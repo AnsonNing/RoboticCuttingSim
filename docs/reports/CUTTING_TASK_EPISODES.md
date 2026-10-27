@@ -1,6 +1,6 @@
 # Fixed CUT-01 / TRIM-01 live episode audit
 
-Both live backends physically divide the fixed CUT-01 bar into two substantial parts under the prefrozen task protocol. Both fixed TRIM-01 episodes execute but fail to remove the bump or meet the surface goal. These are separate recorded task results; the complete 18-gate simulator acceptance and randomized benchmark remain incomplete.
+Both live backends physically divide the fixed CUT-01 bar into two substantial parts under the prefrozen task protocol. Original1 mm TRIM-01 episodes fail to separate; the explicit2 mm follow-ups below physically detach1.608 g in both backends while retaining the strict surface-goal FAIL. The complete18-gate simulator acceptance remains incomplete. The subsequently executed seeded variants are reported separately in [RANDOMIZED_TASK_EPISODES](RANDOMIZED_TASK_EPISODES.md).
 
 The independent audit is `artifacts/cutting_task_episode_audit_002/result.json`; [the public receipt](../evidence/cutting_task_episode_audit.json) retains input hashes, source verification, checks and measurements. All four records have 400 actual control intervals and 8 seconds of robot and material time. Lab records material at 20 ms and native Kit at 200 ms, with both recording actual robot poses at 20 ms. Hardware timings were not exclusive performance measurements.
 

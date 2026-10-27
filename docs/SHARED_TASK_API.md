@@ -8,9 +8,15 @@ The second Franka remains parked. No model training is included.
 Actual API validation on2026-10-28: Lab/CUT-01 and native Kit/TRIM-01 each ran
 reset, explicit Cartesian and joint actions, two synchronized RGB-D observations,
 Global rendering, independent evaluation and close. Both passed the2-step smoke;
-the unfinished cutting goal correctly remains `NOT_RUN`. Three CPU wrapper
-contracts separately check observation isolation, reset and stale-camera rejection.
+the unfinished cutting goal correctly remains `NOT_RUN`. CPU wrapper contracts
+separately check observation isolation, reset seeds and stale-camera rejection.
 Receipts and source hashes: [shared_task_api_smoke.json](evidence/shared_task_api_smoke.json).
+
+Final launcher checks also pass actual two-step Kit/TRIM with explicit2 mm
+particles and Lab/CUT with the final reset behavior. They exercise both action
+modes and retain process/source receipts in
+[task_regression.json](evidence/task_regression.json). These are API smokes,
+separate from the400-step physical recordings.
 
 Use the dedicated runtime environment, and a fresh output directory:
 
@@ -21,7 +27,8 @@ Use the dedicated runtime environment, and a fresh output directory:
 
 # Same API, actual Lab/InteractiveScene; explicitly ideal Warp cameras.
 .deps/isaaclab-venv/bin/python scripts/run_cutting_task.py \
-  --runtime isaac_lab --task TRIM-01 --output-dir artifacts/my_trim_api
+  --runtime isaac_lab --task TRIM-01 --particle-spacing 0.002 \
+  --output-dir artifacts/my_trim_api
 
 # Two-step actual Cartesian + joint control smoke, not a cutting-success test.
 .deps/isaaclab-venv/bin/python scripts/run_cutting_task.py \
@@ -34,6 +41,16 @@ audits, use the recording commands in [CUTTING_TASKS](CUTTING_TASKS.md).
 The API CLI preserves actual observation arrays, Global images, measured tool
 trajectory and an independent task score. It checks worker receipts because Kit
 can return process code zero after an exception.
+
+The original task factory retains 1 mm particles. The successful live TRIM
+reference episodes explicitly use `--particle-spacing 0.002` (Python:
+`particle_spacing_m=0.002` in `open_cutting_env`). This changes initial quadrature,
+not particle deletion during cutting. The retained 1 mm TRIM baseline does not
+fully separate. With 2 mm particles, both Lab and native Kit detach a 1.608 g chip
+and remove 98.5294% of above-plane reference material. The original strict
+full-surface goal still returns `FAIL_TASK_METRICS` / `success=False`;
+this is independent of physical separation and episode completion. See the
+[actual episode audit](reports/CUTTING_TASK_EPISODES.md).
 
 ## Python
 
@@ -53,6 +70,13 @@ with open_cutting_env("CUT-01", runtime="isaac_sim",
     print(result["status"], result["success"])
     global_rgb = env.render("global")
 ```
+
+For randomized tasks, pass `task_variant="randomized"` through the same factory's
+backend options. `reset()` preserves the constructed task seed. Native Kit can
+rebuild the stage for another `reset(seed)`; Lab's geometry/fixtures are fixed at
+construction, so a changed randomized seed explicitly requires a new environment.
+The fixed variant stays geometrically identical across seeds. Distribution and
+one-seed actual validation are recorded in [TASK_RANDOMIZATION](TASK_RANDOMIZATION.md).
 
 `step(None)` executes the reference trajectory. An external controller supplies:
 

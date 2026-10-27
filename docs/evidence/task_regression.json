@@ -1,0 +1,121 @@
+{
+  "scope": "CPU suite, exact legacy generator contracts, and an actual short Lab D0 physics regression; not full D0-D3 reruns",
+  "cpu": {
+    "command": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q"
+    ],
+    "status": "PASS",
+    "tests_passed": 205,
+    "result_text": "........................................................................ [ 35%]\n........................................................................ [ 70%]\n.............................................................            [100%]\n205 passed in 1.73s",
+    "log": "artifacts/final_cutting_task_tests_001.log",
+    "log_sha256": "e43f6271a643117d78542cf5da4035a724e2f9273f53452d73608c02b08255eb",
+    "scope": "CPU contracts; not actual Isaac/GPU episode counts"
+  },
+  "legacy_sampler": {
+    "status": "PASS",
+    "scope": "Eight exact pre-randomization D0-D3 specimen/mass/lattice/spec hash controls",
+    "source": "tests/test_task_randomization.py",
+    "source_sha256": "c54622af5bb4bd74751dfe9a7b882604f244fd420269c1c613db71167f12d507"
+  },
+  "actual_lab_d0_prefix": {
+    "scope": "Actual five-control-step Lab D0 after new-task code versus original FF002 prefix; cameras disabled for this physics regression; not a full D0 repeat",
+    "original": "artifacts/isaac_lab_d0_feedforward_002",
+    "new": "artifacts/isaac_lab_d0_after_tasks_regression_001",
+    "metrics": {
+      "material_position_max_error_m": 5.21540641784668e-08,
+      "material_velocity_max_error_m_s": 6.241840310394764e-06,
+      "joint_position_max_error_rad": 5.0370541071487196e-12,
+      "cut_codes_exact": true,
+      "reference_points_exact": true,
+      "mass_exact": true
+    },
+    "status": "PASS_REGRESSION"
+  },
+  "actual_lab_d0_receipt_sha256": "b84a35068deb614f8dd6763c9592851b4b1ae91e8831070ee112345fa5094b86",
+  "full_d0_d3_dynamic_rerun": "NOT_RUN",
+  "final_api_smokes": [
+    {
+      "artifact": "artifacts/isaacsim_shared_api_coarse_smoke_001",
+      "result": {
+        "status": "PASS_SMOKE",
+        "runtime_source": "live_isaac_sim",
+        "task_id": "TRIM-01",
+        "steps": 2,
+        "simulation_s": 0.04,
+        "task_metric_status": "NOT_RUN",
+        "task_success": false,
+        "api_exercised": [
+          "reset",
+          "step",
+          "observe",
+          "render",
+          "evaluate",
+          "close"
+        ],
+        "explicit_actions_exercised": true,
+        "policy_observation_keys": [
+          "rgb",
+          "depth_m",
+          "valid_mask",
+          "calibration",
+          "timestamp_s",
+          "proprio"
+        ],
+        "full_physics_camera_acceptance": "SEPARATE_AUDIT_REQUIRED"
+      },
+      "process": {
+        "returncode": 0,
+        "wall_s": 11.211068075150251
+      },
+      "manifest_sha256": "2dd4a3368daa4feace6ef52554a1d9192210fe9cfa81510959a86f5f35d474ef",
+      "result_sha256": "a58852aa63f21c408c997df49dba4802c8070517a856fbc7308c4661a34f447c",
+      "api_sources_sha256": {
+        "run_cutting_task.py": "ab7e9910cc8ea1f17ca55d1b4277f31c2488b6f447d2c1e4ec03afcb9281345a",
+        "live_env.py": "5cbc2fe5295d97c725bc43890dcb7fada8a3feb6dabb9e4527329c79623c4604"
+      }
+    },
+    {
+      "artifact": "artifacts/isaac_lab_shared_api_final_smoke_001",
+      "result": {
+        "status": "PASS_SMOKE",
+        "runtime_source": "live_isaac_lab",
+        "task_id": "CUT-01",
+        "steps": 2,
+        "simulation_s": 0.04,
+        "task_metric_status": "NOT_RUN",
+        "task_success": false,
+        "api_exercised": [
+          "reset",
+          "step",
+          "observe",
+          "render",
+          "evaluate",
+          "close"
+        ],
+        "explicit_actions_exercised": true,
+        "policy_observation_keys": [
+          "rgb",
+          "depth_m",
+          "valid_mask",
+          "calibration",
+          "timestamp_s",
+          "proprio"
+        ],
+        "full_physics_camera_acceptance": "SEPARATE_AUDIT_REQUIRED"
+      },
+      "process": {
+        "returncode": 0,
+        "wall_s": 11.308391364989802
+      },
+      "manifest_sha256": "4bd5415be21798de42541431854305be38e0defe71a950004c6cfe16dc803f06",
+      "result_sha256": "0b68a91955f3f7fe1245e90a9e7769eecef43bdd3821294ed08f3b454f0ec06c",
+      "api_sources_sha256": {
+        "run_cutting_task.py": "ab7e9910cc8ea1f17ca55d1b4277f31c2488b6f447d2c1e4ec03afcb9281345a",
+        "live_env.py": "7c2fc633da7867c84d02e4a21da53a34c677fa49943a52992937d815f1159f33"
+      }
+    }
+  ]
+}

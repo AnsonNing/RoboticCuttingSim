@@ -1,6 +1,43 @@
 # Progress — 2026-10-28 Asia/Seoul
 
-## 最新：真實 Isaac runtime 整合與驗收
+## 最新：兩個 Cutting Tasks 已完成實際物理執行
+
+固定 CUT-01 與 TRIM-01 均已在 **Isaac Lab 3.0 GA 與 Isaac Sim 6.2**
+各完成400控制步／8秒，實際 Franka 持固定刀具、量測刀刃接觸材料，TLMPM 產生
+永久分離，材料反作用回饋手臂。第二臂停泊。兩個任務共用同一個
+`reset/step/observe/render/evaluate/close` 介面與獨立 Task evaluator；
+沒有訓練模型、改動 RSI、其他環境或 driver。
+
+| 本輪交付 | 實際結果 | 狀態與界線 |
+| --- | --- | --- |
+| 固定 CUT-01 | Lab／Sim各一次；144g→72g+72g，1→2實際MPM分量，切割位置reference-support上界1.5mm，撤刀後2.4s持續分離 | **PASS_TASK_METRICS**；完整相機／耦合驗收另計 |
+| 固定 TRIM-01 | 明示2mm粒子初始取樣，Lab／Sim各一次；145.632g不變，1.608g切屑，98.5294%目標材料移除 | **物理分離PASS**；原始全表面精度 **FAIL_TASK_METRICS** |
+| 隨機化 | 凍結分布：不同長度、切割位置、XY/yaw、1–3個連續Dome/Gaussian/Ridge/irregular凸起；native seed42兩任務均完整實跑 | CUT分成66.6/59.4g並通過Task；TRIM形成三個切屑、移除96.2791%，幾何目標仍FAIL；不宣稱成功率 |
+| 原生相機 | 每集41幀雙640×480 RGB-D＋1280×960 Global；當下表面／實際robot姿態進入Kit原生管線 | geometry/time/CAM-03 PASS；CAM-04、chip像素與嚴格reset仍有FAIL；Lab為明示ideal Warp |
+| 公開影片 | 兩固定任務各有Global、雙RGB、雙Depth、同步視角、command/actual刀路與來源hash | 由實際capture編碼；raw保留；沒有USD replay冒充live |
+| 回歸 | 205項CPU測試；舊D0–D3 sampler的8組golden hash不變；另做Lab D0實際5步前綴比較 | code/reference/mass一致，位置最大差52.15nm；不是完整D0–D3動力學重跑 |
+
+原始1mm TRIM兩次live仍FAIL：兩個code0粒子橋接，沒有真正斷開。延長刀路、
+第二次真切削與改2mm網格的負結果均保存，之後2mm粒子配置才在兩個live runtime
+產生分離。這是明示的解析度相關工程結果，沒有改寫預設、刪粒子或宣稱收斂。
+
+固定粗粒子TRIM的正向最高殘留約0.106–0.109mm，但全footprint p95約1.67mm、
+overcut約2%，仍未達原始標準。獨立無凸起target控制與三維表面距離已完成：
+represented-column指標仍FAIL；雙向表面距離p95約0.29mm僅作描述，未重新訂門檻。
+固定任務的分割耦合功殘差仍超標，材料／斷裂參數未實物校準。隨機TRIM雖分離，
+參考撤刀後仍有tool contact，不能宣稱三塊切屑全部blade-clear自由飛行。
+
+主要新增證據：`artifacts/isaac_lab_cut01_001`、`isaacsim_cut01_001`、
+`isaac_lab_trim01_coarse_001`、`isaacsim_trim01_coarse_001`、
+`isaac_native_randomized_benchmark_001`；精簡source/hash/量測與FAIL在公開docs。
+完整表格與指令：[CUTTING_BENCHMARK](CUTTING_BENCHMARK.md)、
+[固定實驗](reports/CUTTING_TASK_EPISODES.md)、
+[隨機實驗](reports/RANDOMIZED_TASK_EPISODES.md)、
+[原生相機](TASK_CAMERA_VALIDATION.md)、
+[共用API](SHARED_TASK_API.md)、[表面控制](REPRESENTED_TARGET_VALIDATION.md)。
+影片入口在[README](../README.md)。本機raw未刪除，大型資產不提交Git。
+
+## 已保存：先前 Isaac runtime 整合與驗收
 
 本輪已在原機器、原 driver 570.211.01 實際執行 Isaac Lab 3.0 GA 與
 Isaac Sim 6.2／Kit110.4；使用官方支援的 Torch2.11/cu128 隔離環境。
@@ -31,7 +68,7 @@ ENV-01為FAIL。新原生剛體穿透稽核最大32.494µm／刀具對剛體0，
 隨機化 → 回歸測試。會在目前整合證據與未解決問題保存後，以共用 Task／
 Geometry／Fixture、workpiece-local目標及統一API接續；原D0–D3基線保留。
 
-### CUT-01／TRIM-01 實作進行中
+### 先前 CUT-01／1mm TRIM-01 實作與負結果
 
 已固定兩個任務的幾何、材料、治具、固定刀具座與獨立評分標準，見
 [CUTTING_TASKS](CUTTING_TASKS.md)。新增可選工件座標材料介面與有限治具接觸；

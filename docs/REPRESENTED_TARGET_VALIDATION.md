@@ -111,11 +111,11 @@ known offsets, physical-gate blocking, exact-mesh self distance and known
 1.5 mm translation. Reproduce with fresh output paths:
 
 ```bash
-.venv/bin/python scripts/build_represented_flatbar_target.py artifacts/represented_flatbar_target_002 --device cuda:0
-.venv/bin/python scripts/evaluate_represented_target.py artifacts/isaac_lab_trim01_coarse_001 artifacts/represented_flatbar_target_002 artifacts/represented_goal_lab_coarse_001
-.venv/bin/python scripts/evaluate_represented_target.py artifacts/isaacsim_trim01_coarse_001 artifacts/represented_flatbar_target_002 artifacts/represented_goal_kit_coarse_001
-.venv/bin/python scripts/describe_represented_mesh_distance.py artifacts/represented_goal_lab_coarse_001 artifacts/represented_flatbar_target_002 artifacts/represented_mesh_distance_lab_coarse_001
-.venv/bin/python scripts/describe_represented_mesh_distance.py artifacts/represented_goal_kit_coarse_001 artifacts/represented_flatbar_target_002 artifacts/represented_mesh_distance_kit_coarse_001
+.venv/bin/python scripts/build_represented_flatbar_target.py artifacts/represented_flatbar_target_NEW --device cuda:0
+.venv/bin/python scripts/evaluate_represented_target.py artifacts/isaac_lab_trim01_coarse_001 artifacts/represented_flatbar_target_NEW artifacts/represented_goal_lab_NEW
+.venv/bin/python scripts/evaluate_represented_target.py artifacts/isaacsim_trim01_coarse_001 artifacts/represented_flatbar_target_NEW artifacts/represented_goal_kit_NEW
+.venv/bin/python scripts/describe_represented_mesh_distance.py artifacts/represented_goal_lab_NEW artifacts/represented_flatbar_target_NEW artifacts/represented_mesh_distance_lab_NEW
+.venv/bin/python scripts/describe_represented_mesh_distance.py artifacts/represented_goal_kit_NEW artifacts/represented_flatbar_target_NEW artifacts/represented_mesh_distance_kit_NEW
 .venv/bin/python -m pytest -q tests/test_represented_target.py tests/test_represented_mesh_distance.py
 ```
 
