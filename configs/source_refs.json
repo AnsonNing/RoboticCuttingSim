@@ -1,0 +1,17 @@
+{
+  "IsaacLab": {
+    "url": "https://github.com/isaac-sim/IsaacLab",
+    "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+    "license": "BSD-3-Clause"
+  },
+  "newton": {
+    "url": "https://github.com/newton-physics/newton",
+    "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+    "license": "Apache-2.0"
+  },
+  "CRESSim-MPM": {
+    "url": "https://github.com/yafei-ou/CRESSim-MPM",
+    "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+    "license": "BSD-3-Clause"
+  }
+}

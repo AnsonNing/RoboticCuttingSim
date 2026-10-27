@@ -1,0 +1,14 @@
+.venv/
+.deps/
+artifacts/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.mp4
+*.npz
+*.npy
+*.so

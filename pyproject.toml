@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotic-cutting-sim"
+version = "0.1.0"
+description = "Blade-only MPM experiments for an independently validated cutting workcell"
+requires-python = ">=3.12,<3.13"
+dependencies = ["numpy>=2,<3", "scipy>=1.11", "PyYAML>=6"]
+
+[project.optional-dependencies]
+newton = ["newton==1.6.1", "warp-lang==1.17.0"]
+tools = ["pytest>=8", "matplotlib>=3.8", "usd-core<26.9"]
+
+[project.scripts]
+robotic-cutting-sim = "robotic_cutting_sim.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["gpu: explicitly invoked Newton GPU test", "expensive: convergence experiment"]
+
