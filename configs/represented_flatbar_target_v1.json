@@ -1,0 +1,73 @@
+{
+  "protocol_id": "represented_flatbar_2mm_whole_columns_v1_20261028",
+  "freeze_boundary": "Committed before target extraction or analysis of actual coarse full-runtime outcomes. No cut output determines target geometry, alignment, parameters or thresholds.",
+  "motivation": "Prior independent uncut H2 flatbar control fails the analytic-plane gouge bound at sharp outer corners. This distinct represented-solid goal retains all footprint columns and the original analytic-plane result separately.",
+  "target": {
+    "dimensions_m": [0.16, 0.03, 0.02],
+    "particle_spacing_m": 0.002,
+    "density_kg_m3": 1500.0,
+    "total_F": "identity",
+    "world_from_workpiece_xyz_xyzw": [0, 0, 0, 0, 0, 0, 1],
+    "no_bump": true,
+    "no_material_dynamics": true,
+    "surface_profile": "current_volume_v1 H2",
+    "surface_parameters": {
+      "voxel_size": 0.001,
+      "kernel_radius": 0.006,
+      "threshold": 0.5,
+      "kernel_scale": 0.5,
+      "smooth_lambda": 0.0,
+      "anisotropic": false,
+      "field_smooth_iterations": 0,
+      "mesh_smooth_iterations": 0
+    }
+  },
+  "measurement": {
+    "spacing_m": 0.001,
+    "grid_shape_xy": [160, 30],
+    "whole_fixed_footprint_m": [[-0.08, 0.08], [-0.015, 0.015]],
+    "cell_centred": true,
+    "columns": 4800,
+    "empty_column_height_m": 0.0,
+    "missing_semantics": "No vertical solid intersection means an empty column of height0. Both-empty columns have zero represented-solid height difference but remain counted in each and union missing fractions. A one-sided actual gap incurs the full represented-target column deficit; target-empty actual-filled columns incur positive residual. No column is dropped or imputed with ideal depth.",
+    "error": "actual represented height minus fixed target represented height on ALL4800 columns",
+    "overcut_denominator": "Unchanged analytic initial base volume0.16*0.03*0.02m3",
+    "fitted_registration_or_bias_correction": false,
+    "edge_culling_or_interior_roi_promotion": false,
+    "all_valid_and_missing_column_tails_retained": true
+  },
+  "shape_limits": {
+    "maximum_positive_residual_m": 0.001,
+    "maximum_gouge_deficit_m": 0.001,
+    "p95_absolute_error_m": 0.0005,
+    "rms_error_m": 0.0005,
+    "overcut_volume_fraction_of_initial_base": 0.01,
+    "actual_missing_fraction": 0.01,
+    "target_missing_fraction": 0.01,
+    "union_missing_fraction": 0.01
+  },
+  "synthetic_controls": {
+    "exact_target": "Same target heights/validity, all errors0; missing columns remain counted",
+    "positive_vertical_offset_m": 0.0015,
+    "negative_vertical_offset_m": -0.0015,
+    "one_actual_missing_ray": {"row": 15, "column": 80},
+    "require_offset_and_one_sided_missing_controls_fail": true
+  },
+  "required_physical_checks_for_combined_goal": [
+    "complete_episode",
+    "initial_continuous_graph",
+    "initial_codes_zero",
+    "reference_matches_single_continuous_task_sampler",
+    "reference_mass_budget_and_unchanged_count",
+    "persistent_history_no_digit_rewrites",
+    "postcut_disconnected_topology_persists",
+    "reference_above_plane_material_removed",
+    "surface_has_explicit_mechanical_provenance",
+    "surface_timestamp_matches_final_physics"
+  ],
+  "additional_physical_acceptance": "Existing finite positive-Jacobian, actual runtime, force, camera, reset and contact acceptance remain separate and cannot be inferred from this geometry metric.",
+  "promotion_boundary": "New represented-solid shape version only. Combined task goal requires ALL listed physical topology/removal/mass/history/provenance checks AND represented-shape limits. Original v1 analytic-plane failures remain unchanged; geometry alone never certifies physical cutting or full simulation.",
+  "original_analytic_task_v1_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+  "newton_version": "1.6.1",
+  "warp_version": "1.17.0"
+}
