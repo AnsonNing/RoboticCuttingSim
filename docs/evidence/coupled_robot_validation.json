@@ -1,0 +1,392 @@
+{
+  "scope": "experimental delayed articulated-robot/material coupling; not Isaac Lab or calibrated physics",
+  "canonical_artifacts": "artifacts/coupled_robot_cut_002",
+  "feedback_enabled": {
+    "status": "PASS_NUMERICAL_COUPLING_PROBE",
+    "duration_s": 7.999999999999917,
+    "wall_s": 35.34766874485649,
+    "scope": "experimental partitioned articulated robot/TLMPM, not Isaac Lab",
+    "particle_count": 19340,
+    "initial_mechanical_components": 1,
+    "final_mechanical_components": 2,
+    "components": [
+      {
+        "id": 0,
+        "particles": 138,
+        "mass_kg": 0.0016560000000000032,
+        "initial_com_m": [
+          -0.00013043477699376525,
+          7.192874891765458e-20,
+          0.018101449569930244
+        ],
+        "final_com_m": [
+          0.068443042266628,
+          -0.0003601263629009381,
+          0.017560939237043476
+        ],
+        "post_withdraw_motion_m": 0.0014921666154326986
+      },
+      {
+        "id": 1,
+        "particles": 19202,
+        "mass_kg": 0.2304240000000927,
+        "initial_com_m": [
+          9.374023135685294e-07,
+          -3.2164784434239177e-21,
+          0.008000937360429014
+        ],
+        "final_com_m": [
+          -1.0441880436518774e-05,
+          2.3279174952660406e-06,
+          0.00786215062031766
+        ],
+        "post_withdraw_motion_m": 4.616218152303237e-05
+      }
+    ],
+    "persistent_split_observed": true,
+    "existing_side_digit_changed": false,
+    "minimum_detF": 0.9060412049293518,
+    "maximum_speed_m_s": 0.20245473086833954,
+    "max_tool_tracking_error_m": 0.005706532846338822,
+    "active_cut_depth_range_m": [
+      0.015644500612078643,
+      0.015720442190688494
+    ],
+    "maximum_material_force_N": 1.0413162971194505,
+    "feedback_enabled": true,
+    "feedback_delay_s": 0.02,
+    "applied_impulse_previous_interval_max_error": 0.0,
+    "mean_rigid_physics_wall_s": 0.004053629580885172,
+    "mean_ik_wall_s": 0.007403071656008251,
+    "mean_material_physics_wall_s": 0.058850929340114815,
+    "mass_kg": 0.23207999999999998,
+    "mass_exchange": "none; immutable IDs/masses, no deletion/spawn",
+    "proprioception_keys": [
+      "q",
+      "qdot",
+      "tool_pose",
+      "timestamp_s"
+    ],
+    "guard_failure": null,
+    "material_geometry_matches_robot_wedge": true,
+    "replay": {
+      "status": "PASS",
+      "max_link_translation_error_m": 0.0,
+      "scope": "measured dynamic articulation replay; offline USD, no RTX or MPM"
+    },
+    "interface_work_ledger": {
+      "material_boundary_work_j": 0.014094516634941101,
+      "robot_applied_material_wrench_work_j": -0.013768858253433958,
+      "sum_interface_work_j": 0.0003256583815071431,
+      "scope": "boundary-work diagnostic under explicit lag; not a converged total-energy conservation claim"
+    },
+    "material_calibration": "provisional_uncalibrated",
+    "physics_proven": false,
+    "limitations": [
+      "20ms explicit feedback delay; not monolithic, no converged energy balance",
+      "Torque impulse accumulated about moving tool points; inter-interval lever-arm approximation",
+      "No Isaac Lab runtime or cameras in this isolated probe",
+      "Material contact resolution and cutting constitutive law remain experimental"
+    ],
+    "artifact_sha256": {
+      "physics_state.npz": "4380a3afdf7d88fe769a2982651bf54f99db6bde71e8d225e811ad3c9a961afe",
+      "robot_state.npz": "f33bcbf99cc91b685202028dca44140e156805705c9b7c1aa249f2526c8d0b29",
+      "tool_geometry.npz": "55b3964ad07f1a3ef5b20d89c22512c2eec1a9723743f7db5eeacc8fae2c6887"
+    }
+  },
+  "feedback_disabled": {
+    "status": "PASS_NUMERICAL_COUPLING_PROBE",
+    "duration_s": 7.999999999999917,
+    "wall_s": 30.55311470478773,
+    "scope": "experimental partitioned articulated robot/TLMPM, not Isaac Lab",
+    "particle_count": 19340,
+    "initial_mechanical_components": 1,
+    "final_mechanical_components": 2,
+    "components": [
+      {
+        "id": 0,
+        "particles": 140,
+        "mass_kg": 0.0016800000000000033,
+        "initial_com_m": [
+          2.857143325465077e-05,
+          7.09011953616881e-20,
+          0.018057143142713013
+        ],
+        "final_com_m": [
+          0.07002286996160237,
+          -1.8389446112061327e-05,
+          0.065447828120419
+        ],
+        "post_withdraw_motion_m": 0.0054385781881348015
+      },
+      {
+        "id": 1,
+        "particles": 19200,
+        "mass_kg": 0.23040000000009267,
+        "initial_com_m": [
+          -2.0833336748200338e-07,
+          -3.2168134932617745e-21,
+          0.008000208291438982
+        ],
+        "final_com_m": [
+          3.8704790598249994e-05,
+          -6.069769375851199e-06,
+          0.007834488274371961
+        ],
+        "post_withdraw_motion_m": 1.7866416440184445e-05
+      }
+    ],
+    "persistent_split_observed": true,
+    "existing_side_digit_changed": false,
+    "minimum_detF": 0.9023928642272949,
+    "maximum_speed_m_s": 0.08019877225160599,
+    "max_tool_tracking_error_m": 0.0057371815729619635,
+    "active_cut_depth_range_m": [
+      0.01547111823632305,
+      0.015476062793220474
+    ],
+    "maximum_material_force_N": 1.4055243886300617,
+    "feedback_enabled": false,
+    "feedback_delay_s": 0.02,
+    "applied_impulse_previous_interval_max_error": null,
+    "mean_rigid_physics_wall_s": 0.00405908064392861,
+    "mean_ik_wall_s": 0.007425098834792152,
+    "mean_material_physics_wall_s": 0.0585886903264327,
+    "mass_kg": 0.23207999999999998,
+    "mass_exchange": "none; immutable IDs/masses, no deletion/spawn",
+    "proprioception_keys": [
+      "q",
+      "qdot",
+      "tool_pose",
+      "timestamp_s"
+    ],
+    "guard_failure": null,
+    "material_geometry_matches_robot_wedge": true,
+    "replay": {
+      "status": "PASS",
+      "max_link_translation_error_m": 0.0,
+      "scope": "measured dynamic articulation replay; offline USD, no RTX or MPM"
+    },
+    "interface_work_ledger": {
+      "material_boundary_work_j": 0.018937870860099792,
+      "robot_applied_material_wrench_work_j": 0.0,
+      "sum_interface_work_j": 0.018937870860099792,
+      "scope": "boundary-work diagnostic under explicit lag; not a converged total-energy conservation claim"
+    },
+    "material_calibration": "provisional_uncalibrated",
+    "physics_proven": false,
+    "limitations": [
+      "20ms explicit feedback delay; not monolithic, no converged energy balance",
+      "Torque impulse accumulated about moving tool points; inter-interval lever-arm approximation",
+      "No Isaac Lab runtime or cameras in this isolated probe",
+      "Material contact resolution and cutting constitutive law remain experimental"
+    ],
+    "artifact_sha256": {
+      "physics_state.npz": "63966b48c3bfa1e9fb3fee22585b9f9b5adbbab8d2173b5a16876ae4f9fd3f48",
+      "robot_state.npz": "7e93dceb60c0b13be259a3f1d2426a5fcfa4d526637d9a43f122455bada7af9b",
+      "tool_geometry.npz": "55b3964ad07f1a3ef5b20d89c22512c2eec1a9723743f7db5eeacc8fae2c6887"
+    }
+  },
+  "comparison": {
+    "status": "PASS",
+    "scope": "matched commands/seed with material reaction feedback toggled; no training",
+    "q_max_difference_rad": 0.00036588311195373535,
+    "tool_position_max_difference_m": 0.00034481241773740023,
+    "enabled_final_components": 2,
+    "disabled_final_components": 2
+  },
+  "source": {
+    "timestamp": "2026-10-28T01:38:09.283314+09:00",
+    "command": [
+      "scripts/run_coupled_cutting.py",
+      "--output-dir",
+      "artifacts/coupled_robot_cut_002",
+      "--compare-feedback"
+    ],
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "backend": "experimental_panda_tlmpm",
+    "git_sha": "74406767f2469d825a259680489c20f8eb91e34a",
+    "git_dirty": true,
+    "config": {
+      "coupling": {
+        "control_dt": 0.02,
+        "material_dt": 0.0001,
+        "dx": 0.004,
+        "device": "cuda:0",
+        "feedback": true,
+        "variant": "D0",
+        "family": "dome",
+        "cut_height_m": 0.0155
+      },
+      "seed": 42,
+      "duration_s": 8.0
+    },
+    "config_sha256": "6ba13bee8ffc34362705eafd6902a2de47c8d737c6c32cf7f1a63d34674a10fd",
+    "packages": {
+      "newton": "1.6.1",
+      "warp-lang": "1.17.0",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "isaaclab": null,
+      "isaacsim": null,
+      "torch": null,
+      "usd-core": "26.8"
+    },
+    "source_checkouts": {
+      "newton": {
+        "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      },
+      "CRESSim-MPM": {
+        "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+        "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+        "dirty": true
+      },
+      "IsaacLab": {
+        "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      }
+    },
+    "physics_proven": false,
+    "vision_proven": false,
+    "implementation_sha256": {
+      "src/robotic_cutting_sim/coupled_robot.py": "c84ec7f4ee4f4e2ab32083d7b589f5080f964e7821da6ab0c7a37b525d4c4deb",
+      "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+      "src/robotic_cutting_sim/tlmpm.py": "0c512a252843cd395c1d610249a16ca176763a75e13094ca01ab4077cc08f7b7",
+      "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+    }
+  },
+  "executed_drivers": {
+    "additional_executed_driver_sources_sha256": {
+      "scripts/run_coupled_cutting.py": "bc0a945d5ef3214b6317a770a31c3ad0dc384ac61b641f9016c174177e8ad378",
+      "scripts/check_robot_control.py": "309ac854cfc315b7d40adfec64d3530e3891dfe2056fe18861a115047df67f78"
+    },
+    "scope": "supplemental hashes captured before driver modifications; core module hashes remain in frozen manifest"
+  },
+  "default_box_regression": {
+    "status": "PASS_STANDALONE_ROBOT",
+    "tests": {
+      "articulation_joint_control": "PASS",
+      "cartesian_fk_ik_path": "PASS",
+      "parked_second_arm": "PASS",
+      "fixed_knife_attachment": "PASS",
+      "collision_free_reference": "PASS",
+      "same_reset_repeat": "PASS",
+      "finite_dynamics": "PASS",
+      "measured_link_replay": "PASS",
+      "material_contact_coupling": "NOT_RUN",
+      "bidirectional_material_force": "NOT_RUN",
+      "isaac_lab_control": "BLOCKED",
+      "diagnostic_tool_wrench_response": "PASS",
+      "self_collision_detection": "PASS",
+      "robot_table_detection": "PASS",
+      "tool_table_dynamic_response": "PASS"
+    },
+    "steps": 360,
+    "simulated_duration_s": 5.999999999999984,
+    "wall_s_including_construction_and_extra_checks": 10.425592891173437,
+    "construction_wall_s": 0.8392358159180731,
+    "mean_physics_wall_s": 0.0015960957227636957,
+    "mean_ik_wall_s": 0.007249809067515243,
+    "max_tracking_error_m": 0.00410793239109699,
+    "rms_tracking_error_m": 0.0026207961059418216,
+    "max_park_drift_rad": 2.467658374730522e-14,
+    "reset_q_max_difference_rad": 0.0,
+    "joint_control_final_error_rad": 3.0994415283203125e-06,
+    "joint_control_displacement_rad": 0.04999997839331627,
+    "rigid_reference_contact_count": 0,
+    "replay": {
+      "status": "PASS",
+      "max_link_translation_error_m": 0.0,
+      "scope": "measured dynamic articulation replay; offline USD, no RTX or MPM"
+    },
+    "collision_validation": {
+      "tests": {
+        "self_collision_detection": "PASS",
+        "robot_table_detection": "PASS",
+        "tool_table_dynamic_response": "PASS"
+      },
+      "negative_static_queries": {
+        "self_collision_detection": {
+          "seed": 42,
+          "attempt": 9,
+          "q_rad": [
+            1.535562381811217,
+            0.4749629031355136,
+            0.3104711955842343,
+            -1.3930600988571697,
+            -1.136030763710852,
+            0.0986832380123325,
+            -0.3666974169818036
+          ],
+          "geoms": [
+            "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c0/link5_c0_7",
+            "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_c/hand_c_4"
+          ],
+          "distance_m": -0.02004114601135402
+        },
+        "robot_table_detection": {
+          "seed": 42,
+          "attempt": 24,
+          "q_rad": [
+            -1.059606973463149,
+            1.5967420875624083,
+            -1.21154749718699,
+            -1.525598493311296,
+            -1.4140846886173593,
+            3.5113843126406694,
+            -1.9434635435657288
+          ],
+          "geoms": [
+            "table_31",
+            "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/link7_c/link7_c_5"
+          ],
+          "distance_m": -0.020771241532017898
+        }
+      },
+      "max_knife_table_normal_force_N": 38.4657292836636,
+      "maximum_knife_table_penetration_m": 0.00011359487413913285,
+      "final_requested_tool_center_z_m": 0.0020000000000000018,
+      "final_measured_tool_center_z_m": 0.00495968866021107,
+      "scope": "rigid collisions and articulated table response; no material cutting force"
+    },
+    "diagnostic_wrench_validation": {
+      "status": "PASS",
+      "tool_displacement_after_20N_world_x_m": [
+        0.010235345654685299,
+        -0.0006169574576455118,
+        0.006835343896805235
+      ],
+      "unload_return_error_m": 3.5673961277159287e-06,
+      "scope": "diagnostic force injection validates articulated response; no material-force source"
+    },
+    "memory": {
+      "process_peak_rss_MiB": 550.34375,
+      "process_gpu_memory_MiB_per_device": [],
+      "scope": "RSS high-water mark and one owned-process GPU memory sample; not a GPU peak guarantee"
+    },
+    "physical_cutting_validated": false,
+    "material_force_coupling_validated": false,
+    "rtx_validated": false,
+    "limitations": [
+      "standalone rigid robot test, no MPM material",
+      "collider support validated separately from physical cutting",
+      "unvalidated Isaac Lab runtime"
+    ],
+    "artifact_sha256": {
+      "trajectory.npz": "0c21c66ed71d8f55f5f28cef49b16868741e234653502fab5dd41e3ee1198cae",
+      "collision_response.npz": "07c8461c019d422e4f7e7f7087bdb928a6db0fe956950d43c05d86e244bb10cf",
+      "reset_repeat.npz": "0c044ec88db7f64cae2b4e914d41f16c81897752d3e27cb61e95c65714b826fc",
+      "dual_franka_replay.usda": "5094beba602302c67bca10927bc061dd3677e275a7953aefb11d3a31bcab4e72",
+      "diagnostic_wrench_response.npz": "e2b318355812ed245fce73591eae4d11db56c67c37cd9f77fa68f43e128e2af6"
+    }
+  },
+  "default_box_array_regression_max_absolute_difference": {
+    "q": 0.0,
+    "qdot": 0.0,
+    "body_pose": 0.0,
+    "tool_pose": 2.220446049250313e-16
+  }
+}

@@ -16,7 +16,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from robotic_cutting_sim.recording import command, manifest, new_output, write_json
-from robotic_cutting_sim.robot import DualFrankaController, RobotConfig, compose_tool_pose
+from robotic_cutting_sim.robot import DualFrankaController, RobotConfig, compose_tool_pose, wedge_mesh
 
 
 def reference_pose(step, count):
@@ -79,11 +79,20 @@ def export_replay(robot, times, bodies, tools, path):
             op = xf.AddTransformOp()
             xf.SetResetXformStack(True)
             operations.append((body_index, op))
-    blade = UsdGeom.Cube.Define(stage, "/World/Knife")
-    blade.CreateSizeAttr(2.)
+    if robot.config.tool_shape == "cut_wedge":
+        blade = UsdGeom.Mesh.Define(stage, "/World/Knife")
+        vertices, faces = wedge_mesh(robot.config.wedge_length_m, robot.config.wedge_height_m,
+                                     robot.config.wedge_half_width_m)
+        blade.CreatePointsAttr(vertices)
+        blade.CreateFaceVertexCountsAttr([3] * len(faces))
+        blade.CreateFaceVertexIndicesAttr(faces.ravel())
+    else:
+        blade = UsdGeom.Cube.Define(stage, "/World/Knife")
+        blade.CreateSizeAttr(2.)
     blade_xf = UsdGeom.Xformable(blade)
     blade_pose_op = blade_xf.AddTransformOp()
-    blade_xf.AddScaleOp().Set(Gf.Vec3f(*robot.config.tool_half_extents_m))
+    if robot.config.tool_shape == "box":
+        blade_xf.AddScaleOp().Set(Gf.Vec3f(*robot.config.tool_half_extents_m))
     table = UsdGeom.Cube.Define(stage, "/World/Table")
     table.CreateSizeAttr(2.)
     UsdGeom.Xformable(table).AddTranslateOp().Set(Gf.Vec3d(0, 0, -.035))

@@ -25,6 +25,11 @@ class RobotConfig:
     asset_path: str | None = None
     tool_offset_m: tuple = (0., 0., .18)
     tool_half_extents_m: tuple = (.001, .05, .015)
+    tool_rotation_xyzw: tuple = (0., 0., 0., 1.)
+    tool_shape: str = "box"
+    wedge_length_m: float = .012
+    wedge_height_m: float = .004
+    wedge_half_width_m: float = .025
 
     def __post_init__(self):
         if self.backend not in ("mujoco_cpu", "mujoco_warp"):
@@ -36,6 +41,11 @@ class RobotConfig:
         if (len(self.tool_half_extents_m) != 3 or not np.all(np.isfinite(self.tool_half_extents_m))
                 or not np.all(np.asarray(self.tool_half_extents_m) > 0)):
             raise ValueError("tool_half_extents_m must be positive")
+        if self.tool_shape not in ("box", "cut_wedge"):
+            raise ValueError("tool_shape must be box or cut_wedge")
+        validate_pose([0, 0, 0, *self.tool_rotation_xyzw])
+        if min(self.wedge_length_m, self.wedge_height_m, self.wedge_half_width_m) <= 0:
+            raise ValueError("Wedge dimensions must be positive")
 
 
 def validate_pose(pose):
@@ -50,10 +60,22 @@ def validate_pose(pose):
     return pose
 
 
-def compose_tool_pose(hand_pose, offset):
+def compose_tool_pose(hand_pose, offset, rotation_xyzw=None):
     """Compose a fixed hand-to-tool translation, preserving XYZW orientation."""
     hand = validate_pose(hand_pose)
-    return np.r_[hand[:3] + Rotation.from_quat(hand[3:]).apply(offset), hand[3:]]
+    rot = Rotation.from_quat(hand[3:])
+    orientation = hand[3:] if rotation_xyzw is None else (rot * Rotation.from_quat(rotation_xyzw)).as_quat()
+    return np.r_[hand[:3] + rot.apply(offset), orientation]
+
+
+def wedge_mesh(length=.012, height=.004, half_width=.025):
+    """Closed triangular extrusion matching TLMPM._wedge_sdf exactly."""
+    vertices = np.array([[0, -half_width, 0], [-length, -half_width, height],
+                         [-length, -half_width, -.0004], [0, half_width, 0],
+                         [-length, half_width, height], [-length, half_width, -.0004]], dtype=np.float32)
+    faces = np.array([[0, 2, 1], [3, 4, 5], [0, 1, 4], [0, 4, 3],
+                      [1, 2, 5], [1, 5, 4], [2, 0, 3], [2, 3, 5]], dtype=np.int32)
+    return vertices, faces[:, ::-1].copy()
 
 
 class DualFrankaController:
@@ -119,10 +141,16 @@ class DualFrankaController:
             builder.joint_q[9] = -np.pi / 2  # park toward +Y, away from the cutting arm
             builder.joint_target_q[9] = -np.pi / 2
             cfg = newton.ModelBuilder.ShapeConfig(density=7800., mu=.35, gap=.001)
-            self.tool_shape = builder.add_shape_box(self.hand_local,
-                xform=wp.transform(wp.vec3(*self.config.tool_offset_m)),
-                hx=self.config.tool_half_extents_m[0], hy=self.config.tool_half_extents_m[1],
-                hz=self.config.tool_half_extents_m[2], cfg=cfg, label="knife_fixed_to_arm_0_hand")
+            mount = wp.transform(wp.vec3(*self.config.tool_offset_m), wp.quat(*self.config.tool_rotation_xyzw))
+            if self.config.tool_shape == "cut_wedge":
+                vertices, faces = wedge_mesh(self.config.wedge_length_m, self.config.wedge_height_m,
+                                             self.config.wedge_half_width_m)
+                self.tool_shape = builder.add_shape_convex_hull(self.hand_local, xform=mount,
+                    mesh=newton.Mesh(vertices, faces.ravel()), cfg=cfg, label="knife_fixed_to_arm_0_hand")
+            else:
+                self.tool_shape = builder.add_shape_box(self.hand_local, xform=mount,
+                    hx=self.config.tool_half_extents_m[0], hy=self.config.tool_half_extents_m[1],
+                    hz=self.config.tool_half_extents_m[2], cfg=cfg, label="knife_fixed_to_arm_0_hand")
             # Shape-on-link attachment is exactly rigid, including added inertia.
             self.table_shape = builder.add_shape_box(-1, xform=wp.transform(wp.vec3(0, 0, -.035)),
                 hx=.9, hy=.6, hz=.025, label="table")
@@ -139,7 +167,7 @@ class DualFrankaController:
                 link_offset=wp.vec3(*self.config.tool_offset_m),
                 target_positions=wp.array([wp.vec3(0, 0, .1)], dtype=wp.vec3, device=self.device))
             self.rotation_objective = ik.IKObjectiveRotation(link_index=self.hand_local,
-                link_offset_rotation=wp.quat_identity(),
+                link_offset_rotation=wp.quat(*self.config.tool_rotation_xyzw),
                 target_rotations=wp.array([wp.vec4(1, 0, 0, 0)], dtype=wp.vec4, device=self.device))
             limit_objective = ik.IKObjectiveJointLimit(self.model.joint_limit_lower,
                                                       self.model.joint_limit_upper, weight=10.)
@@ -187,7 +215,8 @@ class DualFrankaController:
         q = np.clip(q, self.lower, self.upper)
         self.ik_state.joint_q.assign(q)
         self.newton.eval_fk(self.model, self.ik_state.joint_q, self.model.joint_qd, self.ik_state)
-        actual = compose_tool_pose(self.ik_state.body_q.numpy()[self.hand_local], self.config.tool_offset_m)
+        actual = compose_tool_pose(self.ik_state.body_q.numpy()[self.hand_local], self.config.tool_offset_m,
+                                   self.config.tool_rotation_xyzw)
         position_error = float(np.linalg.norm(actual[:3] - pose[:3]))
         rotation_error = float((Rotation.from_quat(actual[3:]).inv() * Rotation.from_quat(pose[3:])).magnitude())
         return q[:7].copy(), {"position_error_m": position_error, "rotation_error_rad": rotation_error,
@@ -198,7 +227,8 @@ class DualFrankaController:
         q[:7] = self._validate_joints(joints)
         self.ik_state.joint_q.assign(q)
         self.newton.eval_fk(self.model, self.ik_state.joint_q, self.model.joint_qd, self.ik_state)
-        return compose_tool_pose(self.ik_state.body_q.numpy()[self.hand_local], self.config.tool_offset_m)
+        return compose_tool_pose(self.ik_state.body_q.numpy()[self.hand_local], self.config.tool_offset_m,
+                                 self.config.tool_rotation_xyzw)
 
     def step_joints(self, joints=None, tool_wrench_world=None):
         """Advance dynamics, optionally applying an internal diagnostic wrench.
@@ -215,6 +245,7 @@ class DualFrankaController:
         self.targets[9:] = self.initial_q[9:]
         self.control.joint_target_q.assign(self.targets)
         start = time.perf_counter()
+        wrench_work = 0.
         dt = self.config.control_dt / self.config.substeps
         for _ in range(self.config.substeps):
             self.state.clear_forces()
@@ -223,19 +254,26 @@ class DualFrankaController:
                 hand = self.state.body_q.numpy()[self.hand_local]
                 rot = Rotation.from_quat(hand[3:])
                 center = hand[:3] + rot.apply(self.model.body_com.numpy()[self.hand_local])
-                tool = compose_tool_pose(hand, self.config.tool_offset_m)
+                tool = compose_tool_pose(hand, self.config.tool_offset_m, self.config.tool_rotation_xyzw)
                 forces = np.zeros((self.model.body_count, 6), dtype=np.float32)
                 forces[self.hand_local, :3] = wrench[:3]
                 forces[self.hand_local, 3:] = wrench[3:] + np.cross(tool[:3] - center, wrench[:3])
                 self.state.body_f.assign(forces)
             self.solver.step(self.state, self.next_state, self.control, None, dt)
             self.state, self.next_state = self.next_state, self.state
+            if wrench is not None:
+                self.newton.eval_fk(self.model, self.state.joint_q, self.state.joint_qd, self.state)
+                after = compose_tool_pose(self.state.body_q.numpy()[self.hand_local], self.config.tool_offset_m,
+                                          self.config.tool_rotation_xyzw)
+                rotation_delta = (Rotation.from_quat(after[3:]) * Rotation.from_quat(tool[3:]).inv()).as_rotvec()
+                wrench_work += float(np.dot(wrench[:3], after[:3] - tool[:3]) + np.dot(wrench[3:], rotation_delta))
         # MuJoCo's cached xpos precedes its final integration. Derive published
         # link poses from the final joint state at the same timestamp.
         self.newton.eval_fk(self.model, self.state.joint_q, self.state.joint_qd, self.state)
         self.wp.synchronize_device(self.device)
         self.time_s += self.config.control_dt
-        return self.proprioception(), {"physics_wall_s": time.perf_counter() - start}
+        return self.proprioception(), {"physics_wall_s": time.perf_counter() - start,
+                                      "applied_tool_wrench_work_j": wrench_work}
 
     def step_cartesian(self, tool_pose, tool_wrench_world=None):
         start = time.perf_counter()
@@ -251,7 +289,7 @@ class DualFrankaController:
         qdot = self.state.joint_qd.numpy().reshape(2, 9)
         return {"q": q[:, :7].copy(), "qdot": qdot[:, :7].copy(),
                 "tool_pose": compose_tool_pose(self.state.body_q.numpy()[self.hand_local],
-                                                self.config.tool_offset_m),
+                                                self.config.tool_offset_m, self.config.tool_rotation_xyzw),
                 "timestamp_s": self.time_s}
 
     def diagnostic_contacts(self):
