@@ -21,6 +21,38 @@ from robotic_cutting_sim.usd_surface_bridge import stage_triangles
 from robotic_cutting_sim.visual_geometry import non_render_purpose_paths
 
 
+def task_session_geometry(stage, setup):
+    """Recompose recorded task session geometry over its legacy weak USD layer."""
+    from pxr import Gf, UsdGeom
+
+    task = setup.get("task")
+    if not task:
+        return None
+    disabled = []
+    for prim in list(stage.Traverse()):
+        if str(prim.GetPath()).startswith("/World/Tray"):
+            disabled.append(str(prim.GetPath()))
+            prim.SetActive(False)
+    root = UsdGeom.Xform.Define(stage, "/World/TaskFixture")
+    pose = task["world_from_workpiece_xyzw"]
+    root.AddTranslateOp().Set(Gf.Vec3d(*pose[:3]))
+    root.AddOrientOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Quatd(pose[6], Gf.Vec3d(*pose[3:6])))
+    for index, box in enumerate(task["fixture_boxes_local"]):
+        cube = UsdGeom.Cube.Define(stage, f"/World/TaskFixture/Box_{index}")
+        cube.CreateSizeAttr(2.)
+        cube.AddTranslateOp().Set(Gf.Vec3d(*box["center_m"]))
+        cube.AddScaleOp().Set(Gf.Vec3f(*box["half_extents_m"]))
+    table = UsdGeom.Xformable(stage.GetPrimAtPath("/World/Table"))
+    for op in table.GetOrderedXformOps():
+        if op.GetOpType() == UsdGeom.XformOp.TypeTranslate:
+            op.Set(Gf.Vec3d(0., 0., task["table_top_world_z_m"]-.025))
+    return {"source": "recorded setup.json task; not current mutable task defaults",
+            "task": task["task_id"], "disabled_legacy_tray_prims": disabled,
+            "fixture_boxes_local": task["fixture_boxes_local"],
+            "world_from_workpiece_xyzw": pose,
+            "table_top_world_z_m": task["table_top_world_z_m"]}
+
+
 @wp.kernel
 def reference_rays(mesh_id: wp.uint64, camera_pose: wp.mat44, k: wp.mat33, near: float, far: float,
                    ids: wp.array(dtype=int), sides: wp.array(dtype=int), depth: wp.array2d(dtype=float), labels: wp.array2d(dtype=int)):
@@ -82,8 +114,9 @@ def main():
         root.GetVariantSets().GetVariantSet("Physics").SetVariantSelection("physx")
         root.GetVariantSets().GetVariantSet("Colliders").SetVariantSelection("convex_hulls")
     stage.GetPrimAtPath("/World/KinematicBlade").SetActive(False)
+    task_geometry_receipt = task_session_geometry(stage, setup)
     knife=UsdGeom.Mesh.Define(stage,setup["knife_prim"])
-    kv,kf=wedge_mesh()
+    kv,kf=wedge_mesh(**setup.get("blade_dimensions_m", {}))
     knife.CreatePointsAttr(kv);knife.CreateFaceVertexCountsAttr([3]*len(kf));knife.CreateFaceVertexIndicesAttr(kf.ravel())
     xf=UsdGeom.Xformable(knife)
     xf.AddTranslateOp().Set(Gf.Vec3d(*setup["T_hand_edge_xyz_xyzw"][:3]))
@@ -99,9 +132,9 @@ def main():
     specimen=UsdGeom.Mesh.Define(stage,"/World/ContinuousSpecimen")
     specimen.CreateDoubleSidedAttr(True)
     specimen.GetNormalsAttr().Block()
-    names=["other","franka_0","franka_1","knife","substrate_or_continuous_material","table","fixture","chip"]
+    base_names=["other","franka_0","franka_1","knife","substrate_or_continuous_material","table","fixture","chip"]
     hashes={}
-    for path in [args.episode/"robot_state.npz",args.episode/"frame_manifest.json",args.episode/"calibration_runtime.json",
+    for path in [args.episode/"setup.json",args.episode/"robot_state.npz",args.episode/"frame_manifest.json",args.episode/"calibration_runtime.json",
                  Path(setup["source_scene"]),Path("configs/isaac_acceptance.json")]:
         hashes[str(path)]=hashlib.sha256(path.read_bytes()).hexdigest()
     snapshots=output/"implementation";snapshots.mkdir()
@@ -110,6 +143,7 @@ def main():
         data=path.read_bytes();(snapshots/path.name).write_bytes(data)
         hashes[str(path)]=hashlib.sha256(data).hexdigest()
     write_json(output/"input.json",{"episode":str(args.episode.resolve()),"input_sha256":hashes,"excluded_guide_prims":excluded,
+        "task_session_geometry":task_geometry_receipt,"blade_dimensions_m":setup.get("blade_dimensions_m", {"length":.012,"height":.004,"half_width":.025}),
         "reference":"Actual per-link PhysX poses + actual current material mesh + measured fixed knife mount; CPU visual triangle first hits",
         "scope":"Independent recorded-live-data audit, not native semantic segmentation or new live camera capture"})
     wp.init()
@@ -134,13 +168,15 @@ def main():
         specimen.GetFaceVertexCountsAttr().Set([3]*len(source_faces))
         specimen.GetFaceVertexIndicesAttr().Set(source_faces.ravel())
         vertices,faces,_,metadata=stage_triangles(stage,excluded_prefixes=tuple(excluded))
+        ranges=row["current_component_surface"]["component_ranges"]
+        names=base_names+([f"material_component_{r['mechanical_component']}" for r in ranges] if setup.get("task") else [])
         face_ids=np.zeros(len(faces),np.int32)
         face_sides=np.zeros(len(faces),np.int32)
         for prim in metadata["prims"]:
             path=prim["prim_path"]
             label=("knife" if path==setup["knife_prim"] else "franka_0" if path.startswith("/World/Franka_0/")
                 else "franka_1" if path.startswith("/World/Franka_1/") else "substrate_or_continuous_material" if "ContinuousSpecimen" in path
-                else "table" if path=="/World/Table" else "fixture" if "Tray" in path else "other")
+                else "table" if path=="/World/Table" else "fixture" if "Tray" in path or path.startswith("/World/TaskFixture/") else "other")
             offset=prim["first_triangle"]
             usd_prim=stage.GetPrimAtPath(path)
             if usd_prim.IsA(UsdGeom.Mesh):
@@ -152,8 +188,11 @@ def main():
                     face_sides[offset:offset+prim["triangles"]]=side
             face_ids[offset:offset+prim["triangles"]]=names.index(label)
             if label=="substrate_or_continuous_material":
-                ranges=row["current_component_surface"]["component_ranges"]
-                if len(ranges)>1:
+                if setup.get("task"):
+                    for r in ranges:
+                        start=offset+r["first_triangle"]
+                        face_ids[start:start+r["triangles"]]=names.index(f"material_component_{r['mechanical_component']}")
+                elif len(ranges)>1:
                     chip=min(ranges,key=lambda r:r["particles"])
                     start=offset+chip["first_triangle"]
                     face_ids[start:start+chip["triangles"]]=names.index("chip")
@@ -192,11 +231,27 @@ def main():
             verified={name:int(np.sum((attribution==i)&consistent)) for i,name in enumerate(names)}
             counts["material"]=counts["substrate_or_continuous_material"]+counts["chip"]
             verified["material"]=verified["substrate_or_continuous_material"]+verified["chip"]
+            component_visibility={}
+            if setup.get("task"):
+                for r in ranges:
+                    component_name=f"material_component_{r['mechanical_component']}"
+                    counts["material"]+=counts[component_name]
+                    verified["material"]+=verified[component_name]
+                    component_visibility[str(r["mechanical_component"])]=dict(particles=r["particles"],
+                        geometric_pixels=counts[component_name],rtx_depth_consistent_pixels=verified[component_name],
+                        native_valid_pixels=int(np.sum((attribution==names.index(component_name))&actual_valid)))
             camera_record={"geometry_vs_actual_rtx":geometry_comparison,"actual_native_vs_geometry":native_comparison,
                 "actual_native_vs_rtx":native_vs_rtx,"timestamp_span_s":float(max(timestamps)-min(timestamps)),
                 "geometric_visible_pixels":counts,"rtx_depth_consistent_attributed_pixels":verified,
                 "native_valid_chip_pixels":int(np.sum((attribution==names.index("chip"))&actual_valid)),
                 "input_observation_sha256":hashlib.sha256(payload_path.read_bytes()).hexdigest()}
+            if setup.get("task"):
+                camera_record["current_mechanical_component_visibility"]=component_visibility
+                # For CUT these are two substantial pieces, not a small chip.
+                # The smaller component is a visible separated component only;
+                # count is zero until there is an actual current split.
+                secondary=min(ranges,key=lambda r:(r["particles"],-r["mechanical_component"]))
+                camera_record["native_valid_separated_component_pixels"]=(component_visibility[str(secondary["mechanical_component"])]["native_valid_pixels"] if len(ranges)>1 else 0)
             if camera_name!="global":
                 camera_record["input_native_and_reference_aovs_sha256"]=hashlib.sha256(raw_path.read_bytes()).hexdigest()
             frame_record["cameras"][camera_name]=camera_record
@@ -218,13 +273,19 @@ def main():
         for c in r["cameras"].values()) for r in records)
     geometry_pass=all(depth_pass(c["geometry_vs_actual_rtx"]) for r in records for c in r["cameras"].values())
     native_pass=all(depth_pass(c["actual_native_vs_geometry"]) for r in records for name,c in r["cameras"].items() if name!="global")
-    chip=max(c["native_valid_chip_pixels"] for r in records for c in r["cameras"].values())
+    if setup.get("task"):
+        chip=max(c["native_valid_separated_component_pixels"] for r in records for name,c in r["cameras"].items() if name!="global")
+    else:
+        chip=max(c["native_valid_chip_pixels"] for r in records for c in r["cameras"].values())
     chip_pass=chip>=camera_gate["minimum_visible_chip_pixels_in_any_recorded_frame"]
     result={"scope":"Recorded actual live Kit arrays vs measured-state CPU geometry; no new sensor rendering or semantic AOV",
         "frames":len(records),"partial_frame_subset":args.frames is not None,"CAM-03":"PASS_GEOMETRIC_ATTRIBUTION" if global_pass else "FAIL",
         "CAM-04_strict_native":"PASS" if sync_pass and geometry_pass and native_pass and chip_pass else "FAIL",
         "geometry_bridge":"PASS" if geometry_pass and sync_pass else "FAIL","time_synchronization":"PASS" if sync_pass else "FAIL",
-        "native_depth_and_mask":"PASS" if native_pass else "FAIL","maximum_native_valid_chip_pixels":chip,
+        "native_depth_and_mask":"PASS" if native_pass else "FAIL","maximum_native_valid_chip_pixels":chip if not setup.get("task") else None,
+        "maximum_native_valid_separated_component_pixels":chip if setup.get("task") else None,
+        "separated_component_visibility":"PASS" if chip_pass else "FAIL",
+        "task_id":(setup.get("task") or {}).get("task_id"),
         "native_semantic_aov_captured":False,"ideal_fallback_for_native_gate_used":False,
         "all_valid_error_tails_retained":True,"records":records}
     write_json(output/"result.json",result)
