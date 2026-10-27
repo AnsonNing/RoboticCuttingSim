@@ -98,6 +98,7 @@ def affine_box_sdf(positions,case):
 def affine_mesh_measurements(vertices,triangles,case,spacing,reference_volume):
     # Reuse physical signed-volume/topology checks. All analytic distance/face
     # fields are replaced below using the actual sheared/compressed shape.
+    reference_volume=float(reference_volume)
     metrics=mesh_measurements(vertices,triangles,case,spacing,reference_volume)
     matrix=affine_matrix(case)
     jacobian=float(np.linalg.det(matrix))

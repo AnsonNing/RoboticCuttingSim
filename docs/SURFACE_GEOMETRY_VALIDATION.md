@@ -59,6 +59,71 @@ driver 570.211.01. Raw NPZ meshes, masses, protocol, manifest and exact source
 byte snapshots are in `artifacts/particle_surface_geometry_001`.
 [Complete control receipt](evidence/particle_surface_geometry_audit.json).
 
+## Current-volume affine controls
+
+Commit `4e1bd20` freezes
+[`particle_surface_affine_v1.json`](../configs/particle_surface_affine_v1.json)
+before affine extraction, SHA256
+`b9e65ca4679c3d217c1a0af83eae8656362d6f988c0b192252e523b2e83384db`.
+Six 160×30×20 mm full-cell boxes contain 96,000 particles at 1 mm spacing.
+Development includes compression/expansion with total Jacobian 0.8/1.2 and shear
+0.25. Three held-out cases combine rotation, translation, compression/expansion
+and shear. Whole-mesh error, topology, volume and face-center criteria remain
+unchanged. No cut/task result or target plane enters the protocol.
+
+H1 retains reference radii. H2 uses the same fixed threshold/kernel/voxel recipe
+but supplies current particle volumes:
+
+```python
+J = np.linalg.det(total_F)  # F, not F*Fpi or Fpi
+radius = (spacing/2) * np.cbrt(J)
+# Newton's density weight 8*r**3 = reference_particle_volume * J.
+# Particle mass is unchanged; current density = reference_density / J.
+```
+
+An actual GPU probe exercises TLMPM `_deformation` on one trilinear reference
+cell with known affine velocity, then exercises its plastic return `_stress`.
+The stored total F matches the expected matrix exactly and remains bit-for-bit
+unchanged during plastic return. Fpi changes by 0.15888 and accumulated plastic
+strain becomes 0.22769. Total detF is 0.792. This confirms the source contract
+`Fe = F * Fpi`, where Fpi is the separate inverse plastic factor; total F maps
+reference positions to current positions. It is the appropriate volume ratio.
+
+| All six affine cases | H1 reference radii | H2 current-volume radii |
+|---|---:|---:|
+| Whole-volume absolute error | 0.522–3.745% | 0.418–0.644% |
+| Full area-weighted p95 SDF | 0.212–0.345 mm | 0.164–0.220 mm |
+| Worst face-center mean bias | 218.6 μm | 1.32 μm |
+| Closed/oriented, one component, Euler 2 | All pass | All pass |
+| Unchanged broad frozen gates | 6/6 pass | 6/6 pass |
+
+H1 also passes the broad geometry gates; its extra volume/plane bias under
+J≠1 is retained in the comparison. H2 is supported by physical current-volume
+weighting and the independent affine controls, not by forcing a baseline
+failure. The affine reference uses **exact Euclidean distance** to the sheared
+parallelepiped, with face/edge/vertex active-set projection. An inverse-affine
+coordinate norm would be an incorrect distance metric. CPU tests independently
+compare it with bounded least squares and verify transformed closed-mesh volume.
+
+Canonical actual outputs are `artifacts/particle_surface_affine_002`, including
+exact source snapshots, total-F receipt, particle masses/positions, input F,
+actual radii and meshes. [Full affine receipt](evidence/particle_surface_affine_audit.json).
+The first `_001` run is retained after a numpy scalar boolean caused JSON
+serialization to fail following the first mesh. Only scalar serialization was
+fixed; the frozen geometry, candidates and gates stayed unchanged. The earlier
+CPU total-F probe is separately preserved at
+`artifacts/tlmpm_total_F_cpu_failure_001`: Warp's whole-module CPU compilation
+rejects an unrelated `new` argument as a C++ member name. The actual GPU probe
+passes; the core solver was not edited to obtain these results.
+
+This extends validation to homogeneous affine deformation at 1 mm sampling,
+J∈[0.8,1.2] and the specified shears/rotations. It does not establish accuracy
+for heterogeneous strain, thinner chips, stronger anisotropy or contact gaps.
+Current-volume radii reject nonfinite/inverted F rather than silently clamping.
+Existing defaults and earlier live baselines remain unchanged. An optional
+surface profile can use this contract in a separately recorded experiment;
+geometry controls cannot promote TASK-02 or cut physics.
+
 ## Quadrature error is distinct from rendering bias
 
 The actual default D0 sampler represents each retained point with a full
@@ -82,16 +147,21 @@ CPU evidence and exact sampler snapshot are in
 `artifacts/reference_quadrature_001`;
 [quadrature receipt](evidence/reference_quadrature_audit.json).
 
-Dynamic deformation needs additional controls before adopting H1 globally:
-constant input radii represent reference volume and ignore `det(F)`. Current
-particle volume, anisotropic deformation, thin chips and near-contact separate
-surfaces are not validated here. Existing live baselines remain immutable.
+General dynamic deformation still needs additional controls: constant H1 input
+radii represent reference volume and ignore `det(F)`. H2 covers the homogeneous
+affine envelope above; heterogeneous deformation, thin chips and near-contact
+separate surfaces remain unvalidated. Existing live baselines remain immutable.
 
 ```bash
 .venv/bin/python -m pytest tests/test_surface_controls.py -q
 .venv/bin/python scripts/audit_particle_surface_geometry.py artifacts/surface_controls_fresh --device cuda:0
 .venv/bin/python scripts/audit_reference_quadrature.py artifacts/quadrature_fresh
+.venv/bin/python -m pytest tests/test_affine_surface_controls.py -q
+.venv/bin/python scripts/audit_affine_particle_surface.py artifacts/affine_surface_fresh --device cuda:0
 ```
 
 Two meaningful CPU geometry tests pass, covering full-cell mass, analytic SDF,
 signed mesh volume/manifold validity and a missing-triangle failure.
+Three additional affine CPU tests pass for the current-volume radius/inversion
+guard, Euclidean affine SDF and physical closed-volume/J contract. The actual
+total-F numerical probe is a separate GPU check.
