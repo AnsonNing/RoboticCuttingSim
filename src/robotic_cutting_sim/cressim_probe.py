@@ -54,11 +54,13 @@ def run(args,output):
                              "blade_fx_N":"nan","blade_fz_N":"nan"})
     max_speed=float(np.linalg.norm(velocities,axis=2).max())
     # Broad engineering guard, not a calibrated physical acceptance threshold.
-    stable=max_speed<2.0 and positions[:,:,:2].min()>-.15 and positions[:,:,:2].max()<.15
+    min_z=float(positions[:,:,2].min())
+    stable=max_speed<2.0 and min_z>=-.001 and positions[:,:,:2].min()>-.15 and positions[:,:,:2].max()<.15
     result={"status":"PASS" if stable else "FAIL","scope":"GPU QuadSlicer execution with broad numerical sanity guard","particle_count":len(points),
             "wall_s":elapsed,"simulation_s":args.frames*args.dt,"sim_s_per_wall_s":args.frames*args.dt/elapsed,
             "mass_error_relative":float(mass_error),"max_speed_m_s":max_speed,
-            "numerical_sanity_guard":{"max_speed_limit_m_s":2.0,"passed":bool(stable)},
+            "min_particle_z_m":min_z,
+            "numerical_sanity_guard":{"max_speed_limit_m_s":2.0,"minimum_z_limit_m":-.001,"passed":bool(stable)},
             "persistent_separation_valid":None,"physics_proven":False,
             "limitations":["Only elastic co-rotational law, no equivalent Newton plasticity",
                            "QuadSlicer and Newton box differ; not a controlled quantitative ranking",

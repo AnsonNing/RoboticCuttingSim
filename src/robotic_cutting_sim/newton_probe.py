@@ -158,12 +158,16 @@ def run(args, output):
                         final_plastic_volume_Jp=bed.state.mpm.particle_Jp.numpy(),
                         final_stress_pa=bed.state.mpm.particle_stress.numpy())
     # Constant particle masses are not a geometric chip/substrate budget.
-    result = {"status": "PASS", "scope": "finite MPM contact/deformation execution only",
+    max_speed = max(r["max_speed_m_s"] for r in rows)
+    min_z = min(r["min_z_m"] for r in rows)
+    numerical_guard = max_speed < 2.0 and min_z >= -.001
+    result = {"status": "PASS" if numerical_guard else "FAIL", "scope": "MPM contact/deformation with broad numerical sanity guard",
               "case": args.case, "particle_count": len(points), "initial_mass_kg": bed.initial_mass,
               "mass_error_relative": max(r["mass_error_relative"] for r in rows), "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
               "setup_wall_s": setup_s, "physics_wall_s": sim_wall_s,
               "simulation_s": args.frames*args.dt, "sim_s_per_wall_s": args.frames*args.dt/sim_wall_s,
-              "max_speed_m_s": max(r["max_speed_m_s"] for r in rows),
+              "max_speed_m_s": max_speed, "min_particle_z_m":min_z,
+              "numerical_sanity_guard":{"max_speed_limit_m_s":2.0,"minimum_z_limit_m":-.001,"passed":numerical_guard},
               **{key:max(r[key] for r in rows) for key in frame_diagnostics},
               "force_scope":"solver collider impulses / frame dt; excludes particle projection corrections",
               "peak_blade_force_N": max(np.linalg.norm([r[k] for k in ["blade_fx_N","blade_fy_N","blade_fz_N"]]) for r in rows),
