@@ -1,0 +1,104 @@
+{
+  "scope": "CPU audit of actual default D0 sampler, not dynamics or cutting acceptance",
+  "specimen": {
+    "length": 0.12,
+    "width": 0.08,
+    "base_height": 0.015,
+    "bump_height": 0.008,
+    "bump_radius": 0.015,
+    "center_x": 0.0,
+    "center_y": 0.0,
+    "family": "dome",
+    "seed": 42
+  },
+  "density_kg_m3": 1500.0,
+  "rows": [
+    {
+      "spacing_m": 0.001,
+      "particles": 145656,
+      "base_quadrature_particles": 144000,
+      "reference_volume_m3": 0.000145656,
+      "analytic_total_volume_m3": 0.00014568151779796915,
+      "relative_quadrature_volume_error": -0.00017516153287566727,
+      "base_reference_volume_m3": 0.000144,
+      "analytic_base_volume_m3": 0.00014399999999999998,
+      "base_center_z_range_m": [
+        0.0005000000237487257,
+        0.014499999582767487
+      ],
+      "base_full_cell_union_bounds_m": [
+        [
+          -0.06000000137090683,
+          -0.040000001817941666,
+          2.374872564228636e-11
+        ],
+        [
+          0.06000000137090683,
+          0.040000001817941666,
+          0.014999999582767487
+        ]
+      ],
+      "base_full_cell_top_minus_nominal_m": -4.1723251242853365e-10,
+      "full_cell_interpretation": "Newton density kernel uses volume8r^3=spacing^3. These are quadrature-cell extents, not a physical boundary oracle or cut score."
+    },
+    {
+      "spacing_m": 0.0015,
+      "particles": 42890,
+      "base_quadrature_particles": 42400,
+      "reference_volume_m3": 0.00014475375000000003,
+      "analytic_total_volume_m3": 0.00014568151779796915,
+      "relative_quadrature_volume_error": -0.00636846603462593,
+      "base_reference_volume_m3": 0.0001431,
+      "analytic_base_volume_m3": 0.00014399999999999998,
+      "base_center_z_range_m": [
+        0.000750000006519258,
+        0.01425000000745058
+      ],
+      "base_full_cell_union_bounds_m": [
+        [
+          -0.06000000086426735,
+          -0.040000001311302186,
+          6.519258006695838e-12
+        ],
+        [
+          0.06000000086426735,
+          0.039500000298023225,
+          0.015000000007450581
+        ]
+      ],
+      "base_full_cell_top_minus_nominal_m": 7.450581818169155e-12,
+      "full_cell_interpretation": "Newton density kernel uses volume8r^3=spacing^3. These are quadrature-cell extents, not a physical boundary oracle or cut score."
+    },
+    {
+      "spacing_m": 0.002,
+      "particles": 19340,
+      "base_quadrature_particles": 19200,
+      "reference_volume_m3": 0.00015471999999999998,
+      "analytic_total_volume_m3": 0.00014568151779796915,
+      "relative_quadrature_volume_error": 0.062042751466698576,
+      "base_reference_volume_m3": 0.00015360000000000002,
+      "analytic_base_volume_m3": 0.00014399999999999998,
+      "base_center_z_range_m": [
+        0.0010000000474974513,
+        0.014999999664723873
+      ],
+      "base_full_cell_union_bounds_m": [
+        [
+          -0.06000000035762787,
+          -0.040000000804662705,
+          4.749745128457272e-11
+        ],
+        [
+          0.06000000035762787,
+          0.040000000804662705,
+          0.015999999664723874
+        ]
+      ],
+      "base_full_cell_top_minus_nominal_m": 0.0009999996647238746,
+      "full_cell_interpretation": "Newton density kernel uses volume8r^3=spacing^3. These are quadrature-cell extents, not a physical boundary oracle or cut score."
+    }
+  ],
+  "analytic_dome_extra_volume_formula": "2*pi*height*radius^2*(1/4-1/pi^2)",
+  "source_sha256": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+  "physics_or_rendering_modified": false
+}

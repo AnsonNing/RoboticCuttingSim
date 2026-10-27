@@ -1,0 +1,2842 @@
+{
+  "protocol_id": "particle_surface_geometry_v1_20261028",
+  "protocol_sha256": "9c0f77dcf661b8a0ef3ff03fa274483e37f4032ef4a390599bb70e8aa966e4d1",
+  "status": "PASS_INDEPENDENT_GEOMETRY_PROFILE",
+  "profile_promoted_for_cut_results": false,
+  "cut_physics_changed": false,
+  "rows": [
+    {
+      "case_id": "flat_box",
+      "split": "development",
+      "spacing_m": 0.001,
+      "hypothesis": "H0",
+      "particles": 31104,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.09588871407322586,
+      "measurements": {
+        "vertices": 6870,
+        "triangles": 13736,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.485665395669748e-05,
+        "mesh_volume_m3": 3.485665395669748e-05,
+        "relative_volume_error_vs_analytic": 0.12064859685884399,
+        "relative_volume_error_vs_mass": 0.12064859685884423,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005469544954088238,
+          "p95_absolute_m": 0.0006273527964949614,
+          "max_absolute_m": 0.0006273549199104309
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006587592609548291,
+          "signed_mean_m": 0.0005745507952877165,
+          "rms_m": 0.0005886139156182573,
+          "p95_absolute_m": 0.0006273527964949614
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 348,
+            "signed_mean_m": 0.0006273526318970756,
+            "max_absolute_m": 0.0006273531243205059
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 348,
+            "signed_mean_m": 0.0006273502111434938,
+            "max_absolute_m": 0.0006273502111434938
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 492,
+            "signed_mean_m": 0.0006273521875160033,
+            "max_absolute_m": 0.0006273522973060629
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 492,
+            "signed_mean_m": 0.0006273528021737576,
+            "max_absolute_m": 0.000627353727817536
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1189,
+            "signed_mean_m": 0.0006273519208042247,
+            "max_absolute_m": 0.0006273537427186979
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1189,
+            "signed_mean_m": 0.0006273511946201325,
+            "max_absolute_m": 0.0006273511946201325
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024627353124320506,
+            -0.01862735229730606,
+            -0.009627353742718697
+          ],
+          [
+            0.024627350211143494,
+            0.018627353727817535,
+            0.00962735491991043
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": false,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "flat_box",
+      "split": "development",
+      "spacing_m": 0.001,
+      "hypothesis": "H1",
+      "particles": 31104,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.0005,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.00473995297215879,
+      "measurements": {
+        "vertices": 44886,
+        "triangles": 89768,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.086550857017194e-05,
+        "mesh_volume_m3": 3.086550857017194e-05,
+        "relative_volume_error_vs_analytic": 0.007667548541282735,
+        "relative_volume_error_vs_mass": 0.007667548541282519,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -1.9598019207797527e-05,
+          "p95_absolute_m": 0.0001247209161519998,
+          "max_absolute_m": 0.0005000010579824434
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006193483343143757,
+          "signed_mean_m": -2.883417523564176e-05,
+          "rms_m": 8.529242027304335e-05,
+          "p95_absolute_m": 0.00021354258060455114
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 2856,
+            "signed_mean_m": -2.729494088139881e-07,
+            "max_absolute_m": 1.833505928517526e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 2856,
+            "signed_mean_m": -2.7257980418792437e-07,
+            "max_absolute_m": 1.8326938152311845e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 4008,
+            "signed_mean_m": -2.752292432807047e-07,
+            "max_absolute_m": 1.8343329429605648e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 4008,
+            "signed_mean_m": -2.7447189585411074e-07,
+            "max_absolute_m": 1.8338337540620142e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 9937,
+            "signed_mean_m": -2.690264459356402e-07,
+            "max_absolute_m": 1.8328875303254971e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 9937,
+            "signed_mean_m": -2.682756925356061e-07,
+            "max_absolute_m": 1.8354356288909773e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024000226579606532,
+            -0.018000225752592088,
+            -0.009000229060649872
+          ],
+          [
+            0.02400022366642952,
+            0.018000226251780986,
+            0.009000228375196456
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "flat_box",
+      "split": "development",
+      "spacing_m": 0.0015,
+      "hypothesis": "H0",
+      "particles": 9216,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.00310159707441926,
+      "measurements": {
+        "vertices": 7142,
+        "triangles": 14280,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.1104e-05,
+        "oriented_volume_m3": 3.4682556774568125e-05,
+        "mesh_volume_m3": 3.4682556774568125e-05,
+        "relative_volume_error_vs_analytic": 0.1150513366309197,
+        "relative_volume_error_vs_mass": 0.1150513366309197,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005016329259176194,
+          "p95_absolute_m": 0.0005970534756779659,
+          "max_absolute_m": 0.0005970563739538214
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006583739381426148,
+          "signed_mean_m": 0.0005480625429996964,
+          "rms_m": 0.0005607946843859805,
+          "p95_absolute_m": 0.0005966893285512913
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 243,
+            "signed_mean_m": 0.0005957362061297442,
+            "max_absolute_m": 0.0005970553383231152
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 243,
+            "signed_mean_m": 0.0005957330438335247,
+            "max_absolute_m": 0.000597052425146103
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 351,
+            "signed_mean_m": 0.0005957364431049091,
+            "max_absolute_m": 0.0005970545113086721
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 351,
+            "signed_mean_m": 0.0005957369343337856,
+            "max_absolute_m": 0.0005970559418201453
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1053,
+            "signed_mean_m": 0.0005957361443882781,
+            "max_absolute_m": 0.000597054094076158
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1053,
+            "signed_mean_m": 0.0005957355792196387,
+            "max_absolute_m": 0.0005970534086227417
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024597055338323116,
+            -0.01859705637395382,
+            -0.009597054094076157
+          ],
+          [
+            0.024597052425146104,
+            0.018597055941820144,
+            0.009597053408622741
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "flat_box",
+      "split": "development",
+      "spacing_m": 0.0015,
+      "hypothesis": "H1",
+      "particles": 9216,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.00075,
+        "kernel_radius": 0.0045000000000000005
+      },
+      "extract_wall_s": 0.0045333909802138805,
+      "measurements": {
+        "vertices": 11472,
+        "triangles": 22940,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.1104e-05,
+        "oriented_volume_m3": 3.058319434745598e-05,
+        "mesh_volume_m3": 3.058319434745598e-05,
+        "relative_volume_error_vs_analytic": 0.016744008890947213,
+        "relative_volume_error_vs_mass": 0.016744008890947213,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -7.41650270560498e-05,
+          "p95_absolute_m": 0.0004319176509976234,
+          "max_absolute_m": 0.0009999998956918728
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006047874085626864,
+          "signed_mean_m": -6.543653707203314e-05,
+          "rms_m": 0.00016654547943736406,
+          "p95_absolute_m": 0.00046683231244484813
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 432,
+            "signed_mean_m": 2.6482575986936897e-06,
+            "max_absolute_m": 3.547675907610709e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 432,
+            "signed_mean_m": -2.9452793576097866e-06,
+            "max_absolute_m": 3.810822963714461e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 624,
+            "signed_mean_m": 2.6482927541340958e-06,
+            "max_absolute_m": 3.548711538316901e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 624,
+            "signed_mean_m": -2.9451956088910993e-06,
+            "max_absolute_m": 3.811031579970675e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1872,
+            "signed_mean_m": 2.6443920169898803e-06,
+            "max_absolute_m": 3.542706370355045e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1872,
+            "signed_mean_m": -2.943315471594136e-06,
+            "max_absolute_m": 3.8098394870757918e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02400354767590761,
+            -0.018003548711538316,
+            -0.009003542706370354
+          ],
+          [
+            0.02399787300825119,
+            0.017997872799634933,
+            0.008997873991727828
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "flat_box",
+      "split": "development",
+      "spacing_m": 0.002,
+      "hypothesis": "H0",
+      "particles": 3888,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.003259344957768917,
+      "measurements": {
+        "vertices": 6870,
+        "triangles": 13736,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.43433182726288e-05,
+        "mesh_volume_m3": 3.43433182726288e-05,
+        "relative_volume_error_vs_analytic": 0.10414474899140946,
+        "relative_volume_error_vs_mass": 0.1041447489914097,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0004740287383777005,
+          "p95_absolute_m": 0.0005821314975619322,
+          "max_absolute_m": 0.0005821328610181829
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006583735173819107,
+          "signed_mean_m": 0.0004974019765655288,
+          "rms_m": 0.0005087335066053001,
+          "p95_absolute_m": 0.0005524814128875753
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 138,
+            "signed_mean_m": 0.0005382586361273464,
+            "max_absolute_m": 0.0005821318253874767
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 138,
+            "signed_mean_m": 0.0005382589488357738,
+            "max_absolute_m": 0.0005821326375007631
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 210,
+            "signed_mean_m": 0.0005379212221929027,
+            "max_absolute_m": 0.0005821328610181829
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 210,
+            "signed_mean_m": 0.0005379216371192825,
+            "max_absolute_m": 0.0005821324288845069
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 805,
+            "signed_mean_m": 0.0005389038535378749,
+            "max_absolute_m": 0.0005821305811405195
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 805,
+            "signed_mean_m": 0.0005389021083434917,
+            "max_absolute_m": 0.0005821298956871033
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024582131825387477,
+            -0.01858213286101818,
+            -0.009582130581140519
+          ],
+          [
+            0.024582132637500764,
+            0.018582132428884506,
+            0.009582129895687103
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "flat_box",
+      "split": "development",
+      "spacing_m": 0.002,
+      "hypothesis": "H1",
+      "particles": 3888,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.006
+      },
+      "extract_wall_s": 0.005504834000021219,
+      "measurements": {
+        "vertices": 9678,
+        "triangles": 19352,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.017832259376306e-05,
+        "mesh_volume_m3": 3.017832259376306e-05,
+        "relative_volume_error_vs_analytic": 0.02976071907911966,
+        "relative_volume_error_vs_mass": 0.02976071907911945,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -8.818324575384221e-05,
+          "p95_absolute_m": 0.0007787857055664062,
+          "max_absolute_m": 0.0010000002086162554
+        },
+        "full_area_sdf": {
+          "area_m2": 0.005898675578062822,
+          "signed_mean_m": -0.00011507907334234049,
+          "rms_m": 0.00024565021533905045,
+          "p95_absolute_m": 0.0006050406495730059
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 282,
+            "signed_mean_m": -5.255360288411556e-07,
+            "max_absolute_m": 3.6682114005100186e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 282,
+            "signed_mean_m": -5.25050869224626e-07,
+            "max_absolute_m": 3.665536642074446e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 426,
+            "signed_mean_m": -5.370705550244608e-07,
+            "max_absolute_m": 3.6690384149530575e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 426,
+            "signed_mean_m": -5.36573552329137e-07,
+            "max_absolute_m": 3.6676079034798914e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1669,
+            "signed_mean_m": -5.055011979387329e-07,
+            "max_absolute_m": 3.66759300231799e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1669,
+            "signed_mean_m": -5.042749011209303e-07,
+            "max_absolute_m": 3.668278455734239e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024000452890992164,
+            -0.018000452995300294,
+            -0.009000450715422631
+          ],
+          [
+            0.024000454634428025,
+            0.018000453494489192,
+            0.009000448167324065
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "tilted_x_box",
+      "split": "development",
+      "spacing_m": 0.001,
+      "hypothesis": "H0",
+      "particles": 31104,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.0031720639672130346,
+      "measurements": {
+        "vertices": 7622,
+        "triangles": 15240,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.476003821890669e-05,
+        "mesh_volume_m3": 3.476003821890669e-05,
+        "relative_volume_error_vs_analytic": 0.11754238100908858,
+        "relative_volume_error_vs_mass": 0.11754238100908881,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005424443829528031,
+          "p95_absolute_m": 0.0006428386059546061,
+          "max_absolute_m": 0.0006438622978967162
+        },
+        "full_area_sdf": {
+          "area_m2": 0.00659215579769596,
+          "signed_mean_m": 0.0005587410057803074,
+          "rms_m": 0.0005730472832936679,
+          "p95_absolute_m": 0.0006385716195494509
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 406,
+            "signed_mean_m": 0.0005953699921020599,
+            "max_absolute_m": 0.0006431063299348477
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 406,
+            "signed_mean_m": 0.0005953701971002421,
+            "max_absolute_m": 0.0006431095645403652
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 507,
+            "signed_mean_m": 0.0006275428938266114,
+            "max_absolute_m": 0.0006277389675378824
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 507,
+            "signed_mean_m": 0.0006275413988903902,
+            "max_absolute_m": 0.0006277363300323489
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1421,
+            "signed_mean_m": 0.0005923625406956515,
+            "max_absolute_m": 0.000643859975841838
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1421,
+            "signed_mean_m": 0.0005923626531703366,
+            "max_absolute_m": 0.0006438622978967162
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024643227657173247,
+            -0.01862773896753788,
+            -0.009643859975841837
+          ],
+          [
+            0.024643226061060848,
+            0.018627736330032348,
+            0.009643862297896716
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": false,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "tilted_x_box",
+      "split": "development",
+      "spacing_m": 0.001,
+      "hypothesis": "H1",
+      "particles": 31104,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.0005,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.004964020103216171,
+      "measurements": {
+        "vertices": 31964,
+        "triangles": 63924,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.086737919357146e-05,
+        "mesh_volume_m3": 3.086737919357146e-05,
+        "relative_volume_error_vs_analytic": 0.0076074076140862125,
+        "relative_volume_error_vs_mass": 0.0076074076140859965,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -2.802051145127021e-05,
+          "p95_absolute_m": 0.00025388702342667505,
+          "max_absolute_m": 0.000611946908805349
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006193814906620011,
+          "signed_mean_m": -2.8807422887505823e-05,
+          "rms_m": 8.666535081186722e-05,
+          "p95_absolute_m": 0.00023180343524178276
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 1652,
+            "signed_mean_m": -1.2656508792601855e-07,
+            "max_absolute_m": 3.165287406157319e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 1652,
+            "signed_mean_m": -1.264211835369242e-07,
+            "max_absolute_m": 3.1644681595978386e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 3579,
+            "signed_mean_m": -3.318776358045757e-07,
+            "max_absolute_m": 1.8322989344572715e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 3577,
+            "signed_mean_m": -3.325287893157329e-07,
+            "max_absolute_m": 1.8321424722668456e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 5782,
+            "signed_mean_m": -2.475988720258616e-07,
+            "max_absolute_m": 3.5076189040996603e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 5782,
+            "signed_mean_m": -2.4790007579119013e-07,
+            "max_absolute_m": 3.5051301149405245e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02400276213838604,
+            -0.018000236168503762,
+            -0.009003041978202887
+          ],
+          [
+            0.024002761125080922,
+            0.01800023353099823,
+            0.009003044383624904
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "tilted_x_box",
+      "split": "development",
+      "spacing_m": 0.0015,
+      "hypothesis": "H0",
+      "particles": 9216,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.003185704117640853,
+      "measurements": {
+        "vertices": 7618,
+        "triangles": 15232,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.1104e-05,
+        "oriented_volume_m3": 3.45391504431259e-05,
+        "mesh_volume_m3": 3.45391504431259e-05,
+        "relative_volume_error_vs_analytic": 0.11044079356757663,
+        "relative_volume_error_vs_mass": 0.11044079356757663,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005092000726376976,
+          "p95_absolute_m": 0.0006040702706743475,
+          "max_absolute_m": 0.0006064882252338893
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006588861717345996,
+          "signed_mean_m": 0.0005251637087356555,
+          "rms_m": 0.0005380407312115618,
+          "p95_absolute_m": 0.0005993182668184768
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 270,
+            "signed_mean_m": 0.0005519628402537212,
+            "max_absolute_m": 0.0006064864897114899
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 270,
+            "signed_mean_m": 0.0005519635074382181,
+            "max_absolute_m": 0.0006064882252338893
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 351,
+            "signed_mean_m": 0.0005957718136855705,
+            "max_absolute_m": 0.0005970556139946008
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 351,
+            "signed_mean_m": 0.0005957702136362384,
+            "max_absolute_m": 0.0005970529764890674
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1215,
+            "signed_mean_m": 0.0005510396995701313,
+            "max_absolute_m": 0.0006057283929803859
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1215,
+            "signed_mean_m": 0.0005510394947751308,
+            "max_absolute_m": 0.0006057235515628187
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02460648648971149,
+            -0.0185970556139946,
+            -0.009605769185509152
+          ],
+          [
+            0.02460648822523389,
+            0.018597052976489066,
+            0.009605771924399736
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "tilted_x_box",
+      "split": "development",
+      "spacing_m": 0.0015,
+      "hypothesis": "H1",
+      "particles": 9216,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.00075,
+        "kernel_radius": 0.0045000000000000005
+      },
+      "extract_wall_s": 0.004300061147660017,
+      "measurements": {
+        "vertices": 13818,
+        "triangles": 27632,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.1104e-05,
+        "oriented_volume_m3": 3.057991454773409e-05,
+        "mesh_volume_m3": 3.057991454773409e-05,
+        "relative_volume_error_vs_analytic": 0.016849455126861704,
+        "relative_volume_error_vs_mass": 0.016849455126861704,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -6.60973241441424e-05,
+          "p95_absolute_m": 0.0005441974481865813,
+          "max_absolute_m": 0.000820066844680797
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006047936426482919,
+          "signed_mean_m": -6.445465473420852e-05,
+          "rms_m": 0.00015959037961025407,
+          "p95_absolute_m": 0.00045011132155398786
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 468,
+            "signed_mean_m": -3.254234120259611e-07,
+            "max_absolute_m": 5.341003079011725e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 504,
+            "signed_mean_m": -2.1146336494104428e-07,
+            "max_absolute_m": 5.046185287176097e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 1110,
+            "signed_mean_m": -5.025339086289358e-07,
+            "max_absolute_m": 2.7468577027296714e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 1110,
+            "signed_mean_m": -5.008579642919976e-07,
+            "max_absolute_m": 2.7448385953900145e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 2232,
+            "signed_mean_m": -4.5894244599869e-07,
+            "max_absolute_m": 5.339808550951924e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 2160,
+            "signed_mean_m": -4.4723579738233953e-07,
+            "max_absolute_m": 5.2095324709743734e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02400453628977094,
+            -0.01800035258382559,
+            -0.009004528109204464
+          ],
+          [
+            0.024004129823075853,
+            0.01800035460293293,
+            0.009004580044707548
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "tilted_x_box",
+      "split": "development",
+      "spacing_m": 0.002,
+      "hypothesis": "H0",
+      "particles": 3888,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.00294694397598505,
+      "measurements": {
+        "vertices": 7854,
+        "triangles": 15704,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.410006314164378e-05,
+        "mesh_volume_m3": 3.410006314164378e-05,
+        "relative_volume_error_vs_analytic": 0.09632404647774495,
+        "relative_volume_error_vs_mass": 0.09632404647774519,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.00044161704253592926,
+          "p95_absolute_m": 0.0005644472135365262,
+          "max_absolute_m": 0.0005845496057429976
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006585636272215644,
+          "signed_mean_m": 0.00045915134296582895,
+          "rms_m": 0.00047074759234834516,
+          "p95_absolute_m": 0.0005440317073225696
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 161,
+            "signed_mean_m": 0.00047424147398342773,
+            "max_absolute_m": 0.0005588211882424365
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 161,
+            "signed_mean_m": 0.0004742425653114934,
+            "max_absolute_m": 0.0005588177595783547
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 215,
+            "signed_mean_m": 0.0005382582309634211,
+            "max_absolute_m": 0.0005807956531643892
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 215,
+            "signed_mean_m": 0.0005382573174875841,
+            "max_absolute_m": 0.0005807939469814304
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1038,
+            "signed_mean_m": 0.00046511121201418034,
+            "max_absolute_m": 0.0005845496057429976
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1038,
+            "signed_mean_m": 0.00046511121881446447,
+            "max_absolute_m": 0.0005845484711123651
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02457490178921424,
+            -0.018582120925188066,
+            -0.009584549605742997
+          ],
+          [
+            0.024574899859633275,
+            0.01858212015032768,
+            0.009584548471112364
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "tilted_x_box",
+      "split": "development",
+      "spacing_m": 0.002,
+      "hypothesis": "H1",
+      "particles": 3888,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.006
+      },
+      "extract_wall_s": 0.0034482290502637625,
+      "measurements": {
+        "vertices": 7470,
+        "triangles": 14936,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.0184376277726775e-05,
+        "mesh_volume_m3": 3.0184376277726775e-05,
+        "relative_volume_error_vs_analytic": 0.029566091894072274,
+        "relative_volume_error_vs_mass": 0.029566091894072062,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -0.00011924565594281275,
+          "p95_absolute_m": 0.0007697006086817142,
+          "max_absolute_m": 0.001026644852136313
+        },
+        "full_area_sdf": {
+          "area_m2": 0.005899715595007558,
+          "signed_mean_m": -0.00011459924497369861,
+          "rms_m": 0.0002471463616362906,
+          "p95_absolute_m": 0.0006325622715327925
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 161,
+            "signed_mean_m": -2.513993487842254e-07,
+            "max_absolute_m": 6.9235347954221815e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 161,
+            "signed_mean_m": -2.502311467820246e-07,
+            "max_absolute_m": 6.922715548862701e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 391,
+            "signed_mean_m": -6.434073114310018e-07,
+            "max_absolute_m": 3.617644309995144e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 391,
+            "signed_mean_m": -6.442036089077015e-07,
+            "max_absolute_m": 3.6184191703793334e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 989,
+            "signed_mean_m": -6.816945024112079e-07,
+            "max_absolute_m": 6.735696068753752e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 989,
+            "signed_mean_m": -6.821616765628407e-07,
+            "max_absolute_m": 6.738621567498049e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024005684983565072,
+            -0.01800047179311514,
+            -0.009006188408884353
+          ],
+          [
+            0.0240056861362802,
+            0.01800047008693218,
+            0.00900618723257015
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "heldout_mixed_tilt",
+      "split": "held_out",
+      "spacing_m": 0.001,
+      "hypothesis": "H0",
+      "particles": 31104,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.01104058395139873,
+      "measurements": {
+        "vertices": 8624,
+        "triangles": 17244,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.468690225252556e-05,
+        "mesh_volume_m3": 3.468690225252556e-05,
+        "relative_volume_error_vs_analytic": 0.11519104464138251,
+        "relative_volume_error_vs_mass": 0.11519104464138274,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005421448803732554,
+          "p95_absolute_m": 0.0006392052581215688,
+          "max_absolute_m": 0.0006426934776083831
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006590338010973435,
+          "signed_mean_m": 0.0005464535436219604,
+          "rms_m": 0.0005622485695151283,
+          "p95_absolute_m": 0.0006303404217554386
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 458,
+            "signed_mean_m": 0.000588633406406968,
+            "max_absolute_m": 0.0006426544239497151
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 453,
+            "signed_mean_m": 0.0005896475695393418,
+            "max_absolute_m": 0.0006426307203027705
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 685,
+            "signed_mean_m": 0.0005837271433113097,
+            "max_absolute_m": 0.0006384911793223258
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 684,
+            "signed_mean_m": 0.0005838570790995752,
+            "max_absolute_m": 0.0006385960017532971
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1609,
+            "signed_mean_m": 0.0005879553006209741,
+            "max_absolute_m": 0.0006410139628604157
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1608,
+            "signed_mean_m": 0.0005880636789400223,
+            "max_absolute_m": 0.0006410520429779853
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024642693477608384,
+            -0.018638491179322324,
+            -0.009641013962860415
+          ],
+          [
+            0.02464263072030277,
+            0.018638596001753296,
+            0.009641052042977985
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": false,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "heldout_mixed_tilt",
+      "split": "held_out",
+      "spacing_m": 0.001,
+      "hypothesis": "H1",
+      "particles": 31104,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.0005,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.004890409065410495,
+      "measurements": {
+        "vertices": 32460,
+        "triangles": 64916,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.086877915404396e-05,
+        "mesh_volume_m3": 3.086877915404396e-05,
+        "relative_volume_error_vs_analytic": 0.007562398596837657,
+        "relative_volume_error_vs_mass": 0.00756239859683744,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -2.932840555285745e-05,
+          "p95_absolute_m": 0.00024127927741084972,
+          "max_absolute_m": 0.0006431770913946679
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006194517551249914,
+          "signed_mean_m": -2.8794924335964827e-05,
+          "rms_m": 8.752217385850578e-05,
+          "p95_absolute_m": 0.00023362869192369726
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 1819,
+            "signed_mean_m": -3.101917778418437e-07,
+            "max_absolute_m": 3.5301376631602377e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 1823,
+            "signed_mean_m": -3.096798509691963e-07,
+            "max_absolute_m": 3.5370830310209322e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 2736,
+            "signed_mean_m": -3.344794318847274e-07,
+            "max_absolute_m": 3.4072762850126392e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 2737,
+            "signed_mean_m": -3.3698152180815387e-07,
+            "max_absolute_m": 3.378483405421656e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 6431,
+            "signed_mean_m": -3.1585350516501337e-07,
+            "max_absolute_m": 3.4505042460705737e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 6434,
+            "signed_mean_m": -3.1800019335522256e-07,
+            "max_absolute_m": 3.500597739635597e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024003023908741507,
+            -0.01800291165190959,
+            -0.009003005922616658
+          ],
+          [
+            0.024003043877424277,
+            0.018002884241646384,
+            0.009003002428049361
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "heldout_mixed_tilt",
+      "split": "held_out",
+      "spacing_m": 0.0015,
+      "hypothesis": "H0",
+      "particles": 9216,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.003152112942188978,
+      "measurements": {
+        "vertices": 8600,
+        "triangles": 17196,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.1104e-05,
+        "oriented_volume_m3": 3.4446501831505836e-05,
+        "mesh_volume_m3": 3.4446501831505836e-05,
+        "relative_volume_error_vs_analytic": 0.10746212164049117,
+        "relative_volume_error_vs_mass": 0.10746212164049117,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005054552046710482,
+          "p95_absolute_m": 0.000601045064303692,
+          "max_absolute_m": 0.0006064397822195082
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006586219649013127,
+          "signed_mean_m": 0.0005099205122443358,
+          "rms_m": 0.0005242699201393337,
+          "p95_absolute_m": 0.0005911745728567903
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 308,
+            "signed_mean_m": 0.000545430071424915,
+            "max_absolute_m": 0.0006063058794418437
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 310,
+            "signed_mean_m": 0.0005444743232154346,
+            "max_absolute_m": 0.0006064030795069515
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 478,
+            "signed_mean_m": 0.0005395442945402089,
+            "max_absolute_m": 0.0006021817850753487
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 478,
+            "signed_mean_m": 0.0005395375419283613,
+            "max_absolute_m": 0.0006020529570167979
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1341,
+            "signed_mean_m": 0.000544214623834173,
+            "max_absolute_m": 0.0006049024119615734
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1344,
+            "signed_mean_m": 0.0005440298468459237,
+            "max_absolute_m": 0.0006050025071561368
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02460643978221951,
+            -0.018602181785075347,
+            -0.009604902411961573
+          ],
+          [
+            0.024606403079506952,
+            0.018602077396835386,
+            0.009605002507156136
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "heldout_mixed_tilt",
+      "split": "held_out",
+      "spacing_m": 0.0015,
+      "hypothesis": "H1",
+      "particles": 9216,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.00075,
+        "kernel_radius": 0.0045000000000000005
+      },
+      "extract_wall_s": 0.0035442239604890347,
+      "measurements": {
+        "vertices": 14152,
+        "triangles": 28300,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.1104e-05,
+        "oriented_volume_m3": 3.0582123303051186e-05,
+        "mesh_volume_m3": 3.0582123303051186e-05,
+        "relative_volume_error_vs_analytic": 0.016778443188940735,
+        "relative_volume_error_vs_mass": 0.016778443188940735,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -6.548350756175511e-05,
+          "p95_absolute_m": 0.00045469258100823586,
+          "max_absolute_m": 0.0009079799761304713
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006048547080286872,
+          "signed_mean_m": -6.477089886185328e-05,
+          "rms_m": 0.00016212126251869186,
+          "p95_absolute_m": 0.0004570852131015205
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 550,
+            "signed_mean_m": -5.0435301293602e-07,
+            "max_absolute_m": 5.0825653212654975e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 546,
+            "signed_mean_m": -4.378277774443036e-07,
+            "max_absolute_m": 5.222236802222835e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 848,
+            "signed_mean_m": -4.933911577466493e-07,
+            "max_absolute_m": 5.0398278687718845e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 849,
+            "signed_mean_m": -5.02161076290147e-07,
+            "max_absolute_m": 4.836269289293371e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 2388,
+            "signed_mean_m": -4.6915285008357113e-07,
+            "max_absolute_m": 5.225046045199966e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 2392,
+            "signed_mean_m": -4.766337305677242e-07,
+            "max_absolute_m": 5.149711764297973e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02400457513498674,
+            -0.01800424371805724,
+            -0.009004480173275067
+          ],
+          [
+            0.024004491190134213,
+            0.01800419871310437,
+            0.00900438148945064
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "heldout_mixed_tilt",
+      "split": "held_out",
+      "spacing_m": 0.002,
+      "hypothesis": "H0",
+      "particles": 3888,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.003150210017338395,
+      "measurements": {
+        "vertices": 8564,
+        "triangles": 17124,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.396915949573154e-05,
+        "mesh_volume_m3": 3.396915949573154e-05,
+        "relative_volume_error_vs_analytic": 0.09211546732676003,
+        "relative_volume_error_vs_mass": 0.09211546732676026,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0004314885492979933,
+          "p95_absolute_m": 0.000543774238919879,
+          "max_absolute_m": 0.0005824425683848243
+        },
+        "full_area_sdf": {
+          "area_m2": 0.00658215681300601,
+          "signed_mean_m": 0.00043778136422334917,
+          "rms_m": 0.00045047687233825773,
+          "p95_absolute_m": 0.0005209440235065418
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 181,
+            "signed_mean_m": 0.0004605674552064491,
+            "max_absolute_m": 0.000577712034450055
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 183,
+            "signed_mean_m": 0.0004632609465760514,
+            "max_absolute_m": 0.0005790608161448454
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 293,
+            "signed_mean_m": 0.0004531375974720092,
+            "max_absolute_m": 0.0005721704903364037
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 292,
+            "signed_mean_m": 0.00045444668434072575,
+            "max_absolute_m": 0.0005733299844939352
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1107,
+            "signed_mean_m": 0.00045893724091697374,
+            "max_absolute_m": 0.0005805364930081183
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1097,
+            "signed_mean_m": 0.0004592725436147053,
+            "max_absolute_m": 0.0005793678603075621
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024579223983031716,
+            -0.01857491595582404,
+            -0.009580536493008118
+          ],
+          [
+            0.024582442568384825,
+            0.018573329984493934,
+            0.009580281438883387
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "heldout_mixed_tilt",
+      "split": "held_out",
+      "spacing_m": 0.002,
+      "hypothesis": "H1",
+      "particles": 3888,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.006
+      },
+      "extract_wall_s": 0.0042774968314915895,
+      "measurements": {
+        "vertices": 7824,
+        "triangles": 15644,
+        "finite": true,
+        "analytic_volume_m3": 3.1104e-05,
+        "mass_over_density_m3": 3.110399999999999e-05,
+        "oriented_volume_m3": 3.018768766280208e-05,
+        "mesh_volume_m3": 3.018768766280208e-05,
+        "relative_volume_error_vs_analytic": 0.029459630182546312,
+        "relative_volume_error_vs_mass": 0.0294596301825461,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -0.00011612939956261108,
+          "p95_absolute_m": 0.0006819393653660009,
+          "max_absolute_m": 0.001196219637186525
+        },
+        "full_area_sdf": {
+          "area_m2": 0.005900527789315864,
+          "signed_mean_m": -0.00011539572672322683,
+          "rms_m": 0.0002518184803570923,
+          "p95_absolute_m": 0.0006886727396027255
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 183,
+            "signed_mean_m": -5.913227666718619e-07,
+            "max_absolute_m": 6.806752005532324e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 187,
+            "signed_mean_m": -8.040041235000494e-07,
+            "max_absolute_m": 7.093793844323293e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 291,
+            "signed_mean_m": -6.507344910166629e-07,
+            "max_absolute_m": 6.800068403152448e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 293,
+            "signed_mean_m": -6.705049637360992e-07,
+            "max_absolute_m": 6.445591182308724e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1104,
+            "signed_mean_m": -6.555942287627582e-07,
+            "max_absolute_m": 6.855623907502106e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1099,
+            "signed_mean_m": -6.081931425095161e-07,
+            "max_absolute_m": 6.860021597773075e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.024,
+          0.018,
+          0.009
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.024006012135095497,
+            -0.01800578196248176,
+            -0.009005829117210897
+          ],
+          [
+            0.024006050527839985,
+            0.018005481530277832,
+            0.00900600584006362
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "heldout_aspect_tilt",
+      "split": "held_out",
+      "spacing_m": 0.001,
+      "hypothesis": "H0",
+      "particles": 38880,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.0033452040515840054,
+      "measurements": {
+        "vertices": 9910,
+        "triangles": 19816,
+        "finite": true,
+        "analytic_volume_m3": 3.888e-05,
+        "mass_over_density_m3": 3.888e-05,
+        "oriented_volume_m3": 4.29052534012744e-05,
+        "mesh_volume_m3": 4.29052534012744e-05,
+        "relative_volume_error_vs_analytic": 0.10353018007393003,
+        "relative_volume_error_vs_mass": 0.10353018007393003,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005432954865017179,
+          "p95_absolute_m": 0.0006363242985392961,
+          "max_absolute_m": 0.000642150554276081
+        },
+        "full_area_sdf": {
+          "area_m2": 0.007392450303380441,
+          "signed_mean_m": 0.0005472964889946164,
+          "rms_m": 0.0005620639435052095,
+          "p95_absolute_m": 0.0006270288515368414
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 553,
+            "signed_mean_m": 0.0005883832348594917,
+            "max_absolute_m": 0.000642150554276081
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 549,
+            "signed_mean_m": 0.0005885499311575907,
+            "max_absolute_m": 0.0006421110076288185
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 1108,
+            "signed_mean_m": 0.0005871062576921033,
+            "max_absolute_m": 0.000639413054148396
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 1106,
+            "signed_mean_m": 0.0005871543362157541,
+            "max_absolute_m": 0.0006393598922508938
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1619,
+            "signed_mean_m": 0.0005812378566305116,
+            "max_absolute_m": 0.0006357699065873568
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1620,
+            "signed_mean_m": 0.0005812822569042341,
+            "max_absolute_m": 0.0006357936755915384
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.027,
+          0.015,
+          0.012
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.02764215055427608,
+            -0.015639413054148395,
+            -0.012635769906587357
+          ],
+          [
+            0.027642111007628818,
+            0.015639359892250893,
+            0.012635793675591539
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": false,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "heldout_aspect_tilt",
+      "split": "held_out",
+      "spacing_m": 0.001,
+      "hypothesis": "H1",
+      "particles": 38880,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.0005,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.005154116079211235,
+      "measurements": {
+        "vertices": 37488,
+        "triangles": 74972,
+        "finite": true,
+        "analytic_volume_m3": 3.888e-05,
+        "mass_over_density_m3": 3.888e-05,
+        "oriented_volume_m3": 3.863056108092096e-05,
+        "mesh_volume_m3": 3.863056108092096e-05,
+        "relative_volume_error_vs_analytic": 0.006415610058617217,
+        "relative_volume_error_vs_mass": 0.006415610058617217,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -2.7007159577939588e-05,
+          "p95_absolute_m": 0.00022580255475057592,
+          "max_absolute_m": 0.0006014665554116699
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006970142845397067,
+          "signed_mean_m": -2.7178058438974945e-05,
+          "rms_m": 8.488102222157888e-05,
+          "p95_absolute_m": 0.0002225995891056195
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 2202,
+            "signed_mean_m": -3.1709795570175943e-07,
+            "max_absolute_m": 3.5348742344204487e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 2195,
+            "signed_mean_m": -3.081492893478175e-07,
+            "max_absolute_m": 3.5200845915212e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 4426,
+            "signed_mean_m": -3.1970211028344953e-07,
+            "max_absolute_m": 3.4445942106269e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 4429,
+            "signed_mean_m": -3.215824029420089e-07,
+            "max_absolute_m": 3.450375147068252e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 6460,
+            "signed_mean_m": -3.4898669459032207e-07,
+            "max_absolute_m": 3.3368654105987022e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 6457,
+            "signed_mean_m": -3.467834733287158e-07,
+            "max_absolute_m": 3.319693969000212e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.027,
+          0.015,
+          0.012
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.027002992330543915,
+            -0.01500294418718496,
+            -0.01200280841019665
+          ],
+          [
+            0.027003006597246453,
+            0.015002929673216212,
+            0.012002803253701441
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "heldout_aspect_tilt",
+      "split": "held_out",
+      "spacing_m": 0.0015,
+      "hypothesis": "H0",
+      "particles": 11520,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.003645997028797865,
+      "measurements": {
+        "vertices": 9896,
+        "triangles": 19788,
+        "finite": true,
+        "analytic_volume_m3": 3.888e-05,
+        "mass_over_density_m3": 3.888e-05,
+        "oriented_volume_m3": 4.263220020529879e-05,
+        "mesh_volume_m3": 4.263220020529879e-05,
+        "relative_volume_error_vs_analytic": 0.09650720692640925,
+        "relative_volume_error_vs_mass": 0.09650720692640925,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0005057319274128443,
+          "p95_absolute_m": 0.0005980932215176402,
+          "max_absolute_m": 0.0006063792526022661
+        },
+        "full_area_sdf": {
+          "area_m2": 0.007388573338497374,
+          "signed_mean_m": 0.0005103144812940179,
+          "rms_m": 0.0005236774611787758,
+          "p95_absolute_m": 0.0005879250190486555
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 401,
+            "signed_mean_m": 0.0005446618614555529,
+            "max_absolute_m": 0.0006051376685520388
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 399,
+            "signed_mean_m": 0.0005445071920932949,
+            "max_absolute_m": 0.0006059487017638747
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 862,
+            "signed_mean_m": 0.0005433536943778157,
+            "max_absolute_m": 0.00060321524430983
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 863,
+            "signed_mean_m": 0.0005431466015020396,
+            "max_absolute_m": 0.0006031761276256032
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1326,
+            "signed_mean_m": 0.0005367962178940162,
+            "max_absolute_m": 0.0005994000881377488
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1327,
+            "signed_mean_m": 0.0005366424594721176,
+            "max_absolute_m": 0.0005994344257315015
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.027,
+          0.015,
+          0.012
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.027606027573510335,
+            -0.01560321524430983,
+            -0.012599400088137749
+          ],
+          [
+            0.027606379252602266,
+            0.015603176127625603,
+            0.012599434425731502
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "heldout_aspect_tilt",
+      "split": "held_out",
+      "spacing_m": 0.0015,
+      "hypothesis": "H1",
+      "particles": 11520,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.00075,
+        "kernel_radius": 0.0045000000000000005
+      },
+      "extract_wall_s": 0.004431429086253047,
+      "measurements": {
+        "vertices": 16362,
+        "triangles": 32720,
+        "finite": true,
+        "analytic_volume_m3": 3.888e-05,
+        "mass_over_density_m3": 3.888e-05,
+        "oriented_volume_m3": 3.832622105924513e-05,
+        "mesh_volume_m3": 3.832622105924513e-05,
+        "relative_volume_error_vs_analytic": 0.014243285513242469,
+        "relative_volume_error_vs_mass": 0.014243285513242469,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -6.057879789331722e-05,
+          "p95_absolute_m": 0.0004361818646779164,
+          "max_absolute_m": 0.0008860875328319303
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006815979139485036,
+          "signed_mean_m": -6.109104039393962e-05,
+          "rms_m": 0.00015703540250029164,
+          "p95_absolute_m": 0.0004422209128314581
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 714,
+            "signed_mean_m": -4.989117263840661e-07,
+            "max_absolute_m": 5.183479623395437e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 709,
+            "signed_mean_m": -4.519441779642781e-07,
+            "max_absolute_m": 5.193554777703502e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 1536,
+            "signed_mean_m": -4.835019155868859e-07,
+            "max_absolute_m": 5.107915814260219e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 1537,
+            "signed_mean_m": -4.7608553946012274e-07,
+            "max_absolute_m": 5.170745837917989e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 2350,
+            "signed_mean_m": -5.079771398384556e-07,
+            "max_absolute_m": 4.99779036266558e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 2357,
+            "signed_mean_m": -5.079748117059708e-07,
+            "max_absolute_m": 4.9444977683991975e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.027,
+          0.015,
+          0.012
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.027004560307128198,
+            -0.015004376928866886,
+            -0.012004187762328639
+          ],
+          [
+            0.027004564424759743,
+            0.01500436584084708,
+            0.012004211353405646
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    },
+    {
+      "case_id": "heldout_aspect_tilt",
+      "split": "held_out",
+      "spacing_m": 0.002,
+      "hypothesis": "H0",
+      "particles": 4860,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.25,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.003
+      },
+      "extract_wall_s": 0.0033335560001432896,
+      "measurements": {
+        "vertices": 9854,
+        "triangles": 19704,
+        "finite": true,
+        "analytic_volume_m3": 3.888e-05,
+        "mass_over_density_m3": 3.888e-05,
+        "oriented_volume_m3": 4.208849558138604e-05,
+        "mesh_volume_m3": 4.208849558138604e-05,
+        "relative_volume_error_vs_analytic": 0.0825230345006698,
+        "relative_volume_error_vs_mass": 0.0825230345006698,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": 0.0004305391760400111,
+          "p95_absolute_m": 0.0005396698939267525,
+          "max_absolute_m": 0.0005822150398117759
+        },
+        "full_area_sdf": {
+          "area_m2": 0.00738592515664064,
+          "signed_mean_m": 0.00043701822935672384,
+          "rms_m": 0.00044875253661071985,
+          "p95_absolute_m": 0.0005163017182055475
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 273,
+            "signed_mean_m": 0.0004604216417725283,
+            "max_absolute_m": 0.0005792891663986485
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 275,
+            "signed_mean_m": 0.00046021219015815977,
+            "max_absolute_m": 0.0005798095553271113
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 645,
+            "signed_mean_m": 0.0004583783515032103,
+            "max_absolute_m": 0.0005754425032087427
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 645,
+            "signed_mean_m": 0.000458270942992583,
+            "max_absolute_m": 0.0005739332260067918
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1057,
+            "signed_mean_m": 0.00045027872128170404,
+            "max_absolute_m": 0.0005701125007945597
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1057,
+            "signed_mean_m": 0.00044983567358798535,
+            "max_absolute_m": 0.0005679343136188817
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.027,
+          0.015,
+          0.012
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.027579959304404933,
+            -0.015576368653673974,
+            -0.01257011250079456
+          ],
+          [
+            0.027582215039811776,
+            0.015577964939817035,
+            0.012567934313618882
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": false,
+        "volume_mass": false,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "FAIL"
+    },
+    {
+      "case_id": "heldout_aspect_tilt",
+      "split": "held_out",
+      "spacing_m": 0.002,
+      "hypothesis": "H1",
+      "particles": 4860,
+      "parameters": {
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "voxel_size": 0.001,
+        "kernel_radius": 0.006
+      },
+      "extract_wall_s": 0.004206860903650522,
+      "measurements": {
+        "vertices": 9028,
+        "triangles": 18052,
+        "finite": true,
+        "analytic_volume_m3": 3.888e-05,
+        "mass_over_density_m3": 3.888e-05,
+        "oriented_volume_m3": 3.790730784461725e-05,
+        "mesh_volume_m3": 3.790730784461725e-05,
+        "relative_volume_error_vs_analytic": 0.025017802350379353,
+        "relative_volume_error_vs_mass": 0.025017802350379353,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "mesh_components": 1,
+        "euler_characteristic": 2,
+        "full_vertex_sdf": {
+          "signed_mean_m": -0.00010747803491173335,
+          "p95_absolute_m": 0.0006568566341016015,
+          "max_absolute_m": 0.001235062858720791
+        },
+        "full_area_sdf": {
+          "area_m2": 0.006659730796442616,
+          "signed_mean_m": -0.0001088932747307682,
+          "rms_m": 0.0002441718882117946,
+          "p95_absolute_m": 0.0006687624129608024
+        },
+        "central_faces": [
+          {
+            "axis": 0,
+            "sign": -1,
+            "samples": 276,
+            "signed_mean_m": -5.829628840105008e-07,
+            "max_absolute_m": 6.919584581478039e-06
+          },
+          {
+            "axis": 0,
+            "sign": 1,
+            "samples": 274,
+            "signed_mean_m": -5.560416949081408e-07,
+            "max_absolute_m": 6.79483143950152e-06
+          },
+          {
+            "axis": 1,
+            "sign": -1,
+            "samples": 646,
+            "signed_mean_m": -6.312408955166775e-07,
+            "max_absolute_m": 6.716457742464085e-06
+          },
+          {
+            "axis": 1,
+            "sign": 1,
+            "samples": 646,
+            "signed_mean_m": -6.563835746639565e-07,
+            "max_absolute_m": 6.66210131848588e-06
+          },
+          {
+            "axis": 2,
+            "sign": -1,
+            "samples": 1058,
+            "signed_mean_m": -7.09919957683625e-07,
+            "max_absolute_m": 6.634647636054314e-06
+          },
+          {
+            "axis": 2,
+            "sign": 1,
+            "samples": 1058,
+            "signed_mean_m": -6.825667943027907e-07,
+            "max_absolute_m": 6.450531244508312e-06
+          }
+        ],
+        "physical_box_local_half_extents_m": [
+          0.027,
+          0.015,
+          0.012
+        ],
+        "mesh_local_extents_m": [
+          [
+            -0.027006036584796278,
+            -0.015005875652262218,
+            -0.012005205317211604
+          ],
+          [
+            0.027005852399484997,
+            0.015005878349820678,
+            0.01200560297327812
+          ]
+        ]
+      },
+      "checks": {
+        "finite": true,
+        "closed": true,
+        "components": true,
+        "euler": true,
+        "volume_analytic": true,
+        "volume_mass": true,
+        "full_area_p95": true,
+        "full_vertex_max": true,
+        "central_face_bias": true
+      },
+      "status": "PASS"
+    }
+  ],
+  "scope": "Analytic closed-volume renderer controls only; no TASK score or cutting evidence"
+}
