@@ -55,22 +55,25 @@ def main():
     p.add_argument("--repeat-dir", type=Path)
     p.add_argument("--standalone-reference-dir", type=Path, help="descriptive same-recipe comparison; never passes a live gate")
     p.add_argument("--native-camera-controls", type=Path, help="exact-version independent native Kit known-geometry audit result")
+    p.add_argument("--live-camera-audit", type=Path, help="independent measured-state scene/native camera consistency audit")
     p.add_argument("--output-dir", type=Path, required=True)
     args = p.parse_args()
     import json
     protocol = json.loads(args.protocol.read_text())
     output = new_output(args.output_dir)
     (output/"validator_source").mkdir()
-    for path in (Path(__file__), ROOT/"src/robotic_cutting_sim/live_acceptance.py",
-                 ROOT/"src/robotic_cutting_sim/scene_frames.py", ROOT/"src/robotic_cutting_sim/scene_validation.py", args.protocol):
+    validator_paths = (Path(__file__), ROOT/"src/robotic_cutting_sim/live_acceptance.py",
+        ROOT/"src/robotic_cutting_sim/scene_frames.py", ROOT/"src/robotic_cutting_sim/scene_validation.py", args.protocol)
+    for path in validator_paths:
         shutil.copyfile(path, output/"validator_source"/path.name)
     result, debug = audit_live_episode(args.recording_dir, protocol, protocol_path=args.protocol,
         contact_device=None if args.contact_device == "none" else args.contact_device,
-        feedback_off_dir=args.feedback_off_dir, repeat_dir=args.repeat_dir, native_camera_controls=args.native_camera_controls)
-    result["validator_sha256"] = {"driver": sha256(__file__),
-        "live_acceptance": sha256(ROOT/"src/robotic_cutting_sim/live_acceptance.py"),
-        "scene_frames": sha256(ROOT/"src/robotic_cutting_sim/scene_frames.py"),
-        "scene_validation": sha256(ROOT/"src/robotic_cutting_sim/scene_validation.py")}
+        feedback_off_dir=args.feedback_off_dir, repeat_dir=args.repeat_dir, native_camera_controls=args.native_camera_controls,
+        live_camera_audit=args.live_camera_audit)
+    result["validator_sha256"] = {label: sha256(output/"validator_source"/path.name)
+        for label, path in zip(("driver", "live_acceptance", "scene_frames", "scene_validation"), validator_paths[:4])}
+    result["validator_sources_unchanged_during_analysis"] = all(
+        sha256(path) == sha256(output/"validator_source"/path.name) for path in validator_paths)
     if args.standalone_reference_dir:
         result["standalone_reference_comparison"] = compare_standalone_reference(args.recording_dir, args.standalone_reference_dir)
     trajectory = debug["trajectory"]

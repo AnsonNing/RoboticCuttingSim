@@ -110,3 +110,43 @@ ENV-02's available material screens pass: finite states, minimum detF≥0.906, s
 The first CPU contact-audit attempt is preserved in `artifacts/isaac_lab_d0_audit_001/FAILED.json`: Warp 1.17 whole-module CPU compilation emits an unrelated C++ member called `new`, rejected by Clang. An isolated unchanged-function CPU diagnostic was preserved in `_002`, but the reported final attribution uses the original unchanged CUDA kernel. Administrative reader/source-provenance corrections and all intermediate audit directories remain available; none changes physical data or thresholds.
 
 Machine-readable checkpoint: [`isaac_live_acceptance.json`](../evidence/isaac_live_acceptance.json). Full per-episode hashes, missing-evidence lists, detailed contact samples, plots and source snapshots are retained in the artifact paths above. No policy or RSI training was run.
+
+## Later native-contact, repeat and live-camera receipts
+
+The earlier four receipts remain unchanged. Two fresh audits append evidence without promoting a previous failure:
+
+- Lab `artifacts/isaac_lab_d0_feedforward_002`, paired with the complete same-source `isaac_lab_d0_feedforward_repeat_001`: `artifacts/isaac_lab_d0_feedforward002_audit_002/result.json`.
+- The same Kit feedforward episode as above, now bound by hashes to the complete41-frame independent visual/native camera audit: `artifacts/isaacsim_live_native_d0_ff_audit_005/result.json`. The camera reference is `artifacts/live_camera_mesh_ff_002/result.json` and its pre-analysis snapshots/input hashes.
+
+Both new audits confirm the validator bytes remained unchanged during analysis. Their saved historical TLMPM source exactly matches each episode's hash and supplies the unchanged actual CUDA contact kernel; subsequent CUT/TRIM fixture extensions in the current working tree do not silently change this recheck. All51 related CPU tests pass, including18 task-schema controls; these are distinct from the actual runtime episodes.
+
+| Gate | Later Lab feedforward002 | Kit feedforward with full camera audit |
+| --- | --- | --- |
+| RT-01 | PASS | NR |
+| RT-02 | NR | PASS |
+| SC-01 | PASS | PASS |
+| SC-02 | PASS | PASS |
+| ROB-01 | PASS | PASS |
+| ROB-02 | PASS | PASS |
+| PHY-01 | NR | NR |
+| PHY-02 | PASS | PASS |
+| PHY-03 | FAIL | FAIL |
+| PHY-04 | FAIL | FAIL |
+| CAM-01 | NR | PASS scoped native geometry controls |
+| CAM-02 | NR | PASS scoped native geometry controls |
+| CAM-03 | NR | PASS geometric first-hit attribution |
+| CAM-04 | NR | FAIL actual native masks |
+| TASK-01 | PASS | PASS |
+| TASK-02 | FAIL | FAIL |
+| ENV-01 | FAIL | FAIL |
+| ENV-02 | PASS | NR |
+
+Lab now has8 PASS/4 FAIL/6 NR. The native MJWarp recorder samples actual active contact slots before every2 ms rigid substep and after the final substep, including a nonintegrating position/contact refresh at reset. Maximum native non-tool rigid penetration is **32.494 µm**, native knife-rigid penetration is0, minimum material detF is0.90545 and maximum speed0.30953 m/s. Retained material-tray, knife-material and material-material maxima are292.2/428.4/167.5 µm. These actual native measurements close the earlier ENV-02 evidence gap for this Lab episode.
+
+Lab's same-process initial q/material/depth reset remains exactly equal with matching masks. Its complete same-source repeat nevertheless fails ENV-01: all-frame particle difference **1.00137 mm**, final component COM difference **0.10754 mm**, velocity difference **0.13365 m/s** and28 differing code-particle frames. Neither bitwise identity nor the frozen tolerance-based repeat test passes. The interface work residual is19.1383%; improving observation/penetration instrumentation does not erase that coupling limitation.
+
+Kit now has10 PASS/5 FAIL/3 NR. Across every global frame, independently reconstructed first-hit geometry agrees with actual RTX depth at at least **18,610 / 27,791 / 26 / 608 / 161,311** pixels for arm0/arm1/knife/material/table. Those are depth-verified geometric attributions, not captured native semantic labels. The current dynamic visual mesh/pose bridge passes: worst area p95 error **0.715 µm**, minimum mask IoU **0.99996236**, and timestamp span≤`8.9e-16` s. Up to36 actual native-valid chip pixels are visible.
+
+The **actual registered native SingleView output** still fails CAM-04. Minimum valid-mask IoUs are **0.44510 / 0.20547** for cameras0/1, well below0.99. Their p95 errors on common valid pixels are small (≤0.358 µm), while retained maximum errors reach **620.7 / 1003.6 mm**. Rare global silhouette tails also remain in the receipt. The passing visual geometry bridge is not substituted for the native data. No error-tail rejection, hole filling or ideal-depth replacement is used to obtain a sensor pass.
+
+Latest machine-readable receipts: [`isaac_live_acceptance_latest.json`](../evidence/isaac_live_acceptance_latest.json). Execution, durable mechanical separation and geometric camera synchronization are supported capabilities. Complete native-sensor, reset/repeat, delayed-work, flatness and calibrated material acceptance remain unachieved under the unchanged protocol.

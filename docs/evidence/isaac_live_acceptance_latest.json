@@ -1,0 +1,2874 @@
+{
+  "scope": "Appended later evidence; prior failed receipts preserved",
+  "full_benchmark_ready": false,
+  "episodes": {
+    "lab_feedforward002": {
+      "scope": "Independent quantitative audit of this actual recorded episode",
+      "recording": "artifacts/isaac_lab_d0_feedforward_002",
+      "runtime_source": "live_isaac_lab",
+      "protocol_id": "isaac_d0_acceptance_v1_20261028",
+      "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+      "input_sha256": {
+        "manifest.json": "bd39912b581be2c83b4ca9da31a851c2485484ee147ea53c7e8a6b30e3bc6f4b",
+        "setup.json": "55d486892ae93a61c0778da9af33ab6c42c77390fe8a98d5a2cb95fcfe5c23be",
+        "result.json": "3be5f73549ed8426b75cc878b3bef1504bd7e5f3da55113542c4297fb5ec8642",
+        "robot_state.npz": "c265615a4c1a905f9995e8b8db32948bdfb9ba3e0402983c6834e0c5242289f1",
+        "physics_state.npz": "b71e8d8ed4d7608effee31d7a10109af5735b3f0448653664201931f2d792d9e",
+        "diagnostics.json": "9750d92c846e7d3b8862dd70c69dd88e22fdab40bc3a68f21219fc9de6a63e84"
+      },
+      "gates": {
+        "RT-01": {
+          "status": "PASS",
+          "checks": {
+            "full_400_step_recording": true,
+            "full_8_second_recording": true,
+            "actual_scene_environment_task_api": true,
+            "actual_articulation_owner": true,
+            "actual_task_api": true,
+            "GA_release": true,
+            "completed_execution": true,
+            "protocol_matches_prefrozen_file": true,
+            "runtime_module_hashes_recorded": true,
+            "actual_native_clock_tracks_episode": true
+          },
+          "measurements": {
+            "steps": 400,
+            "simulation_s": 8.0,
+            "native_clock_s": 7.999999999999341,
+            "wall_s": 187.72831847099587,
+            "current_source_matches_recorded_hash": {
+              "isaac_lab_env.py": false,
+              "live_material.py": false,
+              "tlmpm.py": false,
+              "cut_topology.py": true,
+              "scene_frames.py": true
+            },
+            "hash_matching_implementation": {
+              "isaac_lab_env.py": {
+                "verified": true,
+                "source": "artifacts/isaac_lab_d0_feedforward_002/implementation/isaac_lab_env.py",
+                "sha256": "604f90d167796f3f6f66c4d16f6dd7e65721e627c7a088dca8d609aa91b2e3f6"
+              },
+              "live_material.py": {
+                "verified": true,
+                "source": "artifacts/isaac_lab_d0_feedforward_002/implementation/live_material.py",
+                "sha256": "da7dbb37244d095733e70af3d4dd8881777c8716f71bbfd6bf417abd6654b5b5"
+              },
+              "tlmpm.py": {
+                "verified": true,
+                "source": "artifacts/isaac_lab_d0_feedforward_002/implementation/tlmpm.py",
+                "sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac"
+              },
+              "cut_topology.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/cut_topology.py",
+                "sha256": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+              },
+              "scene_frames.py": {
+                "verified": true,
+                "source": "artifacts/isaac_lab_d0_feedforward_002/implementation/scene_frames.py",
+                "sha256": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b"
+              }
+            },
+            "GA_source_sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "distribution_versions": {
+              "isaaclab": "28.0.0",
+              "isaaclab-newton": "9.1.4",
+              "torch": "2.11.0+cu128",
+              "warp-lang": "1.17.0",
+              "newton": "1.6.1",
+              "usd-exchange": "3.0.1"
+            },
+            "package_version_is_not_GA_release_number": true
+          },
+          "missing_evidence": [],
+          "scope": "Live Lab DirectRLEnv + InteractiveScene/NewtonManager; kit-less cameras cannot pass native D455/Kit"
+        },
+        "RT-02": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {},
+          "missing_evidence": [
+            "This recording is kit-less Lab, not a full Isaac Sim/Kit episode"
+          ],
+          "scope": ""
+        },
+        "SC-01": {
+          "status": "PASS",
+          "checks": {
+            "identity_workpiece_supported_by_fixture": true,
+            "loaded_workpiece_local_target_matches_protocol": true,
+            "USD_meters": true,
+            "USD_Z_up": true,
+            "all_required_camera_frames": true,
+            "camera_target_forward": true,
+            "camera_frame_translation": true,
+            "camera_frame_rotation": true,
+            "hand_USD_translation": true,
+            "hand_USD_rotation": true
+          },
+          "measurements": {
+            "up_axis": "Z",
+            "meters_per_unit": 1.0,
+            "actual_final_scene_sha256": "d3426213c3b06e75f4353d57b3c964107ff56038254ad1e24a0170bfa874004c",
+            "camera_forward_cosines": {
+              "d455_0": 0.9999999999999972,
+              "d455_1": 1.0000000000000002,
+              "global": 0.9922994153684433
+            },
+            "camera_transform_errors": {
+              "d455_0": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              },
+              "d455_1": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              },
+              "global": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              }
+            },
+            "final_USD_vs_measured_hand_translation_m": 0.0,
+            "final_USD_vs_measured_hand_rotation_rad": 0.0
+          },
+          "missing_evidence": [],
+          "scope": "Actual USD versus recorded articulated hand and optical camera frames"
+        },
+        "SC-02": {
+          "status": "PASS",
+          "checks": {
+            "actual_D0_samples": true,
+            "positive_masses": true,
+            "initial_codes_zero": true,
+            "initial_continuum_components_one": true
+          },
+          "measurements": {
+            "initial_particle_count": 19340,
+            "initial_mass_kg": 0.23207999999999998,
+            "actual_initial_sample_error_m": 0.0,
+            "float32_sample_roundoff_bound_m": 7.450580596923828e-09,
+            "analytic_specimen": {
+              "length_m": 0.12,
+              "width_m": 0.08,
+              "base_height_m": 0.015,
+              "bump_height_m": 0.008,
+              "bump_radius_m": 0.015
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual continuous initial D0 samples and full mechanical stencil graph"
+        },
+        "ROB-01": {
+          "status": "PASS",
+          "checks": {
+            "two_articulations": true,
+            "seven_arm_joints_each": true,
+            "named_actual_Panda_hand": true,
+            "physical_knife_attached_to_same_hand": true,
+            "mount_translation": true,
+            "mount_rotation": true,
+            "recorded_hand_equals_named_body": true
+          },
+          "measurements": {
+            "max_fixed_mount_translation_error_m": 8.326673125851656e-17,
+            "max_fixed_mount_rotation_error_rad": 1.0947409328748218e-19,
+            "named_hand": "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand",
+            "body_index": 8
+          },
+          "missing_evidence": [],
+          "scope": "Measured named hand and actual fixed physical wedge"
+        },
+        "ROB-02": {
+          "status": "PASS",
+          "checks": {
+            "active_max_edge_position_error_m": true,
+            "active_max_edge_height_error_from_command_m": true,
+            "active_max_edge_rotation_error_deg": true,
+            "all_phase_max_edge_position_error_m": true,
+            "max_measured_edge_translation_per_control_step_m": true,
+            "minimum_analytic_bump_cross_section_sweep_coverage": true,
+            "actual_edge_intersects_original_material": true
+          },
+          "measurements": {
+            "status": "PASS",
+            "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+            "metrics": {
+              "active_max_edge_position_error_m": 0.0005078247859062442,
+              "active_max_edge_height_error_from_command_m": 0.00025094168993650134,
+              "active_max_edge_rotation_error_deg": 0.035482588263641784,
+              "all_phase_max_edge_position_error_m": 0.002369040940852878,
+              "max_measured_edge_translation_per_control_step_m": 0.0017593047623380227
+            },
+            "checks": {
+              "active_max_edge_position_error_m": true,
+              "active_max_edge_height_error_from_command_m": true,
+              "active_max_edge_rotation_error_deg": true,
+              "all_phase_max_edge_position_error_m": true,
+              "max_measured_edge_translation_per_control_step_m": true,
+              "minimum_analytic_bump_cross_section_sweep_coverage": true,
+              "actual_edge_intersects_original_material": true
+            },
+            "active_interval_s": [
+              1.6,
+              5.6
+            ],
+            "active_sample_count": 200,
+            "sweep": {
+              "scope": "analytic workpiece-local finite-edge geometry only",
+              "cross_section_samples": 1992,
+              "cross_section_area_m2": 0.0004980000000000001,
+              "cross_section_sweep_coverage": 1.0,
+              "actual_edge_intersects_original_material": true,
+              "edge_endpoint_height_valid_fraction": 1.0,
+              "local_edge_center_bounds_m": [
+                [
+                  -0.03000065136825728,
+                  -6.524237714563975e-05,
+                  0.01547498541495218
+                ],
+                [
+                  0.045003682135623266,
+                  8.234840675801244e-08,
+                  0.01575094143661676
+                ]
+              ],
+              "cut_plane_local_z_m": 0.0155,
+              "target_plane_local_z_m": 0.015,
+              "sampling_spacing_m": 0.0005,
+              "height_tolerance_m": 0.0005
+            },
+            "active_local_edge_height_range_m": [
+              0.01547498541495218,
+              0.01575094143661676
+            ],
+            "active_plane_normal_tilt_max_deg": 0.03540877815903552
+          },
+          "missing_evidence": [],
+          "scope": "Measured edge geometry and tracking, not IK targets"
+        },
+        "PHY-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_material_tool_contacts": true,
+            "nonzero_accumulated_plastic_history": true
+          },
+          "measurements": {
+            "material_tool_substep_particle_events": 4906138,
+            "max_accumulated_plastic_strain": 0.4936921298503876
+          },
+          "missing_evidence": [
+            "Matched settle/elastic control measuring above-plane deformation residual drop"
+          ],
+          "scope": "Constitutive deformation is separate from component separation"
+        },
+        "PHY-02": {
+          "status": "PASS",
+          "checks": {
+            "nonzero_digits_never_rewritten_in_recorded_history": true,
+            "all_particle_frames_preserve_count": true,
+            "initial_mass_matches_immutable_recorded_masses": true,
+            "initial_graph_one_component": true,
+            "final_graph_at_least_two": true,
+            "recorded_graph_agrees": true,
+            "positive_detached_component_mass": true
+          },
+          "measurements": {
+            "graph": {
+              "status": "PASS",
+              "initial_components": 1,
+              "final_components": 2,
+              "recorded_partition_matches_recomputation": true,
+              "includes_positive_weights": true,
+              "includes_nonzero_stress_gradients": true,
+              "includes_unassigned_code_zero_particles": true,
+              "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "stencil_sha256": "a7e36cca51d71701fdd22dc442e3e8adcf86ec9f409ef486339fe5ca22f83e34"
+            },
+            "history": {
+              "initial_nonzero_codes": 0,
+              "nonzero_digit_rewrites_by_cut": [
+                0
+              ],
+              "nonzero_digit_rewrites": 0,
+              "final_code_histogram": {
+                "0": 11093,
+                "1": 8109,
+                "2": 138
+              },
+              "sampled_history_only": true
+            },
+            "task_mass": {
+              "status": "MEASURED",
+              "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+              "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "component_count": 2,
+              "reference_substrate_component_ids": [
+                1
+              ],
+              "detached_mass_kg": 0.001656,
+              "reference_above_target_mass_kg": 0.0016799999999999999,
+              "detached_initial_above_target_mass_kg": 0.001656,
+              "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+              "remaining_initial_above_target_mass_kg": 2.4e-05,
+              "reference_plane_tolerance_m": 1e-07,
+              "current_substrate_particle_center_max_residual_m": 0.00030907768756151255,
+              "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+            },
+            "mass_evidence_scope": "All particle counts and one immutable per-particle mass vector; no inferred force observation"
+          },
+          "missing_evidence": [],
+          "scope": "Persistent separation uses the actual transfer/stress stencil, including possible zero-code bridges"
+        },
+        "PHY-03": {
+          "status": "FAIL",
+          "checks": {
+            "postwithdraw_chip_motion": true,
+            "persistent_history_no_reset": true,
+            "measured_blade_clear_of_all_particle_spheres_after_withdrawal": true,
+            "cross_component_contact_exchange": false
+          },
+          "measurements": {
+            "withdrawal_complete_s": 6.3999999999999995,
+            "postwithdraw_chip_com_displacement_m": 0.0012353835862361688,
+            "postwithdraw_min_material_sphere_to_blade_AABB_clearance_m": 0.036646502985402424,
+            "original_postwithdraw_material_pair_events_unattributed": 35523,
+            "contact_kernel_recheck": {
+              "scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
+              "device": "cuda:0",
+              "peak_component_net_contact_impulse_Ns": 1.591302455776226e-14,
+              "source_path": "artifacts/isaac_lab_d0_feedforward_002/implementation/tlmpm.py",
+              "source_sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac",
+              "roundoff_reporting_floor_Ns": 1e-09,
+              "samples": [
+                {
+                  "time_s": 6.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.42,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.44,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.46,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.48,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.5,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.5200000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.54,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.5600000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.58,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.62,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.640000000000001,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.66,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.68,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.7,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.72,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.74,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.76,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.78,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.82,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.84,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.86,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.88,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.9,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.92,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.94,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.96,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.98,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0200000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.04,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0600000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.08,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.1000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.12,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.140000000000001,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.16,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.18,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.2,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.22,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.24,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.26,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.28,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.3,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.32,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.34,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.36,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.38,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.42,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.44,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.46,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.48,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.5,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.5200000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.54,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.5600000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.58,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.62,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      -3.552713678800501e-15,
+                      -3.552713678800501e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.0242958677880805e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.640000000000001,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.66,
+                  "component_net_impulses_Ns": [
+                    [
+                      -3.552713678800501e-15,
+                      7.105427357601002e-15,
+                      7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.0658141036401503e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.68,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.7763568394002505e-15,
+                      7.105427357601002e-15,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.020439314654103e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.7,
+                  "component_net_impulses_Ns": [
+                    [
+                      -3.552713678800501e-15,
+                      7.105427357601002e-15,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.944109290391274e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.72,
+                  "component_net_impulses_Ns": [
+                    [
+                      -1.7763568394002505e-15,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.7763568394002505e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.74,
+                  "component_net_impulses_Ns": [
+                    [
+                      -1.7763568394002505e-15,
+                      -7.105427357601002e-15,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.32410687763558e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.76,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.7763568394002505e-15,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.7763568394002505e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.78,
+                  "component_net_impulses_Ns": [
+                    [
+                      -8.881784197001252e-16,
+                      -7.105427357601002e-15,
+                      1.4210854715202004e-14
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.591302455776226e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      8.881784197001252e-16,
+                      -7.105427357601002e-15,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.160723346098895e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.82,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.7763568394002505e-15,
+                      -7.105427357601002e-15,
+                      7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.020439314654103e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.84,
+                  "component_net_impulses_Ns": [
+                    [
+                      -8.881784197001252e-16,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 8.881784197001252e-16,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.86,
+                  "component_net_impulses_Ns": [
+                    [
+                      -8.881784197001252e-16,
+                      0.0,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.160723346098895e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.88,
+                  "component_net_impulses_Ns": [
+                    [
+                      -4.440892098500626e-16,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 4.440892098500626e-16,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.9,
+                  "component_net_impulses_Ns": [
+                    [
+                      5.551115123125783e-16,
+                      0.0,
+                      -1.4210854715202004e-14
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.4221692604176232e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.92,
+                  "component_net_impulses_Ns": [
+                    [
+                      -5.551115123125783e-16,
+                      0.0,
+                      7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.127078414416858e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.94,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.1102230246251565e-15,
+                      0.0,
+                      1.4210854715202004e-14
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.4254156828833717e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.96,
+                  "component_net_impulses_Ns": [
+                    [
+                      -1.3322676295501878e-15,
+                      0.0,
+                      -1.4210854715202004e-14
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.4273168140722167e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.98,
+                  "component_net_impulses_Ns": [
+                    [
+                      -4.440892098500626e-16,
+                      0.0,
+                      -1.4210854715202004e-14
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.4217791915866692e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 8.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      1.4210854715202004e-14
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.4210854715202004e-14,
+                  "material_pair_events": 3
+                }
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Independent chip motion and attributed component exchange; no healing"
+        },
+        "PHY-04": {
+          "status": "FAIL",
+          "checks": {
+            "finite_reaction": true,
+            "nonzero_reaction": true,
+            "previous_interval_feedback_carry": true,
+            "feedback_delay_declared": true,
+            "interface_work_residual": false
+          },
+          "measurements": {
+            "peak_reaction_N": 2.058084871962499,
+            "feedback_carry_max_abs_error": 0.0,
+            "material_boundary_work_J": 0.014773871048284093,
+            "robot_applied_material_wrench_work_J": -0.011946403001715088,
+            "interface_work_residual_fraction": 0.19138301920520692,
+            "robot_work_source": "Recorded actual applied-tool-wrench boundary-work ledger",
+            "matched_ON_OFF_max_tool_position_difference_m": null,
+            "ON_camera_enabled": true,
+            "OFF_camera_enabled": null,
+            "camera_control_scope": "Camera readout may be disabled in OFF; it does not advance or mutate dynamics",
+            "scope": "Partitioned boundary work, not a total-energy convergence proof"
+          },
+          "missing_evidence": [
+            "Matched feedback ON/OFF live episode with identical recipe, code and command path"
+          ],
+          "scope": ""
+        },
+        "CAM-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "recorded_camera_source": "ideal_warp_rgbd",
+            "native_d455_validated": false
+          },
+          "missing_evidence": [
+            "Native d455_0 noise-OFF plane/registration/coverage control tied to this sensor configuration"
+          ],
+          "scope": "Ideal Warp RGB-D and RTX reference cannot substitute for native D455"
+        },
+        "CAM-02": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "recorded_camera_source": "ideal_warp_rgbd",
+            "native_d455_validated": false
+          },
+          "missing_evidence": [
+            "Native d455_1 noise-OFF plane/registration/coverage control tied to this sensor configuration"
+          ],
+          "scope": "Ideal Warp RGB-D and RTX reference cannot substitute for native D455"
+        },
+        "CAM-03": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_live_RGB_frames_present": true
+          },
+          "measurements": {
+            "global_RGB_frames": 41
+          },
+          "missing_evidence": [
+            "Per-object first-visible pixel attribution for both arms, knife, material and table"
+          ],
+          "scope": "A complete scene view requires measured visibility, not prim existence"
+        },
+        "CAM-04": {
+          "status": "NOT_RUN",
+          "checks": {
+            "recorded_physics_surface_camera_timestamps": true
+          },
+          "measurements": {
+            "RGBD_files": 41,
+            "max_recorded_timestamp_difference_s": 0.0,
+            "max_native_clock_offset_corrected_difference_s": null
+          },
+          "missing_evidence": [
+            "Independent full-scene mesh/depth agreement and valid-mask IoU",
+            "Actual chip-visible pixel attribution"
+          ],
+          "scope": "Recorded matching timestamps alone do not prove geometric capture agreement"
+        },
+        "TASK-01": {
+          "status": "PASS",
+          "checks": {
+            "detached_initial_above_target_mass_fraction": true
+          },
+          "measurements": {
+            "status": "MEASURED",
+            "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+            "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+            "component_count": 2,
+            "reference_substrate_component_ids": [
+              1
+            ],
+            "detached_mass_kg": 0.001656,
+            "reference_above_target_mass_kg": 0.0016799999999999999,
+            "detached_initial_above_target_mass_kg": 0.001656,
+            "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+            "remaining_initial_above_target_mass_kg": 2.4e-05,
+            "reference_plane_tolerance_m": 1e-07,
+            "current_substrate_particle_center_max_residual_m": 0.00030907768756151255,
+            "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+          },
+          "missing_evidence": [],
+          "scope": "Reference above-local-plane mass removed into physically disconnected components"
+        },
+        "TASK-02": {
+          "status": "FAIL",
+          "checks": {
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": true,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true,
+            "no_future_partition": true,
+            "surface_partition_matches_actual_graph": true,
+            "surface_codes_match_physics": true,
+            "surface_stencil_matches_actual_graph": true,
+            "surface_and_physics_timestamp": true
+          },
+          "measurements": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              120,
+              80
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.001974030008968144,
+            "surface_p95_absolute_plane_error_m": 0.001742704650547932,
+            "surface_rms_plane_error_m": 0.0016196611609292136,
+            "maximum_gouge_depth_m": 0.0,
+            "overcut_volume_m3": 0.0,
+            "overcut_volume_fraction_of_initial_base": 0.0,
+            "source_mesh": "artifacts/isaac_lab_d0_feedforward_002/rgbd/surface_00400.npz",
+            "source_mesh_sha256": "42985138c2ac8b695c8e89a936881af6a77c665b51a32a3fefad1bc392a7dbfc",
+            "source_metadata_sha256": "846955c8fba540ce150ae2438c13e160a4bcda95566bcf1a574097d82e9c2d51",
+            "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+            "selection_scope": "Offline current mechanical-substrate triangle statistics; no physics or visibility edits"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "ENV-01": {
+          "status": "FAIL",
+          "checks": {
+            "same_process_reset_after_cut": true,
+            "reset_joint_state": true,
+            "reset_material_state": true,
+            "reset_all_cut_history_zero": true,
+            "reset_both_camera_depths": true,
+            "reset_both_camera_valid_masks": true,
+            "same_config_except_declared_control": true,
+            "same_material_recipe": true,
+            "same_timestamps": true,
+            "same_commanded_edge_path": true,
+            "same_source_isaac_lab_env.py": true,
+            "same_source_live_material.py": true,
+            "same_source_tlmpm.py": true,
+            "same_source_robot.py": true,
+            "same_source_coupled_robot.py": true,
+            "same_source_scene_frames.py": true,
+            "all_frame_max_position_error_m": false,
+            "all_frame_max_velocity_error_m_s": false,
+            "final_component_com_error_m": false
+          },
+          "measurements": {
+            "repeat": {
+              "all_frame_max_position_error_m": 0.0010013728169724345,
+              "all_frame_max_velocity_error_m_s": 0.13365180790424347,
+              "positions_bitwise_equal": false,
+              "velocities_bitwise_equal": false,
+              "codes_bitwise_equal": false,
+              "differing_code_particle_frames": 28,
+              "final_component_com_error_m": 0.00010754471997526552
+            },
+            "instrumented_same_process_reset": {
+              "scope": "same-process reset to original seed; full repeat assessed separately",
+              "joint_max_abs_error_rad": 0.0,
+              "material_max_abs_error_m": 0.0,
+              "nonzero_cut_codes": 0,
+              "depth_max_abs_error_m": {
+                "d455_0": 0.0,
+                "d455_1": 0.0,
+                "global": 0.0
+              },
+              "depth_valid_mask_exact": {
+                "d455_0": true,
+                "d455_1": true,
+                "global": true
+              },
+              "receipt_path": "artifacts/isaac_lab_d0_feedforward_002/reset_check.json",
+              "receipt_sha256": "52cac87469056500dc834a57a0b10af03e26545dd4eae10a094c908b0a8069a0"
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Fresh-process similarity cannot alone prove clearing of a prior cut during reset"
+        },
+        "ENV-02": {
+          "status": "PASS",
+          "checks": {
+            "all_recorded_values_finite": true,
+            "retained_material_floor_tray_penetration": true,
+            "tool_material_penetration": true,
+            "material_overlap": true,
+            "minimum_detF": true,
+            "maximum_speed": true,
+            "native_non_tool_rigid_penetration": true,
+            "native_tool_rigid_penetration": true
+          },
+          "measurements": {
+            "all_recorded_values_finite": true,
+            "minimum_detF": 0.9054468870162964,
+            "maximum_material_speed_m_s": 0.30952373147010803,
+            "maximum_retained_material_floor_tray_penetration_m": 0.0002921308623626828,
+            "maximum_tool_material_penetration_m": 0.0004283585585653782,
+            "maximum_material_overlap_m": 0.0001674295635893941,
+            "sampling_scope": "Every control-boundary finite/detF/speed; retained material contacts use per-interval substep maxima; actual native rigid contacts sampled before every2ms substep and after final substep",
+            "native_non_tool_rigid_max_penetration_m": 3.249384826631285e-05,
+            "native_tool_rigid_max_penetration_m": 0.0,
+            "native_contact_sampling_source": [
+              "actual MJWarp nacon/contact.dist/geom; pre-substeps plus final"
+            ]
+          },
+          "missing_evidence": [],
+          "scope": "Measured finite/contact screen, not calibrated contact or a convergence proof"
+        }
+      },
+      "gate_counts": {
+        "PASS": 8,
+        "FAIL": 4,
+        "NOT_RUN": 6,
+        "BLOCKED": 0
+      },
+      "all_18_gates_pass": false,
+      "execution_pass": true,
+      "physical_cutting_pass": true,
+      "surface_flattening_pass": false,
+      "native_camera_geometry_controls_pass": false,
+      "native_d455_pass": false,
+      "full_benchmark_ready": false,
+      "force_in_policy_observation": false,
+      "unvalidated_global_task_integration": "D0\u2013D3 native sensor/task integration remains separate from this one D0 episode",
+      "validator_sha256": {
+        "driver": "c02b89069915cd92066146b28e9f2ee5aa5efde960b822bb3bb0e005d56e395d",
+        "live_acceptance": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+        "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+      },
+      "validator_sources_unchanged_during_analysis": true
+    },
+    "kit_feedforward_live_camera": {
+      "scope": "Independent quantitative audit of this actual recorded episode",
+      "recording": "artifacts/isaacsim_live_native_d0_ff_001",
+      "runtime_source": "LIVE_IsaacSim6.2_cutting",
+      "protocol_id": "isaac_d0_acceptance_v1_20261028",
+      "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+      "input_sha256": {
+        "manifest.json": "a5769bef8f467b3f20a8083f3a4fefdd8a40aa1d5c283e9bb5c03c6da16a3087",
+        "setup.json": "447ce36174be445df0d21f4de3dd756e0df38ac94aa74116f9d386de53e8f45e",
+        "result.json": "fc4dcd97f2d4e5c0321a2b47cf0f11b1eb676cd0fa259bc5abc9900089b798a8",
+        "robot_state.npz": "5c344f7712955681976ecc570a15f11433e3f3d6ceec0612de83f53fa1304464",
+        "oracle_debug/physics_state.npz": "88da049d2cf832c7b8d702b893afafe7331c41cb4eabbf7766f6b86c0dc0797f",
+        "oracle_debug/diagnostics.json": "343ac46dcfe371fe034f34916c164a1e9d6a44d8761d7bc99e488c0dc1e64d45"
+      },
+      "gates": {
+        "RT-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {},
+          "missing_evidence": [
+            "This recording does not use the actual Lab task/scene APIs"
+          ],
+          "scope": ""
+        },
+        "RT-02": {
+          "status": "PASS",
+          "checks": {
+            "full_400_steps": true,
+            "full_8_seconds": true,
+            "native_physics_steps": true,
+            "native_PhysX": true,
+            "zero_standalone_robot_steps": true,
+            "no_replay": true,
+            "live_captures": true,
+            "completed_execution": true,
+            "version_6_2": true,
+            "native_process_exit_success": true,
+            "frozen_implementation_bytes_verified": true,
+            "actual_native_clock_tracks_episode": true
+          },
+          "measurements": {
+            "versions": {
+              "isaacsim": "6.2.0.0",
+              "isaacsim-kernel": "6.2.0.0",
+              "isaacsim-core": "6.2.0.0",
+              "isaacsim-sensor": "6.2.0.0",
+              "torch": "2.11.0+cu128",
+              "warp-lang": "1.17.0",
+              "newton": "1.6.1"
+            },
+            "steps": 400,
+            "simulation_s": 8.0,
+            "hash_matching_implementation": {
+              "src/robotic_cutting_sim/isaac_sim_runner.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/isaac_sim_runner.py",
+                "sha256": "0891006c220871ddd9f3b5578c8803ce027c5c9b30cbb9bebece92fa94801485"
+              },
+              "src/robotic_cutting_sim/live_material.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/live_material.py",
+                "sha256": "da7dbb37244d095733e70af3d4dd8881777c8716f71bbfd6bf417abd6654b5b5"
+              },
+              "src/robotic_cutting_sim/robot.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/robot.py",
+                "sha256": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024"
+              },
+              "src/robotic_cutting_sim/tlmpm.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/tlmpm.py",
+                "sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac"
+              },
+              "src/robotic_cutting_sim/material_config.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/material_config.py",
+                "sha256": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797"
+              },
+              "src/robotic_cutting_sim/cut_topology.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/cut_topology.py",
+                "sha256": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+              },
+              "src/robotic_cutting_sim/cutting_surface.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/cutting_surface.py",
+                "sha256": "bdf22edb02a8f4d6c70e0c0bc2e1b552c9a1e40d8637c24d97e570edde255b02"
+              },
+              "src/robotic_cutting_sim/usd_surface_bridge.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/usd_surface_bridge.py",
+                "sha256": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3"
+              },
+              "src/robotic_cutting_sim/single_view_registration.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/single_view_registration.py",
+                "sha256": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df"
+              },
+              "scripts/run_isaac_sim_cutting.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/run_isaac_sim_cutting.py",
+                "sha256": "e70bc9c391229f8ed16b0c98d9443206e26941ea6dfd50c4135f8851d1d50243"
+              },
+              "configs/isaac_sim_cutting.kit": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/isaac_sim_cutting.kit",
+                "sha256": "1d3fd180908617e07ae2a343e016027b80c245fbcf48b0a186ad72ec969542e3"
+              }
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit/PhysX/native capture path"
+        },
+        "SC-01": {
+          "status": "PASS",
+          "checks": {
+            "identity_workpiece_supported_by_fixture": true,
+            "loaded_workpiece_local_target_matches_protocol": true,
+            "USD_meters": true,
+            "USD_Z_up": true,
+            "all_required_camera_frames": true,
+            "camera_target_forward": true,
+            "camera_frame_translation": true,
+            "camera_frame_rotation": true,
+            "hand_USD_translation": true,
+            "hand_USD_rotation": true
+          },
+          "measurements": {
+            "up_axis": "Z",
+            "meters_per_unit": 1.0,
+            "actual_final_scene_sha256": "a4bd4361eaf82e22c29e797c5e34c9eebe86f8b7b25e2be7322ba8fbfe9e139e",
+            "camera_forward_cosines": {
+              "d455_0": 0.9999999999999962,
+              "d455_1": 1.0000000000000004,
+              "global": 0.9922994149919311
+            },
+            "camera_transform_errors": {
+              "d455_0": {
+                "translation_m": 1.1973201241565775e-07,
+                "rotation_rad": 8.098287022367855e-16
+              },
+              "d455_1": {
+                "translation_m": 1.6521629435955736e-08,
+                "rotation_rad": 4.8666989573011404e-08
+              },
+              "global": {
+                "translation_m": 2.3841858265427624e-08,
+                "rotation_rad": 3.368045037175248e-16
+              }
+            },
+            "final_USD_vs_measured_hand_translation_m": 1.41841227003005e-11,
+            "final_USD_vs_measured_hand_rotation_rad": 1.5568708323890077e-07,
+            "scope": "Native Replicator camera transforms versus loaded static USD; instrumented native PhysX versus live USD knife attachment at every control step"
+          },
+          "missing_evidence": [],
+          "scope": "Actual USD versus recorded articulated hand and optical camera frames"
+        },
+        "SC-02": {
+          "status": "PASS",
+          "checks": {
+            "actual_D0_samples": true,
+            "positive_masses": true,
+            "initial_codes_zero": true,
+            "initial_continuum_components_one": true
+          },
+          "measurements": {
+            "initial_particle_count": 19340,
+            "initial_mass_kg": 0.23207999999999998,
+            "actual_initial_sample_error_m": 0.0,
+            "float32_sample_roundoff_bound_m": 7.450580596923828e-09,
+            "analytic_specimen": {
+              "length_m": 0.12,
+              "width_m": 0.08,
+              "base_height_m": 0.015,
+              "bump_height_m": 0.008,
+              "bump_radius_m": 0.015
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual continuous initial D0 samples and full mechanical stencil graph"
+        },
+        "ROB-01": {
+          "status": "PASS",
+          "checks": {
+            "two_articulations": true,
+            "seven_arm_joints_each": true,
+            "named_actual_Panda_hand": true,
+            "physical_knife_attached_to_same_hand": true,
+            "mount_translation": true,
+            "mount_rotation": true,
+            "recorded_hand_equals_named_body": true
+          },
+          "measurements": {
+            "max_fixed_mount_translation_error_m": 5.551115125710722e-17,
+            "max_fixed_mount_rotation_error_rad": 3.699264158676972e-24,
+            "named_hand": "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand",
+            "body_index": 8
+          },
+          "missing_evidence": [],
+          "scope": "Measured named hand and actual fixed physical wedge"
+        },
+        "ROB-02": {
+          "status": "PASS",
+          "checks": {
+            "active_max_edge_position_error_m": true,
+            "active_max_edge_height_error_from_command_m": true,
+            "active_max_edge_rotation_error_deg": true,
+            "all_phase_max_edge_position_error_m": true,
+            "max_measured_edge_translation_per_control_step_m": true,
+            "minimum_analytic_bump_cross_section_sweep_coverage": true,
+            "actual_edge_intersects_original_material": true
+          },
+          "measurements": {
+            "status": "PASS",
+            "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+            "metrics": {
+              "active_max_edge_position_error_m": 0.00048041668113911695,
+              "active_max_edge_height_error_from_command_m": 0.00025161219458051665,
+              "active_max_edge_rotation_error_deg": 0.03558864622940933,
+              "all_phase_max_edge_position_error_m": 0.0021634585644935856,
+              "max_measured_edge_translation_per_control_step_m": 0.0017316437995614853
+            },
+            "checks": {
+              "active_max_edge_position_error_m": true,
+              "active_max_edge_height_error_from_command_m": true,
+              "active_max_edge_rotation_error_deg": true,
+              "all_phase_max_edge_position_error_m": true,
+              "max_measured_edge_translation_per_control_step_m": true,
+              "minimum_analytic_bump_cross_section_sweep_coverage": true,
+              "actual_edge_intersects_original_material": true
+            },
+            "active_interval_s": [
+              1.6,
+              5.6
+            ],
+            "active_sample_count": 200,
+            "sweep": {
+              "scope": "analytic workpiece-local finite-edge geometry only",
+              "cross_section_samples": 1992,
+              "cross_section_area_m2": 0.0004980000000000001,
+              "cross_section_sweep_coverage": 1.0,
+              "actual_edge_intersects_original_material": true,
+              "edge_endpoint_height_valid_fraction": 1.0,
+              "local_edge_center_bounds_m": [
+                [
+                  -0.029947378709614954,
+                  -6.610408661187684e-05,
+                  0.015486785000825481
+                ],
+                [
+                  0.044968085704541354,
+                  -1.176083984234679e-05,
+                  0.015751612194580517
+                ]
+              ],
+              "cut_plane_local_z_m": 0.0155,
+              "target_plane_local_z_m": 0.015,
+              "sampling_spacing_m": 0.0005,
+              "height_tolerance_m": 0.0005
+            },
+            "active_local_edge_height_range_m": [
+              0.015486785000825481,
+              0.015751612194580517
+            ],
+            "active_plane_normal_tilt_max_deg": 0.03551457410739014
+          },
+          "missing_evidence": [],
+          "scope": "Measured edge geometry and tracking, not IK targets"
+        },
+        "PHY-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_material_tool_contacts": true,
+            "nonzero_accumulated_plastic_history": true
+          },
+          "measurements": {
+            "material_tool_substep_particle_events": 4876041,
+            "max_accumulated_plastic_strain": 0.49237725138664246
+          },
+          "missing_evidence": [
+            "Matched settle/elastic control measuring above-plane deformation residual drop"
+          ],
+          "scope": "Constitutive deformation is separate from component separation"
+        },
+        "PHY-02": {
+          "status": "PASS",
+          "checks": {
+            "nonzero_digits_never_rewritten_in_recorded_history": true,
+            "all_particle_frames_preserve_count": true,
+            "initial_mass_matches_immutable_recorded_masses": true,
+            "initial_graph_one_component": true,
+            "final_graph_at_least_two": true,
+            "recorded_graph_agrees": true,
+            "positive_detached_component_mass": true
+          },
+          "measurements": {
+            "graph": {
+              "status": "PASS",
+              "initial_components": 1,
+              "final_components": 2,
+              "recorded_partition_matches_recomputation": true,
+              "includes_positive_weights": true,
+              "includes_nonzero_stress_gradients": true,
+              "includes_unassigned_code_zero_particles": true,
+              "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "stencil_sha256": "a7e36cca51d71701fdd22dc442e3e8adcf86ec9f409ef486339fe5ca22f83e34"
+            },
+            "history": {
+              "initial_nonzero_codes": 0,
+              "nonzero_digit_rewrites_by_cut": [
+                0
+              ],
+              "nonzero_digit_rewrites": 0,
+              "final_code_histogram": {
+                "0": 11094,
+                "1": 8108,
+                "2": 138
+              },
+              "sampled_history_only": true
+            },
+            "task_mass": {
+              "status": "MEASURED",
+              "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+              "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "component_count": 2,
+              "reference_substrate_component_ids": [
+                1
+              ],
+              "detached_mass_kg": 0.001656,
+              "reference_above_target_mass_kg": 0.0016799999999999999,
+              "detached_initial_above_target_mass_kg": 0.001656,
+              "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+              "remaining_initial_above_target_mass_kg": 2.4e-05,
+              "reference_plane_tolerance_m": 1e-07,
+              "current_substrate_particle_center_max_residual_m": 0.0003040504083037382,
+              "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+            },
+            "mass_evidence_scope": "All particle counts and one immutable per-particle mass vector; no inferred force observation"
+          },
+          "missing_evidence": [],
+          "scope": "Persistent separation uses the actual transfer/stress stencil, including possible zero-code bridges"
+        },
+        "PHY-03": {
+          "status": "FAIL",
+          "checks": {
+            "postwithdraw_chip_motion": false,
+            "persistent_history_no_reset": true,
+            "measured_blade_clear_of_all_particle_spheres_after_withdrawal": true,
+            "cross_component_contact_exchange": false
+          },
+          "measurements": {
+            "withdrawal_complete_s": 6.3999999999999995,
+            "postwithdraw_chip_com_displacement_m": 0.0006878326440274208,
+            "postwithdraw_min_material_sphere_to_blade_AABB_clearance_m": 0.03656304017963827,
+            "original_postwithdraw_material_pair_events_unattributed": 31907,
+            "contact_kernel_recheck": {
+              "scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
+              "device": "cuda:0",
+              "peak_component_net_contact_impulse_Ns": 0.0,
+              "source_path": "artifacts/isaacsim_live_native_d0_ff_001/implementation/tlmpm.py",
+              "source_sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac",
+              "roundoff_reporting_floor_Ns": 1e-09,
+              "samples": [
+                {
+                  "time_s": 6.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.2,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 8.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                }
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Independent chip motion and attributed component exchange; no healing"
+        },
+        "PHY-04": {
+          "status": "FAIL",
+          "checks": {
+            "finite_reaction": true,
+            "nonzero_reaction": true,
+            "previous_interval_feedback_carry": true,
+            "feedback_delay_declared": true,
+            "interface_work_residual": false,
+            "same_config_except_declared_control": true,
+            "same_material_recipe": true,
+            "same_timestamps": true,
+            "same_commanded_edge_path": true,
+            "feedback_toggled": true,
+            "same_source_isaac_sim_runner.py": true,
+            "same_source_live_material.py": true,
+            "same_source_tlmpm.py": true,
+            "same_source_robot.py": true,
+            "same_source_coupled_robot.py": true,
+            "same_source_scene_frames.py": true,
+            "matched_feedback_affects_tool_dynamics": true
+          },
+          "measurements": {
+            "peak_reaction_N": 1.997231846259329,
+            "feedback_carry_max_abs_error": 0.0,
+            "material_boundary_work_J": 0.014541886324664688,
+            "robot_applied_material_wrench_work_J": -0.011861276246885547,
+            "interface_work_residual_fraction": 0.18433716355164476,
+            "robot_work_source": "Recomputed from recorded actually applied wrenches and measured edge increments; world-angle increment, not desired motion",
+            "matched_ON_OFF_max_tool_position_difference_m": 0.0006264651638073534,
+            "ON_camera_enabled": null,
+            "OFF_camera_enabled": null,
+            "camera_control_scope": "Camera readout may be disabled in OFF; it does not advance or mutate dynamics",
+            "scope": "Partitioned boundary work, not a total-energy convergence proof"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "CAM-01": {
+          "status": "PASS",
+          "checks": {
+            "control_raw_input_hashes_match": true,
+            "exact_runtime_profile": true,
+            "same_registration_implementation": true,
+            "both_development_and_heldout_controls": true,
+            "all_noise_OFF_planes_within_frozen_limit": true,
+            "known_plane_valid_coverage": true,
+            "feature_registration_error": true,
+            "no_error_based_sample_rejection_in_controls": true,
+            "all_native_values_exactly_preserved": true,
+            "exact_live_intrinsics_and_native_recipe": true,
+            "validated_profile_applied_to_every_live_frame": true
+          },
+          "measurements": {
+            "known_plane_worst_p95_error_m": 2.3100404211717773e-07,
+            "known_plane_minimum_valid_coverage": 0.928125,
+            "registration_feature_worst_p95_error_px": 0.0,
+            "noise_OFF_control_frames": 14,
+            "development_and_heldout_splits": [
+              "development",
+              "held_out"
+            ],
+            "control_audit_path": "artifacts/single_view_kit_audit_003/result.json",
+            "control_audit_sha256": "50188453e9894446f7ef327ff613ee6e4db6417f77e27461b04299b25147290c",
+            "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+            "separate_physical_color_imager_calibration_validated": false,
+            "full_dynamic_sensor_consistency": "Assessed independently under CAM-04"
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit native virtual RGB/SingleView analytic geometry controls; no physical D455 color-imager or noise-realism claim"
+        },
+        "CAM-02": {
+          "status": "PASS",
+          "checks": {
+            "control_raw_input_hashes_match": true,
+            "exact_runtime_profile": true,
+            "same_registration_implementation": true,
+            "both_development_and_heldout_controls": true,
+            "all_noise_OFF_planes_within_frozen_limit": true,
+            "known_plane_valid_coverage": true,
+            "feature_registration_error": true,
+            "no_error_based_sample_rejection_in_controls": true,
+            "all_native_values_exactly_preserved": true,
+            "exact_live_intrinsics_and_native_recipe": true,
+            "validated_profile_applied_to_every_live_frame": true
+          },
+          "measurements": {
+            "known_plane_worst_p95_error_m": 2.282429206523772e-07,
+            "known_plane_minimum_valid_coverage": 0.928125,
+            "registration_feature_worst_p95_error_px": 0.0,
+            "noise_OFF_control_frames": 14,
+            "development_and_heldout_splits": [
+              "development",
+              "held_out"
+            ],
+            "control_audit_path": "artifacts/single_view_kit_audit_003/result.json",
+            "control_audit_sha256": "50188453e9894446f7ef327ff613ee6e4db6417f77e27461b04299b25147290c",
+            "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+            "separate_physical_color_imager_calibration_validated": false,
+            "full_dynamic_sensor_consistency": "Assessed independently under CAM-04"
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit native virtual RGB/SingleView analytic geometry controls; no physical D455 color-imager or noise-realism claim"
+        },
+        "CAM-03": {
+          "status": "PASS",
+          "checks": {
+            "all_required_objects_visible": true,
+            "recorded_live_evidence_hashes_match": true,
+            "all_frames_audited_without_error_trimming": true
+          },
+          "measurements": {
+            "minimum_RTX_depth_consistent_visible_pixels": {
+              "franka_0": 18610,
+              "franka_1": 27791,
+              "knife": 26,
+              "material": 608,
+              "table": 161311
+            },
+            "actual_native_semantic_AOV": false,
+            "independent_audit_path": "artifacts/live_camera_mesh_ff_002/result.json",
+            "independent_audit_sha256": "056416631f6945907d4e462727a6881bbf7b74ced4a14a01ad9ad259e456255a"
+          },
+          "missing_evidence": [],
+          "scope": "Measured-state first-hit geometric attribution verified against actual native RTX depth, not a captured semantic AOV"
+        },
+        "CAM-04": {
+          "status": "FAIL",
+          "checks": {
+            "physics_surface_camera_timestamps": true,
+            "visual_mesh_RTX_bridge_p95": true,
+            "visual_mesh_RTX_bridge_masks": true,
+            "actual_native_depth_p95": true,
+            "actual_native_valid_masks": false,
+            "actual_native_chip_visible": true,
+            "recorded_live_evidence_hashes_match": true,
+            "all_frames_audited_without_error_trimming": true
+          },
+          "measurements": {
+            "geometry_bridge": {
+              "worst_p95_error_m": 7.152557373046875e-07,
+              "minimum_mask_iou": 0.9999623635679338
+            },
+            "actual_native": {
+              "d455_0": {
+                "worst_p95_error_m": 2.384185791015625e-07,
+                "minimum_mask_iou": 0.4450956771533151,
+                "maximum_absolute_error_m": 0.6206981539726257
+              },
+              "d455_1": {
+                "worst_p95_error_m": 3.5762786865234375e-07,
+                "minimum_mask_iou": 0.20546952565134127,
+                "maximum_absolute_error_m": 1.0035709142684937
+              },
+              "global": {
+                "worst_p95_error_m": 7.152557373046875e-07,
+                "minimum_mask_iou": 0.999976273631463,
+                "maximum_absolute_error_m": 0.7102088928222656
+              }
+            },
+            "maximum_native_valid_chip_pixels": 36,
+            "maximum_timestamp_span_s": 8.881784197001252e-16,
+            "error_tails_retained": true,
+            "independent_audit_path": "artifacts/live_camera_mesh_ff_002/result.json",
+            "independent_audit_sha256": "056416631f6945907d4e462727a6881bbf7b74ced4a14a01ad9ad259e456255a"
+          },
+          "missing_evidence": [],
+          "scope": "Actual native output must pass independently of the successful visual geometry bridge; no ideal/RTX fallback"
+        },
+        "TASK-01": {
+          "status": "PASS",
+          "checks": {
+            "detached_initial_above_target_mass_fraction": true
+          },
+          "measurements": {
+            "status": "MEASURED",
+            "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+            "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+            "component_count": 2,
+            "reference_substrate_component_ids": [
+              1
+            ],
+            "detached_mass_kg": 0.001656,
+            "reference_above_target_mass_kg": 0.0016799999999999999,
+            "detached_initial_above_target_mass_kg": 0.001656,
+            "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+            "remaining_initial_above_target_mass_kg": 2.4e-05,
+            "reference_plane_tolerance_m": 1e-07,
+            "current_substrate_particle_center_max_residual_m": 0.0003040504083037382,
+            "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+          },
+          "missing_evidence": [],
+          "scope": "Reference above-local-plane mass removed into physically disconnected components"
+        },
+        "TASK-02": {
+          "status": "FAIL",
+          "checks": {
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": true,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true,
+            "no_future_partition": true,
+            "surface_partition_matches_actual_graph": true,
+            "surface_codes_match_physics": true,
+            "surface_stencil_matches_actual_graph": true,
+            "surface_and_physics_timestamp": true
+          },
+          "measurements": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              120,
+              80
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0019619532702953094,
+            "surface_p95_absolute_plane_error_m": 0.0017391070506597895,
+            "surface_rms_plane_error_m": 0.0016192636617529208,
+            "maximum_gouge_depth_m": 0.0,
+            "overcut_volume_m3": 0.0,
+            "overcut_volume_fraction_of_initial_base": 0.0,
+            "source_mesh": "artifacts/isaacsim_live_native_d0_ff_001/surface_debug/surface_0040.npz",
+            "source_mesh_sha256": "757db7e0d93761bb5845bcb623dc98d5207c5530f3b0e4a231abe5ec4e34677b",
+            "source_metadata_sha256": "a2b9107a550c4d8fb24eed50ecfcc3d7249d6caccb9dd3f7620074a026b0a693",
+            "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+            "selection_scope": "Offline current mechanical-substrate triangle statistics; no physics or visibility edits"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "ENV-01": {
+          "status": "FAIL",
+          "checks": {
+            "same_process_reset_after_cut": true,
+            "reset_joint_state": true,
+            "reset_material_state": true,
+            "reset_all_cut_history_zero": true,
+            "reset_both_camera_depths": false,
+            "reset_both_camera_valid_masks": false,
+            "camera_reset_receipt_matches_raw_recordings": true,
+            "same_config_except_declared_control": true,
+            "same_material_recipe": true,
+            "same_timestamps": true,
+            "same_commanded_edge_path": true,
+            "same_source_isaac_sim_runner.py": true,
+            "same_source_live_material.py": true,
+            "same_source_tlmpm.py": true,
+            "same_source_robot.py": true,
+            "same_source_coupled_robot.py": true,
+            "same_source_scene_frames.py": true,
+            "all_frame_max_position_error_m": false,
+            "all_frame_max_velocity_error_m_s": false,
+            "final_component_com_error_m": false
+          },
+          "measurements": {
+            "repeat": {
+              "all_frame_max_position_error_m": 0.001504560699686408,
+              "all_frame_max_velocity_error_m_s": 0.020889807492494583,
+              "positions_bitwise_equal": false,
+              "velocities_bitwise_equal": false,
+              "codes_bitwise_equal": false,
+              "differing_code_particle_frames": 5,
+              "final_component_com_error_m": 0.0007635129887856084
+            },
+            "instrumented_same_process_reset": {
+              "scope": "same-process reset measured by native Kit runner",
+              "joint_max_abs_error_rad": 0.0,
+              "material_max_abs_error_m": 0.0,
+              "nonzero_cut_codes": 0,
+              "depth_max_abs_error_m": {
+                "d455_0": 1.1468040943145752,
+                "d455_1": 1.6612114906311035,
+                "global": 0.014312982559204102
+              },
+              "depth_valid_mask_exact": {
+                "d455_0": false,
+                "d455_1": false,
+                "global": true
+              },
+              "receipt_path": "artifacts/isaacsim_live_native_d0_ff_repeat_001/reset_receipt.json",
+              "receipt_sha256": "b22183c37b314e5313bde078cc79ce5031a14c0d7975357938b2cc9a3554f7e0",
+              "raw_camera_rechecks": {
+                "d455_0": {
+                  "initial_sha256": "df5a66060fbb1f793ffa0e38aca2a6434b9a81732edfb45c263959d6e18aca49",
+                  "reset_sha256": "f67d58d92e489746cad9e41e1404cf0aace0550184614fb24df67f7f537a0ff1",
+                  "max_all_pixel_depth_error_m": 1.1468040943145752,
+                  "valid_mask_changed_pixels": 1543,
+                  "common_valid_p99_error_m": 0.0,
+                  "common_valid_max_error_m": 0.0064400434494018555,
+                  "matches_instrumented_receipt": true
+                },
+                "d455_1": {
+                  "initial_sha256": "7bd998f4c97f75b814a7c431a8fc33150fae2f756e30676aa18b8dab37785797",
+                  "reset_sha256": "25f0340f27061f928af51cda79c03c5164c66ddb25eb5077a8fbdca48224e21c",
+                  "max_all_pixel_depth_error_m": 1.6612114906311035,
+                  "valid_mask_changed_pixels": 580,
+                  "common_valid_p99_error_m": 0.0,
+                  "common_valid_max_error_m": 0.02267235517501831,
+                  "matches_instrumented_receipt": true
+                },
+                "global": {
+                  "initial_sha256": "89ca2c100e45df11b13a8c248e4d7604c7232b89751df95c791822f152d36030",
+                  "reset_sha256": "37e02b19315004d018828d7a22ff71b1f6234f9b8b74c3c028cc2f2c718c5edf",
+                  "max_all_pixel_depth_error_m": 0.014312982559204102,
+                  "valid_mask_changed_pixels": 0,
+                  "common_valid_p99_error_m": 0.0,
+                  "common_valid_max_error_m": 0.014312982559204102,
+                  "matches_instrumented_receipt": true
+                }
+              }
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Fresh-process similarity cannot alone prove clearing of a prior cut during reset"
+        },
+        "ENV-02": {
+          "status": "NOT_RUN",
+          "checks": {
+            "all_recorded_values_finite": true,
+            "retained_material_floor_tray_penetration": true,
+            "tool_material_penetration": true,
+            "material_overlap": true,
+            "minimum_detF": true,
+            "maximum_speed": true
+          },
+          "measurements": {
+            "all_recorded_values_finite": true,
+            "minimum_detF": 0.9058769941329956,
+            "maximum_material_speed_m_s": 0.23405209183692932,
+            "maximum_retained_material_floor_tray_penetration_m": 0.0002783100353553891,
+            "maximum_tool_material_penetration_m": 0.0004086972330696881,
+            "maximum_material_overlap_m": 0.00018230767454952002,
+            "sampling_scope": "Every control-boundary finite/detF/speed; retained material contacts use per-interval substep maxima; native Panda/self/table penetration is unmeasured"
+          },
+          "missing_evidence": [
+            "Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit"
+          ],
+          "scope": "Measured finite/contact screen, not calibrated contact or a convergence proof"
+        }
+      },
+      "gate_counts": {
+        "PASS": 10,
+        "FAIL": 5,
+        "NOT_RUN": 3,
+        "BLOCKED": 0
+      },
+      "all_18_gates_pass": false,
+      "execution_pass": true,
+      "physical_cutting_pass": true,
+      "surface_flattening_pass": false,
+      "native_camera_geometry_controls_pass": true,
+      "native_d455_pass": false,
+      "full_benchmark_ready": false,
+      "force_in_policy_observation": false,
+      "unvalidated_global_task_integration": "D0\u2013D3 native sensor/task integration remains separate from this one D0 episode",
+      "validator_sha256": {
+        "driver": "c02b89069915cd92066146b28e9f2ee5aa5efde960b822bb3bb0e005d56e395d",
+        "live_acceptance": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+        "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+      },
+      "validator_sources_unchanged_during_analysis": true
+    }
+  }
+}

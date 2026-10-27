@@ -7,6 +7,7 @@ import pytest
 from robotic_cutting_sim.live_acceptance import (
     cut_history_metrics, gate, graph_audit, matched_recordings,
     read_reset_metrics, repeated_state_metrics, same_partition,
+    score_live_camera_records,
 )
 
 
@@ -124,3 +125,30 @@ def test_reset_sensor_holes_are_separate_from_common_valid_depth_error(tmp_path)
     assert measured["max_all_pixel_depth_error_m"] == 1.
     assert measured["common_valid_max_error_m"] == pytest.approx(.003, abs=1e-7)
     assert not report["depth_valid_mask_exact"]["d455_0"]
+
+
+def camera_records():
+    row = {"geometry_vs_actual_rtx": {"p95_absolute_error_m": 1e-7, "valid_mask_iou": 1.},
+        "actual_native_vs_geometry": {"p95_absolute_error_m": 2e-7, "valid_mask_iou": .4, "max_absolute_error_m": .9},
+        "timestamp_span_s": 0., "native_valid_chip_pixels": 30,
+        "rtx_depth_consistent_attributed_pixels": {name: 30 for name in ("franka_0", "franka_1", "knife", "material", "table")}}
+    return [{"cameras": {name: copy.deepcopy(row) for name in ("d455_0", "d455_1", "global")}}]
+
+
+def test_accurate_visual_geometry_cannot_hide_actual_native_depth_holes():
+    from robotic_cutting_sim.recording import ROOT
+    protocol = json.loads((ROOT/"configs/isaac_acceptance.json").read_text())
+    result = score_live_camera_records(camera_records(), protocol)
+    assert result["CAM-03"]["status"] == "PASS"
+    assert result["CAM-04"]["status"] == "FAIL"
+    assert result["CAM-04"]["checks"]["visual_mesh_RTX_bridge_masks"]
+    assert not result["CAM-04"]["checks"]["actual_native_valid_masks"]
+    assert result["CAM-04"]["measurements"]["actual_native"]["d455_0"]["maximum_absolute_error_m"] == .9
+
+
+def test_camera_presence_is_not_enough_when_knife_has_too_few_visible_pixels():
+    from robotic_cutting_sim.recording import ROOT
+    protocol = json.loads((ROOT/"configs/isaac_acceptance.json").read_text())
+    records = camera_records()
+    records[0]["cameras"]["global"]["rtx_depth_consistent_attributed_pixels"]["knife"] = 24
+    assert score_live_camera_records(records, protocol)["CAM-03"]["status"] == "FAIL"

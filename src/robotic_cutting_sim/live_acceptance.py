@@ -203,7 +203,7 @@ def compare_standalone_reference(live_dir, reference_dir):
     return report
 
 
-def actual_contact_kernel_recheck(physics, setup, component_ids, times_s, *, device="cpu"):
+def actual_contact_kernel_recheck(physics, setup, component_ids, times_s, *, device="cpu", source_path=None):
     """Reevaluate actual contact kernel on saved states, without advancing any body.
 
     Component net impulse cancels all within-component antisymmetric pair forces.
@@ -211,7 +211,16 @@ def actual_contact_kernel_recheck(physics, setup, component_ids, times_s, *, dev
     It is not an original-substep pair log or an additional trajectory rollout.
     """
     import warp as wp
-    from . import tlmpm
+    if source_path is None:
+        from . import tlmpm
+    else:
+        import importlib.util
+        import sys
+        name = "robotic_cutting_sim._recorded_contact_"+sha256(source_path)[:12]
+        specification = importlib.util.spec_from_file_location(name, source_path)
+        tlmpm = importlib.util.module_from_spec(specification)
+        sys.modules[name] = tlmpm
+        specification.loader.exec_module(tlmpm)
     config = setup["material"]
     radius = config["contact_radius_scale"]*config["dx"]*.25
     count = len(physics["mass_kg"])
@@ -240,6 +249,8 @@ def actual_contact_kernel_recheck(physics, setup, component_ids, times_s, *, dev
     peak = max((np.linalg.norm(row["component_net_impulses_Ns"], axis=1).max() for row in rows), default=0.)
     return {"scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
             "device": device, "peak_component_net_contact_impulse_Ns": float(peak),
+            "source_path": None if source_path is None else str(source_path),
+            "source_sha256": None if source_path is None else sha256(source_path),
             "roundoff_reporting_floor_Ns": 1e-9, "samples": rows}
 
 
@@ -341,6 +352,58 @@ def native_camera_control_gates(directory, control_audit_path, manifest, protoco
     return result
 
 
+def score_live_camera_records(records, protocol):
+    """Keep a passing visual-geometry bridge separate from actual native holes."""
+    cam3, cam4 = protocol["tests"]["CAM-03"], protocol["tests"]["CAM-04"]
+    minimum_visible = {name: min(row["cameras"]["global"]["rtx_depth_consistent_attributed_pixels"][name] for row in records)
+                       for name in cam3["required_objects"]}
+    cameras = [row["cameras"][name] for row in records for name in ("d455_0", "d455_1", "global")]
+    bridge = {"worst_p95_error_m": max(row["geometry_vs_actual_rtx"]["p95_absolute_error_m"] for row in cameras),
+              "minimum_mask_iou": min(row["geometry_vs_actual_rtx"]["valid_mask_iou"] for row in cameras)}
+    native = {name: {"worst_p95_error_m": max(row["cameras"][name]["actual_native_vs_geometry"]["p95_absolute_error_m"] for row in records),
+                    "minimum_mask_iou": min(row["cameras"][name]["actual_native_vs_geometry"]["valid_mask_iou"] for row in records),
+                    "maximum_absolute_error_m": max(row["cameras"][name]["actual_native_vs_geometry"]["max_absolute_error_m"] for row in records)}
+              for name in ("d455_0", "d455_1", "global")}
+    span = max(row["timestamp_span_s"] for row in cameras)
+    chip = max(row["native_valid_chip_pixels"] for row in cameras)
+    return {"CAM-03": gate({"all_required_objects_visible": all(value >= cam3["minimum_visible_pixels_each_required_object"] for value in minimum_visible.values())},
+                {"minimum_RTX_depth_consistent_visible_pixels": minimum_visible, "actual_native_semantic_AOV": False},
+                scope="Measured-state first-hit geometric attribution verified against actual native RTX depth, not a captured semantic AOV"),
+            "CAM-04": gate({"physics_surface_camera_timestamps": span <= cam4["max_physics_surface_camera_timestamp_difference_s"],
+                "visual_mesh_RTX_bridge_p95": bridge["worst_p95_error_m"] <= cam4["mesh_depth_p95_absolute_error_m"],
+                "visual_mesh_RTX_bridge_masks": bridge["minimum_mask_iou"] >= cam4["minimum_reference_depth_valid_mask_iou"],
+                "actual_native_depth_p95": all(row["worst_p95_error_m"] <= cam4["mesh_depth_p95_absolute_error_m"] for row in native.values()),
+                "actual_native_valid_masks": all(row["minimum_mask_iou"] >= cam4["minimum_reference_depth_valid_mask_iou"] for row in native.values()),
+                "actual_native_chip_visible": chip >= cam4["minimum_visible_chip_pixels_in_any_recorded_frame"]},
+                {"geometry_bridge": bridge, "actual_native": native, "maximum_native_valid_chip_pixels": chip,
+                 "maximum_timestamp_span_s": span, "error_tails_retained": True},
+                scope="Actual native output must pass independently of the successful visual geometry bridge; no ideal/RTX fallback")}
+
+
+def bound_live_camera_audit(directory, audit_path, protocol):
+    audit = _json(audit_path)
+    inputs = _json(audit_path.parent/"input.json")
+    matches = Path(inputs["episode"]).resolve() == directory.resolve()
+    for relative, expected in inputs["input_sha256"].items():
+        path = ROOT/relative
+        snapshot = audit_path.parent/"implementation"/Path(relative).name
+        matches &= ((path.is_file() and sha256(path) == expected) or (snapshot.is_file() and sha256(snapshot) == expected))
+    for row in audit["records"]:
+        matches &= sha256(directory/"surface_debug"/f"surface_{row['frame']:04d}.npz") == row["surface_file_sha256"]
+        for name, camera in row["cameras"].items():
+            folder = "global_debug" if name == "global" else "observations"
+            matches &= sha256(directory/folder/f"{name}_{row['frame']:04d}.npz") == camera["input_observation_sha256"]
+    result = score_live_camera_records(audit["records"], protocol)
+    for item in result.values():
+        item["checks"]["recorded_live_evidence_hashes_match"] = bool(matches)
+        item["checks"]["all_frames_audited_without_error_trimming"] = audit["partial_frame_subset"] is False and audit["all_valid_error_tails_retained"] is True
+        item["measurements"]["independent_audit_path"] = str(audit_path)
+        item["measurements"]["independent_audit_sha256"] = sha256(audit_path)
+        if not all(item["checks"].values()):
+            item["status"] = "FAIL"
+    return result
+
+
 def _usd_frame_audit(directory, setup, robot, target, diagnostics):
     path = directory/"final_live_scene.usda"
     native_kit = not path.is_file() and (directory/"calibration_runtime.json").is_file()
@@ -383,7 +446,7 @@ def _usd_frame_audit(directory, setup, robot, target, diagnostics):
 
 
 def audit_live_episode(directory, protocol, *, protocol_path=None, contact_device=None,
-                       feedback_off_dir=None, repeat_dir=None, native_camera_controls=None):
+                       feedback_off_dir=None, repeat_dir=None, native_camera_controls=None, live_camera_audit=None):
     directory = Path(directory)
     manifest, setup, completion = [_json(directory/name) for name in ("manifest.json", "setup.json", "result.json")]
     robot = load_npz(directory/"robot_state.npz")
@@ -561,9 +624,14 @@ def audit_live_episode(directory, protocol, *, protocol_path=None, contact_devic
     contact = None
     contact_missing = []
     frozen_kernel = source_checks.get("tlmpm.py", False)
+    frozen_source_path = None
+    if not frozen_kernel:
+        frozen_source_path = directory/"implementation/tlmpm.py"
+        frozen_kernel = frozen_source_path.is_file() and sha256(frozen_source_path) == hashes.get("src/robotic_cutting_sim/tlmpm.py")
     if contact_device and labels is not None and len(post) and frozen_kernel:
         try:
-            contact = actual_contact_kernel_recheck(physics, setup, labels, post, device=contact_device)
+            contact = actual_contact_kernel_recheck(physics, setup, labels, post, device=contact_device,
+                source_path=frozen_source_path if frozen_source_path is not None and frozen_kernel else None)
         except Exception as error:
             contact_missing.append("Actual contact kernel recheck blocked: "+str(error))
     else:
@@ -659,6 +727,8 @@ def audit_live_episode(directory, protocol, *, protocol_path=None, contact_devic
          "max_native_clock_offset_corrected_difference_s": max(native_camera_timestamp_error, default=None)},
         ["Independent full-scene mesh/depth agreement and valid-mask IoU", "Actual chip-visible pixel attribution"],
         "Recorded matching timestamps alone do not prove geometric capture agreement")
+    if live_camera_audit:
+        gates.update(bound_live_camera_audit(directory, Path(live_camera_audit), protocol))
 
     task1_checks = {} if task["status"] != "MEASURED" else {"detached_initial_above_target_mass_fraction":
         task["detached_initial_above_target_mass_fraction"] is not None and task["detached_initial_above_target_mass_fraction"] >= protocol["tests"]["TASK-01"]["minimum_detached_initial_above_target_mass_fraction"]}
@@ -750,7 +820,18 @@ def audit_live_episode(directory, protocol, *, protocol_path=None, contact_devic
     if trace:
         env_checks["minimum_detF"] = env_metrics["minimum_detF"] >= env_limits["minimum_detF"]
         env_checks["maximum_speed"] = env_metrics["maximum_material_speed_m_s"] <= env_limits["maximum_material_speed_m_s"]
-    env_missing = ["Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit"]
+    env_missing = []
+    if all("native_rigid_contact_audit" in row for row in diagnostics):
+        native = [row["native_rigid_contact_audit"] for row in diagnostics]
+        env_metrics["native_non_tool_rigid_max_penetration_m"] = max(row["max_non_tool_penetration_m"] for row in native)
+        env_metrics["native_tool_rigid_max_penetration_m"] = max(row["max_tool_rigid_penetration_m"] for row in native)
+        env_metrics["native_contact_sampling_source"] = sorted({row["source"] for row in native})
+        env_checks["native_non_tool_rigid_penetration"] = env_metrics["native_non_tool_rigid_max_penetration_m"] <= env_limits["maximum_non_tool_rigid_penetration_m"]
+        env_checks["native_tool_rigid_penetration"] = env_metrics["native_tool_rigid_max_penetration_m"] <= env_limits["maximum_tool_material_penetration_m"]
+        env_metrics["sampling_scope"] = env_metrics["sampling_scope"].replace("; native Panda/self/table penetration is unmeasured", "")
+        env_metrics["sampling_scope"] += "; actual native rigid contacts sampled before every2ms substep and after final substep"
+    else:
+        env_missing.append("Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit")
     if not trace:
         env_missing.append("All control-boundary determinant/speed trace")
     gates["ENV-02"] = gate(env_checks, env_metrics, env_missing,
