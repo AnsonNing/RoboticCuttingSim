@@ -69,3 +69,14 @@ def test_nonperspective_runtime_model_is_rejected():
     with pytest.raises(ValueError):
         register_native_depth(np.array([[cloud(.5, .5, 1.)]], np.float32), np.ones((1, 1), np.float32),
                               {**CAMERA, "model": "fisheye"})
+
+
+def test_explicit_source_correspondence_offset_keeps_noisy_native_value():
+    points = np.array([[cloud(1.5, .5, 1.)]], np.float32)
+    native = np.array([[1.02]], np.float32)
+    original = register_native_depth(points, native, CAMERA)
+    shifted = register_native_depth(points, native, CAMERA, pointcloud_pixel_offset=(1., 0.))
+    assert original["valid_mask"][0, 1] and not shifted["valid_mask"][0, 1]
+    assert shifted["depth_m"][0, 2] == native[0, 0]
+    assert shifted["source_index"][0, 2] == 0
+    assert shifted["diagnostics"]["pointcloud_pixel_offset"] == [1., 0.]

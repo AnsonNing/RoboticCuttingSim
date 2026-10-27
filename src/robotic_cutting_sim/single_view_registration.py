@@ -11,7 +11,8 @@ This does not calibrate a physical D455 or align its separate color imager.
 import numpy as np
 
 
-def register_native_depth(pointcloud_usd, native_distance_m, camera, *, min_depth_m=.52, max_depth_m=6.):
+def register_native_depth(pointcloud_usd, native_distance_m, camera, *, min_depth_m=.52, max_depth_m=6.,
+                          pointcloud_pixel_offset=(0., 0.)):
     """Return optical-Z depth/mask and exact native sample provenance.
 
     Uses nearest measured-Z z-buffer selection when native samples collide in
@@ -34,6 +35,9 @@ def register_native_depth(pointcloud_usd, native_distance_m, camera, *, min_dept
         raise ValueError("A finite perspective K and positive output dimensions are required")
     if camera.get("model", "pinhole").lower() not in ("pinhole", "perspective"):
         raise ValueError("This registration helper validates perspective cameras only")
+    offset = np.asarray(pointcloud_pixel_offset, dtype=float)
+    if offset.shape != (2,) or not np.isfinite(offset).all():
+        raise ValueError("A finite 2D source-correspondence offset is required")
     raw_valid = np.isfinite(distance) & (distance >= min_depth_m) & (distance <= max_depth_m) & (distance > 0)
     xyz = points[..., :3].astype(np.float64)
     # Native XYZ has USD axes: X right, Y up, Z backward. Its depth/range
@@ -45,7 +49,7 @@ def register_native_depth(pointcloud_usd, native_distance_m, camera, *, min_dept
     candidates = np.flatnonzero(raw_valid & point_valid)
     directions = xyz.reshape(-1, 3)[candidates]
     projection = directions @ k.T
-    uv = projection[:, :2] / projection[:, 2:3]
+    uv = projection[:, :2] / projection[:, 2:3] + offset
     inside = (np.isfinite(uv).all(-1) & (uv[:, 0] >= 0) & (uv[:, 0] < width)
               & (uv[:, 1] >= 0) & (uv[:, 1] < height))
     candidates, uv = candidates[inside], uv[inside]
@@ -75,6 +79,7 @@ def register_native_depth(pointcloud_usd, native_distance_m, camera, *, min_dept
         "pointcloud_measurement_disagreement_gt_1um": int(np.sum(disagreement > 1e-6)),
         "pointcloud_measurement_disagreement_gt_0_1mm": int(np.sum(disagreement > 1e-4)),
         "consistency_filter_applied": False,
+        "pointcloud_pixel_offset": offset.tolist(),
         "native_measurement_values_preserved_exactly": bool(np.array_equal(output[valid], distance.reshape(-1)[source_index[valid]])),
         "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
         "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
