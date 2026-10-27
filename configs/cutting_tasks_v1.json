@@ -4,7 +4,12 @@
   "units": "m, kg, s, rad",
   "frames": "Particles sampled in WORKPIECE LOCAL; recorded evaluator positions/reference_positions are WORLD; poses XYZ+XYZW; target plane belongs to workpiece",
   "episode": {"duration_s": 8.0, "control_dt_s": 0.02, "active_cut_interval_s": [1.6, 5.6]},
+  "material": {"density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3,
+    "yield_stress_pa": 1000.0, "hardening_ratio": 0.0, "friction": 0.3,
+    "fracture_energy_j_m2": 0.05, "failure_model": "experimental_edge_work_persistent_TLMPM", "calibration": "provisional_uncalibrated"},
+  "action_modes": ["cartesian_edge_pose_world", "joint_position_rad"],
   "common": {
+    "table_top_world_z_m": -0.01,
     "initial_mechanical_components": 1,
     "initial_nonzero_cut_codes": 0,
     "mass_relative_tolerance": 0.000001,
@@ -16,6 +21,7 @@
     "material_calibration": "provisional_uncalibrated"
   },
   "CUT-01": {
+    "goal_kind": "sever",
     "geometry": {"length_m": 0.16, "width_m": 0.03, "base_height_m": 0.02, "bumps": []},
     "particle_spacing_m": 0.001,
     "grid_dx_m": 0.004,
@@ -24,6 +30,13 @@
     "blade_length_m": 0.035,
     "blade_height_m": 0.004,
     "blade_half_width_m": 0.025,
+    "hand_from_edge_xyz_xyzw": [0.0, 0.0, 0.18, 0.7071067811865476, 0.0, 0.7071067811865476, 0.0],
+    "edge_orientation_local_xyzw": [0.0, 0.7071067811865476, 0.0, 0.7071067811865476],
+    "fixture_boxes_local": [
+      {"name": "left_pedestal", "center_m": [-0.055, 0.0, -0.005], "half_extents_m": [0.035, 0.021, 0.005]},
+      {"name": "right_pedestal", "center_m": [0.055, 0.0, -0.005], "half_extents_m": [0.035, 0.021, 0.005]}],
+    "edge_position_knots_local_txyz": [[0.0, 0.0, 0.0, 0.05], [1.0, 0.0, 0.0, 0.03],
+      [1.6, 0.0, 0.0, 0.03], [5.6, 0.0, 0.0, -0.003], [6.4, 0.0, 0.0, 0.05], [8.0, 0.0, 0.0, 0.05]],
     "minimum_substantial_part_mass_fraction_each": 0.4,
     "required_substantial_parts": 2,
     "minimum_two_main_parts_total_mass_fraction": 0.99,
@@ -31,6 +44,7 @@
     "reason": "Two main physical pieces each contain at least40% and together99% of initial mass; the conservative 4mm reference support permits midpoint spread below2mm around the intended plane. At most1% minor debris is allowed and separately counted."
   },
   "TRIM-01": {
+    "goal_kind": "flatten",
     "geometry": {"length_m": 0.16, "width_m": 0.03, "base_height_m": 0.02,
       "bumps": [{"x_m": 0.0, "y_m": 0.0, "radius_x_m": 0.012, "radius_y_m": 0.012, "height_m": 0.008, "family": "dome"}]},
     "particle_spacing_m": 0.001,
@@ -41,6 +55,11 @@
     "blade_length_m": 0.012,
     "blade_height_m": 0.004,
     "blade_half_width_m": 0.025,
+    "hand_from_edge_xyz_xyzw": [0.0, 0.0, 0.18, 1.0, 0.0, 0.0, 0.0],
+    "edge_orientation_local_xyzw": [0.0, 0.0, 0.0, 1.0],
+    "fixture_boxes_local": [{"name": "support_floor", "center_m": [0.0, 0.0, -0.005], "half_extents_m": [0.09, 0.025, 0.005]}],
+    "edge_position_knots_local_txyz": [[0.0, -0.045, 0.0, 0.06], [1.0, -0.045, 0.0, 0.0202],
+      [1.6, -0.045, 0.0, 0.0202], [5.6, 0.045, 0.0, 0.0202], [6.4, 0.08, 0.0, 0.06], [8.0, 0.08, 0.0, 0.06]],
     "minimum_detached_reference_above_plane_mass_fraction": 0.9,
     "maximum_substrate_surface_residual_height_m": 0.001,
     "surface_p95_absolute_plane_error_m": 0.0005,
