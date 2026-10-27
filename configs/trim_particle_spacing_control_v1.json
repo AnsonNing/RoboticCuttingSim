@@ -1,0 +1,28 @@
+{
+  "protocol_id": "trim_particle_spacing_control_v1_20261028",
+  "freeze_boundary": "Frozen before this final carry-over discretization output, after retained native/Lab1mm and trajectory/grid negatives. No further trajectory/discretization search is authorized by this protocol if it fails.",
+  "scope": "Physics-only ideal kinematic retained TLMPM; not live Isaac, robot feedback, convergence, calibrated fracture or full surface acceptance",
+  "task_id": "TRIM-01",
+  "seed": 42,
+  "control_dt_s": 0.02,
+  "material_dt_s": 0.0001,
+  "record_interval_s": 0.2,
+  "changed_input": "Initial uniform particle spacing 1mm to2mm on the entire continuous specimen; actual sample mass/quadrature and particle-radius-derived scales change and are recorded",
+  "unchanged": ["160x30x20mm bar plus continuous dome geometry", "grid 4mm", "original fixed8s knife path", "target local Z20mm", "edge local Z20.2mm", "material", "fixtures", "persistent cut field0", "goal thresholds"],
+  "coarse_particles": {
+    "duration_s": 8.0,
+    "particle_spacing_m": 0.002,
+    "active_cut_intervals_s": [[1.6, 5.6]],
+    "knots_local_txyz": [[0.0, -0.045, 0.0, 0.06], [1.0, -0.045, 0.0, 0.0202], [1.6, -0.045, 0.0, 0.0202], [5.6, 0.045, 0.0, 0.0202], [6.4, 0.08, 0.0, 0.06], [8.0, 0.08, 0.0, 0.06]],
+    "postwithdraw_start_s": 6.4
+  },
+  "candidate_checks": {
+    "initial_components": 1,
+    "minimum_final_components": 2,
+    "minimum_detached_reference_above_plane_mass_fraction": 0.9,
+    "minimum_postwithdraw_disconnected_duration_s": 0.5,
+    "nonzero_digit_rewrites_allowed": 0,
+    "forbid_code_edits_or_particle_removal": true
+  },
+  "promotion_boundary": "At most a discretization-specific kinematic severing candidate for new actual live episodes; retain all1mm97k failures and formal surface-quality failures. No convergence or general TRIM success claim."
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Frozen physical TRIM trajectory controls, without an Isaac/runtime claim."""
 import argparse
-from dataclasses import asdict
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -30,7 +30,7 @@ def reference_pose(task,case,t):
 
 
 def run(args):
-    protocol_path=ROOT/"configs/trim_sweep_diagnostic_v1.json"
+    protocol_path=Path(args.protocol).resolve() if args.protocol else ROOT/"configs/trim_sweep_diagnostic_v1.json"
     protocol=json.loads(protocol_path.read_text());case=protocol[args.case]
     out=new_output(args.output_dir)
     (out/"implementation").mkdir()
@@ -43,6 +43,8 @@ def run(args):
     write_json(out/"manifest.json",{**manifest({"case":args.case,"device":args.device,"protocol":protocol},"kinematic_material_diagnostic"),
         "implementation_sha256":hashes,"live_isaac":False,"robot_dynamics":False,"kinematic_tool":True})
     task=make_task(protocol["task_id"],protocol["seed"])
+    if "particle_spacing_m" in case:
+        task=replace(task,particle_spacing_m=case["particle_spacing_m"])
     dt=protocol["control_dt_s"]
     material=LiveCuttingMaterial(CouplingConfig(control_dt=dt,material_dt=protocol["material_dt_s"],dx=task.grid_dx_m,
         device=args.device,feedback=False),task=task)
@@ -122,7 +124,8 @@ def run(args):
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case",choices=["fast_sweep","second_pass"],required=True)
+    parser.add_argument("--case",choices=["fast_sweep","second_pass","coarse_particles"],required=True)
+    parser.add_argument("--protocol",type=Path,help="Explicit frozen protocol; defaults to the original A/B controls")
     parser.add_argument("--device",default="cuda:1")
     parser.add_argument("--output-dir",type=Path,required=True)
     arguments=parser.parse_args()
