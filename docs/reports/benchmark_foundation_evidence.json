@@ -1,0 +1,400 @@
+{
+  "scope": "benchmark_foundation_only",
+  "benchmark_ready": false,
+  "scenario_generation_status": "PASS",
+  "scenario_simulation_status": "NOT_RUN",
+  "scenarios": [
+    {
+      "case": "D0_seed42",
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "connected_components": 1,
+      "bump_count": 1,
+      "families": [
+        "dome"
+      ],
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.4,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "580a427d07395316400a43c26f49c277791d8f3b200158025ac35e6d40f4ced3",
+      "scenario_sha256": "cb54d641b720bdbf0c20319f19cfbb4d6a9fb6472621c905414861f5a7a65d32"
+    },
+    {
+      "case": "D0_seed43",
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "connected_components": 1,
+      "bump_count": 1,
+      "families": [
+        "dome"
+      ],
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.4,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "580a427d07395316400a43c26f49c277791d8f3b200158025ac35e6d40f4ced3",
+      "scenario_sha256": "90cb11d33c5775c48a88dab0e06ab19e5706189a534cf7499dee874d58dab48a"
+    },
+    {
+      "case": "D1_seed42",
+      "particle_count": 19401,
+      "initial_mass_kg": 0.23281199999999996,
+      "connected_components": 1,
+      "bump_count": 1,
+      "families": [
+        "ellipsoid_cap"
+      ],
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.4,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "813c4bac1ce3f837eee6707d6f5c6a7e767ddc94d4efe01f9738ca9c3b41f1d1",
+      "scenario_sha256": "e84e5bc297d3889fc732fd8a408d37e6acd8e8af46869a344bec18d2fa0cc284"
+    },
+    {
+      "case": "D1_seed43",
+      "particle_count": 19308,
+      "initial_mass_kg": 0.23169599999999999,
+      "connected_components": 1,
+      "bump_count": 1,
+      "families": [
+        "ridge"
+      ],
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.4,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "0cd9296ff69fc27a7c0d03217ee0b70c6dbb38c1163ded73d43d2b88cd5913a6",
+      "scenario_sha256": "bac3582343697a42f31c936b45879a5b6a3f25f21bfc2d435cd408e5146eb215"
+    },
+    {
+      "case": "D2_seed42",
+      "particle_count": 19386,
+      "initial_mass_kg": 0.23263199999999995,
+      "connected_components": 1,
+      "bump_count": 3,
+      "families": [
+        "ellipsoid_cap",
+        "ridge",
+        "dome"
+      ],
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.4,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "3dfa6061187df83183a0427952031e6923d1b84b24946c400559a4ea8aef8a9f",
+      "scenario_sha256": "fc512be0ea97217ae9ec7f30a4221001d6ddb28fb74c305bcba3c013d6da1bc6"
+    },
+    {
+      "case": "D2_seed43",
+      "particle_count": 19336,
+      "initial_mass_kg": 0.23203199999999996,
+      "connected_components": 1,
+      "bump_count": 3,
+      "families": [
+        "ridge",
+        "dome",
+        "gaussian"
+      ],
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.4,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "3509b6b83aa4d2bb593c8eec1deed50215231b0fd15d3b1e7c80cece117a40e1",
+      "scenario_sha256": "330fca6343fc0cc5dd7c9c9bd6627359627fe239fb852aa147509617896e1c12"
+    },
+    {
+      "case": "D3_seed42",
+      "particle_count": 19303,
+      "initial_mass_kg": 0.244965736382002,
+      "connected_components": 1,
+      "bump_count": 2,
+      "families": [
+        "ridge",
+        "dome"
+      ],
+      "material": {
+        "density_kg_m3": 1586.3190720483988,
+        "young_modulus_pa": 79365.6967962498,
+        "poisson_ratio": 0.30764384584755305,
+        "yield_stress_pa": 1147.6677631233597,
+        "hardening_ratio": 0.16637543610475045,
+        "friction": 0.22552690244167015,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "93a3907a0bcab7596fd8ef76b8e07f8c073c02b6435deb07d46e998e75be8095",
+      "scenario_sha256": "3e57430252f3952804db985fcbd2273981196950764a7f45731c88c72abdd60f"
+    },
+    {
+      "case": "D3_seed43",
+      "particle_count": 19469,
+      "initial_mass_kg": 0.2750145384317483,
+      "connected_components": 1,
+      "bump_count": 4,
+      "families": [
+        "ellipsoid_cap",
+        "gaussian",
+        "ridge",
+        "ridge"
+      ],
+      "material": {
+        "density_kg_m3": 1765.7207511412262,
+        "young_modulus_pa": 89872.90465644724,
+        "poisson_ratio": 0.2543894050610405,
+        "yield_stress_pa": 957.481053661607,
+        "hardening_ratio": 0.2283596513930541,
+        "friction": 0.25045498759732243,
+        "failure_model": "not_configured",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": null,
+        "calibration": "provisional_uncalibrated"
+      },
+      "positions_sha256": "4178d13ec66decbe6c0f4f5ce25ff6f2f3f536100b1ec627d8f017232eb7494c",
+      "scenario_sha256": "92514337449d7035c34e1358901c8803af8a277fb63d50a4f9f9c5d2221ca5c7"
+    }
+  ],
+  "cpu_tests": {
+    "command": ".venv/bin/python -m pytest tests/test_benchmark_foundation.py -q",
+    "status": "PASS",
+    "passed": 24
+  },
+  "D0_existing_generator_positions_mass_lattice_identical": true,
+  "actual_recording_comparison": {
+    "status": "PASS",
+    "scope": "explicit_recording_comparison_only",
+    "benchmark_ready": false,
+    "runs": {
+      "newton": {
+        "status": "PASS",
+        "scope": "offline_oracle_diagnostics_only",
+        "benchmark_ready": false,
+        "formal_cutting_success": null,
+        "source": "artifacts/newton_settle_002/physics_state.npz",
+        "source_sha256": "1f28cd732021545ed80f4f8ce40bb5ee3ce9ab8838768c0fde3ae19b81baea81",
+        "metric_config": {
+          "length_m": 0.12,
+          "width_m": 0.08,
+          "target_height_m": 0.015,
+          "density_kg_m3": 1500.0,
+          "surface_cell_size_m": 0.004,
+          "particle_support_radius_m": 0.001,
+          "gravity_m_s2": 9.81
+        },
+        "frame_count": 121,
+        "particle_count": 19340,
+        "simulation_duration_s": 2.0,
+        "mass": {
+          "initial_kg": 0.2320800082088681,
+          "final_kg": 0.2320800082088681,
+          "max_relative_change": 0.0,
+          "temporal_measurement": "static masses reused; not an independent per-frame mass measurement",
+          "outside_xy_footprint_mass_kg": 0.0,
+          "outside_xy_footprint_reference_volume_m3": 0.0
+        },
+        "components": {
+          "status": "NOT_AVAILABLE",
+          "detached_mass_kg": null,
+          "substrate_mass_kg": null,
+          "permanent_separation_proven": null,
+          "recontact_proven": null,
+          "reason": "No component IDs recorded; cut side codes are not component IDs"
+        },
+        "initial_surface": {
+          "residual_height_proxy_m": 0.006999999716877939,
+          "residual_height_p95_proxy_m": 0.0009999996647238746,
+          "rms_target_plane_error_proxy_m": 0.0013808207516662493,
+          "surface_roughness_std_proxy_m": 0.0007692998414352583,
+          "overcut_volume_proxy_m3": 0.0,
+          "occupied_bin_fraction": 1.0,
+          "grid_shape_xy": [
+            30,
+            20
+          ],
+          "particle_count_in_footprint": 19340
+        },
+        "final_surface": {
+          "residual_height_proxy_m": 0.006898874849081041,
+          "residual_height_p95_proxy_m": 0.0009592655710876002,
+          "rms_target_plane_error_proxy_m": 0.0013209756610669825,
+          "surface_roughness_std_proxy_m": 0.0007642849901534995,
+          "overcut_volume_proxy_m3": 0.0,
+          "occupied_bin_fraction": 1.0,
+          "grid_shape_xy": [
+            30,
+            20
+          ],
+          "particle_count_in_footprint": 19340
+        },
+        "surface_scope": "particle-bin maximum Z plus configured support radius; empty bins have height zero; not a reconstructed-mesh or RGB-D metric",
+        "surface_particle_selection": "all particles; unclassified chips may occlude the substrate",
+        "minimum_particle_z_m": 0.00043608597479760647,
+        "frame_sampled_max_speed_m_s": 0.0011892380766311752,
+        "kinetic_energy_final_j": 8.96781838616783e-16,
+        "gravitational_energy_final_j": 0.018259222976489183,
+        "total_energy_balance_status": "NOT_EVALUATED; internal strain energy, fixture/tool work and dissipation absent",
+        "input_fingerprints": {
+          "initial_positions": "05078881e20059e1a2234715368a2b3c0da935fa3389563ce3b3e91a4b02082e",
+          "initial_mass": "32c0799426981a5952c4d37fe715e3dd7a15d98c5c8a9854e204f92fd17983f8",
+          "timestamps": "7c835380a4c9bfb34afd27a5480b240724f19662789b5b568e0f4e9905d14de2",
+          "tool_poses": "31302fbe2f27db92f005f6d16566901057e156f786547a3fc297204c6c27e7ad"
+        },
+        "tool_pose_status": "RECORDED",
+        "tool_box_proxy_particle_center_penetration_m": 0.0,
+        "penetration_scope": "oriented bounding-box proxy; not particle-radius-aware or a solver contact certificate",
+        "reported_wall_s": null,
+        "simulation_s_per_reported_wall_s": null
+      },
+      "cressim_corrected": {
+        "status": "PASS",
+        "scope": "offline_oracle_diagnostics_only",
+        "benchmark_ready": false,
+        "formal_cutting_success": null,
+        "source": "artifacts/CRESSim_candidate/verification_002/settle/physics_state.npz",
+        "source_sha256": "b00d159bba30d02a39acbf3de21b071156938eb14fb51ca16d69b23fad4c0753",
+        "metric_config": {
+          "length_m": 0.12,
+          "width_m": 0.08,
+          "target_height_m": 0.015,
+          "density_kg_m3": 1500.0,
+          "surface_cell_size_m": 0.004,
+          "particle_support_radius_m": 0.001,
+          "gravity_m_s2": 9.81
+        },
+        "frame_count": 121,
+        "particle_count": 19340,
+        "simulation_duration_s": 2.0,
+        "mass": {
+          "initial_kg": 0.2320800082088681,
+          "final_kg": 0.2320800082088681,
+          "max_relative_change": 0.0,
+          "temporal_measurement": "static masses reused; not an independent per-frame mass measurement",
+          "outside_xy_footprint_mass_kg": 0.0,
+          "outside_xy_footprint_reference_volume_m3": 0.0
+        },
+        "components": {
+          "status": "NOT_AVAILABLE",
+          "detached_mass_kg": null,
+          "substrate_mass_kg": null,
+          "permanent_separation_proven": null,
+          "recontact_proven": null,
+          "reason": "No component IDs recorded; cut side codes are not component IDs"
+        },
+        "initial_surface": {
+          "residual_height_proxy_m": 0.006999999716877939,
+          "residual_height_p95_proxy_m": 0.0009999996647238746,
+          "rms_target_plane_error_proxy_m": 0.0013808207516662493,
+          "surface_roughness_std_proxy_m": 0.0007692998414352583,
+          "overcut_volume_proxy_m3": 0.0,
+          "occupied_bin_fraction": 1.0,
+          "grid_shape_xy": [
+            30,
+            20
+          ],
+          "particle_count_in_footprint": 19340
+        },
+        "final_surface": {
+          "residual_height_proxy_m": 0.006948378369212152,
+          "residual_height_p95_proxy_m": 0.000972021803259851,
+          "rms_target_plane_error_proxy_m": 0.0013489014203056464,
+          "surface_roughness_std_proxy_m": 0.0007670664764375536,
+          "overcut_volume_proxy_m3": 0.0,
+          "occupied_bin_fraction": 1.0,
+          "grid_shape_xy": [
+            30,
+            20
+          ],
+          "particle_count_in_footprint": 19340
+        },
+        "surface_scope": "particle-bin maximum Z plus configured support radius; empty bins have height zero; not a reconstructed-mesh or RGB-D metric",
+        "surface_particle_selection": "all particles; unclassified chips may occlude the substrate",
+        "minimum_particle_z_m": 0.0009708423167467117,
+        "frame_sampled_max_speed_m_s": 0.02427346159022611,
+        "kinetic_energy_final_j": 2.8801447305366158e-15,
+        "gravitational_energy_final_j": 0.018312450705369816,
+        "total_energy_balance_status": "NOT_EVALUATED; internal strain energy, fixture/tool work and dissipation absent",
+        "input_fingerprints": {
+          "initial_positions": "05078881e20059e1a2234715368a2b3c0da935fa3389563ce3b3e91a4b02082e",
+          "initial_mass": "32c0799426981a5952c4d37fe715e3dd7a15d98c5c8a9854e204f92fd17983f8",
+          "timestamps": "7c835380a4c9bfb34afd27a5480b240724f19662789b5b568e0f4e9905d14de2",
+          "tool_poses": "22a31a4a7a257e7e9c2163de86e0a4af6b2e22207e36e096254c3152294d32b5"
+        },
+        "tool_pose_status": "RECORDED",
+        "tool_box_proxy_particle_center_penetration_m": 0.0,
+        "penetration_scope": "oriented bounding-box proxy; not particle-radius-aware or a solver contact certificate",
+        "reported_wall_s": 1.936440977966413,
+        "simulation_s_per_reported_wall_s": 1.032822597103029
+      }
+    },
+    "recorded_inputs_match": {
+      "initial_positions": true,
+      "initial_mass": true,
+      "timestamps": true,
+      "tool_poses": false
+    },
+    "formal_paired_protocol": "NOT_ESTABLISHED; solver material, contact geometry and frozen protocol require separate evidence",
+    "solver_ranking": null,
+    "formal_cutting_success": null
+  },
+  "artifacts": {
+    "artifacts/benchmark_foundation_001/scenarios/result.json": {
+      "sha256": "19c1568390a63aa41737782f5f60d21c02a50fe81e3db6d180a53ce2c011a4f9",
+      "bytes": 7239
+    },
+    "artifacts/benchmark_foundation_001/settle_comparison/result.json": {
+      "sha256": "62a965ced7c2fa3628aa155b76a3585ca7f8f42f123b0abe0c4f3f2a5fb5c25f",
+      "bytes": 7628
+    }
+  }
+}
