@@ -29,6 +29,7 @@ def main():
     parser.add_argument("--variant", choices=("D0", "D1"), default="D0")
     parser.add_argument("--task-id", choices=("CUT-01", "TRIM-01"))
     parser.add_argument("--task-variant", default="fixed")
+    parser.add_argument("--particle-spacing", type=float, help="Explicit task-only initial quadrature override in metres")
     parser.add_argument("--action-mode", choices=("cartesian_edge_pose_world", "joint_position_rad"), default="cartesian_edge_pose_world")
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--no-camera", action="store_true")
@@ -59,6 +60,7 @@ def main():
     options = LabCuttingConfig(device=args.device, material_device=args.material_device,
         seed=args.seed, variant=args.variant, camera=not args.no_camera, feedback=not args.no_feedback,
         task_id=args.task_id, task_variant=args.task_variant, action_mode=args.action_mode,
+        particle_spacing_m=args.particle_spacing,
         velocity_feedforward=args.velocity_feedforward, global_width=args.global_width, global_height=args.global_height,
         experiment=args.experiment,
         static_scene=str(scene_path.resolve()))
@@ -76,7 +78,7 @@ def main():
     record["acceptance_protocol_sha256"] = hashlib.sha256((ROOT/"configs/isaac_acceptance.json").read_bytes()).hexdigest()
     if args.task_id:
         from robotic_cutting_sim.tasks import make_task
-        task = make_task(args.task_id, seed=args.seed, variant=args.task_variant)
+        task = make_task(args.task_id, seed=args.seed, variant=args.task_variant, particle_spacing_m=args.particle_spacing)
         write_json(output/"task.json", task.to_dict())
         record["task_protocol_sha256"] = task.to_dict()["protocol_sha256"]
     implementation = output/"implementation"
@@ -121,7 +123,8 @@ def main():
             def capture(step):
                 state = env.measured()
                 states.append(state)
-                material.append(env.material.world_state())
+                world_state = env.material.world_state()
+                material.append({key: world_state[key] for key in ("positions", "velocities", "codes")})
                 material_times.append(env.time_s)
                 if not options.camera:
                     return

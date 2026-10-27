@@ -97,6 +97,7 @@ class LabCuttingConfig:
     variant: str = "D0"
     task_id: str | None = None
     task_variant: str = "fixed"
+    particle_spacing_m: float | None = None
     action_mode: str = "cartesian_edge_pose_world"
     surface_profile: str | None = None
     dx: float = .004
@@ -113,6 +114,8 @@ class LabCuttingConfig:
     def __post_init__(self):
         if self.task_id not in (None, "CUT-01", "TRIM-01"):
             raise ValueError("Unsupported live cutting task")
+        if self.particle_spacing_m is not None and self.task_id is None:
+            raise ValueError("Particle-spacing overrides require a CUT/TRIM task; legacy recipes remain fixed")
         if self.action_mode not in ("cartesian_edge_pose_world", "joint_position_rad"):
             raise ValueError("Unsupported action mode")
         if self.velocity_feedforward is None:
@@ -127,7 +130,8 @@ def make_lab_cfg(options):
     if not asset.is_file():
         raise FileNotFoundError(asset)
     from .tasks import make_task
-    task = make_task(options.task_id, seed=options.seed, variant=options.task_variant) if options.task_id else None
+    task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
+                     particle_spacing_m=options.particle_spacing_m) if options.task_id else None
 
     def robot(index):
         q = dict(zip([f"panda_joint{i}" for i in range(1, 8)], PARK_JOINTS))
@@ -204,7 +208,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self.options = options
         self.target = WorkpieceTarget()
         from .tasks import make_task
-        self.task = make_task(options.task_id, seed=options.seed, variant=options.task_variant) if options.task_id else None
+        self.task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
+            particle_spacing_m=options.particle_spacing_m) if options.task_id else None
         self.mount = np.array(self.task.hand_from_edge_xyz_xyzw if self.task else (0, 0, .18, 1, 0, 0, 0), float)
         self.material = LiveCuttingMaterial(CouplingConfig(dx=options.dx,
             device=options.material_device, feedback=options.feedback, variant=options.variant), self.target, task=self.task)

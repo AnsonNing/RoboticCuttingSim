@@ -215,3 +215,18 @@ def test_invalid_task_variants_and_fixture_dimensions_are_rejected():
         make_task(variant="random")
     with pytest.raises(ValueError):
         FixtureBox("bad", (0, 0, 0), (0, 1, 1))
+
+
+def test_explicit_quadrature_preserves_nominal_bar_goal_and_immutable_mass_budget():
+    original = make_task("TRIM-01")
+    coarse = make_task("TRIM-01", particle_spacing_m=.002)
+    assert coarse.geometry == original.geometry and coarse.material == original.material
+    assert coarse.target_origin_local_m == original.target_origin_local_m
+    assert coarse.fixture_boxes_local == original.fixture_boxes_local
+    assert np.array_equal(coarse.reference_edge_pose_world(3.), original.reference_edge_pose_world(3.))
+    points, mass, lattice = coarse.sample_particles()
+    assert len(points) == 12136 and len(np.unique(lattice, axis=0)) == len(points)
+    assert np.all(mass == coarse.material.density_kg_m3*.002**3)
+    assert mass[points[:, 2] < .020].sum() == pytest.approx(.144, abs=1e-12)
+    assert coarse.to_dict()["numerical_overrides"]["particle_spacing_m"] == {"protocol": .001, "actual": .002}
+    assert original.particle_spacing_m == .001 and original.to_dict()["numerical_overrides"] == {}

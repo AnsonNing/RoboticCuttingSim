@@ -169,7 +169,9 @@ class CuttingTaskSpec:
         return {**asdict(self), "protocol_id": _protocol()["protocol_id"],
                 "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
                 "sample_coordinate_frame": "workpiece_local", "evaluator_coordinate_frame": "world",
-                "action_modes": ACTION_MODES, "runtime_validated": False}
+                "action_modes": ACTION_MODES, "runtime_validated": False,
+                "numerical_overrides": {"particle_spacing_m": {"protocol": _protocol()[self.task_id]["particle_spacing_m"],
+                    "actual": self.particle_spacing_m}} if self.particle_spacing_m != _protocol()[self.task_id]["particle_spacing_m"] else {}}
 
     def evaluate_oracle(self, recording):
         return evaluate_task_oracle(self, recording)
@@ -179,7 +181,8 @@ def _protocol():
     return json.loads(PROTOCOL_PATH.read_text())
 
 
-def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1)):
+def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1),
+              particle_spacing_m=None):
     protocol = _protocol()
     if task_id not in ("CUT-01", "TRIM-01"):
         raise ValueError("task_id must be CUT-01 or TRIM-01; legacy D0 is unchanged")
@@ -188,7 +191,7 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
     return CuttingTaskSpec(task_id, int(seed), variant,
         HeightFieldSpec(geometry["length_m"], geometry["width_m"], geometry["base_height_m"],
             tuple(Bump(**row) for row in geometry["bumps"])),
-        config["particle_spacing_m"], config["grid_dx_m"],
+        config["particle_spacing_m"] if particle_spacing_m is None else float(particle_spacing_m), config["grid_dx_m"],
         tuple(FixtureBox(row["name"], tuple(row["center_m"]), tuple(row["half_extents_m"])) for row in config["fixture_boxes_local"]),
         tuple(world_from_workpiece_xyzw), protocol["common"]["table_top_world_z_m"], tuple(config["hand_from_edge_xyz_xyzw"]),
         protocol["episode"]["duration_s"], protocol["episode"]["control_dt_s"], MaterialParameters(**protocol["material"]),
