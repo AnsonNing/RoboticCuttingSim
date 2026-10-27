@@ -2,7 +2,9 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation
 
-from robotic_cutting_sim.coupled_robot import CouplingConfig, interpolate_measured_poses
+from robotic_cutting_sim.coupled_robot import CouplingConfig, active_cut_index, interpolate_measured_poses, material_recipe
+from robotic_cutting_sim.benchmark import BenchmarkSpec, sample_specimen
+from robotic_cutting_sim.geometry import Specimen, sample_particles
 from robotic_cutting_sim.robot import compose_tool_pose, wedge_mesh
 
 
@@ -40,3 +42,38 @@ def test_measured_pose_interpolation_has_world_angular_velocity_and_matching_end
 def test_partitioned_coupling_requires_integral_positive_time_grid(kwargs):
     with pytest.raises(ValueError):
         CouplingConfig(**kwargs)
+
+
+def test_benchmark_recipe_applies_supported_materials_and_discloses_unapplied_fields():
+    spec = BenchmarkSpec.generate(42, "D3")
+    actual, receipt = material_recipe(CouplingConfig(), spec)
+    assert actual.density == spec.material.density_kg_m3
+    assert actual.young == spec.material.young_modulus_pa
+    assert actual.poisson == spec.material.poisson_ratio
+    assert actual.yield_stress == spec.material.yield_stress_pa
+    assert actual.contact_friction == spec.material.friction
+    assert receipt["unapplied"]["hardening_ratio"]["status"] == "UNSUPPORTED"
+    assert receipt["unapplied"]["blade_half_thickness_m"]["status"] == "UNSUPPORTED"
+    assert receipt["deferred_to_sensor_adapter"]["status"] == "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+
+
+def test_no_recipe_preserves_frozen_default_material_and_d0_particle_arrays():
+    material, receipt = material_recipe(CouplingConfig(), None)
+    assert material.contact_friction == .3
+    assert material.cutting_energy == .05
+    legacy = sample_particles(Specimen.generate(42, "D0"), .002, material.density)
+    explicit = sample_specimen(BenchmarkSpec.generate(42, "D0"), .002)
+    for a, b in zip(legacy, explicit):
+        np.testing.assert_array_equal(a, b)
+    assert receipt["source"] == "legacy_TLMPM_defaults"
+
+
+def test_explicit_cut_digit_overrides_script_window_without_enabling_extra_digits():
+    assert active_cut_index(0) == -1
+    assert active_cut_index(2) == 0
+    assert active_cut_index(7) == -1
+    assert active_cut_index(7, cut_index=0) == 0
+    assert active_cut_index(2, cut_index=-1) == -1
+    assert active_cut_index(2, cutting=False, cut_index=0) == -1
+    with pytest.raises(ValueError):
+        active_cut_index(2, cut_index=1)

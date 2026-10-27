@@ -12,6 +12,7 @@ import time
 import numpy as np
 
 from robotic_cutting_sim.coupled_robot import CoupledCutting, CouplingConfig, reference_pose
+from robotic_cutting_sim.benchmark import BenchmarkSpec
 from robotic_cutting_sim.cut_topology import mechanical_components
 from robotic_cutting_sim.recording import manifest, new_output, write_json
 from robotic_cutting_sim.robot import wedge_mesh
@@ -92,7 +93,8 @@ def run(output, config, seed, duration):
         codes=np.array([s["codes"] for s in material]), mass_kg=scene.masses,
         reference_positions=scene.points, reference_indices=scene.lattice,
         final_F=final["F"], final_Fpi=final["Fpi"], final_cut_progress=final["cut_progress"],
-        final_plastic_strain=final["plastic_strain"], component_ids=component)
+        final_plastic_strain=final["plastic_strain"], component_ids=component,
+        component_provenance="final conservative MPM reference-stencil compatibility graph, including derivative support")
     vertices, faces = wedge_mesh()
     np.savez_compressed(output / "tool_geometry.npz", vertices_tool=vertices, triangle_indices=faces)
     write_json(output / "diagnostics.json", diagnostics)
@@ -155,13 +157,18 @@ def main():
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--duration", type=float, default=8.)
-    parser.add_argument("--no-feedback", action="store_true")
-    parser.add_argument("--compare-feedback", action="store_true")
+    parser.add_argument("--variant", choices=["D0", "D1", "D2", "D3"], default="D0")
+    parser.add_argument("--benchmark-recipe", action="store_true", help="Explicit BenchmarkSpec recipe, including its supported material values")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--no-feedback", action="store_true")
+    mode.add_argument("--compare-feedback", action="store_true")
     args = parser.parse_args()
     output = new_output(args.output_dir)
-    config = CouplingConfig(device=args.device, feedback=not args.no_feedback)
+    config = CouplingConfig(device=args.device, feedback=not args.no_feedback, variant=args.variant,
+        benchmark_spec=BenchmarkSpec.generate(args.seed, args.variant) if args.benchmark_recipe else None)
     result = run(output, config, args.seed, args.duration)
     print(json.dumps({k: v for k, v in result.items() if k != "components"}, indent=2), flush=True)
+    failed = result["status"] == "FAIL"
     if args.compare_feedback:
         from dataclasses import replace
         other = new_output(output / "feedback_disabled")
@@ -177,7 +184,8 @@ def main():
             "disabled_final_components": control["final_mechanical_components"]}
         write_json(output / "feedback_comparison.json", comparison)
         print(json.dumps(comparison, indent=2), flush=True)
-    return int(result["status"] == "FAIL")
+        failed |= comparison["status"] == "FAIL"
+    return int(failed)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,358 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "variant": "D2",
+      "particle_count": 19386,
+      "timestamp_s": 0.19999999999999998,
+      "finite": true,
+      "min_detF": 0.9981751441955566,
+      "changed_positions": true,
+      "cut_disabled": true,
+      "parameter_receipt": {
+        "source": "BenchmarkSpec",
+        "applied": {
+          "density_kg_m3": {
+            "backend_field": "density",
+            "value": 1500.0
+          },
+          "young_modulus_pa": {
+            "backend_field": "young",
+            "value": 50000.0
+          },
+          "poisson_ratio": {
+            "backend_field": "poisson",
+            "value": 0.3
+          },
+          "yield_stress_pa": {
+            "backend_field": "yield_stress",
+            "value": 1000.0
+          },
+          "friction": {
+            "backend_field": "contact_friction",
+            "value": 0.4
+          }
+        },
+        "unapplied": {
+          "hardening_ratio": {
+            "requested": 0.0,
+            "status": "UNSUPPORTED",
+            "reason": "TLMPM uses perfect Hencky J2 plasticity without hardening"
+          },
+          "critical_stress_pa": {
+            "requested": null,
+            "status": "UNSUPPORTED",
+            "reason": "The retained cut law is edge work, not critical-stress failure"
+          },
+          "failure_model": {
+            "requested": "not_configured",
+            "status": "NOT_APPLIED",
+            "reason": "Actual backend is experimental edge-work activation plus persistent logical-grid cuts"
+          },
+          "blade_half_thickness_m": {
+            "requested": 0.001,
+            "status": "UNSUPPORTED",
+            "reason": "A rectangular blade half-thickness has no exact triangular-wedge counterpart"
+          }
+        },
+        "deferred_to_sensor_adapter": {
+          "camera_translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "camera_rotation_deg": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "status": "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+        },
+        "calibration": "provisional_uncalibrated",
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.4,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.012,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": true,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "scenario_selection": "auto_generated_BenchmarkSpec"
+      },
+      "sampling_receipt": {
+        "scope": "generated_initial_state_only",
+        "variant": "D2",
+        "seed": 42,
+        "spacing_m": 0.002,
+        "particle_count": 19386,
+        "initial_mass_kg": 0.23263199999999995,
+        "particle_volume_m3": 8e-09,
+        "continuous_base": true,
+        "preassigned_components": false,
+        "sampling": "cell centers below one max-union height field over a single base",
+        "positions_sha256": "3dfa6061187df83183a0427952031e6923d1b84b24946c400559a4ea8aef8a9f",
+        "mass_sha256": "4fcbd487218fc88dfa339772600aedf04b5f407822884ed258ca8dfa9690681d",
+        "lattice_sha256": "2922af41372394311fceb36c8914fe24ed8a142c3d6a557e452b73833c7f24bc",
+        "scenario_sha256": "fc512be0ea97217ae9ec7f30a4221001d6ddb28fb74c305bcba3c013d6da1bc6",
+        "material_status": "provisional_uncalibrated",
+        "benchmark_ready": false
+      },
+      "scenario": {
+        "variant": "D2",
+        "seed": 42,
+        "heightfield": {
+          "length_m": 0.12,
+          "width_m": 0.08,
+          "base_height_m": 0.015,
+          "bumps": [
+            {
+              "x_m": -0.027904175805776147,
+              "y_m": -0.014244486240991791,
+              "radius_x_m": 0.010434391679645529,
+              "radius_y_m": 0.009789472116237454,
+              "height_m": 0.005470886739438248,
+              "family": "ellipsoid_cap"
+            },
+            {
+              "x_m": 0.030044558807961412,
+              "y_m": -0.012855742778892185,
+              "radius_x_m": 0.007512454530702184,
+              "radius_y_m": 0.008801543751582269,
+              "height_m": 0.006853990121162906,
+              "family": "ridge"
+            },
+            {
+              "x_m": 0.0017070599553944072,
+              "y_m": 0.014575460480322659,
+              "radius_x_m": 0.010291046453083319,
+              "radius_y_m": 0.008773656795309325,
+              "height_m": 0.006136193608923884,
+              "family": "dome"
+            }
+          ]
+        },
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.4,
+          "failure_model": "not_configured",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": null,
+          "calibration": "provisional_uncalibrated"
+        },
+        "blade_half_thickness_m": 0.001,
+        "camera_translation_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "camera_rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "scope": "10-step actual adapter state smoke; no cutting success claim"
+    },
+    {
+      "variant": "D3",
+      "particle_count": 19303,
+      "timestamp_s": 0.19999999999999998,
+      "finite": true,
+      "min_detF": 0.9989354610443115,
+      "changed_positions": true,
+      "cut_disabled": true,
+      "parameter_receipt": {
+        "source": "BenchmarkSpec",
+        "applied": {
+          "density_kg_m3": {
+            "backend_field": "density",
+            "value": 1586.3190720483988
+          },
+          "young_modulus_pa": {
+            "backend_field": "young",
+            "value": 79365.6967962498
+          },
+          "poisson_ratio": {
+            "backend_field": "poisson",
+            "value": 0.30764384584755305
+          },
+          "yield_stress_pa": {
+            "backend_field": "yield_stress",
+            "value": 1147.6677631233597
+          },
+          "friction": {
+            "backend_field": "contact_friction",
+            "value": 0.22552690244167015
+          }
+        },
+        "unapplied": {
+          "hardening_ratio": {
+            "requested": 0.16637543610475045,
+            "status": "UNSUPPORTED",
+            "reason": "TLMPM uses perfect Hencky J2 plasticity without hardening"
+          },
+          "critical_stress_pa": {
+            "requested": null,
+            "status": "UNSUPPORTED",
+            "reason": "The retained cut law is edge work, not critical-stress failure"
+          },
+          "failure_model": {
+            "requested": "not_configured",
+            "status": "NOT_APPLIED",
+            "reason": "Actual backend is experimental edge-work activation plus persistent logical-grid cuts"
+          },
+          "blade_half_thickness_m": {
+            "requested": 0.0013621049375940656,
+            "status": "UNSUPPORTED",
+            "reason": "A rectangular blade half-thickness has no exact triangular-wedge counterpart"
+          }
+        },
+        "deferred_to_sensor_adapter": {
+          "camera_translation_m": [
+            0.0013166439912206482,
+            0.0025808774008537387,
+            -0.0014547403187013166
+          ],
+          "camera_rotation_deg": [
+            2.824188146369419,
+            2.3587267279331865,
+            1.670300982442571
+          ],
+          "status": "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+        },
+        "calibration": "provisional_uncalibrated",
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1586.3190720483988,
+          "young": 79365.6967962498,
+          "poisson": 0.30764384584755305,
+          "yield_stress": 1147.6677631233597,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.22552690244167015,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.012,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": true,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "scenario_selection": "auto_generated_BenchmarkSpec"
+      },
+      "sampling_receipt": {
+        "scope": "generated_initial_state_only",
+        "variant": "D3",
+        "seed": 42,
+        "spacing_m": 0.002,
+        "particle_count": 19303,
+        "initial_mass_kg": 0.244965736382002,
+        "particle_volume_m3": 8e-09,
+        "continuous_base": true,
+        "preassigned_components": false,
+        "sampling": "cell centers below one max-union height field over a single base",
+        "positions_sha256": "93a3907a0bcab7596fd8ef76b8e07f8c073c02b6435deb07d46e998e75be8095",
+        "mass_sha256": "fac9e55b22d1911734b679e4c0ecd02c162863775901124c39de3782e7167d09",
+        "lattice_sha256": "6db0efaedbd842804fc5f367772ec29fe498e250179bfaedc3f49426f6036597",
+        "scenario_sha256": "3e57430252f3952804db985fcbd2273981196950764a7f45731c88c72abdd60f",
+        "material_status": "provisional_uncalibrated",
+        "benchmark_ready": false
+      },
+      "scenario": {
+        "variant": "D3",
+        "seed": 42,
+        "heightfield": {
+          "length_m": 0.12,
+          "width_m": 0.08,
+          "base_height_m": 0.015,
+          "bumps": [
+            {
+              "x_m": -0.029244486240991793,
+              "y_m": -0.012565608320354471,
+              "radius_x_m": 0.009789472116237454,
+              "radius_y_m": 0.007376709391550598,
+              "height_m": 0.00987811175818378,
+              "family": "ridge"
+            },
+            {
+              "x_m": 0.030044558807961412,
+              "y_m": -0.012855742778892185,
+              "radius_x_m": 0.007512454530702184,
+              "radius_y_m": 0.008801543751582269,
+              "height_m": 0.006853990121162906,
+              "family": "dome"
+            }
+          ]
+        },
+        "material": {
+          "density_kg_m3": 1586.3190720483988,
+          "young_modulus_pa": 79365.6967962498,
+          "poisson_ratio": 0.30764384584755305,
+          "yield_stress_pa": 1147.6677631233597,
+          "hardening_ratio": 0.16637543610475045,
+          "friction": 0.22552690244167015,
+          "failure_model": "not_configured",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": null,
+          "calibration": "provisional_uncalibrated"
+        },
+        "blade_half_thickness_m": 0.0013621049375940656,
+        "camera_translation_m": [
+          0.0013166439912206482,
+          0.0025808774008537387,
+          -0.0014547403187013166
+        ],
+        "camera_rotation_deg": [
+          2.824188146369419,
+          2.3587267279331865,
+          1.670300982442571
+        ]
+      },
+      "scope": "10-step actual adapter state smoke; no cutting success claim"
+    }
+  ],
+  "source_receipt_scope": "post-run current-source hashes; this is not a launch-time manifest",
+  "source_sha256": {
+    "src/robotic_cutting_sim/coupled_robot.py": "9e1aa11a89131998c75d4c0a382f3a3f0905e950babeebd5c40fed7f4e35e257",
+    "src/robotic_cutting_sim/benchmark.py": "f0ca2a16b9c8f360ddae0754167576ca2a7aeabd03d356fc4a84d3f873cd3b49",
+    "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+    "src/robotic_cutting_sim/tlmpm.py": "0c512a252843cd395c1d610249a16ca176763a75e13094ca01ab4077cc08f7b7"
+  },
+  "artifact_sha256": {
+    "D3_state.npz": "3066b1b8c2c9914ecbe61a0cba6df707a6a33e22e522b83f0e32724508ba50bd",
+    "D2_state.npz": "e959a659a91440b7ab9108a80b0f25d24f18fbf474b5072f61c63908d48c7533"
+  }
+}
