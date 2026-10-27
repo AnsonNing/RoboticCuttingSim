@@ -371,7 +371,8 @@ def _remember_cut(cuts: wp.array(dtype=int), index: wp.array(dtype=int), previou
 
 class TLMPM:
     """GPU physics state; all particles are initially one uncut continuum."""
-    def __init__(self, points, masses, spacing, config=TLMPMConfig(), device="cuda:1"):
+    def __init__(self, points, masses, spacing, config=TLMPMConfig(), device="cuda:1", *,
+                 fixture_boxes=None, table_plane=None):
         if config.cuts not in (1, 2):
             raise ValueError("One or two retained cuts supported by this prototype")
         if not 0 <= config.pic <= 1 or not 0 < config.sharpness < 1:
@@ -382,6 +383,21 @@ class TLMPM:
         self.volume = spacing**3
         self.radius = config.contact_radius_scale*spacing*.5
         self.code_count = 3**config.cuts
+        self.fixture_data = None
+        if fixture_boxes is not None or table_plane is not None:
+            if config.floor:
+                raise ValueError("Custom fixtures require floor=False; do not also apply the legacy tray")
+            boxes = np.asarray(fixture_boxes, dtype=np.float32).reshape(-1, 2, 3)
+            plane = np.asarray(table_plane, dtype=np.float32)
+            if not np.isfinite(boxes).all() or np.any(boxes[:, 1] <= 0):
+                raise ValueError("Fixture boxes need finite centers and positive half extents")
+            if plane.shape != (4,) or not np.isfinite(plane).all() or not np.isclose(np.linalg.norm(plane[:3]), 1.):
+                raise ValueError("Table plane needs a unit inward normal and signed offset")
+            from .fixture_contacts import fixture_contacts
+            with wp.ScopedDevice(device):
+                self.fixture_data = (fixture_contacts,
+                    wp.array(boxes[:, 0].copy(), dtype=wp.vec3),
+                    wp.array(boxes[:, 1].copy(), dtype=wp.vec3), wp.vec4(*plane))
         origin = np.floor(points.min(0)/config.dx)*config.dx-2*config.dx
         dims = np.ceil((points.max(0)-origin)/config.dx).astype(int)+3
         cells = np.floor((points-origin)/config.dx).astype(int)
@@ -456,6 +472,10 @@ class TLMPM:
                 self.reaction, self.stats, self.radius, self.volume, c.dt, c.contact_stiffness,
                 c.contact_friction, c.cutting_energy, c.sharpness, c.blade_length,
                 c.blade_height, c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool)])
+            if self.fixture_data is not None:
+                kernel, centers, halves, plane = self.fixture_data
+                wp.launch(kernel, n, [self.x, self.v, self.mass, self.impulse, centers, halves,
+                    plane, self.radius, c.dt, c.contact_stiffness, c.contact_friction, self.stats])
             if c.material_contact:
                 self.hash.build(self.x, 2.4*self.radius)
                 wp.launch(_particle_contacts, n, [self.hash.id, self.x, self.reference,

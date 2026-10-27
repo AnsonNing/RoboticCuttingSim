@@ -30,6 +30,18 @@ Lab初始reset的q／材料／ideal-depth差異為0；完整repeat與原生剛�
 隨機化 → 回歸測試。會在目前整合證據與未解決問題保存後，以共用 Task／
 Geometry／Fixture、workpiece-local目標及統一API接續；原D0–D3基線保留。
 
+### CUT-01／TRIM-01 實作進行中
+
+已固定兩個任務的幾何、材料、治具、固定刀具座與獨立評分標準，見
+[CUTTING_TASKS](CUTTING_TASKS.md)。新增可選工件座標材料介面與有限治具接觸；
+舊 D0–D3 的預設接觸／表面設定保留。新任務採用1mm完整粒子體積取樣，
+CUT-01為96,000粒子／144g，TRIM-01為97,044粒子／145.566g。
+
+Lab與Kit的實際2步CUT啟動已通過；Kit另完成TRIM啟動。第一個完整CUT正執行，
+尚未宣稱切割任務通過。初次啟動的JSON布林序列化失敗另存，修正後使用新輸出目錄。
+新任務使用經獨立閉合仿射幾何控制通過的current-volume表面profile；其驗證
+不等於任務整平通過，也沒有改動切削物理或舊D0的renderer預設。
+
 ## 先前 standalone 基線與歷史紀錄
 
 本輪已沿 Physical Cutting → Franka Control → RGB-D → Simulation Benchmark

@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def write_json(path, data):
     def convert(value):
-        if isinstance(value, (np.integer, np.floating)):
+        if isinstance(value, np.generic):
             return value.item()
         if isinstance(value, np.ndarray):
             return value.tolist()

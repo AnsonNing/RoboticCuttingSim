@@ -7,6 +7,7 @@ are explicitly ideal Warp RGB-D of the CURRENT full USD scene, not native D455.
 Full Kit and native sensors have separate runners and acceptance results.
 """
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 import time
 
@@ -63,7 +64,7 @@ def _native_contact_audit(count: wp.array(dtype=int), distance: wp.array(dtype=f
                 wp.atomic_max(audit, 1, penetration)
 
 
-def _spawn_franka(prim_path, cfg, translation=None, orientation=None, **kwargs):
+def _spawn_franka(prim_path, cfg, translation=None, orientation=None, *, task=None, **kwargs):
     """Spawn through Lab, attaching the physical wedge before Newton imports USD."""
     from pxr import Gf, Usd, UsdGeom, UsdPhysics
     prim = sim_utils.spawn_from_usd(prim_path, cfg, translation=translation, orientation=orientation, **kwargs)
@@ -72,15 +73,17 @@ def _spawn_franka(prim_path, cfg, translation=None, orientation=None, **kwargs):
         hand_prim = next(p for p in Usd.PrimRange(prim) if p.GetName() == "panda_hand"
                          and p.HasAPI(UsdPhysics.RigidBodyAPI))
         mesh = UsdGeom.Mesh.Define(stage, str(hand_prim.GetPath())+"/Knife")
-        vertices, faces = wedge_mesh()
+        dimensions = (task.blade_length_m, task.blade_height_m, task.blade_half_width_m) if task else (.012, .004, .025)
+        mount = task.hand_from_edge_xyz_xyzw if task else (0, 0, .18, 1, 0, 0, 0)
+        vertices, faces = wedge_mesh(*dimensions)
         mesh.CreatePointsAttr(vertices)
         mesh.CreateFaceVertexCountsAttr([3]*len(faces))
         mesh.CreateFaceVertexIndicesAttr(faces.ravel())
         mesh.CreateSubdivisionSchemeAttr("none")
         mesh.CreateDisplayColorAttr([Gf.Vec3f(.38, .65, .85)])
         xf = UsdGeom.Xformable(mesh)
-        xf.AddTranslateOp().Set(Gf.Vec3d(0, 0, .18))
-        xf.AddOrientOp().Set(Gf.Quatf(0, Gf.Vec3f(1, 0, 0)))
+        xf.AddTranslateOp().Set(Gf.Vec3d(*mount[:3]))
+        xf.AddOrientOp().Set(Gf.Quatf(float(mount[6]), Gf.Vec3f(*mount[3:6])))
         UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
         UsdPhysics.MeshCollisionAPI.Apply(mesh.GetPrim()).CreateApproximationAttr("convexHull")
     return prim
@@ -92,16 +95,30 @@ class LabCuttingConfig:
     material_device: str = "cuda:0"
     seed: int = 42
     variant: str = "D0"
+    task_id: str | None = None
+    task_variant: str = "fixed"
+    action_mode: str = "cartesian_edge_pose_world"
+    surface_profile: str | None = None
     dx: float = .004
     feedback: bool = True
     width: int = 640
     height: int = 480
     global_width: int = 1280
     global_height: int = 960
-    velocity_feedforward: bool = False
+    velocity_feedforward: bool | None = None
     experiment: str = "cut"
     camera: bool = True
     static_scene: str = str(ROOT/"artifacts/research_handoff_001/workcell/workcell.usda")
+
+    def __post_init__(self):
+        if self.task_id not in (None, "CUT-01", "TRIM-01"):
+            raise ValueError("Unsupported live cutting task")
+        if self.action_mode not in ("cartesian_edge_pose_world", "joint_position_rad"):
+            raise ValueError("Unsupported action mode")
+        if self.velocity_feedforward is None:
+            object.__setattr__(self, "velocity_feedforward", self.task_id is not None)
+        if self.surface_profile is None:
+            object.__setattr__(self, "surface_profile", "current_volume_v1" if self.task_id else "legacy")
 
 
 def make_lab_cfg(options):
@@ -109,6 +126,8 @@ def make_lab_cfg(options):
     asset = ROOT/"artifacts/workcell_asset_cache"/ASSETS["franka"]
     if not asset.is_file():
         raise FileNotFoundError(asset)
+    from .tasks import make_task
+    task = make_task(options.task_id, seed=options.seed, variant=options.task_variant) if options.task_id else None
 
     def robot(index):
         q = dict(zip([f"panda_joint{i}" for i in range(1, 8)], PARK_JOINTS))
@@ -116,7 +135,7 @@ def make_lab_cfg(options):
         if index == 1:
             q["panda_joint1"] = -np.pi/2
         return ArticulationCfg(prim_path=f"/World/Franka_{index}",
-            spawn=sim_utils.UsdFileCfg(usd_path=str(asset), func=_spawn_franka,
+            spawn=sim_utils.UsdFileCfg(usd_path=str(asset), func=partial(_spawn_franka, task=task) if task else _spawn_franka,
                 variants={"Physics": "mujoco", "Colliders": "convex_hulls"},
                 articulation_props=[NewtonArticulationCfg(self_collision_enabled=True)],
                 rigid_props={"/.*": [MujocoRigidBodyCfg(gravcomp=1.)]},
@@ -133,8 +152,8 @@ def make_lab_cfg(options):
                 "fingers": ImplicitActuatorCfg(joint_names_expr=["panda_finger_joint.*"],
                     stiffness=350., damping=10., joint_effort_limit=20., armature=.1, viscous_friction=0.)})
 
-    def fixed_box(name, center, size, color):
-        return AssetBaseCfg(prim_path="/World/"+name, init_state=AssetBaseCfg.InitialStateCfg(pos=center),
+    def fixed_box(name, center, size, color, rotation=(0., 0., 0., 1.)):
+        return AssetBaseCfg(prim_path="/World/"+name, init_state=AssetBaseCfg.InitialStateCfg(pos=center, rot=rotation),
             spawn=sim_utils.CuboidCfg(size=size,
                 collision_props=[sim_utils.UsdPhysicsCollisionCfg(collision_enabled=True)],
                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=color)))
@@ -150,6 +169,17 @@ def make_lab_cfg(options):
         franka_0 = robot(0)
         franka_1 = robot(1)
 
+    scene_cfg = CuttingSceneCfg(num_envs=1, env_spacing=2.)
+    if task:
+        for name in ("tray_floor", "tray_left", "tray_right", "tray_front", "tray_back"):
+            setattr(scene_cfg, name, None)
+        scene_cfg.table = fixed_box("Table", (0., 0., task.table_top_world_z_m-.025),
+                                    (1.8, 1.2, .05), (.28, .31, .35))
+        for index, box in enumerate(task.fixture_boxes_local):
+            center = tuple(task.points_to_world(box.center_m))
+            setattr(scene_cfg, f"task_fixture_{index}", fixed_box(f"TaskFixture_{index}", center,
+                tuple(2*np.asarray(box.half_extents_m)), (.22, .27, .31), tuple(task.world_from_workpiece_xyzw[3:])))
+
     observation = {"q": [2, 7], "qdot": [2, 7], "tool_pose": 7}
     if options.camera:
         for name in ("d455_0", "d455_1"):
@@ -157,7 +187,7 @@ def make_lab_cfg(options):
             observation[name+"_depth_m"] = [options.height, options.width]
     cfg = DirectRLEnvCfg(seed=options.seed, decimation=10, episode_length_s=8.,
         action_space=7, observation_space=observation, ui_window_class_type=None,
-        scene=CuttingSceneCfg(num_envs=1, env_spacing=2.),
+        scene=scene_cfg,
         sim=sim_utils.SimulationCfg(device=options.device, dt=.002, render_interval=10,
             physics=NewtonCfg(use_cuda_graph=False, load_visual_shapes=False,
                 default_shape_cfg=NewtonShapeCfg(gap=.001),
@@ -173,8 +203,11 @@ class IsaacLabCuttingEnv(DirectRLEnv):
     def __init__(self, cfg, options):
         self.options = options
         self.target = WorkpieceTarget()
+        from .tasks import make_task
+        self.task = make_task(options.task_id, seed=options.seed, variant=options.task_variant) if options.task_id else None
+        self.mount = np.array(self.task.hand_from_edge_xyz_xyzw if self.task else (0, 0, .18, 1, 0, 0, 0), float)
         self.material = LiveCuttingMaterial(CouplingConfig(dx=options.dx,
-            device=options.material_device, feedback=options.feedback, variant=options.variant), self.target)
+            device=options.material_device, feedback=options.feedback, variant=options.variant), self.target, task=self.task)
         self._bound = False
         self._capture_time = None
         self.time_s = 0.
@@ -232,10 +265,10 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         import newton.ik as ik
         self._ik_state = self.model.state()
         self._ik_q = wp.clone(self.model.joint_q).reshape((1, self.model.joint_coord_count))
-        self._position = ik.IKObjectivePosition(link_index=self.hand, link_offset=wp.vec3(0, 0, .18),
+        self._position = ik.IKObjectivePosition(link_index=self.hand, link_offset=wp.vec3(*self.mount[:3]),
             target_positions=wp.array([wp.vec3(0, 0, .1)], dtype=wp.vec3, device=self.model.device))
         self._rotation = ik.IKObjectiveRotation(link_index=self.hand,
-            link_offset_rotation=wp.quat(1, 0, 0, 0),
+            link_offset_rotation=wp.quat(*self.mount[3:]),
             target_rotations=wp.array([wp.vec4(0, 0, 0, 1)], dtype=wp.vec4, device=self.model.device))
         limits = ik.IKObjectiveJointLimit(self.model.joint_limit_lower, self.model.joint_limit_upper, weight=10.)
         self._ik = ik.IKSolver(model=self.model, n_problems=1,
@@ -264,7 +297,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         q = np.clip(self._ik_q.numpy()[0], self.model.joint_limit_lower.numpy(), self.model.joint_limit_upper.numpy())
         self._ik_state.joint_q.assign(q)
         newton.eval_fk(self.model, self._ik_state.joint_q, self.model.joint_qd, self._ik_state)
-        edge = compose_tool_pose(self._ik_state.body_q.numpy()[self.hand], (0, 0, .18), (1, 0, 0, 0))
+        edge = compose_tool_pose(self._ik_state.body_q.numpy()[self.hand], self.mount[:3], self.mount[3:])
         error = float(np.linalg.norm(edge[:3]-desired[:3]))
         if error > .001:
             raise RuntimeError(f"Active Lab model IK position error {error}m")
@@ -281,7 +314,11 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         return {"q": np.array([q[indices][:7] for indices in self._joint_coords]),
             "qdot": np.array([v[indices][:7] for indices in self._joint_coords]),
             "hand_pose": hand, "body_pose": body,
-            "tool_pose": compose_tool_pose(hand, (0, 0, .18), (1, 0, 0, 0)), "timestamp_s": self.time_s}
+            "tool_pose": compose_tool_pose(hand, self.mount[:3], self.mount[3:]), "timestamp_s": self.time_s}
+
+    def reference_pose(self, time_s):
+        return (self.task.reference_edge_pose_world(time_s) if self.task else
+            self.target.poses_to_world(reference_pose(time_s, self.target.edge_height_local_m)))
 
     def _reset_idx(self, env_ids):
         super()._reset_idx(env_ids)
@@ -300,7 +337,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             robot.write_joint_velocity_to_sim_index(velocity=torch.zeros_like(tensor))
         self.scene.write_data_to_sim()
         self.sim.forward()
-        desired = self.target.poses_to_world(reference_pose(0, self.target.height_m+self.target.edge_clearance_m))
+        desired = self.reference_pose(0.)
         q, _ = self._solve_ik(desired)
         for arm, robot in enumerate(self.robots):
             values = q[self._joint_coords[arm]] if arm == 0 else self._park_q[self._joint_coords[arm]]
@@ -328,13 +365,28 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self._bridge = DynamicSurfaceBridge(self.sim.stage)
         self._capture_time = None
         self.last_diagnostics = {}
+        self._step_cut_enabled, self._step_cut_index = True, None
 
     def _pre_physics_step(self, actions):
         if self.time_s >= 8.-1e-9:
             raise RuntimeError("Episode ended; call reset")
-        self._desired = actions[0].detach().cpu().numpy().astype(float)
         self._previous = self.measured()
-        q, self._ik_error = self._solve_ik(self._desired)
+        values = actions[0].detach().cpu().numpy().astype(float)
+        if self._step_action_mode == "joint_position_rad":
+            import newton
+            q = NewtonManager.get_state_0().joint_q.numpy().copy()
+            coordinates = self._joint_coords[0][:7]
+            if (not np.isfinite(values).all() or np.any(values < self.model.joint_limit_lower.numpy()[coordinates])
+                    or np.any(values > self.model.joint_limit_upper.numpy()[coordinates])):
+                raise ValueError("Joint command exceeds the actual articulation limits")
+            q[coordinates] = values
+            self._ik_state.joint_q.assign(q)
+            newton.eval_fk(self.model, self._ik_state.joint_q, self.model.joint_qd, self._ik_state)
+            self._desired = compose_tool_pose(self._ik_state.body_q.numpy()[self.hand], self.mount[:3], self.mount[3:])
+            self._ik_error = 0.
+        else:
+            self._desired = values
+            q, self._ik_error = self._solve_ik(self._desired)
         for arm, robot in enumerate(self.robots):
             values = q[self._joint_coords[arm]] if arm == 0 else self._park_q[self._joint_coords[arm]]
             robot.actuators.target_command.set_position_index(
@@ -353,7 +405,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
     def _get_rewards(self):
         self.time_s = float(self.episode_length_buf[0])*self.step_dt
         measured = self.measured()
-        diagnostics = self.material.advance(measured["tool_pose"], self.time_s, cutting=self.options.experiment == "cut")
+        diagnostics = self.material.advance(measured["tool_pose"], self.time_s,
+            cutting=self.options.experiment == "cut" and self._step_cut_enabled, cut_index=self._step_cut_index)
         self._sample_native_contacts()
         contact = self._contact_audit.numpy()
         delta_rotation = (Rotation.from_quat(measured["tool_pose"][3:])
@@ -388,8 +441,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             xf.ClearXformOpOrder()
             xf.SetResetXformStack(True)
             self._body_ops.append((i, xf.AddTransformOp()))
-        self._surface = ComponentSurface(self.options.dx/2, self.options.material_device,
-            voxel_size=min(self.options.dx/2, .0015))
+        self._surface = ComponentSurface(self.material.spacing, self.options.material_device,
+            voxel_size=self.material.spacing/2 if self.options.surface_profile == "current_volume_v1" else min(self.material.spacing, .0015),
+            profile=self.options.surface_profile)
         paths = {"d455_0": "/World/D455_0/RSD455/Camera_Pseudo_Depth",
                  "d455_1": "/World/D455_1/RSD455/Camera_Pseudo_Depth", "global": "/World/GlobalCamera"}
         self.calibration = {name: usd_camera_calibration(self.sim.stage, path,
@@ -406,6 +460,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         policy = {key: torch.as_tensor(measured[key][None], device=self.device) for key in ("q", "qdot", "tool_pose")}
         if self._capture_time != self.time_s:
             vertices, faces, self.surface_metadata = self._surface.extract(self.material.bed)
+            if self.task:
+                vertices = self.task.points_to_world(vertices).astype(np.float32)
             self.surface = (vertices, faces)
             self._bridge.update(vertices, faces, self.time_s)
             self._bridge.mesh.CreateDisplayColorAttr([Gf.Vec3f(.72, .32, .13)])
@@ -433,8 +489,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
 
     def reference_action(self):
         trajectory_time = self.time_s+self.step_dt if self.options.experiment == "cut" else 0.
-        desired = self.target.poses_to_world(reference_pose(trajectory_time,
-            self.target.height_m+self.target.edge_clearance_m))
+        desired = self.reference_pose(trajectory_time)
         return torch.tensor(desired[None], device=self.device, dtype=torch.float32)
 
     def reset(self, seed=None, options=None):
@@ -442,7 +497,25 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             self.cfg.seed = int(seed)
         return super().reset(seed=seed, options=options)
 
-    def step(self, action):
+    def step(self, action=None):
+        self._step_action_mode = self.options.action_mode
+        self._step_cut_enabled, self._step_cut_index = True, None
+        if action is None:
+            self._step_action_mode = "cartesian_edge_pose_world"
+            action = self.reference_action()
+        elif isinstance(action, dict):
+            if not self.task:
+                raise ValueError("Task action mappings require a CUT/TRIM task")
+            command = self.task.validate_action(action)
+            self._step_action_mode = command["mode"]
+            self._step_cut_enabled, self._step_cut_index = command["cut_enabled"], 0
+            values = command["target"]
+            if values.shape == (2, 7):
+                parked = self._park_q[self._joint_coords[1]][:7]
+                if not np.allclose(values[1], parked, atol=1e-8, rtol=0):
+                    raise ValueError("Franka 2 is parked in this task version")
+                values = values[0]
+            action = torch.tensor(values[None], device=self.device, dtype=torch.float32)
         obs, reward, terminated, _, info = super().step(action)
         truncated = torch.tensor([self.time_s >= 8.-1e-9], device=self.device)
         return obs, reward, terminated, truncated, info

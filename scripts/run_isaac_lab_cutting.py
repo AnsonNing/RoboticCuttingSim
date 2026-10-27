@@ -27,10 +27,13 @@ def main():
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--material-device", default="cuda:0")
     parser.add_argument("--variant", choices=("D0", "D1"), default="D0")
+    parser.add_argument("--task-id", choices=("CUT-01", "TRIM-01"))
+    parser.add_argument("--task-variant", default="fixed")
+    parser.add_argument("--action-mode", choices=("cartesian_edge_pose_world", "joint_position_rad"), default="cartesian_edge_pose_world")
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--no-camera", action="store_true")
     parser.add_argument("--no-feedback", action="store_true")
-    parser.add_argument("--velocity-feedforward", action="store_true")
+    parser.add_argument("--velocity-feedforward", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--experiment", choices=("cut", "settle"), default="cut")
     parser.add_argument("--global-width", type=int, default=1280)
     parser.add_argument("--global-height", type=int, default=960)
@@ -55,6 +58,7 @@ def main():
         scene_path = scene_dir/"workcell.usda"
     options = LabCuttingConfig(device=args.device, material_device=args.material_device,
         seed=args.seed, variant=args.variant, camera=not args.no_camera, feedback=not args.no_feedback,
+        task_id=args.task_id, task_variant=args.task_variant, action_mode=args.action_mode,
         velocity_feedforward=args.velocity_feedforward, global_width=args.global_width, global_height=args.global_height,
         experiment=args.experiment,
         static_scene=str(scene_path.resolve()))
@@ -70,12 +74,20 @@ def main():
         "material_dt_s": .0001, "camera": "ideal_warp_rgbd" if options.camera else "disabled",
         "native_d455_validated": False, "isaac_sim_kit_validated": False}
     record["acceptance_protocol_sha256"] = hashlib.sha256((ROOT/"configs/isaac_acceptance.json").read_bytes()).hexdigest()
+    if args.task_id:
+        from robotic_cutting_sim.tasks import make_task
+        task = make_task(args.task_id, seed=args.seed, variant=args.task_variant)
+        write_json(output/"task.json", task.to_dict())
+        record["task_protocol_sha256"] = task.to_dict()["protocol_sha256"]
     implementation = output/"implementation"
     implementation.mkdir()
     loaded = [Path(__file__), ROOT/"src/robotic_cutting_sim/isaac_lab_env.py",
         ROOT/"src/robotic_cutting_sim/live_material.py", ROOT/"src/robotic_cutting_sim/tlmpm.py",
         ROOT/"src/robotic_cutting_sim/coupled_robot.py", ROOT/"src/robotic_cutting_sim/cutting_surface.py",
         ROOT/"src/robotic_cutting_sim/material_config.py", ROOT/"src/robotic_cutting_sim/scene_frames.py"]
+    if args.task_id:
+        loaded += [ROOT/"src/robotic_cutting_sim/tasks.py", ROOT/"src/robotic_cutting_sim/fixture_contacts.py",
+                   ROOT/"configs/cutting_tasks_v1.json"]
     record["implementation_sha256"] = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in loaded}
     for path in loaded:
         shutil.copyfile(path, implementation/path.name)
@@ -94,7 +106,7 @@ def main():
                 "cutting_hand_body_index": env.hand, "cutting_hand_body_label": env.model.body_label[env.hand],
                 "knife_shape_index": env.knife_shape, "knife_shape_label": env.model.shape_label[env.knife_shape],
                 "knife_shape_body_index": int(env.model.shape_body.numpy()[env.knife_shape]),
-                "T_hand_edge_xyz_xyzw": [0., 0., .18, 1., 0., 0., 0.],
+                "T_hand_edge_xyz_xyzw": env.mount,
                 "body_labels": list(env.model.body_label),
                 "articulations": [{"type": type(robot).__module__+"."+type(robot).__name__,
                     "joint_names": robot.joint_names, "body_names": robot.body_names} for robot in env.robots],
@@ -109,7 +121,7 @@ def main():
             def capture(step):
                 state = env.measured()
                 states.append(state)
-                material.append(env.material.debug_state())
+                material.append(env.material.world_state())
                 material_times.append(env.time_s)
                 if not options.camera:
                     return
@@ -149,7 +161,7 @@ def main():
             initial_depth = {name: frame["depth_m"].copy() for name, frame in env.frames.items()}
             for step in range(1, args.steps+1):
                 tick = time.perf_counter()
-                env.step(env.reference_action())
+                env.step()
                 state = env.measured()
                 data = env.material.debug_state()
                 diagnostic = env.last_diagnostics.copy()
@@ -174,9 +186,9 @@ def main():
             count, component_ids = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), data["codes"],
                 1, gradients=bed.gradients.numpy())
             from robotic_cutting_sim.scene_frames import compose_pose, matrix_pose, invert_transform, pose_matrix
-            command = np.vstack([env.target.poses_to_world(reference_pose(0, env.target.edge_height_local_m)),
+            command = np.vstack([env.reference_pose(0),
                                  [d["desired_tool_pose"] for d in diagnostics]])
-            edge_from_hand = matrix_pose(invert_transform(pose_matrix([0., 0., .18, 1., 0., 0., 0.])))
+            edge_from_hand = matrix_pose(invert_transform(pose_matrix(env.mount)))
             np.savez_compressed(output/"robot_state.npz", time_s=[s["timestamp_s"] for s in states],
                 q=[s["q"] for s in states], qdot=[s["qdot"] for s in states],
                 body_pose=[s["body_pose"] for s in states], hand_pose_xyzw=[s["hand_pose"] for s in states],
@@ -185,13 +197,26 @@ def main():
                 next_material_wrench_world=[d["next_material_wrench_world"] for d in diagnostics],
                 applied_previous_material_wrench_world=[d["applied_previous_material_wrench_world"] for d in diagnostics],
                 material_reaction_impulse_world=[d["current_material_reaction_impulse_world"] for d in diagnostics])
-            np.savez_compressed(output/"physics_state.npz", time_s=material_times,
+            physics_record = dict(time_s=material_times,
                 positions=[s["positions"] for s in material], velocities=[s["velocities"] for s in material],
                 codes=[s["codes"] for s in material], mass_kg=env.material.masses,
-                reference_positions=env.material.points, reference_indices=env.material.lattice,
+                reference_positions=env.material.world_points, reference_positions_local=env.material.points,
+                world_from_workpiece_xyzw=env.material.task.world_from_workpiece_xyzw if env.task else (0, 0, 0, 0, 0, 0, 1),
+                reference_indices=env.material.lattice,
                 final_F=data["F"], final_Fpi=data["Fpi"], final_plastic_strain=data["plastic_strain"],
                 component_ids=component_ids, reference_stencil_nodes=bed.nodes.numpy(),
                 reference_stencil_weights=bed.weights.numpy(), reference_stencil_gradients=bed.gradients.numpy())
+            np.savez_compressed(output/"physics_state.npz", **physics_record)
+            if env.task:
+                vertices, faces = env.surface
+                face_labels = np.full(len(faces), -1, np.int32)
+                for row in env.surface_metadata["component_ranges"]:
+                    face_labels[row["first_triangle"]:row["first_triangle"]+row["triangles"]] = row["mechanical_component"]
+                evaluation = env.task.evaluate_oracle({**physics_record, "surface_vertices_world": vertices,
+                    "surface_triangles": faces, "surface_triangle_component_ids": face_labels,
+                    "surface_component_provenance": env.surface_metadata["partition_rule"],
+                    "surface_timestamp_s": env.time_s})
+                write_json(output/"task_evaluation.json", evaluation)
             env.sim.stage.Export(str(output/"final_live_scene.usda"))
             write_json(output/"diagnostics.json", diagnostics)
             write_json(output/"trace.json", rows)
@@ -202,10 +227,12 @@ def main():
                 "component_masses_kg": [float(env.material.masses[component_ids == i].sum()) for i in np.unique(component_ids)],
                 "native_d455_validated": False, "isaac_sim_kit_validated": False,
                 "full_acceptance": "PENDING_SEPARATE_QUANTITATIVE_AUDIT"}
+            if env.task:
+                result["task_id"], result["task_success"] = env.task.task_id, evaluation["status"]
             if args.reset_check:
                 env.reset(seed=args.seed)
                 reset_state = env.measured()
-                reset_material = env.material.debug_state()
+                reset_material = env.material.world_state()
                 reset = {"scope": "same-process reset to original seed; full repeat assessed separately",
                     "joint_max_abs_error_rad": float(np.max(np.abs(reset_state["q"]-states[0]["q"]))),
                     "material_max_abs_error_m": float(np.max(np.abs(reset_material["positions"]-material[0]["positions"]))),

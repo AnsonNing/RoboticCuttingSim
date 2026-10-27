@@ -65,42 +65,61 @@ def combine_component_meshes(meshes):
 
 class CuttingSurface:
     """Newton ParticleSurface per current component, with no intercomponent weld."""
-    def __init__(self, partition, spacing_m, voxel_size_m=.001, device="cuda:0"):
+    def __init__(self, partition, spacing_m, voxel_size_m=.001, device="cuda:0", *, profile="legacy"):
         from newton.geometry import ParticleSurface
         self.partition = partition
         self.spacing_m, self.voxel_size_m, self.device = spacing_m, voxel_size_m, device
+        if profile not in ("legacy", "current_volume_v1"):
+            raise ValueError("Unknown surface profile")
+        if profile == "current_volume_v1" and not np.isclose(voxel_size_m, spacing_m/2):
+            raise ValueError("Validated current-volume profile requires half-spacing voxels")
+        self.profile = profile
         self.surface_type = ParticleSurface
         self.surfaces = {}
 
-    def extract(self, positions_m, current_codes):
+    def extract(self, positions_m, current_codes, total_F=None):
         import warp as wp
         positions = np.asarray(positions_m, np.float32)
         if positions.shape != (len(self.partition.nodes), 3) or not np.isfinite(positions).all():
             raise ValueError("Expected current finite particle positions matching the mechanical graph")
         count, labels, provenance = self.partition.partition(current_codes)
+        if self.profile == "current_volume_v1":
+            from .affine_surface_controls import current_volume_radii
+            deformation = np.asarray(total_F)
+            if deformation.shape != (len(positions), 3, 3):
+                raise ValueError("Current-volume reconstruction needs one total deformation gradient per particle")
+            radii_all = current_volume_radii(self.spacing_m, deformation)
+            provenance["current_volume_jacobian_min_max"] = [float(np.linalg.det(deformation).min()),
+                                                             float(np.linalg.det(deformation).max())]
+            provenance["profile_validation_scope"] = "Independent closed affine boxes; J=.8/1.2, shear=.25, held-out rigid rotations; not calibrated fracture surfaces"
         chunks = []
         with wp.ScopedDevice(self.device):
             for label in range(count):
                 selected = np.flatnonzero(labels == label)
                 key = hashlib.sha256(selected.tobytes()).hexdigest()
                 if key not in self.surfaces:
+                    profile_args = ({"threshold": .5, "kernel_scale": .5, "kernel_radius": 3*self.spacing_m,
+                        "anisotropic": False, "field_smooth_iterations": 0} if self.profile == "current_volume_v1" else {})
                     self.surfaces[key] = self.surface_type(voxel_size=self.voxel_size_m, smooth_lambda=0,
-                                           mesh_smooth_iterations=0, device=self.device)
+                                           mesh_smooth_iterations=0, device=self.device, **profile_args)
                 points = wp.array(positions[selected], dtype=wp.vec3, device=self.device)
-                radii = wp.full(len(selected), self.spacing_m / 2, dtype=float, device=self.device)
+                radii = (wp.array(radii_all[selected].astype(np.float32), dtype=float, device=self.device)
+                    if self.profile == "current_volume_v1" else
+                    wp.full(len(selected), self.spacing_m / 2, dtype=float, device=self.device))
                 vertices, indices, _ = self.surfaces[key].extract(points, radii)
                 if vertices is None or indices is None:
                     raise RuntimeError(f"ParticleSurface returned no mesh for {len(selected)} physical particles")
                 chunks.append((label, vertices.numpy().copy(), indices.numpy().reshape(-1, 3).copy(), len(selected)))
         vertices, faces, ranges = combine_component_meshes(chunks)
         return vertices, faces, {**provenance, "mechanical_components": count, "component_ranges": ranges,
-                                 "renderer_partition_changes_physics": False}
+                                 "renderer_partition_changes_physics": False, "surface_profile": self.profile}
 
 
 class ComponentSurface:
     """Live-bed convenience adapter; reference stencil is copied only once."""
-    def __init__(self, spacing, device="cuda:0", voxel_size=.001):
+    def __init__(self, spacing, device="cuda:0", voxel_size=.001, *, profile="legacy"):
         self.spacing, self.device, self.voxel_size = spacing, device, voxel_size
+        self.profile = profile
         self.surface = None
         self.bed_identity = None
 
@@ -108,9 +127,10 @@ class ComponentSurface:
         if self.surface is None or self.bed_identity != id(bed):
             partition = CurrentMechanicalPartition(bed.nodes.numpy(), bed.weights.numpy(),
                                                     bed.gradients.numpy(), bed.config.cuts)
-            self.surface = CuttingSurface(partition, self.spacing, self.voxel_size, self.device)
+            self.surface = CuttingSurface(partition, self.spacing, self.voxel_size, self.device, profile=self.profile)
             self.bed_identity = id(bed)
-        return self.surface.extract(bed.x.numpy(), bed.code.numpy())
+        return self.surface.extract(bed.x.numpy(), bed.code.numpy(),
+                                    bed.F.numpy() if self.profile == "current_volume_v1" else None)
 
 
 def wedge_mesh(length=.012, height=.004, half_width=.025):
