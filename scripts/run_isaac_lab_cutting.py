@@ -10,11 +10,13 @@ import hashlib
 import importlib.metadata
 from pathlib import Path
 import subprocess
+import shutil
 import time
 
 import numpy as np
 
 from robotic_cutting_sim.recording import ROOT, manifest, new_output, write_json
+from robotic_cutting_sim.coupled_robot import reference_pose
 
 
 def main():
@@ -28,9 +30,14 @@ def main():
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--no-camera", action="store_true")
     parser.add_argument("--no-feedback", action="store_true")
+    parser.add_argument("--velocity-feedforward", action="store_true")
+    parser.add_argument("--experiment", choices=("cut", "settle"), default="cut")
+    parser.add_argument("--global-width", type=int, default=1280)
+    parser.add_argument("--global-height", type=int, default=960)
+    parser.add_argument("--reset-check", action="store_true")
     parser.add_argument("--record-every", type=int, default=10)
     args = parser.parse_args()
-    if not 1 <= args.steps <= 400 or args.record_every < 1:
+    if not 1 <= args.steps <= 400 or min(args.record_every, args.global_width, args.global_height) < 1:
         parser.error("steps must be 1..400 and record-every positive")
     output = new_output(args.output_dir)
     write_json(output/"phase.json", {"phase": "IMPORTING_ISAAC_LAB", "source": "live_isaac_lab"})
@@ -48,6 +55,8 @@ def main():
         scene_path = scene_dir/"workcell.usda"
     options = LabCuttingConfig(device=args.device, material_device=args.material_device,
         seed=args.seed, variant=args.variant, camera=not args.no_camera, feedback=not args.no_feedback,
+        velocity_feedforward=args.velocity_feedforward, global_width=args.global_width, global_height=args.global_height,
+        experiment=args.experiment,
         static_scene=str(scene_path.resolve()))
     cfg = make_lab_cfg(options)
     record = manifest(asdict(options), "live_isaac_lab")
@@ -61,6 +70,15 @@ def main():
         "material_dt_s": .0001, "camera": "ideal_warp_rgbd" if options.camera else "disabled",
         "native_d455_validated": False, "isaac_sim_kit_validated": False}
     record["acceptance_protocol_sha256"] = hashlib.sha256((ROOT/"configs/isaac_acceptance.json").read_bytes()).hexdigest()
+    implementation = output/"implementation"
+    implementation.mkdir()
+    loaded = [Path(__file__), ROOT/"src/robotic_cutting_sim/isaac_lab_env.py",
+        ROOT/"src/robotic_cutting_sim/live_material.py", ROOT/"src/robotic_cutting_sim/tlmpm.py",
+        ROOT/"src/robotic_cutting_sim/coupled_robot.py", ROOT/"src/robotic_cutting_sim/cutting_surface.py",
+        ROOT/"src/robotic_cutting_sim/material_config.py", ROOT/"src/robotic_cutting_sim/scene_frames.py"]
+    record["implementation_sha256"] = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in loaded}
+    for path in loaded:
+        shutil.copyfile(path, implementation/path.name)
     write_json(output/"manifest.json", record)
     (output/"rgbd").mkdir()
     writers = {}
@@ -91,9 +109,8 @@ def main():
             def capture(step):
                 state = env.measured()
                 states.append(state)
-                if step % 5 == 0 or step == args.steps:
-                    material.append(env.material.debug_state())
-                    material_times.append(env.time_s)
+                material.append(env.material.debug_state())
+                material_times.append(env.time_s)
                 if not options.camera:
                     return
                 from PIL import Image, ImageDraw
@@ -101,7 +118,7 @@ def main():
                 for name, frame in env.frames.items():
                     image = Image.fromarray(frame["rgb"])
                     draw = ImageDraw.Draw(image)
-                    draw.rectangle((0, 0, 640, 27), fill=(0, 0, 0))
+                    draw.rectangle((0, 0, image.width, 27), fill=(0, 0, 0))
                     draw.text((6, 8), f"LIVE ISAAC LAB 3.0 | ideal Warp RGB-D | {name} | t={env.time_s:.2f}s", fill="white")
                     labeled[name] = np.asarray(image)
                     writers[name].append_data(labeled[name])
@@ -115,7 +132,8 @@ def main():
                 draw.text((6, 8), f"LIVE ISAAC LAB | ideal optical Z | range .52-.84 m | t={env.time_s:.2f}s", fill="white")
                 depth = np.asarray(image)
                 writers["depth"].append_data(depth)
-                writers["multiview"].append_data(np.vstack([np.hstack([labeled["global"], labeled["d455_0"]]),
+                global_tile = np.asarray(Image.fromarray(labeled["global"]).resize((640, 480)))
+                writers["multiview"].append_data(np.vstack([np.hstack([global_tile, labeled["d455_0"]]),
                     np.hstack([labeled["d455_1"], depth])]))
                 if step % args.record_every == 0 or step == args.steps:
                     data = {name+"_"+key: frame[key] for name, frame in env.frames.items()
@@ -128,6 +146,7 @@ def main():
                     write_json(output/"rgbd"/f"surface_{step:05d}.json", env.surface_metadata)
 
             capture(0)
+            initial_depth = {name: frame["depth_m"].copy() for name, frame in env.frames.items()}
             for step in range(1, args.steps+1):
                 tick = time.perf_counter()
                 env.step(env.reference_action())
@@ -154,11 +173,15 @@ def main():
             bed = env.material.bed
             count, component_ids = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), data["codes"],
                 1, gradients=bed.gradients.numpy())
+            from robotic_cutting_sim.scene_frames import compose_pose, matrix_pose, invert_transform, pose_matrix
+            command = np.vstack([env.target.poses_to_world(reference_pose(0, env.target.edge_height_local_m)),
+                                 [d["desired_tool_pose"] for d in diagnostics]])
+            edge_from_hand = matrix_pose(invert_transform(pose_matrix([0., 0., .18, 1., 0., 0., 0.])))
             np.savez_compressed(output/"robot_state.npz", time_s=[s["timestamp_s"] for s in states],
                 q=[s["q"] for s in states], qdot=[s["qdot"] for s in states],
                 body_pose=[s["body_pose"] for s in states], hand_pose_xyzw=[s["hand_pose"] for s in states],
                 tool_pose_xyzw=[s["tool_pose"] for s in states],
-                desired_tool_pose_xyzw=np.vstack([states[0]["tool_pose"], [d["desired_tool_pose"] for d in diagnostics]]),
+                desired_tool_pose_xyzw=command, commanded_hand_pose_xyzw=compose_pose(command, edge_from_hand),
                 next_material_wrench_world=[d["next_material_wrench_world"] for d in diagnostics],
                 applied_previous_material_wrench_world=[d["applied_previous_material_wrench_world"] for d in diagnostics],
                 material_reaction_impulse_world=[d["current_material_reaction_impulse_world"] for d in diagnostics])
@@ -179,6 +202,20 @@ def main():
                 "component_masses_kg": [float(env.material.masses[component_ids == i].sum()) for i in np.unique(component_ids)],
                 "native_d455_validated": False, "isaac_sim_kit_validated": False,
                 "full_acceptance": "PENDING_SEPARATE_QUANTITATIVE_AUDIT"}
+            if args.reset_check:
+                env.reset(seed=args.seed)
+                reset_state = env.measured()
+                reset_material = env.material.debug_state()
+                reset = {"scope": "same-process reset to original seed; full repeat assessed separately",
+                    "joint_max_abs_error_rad": float(np.max(np.abs(reset_state["q"]-states[0]["q"]))),
+                    "material_max_abs_error_m": float(np.max(np.abs(reset_material["positions"]-material[0]["positions"]))),
+                    "nonzero_cut_codes": int(np.count_nonzero(reset_material["codes"])),
+                    "depth_max_abs_error_m": {name: float(np.max(np.abs(env.frames[name]["depth_m"]-depth)))
+                        for name, depth in initial_depth.items()},
+                    "depth_valid_mask_exact": {name: bool(np.array_equal(env.frames[name]["depth_m"] > 0, depth > 0))
+                        for name, depth in initial_depth.items()}}
+                write_json(output/"reset_check.json", reset)
+                result["reset_check"] = reset
             write_json(output/"result.json", result)
             write_json(output/"phase.json", {"phase": "COMPLETE", **result})
             print(result, flush=True)

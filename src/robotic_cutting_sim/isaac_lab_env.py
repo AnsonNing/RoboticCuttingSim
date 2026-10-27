@@ -21,7 +21,7 @@ from isaaclab.envs import DirectRLEnv, DirectRLEnvCfg
 from isaaclab.scene import InteractiveSceneCfg
 import isaaclab.sim as sim_utils
 from isaaclab.utils import configclass
-from isaaclab_newton.physics import NewtonCfg, NewtonManager, MJWarpSolverCfg
+from isaaclab_newton.physics import NewtonCfg, NewtonManager, MJWarpSolverCfg, NewtonShapeCfg
 from isaaclab_newton.sim.schemas import MujocoRigidBodyCfg, MujocoJointCfg, NewtonArticulationCfg
 
 from .coupled_robot import CouplingConfig, reference_pose
@@ -43,6 +43,24 @@ def _edge_wrench(body_q: wp.array(dtype=wp.transform), body_com: wp.array(dtype=
     force = wp.vec3(w[0], w[1], w[2])
     torque = wp.vec3(w[3], w[4], w[5])+wp.cross(edge-center, force)
     body_f[hand] = body_f[hand]+wp.spatial_vector(force, torque)
+
+
+@wp.kernel
+def _native_contact_audit(count: wp.array(dtype=int), distance: wp.array(dtype=float),
+                          geom: wp.array(dtype=wp.vec2i), world: wp.array(dtype=int), shape_map: wp.array2d(dtype=int),
+                          knife: int, audit: wp.array(dtype=float)):
+    i = wp.tid()
+    if i < count[0]:
+        pair = geom[i]
+        if pair[0] >= 0 and pair[1] >= 0:
+            a, b = shape_map[world[i], pair[0]], shape_map[world[i], pair[1]]
+            penetration = wp.max(0., -distance[i])
+            wp.atomic_max(audit, 3, float(count[0]))
+            if a != knife and b != knife:
+                wp.atomic_max(audit, 0, penetration)
+                wp.atomic_add(audit, 2, 1.)
+            else:
+                wp.atomic_max(audit, 1, penetration)
 
 
 def _spawn_franka(prim_path, cfg, translation=None, orientation=None, **kwargs):
@@ -78,6 +96,10 @@ class LabCuttingConfig:
     feedback: bool = True
     width: int = 640
     height: int = 480
+    global_width: int = 1280
+    global_height: int = 960
+    velocity_feedforward: bool = False
+    experiment: str = "cut"
     camera: bool = True
     static_scene: str = str(ROOT/"artifacts/research_handoff_001/workcell/workcell.usda")
 
@@ -138,7 +160,7 @@ def make_lab_cfg(options):
         scene=CuttingSceneCfg(num_envs=1, env_spacing=2.),
         sim=sim_utils.SimulationCfg(device=options.device, dt=.002, render_interval=10,
             physics=NewtonCfg(use_cuda_graph=False, load_visual_shapes=False,
-                default_shape_cfg=__import__("isaaclab_newton.physics", fromlist=["NewtonShapeCfg"]).NewtonShapeCfg(gap=.001),
+                default_shape_cfg=NewtonShapeCfg(gap=.001),
                 solver_cfg=MJWarpSolverCfg(use_mujoco_cpu=options.device == "cpu", iterations=50,
                     nconmax=256, njmax=1024, integrator="implicitfast", cone="elliptic"))))
     return cfg
@@ -167,6 +189,10 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             raise RuntimeError("Physical wedge collider is not attached to the measured Panda hand")
         self._bind_ik()
         self._force_buffer = wp.zeros(1, dtype=wp.spatial_vector, device=self.model.device)
+        self._contact_audit = wp.zeros(4, dtype=float, device=self.model.device)
+        # Read-only debug access to the pinned native solver's signed contact
+        # distances; stepping still belongs entirely to Lab's PhysicsManager.
+        self._native_solver = self.sim.physics_manager._solver
         self._bind_visuals()
         self._bound = True
 
@@ -191,8 +217,16 @@ class IsaacLabCuttingEnv(DirectRLEnv):
 
     def _native_force(self, state):
         if self._bound:
+            self._sample_native_contacts()
             wp.launch(_edge_wrench, dim=1, inputs=[state.body_q, self.model.body_com,
                 self._force_buffer, self.hand, state.body_f], device=self.model.device)
+
+    def _sample_native_contacts(self):
+        data = self._native_solver.mjw_data
+        wp.launch(_native_contact_audit, dim=data.naconmax,
+            inputs=[data.nacon, data.contact.dist, data.contact.geom, data.contact.worldid,
+                self._native_solver.mjc_geom_to_newton_shape, self.knife_shape, self._contact_audit],
+            device=self.model.device)
 
     def _bind_ik(self):
         import newton.ik as ik
@@ -256,6 +290,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self.time_s = 0.
         self._runtime_time_origin = self.sim.physics_manager.get_simulation_time()
         self._force_buffer.zero_()
+        self._contact_audit.zero_()
         # Lab initializes reset defaults, but a DirectRLEnv subclass must write
         # them. Seed IK from the nonsingular Panda park configuration.
         for arm, robot in enumerate(self.robots):
@@ -273,10 +308,22 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             robot.write_joint_position_to_sim_index(position=tensor)
             robot.write_joint_velocity_to_sim_index(velocity=torch.zeros_like(tensor))
             robot.actuators.target_command.set_position_index(value=tensor)
+            robot.actuators.target_command.set_velocity_index(value=torch.zeros_like(tensor))
         self.scene.write_data_to_sim()
         self.sim.forward()
         self.scene.update(0.)
+        # MuJoCo reset clears warm starts but deliberately defers native qpos
+        # synchronization until the next step. Refresh position/contact caches
+        # without integrating so contact audits cannot read the old park pose.
+        import mujoco_warp
+        self._native_solver._update_mjc_data(self._native_solver.mjw_data, self.model, NewtonManager.get_state_0())
+        mujoco_warp.fwd_position(self._native_solver.mjw_model, self._native_solver.mjw_data)
         self.setup_receipt = self.material.reset(self.measured()["tool_pose"], self.cfg.seed)
+        self.setup_receipt["native_contact_reset_refresh"] = "native coordinate sync + fwd_position; zero integration"
+        self._last_joint_targets = [q[self._joint_coords[0]].copy(), self._park_q[self._joint_coords[1]].copy()]
+        self.setup_receipt["velocity_feedforward"] = self.options.velocity_feedforward
+        self.setup_receipt["experiment"] = self.options.experiment
+        self.setup_receipt["velocity_target_source"] = "commanded IK joint finite difference" if self.options.velocity_feedforward else "zero"
         from .usd_surface_bridge import DynamicSurfaceBridge
         self._bridge = DynamicSurfaceBridge(self.sim.stage)
         self._capture_time = None
@@ -292,8 +339,13 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             values = q[self._joint_coords[arm]] if arm == 0 else self._park_q[self._joint_coords[arm]]
             robot.actuators.target_command.set_position_index(
                 value=torch.tensor(values[None], device=self.device, dtype=torch.float32))
+            velocity = (values-self._last_joint_targets[arm])/self.step_dt if self.options.velocity_feedforward else np.zeros_like(values)
+            robot.actuators.target_command.set_velocity_index(
+                value=torch.tensor(velocity[None], device=self.device, dtype=torch.float32))
+            self._last_joint_targets[arm] = values.copy()
         applied = self.material.pending_wrench if self.options.feedback else np.zeros(6)
         self._force_buffer.assign(np.asarray(applied, np.float32).reshape(1, 6))
+        self._contact_audit.zero_()
 
     def _apply_action(self):
         pass  # Lab's scene writes the persistent actuator targets before its own dynamics step.
@@ -301,7 +353,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
     def _get_rewards(self):
         self.time_s = float(self.episode_length_buf[0])*self.step_dt
         measured = self.measured()
-        diagnostics = self.material.advance(measured["tool_pose"], self.time_s)
+        diagnostics = self.material.advance(measured["tool_pose"], self.time_s, cutting=self.options.experiment == "cut")
+        self._sample_native_contacts()
+        contact = self._contact_audit.numpy()
         delta_rotation = (Rotation.from_quat(measured["tool_pose"][3:])
             * Rotation.from_quat(self._previous["tool_pose"][3:]).inv()).as_rotvec()
         applied = diagnostics["applied_previous_material_wrench_world"]
@@ -309,6 +363,10 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             "ik_position_error_m": self._ik_error,
             "runtime_timestamp_s": self.sim.physics_manager.get_simulation_time()-self._runtime_time_origin,
             "native_runtime_timestamp_s": self.sim.physics_manager.get_simulation_time(),
+            "native_rigid_contact_audit": {"source": "actual MJWarp nacon/contact.dist/geom; pre-substeps plus final",
+                "max_non_tool_penetration_m": float(contact[0]), "max_tool_rigid_penetration_m": float(contact[1]),
+                "observed_non_tool_contact_slots": int(contact[2]), "max_simultaneous_contacts": int(contact[3])},
+            "native_float32_wrench_payload_world": self._force_buffer.numpy()[0].astype(float),
             "applied_tool_wrench_work_j": float(applied[:3]@(measured["tool_pose"][:3]-self._previous["tool_pose"][:3])
                 + applied[3:]@delta_rotation)}
         return torch.zeros(1, device=self.device)
@@ -335,7 +393,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         paths = {"d455_0": "/World/D455_0/RSD455/Camera_Pseudo_Depth",
                  "d455_1": "/World/D455_1/RSD455/Camera_Pseudo_Depth", "global": "/World/GlobalCamera"}
         self.calibration = {name: usd_camera_calibration(self.sim.stage, path,
-            self.options.width, self.options.height, near_m=.52 if name != "global" else .01,
+            self.options.width if name != "global" else self.options.global_width,
+            self.options.height if name != "global" else self.options.global_height,
+            near_m=.52 if name != "global" else .01,
             far_m=6. if name != "global" else 20.) for name, path in paths.items()}
 
     def _get_observations(self):
@@ -372,7 +432,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         return {"policy": policy}
 
     def reference_action(self):
-        desired = self.target.poses_to_world(reference_pose(self.time_s+self.step_dt,
+        trajectory_time = self.time_s+self.step_dt if self.options.experiment == "cut" else 0.
+        desired = self.target.poses_to_world(reference_pose(trajectory_time,
             self.target.height_m+self.target.edge_clearance_m))
         return torch.tensor(desired[None], device=self.device, dtype=torch.float32)
 
@@ -380,6 +441,11 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         if seed is not None:
             self.cfg.seed = int(seed)
         return super().reset(seed=seed, options=options)
+
+    def step(self, action):
+        obs, reward, terminated, _, info = super().step(action)
+        truncated = torch.tensor([self.time_s >= 8.-1e-9], device=self.device)
+        return obs, reward, terminated, truncated, info
 
     def debug_state(self):
         return {"robot": self.measured(), "material": self.material.debug_state(),

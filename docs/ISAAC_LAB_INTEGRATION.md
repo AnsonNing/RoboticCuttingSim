@@ -48,8 +48,32 @@ Kit gates. The Kit path is documented separately.
   0.04 s, rigid runtime clock 0.04000000000000002 s, 3.665 s wall time.
 - `artifacts/isaac_lab_camera_smoke_001`: the same live physics plus both
   ideal RGB-D views/global and five labelled videos; 0.04 s / 4.496 s wall.
-- Full frozen D0 baseline is running as `artifacts/isaac_lab_d0_001`; its final
-  results and separate acceptance audit will be added after completion.
+- `artifacts/isaac_lab_d0_001`: 400 steps / 8 s / 193.169 s wall, native
+  clock 7.999999999999341 s, two final mechanical components, 1.656 g chip.
+  The original controller fails frozen ROB-02: active maximum 1.23558 mm;
+  all-phase maximum 5.70398 mm. The actual substrate triangle mesh also fails
+  TASK-02: peak residual 1.904 mm / p95 absolute plane error 1.709 mm.
+- `artifacts/isaac_lab_d0_feedback_off_001`: matched 400-step no-feedback
+  physics control, 64.580 s wall with cameras explicitly disabled. Contact
+  reaction changes actual robot motion. Baseline interface-work residual is
+  2.3093%; this is a delayed-coupling diagnostic, not an energy convergence claim.
+- `artifacts/isaac_lab_d0_feedforward_001`: the optional
+  `--velocity-feedforward` sends the finite difference of commanded IK joints
+  as target velocities; gains, path, material and thresholds are unchanged.
+  Actual active tracking maximum falls to 0.50725 mm and all-phase to 2.36897 mm,
+  passing ROB-02. Global resolution is 1280x960; D455 ideal views remain 640x480.
+  All 400 material states are recorded. Reset q/material/depth differences are
+  exactly zero with identical valid masks. TASK-02 still fails (1.974 mm peak).
+  The interface-work residual rises to 19.15%, and the original post-withdrawal
+  cross-component recontact criterion fails; these negative results are retained.
+
+`--reset-check` inspects the initial state after a same-process reset; a full
+independent repeat is a separate requirement. The latest recorder copies and
+hashes its wrapper and physical implementation at launch. Older source can be
+recovered only when its bytes exactly match a recorded hash, with an explicit
+after-launch recovery receipt. Full native body contact auditing now reads the
+actual MuJoCo Warp contact distances at rigid substeps; reset refreshes its
+position/contact cache without integrating, avoiding stale constructor contacts.
 
 Failures are retained: `isaac_lab_smoke_001` used Lab's advertised MuJoCo CPU
 option but hit Newton's unimplemented `get_max_contact_count`; 002 found an
