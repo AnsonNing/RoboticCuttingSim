@@ -10,7 +10,9 @@
         51666
       ],
       "result_status": "PASS_EXECUTION",
-      "live_isaac": true
+      "live_isaac": true,
+      "implementation_copy_hashes_match": true,
+      "physics_state_sha256": "2a50c2652d5ec0e244e369e6c61d428e3ebf1fe7b06bf61124a6aa267491567d"
     },
     "Kinematic A: faster/longer": {
       "source_recording": "artifacts/trim_fast_sweep_diagnostic_001",
@@ -21,7 +23,9 @@
         51666
       ],
       "result_status": "FAIL_KINEMATIC_SEVERING_CANDIDATE",
-      "live_isaac": false
+      "live_isaac": false,
+      "implementation_copy_hashes_match": true,
+      "physics_state_sha256": "28d8353fbf440953c0d6151e67ec364f81679662cead4e7355a640235e85b151"
     },
     "Kinematic B: two passes": {
       "source_recording": "artifacts/trim_second_pass_diagnostic_001",
@@ -32,7 +36,9 @@
         51666
       ],
       "result_status": "FAIL_KINEMATIC_SEVERING_CANDIDATE",
-      "live_isaac": false
+      "live_isaac": false,
+      "implementation_copy_hashes_match": true,
+      "physics_state_sha256": "bd193d4a53492566dd940155f66831dc91c79fb60fb68b4e27ccbe02e5f1eddf"
     }
   },
   "labels_edited": false,
