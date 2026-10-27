@@ -19,7 +19,8 @@ def main(argv=None):
     doctor=sub.add_parser("doctor",help="Read-only hardware and version audit")
     doctor.add_argument("--output-dir",type=Path,required=True)
     scene=sub.add_parser("scene",help="Create a static USD preview and continuous particle sample")
-    scene.add_argument("--preset",choices=["physics_only"],default="physics_only")
+    scene.add_argument("--preset",choices=["physics_only","workcell"],default="physics_only")
+    scene.add_argument("--asset-root",help="Complete local or official Isaac asset root for workcell composition")
     scene.add_argument("--variant",choices=["D0","D1"],default="D0")
     scene.add_argument("--family",choices=["dome","gaussian","ellipsoid_cap","ridge"],default="dome")
     scene.add_argument("--seed",type=int,default=42); scene.add_argument("--spacing",type=positive,default=.002)
@@ -37,11 +38,18 @@ def main(argv=None):
     camera.add_argument("--input",type=Path,required=True); camera.add_argument("--surface-voxel-size",type=positive,default=.0015)
     camera.add_argument("--samples",type=int,default=5); camera.add_argument("--device",default="cuda:0")
     camera.add_argument("--output-dir",type=Path,required=True)
+    demo=sub.add_parser("env-demo",help="Live MPM environment with reset/step and two ideal RGB-D observations")
+    demo.add_argument("--steps",type=int,default=120); demo.add_argument("--seed",type=int,default=42)
+    demo.add_argument("--case",choices=["indent_unload","through_bump_cut","shallow_scrape","settle"],default="indent_unload")
+    demo.add_argument("--voxel-size",type=positive,default=.004); demo.add_argument("--device",default="cuda:0")
+    demo.add_argument("--output-dir",type=Path,required=True)
     args=parser.parse_args(argv)
     if args.command=="physics-probe" and (args.frames<1 or args.substeps<1):
         parser.error("--frames and --substeps must be positive integers")
     if args.command=="camera-check" and args.samples<2:
         parser.error("--samples must be at least two")
+    if args.command=="env-demo" and args.steps<1:
+        parser.error("--steps must be positive")
     try:
         if args.command=="doctor":
             from .doctor import run
@@ -49,8 +57,14 @@ def main(argv=None):
             print(json.dumps(result,indent=2)); return 2 if result["cuda13_driver_gate"]=="BLOCKED" or result["isaacsim_runtime"]=="BLOCKED" else 0
         output=new_output(args.output_dir)
         if args.command=="scene":
-            from .scene import export
+            if args.preset=="workcell":
+                from .workcell import export
+            else:
+                from .scene import export
             result=export(args,output)
+        elif args.command=="env-demo":
+            from .env_demo import run
+            result=run(args,output)
         elif args.command=="physics-probe":
             if args.solver=="newton":
                 from .newton_probe import run

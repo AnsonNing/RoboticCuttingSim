@@ -31,7 +31,7 @@ for path in sorted((camera/"surface").glob("*.npz")):
     mesh.GetPointsAttr().Set(Vt.Vec3fArray.FromNumpy(vertices),t)
     mesh.GetFaceVertexIndicesAttr().Set(Vt.IntArray.FromNumpy(faces.ravel()),t)
     mesh.GetFaceVertexCountsAttr().Set(Vt.IntArray.FromNumpy(np.full(len(faces),3,np.int32)),t)
-    mesh.CreateExtentAttr().Set([Gf.Vec3f(*vertices.min(0)),Gf.Vec3f(*vertices.max(0))],t)
+    mesh.CreateExtentAttr().Set([Gf.Vec3f(*map(float,vertices.min(0))),Gf.Vec3f(*map(float,vertices.max(0)))],t)
 stage.SetStartTimeCode(0); stage.SetEndTimeCode(float(times[-1])*60)
 metadata=stage.GetRootLayer().customLayerData
 metadata.update(status="RECORDED_MPM_SURFACE_REPLAY",physics_run=str(physics),camera_run=str(camera),

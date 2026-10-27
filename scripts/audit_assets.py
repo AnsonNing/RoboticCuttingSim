@@ -19,11 +19,11 @@ for name,path in assets.items():
     record={"name":name,"url":url,"composition":"NOT_RUN","license":"Official NVIDIA/asset license; no redistribution"}
     try:
         with urllib.request.urlopen(url,timeout=30) as response:
-            data=response.read(2*1024*1024+1)
+            data=response.read(16*1024*1024+1)
             record["http_status"]=response.status
             record["response_etag"]=response.headers.get("ETag")
-        if len(data)>2*1024*1024:
-            raise RuntimeError("Root USD exceeds 2 MiB audit cap; complete asset not downloaded")
+        if len(data)>16*1024*1024:
+            raise RuntimeError("Root USD exceeds 16 MiB audit cap; complete asset not downloaded")
         target=out/(name+Path(path).suffix); target.write_bytes(data)
         record.update(status="PASS",bytes=len(data),sha256=hashlib.sha256(data).hexdigest(),local=str(target))
     except Exception as error:
