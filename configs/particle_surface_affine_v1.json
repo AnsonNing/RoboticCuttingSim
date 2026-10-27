@@ -1,0 +1,266 @@
+{
+  "protocol_id": "particle_surface_affine_current_volume_v1_20261028",
+  "freeze_boundary": "Frozen before any affine compression/shear surface extraction. Prior rigid-box controls are development rationale only; no cut data or target-plane metrics are used.",
+  "scope": "Independent known-affine closed-volume renderer controls; no default renderer/cut physics changes",
+  "newton_version": "1.6.1",
+  "warp_version": "1.17.0",
+  "density_kg_m3": 1500.0,
+  "spacing_m": [
+    0.001
+  ],
+  "recipes": {
+    "H1": {
+      "voxel_size_over_spacing": 0.5,
+      "kernel_radius_over_spacing": 3.0,
+      "threshold": 0.5,
+      "kernel_scale": 0.5,
+      "radius_mode": "reference_volume"
+    },
+    "H2": {
+      "voxel_size_over_spacing": 0.5,
+      "kernel_radius_over_spacing": 3.0,
+      "threshold": 0.5,
+      "kernel_scale": 0.5,
+      "radius_mode": "current_volume_from_total_F"
+    }
+  },
+  "shared_recipe": {
+    "smooth_lambda": 0.0,
+    "anisotropic": false,
+    "field_smooth_iterations": 0,
+    "mesh_smooth_iterations": 0
+  },
+  "candidate_rationale": "Normalized half-density boundary and physical quadrature weight. H1 radius=spacing/2; H2 radius=(spacing/2)*cbrt(det(total F)), so 8*r^3 equals current reference-cell volume. Current density=rho0/detF and mass is unchanged. The fixed isotropic support/voxel recipes are not fitted. Exact Euclidean affine-box SDF is used, not inverse-affine norm.",
+  "promotion_rule": "Only fixed H2 is assessed; all development/held-out cases must pass unchanged whole-mesh/volume/topology/face-center criteria. No alternate profiles or thresholds after outcomes.",
+  "criteria": {
+    "all_mesh_values_finite": true,
+    "require_closed_oriented_manifold": true,
+    "mesh_components": 1,
+    "euler_characteristic": 2,
+    "mesh_volume_relative_error_vs_analytic_max": 0.05,
+    "mesh_volume_relative_error_vs_mass_over_density_max": 0.05,
+    "full_mesh_area_weighted_p95_analytic_sdf_absolute_over_spacing_max": 0.5,
+    "full_mesh_vertex_max_analytic_sdf_absolute_over_spacing_max": 1.5,
+    "central_face_offset_absolute_over_spacing_max": 0.25,
+    "reason": "Half-particle p95 boundary accuracy, bounded whole-object volume bias and topological validity are geometry screens; they cannot pass a cut/flatness task. Sharp edges are included in whole-mesh statistics, never culled."
+  },
+  "central_face_definition": "Vertices within3*spacing of each finite face edge are excluded only from a separately reported face-center bias diagnostic. Full-mesh SDF/volume metrics always include all vertices/triangles.",
+  "cases": [
+    {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "translation_m": [
+        0.013,
+        -0.007,
+        0.031
+      ],
+      "id": "compress_z_080",
+      "split": "development",
+      "euler_xyz_rad": [
+        0,
+        0,
+        0
+      ],
+      "affine_local": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0.8
+        ]
+      ]
+    },
+    {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "translation_m": [
+        0.013,
+        -0.007,
+        0.031
+      ],
+      "id": "expand_z_120",
+      "split": "development",
+      "euler_xyz_rad": [
+        0,
+        0,
+        0
+      ],
+      "affine_local": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1.2
+        ]
+      ]
+    },
+    {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "translation_m": [
+        0.013,
+        -0.007,
+        0.031
+      ],
+      "id": "shear_xz_025",
+      "split": "development",
+      "euler_xyz_rad": [
+        0,
+        0,
+        0
+      ],
+      "affine_local": [
+        [
+          1,
+          0,
+          0.25
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "translation_m": [
+        0.0083,
+        -0.0067,
+        0.0291
+      ],
+      "id": "heldout_rot_compress_shear",
+      "split": "held_out",
+      "euler_xyz_rad": [
+        0.21,
+        -0.17,
+        0.11
+      ],
+      "affine_local": [
+        [
+          1,
+          0,
+          0.25
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0.8
+        ]
+      ]
+    },
+    {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "translation_m": [
+        -0.0069,
+        0.0121,
+        0.0337
+      ],
+      "id": "heldout_rot_expand_shear",
+      "split": "held_out",
+      "euler_xyz_rad": [
+        -0.19,
+        0.23,
+        -0.27
+      ],
+      "affine_local": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          -0.25
+        ],
+        [
+          0,
+          0,
+          1.2
+        ]
+      ]
+    },
+    {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "translation_m": [
+        0.0171,
+        0.0023,
+        0.0257
+      ],
+      "id": "heldout_rot_compress_x_shear",
+      "split": "held_out",
+      "euler_xyz_rad": [
+        0.13,
+        0.27,
+        -0.18
+      ],
+      "affine_local": [
+        [
+          0.8,
+          0,
+          0
+        ],
+        [
+          0.25,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    }
+  ]
+}
