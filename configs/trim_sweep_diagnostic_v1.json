@@ -1,0 +1,32 @@
+{
+  "protocol_id": "trim_sweep_diagnostic_v1_20261028",
+  "freeze_boundary": "Frozen before either controlled kinematic-material diagnostic. The first live native/Lab TRIM-01 negatives remain unchanged.",
+  "scope": "Physics-only retained TLMPM with ideal commanded kinematic tool; not a live Isaac or articulated-robot experiment",
+  "task_id": "TRIM-01",
+  "seed": 42,
+  "control_dt_s": 0.02,
+  "material_dt_s": 0.0001,
+  "record_interval_s": 0.2,
+  "unchanged": ["continuous geometry", "reference particle spacing 1mm", "grid 4mm", "material recipe", "fixtures", "target local Z20mm", "edge Z20.2mm", "persistent cut field 0", "current_volume_v1 surface", "goal thresholds"],
+  "fast_sweep": {
+    "duration_s": 8.0,
+    "active_cut_intervals_s": [[1.6, 5.6]],
+    "knots_local_txyz": [[0.0, -0.045, 0.0, 0.06], [1.0, -0.045, 0.0, 0.0202], [1.6, -0.045, 0.0, 0.0202], [5.6, 0.13, 0.0, 0.0202], [6.4, 0.15, 0.0, 0.06], [8.0, 0.15, 0.0, 0.06]],
+    "postwithdraw_start_s": 6.4
+  },
+  "second_pass": {
+    "duration_s": 16.0,
+    "active_cut_intervals_s": [[1.6, 5.6], [10.4, 14.4]],
+    "knots_local_txyz": [[0.0, -0.045, 0.0, 0.06], [1.0, -0.045, 0.0, 0.0202], [1.6, -0.045, 0.0, 0.0202], [5.6, 0.045, 0.0, 0.0202], [6.4, 0.08, 0.0, 0.06], [8.0, 0.08, 0.0, 0.06], [9.0, -0.045, 0.0, 0.06], [10.0, -0.045, 0.0, 0.0202], [10.4, -0.045, 0.0, 0.0202], [14.4, 0.13, 0.0, 0.0202], [15.2, 0.15, 0.0, 0.06], [16.0, 0.15, 0.0, 0.06]],
+    "postwithdraw_start_s": 15.2
+  },
+  "candidate_checks": {
+    "initial_components": 1,
+    "minimum_final_components": 2,
+    "minimum_detached_reference_above_plane_mass_fraction": 0.9,
+    "minimum_postwithdraw_disconnected_duration_s": 0.5,
+    "nonzero_digit_rewrites_allowed": 0,
+    "forbid_code_edits_or_particle_removal": true
+  },
+  "promotion_boundary": "A passing diagnostic only selects a trajectory for new actual live Isaac Lab and native Kit episodes. No policy training, no label repair, no fabricated robot feedback."
+}
