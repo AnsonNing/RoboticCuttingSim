@@ -1,0 +1,156 @@
+{
+  "protocol_id": "native_kit_single_view_correspondence_v1_20261028",
+  "freeze_boundary": "Frozen before the first native Kit camera controls. Existing OVRTX results are development rationale, not independent Kit validation.",
+  "runtime_profile": {
+    "isaacsim": "6.2.0.0",
+    "omni.sensors.nv.camera": "1.4.0",
+    "kit_major_minor": "110.4",
+    "width": 640,
+    "height": 480,
+    "baseline_mm": 95.0,
+    "confidence": 1.0,
+    "ir_effective_distance_m": 4.0,
+    "warmup": 10
+  },
+  "candidates": {
+    "H0": {
+      "pointcloud_to_scalar_rgb_pixel_offset": [
+        0.0,
+        0.0
+      ],
+      "role": "unchanged frozen baseline"
+    },
+    "H1": {
+      "pointcloud_to_scalar_rgb_pixel_offset": [
+        1.0,
+        0.0
+      ],
+      "role": "single preregistered source-correspondence hypothesis; never changes measured native Z"
+    }
+  },
+  "candidate_selection": "Only H1 may be assessed for promotion. No offset optimization, alternate candidate selection, threshold changes, or ideal-Z substitution after held-out results.",
+  "criteria": {
+    "noise_off_plane_p95_absolute_error_m": 0.001,
+    "noise_off_minimum_valid_coverage": 0.9,
+    "noise_off_feature_p95_error_px": 0.5,
+    "feature_rgb_vs_analytic_mask_minimum_iou": 0.95,
+    "minimum_feature_scanlines": 25,
+    "source_measurement_values_exactly_preserved": true,
+    "forbid_error_based_valid_sample_rejection": true,
+    "noise_on": "Record all native metric differences, validity changes, coverage and hard outliers; no calibrated physical-noise claim."
+  },
+  "feature_definition": "Red foreground box: compare depth-vs-RGB silhouette row/column extrema on all analytic feature scanlines. A missing predicted silhouette incurs the full image extent as error. No error-conditioned selection or hole filling.",
+  "feature_classification": {
+    "rgb_red_minimum_8bit": 10,
+    "rgb_red_to_green_ratio": 1.5,
+    "rgb_red_to_blue_ratio": 1.5,
+    "depth_below_analytic_plane_minimum_m": 0.05
+  },
+  "scene": {
+    "plane_half_width_m": 3.2,
+    "plane_half_height_m": 2.5,
+    "checker_tiles_xy": [
+      32,
+      24
+    ],
+    "box_center_xy_m": [
+      0.06,
+      -0.08
+    ],
+    "box_center_z_below_plane_origin_m": 0.15,
+    "box_half_extents_m": [
+      0.09,
+      0.07,
+      0.02
+    ]
+  },
+  "cases": [
+    {
+      "id": "x_positive_near",
+      "split": "development",
+      "slope_x": 0.25,
+      "slope_y": 0.0,
+      "distance_m": 0.85,
+      "repeats": 3
+    },
+    {
+      "id": "x_negative_near",
+      "split": "development",
+      "slope_x": -0.25,
+      "slope_y": 0.0,
+      "distance_m": 0.85
+    },
+    {
+      "id": "x_positive_far",
+      "split": "development",
+      "slope_x": 0.25,
+      "slope_y": 0.0,
+      "distance_m": 1.4
+    },
+    {
+      "id": "x_negative_far",
+      "split": "development",
+      "slope_x": -0.25,
+      "slope_y": 0.0,
+      "distance_m": 1.4
+    },
+    {
+      "id": "y_positive",
+      "split": "development",
+      "slope_x": 0.0,
+      "slope_y": 0.2,
+      "distance_m": 1.1
+    },
+    {
+      "id": "y_negative",
+      "split": "development",
+      "slope_x": 0.0,
+      "slope_y": -0.2,
+      "distance_m": 1.1
+    },
+    {
+      "id": "step_development",
+      "split": "development",
+      "slope_x": 0.25,
+      "slope_y": 0.1,
+      "distance_m": 1.0,
+      "box": true
+    },
+    {
+      "id": "mixed_positive",
+      "split": "held_out",
+      "slope_x": 0.17,
+      "slope_y": -0.13,
+      "distance_m": 1.25
+    },
+    {
+      "id": "mixed_negative",
+      "split": "held_out",
+      "slope_x": -0.19,
+      "slope_y": 0.11,
+      "distance_m": 1.8
+    },
+    {
+      "id": "steep_negative",
+      "split": "held_out",
+      "slope_x": -0.32,
+      "slope_y": 0.0,
+      "distance_m": 1.05
+    },
+    {
+      "id": "steep_y",
+      "split": "held_out",
+      "slope_x": 0.0,
+      "slope_y": 0.27,
+      "distance_m": 1.55
+    },
+    {
+      "id": "step_held_out",
+      "split": "held_out",
+      "slope_x": -0.17,
+      "slope_y": 0.14,
+      "distance_m": 1.6,
+      "box": true
+    }
+  ]
+}

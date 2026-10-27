@@ -35,7 +35,7 @@ def main():
     protocol = json.loads(protocol_bytes)
     assert hashlib.sha256(protocol_bytes).hexdigest() == fixture["protocol_sha256"]
     criteria = protocol["criteria"]
-    rows, arrays, input_hashes = [], {}, {}
+    rows, arrays, indices, input_hashes = [], {}, {}, {}
     for label, run in (("off", args.noise_off), ("on", args.noise_on)):
         prepared = json.loads((run / "prepared.json").read_text())
         assert len(prepared["time_s"]) == len(fixture["frames"])
@@ -45,7 +45,8 @@ def main():
                 native_path, payload_path = run / "camera_debug" / name, run / "observations" / name
                 native, payload = np.load(native_path), np.load(payload_path)
                 assert float(payload["surface_timestamp_s"]) == case["time_s"]
-                camera = decode_camera_params(payload["camera_params_raw"])
+                camera = (decode_camera_params(payload["camera_params_raw"]) if "camera_params_raw" in payload else
+                          json.loads(str(payload["camera_calibration_json"].item())))
                 plane, expected, box = analytic_control(camera, case, protocol["scene"])
                 raw = native["depth_sensor_distance_raw"].squeeze(-1)
                 raw_valid = np.isfinite(raw) & (raw >= .52) & (raw <= 6.)
@@ -77,11 +78,12 @@ def main():
                     rows.append(row)
                     arrays[(label, camera_name, frame_index, hypothesis)] = (depth.copy(), valid.copy())
                     if hypothesis == "H1":
+                        indices[(label, camera_name, frame_index)] = reg["source_index"].copy()
                         folder = output / label
                         folder.mkdir(exist_ok=True)
                         np.savez_compressed(folder / name, rgb=payload["rgb"], depth_m=depth, valid_mask=valid,
                             source_index=reg["source_index"], analytic_scene_depth_m=expected, analytic_box_mask=box,
-                            camera_params_raw=payload["camera_params_raw"], timestamp_s=payload["timestamp_s"],
+                            camera_calibration_json=json.dumps(camera), timestamp_s=payload["timestamp_s"],
                             simulated_d455_validated=False, registration_validated=False)
                 arrays[(label, camera_name, frame_index, "raw")] = (raw.copy(), raw_valid.copy())
     noise = []
@@ -93,6 +95,21 @@ def main():
                 noise.append({"camera": camera_name, "frame_index": index, "case_id": case["id"], "kind": kind,
                     "off_valid_samples": int(ma.sum()), "on_valid_samples": int(mb.sum()),
                     "validity_changed_samples": int(np.sum(ma != mb)), "common_on_minus_off": stats(on[ma & mb]-off[ma & mb])})
+            raw_off, off_mask = arrays[("off", camera_name, index, "raw")]
+            raw_on, on_mask = arrays[("on", camera_name, index, "raw")]
+            common = off_mask & on_mask
+            nonzero = common & (abs(raw_on.astype(float)-raw_off.astype(float)) > 1e-6)
+            selected = indices[("on", camera_name, index)]
+            chosen = selected[selected >= 0]
+            chosen_common = chosen[common.reshape(-1)[chosen]]
+            chosen_nonzero = int(np.sum(nonzero.reshape(-1)[chosen]))
+            noise.append({"camera": camera_name, "frame_index": index, "case_id": case["id"],
+                "kind": "raw_noise_retention_ledger", "input_nonzero_common_native_samples": int(nonzero.sum()),
+                "selected_nonzero_native_samples": chosen_nonzero,
+                "unselected_nonzero_native_samples": int(nonzero.sum())-chosen_nonzero,
+                "selected_source_on_minus_off": stats(raw_on.reshape(-1)[chosen_common]-raw_off.reshape(-1)[chosen_common]),
+                "selection": "finite forward native direction, output image bounds, measured-Z z-buffer; no depth-error/consistency rejection",
+                "error_based_rejections": 0})
     temporal = []
     for camera_name in ("d455_0", "d455_1"):
         for label in ("off", "on"):

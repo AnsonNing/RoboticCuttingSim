@@ -11,6 +11,45 @@ This does not calibrate a physical D455 or align its separate color imager.
 import numpy as np
 
 
+def register_ovrtx_single_view_depth(pointcloud_usd, native_distance_m, camera, *,
+                                    ovrtx_version, ovstage_version, native_model_parameters):
+    """Use the independently held-out validated, exact-version association.
+
+    This is an empirical AOV sample-correspondence profile, not an assertion
+    about NVIDIA's private implementation or physical D455 calibration. Other
+    renderers/versions must run their own controls instead of inheriting it.
+    """
+    if (ovrtx_version, ovstage_version) != ("0.6.0.1791947691", "0.3.0.1791986420"):
+        raise ValueError("Native AOV source correspondence is unvalidated for this renderer version")
+    if (int(camera["width"]), int(camera["height"])) != (640, 480):
+        raise ValueError("Native AOV source correspondence requires independent controls at this resolution")
+    k = np.asarray(camera["K"], dtype=float)
+    expected = np.array([[317.0431137084961, 0., 320.], [0., 317.0431137084961, 240.], [0., 0., 1.]])
+    if k.shape != (3, 3) or not np.allclose(k, expected, atol=1e-4, rtol=0):
+        raise ValueError("Native AOV source correspondence requires independent controls for these intrinsics")
+    controlled = {"enabled": True, "baselineMM": 95., "focalLengthPixel": 317.04310808172426,
+        "sensorSizePixel": 640., "maxDisparityPixel": 150., "confidenceThreshold": 1.,
+        "noiseDownscaleFactorPixel": 1., "minDistance": .52, "maxDistance": 6.,
+        "outlierRemovalEnabled": True, "rgbDepthOutputMode": 0, "effectiveDistance": 4.}
+    if any(name not in native_model_parameters or not np.isclose(native_model_parameters[name], value,
+               atol=1e-4 if name == "focalLengthPixel" else 1e-5, rtol=0)
+           for name, value in controlled.items()):
+        raise ValueError("Native AOV source correspondence requires the controlled depth-model parameters")
+    noise_pair = (native_model_parameters.get("noiseMean"), native_model_parameters.get("noiseSigma"))
+    if noise_pair not in ((0., 0.), (.25, .25)):
+        raise ValueError("Native AOV source correspondence requires independent controls for these noise settings")
+    result = register_native_depth(pointcloud_usd, native_distance_m, camera, pointcloud_pixel_offset=(1., 0.))
+    result["diagnostics"].update({
+        "profile": "ovrtx_0_6_0_1791947691_single_view_640x480_v1",
+        "source_correspondence_validated": True,
+        "control_protocol_sha256": "3dc0ed00e4d5be88fd187459492b823caceb2501019d613a990085535f0486c2",
+        "simulated_d455_calibration_validated": False,
+        "noise_calibration_validated": False,
+        "scope": "original virtual depth-camera RGB; no separate physical color-imager calibration",
+    })
+    return result
+
+
 def register_native_depth(pointcloud_usd, native_distance_m, camera, *, min_depth_m=.52, max_depth_m=6.,
                           pointcloud_pixel_offset=(0., 0.)):
     """Return optical-Z depth/mask and exact native sample provenance.

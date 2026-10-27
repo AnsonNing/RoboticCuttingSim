@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from robotic_cutting_sim.single_view_registration import analytic_plane_depth, register_native_depth
+from robotic_cutting_sim.single_view_registration import analytic_plane_depth, register_native_depth, register_ovrtx_single_view_depth
 
 
 CAMERA = {"K": [[4., 0, 2.], [0, 4., 1.]], "width": 4, "height": 2, "model": "pinhole"}
@@ -80,3 +80,31 @@ def test_explicit_source_correspondence_offset_keeps_noisy_native_value():
     assert shifted["depth_m"][0, 2] == native[0, 0]
     assert shifted["source_index"][0, 2] == 0
     assert shifted["diagnostics"]["pointcloud_pixel_offset"] == [1., 0.]
+
+
+def test_validated_association_profile_rejects_uncontrolled_runtime_or_optics():
+    points = np.array([[cloud(1.5, .5, 1.)]], np.float32)
+    native = np.array([[1.02]], np.float32)
+    with pytest.raises(ValueError, match="renderer version"):
+        register_ovrtx_single_view_depth(points, native, CAMERA,
+            ovrtx_version="other", ovstage_version="0.3.0.1791986420", native_model_parameters={})
+    with pytest.raises(ValueError, match="resolution"):
+        register_ovrtx_single_view_depth(points, native, CAMERA,
+            ovrtx_version="0.6.0.1791947691", ovstage_version="0.3.0.1791986420", native_model_parameters={})
+    camera = {"width": 640, "height": 480, "K": [[317.0431137084961, 0., 320.],
+        [0., 317.0431137084961, 240.], [0., 0., 1.]]}
+    point = np.array([[[0., 0., -1., 1.]]], np.float32)
+    parameters = {"enabled": True, "baselineMM": 95., "focalLengthPixel": 317.04310808172426,
+        "sensorSizePixel": 640., "maxDisparityPixel": 150., "confidenceThreshold": 1.,
+        "noiseDownscaleFactorPixel": 1., "minDistance": .52, "maxDistance": 6.,
+        "outlierRemovalEnabled": True, "rgbDepthOutputMode": 0, "effectiveDistance": 4.,
+        "noiseMean": .25, "noiseSigma": .25}
+    result = register_ovrtx_single_view_depth(point, native, camera,
+        ovrtx_version="0.6.0.1791947691", ovstage_version="0.3.0.1791986420", native_model_parameters=parameters)
+    assert result["depth_m"][240, 321] == native[0, 0]
+    assert result["diagnostics"]["source_correspondence_validated"]
+    assert not result["diagnostics"]["noise_calibration_validated"]
+    with pytest.raises(ValueError, match="depth-model parameters"):
+        register_ovrtx_single_view_depth(point, native, camera,
+            ovrtx_version="0.6.0.1791947691", ovstage_version="0.3.0.1791986420",
+            native_model_parameters={**parameters, "baselineMM": 55.})
