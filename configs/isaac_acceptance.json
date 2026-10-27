@@ -1,0 +1,182 @@
+{
+  "protocol_id": "isaac_d0_acceptance_v1_20261028",
+  "scope": "Engineering acceptance for future live Isaac episodes; material remains uncalibrated",
+  "freeze_boundary": "Frozen before new Isaac integration episodes. Existing standalone recordings are retrospective diagnostics and cannot pass RT-01 or RT-02.",
+  "units": "m, kg, s, rad",
+  "pose_convention": "T_destination_source acts on column vectors; pose XYZ+XYZW; explicit WXYZ adapters required",
+  "workpiece": {
+    "length_m": 0.12,
+    "width_m": 0.08,
+    "base_height_m": 0.015,
+    "bump_height_m": 0.008,
+    "bump_radius_m": 0.015,
+    "target_plane_local_z_m": 0.015,
+    "edge_clearance_above_target_m": 0.0005
+  },
+  "episode": {
+    "seed": 42,
+    "control_dt_s": 0.02,
+    "duration_s": 8.0,
+    "minimum_control_steps": 400,
+    "active_cut_interval_s": [1.6, 5.6]
+  },
+  "tests": {
+    "RT-01": {
+      "required_runtime": "live_isaac_lab",
+      "required_version": "3.0.0",
+      "minimum_control_steps": 400,
+      "minimum_simulation_time_s": 8.0,
+      "require_actual_scene_environment_task_api": true,
+      "reject_replay_or_standalone_substitution": true,
+      "reason": "One complete D0 episode must be advanced by the actual Lab runtime."
+    },
+    "RT-02": {
+      "required_runtime": "live_isaac_sim_kit",
+      "required_version": "6.2.0",
+      "minimum_control_steps": 400,
+      "minimum_simulation_time_s": 8.0,
+      "require_live_physics_articulation_and_capture": true,
+      "reject_kitless_or_replay_substitution": true,
+      "reason": "Kit-less Lab and full Sim/Kit are separate acceptance paths."
+    },
+    "SC-01": {
+      "world_up_axis": "Z",
+      "usd_meters_per_unit": 1.0,
+      "max_transform_translation_error_m": 0.00001,
+      "max_transform_rotation_error_rad": 0.0001,
+      "minimum_camera_target_forward_cosine": 0.95,
+      "reason": "Composition precision must be well below the millimeter cutting and camera tolerances."
+    },
+    "SC-02": {
+      "initial_mechanical_components": 1,
+      "initial_nonzero_cut_codes": 0,
+      "dimension_config_absolute_tolerance_m": 0.000000001,
+      "require_positive_particle_masses": true,
+      "require_continuous_base_and_bumps": true,
+      "reason": "D0 is one connected initial material, with analytic dimensions checked separately from quadrature error."
+    },
+    "ROB-01": {
+      "required_articulations": 2,
+      "arm_joint_count_each": 7,
+      "max_fixed_mount_translation_error_m": 0.00001,
+      "max_fixed_mount_rotation_error_rad": 0.0001,
+      "require_named_hand_and_actual_measured_edge": true,
+      "reason": "The material edge must be a measured rigid attachment to the articulated hand."
+    },
+    "ROB-02": {
+      "active_max_edge_position_error_m": 0.001,
+      "active_max_edge_height_error_from_command_m": 0.0005,
+      "active_max_edge_rotation_error_deg": 1.0,
+      "all_phase_max_edge_position_error_m": 0.005,
+      "max_measured_edge_translation_per_control_step_m": 0.01,
+      "minimum_analytic_bump_cross_section_sweep_coverage": 0.95,
+      "reason": "One degree at the 25 mm edge half-width contributes about 0.44 mm height error; approach errors remain separately visible."
+    },
+    "PHY-01": {
+      "minimum_material_tool_contact_events": 1,
+      "minimum_max_accumulated_plastic_strain": 0.0001,
+      "minimum_above_plane_region_residual_drop_vs_settle_m": 0.0002,
+      "require_matched_settle_or_elastic_control": true,
+      "reason": "Contact and nonzero constitutive plastic history need a measured deformation control."
+    },
+    "PHY-02": {
+      "initial_mechanical_components": 1,
+      "minimum_final_mechanical_components": 2,
+      "minimum_detached_mass_kg": 0.000001,
+      "nonzero_digit_rewrites_allowed": 0,
+      "require_gradient_and_unassigned_bridge_audit": true,
+      "reason": "Disconnected continuum degrees of freedom, persistent history and an actual nonzero chip mass are required."
+    },
+    "PHY-03": {
+      "minimum_postwithdraw_chip_com_displacement_m": 0.001,
+      "minimum_cross_component_contact_impulse_Ns": 0.000000001,
+      "postwithdraw_nonzero_digit_rewrites_allowed": 0,
+      "require_component_contact_attribution": true,
+      "reason": "Independent chip dynamics and contact must be attributed across disconnected material components."
+    },
+    "PHY-04": {
+      "minimum_peak_material_reaction_n": 0.000001,
+      "max_previous_interval_feedback_carry_error_n": 0.00000001,
+      "declared_feedback_delay_s": 0.02,
+      "minimum_matched_on_off_tool_position_difference_m": 0.00001,
+      "max_interface_work_residual_fraction": 0.05,
+      "reason": "An actual reaction must enter robot dynamics; delay and interface work mismatch remain explicit."
+    },
+    "CAM-01": {
+      "camera": "d455_0",
+      "require_native_simulated_d455": true,
+      "noise_off_plane_p95_absolute_error_m": 0.001,
+      "minimum_known_plane_valid_coverage": 0.9,
+      "registration_feature_p95_error_px": 0.5,
+      "forbid_error_based_valid_sample_rejection": true,
+      "reason": "Reuse the existing 1 mm native depth criterion; ideal depth cannot promote this gate."
+    },
+    "CAM-02": {
+      "camera": "d455_1",
+      "require_native_simulated_d455": true,
+      "noise_off_plane_p95_absolute_error_m": 0.001,
+      "minimum_known_plane_valid_coverage": 0.9,
+      "registration_feature_p95_error_px": 0.5,
+      "forbid_error_based_valid_sample_rejection": true,
+      "reason": "The second native camera requires its own independent geometry and registration evidence."
+    },
+    "CAM-03": {
+      "camera": "global",
+      "require_live_rgb": true,
+      "minimum_visible_pixels_each_required_object": 25,
+      "required_objects": ["franka_0", "franka_1", "knife", "material", "table"],
+      "reason": "The global view must actually show the complete moving workcell, not merely contain camera prims."
+    },
+    "CAM-04": {
+      "max_physics_surface_camera_timestamp_difference_s": 0.000001,
+      "mesh_depth_p95_absolute_error_m": 0.001,
+      "minimum_reference_depth_valid_mask_iou": 0.99,
+      "minimum_visible_chip_pixels_in_any_recorded_frame": 25,
+      "reason": "Current separated geometry, tool occlusion and capture must agree numerically at one timestamp."
+    },
+    "TASK-01": {
+      "minimum_detached_initial_above_target_mass_fraction": 0.9,
+      "require_mechanical_component_provenance": true,
+      "reason": "Removing at least 90 percent of reference above-plane material is scored separately from mere component separation."
+    },
+    "TASK-02": {
+      "maximum_substrate_surface_residual_height_m": 0.001,
+      "surface_p95_absolute_plane_error_m": 0.0005,
+      "surface_rms_plane_error_m": 0.0005,
+      "maximum_gouge_depth_m": 0.001,
+      "maximum_overcut_volume_fraction_of_initial_base": 0.01,
+      "maximum_unobserved_or_empty_surface_bin_fraction": 0.01,
+      "surface_grid_spacing_m": 0.001,
+      "particle_bin_proxy_cannot_pass_formal_gate": true,
+      "require_measured_substrate_surface_or_registered_depth": true,
+      "reason": "Millimeter peak quality and submillimeter area statistics are useful engineering goals, independent of cutting success and the current coarse particle proxy."
+    },
+    "ENV-01": {
+      "initial_joint_max_abs_reset_error_rad": 0.000001,
+      "initial_material_max_abs_reset_error_m": 0.000001,
+      "initial_depth_max_abs_reset_error_m": 0.00001,
+      "initial_depth_valid_mask_exact": true,
+      "reset_nonzero_cut_codes": 0,
+      "repeat_all_frame_max_position_error_m": 0.0001,
+      "repeat_final_component_com_error_m": 0.00005,
+      "repeat_all_frame_max_velocity_error_m_s": 0.01,
+      "reason": "Retain the prior frozen numerical repeat tolerances and explicitly test fresh initial state/history."
+    },
+    "ENV-02": {
+      "nonfinite_values_allowed": 0,
+      "minimum_detF": 0.05,
+      "maximum_material_speed_m_s": 2.0,
+      "maximum_non_tool_rigid_penetration_m": 0.001,
+      "maximum_tool_material_penetration_m": 0.001,
+      "maximum_material_overlap_m": 0.001,
+      "reason": "Broad finite-state screens remain distinct from calibrated contact accuracy and full energy convergence."
+    }
+  },
+  "promotion_rules": {
+    "simulation_execution_cannot_substitute_for_physical_cutting": true,
+    "physical_cutting_cannot_substitute_for_surface_flattening": true,
+    "ideal_or_standalone_camera_cannot_substitute_for_native_d455_or_isaac": true,
+    "missing_evidence_status": "NOT_RUN_OR_BLOCKED",
+    "threshold_changes_after_results_require_new_protocol_and_disclosed_experiment": true
+  }
+}
