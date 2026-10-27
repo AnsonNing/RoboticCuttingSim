@@ -1,0 +1,51 @@
+{
+  "protocol_id": "trim_single_input_2mm_reference_grid_v1_20261028",
+  "freeze_boundary": "Committed before any numeric run of this branch; one grid diagnostic, no subsequent parameter or trajectory search if negative.",
+  "hypothesis": "Changing only the exposed reference-grid dx input from4mm to2mm at fixed1mm particles reduces bulk quadrature from64 to8particles/cell and may permit actual separation with the original TRIM path.",
+  "task_id": "TRIM-01",
+  "seed": 42,
+  "original_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+  "only_explicit_change": {"grid_dx_m": 0.002},
+  "original_grid_dx_m": 0.004,
+  "particle_spacing_m": 0.001,
+  "material_dt_s": 0.0001,
+  "control_dt_s": 0.02,
+  "duration_s": 8.0,
+  "steps": 400,
+  "tool_source": "Exact task.reference_edge_pose_world at every control boundary; kinematic prescribed measured input, not robot tracking",
+  "active_interval_s": [1.6, 5.6],
+  "fully_withdrawn_time_s": 6.4,
+  "cut_plane_local_z_m": 0.0202,
+  "material_fixture_trajectory_changes": false,
+  "surface_profile": "current_volume_v1 H2, voxel0.5mm, unchanged parameters",
+  "derived_dx_scales_m": {
+    "assignment_normal_band_6dx": 0.012,
+    "assignment_rear_2dx": 0.004,
+    "particle_contact_reference_exclusion_3dx": 0.006
+  },
+  "derived_scale_boundary": "Existing source derives these windows fromdx, so this single-input test is not pure transfer-grid convergence with all physical windows held fixed.",
+  "physical_candidate_criteria": {
+    "initial_actual_stencil_components": 1,
+    "minimum_final_actual_stencil_components": 2,
+    "minimum_detached_initial_above_plane_mass_fraction": 0.9,
+    "minimum_post_withdraw_topology_persistence_s": 0.5,
+    "minimum_det_total_F_strict": 0.0,
+    "nonzero_digit_rewrites_allowed": 0,
+    "particle_count_changes_allowed": 0,
+    "require_uploaded_mass_vector_exactly_unchanged": true,
+    "all_control_boundary_state_and_reaction_values_finite": true,
+    "actual_stencil_includes_positive_weights_and_nonzero_stress_gradients": true
+  },
+  "abort_guards": {"nonfinite_state_or_nonpositive_total_F": true, "maximum_speed_m_s": 5.0},
+  "unchanged_v1_surface_limits": {
+    "maximum_substrate_surface_residual_height_m": 0.001,
+    "surface_p95_absolute_plane_error_m": 0.0005,
+    "surface_rms_plane_error_m": 0.0005,
+    "maximum_gouge_depth_m": 0.001,
+    "maximum_overcut_volume_fraction_of_initial_base": 0.01,
+    "maximum_missing_surface_fraction": 0.01
+  },
+  "recording": "Every20ms all-particlex/v/codes, finalF/Fpi/plastic/contactwork, full actual reference stencils, reaction/contact trace and final H2surface",
+  "runtime_scope": "Physics-only LiveCuttingMaterial; zero robot dynamics, no Isaac Lab/Sim episode, no sensor capture, no policy training",
+  "promotion": "No runtime/default promotion; any physical candidate requires later actual native/Lab episodes. Full v1 surface limits remain unchanged."
+}
