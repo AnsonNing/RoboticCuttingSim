@@ -1,0 +1,35 @@
+--- a/include/math/mat33.h
++++ b/include/math/mat33.h
+@@ -279,7 +279,7 @@
+                 make_float4(-(d * i - f * g), (a * i - c * g), -(a * f - c * d), 0.0f),
+                 make_float4((d * h - e * g), -(a * h - b * g), (a * e - b * d), 0.0f)};
+
+-            return adj * invDet;
++            return adj.transpose() * invDet;
+         }
+     };
+
+@@ -301,9 +301,9 @@
+
+         // Outer product calculation
+         return Mat3x3f(
+-            ax * bx, ax * by, ax * bz,
+-            ay * bx, ay * by, ay * bz,
+-            az * bx, az * by, az * bz);
++            ax * bx, ay * bx, az * bx,
++            ax * by, ay * by, az * by,
++            ax * bz, ay * bz, az * bz);
+     }
+
+ } // namespace crmpm
+--- a/include/math/svd3.h
++++ b/include/math/svd3.h
+@@ -1268,7 +1268,7 @@
+         //        u.col0.x, u.col1.x, u.col2.x, u.col0.y, u.col1.y, u.col2.y, u.col0.z, u.col1.z, u.col2.z,
+         //        v.col0.x, v.col1.x, v.col2.x, v.col0.y, v.col1.y, v.col2.y, v.col0.z, v.col1.z, v.col2.z,
+         //        sigma.col0.x, sigma.col1.y, sigma.col2.z);
+-        svd<4>(a.col0.x, a.col0.y, a.col0.z, a.col1.x, a.col1.y, a.col1.z, a.col2.x, a.col2.y, a.col2.z,
++        svd<4>(a.col0.x, a.col1.x, a.col2.x, a.col0.y, a.col1.y, a.col2.y, a.col0.z, a.col1.z, a.col2.z,
+                u.col0.x, u.col1.x, u.col2.x, u.col0.y, u.col1.y, u.col2.y, u.col0.z, u.col1.z, u.col2.z,
+                vt.col0.x, vt.col0.y, vt.col0.z, vt.col1.x, vt.col1.y, vt.col1.z, vt.col2.x, vt.col2.y, vt.col2.z,
+                sigma.col0.x, sigma.col1.y, sigma.col2.z);

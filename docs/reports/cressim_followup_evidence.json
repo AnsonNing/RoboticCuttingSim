@@ -1,0 +1,486 @@
+{
+  "upstream_sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+  "scope": "isolated_math_and_numerical_controls_only; physical_cutting_unsupported",
+  "patches": {
+    "cressim_si_mls.patch": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+    "cressim_math_layout.patch": "bbb5c1fc1ef4e3f92b9a20ffa16bb7e61e2d7d81215d0655ded5744df6a81b83"
+  },
+  "shared_source_unchanged": true,
+  "cpu": {
+    "upstream": {
+      "returncode": 1,
+      "checks": [
+        {
+          "test": "outer_product",
+          "error": 6,
+          "tolerance": 9.999999975e-07,
+          "status": "FAIL"
+        },
+        {
+          "test": "inverse_identity",
+          "error": 0.200000003,
+          "tolerance": 9.999999975e-07,
+          "status": "FAIL"
+        },
+        {
+          "test": "svd_reconstruction",
+          "error": 0.2000003755,
+          "tolerance": 1.999999949e-05,
+          "status": "FAIL"
+        },
+        {
+          "test": "svd_orthogonality",
+          "error": 5.960464478e-07,
+          "tolerance": 1.999999949e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "rigid_rotation_zero_corotational_stress_Pa",
+          "error": 26971.51562,
+          "tolerance": 0.1000000015,
+          "status": "FAIL"
+        },
+        {
+          "test": "simple_shear_corotational_stress_Pa",
+          "error": 3995.011963,
+          "tolerance": 0.1000000015,
+          "status": "FAIL"
+        },
+        {
+          "test": "affine_grid_to_particle_velocity_m_s",
+          "error": 2.980232239e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "affine_grid_to_particle_gradient_s_inv",
+          "error": 1.202800035,
+          "tolerance": 4.999999874e-05,
+          "status": "FAIL"
+        },
+        {
+          "test": "freefall_velocity_m_s",
+          "error": 0.09809999913,
+          "tolerance": 1.999999949e-05,
+          "status": "FAIL"
+        },
+        {
+          "test": "freefall_position_m",
+          "error": 0.0004954058677,
+          "tolerance": 2.000000023e-07,
+          "status": "FAIL"
+        },
+        {
+          "test": "p2g_relative_mass_error",
+          "error": 1.002901406e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "static_plane_coulomb_velocity_m_s",
+          "error": 5.960464478e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "particle_projection_to_plane_m",
+          "error": 0,
+          "tolerance": 2.000000023e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "moving_plane_relative_contact_m_s",
+          "error": 0,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "current_slicer_crossing_detected",
+          "error": 0,
+          "tolerance": 0,
+          "status": "PASS"
+        },
+        {
+          "test": "withdrawn_slicer_restores_transfer",
+          "error": 0,
+          "tolerance": 0,
+          "status": "PASS"
+        },
+        {
+          "test": "persistent_cutting",
+          "status": "UNSUPPORTED",
+          "crossing_before_withdrawal": true,
+          "crossing_after_withdrawal": false
+        },
+        {
+          "scope": "host_header_math_and_transfer_controls",
+          "status": "FAIL"
+        }
+      ]
+    },
+    "four_patch": {
+      "returncode": 1,
+      "checks": [
+        {
+          "test": "outer_product",
+          "error": 6,
+          "tolerance": 9.999999975e-07,
+          "status": "FAIL"
+        },
+        {
+          "test": "inverse_identity",
+          "error": 0.200000003,
+          "tolerance": 9.999999975e-07,
+          "status": "FAIL"
+        },
+        {
+          "test": "svd_reconstruction",
+          "error": 0.2000003755,
+          "tolerance": 1.999999949e-05,
+          "status": "FAIL"
+        },
+        {
+          "test": "svd_orthogonality",
+          "error": 5.960464478e-07,
+          "tolerance": 1.999999949e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "rigid_rotation_zero_corotational_stress_Pa",
+          "error": 26971.51562,
+          "tolerance": 0.1000000015,
+          "status": "FAIL"
+        },
+        {
+          "test": "simple_shear_corotational_stress_Pa",
+          "error": 3995.011963,
+          "tolerance": 0.1000000015,
+          "status": "FAIL"
+        },
+        {
+          "test": "affine_grid_to_particle_velocity_m_s",
+          "error": 2.980232239e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "affine_grid_to_particle_gradient_s_inv",
+          "error": 1.900005341,
+          "tolerance": 4.999999874e-05,
+          "status": "FAIL"
+        },
+        {
+          "test": "freefall_velocity_m_s",
+          "error": 3.552713679e-15,
+          "tolerance": 1.999999949e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "freefall_position_m",
+          "error": 3.725290298e-09,
+          "tolerance": 2.000000023e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "p2g_relative_mass_error",
+          "error": 5.400309533e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "static_plane_coulomb_velocity_m_s",
+          "error": 5.960464478e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "particle_projection_to_plane_m",
+          "error": 0,
+          "tolerance": 2.000000023e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "moving_plane_relative_contact_m_s",
+          "error": 0,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "current_slicer_crossing_detected",
+          "error": 0,
+          "tolerance": 0,
+          "status": "PASS"
+        },
+        {
+          "test": "withdrawn_slicer_restores_transfer",
+          "error": 0,
+          "tolerance": 0,
+          "status": "PASS"
+        },
+        {
+          "test": "persistent_cutting",
+          "status": "UNSUPPORTED",
+          "crossing_before_withdrawal": true,
+          "crossing_after_withdrawal": false
+        },
+        {
+          "scope": "host_header_math_and_transfer_controls",
+          "status": "FAIL"
+        }
+      ]
+    },
+    "math_layout": {
+      "returncode": 0,
+      "checks": [
+        {
+          "test": "outer_product",
+          "error": 0,
+          "tolerance": 9.999999975e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "inverse_identity",
+          "error": 0,
+          "tolerance": 9.999999975e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "svd_reconstruction",
+          "error": 2.384185791e-07,
+          "tolerance": 1.999999949e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "svd_orthogonality",
+          "error": 7.152557373e-07,
+          "tolerance": 1.999999949e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "rigid_rotation_zero_corotational_stress_Pa",
+          "error": 0.00265392079,
+          "tolerance": 0.1000000015,
+          "status": "PASS"
+        },
+        {
+          "test": "simple_shear_corotational_stress_Pa",
+          "error": 0.009948730469,
+          "tolerance": 0.1000000015,
+          "status": "PASS"
+        },
+        {
+          "test": "affine_grid_to_particle_velocity_m_s",
+          "error": 2.980232239e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "affine_grid_to_particle_gradient_s_inv",
+          "error": 7.778406143e-06,
+          "tolerance": 4.999999874e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "freefall_velocity_m_s",
+          "error": 5.215406418e-08,
+          "tolerance": 1.999999949e-05,
+          "status": "PASS"
+        },
+        {
+          "test": "freefall_position_m",
+          "error": 3.725290298e-09,
+          "tolerance": 2.000000023e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "p2g_relative_mass_error",
+          "error": 5.400309533e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "static_plane_coulomb_velocity_m_s",
+          "error": 5.960464478e-08,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "particle_projection_to_plane_m",
+          "error": 0,
+          "tolerance": 2.000000023e-07,
+          "status": "PASS"
+        },
+        {
+          "test": "moving_plane_relative_contact_m_s",
+          "error": 0,
+          "tolerance": 1.999999995e-06,
+          "status": "PASS"
+        },
+        {
+          "test": "current_slicer_crossing_detected",
+          "error": 0,
+          "tolerance": 0,
+          "status": "PASS"
+        },
+        {
+          "test": "withdrawn_slicer_restores_transfer",
+          "error": 0,
+          "tolerance": 0,
+          "status": "PASS"
+        },
+        {
+          "test": "persistent_cutting",
+          "status": "UNSUPPORTED",
+          "crossing_before_withdrawal": true,
+          "crossing_after_withdrawal": false
+        },
+        {
+          "scope": "host_header_math_and_transfer_controls",
+          "status": "PASS"
+        }
+      ]
+    }
+  },
+  "gpu": {
+    "settle": {
+      "status": "PASS",
+      "scope": "numerical_sanity_only",
+      "seed": 42,
+      "particle_count": 19340,
+      "frames": 120,
+      "dt_s": 0.016666666666666666,
+      "subdt_s": 0.00016666666666666666,
+      "dx_m": 0.004,
+      "wall_s": 1.936440977966413,
+      "max_speed_m_s": 0.0242734607309103,
+      "min_particle_z_m": 0.0009708423167467117,
+      "finite": true,
+      "mass_error_relative": 3.537085536468222e-08,
+      "sampled_device_peak_MiB": 967.0,
+      "gpu_memory_scope": "entire selected physical device including baseline; 100ms sampling",
+      "gpu_memory_command": [
+        "nvidia-smi",
+        "-i",
+        "0",
+        "--query-gpu=index,memory.used,utilization.gpu",
+        "--format=csv,noheader,nounits",
+        "--loop-ms=100"
+      ],
+      "material": "uncalibrated co-rotational elastic E=50000Pa nu=.3",
+      "persistent_cutting_status": "UNSUPPORTED",
+      "physics_proven": false,
+      "limitations": [
+        "No plasticity, damage or persistent multi-field cut history",
+        "Native kinematic reaction forces unavailable",
+        "Moving-slicer G2P reflection ignores relative tool velocity"
+      ]
+    },
+    "through_bump_cut": {
+      "status": "PASS",
+      "scope": "numerical_sanity_only",
+      "seed": 42,
+      "particle_count": 19340,
+      "frames": 120,
+      "dt_s": 0.016666666666666666,
+      "subdt_s": 0.00016666666666666666,
+      "dx_m": 0.004,
+      "wall_s": 1.993763895938173,
+      "max_speed_m_s": 0.03397111967206001,
+      "min_particle_z_m": 0.0009705718257464468,
+      "finite": true,
+      "mass_error_relative": 3.537085536468222e-08,
+      "sampled_device_peak_MiB": 967.0,
+      "gpu_memory_scope": "entire selected physical device including baseline; 100ms sampling",
+      "gpu_memory_command": [
+        "nvidia-smi",
+        "-i",
+        "0",
+        "--query-gpu=index,memory.used,utilization.gpu",
+        "--format=csv,noheader,nounits",
+        "--loop-ms=100"
+      ],
+      "material": "uncalibrated co-rotational elastic E=50000Pa nu=.3",
+      "persistent_cutting_status": "UNSUPPORTED",
+      "physics_proven": false,
+      "limitations": [
+        "No plasticity, damage or persistent multi-field cut history",
+        "Native kinematic reaction forces unavailable",
+        "Moving-slicer G2P reflection ignores relative tool velocity"
+      ]
+    }
+  },
+  "repeat_comparison": {
+    "settle": {
+      "positions": {
+        "max_absolute_difference": 6.426125764846802e-08,
+        "bitwise_equal": false
+      },
+      "velocities": {
+        "max_absolute_difference": 2.1587316041404847e-06,
+        "bitwise_equal": false
+      },
+      "mass_kg": {
+        "max_absolute_difference": 0.0,
+        "bitwise_equal": true
+      },
+      "tool_pose_xyzw": {
+        "max_absolute_difference": 0.0,
+        "bitwise_equal": true
+      }
+    },
+    "through_bump_cut": {
+      "positions": {
+        "max_absolute_difference": 1.0159797966480255e-05,
+        "bitwise_equal": false
+      },
+      "velocities": {
+        "max_absolute_difference": 0.013450623489916325,
+        "bitwise_equal": false
+      },
+      "mass_kg": {
+        "max_absolute_difference": 0.0,
+        "bitwise_equal": true
+      },
+      "tool_pose_xyzw": {
+        "max_absolute_difference": 0.0,
+        "bitwise_equal": true
+      }
+    }
+  },
+  "artifacts": {
+    "artifacts/CRESSim_candidate/verification_002/summary.json": {
+      "sha256": "e679294fb3055eaa3b0fce204f5903a22b1af1872fb2c2058bb9f873ace97e69",
+      "bytes": 12096
+    },
+    "artifacts/CRESSim_candidate/verification_002/settle/physics_state.npz": {
+      "sha256": "b00d159bba30d02a39acbf3de21b071156938eb14fb51ca16d69b23fad4c0753",
+      "bytes": 43403911
+    },
+    "artifacts/CRESSim_candidate/verification_002/settle/preview.mp4": {
+      "sha256": "af1ef070baae71f24a21587128941ca7fff39827631486b4354ee683296a9de3",
+      "bytes": 50517
+    },
+    "artifacts/CRESSim_candidate/verification_002/settle/trace.csv": {
+      "sha256": "e13357a8f500c0b0602b03ac2fd08ded5c7183da9f7b054fc9e5de64d8913900",
+      "bytes": 10324
+    },
+    "artifacts/CRESSim_candidate/verification_002/through_bump_cut/physics_state.npz": {
+      "sha256": "d8fc0c879a7d66b8ebf913b7ca7358244582c1dbff7a7c1110dfafb9ce21b8aa",
+      "bytes": 46974733
+    },
+    "artifacts/CRESSim_candidate/verification_002/through_bump_cut/preview.mp4": {
+      "sha256": "58ac1aa1dcdad5b2da5c0bba96bca364db86c37f08ad9b5aa7d3a37de6ae5f87",
+      "bytes": 82209
+    },
+    "artifacts/CRESSim_candidate/verification_002/through_bump_cut/trace.csv": {
+      "sha256": "ff538620f9483d6a3637ec1e798479ab088690ffbcc3e4efef29710ba45685eb",
+      "bytes": 10254
+    }
+  },
+  "current_patch_format": {
+    "sha256": "1388b9011d305afe3249c976c91e2a45e7fff9295bba327d69dc8b938ab48e28",
+    "note": "Whitespace-only context format normalized after GPU run; original executed patch retained with raw artifacts",
+    "cpu_verification": "artifacts/CRESSim_candidate/verification_003_cpu",
+    "final_source_identical_to_gpu_candidate": true
+  }
+}
