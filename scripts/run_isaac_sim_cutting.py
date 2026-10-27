@@ -242,6 +242,8 @@ def main():
         files += [ROOT/"src/robotic_cutting_sim"/name for name in ("tasks.py","geometry.py","scene_frames.py","scene_validation.py",
                   "benchmark.py","workcell.py","coupled_robot.py","fixture_contacts.py","affine_surface_controls.py")]
         files += [ROOT/"configs/cutting_tasks_v1.json",ROOT/"configs/particle_surface_affine_v1.json"]
+        if args.task_variant == "randomized":
+            files += [ROOT/"src/robotic_cutting_sim/task_randomization.py",ROOT/"configs/task_randomization_v1.json"]
     (out/"implementation").mkdir()
     hashes={str(f.relative_to(ROOT)):hashlib.sha256(f.read_bytes()).hexdigest() for f in files}
     for f in files:

@@ -1,0 +1,445 @@
+{
+  "scope": "Immutable actual live native Kit recordings; CPU mesh first-hit audit and captured-array visualization only. No new physics or renderer invocation.",
+  "episode": "artifacts/isaacsim_trim01_coarse_001",
+  "source_config": {
+    "task_id": "TRIM-01",
+    "particle_spacing_m": 0.002,
+    "grid_dx_m": 0.004,
+    "seed": 42
+  },
+  "camera_audit": "artifacts/live_camera_mesh_trim01_coarse_001",
+  "task_object_audit": "artifacts/task_object_visibility_trim01_coarse_001",
+  "input_sha256": {
+    "artifacts/live_camera_mesh_trim01_coarse_001/input.json": "21a7a2337178dbce4cdf055fe4cb3174d10c1a2c5799b8b181e858f8e840a511",
+    "artifacts/live_camera_mesh_trim01_coarse_001/result.json": "e0284261e34c4116729dc73e7ba2712f00574ed8ac97635ec6ee7829d183b2c3",
+    "artifacts/task_object_visibility_trim01_coarse_001/result.json": "bba7d28ec79e56e3889ecc88b81d354397dfa4f4f14461cc49cb5b83f83b58f8",
+    "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+    "scripts/audit_live_camera_mesh.py": "bb7e998ca33b7982f6e0d6e8a35ba7159076e2f408e548f44383c59c6f2e45d0",
+    "scripts/audit_task_object_visibility.py": "a99746412109283674d0431c9221e27c9a0725c0fafaeb55ce3ad15ebc1cc859",
+    "scripts/render_live_isaac_evidence.py": "1d68047ce705b2908aaa498dc0d624ed46ad86f79cd6f439f37784a4af06fde6"
+  },
+  "full_41_frame_gate_results": {
+    "scope": "Recorded actual live Kit arrays vs measured-state CPU geometry; no new sensor rendering or semantic AOV",
+    "frames": 41,
+    "partial_frame_subset": false,
+    "CAM-03": "PASS_GEOMETRIC_ATTRIBUTION",
+    "CAM-04_strict_native": "FAIL",
+    "geometry_bridge": "PASS",
+    "time_synchronization": "PASS",
+    "native_depth_and_mask": "FAIL",
+    "maximum_native_valid_chip_pixels": null,
+    "maximum_native_valid_separated_component_pixels": 24,
+    "separated_component_visibility": "FAIL",
+    "task_id": "TRIM-01",
+    "native_semantic_aov_captured": false,
+    "ideal_fallback_for_native_gate_used": false,
+    "all_valid_error_tails_retained": true
+  },
+  "frozen_CAM04_criteria": {
+    "max_physics_surface_camera_timestamp_difference_s": 1e-06,
+    "mesh_depth_p95_absolute_error_m": 0.001,
+    "minimum_reference_depth_valid_mask_iou": 0.99,
+    "minimum_visible_chip_pixels_in_any_recorded_frame": 25,
+    "reason": "Current separated geometry, tool occlusion and capture must agree numerically at one timestamp."
+  },
+  "native_invalid_pixels_and_all_valid_error_tails_retained": true,
+  "new_thresholds_selected": false,
+  "oracle_object_masks_added_to_observations": false,
+  "camera_summaries": {
+    "d455_0": {
+      "native_D455": true,
+      "all_material": {
+        "sampled_frames": 41,
+        "frames_with_reference_visibility": 41,
+        "minimum_reference_visible_pixels": 967,
+        "maximum_reference_visible_pixels": 1041,
+        "total_reference_pixel_samples": 40869,
+        "native_valid_coverage_weighted": 0.9908732780346963,
+        "minimum_native_valid_coverage_when_visible": 0.98559670781893,
+        "native_invalid_pixel_samples": 373,
+        "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+        "native_invalid_or_error_gt_1mm_pixel_samples": 381,
+        "native_invalid_or_error_gt_5mm_pixel_samples": 380,
+        "native_depth_vs_mesh": {
+          "pixels": 40496,
+          "p95_absolute_error_m": 1.7881393432617188e-07,
+          "max_absolute_error_m": 0.02366006374359131,
+          "rms_error_m": 0.0002667512801180137,
+          "absolute_error_gt_1mm_pixels": 8,
+          "absolute_error_gt_5mm_pixels": 7,
+          "error_trimming_applied": false
+        },
+        "actual_rtx_invalid_pixel_samples": 0,
+        "actual_rtx_depth_vs_mesh": {
+          "pixels": 40869,
+          "p95_absolute_error_m": 1.7881393432617188e-07,
+          "max_absolute_error_m": 1.5497207641601562e-06,
+          "rms_error_m": 8.907175020512456e-08,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        }
+      },
+      "actual_separated_134_particle_component": {
+        "sampled_frames": 19,
+        "frames_with_reference_visibility": 19,
+        "minimum_reference_visible_pixels": 19,
+        "maximum_reference_visible_pixels": 24,
+        "total_reference_pixel_samples": 383,
+        "native_valid_coverage_weighted": 1.0,
+        "minimum_native_valid_coverage_when_visible": 1.0,
+        "native_invalid_pixel_samples": 0,
+        "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+        "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+        "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+        "native_depth_vs_mesh": {
+          "pixels": 383,
+          "p95_absolute_error_m": 1.7881393432617188e-07,
+          "max_absolute_error_m": 3.5762786865234375e-07,
+          "rms_error_m": 9.765113026645265e-08,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        },
+        "actual_rtx_invalid_pixel_samples": 0,
+        "actual_rtx_depth_vs_mesh": {
+          "pixels": 383,
+          "p95_absolute_error_m": 1.7881393432617188e-07,
+          "max_absolute_error_m": 3.5762786865234375e-07,
+          "rms_error_m": 9.765113026645265e-08,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        }
+      },
+      "post_separation_native_valid_chip_pixels_min": 19,
+      "post_separation_native_valid_chip_pixels_max": 24,
+      "native_whole_image_valid_mask_iou_range": [
+        0.6430579042059502,
+        0.6530713393693413
+      ],
+      "geometry_vs_rtx_p95_error_max_m": 1.7881393432617188e-07,
+      "physics_surface_camera_timestamp_span_max_s": 8.881784197001252e-16
+    },
+    "d455_1": {
+      "native_D455": true,
+      "all_material": {
+        "sampled_frames": 41,
+        "frames_with_reference_visibility": 41,
+        "minimum_reference_visible_pixels": 735,
+        "maximum_reference_visible_pixels": 797,
+        "total_reference_pixel_samples": 31307,
+        "native_valid_coverage_weighted": 0.9852109751812693,
+        "minimum_native_valid_coverage_when_visible": 0.979757085020243,
+        "native_invalid_pixel_samples": 463,
+        "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+        "native_invalid_or_error_gt_1mm_pixel_samples": 479,
+        "native_invalid_or_error_gt_5mm_pixel_samples": 466,
+        "native_depth_vs_mesh": {
+          "pixels": 30844,
+          "p95_absolute_error_m": 1.7881393432617188e-07,
+          "max_absolute_error_m": 0.11228162050247192,
+          "rms_error_m": 0.0006673208945248147,
+          "absolute_error_gt_1mm_pixels": 16,
+          "absolute_error_gt_5mm_pixels": 3,
+          "error_trimming_applied": false
+        },
+        "actual_rtx_invalid_pixel_samples": 0,
+        "actual_rtx_depth_vs_mesh": {
+          "pixels": 31307,
+          "p95_absolute_error_m": 1.7881393432617188e-07,
+          "max_absolute_error_m": 5.960464477539062e-07,
+          "rms_error_m": 9.287718144844715e-08,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        }
+      },
+      "actual_separated_134_particle_component": {
+        "sampled_frames": 19,
+        "frames_with_reference_visibility": 19,
+        "minimum_reference_visible_pixels": 3,
+        "maximum_reference_visible_pixels": 21,
+        "total_reference_pixel_samples": 368,
+        "native_valid_coverage_weighted": 0.9864130434782609,
+        "minimum_native_valid_coverage_when_visible": 0.85,
+        "native_invalid_pixel_samples": 5,
+        "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+        "native_invalid_or_error_gt_1mm_pixel_samples": 7,
+        "native_invalid_or_error_gt_5mm_pixel_samples": 7,
+        "native_depth_vs_mesh": {
+          "pixels": 363,
+          "p95_absolute_error_m": 2.384185791015625e-07,
+          "max_absolute_error_m": 0.11228162050247192,
+          "rms_error_m": 0.0060392601969203935,
+          "absolute_error_gt_1mm_pixels": 2,
+          "absolute_error_gt_5mm_pixels": 2,
+          "error_trimming_applied": false
+        },
+        "actual_rtx_invalid_pixel_samples": 0,
+        "actual_rtx_depth_vs_mesh": {
+          "pixels": 368,
+          "p95_absolute_error_m": 2.1755695343017443e-07,
+          "max_absolute_error_m": 5.364418029785156e-07,
+          "rms_error_m": 1.1327098710333447e-07,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        }
+      },
+      "post_separation_native_valid_chip_pixels_min": 3,
+      "post_separation_native_valid_chip_pixels_max": 21,
+      "native_whole_image_valid_mask_iou_range": [
+        0.30890468640467467,
+        0.33991323107108673
+      ],
+      "geometry_vs_rtx_p95_error_max_m": 1.7881393432617188e-07,
+      "physics_surface_camera_timestamp_span_max_s": 8.881784197001252e-16
+    },
+    "global": {
+      "native_D455": false,
+      "all_material": {
+        "sampled_frames": 41,
+        "frames_with_reference_visibility": 41,
+        "minimum_reference_visible_pixels": 531,
+        "maximum_reference_visible_pixels": 577,
+        "total_reference_pixel_samples": 22546,
+        "native_valid_coverage_weighted": 1.0,
+        "minimum_native_valid_coverage_when_visible": 1.0,
+        "native_invalid_pixel_samples": 0,
+        "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+        "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+        "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+        "native_depth_vs_mesh": {
+          "pixels": 22546,
+          "p95_absolute_error_m": 7.152557373046875e-07,
+          "max_absolute_error_m": 5.9604644775390625e-06,
+          "rms_error_m": 3.854123762547672e-07,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        },
+        "actual_rtx_invalid_pixel_samples": 0,
+        "actual_rtx_depth_vs_mesh": {
+          "pixels": 22546,
+          "p95_absolute_error_m": 7.152557373046875e-07,
+          "max_absolute_error_m": 5.9604644775390625e-06,
+          "rms_error_m": 3.854123762547672e-07,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        }
+      },
+      "actual_separated_134_particle_component": {
+        "sampled_frames": 19,
+        "frames_with_reference_visibility": 19,
+        "minimum_reference_visible_pixels": 11,
+        "maximum_reference_visible_pixels": 15,
+        "total_reference_pixel_samples": 257,
+        "native_valid_coverage_weighted": 1.0,
+        "minimum_native_valid_coverage_when_visible": 1.0,
+        "native_invalid_pixel_samples": 0,
+        "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+        "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+        "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+        "native_depth_vs_mesh": {
+          "pixels": 257,
+          "p95_absolute_error_m": 1.430511474609375e-06,
+          "max_absolute_error_m": 2.384185791015625e-06,
+          "rms_error_m": 6.113879657377083e-07,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        },
+        "actual_rtx_invalid_pixel_samples": 0,
+        "actual_rtx_depth_vs_mesh": {
+          "pixels": 257,
+          "p95_absolute_error_m": 1.430511474609375e-06,
+          "max_absolute_error_m": 2.384185791015625e-06,
+          "rms_error_m": 6.113879657377083e-07,
+          "absolute_error_gt_1mm_pixels": 0,
+          "absolute_error_gt_5mm_pixels": 0,
+          "error_trimming_applied": false
+        }
+      },
+      "post_separation_native_valid_chip_pixels_min": 11,
+      "post_separation_native_valid_chip_pixels_max": 15,
+      "native_whole_image_valid_mask_iou_range": [
+        0.9999810580948232,
+        0.9999905249194618
+      ],
+      "geometry_vs_rtx_p95_error_max_m": 7.152557373046875e-07,
+      "physics_surface_camera_timestamp_span_max_s": 8.881784197001252e-16
+    }
+  },
+  "media": {
+    "isaacsim_cut01_media_002": {
+      "source_episode": "isaacsim_cut01_001",
+      "provenance_sha256": "86f2ed8da0d9305ce1b3ccb931bd18f79ba5131b88f9d0a3629c8d88b69278df",
+      "videos": {
+        "live_d455_0.mp4": {
+          "bytes": 85966,
+          "sha256": "a81a6f549fe83d1aada1e70cd9340a7689940ba09d45975015f19e779b85e9db",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_d455_1.mp4": {
+          "bytes": 73248,
+          "sha256": "01ca53f0160bed760078531e19eb54fd70e85ecf7dda122788a4fd1b3734926c",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_d455_1_measured_depth.mp4": {
+          "bytes": 96134,
+          "sha256": "fea3b09355b08f67b04cab6c708245ab1a152e044f2b7b8f25eec096f35acdcd",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_global.mp4": {
+          "bytes": 90722,
+          "sha256": "ab4bae34293923c8e319b881aab99c04480a9eec03fb6642910ebfb0fdde1bbd",
+          "ffprobe": {
+            "width": 1280,
+            "height": 960,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_measured_depth.mp4": {
+          "bytes": 70872,
+          "sha256": "8e75eaf761a4676aefd6281d68d4ebb264f2ca3d23167ddc1fc0628ab5b1cdff",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_synchronized_multiview.mp4": {
+          "bytes": 251240,
+          "sha256": "157fd8b170d13dd77181b578c66f18d88b5815db0310d878669bdadde6b3e8e0",
+          "ffprobe": {
+            "width": 1280,
+            "height": 960,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        }
+      },
+      "d455_1_depth_source_checks": [
+        {
+          "frame": 0,
+          "input_npz_sha256": "3ad113755a4c3b927243ee43d43ad4b76547041721598550f2cdd326e8cb9c61",
+          "display_pixels_equal_source_colormap_outside_text_and_legend": true
+        },
+        {
+          "frame": 20,
+          "input_npz_sha256": "522be454f13ce4e13a4f8fc8b19e14f37b101fead463c1026404d513dbfc92df",
+          "display_pixels_equal_source_colormap_outside_text_and_legend": true
+        },
+        {
+          "frame": 40,
+          "input_npz_sha256": "e25f621b13ffe97007c1651ee935e2c5fc63322d370cb85e4944667ed7dd3964",
+          "display_pixels_equal_source_colormap_outside_text_and_legend": true
+        }
+      ],
+      "trajectory_png_sha256": "5769e4f045f252bf61433d70d9a7e5a14fc8fe3f8cb44526ac2e3f1d071dde44"
+    },
+    "isaacsim_trim01_coarse_media_002": {
+      "source_episode": "isaacsim_trim01_coarse_001",
+      "provenance_sha256": "f654ef0e4e5e3b5702357d815cdc6f1643f71341c948eaab60627e6e58e5ae98",
+      "videos": {
+        "live_d455_0.mp4": {
+          "bytes": 88062,
+          "sha256": "d6d6e7428943414491496fc83a86ce86f0e7b8b40e4cf8732d5b2ad3e2827fb4",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_d455_1.mp4": {
+          "bytes": 77555,
+          "sha256": "bf6568304a2e272c235d9217a7ffed87cc03f8da47f4ec0a9706c218a0065764",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_d455_1_measured_depth.mp4": {
+          "bytes": 104016,
+          "sha256": "2ebb0d81c5e93057c741ebc412a1e4c1bcefca02c7844df5c3d16559004c96ac",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_global.mp4": {
+          "bytes": 94518,
+          "sha256": "3d2ec6189315be56a50d994596fc45147c398aa0c5d11a26cc5fc76eea4235eb",
+          "ffprobe": {
+            "width": 1280,
+            "height": 960,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_measured_depth.mp4": {
+          "bytes": 67694,
+          "sha256": "e7344f83e80457c0c1b31729458ac92f86d2995fee67d89a7d5b3d8e7d102f45",
+          "ffprobe": {
+            "width": 640,
+            "height": 480,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        },
+        "live_synchronized_multiview.mp4": {
+          "bytes": 256701,
+          "sha256": "58b209a54bcd270b9cf0be6db834079a05c304faa41ae10d59052312ea6d7bc6",
+          "ffprobe": {
+            "width": 1280,
+            "height": 960,
+            "r_frame_rate": "5/1",
+            "nb_read_frames": "41"
+          }
+        }
+      },
+      "d455_1_depth_source_checks": [
+        {
+          "frame": 0,
+          "input_npz_sha256": "45e522e98db732248d009a3315457a6921f27350cefdea6156278dfc5fc08ea9",
+          "display_pixels_equal_source_colormap_outside_text_and_legend": true
+        },
+        {
+          "frame": 20,
+          "input_npz_sha256": "c13444e7d6668fc8364cecddfa57ad68a7575c55803ec854c001d4d636e2a8e7",
+          "display_pixels_equal_source_colormap_outside_text_and_legend": true
+        },
+        {
+          "frame": 40,
+          "input_npz_sha256": "cf89cf55e741bc1aeac6dc826ff43d9614afdf15b0d74b8f793badf57a25e08c",
+          "display_pixels_equal_source_colormap_outside_text_and_legend": true
+        }
+      ],
+      "trajectory_png_sha256": "6b73aae83248f7f920a38290bea6fc29c6ffc98beffac5c87c364e7e2f4cb74a"
+    }
+  }
+}

@@ -337,3 +337,63 @@ a shared task is rejected to protect legacy D0. Source files and protocol bytes
 are frozen before each worker starts. Actual Global, both native RGB views,
 measured-depth and synchronized multiview videos, plus workpiece-local trajectory,
 are under `artifacts/isaacsim_trim01_coarse_media_001`.
+
+## Complete native task camera evidence and both measured-depth videos
+
+The complete41-frame coarse TRIM recording was independently audited on CPU in
+`artifacts/live_camera_mesh_trim01_coarse_001`, followed by the descriptive
+object audit `artifacts/task_object_visibility_trim01_coarse_001`. Both audits
+use immutable measured PhysX link poses, the exact recorded current-component
+surface and recorded task fixtures; no physics or native camera was rerun.
+Object masks belong to this evaluator only and are absent from observations.
+
+CAM03 geometric visibility, the dynamic geometry bridge and time synchronization
+pass. The largest per-frame mesh-versus-RTX p95 error is0.179µm for each D455
+and0.715µm for Global; the maximum physics/surface/camera timestamp span is
+8.89e-16s. **Strict native CAM04 still fails.** Whole-image native valid-mask IoU
+is.6431–.6531 for D4550 and.3089–.3399 for D4551. No ideal depth replaces native
+holes, and every valid error tail remains in the statistics.
+
+| Actual recorded view | All-material native depth coverage | Detached1.608g chip: valid pixels per post-split frame | Chip native depth maximum error |
+|---|---:|---:|---:|
+| D4550 |99.0873%|19–24|0.000358mm|
+| D4551 |98.5211%|3–21|112.282mm|
+| Global ideal RTX reference |100%|11–15|0.002384mm|
+
+The chip is geometrically visible in all19 post-split captures. D4550 retains
+all383 chip pixel samples; D4551 retains363/368, including two valid outliers
+above5mm. Across all material, native valid maximum errors are23.660mm and
+112.282mm respectively. High local coverage therefore does not establish
+whole-image depth quality. The maximum native chip visibility is24 pixels,
+below the existing25-pixel criterion; this failure is retained without changing
+camera poses, thresholds or source data. Global is an ideal reference camera,
+not an additional native D455 measurement.
+
+Fresh media sets `artifacts/isaacsim_cut01_media_002` and
+`artifacts/isaacsim_trim01_coarse_media_002` each contain six videos: Global,
+D4550 RGB, D4551 RGB, D4550 measured depth (`live_measured_depth.mp4`),
+D4551 measured depth (`live_d455_1_measured_depth.mp4`) and synchronized
+multiview. All12 videos have41 frames at5fps; both task-plane trajectory plots
+are included. The original five-video `_001` directories remain unchanged.
+Both depth products use the same fixed.52–1.20m display scale, with invalid
+depth shown black. The multiview retains its four explicitly labelled panels;
+the D4551 depth video is delivered separately.
+
+For frames0/20/40 of each task, the new D4551 PNG color pixels outside text and
+legend match the actual D4551 measured-depth arrays exactly. Video dimensions,
+frame counts, byte sizes and SHA256 values, audit source hashes and complete
+object summaries are stored in
+[`native_task_camera_media_v1.json`](evidence/native_task_camera_media_v1.json).
+These are captured-array visualizations, not replay-rendered evidence.
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/audit_live_camera_mesh.py \
+  artifacts/isaacsim_trim01_coarse_001 artifacts/camera_mesh_trim_fresh --device cpu
+PYTHONPATH=src .venv/bin/python scripts/audit_task_object_visibility.py \
+  artifacts/camera_mesh_trim_fresh artifacts/task_objects_trim_fresh
+PYTHONPATH=src .venv/bin/python scripts/render_live_isaac_evidence.py \
+  artifacts/isaacsim_trim01_coarse_001 artifacts/trim_six_video_fresh
+```
+
+The first command intentionally returns exit1 for the preserved strict CAM04
+failure; its completed `result.json` distinguishes this from an audit error.
