@@ -50,12 +50,15 @@ def worker(args, config):
                 (out/directory).mkdir()
             proprio, diagnostics, materials,body_poses = [initial], [], [],[env.body_poses()]
             frame_rows = []
+            first_capture={}
             previous = {}
             changed = {name:0 for name in ("d455_0","d455_1","global")}
             def record():
                 frames, sensor_info = env.capture()
                 index = len(frame_rows)
                 for name,frame in frames.items():
+                    if index==0:
+                        first_capture[name]={key:frame[key].copy() for key in ("depth_m","valid_mask")}
                     target = out/("global_debug" if name == "global" else "observations")
                     debug_keys={key for key in frame if key.startswith("rtx_reference_") or key.startswith("depth_sensor_")
                                 or key in ("native_source_index_debug","native_raw_valid_mask")}
@@ -85,6 +88,9 @@ def worker(args, config):
                     "native_registration":{name:dict(value) for name,value in env.native_registration.items()}})
                 write_json(out/"frame_manifest.json",frame_rows)
             record()
+            initial_surface_vertices=env.surface_arrays[0].copy()
+            initial_surface_triangles=env.surface_arrays[1].copy()
+            initial_all_dofs=env.arms.get_dof_positions().numpy().copy()
             start = time.perf_counter()
             for step in range(config.steps):
                 actual, diagnostic = env.step()
@@ -124,9 +130,29 @@ def worker(args, config):
             reset_error=float(np.abs(again["q"]-initial["q"]).max())
             reset_material_error=float(np.abs(reset_material["positions"]-first_material).max())
             reset_codes=int(np.count_nonzero(reset_material["codes"]))
+            reset_body=env.body_poses()
+            reset_all_dofs=env.arms.get_dof_positions().numpy().copy()
+            reset_vertices,reset_triangles=env.surface_arrays
+            reset_surface_equal=(np.array_equal(initial_surface_vertices,reset_vertices)
+                                 and np.array_equal(initial_surface_triangles,reset_triangles))
+            np.savez_compressed(out/"oracle_debug/reset_geometry.npz",initial_body_pose=body_poses[0],
+                reset_body_pose=reset_body,initial_all_dofs=initial_all_dofs,reset_all_dofs=reset_all_dofs,
+                initial_surface_vertices=initial_surface_vertices,initial_surface_triangles=initial_surface_triangles,
+                reset_surface_vertices=reset_vertices,reset_surface_triangles=reset_triangles)
+            reset_frames,reset_sensor_info=env.capture()
+            (out/"reset_observations").mkdir()
+            camera_reset={}
+            for name,frame in reset_frames.items():
+                np.savez_compressed(out/"reset_observations"/f"{name}.npz",rgb=frame["rgb"],depth_m=frame["depth_m"],
+                    valid_mask=frame["valid_mask"],physics_timestamp_s=frame["physics_timestamp_s"])
+                camera_reset[name]={"max_depth_error_m":float(np.abs(first_capture[name]["depth_m"]-frame["depth_m"]).max()),
+                    "valid_mask_changed_pixels":int(np.sum(first_capture[name]["valid_mask"]!=frame["valid_mask"]))}
             write_json(out/"reset_receipt.json",{"q_max_error_rad":reset_error,"material_max_error_m":reset_material_error,
                 "nonzero_cut_codes":reset_codes,"time_s":env.time_s,"dynamics_reset_measured":True,
-                "camera_reset_repeatability":"NOT_RUN"})
+                "all_nine_dofs_max_error_rad":float(np.abs(initial_all_dofs-reset_all_dofs).max()),
+                "all_body_pose_max_abs_error":float(np.abs(np.asarray(body_poses[0])-reset_body).max()),
+                "surface_arrays_bitwise_equal":reset_surface_equal,
+                "camera_reset_repeatability":camera_reset,"sensor_info":reset_sensor_info})
             result = {"status":"PASS_EXECUTION" if qmotion>1e-5 else "FAIL",
                 "scope":"LIVE Isaac Sim6.2 native PhysX articulation + retained TLMPM + native RTX",
                 "steps":config.steps,"simulation_s":config.steps*config.control_dt,"wall_s":time.perf_counter()-start,
@@ -135,7 +161,7 @@ def worker(args, config):
                 "camera_mode":config.camera_mode,"camera_frames":len(frame_rows),"changed_depth_pixels_10um":changed,
                 "joint_motion_max_rad":qmotion,"final_mechanical_components":frame_rows[-1]["current_component_surface"]["mechanical_components"],
                 "full_isaac_integration":False,"physical_cutting":"NOT_SCORED","surface_flattening":"NOT_SCORED",
-                "native_single_view_calibration":"NOT_VALIDATED","reset_repeatability":"PARTIAL_DYNAMICS_AND_MATERIAL",
+                "native_single_view_calibration":"NOT_VALIDATED","reset_repeatability":"MEASURED_DYNAMICS_MATERIAL_CAMERAS",
                 "native_single_view_registration":"VALIDATED_EXACT_PROFILE_APPLIED" if config.camera_mode=="native_single_view" else "NOT_RUN",
                 "observation_force_oracle_global":False,
                 "limitations":["Native PhysX trajectory differs from standalone MuJoCo and requires comparison",
@@ -166,10 +192,12 @@ def main():
     p.add_argument("--scene",type=Path)
     p.add_argument("--runtime-only",action="store_true")
     p.add_argument("--no-feedback",action="store_true")
+    p.add_argument("--velocity-feedforward",action="store_true",help="Set native drive velocity targets from successive IK commands")
     p.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
     args=p.parse_args()
     config=IsaacSimCuttingConfig(seed=args.seed,steps=args.steps,record_every=args.record_every,gpu=args.gpu,
                 device=args.device,camera_mode=args.camera_mode,feedback=not args.no_feedback,
+                velocity_feedforward=args.velocity_feedforward,
                 scene=str(args.scene.resolve()) if args.scene else None)
     if args.worker:
         return worker(args,config)
@@ -193,6 +221,8 @@ def main():
         argv.append("--runtime-only")
     if args.no_feedback:
         argv.append("--no-feedback")
+    if args.velocity_feedforward:
+        argv.append("--velocity-feedforward")
     env=os.environ.copy();env["OMNI_KIT_ACCEPT_EULA"]="YES";env["PYTHONUNBUFFERED"]="1"
     start=time.perf_counter()
     with (out/"stdout.log").open("w") as log:

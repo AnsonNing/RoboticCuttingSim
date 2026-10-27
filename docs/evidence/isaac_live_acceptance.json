@@ -1,0 +1,4466 @@
+{
+  "protocol": "configs/isaac_acceptance.json",
+  "full_benchmark_ready": false,
+  "episodes": {
+    "lab_baseline": {
+      "scope": "Independent quantitative audit of this actual recorded episode",
+      "recording": "artifacts/isaac_lab_d0_001",
+      "runtime_source": "live_isaac_lab",
+      "protocol_id": "isaac_d0_acceptance_v1_20261028",
+      "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+      "input_sha256": {
+        "manifest.json": "3f3205126227e1ac52292f31bb57bc4ebffa17ad1b8db843bba8c4a1f49045c7",
+        "setup.json": "ba989d9e603cb22e6fb2c2de3407eca3b097bc7b71978464ba00bc1b9aef2d95",
+        "result.json": "e8f185408ad6b35163e0e7c8d4cd0d2bc0c03f76bf2ee234f13cadc673cdac6f",
+        "robot_state.npz": "4483cb0c5f9cf3d5057096842ab76750bc4fdc11360b1cc363686322879e81ae",
+        "physics_state.npz": "2a6f36fb1e2b65a11b0ddf78ede258479ca2c88006612a989cbcf35293285d85",
+        "diagnostics.json": "73c91c7334855bcbbc5b10c9780eb7950befdd8e22ea494b2e345cbecb4ab337"
+      },
+      "gates": {
+        "RT-01": {
+          "status": "PASS",
+          "checks": {
+            "full_400_step_recording": true,
+            "full_8_second_recording": true,
+            "actual_scene_environment_task_api": true,
+            "actual_articulation_owner": true,
+            "actual_task_api": true,
+            "GA_release": true,
+            "completed_execution": true,
+            "protocol_matches_prefrozen_file": true,
+            "runtime_module_hashes_recorded": true,
+            "actual_native_clock_tracks_episode": true
+          },
+          "measurements": {
+            "steps": 400,
+            "simulation_s": 8.0,
+            "native_clock_s": 7.999999999999341,
+            "wall_s": 193.16916846996173,
+            "current_source_matches_recorded_hash": {
+              "isaac_lab_env.py": false,
+              "live_material.py": true,
+              "tlmpm.py": true,
+              "cut_topology.py": true,
+              "scene_frames.py": true
+            },
+            "hash_matching_implementation": {
+              "isaac_lab_env.py": {
+                "verified": true,
+                "source": "git:c03e152c7b07f42df4f278b0103e8a5daed04ff6:src/robotic_cutting_sim/isaac_lab_env.py",
+                "sha256": "1b2219552e5aaab297353bf9c02fab6e310041c8008b033c1e8c374ea8643b31",
+                "recovered_after_episode": true
+              },
+              "live_material.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/live_material.py",
+                "sha256": "da7dbb37244d095733e70af3d4dd8881777c8716f71bbfd6bf417abd6654b5b5"
+              },
+              "tlmpm.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/tlmpm.py",
+                "sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac"
+              },
+              "cut_topology.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/cut_topology.py",
+                "sha256": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+              },
+              "scene_frames.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/scene_frames.py",
+                "sha256": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b"
+              }
+            },
+            "GA_source_sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "distribution_versions": {
+              "isaaclab": "28.0.0",
+              "isaaclab-newton": "9.1.4",
+              "torch": "2.11.0+cu128",
+              "warp-lang": "1.17.0",
+              "newton": "1.6.1",
+              "usd-exchange": "3.0.1"
+            },
+            "package_version_is_not_GA_release_number": true
+          },
+          "missing_evidence": [],
+          "scope": "Live Lab DirectRLEnv + InteractiveScene/NewtonManager; kit-less cameras cannot pass native D455/Kit"
+        },
+        "RT-02": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {},
+          "missing_evidence": [
+            "This recording is kit-less Lab, not a full Isaac Sim/Kit episode"
+          ],
+          "scope": ""
+        },
+        "SC-01": {
+          "status": "PASS",
+          "checks": {
+            "identity_workpiece_supported_by_fixture": true,
+            "loaded_workpiece_local_target_matches_protocol": true,
+            "USD_meters": true,
+            "USD_Z_up": true,
+            "all_required_camera_frames": true,
+            "camera_target_forward": true,
+            "camera_frame_translation": true,
+            "camera_frame_rotation": true,
+            "hand_USD_translation": true,
+            "hand_USD_rotation": true
+          },
+          "measurements": {
+            "up_axis": "Z",
+            "meters_per_unit": 1.0,
+            "actual_final_scene_sha256": "7ffe48f1d1a241a34040d90fb746cbdffc0af0c0ac335bf22b9f141b719aa787",
+            "camera_forward_cosines": {
+              "d455_0": 0.9999999999999972,
+              "d455_1": 1.0000000000000002,
+              "global": 0.9922994153684433
+            },
+            "camera_transform_errors": {
+              "d455_0": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              },
+              "d455_1": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              },
+              "global": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              }
+            },
+            "final_USD_vs_measured_hand_translation_m": 0.0,
+            "final_USD_vs_measured_hand_rotation_rad": 0.0
+          },
+          "missing_evidence": [],
+          "scope": "Actual USD versus recorded articulated hand and optical camera frames"
+        },
+        "SC-02": {
+          "status": "PASS",
+          "checks": {
+            "actual_D0_samples": true,
+            "positive_masses": true,
+            "initial_codes_zero": true,
+            "initial_continuum_components_one": true
+          },
+          "measurements": {
+            "initial_particle_count": 19340,
+            "initial_mass_kg": 0.23207999999999998,
+            "actual_initial_sample_error_m": 0.0,
+            "float32_sample_roundoff_bound_m": 7.450580596923828e-09,
+            "analytic_specimen": {
+              "length_m": 0.12,
+              "width_m": 0.08,
+              "base_height_m": 0.015,
+              "bump_height_m": 0.008,
+              "bump_radius_m": 0.015
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual continuous initial D0 samples and full mechanical stencil graph"
+        },
+        "ROB-01": {
+          "status": "PASS",
+          "checks": {
+            "two_articulations": true,
+            "seven_arm_joints_each": true,
+            "named_actual_Panda_hand": true,
+            "physical_knife_attached_to_same_hand": true,
+            "mount_translation": true,
+            "mount_rotation": true,
+            "recorded_hand_equals_named_body": true
+          },
+          "measurements": {
+            "max_fixed_mount_translation_error_m": 8.326673125851656e-17,
+            "max_fixed_mount_rotation_error_rad": 1.0927709897226315e-19,
+            "named_hand": "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand",
+            "body_index": 8
+          },
+          "missing_evidence": [],
+          "scope": "Measured named hand and actual fixed physical wedge"
+        },
+        "ROB-02": {
+          "status": "FAIL",
+          "checks": {
+            "active_max_edge_position_error_m": false,
+            "active_max_edge_height_error_from_command_m": true,
+            "active_max_edge_rotation_error_deg": true,
+            "all_phase_max_edge_position_error_m": false,
+            "max_measured_edge_translation_per_control_step_m": true,
+            "minimum_analytic_bump_cross_section_sweep_coverage": true,
+            "actual_edge_intersects_original_material": true
+          },
+          "measurements": {
+            "status": "FAIL",
+            "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+            "metrics": {
+              "active_max_edge_position_error_m": 0.001235580241865565,
+              "active_max_edge_height_error_from_command_m": 0.00022005495706639566,
+              "active_max_edge_rotation_error_deg": 0.031313099283235606,
+              "all_phase_max_edge_position_error_m": 0.00570398388907542,
+              "max_measured_edge_translation_per_control_step_m": 0.0014516553132013833
+            },
+            "checks": {
+              "active_max_edge_position_error_m": false,
+              "active_max_edge_height_error_from_command_m": true,
+              "active_max_edge_rotation_error_deg": true,
+              "all_phase_max_edge_position_error_m": false,
+              "max_measured_edge_translation_per_control_step_m": true,
+              "minimum_analytic_bump_cross_section_sweep_coverage": true,
+              "actual_edge_intersects_original_material": true
+            },
+            "active_interval_s": [
+              1.6,
+              5.6
+            ],
+            "active_sample_count": 200,
+            "sweep": {
+              "scope": "analytic workpiece-local finite-edge geometry only",
+              "cross_section_samples": 1992,
+              "cross_section_area_m2": 0.0004980000000000001,
+              "cross_section_sweep_coverage": 1.0,
+              "actual_edge_intersects_original_material": true,
+              "edge_endpoint_height_valid_fraction": 1.0,
+              "local_edge_center_bounds_m": [
+                [
+                  -0.029782472529674985,
+                  -6.304651402361033e-05,
+                  0.015644500601567052
+                ],
+                [
+                  0.04341298635808459,
+                  -2.338108982417422e-05,
+                  0.015720054703746655
+                ]
+              ],
+              "cut_plane_local_z_m": 0.0155,
+              "target_plane_local_z_m": 0.015,
+              "sampling_spacing_m": 0.0005,
+              "height_tolerance_m": 0.0005
+            },
+            "active_local_edge_height_range_m": [
+              0.015644500601567052,
+              0.015720054703746655
+            ],
+            "active_plane_normal_tilt_max_deg": 0.03130878081243708
+          },
+          "missing_evidence": [],
+          "scope": "Measured edge geometry and tracking, not IK targets"
+        },
+        "PHY-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_material_tool_contacts": true,
+            "nonzero_accumulated_plastic_history": true
+          },
+          "measurements": {
+            "material_tool_substep_particle_events": 6032589,
+            "max_accumulated_plastic_strain": 0.4946117699146271
+          },
+          "missing_evidence": [
+            "Matched settle/elastic control measuring above-plane deformation residual drop"
+          ],
+          "scope": "Constitutive deformation is separate from component separation"
+        },
+        "PHY-02": {
+          "status": "PASS",
+          "checks": {
+            "nonzero_digits_never_rewritten_in_recorded_history": true,
+            "all_particle_frames_preserve_count": true,
+            "initial_mass_matches_immutable_recorded_masses": true,
+            "initial_graph_one_component": true,
+            "final_graph_at_least_two": true,
+            "recorded_graph_agrees": true,
+            "positive_detached_component_mass": true
+          },
+          "measurements": {
+            "graph": {
+              "status": "PASS",
+              "initial_components": 1,
+              "final_components": 2,
+              "recorded_partition_matches_recomputation": true,
+              "includes_positive_weights": true,
+              "includes_nonzero_stress_gradients": true,
+              "includes_unassigned_code_zero_particles": true,
+              "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "stencil_sha256": "a7e36cca51d71701fdd22dc442e3e8adcf86ec9f409ef486339fe5ca22f83e34"
+            },
+            "history": {
+              "initial_nonzero_codes": 0,
+              "nonzero_digit_rewrites_by_cut": [
+                0
+              ],
+              "nonzero_digit_rewrites": 0,
+              "final_code_histogram": {
+                "0": 11286,
+                "1": 7916,
+                "2": 138
+              },
+              "sampled_history_only": true
+            },
+            "task_mass": {
+              "status": "MEASURED",
+              "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+              "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "component_count": 2,
+              "reference_substrate_component_ids": [
+                1
+              ],
+              "detached_mass_kg": 0.001656,
+              "reference_above_target_mass_kg": 0.0016799999999999999,
+              "detached_initial_above_target_mass_kg": 0.001656,
+              "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+              "remaining_initial_above_target_mass_kg": 2.4e-05,
+              "reference_plane_tolerance_m": 1e-07,
+              "current_substrate_particle_center_max_residual_m": 0.000258010476827622,
+              "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+            },
+            "mass_evidence_scope": "All particle counts and one immutable per-particle mass vector; no inferred force observation"
+          },
+          "missing_evidence": [],
+          "scope": "Persistent separation uses the actual transfer/stress stencil, including possible zero-code bridges"
+        },
+        "PHY-03": {
+          "status": "PASS",
+          "checks": {
+            "postwithdraw_chip_motion": true,
+            "persistent_history_no_reset": true,
+            "measured_blade_clear_of_all_particle_spheres_after_withdrawal": true,
+            "cross_component_contact_exchange": true
+          },
+          "measurements": {
+            "withdrawal_complete_s": 6.3999999999999995,
+            "postwithdraw_chip_com_displacement_m": 0.00138638520023992,
+            "postwithdraw_min_material_sphere_to_blade_AABB_clearance_m": 0.03270917841991985,
+            "original_postwithdraw_material_pair_events_unattributed": 65347,
+            "contact_kernel_recheck": {
+              "scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
+              "device": "cuda:0",
+              "peak_component_net_contact_impulse_Ns": 5.468896766822883e-08,
+              "roundoff_reporting_floor_Ns": 1e-09,
+              "samples": [
+                {
+                  "time_s": 6.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      2.588673098102845e-08,
+                      5.486342047333892e-09,
+                      2.436058821331244e-08
+                    ],
+                    [
+                      -2.588673186920687e-08,
+                      -5.486338494620213e-09,
+                      -2.436058377242034e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.756054031998179e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 6.5,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.8342685592642738e-08,
+                      2.5735715780683677e-09,
+                      1.6816670722619165e-08
+                    ],
+                    [
+                      -1.8342685592642738e-08,
+                      -2.5735777953173056e-09,
+                      -1.6816674275332844e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.160723346098895e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 6.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.7369945481959803e-08,
+                      -7.366054433077807e-10,
+                      1.5534311614828766e-08
+                    ],
+                    [
+                      -1.7369945481959803e-08,
+                      7.366063314862004e-10,
+                      -1.5534308062115088e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 3.66205343881779e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 6.7,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.820503925387129e-08,
+                      -3.4833078643714543e-09,
+                      1.6242935885202314e-08
+                    ],
+                    [
+                      -1.820503836569287e-08,
+                      3.4833100848175036e-09,
+                      -1.6242930112042586e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 6.2488890859448035e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 6.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.8130293710783008e-08,
+                      -5.301686201164557e-09,
+                      1.6138372416207858e-08
+                    ],
+                    [
+                      -1.8130294154872217e-08,
+                      5.3016822043616685e-09,
+                      -1.6138373304386278e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 4.118313910115614e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 6.9,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.8406620228006432e-08,
+                      -6.526946094709274e-09,
+                      1.615053690784407e-08
+                    ],
+                    [
+                      -1.840662111618485e-08,
+                      6.526949203333743e-09,
+                      -1.615054001646854e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 4.48508116795402e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.882412092868435e-08,
+                      -7.654207934137958e-09,
+                      1.6503548749824404e-08
+                    ],
+                    [
+                      -1.8824120040505932e-08,
+                      7.654212819119266e-09,
+                      -1.6503545197110725e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 6.105217258353122e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.1000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      2.1660394367017943e-08,
+                      -5.249688683761633e-09,
+                      1.854775177889678e-08
+                    ],
+                    [
+                      -2.166039370088413e-08,
+                      5.2496900160292626e-09,
+                      -1.8547747782093893e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 4.265337574760008e-15,
+                  "material_pair_events": 5
+                },
+                {
+                  "time_s": 7.2,
+                  "component_net_impulses_Ns": [
+                    [
+                      2.7989784712190158e-08,
+                      -2.064908244392427e-09,
+                      2.4189546365960268e-08
+                    ],
+                    [
+                      -2.7989790041260676e-08,
+                      2.0649100207492666e-09,
+                      -2.4189547254138688e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.687116766346677e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.3,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.017400018734406e-08,
+                      -4.3449688291730126e-10,
+                      2.5972283879127644e-08
+                    ],
+                    [
+                      -3.0173999299165644e-08,
+                      4.3450043563098006e-10,
+                      -2.597229364909026e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.0433733987432285e-14,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.190399411323597e-08,
+                      -7.976979077284341e-10,
+                      2.7022721837965946e-08
+                    ],
+                    [
+                      -3.190399322505755e-08,
+                      7.977094540478902e-10,
+                      -2.7022726278858045e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.2402736654387905e-14,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.5,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.745179810721311e-08,
+                      -4.615969828591915e-10,
+                      3.0790019422966e-08
+                    ],
+                    [
+                      -3.745179988356995e-08,
+                      4.615978710376112e-10,
+                      -3.079001587025232e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 4.070144838902081e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      4.163031519510696e-08,
+                      2.722799763432704e-10,
+                      3.402365678084607e-08
+                    ],
+                    [
+                      -4.163031519510696e-08,
+                      -2.722817527001098e-10,
+                      -3.402365500448923e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 2.5121479338940403e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.7,
+                  "component_net_impulses_Ns": [
+                    [
+                      4.2446401948836865e-08,
+                      1.6567014426982496e-10,
+                      3.4484173738746904e-08
+                    ],
+                    [
+                      -4.2446400172480026e-08,
+                      -1.6566836791298556e-10,
+                      -3.44841826205311e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 9.230220894641107e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      4.157247701641609e-08,
+                      8.291323183584609e-10,
+                      3.353279254270092e-08
+                    ],
+                    [
+                      -4.157247346370241e-08,
+                      -8.291296538232018e-10,
+                      -3.353278810180882e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 6.2803698347351005e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.9,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.842979623414067e-08,
+                      1.001637883746298e-09,
+                      3.097065359725093e-08
+                    ],
+                    [
+                      -3.842979623414067e-08,
+                      -1.0016334428541995e-09,
+                      -3.097064826818041e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 6.936895214610187e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 8.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.262177727947346e-08,
+                      1.3015153399464907e-09,
+                      2.6118605944702722e-08
+                    ],
+                    [
+                      -3.2621774614938204e-08,
+                      -1.3015171163033301e-09,
+                      -2.611861038559482e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.475099487534308e-15,
+                  "material_pair_events": 4
+                }
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Independent chip motion and attributed component exchange; no healing"
+        },
+        "PHY-04": {
+          "status": "PASS",
+          "checks": {
+            "finite_reaction": true,
+            "nonzero_reaction": true,
+            "previous_interval_feedback_carry": true,
+            "feedback_delay_declared": true,
+            "interface_work_residual": true,
+            "same_config_except_declared_control": true,
+            "same_material_recipe": true,
+            "same_timestamps": true,
+            "same_commanded_edge_path": true,
+            "feedback_toggled": true,
+            "same_source_isaac_lab_env.py": true,
+            "same_source_live_material.py": true,
+            "same_source_tlmpm.py": true,
+            "same_source_robot.py": true,
+            "same_source_coupled_robot.py": true,
+            "same_source_scene_frames.py": true,
+            "matched_feedback_affects_tool_dynamics": true
+          },
+          "measurements": {
+            "peak_reaction_N": 1.0412509485843553,
+            "feedback_carry_max_abs_error": 0.0,
+            "material_boundary_work_J": 0.014089384858174014,
+            "robot_applied_material_wrench_work_J": -0.01376401871307882,
+            "interface_work_residual_fraction": 0.023092998620619875,
+            "matched_ON_OFF_max_tool_position_difference_m": 0.0003443249474171098,
+            "ON_camera_enabled": true,
+            "OFF_camera_enabled": false,
+            "camera_control_scope": "Camera readout may be disabled in OFF; it does not advance or mutate dynamics",
+            "scope": "Partitioned boundary work, not a total-energy convergence proof"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "CAM-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "recorded_camera_source": "ideal_warp_rgbd",
+            "native_d455_validated": false
+          },
+          "missing_evidence": [
+            "Native d455_0 noise-OFF plane/registration/coverage control tied to this sensor configuration"
+          ],
+          "scope": "Ideal Warp RGB-D and RTX reference cannot substitute for native D455"
+        },
+        "CAM-02": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "recorded_camera_source": "ideal_warp_rgbd",
+            "native_d455_validated": false
+          },
+          "missing_evidence": [
+            "Native d455_1 noise-OFF plane/registration/coverage control tied to this sensor configuration"
+          ],
+          "scope": "Ideal Warp RGB-D and RTX reference cannot substitute for native D455"
+        },
+        "CAM-03": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_live_RGB_frames_present": true
+          },
+          "measurements": {
+            "global_RGB_frames": 41
+          },
+          "missing_evidence": [
+            "Per-object first-visible pixel attribution for both arms, knife, material and table"
+          ],
+          "scope": "A complete scene view requires measured visibility, not prim existence"
+        },
+        "CAM-04": {
+          "status": "NOT_RUN",
+          "checks": {
+            "recorded_physics_surface_camera_timestamps": true
+          },
+          "measurements": {
+            "RGBD_frames": 41,
+            "max_recorded_timestamp_difference_s": 0.0
+          },
+          "missing_evidence": [
+            "Independent full-scene mesh/depth agreement and valid-mask IoU",
+            "Actual chip-visible pixel attribution"
+          ],
+          "scope": "Recorded matching timestamps alone do not prove geometric capture agreement"
+        },
+        "TASK-01": {
+          "status": "PASS",
+          "checks": {
+            "detached_initial_above_target_mass_fraction": true
+          },
+          "measurements": {
+            "status": "MEASURED",
+            "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+            "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+            "component_count": 2,
+            "reference_substrate_component_ids": [
+              1
+            ],
+            "detached_mass_kg": 0.001656,
+            "reference_above_target_mass_kg": 0.0016799999999999999,
+            "detached_initial_above_target_mass_kg": 0.001656,
+            "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+            "remaining_initial_above_target_mass_kg": 2.4e-05,
+            "reference_plane_tolerance_m": 1e-07,
+            "current_substrate_particle_center_max_residual_m": 0.000258010476827622,
+            "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+          },
+          "missing_evidence": [],
+          "scope": "Reference above-local-plane mass removed into physically disconnected components"
+        },
+        "TASK-02": {
+          "status": "FAIL",
+          "checks": {
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": true,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true,
+            "no_future_partition": true,
+            "surface_partition_matches_actual_graph": true,
+            "surface_codes_match_physics": true,
+            "surface_stencil_matches_actual_graph": true,
+            "surface_and_physics_timestamp": true
+          },
+          "measurements": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              120,
+              80
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0019041336556985394,
+            "surface_p95_absolute_plane_error_m": 0.0017086602809573141,
+            "surface_rms_plane_error_m": 0.0016426139527366001,
+            "maximum_gouge_depth_m": 0.0,
+            "overcut_volume_m3": 0.0,
+            "overcut_volume_fraction_of_initial_base": 0.0,
+            "source_mesh": "artifacts/isaac_lab_d0_001/rgbd/surface_00400.npz",
+            "source_mesh_sha256": "b8579f471af3aa27030a971f7a6821c2025c338ef08680ef11c9e59dc0700212",
+            "source_metadata_sha256": "65e95495b17825ab91e848a2376800438b5de9d21410a48cd0afacbe503089d0",
+            "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+            "selection_scope": "Offline current mechanical-substrate triangle statistics; no physics or visibility edits"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "ENV-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "repeat": null,
+            "instrumented_same_process_reset": null
+          },
+          "missing_evidence": [
+            "Reset after an actual terminal cut in the same environment, including q/material/depth/valid-mask/history comparisons",
+            "Independent full same-seed live episode with frozen recipe/commands"
+          ],
+          "scope": "Fresh-process similarity cannot alone prove clearing of a prior cut during reset"
+        },
+        "ENV-02": {
+          "status": "NOT_RUN",
+          "checks": {
+            "all_recorded_values_finite": true,
+            "retained_material_floor_tray_penetration": true,
+            "tool_material_penetration": true,
+            "material_overlap": true,
+            "minimum_detF": true,
+            "maximum_speed": true
+          },
+          "measurements": {
+            "all_recorded_values_finite": true,
+            "minimum_detF": 0.9065601825714111,
+            "maximum_material_speed_m_s": 0.20608021318912506,
+            "maximum_retained_material_floor_tray_penetration_m": 7.768452633172274e-05,
+            "maximum_tool_material_penetration_m": 0.0003790233749896288,
+            "maximum_material_overlap_m": 0.00036369485314935446,
+            "sampling_scope": "Every control-boundary finite/detF/speed; retained material contacts use per-interval substep maxima; native Panda/self/table penetration is unmeasured"
+          },
+          "missing_evidence": [
+            "Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit"
+          ],
+          "scope": "Measured finite/contact screen, not calibrated contact or a convergence proof"
+        }
+      },
+      "gate_counts": {
+        "PASS": 8,
+        "FAIL": 2,
+        "NOT_RUN": 8,
+        "BLOCKED": 0
+      },
+      "all_18_gates_pass": false,
+      "execution_pass": true,
+      "physical_cutting_pass": true,
+      "surface_flattening_pass": false,
+      "native_d455_pass": false,
+      "full_benchmark_ready": false,
+      "force_in_policy_observation": false,
+      "unvalidated_global_task_integration": "D0\u2013D3 native sensor/task integration remains separate from this one D0 episode",
+      "validator_sha256": {
+        "driver": "0a58ffb1af57f6418bd049fe0bc19e8c153a7d370881ef4308f945bebcf7b957",
+        "live_acceptance": "e1ca6a893e731b4a345515d9ed89185c52bde0a51436d4232d8fd20ebd36b53e",
+        "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+      },
+      "standalone_reference_comparison": {
+        "scope": "Measured standalone versus live-runtime difference, not a repeatability or Isaac runtime substitute",
+        "reference": "artifacts/coupled_robot_cut_002",
+        "checks": {
+          "identical_effective_material_recipe": true,
+          "control_timestamps_align": true,
+          "same_particle_reference_positions": true,
+          "same_particle_masses": true
+        },
+        "raw_material_dicts_identical": false,
+        "recipe_schema_normalizations": [
+          {
+            "field": "fixture_walls",
+            "effective_value": true,
+            "reason": "Recorded legacy floor=True unconditionally enabled all six finite tray/table contacts",
+            "verified_source": "git:74406767f2469d825a259680489c20f8eb91e34a:src/robotic_cutting_sim/tlmpm.py",
+            "source_sha256": "0c512a252843cd395c1d610249a16ca176763a75e13094ca01ab4077cc08f7b7"
+          }
+        ],
+        "live_contact_friction": 0.3,
+        "reference_contact_friction": 0.3,
+        "reference_input_sha256": {
+          "manifest.json": "9232f4f66a0461d20ef6712a6c36112f7988fdadf2f27ad97505e70123a177a7",
+          "setup.json": "4b099a72c9d1f185182a198e933f11bf38a1fc2ea4405af1fb57ce0e546a99db",
+          "robot_state.npz": "f33bcbf99cc91b685202028dca44140e156805705c9b7c1aa249f2526c8d0b29",
+          "physics_state.npz": "4380a3afdf7d88fe769a2982651bf54f99db6bde71e8d225e811ad3c9a961afe"
+        },
+        "max_commanded_edge_position_difference_m": 1.3164521582981767e-06,
+        "max_commanded_edge_position_difference_after_initial_state_m": 3.6517241966588864e-09,
+        "max_commanded_edge_rotation_difference_rad": 4.6377623541644453e-07,
+        "max_actual_edge_position_difference_m": 3.845499223397255e-06,
+        "max_actual_edge_rotation_difference_rad": 7.222076645660524e-06,
+        "max_actual_joint_absolute_difference_rad": 3.5762786865234375e-06,
+        "material_state_difference": {
+          "all_frame_max_position_error_m": 0.002082719234749675,
+          "all_frame_max_velocity_error_m_s": 0.039449915289878845,
+          "positions_bitwise_equal": false,
+          "velocities_bitwise_equal": false,
+          "codes_bitwise_equal": false,
+          "differing_code_particle_frames": 1,
+          "final_component_com_error_m": 0.00047646172086607887
+        }
+      }
+    },
+    "lab_feedforward": {
+      "scope": "Independent quantitative audit of this actual recorded episode",
+      "recording": "artifacts/isaac_lab_d0_feedforward_001",
+      "runtime_source": "live_isaac_lab",
+      "protocol_id": "isaac_d0_acceptance_v1_20261028",
+      "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+      "input_sha256": {
+        "manifest.json": "0e01546c7838b06d8e75f6026b817afef65951b300a05e2846fa9f89a885d069",
+        "setup.json": "43408cbb67527d54ce05b4d1bf29a36d6a1fa9a3a4d6d745632004523d8f9332",
+        "result.json": "0a53d44f26826345a7183482cc78ebfec6adfa07251eeb9137e09325a91af7c0",
+        "robot_state.npz": "1649a606cfaab84b1600a135467395fe6719209ead6f68b016f6264389f619a4",
+        "physics_state.npz": "057ca1aaa5ab37b808082e00d914b5e7ccdabaf5cfd6c74efb2ec45d5c881344",
+        "diagnostics.json": "0a66f37980d276daa9774cc5271ba29d8e88205c9fad980ba5b76cf19e37c60a"
+      },
+      "gates": {
+        "RT-01": {
+          "status": "PASS",
+          "checks": {
+            "full_400_step_recording": true,
+            "full_8_second_recording": true,
+            "actual_scene_environment_task_api": true,
+            "actual_articulation_owner": true,
+            "actual_task_api": true,
+            "GA_release": true,
+            "completed_execution": true,
+            "protocol_matches_prefrozen_file": true,
+            "runtime_module_hashes_recorded": true,
+            "actual_native_clock_tracks_episode": true
+          },
+          "measurements": {
+            "steps": 400,
+            "simulation_s": 8.0,
+            "native_clock_s": 7.999999999999341,
+            "wall_s": 192.75883855391294,
+            "current_source_matches_recorded_hash": {
+              "isaac_lab_env.py": false,
+              "live_material.py": true,
+              "tlmpm.py": true,
+              "cut_topology.py": true,
+              "scene_frames.py": true
+            },
+            "hash_matching_implementation": {
+              "isaac_lab_env.py": {
+                "verified": true,
+                "source": "artifacts/isaac_lab_d0_feedforward_001/implementation/isaac_lab_env.py",
+                "sha256": "1b8c23f67abace2019dae72008c400cebe17f6e4275424acaa663140dbefa2ce"
+              },
+              "live_material.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/live_material.py",
+                "sha256": "da7dbb37244d095733e70af3d4dd8881777c8716f71bbfd6bf417abd6654b5b5"
+              },
+              "tlmpm.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/tlmpm.py",
+                "sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac"
+              },
+              "cut_topology.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/cut_topology.py",
+                "sha256": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+              },
+              "scene_frames.py": {
+                "verified": true,
+                "source": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/scene_frames.py",
+                "sha256": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b"
+              }
+            },
+            "GA_source_sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "distribution_versions": {
+              "isaaclab": "28.0.0",
+              "isaaclab-newton": "9.1.4",
+              "torch": "2.11.0+cu128",
+              "warp-lang": "1.17.0",
+              "newton": "1.6.1",
+              "usd-exchange": "3.0.1"
+            },
+            "package_version_is_not_GA_release_number": true
+          },
+          "missing_evidence": [],
+          "scope": "Live Lab DirectRLEnv + InteractiveScene/NewtonManager; kit-less cameras cannot pass native D455/Kit"
+        },
+        "RT-02": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {},
+          "missing_evidence": [
+            "This recording is kit-less Lab, not a full Isaac Sim/Kit episode"
+          ],
+          "scope": ""
+        },
+        "SC-01": {
+          "status": "PASS",
+          "checks": {
+            "identity_workpiece_supported_by_fixture": true,
+            "loaded_workpiece_local_target_matches_protocol": true,
+            "USD_meters": true,
+            "USD_Z_up": true,
+            "all_required_camera_frames": true,
+            "camera_target_forward": true,
+            "camera_frame_translation": true,
+            "camera_frame_rotation": true,
+            "hand_USD_translation": true,
+            "hand_USD_rotation": true
+          },
+          "measurements": {
+            "up_axis": "Z",
+            "meters_per_unit": 1.0,
+            "actual_final_scene_sha256": "993f9941712510afea58a67bf328c616ea317eb7b32309022767c59aa43a992f",
+            "camera_forward_cosines": {
+              "d455_0": 0.9999999999999972,
+              "d455_1": 1.0000000000000002,
+              "global": 0.9922994153684433
+            },
+            "camera_transform_errors": {
+              "d455_0": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              },
+              "d455_1": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              },
+              "global": {
+                "translation_m": 0.0,
+                "rotation_rad": 0.0
+              }
+            },
+            "final_USD_vs_measured_hand_translation_m": 0.0,
+            "final_USD_vs_measured_hand_rotation_rad": 1.0587906791970162e-22
+          },
+          "missing_evidence": [],
+          "scope": "Actual USD versus recorded articulated hand and optical camera frames"
+        },
+        "SC-02": {
+          "status": "PASS",
+          "checks": {
+            "actual_D0_samples": true,
+            "positive_masses": true,
+            "initial_codes_zero": true,
+            "initial_continuum_components_one": true
+          },
+          "measurements": {
+            "initial_particle_count": 19340,
+            "initial_mass_kg": 0.23207999999999998,
+            "actual_initial_sample_error_m": 0.0,
+            "float32_sample_roundoff_bound_m": 7.450580596923828e-09,
+            "analytic_specimen": {
+              "length_m": 0.12,
+              "width_m": 0.08,
+              "base_height_m": 0.015,
+              "bump_height_m": 0.008,
+              "bump_radius_m": 0.015
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual continuous initial D0 samples and full mechanical stencil graph"
+        },
+        "ROB-01": {
+          "status": "PASS",
+          "checks": {
+            "two_articulations": true,
+            "seven_arm_joints_each": true,
+            "named_actual_Panda_hand": true,
+            "physical_knife_attached_to_same_hand": true,
+            "mount_translation": true,
+            "mount_rotation": true,
+            "recorded_hand_equals_named_body": true
+          },
+          "measurements": {
+            "max_fixed_mount_translation_error_m": 8.327124450911205e-17,
+            "max_fixed_mount_rotation_error_rad": 1.0947388843289458e-19,
+            "named_hand": "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand",
+            "body_index": 8
+          },
+          "missing_evidence": [],
+          "scope": "Measured named hand and actual fixed physical wedge"
+        },
+        "ROB-02": {
+          "status": "PASS",
+          "checks": {
+            "active_max_edge_position_error_m": true,
+            "active_max_edge_height_error_from_command_m": true,
+            "active_max_edge_rotation_error_deg": true,
+            "all_phase_max_edge_position_error_m": true,
+            "max_measured_edge_translation_per_control_step_m": true,
+            "minimum_analytic_bump_cross_section_sweep_coverage": true,
+            "actual_edge_intersects_original_material": true
+          },
+          "measurements": {
+            "status": "PASS",
+            "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+            "metrics": {
+              "active_max_edge_position_error_m": 0.0005072464194099609,
+              "active_max_edge_height_error_from_command_m": 0.0002505839591481762,
+              "active_max_edge_rotation_error_deg": 0.035431594017064916,
+              "all_phase_max_edge_position_error_m": 0.002368967525803957,
+              "max_measured_edge_translation_per_control_step_m": 0.0017592275112630323
+            },
+            "checks": {
+              "active_max_edge_position_error_m": true,
+              "active_max_edge_height_error_from_command_m": true,
+              "active_max_edge_rotation_error_deg": true,
+              "all_phase_max_edge_position_error_m": true,
+              "max_measured_edge_translation_per_control_step_m": true,
+              "minimum_analytic_bump_cross_section_sweep_coverage": true,
+              "actual_edge_intersects_original_material": true
+            },
+            "active_interval_s": [
+              1.6,
+              5.6
+            ],
+            "active_sample_count": 200,
+            "sweep": {
+              "scope": "analytic workpiece-local finite-edge geometry only",
+              "cross_section_samples": 1992,
+              "cross_section_area_m2": 0.0004980000000000001,
+              "cross_section_sweep_coverage": 1.0,
+              "actual_edge_intersects_original_material": true,
+              "edge_endpoint_height_valid_fraction": 1.0,
+              "local_edge_center_bounds_m": [
+                [
+                  -0.029999510798675768,
+                  -6.53262757125907e-05,
+                  0.015474925844813164
+                ],
+                [
+                  0.045003333855067114,
+                  -3.8397611377679444e-07,
+                  0.015750583705828436
+                ]
+              ],
+              "cut_plane_local_z_m": 0.0155,
+              "target_plane_local_z_m": 0.015,
+              "sampling_spacing_m": 0.0005,
+              "height_tolerance_m": 0.0005
+            },
+            "active_local_edge_height_range_m": [
+              0.015474925844813164,
+              0.015750583705828436
+            ],
+            "active_plane_normal_tilt_max_deg": 0.035355728141718126
+          },
+          "missing_evidence": [],
+          "scope": "Measured edge geometry and tracking, not IK targets"
+        },
+        "PHY-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_material_tool_contacts": true,
+            "nonzero_accumulated_plastic_history": true
+          },
+          "measurements": {
+            "material_tool_substep_particle_events": 4904205,
+            "max_accumulated_plastic_strain": 0.4936794340610504
+          },
+          "missing_evidence": [
+            "Matched settle/elastic control measuring above-plane deformation residual drop"
+          ],
+          "scope": "Constitutive deformation is separate from component separation"
+        },
+        "PHY-02": {
+          "status": "PASS",
+          "checks": {
+            "nonzero_digits_never_rewritten_in_recorded_history": true,
+            "all_particle_frames_preserve_count": true,
+            "initial_mass_matches_immutable_recorded_masses": true,
+            "initial_graph_one_component": true,
+            "final_graph_at_least_two": true,
+            "recorded_graph_agrees": true,
+            "positive_detached_component_mass": true
+          },
+          "measurements": {
+            "graph": {
+              "status": "PASS",
+              "initial_components": 1,
+              "final_components": 2,
+              "recorded_partition_matches_recomputation": true,
+              "includes_positive_weights": true,
+              "includes_nonzero_stress_gradients": true,
+              "includes_unassigned_code_zero_particles": true,
+              "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "stencil_sha256": "a7e36cca51d71701fdd22dc442e3e8adcf86ec9f409ef486339fe5ca22f83e34"
+            },
+            "history": {
+              "initial_nonzero_codes": 0,
+              "nonzero_digit_rewrites_by_cut": [
+                0
+              ],
+              "nonzero_digit_rewrites": 0,
+              "final_code_histogram": {
+                "0": 11093,
+                "1": 8109,
+                "2": 138
+              },
+              "sampled_history_only": true
+            },
+            "task_mass": {
+              "status": "MEASURED",
+              "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+              "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "component_count": 2,
+              "reference_substrate_component_ids": [
+                1
+              ],
+              "detached_mass_kg": 0.001656,
+              "reference_above_target_mass_kg": 0.0016799999999999999,
+              "detached_initial_above_target_mass_kg": 0.001656,
+              "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+              "remaining_initial_above_target_mass_kg": 2.4e-05,
+              "reference_plane_tolerance_m": 1e-07,
+              "current_substrate_particle_center_max_residual_m": 0.0003066786006093031,
+              "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+            },
+            "mass_evidence_scope": "All particle counts and one immutable per-particle mass vector; no inferred force observation"
+          },
+          "missing_evidence": [],
+          "scope": "Persistent separation uses the actual transfer/stress stencil, including possible zero-code bridges"
+        },
+        "PHY-03": {
+          "status": "FAIL",
+          "checks": {
+            "postwithdraw_chip_motion": true,
+            "persistent_history_no_reset": true,
+            "measured_blade_clear_of_all_particle_spheres_after_withdrawal": true,
+            "cross_component_contact_exchange": false
+          },
+          "measurements": {
+            "withdrawal_complete_s": 6.3999999999999995,
+            "postwithdraw_chip_com_displacement_m": 0.0012418600428278383,
+            "postwithdraw_min_material_sphere_to_blade_AABB_clearance_m": 0.03659750405650574,
+            "original_postwithdraw_material_pair_events_unattributed": 34436,
+            "contact_kernel_recheck": {
+              "scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
+              "device": "cuda:0",
+              "peak_component_net_contact_impulse_Ns": 1.0058400026574543e-14,
+              "roundoff_reporting_floor_Ns": 1e-09,
+              "samples": [
+                {
+                  "time_s": 6.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.42,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.44,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.46,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.48,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.5,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.5200000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.54,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.5600000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.58,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.62,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.640000000000001,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.66,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.68,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.7,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.72,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.74,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.76,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.78,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.82,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.84,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.86,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.88,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.9,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.92,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.94,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.96,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.98,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0200000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.04,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0600000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.08,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.1000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.12,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.140000000000001,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.16,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.18,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.2,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.22,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.24,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.26,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.28,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.3,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.32,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.34,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.36,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.38,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.42,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.44,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.46,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.48,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.5,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.5200000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.54,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.5600000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.58,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 7.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.62,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.640000000000001,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.66,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.68,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.7763568394002505e-15,
+                      -3.552713678800501e-15,
+                      3.552713678800501e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.329070518200751e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.7,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      7.105427357601002e-15,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.0048591735576161e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.72,
+                  "component_net_impulses_Ns": [
+                    [
+                      8.881784197001252e-16,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 8.881784197001252e-16,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.74,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.5543122344752192e-15,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.5543122344752192e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.76,
+                  "component_net_impulses_Ns": [
+                    [
+                      -1.1102230246251565e-16,
+                      -7.105427357601002e-15,
+                      7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.0049205034227015e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.78,
+                  "component_net_impulses_Ns": [
+                    [
+                      -4.440892098500626e-16,
+                      7.105427357601002e-15,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 1.0058400026574543e-14,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      8.881784197001252e-16,
+                      0.0,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.160723346098895e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.82,
+                  "component_net_impulses_Ns": [
+                    [
+                      -8.881784197001252e-16,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 8.881784197001252e-16,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.84,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      -7.105427357601002e-15,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.105427357601002e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.86,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.105427357601002e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.88,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      7.105427357601002e-15,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.105427357601002e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.9,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.92,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.105427357601002e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.94,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.96,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      -7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.105427357601002e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.98,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 8.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      7.105427357601002e-15
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 7.105427357601002e-15,
+                  "material_pair_events": 3
+                }
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Independent chip motion and attributed component exchange; no healing"
+        },
+        "PHY-04": {
+          "status": "FAIL",
+          "checks": {
+            "finite_reaction": true,
+            "nonzero_reaction": true,
+            "previous_interval_feedback_carry": true,
+            "feedback_delay_declared": true,
+            "interface_work_residual": false
+          },
+          "measurements": {
+            "peak_reaction_N": 2.0580800484115924,
+            "feedback_carry_max_abs_error": 0.0,
+            "material_boundary_work_J": 0.014770321794072672,
+            "robot_applied_material_wrench_work_J": -0.011942484468131674,
+            "interface_work_residual_fraction": 0.19145400928744888,
+            "robot_work_source": "Recorded actual applied-tool-wrench boundary-work ledger",
+            "matched_ON_OFF_max_tool_position_difference_m": null,
+            "ON_camera_enabled": true,
+            "OFF_camera_enabled": null,
+            "camera_control_scope": "Camera readout may be disabled in OFF; it does not advance or mutate dynamics",
+            "scope": "Partitioned boundary work, not a total-energy convergence proof"
+          },
+          "missing_evidence": [
+            "Matched feedback ON/OFF live episode with identical recipe, code and command path"
+          ],
+          "scope": ""
+        },
+        "CAM-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "recorded_camera_source": "ideal_warp_rgbd",
+            "native_d455_validated": false
+          },
+          "missing_evidence": [
+            "Native d455_0 noise-OFF plane/registration/coverage control tied to this sensor configuration"
+          ],
+          "scope": "Ideal Warp RGB-D and RTX reference cannot substitute for native D455"
+        },
+        "CAM-02": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "recorded_camera_source": "ideal_warp_rgbd",
+            "native_d455_validated": false
+          },
+          "missing_evidence": [
+            "Native d455_1 noise-OFF plane/registration/coverage control tied to this sensor configuration"
+          ],
+          "scope": "Ideal Warp RGB-D and RTX reference cannot substitute for native D455"
+        },
+        "CAM-03": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_live_RGB_frames_present": true
+          },
+          "measurements": {
+            "global_RGB_frames": 41
+          },
+          "missing_evidence": [
+            "Per-object first-visible pixel attribution for both arms, knife, material and table"
+          ],
+          "scope": "A complete scene view requires measured visibility, not prim existence"
+        },
+        "CAM-04": {
+          "status": "NOT_RUN",
+          "checks": {
+            "recorded_physics_surface_camera_timestamps": true
+          },
+          "measurements": {
+            "RGBD_files": 41,
+            "max_recorded_timestamp_difference_s": 0.0,
+            "max_native_clock_offset_corrected_difference_s": null
+          },
+          "missing_evidence": [
+            "Independent full-scene mesh/depth agreement and valid-mask IoU",
+            "Actual chip-visible pixel attribution"
+          ],
+          "scope": "Recorded matching timestamps alone do not prove geometric capture agreement"
+        },
+        "TASK-01": {
+          "status": "PASS",
+          "checks": {
+            "detached_initial_above_target_mass_fraction": true
+          },
+          "measurements": {
+            "status": "MEASURED",
+            "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+            "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+            "component_count": 2,
+            "reference_substrate_component_ids": [
+              1
+            ],
+            "detached_mass_kg": 0.001656,
+            "reference_above_target_mass_kg": 0.0016799999999999999,
+            "detached_initial_above_target_mass_kg": 0.001656,
+            "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+            "remaining_initial_above_target_mass_kg": 2.4e-05,
+            "reference_plane_tolerance_m": 1e-07,
+            "current_substrate_particle_center_max_residual_m": 0.0003066786006093031,
+            "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+          },
+          "missing_evidence": [],
+          "scope": "Reference above-local-plane mass removed into physically disconnected components"
+        },
+        "TASK-02": {
+          "status": "FAIL",
+          "checks": {
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": true,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true,
+            "no_future_partition": true,
+            "surface_partition_matches_actual_graph": true,
+            "surface_codes_match_physics": true,
+            "surface_stencil_matches_actual_graph": true,
+            "surface_and_physics_timestamp": true
+          },
+          "measurements": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              120,
+              80
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0019741250044522166,
+            "surface_p95_absolute_plane_error_m": 0.0017429744759976877,
+            "surface_rms_plane_error_m": 0.0016196219686923131,
+            "maximum_gouge_depth_m": 0.0,
+            "overcut_volume_m3": 0.0,
+            "overcut_volume_fraction_of_initial_base": 0.0,
+            "source_mesh": "artifacts/isaac_lab_d0_feedforward_001/rgbd/surface_00400.npz",
+            "source_mesh_sha256": "40256a1d573ab6d6ca598edf7afab293e51b017712bd712024cdf5a854c7273e",
+            "source_metadata_sha256": "cc3c71ff33093f6a0282d1c14c9a0bc3805b531b534cfe3f0335ce0dc15a769e",
+            "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+            "selection_scope": "Offline current mechanical-substrate triangle statistics; no physics or visibility edits"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "ENV-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "same_process_reset_after_cut": true,
+            "reset_joint_state": true,
+            "reset_material_state": true,
+            "reset_all_cut_history_zero": true,
+            "reset_both_camera_depths": true,
+            "reset_both_camera_valid_masks": true
+          },
+          "measurements": {
+            "repeat": null,
+            "instrumented_same_process_reset": {
+              "scope": "same-process reset to original seed; full repeat assessed separately",
+              "joint_max_abs_error_rad": 0.0,
+              "material_max_abs_error_m": 0.0,
+              "nonzero_cut_codes": 0,
+              "depth_max_abs_error_m": {
+                "d455_0": 0.0,
+                "d455_1": 0.0,
+                "global": 0.0
+              },
+              "depth_valid_mask_exact": {
+                "d455_0": true,
+                "d455_1": true,
+                "global": true
+              }
+            }
+          },
+          "missing_evidence": [
+            "Independent full same-seed live episode with frozen recipe/commands"
+          ],
+          "scope": "Fresh-process similarity cannot alone prove clearing of a prior cut during reset"
+        },
+        "ENV-02": {
+          "status": "NOT_RUN",
+          "checks": {
+            "all_recorded_values_finite": true,
+            "retained_material_floor_tray_penetration": true,
+            "tool_material_penetration": true,
+            "material_overlap": true,
+            "minimum_detF": true,
+            "maximum_speed": true
+          },
+          "measurements": {
+            "all_recorded_values_finite": true,
+            "minimum_detF": 0.9055474996566772,
+            "maximum_material_speed_m_s": 0.23129644989967346,
+            "maximum_retained_material_floor_tray_penetration_m": 0.00028556876350194216,
+            "maximum_tool_material_penetration_m": 0.0004283528833184391,
+            "maximum_material_overlap_m": 0.00017791392747312784,
+            "sampling_scope": "Every control-boundary finite/detF/speed; retained material contacts use per-interval substep maxima; native Panda/self/table penetration is unmeasured"
+          },
+          "missing_evidence": [
+            "Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit"
+          ],
+          "scope": "Measured finite/contact screen, not calibrated contact or a convergence proof"
+        }
+      },
+      "gate_counts": {
+        "PASS": 7,
+        "FAIL": 3,
+        "NOT_RUN": 8,
+        "BLOCKED": 0
+      },
+      "all_18_gates_pass": false,
+      "execution_pass": true,
+      "physical_cutting_pass": true,
+      "surface_flattening_pass": false,
+      "native_camera_geometry_controls_pass": false,
+      "native_d455_pass": false,
+      "full_benchmark_ready": false,
+      "force_in_policy_observation": false,
+      "unvalidated_global_task_integration": "D0\u2013D3 native sensor/task integration remains separate from this one D0 episode",
+      "validator_sha256": {
+        "driver": "9244b8bebcb505af2a9b8c8718a4af2bd832973048b0b65a42019c004e7cacf2",
+        "live_acceptance": "cf954c2aee600b6d950e4f3975e2fcaf93022f5723cb0930e1ef01cd999b3b66",
+        "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+      }
+    },
+    "kit_baseline": {
+      "scope": "Independent quantitative audit of this actual recorded episode",
+      "recording": "artifacts/isaacsim_live_native_d0_001",
+      "runtime_source": "LIVE_IsaacSim6.2_cutting",
+      "protocol_id": "isaac_d0_acceptance_v1_20261028",
+      "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+      "input_sha256": {
+        "manifest.json": "6e28c7e25befc463f9706c83d7eeeefeefb79a71f2daff12c4b174ac223db769",
+        "setup.json": "a9a3a121f3d0cc549150aaa99c08b4035dcf2ae48b7e306f03c6ddaee6be799b",
+        "result.json": "c102ad1177931180b2f452e8633afc6e3f24492964840e71d66fcfb734d54412",
+        "robot_state.npz": "b9ca07236ca50aff8729f6961a3d85be5a976f6719cd55be3a0828f811defaab",
+        "oracle_debug/physics_state.npz": "6b20483592fa54d08bfd5c7c3474816a62e23abb9b2acc4dc986670f9bec1686",
+        "oracle_debug/diagnostics.json": "0abadf5db45a4e0ea757fb9c97cb82f68b19c280c783a4563545ed663f6d6300"
+      },
+      "gates": {
+        "RT-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {},
+          "missing_evidence": [
+            "This recording does not use the actual Lab task/scene APIs"
+          ],
+          "scope": ""
+        },
+        "RT-02": {
+          "status": "PASS",
+          "checks": {
+            "full_400_steps": true,
+            "full_8_seconds": true,
+            "native_physics_steps": true,
+            "native_PhysX": true,
+            "zero_standalone_robot_steps": true,
+            "no_replay": true,
+            "live_captures": true,
+            "completed_execution": true,
+            "version_6_2": true,
+            "native_process_exit_success": true,
+            "frozen_implementation_bytes_verified": true,
+            "actual_native_clock_tracks_episode": true
+          },
+          "measurements": {
+            "versions": {
+              "isaacsim": "6.2.0.0",
+              "isaacsim-kernel": "6.2.0.0",
+              "isaacsim-core": "6.2.0.0",
+              "isaacsim-sensor": "6.2.0.0",
+              "torch": "2.11.0+cu128",
+              "warp-lang": "1.17.0",
+              "newton": "1.6.1"
+            },
+            "steps": 400,
+            "simulation_s": 8.0,
+            "hash_matching_implementation": {
+              "src/robotic_cutting_sim/isaac_sim_runner.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/isaac_sim_runner.py",
+                "sha256": "ef754cc9bc278fb0ec75ce292fb7dc2e4f9b3bd3466def26a05856ecf05eacf3"
+              },
+              "src/robotic_cutting_sim/live_material.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/live_material.py",
+                "sha256": "da7dbb37244d095733e70af3d4dd8881777c8716f71bbfd6bf417abd6654b5b5"
+              },
+              "src/robotic_cutting_sim/robot.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/robot.py",
+                "sha256": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024"
+              },
+              "src/robotic_cutting_sim/tlmpm.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/tlmpm.py",
+                "sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac"
+              },
+              "src/robotic_cutting_sim/material_config.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/material_config.py",
+                "sha256": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797"
+              },
+              "src/robotic_cutting_sim/cut_topology.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/cut_topology.py",
+                "sha256": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+              },
+              "src/robotic_cutting_sim/cutting_surface.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/cutting_surface.py",
+                "sha256": "bdf22edb02a8f4d6c70e0c0bc2e1b552c9a1e40d8637c24d97e570edde255b02"
+              },
+              "src/robotic_cutting_sim/usd_surface_bridge.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/usd_surface_bridge.py",
+                "sha256": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3"
+              },
+              "src/robotic_cutting_sim/single_view_registration.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/single_view_registration.py",
+                "sha256": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df"
+              },
+              "scripts/run_isaac_sim_cutting.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/run_isaac_sim_cutting.py",
+                "sha256": "1032449922130282b069ad74765750ff2f57315607ef79739537dbb710f7f78f"
+              },
+              "configs/isaac_sim_cutting.kit": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_001/implementation/isaac_sim_cutting.kit",
+                "sha256": "1d3fd180908617e07ae2a343e016027b80c245fbcf48b0a186ad72ec969542e3"
+              }
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit/PhysX/native capture path"
+        },
+        "SC-01": {
+          "status": "PASS",
+          "checks": {
+            "identity_workpiece_supported_by_fixture": true,
+            "loaded_workpiece_local_target_matches_protocol": true,
+            "USD_meters": true,
+            "USD_Z_up": true,
+            "all_required_camera_frames": true,
+            "camera_target_forward": true,
+            "camera_frame_translation": true,
+            "camera_frame_rotation": true,
+            "hand_USD_translation": true,
+            "hand_USD_rotation": true
+          },
+          "measurements": {
+            "up_axis": "Z",
+            "meters_per_unit": 1.0,
+            "actual_final_scene_sha256": "a4bd4361eaf82e22c29e797c5e34c9eebe86f8b7b25e2be7322ba8fbfe9e139e",
+            "camera_forward_cosines": {
+              "d455_0": 0.9999999999999962,
+              "d455_1": 1.0000000000000004,
+              "global": 0.9922994149919311
+            },
+            "camera_transform_errors": {
+              "d455_0": {
+                "translation_m": 1.1973201241565775e-07,
+                "rotation_rad": 8.098287022367855e-16
+              },
+              "d455_1": {
+                "translation_m": 1.6521629435955736e-08,
+                "rotation_rad": 4.8666989573011404e-08
+              },
+              "global": {
+                "translation_m": 2.3841858265427624e-08,
+                "rotation_rad": 3.368045037175248e-16
+              }
+            },
+            "final_USD_vs_measured_hand_translation_m": 1.7828631319202736e-11,
+            "final_USD_vs_measured_hand_rotation_rad": 1.4549930183566593e-07,
+            "scope": "Native Replicator camera transforms versus loaded static USD; instrumented native PhysX versus live USD knife attachment at every control step"
+          },
+          "missing_evidence": [],
+          "scope": "Actual USD versus recorded articulated hand and optical camera frames"
+        },
+        "SC-02": {
+          "status": "PASS",
+          "checks": {
+            "actual_D0_samples": true,
+            "positive_masses": true,
+            "initial_codes_zero": true,
+            "initial_continuum_components_one": true
+          },
+          "measurements": {
+            "initial_particle_count": 19340,
+            "initial_mass_kg": 0.23207999999999998,
+            "actual_initial_sample_error_m": 0.0,
+            "float32_sample_roundoff_bound_m": 7.450580596923828e-09,
+            "analytic_specimen": {
+              "length_m": 0.12,
+              "width_m": 0.08,
+              "base_height_m": 0.015,
+              "bump_height_m": 0.008,
+              "bump_radius_m": 0.015
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual continuous initial D0 samples and full mechanical stencil graph"
+        },
+        "ROB-01": {
+          "status": "PASS",
+          "checks": {
+            "two_articulations": true,
+            "seven_arm_joints_each": true,
+            "named_actual_Panda_hand": true,
+            "physical_knife_attached_to_same_hand": true,
+            "mount_translation": true,
+            "mount_rotation": true,
+            "recorded_hand_equals_named_body": true
+          },
+          "measurements": {
+            "max_fixed_mount_translation_error_m": 5.55111513346554e-17,
+            "max_fixed_mount_rotation_error_rad": 0.0,
+            "named_hand": "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand",
+            "body_index": 8
+          },
+          "missing_evidence": [],
+          "scope": "Measured named hand and actual fixed physical wedge"
+        },
+        "ROB-02": {
+          "status": "FAIL",
+          "checks": {
+            "active_max_edge_position_error_m": false,
+            "active_max_edge_height_error_from_command_m": true,
+            "active_max_edge_rotation_error_deg": true,
+            "all_phase_max_edge_position_error_m": false,
+            "max_measured_edge_translation_per_control_step_m": true,
+            "minimum_analytic_bump_cross_section_sweep_coverage": true,
+            "actual_edge_intersects_original_material": true
+          },
+          "measurements": {
+            "status": "FAIL",
+            "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+            "metrics": {
+              "active_max_edge_position_error_m": 0.0012556469756739512,
+              "active_max_edge_height_error_from_command_m": 0.00022245404224928433,
+              "active_max_edge_rotation_error_deg": 0.027055432051704804,
+              "all_phase_max_edge_position_error_m": 0.005714777213911963,
+              "max_measured_edge_translation_per_control_step_m": 0.0014414068336557676
+            },
+            "checks": {
+              "active_max_edge_position_error_m": false,
+              "active_max_edge_height_error_from_command_m": true,
+              "active_max_edge_rotation_error_deg": true,
+              "all_phase_max_edge_position_error_m": false,
+              "max_measured_edge_translation_per_control_step_m": true,
+              "minimum_analytic_bump_cross_section_sweep_coverage": true,
+              "actual_edge_intersects_original_material": true
+            },
+            "active_interval_s": [
+              1.6,
+              5.6
+            ],
+            "active_sample_count": 200,
+            "sweep": {
+              "scope": "analytic workpiece-local finite-edge geometry only",
+              "cross_section_samples": 1992,
+              "cross_section_area_m2": 0.0004980000000000001,
+              "cross_section_sweep_coverage": 1.0,
+              "actual_edge_intersects_original_material": true,
+              "edge_endpoint_height_valid_fraction": 1.0,
+              "local_edge_center_bounds_m": [
+                [
+                  -0.029817568640778235,
+                  -6.52015369249758e-05,
+                  0.01564412800491488
+                ],
+                [
+                  0.0433894603283689,
+                  -2.384946485154326e-05,
+                  0.015722454042249284
+                ]
+              ],
+              "cut_plane_local_z_m": 0.0155,
+              "target_plane_local_z_m": 0.015,
+              "sampling_spacing_m": 0.0005,
+              "height_tolerance_m": 0.0005
+            },
+            "active_local_edge_height_range_m": [
+              0.01564412800491488,
+              0.015722454042249284
+            ],
+            "active_plane_normal_tilt_max_deg": 0.027032515967128683
+          },
+          "missing_evidence": [],
+          "scope": "Measured edge geometry and tracking, not IK targets"
+        },
+        "PHY-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_material_tool_contacts": true,
+            "nonzero_accumulated_plastic_history": true
+          },
+          "measurements": {
+            "material_tool_substep_particle_events": 6062523,
+            "max_accumulated_plastic_strain": 0.498179167509079
+          },
+          "missing_evidence": [
+            "Matched settle/elastic control measuring above-plane deformation residual drop"
+          ],
+          "scope": "Constitutive deformation is separate from component separation"
+        },
+        "PHY-02": {
+          "status": "PASS",
+          "checks": {
+            "nonzero_digits_never_rewritten_in_recorded_history": true,
+            "all_particle_frames_preserve_count": true,
+            "initial_mass_matches_immutable_recorded_masses": true,
+            "initial_graph_one_component": true,
+            "final_graph_at_least_two": true,
+            "recorded_graph_agrees": true,
+            "positive_detached_component_mass": true
+          },
+          "measurements": {
+            "graph": {
+              "status": "PASS",
+              "initial_components": 1,
+              "final_components": 2,
+              "recorded_partition_matches_recomputation": true,
+              "includes_positive_weights": true,
+              "includes_nonzero_stress_gradients": true,
+              "includes_unassigned_code_zero_particles": true,
+              "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "stencil_sha256": "a7e36cca51d71701fdd22dc442e3e8adcf86ec9f409ef486339fe5ca22f83e34"
+            },
+            "history": {
+              "initial_nonzero_codes": 0,
+              "nonzero_digit_rewrites_by_cut": [
+                0
+              ],
+              "nonzero_digit_rewrites": 0,
+              "final_code_histogram": {
+                "0": 11286,
+                "1": 7916,
+                "2": 138
+              },
+              "sampled_history_only": true
+            },
+            "task_mass": {
+              "status": "MEASURED",
+              "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+              "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "component_count": 2,
+              "reference_substrate_component_ids": [
+                1
+              ],
+              "detached_mass_kg": 0.001656,
+              "reference_above_target_mass_kg": 0.0016799999999999999,
+              "detached_initial_above_target_mass_kg": 0.001656,
+              "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+              "remaining_initial_above_target_mass_kg": 2.4e-05,
+              "reference_plane_tolerance_m": 1e-07,
+              "current_substrate_particle_center_max_residual_m": 0.000259175561368466,
+              "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+            },
+            "mass_evidence_scope": "All particle counts and one immutable per-particle mass vector; no inferred force observation"
+          },
+          "missing_evidence": [],
+          "scope": "Persistent separation uses the actual transfer/stress stencil, including possible zero-code bridges"
+        },
+        "PHY-03": {
+          "status": "PASS",
+          "checks": {
+            "postwithdraw_chip_motion": true,
+            "persistent_history_no_reset": true,
+            "measured_blade_clear_of_all_particle_spheres_after_withdrawal": true,
+            "cross_component_contact_exchange": true
+          },
+          "measurements": {
+            "withdrawal_complete_s": 6.3999999999999995,
+            "postwithdraw_chip_com_displacement_m": 0.001453041110906969,
+            "postwithdraw_min_material_sphere_to_blade_AABB_clearance_m": 0.032579521623490815,
+            "original_postwithdraw_material_pair_events_unattributed": 45677,
+            "contact_kernel_recheck": {
+              "scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
+              "device": "cuda:0",
+              "peak_component_net_contact_impulse_Ns": 5.6940193569099683e-08,
+              "roundoff_reporting_floor_Ns": 1e-09,
+              "samples": [
+                {
+                  "time_s": 6.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.8400127522209004e-08,
+                      7.780926125633414e-09,
+                      2.5979801421271986e-08
+                    ],
+                    [
+                      -3.8400127522209004e-08,
+                      -7.780925237454994e-09,
+                      -2.5979804973985665e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 3.66205343881779e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 6.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.372447565652692e-08,
+                      5.736211505791289e-09,
+                      2.2403838784157415e-08
+                    ],
+                    [
+                      -3.372447565652692e-08,
+                      -5.736209729434449e-09,
+                      -2.2403844113227933e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.617333549722722e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 6.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.2828324947331566e-08,
+                      5.589825491369993e-09,
+                      2.1654727788700256e-08
+                    ],
+                    [
+                      -3.2828324947331566e-08,
+                      -5.589830820440511e-09,
+                      -2.1654727788700256e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 5.329070518200751e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      4.663873909294125e-08,
+                      1.0787005066958955e-08,
+                      3.0832680408821034e-08
+                    ],
+                    [
+                      -4.663873554022757e-08,
+                      -1.0787001070156066e-08,
+                      -3.0832673303393676e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 8.89287949701369e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.2,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.937649850627167e-08,
+                      7.794490386459074e-09,
+                      2.6395163388315268e-08
+                    ],
+                    [
+                      -3.937650028262851e-08,
+                      -7.794489068069232e-09,
+                      -2.6395166052850527e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 3.4631407050079028e-15,
+                  "material_pair_events": 4
+                },
+                {
+                  "time_s": 7.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      3.692515448960876e-08,
+                      6.7519607682697824e-09,
+                      2.5493271493814973e-08
+                    ],
+                    [
+                      -3.692515448960876e-08,
+                      -6.751963876894251e-09,
+                      -2.5493271493814973e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 3.1086244689504383e-15,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      2.731558090829367e-08,
+                      4.250528817806298e-09,
+                      1.8905030430005354e-08
+                    ],
+                    [
+                      -2.731558090829367e-08,
+                      -4.250529705984718e-09,
+                      -1.8905030430005354e-08
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 8.881784197001252e-16,
+                  "material_pair_events": 3
+                },
+                {
+                  "time_s": 7.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.4250016278083422e-08,
+                      2.3163020390626343e-09,
+                      9.995510197313706e-09
+                    ],
+                    [
+                      -1.4250016278083422e-08,
+                      -2.3163020390626343e-09,
+                      -9.995510197313706e-09
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                },
+                {
+                  "time_s": 8.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      1.115701042664341e-08,
+                      1.4221128719071885e-09,
+                      7.681899560907368e-09
+                    ],
+                    [
+                      -1.115701042664341e-08,
+                      -1.4221128719071885e-09,
+                      -7.681899560907368e-09
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                }
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Independent chip motion and attributed component exchange; no healing"
+        },
+        "PHY-04": {
+          "status": "NOT_RUN",
+          "checks": {
+            "finite_reaction": true,
+            "nonzero_reaction": true,
+            "previous_interval_feedback_carry": true,
+            "feedback_delay_declared": true,
+            "interface_work_residual": true
+          },
+          "measurements": {
+            "peak_reaction_N": 1.0375082858359945,
+            "feedback_carry_max_abs_error": 0.0,
+            "material_boundary_work_J": 0.014073971557781562,
+            "robot_applied_material_wrench_work_J": -0.013768889314044493,
+            "interface_work_residual_fraction": 0.02167705416232615,
+            "robot_work_source": "Recomputed from recorded actually applied wrenches and measured edge increments; world-angle increment, not desired motion",
+            "matched_ON_OFF_max_tool_position_difference_m": null,
+            "ON_camera_enabled": null,
+            "OFF_camera_enabled": null,
+            "camera_control_scope": "Camera readout may be disabled in OFF; it does not advance or mutate dynamics",
+            "scope": "Partitioned boundary work, not a total-energy convergence proof"
+          },
+          "missing_evidence": [
+            "Matched feedback ON/OFF live episode with identical recipe, code and command path"
+          ],
+          "scope": ""
+        },
+        "CAM-01": {
+          "status": "PASS",
+          "checks": {
+            "control_raw_input_hashes_match": true,
+            "exact_runtime_profile": true,
+            "same_registration_implementation": true,
+            "both_development_and_heldout_controls": true,
+            "all_noise_OFF_planes_within_frozen_limit": true,
+            "known_plane_valid_coverage": true,
+            "feature_registration_error": true,
+            "no_error_based_sample_rejection_in_controls": true,
+            "all_native_values_exactly_preserved": true,
+            "exact_live_intrinsics_and_native_recipe": true,
+            "validated_profile_applied_to_every_live_frame": true
+          },
+          "measurements": {
+            "known_plane_worst_p95_error_m": 2.3100404211717773e-07,
+            "known_plane_minimum_valid_coverage": 0.928125,
+            "registration_feature_worst_p95_error_px": 0.0,
+            "noise_OFF_control_frames": 14,
+            "development_and_heldout_splits": [
+              "development",
+              "held_out"
+            ],
+            "control_audit_path": "artifacts/single_view_kit_audit_003/result.json",
+            "control_audit_sha256": "50188453e9894446f7ef327ff613ee6e4db6417f77e27461b04299b25147290c",
+            "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+            "separate_physical_color_imager_calibration_validated": false,
+            "full_dynamic_sensor_consistency": "Assessed independently under CAM-04"
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit native virtual RGB/SingleView analytic geometry controls; no physical D455 color-imager or noise-realism claim"
+        },
+        "CAM-02": {
+          "status": "PASS",
+          "checks": {
+            "control_raw_input_hashes_match": true,
+            "exact_runtime_profile": true,
+            "same_registration_implementation": true,
+            "both_development_and_heldout_controls": true,
+            "all_noise_OFF_planes_within_frozen_limit": true,
+            "known_plane_valid_coverage": true,
+            "feature_registration_error": true,
+            "no_error_based_sample_rejection_in_controls": true,
+            "all_native_values_exactly_preserved": true,
+            "exact_live_intrinsics_and_native_recipe": true,
+            "validated_profile_applied_to_every_live_frame": true
+          },
+          "measurements": {
+            "known_plane_worst_p95_error_m": 2.282429206523772e-07,
+            "known_plane_minimum_valid_coverage": 0.928125,
+            "registration_feature_worst_p95_error_px": 0.0,
+            "noise_OFF_control_frames": 14,
+            "development_and_heldout_splits": [
+              "development",
+              "held_out"
+            ],
+            "control_audit_path": "artifacts/single_view_kit_audit_003/result.json",
+            "control_audit_sha256": "50188453e9894446f7ef327ff613ee6e4db6417f77e27461b04299b25147290c",
+            "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+            "separate_physical_color_imager_calibration_validated": false,
+            "full_dynamic_sensor_consistency": "Assessed independently under CAM-04"
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit native virtual RGB/SingleView analytic geometry controls; no physical D455 color-imager or noise-realism claim"
+        },
+        "CAM-03": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_live_RGB_frames_present": true
+          },
+          "measurements": {
+            "global_RGB_frames": 41
+          },
+          "missing_evidence": [
+            "Per-object first-visible pixel attribution for both arms, knife, material and table"
+          ],
+          "scope": "A complete scene view requires measured visibility, not prim existence"
+        },
+        "CAM-04": {
+          "status": "NOT_RUN",
+          "checks": {
+            "recorded_physics_surface_camera_timestamps": true
+          },
+          "measurements": {
+            "RGBD_files": 123,
+            "max_recorded_timestamp_difference_s": 0.0,
+            "max_native_clock_offset_corrected_difference_s": 8.881784197001252e-16
+          },
+          "missing_evidence": [
+            "Independent full-scene mesh/depth agreement and valid-mask IoU",
+            "Actual chip-visible pixel attribution"
+          ],
+          "scope": "Recorded matching timestamps alone do not prove geometric capture agreement"
+        },
+        "TASK-01": {
+          "status": "PASS",
+          "checks": {
+            "detached_initial_above_target_mass_fraction": true
+          },
+          "measurements": {
+            "status": "MEASURED",
+            "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+            "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+            "component_count": 2,
+            "reference_substrate_component_ids": [
+              1
+            ],
+            "detached_mass_kg": 0.001656,
+            "reference_above_target_mass_kg": 0.0016799999999999999,
+            "detached_initial_above_target_mass_kg": 0.001656,
+            "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+            "remaining_initial_above_target_mass_kg": 2.4e-05,
+            "reference_plane_tolerance_m": 1e-07,
+            "current_substrate_particle_center_max_residual_m": 0.000259175561368466,
+            "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+          },
+          "missing_evidence": [],
+          "scope": "Reference above-local-plane mass removed into physically disconnected components"
+        },
+        "TASK-02": {
+          "status": "FAIL",
+          "checks": {
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": true,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true,
+            "no_future_partition": true,
+            "surface_partition_matches_actual_graph": true,
+            "surface_codes_match_physics": true,
+            "surface_stencil_matches_actual_graph": true,
+            "surface_and_physics_timestamp": true
+          },
+          "measurements": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              120,
+              80
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0019201971090537714,
+            "surface_p95_absolute_plane_error_m": 0.0017078979275979597,
+            "surface_rms_plane_error_m": 0.0016436076390092481,
+            "maximum_gouge_depth_m": 0.0,
+            "overcut_volume_m3": 0.0,
+            "overcut_volume_fraction_of_initial_base": 0.0,
+            "source_mesh": "artifacts/isaacsim_live_native_d0_001/surface_debug/surface_0040.npz",
+            "source_mesh_sha256": "f1a5ee8762dcfe0862011a3d28fe4a8d03d3c617172d0c0e4017a3a4f2e9e167",
+            "source_metadata_sha256": "13a8031ecb7ef03b5b7b9fb4463edc63f01ff12dfa4198d56451c9d957be4986",
+            "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+            "selection_scope": "Offline current mechanical-substrate triangle statistics; no physics or visibility edits"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "ENV-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {
+            "repeat": null,
+            "instrumented_same_process_reset": null
+          },
+          "missing_evidence": [
+            "Reset after an actual terminal cut in the same environment, including q/material/depth/valid-mask/history comparisons",
+            "Independent full same-seed live episode with frozen recipe/commands"
+          ],
+          "scope": "Fresh-process similarity cannot alone prove clearing of a prior cut during reset"
+        },
+        "ENV-02": {
+          "status": "NOT_RUN",
+          "checks": {
+            "all_recorded_values_finite": true,
+            "retained_material_floor_tray_penetration": true,
+            "tool_material_penetration": true,
+            "material_overlap": true,
+            "minimum_detF": true,
+            "maximum_speed": true
+          },
+          "measurements": {
+            "all_recorded_values_finite": true,
+            "minimum_detF": 0.9061149954795837,
+            "maximum_material_speed_m_s": 0.18611158430576324,
+            "maximum_retained_material_floor_tray_penetration_m": 0.00010395341087132692,
+            "maximum_tool_material_penetration_m": 0.00040215911576524377,
+            "maximum_material_overlap_m": 0.00027698674239218235,
+            "sampling_scope": "Every control-boundary finite/detF/speed; retained material contacts use per-interval substep maxima; native Panda/self/table penetration is unmeasured"
+          },
+          "missing_evidence": [
+            "Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit"
+          ],
+          "scope": "Measured finite/contact screen, not calibrated contact or a convergence proof"
+        }
+      },
+      "gate_counts": {
+        "PASS": 9,
+        "FAIL": 2,
+        "NOT_RUN": 7,
+        "BLOCKED": 0
+      },
+      "all_18_gates_pass": false,
+      "execution_pass": true,
+      "physical_cutting_pass": true,
+      "surface_flattening_pass": false,
+      "native_camera_geometry_controls_pass": true,
+      "native_d455_pass": false,
+      "full_benchmark_ready": false,
+      "force_in_policy_observation": false,
+      "unvalidated_global_task_integration": "D0\u2013D3 native sensor/task integration remains separate from this one D0 episode",
+      "validator_sha256": {
+        "driver": "9244b8bebcb505af2a9b8c8718a4af2bd832973048b0b65a42019c004e7cacf2",
+        "live_acceptance": "cf954c2aee600b6d950e4f3975e2fcaf93022f5723cb0930e1ef01cd999b3b66",
+        "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+      }
+    },
+    "kit_feedforward": {
+      "scope": "Independent quantitative audit of this actual recorded episode",
+      "recording": "artifacts/isaacsim_live_native_d0_ff_001",
+      "runtime_source": "LIVE_IsaacSim6.2_cutting",
+      "protocol_id": "isaac_d0_acceptance_v1_20261028",
+      "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+      "input_sha256": {
+        "manifest.json": "a5769bef8f467b3f20a8083f3a4fefdd8a40aa1d5c283e9bb5c03c6da16a3087",
+        "setup.json": "447ce36174be445df0d21f4de3dd756e0df38ac94aa74116f9d386de53e8f45e",
+        "result.json": "fc4dcd97f2d4e5c0321a2b47cf0f11b1eb676cd0fa259bc5abc9900089b798a8",
+        "robot_state.npz": "5c344f7712955681976ecc570a15f11433e3f3d6ceec0612de83f53fa1304464",
+        "oracle_debug/physics_state.npz": "88da049d2cf832c7b8d702b893afafe7331c41cb4eabbf7766f6b86c0dc0797f",
+        "oracle_debug/diagnostics.json": "343ac46dcfe371fe034f34916c164a1e9d6a44d8761d7bc99e488c0dc1e64d45"
+      },
+      "gates": {
+        "RT-01": {
+          "status": "NOT_RUN",
+          "checks": {},
+          "measurements": {},
+          "missing_evidence": [
+            "This recording does not use the actual Lab task/scene APIs"
+          ],
+          "scope": ""
+        },
+        "RT-02": {
+          "status": "PASS",
+          "checks": {
+            "full_400_steps": true,
+            "full_8_seconds": true,
+            "native_physics_steps": true,
+            "native_PhysX": true,
+            "zero_standalone_robot_steps": true,
+            "no_replay": true,
+            "live_captures": true,
+            "completed_execution": true,
+            "version_6_2": true,
+            "native_process_exit_success": true,
+            "frozen_implementation_bytes_verified": true,
+            "actual_native_clock_tracks_episode": true
+          },
+          "measurements": {
+            "versions": {
+              "isaacsim": "6.2.0.0",
+              "isaacsim-kernel": "6.2.0.0",
+              "isaacsim-core": "6.2.0.0",
+              "isaacsim-sensor": "6.2.0.0",
+              "torch": "2.11.0+cu128",
+              "warp-lang": "1.17.0",
+              "newton": "1.6.1"
+            },
+            "steps": 400,
+            "simulation_s": 8.0,
+            "hash_matching_implementation": {
+              "src/robotic_cutting_sim/isaac_sim_runner.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/isaac_sim_runner.py",
+                "sha256": "0891006c220871ddd9f3b5578c8803ce027c5c9b30cbb9bebece92fa94801485"
+              },
+              "src/robotic_cutting_sim/live_material.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/live_material.py",
+                "sha256": "da7dbb37244d095733e70af3d4dd8881777c8716f71bbfd6bf417abd6654b5b5"
+              },
+              "src/robotic_cutting_sim/robot.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/robot.py",
+                "sha256": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024"
+              },
+              "src/robotic_cutting_sim/tlmpm.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/tlmpm.py",
+                "sha256": "057ce6708aef72b578ddab31aef3dec09f4a95e18b526f3ae20bf1222f54c8ac"
+              },
+              "src/robotic_cutting_sim/material_config.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/material_config.py",
+                "sha256": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797"
+              },
+              "src/robotic_cutting_sim/cut_topology.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/cut_topology.py",
+                "sha256": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30"
+              },
+              "src/robotic_cutting_sim/cutting_surface.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/cutting_surface.py",
+                "sha256": "bdf22edb02a8f4d6c70e0c0bc2e1b552c9a1e40d8637c24d97e570edde255b02"
+              },
+              "src/robotic_cutting_sim/usd_surface_bridge.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/usd_surface_bridge.py",
+                "sha256": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3"
+              },
+              "src/robotic_cutting_sim/single_view_registration.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/single_view_registration.py",
+                "sha256": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df"
+              },
+              "scripts/run_isaac_sim_cutting.py": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/run_isaac_sim_cutting.py",
+                "sha256": "e70bc9c391229f8ed16b0c98d9443206e26941ea6dfd50c4135f8851d1d50243"
+              },
+              "configs/isaac_sim_cutting.kit": {
+                "verified": true,
+                "source": "artifacts/isaacsim_live_native_d0_ff_001/implementation/isaac_sim_cutting.kit",
+                "sha256": "1d3fd180908617e07ae2a343e016027b80c245fbcf48b0a186ad72ec969542e3"
+              }
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit/PhysX/native capture path"
+        },
+        "SC-01": {
+          "status": "PASS",
+          "checks": {
+            "identity_workpiece_supported_by_fixture": true,
+            "loaded_workpiece_local_target_matches_protocol": true,
+            "USD_meters": true,
+            "USD_Z_up": true,
+            "all_required_camera_frames": true,
+            "camera_target_forward": true,
+            "camera_frame_translation": true,
+            "camera_frame_rotation": true,
+            "hand_USD_translation": true,
+            "hand_USD_rotation": true
+          },
+          "measurements": {
+            "up_axis": "Z",
+            "meters_per_unit": 1.0,
+            "actual_final_scene_sha256": "a4bd4361eaf82e22c29e797c5e34c9eebe86f8b7b25e2be7322ba8fbfe9e139e",
+            "camera_forward_cosines": {
+              "d455_0": 0.9999999999999962,
+              "d455_1": 1.0000000000000004,
+              "global": 0.9922994149919311
+            },
+            "camera_transform_errors": {
+              "d455_0": {
+                "translation_m": 1.1973201241565775e-07,
+                "rotation_rad": 8.098287022367855e-16
+              },
+              "d455_1": {
+                "translation_m": 1.6521629435955736e-08,
+                "rotation_rad": 4.8666989573011404e-08
+              },
+              "global": {
+                "translation_m": 2.3841858265427624e-08,
+                "rotation_rad": 3.368045037175248e-16
+              }
+            },
+            "final_USD_vs_measured_hand_translation_m": 1.41841227003005e-11,
+            "final_USD_vs_measured_hand_rotation_rad": 1.5568708323890077e-07,
+            "scope": "Native Replicator camera transforms versus loaded static USD; instrumented native PhysX versus live USD knife attachment at every control step"
+          },
+          "missing_evidence": [],
+          "scope": "Actual USD versus recorded articulated hand and optical camera frames"
+        },
+        "SC-02": {
+          "status": "PASS",
+          "checks": {
+            "actual_D0_samples": true,
+            "positive_masses": true,
+            "initial_codes_zero": true,
+            "initial_continuum_components_one": true
+          },
+          "measurements": {
+            "initial_particle_count": 19340,
+            "initial_mass_kg": 0.23207999999999998,
+            "actual_initial_sample_error_m": 0.0,
+            "float32_sample_roundoff_bound_m": 7.450580596923828e-09,
+            "analytic_specimen": {
+              "length_m": 0.12,
+              "width_m": 0.08,
+              "base_height_m": 0.015,
+              "bump_height_m": 0.008,
+              "bump_radius_m": 0.015
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Actual continuous initial D0 samples and full mechanical stencil graph"
+        },
+        "ROB-01": {
+          "status": "PASS",
+          "checks": {
+            "two_articulations": true,
+            "seven_arm_joints_each": true,
+            "named_actual_Panda_hand": true,
+            "physical_knife_attached_to_same_hand": true,
+            "mount_translation": true,
+            "mount_rotation": true,
+            "recorded_hand_equals_named_body": true
+          },
+          "measurements": {
+            "max_fixed_mount_translation_error_m": 5.551115125710722e-17,
+            "max_fixed_mount_rotation_error_rad": 3.699264158676972e-24,
+            "named_hand": "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand",
+            "body_index": 8
+          },
+          "missing_evidence": [],
+          "scope": "Measured named hand and actual fixed physical wedge"
+        },
+        "ROB-02": {
+          "status": "PASS",
+          "checks": {
+            "active_max_edge_position_error_m": true,
+            "active_max_edge_height_error_from_command_m": true,
+            "active_max_edge_rotation_error_deg": true,
+            "all_phase_max_edge_position_error_m": true,
+            "max_measured_edge_translation_per_control_step_m": true,
+            "minimum_analytic_bump_cross_section_sweep_coverage": true,
+            "actual_edge_intersects_original_material": true
+          },
+          "measurements": {
+            "status": "PASS",
+            "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+            "metrics": {
+              "active_max_edge_position_error_m": 0.00048041668113911695,
+              "active_max_edge_height_error_from_command_m": 0.00025161219458051665,
+              "active_max_edge_rotation_error_deg": 0.03558864622940933,
+              "all_phase_max_edge_position_error_m": 0.0021634585644935856,
+              "max_measured_edge_translation_per_control_step_m": 0.0017316437995614853
+            },
+            "checks": {
+              "active_max_edge_position_error_m": true,
+              "active_max_edge_height_error_from_command_m": true,
+              "active_max_edge_rotation_error_deg": true,
+              "all_phase_max_edge_position_error_m": true,
+              "max_measured_edge_translation_per_control_step_m": true,
+              "minimum_analytic_bump_cross_section_sweep_coverage": true,
+              "actual_edge_intersects_original_material": true
+            },
+            "active_interval_s": [
+              1.6,
+              5.6
+            ],
+            "active_sample_count": 200,
+            "sweep": {
+              "scope": "analytic workpiece-local finite-edge geometry only",
+              "cross_section_samples": 1992,
+              "cross_section_area_m2": 0.0004980000000000001,
+              "cross_section_sweep_coverage": 1.0,
+              "actual_edge_intersects_original_material": true,
+              "edge_endpoint_height_valid_fraction": 1.0,
+              "local_edge_center_bounds_m": [
+                [
+                  -0.029947378709614954,
+                  -6.610408661187684e-05,
+                  0.015486785000825481
+                ],
+                [
+                  0.044968085704541354,
+                  -1.176083984234679e-05,
+                  0.015751612194580517
+                ]
+              ],
+              "cut_plane_local_z_m": 0.0155,
+              "target_plane_local_z_m": 0.015,
+              "sampling_spacing_m": 0.0005,
+              "height_tolerance_m": 0.0005
+            },
+            "active_local_edge_height_range_m": [
+              0.015486785000825481,
+              0.015751612194580517
+            ],
+            "active_plane_normal_tilt_max_deg": 0.03551457410739014
+          },
+          "missing_evidence": [],
+          "scope": "Measured edge geometry and tracking, not IK targets"
+        },
+        "PHY-01": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_material_tool_contacts": true,
+            "nonzero_accumulated_plastic_history": true
+          },
+          "measurements": {
+            "material_tool_substep_particle_events": 4876041,
+            "max_accumulated_plastic_strain": 0.49237725138664246
+          },
+          "missing_evidence": [
+            "Matched settle/elastic control measuring above-plane deformation residual drop"
+          ],
+          "scope": "Constitutive deformation is separate from component separation"
+        },
+        "PHY-02": {
+          "status": "PASS",
+          "checks": {
+            "nonzero_digits_never_rewritten_in_recorded_history": true,
+            "all_particle_frames_preserve_count": true,
+            "initial_mass_matches_immutable_recorded_masses": true,
+            "initial_graph_one_component": true,
+            "final_graph_at_least_two": true,
+            "recorded_graph_agrees": true,
+            "positive_detached_component_mass": true
+          },
+          "measurements": {
+            "graph": {
+              "status": "PASS",
+              "initial_components": 1,
+              "final_components": 2,
+              "recorded_partition_matches_recomputation": true,
+              "includes_positive_weights": true,
+              "includes_nonzero_stress_gradients": true,
+              "includes_unassigned_code_zero_particles": true,
+              "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "stencil_sha256": "a7e36cca51d71701fdd22dc442e3e8adcf86ec9f409ef486339fe5ca22f83e34"
+            },
+            "history": {
+              "initial_nonzero_codes": 0,
+              "nonzero_digit_rewrites_by_cut": [
+                0
+              ],
+              "nonzero_digit_rewrites": 0,
+              "final_code_histogram": {
+                "0": 11094,
+                "1": 8108,
+                "2": 138
+              },
+              "sampled_history_only": true
+            },
+            "task_mass": {
+              "status": "MEASURED",
+              "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+              "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+              "component_count": 2,
+              "reference_substrate_component_ids": [
+                1
+              ],
+              "detached_mass_kg": 0.001656,
+              "reference_above_target_mass_kg": 0.0016799999999999999,
+              "detached_initial_above_target_mass_kg": 0.001656,
+              "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+              "remaining_initial_above_target_mass_kg": 2.4e-05,
+              "reference_plane_tolerance_m": 1e-07,
+              "current_substrate_particle_center_max_residual_m": 0.0003040504083037382,
+              "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+            },
+            "mass_evidence_scope": "All particle counts and one immutable per-particle mass vector; no inferred force observation"
+          },
+          "missing_evidence": [],
+          "scope": "Persistent separation uses the actual transfer/stress stencil, including possible zero-code bridges"
+        },
+        "PHY-03": {
+          "status": "FAIL",
+          "checks": {
+            "postwithdraw_chip_motion": false,
+            "persistent_history_no_reset": true,
+            "measured_blade_clear_of_all_particle_spheres_after_withdrawal": true,
+            "cross_component_contact_exchange": false
+          },
+          "measurements": {
+            "withdrawal_complete_s": 6.3999999999999995,
+            "postwithdraw_chip_com_displacement_m": 0.0006878326440274208,
+            "postwithdraw_min_material_sphere_to_blade_AABB_clearance_m": 0.03656304017963827,
+            "original_postwithdraw_material_pair_events_unattributed": 31907,
+            "contact_kernel_recheck": {
+              "scope": "actual frozen contact kernel reevaluated on saved postwithdraw frames; not an original-substep pair log",
+              "device": "cuda:0",
+              "peak_component_net_contact_impulse_Ns": 0.0,
+              "roundoff_reporting_floor_Ns": 1e-09,
+              "samples": [
+                {
+                  "time_s": 6.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 6.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.2,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.4,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.6000000000000005,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 7.8,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 2
+                },
+                {
+                  "time_s": 8.0,
+                  "component_net_impulses_Ns": [
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    [
+                      0.0,
+                      0.0,
+                      0.0
+                    ]
+                  ],
+                  "total_impulse_budget_error_Ns": 0.0,
+                  "material_pair_events": 1
+                }
+              ]
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Independent chip motion and attributed component exchange; no healing"
+        },
+        "PHY-04": {
+          "status": "FAIL",
+          "checks": {
+            "finite_reaction": true,
+            "nonzero_reaction": true,
+            "previous_interval_feedback_carry": true,
+            "feedback_delay_declared": true,
+            "interface_work_residual": false,
+            "same_config_except_declared_control": true,
+            "same_material_recipe": true,
+            "same_timestamps": true,
+            "same_commanded_edge_path": true,
+            "feedback_toggled": true,
+            "same_source_isaac_sim_runner.py": true,
+            "same_source_live_material.py": true,
+            "same_source_tlmpm.py": true,
+            "same_source_robot.py": true,
+            "same_source_coupled_robot.py": true,
+            "same_source_scene_frames.py": true,
+            "matched_feedback_affects_tool_dynamics": true
+          },
+          "measurements": {
+            "peak_reaction_N": 1.997231846259329,
+            "feedback_carry_max_abs_error": 0.0,
+            "material_boundary_work_J": 0.014541886324664688,
+            "robot_applied_material_wrench_work_J": -0.011861276246885547,
+            "interface_work_residual_fraction": 0.18433716355164476,
+            "robot_work_source": "Recomputed from recorded actually applied wrenches and measured edge increments; world-angle increment, not desired motion",
+            "matched_ON_OFF_max_tool_position_difference_m": 0.0006264651638073534,
+            "ON_camera_enabled": null,
+            "OFF_camera_enabled": null,
+            "camera_control_scope": "Camera readout may be disabled in OFF; it does not advance or mutate dynamics",
+            "scope": "Partitioned boundary work, not a total-energy convergence proof"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "CAM-01": {
+          "status": "PASS",
+          "checks": {
+            "control_raw_input_hashes_match": true,
+            "exact_runtime_profile": true,
+            "same_registration_implementation": true,
+            "both_development_and_heldout_controls": true,
+            "all_noise_OFF_planes_within_frozen_limit": true,
+            "known_plane_valid_coverage": true,
+            "feature_registration_error": true,
+            "no_error_based_sample_rejection_in_controls": true,
+            "all_native_values_exactly_preserved": true,
+            "exact_live_intrinsics_and_native_recipe": true,
+            "validated_profile_applied_to_every_live_frame": true
+          },
+          "measurements": {
+            "known_plane_worst_p95_error_m": 2.3100404211717773e-07,
+            "known_plane_minimum_valid_coverage": 0.928125,
+            "registration_feature_worst_p95_error_px": 0.0,
+            "noise_OFF_control_frames": 14,
+            "development_and_heldout_splits": [
+              "development",
+              "held_out"
+            ],
+            "control_audit_path": "artifacts/single_view_kit_audit_003/result.json",
+            "control_audit_sha256": "50188453e9894446f7ef327ff613ee6e4db6417f77e27461b04299b25147290c",
+            "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+            "separate_physical_color_imager_calibration_validated": false,
+            "full_dynamic_sensor_consistency": "Assessed independently under CAM-04"
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit native virtual RGB/SingleView analytic geometry controls; no physical D455 color-imager or noise-realism claim"
+        },
+        "CAM-02": {
+          "status": "PASS",
+          "checks": {
+            "control_raw_input_hashes_match": true,
+            "exact_runtime_profile": true,
+            "same_registration_implementation": true,
+            "both_development_and_heldout_controls": true,
+            "all_noise_OFF_planes_within_frozen_limit": true,
+            "known_plane_valid_coverage": true,
+            "feature_registration_error": true,
+            "no_error_based_sample_rejection_in_controls": true,
+            "all_native_values_exactly_preserved": true,
+            "exact_live_intrinsics_and_native_recipe": true,
+            "validated_profile_applied_to_every_live_frame": true
+          },
+          "measurements": {
+            "known_plane_worst_p95_error_m": 2.282429206523772e-07,
+            "known_plane_minimum_valid_coverage": 0.928125,
+            "registration_feature_worst_p95_error_px": 0.0,
+            "noise_OFF_control_frames": 14,
+            "development_and_heldout_splits": [
+              "development",
+              "held_out"
+            ],
+            "control_audit_path": "artifacts/single_view_kit_audit_003/result.json",
+            "control_audit_sha256": "50188453e9894446f7ef327ff613ee6e4db6417f77e27461b04299b25147290c",
+            "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+            "separate_physical_color_imager_calibration_validated": false,
+            "full_dynamic_sensor_consistency": "Assessed independently under CAM-04"
+          },
+          "missing_evidence": [],
+          "scope": "Actual Kit native virtual RGB/SingleView analytic geometry controls; no physical D455 color-imager or noise-realism claim"
+        },
+        "CAM-03": {
+          "status": "NOT_RUN",
+          "checks": {
+            "actual_live_RGB_frames_present": true
+          },
+          "measurements": {
+            "global_RGB_frames": 41
+          },
+          "missing_evidence": [
+            "Per-object first-visible pixel attribution for both arms, knife, material and table"
+          ],
+          "scope": "A complete scene view requires measured visibility, not prim existence"
+        },
+        "CAM-04": {
+          "status": "NOT_RUN",
+          "checks": {
+            "recorded_physics_surface_camera_timestamps": true
+          },
+          "measurements": {
+            "RGBD_files": 123,
+            "max_recorded_timestamp_difference_s": 0.0,
+            "max_native_clock_offset_corrected_difference_s": 8.881784197001252e-16
+          },
+          "missing_evidence": [
+            "Independent full-scene mesh/depth agreement and valid-mask IoU",
+            "Actual chip-visible pixel attribution"
+          ],
+          "scope": "Recorded matching timestamps alone do not prove geometric capture agreement"
+        },
+        "TASK-01": {
+          "status": "PASS",
+          "checks": {
+            "detached_initial_above_target_mass_fraction": true
+          },
+          "measurements": {
+            "status": "MEASURED",
+            "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+            "component_provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+            "component_count": 2,
+            "reference_substrate_component_ids": [
+              1
+            ],
+            "detached_mass_kg": 0.001656,
+            "reference_above_target_mass_kg": 0.0016799999999999999,
+            "detached_initial_above_target_mass_kg": 0.001656,
+            "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+            "remaining_initial_above_target_mass_kg": 2.4e-05,
+            "reference_plane_tolerance_m": 1e-07,
+            "current_substrate_particle_center_max_residual_m": 0.0003040504083037382,
+            "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+          },
+          "missing_evidence": [],
+          "scope": "Reference above-local-plane mass removed into physically disconnected components"
+        },
+        "TASK-02": {
+          "status": "FAIL",
+          "checks": {
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": true,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true,
+            "no_future_partition": true,
+            "surface_partition_matches_actual_graph": true,
+            "surface_codes_match_physics": true,
+            "surface_stencil_matches_actual_graph": true,
+            "surface_and_physics_timestamp": true
+          },
+          "measurements": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              120,
+              80
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0019619532702953094,
+            "surface_p95_absolute_plane_error_m": 0.0017391070506597895,
+            "surface_rms_plane_error_m": 0.0016192636617529208,
+            "maximum_gouge_depth_m": 0.0,
+            "overcut_volume_m3": 0.0,
+            "overcut_volume_fraction_of_initial_base": 0.0,
+            "source_mesh": "artifacts/isaacsim_live_native_d0_ff_001/surface_debug/surface_0040.npz",
+            "source_mesh_sha256": "757db7e0d93761bb5845bcb623dc98d5207c5530f3b0e4a231abe5ec4e34677b",
+            "source_metadata_sha256": "a2b9107a550c4d8fb24eed50ecfcc3d7249d6caccb9dd3f7620074a026b0a693",
+            "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+            "selection_scope": "Offline current mechanical-substrate triangle statistics; no physics or visibility edits"
+          },
+          "missing_evidence": [],
+          "scope": ""
+        },
+        "ENV-01": {
+          "status": "FAIL",
+          "checks": {
+            "same_process_reset_after_cut": true,
+            "reset_joint_state": true,
+            "reset_material_state": true,
+            "reset_all_cut_history_zero": true,
+            "reset_both_camera_depths": false,
+            "reset_both_camera_valid_masks": false,
+            "camera_reset_receipt_matches_raw_recordings": true,
+            "same_config_except_declared_control": true,
+            "same_material_recipe": true,
+            "same_timestamps": true,
+            "same_commanded_edge_path": true,
+            "same_source_isaac_sim_runner.py": true,
+            "same_source_live_material.py": true,
+            "same_source_tlmpm.py": true,
+            "same_source_robot.py": true,
+            "same_source_coupled_robot.py": true,
+            "same_source_scene_frames.py": true,
+            "all_frame_max_position_error_m": false,
+            "all_frame_max_velocity_error_m_s": false,
+            "final_component_com_error_m": false
+          },
+          "measurements": {
+            "repeat": {
+              "all_frame_max_position_error_m": 0.001504560699686408,
+              "all_frame_max_velocity_error_m_s": 0.020889807492494583,
+              "positions_bitwise_equal": false,
+              "velocities_bitwise_equal": false,
+              "codes_bitwise_equal": false,
+              "differing_code_particle_frames": 5,
+              "final_component_com_error_m": 0.0007635129887856084
+            },
+            "instrumented_same_process_reset": {
+              "scope": "same-process reset measured by native Kit runner",
+              "joint_max_abs_error_rad": 0.0,
+              "material_max_abs_error_m": 0.0,
+              "nonzero_cut_codes": 0,
+              "depth_max_abs_error_m": {
+                "d455_0": 1.1468040943145752,
+                "d455_1": 1.6612114906311035,
+                "global": 0.014312982559204102
+              },
+              "depth_valid_mask_exact": {
+                "d455_0": false,
+                "d455_1": false,
+                "global": true
+              },
+              "receipt_path": "artifacts/isaacsim_live_native_d0_ff_repeat_001/reset_receipt.json",
+              "receipt_sha256": "b22183c37b314e5313bde078cc79ce5031a14c0d7975357938b2cc9a3554f7e0",
+              "raw_camera_rechecks": {
+                "d455_0": {
+                  "initial_sha256": "df5a66060fbb1f793ffa0e38aca2a6434b9a81732edfb45c263959d6e18aca49",
+                  "reset_sha256": "f67d58d92e489746cad9e41e1404cf0aace0550184614fb24df67f7f537a0ff1",
+                  "max_all_pixel_depth_error_m": 1.1468040943145752,
+                  "valid_mask_changed_pixels": 1543,
+                  "common_valid_p99_error_m": 0.0,
+                  "common_valid_max_error_m": 0.0064400434494018555,
+                  "matches_instrumented_receipt": true
+                },
+                "d455_1": {
+                  "initial_sha256": "7bd998f4c97f75b814a7c431a8fc33150fae2f756e30676aa18b8dab37785797",
+                  "reset_sha256": "25f0340f27061f928af51cda79c03c5164c66ddb25eb5077a8fbdca48224e21c",
+                  "max_all_pixel_depth_error_m": 1.6612114906311035,
+                  "valid_mask_changed_pixels": 580,
+                  "common_valid_p99_error_m": 0.0,
+                  "common_valid_max_error_m": 0.02267235517501831,
+                  "matches_instrumented_receipt": true
+                },
+                "global": {
+                  "initial_sha256": "89ca2c100e45df11b13a8c248e4d7604c7232b89751df95c791822f152d36030",
+                  "reset_sha256": "37e02b19315004d018828d7a22ff71b1f6234f9b8b74c3c028cc2f2c718c5edf",
+                  "max_all_pixel_depth_error_m": 0.014312982559204102,
+                  "valid_mask_changed_pixels": 0,
+                  "common_valid_p99_error_m": 0.0,
+                  "common_valid_max_error_m": 0.014312982559204102,
+                  "matches_instrumented_receipt": true
+                }
+              }
+            }
+          },
+          "missing_evidence": [],
+          "scope": "Fresh-process similarity cannot alone prove clearing of a prior cut during reset"
+        },
+        "ENV-02": {
+          "status": "NOT_RUN",
+          "checks": {
+            "all_recorded_values_finite": true,
+            "retained_material_floor_tray_penetration": true,
+            "tool_material_penetration": true,
+            "material_overlap": true,
+            "minimum_detF": true,
+            "maximum_speed": true
+          },
+          "measurements": {
+            "all_recorded_values_finite": true,
+            "minimum_detF": 0.9058769941329956,
+            "maximum_material_speed_m_s": 0.23405209183692932,
+            "maximum_retained_material_floor_tray_penetration_m": 0.0002783100353553891,
+            "maximum_tool_material_penetration_m": 0.0004086972330696881,
+            "maximum_material_overlap_m": 0.00018230767454952002,
+            "sampling_scope": "Every control-boundary finite/detF/speed; retained material contacts use per-interval substep maxima; native Panda/self/table penetration is unmeasured"
+          },
+          "missing_evidence": [
+            "Comprehensive native rigid-body (Panda self/robot-table/fixture) penetration audit"
+          ],
+          "scope": "Measured finite/contact screen, not calibrated contact or a convergence proof"
+        }
+      },
+      "gate_counts": {
+        "PASS": 9,
+        "FAIL": 4,
+        "NOT_RUN": 5,
+        "BLOCKED": 0
+      },
+      "all_18_gates_pass": false,
+      "execution_pass": true,
+      "physical_cutting_pass": true,
+      "surface_flattening_pass": false,
+      "native_camera_geometry_controls_pass": true,
+      "native_d455_pass": false,
+      "full_benchmark_ready": false,
+      "force_in_policy_observation": false,
+      "unvalidated_global_task_integration": "D0\u2013D3 native sensor/task integration remains separate from this one D0 episode",
+      "validator_sha256": {
+        "driver": "9244b8bebcb505af2a9b8c8718a4af2bd832973048b0b65a42019c004e7cacf2",
+        "live_acceptance": "44c2e44051f07d31d7d417e7f098ed57cb66d604ed64add40476d29d6065e303",
+        "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+      }
+    }
+  }
+}

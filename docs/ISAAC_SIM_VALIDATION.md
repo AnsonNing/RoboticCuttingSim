@@ -28,6 +28,9 @@ also lists Blackwell GeForce R570. No driver, OS or other project changed.
 | `isaacsim_live_smoke_005` |PASS_EXECUTION:2 control steps,20 native PhysX substeps, distinct640×480 RTX views and1280×960 Global |
 | `isaacsim_live_native_smoke_001` |PASS_EXECUTION:same real loop with registered native SingleView measured depth, plus measured robot/material reset |
 | `isaacsim_live_native_d0_001` |PASS_EXECUTION:400 control steps/4,000 actual PhysX steps/8s;41 native D455/Global captures; mechanical graph1→2 |
+| `isaacsim_live_native_d0_ff_001` |PASS_EXECUTION:same400-step live recipe with explicit joint-velocity feedforward; tracking meets ROB-02 numeric limits |
+| `isaacsim_live_native_d0_ff_no_feedback_001` |PASS_EXECUTION:matched feedforward controller with material wrench disabled at the robot; actual edge motion changes |
+| `isaacsim_live_native_d0_ff_repeat_001` |PASS_EXECUTION:independent same-seed full repeat; ENV-01 reset/repeat tests FAIL, retained below |
 
 The Vulkan shadercache was then fetched from the same official CDN directly,
 SHA256 `ce1230814a7e3dbc32926adb5802c0c79ab09665036d54dfcbe74b57db459549`,
@@ -42,6 +45,16 @@ also use Kit's user cache under `~/.local/share/ov/data/exts/v2`.
 .deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
   --steps 400 --record-every 10 --camera-mode native_single_view \
   --gpu 1 --device cuda:1 --output-dir artifacts/isaacsim_native_fresh
+
+# Explicit controller variant; retains identical gains, geometry and material.
+.deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
+  --steps 400 --record-every 10 --camera-mode native_single_view \
+  --velocity-feedforward --gpu 1 --device cuda:1 \
+  --output-dir artifacts/isaacsim_native_ff_fresh
+
+# Review actual captured arrays, without a USD replay or another renderer.
+.venv/bin/python scripts/render_live_isaac_evidence.py \
+  artifacts/isaacsim_native_ff_fresh artifacts/isaacsim_native_ff_media_fresh
 ```
 
 `configs/isaac_sim_cutting.kit` selects the actual PhysX/RTX extensions rather
@@ -96,6 +109,55 @@ frames at5fps and explicitly identify the Live Isaac Sim/Kit source. Remaining
 surface, contact, camera synchronization and repeatability gates use the separate
 independent acceptance audit.
 
+## Controller comparison and reproducibility
+
+The explicit `--velocity-feedforward` variant sends the finite difference of
+successive commanded IK joint targets to native PhysX velocity targets. Baseline
+PD remains available and its failed tracking measurements remain above. Robot
+gains, desired edge path, material, cameras and transforms are unchanged.
+
+| Measured trajectory quantity | Baseline PD | Velocity feedforward | Frozen limit |
+|---|---:|---:|---:|
+| Active maximum edge position error |1.25565mm|.48042mm|1mm|
+| All-phase maximum position error |5.71478mm|2.16346mm|5mm|
+| Active maximum height error |.22245mm|.25161mm|.5mm|
+| Active maximum rotation error |.02706°|.03559°|1°|
+
+The feedforward run still produces two actual mechanical components and a1.656g
+chip. It applies a peak1.99723N material reaction. The next interval's applied
+wrench equals the prior computed wrench exactly in recorded precision; current
+impulse divided by20ms equals the computed next wrench exactly. In the matched
+`--no-feedback` run, the solver still computes reactions up to2.06695N but the
+robot receives zero material wrench. The maximum measured edge difference is
+.62647mm, versus5.79µm between two feedback-enabled repeats. This establishes
+measurable coupling without asserting converged interface energy.
+
+The full same-seed repeat has a1.505mm maximum material-position difference and
+.02089m/s maximum velocity difference. Final mechanical membership is identical,
+but recorded cut-code histories differ. These exceed ENV-01's.1mm/.01m/s limits.
+After the repeat, a real same-process reset restores q and material positions
+exactly, clears every cut code, and resets the clock to zero. Native camera
+reset repeatability fails: masks change at1543/580 pixels; common-valid maximum
+depth differences are6.44/22.67mm. Global common-valid maximum difference is
+14.313mm. For all three views the99th percentile is zero, but the frozen maximum
+and exact-mask requirements are still violated. Native invalid/outlier values
+are retained, without filtering to change that result. The independent gate
+audit must keep this failure separate from registration-profile acceptance.
+The diagnostic `isaacsim_reset_probe_002` additionally confirms all nine DOFs
+and all22 measured rigid-link poses reset exactly. Initial/reset reconstructed
+surfaces differ by at most3.73nm in symmetric nearest-vertex distance. The
+remaining render/reset discrepancy is unresolved; native noise alone does not
+explain the ideal Global difference.
+
+Evidence is in `isaacsim_live_native_d0_ff_repeat_001/{comparison.json,
+feedback_comparison.json,reset_receipt.json,camera_reset_quantiles.json}`.
+The directly captured repeat videos and trajectory plot are under
+`artifacts/isaacsim_live_native_d0_ff_repeat_media_002`: `live_global.mp4`,
+`live_d455_0.mp4`, `live_d455_1.mp4`, `live_measured_depth.mp4`,
+`live_synchronized_multiview.mp4`, and `planned_vs_actual_trajectory.png`.
+Full acceptance remains false; execution, tracking and registration evidence
+do not override the failed reproducibility or unfinished surface/task gates.
+
 Artifacts include frozen source copies/hashes, native process exit/log/phase,
 actual robot joints and22 link poses, commanded/measured edge poses, raw and
 registered cameras, per-frame current surface provenance, full reference
@@ -103,3 +165,7 @@ stencils, final constitutive state, material-reaction diagnostics and reset
 receipts. Force, material labels and Global images stay outside observations.
 Native MDL packages remain uncached; explicit PreviewSurface overrides preserve
 geometry/occlusion. Initial asset-loading logs retain the unresolved-MDL warnings.
+The installed package freeze is `artifacts/isaacsim_runtime_freeze_001.txt`.
+Two unused optional import converters require external `usd-exchange`; they are
+not enabled, since injecting its standalone USD into the native Kit environment
+would change the validated bundled-USD runtime.

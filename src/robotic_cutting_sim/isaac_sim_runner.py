@@ -31,6 +31,7 @@ class IsaacSimCuttingConfig:
     render_warmup: int = 5
     camera_mode: str = "rtx_rgbd"
     feedback: bool = True
+    velocity_feedforward: bool = False
     scene: str | None = None
 
     def __post_init__(self):
@@ -225,6 +226,7 @@ class LiveIsaacSimCutting:
         self.arms.set_dof_positions(q)  # reset only; never called by step()
         self.arms.set_dof_velocities(np.zeros_like(q))
         self.arms.set_dof_position_targets(q)
+        self.previous_command_q=q.copy()
         self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
         SimulationManager.step()
         self.native_time_origin = SimulationManager.get_simulation_time()
@@ -367,6 +369,9 @@ class LiveIsaacSimCutting:
         target_q = self.ik.initial_q.reshape(2,9).copy()
         target_q[0,:7] = targets
         self.arms.set_dof_position_targets(target_q)
+        velocity_target=(target_q-self.previous_command_q)/c.control_dt if c.velocity_feedforward else np.zeros_like(target_q)
+        self.arms.set_dof_velocity_targets(velocity_target)
+        self.previous_command_q=target_q.copy()
         applied = self.material.pending_wrench.copy() if c.feedback else np.zeros(6)
         start = time.perf_counter()
         for _ in range(c.robot_substeps):
@@ -394,7 +399,9 @@ class LiveIsaacSimCutting:
                            maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
         self._update_surface()
-        return actual, {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,"ik":ik_info,"rendered_attachment":attachment,
+        return actual, {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,
+                 "commanded_joint_velocity_rad_s":velocity_target,"velocity_feedforward":c.velocity_feedforward,
+                 "ik":ik_info,"rendered_attachment":attachment,
                  "robot_physics_wall_s":time.perf_counter()-start,
                  "native_physics_timestamp_s":manager.get_simulation_time(),
                  "native_relative_timestamp_s":native_relative,
