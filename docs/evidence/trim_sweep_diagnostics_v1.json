@@ -39,6 +39,37 @@
       "live_isaac": false,
       "implementation_copy_hashes_match": true,
       "physics_state_sha256": "bd193d4a53492566dd940155f66831dc91c79fb60fb68b4e27ccbe02e5f1eddf"
+    },
+    "Kinematic D: whole-specimen 2mm particles": {
+      "source_recording": "artifacts/trim_coarse_particle_diagnostic_001",
+      "source_manifest_sha256": "cce6c230e197480fdb118780cc234b57e7285d606c99fc7683d238400932b71b",
+      "physics_state_sha256": "32eea9b5cc2885a9bc6e4e4c86de99d0a39525a945f2eb496680adefc72eed17",
+      "implementation_copy_hashes_match": true,
+      "recorded_final_graph": 2,
+      "above_plane_unassigned_particle_ids": [],
+      "result_status": "PASS_KINEMATIC_SEVERING_CANDIDATE",
+      "live_isaac": false,
+      "explicit_particle_spacing_m": 0.002,
+      "grid_dx_m": 0.004,
+      "initial_particle_count": 12136,
+      "initial_mass_kg": 0.14563199999999998,
+      "full_simulation_acceptance": false
+    },
+    "Actual native Kit explicit 2mm particles": {
+      "source_recording": "artifacts/isaacsim_trim01_coarse_001",
+      "source_manifest_sha256": "b9fbdf90b2a9118ba42ad5766e4a6bcb462c6d4295acc50a5df667fd365e074a",
+      "physics_state_sha256": "8164849b43e4419b89257d3144584ab0e7de0673a304db02b7853a7ddb9342ec",
+      "implementation_copy_hashes_match": true,
+      "recorded_final_graph": 2,
+      "above_plane_unassigned_particle_ids": [],
+      "result_status": "PASS_EXECUTION",
+      "live_isaac": true,
+      "explicit_particle_spacing_m": 0.002,
+      "grid_dx_m": 0.004,
+      "initial_particle_count": 12136,
+      "initial_mass_kg": 0.14563199999999998,
+      "full_simulation_acceptance": false,
+      "task_goal_status": "FAIL_TASK_METRICS"
     }
   },
   "labels_edited": false,

@@ -288,3 +288,52 @@ A's new speed leaves the target height unchanged.
 
 Source-recording hashes and exact negative statuses are in
 [`trim_sweep_diagnostics_v1.json`](evidence/trim_sweep_diagnostics_v1.json).
+
+## Explicit coarser-particle carry-over and actual native confirmation
+
+The final control was frozen in `6213166` as
+[`trim_particle_spacing_control_v1.json`](../configs/trim_particle_spacing_control_v1.json).
+It changes the **entire initial continuous specimen's** particle spacing from1mm
+to2mm, preserving the160×30×20mm geometry, dome,4mm grid, original8s path,
+20.2mm edge height, material, fixtures and goal thresholds. Particle quadrature,
+radius and their derived contact scales change. This is a discretization-specific
+carry-over of the validated D0's8-particles-per-cell setting, not convergence.
+No particle is removed or reassigned after cutting.
+
+Kinematic diagnostic `trim_coarse_particle_diagnostic_001` passes severing:
+12,136 particles start with one graph and zero codes, then form1.608g chip and
+144.024g base components with98.5294% reference above-plane mass detached.
+Every nonzero history digit remains unchanged. Its145.632g initial mass is the
+actual coarser sampler budget, versus145.566g for1mm; no mass normalization was
+used. The ideal-tool diagnostic takes32.15s and is not an Isaac result.
+
+The subsequent actual native recording
+`artifacts/isaacsim_trim01_coarse_001` completes400 control steps/4,000 PhysX
+steps/8s, with41 native camera captures and the same1.608g detached component.
+Disconnection persists for2.4s after the active pass. Active edge error is
+.22127mm, height error34.18µm, maximum rotation error.01775° and all-phase position
+error1.96383mm. Peak actual applied material reaction is.67146N, minimum detF
+.91584 and maximum material speed.22355m/s. The loop/evaluation/reset takes86.33s;
+the complete native process takes95.88s.
+
+Full task metrics still **FAIL**: final substrate peak residual is.10645mm,
+but p95/RMS errors are1.67509/.55189mm and measured overcut fraction2.019%.
+Eight of4,800 rays are absent; their retained zero-height tail contributes the
+reported20mm maximum gouge statistic. This is separate from a demonstrated20mm
+physical knife gouge. Formal surface, camera-hole and repeatability limits are
+not relaxed to promote these results. All1mm and trajectory-control failures
+remain available.
+
+```bash
+.deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
+  --task-id TRIM-01 --particle-spacing .002 --steps 400 --record-every 10 \
+  --camera-mode native_single_view --gpu 1 --device cuda:1 \
+  --output-dir artifacts/isaacsim_trim01_coarse_fresh
+```
+
+The sampling override is explicit in configuration, TaskSpec receipts and child
+process arguments. Omitting it retains the original1mm task; supplying it without
+a shared task is rejected to protect legacy D0. Source files and protocol bytes
+are frozen before each worker starts. Actual Global, both native RGB views,
+measured-depth and synchronized multiview videos, plus workpiece-local trajectory,
+are under `artifacts/isaacsim_trim01_coarse_media_001`.
