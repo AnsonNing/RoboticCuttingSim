@@ -1,0 +1,1205 @@
+{
+  "scope": "frozen_TLMPM_engineering_validation",
+  "engineering_status": "FAIL",
+  "physics_proven": false,
+  "benchmark_ready": false,
+  "initial_frozen_source": "74406767f2469d825a259680489c20f8eb91e34a",
+  "initial_source_hashes": {
+    "src/robotic_cutting_sim/tlmpm.py": "0c512a252843cd395c1d610249a16ca176763a75e13094ca01ab4077cc08f7b7",
+    "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+    "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+    "src/robotic_cutting_sim/recording.py": "a6883247ecfbc4e6d7487cfc51b6c575f927e0567b29a60c8c3eced65e335e55",
+    "scripts/run_cutting_probe.py": "3724ae874a471cd05b9f0ed2f3d2409edf8ad8cf7184ab133eeac359a41c8a08"
+  },
+  "frozen_repeat_and_micro_tolerances": {
+    "repeat_max_position_m": 0.0001,
+    "repeat_final_component_com_m": 5e-05,
+    "repeat_max_velocity_m_s": 0.01,
+    "micro_position_m": 1e-06,
+    "micro_relative_momentum": 1e-05,
+    "micro_stress_pa": 0.1,
+    "micro_affine_F": 1e-06,
+    "micro_impulse_budget_Ns": 1e-07,
+    "supported_settle_peak_speed_m_s": 2.0,
+    "supported_min_z_m": -0.011,
+    "plastic_strain_nonzero": 1e-06
+  },
+  "source_delta_two_cuts": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/TLMPM_validation_two_cuts_001",
+    "source_ref": "855d1dbfc74dd6c0d33be3e2cefaa2c26639534d",
+    "source_hashes": {
+      "src/robotic_cutting_sim/tlmpm.py": "0c512a252843cd395c1d610249a16ca176763a75e13094ca01ab4077cc08f7b7",
+      "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+      "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+      "src/robotic_cutting_sim/recording.py": "a6883247ecfbc4e6d7487cfc51b6c575f927e0567b29a60c8c3eced65e335e55",
+      "scripts/run_cutting_probe.py": "cc788e6be61ec6a355ada553e7a744b193acddc643c98621ff8aaf18ca13db21"
+    },
+    "changed_files_from_initial_freeze": [
+      "scripts/run_cutting_probe.py"
+    ]
+  },
+  "tests": {
+    "T1": {
+      "status": "PASS",
+      "scope": "supported settling and active-band noncontact negative control"
+    },
+    "T2": {
+      "status": "PASS",
+      "scope": "tool indentation/unload with positive accumulated plastic strain; uncalibrated and no elastic-law control in this matrix"
+    },
+    "T3": {
+      "status": "PASS",
+      "scope": "online single cut creates disconnected conservative reference transfer/stress graph from one initial component",
+      "uncut_scrape_component_count": 1
+    },
+    "T4": {
+      "status": "PASS",
+      "scope": "persistent digits and disconnected conservative graph after withdrawal"
+    },
+    "T5": {
+      "status": "PASS",
+      "scope": "original postwithdraw contact activity plus actual contact-kernel cross-component impulses on saved states; no healing"
+    },
+    "T6": {
+      "status": "FAIL",
+      "scope": "orthogonal second cut retains first digit, assigns second digit and creates at least one further mechanical component"
+    },
+    "T7": {
+      "status": "NOT_RUN",
+      "scope": "Formal convergence not established; exploratory grids/time step separately reported"
+    },
+    "T8": {
+      "status": "PASS",
+      "scope": "fresh-process same-seed position/velocity/component-COM tolerances frozen before either run",
+      "exact_reproducibility_status": "FAIL"
+    },
+    "T9": {
+      "status": "PASS",
+      "scope": "immutable mass/ID ledger, component partition, local analytic impulse budgets; full run impulse/energy balance NOT_EVALUATED"
+    },
+    "T10": {
+      "status": "NOT_RUN",
+      "scope": "Dynamic separated mesh/RGB-D validation is external to this matrix"
+    }
+  },
+  "gpu_microcontrols": {
+    "status": "PASS",
+    "scope": "actual_frozen_GPU_kernel_analytic_controls",
+    "checks": {
+      "force_free_uniform_translation": {
+        "status": "PASS",
+        "steps": 10,
+        "max_position_error_m": 3.259629011154175e-09,
+        "tolerance_m": 1e-06
+      },
+      "force_free_linear_momentum": {
+        "status": "PASS",
+        "relative_error": 1.0523692431969519e-07,
+        "tolerance_relative": 1e-05
+      },
+      "rigid_rotation_zero_stress": {
+        "status": "PASS",
+        "max_first_piola_stress_pa": 0.023835495114326477,
+        "tolerance_pa": 0.1
+      },
+      "affine_reference_velocity_gradient": {
+        "status": "PASS",
+        "max_deformation_gradient_error": 2.716114977374673e-08,
+        "tolerance": 1e-06
+      },
+      "tool_material_impulse_budget": {
+        "status": "PASS",
+        "material_impulse_Ns": [
+          1.3883784788504272e-06,
+          0.0,
+          -8.147782409650972e-06
+        ],
+        "tool_reaction_impulse_Ns": [
+          -1.3883784504287178e-06,
+          0.0,
+          8.147782864398323e-06
+        ],
+        "budget_residual_norm_Ns": 4.556346636343676e-13,
+        "tolerance_Ns": 1e-07
+      },
+      "separated_material_pair_impulse_budget": {
+        "status": "PASS",
+        "pair_impulses_Ns": [
+          [
+            -8.99999918146932e-07,
+            0.0,
+            0.0
+          ],
+          [
+            8.99999918146932e-07,
+            0.0,
+            0.0
+          ]
+        ],
+        "budget_residual_norm_Ns": 0.0,
+        "tolerance_Ns": 1e-07
+      },
+      "online_digits_do_not_modify_state_instantly": {
+        "status": "PASS",
+        "first_codes": [
+          1,
+          2
+        ],
+        "second_codes": [
+          4,
+          8
+        ],
+        "positions_velocities_F_Fpi_mass_bitwise_unchanged": true
+      }
+    }
+  },
+  "repeat": {
+    "status": "PASS",
+    "tolerances_frozen_before_repeat": {
+      "repeat_max_position_m": 0.0001,
+      "repeat_final_component_com_m": 5e-05,
+      "repeat_max_velocity_m_s": 0.01,
+      "micro_position_m": 1e-06,
+      "micro_relative_momentum": 1e-05,
+      "micro_stress_pa": 0.1,
+      "micro_affine_F": 1e-06,
+      "micro_impulse_budget_Ns": 1e-07,
+      "supported_settle_peak_speed_m_s": 2.0,
+      "supported_min_z_m": -0.011,
+      "plastic_strain_nonzero": 1e-06
+    },
+    "all_frame_max_position_abs_difference_m": 1.0594725608825684e-05,
+    "all_frame_max_velocity_abs_difference_m_s": 0.0045161074958741665,
+    "max_final_reference_component_com_distance_m": 5.41870692940131e-06,
+    "positions_bitwise_equal": false,
+    "velocities_bitwise_equal": false,
+    "codes_bitwise_equal": false,
+    "component_ids_bitwise_equal": true,
+    "final_codes_bitwise_equal": true,
+    "different_code_entries": 1,
+    "different_code_frame_indices": [
+      64
+    ],
+    "exact_reproducibility_status": "FAIL"
+  },
+  "cases": {
+    "settle": {
+      "case": {
+        "name": "settle",
+        "case": "settle",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 0.058549001812934875,
+      "min_z_m": 0.0008792001754045486,
+      "min_detF": 0.992581307888031,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 1,
+      "positive_weight_only_components": 1,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 1,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 19340
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 0,
+      "chip_mass_kg": 0.0,
+      "substrate_mass_kg": 0.23207999999999998,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": null,
+      "chip_postwithdraw_com_displacement_m": null,
+      "chip_postwithdraw_min_com_z_m": null,
+      "final_plastic_strain_max": 0.0,
+      "final_plastic_strain_mass_mean": 0.0,
+      "final_accumulated_contact_work_j": 0.0,
+      "mean_final_vertical_displacement_m": -0.00013084172739441708,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 0.0,
+      "tool_reaction_impulse_Ns": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "material_momentum_change_kg_m_s": [
+        5.988268940079331e-10,
+        -3.3714741832897703e-10,
+        -5.811791550147499e-08
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        5.988268940079331e-10,
+        -3.3714741832897703e-10,
+        5.691761941882085
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 0,
+      "max_tool_penetration_m": 0.0,
+      "max_material_overlap_m": 0.0,
+      "physics_wall_s": 3.8574397158809006,
+      "state_sha256": "d49ea47fc076ac274d6d83b1b32d4b7403d558a582337c3bf8279d4e18d2002d",
+      "trace_sha256": "a35b4f1dd3878d3c65fda18c7a0b38255a01a1a9102d69a2e0b4abcfb787575c",
+      "sampled_entire_device_peak_mib": 696.0
+    },
+    "no_contact": {
+      "case": {
+        "name": "no_contact",
+        "case": "no_contact",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 0.05854857340455055,
+      "min_z_m": 0.0008792000589892268,
+      "min_detF": 0.9925814270973206,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 1,
+      "positive_weight_only_components": 1,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 1,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 19340
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 0,
+      "chip_mass_kg": 0.0,
+      "substrate_mass_kg": 0.23207999999999998,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": null,
+      "chip_postwithdraw_com_displacement_m": null,
+      "chip_postwithdraw_min_com_z_m": null,
+      "final_plastic_strain_max": 0.0,
+      "final_plastic_strain_mass_mean": 0.0,
+      "final_accumulated_contact_work_j": 0.0,
+      "mean_final_vertical_displacement_m": -0.00013084180422612174,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 0.0,
+      "tool_reaction_impulse_Ns": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "material_momentum_change_kg_m_s": [
+        -5.613684954329142e-10,
+        -3.2044648043206148e-09,
+        -1.7163270893695644e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -5.613684954329142e-10,
+        -3.2044648043206148e-09,
+        5.691761828367292
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 0,
+      "max_tool_penetration_m": 0.0,
+      "max_material_overlap_m": 0.0,
+      "physics_wall_s": 7.54755652602762,
+      "state_sha256": "f541ce855da8fcebc403b980c6e4cc0f2f9bde94774c3b67b78db0ecfeb8b9d5",
+      "trace_sha256": "a8d46e4c120c638350a0c9bb6650a28baaa48ed2420ea97ad6b991ae536d4db4",
+      "sampled_entire_device_peak_mib": 1228.0
+    },
+    "indent": {
+      "case": {
+        "name": "indent",
+        "case": "indent",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 0.20068848133087158,
+      "min_z_m": 0.0008725379593670368,
+      "min_detF": 0.9071103930473328,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 1,
+      "positive_weight_only_components": 1,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 1,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 19340
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 0,
+      "chip_mass_kg": 0.0,
+      "substrate_mass_kg": 0.23207999999999998,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": null,
+      "chip_postwithdraw_com_displacement_m": null,
+      "chip_postwithdraw_min_com_z_m": null,
+      "final_plastic_strain_max": 0.4162135720252991,
+      "final_plastic_strain_mass_mean": 0.004463311037069886,
+      "final_accumulated_contact_work_j": 0.0,
+      "mean_final_vertical_displacement_m": -0.0001450563434787353,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 0.4907879392503476,
+      "tool_reaction_impulse_Ns": [
+        -0.0072470838716253635,
+        -7.471243065992894e-08,
+        0.1083883623406291
+      ],
+      "material_momentum_change_kg_m_s": [
+        -1.409782585133101e-07,
+        -2.9290804783833942e-09,
+        -2.3909082439535726e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.007247224849883877,
+        -7.764151113831233e-08,
+        5.800150123249805
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 75358,
+      "max_tool_penetration_m": 0.0005122061702422798,
+      "max_material_overlap_m": 0.0,
+      "physics_wall_s": 7.545942950993776,
+      "state_sha256": "89a6cf44f5215c69958c7f3ebcf781bb8b99c7552a19c4a4ce40023b9dd7ef2d",
+      "trace_sha256": "85417392a103afec39b1867f616960bd1be94f34618e19bac26938af597370c4",
+      "sampled_entire_device_peak_mib": 1228.0
+    },
+    "uncut_scrape": {
+      "case": {
+        "name": "uncut_scrape",
+        "case": "uncut_scrape",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 0.5209282040596008,
+      "min_z_m": 0.0003577404422685504,
+      "min_detF": 0.7520455121994019,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 1,
+      "positive_weight_only_components": 1,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 1,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 19340
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 0,
+      "chip_mass_kg": 0.0,
+      "substrate_mass_kg": 0.23207999999999998,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": null,
+      "chip_postwithdraw_com_displacement_m": null,
+      "chip_postwithdraw_min_com_z_m": null,
+      "final_plastic_strain_max": 5.19857931137085,
+      "final_plastic_strain_mass_mean": 0.40697462344426577,
+      "final_accumulated_contact_work_j": 0.0,
+      "mean_final_vertical_displacement_m": 0.007004321547055493,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 2.0308229399638784,
+      "tool_reaction_impulse_Ns": [
+        -1.214414805942215,
+        -4.170859886443168e-05,
+        -0.21446881413459778
+      ],
+      "material_momentum_change_kg_m_s": [
+        7.126813647443577e-06,
+        -2.467859707593847e-07,
+        -5.070379342734952e-08
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -1.2144076791285676,
+        -4.1955384835191065e-05,
+        5.477293135161609
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 1161446,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.9472277816385031,
+      "tool_contact_substep_particles": 2559015,
+      "max_tool_penetration_m": 0.0022086179815232754,
+      "max_material_overlap_m": 0.0011113666696473956,
+      "physics_wall_s": 8.451497356174514,
+      "state_sha256": "e93298c40a65d5cd8dad7dc42ddaeafa79aa8a975ba2277d5de3ae3d7cd53642",
+      "trace_sha256": "b62b7fd127141737622843b2d49debf8ebd1d323ef15404244a77bb1e22b1025",
+      "sampled_entire_device_peak_mib": 696.0
+    },
+    "cut": {
+      "case": {
+        "name": "cut",
+        "case": "cut",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 1.064061164855957,
+      "min_z_m": -0.009631774388253689,
+      "min_detF": 0.9193854928016663,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 11254,
+        "1": 7946,
+        "2": 140
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 140,
+      "chip_mass_kg": 0.0016799999999999999,
+      "substrate_mass_kg": 0.2304,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": [
+        0.13276834173926283,
+        -3.7942759393313422e-06,
+        -0.00717256866129381
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.08590926856464537,
+      "chip_postwithdraw_min_com_z_m": -0.0071734333909781916,
+      "final_plastic_strain_max": 0.9840719103813171,
+      "final_plastic_strain_mass_mean": 0.011503726961774968,
+      "final_accumulated_contact_work_j": 4.6419736463576555e-05,
+      "mean_final_vertical_displacement_m": -0.0003404439660812505,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 1.3829847977050473,
+      "tool_reaction_impulse_Ns": [
+        -0.38696383770875403,
+        2.5643234494054926e-07,
+        1.2798264121357352
+      ],
+      "material_momentum_change_kg_m_s": [
+        -5.830725379540962e-06,
+        1.4291610563763095e-08,
+        1.108753992920042e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.38696966843413355,
+        2.7072395550431233e-07,
+        6.971588523011135
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 1593510,
+      "max_tool_penetration_m": 0.00029916485073044896,
+      "max_material_overlap_m": 0.0003243967657908797,
+      "physics_wall_s": 7.599413548130542,
+      "state_sha256": "841dabf4dbc7bb1e8e546bbc943fc37939ada0321ab1fd9457f1432481367ba6",
+      "trace_sha256": "2fcdda5dc7a5797cc0ba308f371f4ef688a0c1542adb5b481c6c772bfdccf849",
+      "sampled_entire_device_peak_mib": 696.0
+    },
+    "cut_repeat": {
+      "case": {
+        "name": "cut_repeat",
+        "case": "cut",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 1.064190149307251,
+      "min_z_m": -0.009631617926061153,
+      "min_detF": 0.9193806648254395,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 11254,
+        "1": 7946,
+        "2": 140
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 140,
+      "chip_mass_kg": 0.0016799999999999999,
+      "substrate_mass_kg": 0.2304,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": [
+        0.13276295959949494,
+        -3.206043870055206e-06,
+        -0.007172789883666808
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.08590934149467677,
+      "chip_postwithdraw_min_com_z_m": -0.007173633525547172,
+      "final_plastic_strain_max": 0.9839462041854858,
+      "final_plastic_strain_mass_mean": 0.011502886885601834,
+      "final_accumulated_contact_work_j": 4.642226122086868e-05,
+      "mean_final_vertical_displacement_m": -0.0003404455789842334,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 1.3829135970537325,
+      "tool_reaction_impulse_Ns": [
+        -0.38695994402631184,
+        9.458986119170732e-07,
+        1.2798110145423562
+      ],
+      "material_momentum_change_kg_m_s": [
+        -5.8404887968542995e-06,
+        1.9736276583538852e-08,
+        1.0136160476331018e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.3869657845151087,
+        9.65634888500612e-07,
+        6.971573115903961
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 1593511,
+      "max_tool_penetration_m": 0.0002992734662257135,
+      "max_material_overlap_m": 0.00032405275851488113,
+      "physics_wall_s": 7.592693828046322,
+      "state_sha256": "8ea3bd490ec491b3b5a27ac53601986b448befdc976799a78085270c416fd8af",
+      "trace_sha256": "deb4d96f938932b9f367980ad2c65bc1f0c994fd87381a9ba58a636916999ad1",
+      "sampled_entire_device_peak_mib": 696.0
+    },
+    "cut_recontact": {
+      "case": {
+        "name": "cut_recontact",
+        "case": "cut_recontact",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 0.8788378834724426,
+      "min_z_m": 0.0008547233301214874,
+      "min_detF": 0.9319506287574768,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 13388,
+        "1": 5812,
+        "2": 140
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 140,
+      "chip_mass_kg": 0.0016799999999999999,
+      "substrate_mass_kg": 0.2304,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": [
+        0.041934908234647336,
+        -0.0009919625810263313,
+        0.018276869811649832
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.04150110826529661,
+      "chip_postwithdraw_min_com_z_m": 0.018256198707967998,
+      "final_plastic_strain_max": 0.7749335169792175,
+      "final_plastic_strain_mass_mean": 0.007908280595227878,
+      "final_accumulated_contact_work_j": 3.151399869238958e-05,
+      "mean_final_vertical_displacement_m": -0.00015085423709846352,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 1.3545307168841831,
+      "tool_reaction_impulse_Ns": [
+        -0.37146228463738223,
+        2.610707761618869e-07,
+        1.2528971878439188
+      ],
+      "material_momentum_change_kg_m_s": [
+        -3.2908662048773626e-06,
+        1.3226266824332511e-09,
+        1.2134425689554955e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.3714655755035871,
+        2.6239340284432013e-07,
+        6.944659309188176
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 176511,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.022480846651887987,
+      "tool_contact_substep_particles": 1615331,
+      "max_tool_penetration_m": 0.00042685819789767265,
+      "max_material_overlap_m": 0.0008088928880169988,
+      "physics_wall_s": 7.648176371119916,
+      "state_sha256": "0b05d613e95580b21bcc1ebd20b74343ae2599e85c330306b9596b4441e7a6ae",
+      "trace_sha256": "96cc5668bccd1c80b9c928f679e351e0301d796d443c48f85bac8cb3decd8a86",
+      "sampled_entire_device_peak_mib": 696.0
+    },
+    "cut_dx3mm": {
+      "case": {
+        "name": "cut_dx3mm",
+        "case": "cut",
+        "dx": 0.003,
+        "dt": 0.0001,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 42890,
+      "initial_mass_kg": 0.21713062500000002,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 1.0350219011306763,
+      "min_z_m": -0.00981687381863594,
+      "min_detF": 0.8546530604362488,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 24580,
+        "1": 17840,
+        "2": 470
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 470,
+      "chip_mass_kg": 0.0023793749999999995,
+      "substrate_mass_kg": 0.21475125,
+      "partition_residual_kg": 2.7755575615628914e-17,
+      "chip_final_com_m": [
+        0.1431117652578558,
+        0.00019919849119492513,
+        -0.007403281085351677
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.08262709743153361,
+      "chip_postwithdraw_min_com_z_m": -0.007460642277580155,
+      "final_plastic_strain_max": 3.909270763397217,
+      "final_plastic_strain_mass_mean": 0.00912518879660577,
+      "final_accumulated_contact_work_j": 5.560935278481338e-06,
+      "mean_final_vertical_displacement_m": -0.0003774004532251721,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 0.1083260910741156,
+      "tool_reaction_impulse_Ns": [
+        -0.018905956756789237,
+        0.0003188206439733676,
+        -0.015336565361358226
+      ],
+      "material_momentum_change_kg_m_s": [
+        -4.481890843241908e-06,
+        4.2212386693424255e-08,
+        2.0268874360662135e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.3251285781250015
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.01891043864763248,
+        0.00031886285636006104,
+        5.309792215452387
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 84800,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.021978937176754698,
+      "tool_contact_substep_particles": 191589,
+      "max_tool_penetration_m": 0.0013242373242974281,
+      "max_material_overlap_m": 0.0007931807194836438,
+      "physics_wall_s": 16.084750490030274,
+      "state_sha256": "e774eb3234ea8842ec9005170113fae006ed43cb7443a7c4ae738ec3dd2c4549",
+      "trace_sha256": "359b6f5611ccaf01fb9103396148c51dfca8cc4f770c4ecbc82ab4d7d4db549d",
+      "sampled_entire_device_peak_mib": 702.0
+    },
+    "cut_dx2mm": {
+      "case": {
+        "name": "cut_dx2mm",
+        "case": "cut",
+        "dx": 0.002,
+        "dt": 5e-05,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 145656,
+      "initial_mass_kg": 0.218484,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 1.0869089365005493,
+      "min_z_m": -0.009592140093445778,
+      "min_detF": 0.9297986030578613,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 100550,
+        "1": 43712,
+        "2": 1394
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 1394,
+      "chip_mass_kg": 0.002091,
+      "substrate_mass_kg": 0.216393,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": [
+        0.13442227221394712,
+        3.974109926826025e-06,
+        -0.007778174817091769
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.08406869124039804,
+      "chip_postwithdraw_min_com_z_m": -0.0077948256865426994,
+      "final_plastic_strain_max": 1.2352771759033203,
+      "final_plastic_strain_mass_mean": 0.009761673897085259,
+      "final_accumulated_contact_work_j": 5.836460786667885e-06,
+      "mean_final_vertical_displacement_m": -0.0003193952554639362,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 0.38783840146456217,
+      "tool_reaction_impulse_Ns": [
+        -0.043431214446900415,
+        3.6470937084942533e-06,
+        0.08372780683450401
+      ],
+      "material_momentum_change_kg_m_s": [
+        -8.54624953237836e-06,
+        1.557638631363636e-09,
+        -3.85794746516609e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.3583201
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.043439760696432794,
+        3.648651347125617e-06,
+        5.442047521039758
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 960898,
+      "max_tool_penetration_m": 0.00041506285197101533,
+      "max_material_overlap_m": 0.0001349531812593341,
+      "physics_wall_s": 89.91815055184998,
+      "state_sha256": "9ccf6079d65111b3d939faae12f91902a421f123164fd875f33e1bb68afd0eb2",
+      "trace_sha256": "01304b41743b7273ef676306f5f6e63b481205a92e0e7295d65da04756e57e8e",
+      "sampled_entire_device_peak_mib": 2278.0
+    },
+    "cut_dt_half": {
+      "case": {
+        "name": "cut_dt_half",
+        "case": "cut",
+        "dx": 0.004,
+        "dt": 5e-05,
+        "duration": 2.5
+      },
+      "probe_status": "PASS",
+      "frames": 126,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 1.1802431344985962,
+      "min_z_m": -0.00911619607359171,
+      "min_detF": 0.8625950217247009,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 11288,
+        "1": 7920,
+        "2": 132
+      },
+      "nonzero_digit_changes": [
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": null,
+      "first_digit_preserved_through_second_cut": null,
+      "chip_particle_count": 132,
+      "chip_mass_kg": 0.001584,
+      "substrate_mass_kg": 0.23049599999999998,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": [
+        0.13100541371739277,
+        -1.926891987254338e-05,
+        -0.005656976904984646
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.08072387509537916,
+      "chip_postwithdraw_min_com_z_m": -0.005656976904984646,
+      "final_plastic_strain_max": 1.2959575653076172,
+      "final_plastic_strain_mass_mean": 0.02770172247187367,
+      "final_accumulated_contact_work_j": 2.9099992389092222e-05,
+      "mean_final_vertical_displacement_m": -0.00034281404437282967,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 1.934019752978499,
+      "tool_reaction_impulse_Ns": [
+        -0.4827595802646829,
+        3.1054391086087205e-05,
+        1.5783312274981292
+      ],
+      "material_momentum_change_kg_m_s": [
+        -1.3219464620605903e-05,
+        7.46139171090216e-09,
+        -2.0530290232661928e-07
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -5.691762000000001
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.48277279972930354,
+        3.106185247779811e-05,
+        7.270093022195228
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 0,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.0,
+      "tool_contact_substep_particles": 2128617,
+      "max_tool_penetration_m": 0.0006774609792046249,
+      "max_material_overlap_m": 9.829748887568712e-05,
+      "physics_wall_s": 15.048077492974699,
+      "state_sha256": "51bedb5176b568e002606cb093f453c51ad76d538618d3be1590a22407e77df0",
+      "trace_sha256": "65b4b922ad6c95555a192370caa41b2d31d3f40da7dbd017a85a862ddf0887dc",
+      "sampled_entire_device_peak_mib": 1282.0
+    },
+    "two_cuts": {
+      "case": {
+        "name": "two_cuts",
+        "case": "two_cuts",
+        "dx": 0.004,
+        "dt": 0.0001,
+        "duration": 4.5
+      },
+      "probe_status": "PASS",
+      "frames": 226,
+      "completed_requested_duration": true,
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "mass_scope": "immutable source particle IDs/masses; NPZ has static masses, trace repeats their sum",
+      "finite_positions_velocities_F": true,
+      "sampled_max_speed_m_s": 0.8791026473045349,
+      "min_z_m": 0.0007526049739681184,
+      "min_detF": 0.7312284708023071,
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "positive_weight_only_components": 2,
+      "nonzero_gradient_only_support_entries": 0,
+      "stored_component_graph_matches_recomputed": true,
+      "component_count_at_withdrawal": 2,
+      "component_graph_scope": "conservative actual reference-stencil compatibility incl code0 and nonzero-gradient supports",
+      "initial_codes_all_zero": true,
+      "final_codes_histogram": {
+        "0": 11295,
+        "1": 1317,
+        "2": 140,
+        "3": 1844,
+        "4": 3343,
+        "6": 249,
+        "7": 1152
+      },
+      "nonzero_digit_changes": [
+        0,
+        0
+      ],
+      "post_withdraw_codes_bitwise_unchanged": true,
+      "second_digit_assigned_particles": 6588,
+      "first_digit_preserved_through_second_cut": true,
+      "chip_particle_count": 140,
+      "chip_mass_kg": 0.0016799999999999999,
+      "substrate_mass_kg": 0.2304,
+      "partition_residual_kg": 0.0,
+      "chip_final_com_m": [
+        0.04184436768825564,
+        -0.000534008082156236,
+        0.018297949792551154
+      ],
+      "chip_postwithdraw_com_displacement_m": 0.0009986726505357688,
+      "chip_postwithdraw_min_com_z_m": 0.018297949792551154,
+      "final_plastic_strain_max": 6.323111057281494,
+      "final_plastic_strain_mass_mean": 0.3003703464222292,
+      "final_accumulated_contact_work_j": 5.6476368627045304e-05,
+      "mean_final_vertical_displacement_m": 0.0029330174118121985,
+      "frame_sampled_tool_force_finite": true,
+      "frame_sampled_peak_tool_force_n": 2.3362220680610934,
+      "tool_reaction_impulse_Ns": [
+        -0.38738188726559203,
+        -0.40377182443902365,
+        1.1549342368356883
+      ],
+      "material_momentum_change_kg_m_s": [
+        7.178685843148051e-07,
+        7.199999527106817e-07,
+        -2.0607382235757455e-06
+      ],
+      "gravity_impulse_Ns": [
+        0.0,
+        0.0,
+        -10.2451716
+      ],
+      "unresolved_fixture_and_numerical_impulse_Ns": [
+        -0.38738116939700773,
+        -0.40377110443907094,
+        11.400103776097465
+      ],
+      "full_impulse_balance_status": "NOT_EVALUATED: fixture reaction impulse is not recorded",
+      "postwithdraw_material_contact_pairs": 555159,
+      "postwithdraw_material_impulse_sum_magnitudes_Ns": 0.1845680254045874,
+      "tool_contact_substep_particles": 2891048,
+      "max_tool_penetration_m": 0.001229362445883453,
+      "max_material_overlap_m": 0.0009252054733224213,
+      "physics_wall_s": 14.561660551931709,
+      "state_sha256": "a04e923e627ea8b0671208d23ef1fbaa82f80e743be8e42974b6f036a6ff7ff1",
+      "trace_sha256": "5f46c77fc4db6472c2e264a0e4b9ce26266a613cb4c25bd3595d3e1ccfda8a26",
+      "sampled_entire_device_peak_mib": 1198.0
+    }
+  },
+  "refinement": {
+    "cut": {
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "chip_mass_kg": 0.0016799999999999999,
+      "final_mechanical_components": 2,
+      "sampled_max_speed_m_s": 1.064061164855957,
+      "min_detF": 0.9193854928016663,
+      "max_tool_penetration_m": 0.00029916485073044896
+    },
+    "cut_dx3mm": {
+      "particle_count": 42890,
+      "initial_mass_kg": 0.21713062500000002,
+      "chip_mass_kg": 0.0023793749999999995,
+      "final_mechanical_components": 2,
+      "sampled_max_speed_m_s": 1.0350219011306763,
+      "min_detF": 0.8546530604362488,
+      "max_tool_penetration_m": 0.0013242373242974281
+    },
+    "cut_dx2mm": {
+      "particle_count": 145656,
+      "initial_mass_kg": 0.218484,
+      "chip_mass_kg": 0.002091,
+      "final_mechanical_components": 2,
+      "sampled_max_speed_m_s": 1.0869089365005493,
+      "min_detF": 0.9297986030578613,
+      "max_tool_penetration_m": 0.00041506285197101533
+    },
+    "cut_dt_half": {
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998,
+      "chip_mass_kg": 0.001584,
+      "final_mechanical_components": 2,
+      "sampled_max_speed_m_s": 1.1802431344985962,
+      "min_detF": 0.8625950217247009,
+      "max_tool_penetration_m": 0.0006774609792046249
+    },
+    "scope": "exploratory: grid changes also alter initial particle quadrature, mass, support/contact radii and blade band; not a controlled convergence proof"
+  },
+  "indent_subset_diagnostic": {
+    "region": "reference initial z>15.001mm, a diagnostic subset, not preassigned physical chip",
+    "particle_count": 140,
+    "indent_final_subset_mean_z_m": 0.017127759754657745,
+    "settle_final_subset_mean_z_m": 0.017928749322891235,
+    "indent_minus_settle_subset_mean_z_m": -0.000800990266725421,
+    "max_final_position_difference_indent_vs_settle_m": 0.003305204212665558
+  },
+  "saved_frame_cross_component_contact": {
+    "status": "OBSERVED",
+    "scope": "actual contact kernel reevaluated on recorded frames; not an original-substep pair log",
+    "roundoff_reporting_floor_Ns": 1e-09,
+    "max_component_net_contact_impulse_Ns": 9.290107181451261e-06
+  },
+  "saved_frame_peak_cross_component_contact": {
+    "time_s": 1.56,
+    "material_contact_pairs": 8,
+    "component_net_impulses_Ns": {
+      "0": [
+        -8.323682152422407e-07,
+        5.870447239431087e-09,
+        9.25274116525543e-06
+      ],
+      "1": [
+        8.32368222347668e-07,
+        -5.870447239431087e-09,
+        -9.252741222098848e-06
+      ]
+    },
+    "closed_pair_budget_residual_Ns": 5.728578676879116e-14
+  },
+  "original_two_cuts_setup_failure": {
+    "status": "FAIL",
+    "error": "SciPy Rotation.from_euler one-axis batched-angle shape rejected before physics",
+    "log": "artifacts/TLMPM_validation_001/two_cuts_solver.log",
+    "fresh_delta_not_overwrite": "artifacts/TLMPM_validation_two_cuts_001"
+  },
+  "artifacts": {
+    "artifacts/TLMPM_validation_001/analysis_001/summary.json": {
+      "sha256": "5b8e6203dd33ec7d650decc7e0814cb6c48d66349a78c3e8972931f01f880dc1",
+      "bytes": 49051
+    },
+    "artifacts/TLMPM_validation_001/analysis_001/gpu_microcontrols.json": {
+      "sha256": "d0559c0087da59b433b9ac1fc7202943749341fe5292286b421f8f0d511bef53",
+      "bytes": 1721
+    },
+    "artifacts/TLMPM_validation_001/analysis_001/repeat_comparison.json": {
+      "sha256": "32c69f687ca8ef669560c335da126a5760b0ac7e0b1792322f47e761ea56f1fd",
+      "bytes": 974
+    },
+    "artifacts/TLMPM_validation_001/analysis_001/saved_frame_cross_component_contact.json": {
+      "sha256": "9ca34d36430f69d736a8b9a6a97692fad10bb52b340115642d7bd2604992d5eb",
+      "bytes": 22157
+    },
+    "artifacts/TLMPM_validation_001/analysis_001/validation_overview.png": {
+      "sha256": "d9dbcd1c00095b5b636ebab71f5fcc2c4145123572a7969ad0fa9df9d8a68549",
+      "bytes": 231431
+    },
+    "artifacts/TLMPM_validation_001/analysis_001/analysis_executed_runner.py": {
+      "sha256": "cc9262215ef0dd55e881848b1933bb3c88e924d41e7478b7a75fd4adb2cc52a9",
+      "bytes": 37629
+    }
+  }
+}
