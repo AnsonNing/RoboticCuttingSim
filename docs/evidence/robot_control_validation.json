@@ -1,0 +1,292 @@
+{
+  "scope": "standalone articulated robot only; no MPM material coupling, physical cutting or RTX claim",
+  "cpu": {
+    "artifact_directory": "artifacts/dual_franka_cpu_006",
+    "result": {
+      "status": "PASS_STANDALONE_ROBOT",
+      "tests": {
+        "articulation_joint_control": "PASS",
+        "cartesian_fk_ik_path": "PASS",
+        "parked_second_arm": "PASS",
+        "fixed_knife_attachment": "PASS",
+        "collision_free_reference": "PASS",
+        "same_reset_repeat": "PASS",
+        "finite_dynamics": "PASS",
+        "measured_link_replay": "PASS",
+        "material_contact_coupling": "NOT_RUN",
+        "bidirectional_material_force": "NOT_RUN",
+        "isaac_lab_control": "BLOCKED",
+        "diagnostic_tool_wrench_response": "PASS",
+        "self_collision_detection": "PASS",
+        "robot_table_detection": "PASS",
+        "tool_table_dynamic_response": "PASS"
+      },
+      "steps": 360,
+      "simulated_duration_s": 5.999999999999984,
+      "wall_s_including_construction_and_extra_checks": 10.286985084880143,
+      "construction_wall_s": 0.8590092931408435,
+      "mean_physics_wall_s": 0.001570659762688188,
+      "mean_ik_wall_s": 0.007283836782314918,
+      "max_tracking_error_m": 0.00410793239109699,
+      "rms_tracking_error_m": 0.0026207961059418216,
+      "max_park_drift_rad": 2.467658374730522e-14,
+      "reset_q_max_difference_rad": 0.0,
+      "joint_control_final_error_rad": 3.0994415283203125e-06,
+      "joint_control_displacement_rad": 0.04999997839331627,
+      "rigid_reference_contact_count": 0,
+      "replay": {
+        "status": "PASS",
+        "max_link_translation_error_m": 0.0,
+        "scope": "measured dynamic articulation replay; offline USD, no RTX or MPM"
+      },
+      "collision_validation": {
+        "tests": {
+          "self_collision_detection": "PASS",
+          "robot_table_detection": "PASS",
+          "tool_table_dynamic_response": "PASS"
+        },
+        "negative_static_queries": {
+          "self_collision_detection": {
+            "seed": 42,
+            "attempt": 9,
+            "q_rad": [
+              1.535562381811217,
+              0.4749629031355136,
+              0.3104711955842343,
+              -1.3930600988571697,
+              -1.136030763710852,
+              0.0986832380123325,
+              -0.3666974169818036
+            ],
+            "geoms": [
+              "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c0/link5_c0_7",
+              "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_c/hand_c_4"
+            ],
+            "distance_m": -0.02004114601135402
+          },
+          "robot_table_detection": {
+            "seed": 42,
+            "attempt": 24,
+            "q_rad": [
+              -1.059606973463149,
+              1.5967420875624083,
+              -1.21154749718699,
+              -1.525598493311296,
+              -1.4140846886173593,
+              3.5113843126406694,
+              -1.9434635435657288
+            ],
+            "geoms": [
+              "table_31",
+              "arm_0//panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/link7_c/link7_c_5"
+            ],
+            "distance_m": -0.020771241532017898
+          }
+        },
+        "max_knife_table_normal_force_N": 38.4657292836636,
+        "maximum_knife_table_penetration_m": 0.00011359487413913285,
+        "final_requested_tool_center_z_m": 0.0020000000000000018,
+        "final_measured_tool_center_z_m": 0.00495968866021107,
+        "scope": "rigid collisions and articulated table response; no material cutting force"
+      },
+      "diagnostic_wrench_validation": {
+        "status": "PASS",
+        "tool_displacement_after_20N_world_x_m": [
+          0.010235345654685299,
+          -0.0006169574576455118,
+          0.006835343896805235
+        ],
+        "unload_return_error_m": 3.5673961277159287e-06,
+        "scope": "diagnostic force injection validates articulated response; no material-force source"
+      },
+      "memory": {
+        "process_peak_rss_MiB": 549.828125,
+        "process_gpu_memory_MiB_per_device": [],
+        "scope": "RSS high-water mark and one owned-process GPU memory sample; not a GPU peak guarantee"
+      },
+      "physical_cutting_validated": false,
+      "material_force_coupling_validated": false,
+      "rtx_validated": false,
+      "limitations": [
+        "standalone rigid robot test, no MPM material",
+        "collider support validated separately from physical cutting",
+        "unvalidated Isaac Lab runtime"
+      ],
+      "artifact_sha256": {
+        "trajectory.npz": "65bedcbf584e2f15e821a9682e70f97aa278e31355bf36fb3cc062a22259dfed",
+        "collision_response.npz": "89959689b52f9abab25e773a0f509d5b3249f2e10ea786bfdef4cb2785437277",
+        "reset_repeat.npz": "0c044ec88db7f64cae2b4e914d41f16c81897752d3e27cb61e95c65714b826fc",
+        "dual_franka_replay.usda": "a9678566f381d1a3d3f306a56b8de8a8dcb8fc696d06b585ab8e5fb87ea21ed3",
+        "diagnostic_wrench_response.npz": "27b44317256d7e2f1ae61661ba5cbd4a04c1a33613d9251d3f1fe7707bbffdc8"
+      }
+    },
+    "manifest": {
+      "timestamp": "2026-10-28T01:27:52.301541+09:00",
+      "command": [
+        "scripts/check_robot_control.py",
+        "--output-dir",
+        "artifacts/dual_franka_cpu_006"
+      ],
+      "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+      "backend": "newton_dual_franka_mujoco_cpu",
+      "git_sha": "9453f20135bc0b03175802a6970d8bfe0d9c0152",
+      "git_dirty": true,
+      "config": {
+        "output_dir": "artifacts/dual_franka_cpu_006",
+        "backend": "mujoco_cpu",
+        "device": "cpu",
+        "steps": 360
+      },
+      "config_sha256": "de9595c11a81a5d91810f61143947e15d101bf555037256520d4a500c134f979",
+      "packages": {
+        "newton": "1.6.1",
+        "warp-lang": "1.17.0",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "isaaclab": null,
+        "isaacsim": null,
+        "torch": null,
+        "usd-core": "26.8",
+        "mujoco": "3.12.0",
+        "mujoco-warp": "3.12.0",
+        "newton-usd-schemas": "0.6.0"
+      },
+      "source_checkouts": {
+        "newton": {
+          "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+          "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "dirty": false
+        },
+        "CRESSim-MPM": {
+          "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+          "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+          "dirty": true
+        },
+        "IsaacLab": {
+          "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+          "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "dirty": false
+        }
+      },
+      "physics_proven": false,
+      "vision_proven": false,
+      "implementation_sha256": {
+        "/home/ningan/RoboticCuttingSim/scripts/check_robot_control.py": "6ac3a7dc8c062894762ed55a8d3ff2a2e541134221ae993ee2bba20e93589160",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/robot.py": "97ad7c7cd43cd8590a35b45fc703536d9e534751156504e7079d285e6ccdecbe"
+      }
+    }
+  },
+  "gpu_actual_failures": [
+    {
+      "artifact_directory": "artifacts/dual_franka_warp_001",
+      "result": {
+        "status": "FAIL",
+        "tests": {
+          "articulation_joint_control": "PASS",
+          "cartesian_fk_ik_path": "FAIL",
+          "parked_second_arm": "PASS",
+          "fixed_knife_attachment": "PASS",
+          "collision_free_reference": "NOT_RUN",
+          "same_reset_repeat": "PASS",
+          "finite_dynamics": "PASS",
+          "measured_link_replay": "PASS",
+          "material_contact_coupling": "NOT_RUN",
+          "bidirectional_material_force": "NOT_RUN",
+          "isaac_lab_control": "BLOCKED"
+        },
+        "steps": 120,
+        "simulated_duration_s": 1.9999999999999978,
+        "wall_s_including_construction_and_extra_checks": 139.20166358887218,
+        "construction_wall_s": 18.04646869492717,
+        "mean_physics_wall_s": 0.6977089167397935,
+        "mean_ik_wall_s": 0.011048134959613284,
+        "max_tracking_error_m": 0.012153501222325743,
+        "rms_tracking_error_m": 0.007790739233522805,
+        "max_park_drift_rad": 4.254752550281182e-09,
+        "reset_q_max_difference_rad": 2.682209014892578e-07,
+        "joint_control_final_error_rad": 3.0994415283203125e-06,
+        "joint_control_displacement_rad": 0.04999997839331627,
+        "rigid_reference_contact_count": null,
+        "replay": {
+          "status": "PASS",
+          "max_link_translation_error_m": 0.0,
+          "scope": "measured dynamic articulation replay; offline USD, no RTX or MPM"
+        },
+        "physical_cutting_validated": false,
+        "material_force_coupling_validated": false,
+        "rtx_validated": false,
+        "limitations": [
+          "standalone rigid robot test, no MPM material",
+          "collider support validated separately from physical cutting",
+          "unvalidated Isaac Lab runtime"
+        ],
+        "artifact_sha256": {
+          "trajectory.npz": "65e9008246f3ec0366eaf960bba8f3a07ff6d10492c6bcc9b11d329953ed3814",
+          "reset_repeat.npz": "253b5d3b2c5576b520d0fdb1954ed78ea6052a9f0ff99f99d777a54e6a0d7aed",
+          "dual_franka_replay.usda": "547439248affe554136ded720b8030dae3b142f376d6e566ab12db52d2dc9aa4"
+        }
+      }
+    },
+    {
+      "artifact_directory": "artifacts/dual_franka_warp_002",
+      "result": {
+        "status": "FAIL",
+        "tests": {
+          "articulation_joint_control": "PASS",
+          "cartesian_fk_ik_path": "PASS",
+          "parked_second_arm": "PASS",
+          "fixed_knife_attachment": "PASS",
+          "collision_free_reference": "NOT_RUN",
+          "same_reset_repeat": "FAIL",
+          "finite_dynamics": "PASS",
+          "measured_link_replay": "PASS",
+          "material_contact_coupling": "NOT_RUN",
+          "bidirectional_material_force": "NOT_RUN",
+          "isaac_lab_control": "BLOCKED",
+          "self_collision_detection": "NOT_RUN",
+          "robot_table_detection": "NOT_RUN",
+          "tool_table_dynamic_response": "NOT_RUN"
+        },
+        "steps": 360,
+        "simulated_duration_s": 5.999999999999984,
+        "wall_s_including_construction_and_extra_checks": 24.125992156099528,
+        "construction_wall_s": 0.9962799749337137,
+        "mean_physics_wall_s": 0.026581935786978445,
+        "mean_ik_wall_s": 0.010875381683904884,
+        "max_tracking_error_m": 0.004108110984482466,
+        "rms_tracking_error_m": 0.0026208194089778563,
+        "max_park_drift_rad": 4.2544021638946106e-09,
+        "reset_q_max_difference_rad": 1.6652047634124756e-06,
+        "joint_control_final_error_rad": 3.0994415283203125e-06,
+        "joint_control_displacement_rad": 0.04999997839331627,
+        "rigid_reference_contact_count": null,
+        "replay": {
+          "status": "PASS",
+          "max_link_translation_error_m": 0.0,
+          "scope": "measured dynamic articulation replay; offline USD, no RTX or MPM"
+        },
+        "collision_validation": {
+          "tests": {
+            "self_collision_detection": "NOT_RUN",
+            "robot_table_detection": "NOT_RUN",
+            "tool_table_dynamic_response": "NOT_RUN"
+          },
+          "reason": "Native diagnostic MjData queries are checked on the CPU backend"
+        },
+        "physical_cutting_validated": false,
+        "material_force_coupling_validated": false,
+        "rtx_validated": false,
+        "limitations": [
+          "standalone rigid robot test, no MPM material",
+          "collider support validated separately from physical cutting",
+          "unvalidated Isaac Lab runtime"
+        ],
+        "artifact_sha256": {
+          "trajectory.npz": "2c7357f4330ea104ba09e128d64ea9827a68e4c863c978cb4b88692f9d8b27ed",
+          "reset_repeat.npz": "a4ff03d2c0d85f6191966038fd778dfe9dc0206eabf95774e1854f17f9522dff",
+          "dual_franka_replay.usda": "b840c8f8a0daea71e85793c09e86baaa86f4e823de6af0d5dbbd462427185d0d"
+        }
+      }
+    }
+  ]
+}
