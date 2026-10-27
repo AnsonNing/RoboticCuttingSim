@@ -1,0 +1,83 @@
+{
+  "task": "trim01",
+  "source_kind": "Actual live Isaac Sim6.2 Kit/PhysX/measured-Franka/TLMPM/nativeSingleViewRGBD arrays; encoded after capture",
+  "episode": "artifacts/isaacsim_trim01_coarse_001",
+  "simulation_duration_s": 8,
+  "frames": 41,
+  "fps": 5,
+  "no_replay_robot_or_material_dynamics": true,
+  "files": [
+    {
+      "file": "global.mp4",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/live_global.mp4",
+      "sha256": "3d2ec6189315be56a50d994596fc45147c398aa0c5d11a26cc5fc76eea4235eb",
+      "bytes": 94518
+    },
+    {
+      "file": "d455_0_rgb.mp4",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/live_d455_0.mp4",
+      "sha256": "d6d6e7428943414491496fc83a86ce86f0e7b8b40e4cf8732d5b2ad3e2827fb4",
+      "bytes": 88062
+    },
+    {
+      "file": "d455_1_rgb.mp4",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/live_d455_1.mp4",
+      "sha256": "bf6568304a2e272c235d9217a7ffed87cc03f8da47f4ec0a9706c218a0065764",
+      "bytes": 77555
+    },
+    {
+      "file": "d455_0_depth.mp4",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/live_measured_depth.mp4",
+      "sha256": "e7344f83e80457c0c1b31729458ac92f86d2995fee67d89a7d5b3d8e7d102f45",
+      "bytes": 67694
+    },
+    {
+      "file": "d455_1_depth.mp4",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/live_d455_1_measured_depth.mp4",
+      "sha256": "2ebb0d81c5e93057c741ebc412a1e4c1bcefca02c7844df5c3d16559004c96ac",
+      "bytes": 104016
+    },
+    {
+      "file": "synchronized_multiview.mp4",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/live_synchronized_multiview.mp4",
+      "sha256": "58b209a54bcd270b9cf0be6db834079a05c304faa41ae10d59052312ea6d7bc6",
+      "bytes": 256701
+    },
+    {
+      "file": "trajectory.png",
+      "source": "artifacts/isaacsim_trim01_coarse_media_002/planned_vs_actual_trajectory.png",
+      "sha256": "6b73aae83248f7f920a38290bea6fc29c6ffc98beffac5c87c364e7e2f4cb74a",
+      "bytes": 174214
+    }
+  ],
+  "preview": {
+    "file": "docs/evidence/trim01_live_kit.png",
+    "source": "artifacts/isaacsim_trim01_coarse_001/global_debug/global_0024.png",
+    "sha256": "a0e77ef9620d742f1c45d53bb5782bb1bf804b2efdd3ceed71b7fafb07c27ff4",
+    "timestamp_s": 4.800000000000001
+  },
+  "source_media_provenance": {
+    "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+    "source_manifest_sha256": "b9fbdf90b2a9118ba42ad5766e4a6bcb462c6d4295acc50a5df667fd365e074a",
+    "visualization_script_sha256": "1d68047ce705b2908aaa498dc0d624ed46ad86f79cd6f439f37784a4af06fde6",
+    "source": "actual live Kit captured arrays, no USD replay or new renderer invocation",
+    "depth_color_scale_m": [
+      0.52,
+      1.2
+    ],
+    "native_invalid_depth_display": "black; no filling or error-tail rejection",
+    "measured_depth_videos": {
+      "d455_0": "live_measured_depth.mp4",
+      "d455_1": "live_d455_1_measured_depth.mp4"
+    },
+    "multiview_panels": [
+      "global RGB",
+      "d455_0 RGB",
+      "d455_1 RGB",
+      "d455_0 measured depth"
+    ],
+    "frames": 41,
+    "playback_fps": 5.0
+  },
+  "scientific_acceptance": "Execution, physical separation, surface goal and camera quality are distinct; not all gates pass"
+}
