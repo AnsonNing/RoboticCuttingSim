@@ -1,0 +1,1175 @@
+{
+  "scope": "Independent actual native seed42 CUT/TRIM task metrics; one seed per task, not a success-rate or generalization estimate",
+  "canonical_receipt": "artifacts/randomized_native_task_episode_audit_002/result.json",
+  "canonical_receipt_sha256": "0b7c99a19b78a8682fa6ee5b3afd63f95fa0bb3a3f63141cce2311fb5a2c036f",
+  "analysis_sources_unchanged_during_analysis": true,
+  "analysis_source_sha256": {
+    "scripts/audit_cutting_task_episodes.py": "90af5a60ae7e337003b07293601ead51262a9f5e319a30534e784afc1197bead",
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+    "configs/task_randomization_v1.json": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+    "src/robotic_cutting_sim/tasks.py": "fad5c7b7025a80c0b29cd55b4a20bbba1c7e5212c473dcbb3c7b6fcd1110c6bf",
+    "src/robotic_cutting_sim/task_randomization.py": "01e1fdce6552d9c01a0c5a002f272e86c20d840079cba49c5d50093205f12f48",
+    "src/robotic_cutting_sim/live_acceptance.py": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+    "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+    "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+    "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+    "src/robotic_cutting_sim/benchmark.py": "50cb7f75a62d2c8c40f2216c07b81cf43e931fb79168555207d05f54c272ae0c",
+    "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a"
+  },
+  "randomization_implementation_commit": "ff1187a",
+  "cases": {
+    "cut-01_randomized_seed42": {
+      "recording": "/home/ningan/RoboticCuttingSim/artifacts/isaac_native_randomized_benchmark_001/cut-01_randomized_seed42",
+      "task_id": "CUT-01",
+      "seed": 42,
+      "task_numerical_parameters": {
+        "particle_spacing_m": 0.001,
+        "grid_dx_m": 0.004,
+        "recorded_numerical_overrides": {},
+        "frozen_default_particle_spacing_m": 0.001,
+        "scope": "Explicit numerical overrides do not establish acceptance of the unchanged fixed-default resolution"
+      },
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 41,
+        "material_sampling_max_dt_s": 0.20000000000000018,
+        "wall_s": 216.00168884615414,
+        "runtime_backend": "LIVE_IsaacSim6.2_cutting"
+      },
+      "task_score": {
+        "task_id": "CUT-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "PASS_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "two_substantial_physical_parts": true,
+          "two_main_parts_retain_mass": true,
+          "cut_at_workpiece_local_target_plane": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.06659999999999999,
+            0.059399999999999994
+          ],
+          "recorded_mass_kg": 0.126,
+          "expected_task_sampler_mass_kg": 0.126,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 84000,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 2009088,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000849831841,
+          "substantial_parts": 2,
+          "two_main_parts_mass_fraction": 0.9999999999999998,
+          "minor_parts_mass_fraction": 0.0
+        },
+        "missing_evidence": []
+      },
+      "recorded_score_recomputation": {
+        "same_checks": true,
+        "same_metrics": true,
+        "same_status": true
+      },
+      "mechanical_graph": {
+        "status": "PASS",
+        "initial_components": 1,
+        "final_components": 2,
+        "recorded_partition_matches_recomputation": true,
+        "includes_positive_weights": true,
+        "includes_nonzero_stress_gradients": true,
+        "includes_unassigned_code_zero_particles": true,
+        "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+        "stencil_sha256": "cc119c029a4a54c61b14aced401f5162f6a56112f1a1adb243bf7b841a71ab18"
+      },
+      "history": {
+        "initial_nonzero_codes": 0,
+        "nonzero_digit_rewrites_by_cut": [
+          0
+        ],
+        "nonzero_digit_rewrites": 0,
+        "final_code_histogram": {
+          "0": 55590,
+          "1": 14340,
+          "2": 14070
+        },
+        "sampled_history_only": true
+      },
+      "surface_graph_hashes_match_current_recorded_state": true,
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.002166202112197807,
+          "rms_edge_position_error_m": 0.00035787189719178034,
+          "maximum_edge_local_z_error_m": 0.001808333497365755,
+          "maximum_edge_rotation_error_deg": 0.22005762657463732
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00021366806618674676,
+          "rms_edge_position_error_m": 7.191356622663748e-05,
+          "maximum_edge_local_z_error_m": 0.00014866284058944954,
+          "maximum_edge_rotation_error_deg": 0.025470053673012836
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0016897167687540608,
+        "commanded_vs_task_schedule_max_position_m": 0.0,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00015630373266318966
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.0700516551733017,
+            0.12693119049072266,
+            -0.18138307332992554,
+            -2.481417655944824,
+            0.04542006552219391,
+            2.606818437576294,
+            0.40239518880844116
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            5.10949030481378e-13,
+            -2.0,
+            -1.8949553731717472e-11,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.05208267271518707,
+            0.27180323004722595,
+            -0.15287064015865326,
+            -2.4741153717041016,
+            0.10499119013547897,
+            2.740889310836792,
+            0.4453451633453369
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            1.0053832766310222e-10,
+            -2.0,
+            -1.2594359420376594e-13,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.03437529876828194,
+            0.20980916917324066,
+            0.048315513879060745,
+            0.05715528503060341,
+            0.08021733164787292,
+            0.1791304349899292,
+            0.05769120529294014
+          ],
+          [
+            1.9354665092841117e-10,
+            4.046256218970257e-09,
+            5.299796157487435e-10,
+            6.640394345502898e-10,
+            2.2401377974823333e-10,
+            2.5176155604711425e-10,
+            1.0020932868226584e-11
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.016146384179592133,
+            0.14162077009677887,
+            0.02671760320663452,
+            0.006560802459716797,
+            0.05935986340045929,
+            0.13255643844604492,
+            0.04279965162277222
+          ],
+          [
+            0.0,
+            0.0,
+            1.0002737527159411e-10,
+            0.0,
+            1.8823609337914604e-11,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 1.0002737527159411e-10,
+        "parked_second_arm_max_speed_rad_s": 4.046256218970257e-09,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "postwithdraw_motion": {
+        "status": "MEASURED",
+        "withdrawal_complete_s": 6.4,
+        "sample_start_s": 6.4,
+        "sample_end_s": 8.0,
+        "sampling_dt_max_s": 0.20000000000000018,
+        "components": [
+          {
+            "component_id": 0,
+            "mass_kg": 0.06659999999999999,
+            "particles": 44400,
+            "com_world_at_withdrawal_m": [
+              -0.03577048788338318,
+              0.004842779630418429,
+              0.00968407510706492
+            ],
+            "com_world_final_m": [
+              -0.035763485590223666,
+              0.004838632105717443,
+              0.009683920123603538
+            ],
+            "final_com_displacement_m": 8.139907278980307e-06,
+            "maximum_com_excursion_m": 8.139907278980307e-06
+          },
+          {
+            "component_id": 1,
+            "mass_kg": 0.059399999999999994,
+            "particles": 39600,
+            "com_world_at_withdrawal_m": [
+              0.0379188399255968,
+              0.009874304243468593,
+              0.009715557208285912
+            ],
+            "com_world_final_m": [
+              0.037918798934457466,
+              0.009874316168531731,
+              0.009715597120035757
+            ],
+            "final_com_displacement_m": 5.8441666733905286e-08,
+            "maximum_com_excursion_m": 6.78124795592264e-08
+          }
+        ],
+        "scope": "Final graph memberships used only retrospectively for COMs; no minimum-motion task requirement or cross-component recontact claim"
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "minimum_detF_all_control_intervals": 0.9450440406799316,
+        "minimum_final_particle_detF": 0.948773205280304,
+        "maximum_saved_material_speed_m_s": 0.042480891750150164,
+        "maximum_control_interval_material_speed_m_s": 0.0728287324309349,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": null,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 6371789,
+          "control_intervals_with_tool_contacts": 138,
+          "peak_next_reaction_force_N": 0.25764740831412986,
+          "peak_next_reaction_torque_Nm": 0.0028732869497713285,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.04396131555023835,
+            -0.0034169572793678778,
+            0.12104389362792746,
+            0.00012875521973252383,
+            -0.0017732380270278872,
+            7.475858735686571e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.15300788162851423,
+          "reaction_force_times_dt_impulse_max_abs_error": 1.0842021724855044e-16,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0013223396324075765,
+          "robot_applied_material_wrench_work_J": -0.0011119126340934115,
+          "robot_work_source": "Recorded actual wrench and measured world edge increments",
+          "robot_boundary_reconstruction_work_J": -0.0011119126340934115,
+          "interface_work_residual_fraction": 0.15913233874042002,
+          "maximum_material_fixture_penetration_m": 0.0002505355514585972,
+          "maximum_tool_material_penetration_m": 0.0004422940837685019,
+          "maximum_material_pair_overlap_m": 0.0001305096666328609,
+          "material_pair_events_unattributed": 95259,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.0018125761886184089,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "all_manifest_implementation_bytes_resolved": true,
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "inputs_sha256": {
+        "oracle_debug/diagnostics.json": "ba4259b41d9c51fb6144c5c61c8c6cc8fb900f421cae8cf2e2cd65759109ae2e",
+        "surface_debug/surface_0000.npz": "cf2401cc455a26defdeb52a0fec8d0a37b01d147c7c14e23a318e81ea272d287",
+        "robot_state.npz": "39c8561d9b6fd4841a78960a5ffbce7fc42f573546e7c00354308a7a605f3fec",
+        "surface_debug/surface_0040.npz": "f05f982a4105b99438eaf41543b89d39e45a34b0c4242c73caa30fc4ca4cc790",
+        "oracle_debug/physics_state.npz": "08803b3ca140bfba1779497d4c522a3c4b28bdc1de2a9be222bbda8c85614803",
+        "result.json": "238398937f6157d539504ee2f75b7b3c2e8cce24e21bd2e4473c2aa47bd1fe0a",
+        "setup.json": "b9a05b4c5977d9e1cd0f9a60d60bd6c26d26882809aae5115215459a69b48651",
+        "oracle_debug/task_evaluation.json": "b67010f4a91552b8c6b66842f832836c79683c0d7f35a70ce1d86d8fb38f0009",
+        "manifest.json": "644e7a2b07565650b60bb077ce413a25b14adcb2abf7b828e8cf55298e6f65fa",
+        "frame_manifest.json": "7add1509e2d1f7f17d74c5bdd5b3315f099f9bbfef482472b62fbb300a209c49"
+      },
+      "full_18_gate_acceptance": "NOT_SCORED",
+      "full_benchmark_ready": false,
+      "recorded_actual_task": {
+        "task_id": "CUT-01",
+        "seed": 42,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.14,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": []
+        },
+        "particle_spacing_m": 0.001,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "left_pedestal",
+            "center_m": [
+              -0.048,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.032,
+              0.021,
+              0.005
+            ]
+          },
+          {
+            "name": "right_pedestal",
+            "center_m": [
+              0.052000000000000005,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.028,
+              0.021,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          -0.0012224312049589538,
+          0.00717195839822765,
+          0.0,
+          0.0,
+          0.0,
+          0.0344404072822528,
+          0.9994067532022348
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "sever",
+        "target_origin_local_m": [
+          0.004,
+          0.0,
+          0.0
+        ],
+        "target_normal_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "edge_clearance_m": 0.0,
+        "blade_length_m": 0.035,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            0.004,
+            0.0,
+            0.05
+          ],
+          [
+            1.0,
+            0.004,
+            0.0,
+            0.03
+          ],
+          [
+            1.6,
+            0.004,
+            0.0,
+            0.03
+          ],
+          [
+            5.6,
+            0.004,
+            0.0,
+            -0.003
+          ],
+          [
+            6.4,
+            0.004,
+            0.0,
+            0.05
+          ],
+          [
+            8.0,
+            0.004,
+            0.0,
+            0.05
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {},
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 42,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.3.1",
+          "draws": {
+            "length_m": 0.14,
+            "frame_offset_local_xyz_xyzw": [
+              -0.0012224312049589538,
+              0.00717195839822765,
+              0.0,
+              0.0,
+              0.0,
+              0.03444040728225279,
+              0.9994067532022347
+            ],
+            "frame_yaw_offset_deg": 3.9473605811872776,
+            "cut_x_m": 0.004
+          },
+          "input_world_from_workpiece_xyzw": [
+            6.505213034913027e-19,
+            -3.469446951953614e-18,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "post_reference_withdrawal_tool_contacts": {
+        "reference_withdrawal_complete_s": 6.4,
+        "intervals_after_reference_withdrawal": 80,
+        "intervals_with_tool_contacts": 0,
+        "particle_substep_events": 0,
+        "final_interval_tool_contact_events": 0,
+        "scope": "Actual retained tool-contact counters; reference path completion does not imply every detached chip is blade-clear"
+      },
+      "recorded_camera_frames": 41,
+      "recorded_camera_mode": "native_single_view",
+      "camera_acceptance": "NOT_SCORED_FOR_THIS_RANDOMIZED_EPISODE",
+      "physical_separation_mass_history_and_target_removal_supported": true,
+      "full_receipt": "artifacts/randomized_native_task_episode_audit_002/cut-01_randomized_seed42/result.json",
+      "full_receipt_sha256": "7dbd9f7c33ef01cf38e5dd20753950388a49dcfad2f66cd97231c5ef9573243a"
+    },
+    "trim-01_randomized_seed42": {
+      "recording": "/home/ningan/RoboticCuttingSim/artifacts/isaac_native_randomized_benchmark_001/trim-01_randomized_seed42",
+      "task_id": "TRIM-01",
+      "seed": 42,
+      "task_numerical_parameters": {
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "recorded_numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "frozen_default_particle_spacing_m": 0.001,
+        "scope": "Explicit numerical overrides do not establish acceptance of the unchanged fixed-default resolution"
+      },
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 41,
+        "material_sampling_max_dt_s": 0.20000000000000018,
+        "wall_s": 79.15394542715512,
+        "runtime_backend": "LIVE_IsaacSim6.2_cutting"
+      },
+      "task_score": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": true,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 4,
+          "component_masses_kg": [
+            0.0006720000000000001,
+            0.000768,
+            0.0010440000000000002,
+            0.12609599999999999
+          ],
+          "recorded_mass_kg": 0.12857999999999997,
+          "expected_task_sampler_mass_kg": 0.12857999999999997,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 10715,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 4,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.9627906976744187,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              140,
+              30
+            ],
+            "valid_surface_fraction": 0.9980952380952381,
+            "missing_surface_fraction": 0.0019047619047618536,
+            "maximum_substrate_surface_residual_height_m": 0.0001836619697003633,
+            "surface_p95_absolute_plane_error_m": 0.0016038742909915346,
+            "surface_rms_plane_error_m": 0.0005503559067266872,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.641421734586222e-06,
+            "overcut_volume_fraction_of_initial_base": 0.01954073493555026
+          }
+        },
+        "missing_evidence": []
+      },
+      "recorded_score_recomputation": {
+        "same_checks": true,
+        "same_metrics": true,
+        "same_status": true
+      },
+      "mechanical_graph": {
+        "status": "PASS",
+        "initial_components": 1,
+        "final_components": 4,
+        "recorded_partition_matches_recomputation": true,
+        "includes_positive_weights": true,
+        "includes_nonzero_stress_gradients": true,
+        "includes_unassigned_code_zero_particles": true,
+        "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+        "stencil_sha256": "af1cb6a8155da6191582d45bb936aaaf1ad96990c9b38dc66b818f8e1c20fa4b"
+      },
+      "history": {
+        "initial_nonzero_codes": 0,
+        "nonzero_digit_rewrites_by_cut": [
+          0
+        ],
+        "nonzero_digit_rewrites": 0,
+        "final_code_histogram": {
+          "0": 150,
+          "1": 10358,
+          "2": 207
+        },
+        "sampled_history_only": true
+      },
+      "surface_graph_hashes_match_current_recorded_state": true,
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.0017944760310829356,
+          "rms_edge_position_error_m": 0.00038125745495946883,
+          "maximum_edge_local_z_error_m": 0.001457962012841832,
+          "maximum_edge_rotation_error_deg": 0.1563961651619525
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.0003186437936950871,
+          "rms_edge_position_error_m": 0.0002931412624494817,
+          "maximum_edge_local_z_error_m": 3.9401518377064904e-05,
+          "maximum_edge_rotation_error_deg": 0.033217342594487845
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0013203808758778467,
+        "commanded_vs_task_schedule_max_position_m": 0.0,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00021651705049312991
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.07058197259902954,
+            -0.06258609145879745,
+            -0.22627387940883636,
+            -2.701629877090454,
+            -0.02902451530098915,
+            2.4958128929138184,
+            0.39787593483924866
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            5.10949030481378e-13,
+            -2.0,
+            -1.8949553731717472e-11,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.021761564537882805,
+            0.3399237394332886,
+            -0.16143155097961426,
+            -2.22283673286438,
+            0.10403359681367874,
+            2.7628719806671143,
+            0.4649747610092163
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            1.0053832766310222e-10,
+            -2.0,
+            -1.2594359420376594e-13,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.02117025852203369,
+            0.13455383479595184,
+            0.02383236214518547,
+            0.11092466115951538,
+            0.07639168202877045,
+            0.13770999014377594,
+            0.054484326392412186
+          ],
+          [
+            1.9354665092841117e-10,
+            4.046256218970257e-09,
+            5.299796157487435e-10,
+            6.640394345502898e-10,
+            2.2401377974823333e-10,
+            2.5176155604711425e-10,
+            1.0020932868226584e-11
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.04882040619850159,
+            0.4025098383426666,
+            0.06459455192089081,
+            0.4758634567260742,
+            0.1330581158399582,
+            0.14171123504638672,
+            0.047863394021987915
+          ],
+          [
+            0.0,
+            0.0,
+            1.0002737527159411e-10,
+            0.0,
+            1.8823609337914604e-11,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 1.0002737527159411e-10,
+        "parked_second_arm_max_speed_rad_s": 4.046256218970257e-09,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "postwithdraw_motion": {
+        "status": "MEASURED",
+        "withdrawal_complete_s": 6.4,
+        "sample_start_s": 6.4,
+        "sample_end_s": 8.0,
+        "sampling_dt_max_s": 0.20000000000000018,
+        "components": [
+          {
+            "component_id": 0,
+            "mass_kg": 0.0006720000000000001,
+            "particles": 56,
+            "com_world_at_withdrawal_m": [
+              -0.012030583533646024,
+              0.008417540176119169,
+              0.023072947548436265
+            ],
+            "com_world_final_m": [
+              -0.012029337450411673,
+              0.008427105607772514,
+              0.02307004983802992
+            ],
+            "final_com_displacement_m": 1.0072086761976777e-05,
+            "maximum_com_excursion_m": 1.0072086761976777e-05
+          },
+          {
+            "component_id": 1,
+            "mass_kg": 0.000768,
+            "particles": 64,
+            "com_world_at_withdrawal_m": [
+              0.0036189309176890734,
+              0.007515498086740784,
+              0.024238062149379402
+            ],
+            "com_world_final_m": [
+              0.003614450284325285,
+              0.007509733750877357,
+              0.024232769559603188
+            ],
+            "final_com_displacement_m": 9.017491326658942e-06,
+            "maximum_com_excursion_m": 9.017491326658942e-06
+          },
+          {
+            "component_id": 2,
+            "mass_kg": 0.0010440000000000002,
+            "particles": 87,
+            "com_world_at_withdrawal_m": [
+              0.06694902003977038,
+              0.01760698440056718,
+              0.0673741312462023
+            ],
+            "com_world_final_m": [
+              0.06696808377537315,
+              0.017340675161237946,
+              0.06691711074833213
+            ],
+            "final_com_displacement_m": 0.0005292936542607891,
+            "maximum_com_excursion_m": 0.0005292936542607891
+          },
+          {
+            "component_id": 3,
+            "mass_kg": 0.12609599999999999,
+            "particles": 10508,
+            "com_world_at_withdrawal_m": [
+              -0.0009103540120528765,
+              0.007234740340149728,
+              0.009857353172259461
+            ],
+            "com_world_final_m": [
+              -0.0009032725326966466,
+              0.0072504323955962955,
+              0.009857363073500009
+            ],
+            "final_com_displacement_m": 1.721592437382999e-05,
+            "maximum_com_excursion_m": 1.721592437382999e-05
+          }
+        ],
+        "scope": "Final graph memberships used only retrospectively for COMs; no minimum-motion task requirement or cross-component recontact claim"
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "minimum_detF_all_control_intervals": 0.937964916229248,
+        "minimum_final_particle_detF": 0.9435935616493225,
+        "maximum_saved_material_speed_m_s": 0.0793768421768337,
+        "maximum_control_interval_material_speed_m_s": 0.24814735352993011,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": null,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 344255,
+          "control_intervals_with_tool_contacts": 280,
+          "peak_next_reaction_force_N": 0.10583230009141788,
+          "peak_next_reaction_torque_Nm": 0.0010046652972405352,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.05333450685539946,
+            -0.002515678558340576,
+            -0.013631041824652352,
+            -0.00014155683460133093,
+            -8.861566065163253e-05,
+            6.785480835164172e-05
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.14107843611766543,
+          "reaction_force_times_dt_impulse_max_abs_error": 2.905661822261152e-17,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.002260126857111156,
+          "robot_applied_material_wrench_work_J": -0.0022067138088389445,
+          "robot_work_source": "Recorded actual wrench and measured world edge increments",
+          "robot_boundary_reconstruction_work_J": -0.0022067138088389445,
+          "interface_work_residual_fraction": 0.02363276561408711,
+          "maximum_material_fixture_penetration_m": 3.434217069298029e-05,
+          "maximum_tool_material_penetration_m": 0.0005729855038225651,
+          "maximum_material_pair_overlap_m": 0.0005987033946439624,
+          "material_pair_events_unattributed": 257527,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.0555018804352585,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "all_manifest_implementation_bytes_resolved": true,
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "inputs_sha256": {
+        "result.json": "571dec22714b3b829e907c18e681a79e949346f295fb0bfb8272df1cc4c42359",
+        "robot_state.npz": "f751c956b843bbcb2db4d3bdad52e9bd979e5d7d68cc62a0be3c6a0fccc3607c",
+        "oracle_debug/physics_state.npz": "c397fda8f87b3be4a2d19af7fddad9f54f31ab6d15d2ecf61b6aea551da028ba",
+        "frame_manifest.json": "f76eaaa480ee7fe97d40ee394998e18a7fd40af31a5a5ad75d271bade89ac718",
+        "surface_debug/surface_0000.npz": "b68c72e9f5fff352c44b624e0044f22e48927672de7a790d5a93f43b77bd60e8",
+        "manifest.json": "3d9a5c0a160249b488f53cfeac83a2fc74c4da0619e5dbe1cca1712b6bf02c6c",
+        "setup.json": "a0defd54991308cd8fb4a27e819da44a0f3bda13427637fd9939f4a80fd77521",
+        "oracle_debug/diagnostics.json": "b351a4c81aa94639604d4e014cb5963be2fdaffeaee78aa246cab717457c3309",
+        "oracle_debug/task_evaluation.json": "245a6acf14017d4deaa217d12d25e8ec3672601f3dd48bb15cd327a7ea7e7b13",
+        "surface_debug/surface_0040.npz": "826cff71c37b07e349322445fe90d628bbe695994be1dcc0a50e58ba4ffc844a"
+      },
+      "full_18_gate_acceptance": "NOT_SCORED",
+      "full_benchmark_ready": false,
+      "recorded_actual_task": {
+        "task_id": "TRIM-01",
+        "seed": 42,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.14,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": [
+            {
+              "x_m": -0.02895544119203859,
+              "y_m": 0.0005721286105539077,
+              "radius_x_m": 0.008512454530702184,
+              "radius_y_m": 0.008251929689477836,
+              "height_m": 0.007483192096930325,
+              "family": "dome"
+            },
+            {
+              "x_m": 0.0005754604803226582,
+              "y_m": 0.0006455232265416601,
+              "radius_x_m": 0.009773656795309324,
+              "radius_y_m": 0.007136193608923884,
+              "height_m": 0.00821833914806334,
+              "family": "irregular"
+            },
+            {
+              "x_m": 0.0282552690244167,
+              "y_m": 0.0006552623439851641,
+              "radius_x_m": 0.01052665759648826,
+              "radius_y_m": 0.009790438700426868,
+              "height_m": 0.007418103872519474,
+              "family": "dome"
+            }
+          ]
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "support_floor",
+            "center_m": [
+              0.0,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.08,
+              0.025,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          -0.0012224312049589538,
+          0.00717195839822765,
+          0.0,
+          0.0,
+          0.0,
+          0.0344404072822528,
+          0.9994067532022348
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "flatten",
+        "target_origin_local_m": [
+          0.0,
+          0.0,
+          0.02
+        ],
+        "target_normal_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_clearance_m": 0.0002,
+        "blade_length_m": 0.012,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            -0.06746789572274077,
+            0.0,
+            0.06
+          ],
+          [
+            1.0,
+            -0.06746789572274077,
+            0.0,
+            0.0202
+          ],
+          [
+            1.6,
+            -0.06746789572274077,
+            0.0,
+            0.0202
+          ],
+          [
+            5.6,
+            0.068,
+            0.0,
+            0.0202
+          ],
+          [
+            6.4,
+            0.08,
+            0.0,
+            0.06
+          ],
+          [
+            8.0,
+            0.08,
+            0.0,
+            0.06
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 42,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.3.1",
+          "draws": {
+            "length_m": 0.14,
+            "frame_offset_local_xyz_xyzw": [
+              -0.0012224312049589538,
+              0.00717195839822765,
+              0.0,
+              0.0,
+              0.0,
+              0.03444040728225279,
+              0.9994067532022347
+            ],
+            "frame_yaw_offset_deg": 3.9473605811872776,
+            "bump_anchors_m": [
+              -0.03,
+              0.0,
+              0.03
+            ],
+            "bumps": [
+              {
+                "x_m": -0.02895544119203859,
+                "y_m": 0.0005721286105539077,
+                "radius_x_m": 0.008512454530702184,
+                "radius_y_m": 0.008251929689477836,
+                "height_m": 0.007483192096930325,
+                "family": "dome"
+              },
+              {
+                "x_m": 0.0005754604803226582,
+                "y_m": 0.0006455232265416601,
+                "radius_x_m": 0.009773656795309324,
+                "radius_y_m": 0.007136193608923884,
+                "height_m": 0.00821833914806334,
+                "family": "irregular"
+              },
+              {
+                "x_m": 0.0282552690244167,
+                "y_m": 0.0006552623439851641,
+                "radius_x_m": 0.01052665759648826,
+                "radius_y_m": 0.009790438700426868,
+                "height_m": 0.007418103872519474,
+                "family": "dome"
+              }
+            ]
+          },
+          "input_world_from_workpiece_xyzw": [
+            6.505213034913027e-19,
+            -3.469446951953614e-18,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "post_reference_withdrawal_tool_contacts": {
+        "reference_withdrawal_complete_s": 6.4,
+        "intervals_after_reference_withdrawal": 80,
+        "intervals_with_tool_contacts": 80,
+        "particle_substep_events": 66488,
+        "final_interval_tool_contact_events": 800,
+        "scope": "Actual retained tool-contact counters; reference path completion does not imply every detached chip is blade-clear"
+      },
+      "recorded_camera_frames": 41,
+      "recorded_camera_mode": "native_single_view",
+      "camera_acceptance": "NOT_SCORED_FOR_THIS_RANDOMIZED_EPISODE",
+      "physical_separation_mass_history_and_target_removal_supported": true,
+      "full_receipt": "artifacts/randomized_native_task_episode_audit_002/trim-01_randomized_seed42/result.json",
+      "full_receipt_sha256": "e8dfaa3291a32b320869ca9c2b72b849e2ece1408d63fa1e4157f1e327c8a8c8"
+    }
+  },
+  "prior_audit_preserved": {
+    "directory": "artifacts/randomized_native_task_episode_audit_001",
+    "scope": "Same statuses/checks; inverse/composition frame roundoff caused at most3.47e-18 scalar metric differences. Canonical reader validates seeded reconstruction then uses exact recorded frame. No physics, thresholds or recording changed."
+  },
+  "full_benchmark_ready": false
+}

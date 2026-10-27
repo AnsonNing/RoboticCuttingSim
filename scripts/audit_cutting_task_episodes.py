@@ -5,7 +5,7 @@ Task scores, tracking screens, contact screens and missing paired controls remai
 separate. Oracle graphs/forces are analysis data, never policy observations.
 """
 import argparse
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import hashlib
 import json
 from pathlib import Path
@@ -259,6 +259,9 @@ def audit(directory, output):
         from robotic_cutting_sim.task_randomization import RANDOMIZATION_PROTOCOL_PATH
         if recorded_task["randomization"]["protocol_sha256"] != sha256(RANDOMIZATION_PROTOCOL_PATH):
             raise ValueError("Recorded randomization protocol does not match this auditor")
+    # Generation has been checked above. Use the exact recorded calibrated frame
+    # for scoring instead of introducing inverse/composition roundoff again.
+    task = replace(task, world_from_workpiece_xyzw=tuple(recorded_task["world_from_workpiece_xyzw"]))
     oracle = directory/"oracle_debug" if (directory/"oracle_debug").is_dir() else directory
     physics_path, diagnostic_path = oracle/"physics_state.npz", oracle/"diagnostics.json"
     inputs += [physics_path, diagnostic_path]
