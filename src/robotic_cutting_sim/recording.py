@@ -52,7 +52,10 @@ def manifest(config, backend):
             "git_sha": command(["git", "rev-parse", "HEAD"], cwd=ROOT)["stdout"].strip(),
             "git_dirty": bool(command(["git", "status", "--porcelain"], cwd=ROOT)["stdout"]),
             "config": config, "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest(),
-            "packages": packages, "source_checkouts":sources, "physics_proven": False, "vision_proven": False}
+            "packages": packages, "source_checkouts":sources,
+            "local_code_sha256": {str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest()
+                                  for path in sorted((ROOT/"src").rglob("*.py"))},
+            "physics_proven": False, "vision_proven": False}
 
 
 def new_output(path):

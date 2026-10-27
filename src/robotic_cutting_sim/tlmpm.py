@@ -6,12 +6,11 @@ J2 plasticity, PIC/FLIP, explicit sphere contact and a finite triangular blade.
 Two cut digits are retained. There is no deletion, spawn, prescribed crack, or
 fragment-specific body motion. Parameters are provisional, not calibrated.
 """
-from dataclasses import dataclass
-
 import numpy as np
 import warp as wp
 
 from .cut_topology import compatibility
+from .material_config import TLMPMConfig
 
 
 @wp.func
@@ -151,7 +150,7 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                     reaction: wp.array(dtype=wp.spatial_vector), stats: wp.array(dtype=float),
                     radius: float, volume: float, dt: float, stiffness: float,
                     friction: float, gc: float, sharpness: float, blade_length: float,
-                    blade_height: float, blade_width: float, floor: int, tool: int):
+                    blade_height: float, blade_width: float, floor: int, walls: int, tool: int):
     p = wp.tid()
     impulse[p] = wp.vec3(0.0)
     xp, vp, mp = x[p], v[p], mass[p]
@@ -180,8 +179,9 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
             if side == 5:
                 normal = wp.vec3(0.0, 0.0, 1.0)
                 gap = xp[2]+0.010-radius  # support table's top z=-10mm
-            impulse[p] = impulse[p]+_contact_impulse(gap, normal, vp, mp, dt, stiffness, friction)
-            wp.atomic_max(stats, 0, wp.max(-gap, 0.0))
+            if side == 0 or side == 5 or walls != 0:
+                impulse[p] = impulse[p]+_contact_impulse(gap, normal, vp, mp, dt, stiffness, friction)
+                wp.atomic_max(stats, 0, wp.max(-gap, 0.0))
     if tool != 0:
         i = index[0]
         pose = poses[i]
@@ -369,31 +369,6 @@ def _remember_cut(cuts: wp.array(dtype=int), index: wp.array(dtype=int), previou
         previous[0] = active
 
 
-@dataclass(frozen=True)
-class TLMPMConfig:
-    dx: float = .004
-    dt: float = .0001
-    density: float = 1500.0
-    young: float = 50000.0
-    poisson: float = .3
-    yield_stress: float = 1000.0
-    pic: float = .05
-    contact_stiffness: float = .1
-    contact_friction: float = .3
-    particle_contact_stiffness: float = .05
-    contact_radius_scale: float = .9
-    cutting_energy: float = .05
-    sharpness: float = .8
-    blade_length: float = .012
-    blade_height: float = .004
-    blade_half_width: float = .025
-    cuts: int = 2
-    floor: bool = True
-    tool: bool = True
-    material_contact: bool = True
-    gravity: tuple = (0., 0., -9.81)
-
-
 class TLMPM:
     """GPU physics state; all particles are initially one uncut continuum."""
     def __init__(self, points, masses, spacing, config=TLMPMConfig(), device="cuda:1"):
@@ -480,7 +455,7 @@ class TLMPM:
                 self.contact_work, self.poses, self.twists, self.cuts, self.index,
                 self.reaction, self.stats, self.radius, self.volume, c.dt, c.contact_stiffness,
                 c.contact_friction, c.cutting_energy, c.sharpness, c.blade_length,
-                c.blade_height, c.blade_half_width, int(c.floor), int(c.tool)])
+                c.blade_height, c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool)])
             if c.material_contact:
                 self.hash.build(self.x, 2.4*self.radius)
                 wp.launch(_particle_contacts, n, [self.hash.id, self.x, self.reference,

@@ -1,0 +1,105 @@
+{
+  "status": "PASS",
+  "scope": "experimental TLMPM numerical sanity",
+  "case": "supported_cross_cuts",
+  "setup_wall_s": 3.4641681159846485,
+  "physics_wall_s": 14.342290902044624,
+  "simulation_s": 4.5,
+  "particle_count": 19340,
+  "initial_mass_kg": 0.23207999999999998,
+  "active_mass_error_relative": 0.0,
+  "mass_ledger": "same immutable masses and particle IDs, no spawn/deletion",
+  "initial_mechanical_components": 1,
+  "final_mechanical_components": 3,
+  "component_provenance": "actual reference-node/stencil compatibility incl code0 bridges and stress gradients",
+  "components": [
+    {
+      "id": 0,
+      "particles": 9280,
+      "mass_kg": 0.1113599999999894,
+      "final_com_m": [
+        -0.028953044533622668,
+        0.0003477462138530895,
+        0.007835192273962763
+      ],
+      "final_velocity_m_s": [
+        2.447116010276959e-07,
+        -1.1240682337354205e-07,
+        6.278127107737632e-07
+      ],
+      "initial_com_m": [
+        -0.031000000023251862,
+        -6.655476192955396e-21,
+        0.007999999957973793
+      ],
+      "withdraw_to_final_com_distance_m": 7.971840325353973e-07
+    },
+    {
+      "id": 1,
+      "particles": 140,
+      "mass_kg": 0.0016800000000000033,
+      "final_com_m": [
+        0.04292853272386962,
+        0.003822336104557119,
+        0.018236850907227826
+      ],
+      "final_velocity_m_s": [
+        4.2633455824717517e-07,
+        4.581062543757803e-06,
+        -7.071747212096723e-06
+      ],
+      "initial_com_m": [
+        9.453492714891745e-20,
+        7.09011953616881e-20,
+        0.018085714589272273
+      ],
+      "withdraw_to_final_com_distance_m": 6.46417114240009e-06
+    },
+    {
+      "id": 2,
+      "particles": 9920,
+      "mass_kg": 0.1190399999999882,
+      "final_com_m": [
+        0.03430843947811107,
+        0.003520088013258167,
+        0.00801178859533871
+      ],
+      "final_velocity_m_s": [
+        -9.972430621907051e-07,
+        -3.767879010855172e-06,
+        2.914848389830341e-07
+      ],
+      "initial_com_m": [
+        0.02900000002175187,
+        -6.226090632119563e-21,
+        0.007999999957973746
+      ],
+      "withdraw_to_final_com_distance_m": 2.9295878779313172e-06
+    }
+  ],
+  "existing_side_digit_changed": false,
+  "maximum_speed_m_s": 0.6961329579353333,
+  "minimum_detF": 0.9026702642440796,
+  "max_tool_penetration_m": 0.00047552306205034256,
+  "maximum_material_overlap_m": 0.0007653549546375871,
+  "post_withdraw_material_contact_substep_pairs": 224770,
+  "guard_failure": null,
+  "force_scope": "equal-opposite wedge contact impulse/frame dt, diagnostic only",
+  "physics_proven": false,
+  "material_calibration": "uncalibrated",
+  "maximum_accumulated_contact_work_j": 9.999997274690031e-08,
+  "total_accumulated_contact_work_j": 4.016925231553614e-05,
+  "persistent_cutting_acceptance": "NOT_EVALUATED; mechanical components alone are insufficient",
+  "limitations": [
+    "Experimental independent solver, not BladeMaster release",
+    "Linear TL reference stencil; no hourglass stabilization",
+    "Dynamic Coulomb friction without tangential history",
+    "Kinematic tool, no two-way articulated coupling in this probe"
+  ],
+  "local_artifact_root": "artifacts/tlmpm_supported_cross_cuts_001",
+  "artifact_sha256": {
+    "result.json": "88c2ae3d146086f64b1e5e9e55add7d65fb59768be93309446aeb99aa03f2256",
+    "manifest.json": "c1a99e46601ece23e951f909757f49592a0ac26ae4463b2f74580c74ef15d87f",
+    "physics_state.npz": "438744e2aa69166ae7adbfb512195ed04461b11208e4629fc003ee17d86cc689"
+  }
+}

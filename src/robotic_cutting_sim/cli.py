@@ -43,7 +43,40 @@ def main(argv=None):
     demo.add_argument("--case",choices=["indent_unload","through_bump_cut","shallow_scrape","settle"],default="indent_unload")
     demo.add_argument("--voxel-size",type=positive,default=.004); demo.add_argument("--device",default="cuda:0")
     demo.add_argument("--output-dir",type=Path,required=True)
+    cutting=sub.add_parser("cutting-probe",help="Experimental persistent TLMPM cutting, withdrawal and recontact")
+    cutting.add_argument("--case",choices=["settle","no_contact","indent","uncut_scrape","cut","cut_recontact","two_cuts","cross_cuts","supported_cross_cuts"],default="cut")
+    cutting.add_argument("--dx",type=positive,default=.004)
+    cutting.add_argument("--dt",type=positive,default=.0001)
+    cutting.add_argument("--duration",type=positive,default=2.5)
+    cutting.add_argument("--variant",choices=["D0","D1"],default="D0")
+    cutting.add_argument("--seed",type=int,default=42)
+    cutting.add_argument("--device",default="cuda:0")
+    cutting.add_argument("--output-dir",type=Path,required=True)
+    research=sub.add_parser("research-demo",help="Live dual-Panda cutting with measured proprioception and full-scene ideal RGB-D")
+    research.add_argument("--steps",type=int,default=400)
+    research.add_argument("--record-every",type=int,default=10)
+    research.add_argument("--device",default="cuda:0")
+    research.add_argument("--scene",type=Path)
+    research.add_argument("--output-dir",type=Path,required=True)
+    benchmark=sub.add_parser("benchmark",help="Execute the standalone D0–D3 simulation benchmark; no training")
+    benchmark.add_argument("--variants",nargs="+",choices=["D0","D1","D2","D3"],default=["D0","D1","D2","D3"])
+    benchmark.add_argument("--seeds",nargs="+",type=int,default=[42])
+    benchmark.add_argument("--duration",type=positive,default=8.)
+    benchmark.add_argument("--device",default="cuda:0")
+    benchmark.add_argument("--output-dir",type=Path,required=True)
     args=parser.parse_args(argv)
+    if args.command in ("cutting-probe","research-demo","benchmark"):
+        import subprocess
+        import sys
+        scripts={"cutting-probe":"run_cutting_probe.py", "research-demo":"check_research_env.py",
+                 "benchmark":"run_simulation_benchmark.py"}
+        command=[sys.executable,str(ROOT/"scripts"/scripts[args.command])]
+        for name,value in vars(args).items():
+            if name=="command" or value is None:
+                continue
+            command.append("--"+name.replace("_","-"))
+            command.extend(map(str,value)) if isinstance(value,list) else command.append(str(value))
+        return subprocess.run(command,cwd=ROOT).returncode
     if args.command=="physics-probe" and (args.frames<1 or args.substeps<1):
         parser.error("--frames and --substeps must be positive integers")
     if args.command=="camera-check" and args.samples<2:

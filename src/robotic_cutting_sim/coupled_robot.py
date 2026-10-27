@@ -14,7 +14,7 @@ from scipy.spatial.transform import Rotation, Slerp
 from .benchmark import BenchmarkSpec, sample_specimen
 from .geometry import Specimen, sample_particles
 from .robot import DualFrankaController, RobotConfig, validate_pose
-from .tlmpm import TLMPM, TLMPMConfig
+from .material_config import TLMPMConfig
 
 
 @dataclass(frozen=True)
@@ -123,6 +123,7 @@ class CoupledCutting:
 
     def reset(self, seed=42):
         import warp as wp
+        from .tlmpm import TLMPM
         c = self.config
         start = time.perf_counter()
         self.substeps = round(c.control_dt / c.material_dt)

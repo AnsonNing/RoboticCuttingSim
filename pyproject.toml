@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotic-cutting-sim"
-version = "0.1.0"
-description = "Blade-only MPM experiments for an independently validated cutting workcell"
+version = "0.2.0"
+description = "Experimental persistent material cutting, articulated dual Panda control and programmable RGB-D"
 requires-python = ">=3.12,<3.13"
 dependencies = ["numpy>=2,<3", "scipy>=1.11", "PyYAML>=6"]
 
 [project.optional-dependencies]
 newton = ["newton==1.6.1", "warp-lang==1.17.0"]
+robot = ["newton==1.6.1", "warp-lang==1.17.0", "mujoco==3.12.0", "mujoco-warp==3.12.0", "newton-usd-schemas==0.6.0"]
 tools = ["pytest>=8", "matplotlib>=3.8", "usd-core<26.9"]
 
 [project.scripts]
@@ -22,4 +23,3 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["gpu: explicitly invoked Newton GPU test", "expensive: convergence experiment"]
-

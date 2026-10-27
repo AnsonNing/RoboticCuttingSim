@@ -21,7 +21,7 @@ def tool_plan(times, case, z=.0155):
                       [1.30, .045, z], [1.45, .080, .06], [3., .080, .06]])
     if case == "no_contact":
         knots[:, 2] += .1
-    elif case in ("cut_recontact", "two_cuts"):
+    elif case in ("cut_recontact", "two_cuts", "cross_cuts", "supported_cross_cuts"):
         # A shorter sweep and vertical withdrawal leave the chip above the
         # substrate, where gravity produces genuine cut-face recontact.
         knots = np.array([[0, -.030, .06], [.20, -.030, z], [.30, -.030, z],
@@ -34,8 +34,8 @@ def tool_plan(times, case, z=.0155):
     velocity = np.gradient(position, times, axis=0)
     poses = np.c_[position, np.tile([0, 0, 0, 1], (len(times), 1))].astype(np.float32)
     twists = np.c_[velocity, np.zeros_like(velocity)].astype(np.float32)
-    active = ((times >= .30) & (times < 1.30) & (case in ("cut", "cut_recontact", "two_cuts", "no_contact"))).astype(np.int32)-1
-    if case == "two_cuts":
+    active = ((times >= .30) & (times < 1.30) & (case in ("cut", "cut_recontact", "two_cuts", "cross_cuts", "supported_cross_cuts", "no_contact"))).astype(np.int32)-1
+    if case in ("two_cuts", "cross_cuts", "supported_cross_cuts"):
         from scipy.spatial.transform import Rotation, Slerp
         second = times >= 1.7
         t = times[second]
@@ -43,20 +43,33 @@ def tool_plan(times, case, z=.0155):
             np.interp(t, [1.7, 2., 2.4, 3.4, 4.5], [0., -.030, -.030, .030, .030]),
             np.interp(t, [1.7, 2., 2.3, 3.4, 3.55, 4.5], [.06, .06, .0125, .0125, .06, .06])])
         rotations = Slerp([1.7, 2., 4.5], Rotation.from_euler("z", np.array([0, 90, 90])[:, None], degrees=True))
+        if case in ("cross_cuts", "supported_cross_cuts"):
+            # Controlled free-specimen/zero-g test: the second finite edge spans
+            # the full cross section. No rigid tray wall is traversed or ignored.
+            second_position = np.column_stack([np.interp(t, [1.7, 2., 4.5], [.022, 0., 0.]),
+                np.interp(t, [1.7, 2., 2.4, 3.4, 4.5], [0., -.055, -.055, .055, .055]),
+                np.interp(t, [1.7, 2., 2.3, 3.4, 3.55, 4.5], [.06, .06, .025, .025, .08, .08])])
+            vertical_edge = np.array([[0., 0., 1.], [1., 0., 0.], [0., 1., 0.]])
+            rotations = Slerp([1.7, 2., 4.5], Rotation.from_matrix(np.array([np.eye(3), vertical_edge, vertical_edge])))
         poses[second, :3] = second_position
         poses[second, 3:] = rotations(t).as_quat()
         twists[second, :3] = np.gradient(second_position, t, axis=0)
-        twists[(times >= 1.7) & (times < 2.), 5] = np.pi/2/.3
+        turning = (times >= 1.7) & (times < 2.)
+        turn = rotations.rotations[1]*rotations.rotations[0].inv()
+        twists[turning, 3:] = turn.as_rotvec()/.3
         active[(times >= 2.4) & (times < 3.4)] = 1
     # Active cut zero, inactive -1. Full history is retained after this interval.
     return poses, twists, active
 
 
 def run(args, output):
-    cut_count = 2 if args.case == "two_cuts" else 1
+    cut_count = 2 if args.case in ("two_cuts", "cross_cuts", "supported_cross_cuts") else 1
     material = TLMPMConfig(dx=args.dx, dt=args.dt, cuts=cut_count, pic=args.pic,
                            cutting_energy=args.cutting_energy, young=args.young,
                            yield_stress=args.yield_stress, tool=args.case != "settle",
+                           floor=args.case != "cross_cuts",
+                           fixture_walls=args.case != "supported_cross_cuts",
+                           gravity=(0., 0., 0.) if args.case == "cross_cuts" else (0., 0., -9.81),
                            material_contact=not args.no_material_contact)
     spacing = args.dx/2
     spec = Specimen.generate(args.seed, args.variant, args.family)
@@ -115,7 +128,7 @@ def run(args, output):
         if (frame+1) % 25 == 0:
             print(f"frame={frame+1}/{frames} t={row['time_s']:.3f} speed={speed.max():.4f} "
                   f"sides={row['negative_side']}/{row['positive_side']} detF={determinant.min():.4f}", flush=True)
-        if not finite or speed.max() > 5 or q[:, 2].min() < -.013 or determinant.min() < .05:
+        if not finite or speed.max() > 5 or (material.floor and q[:, 2].min() < -.013) or determinant.min() < .05:
             failed = "Nonfinite, speed>5m/s, table penetration>3mm, or detF<.05 guard"
             break
     wall = time.perf_counter()-tick
@@ -152,7 +165,8 @@ def run(args, output):
                                 "final_com_m": com[-1].tolist(), "final_velocity_m_s": velocity[-1].tolist(),
                                 "initial_com_m": com[0].tolist(),
                                 "withdraw_to_final_com_distance_m": float(np.linalg.norm(com[-1]-com[withdrew[0]])) if len(withdrew) else None})
-    sanity = failed is None and max(r["max_speed_m_s"] for r in rows) < 2 and min(r["min_z_m"] for r in rows) >= -.011
+    sanity = failed is None and max(r["max_speed_m_s"] for r in rows) < 2
+    sanity = sanity and (not material.floor or min(r["min_z_m"] for r in rows) >= -.011)
     result = {"status": "PASS" if sanity else "FAIL", "scope": "experimental TLMPM numerical sanity",
               "case": args.case, "setup_wall_s": setup, "physics_wall_s": wall,
               "simulation_s": len(rows)*args.frame_dt, "particle_count": len(points),
@@ -183,7 +197,7 @@ def run(args, output):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output-dir", type=Path, required=True)
-    p.add_argument("--case", choices=["settle", "no_contact", "indent", "cut", "cut_recontact", "two_cuts", "uncut_scrape"], default="cut")
+    p.add_argument("--case", choices=["settle", "no_contact", "indent", "cut", "cut_recontact", "two_cuts", "cross_cuts", "supported_cross_cuts", "uncut_scrape"], default="cut")
     p.add_argument("--dx", type=float, default=.004)
     p.add_argument("--dt", type=float, default=.0001)
     p.add_argument("--frame-dt", type=float, default=.02)

@@ -11,11 +11,18 @@ record their tracked diff hashes. No third-party asset is redistributed here.
 | [CRESSim-MPM](https://github.com/yafei-ou/CRESSim-MPM) | BSD-3-Clause | Isolated shared-library build and headless API harness; license retained at [licenses/CRESSim-MPM.txt](licenses/CRESSim-MPM.txt) |
 | NVIDIA Warp 1.17.0 | Apache-2.0 | Official runtime and programmable mesh ray camera |
 | OpenUSD core | Apache-2.0 | `usd-core` standalone scene export; not coinstalled with Isaac's `usd-exchange` |
+| MuJoCo / MuJoCo Warp 3.12.0 | Apache-2.0 | Articulated dynamics through Newton, isolated project environment |
+| [Taichi MPM / CPIC](https://github.com/yuanming-hu/taichi_mpm) | MIT | Pinned source inspection only, not built or redistributed |
+| [OVRTX / OVStage](https://nvidia-omniverse.github.io/ovrtx/) 0.6.0 | NVIDIA software terms | Separate `.deps/rtx-venv` environment; actual RTX capture, no binary redistribution |
 
-The CRESSim patch in `scripts/patches/cressim_si_mls.patch` changes only its isolated
+The CRESSim patches in `scripts/patches/cressim_si_mls.patch` and
+`scripts/patches/cressim_math_layout.patch` change only its isolated
 checkout: SI-scale nodal mass cutoff/empty-node velocity, missing constitutive switch
 break, quadratic APIC inverse-spacing factor, and world-frame slicer normal. It is
 an experimental local correction, not an upstream release or validated cutting law.
+The second patch corrects outer-product, inverse and SVD memory-layout assembly;
+all sixteen actual-header controls and fresh GPU probes passed. Both patches are
+now applied by the default build script, and earlier failures remain preserved.
 Original copyright/license headers remain in the source; the patch is shipped with
 the upstream BSD notice. `build_cressim.sh` applies it idempotently and refuses
 incompatible patch context. Moving-normal slicer relative-velocity semantics remain
@@ -23,5 +30,7 @@ unresolved, and no persistent fracture labels are added by this patch.
 
 Isaac Sim and official Franka/D455 assets have separate NVIDIA/asset terms. Assets
 are to be resolved from their official root and used under those terms; see
-[ASSET_SOURCES](assets/ASSET_SOURCES.md). DiSECt, CPIC, BladeMaster and research
-datasets have not been copied, installed or redistributed.
+[ASSET_SOURCES](assets/ASSET_SOURCES.md). DiSECt, BladeMaster and research datasets
+are not redistributed. CPIC's MIT reference is inspected in an ignored checkout.
+`tlmpm.py` is an independent implementation from published mathematical ideas,
+not copied BladeMaster, CPIC or DiSECt code.

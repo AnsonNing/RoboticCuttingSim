@@ -1,0 +1,715 @@
+{
+  "status": "PASS_EXECUTION",
+  "scope": "standalone articulated cutting + vision benchmark execution",
+  "cases": [
+    {
+      "variant": "D0",
+      "seed": 42,
+      "status": "PASS_EXECUTION",
+      "physics_status": "PASS_NUMERICAL_COUPLING_PROBE",
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "particle_count": 19340,
+      "max_speed_m_s": 0.18877562880516052,
+      "minimum_detF": 0.9050512313842773,
+      "peak_material_force_N": 1.0686682369067873,
+      "mass_budget": {
+        "status": "SOURCE_REPORTED",
+        "component_provenance": "final conservative MPM reference-stencil compatibility graph, including derivative support",
+        "anchor_method": "explicit source mask; fixture attachment not independently verified",
+        "component_count": 2,
+        "detached_component_count": 1,
+        "substrate_mass_kg": 0.230424,
+        "detached_mass_kg": 0.001656,
+        "unclassified_mass_kg": 0.0,
+        "partition_residual_kg": -9.107298248878237e-18,
+        "largest_components": [
+          {
+            "id": 1,
+            "mass_kg": 0.230424,
+            "contains_reference_anchor": true,
+            "center_of_mass_m": [
+              -2.974289805578432e-05,
+              3.4773509291332854e-06,
+              0.007861421612843124
+            ],
+            "linear_momentum_kg_m_s": [
+              -6.013203506761804e-06,
+              -5.910493519778256e-08,
+              2.502658864211608e-08
+            ]
+          },
+          {
+            "id": 0,
+            "mass_kg": 0.001656,
+            "contains_reference_anchor": false,
+            "center_of_mass_m": [
+              0.060543518621420524,
+              -0.002184424547759472,
+              0.01793813810724279
+            ],
+            "linear_momentum_kg_m_s": [
+              4.2916246864479024e-08,
+              4.6308054388646295e-08,
+              -1.0361101248349762e-08
+            ]
+          }
+        ],
+        "component_list_truncated": false,
+        "permanent_separation_proven": null,
+        "recontact_proven": null
+      },
+      "surface_metrics": {
+        "residual_height_proxy_m": 0.001265697613358499,
+        "residual_height_p95_proxy_m": 0.0009193757213652147,
+        "rms_target_plane_error_proxy_m": 0.0008628105438430343,
+        "surface_roughness_std_proxy_m": 5.4910762236967115e-05,
+        "overcut_volume_proxy_m3": 0.0,
+        "occupied_bin_fraction": 1.0,
+        "grid_shape_xy": [
+          30,
+          20
+        ],
+        "particle_count_in_footprint": 19202
+      },
+      "parameter_application": {
+        "source": "BenchmarkSpec",
+        "applied": {
+          "density_kg_m3": {
+            "backend_field": "density",
+            "value": 1500.0
+          },
+          "young_modulus_pa": {
+            "backend_field": "young",
+            "value": 50000.0
+          },
+          "poisson_ratio": {
+            "backend_field": "poisson",
+            "value": 0.3
+          },
+          "yield_stress_pa": {
+            "backend_field": "yield_stress",
+            "value": 1000.0
+          },
+          "friction": {
+            "backend_field": "contact_friction",
+            "value": 0.4
+          }
+        },
+        "unapplied": {
+          "hardening_ratio": {
+            "requested": 0.0,
+            "status": "UNSUPPORTED",
+            "reason": "TLMPM uses perfect Hencky J2 plasticity without hardening"
+          },
+          "critical_stress_pa": {
+            "requested": null,
+            "status": "UNSUPPORTED",
+            "reason": "The retained cut law is edge work, not critical-stress failure"
+          },
+          "failure_model": {
+            "requested": "not_configured",
+            "status": "NOT_APPLIED",
+            "reason": "Actual backend is experimental edge-work activation plus persistent logical-grid cuts"
+          },
+          "blade_half_thickness_m": {
+            "requested": 0.001,
+            "status": "UNSUPPORTED",
+            "reason": "A rectangular blade half-thickness has no exact triangular-wedge counterpart"
+          }
+        },
+        "deferred_to_sensor_adapter": {
+          "camera_translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "camera_rotation_deg": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "status": "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+        },
+        "calibration": "provisional_uncalibrated",
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.4,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.012,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": true,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "scenario_selection": "provided_BenchmarkSpec"
+      },
+      "camera_status": "PASS",
+      "changed_depth_pixels_10um": {
+        "d455_0": 55074,
+        "d455_1": 60707,
+        "global": 16135
+      },
+      "physics_wall_s": 32.91493242094293,
+      "task_success": null,
+      "task_success_scope": "not inferred from a mechanical split or numerical execution"
+    },
+    {
+      "variant": "D1",
+      "seed": 42,
+      "status": "PASS_EXECUTION",
+      "physics_status": "PASS_NUMERICAL_COUPLING_PROBE",
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "particle_count": 19401,
+      "max_speed_m_s": 0.1664901077747345,
+      "minimum_detF": 0.9178597331047058,
+      "peak_material_force_N": 0.9974723849004783,
+      "mass_budget": {
+        "status": "SOURCE_REPORTED",
+        "component_provenance": "final conservative MPM reference-stencil compatibility graph, including derivative support",
+        "anchor_method": "explicit source mask; fixture attachment not independently verified",
+        "component_count": 2,
+        "detached_component_count": 1,
+        "substrate_mass_kg": 0.230436,
+        "detached_mass_kg": 0.002376,
+        "unclassified_mass_kg": 0.0,
+        "partition_residual_kg": -3.859759734048396e-17,
+        "largest_components": [
+          {
+            "id": 1,
+            "mass_kg": 0.230436,
+            "contains_reference_anchor": true,
+            "center_of_mass_m": [
+              -3.361450118310593e-05,
+              3.483675090297833e-06,
+              0.007862091002223133
+            ],
+            "linear_momentum_kg_m_s": [
+              -6.405150485181372e-06,
+              9.298194654871758e-09,
+              7.829400524928587e-09
+            ]
+          },
+          {
+            "id": 0,
+            "mass_kg": 0.002376,
+            "contains_reference_anchor": false,
+            "center_of_mass_m": [
+              0.06825553928737083,
+              -0.0013669356240742752,
+              0.06581677605557924
+            ],
+            "linear_momentum_kg_m_s": [
+              -8.917294814801842e-08,
+              1.3895477152125572e-08,
+              -1.678942384842235e-09
+            ]
+          }
+        ],
+        "component_list_truncated": false,
+        "permanent_separation_proven": null,
+        "recontact_proven": null
+      },
+      "surface_metrics": {
+        "residual_height_proxy_m": 0.0012860991656780257,
+        "residual_height_p95_proxy_m": 0.0009202719796448961,
+        "rms_target_plane_error_proxy_m": 0.000858299491834483,
+        "surface_roughness_std_proxy_m": 7.073639394054808e-05,
+        "overcut_volume_proxy_m3": 0.0,
+        "occupied_bin_fraction": 1.0,
+        "grid_shape_xy": [
+          30,
+          20
+        ],
+        "particle_count_in_footprint": 19203
+      },
+      "parameter_application": {
+        "source": "BenchmarkSpec",
+        "applied": {
+          "density_kg_m3": {
+            "backend_field": "density",
+            "value": 1500.0
+          },
+          "young_modulus_pa": {
+            "backend_field": "young",
+            "value": 50000.0
+          },
+          "poisson_ratio": {
+            "backend_field": "poisson",
+            "value": 0.3
+          },
+          "yield_stress_pa": {
+            "backend_field": "yield_stress",
+            "value": 1000.0
+          },
+          "friction": {
+            "backend_field": "contact_friction",
+            "value": 0.4
+          }
+        },
+        "unapplied": {
+          "hardening_ratio": {
+            "requested": 0.0,
+            "status": "UNSUPPORTED",
+            "reason": "TLMPM uses perfect Hencky J2 plasticity without hardening"
+          },
+          "critical_stress_pa": {
+            "requested": null,
+            "status": "UNSUPPORTED",
+            "reason": "The retained cut law is edge work, not critical-stress failure"
+          },
+          "failure_model": {
+            "requested": "not_configured",
+            "status": "NOT_APPLIED",
+            "reason": "Actual backend is experimental edge-work activation plus persistent logical-grid cuts"
+          },
+          "blade_half_thickness_m": {
+            "requested": 0.001,
+            "status": "UNSUPPORTED",
+            "reason": "A rectangular blade half-thickness has no exact triangular-wedge counterpart"
+          }
+        },
+        "deferred_to_sensor_adapter": {
+          "camera_translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "camera_rotation_deg": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "status": "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+        },
+        "calibration": "provisional_uncalibrated",
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.4,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.012,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": true,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "scenario_selection": "provided_BenchmarkSpec"
+      },
+      "camera_status": "PASS",
+      "changed_depth_pixels_10um": {
+        "d455_0": 55078,
+        "d455_1": 60821,
+        "global": 16135
+      },
+      "physics_wall_s": 30.68055360717699,
+      "task_success": null,
+      "task_success_scope": "not inferred from a mechanical split or numerical execution"
+    },
+    {
+      "variant": "D2",
+      "seed": 42,
+      "status": "PASS_EXECUTION",
+      "physics_status": "PASS_NUMERICAL_COUPLING_PROBE",
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 3,
+      "particle_count": 19386,
+      "max_speed_m_s": 1.1138389110565186,
+      "minimum_detF": 0.9044881463050842,
+      "peak_material_force_N": 1.0934273029405008,
+      "mass_budget": {
+        "status": "SOURCE_REPORTED",
+        "component_provenance": "final conservative MPM reference-stencil compatibility graph, including derivative support",
+        "anchor_method": "explicit source mask; fixture attachment not independently verified",
+        "component_count": 3,
+        "detached_component_count": 2,
+        "substrate_mass_kg": 0.23165999999999998,
+        "detached_mass_kg": 0.0009719999999999999,
+        "unclassified_mass_kg": 0.0,
+        "partition_residual_kg": -2.699663409488906e-17,
+        "largest_components": [
+          {
+            "id": 2,
+            "mass_kg": 0.23165999999999998,
+            "contains_reference_anchor": true,
+            "center_of_mass_m": [
+              -4.817671483984962e-05,
+              -2.489256973413908e-05,
+              0.007910261072448325
+            ],
+            "linear_momentum_kg_m_s": [
+              -4.484318834019602e-06,
+              4.894018431229922e-06,
+              7.354126111735412e-08
+            ]
+          },
+          {
+            "id": 1,
+            "mass_kg": 0.000504,
+            "contains_reference_anchor": false,
+            "center_of_mass_m": [
+              0.09337301197506133,
+              -0.010804830119013788,
+              -0.007297115938161454
+            ],
+            "linear_momentum_kg_m_s": [
+              -2.938876959979098e-08,
+              1.506854238903088e-08,
+              2.6145848743141182e-08
+            ]
+          },
+          {
+            "id": 0,
+            "mass_kg": 0.00046800000000000015,
+            "contains_reference_anchor": false,
+            "center_of_mass_m": [
+              0.08607115883093613,
+              0.013293265365064137,
+              -0.007700738676178912
+            ],
+            "linear_momentum_kg_m_s": [
+              -2.6459217315277765e-09,
+              5.230856297657738e-10,
+              3.129761785203258e-11
+            ]
+          }
+        ],
+        "component_list_truncated": false,
+        "permanent_separation_proven": null,
+        "recontact_proven": null
+      },
+      "surface_metrics": {
+        "residual_height_proxy_m": 0.02171314737200737,
+        "residual_height_p95_proxy_m": 0.002388507932424538,
+        "rms_target_plane_error_proxy_m": 0.002215151590077308,
+        "surface_roughness_std_proxy_m": 0.001830566800515179,
+        "overcut_volume_proxy_m3": 6.7807664871215585e-09,
+        "occupied_bin_fraction": 1.0,
+        "grid_shape_xy": [
+          30,
+          20
+        ],
+        "particle_count_in_footprint": 19305
+      },
+      "parameter_application": {
+        "source": "BenchmarkSpec",
+        "applied": {
+          "density_kg_m3": {
+            "backend_field": "density",
+            "value": 1500.0
+          },
+          "young_modulus_pa": {
+            "backend_field": "young",
+            "value": 50000.0
+          },
+          "poisson_ratio": {
+            "backend_field": "poisson",
+            "value": 0.3
+          },
+          "yield_stress_pa": {
+            "backend_field": "yield_stress",
+            "value": 1000.0
+          },
+          "friction": {
+            "backend_field": "contact_friction",
+            "value": 0.4
+          }
+        },
+        "unapplied": {
+          "hardening_ratio": {
+            "requested": 0.0,
+            "status": "UNSUPPORTED",
+            "reason": "TLMPM uses perfect Hencky J2 plasticity without hardening"
+          },
+          "critical_stress_pa": {
+            "requested": null,
+            "status": "UNSUPPORTED",
+            "reason": "The retained cut law is edge work, not critical-stress failure"
+          },
+          "failure_model": {
+            "requested": "not_configured",
+            "status": "NOT_APPLIED",
+            "reason": "Actual backend is experimental edge-work activation plus persistent logical-grid cuts"
+          },
+          "blade_half_thickness_m": {
+            "requested": 0.001,
+            "status": "UNSUPPORTED",
+            "reason": "A rectangular blade half-thickness has no exact triangular-wedge counterpart"
+          }
+        },
+        "deferred_to_sensor_adapter": {
+          "camera_translation_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "camera_rotation_deg": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "status": "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+        },
+        "calibration": "provisional_uncalibrated",
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.4,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.012,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": true,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "scenario_selection": "provided_BenchmarkSpec"
+      },
+      "camera_status": "PASS",
+      "changed_depth_pixels_10um": {
+        "d455_0": 55507,
+        "d455_1": 60818,
+        "global": 16161
+      },
+      "physics_wall_s": 31.427978934021667,
+      "task_success": null,
+      "task_success_scope": "not inferred from a mechanical split or numerical execution"
+    },
+    {
+      "variant": "D3",
+      "seed": 42,
+      "status": "PASS_EXECUTION",
+      "physics_status": "PASS_NUMERICAL_COUPLING_PROBE",
+      "initial_mechanical_components": 1,
+      "final_mechanical_components": 2,
+      "particle_count": 19303,
+      "max_speed_m_s": 0.18559621274471283,
+      "minimum_detF": 0.8679225444793701,
+      "peak_material_force_N": 1.3864219680238592,
+      "mass_budget": {
+        "status": "SOURCE_REPORTED",
+        "component_provenance": "final conservative MPM reference-stencil compatibility graph, including derivative support",
+        "anchor_method": "explicit source mask; fixture attachment not independently verified",
+        "component_count": 2,
+        "detached_component_count": 1,
+        "substrate_mass_kg": 0.24457232925213399,
+        "detached_mass_kg": 0.000393407129868003,
+        "unclassified_mass_kg": 0.0,
+        "partition_residual_kg": 1.452830911130576e-17,
+        "largest_components": [
+          {
+            "id": 1,
+            "mass_kg": 0.24457232925213399,
+            "contains_reference_anchor": true,
+            "center_of_mass_m": [
+              -2.8016422181906555e-05,
+              2.023649890336744e-05,
+              0.007898489763876547
+            ],
+            "linear_momentum_kg_m_s": [
+              -3.220521370114846e-06,
+              5.131760677458059e-06,
+              -1.2699287146936966e-07
+            ]
+          },
+          {
+            "id": 0,
+            "mass_kg": 0.000393407129868003,
+            "contains_reference_anchor": false,
+            "center_of_mass_m": [
+              0.07413431112804719,
+              -0.01285945561023489,
+              0.06499824757056852
+            ],
+            "linear_momentum_kg_m_s": [
+              1.093837673873913e-08,
+              2.805276420210586e-09,
+              -1.0862647662620525e-08
+            ]
+          }
+        ],
+        "component_list_truncated": false,
+        "permanent_separation_proven": null,
+        "recontact_proven": null
+      },
+      "surface_metrics": {
+        "residual_height_proxy_m": 0.016012534931302072,
+        "residual_height_p95_proxy_m": 0.0011857913937419664,
+        "rms_target_plane_error_proxy_m": 0.001970541406944865,
+        "surface_roughness_std_proxy_m": 0.0016030993450909029,
+        "overcut_volume_proxy_m3": 0.0,
+        "occupied_bin_fraction": 1.0,
+        "grid_shape_xy": [
+          30,
+          20
+        ],
+        "particle_count_in_footprint": 19272
+      },
+      "parameter_application": {
+        "source": "BenchmarkSpec",
+        "applied": {
+          "density_kg_m3": {
+            "backend_field": "density",
+            "value": 1586.3190720483988
+          },
+          "young_modulus_pa": {
+            "backend_field": "young",
+            "value": 79365.6967962498
+          },
+          "poisson_ratio": {
+            "backend_field": "poisson",
+            "value": 0.30764384584755305
+          },
+          "yield_stress_pa": {
+            "backend_field": "yield_stress",
+            "value": 1147.6677631233597
+          },
+          "friction": {
+            "backend_field": "contact_friction",
+            "value": 0.22552690244167015
+          }
+        },
+        "unapplied": {
+          "hardening_ratio": {
+            "requested": 0.16637543610475045,
+            "status": "UNSUPPORTED",
+            "reason": "TLMPM uses perfect Hencky J2 plasticity without hardening"
+          },
+          "critical_stress_pa": {
+            "requested": null,
+            "status": "UNSUPPORTED",
+            "reason": "The retained cut law is edge work, not critical-stress failure"
+          },
+          "failure_model": {
+            "requested": "not_configured",
+            "status": "NOT_APPLIED",
+            "reason": "Actual backend is experimental edge-work activation plus persistent logical-grid cuts"
+          },
+          "blade_half_thickness_m": {
+            "requested": 0.0013621049375940656,
+            "status": "UNSUPPORTED",
+            "reason": "A rectangular blade half-thickness has no exact triangular-wedge counterpart"
+          }
+        },
+        "deferred_to_sensor_adapter": {
+          "camera_translation_m": [
+            0.0013166439912206482,
+            0.0025808774008537387,
+            -0.0014547403187013166
+          ],
+          "camera_rotation_deg": [
+            2.824188146369419,
+            2.3587267279331865,
+            1.670300982442571
+          ],
+          "status": "NOT_APPLIED_BY_PHYSICS_ADAPTER"
+        },
+        "calibration": "provisional_uncalibrated",
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1586.3190720483988,
+          "young": 79365.6967962498,
+          "poisson": 0.30764384584755305,
+          "yield_stress": 1147.6677631233597,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.22552690244167015,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.012,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": true,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "scenario_selection": "provided_BenchmarkSpec"
+      },
+      "camera_status": "PASS",
+      "changed_depth_pixels_10um": {
+        "d455_0": 54858,
+        "d455_1": 60465,
+        "global": 16094
+      },
+      "physics_wall_s": 31.744252434931695,
+      "task_success": null,
+      "task_success_scope": "not inferred from a mechanical split or numerical execution"
+    }
+  ],
+  "wall_s": 170.49017909681424,
+  "benchmark_executable": true,
+  "benchmark_ready": false,
+  "formal_task_success_rate": null,
+  "full_isaac_lab_runtime": "BLOCKED",
+  "simulated_d455_validated": false,
+  "limitations": [
+    "Provisional material and cutting parameters, no physical calibration",
+    "Partial recipe application is reported per case; D3 hardening and camera perturbations require adapters",
+    "Fixed sweep is a baseline, not an optimal or learned cutting controller",
+    "Surface proxies and source mechanical components are oracle metrics, excluded from observations",
+    "Ideal full-scene RGB-D is validated separately from native D455 sensor calibration"
+  ],
+  "local_artifact_root": "artifacts/simulation_benchmark_001",
+  "artifact_sha256": {
+    "result.json": "7330792f7e3f353e460e89109f64053f54abdbc7bdbb2eda8c98db950e8c4f31",
+    "manifest.json": "40d0cb1815cbe0f920a36de1b9f13d43886a3826d646085ca219b30817b645f5"
+  }
+}

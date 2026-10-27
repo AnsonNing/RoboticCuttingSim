@@ -91,6 +91,8 @@ def run(output, config, seed, duration):
     np.savez_compressed(output / "physics_state.npz", time_s=snapshot_times,
         positions=np.array([s["positions"] for s in material]), velocities=np.array([s["velocities"] for s in material]),
         codes=np.array([s["codes"] for s in material]), mass_kg=scene.masses,
+        tool_pose_xyzw=tools[np.rint(np.asarray(snapshot_times)/config.control_dt).astype(int)],
+        substrate_anchor_mask=scene.points[:, 2] <= scene.points[:, 2].min()+config.dx/8,
         reference_positions=scene.points, reference_indices=scene.lattice,
         final_F=final["F"], final_Fpi=final["Fpi"], final_cut_progress=final["cut_progress"],
         final_plastic_strain=final["plastic_strain"], component_ids=component,

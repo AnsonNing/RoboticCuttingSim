@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "scope": "live measured Panda + persistent-cut MPM + full-scene ideal RGB-D API",
+  "steps": 400,
+  "simulation_s": 8.0,
+  "wall_s": 164.55213251407258,
+  "final_mechanical_components": 2,
+  "changed_depth_pixels_10um_accumulated": {
+    "d455_0": 477045,
+    "d455_1": 581647
+  },
+  "same_seed_reset_q_error_rad": 0.0,
+  "same_seed_reset_depth_error_m": 0.0,
+  "truncation_guard": true,
+  "observation_contains_force_oracle_global": false,
+  "mean_camera_wall_s": 0.31960537411563567,
+  "max_camera_wall_s": 0.7084724688902497,
+  "simulated_d455_validated": false,
+  "physics_calibrated": false,
+  "capabilities": {
+    "articulated_robots": true,
+    "persistent_cutting": "experimental_online_TLMPM",
+    "material_reaction_feedback": "one_interval_explicit_delay",
+    "ideal_rgbd": true,
+    "simulated_d455_validated": false,
+    "physics_calibrated": false,
+    "policy_training": false
+  },
+  "source_sha256": {
+    "src/robotic_cutting_sim/research_env.py": "0011ca1c5ba6347a55f087bfd694eb816fba4119d7775df20de97fd92e0864c1",
+    "src/robotic_cutting_sim/coupled_robot.py": "c84ec7f4ee4f4e2ab32083d7b589f5080f964e7821da6ab0c7a37b525d4c4deb",
+    "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+    "src/robotic_cutting_sim/tlmpm.py": "0c512a252843cd395c1d610249a16ca176763a75e13094ca01ab4077cc08f7b7",
+    "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+    "src/robotic_cutting_sim/cutting_surface.py": "d169edcc1d740dfb3429ba9d4ff223f831539fe74363533642bd6628a10c177c",
+    "scripts/check_research_env.py": "19ea52b9b33e5f965c493d9ceba78f2db3de79efa3adccec1b435c5e70012f4b"
+  },
+  "local_artifact_root": "artifacts/research_env_full_001",
+  "artifact_sha256": {
+    "result.json": "bbe112d9da2be7d57e904b30e7ce15abadbf451b53685353fed71cb809159988",
+    "manifest.json": "b138718f60ccd8af9d541ee013cf8e812084db175dc254e1caa16161979d8055"
+  }
+}

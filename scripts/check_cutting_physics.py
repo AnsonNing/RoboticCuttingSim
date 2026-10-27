@@ -323,7 +323,7 @@ def gpu_microcontrols(device, tolerances):
             contact.progress, contact.contact_work, contact.poses, contact.twists, contact.cuts, contact.index,
             contact.reaction, contact.stats, contact.radius, contact.volume, c.dt, c.contact_stiffness,
             c.contact_friction, c.cutting_energy, c.sharpness, c.blade_length, c.blade_height,
-            c.blade_half_width, 0, 1])
+            c.blade_half_width, 0, int(c.fixture_walls), 1])
         material_impulse = contact.impulse.numpy().astype(float).sum(0)
         reaction = contact.reaction.numpy()[0, :3].astype(float)
         error = float(np.linalg.norm(material_impulse+reaction))

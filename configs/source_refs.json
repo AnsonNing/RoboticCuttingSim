@@ -13,5 +13,10 @@
     "url": "https://github.com/yafei-ou/CRESSim-MPM",
     "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
     "license": "BSD-3-Clause"
+  },
+  "taichi_mpm": {
+    "url": "https://github.com/yuanming-hu/taichi_mpm",
+    "sha": "3a680ab0fdc6e95077f08a91bc9079e1ef41478e",
+    "license": "MIT"
   }
 }

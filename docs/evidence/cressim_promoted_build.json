@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "scope": "GPU QuadSlicer execution with broad numerical sanity guard",
+  "particle_count": 19340,
+  "wall_s": 2.2666392200626433,
+  "simulation_s": 2.0,
+  "sim_s_per_wall_s": 0.8823636255375154,
+  "mass_error_relative": 3.537085536468222e-08,
+  "max_speed_m_s": 0.024273451417684555,
+  "min_particle_z_m": 0.0009708424913696945,
+  "numerical_sanity_guard": {
+    "max_speed_limit_m_s": 2.0,
+    "minimum_z_limit_m": -0.001,
+    "passed": true
+  },
+  "persistent_separation_valid": null,
+  "physics_proven": false,
+  "limitations": [
+    "Only elastic co-rotational law, no equivalent Newton plasticity",
+    "QuadSlicer and Newton box differ; not a controlled quantitative ranking",
+    "No persistent cut labels exported; withdrawal/recontact gate remains open"
+  ],
+  "local_artifact_root": "artifacts/cressim_scrape_promoted_001",
+  "artifact_sha256": {
+    "result.json": "407de9ff2427368adddbbde7aab768b86afd25a8fc65449fe7ae57802b54b3e7",
+    "manifest.json": "448d00b42223bd6084724d0057c187086109cb126d1462bc704f4d758d2e1f2d",
+    "physics_state.npz": "b15b2efa779478c542ef80a3945c4f3db8a15481ee1c2aab5509e1e03d8e7267"
+  }
+}
