@@ -1,0 +1,1606 @@
+{
+  "scope": "Descriptive task-object audit plus unchanged frozen camera gates; no oracle ROI enters observations",
+  "strict_native_CAM04_promoted": false,
+  "code_commit": "6b75f1f",
+  "frozen_camera_gates": {
+    "CAM-03": {
+      "camera": "global",
+      "require_live_rgb": true,
+      "minimum_visible_pixels_each_required_object": 25,
+      "required_objects": [
+        "franka_0",
+        "franka_1",
+        "knife",
+        "material",
+        "table"
+      ],
+      "reason": "The global view must actually show the complete moving workcell, not merely contain camera prims."
+    },
+    "CAM-04": {
+      "max_physics_surface_camera_timestamp_difference_s": 1e-06,
+      "mesh_depth_p95_absolute_error_m": 0.001,
+      "minimum_reference_depth_valid_mask_iou": 0.99,
+      "minimum_visible_chip_pixels_in_any_recorded_frame": 25,
+      "reason": "Current separated geometry, tool occlusion and capture must agree numerically at one timestamp."
+    }
+  },
+  "task_entries": {
+    "CUT-01": {
+      "camera_audit_artifact": "artifacts/live_camera_mesh_cut01_001",
+      "object_audit_artifact": "artifacts/task_object_cut01_001",
+      "camera_result": {
+        "scope": "Recorded actual live Kit arrays vs measured-state CPU geometry; no new sensor rendering or semantic AOV",
+        "frames": 41,
+        "partial_frame_subset": false,
+        "CAM-03": "PASS_GEOMETRIC_ATTRIBUTION",
+        "CAM-04_strict_native": "FAIL",
+        "geometry_bridge": "PASS",
+        "time_synchronization": "PASS",
+        "native_depth_and_mask": "FAIL",
+        "maximum_native_valid_chip_pixels": null,
+        "maximum_native_valid_separated_component_pixels": 517,
+        "separated_component_visibility": "PASS",
+        "task_id": "CUT-01",
+        "native_semantic_aov_captured": false,
+        "ideal_fallback_for_native_gate_used": false,
+        "all_valid_error_tails_retained": true
+      },
+      "camera_summary": {
+        "d455_0": {
+          "geometry_vs_actual_rtx": {
+            "minimum_mask_iou": 0.9999845062130086,
+            "maximum_frame_p95_absolute_error_m": 1.7881393432617188e-07,
+            "maximum_absolute_error_m": 0.5184019207954407,
+            "total_error_gt_1mm_pixel_samples": 19
+          },
+          "actual_native_vs_geometry": {
+            "minimum_mask_iou": 0.6464998992888241,
+            "maximum_frame_p95_absolute_error_m": 2.384185791015625e-07,
+            "maximum_absolute_error_m": 0.6179696917533875,
+            "total_error_gt_1mm_pixel_samples": 1743
+          },
+          "actual_native_vs_rtx": {
+            "minimum_mask_iou": 0.6464898825570946,
+            "maximum_frame_p95_absolute_error_m": 0.0,
+            "maximum_absolute_error_m": 0.6179699301719666,
+            "total_error_gt_1mm_pixel_samples": 1743
+          },
+          "minimum_rtx_depth_consistent_visible_pixels": {
+            "franka_0": 33894,
+            "franka_1": 21289,
+            "knife": 9,
+            "material": 899,
+            "table": 199111
+          }
+        },
+        "d455_1": {
+          "geometry_vs_actual_rtx": {
+            "minimum_mask_iou": 0.9999618043619418,
+            "maximum_frame_p95_absolute_error_m": 1.7881393432617188e-07,
+            "maximum_absolute_error_m": 0.3123525381088257,
+            "total_error_gt_1mm_pixel_samples": 196
+          },
+          "actual_native_vs_geometry": {
+            "minimum_mask_iou": 0.3368921543303772,
+            "maximum_frame_p95_absolute_error_m": 2.384185791015625e-07,
+            "maximum_absolute_error_m": 1.0061779618263245,
+            "total_error_gt_1mm_pixel_samples": 4573
+          },
+          "actual_native_vs_rtx": {
+            "minimum_mask_iou": 0.3368921543303772,
+            "maximum_frame_p95_absolute_error_m": 0.0,
+            "maximum_absolute_error_m": 1.0061779022216797,
+            "total_error_gt_1mm_pixel_samples": 4597
+          },
+          "minimum_rtx_depth_consistent_visible_pixels": {
+            "franka_0": 21396,
+            "franka_1": 22501,
+            "knife": 166,
+            "material": 734,
+            "table": 163310
+          }
+        },
+        "global": {
+          "geometry_vs_actual_rtx": {
+            "minimum_mask_iou": 0.999981044450763,
+            "maximum_frame_p95_absolute_error_m": 7.152557373046875e-07,
+            "maximum_absolute_error_m": 0.7464022636413574,
+            "total_error_gt_1mm_pixel_samples": 57
+          },
+          "actual_native_vs_geometry": {
+            "minimum_mask_iou": 0.999981044450763,
+            "maximum_frame_p95_absolute_error_m": 7.152557373046875e-07,
+            "maximum_absolute_error_m": 0.7464022636413574,
+            "total_error_gt_1mm_pixel_samples": 57
+          },
+          "actual_native_vs_rtx": {
+            "minimum_mask_iou": 1.0,
+            "maximum_frame_p95_absolute_error_m": 0.0,
+            "maximum_absolute_error_m": 0.0,
+            "total_error_gt_1mm_pixel_samples": 0
+          },
+          "minimum_rtx_depth_consistent_visible_pixels": {
+            "franka_0": 18605,
+            "franka_1": 27791,
+            "knife": 85,
+            "material": 536,
+            "table": 161625
+          }
+        }
+      },
+      "max_timestamp_span_s": 8.881784197001252e-16,
+      "camera_audit_wall_s": 57.203034572536126,
+      "camera_input": {
+        "episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "input_sha256": {
+          "artifacts/isaacsim_cut01_001/setup.json": "85c2b53f83eacf5d7fae91abf41e9f3a004a7c0d2730c597f5fe5eaf53a1e790",
+          "artifacts/isaacsim_cut01_001/robot_state.npz": "b137188033fb1376ac46dbdfd2a14e54b5174fea8ea7dc63289db86398ba718a",
+          "artifacts/isaacsim_cut01_001/frame_manifest.json": "3644ba16768d8ef9f8dbd3aa1c79577f808d03be418b2608c0cb296395e97a36",
+          "artifacts/isaacsim_cut01_001/calibration_runtime.json": "1028da5cca6a3d470fa34042c77e9e92f8b1a9476aa69a6d596b5176e5acdc12",
+          "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001/initial_workcell_00/workcell.usda": "a4bd4361eaf82e22c29e797c5e34c9eebe86f8b7b25e2be7322ba8fbfe9e139e",
+          "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+          "/home/ningan/RoboticCuttingSim/scripts/audit_live_camera_mesh.py": "bb7e998ca33b7982f6e0d6e8a35ba7159076e2f408e548f44383c59c6f2e45d0",
+          "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+          "src/robotic_cutting_sim/usd_surface_bridge.py": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3",
+          "src/robotic_cutting_sim/cutting_surface.py": "7822b6aaa50274756d741a1f8781e7302c260b8c09a799af2c7b9259db4a0a17"
+        },
+        "excluded_guide_prims": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_capsule",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/gripper",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_c/hand_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/link7_c/link7_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/link6_c/link6_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c0/link5_c0",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c1/link5_c1",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c2/link5_c2",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/link4_c/link4_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/link3_c/link3_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/link2_c/link2_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/link1_c/link1_c",
+          "/World/Franka_0/Geometry/panda_link0/link0_c/link0_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_capsule",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/gripper",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_c/hand_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/link7_c/link7_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/link6_c/link6_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c0/link5_c0",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c1/link5_c1",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c2/link5_c2",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/link4_c/link4_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/link3_c/link3_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/link2_c/link2_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/link1_c/link1_c",
+          "/World/Franka_1/Geometry/panda_link0/link0_c/link0_c"
+        ],
+        "task_session_geometry": {
+          "source": "recorded setup.json task; not current mutable task defaults",
+          "task": "CUT-01",
+          "disabled_legacy_tray_prims": [
+            "/World/TrayFloor",
+            "/World/TrayLeft",
+            "/World/TrayRight",
+            "/World/TrayFront",
+            "/World/TrayBack"
+          ],
+          "fixture_boxes_local": [
+            {
+              "name": "left_pedestal",
+              "center_m": [
+                -0.055,
+                0.0,
+                -0.005
+              ],
+              "half_extents_m": [
+                0.035,
+                0.021,
+                0.005
+              ]
+            },
+            {
+              "name": "right_pedestal",
+              "center_m": [
+                0.055,
+                0.0,
+                -0.005
+              ],
+              "half_extents_m": [
+                0.035,
+                0.021,
+                0.005
+              ]
+            }
+          ],
+          "world_from_workpiece_xyzw": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "table_top_world_z_m": -0.01
+        },
+        "blade_dimensions_m": {
+          "length": 0.035,
+          "height": 0.004,
+          "half_width": 0.025
+        },
+        "reference": "Actual per-link PhysX poses + actual current material mesh + measured fixed knife mount; CPU visual triangle first hits",
+        "scope": "Independent recorded-live-data audit, not native semantic segmentation or new live camera capture"
+      },
+      "object_result": {
+        "status": "DESCRIPTIVE_TASK_OBJECT_AUDIT",
+        "command": [
+          "scripts/audit_task_object_visibility.py",
+          "artifacts/live_camera_mesh_cut01_001",
+          "artifacts/task_object_cut01_001"
+        ],
+        "task_id": "CUT-01",
+        "seed": 42,
+        "episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "camera_audit": "artifacts/live_camera_mesh_cut01_001",
+        "scope": "Recorded measured-mesh first-hit oracle ROI only; no native semantic AOV or formal observation changes",
+        "new_acceptance_thresholds": null,
+        "strict_native_CAM04": "FAIL",
+        "native_invalid_pixels_and_all_valid_error_tails_retained": true,
+        "global_is_ideal_reference_not_native_D455": true,
+        "summaries": {
+          "d455_0": {
+            "knife": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 9,
+                "maximum_reference_visible_pixels": 16,
+                "total_reference_pixel_samples": 492,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 492,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 2.980232238769531e-07,
+                  "rms_error_m": 9.576336829640464e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 492,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 2.980232238769531e-07,
+                  "rms_error_m": 9.576336829640464e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 9,
+                "maximum_reference_visible_pixels": 16,
+                "total_reference_pixel_samples": 180,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 180,
+                  "p95_absolute_error_m": 1.817941665649404e-07,
+                  "max_absolute_error_m": 2.980232238769531e-07,
+                  "rms_error_m": 9.824224563500178e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 180,
+                  "p95_absolute_error_m": 1.817941665649404e-07,
+                  "max_absolute_error_m": 2.980232238769531e-07,
+                  "rms_error_m": 9.824224563500178e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_0": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 448,
+                "maximum_reference_visible_pixels": 1044,
+                "total_reference_pixel_samples": 34321,
+                "native_valid_coverage_weighted": 0.9773316628303371,
+                "minimum_native_valid_coverage_when_visible": 0.9137554585152838,
+                "native_invalid_pixel_samples": 778,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 778,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 778,
+                "native_depth_vs_mesh": {
+                  "pixels": 33543,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.0728836059570312e-06,
+                  "rms_error_m": 8.269791233767596e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 34321,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.0728836059570312e-06,
+                  "rms_error_m": 8.373679266909874e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 448,
+                "maximum_reference_visible_pixels": 518,
+                "total_reference_pixel_samples": 7096,
+                "native_valid_coverage_weighted": 0.9984498308906427,
+                "minimum_native_valid_coverage_when_visible": 0.9980694980694981,
+                "native_invalid_pixel_samples": 11,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 11,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 11,
+                "native_depth_vs_mesh": {
+                  "pixels": 7085,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.0728836059570312e-06,
+                  "rms_error_m": 8.938663393237077e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 7096,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.0728836059570312e-06,
+                  "rms_error_m": 8.93285350695209e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "all_material": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 899,
+                "maximum_reference_visible_pixels": 1044,
+                "total_reference_pixel_samples": 41417,
+                "native_valid_coverage_weighted": 0.9753482869353164,
+                "minimum_native_valid_coverage_when_visible": 0.899888765294772,
+                "native_invalid_pixel_samples": 1021,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 1021,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 1021,
+                "native_depth_vs_mesh": {
+                  "pixels": 40396,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 8.570038330914457e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 41417,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 8.648168124060997e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 899,
+                "maximum_reference_visible_pixels": 1036,
+                "total_reference_pixel_samples": 14192,
+                "native_valid_coverage_weighted": 0.9821025930101466,
+                "minimum_native_valid_coverage_when_visible": 0.899888765294772,
+                "native_invalid_pixel_samples": 254,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 254,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 254,
+                "native_depth_vs_mesh": {
+                  "pixels": 13938,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 9.42837791954879e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 14192,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 9.412361183428694e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_1": {
+              "all_frames": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 451,
+                "maximum_reference_visible_pixels": 518,
+                "total_reference_pixel_samples": 7096,
+                "native_valid_coverage_weighted": 0.9657553551296505,
+                "minimum_native_valid_coverage_when_visible": 0.8004434589800443,
+                "native_invalid_pixel_samples": 243,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 243,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 243,
+                "native_depth_vs_mesh": {
+                  "pixels": 6853,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 9.909259237420762e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 7096,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 9.868597383517281e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 451,
+                "maximum_reference_visible_pixels": 518,
+                "total_reference_pixel_samples": 7096,
+                "native_valid_coverage_weighted": 0.9657553551296505,
+                "minimum_native_valid_coverage_when_visible": 0.8004434589800443,
+                "native_invalid_pixel_samples": 243,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 243,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 243,
+                "native_depth_vs_mesh": {
+                  "pixels": 6853,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 9.909259237420762e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 7096,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.172325134277344e-06,
+                  "rms_error_m": 9.868597383517281e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            }
+          },
+          "d455_1": {
+            "knife": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 166,
+                "maximum_reference_visible_pixels": 318,
+                "total_reference_pixel_samples": 11424,
+                "native_valid_coverage_weighted": 0.8890931372549019,
+                "minimum_native_valid_coverage_when_visible": 0.8720538720538721,
+                "native_invalid_pixel_samples": 1267,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 1277,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 1268,
+                "native_depth_vs_mesh": {
+                  "pixels": 10157,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.13668721914291382,
+                  "rms_error_m": 0.001357053036140042,
+                  "absolute_error_gt_1mm_pixels": 10,
+                  "absolute_error_gt_5mm_pixels": 1,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 11424,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 3.5762786865234375e-07,
+                  "rms_error_m": 9.169597176101129e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 166,
+                "maximum_reference_visible_pixels": 318,
+                "total_reference_pixel_samples": 4027,
+                "native_valid_coverage_weighted": 0.895207350384902,
+                "minimum_native_valid_coverage_when_visible": 0.8825503355704698,
+                "native_invalid_pixel_samples": 422,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 423,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 422,
+                "native_depth_vs_mesh": {
+                  "pixels": 3605,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.00194627046585083,
+                  "rms_error_m": 3.343726185973268e-05,
+                  "absolute_error_gt_1mm_pixels": 1,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 4027,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 2.980232238769531e-07,
+                  "rms_error_m": 9.61545701166392e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_0": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 238,
+                "maximum_reference_visible_pixels": 830,
+                "total_reference_pixel_samples": 25477,
+                "native_valid_coverage_weighted": 0.9831220316363779,
+                "minimum_native_valid_coverage_when_visible": 0.9784075573549258,
+                "native_invalid_pixel_samples": 430,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 500,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 431,
+                "native_depth_vs_mesh": {
+                  "pixels": 25047,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.025755882263183594,
+                  "rms_error_m": 0.0002128469284752474,
+                  "absolute_error_gt_1mm_pixels": 70,
+                  "absolute_error_gt_5mm_pixels": 1,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 25477,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.1324882507324219e-06,
+                  "rms_error_m": 9.433084739875652e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 238,
+                "maximum_reference_visible_pixels": 341,
+                "total_reference_pixel_samples": 4437,
+                "native_valid_coverage_weighted": 0.9936894297949065,
+                "minimum_native_valid_coverage_when_visible": 0.9865771812080537,
+                "native_invalid_pixel_samples": 28,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 41,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 28,
+                "native_depth_vs_mesh": {
+                  "pixels": 4409,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.0030000805854797363,
+                  "rms_error_m": 0.00013931114890895394,
+                  "absolute_error_gt_1mm_pixels": 13,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 4437,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.76837158203125e-07,
+                  "rms_error_m": 9.949409919386929e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "all_material": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 734,
+                "maximum_reference_visible_pixels": 846,
+                "total_reference_pixel_samples": 32549,
+                "native_valid_coverage_weighted": 0.9804909521029832,
+                "minimum_native_valid_coverage_when_visible": 0.976,
+                "native_invalid_pixel_samples": 635,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 705,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 636,
+                "native_depth_vs_mesh": {
+                  "pixels": 31914,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.025755882263183594,
+                  "rms_error_m": 0.000188585712487606,
+                  "absolute_error_gt_1mm_pixels": 70,
+                  "absolute_error_gt_5mm_pixels": 1,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 32549,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.1324882507324219e-06,
+                  "rms_error_m": 9.284977184511564e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 743,
+                "maximum_reference_visible_pixels": 846,
+                "total_reference_pixel_samples": 11509,
+                "native_valid_coverage_weighted": 0.9797549743678861,
+                "minimum_native_valid_coverage_when_visible": 0.976,
+                "native_invalid_pixel_samples": 233,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 246,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 233,
+                "native_depth_vs_mesh": {
+                  "pixels": 11276,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.0030000805854797363,
+                  "rms_error_m": 8.725604810815957e-05,
+                  "absolute_error_gt_1mm_pixels": 13,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 11509,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 5.364418029785156e-07,
+                  "rms_error_m": 9.219592703386861e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_1": {
+              "all_frames": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 505,
+                "maximum_reference_visible_pixels": 507,
+                "total_reference_pixel_samples": 7072,
+                "native_valid_coverage_weighted": 0.971012443438914,
+                "minimum_native_valid_coverage_when_visible": 0.9683168316831683,
+                "native_invalid_pixel_samples": 205,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 205,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 205,
+                "native_depth_vs_mesh": {
+                  "pixels": 6867,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.00042551755905151367,
+                  "rms_error_m": 6.42035253776696e-06,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 7072,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 5.364418029785156e-07,
+                  "rms_error_m": 8.730612380919854e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 505,
+                "maximum_reference_visible_pixels": 507,
+                "total_reference_pixel_samples": 7072,
+                "native_valid_coverage_weighted": 0.971012443438914,
+                "minimum_native_valid_coverage_when_visible": 0.9683168316831683,
+                "native_invalid_pixel_samples": 205,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 205,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 205,
+                "native_depth_vs_mesh": {
+                  "pixels": 6867,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.00042551755905151367,
+                  "rms_error_m": 6.42035253776696e-06,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 7072,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 5.364418029785156e-07,
+                  "rms_error_m": 8.730612380919854e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            }
+          },
+          "global": {
+            "knife": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 85,
+                "maximum_reference_visible_pixels": 141,
+                "total_reference_pixel_samples": 5306,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 1,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 1,
+                "native_depth_vs_mesh": {
+                  "pixels": 5306,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 0.139068603515625,
+                  "rms_error_m": 0.0019091738596221464,
+                  "absolute_error_gt_1mm_pixels": 1,
+                  "absolute_error_gt_5mm_pixels": 1,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 5306,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 0.139068603515625,
+                  "rms_error_m": 0.0019091738596221464,
+                  "absolute_error_gt_1mm_pixels": 1,
+                  "absolute_error_gt_5mm_pixels": 1,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 85,
+                "maximum_reference_visible_pixels": 141,
+                "total_reference_pixel_samples": 1842,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 1842,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 1.430511474609375e-06,
+                  "rms_error_m": 3.526969317125927e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 1842,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 1.430511474609375e-06,
+                  "rms_error_m": 3.526969317125927e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_0": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 207,
+                "maximum_reference_visible_pixels": 602,
+                "total_reference_pixel_samples": 18950,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 18950,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.86102294921875e-06,
+                  "rms_error_m": 3.562896336529832e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 18950,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.86102294921875e-06,
+                  "rms_error_m": 3.562896336529832e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 207,
+                "maximum_reference_visible_pixels": 279,
+                "total_reference_pixel_samples": 3663,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 3663,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 1.430511474609375e-06,
+                  "rms_error_m": 3.4942486953231605e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 3663,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 1.430511474609375e-06,
+                  "rms_error_m": 3.4942486953231605e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "all_material": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 536,
+                "maximum_reference_visible_pixels": 609,
+                "total_reference_pixel_samples": 23569,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 23569,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.86102294921875e-06,
+                  "rms_error_m": 3.5690808166672e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 23569,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.86102294921875e-06,
+                  "rms_error_m": 3.5690808166672e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 536,
+                "maximum_reference_visible_pixels": 609,
+                "total_reference_pixel_samples": 8282,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 8282,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.384185791015625e-06,
+                  "rms_error_m": 3.550420334893668e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 8282,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.384185791015625e-06,
+                  "rms_error_m": 3.550420334893668e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_1": {
+              "all_frames": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 329,
+                "maximum_reference_visible_pixels": 330,
+                "total_reference_pixel_samples": 4619,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 4619,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.384185791015625e-06,
+                  "rms_error_m": 3.5943420068242355e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 4619,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.384185791015625e-06,
+                  "rms_error_m": 3.5943420068242355e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              },
+              "post_separation": {
+                "sampled_frames": 14,
+                "frames_with_reference_visibility": 14,
+                "minimum_reference_visible_pixels": 329,
+                "maximum_reference_visible_pixels": 330,
+                "total_reference_pixel_samples": 4619,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 4619,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.384185791015625e-06,
+                  "rms_error_m": 3.5943420068242355e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 4619,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.384185791015625e-06,
+                  "rms_error_m": 3.5943420068242355e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "receipt_sha256": {
+        "artifacts/live_camera_mesh_cut01_001/input.json": "ecf5162ee63b3769c742eb998c917b7e054acc81a619655736bf5d69d1b3d01a",
+        "artifacts/live_camera_mesh_cut01_001/result.json": "db81d56109529adbb86e0a0b59b0a1e1151a2580373c327dff758b2d481872c8",
+        "artifacts/task_object_cut01_001/result.json": "aa7ee604874e4c66e0a2c6d88720166eab9e8976a2a2a93e6b1cd9ca949b5cbb"
+      }
+    },
+    "TRIM-01": {
+      "camera_audit_artifact": "artifacts/live_camera_mesh_trim01_001",
+      "object_audit_artifact": "artifacts/task_object_trim01_001",
+      "camera_result": {
+        "scope": "Recorded actual live Kit arrays vs measured-state CPU geometry; no new sensor rendering or semantic AOV",
+        "frames": 41,
+        "partial_frame_subset": false,
+        "CAM-03": "PASS_GEOMETRIC_ATTRIBUTION",
+        "CAM-04_strict_native": "FAIL",
+        "geometry_bridge": "PASS",
+        "time_synchronization": "PASS",
+        "native_depth_and_mask": "FAIL",
+        "maximum_native_valid_chip_pixels": null,
+        "maximum_native_valid_separated_component_pixels": 0,
+        "separated_component_visibility": "FAIL",
+        "task_id": "TRIM-01",
+        "native_semantic_aov_captured": false,
+        "ideal_fallback_for_native_gate_used": false,
+        "all_valid_error_tails_retained": true
+      },
+      "camera_summary": {
+        "d455_0": {
+          "geometry_vs_actual_rtx": {
+            "minimum_mask_iou": 0.9999883662310467,
+            "maximum_frame_p95_absolute_error_m": 1.7881393432617188e-07,
+            "maximum_absolute_error_m": 0.5995852947235107,
+            "total_error_gt_1mm_pixel_samples": 26
+          },
+          "actual_native_vs_geometry": {
+            "minimum_mask_iou": 0.6430694865914584,
+            "maximum_frame_p95_absolute_error_m": 2.384185791015625e-07,
+            "maximum_absolute_error_m": 0.5358432531356812,
+            "total_error_gt_1mm_pixel_samples": 1792
+          },
+          "actual_native_vs_rtx": {
+            "minimum_mask_iou": 0.6430694865914584,
+            "maximum_frame_p95_absolute_error_m": 0.0,
+            "maximum_absolute_error_m": 0.5358434915542603,
+            "total_error_gt_1mm_pixel_samples": 1792
+          },
+          "minimum_rtx_depth_consistent_visible_pixels": {
+            "franka_0": 33638,
+            "franka_1": 21289,
+            "knife": 39,
+            "material": 975,
+            "table": 199685
+          }
+        },
+        "d455_1": {
+          "geometry_vs_actual_rtx": {
+            "minimum_mask_iou": 0.9999576586155308,
+            "maximum_frame_p95_absolute_error_m": 1.7881393432617188e-07,
+            "maximum_absolute_error_m": 0.367725133895874,
+            "total_error_gt_1mm_pixel_samples": 207
+          },
+          "actual_native_vs_geometry": {
+            "minimum_mask_iou": 0.30888586739182594,
+            "maximum_frame_p95_absolute_error_m": 2.384185791015625e-07,
+            "maximum_absolute_error_m": 0.809073269367218,
+            "total_error_gt_1mm_pixel_samples": 3671
+          },
+          "actual_native_vs_rtx": {
+            "minimum_mask_iou": 0.30887569510439505,
+            "maximum_frame_p95_absolute_error_m": 0.0,
+            "maximum_absolute_error_m": 0.8090729117393494,
+            "total_error_gt_1mm_pixel_samples": 3688
+          },
+          "minimum_rtx_depth_consistent_visible_pixels": {
+            "franka_0": 19202,
+            "franka_1": 22501,
+            "knife": 54,
+            "material": 774,
+            "table": 163667
+          }
+        },
+        "global": {
+          "geometry_vs_actual_rtx": {
+            "minimum_mask_iou": 0.9999810580948232,
+            "maximum_frame_p95_absolute_error_m": 7.152557373046875e-07,
+            "maximum_absolute_error_m": 0.8594245910644531,
+            "total_error_gt_1mm_pixel_samples": 80
+          },
+          "actual_native_vs_geometry": {
+            "minimum_mask_iou": 0.9999810580948232,
+            "maximum_frame_p95_absolute_error_m": 7.152557373046875e-07,
+            "maximum_absolute_error_m": 0.8594245910644531,
+            "total_error_gt_1mm_pixel_samples": 80
+          },
+          "actual_native_vs_rtx": {
+            "minimum_mask_iou": 1.0,
+            "maximum_frame_p95_absolute_error_m": 0.0,
+            "maximum_absolute_error_m": 0.0,
+            "total_error_gt_1mm_pixel_samples": 0
+          },
+          "minimum_rtx_depth_consistent_visible_pixels": {
+            "franka_0": 18627,
+            "franka_1": 27791,
+            "knife": 43,
+            "material": 558,
+            "table": 161699
+          }
+        }
+      },
+      "max_timestamp_span_s": 8.881784197001252e-16,
+      "camera_audit_wall_s": 55.89555829716846,
+      "camera_input": {
+        "episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_001",
+        "input_sha256": {
+          "artifacts/isaacsim_trim01_001/setup.json": "667c8d5b9fc659b2ed5ccf27c302b00d37f4298c15a5b1c49c091f9002a88470",
+          "artifacts/isaacsim_trim01_001/robot_state.npz": "4719c818df308fbbb22c7624276abcfdf9cea628dd7108240e6eed95fdfd3b23",
+          "artifacts/isaacsim_trim01_001/frame_manifest.json": "a25611664f0b7ff0bb1891b30ced07f231047eee3cbba4834210a5f8e54d5684",
+          "artifacts/isaacsim_trim01_001/calibration_runtime.json": "1028da5cca6a3d470fa34042c77e9e92f8b1a9476aa69a6d596b5176e5acdc12",
+          "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_001/initial_workcell_00/workcell.usda": "a4bd4361eaf82e22c29e797c5e34c9eebe86f8b7b25e2be7322ba8fbfe9e139e",
+          "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+          "/home/ningan/RoboticCuttingSim/scripts/audit_live_camera_mesh.py": "bb7e998ca33b7982f6e0d6e8a35ba7159076e2f408e548f44383c59c6f2e45d0",
+          "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+          "src/robotic_cutting_sim/usd_surface_bridge.py": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3",
+          "src/robotic_cutting_sim/cutting_surface.py": "7822b6aaa50274756d741a1f8781e7302c260b8c09a799af2c7b9259db4a0a17"
+        },
+        "excluded_guide_prims": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_capsule",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/gripper",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_c/hand_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/link7_c/link7_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/link6_c/link6_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c0/link5_c0",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c1/link5_c1",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c2/link5_c2",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/link4_c/link4_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/link3_c/link3_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/link2_c/link2_c",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/link1_c/link1_c",
+          "/World/Franka_0/Geometry/panda_link0/link0_c/link0_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_capsule",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/gripper",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_c/hand_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/link7_c/link7_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/link6_c/link6_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c0/link5_c0",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c1/link5_c1",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/link5_c2/link5_c2",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/link4_c/link4_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/link3_c/link3_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/link2_c/link2_c",
+          "/World/Franka_1/Geometry/panda_link0/panda_link1/link1_c/link1_c",
+          "/World/Franka_1/Geometry/panda_link0/link0_c/link0_c"
+        ],
+        "task_session_geometry": {
+          "source": "recorded setup.json task; not current mutable task defaults",
+          "task": "TRIM-01",
+          "disabled_legacy_tray_prims": [
+            "/World/TrayFloor",
+            "/World/TrayLeft",
+            "/World/TrayRight",
+            "/World/TrayFront",
+            "/World/TrayBack"
+          ],
+          "fixture_boxes_local": [
+            {
+              "name": "support_floor",
+              "center_m": [
+                0.0,
+                0.0,
+                -0.005
+              ],
+              "half_extents_m": [
+                0.09,
+                0.025,
+                0.005
+              ]
+            }
+          ],
+          "world_from_workpiece_xyzw": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "table_top_world_z_m": -0.01
+        },
+        "blade_dimensions_m": {
+          "length": 0.012,
+          "height": 0.004,
+          "half_width": 0.025
+        },
+        "reference": "Actual per-link PhysX poses + actual current material mesh + measured fixed knife mount; CPU visual triangle first hits",
+        "scope": "Independent recorded-live-data audit, not native semantic segmentation or new live camera capture"
+      },
+      "object_result": {
+        "status": "DESCRIPTIVE_TASK_OBJECT_AUDIT",
+        "command": [
+          "scripts/audit_task_object_visibility.py",
+          "artifacts/live_camera_mesh_trim01_001",
+          "artifacts/task_object_trim01_001"
+        ],
+        "task_id": "TRIM-01",
+        "seed": 42,
+        "episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_001",
+        "camera_audit": "artifacts/live_camera_mesh_trim01_001",
+        "scope": "Recorded measured-mesh first-hit oracle ROI only; no native semantic AOV or formal observation changes",
+        "new_acceptance_thresholds": null,
+        "strict_native_CAM04": "FAIL",
+        "native_invalid_pixels_and_all_valid_error_tails_retained": true,
+        "global_is_ideal_reference_not_native_D455": true,
+        "summaries": {
+          "d455_0": {
+            "knife": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 39,
+                "maximum_reference_visible_pixels": 92,
+                "total_reference_pixel_samples": 2798,
+                "native_valid_coverage_weighted": 0.9517512508934953,
+                "minimum_native_valid_coverage_when_visible": 0.9032258064516129,
+                "native_invalid_pixel_samples": 135,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 141,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 141,
+                "native_depth_vs_mesh": {
+                  "pixels": 2663,
+                  "p95_absolute_error_m": 2.980232238769531e-07,
+                  "max_absolute_error_m": 0.06300055980682373,
+                  "rms_error_m": 0.0012720931416947319,
+                  "absolute_error_gt_1mm_pixels": 6,
+                  "absolute_error_gt_5mm_pixels": 6,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 2798,
+                  "p95_absolute_error_m": 2.980232238769531e-07,
+                  "max_absolute_error_m": 4.231929779052734e-06,
+                  "rms_error_m": 2.0769364037515343e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_0": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 975,
+                "maximum_reference_visible_pixels": 1044,
+                "total_reference_pixel_samples": 41097,
+                "native_valid_coverage_weighted": 0.9912402365136141,
+                "minimum_native_valid_coverage_when_visible": 0.9866939611054247,
+                "native_invalid_pixel_samples": 360,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 363,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 362,
+                "native_depth_vs_mesh": {
+                  "pixels": 40737,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.012183606624603271,
+                  "rms_error_m": 6.848580433423177e-05,
+                  "absolute_error_gt_1mm_pixels": 3,
+                  "absolute_error_gt_5mm_pixels": 2,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 41097,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.6093254089355469e-06,
+                  "rms_error_m": 8.132635476911115e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "all_material": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 975,
+                "maximum_reference_visible_pixels": 1044,
+                "total_reference_pixel_samples": 41097,
+                "native_valid_coverage_weighted": 0.9912402365136141,
+                "minimum_native_valid_coverage_when_visible": 0.9866939611054247,
+                "native_invalid_pixel_samples": 360,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 363,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 362,
+                "native_depth_vs_mesh": {
+                  "pixels": 40737,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.012183606624603271,
+                  "rms_error_m": 6.848580433423177e-05,
+                  "absolute_error_gt_1mm_pixels": 3,
+                  "absolute_error_gt_5mm_pixels": 2,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 41097,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 1.6093254089355469e-06,
+                  "rms_error_m": 8.132635476911115e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            }
+          },
+          "d455_1": {
+            "knife": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 54,
+                "maximum_reference_visible_pixels": 94,
+                "total_reference_pixel_samples": 3026,
+                "native_valid_coverage_weighted": 0.949438202247191,
+                "minimum_native_valid_coverage_when_visible": 0.9047619047619048,
+                "native_invalid_pixel_samples": 153,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 165,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 165,
+                "native_depth_vs_mesh": {
+                  "pixels": 2873,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.026416897773742676,
+                  "rms_error_m": 0.0012730849946577388,
+                  "absolute_error_gt_1mm_pixels": 12,
+                  "absolute_error_gt_5mm_pixels": 12,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 3026,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 2.980232238769531e-07,
+                  "rms_error_m": 8.446067050404785e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_0": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 774,
+                "maximum_reference_visible_pixels": 833,
+                "total_reference_pixel_samples": 32932,
+                "native_valid_coverage_weighted": 0.9818413700959553,
+                "minimum_native_valid_coverage_when_visible": 0.9714993804213135,
+                "native_invalid_pixel_samples": 598,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 612,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 600,
+                "native_depth_vs_mesh": {
+                  "pixels": 32334,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.005941569805145264,
+                  "rms_error_m": 8.033985017598386e-05,
+                  "absolute_error_gt_1mm_pixels": 14,
+                  "absolute_error_gt_5mm_pixels": 2,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 32932,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.649162292480469e-06,
+                  "rms_error_m": 9.916402627439225e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "all_material": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 774,
+                "maximum_reference_visible_pixels": 833,
+                "total_reference_pixel_samples": 32932,
+                "native_valid_coverage_weighted": 0.9818413700959553,
+                "minimum_native_valid_coverage_when_visible": 0.9714993804213135,
+                "native_invalid_pixel_samples": 598,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 612,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 600,
+                "native_depth_vs_mesh": {
+                  "pixels": 32334,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 0.005941569805145264,
+                  "rms_error_m": 8.033985017598386e-05,
+                  "absolute_error_gt_1mm_pixels": 14,
+                  "absolute_error_gt_5mm_pixels": 2,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 32932,
+                  "p95_absolute_error_m": 1.7881393432617188e-07,
+                  "max_absolute_error_m": 4.649162292480469e-06,
+                  "rms_error_m": 9.916402627439225e-08,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            }
+          },
+          "global": {
+            "knife": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 43,
+                "maximum_reference_visible_pixels": 61,
+                "total_reference_pixel_samples": 2235,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 2235,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 1.430511474609375e-06,
+                  "rms_error_m": 3.837762669805312e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 2235,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 1.430511474609375e-06,
+                  "rms_error_m": 3.837762669805312e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "material_component_0": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 558,
+                "maximum_reference_visible_pixels": 602,
+                "total_reference_pixel_samples": 23655,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 23655,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.1457672119140625e-06,
+                  "rms_error_m": 3.513994079768849e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 23655,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.1457672119140625e-06,
+                  "rms_error_m": 3.513994079768849e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            },
+            "all_material": {
+              "all_frames": {
+                "sampled_frames": 41,
+                "frames_with_reference_visibility": 41,
+                "minimum_reference_visible_pixels": 558,
+                "maximum_reference_visible_pixels": 602,
+                "total_reference_pixel_samples": 23655,
+                "native_valid_coverage_weighted": 1.0,
+                "minimum_native_valid_coverage_when_visible": 1.0,
+                "native_invalid_pixel_samples": 0,
+                "native_valid_but_nonfinite_or_nonpositive_pixel_samples": 0,
+                "native_invalid_or_error_gt_1mm_pixel_samples": 0,
+                "native_invalid_or_error_gt_5mm_pixel_samples": 0,
+                "native_depth_vs_mesh": {
+                  "pixels": 23655,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.1457672119140625e-06,
+                  "rms_error_m": 3.513994079768849e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                },
+                "actual_rtx_invalid_pixel_samples": 0,
+                "actual_rtx_depth_vs_mesh": {
+                  "pixels": 23655,
+                  "p95_absolute_error_m": 7.152557373046875e-07,
+                  "max_absolute_error_m": 2.1457672119140625e-06,
+                  "rms_error_m": 3.513994079768849e-07,
+                  "absolute_error_gt_1mm_pixels": 0,
+                  "absolute_error_gt_5mm_pixels": 0,
+                  "error_trimming_applied": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "receipt_sha256": {
+        "artifacts/live_camera_mesh_trim01_001/input.json": "d10260b66f76cee31c4930f234e5cf90c562968e9519f41b15bcb7b1e1272519",
+        "artifacts/live_camera_mesh_trim01_001/result.json": "cd2ecf2caaef50774758401f006c5d50d2c1167f7c3151e9540e7b7c62437d5d",
+        "artifacts/task_object_trim01_001/result.json": "8d613a8c6a38beb97bb7a6f1017b55b61ff85b74aba87cfa913969d4440c2045"
+      }
+    }
+  },
+  "cpu_tests": {
+    "command": ".venv/bin/python -m pytest -q tests/test_camera_mesh_audit.py tests/test_task_object_visibility.py",
+    "passed": 4
+  },
+  "legacy_regression": {
+    "artifact": "artifacts/live_camera_mesh_legacy_regression_001",
+    "frames": [
+      0,
+      40
+    ],
+    "original_audit": "artifacts/live_camera_mesh_ff_002",
+    "numeric_depth_visibility_metrics_identical": true,
+    "scope": "Independent D0 metric comparison for these two frames only"
+  }
+}
