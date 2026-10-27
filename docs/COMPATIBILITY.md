@@ -33,3 +33,8 @@ Four actual source-only Lab CLI smoke attempts are in `artifacts/official_lab_00
 They stop at missing GA dependencies (`lazy_loader`) before physics launch; this
 is **BLOCKED**, not an official MPM runtime failure or successful test. Install the
 full upstream GA environment only on a compatible driver; do not silently use 2.x.
+
+The usable research baseline is independent of that blocked Kit stack: a locally
+composed13-file official dual-Panda/dual-D455 USD, a working live Newton+ideal-RGB-D
+environment, and combined measured-state replay. Static composition and facade
+integration passed; actual RTX sensor/articulation execution remains unvalidated.

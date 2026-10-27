@@ -1,0 +1,2257 @@
+{
+  "date": "2026-10-28 Asia/Seoul",
+  "gate_states": {
+    "PHYSICS_PROVEN": false,
+    "VISION_PROVEN": false,
+    "WORKCELL_PROVEN": false,
+    "BENCHMARK_READY": false
+  },
+  "raw_evidence": "Local artifacts/ is ignored by Git; hashes are recorded here, binary data is not redistributed",
+  "runs": [
+    {
+      "run": "camera_indent_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/camera_indent_001",
+      "classification": "SUPERSEDED: old input and camera spacing/provenance guards; plane math independently checked",
+      "result": {
+        "status": "PASS",
+        "scope": "ParticleSurface mesh to programmable ideal RGB-D, recorded MPM states",
+        "renderer": "custom Warp mesh ray tracing",
+        "plane_qa": {
+          "status": "PASS",
+          "valid_pixels": 252160,
+          "max_abs_error_m": 8.407817853051114e-07,
+          "rmse_m": 1.1655203536204034e-07,
+          "tolerance_m": 1e-05
+        },
+        "frames": [
+          {
+            "frame": 0,
+            "time_s": 0.0,
+            "vertices": 12346,
+            "triangles": 24688,
+            "extraction_wall_s": 5.279166856082156,
+            "three_camera_wall_s": 0.0253214780241251
+          },
+          {
+            "frame": 30,
+            "time_s": 0.5,
+            "vertices": 12376,
+            "triangles": 24748,
+            "extraction_wall_s": 0.11507203313522041,
+            "three_camera_wall_s": 0.02351022488437593
+          },
+          {
+            "frame": 60,
+            "time_s": 1.0,
+            "vertices": 12424,
+            "triangles": 24844,
+            "extraction_wall_s": 0.1103541620541364,
+            "three_camera_wall_s": 0.023627492133527994
+          },
+          {
+            "frame": 90,
+            "time_s": 1.5,
+            "vertices": 12332,
+            "triangles": 24660,
+            "extraction_wall_s": 0.11030846391804516,
+            "three_camera_wall_s": 0.02380461897701025
+          },
+          {
+            "frame": 120,
+            "time_s": 2.0,
+            "vertices": 12332,
+            "triangles": 24660,
+            "extraction_wall_s": 0.11366150388494134,
+            "three_camera_wall_s": 0.024117367807775736
+          }
+        ],
+        "changed_depth_pixels_10um": {
+          "ideal_0": 2529,
+          "ideal_1": 2046,
+          "global": 1418
+        },
+        "isaac_rtx_d455": "BLOCKED",
+        "modeled_stereo_depth": "NOT_RUN",
+        "true_cut_depth": "NOT_RUN",
+        "vision_proven": false,
+        "limitations": [
+          "Offline replay feasibility, not live Kit synchronization",
+          "Ideal shading and pinhole rays, not RealSense noise or stereo",
+          "Surface smoothing may bridge a physical gap; no cut validated"
+        ]
+      },
+      "source": {
+        "git_sha": "e352885a302cc5b2386e35b058535d637b132438",
+        "git_dirty": false,
+        "config_sha256": "6d0d3f7eef82bd12c550a1cc971a85c93144812ddc10f28c3d92e644f637902e",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "4c54995e5cb0b49cd6b533ddd5a3bfb26d2c7ec8238aa636572e3b6515655042",
+        "manifest.json": "2fff0dfe1f1c9b58c856702f47a6ec17ba42f7656de3c844947fa9b959074f40"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 8.511130089871585,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 672
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "camera-check",
+          "--input",
+          "artifacts/newton_indent_001",
+          "--output-dir",
+          "artifacts/camera_indent_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": null
+        }
+      }
+    },
+    {
+      "run": "camera_indent_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/camera_indent_002",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "ParticleSurface mesh to programmable ideal RGB-D, recorded MPM states",
+        "renderer": "custom Warp mesh ray tracing",
+        "plane_qa": {
+          "status": "PASS",
+          "valid_pixels": 252160,
+          "max_abs_error_m": 8.407817853051114e-07,
+          "rmse_m": 1.1655203536204034e-07,
+          "tolerance_m": 1e-05,
+          "valid_mask_mismatch_pixels": 0
+        },
+        "frames": [
+          {
+            "frame": 0,
+            "time_s": 0.0,
+            "vertices": 12346,
+            "triangles": 24688,
+            "extraction_wall_s": 0.2395933901425451,
+            "three_camera_wall_s": 0.02542768302373588
+          },
+          {
+            "frame": 15,
+            "time_s": 0.25,
+            "vertices": 12290,
+            "triangles": 24576,
+            "extraction_wall_s": 0.11489776195958257,
+            "three_camera_wall_s": 0.023981808219105005
+          },
+          {
+            "frame": 30,
+            "time_s": 0.5,
+            "vertices": 12290,
+            "triangles": 24576,
+            "extraction_wall_s": 0.11098745092749596,
+            "three_camera_wall_s": 0.024220986990258098
+          },
+          {
+            "frame": 45,
+            "time_s": 0.75,
+            "vertices": 12248,
+            "triangles": 24492,
+            "extraction_wall_s": 0.11022864910773933,
+            "three_camera_wall_s": 0.026196678867563605
+          },
+          {
+            "frame": 60,
+            "time_s": 1.0,
+            "vertices": 12304,
+            "triangles": 24604,
+            "extraction_wall_s": 0.11099016503430903,
+            "three_camera_wall_s": 0.023534564999863505
+          },
+          {
+            "frame": 75,
+            "time_s": 1.25,
+            "vertices": 12240,
+            "triangles": 24476,
+            "extraction_wall_s": 0.11053162487223744,
+            "three_camera_wall_s": 0.0234567578881979
+          },
+          {
+            "frame": 90,
+            "time_s": 1.5,
+            "vertices": 12240,
+            "triangles": 24476,
+            "extraction_wall_s": 0.1105176240671426,
+            "three_camera_wall_s": 0.02383096097037196
+          },
+          {
+            "frame": 105,
+            "time_s": 1.75,
+            "vertices": 12240,
+            "triangles": 24476,
+            "extraction_wall_s": 0.11041547101922333,
+            "three_camera_wall_s": 0.03634127601981163
+          },
+          {
+            "frame": 120,
+            "time_s": 2.0,
+            "vertices": 12240,
+            "triangles": 24476,
+            "extraction_wall_s": 0.11059440998360515,
+            "three_camera_wall_s": 0.023822057992219925
+          }
+        ],
+        "changed_depth_pixels_10um": {
+          "ideal_0": 2851,
+          "ideal_1": 2489,
+          "global": 1642
+        },
+        "isaac_rtx_d455": "BLOCKED",
+        "modeled_stereo_depth": "NOT_RUN",
+        "true_cut_depth": "NOT_RUN",
+        "vision_proven": false,
+        "limitations": [
+          "Offline replay feasibility, not live Kit synchronization",
+          "Ideal shading and pinhole rays, not RealSense noise or stereo",
+          "Surface smoothing may bridge a physical gap; no cut validated"
+        ]
+      },
+      "source": {
+        "git_sha": "404097169f67394cc697fbbaac6989d0c236fca7",
+        "git_dirty": false,
+        "config_sha256": "dda4950d4613dd533687660b34d5cc83edc742e50895426e5457430ca03a9c24",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "391ec3229f6c86f536a5e0645b0b81870f033c4d07f19ba1a43c0e67a44c18e0",
+        "manifest.json": "4bd584d2a035f9cb06c9644d25fa8c9619c2910b025624217ad6081940b2b39e"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 3.7621760489419103,
+        "peak_sampled_total_device_MiB": {
+          "0": 1031,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "camera-check",
+          "--input",
+          "artifacts/newton_indent_002",
+          "--samples",
+          "9",
+          "--output-dir",
+          "artifacts/camera_indent_002"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "0",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": null
+        }
+      }
+    },
+    {
+      "run": "cressim_scrape_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/cressim_scrape_001",
+      "classification": "INVALID_ADAPTER: C++ Bounds3 min/max confused with C API center/extents",
+      "result": {
+        "status": "PASS",
+        "scope": "finite GPU QuadSlicer execution only",
+        "particle_count": 19340,
+        "wall_s": 1.565646172966808,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 1.27742783429165,
+        "mass_error_relative": 3.537085536468222e-08,
+        "max_speed_m_s": 69.35559844970703,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "limitations": [
+          "Only elastic co-rotational law, no equivalent Newton plasticity",
+          "QuadSlicer and Newton box differ; not a controlled quantitative ranking",
+          "No persistent cut labels exported; withdrawal/recontact gate remains open"
+        ]
+      },
+      "source": {
+        "git_sha": "e352885a302cc5b2386e35b058535d637b132438",
+        "git_dirty": false,
+        "config_sha256": "f8384f889a536f96e6fdd12376461efafc65535c2b64b971319d2f487bd2aee2",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "24ebeee228986e02466bc14337068ea34b204e4523e08c2ef8d7ce38a1678758",
+        "manifest.json": "482492fe98d33c25a2b1ff611276e0a98bc91670693cdde2cde4e53cfda922f1",
+        "trace.csv": "c0b6b87c62935e564a97e17d8d15352dd09fdcac8ecae2e0cbb9f60aead73e5a",
+        "physics_state.npz": "eeb1036db64a3d657f00718de5af2860881799ffae3995ec08b206b1b159a3ff",
+        "preview.mp4": "aa03eeefca58582a0d7c56b287ea1bb1389c44cdc5f2d64f71d8cf72d8421b2b"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 7.51303572091274,
+        "peak_sampled_total_device_MiB": {
+          "0": 1053,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--solver",
+          "cressim",
+          "--case",
+          "through_bump_cut",
+          "--substeps",
+          "40",
+          "--output-dir",
+          "artifacts/cressim_scrape_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "0",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "cressim_scrape_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/cressim_scrape_002",
+      "classification": "UNCERTIFIED: upstream nodal mass cutoff, APIC/material/normal defects",
+      "result": {
+        "status": "PASS",
+        "scope": "GPU QuadSlicer execution with broad numerical sanity guard",
+        "particle_count": 19340,
+        "wall_s": 0.7145109809935093,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 2.799117232906695,
+        "mass_error_relative": 3.537085536468222e-08,
+        "max_speed_m_s": 0.003662082366645336,
+        "numerical_sanity_guard": {
+          "max_speed_limit_m_s": 2.0,
+          "passed": true
+        },
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "limitations": [
+          "Only elastic co-rotational law, no equivalent Newton plasticity",
+          "QuadSlicer and Newton box differ; not a controlled quantitative ranking",
+          "No persistent cut labels exported; withdrawal/recontact gate remains open"
+        ]
+      },
+      "source": {
+        "git_sha": "8b00c0f8bdcc7e2555df90779de9b6e6e391779d",
+        "git_dirty": false,
+        "config_sha256": "f8384f889a536f96e6fdd12376461efafc65535c2b64b971319d2f487bd2aee2",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "3ac722e0496c14797dd398a7506c144c12b7f9251e61f4a370ff60b2b1b01e63",
+        "manifest.json": "8dc7c684d492fc2497d816400ead7b449eae570d149712cef4b7f0f03c1d1124",
+        "trace.csv": "437ef8514306bb47c5f0d005a19d9088d59f880630f2d4c4e4f4824815569238",
+        "physics_state.npz": "9c9f86020ee338bbededcea9c79f0130582b0dce17142af0fdf45864e94f2a23",
+        "preview.mp4": "485345ea3807161391bb6d05178e5c2daae2277479d786c03f3b286bbbb1ff59"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 5.343423140002415,
+        "peak_sampled_total_device_MiB": {
+          "0": 967,
+          "1": 606
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--solver",
+          "cressim",
+          "--case",
+          "through_bump_cut",
+          "--substeps",
+          "40",
+          "--output-dir",
+          "artifacts/cressim_scrape_002"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "0",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "cressim_scrape_003",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/cressim_scrape_003",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "FAIL",
+        "scope": "GPU QuadSlicer execution with broad numerical sanity guard",
+        "particle_count": 19340,
+        "wall_s": 6.9232358417939395,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.2888822576181029,
+        "mass_error_relative": 3.537085536468222e-08,
+        "max_speed_m_s": 5.685075759887695,
+        "min_particle_z_m": -2.3283064365386963e-10,
+        "numerical_sanity_guard": {
+          "max_speed_limit_m_s": 2.0,
+          "minimum_z_limit_m": -0.001,
+          "passed": false
+        },
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "limitations": [
+          "Only elastic co-rotational law, no equivalent Newton plasticity",
+          "QuadSlicer and Newton box differ; not a controlled quantitative ranking",
+          "No persistent cut labels exported; withdrawal/recontact gate remains open"
+        ]
+      },
+      "source": {
+        "git_sha": "9bbc6e3e18e978fb0f544728897628a56efdd42a",
+        "git_dirty": false,
+        "config_sha256": "db690c7cfb7549c70ee4782cd1816fd492917edad30cd11680e92d5dd7c5bdf1",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "53576a31c7a54c6adf96a106abbbffcb9a5e3ccd4e86d84ed9767e2c32480657",
+        "manifest.json": "2a4d401fba17ed09f30ab647d004fbd94a8f1709cdb38ee9d4fbec65e3534cc9",
+        "trace.csv": "8276e2f2a7dcd74acbd96dc57ce8fbd8de3fd33971ccd2cc5c6eee04adaa351e",
+        "physics_state.npz": "5e2544bb319e9a37840ef9143b0d1b95a24dea410d7f044a54c8d4e1d79b3185",
+        "preview.mp4": "cd3940eb8267429bfed86baf36030c5a334cbe63b89f10f2047b2895e83fe11e"
+      },
+      "execution": {
+        "returncode": 1,
+        "wall_s": 12.204599381890148,
+        "peak_sampled_total_device_MiB": {
+          "0": 967,
+          "1": 68
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--solver",
+          "cressim",
+          "--case",
+          "through_bump_cut",
+          "--substeps",
+          "100",
+          "--output-dir",
+          "artifacts/cressim_scrape_003"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "0",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "cressim_settle_003",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/cressim_settle_003",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "FAIL",
+        "scope": "GPU QuadSlicer execution with broad numerical sanity guard",
+        "particle_count": 19340,
+        "wall_s": 5.02051016013138,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.3983658903595691,
+        "mass_error_relative": 3.537085536468222e-08,
+        "max_speed_m_s": 3.307079792022705,
+        "numerical_sanity_guard": {
+          "max_speed_limit_m_s": 2.0,
+          "passed": false
+        },
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "limitations": [
+          "Only elastic co-rotational law, no equivalent Newton plasticity",
+          "QuadSlicer and Newton box differ; not a controlled quantitative ranking",
+          "No persistent cut labels exported; withdrawal/recontact gate remains open"
+        ]
+      },
+      "source": {
+        "git_sha": "465e44482cac16eab8a70c3708dd9b1780a44914",
+        "git_dirty": false,
+        "config_sha256": "7a936fdda63b3fb9da21315e65591ba64f9a631c83fef224cb0a740cec01140e",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "3b350b5c4003630d7a0f30facca9e1fa35bdabafd3f230e05a5ef3b49eed4224",
+        "manifest.json": "332f47edd1ed06cdba9c1e69c07579cd26626778810efa7a8757a58e6360a892",
+        "trace.csv": "0c861a651951a73825022f1bac904198bfed456f77a69564358442c1ed51564d",
+        "physics_state.npz": "95730ed48f5db24c19979b849050462837c8b7d0a07504e377ca6992c7a3264e",
+        "preview.mp4": "27b954aa502d0762f16852017d5841421303c5ce4e2dbebd052b823f22354f46"
+      },
+      "execution": {
+        "returncode": 1,
+        "wall_s": 10.599715085932985,
+        "peak_sampled_total_device_MiB": {
+          "0": 967,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--solver",
+          "cressim",
+          "--case",
+          "settle",
+          "--substeps",
+          "100",
+          "--output-dir",
+          "artifacts/cressim_settle_003"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "0",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "env_api_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/env_api_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "GPU direct blade action, live observation, truncation, same-D1-seed reset and close",
+        "particle_count": 19300,
+        "seed": 91,
+        "force_in_observation": false,
+        "robot_dynamics": false
+      },
+      "source": {
+        "git_sha": "bd2b0d778529812a0475c941fe1b6bef8ed879da",
+        "git_dirty": true,
+        "config_sha256": "719e5148a5fbc479666bf5b9eebe570e34350f1179198515c93b94bf7b2362dc",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "f7fa47944f263b5284f3a8e8537ce8cc1e9a5032967302aa2d41ebe334ffba9d",
+        "manifest.json": "4c5a4f9480b912b959f85ae186c4e6598e78c8d52fd807a5beb234d03308f10c"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 4.276636361144483,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 824
+        },
+        "command": [
+          ".venv/bin/python",
+          "scripts/check_env_api.py",
+          "artifacts/env_api_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": null
+        }
+      }
+    },
+    {
+      "run": "live_env_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/live_env_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "live reset/step/observe/render/close with real MPM and ideal RGB-D",
+        "steps": 120,
+        "simulation_s": 1.9999999999999978,
+        "episode_wall_s": 8.214901897124946,
+        "observation_keys": [
+          "calibration",
+          "depth_m",
+          "rgb",
+          "timestamp_s",
+          "valid_mask"
+        ],
+        "rgb_shape_per_camera": [
+          480,
+          640,
+          3
+        ],
+        "depth_shape_per_camera": [
+          480,
+          640
+        ],
+        "global_in_observation": false,
+        "force_in_observation": false,
+        "oracle_in_observation": false,
+        "material_deformation": true,
+        "ideal_rgbd": true,
+        "camera_contains": [
+          "material",
+          "kinematic tool",
+          "tray",
+          "table"
+        ],
+        "robot_visuals_in_ideal_camera": false,
+        "d455_rtx": false,
+        "robot_dynamics": false,
+        "persistent_cutting": false,
+        "truncated": true,
+        "reward_semantics": "constant0, no training/scoring claim"
+      },
+      "source": {
+        "git_sha": "9b87f0ee6cf43553b978b3b3b5d77a999459db08",
+        "git_dirty": true,
+        "config_sha256": "bdac0170095d0d2a6c312f3918ac3cf60ff1ea0918cd488f964ccc1c7143da42",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "86f061d312e45b1c0e08e169b6cc84e00f6a27285fab8eb3279e5ec5670d0cca",
+        "manifest.json": "9aac90a9d17b29719002544fa3341bf2a127dc58c9ff8dec078892b9fc0d0e97"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 10.104216864099726,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 792
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "env-demo",
+          "--steps",
+          "120",
+          "--output-dir",
+          "artifacts/live_env_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_elastic_indent_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_elastic_indent_001",
+      "classification": "FAIL: YAML exponent loaded as string; fixed numeric config and rerun",
+      "result": {
+        "status": "FAIL",
+        "error": "Failed to convert the value to the array data type: must be real number, not str",
+        "type": "ValueError"
+      },
+      "source": {
+        "git_sha": "8b00c0f8bdcc7e2555df90779de9b6e6e391779d",
+        "git_dirty": false,
+        "config_sha256": "c9f31d533b96b99c86d4d7240db86bcb925265ec939f9f0343dab1a0d87fee58",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "failure.json": "0847252a94617977852ff7d7b13967c28d30fbe54b0c36adc04c205fc0c58c00",
+        "manifest.json": "291c00e15958f3d2cf50a0be0500fb7f3ce7cd682fcf7cd54d9ec06f2e5241c0"
+      },
+      "execution": {
+        "returncode": 1,
+        "wall_s": 3.197186368983239,
+        "peak_sampled_total_device_MiB": {
+          "0": 967,
+          "1": 606
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "indent_unload",
+          "--material",
+          "configs/materials/elastic_control.yaml",
+          "--output-dir",
+          "artifacts/newton_elastic_indent_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_elastic_indent_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_elastic_indent_002",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "indent_unload",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.654423074098304,
+        "physics_wall_s": 4.690661072032526,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.42637913276760653,
+        "max_speed_m_s": 0.08869342505931854,
+        "pre_projection_particle_center_penetration_m": 0.0,
+        "post_projection_particle_center_penetration_m": 0.0,
+        "max_projection_correction_m": 0.0009592771530151367,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 1.3222868791189235,
+        "final_rms_displacement_m": 0.0001245052262675017,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "465e44482cac16eab8a70c3708dd9b1780a44914",
+        "git_dirty": false,
+        "config_sha256": "bb26c55f97d5bfc4968a5976d6356485b0161046edff6470ad0ff94c69b72a92",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "b78648ade95a0ca35fdac3a4adaa80fb887dc68c2a3e25f031bada842741d1c5",
+        "manifest.json": "7b77c9e61d4b43f3a52c59e91ed8878eb7a8aa9ac4db93dfa11a04365c5f803c",
+        "trace.csv": "a691ab6dad6ad3f434bc6ebc58b0f5be2a57c0cd8bdba81cb7b574420e6ee007",
+        "physics_state.npz": "38b72de6b3a6ec92acb339226ed822e8de2adc6709d0ec1ecc1803d307f59733",
+        "preview.mp4": "5b432d51c79d65dfb42db05dcb615a6c140fbc6f4fa0b05a6724e95354de5e1e"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 12.20643870299682,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "indent_unload",
+          "--material",
+          "configs/materials/elastic_control.yaml",
+          "--output-dir",
+          "artifacts/newton_elastic_indent_002"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_indent_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_indent_001",
+      "classification": "PRE_FIX: stale output-buffer blade transform before projection",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "indent_unload",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.600366392172873,
+        "physics_wall_s": 4.919346327893436,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.4065580804221281,
+        "max_speed_m_s": 0.04282011464238167,
+        "max_blade_particle_center_penetration_m": 0.0,
+        "peak_blade_force_N": 0.4852504166465431,
+        "final_rms_displacement_m": 0.0003000996948685497,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "e352885a302cc5b2386e35b058535d637b132438",
+        "git_dirty": false,
+        "config_sha256": "ce2219a31222b1e19f8670848ed0acca1bea3ff1e4d1b5a0752c750e93ac4148",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "137b78c7001857eb6f6009700ff42380c55dfd71f633424af018879e5ad7d06b",
+        "manifest.json": "7986bdd58f71721c54c6fc306e1f22ed0fbbf14033019b9356aabe5eee7018d0",
+        "trace.csv": "d9705e2ec27ffb14826b4e1f4ede8ea39c0ea4d86117037496a174b42d4f3d8e",
+        "physics_state.npz": "2ecb7e86aa0a728caad714f528eecee6560d0dadb47967bcbd80feaa0a131523",
+        "preview.mp4": "6e78938e4fcbc9eb69f2bd13fa56eb2e941110ed239dd3bf93e6b8394f51aa12"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 12.188290809979662,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "indent_unload",
+          "--output-dir",
+          "artifacts/newton_indent_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_indent_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_indent_002",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "indent_unload",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.5861223528627306,
+        "physics_wall_s": 5.028886760817841,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.3977023335627352,
+        "max_speed_m_s": 0.044517483562231064,
+        "pre_projection_particle_center_penetration_m": 0.0,
+        "post_projection_particle_center_penetration_m": 0.0,
+        "max_projection_correction_m": 0.0009592771530151367,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 0.6489673470763063,
+        "final_rms_displacement_m": 0.00019026416703127325,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "465e44482cac16eab8a70c3708dd9b1780a44914",
+        "git_dirty": false,
+        "config_sha256": "ce2219a31222b1e19f8670848ed0acca1bea3ff1e4d1b5a0752c750e93ac4148",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "53af99aedc49e359df57d725ca56ba36316cbf80a5a73f6154a785a996db76e8",
+        "manifest.json": "2bd35eb3d91047f36f2dd13fa73827bacf5860fd6af478a8f54d1a53e2239856",
+        "trace.csv": "aa0751eb101e6664383018b86b3e53f29e496083f84153144eeb73ac3c5c137b",
+        "physics_state.npz": "9eea6209f26b371c660c08966b6f035745da94ad1e91983fc7ff073a13d4ae52",
+        "preview.mp4": "6f970741036d737677b719f6d1672c354a37ba453823b97371ed8d35495ee070"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 12.710527173941955,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "indent_unload",
+          "--output-dir",
+          "artifacts/newton_indent_002"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_indent_repeat_003",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_indent_repeat_003",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "indent_unload",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.743948119925335,
+        "physics_wall_s": 5.113895940128714,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.3910912586832303,
+        "max_speed_m_s": 0.044517483562231064,
+        "pre_projection_particle_center_penetration_m": 0.0,
+        "post_projection_particle_center_penetration_m": 0.0,
+        "max_projection_correction_m": 0.0009592771530151367,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 0.6489673470763063,
+        "final_rms_displacement_m": 0.00019026416703127325,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "404097169f67394cc697fbbaac6989d0c236fca7",
+        "git_dirty": false,
+        "config_sha256": "ce2219a31222b1e19f8670848ed0acca1bea3ff1e4d1b5a0752c750e93ac4148",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "d2c0f2f04b06282b8aae5c7d88a854ab68bf0afc51f1a168d680761153a339f8",
+        "manifest.json": "368f6204ddf3f80470f0dd51ec07923a63a80b7983c8d9fb3ee0c686939e344e",
+        "trace.csv": "8a6101f1ff869f8a49c6281e3f4f9b4e85c5b635ee8dc8bfa266723e13434b74",
+        "physics_state.npz": "9eea6209f26b371c660c08966b6f035745da94ad1e91983fc7ff073a13d4ae52",
+        "preview.mp4": "6f970741036d737677b719f6d1672c354a37ba453823b97371ed8d35495ee070"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 12.758228982100263,
+        "peak_sampled_total_device_MiB": {
+          "0": 1031,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "indent_unload",
+          "--output-dir",
+          "artifacts/newton_indent_repeat_003"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_scrape_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_scrape_001",
+      "classification": "PRE_FIX: stale output-buffer blade transform before projection",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "through_bump_cut",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.5520835320930928,
+        "physics_wall_s": 5.633422154933214,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.3550239880830856,
+        "max_speed_m_s": 0.16497470438480377,
+        "max_blade_particle_center_penetration_m": 0.0005985430553555457,
+        "peak_blade_force_N": 0.3946707960808525,
+        "final_rms_displacement_m": 0.0036628323141485453,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "e352885a302cc5b2386e35b058535d637b132438",
+        "git_dirty": false,
+        "config_sha256": "20ee434bcf5bde40baca54bda24ba697e2199067f6bdf9f3b48dcb1d05ff6035",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "8a7310a4d887bd024ba811306b69cdb01bd40d9e87a167cf079104e946a9116d",
+        "manifest.json": "774957ca02f47c83419247f8d9028f2a1b8d8df369fffd5c46e6de699d1f87bb",
+        "trace.csv": "8c622d47f37a78be8721c05fa62c76463ed111de650332c3ced06bd0d66d158e",
+        "physics_state.npz": "c161cc186e606ec80070d66320aa8abad5a9cdb6c189caa5fce66b38b26ea6b8",
+        "preview.mp4": "4986d99c756ce206ff42f7f82929111c78ba406a1ff59b4929e4103d77287f72"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 13.224812501110137,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "through_bump_cut",
+          "--output-dir",
+          "artifacts/newton_scrape_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_scrape_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_scrape_002",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "through_bump_cut",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.6532268340233713,
+        "physics_wall_s": 5.7879188728984445,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.34554734506816787,
+        "max_speed_m_s": 0.20087459683418274,
+        "pre_projection_particle_center_penetration_m": 0.0008365734443068476,
+        "post_projection_particle_center_penetration_m": 0.0003931198120117113,
+        "max_projection_correction_m": 0.0009592771530151367,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 0.3978958659509106,
+        "final_rms_displacement_m": 0.0035785334184765816,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "465e44482cac16eab8a70c3708dd9b1780a44914",
+        "git_dirty": false,
+        "config_sha256": "20ee434bcf5bde40baca54bda24ba697e2199067f6bdf9f3b48dcb1d05ff6035",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "e1039e1ca7b5a4eb106c08b36fb5bd46270be7618d817ab3693fba2ef4855cc5",
+        "manifest.json": "81b438bd5fd9d880e2761ea05ccdd5978445a869744a316785ea388821071bde",
+        "trace.csv": "67ca38baa2bb4df8f9f7022226756ea8a60dd2cb2bfc7572c57aa5750f25664b",
+        "physics_state.npz": "ffc40a1df072dd93937f68dc2a9519f594e0808bba20eca35649f201ab2b8334",
+        "preview.mp4": "ddb1c66908ae2300ce4fe8901e0f138dd79c18649f9d4bdee6c8f2905d2ebac8"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 13.788193766027689,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "through_bump_cut",
+          "--output-dir",
+          "artifacts/newton_scrape_002"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_scrape_2mm_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_scrape_2mm_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "through_bump_cut",
+        "particle_count": 145656,
+        "initial_mass_kg": 0.21848400772796595,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.747202405007556,
+        "physics_wall_s": 18.690604742849246,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.10700563344613935,
+        "max_speed_m_s": 0.12238379567861557,
+        "pre_projection_particle_center_penetration_m": 0.00032674495875835256,
+        "post_projection_particle_center_penetration_m": 0.0002139627536137936,
+        "max_projection_correction_m": 0.0004832315316889435,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 0.3648210181595588,
+        "final_rms_displacement_m": 0.004639734514057636,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "404097169f67394cc697fbbaac6989d0c236fca7",
+        "git_dirty": false,
+        "config_sha256": "8aad844cf61b55c250e011cbb5f782da749244fab1b946d8769bcb3f9d3046da",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "c89724b1e0ebdae62a71c9befa394fe55e4f71cd59d97a5e9583bca5ea317a26",
+        "manifest.json": "c8554205bf0d6c297c31274ebd8bfdb2fe1aeb477651f45acc99b2ed7c92d53c",
+        "trace.csv": "fa76e0a0fd7cf46ebf29ad80d0e6ac00f9c2257954cfeb7bbd9d47401bcf0b37",
+        "physics_state.npz": "b236bef73b5f81a1815dfec5ff7234f258c53180ed4d485a5467489b64011329",
+        "preview.mp4": "d8f3054b062d3f36ce020f3fde7e73c72ce4017e10e486fed823152cde9fb930"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 40.28712838096544,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 950
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "through_bump_cut",
+          "--voxel-size",
+          ".002",
+          "--substeps",
+          "8",
+          "--output-dir",
+          "artifacts/newton_scrape_2mm_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_scrape_3mm_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_scrape_3mm_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "through_bump_cut",
+        "particle_count": 42890,
+        "initial_mass_kg": 0.21713062049002474,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.6607290338724852,
+        "physics_wall_s": 9.116873889928684,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.219373441395233,
+        "max_speed_m_s": 0.15908844769001007,
+        "pre_projection_particle_center_penetration_m": 0.0003120314143598068,
+        "post_projection_particle_center_penetration_m": 0.0002410720586776818,
+        "max_projection_correction_m": 0.0007249522022902966,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 0.36772726989809884,
+        "final_rms_displacement_m": 0.005050000734627247,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "404097169f67394cc697fbbaac6989d0c236fca7",
+        "git_dirty": false,
+        "config_sha256": "fbf43c58ab7896287e0acc3544d1a649b9526c7472b65e33298c8ad44d275199",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "3f8f6cbb1c0732958f266d13c371020a5398aa837dfc9002c100fd032da47204",
+        "manifest.json": "5a019ea019c234829aa6e662c7bcbf3e50fefe4de93a2156e6089ffd04e245c5",
+        "trace.csv": "7d3b23336150c414b54c8e8da88003df90eca2b464cca2e8adf45fdacf6edebb",
+        "physics_state.npz": "7bb16d15cd82f0ef2b31406d748e654da2c36bb3dbe91b036c3a36e35eeb303d",
+        "preview.mp4": "7955745fbf9817e912cc4f873a89b0c4a83e83a90e4e33620d42407cad715f39"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 19.599679101025686,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 790
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "through_bump_cut",
+          "--voxel-size",
+          ".003",
+          "--substeps",
+          "6",
+          "--output-dir",
+          "artifacts/newton_scrape_3mm_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_settle_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_settle_001",
+      "classification": "PRE_FIX: superseded by corrected buffer-synchronized runs",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "settle",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.845894715981558,
+        "physics_wall_s": 3.8502060901373625,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.5194527132257085,
+        "max_speed_m_s": 0.0011892380425706506,
+        "max_blade_particle_center_penetration_m": 0.0,
+        "peak_blade_force_N": 0.0,
+        "final_rms_displacement_m": 0.00011241199536016211,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "e352885a302cc5b2386e35b058535d637b132438",
+        "git_dirty": false,
+        "config_sha256": "b480dfbf7e0d208a29ba2114b366792542fb5603bfe6b55ad17ca7472d5c80c1",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "0cd5fcd4a88e1dad192dc2769990bec70fc60666fdd2849747d6a75936871251",
+        "manifest.json": "8d7db861275d5b310776947c68267fe6f289e7278fff7544f364684493240ee0",
+        "trace.csv": "c9f8d7cf52f26bb1cc8f7bcbe47af3ccaba1aea37a599844fb62a0af5a5652bf",
+        "physics_state.npz": "24ecf1f428dda6653bde21065ec3f52afc0ee47d1f472b11d049b62d71e1e7ea",
+        "preview.mp4": "1a89981ac608de45d696b8a0c36e5315852fbee43abff04119c5ca94002e6a98"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 11.730299646034837,
+        "peak_sampled_total_device_MiB": {
+          "0": 1053,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "settle",
+          "--output-dir",
+          "artifacts/newton_settle_001"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_settle_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_settle_002",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "settle",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 1.6747685321606696,
+        "physics_wall_s": 4.080156485084444,
+        "simulation_s": 2.0,
+        "sim_s_per_wall_s": 0.4901772780802076,
+        "max_speed_m_s": 0.0011892380425706506,
+        "pre_projection_particle_center_penetration_m": 0.0,
+        "post_projection_particle_center_penetration_m": 0.0,
+        "max_projection_correction_m": 0.0009592771530151367,
+        "force_scope": "solver collider impulses / frame dt; excludes particle projection corrections",
+        "peak_blade_force_N": 0.0,
+        "final_rms_displacement_m": 0.00011241199536016211,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "465e44482cac16eab8a70c3708dd9b1780a44914",
+        "git_dirty": false,
+        "config_sha256": "b480dfbf7e0d208a29ba2114b366792542fb5603bfe6b55ad17ca7472d5c80c1",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "e6439c77bb48c845166e7628b05929d732c9ffbdbe37efd35becae335180b6bf",
+        "manifest.json": "0e3c7421275260d5cf11a3fb6da8d9d1a56eb69c931ef9505fa15af65572de80",
+        "trace.csv": "7aa8d5336f776dafb52c949c1523bca1644ca08ced211081ec89545ebdbe9873",
+        "physics_state.npz": "1f28cd732021545ed80f4f8ce40bb5ee3ce9ab8838768c0fde3ae19b81baea81",
+        "preview.mp4": "1a89981ac608de45d696b8a0c36e5315852fbee43abff04119c5ca94002e6a98"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 11.637456661090255,
+        "peak_sampled_total_device_MiB": {
+          "0": 967,
+          "1": 726
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "physics-probe",
+          "--case",
+          "settle",
+          "--output-dir",
+          "artifacts/newton_settle_002"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "newton_smoke_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/newton_smoke_001",
+      "classification": "PRE_FIX: stale output-buffer blade transform before projection",
+      "result": {
+        "status": "PASS",
+        "scope": "finite MPM contact/deformation execution only",
+        "case": "settle",
+        "particle_count": 19340,
+        "initial_mass_kg": 0.2320800082088681,
+        "mass_error_relative": 0.0,
+        "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+        "setup_wall_s": 5.209784282837063,
+        "physics_wall_s": 17.288918591104448,
+        "simulation_s": 0.05,
+        "sim_s_per_wall_s": 0.0028920258798445712,
+        "max_speed_m_s": 0.0011892380425706506,
+        "max_blade_particle_center_penetration_m": 0.0,
+        "peak_blade_force_N": 0.0,
+        "final_rms_displacement_m": 0.00011240664753131568,
+        "max_abs_Jp_minus_one": 0.0,
+        "solver_residual": null,
+        "persistent_separation_valid": null,
+        "physics_proven": false,
+        "calibration": "uncalibrated"
+      },
+      "source": {
+        "git_sha": "HEAD",
+        "git_dirty": true,
+        "config_sha256": "350b03009d65b5d50a841bcef6951ecdf0cc3452dc8d398740fa59e736a0774d",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": null
+      },
+      "artifact_sha256": {
+        "result.json": "7a56c1eebf1397c322d14cc5979ba5c9fe6e99718d89c5f3086df118943fc20a",
+        "manifest.json": "5c737d4b371f0e5e490d343bd68241ce4369d28557892f61ba309cdb7561cf4f",
+        "trace.csv": "9c415864b4f538b1cd29ae2d5b7e912ee8e44c64195fea19f5f8aa5f5032d12f",
+        "physics_state.npz": "d801804a2aa75736866672571b05d9c0e83ed0af1586faf35f96e668e9b9e49f",
+        "preview.mp4": "4f4f6b3047fedc34eea3286188d590c07b5a8293416c895c28d875428d8784d1"
+      }
+    },
+    {
+      "run": "research_handoff_001/live_env",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/research_handoff_001/live_env",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "live reset/step/observe/render/close with real MPM and ideal RGB-D",
+        "steps": 120,
+        "simulation_s": 1.9999999999999978,
+        "episode_wall_s": 8.1009962039534,
+        "observation_keys": [
+          "calibration",
+          "depth_m",
+          "rgb",
+          "timestamp_s",
+          "valid_mask"
+        ],
+        "rgb_shape_per_camera": [
+          480,
+          640,
+          3
+        ],
+        "depth_shape_per_camera": [
+          480,
+          640
+        ],
+        "global_in_observation": false,
+        "force_in_observation": false,
+        "oracle_in_observation": false,
+        "material_deformation": true,
+        "ideal_rgbd": true,
+        "camera_contains": [
+          "material",
+          "kinematic tool",
+          "tray",
+          "table"
+        ],
+        "robot_visuals_in_ideal_camera": false,
+        "d455_rtx": false,
+        "robot_dynamics": false,
+        "persistent_cutting": false,
+        "truncated": true,
+        "reward_semantics": "constant0, no training/scoring claim",
+        "recorded_material_surface_snapshots": 9
+      },
+      "source": {
+        "git_sha": "5e6f57995f12b5486f197bc995ab6a436be49a8d",
+        "git_dirty": true,
+        "config_sha256": "bdac0170095d0d2a6c312f3918ac3cf60ff1ea0918cd488f964ccc1c7143da42",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "cb3727d44e247124f9b33afb76f5af76e8422fc64f4758c4fc855732246da5a7",
+        "manifest.json": "63905a3f5623ce1748fe407a984f5893e6f8ab8718412f33cd76915d3d0b9832",
+        "physics_state.npz": "4a7b7f38f5ab8b48ccb7c1e3cb610a734bbb62cfaee20b57aa28e632eb0a93b1"
+      },
+      "execution": {
+        "returncode": 0,
+        "wall_s": 10.099306035088375,
+        "peak_sampled_total_device_MiB": {
+          "0": 427,
+          "1": 792
+        },
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "env-demo",
+          "--steps",
+          "120",
+          "--output-dir",
+          "artifacts/research_handoff_001/live_env"
+        ],
+        "environment": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "OMP_NUM_THREADS": "4",
+          "MPLBACKEND": "Agg"
+        }
+      }
+    },
+    {
+      "run": "research_handoff_001/workcell",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/research_handoff_001/workcell",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "static research workcell; no robot control or cutting acceptance",
+        "scene": "/home/ningan/RoboticCuttingSim/artifacts/research_handoff_001/workcell/workcell.usda",
+        "asset_composition": {
+          "franka": {
+            "status": "PASS",
+            "layers_checked": 12,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": []
+          },
+          "d455": {
+            "status": "PASS",
+            "layers_checked": 1,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": [
+              "../../../Materials/Base/Metals/Aluminum_Anodized.mdl",
+              "../../../Materials/Base/Metals/Aluminum_Cast.mdl",
+              "../../../Materials/Base/Plastics/Plastic_ABS.mdl",
+              "OmniGlass.mdl",
+              "OmniPBR.mdl"
+            ]
+          }
+        },
+        "static_workcell_authored": true,
+        "official_assets_composed": true,
+        "robot_articulation_validated": false,
+        "ik_validated": false,
+        "robot_tool_coupling_validated": false,
+        "robot_force_feedback_validated": false,
+        "rtx_rgbd_validated": false,
+        "physical_cutting_validated": false,
+        "physics_proven": false,
+        "vision_proven": false,
+        "workcell_proven": false,
+        "benchmark_ready": false
+      },
+      "source": {
+        "git_sha": "5e6f57995f12b5486f197bc995ab6a436be49a8d",
+        "git_dirty": true,
+        "config_sha256": "964747d296e79401e10c087bbf9967c9a7b920ee150cb8897eaeaa2b55320a91",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "8338f615c0ff8dcbc2ff6ec544bed24f8040217d18ebcf46ceede12bfb617383",
+        "manifest.json": "63f1500fd9c52ed7d7d4816b002d5f544e58f5feeea5c6497663bb0f935efe2a"
+      }
+    },
+    {
+      "run": "scene_d0_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/scene_d0_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "static blade-only USD and continuous particle initialization",
+        "scene": "artifacts/scene_d0_001/physics_testbed.usda",
+        "length": 0.12,
+        "width": 0.08,
+        "base_height": 0.015,
+        "bump_height": 0.008,
+        "bump_radius": 0.015,
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "family": "dome",
+        "seed": 42,
+        "units": "m,kg,s",
+        "spacing_m": 0.002,
+        "particle_count": 19340,
+        "initial_mass_kg": 0.23207999999999998,
+        "particle_volume_m3": 8e-09,
+        "sampling": "uniform cell centers under one continuous height function",
+        "workcell_proven": false
+      },
+      "artifact_sha256": {
+        "result.json": "ec1b9fcd4503d186526421bf4b09e951705db0f5ffb6af058683806d9cc5a4e8"
+      }
+    },
+    {
+      "run": "workcell_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/workcell_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "static research workcell; no robot control or cutting acceptance",
+        "scene": "/home/ningan/RoboticCuttingSim/artifacts/workcell_001/workcell.usda",
+        "asset_composition": {
+          "franka": {
+            "status": "PASS",
+            "layers_checked": 12,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": []
+          },
+          "d455": {
+            "status": "PASS",
+            "layers_checked": 1,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": [
+              "../../../Materials/Base/Metals/Aluminum_Anodized.mdl",
+              "../../../Materials/Base/Metals/Aluminum_Cast.mdl",
+              "../../../Materials/Base/Plastics/Plastic_ABS.mdl",
+              "OmniGlass.mdl",
+              "OmniPBR.mdl"
+            ]
+          }
+        },
+        "static_workcell_authored": true,
+        "official_assets_composed": true,
+        "robot_articulation_validated": false,
+        "ik_validated": false,
+        "robot_tool_coupling_validated": false,
+        "robot_force_feedback_validated": false,
+        "rtx_rgbd_validated": false,
+        "physical_cutting_validated": false,
+        "physics_proven": false,
+        "vision_proven": false,
+        "workcell_proven": false,
+        "benchmark_ready": false
+      },
+      "source": {
+        "git_sha": "9b87f0ee6cf43553b978b3b3b5d77a999459db08",
+        "git_dirty": true,
+        "config_sha256": "753ab2542737c1ce563851f43ef53ef41e5ad16f87f05961a746013a5e34042a",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "43416a47034e1c5edb38ae06c1ace33662b29f3f139fb415df4ce4ee3afd7c89",
+        "manifest.json": "1932a7753d3a3123c4a2f531fe26f449d0b2b5fff02325ebfd3f63bb36060af3"
+      }
+    },
+    {
+      "run": "workcell_002",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/workcell_002",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "static research workcell; no robot control or cutting acceptance",
+        "scene": "/home/ningan/RoboticCuttingSim/artifacts/workcell_002/workcell.usda",
+        "asset_composition": {
+          "franka": {
+            "status": "PASS",
+            "layers_checked": 12,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": []
+          },
+          "d455": {
+            "status": "PASS",
+            "layers_checked": 1,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": [
+              "../../../Materials/Base/Metals/Aluminum_Anodized.mdl",
+              "../../../Materials/Base/Metals/Aluminum_Cast.mdl",
+              "../../../Materials/Base/Plastics/Plastic_ABS.mdl",
+              "OmniGlass.mdl",
+              "OmniPBR.mdl"
+            ]
+          }
+        },
+        "static_workcell_authored": true,
+        "official_assets_composed": true,
+        "robot_articulation_validated": false,
+        "ik_validated": false,
+        "robot_tool_coupling_validated": false,
+        "robot_force_feedback_validated": false,
+        "rtx_rgbd_validated": false,
+        "physical_cutting_validated": false,
+        "physics_proven": false,
+        "vision_proven": false,
+        "workcell_proven": false,
+        "benchmark_ready": false
+      },
+      "source": {
+        "git_sha": "9b87f0ee6cf43553b978b3b3b5d77a999459db08",
+        "git_dirty": true,
+        "config_sha256": "69fe5dd4cc25691d4a5e14d2b013a977881137bc735e976fd818ceb09d842e37",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "c81fb04ec5302a302da24cb9e10367bd7460ef696e3532502ebd3cb93ba12b3e",
+        "manifest.json": "0075421a10bbe8dd5f00c84b60b1a219140ca781b9d573f893a0e98ea687bff0"
+      }
+    },
+    {
+      "run": "workcell_local_override_001",
+      "local_path": "/home/ningan/RoboticCuttingSim/artifacts/workcell_local_override_001",
+      "classification": "CURRENT_EVIDENCE",
+      "result": {
+        "status": "PASS",
+        "scope": "static research workcell; no robot control or cutting acceptance",
+        "scene": "/home/ningan/RoboticCuttingSim/artifacts/workcell_local_override_001/workcell.usda",
+        "asset_composition": {
+          "franka": {
+            "status": "PASS",
+            "layers_checked": 12,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": []
+          },
+          "d455": {
+            "status": "PASS",
+            "layers_checked": 1,
+            "missing_usd_dependencies": [],
+            "external_shader_assets_not_validated": [
+              "../../../Materials/Base/Metals/Aluminum_Anodized.mdl",
+              "../../../Materials/Base/Metals/Aluminum_Cast.mdl",
+              "../../../Materials/Base/Plastics/Plastic_ABS.mdl",
+              "OmniGlass.mdl",
+              "OmniPBR.mdl"
+            ]
+          }
+        },
+        "static_workcell_authored": true,
+        "official_assets_composed": true,
+        "robot_articulation_validated": false,
+        "ik_validated": false,
+        "robot_tool_coupling_validated": false,
+        "robot_force_feedback_validated": false,
+        "rtx_rgbd_validated": false,
+        "physical_cutting_validated": false,
+        "physics_proven": false,
+        "vision_proven": false,
+        "workcell_proven": false,
+        "benchmark_ready": false
+      },
+      "source": {
+        "git_sha": "9b87f0ee6cf43553b978b3b3b5d77a999459db08",
+        "git_dirty": true,
+        "config_sha256": "f802e39f954c1f8e826b1e6a237f2f215518838c6c954260ca714701471694ae",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.4",
+          "scipy": "1.18.1",
+          "isaaclab": null,
+          "isaacsim": null,
+          "torch": null,
+          "usd-core": "26.8"
+        },
+        "source_checkouts": {
+          "newton": {
+            "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          },
+          "CRESSim-MPM": {
+            "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+            "tracked_patch_sha256": "1989a9ae95277797c4d5e44053031ab1d0b094a807b88b23409d0cd6b5f4f61e",
+            "dirty": true
+          },
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "artifact_sha256": {
+        "result.json": "0f578b967607cafe3bb682197ffd3c2c21ac712847c9133149495586c0aa3239",
+        "manifest.json": "194e3148a9579546fcff9985e45a989aa694e0c1ce93ee579519e176ae331b26"
+      }
+    }
+  ],
+  "checks": {
+    "reset_reproducibility.json": {
+      "status": "PASS",
+      "max_position_error_m": 0.0,
+      "max_velocity_error_m_s": 0.0,
+      "tolerance_position_m": 1e-06,
+      "scope": "fresh process/model/solver reconstruction; seed42, same GPU, all121frames",
+      "initial_positions_identical": true
+    },
+    "replay_validation.json": {
+      "status": "PASS",
+      "surface_timesamples": 9,
+      "timecode_range": [
+        0.0,
+        120.0
+      ],
+      "scope": "USD replay topology and time alignment, no simulation execution"
+    },
+    "handoff_validation.json": {
+      "status": "PASS",
+      "scope": "integrated research handoff script; local asset composition, live MPM/RGB-D and recorded USD replay",
+      "surface_snapshots": 9,
+      "live_steps": 120,
+      "two_frankas_composed": true,
+      "two_native_d455_cameras_composed": true,
+      "tool_timestamp_alignment": true,
+      "robot_dynamics": false,
+      "persistent_cutting": false,
+      "d455_rtx": false,
+      "replay": "artifacts/research_handoff_001/research_workcell_replay.usda"
+    }
+  }
+}

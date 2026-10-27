@@ -1,5 +1,18 @@
 # Setup
 
+The primary handoff is a usable research workcell and environment API. After
+installation, run the integrated demonstration:
+
+```bash
+CUDA_VISIBLE_DEVICES=1 bash scripts/run_research_demo.sh artifacts/my_research_demo
+```
+
+This builds a locally composed dual-Panda/dual-D455 static USD, runs120 live MPM
+steps with ideal RGB-D, and exports a combined measured-state replay. Vendor USD
+dependencies (about21.4MB) download once into ignored artifacts. For an existing
+complete official hierarchy use `scene --preset workcell --asset-root PATH`.
+See `WORKCELL.md` and `ENVIRONMENT_API.md` for supported capabilities.
+
 Python 3.12 is required. All installs are isolated in this repository. Do not
 install packages into RSI or alter the machine driver during this procedure.
 
@@ -41,7 +54,7 @@ its extracted surface through programmable ideal cameras:
 .venv/bin/python -m robotic_cutting_sim.cli scene --output-dir artifacts/scene_new
 CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 MPLBACKEND=Agg .venv/bin/python -m robotic_cutting_sim.cli physics-probe --case indent_unload --output-dir artifacts/indent_new
 CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 MPLBACKEND=Agg .venv/bin/python -m robotic_cutting_sim.cli physics-probe --case through_bump_cut --output-dir artifacts/scrape_new
-CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 MPLBACKEND=Agg .venv/bin/python -m robotic_cutting_sim.cli physics-probe --solver cressim --case through_bump_cut --substeps 40 --output-dir artifacts/cressim_new
+CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 MPLBACKEND=Agg .venv/bin/python -m robotic_cutting_sim.cli physics-probe --solver cressim --case through_bump_cut --substeps 100 --output-dir artifacts/cressim_new
 CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 .venv/bin/python -m robotic_cutting_sim.cli camera-check --input artifacts/indent_new --output-dir artifacts/rgbd_new
 ```
 
@@ -50,3 +63,7 @@ Check live GPU usage first. `CUDA_VISIBLE_DEVICES=1` exposes physical GPU 1 as
 Cold JIT compilation affects timing and is included in receipts. `scripts/run_logged.py`
 can wrap any command and records wall time, exit code and sampled device-wide VRAM.
 Run `--help` on implemented CLI commands. There is no train or RSI command.
+
+CRESSim is an experimental candidate with known numerical failures; its command
+currently returns FAIL/exit1 and preserves evidence. It is not required for using
+the working Newton environment or building the static workcell.
