@@ -18,7 +18,8 @@ Isaac Sim 6.2／Kit110.4；使用官方支援的 Torch2.11/cu128 隔離環境。
 目前明確未通過：D0重建表面最大殘留約1.9–2.0mm；FF的20ms延遲耦合介面功
 相對殘差超過5%；部分FF撤刀後沒有滿足跨分量再接觸門檻；Kit嚴格camera reset／
 逐粒子重現性也失敗。這些保留為 FAIL／NOT_RUN，沒有放寬事前門檻。
-Lab初始reset的q／材料／ideal-depth差異為0；完整repeat與原生剛體穿透稽核正在收尾。
+Lab初始reset的q／材料／ideal-depth差異為0；同source完整repeat仍有逐粒子差異，
+ENV-01為FAIL。新原生剛體穿透稽核最大32.494µm／刀具對剛體0，ENV-02通過。
 
 主要證據：`artifacts/isaac_lab_d0_001`、`isaac_lab_d0_feedback_off_001`、
 `isaac_lab_d0_feedforward_001`、`isaacsim_live_native_d0_001`、
@@ -37,10 +38,20 @@ Geometry／Fixture、workpiece-local目標及統一API接續；原D0–D3基線�
 舊 D0–D3 的預設接觸／表面設定保留。新任務採用1mm完整粒子體積取樣，
 CUT-01為96,000粒子／144g，TRIM-01為97,044粒子／145.566g。
 
-Lab與Kit的實際2步CUT啟動已通過；Kit另完成TRIM啟動。第一個完整CUT正執行，
-尚未宣稱切割任務通過。初次啟動的JSON布林序列化失敗另存，修正後使用新輸出目錄。
+Lab與Kit均已完成固定CUT-01的400步／8秒實跑，獨立Task評分通過：
+144g分為兩個72g主體，實際MPM支撐圖1→2，撤刀後2.4秒持續分離，切割位置
+midpoint上界1.5mm。兩個固定TRIM-01也完成8秒，但均為FAIL_TASK_METRICS：
+兩個被推離原位置的code0粒子仍橋接底座與切屑，不能以97%粒子已有側向label
+冒充真實分離。正在以事前固定的延長刀路／第二次真實切削診斷改善，尚未升格。
+四次完整實驗與原始失敗見[Task episodes](reports/CUTTING_TASK_EPISODES.md)。
+初次啟動的JSON布林序列化失敗另存，修正後使用新輸出目錄。
 新任務使用經獨立閉合仿射幾何控制通過的current-volume表面profile；其驗證
 不等於任務整平通過，也沒有改動切削物理或舊D0的renderer預設。
+
+共用[實際環境API](SHARED_TASK_API.md)已在Lab/CUT與Kit/TRIM各用實際Cartesian及joint
+指令通過2步驗證；正式觀測只含雙RGB-D與proprio。獨立[相機稽核](TASK_CAMERA_VALIDATION.md)
+顯示材料區域原生深度覆蓋率約97.5–99.1%，全畫面CAM-04的缺值／離群仍FAIL。
+軌跡、全幾何與timestamp稽核通過，不將其當成全部相機或切削驗收通過。
 
 ## 先前 standalone 基線與歷史紀錄
 
