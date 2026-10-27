@@ -169,3 +169,52 @@ The installed package freeze is `artifacts/isaacsim_runtime_freeze_001.txt`.
 Two unused optional import converters require external `usd-exchange`; they are
 not enabled, since injecting its standalone USD into the native Kit environment
 would change the validated bundled-USD runtime.
+
+## Shared CUT-01 / TRIM-01 task adapters
+
+`--task-id CUT-01` and `--task-id TRIM-01` use the shared
+[`CuttingTaskSpec`](../src/robotic_cutting_sim/tasks.py) and frozen
+[`cutting_tasks_v1.json`](../configs/cutting_tasks_v1.json). Both start from a
+continuous160×30×20mm bar sampled at1mm, with a4mm reference MPM grid. CUT-01
+uses a35mm blade rotated90° around local Y and two actual support pedestals with
+an open40mm central slot. TRIM-01 adds one continuous8mm dome and a support floor.
+The exact TaskSpec hand-to-edge mount, dimensions, fixture boxes and world/local
+transform are shared by IK, native USD geometry and the retained material.
+The legacy tray is deactivated only for these tasks.
+
+New tasks explicitly default to velocity feedforward, native sensor noise OFF,
+and `current_volume_v1` surface reconstruction. That optional surface recipe was
+validated on independent closed affine controls before use here; it uses the
+current total deformation Jacobian and half-spacing voxels. It does not change
+material state, labels, mass or separation. Legacy D0 continues to use its
+original controller/noise/surface defaults. See the independent
+[surface validation](SURFACE_GEOMETRY_VALIDATION.md) for its limits.
+
+```bash
+.deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
+  --task-id CUT-01 --steps 400 --record-every 10 \
+  --camera-mode native_single_view --gpu 1 --device cuda:1 \
+  --output-dir artifacts/isaacsim_cut01_fresh
+```
+
+The native class accepts the shared TaskAction mapping: absolute world
+`cartesian_edge_pose_world` or `joint_position_rad`, plus an explicit
+`cut_enabled` Boolean. A joint command can contain7 values, or2×7 with the second
+arm equal to its declared park target. A moving secondary arm is rejected for
+these tasks before physics advances. `step(None)` executes the scripted task
+baseline. Explicit actions arm cutting at the actual action time, independently
+of the scripted active interval; the material still receives the measured edge.
+
+Actual native action probe `artifacts/isaacsim_task_actions_002/result.json`
+passes Cartesian,7-joint and parked2×7-joint actions over30 native PhysX steps.
+Its cutting indices are0/−1/−1 as requested, and a rejected secondary-arm target
+leaves the physical clock unchanged. It captures distinct640×480 native views
+and1280×960 Global. This is an API smoke test, not a full cut.
+
+`isaacsim_cut01_smoke_001` retains the initial metadata-serialization failure.
+After correcting NumPy Boolean serialization, `isaacsim_cut01_smoke_002` and
+`isaacsim_trim01_smoke_001` each execute2 native control steps and3 camera
+captures. Their short duration cannot score task completion. Future short runs
+are explicitly labelled `PASS_SMOKE`. Full task metrics are written separately
+to `oracle_debug/task_evaluation.json`; source/config byte snapshots and current
+mechanical surface attribution accompany each recording.

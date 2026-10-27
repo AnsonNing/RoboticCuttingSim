@@ -4,7 +4,7 @@ Isaac modules are imported only after SimulationApp starts. The Newton robot
 object supplies IK targets only: its dynamics step methods are never called.
 All published robot poses come from native PhysX tensors. No replay input exists.
 """
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import importlib.metadata
 from pathlib import Path
 import time
@@ -31,7 +31,12 @@ class IsaacSimCuttingConfig:
     render_warmup: int = 5
     camera_mode: str = "rtx_rgbd"
     feedback: bool = True
-    velocity_feedforward: bool = False
+    velocity_feedforward: bool | None = None
+    task_id: str | None = None
+    task_variant: str = "fixed"
+    action_mode: str = "cartesian"
+    native_noise: str | None = None
+    surface_profile: str | None = None
     scene: str | None = None
 
     def __post_init__(self):
@@ -44,6 +49,20 @@ class IsaacSimCuttingConfig:
             raise ValueError("control_dt must be an integer multiple of material_dt")
         if self.camera_mode not in ("rtx_rgbd", "native_single_view"):
             raise ValueError("Choose rtx_rgbd or native_single_view; no ideal fallback is available")
+        if self.task_id not in (None, "CUT-01", "TRIM-01"):
+            raise ValueError("task_id must be CUT-01, TRIM-01 or None for the legacy D0 recipe")
+        if self.action_mode not in ("cartesian", "joint"):
+            raise ValueError("action_mode must be cartesian or joint")
+        if self.velocity_feedforward is None:
+            object.__setattr__(self,"velocity_feedforward",self.task_id is not None)
+        if self.native_noise is None:
+            object.__setattr__(self,"native_noise","off" if self.task_id else "on")
+        if self.native_noise not in ("off", "on"):
+            raise ValueError("native_noise must be off or on, matching independent sensor controls")
+        if self.surface_profile is None:
+            object.__setattr__(self,"surface_profile","current_volume_v1" if self.task_id else "legacy")
+        if self.surface_profile not in ("legacy","current_volume_v1"):
+            raise ValueError("surface_profile must be legacy or current_volume_v1")
 
 
 def runtime_versions():
@@ -76,6 +95,21 @@ def pose_from_wxyz(position, orientation):
     return np.r_[position, orientation[[1, 2, 3, 0]]/norm]
 
 
+def validate_native_action(action, mode):
+    """Validate an explicit arm command without importing the native runtime."""
+    value=np.asarray(action,float)
+    if mode=="cartesian":
+        if value.shape!=(7,) or not np.isfinite(value).all():
+            raise ValueError("Native Cartesian action must contain seven finite values")
+        from .robot import validate_pose
+        return validate_pose(value)
+    if mode!="joint":
+        raise ValueError("Native arm action mode must be cartesian or joint")
+    if value.shape not in ((7,),(2,7)) or not np.isfinite(value).all():
+        raise ValueError("Native joint action must contain seven finite values or two such arm targets")
+    return value.copy()
+
+
 def calibration_from_replicator(parameters):
     """Use runtime projection, including render-product aspect fitting."""
     width, height = map(int, parameters["renderProductResolution"])
@@ -104,7 +138,7 @@ class LiveIsaacSimCutting:
         self.reset_index = -1
         self._closed = False
 
-    def reset(self):
+    def reset(self,seed=None):
         from argparse import Namespace
         import omni.timeline
         import omni.usd
@@ -119,11 +153,22 @@ class LiveIsaacSimCutting:
         from .usd_surface_bridge import DynamicSurfaceBridge
         from .workcell import export
 
+        if seed is not None:
+            self.config=replace(self.config,seed=int(seed))
         c = self.config
         self.reset_index += 1
         self.SimulationManager = SimulationManager
         self.compose_tool_pose = compose_tool_pose
         self.reference_pose = reference_pose
+        self.task=None
+        self.mount=np.array([0.,0.,.18,1.,0.,0.,0.])
+        if c.task_id:
+            from .tasks import make_task
+            self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant)
+            if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
+                raise ValueError("Native Kit control_dt/dx must match the shared task specification")
+            self.reference_pose=self.task.reference_edge_pose_world
+            self.mount=np.asarray(self.task.hand_from_edge_xyz_xyzw,float)
         self.wp = wp
         omni.timeline.get_timeline_interface().stop()
         context = omni.usd.get_context()
@@ -171,15 +216,19 @@ class LiveIsaacSimCutting:
         knife_path = hand_paths[0]+"/LiveKnife"
         self.knife_path=knife_path
         knife = UsdGeom.Mesh.Define(stage, knife_path)
-        vertices, faces = wedge_mesh()
+        blade_dimensions=([self.task.blade_length_m,self.task.blade_height_m,self.task.blade_half_width_m]
+                          if self.task else [.012,.004,.025])
+        vertices, faces = wedge_mesh(*blade_dimensions)
         knife.CreatePointsAttr(vertices)
         knife.CreateFaceVertexCountsAttr([3]*len(faces))
         knife.CreateFaceVertexIndicesAttr(faces.ravel())
         knife.CreateSubdivisionSchemeAttr("none")
         knife.CreateDisplayColorAttr([Gf.Vec3f(.38, .65, .85)])
         xf = UsdGeom.Xformable(knife)
-        xf.AddTranslateOp().Set(Gf.Vec3d(0, 0, .18))
-        xf.AddOrientOp().Set(Gf.Quatf(0, Gf.Vec3f(1, 0, 0)))
+        xf.AddTranslateOp().Set(Gf.Vec3d(*self.mount[:3]))
+        xf.AddOrientOp().Set(Gf.Quatf(float(self.mount[6]),Gf.Vec3f(*self.mount[3:6])))
+        if self.task:
+            self._author_task_fixture()
         for name in ("Table", "TrayFloor", "TrayLeft", "TrayRight", "TrayFront", "TrayBack"):
             prim = stage.GetPrimAtPath("/World/"+name)
             if prim:
@@ -211,14 +260,16 @@ class LiveIsaacSimCutting:
         self.arms.set_dof_gains([1000.]*4+[600.]*3+[350.,350.], [80.]*4+[40.]*3+[10.,10.])
         self.arms.set_dof_max_efforts([87.]*4+[12.]*3+[20.,20.])
         self.arms.set_solver_iteration_counts(position_counts=16, velocity_counts=4)
-        self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge", tool_rotation_xyzw=(1.,0.,0.,0.)))
+        self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+                   tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
+                   wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
         paths=[]
         for index,label in enumerate(self.ik.model.body_label):
             source_path=label.split("/",1)[1]
             paths.append(f"/World/Franka_{index//self.ik.bodies_per_arm}"+source_path[len("/panda"):])
         self.rigid_links=RigidPrim(paths)
         self.rigid_link_paths=paths
-        joints, ik_info = self.ik.inverse_kinematics(reference_pose(0.))
+        joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.))
         if not ik_info["converged"]:
             raise RuntimeError(f"Initial IK failed: {ik_info}")
         q = self.ik.initial_q.reshape(2, 9).copy()
@@ -226,6 +277,7 @@ class LiveIsaacSimCutting:
         self.arms.set_dof_positions(q)  # reset only; never called by step()
         self.arms.set_dof_velocities(np.zeros_like(q))
         self.arms.set_dof_position_targets(q)
+        self.arms.set_dof_velocity_targets(np.zeros_like(q))
         self.previous_command_q=q.copy()
         self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
         SimulationManager.step()
@@ -237,10 +289,13 @@ class LiveIsaacSimCutting:
         self.time_s, self.step_index = 0., 0
         initial = self.proprioception()
         attachment=self._check_attachment(initial["tool_pose"])
-        self.material = LiveCuttingMaterial(CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
-                       dx=c.dx, device=c.device, feedback=c.feedback))
+        material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
+                       dx=c.dx, device=c.device, feedback=c.feedback)
+        self.material = (LiveCuttingMaterial(material_config,task=self.task) if self.task else LiveCuttingMaterial(material_config))
         material_setup = self.material.reset(initial["tool_pose"], c.seed)
-        self.surface = ComponentSurface(c.dx/2, c.device, voxel_size=min(c.dx/2, .0015))
+        spacing=self.task.particle_spacing_m if self.task else c.dx/2
+        voxel=spacing/2 if c.surface_profile=="current_volume_v1" else min(spacing,.0015)
+        self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
         self.bridge = DynamicSurfaceBridge(stage)
         self._update_surface()
         self._create_cameras()
@@ -248,7 +303,9 @@ class LiveIsaacSimCutting:
             "material":material_setup["material"],"material_setup":material_setup,
             "initial_mass_kg":material_setup["initial_mass_kg"],
             "world_from_workpiece_xyzw":material_setup["world_from_workpiece_xyzw"],
-            "T_hand_edge_xyz_xyzw":[0.,0.,.18,1.,0.,0.,0.],
+            "T_hand_edge_xyz_xyzw":self.mount.tolist(),
+            "blade_dimensions_m":dict(zip(("length","height","half_width"),blade_dimensions)),
+            "task":self.task.to_dict() if self.task else None,
             "cutting_hand_body_label":self.ik.model.body_label[self.ik.hand_local],
             "cutting_hand_body_index":self.ik.hand_local,"physical_knife_body_index":self.ik.hand_local,
             "joint_names":[self.arms.dof_names[:7],self.arms.dof_names[:7]],
@@ -262,6 +319,29 @@ class LiveIsaacSimCutting:
         write_json(self.output/("setup.json" if self.reset_index==0 else f"reset_setup_{self.reset_index:02d}.json"), setup)
         return initial
 
+    def _author_task_fixture(self):
+        from pxr import Gf, UsdGeom, UsdPhysics
+        task,stage=self.task,self.stage
+        for prim in list(stage.Traverse()):
+            if str(prim.GetPath()).startswith("/World/Tray"):
+                prim.SetActive(False)
+        root=UsdGeom.Xform.Define(stage,"/World/TaskFixture")
+        pose=np.asarray(task.world_from_workpiece_xyzw,float)
+        root.AddTranslateOp().Set(Gf.Vec3d(*pose[:3]))
+        root.AddOrientOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Quatd(float(pose[6]),Gf.Vec3d(*pose[3:6])))
+        for index,box in enumerate(task.fixture_boxes_local):
+            cube=UsdGeom.Cube.Define(stage,f"/World/TaskFixture/Box_{index}")
+            cube.CreateSizeAttr(2.)
+            cube.GetPrim().SetCustomDataByKey("research:fixture_name",box.name)
+            cube.AddTranslateOp().Set(Gf.Vec3d(*box.center_m))
+            cube.AddScaleOp().Set(Gf.Vec3f(*box.half_extents_m))
+            cube.CreateDisplayColorAttr([Gf.Vec3f(.22,.27,.31)])
+            UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        table=UsdGeom.Xformable(stage.GetPrimAtPath("/World/Table"))
+        for op in table.GetOrderedXformOps():
+            if op.GetOpType()==UsdGeom.XformOp.TypeTranslate:
+                op.Set(Gf.Vec3d(0,0,task.table_top_world_z_m-.025))
+
     def body_poses(self):
         positions,orientations=self.rigid_links.get_world_poses()
         p,r=numpy_data(positions),numpy_data(orientations)
@@ -272,7 +352,7 @@ class LiveIsaacSimCutting:
         qdot = numpy_data(self.arms.get_dof_velocities())
         p, r = self.hand.get_world_poses()
         hand = pose_from_wxyz(numpy_data(p)[0], numpy_data(r)[0])
-        tool = self.compose_tool_pose(hand, (0.,0.,.18), (1.,0.,0.,0.))
+        tool = self.compose_tool_pose(hand, self.mount[:3], self.mount[3:])
         if not np.isfinite(np.r_[q.ravel(),qdot.ravel(),tool]).all():
             raise FloatingPointError("Nonfinite native PhysX state")
         return {"q":q[:,:7].copy(), "qdot":qdot[:,:7].copy(), "hand_pose":hand,
@@ -280,6 +360,8 @@ class LiveIsaacSimCutting:
 
     def _update_surface(self):
         vertices, faces, self.surface_info = self.surface.extract(self.material.bed)
+        if self.task:
+            vertices=self.task.points_to_world(vertices).astype(np.float32)
         self.surface_receipt = self.bridge.update(vertices, faces, self.time_s)
         self.surface_arrays = (vertices, faces)
 
@@ -328,7 +410,8 @@ class LiveIsaacSimCutting:
                 sensor.set_sensor_maximum_disparity(150.)
                 sensor.set_sensor_disparity_confidence(1.)
                 sensor.set_sensor_distance_cutoffs(.52,6.)
-                sensor.set_sensor_noise_parameters(.25,.25)
+                noise=0. if c.native_noise=="off" else .25
+                sensor.set_sensor_noise_parameters(noise,noise)
                 sensor.set_sensor_disparity_noise_downscale(1.)
                 sensor.set_enabled_outlier_removal(True)
                 sensor.set_sensor_output_mode(0)
@@ -357,17 +440,39 @@ class LiveIsaacSimCutting:
             "resolution":[int(x) for x in sensor.render_product.GetResolutionAttr().Get()]}
             for name,sensor in self.cameras.items()})
 
-    def step(self):
+    def step(self,action=None,*,cutting=True):
         c, manager = self.config, self.SimulationManager
+        mode=c.action_mode
+        if isinstance(action,dict):
+            if self.task is None:
+                raise ValueError("Task action mappings require a shared CUT/TRIM specification")
+            command=self.task.validate_action(action)
+            mode="cartesian" if command["mode"]=="cartesian_edge_pose_world" else "joint"
+            action=command["target"]
+            cutting=bool(cutting and command["cut_enabled"])
         desired = self.reference_pose(self.time_s+c.control_dt)
         # Seed IK from current PHYSX joints, without advancing Newton dynamics.
         q = numpy_data(self.arms.get_dof_positions())
         self.ik.state.joint_q.assign(q.ravel().astype(np.float32))
-        targets, ik_info = self.ik.inverse_kinematics(desired)
-        if not ik_info["converged"]:
-            raise RuntimeError(f"IK failed before native articulation step: {ik_info}")
+        if action is None or mode=="cartesian":
+            if action is not None:
+                desired=validate_native_action(action,"cartesian")
+            targets, ik_info = self.ik.inverse_kinematics(desired)
+            if not ik_info["converged"]:
+                raise RuntimeError(f"IK failed before native articulation step: {ik_info}")
+        else:
+            target=validate_native_action(action,"joint")
+            if self.task and target.ndim==2 and not np.allclose(target[1],self.ik.initial_q.reshape(2,9)[1,:7],atol=1e-6,rtol=0):
+                raise ValueError("CUT/TRIM keep the secondary Franka at its declared park target")
+            targets=(np.stack([self.ik._validate_joints(row) for row in target]) if target.ndim==2
+                     else self.ik._validate_joints(target))
+            desired=None
+            ik_info={"used":False,"reason":"explicit native joint target action"}
         target_q = self.ik.initial_q.reshape(2,9).copy()
-        target_q[0,:7] = targets
+        if np.asarray(targets).ndim==2:
+            target_q[:,:7]=targets
+        else:
+            target_q[0,:7]=targets
         self.arms.set_dof_position_targets(target_q)
         velocity_target=(target_q-self.previous_command_q)/c.control_dt if c.velocity_feedforward else np.zeros_like(target_q)
         self.arms.set_dof_velocity_targets(velocity_target)
@@ -388,7 +493,8 @@ class LiveIsaacSimCutting:
         self.physx.update_transformations(False,True,True)
         actual = self.proprioception()
         attachment=self._check_attachment(actual["tool_pose"])
-        diagnostics = self.material.advance(actual["tool_pose"],self.time_s)
+        diagnostics = self.material.advance(actual["tool_pose"],self.time_s,cutting=cutting,
+                           cut_index=0 if action is not None else None)
         if not np.array_equal(diagnostics["applied_previous_material_wrench_world"],applied):
             raise AssertionError("The material receipt does not match the wrench actually applied to PhysX")
         state=self.material.debug_state()
@@ -400,6 +506,7 @@ class LiveIsaacSimCutting:
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
         self._update_surface()
         return actual, {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,
+                 "commanded_joint_positions_rad":target_q[:,:7].copy(),"action_mode":mode,
                  "commanded_joint_velocity_rad_s":velocity_target,"velocity_feedforward":c.velocity_feedforward,
                  "ik":ik_info,"rendered_attachment":attachment,
                  "robot_physics_wall_s":time.perf_counter()-start,
@@ -476,6 +583,11 @@ class LiveIsaacSimCutting:
         write_json(self.output/"calibration_runtime.json",self.calibration)
         write_json(self.output/"native_registration_latest.json",self.native_registration)
         return frames,{name:{a:str(value[1]) for a,value in payload.items()} for name,payload in latest.items()}
+
+    def close(self):
+        if not self._closed:
+            self.app.close(wait_for_replicator=False)
+            self._closed=True
 
 
 def launch_app(config, output):

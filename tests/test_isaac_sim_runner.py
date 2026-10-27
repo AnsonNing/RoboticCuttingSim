@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from robotic_cutting_sim.isaac_sim_runner import (
-    IsaacSimCuttingConfig, calibration_from_replicator, pose_from_wxyz, require_sim_62,
+    IsaacSimCuttingConfig, LiveIsaacSimCutting, calibration_from_replicator, pose_from_wxyz, require_sim_62, validate_native_action,
 )
 
 
@@ -30,3 +30,46 @@ def test_runtime_projection_calibration_preserves_aspect_and_offsets():
     calibration=calibration_from_replicator(parameters)
     np.testing.assert_allclose(calibration["K"],[[640,0,288],[0,720,192],[0,0,1]])
     np.testing.assert_allclose(calibration["T_world_camera"],np.diag([1,-1,-1,1]))
+
+
+def test_task_defaults_preserve_legacy_controller_and_declare_new_recipe():
+    legacy=IsaacSimCuttingConfig()
+    task=IsaacSimCuttingConfig(task_id="CUT-01")
+    assert legacy.velocity_feedforward is False and legacy.native_noise=="on"
+    assert task.velocity_feedforward is True and task.native_noise=="off"
+    assert legacy.surface_profile=="legacy" and task.surface_profile=="current_volume_v1"
+    assert IsaacSimCuttingConfig(task_id="TRIM-01",velocity_feedforward=False,native_noise="on").velocity_feedforward is False
+    with pytest.raises(ValueError,match="task_id"):
+        IsaacSimCuttingConfig(task_id="UNKNOWN")
+
+
+def test_native_explicit_actions_have_separate_joint_and_world_pose_semantics():
+    joints=np.arange(7.)/10
+    np.testing.assert_array_equal(validate_native_action(joints,"joint"),joints)
+    np.testing.assert_allclose(validate_native_action([.1,.2,.3,0,0,0,2],"cartesian"),[.1,.2,.3,0,0,0,1])
+    with pytest.raises(ValueError,match="Quaternion"):
+        validate_native_action(np.zeros(7),"cartesian")
+    with pytest.raises(ValueError,match="seven finite"):
+        validate_native_action(np.zeros(13),"joint")
+
+
+def test_task_fixture_usd_uses_same_local_boxes_and_workpiece_frame():
+    from types import SimpleNamespace
+    from pxr import Gf, Usd, UsdGeom, UsdPhysics
+    from scipy.spatial.transform import Rotation
+    stage=Usd.Stage.CreateInMemory()
+    table=UsdGeom.Cube.Define(stage,"/World/Table")
+    table.AddTranslateOp().Set(Gf.Vec3d(0,0,-.035))
+    UsdGeom.Cube.Define(stage,"/World/TrayFloor")
+    q=Rotation.from_euler("z",.4).as_quat()
+    box=SimpleNamespace(name="left_pedestal",center_m=(-.055,0,-.005),half_extents_m=(.035,.025,.005))
+    env=LiveIsaacSimCutting(None,None,"unused")
+    env.stage=stage
+    env.task=SimpleNamespace(world_from_workpiece_xyzw=(.02,.03,0,*q),fixture_boxes_local=(box,),table_top_world_z_m=-.01)
+    env._author_task_fixture()
+    assert not stage.GetPrimAtPath("/World/TrayFloor").IsActive()
+    cube=stage.GetPrimAtPath("/World/TaskFixture/Box_0")
+    assert cube.HasAPI(UsdPhysics.CollisionAPI)
+    actual=np.asarray(UsdGeom.Xformable(cube).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
+    np.testing.assert_allclose(actual[:3,3],Rotation.from_quat(q).apply(box.center_m)+[.02,.03,0],atol=1e-10)
+    np.testing.assert_allclose(np.linalg.norm(actual[:3,:3],axis=0),box.half_extents_m,atol=1e-9)
