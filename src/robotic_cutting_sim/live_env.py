@@ -33,9 +33,11 @@ class CuttingTaskEnv:
         self._closed, self._ready = False, False
         self._history, self._observation = [], None
 
-    def reset(self, seed=42):
+    def reset(self, seed=None):
         if self._closed:
             raise RuntimeError("Environment is closed")
+        if seed is None:
+            seed = getattr(self.task, "seed", 42)
         self.backend.reset(seed=int(seed))
         self.task = self.backend.task
         self._history, self._ready = [], True

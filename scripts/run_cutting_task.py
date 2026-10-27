@@ -6,7 +6,10 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 import traceback
+import hashlib
+import shutil
 
 import numpy as np
 
@@ -18,6 +21,8 @@ from robotic_cutting_sim.recording import write_json
 
 def worker(args):
     options = {"device": args.device} if args.device else {}
+    if args.particle_spacing is not None:
+        options["particle_spacing_m"] = args.particle_spacing
     if args.runtime == "isaac_sim":
         options.update(gpu=args.gpu, device=args.device or f"cuda:{args.gpu}", steps=args.steps)
     elif args.device:
@@ -25,6 +30,12 @@ def worker(args):
     try:
         with open_cutting_env(args.task, runtime=args.runtime, output_dir=args.output_dir,
                 seed=args.seed, action_mode=args.action_mode, **options) as env:
+            implementation = args.output_dir/"implementation"
+            implementation.mkdir()
+            source = [Path(__file__).resolve(), Path(__file__).resolve().parents[1]/"src/robotic_cutting_sim/live_env.py"]
+            for path in source:
+                shutil.copyfile(path, implementation/path.name)
+            write_json(implementation/"sha256.json", {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in source})
             observation, setup = env.reset(seed=args.seed)
             write_json(args.output_dir/"api_setup.json", setup)
             write_json(args.output_dir/"task.json", env.task.to_dict())
@@ -85,6 +96,7 @@ def main():
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device")
+    parser.add_argument("--particle-spacing", type=float, help="Explicit initial task quadrature in metres; frozen defaults remain available")
     parser.add_argument("--gpu", type=int, default=1)
     parser.add_argument("--record-every", type=int, default=10)
     parser.add_argument("--action-mode", choices=("cartesian_edge_pose_world", "joint_position_rad"), default="cartesian_edge_pose_world")
@@ -98,9 +110,15 @@ def main():
     if args.output_dir.exists():
         parser.error("Output already exists; preserve runs and use a new directory")
     environment = {**os.environ, "OMNI_KIT_ACCEPT_EULA": "YES", "PYTHONUNBUFFERED": "1"}
+    start = time.perf_counter()
     process = subprocess.run([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--worker"], env=environment)
     result = args.output_dir/"result.json"
     receipt = json.loads(result.read_text()) if result.exists() else {"status": "FAIL", "reason": "No worker receipt"}
+    if process.returncode and receipt["status"].startswith("PASS"):
+        receipt = {**receipt, "status": "FAIL", "reason": "Runtime failed after writing a worker receipt"}
+    if args.output_dir.exists():
+        write_json(args.output_dir/"process_receipt.json", {"returncode": process.returncode, "wall_s": time.perf_counter()-start})
+        write_json(result, receipt)
     return 0 if process.returncode == 0 and receipt["status"] in ("PASS_EXECUTION", "PASS_SMOKE") else 1
 
 

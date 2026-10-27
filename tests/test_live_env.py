@@ -89,3 +89,20 @@ def test_wrapper_rejects_stale_camera_and_preserves_vision_only_contract():
     native.capture = lambda: (old, {})
     with pytest.raises(ValueError, match="timestamps must match"):
         env.step()
+
+
+@pytest.mark.parametrize("kind", ["lab", "kit"])
+def test_omitted_reset_seed_preserves_constructed_task_seed(kind):
+    native = backend(kind)
+    native.task.seed = 73
+    original = native.reset
+    received = []
+
+    def reset(seed):
+        received.append(seed)
+        original(seed)
+
+    native.reset = reset
+    env = CuttingTaskEnv(native)
+    _, info = env.reset()
+    assert received == [73] and info["seed"] == 73

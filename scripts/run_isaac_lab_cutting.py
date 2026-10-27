@@ -90,6 +90,9 @@ def main():
     if args.task_id:
         loaded += [ROOT/"src/robotic_cutting_sim/tasks.py", ROOT/"src/robotic_cutting_sim/fixture_contacts.py",
                    ROOT/"configs/cutting_tasks_v1.json"]
+        if args.task_variant == "randomized":
+            loaded += [ROOT/"src/robotic_cutting_sim/task_randomization.py", ROOT/"configs/task_randomization_v1.json",
+                       ROOT/"src/robotic_cutting_sim/benchmark.py"]
     record["implementation_sha256"] = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in loaded}
     for path in loaded:
         shutil.copyfile(path, implementation/path.name)

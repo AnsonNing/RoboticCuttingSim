@@ -498,6 +498,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         return torch.tensor(desired[None], device=self.device, dtype=torch.float32)
 
     def reset(self, seed=None, options=None):
+        if (seed is not None and self.task is not None and self.task.variant == "randomized"
+                and int(seed) != self.task.seed):
+            raise ValueError("Lab randomized geometry/fixtures are fixed at construction; open a new environment with the new seed")
         if seed is not None:
             self.cfg.seed = int(seed)
         return super().reset(seed=seed, options=options)
