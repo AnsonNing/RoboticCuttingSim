@@ -88,12 +88,14 @@ ffmpeg -n -loglevel error -framerate 5 \
   -c:v libx264 -pix_fmt yuv420p artifacts/coupled_closeup_fresh/coupled_cutting_closeup.mp4
 ```
 
-Completed local videos: `artifacts/ovrtx_cut_closeup_001/cut_closeup.mp4` (33KB),
-`artifacts/ovrtx_recontact_closeup_001/recontact_closeup.mp4` (34KB),
-`artifacts/ovrtx_coupled_001/coupled_cutting_overview.mp4` (21KB), and
-`artifacts/ovrtx_coupled_closeup_001/coupled_cutting_closeup.mp4` (101KB).
-These earlier diagnostic videos retain the intermediate prism facet winding;
-the canonical002 arrays and geometry QA use the corrected outward version.
+Canonical completed videos use the corrected outward wedge:
+`artifacts/ovrtx_coupled_002/coupled_cutting_overview.mp4` (21KB) and
+`artifacts/ovrtx_coupled_closeup_002/coupled_cutting_closeup.mp4` (100KB), each
+containing41 actual RTX frames at5fps. The earlier standalone diagnostic videos
+`artifacts/ovrtx_cut_closeup_001/cut_closeup.mp4` (33KB) and
+`artifacts/ovrtx_recontact_closeup_001/recontact_closeup.mp4` (34KB) retain the
+intermediate prism facet winding. Earlier coupled001 videos are also preserved
+as render intermediates; canonical002 arrays, videos and geometry QA agree.
 All files are actual RTX captures, with simple material overrides, not generated
 illustrations. Media and large USD/NPZ files remain ignored; small actual PNGs
 are committed under `docs/evidence/`.

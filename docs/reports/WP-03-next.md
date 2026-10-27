@@ -112,6 +112,16 @@ optical frame, not the separate native color camera; modeled-depth registration
 is deliberately marked false. Do not interpret all changes in modeled depth as
 material motion, since the model can change visibility/noise as well.
 
+The runner exposes `--noise-mean` and `--noise-sigma` (both default.25). A paired
+static slanted-checker-plane control actually ran with exact0/0 and.25/.25 in
+`artifacts/single_view_plane_noise_off_001` and `single_view_plane_noise_on_001`.
+Each has three frozen source times, confidence1, IR4m and ten warmup steps. Exact
+zero parameters executed successfully without an epsilon fallback. OFF had zero
+native depth pixels changing above10µm across frozen times; ON had43/41 such
+pixels in the two views. The raw scalar/XYZ outputs remain intact for the separate
+registration and analytic plane-error audit; temporal variation alone does not
+calibrate a physical D455.
+
 ## Primary sources
 
 - [Isaac6.2 depth sensor API and asset wrapping](https://docs.isaacsim.omniverse.nvidia.com/6.2.0/sensors/isaacsim_sensors_camera_depth.html)

@@ -70,8 +70,8 @@ def prepare(args):
             product.GetPrim().SetMetadata("apiSchemas", Sdf.TokenListOp.Create(prependedItems=["OmniSensorDepthSensorSingleViewAPI"]))
             parameters = {"enabled": True, "baselineMM": 95.0,
                 "focalLengthPixel": float(calibration[name]["K"][0][0]), "sensorSizePixel": float(args.width),
-                "maxDisparityPixel": 150.0, "confidenceThreshold": args.confidence, "noiseMean": .25,
-                "noiseSigma": .25, "noiseDownscaleFactorPixel": 1.0, "minDistance": .52,
+                "maxDisparityPixel": 150.0, "confidenceThreshold": args.confidence, "noiseMean": args.noise_mean,
+                "noiseSigma": args.noise_sigma, "noiseDownscaleFactorPixel": 1.0, "minDistance": .52,
                 "maxDistance": 6.0, "outlierRemovalEnabled": True, "rgbDepthOutputMode": 0,
                 "effectiveDistance": args.ir_effective_distance}
             for key, value in parameters.items():
@@ -251,6 +251,8 @@ def main():
     parser.add_argument("--camera-mode", choices=["ideal_rgbd", "simulated_d455"], default="ideal_rgbd")
     parser.add_argument("--confidence", type=float, default=.7)
     parser.add_argument("--ir-effective-distance", type=float, default=0.0)
+    parser.add_argument("--noise-mean", type=float, default=.25, help="Native SingleView noiseMean parameter")
+    parser.add_argument("--noise-sigma", type=float, default=.25, help="Native SingleView noiseSigma parameter")
     parser.add_argument("--prepare-only", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.prepare_only:
@@ -258,6 +260,8 @@ def main():
         return 0
     if min(args.width, args.height, args.samples, args.warmup) < 1:
         parser.error("Resolution, samples and warmup must be positive")
+    if not np.isfinite(args.noise_mean) or not np.isfinite(args.noise_sigma) or args.noise_sigma < 0:
+        parser.error("Noise mean must be finite and noise sigma must be finite and nonnegative")
     output = new_output(args.output_dir)
     (output / "observations").mkdir(); (output / "global_debug").mkdir()
     (output / "camera_debug").mkdir()
