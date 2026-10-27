@@ -1,0 +1,1000 @@
+{
+  "artifact": "artifacts/task_frame_fixture_001",
+  "freeze_commit": "2a7b1eb",
+  "protocol": {
+    "protocol_id": "task_frame_fixture_v1_20261028",
+    "seed": 42,
+    "task": "CUT-01",
+    "frame_yaw_degrees": 37.0,
+    "frame_translation_m": [
+      0.17,
+      -0.11,
+      0.0
+    ],
+    "tilt_xyz_degrees": [
+      17.0,
+      -11.0,
+      29.0
+    ],
+    "tilt_translation_m": [
+      0.12,
+      -0.08,
+      0.035
+    ],
+    "contact_segment": {
+      "control_steps": 5,
+      "start_xyz_local_m": [
+        -0.0008,
+        0.0,
+        0.021
+      ],
+      "end_xyz_local_m": [
+        0.0008,
+        0.0,
+        0.018
+      ],
+      "orientation": "actual CUT-01 edge_orientation_local_xyzw",
+      "cutting_enabled": false,
+      "scope": "prescribed measured blade contact only, not a robot or severing episode"
+    },
+    "criteria": {
+      "pose_roundtrip_position_max_m": 1e-12,
+      "pose_roundtrip_angle_max_rad": 1e-10,
+      "local_position_max_m": 2e-05,
+      "local_velocity_max_m_s": 0.002,
+      "local_F_frobenius_max": 0.002,
+      "local_impulse_force_difference_max_Ns": 1e-05,
+      "local_impulse_torque_difference_max_Nms": 1e-06,
+      "world_force_rotation_residual_max_Ns": 1e-09,
+      "world_torque_rotation_residual_max_Nms": 1e-09,
+      "world_state_roundtrip_position_max_m": 1e-10,
+      "world_state_roundtrip_velocity_max_m_s": 1e-10,
+      "minimum_peak_force_N": 0.0001,
+      "minimum_nonzero_horizontal_rotation_effect_N": 1e-05,
+      "gravity_analytic_residual_max_m_s2": 1e-12,
+      "table_plane_analytic_residual_max_m": 1e-07,
+      "fixture_impulse_absolute_tolerance_Ns": 1e-10,
+      "fixture_impulse_relative_tolerance": 0.0001,
+      "fixture_zero_impulse_max_Ns": 1e-14,
+      "minimum_positive_fixture_impulse_Ns": 1e-09,
+      "initial_particles_masses_and_lattice_identical": true,
+      "all_cut_codes_zero": true,
+      "finite_states_and_reaction": true
+    },
+    "fixture_controls": [
+      {
+        "id": "left_pedestal_top",
+        "point_local_m": [
+          -0.055,
+          0.0,
+          0.0002
+        ],
+        "velocity_local_m_s": [
+          0.02,
+          0.0,
+          -0.03
+        ],
+        "contact": "box_top"
+      },
+      {
+        "id": "finite_box_outside",
+        "point_local_m": [
+          -0.095,
+          0.0,
+          -0.003
+        ],
+        "velocity_local_m_s": [
+          0.0,
+          0.0,
+          -0.03
+        ],
+        "contact": "none"
+      },
+      {
+        "id": "open_plunge_slot",
+        "point_local_m": [
+          0.0,
+          0.0,
+          -0.003
+        ],
+        "velocity_local_m_s": [
+          0.0,
+          0.0,
+          -0.03
+        ],
+        "contact": "none"
+      },
+      {
+        "id": "world_table_in_slot",
+        "point_local_m": [
+          0.0,
+          0.0,
+          -0.0098
+        ],
+        "velocity_local_m_s": [
+          0.0,
+          0.01,
+          -0.02
+        ],
+        "contact": "table"
+      }
+    ],
+    "tilted_table_control": {
+      "point_world_m": [
+        0.03,
+        -0.02,
+        -0.0098
+      ],
+      "velocity_world_m_s": [
+        0.01,
+        0.02,
+        -0.03
+      ],
+      "boxes_enabled": false,
+      "scope": "actual transformed table kernel, separate from any tilted material episode"
+    }
+  },
+  "manifest": {
+    "timestamp": "2026-10-28T04:02:37.437742+09:00",
+    "command": [
+      "scripts/probe_task_frames.py",
+      "artifacts/task_frame_fixture_001",
+      "--device",
+      "cuda:0"
+    ],
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "backend": "task_frame_fixture_actual_kernel",
+    "git_sha": "2a7b1eb57fe4806f9798ab00117423827a5bbde8",
+    "git_dirty": true,
+    "config": {
+      "protocol_sha256": "b8019654b617c2132f4ce8377fab5cbeb1e0896fb4445a87f6f72e10a2c111c2",
+      "device": "cuda:0"
+    },
+    "config_sha256": "64fb858c4827598f7513637bb14b31d778fd9eb5dd69bfc609dc4cc9b4652a63",
+    "packages": {
+      "newton": "1.6.1",
+      "warp-lang": "1.17.0",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "isaaclab": null,
+      "isaacsim": null,
+      "torch": null,
+      "usd-core": "26.8",
+      "mujoco": "3.12.0",
+      "mujoco-warp": "3.12.0",
+      "newton-usd-schemas": "0.6.0",
+      "ovrtx": null,
+      "ovstage": null
+    },
+    "source_checkouts": {
+      "newton": {
+        "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      },
+      "CRESSim-MPM": {
+        "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+        "tracked_patch_sha256": "869b881d787e2b096ca3cc52187de7912fb76abf8a4da1b4525cb9f0dd59df51",
+        "dirty": true
+      },
+      "IsaacLab": {
+        "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      }
+    },
+    "local_code_sha256": {
+      "src/robotic_cutting_sim/__init__.py": "d13a603c011d7f243d6af56b8c13125b575eb95fca279b0ac989deb7d1bfd680",
+      "src/robotic_cutting_sim/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+      "src/robotic_cutting_sim/benchmark.py": "f0ca2a16b9c8f360ddae0754167576ca2a7aeabd03d356fc4a84d3f873cd3b49",
+      "src/robotic_cutting_sim/camera.py": "f8449e563a19c90574dedc564e2b94730fb62b07e987e37c100d17e86e34aa2b",
+      "src/robotic_cutting_sim/cli.py": "9818801cb11b4ff0ee68b133a037019f15356f66325efae59e6e962aff620826",
+      "src/robotic_cutting_sim/coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316",
+      "src/robotic_cutting_sim/cressim_probe.py": "4088237a93f47993675528bac32752745308c1212e92036cb0bfc84bd535b79a",
+      "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+      "src/robotic_cutting_sim/cutting_surface.py": "7822b6aaa50274756d741a1f8781e7302c260b8c09a799af2c7b9259db4a0a17",
+      "src/robotic_cutting_sim/doctor.py": "50bc53dd5ce34b77ef10da68413a6e0c7fbadd7e430b06f15c168872d5dd36e7",
+      "src/robotic_cutting_sim/env.py": "5fb16c8951d892493215d04cf80f4e15cbc0fb32e16c27ce80405be8c7d75b20",
+      "src/robotic_cutting_sim/env_demo.py": "9db7ca309128d51e51c0442e659ece100750b3bc4cf2874111f2d60ee934acad",
+      "src/robotic_cutting_sim/fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+      "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+      "src/robotic_cutting_sim/isaac_lab_env.py": "98bce3bb20ce1af9e81bdf030bd5f444c1f57b59c2bb32347bc28cb09c24e1be",
+      "src/robotic_cutting_sim/isaac_sim_runner.py": "865d91f068be65a6ea6122e075abd655bfb75b05584319a7e6719c4d635d426b",
+      "src/robotic_cutting_sim/live_acceptance.py": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+      "src/robotic_cutting_sim/live_camera.py": "ca1277d1f5cfe892efdfde8496d3d4de3ae5e0240258f8c0e3b40d85ffd00a67",
+      "src/robotic_cutting_sim/live_env.py": "5cbc2fe5295d97c725bc43890dcb7fada8a3feb6dabb9e4527329c79623c4604",
+      "src/robotic_cutting_sim/live_material.py": "f43f289a98ff2161968cbc36fa0544b791f2ea68c8b8e6dc47864a42ec31e768",
+      "src/robotic_cutting_sim/material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+      "src/robotic_cutting_sim/newton_probe.py": "ab0bb411cac19f638334b382b78e7e2114d0911489ff3b176bc323273dc7e3b2",
+      "src/robotic_cutting_sim/preview.py": "a7afba89579420bfbb5edabb53a05bb7023a36c080dd5913c4549ad86833b3e1",
+      "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a",
+      "src/robotic_cutting_sim/research_env.py": "3498efc26eef98e7368e14bfc131ad50c883277b63d0a875c97b12ee5c12fcc6",
+      "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+      "src/robotic_cutting_sim/rtx_outputs.py": "b9a3d38286d23132676c3be3e2ab5386bf674c0c36da10ebcfbee4bd24b75423",
+      "src/robotic_cutting_sim/scene.py": "90b3bc8fe13d343fac256b485deaf9fb5b59430b5d6aa5b4857f2e8e4901e03a",
+      "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+      "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+      "src/robotic_cutting_sim/sensor_contract.py": "b976a9c670855c7c8220251f11444576ddd100293e47e3656e7cbbc0ab0aab0a",
+      "src/robotic_cutting_sim/single_view_controls.py": "f0dfeefdb78866ef35f1116d97b295aaca265d85fbbf22a4423ef4d2487d3480",
+      "src/robotic_cutting_sim/single_view_registration.py": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df",
+      "src/robotic_cutting_sim/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+      "src/robotic_cutting_sim/tasks.py": "997d41f38c8b28d9138d847aba22c9d3ffdf75e4660a27ae11559130f275eecd",
+      "src/robotic_cutting_sim/tlmpm.py": "7cb84840672f2bdfa924b0d13a0c84aa64aa3537e5d1906aa41732b1960b479f",
+      "src/robotic_cutting_sim/trajectory.py": "c780ed6f5503f0cf50a90e462b95715b48bab4834493e0352b5a25d8f93d9d88",
+      "src/robotic_cutting_sim/usd_surface_bridge.py": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3",
+      "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+      "src/robotic_cutting_sim/workcell.py": "62272655fb87ac282bd79c528e8a3bf8106e486fa2c8ede33f106403370bfc7b"
+    },
+    "physics_proven": false,
+    "vision_proven": false
+  },
+  "result": {
+    "status": "PASS_FRAME_AND_FIXTURE_CONTROLS",
+    "protocol_sha256": "b8019654b617c2132f4ce8377fab5cbeb1e0896fb4445a87f6f72e10a2c111c2",
+    "seed": 42,
+    "frame_equivalence": {
+      "measurements": {
+        "local_position_max_m": 9.590927163571905e-08,
+        "local_velocity_max_m_s": 1.3987360944156535e-05,
+        "local_F_frobenius_max": 6.305904662440298e-06,
+        "local_impulse_force_difference_max_Ns": 5.8975495336025634e-09,
+        "local_impulse_torque_difference_max_Nms": 1.0662300190680432e-10,
+        "horizontal_world_force_rotation_effect_N": 0.092115757656521
+      },
+      "checks": {
+        "local_position_max_m": true,
+        "local_velocity_max_m_s": true,
+        "local_F_frobenius_max": true,
+        "local_impulse_force_difference_max_Ns": true,
+        "local_impulse_torque_difference_max_Nms": true,
+        "nonzero_horizontal_rotation": true,
+        "identical_initial_points_masses_lattice": true,
+        "identical_codes": true,
+        "identity_pose_roundtrip_position_max_m": true,
+        "identity_pose_roundtrip_angle_max_rad": true,
+        "identity_world_state_roundtrip_position_max_m": true,
+        "identity_world_state_roundtrip_velocity_max_m_s": true,
+        "identity_world_force_rotation_residual_max_Ns": true,
+        "identity_world_torque_rotation_residual_max_Nms": true,
+        "identity_nonzero_force": true,
+        "identity_finite": true,
+        "identity_all_codes_zero": true,
+        "yaw_translated_pose_roundtrip_position_max_m": true,
+        "yaw_translated_pose_roundtrip_angle_max_rad": true,
+        "yaw_translated_world_state_roundtrip_position_max_m": true,
+        "yaw_translated_world_state_roundtrip_velocity_max_m_s": true,
+        "yaw_translated_world_force_rotation_residual_max_Ns": true,
+        "yaw_translated_world_torque_rotation_residual_max_Nms": true,
+        "yaw_translated_nonzero_force": true,
+        "yaw_translated_finite": true,
+        "yaw_translated_all_codes_zero": true
+      },
+      "passed": true
+    },
+    "fixture_kernel_passed": true,
+    "tilted_frame_passed": true,
+    "wall_s": 6.459651244105771,
+    "exclusive_timing": false,
+    "robot_rollout": false,
+    "full_task_acceptance": false,
+    "tilted_material_episode": false,
+    "cutting_enabled": false,
+    "scope": "Actual LOCAL material dynamics and physical fixture impulses; no policy observation changes"
+  },
+  "fixture_kernel": {
+    "actual_warp_kernel": "robotic_cutting_sim.fixture_contacts.fixture_contacts",
+    "actual_fixture_inputs": {
+      "centers_local_m": [
+        [
+          -0.054999999701976776,
+          0.0,
+          -0.004999999888241291
+        ],
+        [
+          0.054999999701976776,
+          0.0,
+          -0.004999999888241291
+        ]
+      ],
+      "half_extents_local_m": [
+        [
+          0.03500000014901161,
+          0.020999999716877937,
+          0.004999999888241291
+        ],
+        [
+          0.03500000014901161,
+          0.020999999716877937,
+          0.004999999888241291
+        ]
+      ],
+      "table_plane_local": [
+        0.0,
+        0.0,
+        1.0,
+        0.009999999776482582
+      ],
+      "radius_m": 0.00045000000000000004,
+      "dt_s": 0.0001,
+      "stiffness": 0.1,
+      "friction": 0.3,
+      "particle_mass_kg": 1.5e-06
+    },
+    "rows": [
+      {
+        "id": "left_pedestal_top",
+        "point_local_m": [
+          -0.055,
+          0.0,
+          0.0002
+        ],
+        "velocity_local_m_s": [
+          0.02,
+          0.0,
+          -0.03
+        ],
+        "contact": "box_top",
+        "actual_impulse_local_Ns": [
+          -2.999999892949745e-08,
+          0.0,
+          3.794998235662206e-07
+        ],
+        "expected_impulse_local_Ns": [
+          -3.0000000000000004e-08,
+          0.0,
+          3.795000000000001e-07
+        ],
+        "error_Ns": 1.7643702707725772e-13,
+        "tolerance_Ns": 1.380683924010458e-10,
+        "passed": true
+      },
+      {
+        "id": "finite_box_outside",
+        "point_local_m": [
+          -0.095,
+          0.0,
+          -0.003
+        ],
+        "velocity_local_m_s": [
+          0.0,
+          0.0,
+          -0.03
+        ],
+        "contact": "none",
+        "actual_impulse_local_Ns": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "expected_impulse_local_Ns": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "error_Ns": 0.0,
+        "tolerance_Ns": 1e-10,
+        "passed": true
+      },
+      {
+        "id": "open_plunge_slot",
+        "point_local_m": [
+          0.0,
+          0.0,
+          -0.003
+        ],
+        "velocity_local_m_s": [
+          0.0,
+          0.0,
+          -0.03
+        ],
+        "contact": "none",
+        "actual_impulse_local_Ns": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "expected_impulse_local_Ns": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "error_Ns": 0.0,
+        "tolerance_Ns": 1e-10,
+        "passed": true
+      },
+      {
+        "id": "world_table_in_slot",
+        "point_local_m": [
+          0.0,
+          0.0,
+          -0.0098
+        ],
+        "velocity_local_m_s": [
+          0.0,
+          0.01,
+          -0.02
+        ],
+        "contact": "table",
+        "actual_impulse_local_Ns": [
+          0.0,
+          -1.4999999464748726e-08,
+          3.780005215503479e-07
+        ],
+        "expected_impulse_local_Ns": [
+          0.0,
+          -1.5000000000000002e-08,
+          3.779999999999993e-07
+        ],
+        "error_Ns": 5.21550623286139e-13,
+        "tolerance_Ns": 1.3782975019743054e-10,
+        "passed": true
+      }
+    ],
+    "kernel_statistics": [
+      0.00025000033201649785,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "passed": true
+  },
+  "tilted_frame": {
+    "scope": "actual adapter configuration plus direct transformed-table kernel; no tilted material episode",
+    "task": {
+      "task_id": "CUT-01",
+      "seed": 42,
+      "variant": "fixed",
+      "geometry": {
+        "length_m": 0.16,
+        "width_m": 0.03,
+        "base_height_m": 0.02,
+        "bumps": []
+      },
+      "particle_spacing_m": 0.001,
+      "grid_dx_m": 0.004,
+      "fixture_boxes_local": [
+        {
+          "name": "left_pedestal",
+          "center_m": [
+            -0.055,
+            0.0,
+            -0.005
+          ],
+          "half_extents_m": [
+            0.035,
+            0.021,
+            0.005
+          ]
+        },
+        {
+          "name": "right_pedestal",
+          "center_m": [
+            0.055,
+            0.0,
+            -0.005
+          ],
+          "half_extents_m": [
+            0.035,
+            0.021,
+            0.005
+          ]
+        }
+      ],
+      "world_from_workpiece_xyzw": [
+        0.12,
+        -0.08,
+        0.035,
+        0.16617678659447843,
+        -0.05493544884983746,
+        0.2602054123305932,
+        0.9495580632329264
+      ],
+      "table_top_world_z_m": -0.01,
+      "hand_from_edge_xyz_xyzw": [
+        0.0,
+        0.0,
+        0.18,
+        0.7071067811865476,
+        0.0,
+        0.7071067811865476,
+        0.0
+      ],
+      "duration_s": 8.0,
+      "control_dt_s": 0.02,
+      "material": {
+        "density_kg_m3": 1500.0,
+        "young_modulus_pa": 50000.0,
+        "poisson_ratio": 0.3,
+        "yield_stress_pa": 1000.0,
+        "hardening_ratio": 0.0,
+        "friction": 0.3,
+        "failure_model": "experimental_edge_work_persistent_TLMPM",
+        "critical_stress_pa": null,
+        "fracture_energy_j_m2": 0.05,
+        "calibration": "provisional_uncalibrated"
+      },
+      "goal_kind": "sever",
+      "target_origin_local_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "target_normal_local": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "edge_clearance_m": 0.0,
+      "blade_length_m": 0.035,
+      "blade_height_m": 0.004,
+      "blade_half_width_m": 0.025,
+      "edge_orientation_local_xyzw": [
+        0.0,
+        0.7071067811865476,
+        0.0,
+        0.7071067811865476
+      ],
+      "edge_position_knots_local_txyz": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.05
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.03
+        ],
+        [
+          1.6,
+          0.0,
+          0.0,
+          0.03
+        ],
+        [
+          5.6,
+          0.0,
+          0.0,
+          -0.003
+        ],
+        [
+          6.4,
+          0.0,
+          0.0,
+          0.05
+        ],
+        [
+          8.0,
+          0.0,
+          0.0,
+          0.05
+        ]
+      ],
+      "active_cut_interval_s": [
+        1.6,
+        5.6
+      ],
+      "protocol_id": "cutting_tasks_v1_20261028",
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "sample_coordinate_frame": "workpiece_local",
+      "evaluator_coordinate_frame": "world",
+      "action_modes": [
+        "cartesian_edge_pose_world",
+        "joint_position_rad"
+      ],
+      "runtime_validated": false
+    },
+    "reset": {
+      "seed": 42,
+      "material": {
+        "dx": 0.004,
+        "dt": 0.0001,
+        "density": 1500.0,
+        "young": 50000.0,
+        "poisson": 0.3,
+        "yield_stress": 1000.0,
+        "pic": 0.05,
+        "contact_stiffness": 0.1,
+        "contact_friction": 0.3,
+        "particle_contact_stiffness": 0.05,
+        "contact_radius_scale": 0.9,
+        "cutting_energy": 0.05,
+        "sharpness": 0.8,
+        "blade_length": 0.035,
+        "blade_height": 0.004,
+        "blade_half_width": 0.025,
+        "cuts": 1,
+        "floor": false,
+        "fixture_walls": false,
+        "tool": true,
+        "material_contact": true,
+        "gravity": [
+          -1.8718362446439045,
+          -2.8154701277926355,
+          -9.20898783975442
+        ]
+      },
+      "parameter_receipt": {
+        "source": "CuttingTaskSpec",
+        "requested": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "actual_backend_material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.3,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.035,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": false,
+          "fixture_walls": false,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            -1.8718362446439045,
+            -2.8154701277926355,
+            -9.20898783975442
+          ]
+        },
+        "calibration": "provisional_uncalibrated",
+        "solver_coordinates": "static_workpiece_local",
+        "moving_workpiece_frame_supported": false,
+        "cutting_law": "retained experimental edge-work persistent logical-grid separation"
+      },
+      "particles": 96000,
+      "initial_mass_kg": 0.14399999999999996,
+      "initial_cut_codes": [
+        0
+      ],
+      "feedback_delay_s": 0.02,
+      "reset_wall_s": 0.06558914692141116,
+      "workpiece_local_target_height_m": null,
+      "world_from_workpiece_xyzw": [
+        0.12,
+        -0.08,
+        0.035,
+        0.16617678659447843,
+        -0.05493544884983746,
+        0.2602054123305932,
+        0.9495580632329264
+      ],
+      "task_id": "CUT-01",
+      "particle_spacing_m": 0.001
+    },
+    "gravity_analytic_only": true,
+    "actual_gravity_local_m_s2": [
+      -1.8718362446439045,
+      -2.8154701277926355,
+      -9.20898783975442
+    ],
+    "expected_gravity_local_m_s2": [
+      -1.8718362446439045,
+      -2.8154701277926355,
+      -9.20898783975442
+    ],
+    "actual_table_plane_local": [
+      0.1908089965581894,
+      0.28700000047683716,
+      0.938734769821167,
+      0.04500000178813934
+    ],
+    "expected_table_plane_local": [
+      0.1908089953765448,
+      0.2870000130267722,
+      0.9387347441136003,
+      0.045000000000000005
+    ],
+    "table_signed_distance_residual_m": [
+      1.881856798863213e-09,
+      2.208573227080457e-09,
+      1.7110166408706995e-09
+    ],
+    "point_local_m": [
+      -0.057263648044660526,
+      0.08182145556768432,
+      -0.06109962374190789
+    ],
+    "actual_table_impulse_world_Ns": [
+      -1.4999994150450978e-08,
+      -3.000000857320626e-08,
+      3.7950053395968855e-07
+    ],
+    "expected_table_impulse_world_Ns": [
+      -1.5000000000000002e-08,
+      -3.0000000000000004e-08,
+      3.7949999999999934e-07
+    ],
+    "table_impulse_error_Ns": 5.340605459908278e-13,
+    "kernel_statistics": [
+      0.00025000033201649785,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "checks": {
+      "gravity": true,
+      "table_coefficients": true,
+      "table_signed_distance": true,
+      "table_impulse": true,
+      "table_impulse_nonzero": true,
+      "legacy_floor_disabled": true
+    },
+    "passed": true
+  },
+  "segment_summary": {
+    "identity": {
+      "reset": {
+        "seed": 42,
+        "material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.3,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.035,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": false,
+          "fixture_walls": false,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "parameter_receipt": {
+          "source": "CuttingTaskSpec",
+          "requested": {
+            "density_kg_m3": 1500.0,
+            "young_modulus_pa": 50000.0,
+            "poisson_ratio": 0.3,
+            "yield_stress_pa": 1000.0,
+            "hardening_ratio": 0.0,
+            "friction": 0.3,
+            "failure_model": "experimental_edge_work_persistent_TLMPM",
+            "critical_stress_pa": null,
+            "fracture_energy_j_m2": 0.05,
+            "calibration": "provisional_uncalibrated"
+          },
+          "actual_backend_material": {
+            "dx": 0.004,
+            "dt": 0.0001,
+            "density": 1500.0,
+            "young": 50000.0,
+            "poisson": 0.3,
+            "yield_stress": 1000.0,
+            "pic": 0.05,
+            "contact_stiffness": 0.1,
+            "contact_friction": 0.3,
+            "particle_contact_stiffness": 0.05,
+            "contact_radius_scale": 0.9,
+            "cutting_energy": 0.05,
+            "sharpness": 0.8,
+            "blade_length": 0.035,
+            "blade_height": 0.004,
+            "blade_half_width": 0.025,
+            "cuts": 1,
+            "floor": false,
+            "fixture_walls": false,
+            "tool": true,
+            "material_contact": true,
+            "gravity": [
+              0.0,
+              0.0,
+              -9.81
+            ]
+          },
+          "calibration": "provisional_uncalibrated",
+          "solver_coordinates": "static_workpiece_local",
+          "moving_workpiece_frame_supported": false,
+          "cutting_law": "retained experimental edge-work persistent logical-grid separation"
+        },
+        "particles": 96000,
+        "initial_mass_kg": 0.14399999999999996,
+        "initial_cut_codes": [
+          0
+        ],
+        "feedback_delay_s": 0.02,
+        "reset_wall_s": 0.5028871060349047,
+        "workpiece_local_target_height_m": null,
+        "world_from_workpiece_xyzw": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "task_id": "CUT-01",
+        "particle_spacing_m": 0.001
+      },
+      "prescribed_measured_edge_scope": "prescribed measured blade contact only, not a robot or severing episode",
+      "pose_roundtrip_position_max_m": 0.0,
+      "pose_roundtrip_angle_max_rad": 0.0,
+      "world_state_roundtrip_position_max_m": 0.0,
+      "world_state_roundtrip_velocity_max_m_s": 0.0,
+      "world_force_rotation_residual_max_Ns": 0.0,
+      "world_torque_rotation_residual_max_Nms": 0.0,
+      "peak_force_N": 0.14832991013486516,
+      "finite": true,
+      "all_cut_codes_zero": true,
+      "wall_s_including_recording": 3.284096471965313,
+      "timing_exclusive": false
+    },
+    "yaw_translated": {
+      "reset": {
+        "seed": 42,
+        "material": {
+          "dx": 0.004,
+          "dt": 0.0001,
+          "density": 1500.0,
+          "young": 50000.0,
+          "poisson": 0.3,
+          "yield_stress": 1000.0,
+          "pic": 0.05,
+          "contact_stiffness": 0.1,
+          "contact_friction": 0.3,
+          "particle_contact_stiffness": 0.05,
+          "contact_radius_scale": 0.9,
+          "cutting_energy": 0.05,
+          "sharpness": 0.8,
+          "blade_length": 0.035,
+          "blade_height": 0.004,
+          "blade_half_width": 0.025,
+          "cuts": 1,
+          "floor": false,
+          "fixture_walls": false,
+          "tool": true,
+          "material_contact": true,
+          "gravity": [
+            0.0,
+            0.0,
+            -9.81
+          ]
+        },
+        "parameter_receipt": {
+          "source": "CuttingTaskSpec",
+          "requested": {
+            "density_kg_m3": 1500.0,
+            "young_modulus_pa": 50000.0,
+            "poisson_ratio": 0.3,
+            "yield_stress_pa": 1000.0,
+            "hardening_ratio": 0.0,
+            "friction": 0.3,
+            "failure_model": "experimental_edge_work_persistent_TLMPM",
+            "critical_stress_pa": null,
+            "fracture_energy_j_m2": 0.05,
+            "calibration": "provisional_uncalibrated"
+          },
+          "actual_backend_material": {
+            "dx": 0.004,
+            "dt": 0.0001,
+            "density": 1500.0,
+            "young": 50000.0,
+            "poisson": 0.3,
+            "yield_stress": 1000.0,
+            "pic": 0.05,
+            "contact_stiffness": 0.1,
+            "contact_friction": 0.3,
+            "particle_contact_stiffness": 0.05,
+            "contact_radius_scale": 0.9,
+            "cutting_energy": 0.05,
+            "sharpness": 0.8,
+            "blade_length": 0.035,
+            "blade_height": 0.004,
+            "blade_half_width": 0.025,
+            "cuts": 1,
+            "floor": false,
+            "fixture_walls": false,
+            "tool": true,
+            "material_contact": true,
+            "gravity": [
+              0.0,
+              0.0,
+              -9.81
+            ]
+          },
+          "calibration": "provisional_uncalibrated",
+          "solver_coordinates": "static_workpiece_local",
+          "moving_workpiece_frame_supported": false,
+          "cutting_law": "retained experimental edge-work persistent logical-grid separation"
+        },
+        "particles": 96000,
+        "initial_mass_kg": 0.14399999999999996,
+        "initial_cut_codes": [
+          0
+        ],
+        "feedback_delay_s": 0.02,
+        "reset_wall_s": 0.0731202750466764,
+        "workpiece_local_target_height_m": null,
+        "world_from_workpiece_xyzw": [
+          0.17,
+          -0.11,
+          0.0,
+          0.0,
+          0.0,
+          0.31730465640509214,
+          0.9483236552061993
+        ],
+        "task_id": "CUT-01",
+        "particle_spacing_m": 0.001
+      },
+      "prescribed_measured_edge_scope": "prescribed measured blade contact only, not a robot or severing episode",
+      "pose_roundtrip_position_max_m": 2.818112379517619e-17,
+      "pose_roundtrip_angle_max_rad": 0.0,
+      "world_state_roundtrip_position_max_m": 5.721958498152797e-17,
+      "world_state_roundtrip_velocity_max_m_s": 3.980661232645204e-18,
+      "world_force_rotation_residual_max_Ns": 0.0,
+      "world_torque_rotation_residual_max_Nms": 1.0587911840678754e-22,
+      "peak_force_N": 0.14833017512234312,
+      "finite": true,
+      "all_cut_codes_zero": true,
+      "wall_s_including_recording": 2.8286298799794167,
+      "timing_exclusive": false
+    }
+  },
+  "artifact_sha256": {
+    "fixture_kernel.json": "fad95fd1798e16b3f089841ff832bd8cf99d1e41db1ca5b73ebe5316a1dc9a55",
+    "frame_equivalence.json": "2269a18d0daaa7cdb9b6fd503e1f46502a82293f0ca098b5afbd07ae01eb292f",
+    "gpu_before.json": "4ba62951bee0b0456d20b0cb945aa495267142807e47ab60a20238b705c9e85d",
+    "identity.json": "35e1266bee3fe8d0317661da09e383a4df516e52012e055d236c86e8c2bed0c9",
+    "identity.npz": "c0d2fc24401e5a56bb7d1e6e65646059d76dd65af174e7cc345a136c07ef462e",
+    "implementation/coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316",
+    "implementation/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "implementation/fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+    "implementation/live_material.py": "f43f289a98ff2161968cbc36fa0544b791f2ea68c8b8e6dc47864a42ec31e768",
+    "implementation/material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+    "implementation/probe_task_frames.py": "f3873d9d84667206a4460d19d2c3bd04f7efb0a4dbc6549652dd5506e9c71cd3",
+    "implementation/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+    "implementation/tasks.py": "997d41f38c8b28d9138d847aba22c9d3ffdf75e4660a27ae11559130f275eecd",
+    "implementation/tlmpm.py": "7cb84840672f2bdfa924b0d13a0c84aa64aa3537e5d1906aa41732b1960b479f",
+    "manifest.json": "21cdfb5a2fa4c49a50a9debadfcae24ac4b1c67e51279079a4357dd0b0ed79b3",
+    "protocol.json": "35362e59fc5d1baaa6b3e6cbbd27bf9d199b5313af083d0f756ac5040d513a49",
+    "result.json": "ec5168f45db709c36a5c1426c20163a2fb3cf521f2235480173350d4bd5f8d29",
+    "tilted_frame.json": "43946755988e1a71fbd266621d9682f0dbbcfdb1fe168c99f1d52fdcc03e628d",
+    "yaw_translated.json": "4d3b679903f81d14e38e6973113291fb80381253b6eb33f45cce93caa90d28b3",
+    "yaw_translated.npz": "78695c3eda8de27e8b854f1d102fda942489581c4fe71b846e723221c2c9dc98"
+  }
+}
