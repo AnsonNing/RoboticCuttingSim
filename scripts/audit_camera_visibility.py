@@ -15,6 +15,7 @@ import warp as wp
 
 from robotic_cutting_sim.recording import new_output, write_json
 from robotic_cutting_sim.usd_surface_bridge import stage_triangles
+from robotic_cutting_sim.visual_geometry import non_render_purpose_paths
 
 
 @wp.kernel
@@ -46,17 +47,12 @@ def main():
     cameras = json.loads(args.runtime_calibration.read_text())
     # Session-only edits never modify source USD assets.
     stage.SetEditTarget(stage.GetSessionLayer())
-    excluded = []
-    for prim in stage.Traverse():
-        imageable = UsdGeom.Imageable(prim)
-        if imageable and imageable.ComputePurpose() not in ("default", "render"):
-            imageable.MakeInvisible()
-            excluded.append(str(prim.GetPath()))
+    excluded = non_render_purpose_paths(stage)
     names = ["other", "franka_0", "franka_1", "knife", "material", "table", "fixture"]
     records = []
     wp.init()
     for time_s in args.times:
-        v, f, _, meta = stage_triangles(stage, time_s * stage.GetTimeCodesPerSecond())
+        v, f, _, meta = stage_triangles(stage, time_s * stage.GetTimeCodesPerSecond(), excluded_prefixes=tuple(excluded))
         ids = np.zeros(len(f), np.int32)
         for row in meta["prims"]:
             path = row["prim_path"]

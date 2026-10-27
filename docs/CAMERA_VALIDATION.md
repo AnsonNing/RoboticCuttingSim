@@ -182,6 +182,53 @@ same controlled optics/native recipe guard. It is validated by actual Kit
 controls, independently of the OVRTX result. It explicitly leaves physical/noise
 calibration and a particular dynamics episode's synchronization unvalidated.
 
+## Actual live D0 camera/mesh synchronization
+
+The independent audit of all 41 frames in
+`artifacts/isaacsim_live_native_d0_ff_001` uses actual recorded PhysX poses for
+all 22 rigid links, the measured hand-fixed wedge, and each frame's actual
+current-component ParticleSurface mesh. Runtime camera intrinsics/extrinsics
+come from actual Kit camera parameters. Each source mesh hash is checked
+against the live capture receipt. CPU rays are an independent geometry
+reference, not new sensor imagery or a replacement live episode.
+
+The reference excludes guide-purpose collision hulls including instance proxies
+and honors mesh sidedness/clipping. Early CPU diagnostics001–003 incorrectly
+included instanced guide hulls and then investigated sidedness; those failed
+diagnostics remain preserved. Explicit instance-proxy purpose filtering resolves
+the discrepancy. Two additional CPU tests cover that failure and sidedness/near
+clipping. The canonical full audit stores pre-analysis source snapshots and input
+hashes at `artifacts/live_camera_mesh_ff_002`.
+
+| All 41 frames, worst case | D455 0 | D455 1 | Global |
+|---|---:|---:|---:|
+| Measured-state mesh vs actual RTX p95 | 0.179 μm | 0.179 μm | 0.715 μm |
+| Mesh/RTX valid-mask IoU minimum | 0.999988 | 0.999962 | 0.999976 |
+| Largest retained mesh/RTX silhouette tail | 579.8 mm | 353.0 mm | 710.2 mm |
+| Native depth vs mesh p95 | 0.238 μm | 0.358 μm | RTX only |
+| Native/mesh valid-mask IoU minimum | 0.44510 | 0.20547 | RTX only |
+| Largest retained native error | 620.7 mm | 1003.6 mm | RTX only |
+| Maximum native-valid chip pixels | 36 | 34 | 31 RTX pixels |
+
+The large silhouette/hard-tail maxima remain included in RMSE and maximum-error
+records; p95 alone does not describe their severity. No valid sample is trimmed.
+All physical/surface/camera timestamp differences are below 9e−16 s after
+explicitly subtracting the native physics clock's 6 ms startup origin.
+
+The full 1280×960 global view passes the frozen visibility count in every frame.
+Minimum depth-consistent first-hit counts are Franka0=18,610, Franka1=27,791,
+knife=26, material=608 and table=161,311 pixels. These are geometry attributions
+checked at actual captured RTX pixels; native semantic segmentation was not
+captured and is not claimed. The best separated-chip native-depth coverage
+exceeds the frozen 25-pixel visibility criterion.
+
+**CAM-03 geometric visibility PASS; dynamic geometry bridge and timestamps PASS;
+strict native CAM-04 FAIL.** Native validity holes yield mask IoU far below the
+unchanged 0.99 gate. Successful deterministic mesh/RTX agreement does not replace
+that native failure. Source registration, actual native sensor execution,
+physical noise realism, and full dynamic camera acceptance remain distinct.
+[Full actual-live camera audit](evidence/live_camera_mesh_audit.json).
+
 ## Reproduce
 
 Use fresh output names; existing experiment directories are never overwritten.
@@ -206,4 +253,6 @@ OMNI_KIT_ACCEPT_EULA=YES .deps/isaacsim-venv/bin/python scripts/capture_kit_sing
 OMNI_KIT_ACCEPT_EULA=YES .deps/isaacsim-venv/bin/python scripts/capture_kit_single_view_controls.py artifacts/kit_controls_fresh artifacts/kit_on_fresh --gpu 0 --noise on
 .venv/bin/python scripts/audit_single_view_holdout.py artifacts/kit_controls_fresh artifacts/kit_off_fresh artifacts/kit_on_fresh artifacts/kit_audit_fresh
 .venv/bin/python scripts/register_native_capture.py artifacts/kit_on_fresh artifacts/kit_registered_fresh --runtime kit
+.venv/bin/python scripts/audit_live_camera_mesh.py artifacts/isaacsim_live_native_d0_ff_001 artifacts/live_camera_audit_fresh
+.venv/bin/python -m pytest tests/test_camera_mesh_audit.py -q
 ```
