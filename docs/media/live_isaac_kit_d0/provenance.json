@@ -1,0 +1,47 @@
+{
+  "runtime": "Live Isaac Sim6.2 / Kit110.4 / native PhysX + TLMPM + native SingleView RGB-D",
+  "recording": "artifacts/isaacsim_live_native_d0_ff_repeat_001",
+  "source_kind": "arrays captured during live stepping, encoded afterward; no USD replay",
+  "simulation_duration_s": 8,
+  "capture_interval_s": 0.2,
+  "physics_dt_s": 0.002,
+  "control_dt_s": 0.02,
+  "acceptance": "PASS_EXECUTION; full18gateacceptancefalse; see ISAAC_LIVE_ACCEPTANCE.md",
+  "files": [
+    {
+      "path": "global.mp4",
+      "source": "artifacts/isaacsim_live_native_d0_ff_repeat_media_002/live_global.mp4",
+      "bytes": 93446,
+      "sha256": "88dac7ff2f523934ce19dc8bde7eab2fd6bdd53f72c42fa0a7b4db92b77479f5"
+    },
+    {
+      "path": "d455_0.mp4",
+      "source": "artifacts/isaacsim_live_native_d0_ff_repeat_media_002/live_d455_0.mp4",
+      "bytes": 88665,
+      "sha256": "0e6226e6c4f25b6cd738e3627d64a41bca5102d90c8e37b28959457e9bd19d60"
+    },
+    {
+      "path": "d455_1.mp4",
+      "source": "artifacts/isaacsim_live_native_d0_ff_repeat_media_002/live_d455_1.mp4",
+      "bytes": 76722,
+      "sha256": "941d619316a85d00a83408741f180a687dd8dc60154b77a8ae5f5a172c2495fd"
+    },
+    {
+      "path": "measured_depth.mp4",
+      "source": "artifacts/isaacsim_live_native_d0_ff_repeat_media_002/live_measured_depth.mp4",
+      "bytes": 3425036,
+      "sha256": "43f2144d74554e75c50feadcd2f17ef1ab6ddb3ed1df68e6ec650f06dfe15560"
+    },
+    {
+      "path": "synchronized_multiview.mp4",
+      "source": "artifacts/isaacsim_live_native_d0_ff_repeat_media_002/live_synchronized_multiview.mp4",
+      "bytes": 3588565,
+      "sha256": "c020d76ba8392c9b5a30151f2fa57dac3b26fd3374be99a0c81f3c7655a3b213"
+    }
+  ],
+  "readme_still": {
+    "source": "artifacts/isaacsim_live_native_d0_ff_001/global_debug/global_0020.png",
+    "sha256": "ba8c9e8a1093bf337727369bad569d8ba1246727a0c713cbbd965a6604a670a8",
+    "simulation_s": 4
+  }
+}

@@ -39,7 +39,7 @@ versions: [requirements.lock](../requirements.lock). Machine-readable raw audit:
 
 Four actual source-only Lab CLI smoke attempts are in `artifacts/official_lab_001`.
 They stop at missing GA dependencies (`lazy_loader`) before physics launch; this
-is **BLOCKED**, not an official MPM runtime failure or successful test. Install the
+was **BLOCKED**, not an official MPM runtime failure or successful test. The
 full pinned GA dependencies were subsequently installed in separate
 `.deps/isaaclab-venv` and `.deps/isaacsim-venv`; no 2.x substitution was used.
 
