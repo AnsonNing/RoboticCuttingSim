@@ -353,6 +353,22 @@ def _advance(index: wp.array(dtype=int)):
     index[0] += 1
 
 
+@wp.kernel
+def _start_cut(progress: wp.array(dtype=float), cuts: wp.array(dtype=int),
+               index: wp.array(dtype=int), previous: wp.array(dtype=int)):
+    p = wp.tid()
+    active = cuts[index[0]]
+    if active >= 0 and active != previous[0]:
+        progress[p] = 0.0
+
+
+@wp.kernel
+def _remember_cut(cuts: wp.array(dtype=int), index: wp.array(dtype=int), previous: wp.array(dtype=int)):
+    active = cuts[index[0]]
+    if active >= 0:
+        previous[0] = active
+
+
 @dataclass(frozen=True)
 class TLMPMConfig:
     dx: float = .004
@@ -432,6 +448,7 @@ class TLMPM:
             self.old = wp.zeros(total, dtype=wp.vec3)
             self.new = wp.zeros(total, dtype=wp.vec3)
             self.index = wp.zeros(1, dtype=int)
+            self.previous_cut = wp.full(1, -1, dtype=int)
             self.reaction = wp.zeros(1, dtype=wp.spatial_vector)
             self.stats = wp.zeros(7, dtype=float)
             self.hash = wp.HashGrid(64, 64, 32)
@@ -456,6 +473,8 @@ class TLMPM:
         lam = c.young*c.poisson/((1+c.poisson)*(1-2*c.poisson))
         mu = c.young/(2*(1+c.poisson))
         with wp.ScopedDevice(self.device):
+            wp.launch(_start_cut, n, [self.progress, self.cuts, self.index, self.previous_cut])
+            wp.launch(_remember_cut, 1, [self.cuts, self.index, self.previous_cut])
             wp.launch(_stress, n, [self.F, self.Fpi, self.stress, self.plastic, lam, mu, c.yield_stress])
             wp.launch(_rigid_contacts, n, [self.x, self.v, self.mass, self.impulse, self.progress,
                 self.contact_work, self.poses, self.twists, self.cuts, self.index,

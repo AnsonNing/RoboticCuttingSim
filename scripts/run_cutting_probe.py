@@ -21,7 +21,7 @@ def tool_plan(times, case, z=.0155):
                       [1.30, .045, z], [1.45, .080, .06], [3., .080, .06]])
     if case == "no_contact":
         knots[:, 2] += .1
-    elif case == "cut_recontact":
+    elif case in ("cut_recontact", "two_cuts"):
         # A shorter sweep and vertical withdrawal leave the chip above the
         # substrate, where gravity produces genuine cut-face recontact.
         knots = np.array([[0, -.030, .06], [.20, -.030, z], [.30, -.030, z],
@@ -34,13 +34,27 @@ def tool_plan(times, case, z=.0155):
     velocity = np.gradient(position, times, axis=0)
     poses = np.c_[position, np.tile([0, 0, 0, 1], (len(times), 1))].astype(np.float32)
     twists = np.c_[velocity, np.zeros_like(velocity)].astype(np.float32)
-    active = ((times >= .30) & (times < 1.30) & (case in ("cut", "cut_recontact"))).astype(np.int32)-1
+    active = ((times >= .30) & (times < 1.30) & (case in ("cut", "cut_recontact", "two_cuts"))).astype(np.int32)-1
+    if case == "two_cuts":
+        from scipy.spatial.transform import Rotation, Slerp
+        second = times >= 1.7
+        t = times[second]
+        second_position = np.column_stack([np.interp(t, [1.7, 2., 4.5], [.022, 0., 0.]),
+            np.interp(t, [1.7, 2., 2.4, 3.4, 4.5], [0., -.030, -.030, .030, .030]),
+            np.interp(t, [1.7, 2., 2.3, 3.4, 3.55, 4.5], [.06, .06, .0125, .0125, .06, .06])])
+        rotations = Slerp([1.7, 2., 4.5], Rotation.from_euler("z", [0, 90, 90], degrees=True))
+        poses[second, :3] = second_position
+        poses[second, 3:] = rotations(t).as_quat()
+        twists[second, :3] = np.gradient(second_position, t, axis=0)
+        twists[(times >= 1.7) & (times < 2.), 5] = np.pi/2/.3
+        active[(times >= 2.4) & (times < 3.4)] = 1
     # Active cut zero, inactive -1. Full history is retained after this interval.
     return poses, twists, active
 
 
 def run(args, output):
-    material = TLMPMConfig(dx=args.dx, dt=args.dt, cuts=1, pic=args.pic,
+    cut_count = 2 if args.case == "two_cuts" else 1
+    material = TLMPMConfig(dx=args.dx, dt=args.dt, cuts=cut_count, pic=args.pic,
                            cutting_energy=args.cutting_energy, young=args.young,
                            yield_stress=args.yield_stress, tool=args.case != "settle",
                            material_contact=not args.no_material_contact)
@@ -107,9 +121,9 @@ def run(args, output):
     wall = time.perf_counter()-tick
     snapshots = {k: np.stack([r[k] for r in records]) for k in records[0]}
     final = bed.snapshot()
-    components, component = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), final["codes"], 1,
+    components, component = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), final["codes"], cut_count,
                                                    gradients=bed.gradients.numpy())
-    initial_components, _ = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), np.zeros(len(points), int), 1,
+    initial_components, _ = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), np.zeros(len(points), int), cut_count,
                                                    gradients=bed.gradients.numpy())
     np.savez_compressed(output/"physics_state.npz", **snapshots, mass_kg=masses,
                         reference_positions=points, reference_indices=lattice,
@@ -123,8 +137,11 @@ def run(args, output):
         writer = csv.DictWriter(f, fieldnames=list(rows[0])); writer.writeheader(); writer.writerows(rows)
     component_mass = np.bincount(component, weights=masses)
     labels = snapshots["codes"]
-    nonzero_changed = bool(((labels[:-1] != 0) & (labels[1:] != labels[:-1])).any())
-    withdrew = np.flatnonzero(np.arange(len(records))*args.frame_dt >= 1.45)
+    nonzero_changed = False
+    for cut in range(cut_count):
+        digits = (labels//3**cut) % 3
+        nonzero_changed |= bool(((digits[:-1] != 0) & (digits[1:] != digits[:-1])).any())
+    withdrew = np.flatnonzero(np.arange(len(records))*args.frame_dt >= (3.55 if cut_count == 2 else 1.45))
     post = rows[withdrew[0]:] if len(withdrew) else []
     component_stats = []
     for index, mass in enumerate(component_mass):
@@ -151,6 +168,8 @@ def run(args, output):
               "post_withdraw_material_contact_substep_pairs": sum(r["material_contacts"] for r in post),
               "guard_failure": failed, "force_scope": "equal-opposite wedge contact impulse/frame dt, diagnostic only",
               "physics_proven": False, "material_calibration": "uncalibrated",
+              "maximum_accumulated_contact_work_j": float(final["contact_work_j"].max()),
+              "total_accumulated_contact_work_j": float(final["contact_work_j"].sum()),
               "persistent_cutting_acceptance": "NOT_EVALUATED; mechanical components alone are insufficient",
               "limitations": ["Experimental independent solver, not BladeMaster release",
                               "Linear TL reference stencil; no hourglass stabilization",
@@ -164,7 +183,7 @@ def run(args, output):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output-dir", type=Path, required=True)
-    p.add_argument("--case", choices=["settle", "no_contact", "indent", "cut", "cut_recontact", "uncut_scrape"], default="cut")
+    p.add_argument("--case", choices=["settle", "no_contact", "indent", "cut", "cut_recontact", "two_cuts", "uncut_scrape"], default="cut")
     p.add_argument("--dx", type=float, default=.004)
     p.add_argument("--dt", type=float, default=.0001)
     p.add_argument("--frame-dt", type=float, default=.02)
