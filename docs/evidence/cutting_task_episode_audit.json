@@ -1,0 +1,1317 @@
+{
+  "scope": "Independent actual fixed CUT/TRIM recorded-state task and control audit",
+  "canonical_receipt": "artifacts/cutting_task_episode_audit_002/result.json",
+  "canonical_receipt_sha256": "c89d45aac3eebb6e781b1248f071a944c8338b3d5102fa736c939000236e8e87",
+  "analysis_sources_unchanged_during_analysis": true,
+  "analysis_source_sha256": {
+    "scripts/audit_cutting_task_episodes.py": "73157c05186583d9e4dc70f456d95399d5fb97ca0936386b71873f77b1cd61bc",
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+    "src/robotic_cutting_sim/tasks.py": "997d41f38c8b28d9138d847aba22c9d3ffdf75e4660a27ae11559130f275eecd",
+    "src/robotic_cutting_sim/live_acceptance.py": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+    "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+    "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+    "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+    "src/robotic_cutting_sim/benchmark.py": "f0ca2a16b9c8f360ddae0754167576ca2a7aeabd03d356fc4a84d3f873cd3b49",
+    "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a"
+  },
+  "prefrozen_protocol_commit": "02e427f",
+  "task_definitions_commit": "075c6de",
+  "cases": {
+    "isaac_lab_cut01_001": {
+      "recording": "/home/ningan/RoboticCuttingSim/artifacts/isaac_lab_cut01_001",
+      "task_id": "CUT-01",
+      "seed": 42,
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 401,
+        "material_sampling_max_dt_s": 0.020000000000000462,
+        "wall_s": 458.1352364709601,
+        "runtime_backend": "live_isaac_lab"
+      },
+      "task_score": {
+        "task_id": "CUT-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "PASS_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "two_substantial_physical_parts": true,
+          "two_main_parts_retain_mass": true,
+          "cut_at_workpiece_local_target_plane": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.07199999999999998,
+            0.07199999999999998
+          ],
+          "recorded_mass_kg": 0.14399999999999996,
+          "expected_task_sampler_mass_kg": 0.14399999999999996,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 96000,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 2009088,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+          "substantial_parts": 2,
+          "two_main_parts_mass_fraction": 1.0,
+          "minor_parts_mass_fraction": 0.0
+        },
+        "missing_evidence": []
+      },
+      "recorded_score_recomputation": {
+        "same_checks": true,
+        "same_metrics": true,
+        "same_status": true
+      },
+      "mechanical_graph": {
+        "status": "PASS",
+        "initial_components": 1,
+        "final_components": 2,
+        "recorded_partition_matches_recomputation": true,
+        "includes_positive_weights": true,
+        "includes_nonzero_stress_gradients": true,
+        "includes_unassigned_code_zero_particles": true,
+        "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+        "stencil_sha256": "0de1e6d8c9776808a642fe3117878e22b323bf68a0e890570c58e43eac7f868f"
+      },
+      "history": {
+        "initial_nonzero_codes": 0,
+        "nonzero_digit_rewrites_by_cut": [
+          0
+        ],
+        "nonzero_digit_rewrites": 0,
+        "final_code_histogram": {
+          "0": 67590,
+          "1": 14340,
+          "2": 14070
+        },
+        "sampled_history_only": true
+      },
+      "surface_graph_hashes_match_current_recorded_state": true,
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.0023150575153249456,
+          "rms_edge_position_error_m": 0.0003982296449383918,
+          "maximum_edge_local_z_error_m": 0.0019552166528044312,
+          "maximum_edge_rotation_error_deg": 0.236194773192844
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00022157764951073104,
+          "rms_edge_position_error_m": 8.921274274701524e-05,
+          "maximum_edge_local_z_error_m": 0.00015213570963754086,
+          "maximum_edge_rotation_error_deg": 0.02660876463533268
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0017142319787120223,
+        "commanded_vs_task_schedule_max_position_m": 1.8477439855946187e-09,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00016593848696866024
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.08645077049732208,
+            0.1245589330792427,
+            -0.18236860632896423,
+            -2.4843266010284424,
+            0.04476291313767433,
+            2.607408046722412,
+            0.4548298120498657
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            -1.3415750732548304e-09,
+            -2.0,
+            -2.771271823132082e-10,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.06767198443412781,
+            0.2701626121997833,
+            -0.15301117300987244,
+            -2.4770123958587646,
+            0.10478081554174423,
+            2.7421488761901855,
+            0.4981078505516052
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            4.351816823566779e-11,
+            -2.0,
+            0.0,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.036730118095874786,
+            0.21427948772907257,
+            0.049345314502716064,
+            0.054578062146902084,
+            0.08218169212341309,
+            0.18181172013282776,
+            0.05912754684686661
+          ],
+          [
+            2.0359449592888268e-07,
+            6.857208578736618e-09,
+            3.881849153231087e-08,
+            9.056781102856348e-09,
+            6.6037033619181784e-09,
+            1.197240173667069e-08,
+            2.742128515365039e-07
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.016181878745555878,
+            0.14199340343475342,
+            0.026833832263946533,
+            0.006562471389770508,
+            0.05971737951040268,
+            0.13289332389831543,
+            0.043063610792160034
+          ],
+          [
+            0.0,
+            0.0,
+            1.3415750732548304e-09,
+            0.0,
+            2.771271823132082e-10,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 1.3415750732548304e-09,
+        "parked_second_arm_max_speed_rad_s": 2.742128515365039e-07,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "postwithdraw_motion": {
+        "status": "MEASURED",
+        "withdrawal_complete_s": 6.4,
+        "sample_start_s": 6.4,
+        "sample_end_s": 8.0,
+        "sampling_dt_max_s": 0.020000000000000462,
+        "components": [
+          {
+            "component_id": 0,
+            "mass_kg": 0.07199999999999998,
+            "particles": 48000,
+            "com_world_at_withdrawal_m": [
+              -0.04163221297030888,
+              4.5259121727819124e-05,
+              0.00969766685220001
+            ],
+            "com_world_final_m": [
+              -0.041618321868152286,
+              4.063538032581438e-05,
+              0.009697473510166182
+            ],
+            "final_com_displacement_m": 1.4641689957771184e-05,
+            "maximum_com_excursion_m": 1.4641689957771184e-05
+          },
+          {
+            "component_id": 1,
+            "mass_kg": 0.07199999999999998,
+            "particles": 48000,
+            "com_world_at_withdrawal_m": [
+              0.0416436401696388,
+              4.346601617725187e-07,
+              0.009704273718909931
+            ],
+            "com_world_final_m": [
+              0.04162726467602649,
+              5.231331069810578e-07,
+              0.009704141059315751
+            ],
+            "final_com_displacement_m": 1.637626993783261e-05,
+            "maximum_com_excursion_m": 1.637626993783261e-05
+          }
+        ],
+        "scope": "Final graph memberships used only retrospectively for COMs; no minimum-motion task requirement or cross-component recontact claim"
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true,
+          "native_non_tool_rigid_penetration": true
+        },
+        "minimum_detF_all_control_intervals": 0.9447193741798401,
+        "minimum_final_particle_detF": 0.948786199092865,
+        "maximum_saved_material_speed_m_s": 0.07076071703200543,
+        "maximum_control_interval_material_speed_m_s": 0.07076071202754974,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": 3.249384826631285e-05,
+        "native_rigid_contact_coverage": "All recorded native substeps plus boundaries",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 6539198,
+          "control_intervals_with_tool_contacts": 138,
+          "peak_next_reaction_force_N": 0.285387258363621,
+          "peak_next_reaction_torque_Nm": 0.0032416599218965,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.05474074906828719,
+            -0.0003140142930067036,
+            0.12306855855013055,
+            5.379264906558295e-06,
+            -0.0018982393707982215,
+            6.678938529638967e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.15999469651754747,
+          "reaction_force_times_dt_impulse_max_abs_error": 1.205632815803881e-16,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0013747711319886946,
+          "robot_applied_material_wrench_work_J": -0.0011388178460101318,
+          "robot_work_source": "Recorded native applied-wrench work ledger",
+          "robot_boundary_reconstruction_work_J": -0.0011388178460101318,
+          "interface_work_residual_fraction": 0.17163095768329178,
+          "maximum_material_fixture_penetration_m": 0.0002584247849881649,
+          "maximum_tool_material_penetration_m": 0.00043577555334195495,
+          "maximum_material_pair_overlap_m": 0.00012206751853227615,
+          "material_pair_events_unattributed": 93821,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.0016824724237380906,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "all_manifest_implementation_bytes_resolved": true,
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "inputs_sha256": {
+        "robot_state.npz": "43a43408ccd4307bf78839bd5be4b18cfc39ab7a22c176e738085c0829d52b1e",
+        "result.json": "aabebb503ccad750e443d200db484814cb6d6d1e0371140f562bf9d9fd2691ec",
+        "manifest.json": "6a74911ad406d5b80f91459bbb9a29ba195bd6a017a9d34fe25509671575036b",
+        "task_evaluation.json": "751fab74a761ad3601a8fe9eb07356b42b57b9e6b96fb4ce644bc6569ed03d72",
+        "diagnostics.json": "3b8ffe4455ec6a730eea8e13524922278b711e7ee07e96ed532f4390eace2179",
+        "setup.json": "a129627ec31ad0601b591dab41d48aba23341c08be0e9270dd766c3e72e0eaaf",
+        "trace.json": "42a73daa7ffb87bbe822ef5d0bb7fa808904c4ffb361cf2764b04d654ac367a8",
+        "rgbd/surface_00000.json": "fe08550bb36ffd0708b21d80c06f63f69854d0c806a37f2ce5eecf0eb98c9d04",
+        "rgbd/surface_00400.npz": "098274526b9d0ed1ad6022a0c3cfe122cdffbbe70df825cd3c15c8a45e2a55b5",
+        "rgbd/surface_00400.json": "4c7add049d457eb9501336922dc0e7ce08097cd685e8f4d019b19a012be1a6a6",
+        "rgbd/surface_00000.npz": "c34c8077b89322975ab12c03b4f2020c2e1af03fd71ded11c4fdcbcde24657c3",
+        "task.json": "cd226f65e106bae66af6f765a50480f19fea9223fcaf0a084f91e838db77c19f",
+        "physics_state.npz": "a8a60182db6c1f7db879eec7375ae2acb077d359ca7a11749460fffaca43689d"
+      },
+      "full_18_gate_acceptance": "NOT_SCORED",
+      "full_benchmark_ready": false,
+      "full_receipt": "artifacts/cutting_task_episode_audit_002/isaac_lab_cut01_001/result.json",
+      "full_receipt_sha256": "55db2c64014582b2cf734dc8c0d13f27dda11155a26b59eea8d83d947c32bae8"
+    },
+    "isaacsim_cut01_001": {
+      "recording": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "task_id": "CUT-01",
+      "seed": 42,
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 41,
+        "material_sampling_max_dt_s": 0.20000000000000018,
+        "wall_s": 253.0765246991068,
+        "runtime_backend": "LIVE_IsaacSim6.2_cutting"
+      },
+      "task_score": {
+        "task_id": "CUT-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "PASS_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "two_substantial_physical_parts": true,
+          "two_main_parts_retain_mass": true,
+          "cut_at_workpiece_local_target_plane": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.07199999999999998,
+            0.07199999999999998
+          ],
+          "recorded_mass_kg": 0.14399999999999996,
+          "expected_task_sampler_mass_kg": 0.14399999999999996,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 96000,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 2009088,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+          "substantial_parts": 2,
+          "two_main_parts_mass_fraction": 1.0,
+          "minor_parts_mass_fraction": 0.0
+        },
+        "missing_evidence": []
+      },
+      "recorded_score_recomputation": {
+        "same_checks": true,
+        "same_metrics": true,
+        "same_status": true
+      },
+      "mechanical_graph": {
+        "status": "PASS",
+        "initial_components": 1,
+        "final_components": 2,
+        "recorded_partition_matches_recomputation": true,
+        "includes_positive_weights": true,
+        "includes_nonzero_stress_gradients": true,
+        "includes_unassigned_code_zero_particles": true,
+        "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+        "stencil_sha256": "0de1e6d8c9776808a642fe3117878e22b323bf68a0e890570c58e43eac7f868f"
+      },
+      "history": {
+        "initial_nonzero_codes": 0,
+        "nonzero_digit_rewrites_by_cut": [
+          0
+        ],
+        "nonzero_digit_rewrites": 0,
+        "final_code_histogram": {
+          "0": 67590,
+          "1": 14340,
+          "2": 14070
+        },
+        "sampled_history_only": true
+      },
+      "surface_graph_hashes_match_current_recorded_state": true,
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.002165262749154879,
+          "rms_edge_position_error_m": 0.00035779159683004723,
+          "maximum_edge_local_z_error_m": 0.0018066654458503,
+          "maximum_edge_rotation_error_deg": 0.22005825050450184
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00021165392164751315,
+          "rms_edge_position_error_m": 7.238810665833673e-05,
+          "maximum_edge_local_z_error_m": 0.0001474406803297114,
+          "maximum_edge_rotation_error_deg": 0.02530100028763841
+        },
+        "maximum_measured_translation_per_control_step_m": 0.001690916845101782,
+        "commanded_vs_task_schedule_max_position_m": 0.0,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.0001568390324700207
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.0863681510090828,
+            0.1249157190322876,
+            -0.181661918759346,
+            -2.484315872192383,
+            0.04484904929995537,
+            2.6077380180358887,
+            0.4548107981681824
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            5.10949030481378e-13,
+            -2.0,
+            -1.8949553731717472e-11,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.06841990351676941,
+            0.2701203525066376,
+            -0.1530906707048416,
+            -2.4770116806030273,
+            0.10480869561433792,
+            2.7421114444732666,
+            0.4980463683605194
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            1.0053832766310222e-10,
+            -2.0,
+            -1.2594359420376594e-13,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.03445754572749138,
+            0.21034544706344604,
+            0.048587337136268616,
+            0.057169727981090546,
+            0.08083432167768478,
+            0.17952054738998413,
+            0.05813134089112282
+          ],
+          [
+            1.9354665092841117e-10,
+            4.046256218970257e-09,
+            5.299796157487435e-10,
+            6.640394345502898e-10,
+            2.2401377974823333e-10,
+            2.5176155604711425e-10,
+            1.0020932868226584e-11
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.016096703708171844,
+            0.14195102453231812,
+            0.026751846075057983,
+            0.006562948226928711,
+            0.05974621698260307,
+            0.13285589218139648,
+            0.04308328032493591
+          ],
+          [
+            0.0,
+            0.0,
+            1.0002737527159411e-10,
+            0.0,
+            1.8823609337914604e-11,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 1.0002737527159411e-10,
+        "parked_second_arm_max_speed_rad_s": 4.046256218970257e-09,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "postwithdraw_motion": {
+        "status": "MEASURED",
+        "withdrawal_complete_s": 6.4,
+        "sample_start_s": 6.4,
+        "sample_end_s": 8.0,
+        "sampling_dt_max_s": 0.20000000000000018,
+        "components": [
+          {
+            "component_id": 0,
+            "mass_kg": 0.07199999999999998,
+            "particles": 48000,
+            "com_world_at_withdrawal_m": [
+              -0.041631001779826364,
+              4.256114763908624e-05,
+              0.00969786213883552
+            ],
+            "com_world_final_m": [
+              -0.041619319501391305,
+              3.815853564265124e-05,
+              0.009697672051524697
+            ],
+            "final_com_displacement_m": 1.2485782114514357e-05,
+            "maximum_com_excursion_m": 1.2485782114514357e-05
+          },
+          {
+            "component_id": 1,
+            "mass_kg": 0.07199999999999998,
+            "particles": 48000,
+            "com_world_at_withdrawal_m": [
+              0.041644146045982516,
+              8.303973354489535e-07,
+              0.009704197921414966
+            ],
+            "com_world_final_m": [
+              0.0416276073194119,
+              8.354931123905605e-07,
+              0.009704061617131459
+            ],
+            "final_com_displacement_m": 1.6539289023484784e-05,
+            "maximum_com_excursion_m": 1.6539289023484784e-05
+          }
+        ],
+        "scope": "Final graph memberships used only retrospectively for COMs; no minimum-motion task requirement or cross-component recontact claim"
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "minimum_detF_all_control_intervals": 0.9446407556533813,
+        "minimum_final_particle_detF": 0.9486798048019409,
+        "maximum_saved_material_speed_m_s": 0.053100419431489444,
+        "maximum_control_interval_material_speed_m_s": 0.06384505331516266,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": null,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 6537666,
+          "control_intervals_with_tool_contacts": 138,
+          "peak_next_reaction_force_N": 0.28040563467778834,
+          "peak_next_reaction_torque_Nm": 0.003163834366549324,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.054753808970929185,
+            -0.00032325062224701495,
+            0.12282639236738646,
+            5.288328304231885e-06,
+            -0.0019046783389830083,
+            6.7221286570041255e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.16101496444124558,
+          "reaction_force_times_dt_impulse_max_abs_error": 1.1882855810441129e-16,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.001359391530722398,
+          "robot_applied_material_wrench_work_J": -0.0011200921025406624,
+          "robot_work_source": "Recorded actual wrench and measured world edge increments",
+          "robot_boundary_reconstruction_work_J": -0.0011200921025406624,
+          "interface_work_residual_fraction": 0.17603422029161006,
+          "maximum_material_fixture_penetration_m": 0.00023987219901755452,
+          "maximum_tool_material_penetration_m": 0.00043762591667473316,
+          "maximum_material_pair_overlap_m": 0.00012323359260335565,
+          "material_pair_events_unattributed": 94254,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.001690957803702986,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "all_manifest_implementation_bytes_resolved": true,
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "inputs_sha256": {
+        "frame_manifest.json": "3644ba16768d8ef9f8dbd3aa1c79577f808d03be418b2608c0cb296395e97a36",
+        "robot_state.npz": "b137188033fb1376ac46dbdfd2a14e54b5174fea8ea7dc63289db86398ba718a",
+        "oracle_debug/task_evaluation.json": "751fab74a761ad3601a8fe9eb07356b42b57b9e6b96fb4ce644bc6569ed03d72",
+        "surface_debug/surface_0000.npz": "42ddb88f5dc848e3b86be727d6500d252362f073182d8889c7634dadd3e094fd",
+        "setup.json": "85c2b53f83eacf5d7fae91abf41e9f3a004a7c0d2730c597f5fe5eaf53a1e790",
+        "surface_debug/surface_0040.npz": "9ec020955385a1ab04f7c1770a84b7e020418ac36ab21efdd5561b2d1c277165",
+        "result.json": "5cf44d62bdd931de3f3a5e138694e831cb7672f76b4f85bb7edde1e3d3609da8",
+        "oracle_debug/physics_state.npz": "6f5c63fd942dc98e80454f3ff5f7cc1fc775814f9a276f0987ed13bcd4339cf0",
+        "oracle_debug/diagnostics.json": "20885b2be68571e8711fb1ed63d1adc8bfdcc210faea64d3134bdd4beaee2486",
+        "manifest.json": "d9ca866643922da64506c01340785b4154ac97ca9878ca3947e3f1f0c6155677"
+      },
+      "full_18_gate_acceptance": "NOT_SCORED",
+      "full_benchmark_ready": false,
+      "full_receipt": "artifacts/cutting_task_episode_audit_002/isaacsim_cut01_001/result.json",
+      "full_receipt_sha256": "af99c7bb82b41ad8ccf8908c5d372289a97e314d55d2e88189e171ea40fddcab"
+    },
+    "isaac_lab_trim01_001": {
+      "recording": "/home/ningan/RoboticCuttingSim/artifacts/isaac_lab_trim01_001",
+      "task_id": "TRIM-01",
+      "seed": 42,
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 401,
+        "material_sampling_max_dt_s": 0.020000000000000462,
+        "wall_s": 472.22060861089267,
+        "runtime_backend": "live_isaac_lab"
+      },
+      "task_score": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": false,
+          "reference_above_plane_material_removed": false,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": false,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 1,
+          "component_masses_kg": [
+            0.145566
+          ],
+          "recorded_mass_kg": 0.145566,
+          "expected_task_sampler_mass_kg": 0.145566,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 97044,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 1,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.0,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.9995833333333334,
+            "missing_surface_fraction": 0.0004166666666666208,
+            "maximum_substrate_surface_residual_height_m": 0.007561615977878664,
+            "surface_p95_absolute_plane_error_m": 0.0009019372296613657,
+            "surface_rms_plane_error_m": 0.0009280740187184669,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.0450015075235972e-06,
+            "overcut_volume_fraction_of_initial_base": 0.010885432370037473
+          }
+        },
+        "missing_evidence": []
+      },
+      "recorded_score_recomputation": {
+        "same_checks": true,
+        "same_metrics": true,
+        "same_status": true
+      },
+      "mechanical_graph": {
+        "status": "PASS",
+        "initial_components": 1,
+        "final_components": 1,
+        "recorded_partition_matches_recomputation": true,
+        "includes_positive_weights": true,
+        "includes_nonzero_stress_gradients": true,
+        "includes_unassigned_code_zero_particles": true,
+        "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+        "stencil_sha256": "990747411a451abac0314dd3989e383301c2ed3aca5ac87f3cc757d8e612c7e6"
+      },
+      "history": {
+        "initial_nonzero_codes": 0,
+        "nonzero_digit_rewrites_by_cut": [
+          0
+        ],
+        "nonzero_digit_rewrites": 0,
+        "final_code_histogram": {
+          "0": 37202,
+          "1": 58828,
+          "2": 1014
+        },
+        "sampled_history_only": true
+      },
+      "surface_graph_hashes_match_current_recorded_state": true,
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.002160012635112105,
+          "rms_edge_position_error_m": 0.0004289532289045564,
+          "maximum_edge_local_z_error_m": 0.0015404485876251428,
+          "maximum_edge_rotation_error_deg": 0.17483192419623347
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.0002811612997574807,
+          "rms_edge_position_error_m": 0.00023916760918418702,
+          "maximum_edge_local_z_error_m": 3.3371571394963384e-05,
+          "maximum_edge_rotation_error_deg": 0.02163090456075191
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0016728894579026389,
+        "commanded_vs_task_schedule_max_position_m": 3.733197188510009e-09,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00023337078461365193
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.07514815032482147,
+            -0.002948166336864233,
+            -0.20692133903503418,
+            -2.6270549297332764,
+            -0.0012184601509943604,
+            2.489938735961914,
+            0.4629528224468231
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            -1.34069499946321e-09,
+            -2.0,
+            -2.7851532191647266e-10,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.05034739524126053,
+            0.3001742362976074,
+            -0.1618674248456955,
+            -2.2066798210144043,
+            0.09672072529792786,
+            2.738096237182617,
+            0.5128079652786255
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            4.184471866230943e-11,
+            -2.0,
+            0.0,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.019366970285773277,
+            0.12835636734962463,
+            0.019629504531621933,
+            0.15914614498615265,
+            0.061667945235967636,
+            0.18246234953403473,
+            0.04425042122602463
+          ],
+          [
+            2.0363449948490597e-07,
+            7.977376093037947e-09,
+            3.88019465447087e-08,
+            1.3427851719427508e-08,
+            6.375504568723045e-09,
+            1.2197339138708685e-08,
+            2.7420395554145216e-07
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.024394318461418152,
+            0.3031224012374878,
+            0.045053914189338684,
+            0.41774702072143555,
+            0.09793918579816818,
+            0.13160276412963867,
+            0.04184028506278992
+          ],
+          [
+            0.0,
+            0.0,
+            1.34069499946321e-09,
+            0.0,
+            2.7851532191647266e-10,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 1.34069499946321e-09,
+        "parked_second_arm_max_speed_rad_s": 2.7420395554145216e-07,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "postwithdraw_motion": {
+        "status": "MEASURED",
+        "withdrawal_complete_s": 6.4,
+        "sample_start_s": 6.4,
+        "sample_end_s": 8.0,
+        "sampling_dt_max_s": 0.020000000000000462,
+        "components": [
+          {
+            "component_id": 0,
+            "mass_kg": 0.145566,
+            "particles": 97044,
+            "com_world_at_withdrawal_m": [
+              0.0010810823308518148,
+              1.2786519923651222e-05,
+              0.010009938759825272
+            ],
+            "com_world_final_m": [
+              0.0010742946333890209,
+              1.3008562093423586e-05,
+              0.010008950078064708
+            ],
+            "final_com_displacement_m": 6.862917105374906e-06,
+            "maximum_com_excursion_m": 9.81589554134707e-06
+          }
+        ],
+        "scope": "Final graph memberships used only retrospectively for COMs; no minimum-motion task requirement or cross-component recontact claim"
+      },
+      "contact_and_numerical_screens": {
+        "status": "FAIL_SCREEN",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": false,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true,
+          "native_non_tool_rigid_penetration": true
+        },
+        "minimum_detF_all_control_intervals": 0.6658697724342346,
+        "minimum_final_particle_detF": 0.8414593935012817,
+        "maximum_saved_material_speed_m_s": 0.33085548455056035,
+        "maximum_control_interval_material_speed_m_s": 0.33085548877716064,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": 3.249384826631285e-05,
+        "native_rigid_contact_coverage": "All recorded native substeps plus boundaries",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 1733499,
+          "control_intervals_with_tool_contacts": 182,
+          "peak_next_reaction_force_N": 0.6178820893621159,
+          "peak_next_reaction_torque_Nm": 0.0035835325113035593,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.029423304160182795,
+            -0.00048743937119845315,
+            0.06515614290118776,
+            -1.5692859170912676e-05,
+            0.0006516006904695448,
+            6.617321200372284e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.14801819439203895,
+          "reaction_force_times_dt_impulse_max_abs_error": 4.9873299934333204e-17,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.001247587366308811,
+          "robot_applied_material_wrench_work_J": -0.0007927016403459664,
+          "robot_work_source": "Recorded native applied-wrench work ledger",
+          "robot_boundary_reconstruction_work_J": -0.0007927016403459664,
+          "interface_work_residual_fraction": 0.36461232154722567,
+          "maximum_material_fixture_penetration_m": 7.160409586504102e-05,
+          "maximum_tool_material_penetration_m": 0.0016898231115192175,
+          "maximum_material_pair_overlap_m": 0.0007817680016160011,
+          "material_pair_events_unattributed": 3022562,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.15151043069789005,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "all_manifest_implementation_bytes_resolved": true,
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "inputs_sha256": {
+        "robot_state.npz": "a78653056f3649cdf38ea69019e34ea53779df8f343a7282e230a0b9fbbf9eb7",
+        "rgbd/surface_00400.npz": "17f1595fb76f277c5ebb6eaaecc0de74a8e9f029eee216b3a5ddd5d3fba2f8c2",
+        "physics_state.npz": "d1871b4b89be83dc16cb1ceb45d0ff3437857ce454866fdca30776330bfe4528",
+        "task_evaluation.json": "ba3fdca87069d8f3002555b3fccf3481b189f386c0ab4c2ed76d5e63aaf7fc7c",
+        "rgbd/surface_00000.json": "5da1bd954b446da053f67fbeb5c46ac703098db67f5f2c380277f02de9696f18",
+        "diagnostics.json": "41c114743cbe894957f08114254267b1b9b27e47fc3f712c7d0ed81e57fdbaf7",
+        "result.json": "7c2b2ede396d13383484b243e329dc6170ad1bf313dd313daaea89d4f7d1527c",
+        "manifest.json": "62f183358acb8c163113816fe6f974d4d4bdb44182aeed3429f37485efc55851",
+        "task.json": "96244e8b21e3cfc7afd4c4d96d4e625d0abf9354c67759a2a3307acb0fbeabce",
+        "trace.json": "4f2c0c4c91f5e0517898817b619861a62c3f452987a094bbd0ac9dc416b01548",
+        "setup.json": "f9cd3de16448cb5f09f1dde690c6fbe20514dcde185d20b6bd068303f41c30e7",
+        "rgbd/surface_00400.json": "ae96faf1d0b55347f9376cbd30013bd5e3eb14b46b62ac5b2b74f836d0c20816",
+        "rgbd/surface_00000.npz": "80fdb6547653692a05b8b16c57066d30395500b8c53d10e0a3fd3467ddedaef7"
+      },
+      "full_18_gate_acceptance": "NOT_SCORED",
+      "full_benchmark_ready": false,
+      "full_receipt": "artifacts/cutting_task_episode_audit_002/isaac_lab_trim01_001/result.json",
+      "full_receipt_sha256": "2865ac286a15737e9c778fdf05aae961e592d66a2eda6e2b6aabd0aaa8d6d126"
+    },
+    "isaacsim_trim01_001": {
+      "recording": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_001",
+      "task_id": "TRIM-01",
+      "seed": 42,
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 41,
+        "material_sampling_max_dt_s": 0.20000000000000018,
+        "wall_s": 271.05156678985804,
+        "runtime_backend": "LIVE_IsaacSim6.2_cutting"
+      },
+      "task_score": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": false,
+          "reference_above_plane_material_removed": false,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": false,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 1,
+          "component_masses_kg": [
+            0.145566
+          ],
+          "recorded_mass_kg": 0.145566,
+          "expected_task_sampler_mass_kg": 0.145566,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 97044,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 1,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.0,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.9995833333333334,
+            "missing_surface_fraction": 0.0004166666666666208,
+            "maximum_substrate_surface_residual_height_m": 0.007560617860738771,
+            "surface_p95_absolute_plane_error_m": 0.0009243421008803268,
+            "surface_rms_plane_error_m": 0.000914457639495015,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.0111019223813812e-06,
+            "overcut_volume_fraction_of_initial_base": 0.010532311691472722
+          }
+        },
+        "missing_evidence": []
+      },
+      "recorded_score_recomputation": {
+        "same_checks": true,
+        "same_metrics": true,
+        "same_status": true
+      },
+      "mechanical_graph": {
+        "status": "PASS",
+        "initial_components": 1,
+        "final_components": 1,
+        "recorded_partition_matches_recomputation": true,
+        "includes_positive_weights": true,
+        "includes_nonzero_stress_gradients": true,
+        "includes_unassigned_code_zero_particles": true,
+        "provenance": "Recomputed current compatible reference-node MPM graph from recorded actual nodes, weights, stress gradients and cut codes",
+        "stencil_sha256": "990747411a451abac0314dd3989e383301c2ed3aca5ac87f3cc757d8e612c7e6"
+      },
+      "history": {
+        "initial_nonzero_codes": 0,
+        "nonzero_digit_rewrites_by_cut": [
+          0
+        ],
+        "nonzero_digit_rewrites": 0,
+        "final_code_histogram": {
+          "0": 37202,
+          "1": 58828,
+          "2": 1014
+        },
+        "sampled_history_only": true
+      },
+      "surface_graph_hashes_match_current_recorded_state": true,
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.001964250243720567,
+          "rms_edge_position_error_m": 0.00037471170396544264,
+          "maximum_edge_local_z_error_m": 0.0014266326798615114,
+          "maximum_edge_rotation_error_deg": 0.1618724935635137
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00023262053509353985,
+          "rms_edge_position_error_m": 0.0001972367946059312,
+          "maximum_edge_local_z_error_m": 3.0941791015700465e-05,
+          "maximum_edge_rotation_error_deg": 0.01762450766137065
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0016502059997407922,
+        "commanded_vs_task_schedule_max_position_m": 0.0,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00023094179101569925
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.07549066841602325,
+            -0.00294744735583663,
+            -0.20692390203475952,
+            -2.627049446105957,
+            -0.0012181601487100124,
+            2.4902632236480713,
+            0.4631183445453644
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            5.10949030481378e-13,
+            -2.0,
+            -1.8949553731717472e-11,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.05063818767666817,
+            0.30009686946868896,
+            -0.16167451441287994,
+            -2.207073926925659,
+            0.09658518433570862,
+            2.7378838062286377,
+            0.5128147006034851
+          ],
+          [
+            -1.5707963705062866,
+            -0.5,
+            1.0053832766310222e-10,
+            -2.0,
+            -1.2594359420376594e-13,
+            1.5,
+            0.7853981852531433
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.01960039883852005,
+            0.12602362036705017,
+            0.019680701196193695,
+            0.15754221379756927,
+            0.061376530677080154,
+            0.17947106063365936,
+            0.04407026246190071
+          ],
+          [
+            1.9354665092841117e-10,
+            4.046256218970257e-09,
+            5.299796157487435e-10,
+            6.640394345502898e-10,
+            2.2401377974823333e-10,
+            2.5176155604711425e-10,
+            1.0020932868226584e-11
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.024100925773382187,
+            0.30304431915283203,
+            0.04524938762187958,
+            0.41735243797302246,
+            0.09780334681272507,
+            0.13127851486206055,
+            0.04167446494102478
+          ],
+          [
+            0.0,
+            0.0,
+            1.0002737527159411e-10,
+            0.0,
+            1.8823609337914604e-11,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 1.0002737527159411e-10,
+        "parked_second_arm_max_speed_rad_s": 4.046256218970257e-09,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "postwithdraw_motion": {
+        "status": "MEASURED",
+        "withdrawal_complete_s": 6.4,
+        "sample_start_s": 6.4,
+        "sample_end_s": 8.0,
+        "sampling_dt_max_s": 0.20000000000000018,
+        "components": [
+          {
+            "component_id": 0,
+            "mass_kg": 0.145566,
+            "particles": 97044,
+            "com_world_at_withdrawal_m": [
+              0.001087076065156528,
+              1.1932752355312094e-05,
+              0.010012497797602217
+            ],
+            "com_world_final_m": [
+              0.0010793335783960084,
+              1.2576938883039773e-05,
+              0.010011407013575191
+            ],
+            "final_com_displacement_m": 7.845437356383707e-06,
+            "maximum_com_excursion_m": 9.18287649701214e-06
+          }
+        ],
+        "scope": "Final graph memberships used only retrospectively for COMs; no minimum-motion task requirement or cross-component recontact claim"
+      },
+      "contact_and_numerical_screens": {
+        "status": "FAIL_SCREEN",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": false,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "minimum_detF_all_control_intervals": 0.6650305986404419,
+        "minimum_final_particle_detF": 0.8392546772956848,
+        "maximum_saved_material_speed_m_s": 0.32796716081865335,
+        "maximum_control_interval_material_speed_m_s": 0.3279671370983124,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": null,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 1733352,
+          "control_intervals_with_tool_contacts": 187,
+          "peak_next_reaction_force_N": 0.604584630048808,
+          "peak_next_reaction_torque_Nm": 0.0037162524583115807,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.029847661234025935,
+            -0.00043444600215147757,
+            0.06480549784746614,
+            -1.3806717092779142e-05,
+            0.0006638714557275494,
+            6.976190918214081e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.14410207180932422,
+          "reaction_force_times_dt_impulse_max_abs_error": 4.9873299934333204e-17,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0011716395538489133,
+          "robot_applied_material_wrench_work_J": -0.0007696001527718088,
+          "robot_work_source": "Recorded actual wrench and measured world edge increments",
+          "robot_boundary_reconstruction_work_J": -0.0007696001527718088,
+          "interface_work_residual_fraction": 0.3431425644144383,
+          "maximum_material_fixture_penetration_m": 7.085344986990094e-05,
+          "maximum_tool_material_penetration_m": 0.0016883553471416235,
+          "maximum_material_pair_overlap_m": 0.0008055681828409433,
+          "material_pair_events_unattributed": 3067722,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.14846083250037068,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "all_manifest_implementation_bytes_resolved": true,
+      "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "inputs_sha256": {
+        "surface_debug/surface_0040.npz": "56a145fc845dd6465fe59ddcee0fc0aba697f896c5ff51a5eca6ce7af3efd618",
+        "setup.json": "667c8d5b9fc659b2ed5ccf27c302b00d37f4298c15a5b1c49c091f9002a88470",
+        "result.json": "4c93508c478676b1a15ab359a86cb29def943db2cd19849648ee0acecb6e3f9c",
+        "oracle_debug/diagnostics.json": "a6dc855af17209ae09d6ccb5099f7f90a0d14608c76f26a961788fd9d3c13ae0",
+        "robot_state.npz": "4719c818df308fbbb22c7624276abcfdf9cea628dd7108240e6eed95fdfd3b23",
+        "oracle_debug/physics_state.npz": "2a50c2652d5ec0e244e369e6c61d428e3ebf1fe7b06bf61124a6aa267491567d",
+        "surface_debug/surface_0000.npz": "a8902403ade66bb4d2688d4edc5f0535effcb3fa2d5b989d9e966a4c089d7448",
+        "frame_manifest.json": "a25611664f0b7ff0bb1891b30ced07f231047eee3cbba4834210a5f8e54d5684",
+        "manifest.json": "08cff680018dcfe581a8e47c16c34a99868db8bf7b03eaed378e38bd801f277d",
+        "oracle_debug/task_evaluation.json": "474648bfb88379c3dfeccd5d3641086f681d3731c4e5a03e1e7f0d5c40717dd7"
+      },
+      "full_18_gate_acceptance": "NOT_SCORED",
+      "full_benchmark_ready": false,
+      "full_receipt": "artifacts/cutting_task_episode_audit_002/isaacsim_trim01_001/result.json",
+      "full_receipt_sha256": "e0682e0ac576a029c7a49c1f558258897396a5ed3a3e8f5a0ba0c2cf16f1e7e5"
+    }
+  },
+  "preserved_auditor_failure": {
+    "directory": "artifacts/cutting_task_episode_audit_001",
+    "scope": "Auditor JSON inf from reading Lab minDetF in wrong recording file; no experiment or physics failure. Corrected trace reader, explicit missing-data test, no threshold changes."
+  },
+  "full_benchmark_ready": false
+}
