@@ -142,7 +142,8 @@ def worker(args, config):
                     surface_timestamp_s=env.time_s)
                 task_evaluation=env.task.evaluate_oracle(payload)
                 write_json(out/"oracle_debug/task_evaluation.json",task_evaluation)
-            qmotion = float(np.max(np.abs(proprio[-1]["q"]-initial["q"])))
+            qmotion = float(max(np.max(np.abs(state["q"]-initial["q"])) for state in proprio))
+            final_q_displacement=float(np.max(np.abs(proprio[-1]["q"]-initial["q"])))
             first_material=materials[0]["positions"].copy()
             again=env.reset()
             reset_material=material_state()
@@ -180,6 +181,7 @@ def worker(args, config):
                 "camera_mode":config.camera_mode,"camera_frames":len(frame_rows),"changed_depth_pixels_10um":changed,
                 "task_id":config.task_id,"task_goal_status":task_evaluation["status"] if task_evaluation else "NOT_RUN",
                 "joint_motion_max_rad":qmotion,"final_mechanical_components":frame_rows[-1]["current_component_surface"]["mechanical_components"],
+                "final_joint_displacement_rad":final_q_displacement,
                 "full_isaac_integration":False,"physical_cutting":"NOT_SCORED","surface_flattening":"NOT_SCORED",
                 "native_single_view_calibration":"NOT_VALIDATED","reset_repeatability":"MEASURED_DYNAMICS_MATERIAL_CAMERAS",
                 "native_single_view_registration":"VALIDATED_EXACT_PROFILE_APPLIED" if config.camera_mode=="native_single_view" else "NOT_RUN",

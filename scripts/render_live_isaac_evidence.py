@@ -70,18 +70,28 @@ def main():
         video(a.output/"rgb_frames"/name,"frame_%04d.png",a.output/f"live_{name}.mp4",fps)
     robot=np.load(a.episode/"robot_state.npz")
     actual=robot["tool_pose_xyzw"];desired=robot["desired_tool_pose_xyzw"];t=robot["time_s"]
+    setup=json.loads((a.episode/"setup.json").read_text())
+    task=setup.get("task")
+    frame=np.asarray(setup["world_from_workpiece_xyzw"])
+    rotation=Rotation.from_quat(frame[3:]).as_matrix()
+    actual_local=(actual[:,:3]-frame[:3])@rotation
+    desired_local=(desired[:,:3]-frame[:3])@rotation
     error=np.linalg.norm(actual[:,:3]-desired[:,:3],axis=1)
     angle=np.rad2deg((Rotation.from_quat(actual[:,3:]).inv()*Rotation.from_quat(desired[:,3:])).magnitude())
     fig,axes=plt.subplots(2,2,figsize=(11,7))
-    axes[0,0].plot(desired[:,0]*1000,desired[:,2]*1000,label="Commanded")
-    axes[0,0].plot(actual[:,0]*1000,actual[:,2]*1000,label="Measured PhysX",linestyle="--")
-    axes[0,0].axhline(15,color="gray",label="Local target surface15mm")
-    axes[0,0].set(xlabel="World X(mm)",ylabel="Edge Z(mm)");axes[0,0].legend()
+    axes[0,0].plot(desired_local[:,0]*1000,desired_local[:,2]*1000,label="Commanded")
+    axes[0,0].plot(actual_local[:,0]*1000,actual_local[:,2]*1000,label="Measured PhysX",linestyle="--")
+    if task and task["goal_kind"]=="sever":
+        axes[0,0].axvline(task["target_origin_local_m"][0]*1000,color="gray",label="Local sever plane")
+    else:
+        height=(task["target_origin_local_m"][2] if task else setup["material_setup"]["workpiece_local_target_height_m"])
+        axes[0,0].axhline(height*1000,color="gray",label=f"Local target surface {height*1000:g}mm")
+    axes[0,0].set(xlabel="Workpiece-local X(mm)",ylabel="Edge local Z(mm)");axes[0,0].legend()
     axes[0,1].plot(t,error*1000);axes[0,1].set(xlabel="Simulation time(s)",ylabel="Position error(mm)")
-    axes[1,0].plot(t,actual[:,2]*1000,label="Measured");axes[1,0].plot(t,desired[:,2]*1000,label="Commanded")
-    axes[1,0].set(xlabel="Simulation time(s)",ylabel="Edge height(mm)");axes[1,0].legend()
+    axes[1,0].plot(t,actual_local[:,2]*1000,label="Measured");axes[1,0].plot(t,desired_local[:,2]*1000,label="Commanded")
+    axes[1,0].set(xlabel="Simulation time(s)",ylabel="Edge local height(mm)");axes[1,0].legend()
     axes[1,1].plot(t,angle);axes[1,1].set(xlabel="Simulation time(s)",ylabel="Orientation error(deg)")
-    fig.suptitle("LIVE Isaac Sim6.2: commanded versus actual articulated knife edge")
+    fig.suptitle(f"LIVE Isaac Sim6.2 {task['task_id'] if task else 'D0'}: commanded versus actual articulated knife edge")
     fig.tight_layout();fig.savefig(a.output/"planned_vs_actual_trajectory.png",dpi=150);plt.close(fig)
     (a.output/"provenance.json").write_text(json.dumps({"source_episode":str(a.episode.resolve()),
         "source_manifest_sha256":hashlib.sha256((a.episode/"manifest.json").read_bytes()).hexdigest(),

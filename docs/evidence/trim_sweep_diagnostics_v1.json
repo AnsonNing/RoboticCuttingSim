@@ -1,0 +1,40 @@
+{
+  "scope": "Recorded unchanged physical-state diagnostic; A/B have ideal kinematic tools and are not live Isaac experiments",
+  "cases": {
+    "Actual native Kit fixed": {
+      "source_recording": "artifacts/isaacsim_trim01_001",
+      "source_manifest_sha256": "08cff680018dcfe581a8e47c16c34a99868db8bf7b03eaed378e38bd801f277d",
+      "recorded_final_graph": 1,
+      "above_plane_unassigned_particle_ids": [
+        51539,
+        51666
+      ],
+      "result_status": "PASS_EXECUTION",
+      "live_isaac": true
+    },
+    "Kinematic A: faster/longer": {
+      "source_recording": "artifacts/trim_fast_sweep_diagnostic_001",
+      "source_manifest_sha256": "2e8d763f1ca08040fe9154cb07811f75ed45979bae11e9f4ea46998ffa2a7e3c",
+      "recorded_final_graph": 1,
+      "above_plane_unassigned_particle_ids": [
+        51539,
+        51666
+      ],
+      "result_status": "FAIL_KINEMATIC_SEVERING_CANDIDATE",
+      "live_isaac": false
+    },
+    "Kinematic B: two passes": {
+      "source_recording": "artifacts/trim_second_pass_diagnostic_001",
+      "source_manifest_sha256": "b19e142c79a5ac7b5c14bbd323d57d8dc4d5aa4ab74435e075ab2ff21c365651",
+      "recorded_final_graph": 1,
+      "above_plane_unassigned_particle_ids": [
+        51539,
+        51666
+      ],
+      "result_status": "FAIL_KINEMATIC_SEVERING_CANDIDATE",
+      "live_isaac": false
+    }
+  },
+  "labels_edited": false,
+  "particle_removal": false
+}

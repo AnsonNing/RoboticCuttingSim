@@ -218,3 +218,73 @@ captures. Their short duration cannot score task completion. Future short runs
 are explicitly labelled `PASS_SMOKE`. Full task metrics are written separately
 to `oracle_debug/task_evaluation.json`; source/config byte snapshots and current
 mechanical surface attribution accompany each recording.
+
+The first full native CUT-01 recording, `artifacts/isaacsim_cut01_001`, completes
+400 control steps/4,000 PhysX steps/8s and41 native captures. The shared oracle
+task evaluator passes: the continuous144g bar becomes two72g mechanical parts,
+with no rewritten cut digits, no minor debris and2.4s recorded persistent
+disconnection. Conservative reference-stencil midpoint distance from the local
+X=0 target is1.500mm, below the predeclared2mm limit. Active edge tracking error
+is.21165mm, all-phase error2.16526mm, and actual edge offset from the intended
+sever plane is at most.15684mm. Peak material reaction is.28041N; minimum detF
+is.94464. The loop including evaluation/reset takes253.08s; application process
+time is263.52s, with concurrent jobs and no isolated performance claim.
+
+Initial robot/material reset again succeeds exactly, including all nine joints
+and22 link poses. Camera reset still fails even with native noise OFF: valid
+masks change80/229 pixels and Global maximum depth difference is57.943mm. Task
+separation success therefore does not promote full environment acceptance.
+The historical `joint_motion_max_rad` field in this first CUT recording measures
+final displacement rather than the whole path; raw q records show the actual
+whole-path maximum.14195rad. The writer now reports both quantities explicitly.
+
+Actual captured CUT videos, measured depth, synchronized multiview and the
+workpiece-local commanded/measured trajectory plot are in
+`artifacts/isaacsim_cut01_media_001`. They use existing captured arrays only;
+the source manifest and visualization code hashes are recorded alongside them.
+
+The first full native TRIM-01 recording, `artifacts/isaacsim_trim01_001`, also
+completes400/4,000 steps,8s and41 captures, but **fails task metrics**. The
+conservative mechanical graph stays connected, so detached mass is zero.
+Of1,044 initially above-plane particles,1,014 end with cut code2,28 with code1,
+and two with code0. A cut code alone is not an independent material component.
+Those two unchanged code0 particles have reference coordinates
+`[4.5,±2.5,24.5]mm`; their actual positive-weight/stress-gradient support touches
+both assigned sides. They remain real numerical bridges, with no post-hoc label
+repair. During recorded active snapshots they stay at least4.04mm ahead of the
+edge and have zero accumulated edge-work progress. Active height tracking error
+is only30.94µm. The initial above-plane material COM advects62.56mm in X.
+
+The final connected surface has7.561mm peak, .924mm p95 and.914mm RMS target-plane
+error. Two of4,800 rays are missing. The frozen evaluator includes their zero
+heights, producing a20mm worst gouge statistic; this does not establish a20mm
+physical knife gouge. The actual loop/evaluation/reset takes271.05s and process
+time281.47s. The five live videos and task-plane trajectory are retained under
+`artifacts/isaacsim_trim01_media_001`, including this failed outcome.
+
+## Frozen follow-up trajectory diagnostics
+
+[`trim_sweep_diagnostic_v1.json`](../configs/trim_sweep_diagnostic_v1.json) was
+committed in `79c92c2` before either follow-up output. The actual material,
+geometry,1mm particles,4mm grid, fixtures,20.2mm edge plane, surface recipe and
+goal thresholds remain unchanged. These controls use an ideal kinematic tool
+and **cannot pass live Isaac or articulated reaction acceptance**.
+
+| Diagnostic | Declared change | Actual outcome |
+|---|---|---|
+| A `trim_fast_sweep_diagnostic_001` |Same8s; active sweep ends X=130mm instead45mm,43.75mm/s |FAIL:one mechanical component; two above-plane code0 bridges remain;125.54s wall|
+| B `trim_second_pass_diagnostic_001` |Original first8s unchanged; second sweep10.4–14.4s ends X=130mm, then withdraw and hold to16s |FAIL:one component at8s and16s; the same two bridges remain;248.06s wall|
+
+Both preserve every particle and every previously assigned nonzero history
+digit. A's above-plane code counts0/1/2 are2/23/1,019; B's are2/28/1,014.
+The same two reference particles bridge the actual stencil graph in both cases.
+No trajectory was promoted to a new live Isaac episode from these failures.
+`run_trim_sweep_diagnostic.py` records full states, forces/contact traces, actual
+reference stencils, code histories, H2 final surfaces and source/config hashes.
+Its CPU tests verify B's first401 control poses equal the original episode and
+A's new speed leaves the target height unchanged.
+
+![Recorded unassigned particle and blade motion](evidence/trim_sweep_code0_bridges.png)
+
+Source-recording hashes and exact negative statuses are in
+[`trim_sweep_diagnostics_v1.json`](evidence/trim_sweep_diagnostics_v1.json).
