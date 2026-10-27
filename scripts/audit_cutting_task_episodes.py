@@ -243,7 +243,8 @@ def audit(directory, output):
     if task_json.is_file():
         inputs.append(task_json)
     task = make_task(recorded_task["task_id"], recorded_task["seed"], recorded_task["variant"],
-                     world_from_workpiece_xyzw=recorded_task["world_from_workpiece_xyzw"])
+                     world_from_workpiece_xyzw=recorded_task["world_from_workpiece_xyzw"],
+                     particle_spacing_m=recorded_task["particle_spacing_m"])
     # Refuse to score an episode using a different current recipe or threshold.
     if (json.loads(json.dumps(asdict(task))) != {k: recorded_task[k] for k in asdict(task)}
             or recorded_task["protocol_sha256"] != sha256(PROTOCOL_PATH)):
@@ -317,6 +318,10 @@ def audit(directory, output):
     plots(output, directory.name, task, trace, [initial_surface, final_surface])
     evidence = {"recording": str(directory), "task_id": task.task_id, "seed": task.seed,
         "scope": "Independent offline recorded-state audit; no simulation execution or policy observation modification",
+        "task_numerical_parameters": {"particle_spacing_m": task.particle_spacing_m, "grid_dx_m": task.grid_dx_m,
+            "recorded_numerical_overrides": recorded_task.get("numerical_overrides", {}),
+            "frozen_default_particle_spacing_m": json.loads(PROTOCOL_PATH.read_text())[task.task_id]["particle_spacing_m"],
+            "scope": "Explicit numerical overrides do not establish acceptance of the unchanged fixed-default resolution"},
         "execution": {"recorded_status": result["status"], "control_steps": len(robot["time_s"])-1,
             "robot_duration_s": float(robot["time_s"][-1]-robot["time_s"][0]),
             "material_duration_s": float(physics["time_s"][-1]-physics["time_s"][0]),

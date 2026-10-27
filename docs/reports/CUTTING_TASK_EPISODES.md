@@ -83,3 +83,45 @@ The raw audit directory contains both PNG and SVG command/actual X-Z-time/error 
 Four meaningful analytic controls pass: translated/rotated workpiece pose tracking; mass-weighted actual-component COM motion; delayed-force/actual-displacement work and impulse attribution; and explicit unknown interval instrumentation. The first auditor attempt (`cutting_task_episode_audit_001`) preserved a strict-JSON failure because Lab's interval det(F) is in `trace.json`, rather than `diagnostics.json`. The corrected reader uses the actual trace and keeps missing metrics as unknown. This involved no experiment, physics or acceptance-threshold change.
 
 Native Task RGB-D/visibility audits are separate receipts owned by the camera validation work. A successful CUT score does not promote native camera mask coverage, full repeatability, randomized task variants, or the complete 18-gate benchmark.
+
+## Explicit 2 mm particle-spacing follow-up
+
+The subsequent actual live recordings `isaac_lab_trim01_coarse_001` and `isaacsim_trim01_coarse_001` retain the bar, continuous bump, material parameters, fixtures, target plane, 8 s trajectory and 4 mm material grid, but explicitly use **2 mm particles**, rather than the fixed protocol's 1 mm default. The factory's recorded `numerical_overrides` identifies this difference. This is a resolution-dependent engineering result obtained after the 1 mm failure, not a convergence proof or replacement of that failed experiment.
+
+Both 400-step / 8 s actual runs now produce a physical 1 → 2 MPM graph transition. Each begins with zero codes and one continuous actual graph and retains all 12,136 particles and 145.632 g reference mass. The resulting chip contains 134 particles / 1.608 g; the substrate contains 12,002 particles / 144.024 g. **98.5294%** of the reference material initially above the plane is in the detached component. No nonzero history digit rewrites occur, and two components persist at every saved postcut sample for 2.4 s. These outcomes recompute exactly from actual reference stencils, including stress-gradient and code-zero coupling checks. The changed quadrature raises initial sampled mass by 66 mg relative to the 1 mm specimen; neither mass is rescaled to hide that difference.
+
+The independent receipt is `artifacts/cutting_task_coarse_episode_audit_002/result.json`; [the public coarse-run receipt](../evidence/cutting_task_coarse_episode_audit.json) keeps source/input hashes and numerical overrides. Actual Lab / native Kit wall times are 197.31 / 86.33 s, respectively, without exclusive hardware timing. All recorded TaskSpec checks and metric dictionaries exactly match recomputation, with unchanged analysis-source snapshots.
+
+| Measurement | Lab coarse TRIM | Native Kit coarse TRIM |
+| --- | --- | --- |
+| Active maximum edge position / local-Z error | 0.2693 / 0.03038 mm | 0.2213 / 0.03418 mm |
+| Active maximum edge angle error | 0.02163° | 0.01775° |
+| All-phase maximum edge position / angle error | 2.1602 mm / 0.1748° | 1.9638 mm / 0.1608° |
+| Minimum det(F), all control intervals | 0.91561 | 0.91584 |
+| Maximum interval material speed | 0.21405 m/s | 0.22355 m/s |
+| Actual tool-contact particle/substep events | 284,579 | 283,539 |
+| Peak material reaction | 0.7068 N | 0.6715 N |
+| Maximum tool/material penetration | 0.43356 mm | 0.43346 mm |
+| Postwithdraw chip COM displacement, 6.4–8 s | 11.10 µm | 10.75 µm |
+| Partitioned interface-work residual | **35.79%** | **32.99%** |
+
+Both pass the available broad finite/contact screens; native Kit rigid penetration remains unmeasured. Small postwithdraw COM motion describes the resting chip, rather than proving a recontact gate. The interface-work residual still fails the earlier 10% screen; no material calibration, paired feedback, same-source task repeatability, or full benchmark promotion is claimed.
+
+The **original strict v1 full-footprint geometry score remains FAIL_TASK_METRICS** in both runs, despite the separated cap and low positive height residual:
+
+| Actual v1 mesh statistic | Frozen limit | Lab coarse | Native Kit coarse |
+| --- | --- | --- | --- |
+| Maximum positive surface residual | 1 mm | 0.10882 mm | 0.10645 mm |
+| p95 absolute plane error | 0.5 mm | 1.67336 mm | 1.67509 mm |
+| RMS plane error | 0.5 mm | 0.61459 mm | 0.55189 mm |
+| Maximum gouge, raw footprint-wide statistic | 1 mm | 20 mm | 20 mm |
+| Integrated overcut / initial base volume | 1% | 2.04104% | 2.01914% |
+| Missing bins | 1% | 0.125% | 0.16667% |
+
+An independently versioned represented-flatbar geometry control is defined in `configs/represented_flatbar_target_v1.json` (`94c8aa0`). It evaluates the represented no-bump bar and preserves all 4,800 fixed rays and one-sided deficits. It does **not** change the v1 ideal-bar target or erase these strict geometry failures. Its results belong in a separate receipt; they are not presumed to pass here.
+
+![Native coarse TRIM command and measured edge](../media/coarse_task_trim_trajectory.png)
+
+![Native coarse TRIM actual current surfaces](../media/coarse_task_trim_material.png)
+
+Reproduce with the same auditor command above, replacing recording directories with the two `*_trim01_coarse_001` paths and choosing a fresh output directory. Original 1 mm results, scores and their audit artifacts remain unchanged.
