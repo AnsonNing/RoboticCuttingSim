@@ -52,7 +52,8 @@ def prepare(args):
                if samples else [0.0])
     calibration = {}
     products = []
-    for name, path in CAMERAS.items():
+    cameras = {**CAMERAS, "global": args.global_camera_path}
+    for name, path in cameras.items():
         calibration[name] = usd_camera_calibration(stage, path, args.width, args.height)
         product = UsdRender.Product.Define(stage, "/Render/" + name)
         product.GetResolutionAttr().Set(Gf.Vec2i(args.width, args.height))
@@ -244,6 +245,7 @@ def main():
     parser.add_argument("--height", type=int, default=480)
     parser.add_argument("--samples", type=int, default=3)
     parser.add_argument("--base-scene", type=Path, help="Optional workcell beneath a measured robot-only replay")
+    parser.add_argument("--global-camera-path", default="/World/GlobalCamera", help="Debug camera prim; native D455 views are retained")
     parser.add_argument("--warmup", type=int, default=10)
     parser.add_argument("--gpu", type=int, default=1)
     parser.add_argument("--camera-mode", choices=["ideal_rgbd", "simulated_d455"], default="ideal_rgbd")
