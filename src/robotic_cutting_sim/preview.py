@@ -27,7 +27,8 @@ def make_preview(output):
     for j,i in enumerate(np.unique(np.linspace(0,len(points)-1,min(90,len(points)),dtype=int))):
         q = points[i]; mask = np.abs(q[:,1]) < .003
         sc.set_offsets(q[mask][:,[0,2]]*1000); sc.set_array(q[mask,2])
-        pose = data["tool_pose_xyzw"][max(i-1,0)]
+        tool_index = i if len(data["tool_pose_xyzw"])==len(points) else max(i-1,0)
+        pose = data["tool_pose_xyzw"][tool_index]
         patch.set_xy(((pose[0]-half[0])*1000,(pose[2]-half[2])*1000))
         ax.set_title(f"MPM diagnostic slice | t={times[i]:.3f} s | no separation claim")
         fig.savefig(images/f"{j:04d}.png", dpi=100)

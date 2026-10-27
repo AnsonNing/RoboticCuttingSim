@@ -7,7 +7,7 @@ from .recording import ROOT, command, manifest, write_json
 
 
 def run(output):
-    output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=False)
     commands = {"uname": ["uname", "-a"], "os": ["cat", "/etc/os-release"],
                 "cpu": ["lscpu"], "ram": ["free", "-b"],
                 "gpu": ["nvidia-smi", "--query-gpu=index,name,memory.total,memory.used,driver_version,compute_cap", "--format=csv,noheader,nounits"],

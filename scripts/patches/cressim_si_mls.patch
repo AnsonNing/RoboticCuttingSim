@@ -1,0 +1,60 @@
+diff --git a/src/solver/constitutive_models.h b/src/solver/constitutive_models.h
+index 880757e..c165287 100644
+--- a/src/solver/constitutive_models.h
++++ b/src/solver/constitutive_models.h
+@@ -108,6 +108,7 @@ namespace crmpm
+             break;
+         case ParticleMaterialType::eCoRotational:
+             computeCoRotationalStress(gradientDeformationTensor, particleMaterialProperties0.x, particleMaterialProperties0.y, stress);
++            break;
+         case ParticleMaterialType::eLinearElastic:
+             computeLinearElasticStress(gradientDeformationTensor, particleMaterialProperties0.x, particleMaterialProperties0.y, stress);
+             break;
+diff --git a/src/solver/mls_mpm_algorithm.h b/src/solver/mls_mpm_algorithm.h
+index 8ef2b83..a21929d 100644
+--- a/src/solver/mls_mpm_algorithm.h
++++ b/src/solver/mls_mpm_algorithm.h
+@@ -262,8 +262,13 @@ namespace crmpm
+         int k = nodeIdx / (numNodesX * numNodesY);
+ 
+         // Small mass cutoff
+-        if (nodeMomentumVelocityMass[nodeIdx].w < 1e-4f)
++        if (nodeMomentumVelocityMass[nodeIdx].w < 1e-12f)
++        {
++            nodeMomentumVelocityMass[nodeIdx].x = 0.0f;
++            nodeMomentumVelocityMass[nodeIdx].y = 0.0f;
++            nodeMomentumVelocityMass[nodeIdx].z = 0.0f;
+             return;
++        }
+ 
+         // Convert to velocity
+         nodeMomentumVelocityMass[nodeIdx].x /= nodeMomentumVelocityMass[nodeIdx].w;
+@@ -368,7 +373,7 @@ namespace crmpm
+         particleVelocity = particleVelocityCumulation;
+ 
+         // Update APIC affine momentum
+-        particleAffineMomentum = 4 * invCellSize * affineMomentumCumulation;
++        particleAffineMomentum = 4 * invCellSize * invCellSize * affineMomentumCumulation;
+ 
+         // Position integration (symplectic)
+         particlePositionMass += particleVelocity * integrationStepSize;
+@@ -390,4 +395,4 @@ namespace crmpm
+     }
+ } // namespace crmpm
+ 
+-#endif // !CR_MLS_MPM_ALGORITHM_H
+\ No newline at end of file
++#endif // !CR_MLS_MPM_ALGORITHM_H
+diff --git a/src/solver/mpm_rigid_contact.h b/src/solver/mpm_rigid_contact.h
+index e9046e8..9ee038c 100644
+--- a/src/solver/mpm_rigid_contact.h
++++ b/src/solver/mpm_rigid_contact.h
+@@ -468,7 +468,7 @@ namespace crmpm
+                     gradient *= _shapeInvScale; // scaled gradient
+                     const float invScale = gradient.invNorm();
+                     gradient = gradient * invScale;
+-                    *normal = gradient; // no safety check
++                    *normal = _shapeRotation.rotate(gradient); // world-frame transfer normal
+                 }
+                 return true;
+             }

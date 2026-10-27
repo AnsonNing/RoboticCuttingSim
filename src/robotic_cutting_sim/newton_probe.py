@@ -62,17 +62,32 @@ class NewtonTestbed:
     def step(self, dt, pose, twist):
         wp = self.wp
         with wp.ScopedDevice(self.device):
-            self.state.body_q.assign(np.asarray([pose], dtype=np.float32))
-            self.state.body_qd.assign(np.asarray([twist], dtype=np.float32))
+            # MPM advances particles, not rigid bodies. Projection reads its own
+            # input body arrays and extrapolates by dt, so both buffers must hold
+            # the same authoritative start-of-substep pose and twist.
+            for state in (self.state, self.next_state):
+                state.body_q.assign(np.asarray([pose], dtype=np.float32))
+                state.body_qd.assign(np.asarray([twist], dtype=np.float32))
             self.solver.step(self.state, self.next_state, None, None, dt)
+            before = self.next_state.particle_q.numpy()
             self.solver.project_outside(self.next_state, self.next_state, dt)
+            after = self.next_state.particle_q.numpy()
+            from scipy.spatial.transform import Rotation
+            end_position = pose[:3] + dt*twist[:3]
+            end_rotation = Rotation.from_rotvec(dt*twist[3:]) * Rotation.from_quat(pose[3:])
+            def penetration(points):
+                local = end_rotation.inv().apply(points-end_position)
+                return float(np.maximum(np.min(self.half_extents-np.abs(local),axis=1),0).max())
+            diagnostic = {"pre_projection_particle_center_penetration_m":penetration(before),
+                          "post_projection_particle_center_penetration_m":penetration(after),
+                          "max_projection_correction_m":float(np.linalg.norm(after-before,axis=1).max())}
             self.state, self.next_state = self.next_state, self.state
             impulses, _, ids = self.solver.collect_collider_impulses(self.state)
             ids_np, imp_np = ids.numpy(), impulses.numpy()
             valid = (ids_np >= 0) & (ids_np < len(self.collider_bodies))
             selected = np.zeros(len(ids_np), dtype=bool)
             selected[valid] = self.collider_bodies[ids_np[valid]] == self.blade
-            return imp_np[selected].sum(axis=0) if selected.any() else np.zeros(3)
+            return (imp_np[selected].sum(axis=0) if selected.any() else np.zeros(3)), diagnostic
 
     def snapshot(self):
         return self.state.particle_q.numpy(), self.state.particle_qd.numpy()
@@ -95,34 +110,38 @@ def run(args, output):
     wall_start = time.perf_counter()
     bed = NewtonTestbed(points, masses, spacing, args.voxel_size, args.case, material, args.device)
     setup_s = time.perf_counter()-wall_start
-    frames, velocities, times, tool_poses = [points], [np.zeros_like(points)], [0.0], []
+    frames, velocities, times, tool_poses = [points], [np.zeros_like(points)], [0.0], [trajectory.at(0)[0]]
     rows = []
     sub_dt = args.dt / args.substeps
     start_sim = time.perf_counter()
     for frame in range(args.frames):
         start = time.perf_counter()
         impulse = np.zeros(3)
+        frame_diagnostics = {"pre_projection_particle_center_penetration_m":0.0,
+                             "post_projection_particle_center_penetration_m":0.0,
+                             "max_projection_correction_m":0.0}
         for sub in range(args.substeps):
             t = frame*args.dt + sub*sub_dt
             pose, twist = trajectory.at(t)
-            impulse += bed.step(sub_dt, pose, twist)
+            step_impulse, diagnostics = bed.step(sub_dt, pose, twist)
+            impulse += step_impulse
+            for key,value in diagnostics.items():
+                frame_diagnostics[key] = max(frame_diagnostics[key],value)
         t = (frame+1)*args.dt
         q, v = bed.snapshot()
         if not np.isfinite(q).all() or not np.isfinite(v).all():
             raise FloatingPointError(f"Nonfinite material state at frame {frame}")
         pose, _ = trajectory.at(t)
-        from scipy.spatial.transform import Rotation
-        local = Rotation.from_quat(pose[3:]).inv().apply(q-pose[:3])
-        distances = bed.half_extents - np.abs(local)
-        penetration = np.maximum(np.min(distances, axis=1), 0)
         force = impulse/args.dt
         jp = bed.state.mpm.particle_Jp.numpy()
+        current_mass = float(bed.model.particle_mass.numpy().astype(float).sum())
+        mass_error = abs(current_mass-bed.initial_mass)/bed.initial_mass
         rows.append({"time_s": t, "frame_wall_s": time.perf_counter()-start,
-                     "mass_kg": bed.initial_mass, "particle_count": len(q),
-                     "mass_error_relative": 0.0, "min_z_m": float(q[:,2].min()),
+                     "mass_kg": current_mass, "particle_count": len(q),
+                     "mass_error_relative": mass_error, "min_z_m": float(q[:,2].min()),
                      "max_z_m": float(q[:,2].max()), "max_speed_m_s": float(np.linalg.norm(v,axis=1).max()),
                      "rms_displacement_m": float(np.sqrt(np.mean(np.sum((q-points)**2,axis=1)))),
-                     "blade_particle_center_penetration_m": float(penetration.max()),
+                     **frame_diagnostics,
                      "max_abs_Jp_minus_one": float(np.max(np.abs(jp-1))),
                      "blade_fx_N": float(force[0]), "blade_fy_N": float(force[1]), "blade_fz_N": float(force[2]),
                      "blade_x_m": float(pose[0]), "blade_y_m": float(pose[1]), "blade_z_m": float(pose[2])})
@@ -134,15 +153,19 @@ def run(args, output):
         writer = csv.DictWriter(f, fieldnames=list(rows[0])); writer.writeheader(); writer.writerows(rows)
     np.savez_compressed(output/"physics_state.npz", positions=np.stack(frames), velocities=np.stack(velocities),
                         time_s=np.array(times), mass_kg=bed.model.particle_mass.numpy(),
-                        tool_pose_xyzw=np.array(tool_poses), tool_half_extents=bed.half_extents)
+                        tool_pose_xyzw=np.array(tool_poses), tool_half_extents=bed.half_extents,
+                        final_elastic_strain=bed.state.mpm.particle_elastic_strain.numpy(),
+                        final_plastic_volume_Jp=bed.state.mpm.particle_Jp.numpy(),
+                        final_stress_pa=bed.state.mpm.particle_stress.numpy())
     # Constant particle masses are not a geometric chip/substrate budget.
     result = {"status": "PASS", "scope": "finite MPM contact/deformation execution only",
               "case": args.case, "particle_count": len(points), "initial_mass_kg": bed.initial_mass,
-              "mass_error_relative": 0.0, "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
+              "mass_error_relative": max(r["mass_error_relative"] for r in rows), "mass_budget_scope": "all unchanged active particles; no deletion/spawn",
               "setup_wall_s": setup_s, "physics_wall_s": sim_wall_s,
               "simulation_s": args.frames*args.dt, "sim_s_per_wall_s": args.frames*args.dt/sim_wall_s,
               "max_speed_m_s": max(r["max_speed_m_s"] for r in rows),
-              "max_blade_particle_center_penetration_m": max(r["blade_particle_center_penetration_m"] for r in rows),
+              **{key:max(r[key] for r in rows) for key in frame_diagnostics},
+              "force_scope":"solver collider impulses / frame dt; excludes particle projection corrections",
               "peak_blade_force_N": max(np.linalg.norm([r[k] for k in ["blade_fx_N","blade_fy_N","blade_fz_N"]]) for r in rows),
               "final_rms_displacement_m": rows[-1]["rms_displacement_m"],
               "max_abs_Jp_minus_one": max(r["max_abs_Jp_minus_one"] for r in rows),

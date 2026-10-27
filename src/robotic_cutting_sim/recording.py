@@ -39,12 +39,20 @@ def manifest(config, backend):
             packages[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
             packages[name] = None
+    sources = {}
+    for name in ["newton", "CRESSim-MPM", "IsaacLab"]:
+        checkout = ROOT/".deps"/name
+        if checkout.is_dir():
+            diff = command(["git", "diff", "HEAD"], cwd=checkout)["stdout"]
+            sources[name] = {"sha":command(["git","rev-parse","HEAD"],cwd=checkout)["stdout"].strip(),
+                             "tracked_patch_sha256":hashlib.sha256(diff.encode()).hexdigest(),
+                             "dirty":bool(diff)}
     return {"timestamp": datetime.now(ZoneInfo("Asia/Seoul")).isoformat(),
             "command": sys.argv, "python": sys.version, "backend": backend,
             "git_sha": command(["git", "rev-parse", "HEAD"], cwd=ROOT)["stdout"].strip(),
             "git_dirty": bool(command(["git", "status", "--porcelain"], cwd=ROOT)["stdout"]),
             "config": config, "config_sha256": hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest(),
-            "packages": packages, "physics_proven": False, "vision_proven": False}
+            "packages": packages, "source_checkouts":sources, "physics_proven": False, "vision_proven": False}
 
 
 def new_output(path):

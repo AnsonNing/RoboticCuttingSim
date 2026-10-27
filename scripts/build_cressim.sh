@@ -3,6 +3,15 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source_dir="$PWD/.deps/CRESSim-MPM"
 build_dir="$PWD/.deps/cressim-build"
+patch_file="$PWD/scripts/patches/cressim_si_mls.patch"
+if git -C "$source_dir" apply --reverse --check "$patch_file" 2>/dev/null; then
+  echo "CRESSim SI/MLS patch already applied"
+elif git -C "$source_dir" apply --check "$patch_file"; then
+  git -C "$source_dir" apply "$patch_file"
+else
+  echo "CRESSim source differs from tested patch context" >&2
+  exit 1
+fi
 cmake -S "$source_dir" -B "$build_dir" \
   -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.8/bin/nvcc \
   -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=Release \

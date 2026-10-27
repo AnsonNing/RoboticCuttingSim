@@ -41,7 +41,8 @@ def run(args,output):
         raise FloatingPointError("CRESSim exported nonfinite state")
     positions=values[:,:,:3]; velocities=values[:,:,3:6]; masses=values[:,:,6]
     mass_error=np.max(np.abs(masses.sum(axis=1,dtype=float)-mass.sum())/mass.sum())
-    poses=np.array([trajectory.at((i+1)*args.dt)[0] for i in range(args.frames)])
+    poses=np.array([trajectory.at(i*args.dt)[0] for i in range(args.frames+1)])
+    poses[:,2] -= .010 # export actual slicer plane, not Newton box center
     np.savez_compressed(output/"physics_state.npz",positions=positions,velocities=velocities,time_s=np.arange(args.frames+1)*args.dt,
                         mass_kg=masses[0],tool_pose_xyzw=poses,tool_half_extents=[.010,.025,.0005])
     with open(output/"trace.csv","w",newline="") as f:

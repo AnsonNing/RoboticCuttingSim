@@ -94,8 +94,14 @@ int main(int argc, char** argv) {
     };
     dump();
     for(int frame=0;frame<frames;++frame) {
-        blade->setKinematicTarget(poseAt((frame+1)*dt),dt);
-        scene->advance(dt); scene->fetchResults(); dump();
+        // The engine freezes the target pose through advance(). Drive every
+        // integration step rather than teleporting once per camera frame.
+        const int substeps=std::lround(dt/subdt);
+        for(int sub=0;sub<substeps;++sub) {
+            blade->setKinematicTarget(poseAt(frame*dt+(sub+1)*subdt),subdt);
+            scene->advance(subdt); scene->fetchResults();
+        }
+        dump();
         if((frame+1)%15==0) std::cout<<"frame="<<frame+1<<"/"<<frames<<std::endl;
     }
     blade->release(); for(auto* s:shapes) s->release(); scene->release(); releaseFactory(factory);

@@ -3,6 +3,6 @@ calibration: uncalibrated
 density_kg_m3: 1500.0
 young_modulus_pa: 50000.0
 poisson_ratio: 0.30
-yield_stress_pa: 1.0e15
+yield_stress_pa: 1000000000000000.0
 friction: 0.4
 # Same E/nu as provisional plasticine, suppress deviatoric yielding.

@@ -4,6 +4,8 @@ This Warp ray camera is not Isaac Sim RTX, a RealSense sensor, or modeled stereo
 Camera frame is OpenCV: +X right, +Y down, +Z forward; depth is optical Z in m.
 """
 import time
+import json
+import hashlib
 
 import numpy as np
 import warp as wp
@@ -67,12 +69,16 @@ def plane_check(device):
     local = np.stack([(x+.5-k[0,2])/k[0,0],(y+.5-k[1,2])/k[1,1],np.ones_like(x)],-1)
     rays = local @ t[:3,:3].T
     expected = -t[2,3]/rays[:,:,2]
-    valid = (depth>0)&(expected>=c["near_m"])&(expected<=c["far_m"])
+    hit = t[:3,3] + rays*expected[:,:,None]
+    expected_valid = ((expected>=c["near_m"])&(expected<=c["far_m"])
+                      &(np.abs(hit[:,:,0])<=2)&(np.abs(hit[:,:,1])<=2))
+    valid = depth>0
+    mask_mismatch = int(np.sum(valid != expected_valid))
     err = np.abs(depth[valid]-expected[valid])
-    if len(err) == 0 or err.max() > 1e-5:
+    if not np.isfinite(depth).all() or mask_mismatch or len(err) == 0 or err.max() > 1e-5:
         raise AssertionError("Ideal camera plane depth failed 10 micrometer numerical tolerance")
     return {"status":"PASS","valid_pixels":int(valid.sum()),"max_abs_error_m":float(err.max()),
-            "rmse_m":float(np.sqrt(np.mean(err**2))),"tolerance_m":1e-5}
+            "rmse_m":float(np.sqrt(np.mean(err**2))),"tolerance_m":1e-5,"valid_mask_mismatch_pixels":mask_mismatch}
 
 
 def run(args, output):
@@ -82,7 +88,10 @@ def run(args, output):
     wp.init()
     device = args.device
     state = np.load(args.input / "physics_state.npz")
-    episode = manifest({"input":str(args.input.resolve()),"surface_voxel_size_m":args.surface_voxel_size,
+    with open(args.input/"physics_state.npz","rb") as source_file:
+        source_hash=hashlib.file_digest(source_file,"sha256").hexdigest()
+    episode = manifest({"input":str(args.input.resolve()),"physics_state_sha256":source_hash,
+                        "surface_voxel_size_m":args.surface_voxel_size,
                         "renderer":"custom_warp_ray_camera", "device":device}, "particle_surface_camera_probe")
     write_json(output/"manifest.json",episode)
     cameras = {"ideal_0":calibration([0,-.5,.55]), "ideal_1":calibration([.5,-.4,.25]),
@@ -92,7 +101,7 @@ def run(args, output):
     with wp.ScopedDevice(device):
         surface = ParticleSurface(voxel_size=args.surface_voxel_size, smooth_lambda=0.0,
                                   mesh_smooth_iterations=0, device=device)
-        spacing = float(state["mass_kg"][0]/1500)**(1/3)
+        spacing = float(json.loads((args.input/"specimen.json").read_text())["spacing_m"])
         radii = wp.full(state["positions"].shape[1], value=spacing/2, dtype=float,device=device)
         frame_ids = np.unique(np.linspace(0,len(state["positions"])-1,args.samples,dtype=int))
         rows = []; previous = {}; dynamic_pixels = {name:0 for name in cameras}
