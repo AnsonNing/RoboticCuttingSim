@@ -32,7 +32,7 @@ class Bump:
     family: str = "dome"
 
     def __post_init__(self):
-        if (self.family not in FAMILIES or
+        if (self.family not in FAMILIES+("irregular",) or
                 not np.isfinite([self.x_m, self.y_m, self.radius_x_m,
                                  self.radius_y_m, self.height_m]).all() or
                 min(self.radius_x_m, self.radius_y_m, self.height_m) <= 0):
@@ -47,8 +47,12 @@ class Bump:
             shape = np.maximum((np.exp(-4*r*r)-np.exp(-4))/(1-np.exp(-4)), 0)
         elif self.family == "ellipsoid_cap":
             shape = np.sqrt(np.maximum(1-r*r, 0))
-        else:
+        elif self.family == "ridge":
             shape = np.maximum(1-x*x, 0)**2*np.maximum(1-y*y, 0)**2
+        else:
+            # Opt-in compact asymmetric cap; legacy family draws stay unchanged.
+            exponent = np.clip(1+.30*x+.18*y+.15*x*y, .5, 1.6)
+            shape = np.where(r < 1, np.cos(np.minimum(r, 1)*np.pi/2)**(2*exponent), 0)
         return self.height_m*shape
 
 

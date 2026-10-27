@@ -1,0 +1,72 @@
+{
+  "source_commit": "51e5bfe",
+  "benchmark_source_sha256": "f0ca2a16b9c8f360ddae0754167576ca2a7aeabd03d356fc4a84d3f873cd3b49",
+  "scope": "Actual deterministic CPU specimen outputs captured before adding the opt-in irregular family; no solver execution",
+  "spacing_m": 0.002,
+  "cases": {
+    "D0:42": {
+      "positions_sha256": "580a427d07395316400a43c26f49c277791d8f3b200158025ac35e6d40f4ced3",
+      "mass_sha256": "d6c3bed1071744e8f78036525b7cdc6c59ab8dc172b99901f9bb69cc55e52748",
+      "lattice_sha256": "2b82e578d458b8b1af7e6a8a72a8802066b09f6c12f6f03cfc89478455c31dee",
+      "scenario_sha256": "cb54d641b720bdbf0c20319f19cfbb4d6a9fb6472621c905414861f5a7a65d32",
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998
+    },
+    "D0:2026": {
+      "positions_sha256": "580a427d07395316400a43c26f49c277791d8f3b200158025ac35e6d40f4ced3",
+      "mass_sha256": "d6c3bed1071744e8f78036525b7cdc6c59ab8dc172b99901f9bb69cc55e52748",
+      "lattice_sha256": "2b82e578d458b8b1af7e6a8a72a8802066b09f6c12f6f03cfc89478455c31dee",
+      "scenario_sha256": "2c37765ac216a515292032f70cd7dab4c40d6f271e6b1480970ad595a6de3aa6",
+      "particle_count": 19340,
+      "initial_mass_kg": 0.23207999999999998
+    },
+    "D1:42": {
+      "positions_sha256": "813c4bac1ce3f837eee6707d6f5c6a7e767ddc94d4efe01f9738ca9c3b41f1d1",
+      "mass_sha256": "e6cf5d8bb2345b15f55ef2956ba4c15095bc57c1ad55352db114f08049bd6e53",
+      "lattice_sha256": "11be612e740e61a7d73bc6f26f5afb8fc56fba3262d6daebc106788868a26739",
+      "scenario_sha256": "e84e5bc297d3889fc732fd8a408d37e6acd8e8af46869a344bec18d2fa0cc284",
+      "particle_count": 19401,
+      "initial_mass_kg": 0.23281199999999996
+    },
+    "D1:2026": {
+      "positions_sha256": "bcdffdc7c1eee0afe2ea36cb88c27db1e9893a64ff35ded0b646ea574eb3f0e8",
+      "mass_sha256": "94ed4e245f76b31ac0b94ec8fe517e36ff39bd8a1ff04d908e7aa3ae005ae292",
+      "lattice_sha256": "d0cc94d06773fe40c29c5d9be70e5d85c7789064884259cf22190553bf425db5",
+      "scenario_sha256": "0ba33ef0fa601956f74e889577d1c152c0f2810911eafe327ad58172c0b4289e",
+      "particle_count": 19287,
+      "initial_mass_kg": 0.23144399999999998
+    },
+    "D2:42": {
+      "positions_sha256": "3dfa6061187df83183a0427952031e6923d1b84b24946c400559a4ea8aef8a9f",
+      "mass_sha256": "4fcbd487218fc88dfa339772600aedf04b5f407822884ed258ca8dfa9690681d",
+      "lattice_sha256": "2922af41372394311fceb36c8914fe24ed8a142c3d6a557e452b73833c7f24bc",
+      "scenario_sha256": "fc512be0ea97217ae9ec7f30a4221001d6ddb28fb74c305bcba3c013d6da1bc6",
+      "particle_count": 19386,
+      "initial_mass_kg": 0.23263199999999995
+    },
+    "D2:2026": {
+      "positions_sha256": "3819af642f3abcf6eaf8120c5e5ad9e9d0aa838154b45b12214e723d0324e6d5",
+      "mass_sha256": "9589d06ccdbbc983bd1710dc81a04dda2c119cb0eb9e8ac582ac963e2f557c87",
+      "lattice_sha256": "23cd8f0d3ba7773a58d2d90c87c857254d63e5d78f3fd9a659b0a851dceadbbf",
+      "scenario_sha256": "79ee8820fd95049adf6a1f693d2cf315f2ee08cba39d028d5c105f1a2f114a8a",
+      "particle_count": 19510,
+      "initial_mass_kg": 0.23412
+    },
+    "D3:42": {
+      "positions_sha256": "93a3907a0bcab7596fd8ef76b8e07f8c073c02b6435deb07d46e998e75be8095",
+      "mass_sha256": "fac9e55b22d1911734b679e4c0ecd02c162863775901124c39de3782e7167d09",
+      "lattice_sha256": "6db0efaedbd842804fc5f367772ec29fe498e250179bfaedc3f49426f6036597",
+      "scenario_sha256": "3e57430252f3952804db985fcbd2273981196950764a7f45731c88c72abdd60f",
+      "particle_count": 19303,
+      "initial_mass_kg": 0.244965736382002
+    },
+    "D3:2026": {
+      "positions_sha256": "554268aebe5cab0822785982a4eeb80dadd269ef3d04876c0789f4e9b5ba9374",
+      "mass_sha256": "d4e5d6f46e6d5c0372db32db12987ce34640700afe9594f2cf3bf20380b81a9a",
+      "lattice_sha256": "3bf3ed752827f2ed1ad9744c7d3bf11dff1309fdbdc7e6ceee51697c497c606d",
+      "scenario_sha256": "6e4d3ed7ba06de4cc61a38067994790f01917aeb4c2d03d75c0a9993e891c295",
+      "particle_count": 19626,
+      "initial_mass_kg": 0.22941818879369932
+    }
+  }
+}

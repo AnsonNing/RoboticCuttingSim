@@ -68,8 +68,8 @@ class CuttingTaskSpec:
     def __post_init__(self):
         if self.task_id not in ("CUT-01", "TRIM-01") or self.goal_kind not in ("sever", "flatten"):
             raise ValueError("Unsupported task/goal")
-        if self.variant != "fixed":
-            raise ValueError("Only the explicit fixed variant is implemented")
+        if self.variant not in ("fixed", "randomized"):
+            raise ValueError("Task variant must be fixed or randomized")
         for pose in (self.world_from_workpiece_xyzw, self.hand_from_edge_xyz_xyzw,
                      (0, 0, 0, *self.edge_orientation_local_xyzw)):
             validate_pose_xyzw(pose)
@@ -166,12 +166,16 @@ class CuttingTaskSpec:
         return {"mode": mode, "target": target.copy(), "cut_enabled": bool(enabled)}
 
     def to_dict(self):
-        return {**asdict(self), "protocol_id": _protocol()["protocol_id"],
+        result = {**asdict(self), "protocol_id": _protocol()["protocol_id"],
                 "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
                 "sample_coordinate_frame": "workpiece_local", "evaluator_coordinate_frame": "world",
                 "action_modes": ACTION_MODES, "runtime_validated": False,
                 "numerical_overrides": {"particle_spacing_m": {"protocol": _protocol()[self.task_id]["particle_spacing_m"],
                     "actual": self.particle_spacing_m}} if self.particle_spacing_m != _protocol()[self.task_id]["particle_spacing_m"] else {}}
+        if self.variant == "randomized":
+            from .task_randomization import randomization_receipt
+            result["randomization"] = randomization_receipt(self)
+        return result
 
     def evaluate_oracle(self, recording):
         return evaluate_task_oracle(self, recording)
@@ -183,12 +187,14 @@ def _protocol():
 
 def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1),
               particle_spacing_m=None):
+    if variant == "randomized" and (not isinstance(seed, (int, np.integer)) or isinstance(seed, (bool, np.bool_)) or seed < 0):
+        raise ValueError("Randomized task seed must be a nonnegative integer")
     protocol = _protocol()
     if task_id not in ("CUT-01", "TRIM-01"):
         raise ValueError("task_id must be CUT-01 or TRIM-01; legacy D0 is unchanged")
     config = protocol[task_id]
     geometry = config["geometry"]
-    return CuttingTaskSpec(task_id, int(seed), variant,
+    task = CuttingTaskSpec(task_id, int(seed), "fixed" if variant == "randomized" else variant,
         HeightFieldSpec(geometry["length_m"], geometry["width_m"], geometry["base_height_m"],
             tuple(Bump(**row) for row in geometry["bumps"])),
         config["particle_spacing_m"] if particle_spacing_m is None else float(particle_spacing_m), config["grid_dx_m"],
@@ -199,6 +205,10 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
         config.get("edge_clearance_m", 0.), config["blade_length_m"], config["blade_height_m"], config["blade_half_width_m"],
         tuple(config["edge_orientation_local_xyzw"]), tuple(tuple(row) for row in config["edge_position_knots_local_txyz"]),
         tuple(protocol["episode"]["active_cut_interval_s"]))
+    if variant == "randomized":
+        from .task_randomization import randomize_task
+        return randomize_task(task)
+    return task
 
 
 def _interface_location(nodes, weights, gradients, labels, reference_local, task):

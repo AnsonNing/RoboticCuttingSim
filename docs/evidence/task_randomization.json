@@ -1,0 +1,1274 @@
+{
+  "scope": "Actual CPU generation only, no solver/camera/robot execution",
+  "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+  "source_sha256": {
+    "src/robotic_cutting_sim/tasks.py": "fad5c7b7025a80c0b29cd55b4a20bbba1c7e5212c473dcbb3c7b6fcd1110c6bf",
+    "src/robotic_cutting_sim/task_randomization.py": "01e1fdce6552d9c01a0c5a002f272e86c20d840079cba49c5d50093205f12f48",
+    "src/robotic_cutting_sim/benchmark.py": "50cb7f75a62d2c8c40f2216c07b81cf43e931fb79168555207d05f54c272ae0c",
+    "configs/task_randomization_v1.json": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+    "tests/test_task_randomization.py": "c54622af5bb4bd74751dfe9a7b882604f244fd420269c1c613db71167f12d507"
+  },
+  "cases": {
+    "CUT-01_seed42": {
+      "task": {
+        "task_id": "CUT-01",
+        "seed": 42,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.14,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": []
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "left_pedestal",
+            "center_m": [
+              -0.048,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.032,
+              0.021,
+              0.005
+            ]
+          },
+          {
+            "name": "right_pedestal",
+            "center_m": [
+              0.052000000000000005,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.028,
+              0.021,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          -0.0012224312049589538,
+          0.00717195839822765,
+          0.0,
+          0.0,
+          0.0,
+          0.0344404072822528,
+          0.9994067532022348
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "sever",
+        "target_origin_local_m": [
+          0.004,
+          0.0,
+          0.0
+        ],
+        "target_normal_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "edge_clearance_m": 0.0,
+        "blade_length_m": 0.035,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            0.004,
+            0.0,
+            0.05
+          ],
+          [
+            1.0,
+            0.004,
+            0.0,
+            0.03
+          ],
+          [
+            1.6,
+            0.004,
+            0.0,
+            0.03
+          ],
+          [
+            5.6,
+            0.004,
+            0.0,
+            -0.003
+          ],
+          [
+            6.4,
+            0.004,
+            0.0,
+            0.05
+          ],
+          [
+            8.0,
+            0.004,
+            0.0,
+            0.05
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 42,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.5.4",
+          "draws": {
+            "length_m": 0.14,
+            "frame_offset_local_xyz_xyzw": [
+              -0.0012224312049589538,
+              0.00717195839822765,
+              0.0,
+              0.0,
+              0.0,
+              0.03444040728225279,
+              0.9994067532022347
+            ],
+            "frame_yaw_offset_deg": 3.9473605811872776,
+            "cut_x_m": 0.004
+          },
+          "input_world_from_workpiece_xyzw": [
+            6.505213034913027e-19,
+            -3.469446951953614e-18,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "particles": 10500,
+      "mass_kg": 0.126,
+      "positions_sha256": "c6d774dfa87605624cd04c5120e4700bacd7802192d91e849fd9b14b7c00602a",
+      "mass_sha256": "97b5feb768f92a5820219a65d539f51554dfb91af8a3375ef8e91fa0018c11ab",
+      "lattice_sha256": "9ac82c03bb9722a8845b7078582f69fe8fad8adf1172d7f8f2a345b49d38bf15",
+      "geometric_six_neighbor_components": 1,
+      "mechanical_components": "NOT_RUN; no actual runtime stencils in CPU generation",
+      "runtime": "NOT_RUN",
+      "task_success": "NOT_RUN"
+    },
+    "CUT-01_seed43": {
+      "task": {
+        "task_id": "CUT-01",
+        "seed": 43,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.16,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": []
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "left_pedestal",
+            "center_m": [
+              -0.054,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.036,
+              0.021,
+              0.005
+            ]
+          },
+          {
+            "name": "right_pedestal",
+            "center_m": [
+              0.055999999999999994,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.034,
+              0.021,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          -0.009124493527220067,
+          -0.009599408262515662,
+          0.0,
+          0.0,
+          0.0,
+          0.05916918463956545,
+          0.9982479689882114
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "sever",
+        "target_origin_local_m": [
+          0.002,
+          0.0,
+          0.0
+        ],
+        "target_normal_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "edge_clearance_m": 0.0,
+        "blade_length_m": 0.035,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            0.002,
+            0.0,
+            0.05
+          ],
+          [
+            1.0,
+            0.002,
+            0.0,
+            0.03
+          ],
+          [
+            1.6,
+            0.002,
+            0.0,
+            0.03
+          ],
+          [
+            5.6,
+            0.002,
+            0.0,
+            -0.003
+          ],
+          [
+            6.4,
+            0.002,
+            0.0,
+            0.05
+          ],
+          [
+            8.0,
+            0.002,
+            0.0,
+            0.05
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 43,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.5.4",
+          "draws": {
+            "length_m": 0.16,
+            "frame_offset_local_xyz_xyzw": [
+              -0.009124493527220067,
+              -0.009599408262515662,
+              0.0,
+              0.0,
+              0.0,
+              0.05916918463956544,
+              0.9982479689882113
+            ],
+            "frame_yaw_offset_deg": 6.7842516502206,
+            "cut_x_m": 0.002
+          },
+          "input_world_from_workpiece_xyzw": [
+            3.469446951953614e-18,
+            3.469446951953614e-18,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "particles": 12000,
+      "mass_kg": 0.14399999999999996,
+      "positions_sha256": "ff6dd8da39cab66858cfa2cb2a02f40f9232837e41d5a7074b6c3aed7e8180f1",
+      "mass_sha256": "e4b12839c5484b35bb188659790a1ad4ce758a40be8b2a2b7dfecf5f164aa249",
+      "lattice_sha256": "d4a9a7d17e8a8752e7e891d38e3966df73e9592edefb44cc47709bcee9e43c17",
+      "geometric_six_neighbor_components": 1,
+      "mechanical_components": "NOT_RUN; no actual runtime stencils in CPU generation",
+      "runtime": "NOT_RUN",
+      "task_success": "NOT_RUN"
+    },
+    "CUT-01_seed2026": {
+      "task": {
+        "task_id": "CUT-01",
+        "seed": 2026,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.18,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": []
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "left_pedestal",
+            "center_m": [
+              -0.063,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.03699999999999999,
+              0.021,
+              0.005
+            ]
+          },
+          {
+            "name": "right_pedestal",
+            "center_m": [
+              0.056999999999999995,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.043,
+              0.021,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          0.002798263314303091,
+          -0.0006546319771302978,
+          0.0,
+          0.0,
+          0.0,
+          -0.022599997511267268,
+          0.9997445874384571
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "sever",
+        "target_origin_local_m": [
+          -0.006,
+          0.0,
+          0.0
+        ],
+        "target_normal_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "edge_clearance_m": 0.0,
+        "blade_length_m": 0.035,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            -0.006,
+            0.0,
+            0.05
+          ],
+          [
+            1.0,
+            -0.006,
+            0.0,
+            0.03
+          ],
+          [
+            1.6,
+            -0.006,
+            0.0,
+            0.03
+          ],
+          [
+            5.6,
+            -0.006,
+            0.0,
+            -0.003
+          ],
+          [
+            6.4,
+            -0.006,
+            0.0,
+            0.05
+          ],
+          [
+            8.0,
+            -0.006,
+            0.0,
+            0.05
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 2026,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.5.4",
+          "draws": {
+            "length_m": 0.18,
+            "frame_offset_local_xyz_xyzw": [
+              0.002798263314303091,
+              -0.0006546319771302978,
+              0.0,
+              0.0,
+              0.0,
+              -0.022599997511267268,
+              0.9997445874384571
+            ],
+            "frame_yaw_offset_deg": -2.5899894578390388,
+            "cut_x_m": -0.006
+          },
+          "input_world_from_workpiece_xyzw": [
+            0.0,
+            1.0842021724855044e-19,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "particles": 13500,
+      "mass_kg": 0.16199999999999998,
+      "positions_sha256": "92e3ea817321dcb59a5e72ce69a21cf5e081d1b03c1b43f382dbea29d79ef833",
+      "mass_sha256": "5fc6be7b5b0e9ca1ab4c53c68ab18060db600bfd4171495de34a222e8654f60d",
+      "lattice_sha256": "4b48c72bc69e4949874e49f6b6a389cb127edfdfd98ebbe1414a9bf43133a6bd",
+      "geometric_six_neighbor_components": 1,
+      "mechanical_components": "NOT_RUN; no actual runtime stencils in CPU generation",
+      "runtime": "NOT_RUN",
+      "task_success": "NOT_RUN"
+    },
+    "TRIM-01_seed42": {
+      "task": {
+        "task_id": "TRIM-01",
+        "seed": 42,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.14,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": [
+            {
+              "x_m": -0.02895544119203859,
+              "y_m": 0.0005721286105539077,
+              "radius_x_m": 0.008512454530702184,
+              "radius_y_m": 0.008251929689477836,
+              "height_m": 0.007483192096930325,
+              "family": "dome"
+            },
+            {
+              "x_m": 0.0005754604803226582,
+              "y_m": 0.0006455232265416601,
+              "radius_x_m": 0.009773656795309324,
+              "radius_y_m": 0.007136193608923884,
+              "height_m": 0.00821833914806334,
+              "family": "irregular"
+            },
+            {
+              "x_m": 0.0282552690244167,
+              "y_m": 0.0006552623439851641,
+              "radius_x_m": 0.01052665759648826,
+              "radius_y_m": 0.009790438700426868,
+              "height_m": 0.007418103872519474,
+              "family": "dome"
+            }
+          ]
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "support_floor",
+            "center_m": [
+              0.0,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.08,
+              0.025,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          -0.0012224312049589538,
+          0.00717195839822765,
+          0.0,
+          0.0,
+          0.0,
+          0.0344404072822528,
+          0.9994067532022348
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "flatten",
+        "target_origin_local_m": [
+          0.0,
+          0.0,
+          0.02
+        ],
+        "target_normal_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_clearance_m": 0.0002,
+        "blade_length_m": 0.012,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            -0.06746789572274077,
+            0.0,
+            0.06
+          ],
+          [
+            1.0,
+            -0.06746789572274077,
+            0.0,
+            0.0202
+          ],
+          [
+            1.6,
+            -0.06746789572274077,
+            0.0,
+            0.0202
+          ],
+          [
+            5.6,
+            0.068,
+            0.0,
+            0.0202
+          ],
+          [
+            6.4,
+            0.08,
+            0.0,
+            0.06
+          ],
+          [
+            8.0,
+            0.08,
+            0.0,
+            0.06
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 42,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.5.4",
+          "draws": {
+            "length_m": 0.14,
+            "frame_offset_local_xyz_xyzw": [
+              -0.0012224312049589538,
+              0.00717195839822765,
+              0.0,
+              0.0,
+              0.0,
+              0.03444040728225279,
+              0.9994067532022347
+            ],
+            "frame_yaw_offset_deg": 3.9473605811872776,
+            "bump_anchors_m": [
+              -0.03,
+              0.0,
+              0.03
+            ],
+            "bumps": [
+              {
+                "x_m": -0.02895544119203859,
+                "y_m": 0.0005721286105539077,
+                "radius_x_m": 0.008512454530702184,
+                "radius_y_m": 0.008251929689477836,
+                "height_m": 0.007483192096930325,
+                "family": "dome"
+              },
+              {
+                "x_m": 0.0005754604803226582,
+                "y_m": 0.0006455232265416601,
+                "radius_x_m": 0.009773656795309324,
+                "radius_y_m": 0.007136193608923884,
+                "height_m": 0.00821833914806334,
+                "family": "irregular"
+              },
+              {
+                "x_m": 0.0282552690244167,
+                "y_m": 0.0006552623439851641,
+                "radius_x_m": 0.01052665759648826,
+                "radius_y_m": 0.009790438700426868,
+                "height_m": 0.007418103872519474,
+                "family": "dome"
+              }
+            ]
+          },
+          "input_world_from_workpiece_xyzw": [
+            6.505213034913027e-19,
+            -3.469446951953614e-18,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "particles": 10715,
+      "mass_kg": 0.12857999999999997,
+      "positions_sha256": "ea1a4cd5d1c2e2d8a028eb5c74b633a5f091c8cd7749ee7a2fb0ff68bb733cdd",
+      "mass_sha256": "4bd17e78794fe0fec94667353969a09bdb28fd80f50c0666569acee65771737e",
+      "lattice_sha256": "bc1732fc33ee03e58cbf86bca23892cd08943d45781fb9ccbd02a26346c274af",
+      "geometric_six_neighbor_components": 1,
+      "mechanical_components": "NOT_RUN; no actual runtime stencils in CPU generation",
+      "runtime": "NOT_RUN",
+      "task_success": "NOT_RUN"
+    },
+    "TRIM-01_seed43": {
+      "task": {
+        "task_id": "TRIM-01",
+        "seed": 43,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.16,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": [
+            {
+              "x_m": -0.028992830912725538,
+              "y_m": -0.00047261560504325065,
+              "radius_x_m": 0.009679911638865073,
+              "radius_y_m": 0.008255156935005545,
+              "height_m": 0.009821258316884952,
+              "family": "dome"
+            },
+            {
+              "x_m": 0.0015676066767321708,
+              "y_m": -0.00044273394896211294,
+              "radius_x_m": 0.009114137191117503,
+              "radius_y_m": 0.008109997874236314,
+              "height_m": 0.006016310899943955,
+              "family": "gaussian"
+            }
+          ]
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "support_floor",
+            "center_m": [
+              0.0,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.09,
+              0.025,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          -0.009124493527220067,
+          -0.009599408262515662,
+          0.0,
+          0.0,
+          0.0,
+          0.05916918463956545,
+          0.9982479689882114
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "flatten",
+        "target_origin_local_m": [
+          0.0,
+          0.0,
+          0.02
+        ],
+        "target_normal_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_clearance_m": 0.0002,
+        "blade_length_m": 0.012,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            -0.06867274255159062,
+            0.0,
+            0.06
+          ],
+          [
+            1.0,
+            -0.06867274255159062,
+            0.0,
+            0.0202
+          ],
+          [
+            1.6,
+            -0.06867274255159062,
+            0.0,
+            0.0202
+          ],
+          [
+            5.6,
+            0.04068174386784967,
+            0.0,
+            0.0202
+          ],
+          [
+            6.4,
+            0.07568174386784968,
+            0.0,
+            0.06
+          ],
+          [
+            8.0,
+            0.07568174386784968,
+            0.0,
+            0.06
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 43,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.5.4",
+          "draws": {
+            "length_m": 0.16,
+            "frame_offset_local_xyz_xyzw": [
+              -0.009124493527220067,
+              -0.009599408262515662,
+              0.0,
+              0.0,
+              0.0,
+              0.05916918463956544,
+              0.9982479689882113
+            ],
+            "frame_yaw_offset_deg": 6.7842516502206,
+            "bump_anchors_m": [
+              -0.03,
+              0.0
+            ],
+            "bumps": [
+              {
+                "x_m": -0.028992830912725538,
+                "y_m": -0.00047261560504325065,
+                "radius_x_m": 0.009679911638865073,
+                "radius_y_m": 0.008255156935005545,
+                "height_m": 0.009821258316884952,
+                "family": "dome"
+              },
+              {
+                "x_m": 0.0015676066767321708,
+                "y_m": -0.00044273394896211294,
+                "radius_x_m": 0.009114137191117503,
+                "radius_y_m": 0.008109997874236314,
+                "height_m": 0.006016310899943955,
+                "family": "gaussian"
+              }
+            ]
+          },
+          "input_world_from_workpiece_xyzw": [
+            3.469446951953614e-18,
+            3.469446951953614e-18,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "particles": 12125,
+      "mass_kg": 0.14550000000000002,
+      "positions_sha256": "00669393969db5882006fb502df395b85e56a2ca41530efc1138311c81d9197a",
+      "mass_sha256": "ee01dd84e43d43db3913a36ec6d84227a650adb7111707be2c15ac731b8c0e7e",
+      "lattice_sha256": "811819e669161cb6295cf2676885851b322d23a1848f3a6467f75f7e0e20af2a",
+      "geometric_six_neighbor_components": 1,
+      "mechanical_components": "NOT_RUN; no actual runtime stencils in CPU generation",
+      "runtime": "NOT_RUN",
+      "task_success": "NOT_RUN"
+    },
+    "TRIM-01_seed2026": {
+      "task": {
+        "task_id": "TRIM-01",
+        "seed": 2026,
+        "variant": "randomized",
+        "geometry": {
+          "length_m": 0.18,
+          "width_m": 0.03,
+          "base_height_m": 0.02,
+          "bumps": [
+            {
+              "x_m": 0.0011620729834130603,
+              "y_m": 0.0008102876733543478,
+              "radius_x_m": 0.008709412767292195,
+              "radius_y_m": 0.00926392401342566,
+              "height_m": 0.0071932110694222775,
+              "family": "gaussian"
+            }
+          ]
+        },
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "fixture_boxes_local": [
+          {
+            "name": "support_floor",
+            "center_m": [
+              0.0,
+              0.0,
+              -0.005
+            ],
+            "half_extents_m": [
+              0.09999999999999999,
+              0.025,
+              0.005
+            ]
+          }
+        ],
+        "world_from_workpiece_xyzw": [
+          0.002798263314303091,
+          -0.0006546319771302978,
+          0.0,
+          0.0,
+          0.0,
+          -0.022599997511267268,
+          0.9997445874384571
+        ],
+        "table_top_world_z_m": -0.01,
+        "hand_from_edge_xyz_xyzw": [
+          0.0,
+          0.0,
+          0.18,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "duration_s": 8.0,
+        "control_dt_s": 0.02,
+        "material": {
+          "density_kg_m3": 1500.0,
+          "young_modulus_pa": 50000.0,
+          "poisson_ratio": 0.3,
+          "yield_stress_pa": 1000.0,
+          "hardening_ratio": 0.0,
+          "friction": 0.3,
+          "failure_model": "experimental_edge_work_persistent_TLMPM",
+          "critical_stress_pa": null,
+          "fracture_energy_j_m2": 0.05,
+          "calibration": "provisional_uncalibrated"
+        },
+        "goal_kind": "flatten",
+        "target_origin_local_m": [
+          0.0,
+          0.0,
+          0.02
+        ],
+        "target_normal_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_clearance_m": 0.0002,
+        "blade_length_m": 0.012,
+        "blade_height_m": 0.004,
+        "blade_half_width_m": 0.025,
+        "edge_orientation_local_xyzw": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "edge_position_knots_local_txyz": [
+          [
+            0.0,
+            -0.037547339783879134,
+            0.0,
+            0.06
+          ],
+          [
+            1.0,
+            -0.037547339783879134,
+            0.0,
+            0.0202
+          ],
+          [
+            1.6,
+            -0.037547339783879134,
+            0.0,
+            0.0202
+          ],
+          [
+            5.6,
+            0.03987148575070525,
+            0.0,
+            0.0202
+          ],
+          [
+            6.4,
+            0.07487148575070526,
+            0.0,
+            0.06
+          ],
+          [
+            8.0,
+            0.07487148575070526,
+            0.0,
+            0.06
+          ]
+        ],
+        "active_cut_interval_s": [
+          1.6,
+          5.6
+        ],
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "sample_coordinate_frame": "workpiece_local",
+        "evaluator_coordinate_frame": "world",
+        "action_modes": [
+          "cartesian_edge_pose_world",
+          "joint_position_rad"
+        ],
+        "runtime_validated": false,
+        "numerical_overrides": {
+          "particle_spacing_m": {
+            "protocol": 0.001,
+            "actual": 0.002
+          }
+        },
+        "randomization": {
+          "protocol_id": "task_randomization_v1_20261028",
+          "protocol_sha256": "7d47b2d9eca28bc35c47324fd957fa4179bce9101e23a8827f457857c6149433",
+          "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+          "seed": 2026,
+          "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+          "numpy_version": "2.5.4",
+          "draws": {
+            "length_m": 0.18,
+            "frame_offset_local_xyz_xyzw": [
+              0.002798263314303091,
+              -0.0006546319771302978,
+              0.0,
+              0.0,
+              0.0,
+              -0.022599997511267268,
+              0.9997445874384571
+            ],
+            "frame_yaw_offset_deg": -2.5899894578390388,
+            "bump_anchors_m": [
+              0.0
+            ],
+            "bumps": [
+              {
+                "x_m": 0.0011620729834130603,
+                "y_m": 0.0008102876733543478,
+                "radius_x_m": 0.008709412767292195,
+                "radius_y_m": 0.00926392401342566,
+                "height_m": 0.0071932110694222775,
+                "family": "gaussian"
+              }
+            ]
+          },
+          "input_world_from_workpiece_xyzw": [
+            0.0,
+            1.0842021724855044e-19,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+          "scope": "Seeded continuous initial geometry, local target, fixtures and scripted actions only; actual cutting and sensors require episode receipts",
+          "policy_observation_contains_force_or_oracle": false
+        }
+      },
+      "particles": 13549,
+      "mass_kg": 0.16258799999999995,
+      "positions_sha256": "d8228512999ed9267c0cc22cbbf25a981e069ef6594de2b84b93ffccc7a1e2ff",
+      "mass_sha256": "a1987ea30f15e5f86a5fc591799eaaa7860b691430272075068e4a31c1a70ab7",
+      "lattice_sha256": "4b72152640b52ba07cae9b298d1a871299621ee9958d7d4f0eb46d34421b3c28",
+      "geometric_six_neighbor_components": 1,
+      "mechanical_components": "NOT_RUN; no actual runtime stencils in CPU generation",
+      "runtime": "NOT_RUN",
+      "task_success": "NOT_RUN"
+    }
+  },
+  "meaningful_test_command": ".venv/bin/python -m pytest -q tests/test_task_randomization.py tests/test_cutting_tasks.py tests/test_task_episode_audit.py tests/test_benchmark_foundation.py",
+  "test_result": "69 passed",
+  "fixed_defaults_and_legacy_benchmark_preserved": true,
+  "full_benchmark_ready": false
+}

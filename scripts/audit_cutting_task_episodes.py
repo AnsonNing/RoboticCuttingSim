@@ -242,13 +242,23 @@ def audit(directory, output):
     recorded_task = json.loads(task_json.read_text()) if task_json.is_file() else setup["task"]
     if task_json.is_file():
         inputs.append(task_json)
+    input_pose = recorded_task.get("randomization", {}).get("input_world_from_workpiece_xyzw", recorded_task["world_from_workpiece_xyzw"])
     task = make_task(recorded_task["task_id"], recorded_task["seed"], recorded_task["variant"],
-                     world_from_workpiece_xyzw=recorded_task["world_from_workpiece_xyzw"],
+                     world_from_workpiece_xyzw=input_pose,
                      particle_spacing_m=recorded_task["particle_spacing_m"])
     # Refuse to score an episode using a different current recipe or threshold.
-    if (json.loads(json.dumps(asdict(task))) != {k: recorded_task[k] for k in asdict(task)}
+    generated = json.loads(json.dumps(asdict(task)))
+    recorded = {k: recorded_task[k] for k in generated}
+    # Reversing a composed seeded offset introduces only floating-point roundoff;
+    # compare the rigid transform, while requiring all other recipe fields exact.
+    pose_error = pose_errors(generated.pop("world_from_workpiece_xyzw"), recorded.pop("world_from_workpiece_xyzw"))
+    if (generated != recorded or max(pose_error) > 1e-12
             or recorded_task["protocol_sha256"] != sha256(PROTOCOL_PATH)):
         raise ValueError("Recorded task/thresholds do not match this auditor's frozen TaskSpec")
+    if task.variant == "randomized":
+        from robotic_cutting_sim.task_randomization import RANDOMIZATION_PROTOCOL_PATH
+        if recorded_task["randomization"]["protocol_sha256"] != sha256(RANDOMIZATION_PROTOCOL_PATH):
+            raise ValueError("Recorded randomization protocol does not match this auditor")
     oracle = directory/"oracle_debug" if (directory/"oracle_debug").is_dir() else directory
     physics_path, diagnostic_path = oracle/"physics_state.npz", oracle/"diagnostics.json"
     inputs += [physics_path, diagnostic_path]
@@ -349,9 +359,10 @@ def main():
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     output = new_output(args.output_dir)
-    analysis_paths = [Path(__file__).resolve(), PROTOCOL_PATH, ROOT/"configs/isaac_acceptance.json"]
+    analysis_paths = [Path(__file__).resolve(), PROTOCOL_PATH, ROOT/"configs/isaac_acceptance.json",
+        ROOT/"configs/task_randomization_v1.json"]
     analysis_paths += [ROOT/"src/robotic_cutting_sim"/name for name in
-        ("tasks.py", "live_acceptance.py", "cut_topology.py", "scene_validation.py", "scene_frames.py", "benchmark.py", "recording.py")]
+        ("tasks.py", "task_randomization.py", "live_acceptance.py", "cut_topology.py", "scene_validation.py", "scene_frames.py", "benchmark.py", "recording.py")]
     before = {str(path.relative_to(ROOT)): sha256(path) for path in analysis_paths}
     snapshots = output/"analysis_sources"
     snapshots.mkdir()

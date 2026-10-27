@@ -1,0 +1,44 @@
+{
+  "protocol_id": "task_randomization_v1_20261028",
+  "scope": "Seeded CPU task generation. Actual randomized runtime, cutting, camera and success receipts are separate; generated reference paths do not guarantee task success.",
+  "base_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+  "rng": "numpy.random.Generator(PCG64(seed)); nonnegative integer seed",
+  "draw_order": "length choice, local frame XY uniform, local frame yaw uniform, then task-specific draws; bump anchors sorted before shape draws",
+  "common": {
+    "length_choices_m": [0.14, 0.16, 0.18],
+    "width_m": 0.03,
+    "base_height_m": 0.02,
+    "frame_xy_offset_limit_m": 0.01,
+    "frame_yaw_offset_limit_deg": 10.0,
+    "frame_offset_local_z_m": 0.0,
+    "frame_composition": "T_world_actual = T_world_input @ T_input_seeded_offset; all target, particles, fixtures and edge paths remain in actual workpiece-local coordinates",
+    "inherit_material_blade_mount_timing_and_numerical_settings": true,
+    "force_or_oracle_in_policy_observation": false
+  },
+  "CUT-01": {
+    "cut_x_choices_m": [-0.008, -0.006, -0.004, -0.002, 0.0, 0.002, 0.004, 0.006, 0.008],
+    "slot_half_width_m": 0.02,
+    "support_outer_margin_m": 0.01,
+    "support_half_width_m": 0.021,
+    "support_half_height_m": 0.005,
+    "minimum_analytic_part_fraction": 0.4
+  },
+  "TRIM-01": {
+    "bump_count_inclusive": [1, 3],
+    "bump_x_anchors_m": [-0.03, 0.0, 0.03],
+    "bump_x_jitter_limit_m": 0.002,
+    "bump_y_limit_m": 0.001,
+    "bump_radius_x_range_m": [0.008, 0.012],
+    "bump_radius_y_range_m": [0.006, 0.011],
+    "bump_height_range_m": [0.006, 0.01],
+    "families": ["dome", "gaussian", "ridge", "irregular"],
+    "reference_margin_from_bump_bounds_m": 0.03,
+    "reference_inset_from_bar_end_m": 0.002,
+    "withdrawal_translation_m": 0.035,
+    "withdrawal_maximum_beyond_bar_end_m": 0.01,
+    "support_outer_margin_m": 0.01,
+    "support_half_width_m": 0.025,
+    "support_half_height_m": 0.005
+  },
+  "compatibility": "The fixed CUT/TRIM recipe, original task thresholds, legacy FAMILIES sequence and D0-D3 specimen draws remain unchanged. Irregular is opt-in and uses the same Bump fields."
+}
