@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "scope": "supported sequential crossing cuts,current conservative MPM support graph",
+  "history": [
+    {
+      "time_s": 0.0,
+      "components": 1,
+      "component_particles": [
+        19340
+      ],
+      "mass_kg": [
+        0.23208000000009435
+      ]
+    },
+    {
+      "time_s": 1.46,
+      "components": 2,
+      "component_particles": [
+        140,
+        19200
+      ],
+      "mass_kg": [
+        0.0016800000000000033,
+        0.23040000000009267
+      ]
+    },
+    {
+      "time_s": 2.3000000000000003,
+      "components": 2,
+      "component_particles": [
+        140,
+        19200
+      ],
+      "mass_kg": [
+        0.0016800000000000033,
+        0.23040000000009267
+      ]
+    },
+    {
+      "time_s": 3.56,
+      "components": 3,
+      "component_particles": [
+        9280,
+        140,
+        9920
+      ],
+      "mass_kg": [
+        0.1113599999999894,
+        0.0016800000000000033,
+        0.1190399999999882
+      ]
+    },
+    {
+      "time_s": 4.5,
+      "components": 3,
+      "component_particles": [
+        9280,
+        140,
+        9920
+      ],
+      "mass_kg": [
+        0.1113599999999894,
+        0.0016800000000000033,
+        0.1190399999999882
+      ]
+    }
+  ],
+  "first_digits_never_rewritten": true,
+  "second_digit_particles": 7458,
+  "support": "rigid floor and table, no sidewalls; gravity active",
+  "source_npz_sha256": "438744e2aa69166ae7adbfb512195ed04461b11208e4629fc003ee17d86cc689",
+  "full_robot_second_direction": "NOT_RUN"
+}

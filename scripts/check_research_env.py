@@ -33,6 +33,8 @@ def main():
     p.add_argument("--device", default="cuda:0")
     p.add_argument("--scene", type=Path)
     args = p.parse_args()
+    if args.steps < 1 or args.record_every < 1:
+        p.error("steps and record-every must be positive integers")
     output = new_output(args.output_dir)
     for directory in ("observations", "global_debug", "oracle_debug"):
         (output/directory).mkdir()
@@ -40,7 +42,9 @@ def main():
     receipt = manifest(parameters, "live_articulated_cutting_env")
     root = Path(__file__).resolve().parents[1]
     sources = [root/"src/robotic_cutting_sim"/name for name in
-               ("research_env.py", "coupled_robot.py", "robot.py", "tlmpm.py", "cut_topology.py", "cutting_surface.py")]
+               ("research_env.py", "coupled_robot.py", "robot.py", "tlmpm.py", "material_config.py",
+                "cut_topology.py", "cutting_surface.py", "camera.py", "sensor_contract.py",
+                "usd_surface_bridge.py", "workcell.py", "recording.py")]
     sources.append(Path(__file__))
     (output/"implementation").mkdir()
     source_hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}

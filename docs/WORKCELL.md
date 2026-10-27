@@ -1,5 +1,11 @@
 # Static dual-arm research workcell
 
+The static exporter remains useful. Articulated control,an attached physical
+wedge,material reaction feedback and full-scene live RGB-D are now available in
+[ResearchCuttingEnv](RESEARCH_ENVIRONMENT.md); see also
+[coupling validation](COUPLED_ROBOT_VALIDATION.md). The description below covers
+the original static USD composition.
+
 The scene is built and locally composed from official Isaac6.2 asset hierarchy:
 two Franka Pandas, two D455 bodies/native optical prims, global camera, table,
 tray, continuous specimen and box knife proxy. It is a usable static research

@@ -1,5 +1,10 @@
 # Validation boundaries
 
+Continuation evidence: [persistent-cut matrix](reports/TLMPM_VALIDATION.md),
+[robot/material coupling](COUPLED_ROBOT_VALIDATION.md) and
+[executable benchmark](BENCHMARK_REPORT.md). The initial-phase table below is
+retained as a historical snapshot rather than the current capability status.
+
 Evidence index: [validation_summary.json](evidence/validation_summary.json).
 Per-work-package commands and numerical results are in `docs/reports/`.
 

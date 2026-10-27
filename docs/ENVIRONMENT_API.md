@@ -1,5 +1,8 @@
 # Research environment API
 
+This is the original Newton deformation baseline. For articulated persistent
+cutting and full-scene live RGB-D use [ResearchCuttingEnv](RESEARCH_ENVIRONMENT.md).
+
 `CuttingEnv` advances Newton MPM and a kinematic blade with live ideal RGB-D. The
 separate USD scene includes static robot/sensor assets. There is no training framework.
 

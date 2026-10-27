@@ -29,7 +29,9 @@ def run(output, config, seed, duration):
     proprio, setup = scene.reset(seed)
     record = manifest({"coupling": asdict(config), "seed": seed, "duration_s": duration}, "experimental_panda_tlmpm")
     root = Path(__file__).resolve().parents[1]
-    sources = [root / "src/robotic_cutting_sim" / name for name in ("coupled_robot.py", "robot.py", "tlmpm.py", "cut_topology.py")]
+    sources = [root / "src/robotic_cutting_sim" / name for name in
+               ("coupled_robot.py", "robot.py", "tlmpm.py", "material_config.py", "cut_topology.py", "benchmark.py", "recording.py")]
+    sources.append(Path(__file__))
     record["implementation_sha256"] = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
     (output / "implementation").mkdir()
     for source in sources:

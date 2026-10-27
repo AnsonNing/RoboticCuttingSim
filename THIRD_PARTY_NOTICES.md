@@ -13,7 +13,7 @@ record their tracked diff hashes. No third-party asset is redistributed here.
 | OpenUSD core | Apache-2.0 | `usd-core` standalone scene export; not coinstalled with Isaac's `usd-exchange` |
 | MuJoCo / MuJoCo Warp 3.12.0 | Apache-2.0 | Articulated dynamics through Newton, isolated project environment |
 | [Taichi MPM / CPIC](https://github.com/yuanming-hu/taichi_mpm) | MIT | Pinned source inspection only, not built or redistributed |
-| [OVRTX / OVStage](https://nvidia-omniverse.github.io/ovrtx/) 0.6.0 | NVIDIA software terms | Separate `.deps/rtx-venv` environment; actual RTX capture, no binary redistribution |
+| [OVRTX0.6.0 / OVStage0.3.0](https://nvidia-omniverse.github.io/ovrtx/) | NVIDIA software terms | Separate `.deps/rtx-venv` environment; actual RTX capture, no binary redistribution |
 
 The CRESSim patches in `scripts/patches/cressim_si_mls.patch` and
 `scripts/patches/cressim_math_layout.patch` change only its isolated

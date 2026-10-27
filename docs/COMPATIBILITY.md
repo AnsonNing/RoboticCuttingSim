@@ -18,7 +18,9 @@ Official references checked before implementation:
 | Project Python | 3.12.12, own `.venv`; system Python 3.10 is not used |
 | Official requested GA | Lab v3.0.0, Sim 6.2.0, Torch 2.11 cu130, Warp 1.17.0, Newton 1.6.1 |
 | Installed standalone probe | Newton 1.6.1, Warp 1.17.0, CUDA 12.9 bundled runtime; GPU smoke actually passed on R570 |
-| Full GA / Isaac RTX | BLOCKED: CUDA 13 driver gate; Sim official tested Linux driver 595.58.03. Sim/Torch GA stack not installed. |
+| Full GA / Isaac runtime | BLOCKED: CUDA 13 driver gate; Sim official tested Linux driver 595.58.03. Sim/Torch GA stack not installed. |
+| Standalone articulation | PASS: Newton + MuJoCo3.12.0 CPU; dual Panda IK/dynamics/collisions executed |
+| Standalone RTX | PASS: OVRTX0.6.0/OVStage0.3.0 in `.deps/rtx-venv`; actual RGB-D cutting capture on unchanged R570 |
 
 The official tested driver is not proof that every lower driver fails. R570 does
 not satisfy CUDA 13's driver generation, while the separate Warp 1.17 CUDA 12
@@ -34,7 +36,15 @@ They stop at missing GA dependencies (`lazy_loader`) before physics launch; this
 is **BLOCKED**, not an official MPM runtime failure or successful test. Install the
 full upstream GA environment only on a compatible driver; do not silently use 2.x.
 
-The usable research baseline is independent of that blocked Kit stack: a locally
-composed13-file official dual-Panda/dual-D455 USD, a working live Newton+ideal-RGB-D
-environment, and combined measured-state replay. Static composition and facade
-integration passed; actual RTX sensor/articulation execution remains unvalidated.
+The usable research baseline is independent of the blocked Kit stack: official
+USD geometry,actual articulated control,persistent-cut Warp TLMPM,live full-scene
+ideal RGB-D and separately captured native RTX arrays. The
+[OVRTX driver table](https://nvidia-omniverse.github.io/ovrtx/driver_requirements.html)
+lists a Blackwell R570 baseline; actual capture succeeded here. A recorded R570
+denoiser quality/fallback warning does not prevent array capture. This is distinct
+from CUDA13 and the uninstalled full Isaac runtime. No driver changed.
+
+OVRTX bundles its own USD/runtime and stays isolated from the physics environment.
+Native SingleView D455 arrays are accessible,but registration/noise calibration
+remains unvalidated. See [WP-03-next](reports/WP-03-next.md) and
+[WP-03-cutting](reports/WP-03-cutting.md) for exact receipts and limits.

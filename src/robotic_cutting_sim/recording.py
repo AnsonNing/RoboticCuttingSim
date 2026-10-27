@@ -34,7 +34,8 @@ def command(args, timeout=30, cwd=None):
 
 def manifest(config, backend):
     packages = {}
-    for name in ["newton", "warp-lang", "numpy", "scipy", "isaaclab", "isaacsim", "torch", "usd-core"]:
+    for name in ["newton", "warp-lang", "numpy", "scipy", "isaaclab", "isaacsim", "torch", "usd-core",
+                 "mujoco", "mujoco-warp", "newton-usd-schemas", "ovrtx", "ovstage"]:
         try:
             packages[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:

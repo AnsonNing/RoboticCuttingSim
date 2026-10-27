@@ -1,5 +1,12 @@
 # WP-02 — Initial solver comparison
 
+Continuation: [independent TLMPM](PERSISTENT_CUTTING.md) now supplies online
+persistent separation alongside official Newton's deformation baseline.
+[Frozen GPU validation](TLMPM_VALIDATION.md) records actual cutting/withdrawal/
+recontact and refinement limits. [CRESSim corrections](CRESSIM_FOLLOWUP.md)
+restore stable controls without retained cut topology; both patches are applied
+by the default build. The original investigation below is historical evidence.
+
 State: **BLOCKED at persistent-separation gate; no formal solver selected**.
 Newton is retained as the working deformation testbed. Neither candidate has
 passed the required cut, withdrawal, recontact and independent-chip acceptance.

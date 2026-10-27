@@ -1,5 +1,10 @@
 # WP-03 — Dynamic surface to programmable RGB-D
 
+Continuation: [WP-03-cutting](reports/WP-03-cutting.md) now demonstrates full-scene
+live ideal RGB-D and actual standalone NVIDIA RTX with articulated Panda motion
+and mechanically separated cut surfaces. The material-only pipeline below is
+historical. Full Isaac runtime and native D455 calibration remain separate gates.
+
 State: **ideal array-output feasibility PASS; full G3 / D455 RTX BLOCKED**.
 The later live environment also produces RGB-D at every control step and includes
 the current tool, tray and table in its ray scene. A120-step episode was executed
