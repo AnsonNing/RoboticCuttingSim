@@ -1,0 +1,179 @@
+{
+  "scope": "Actual two-step API/control/camera smoke, not full cutting task validation",
+  "cases": [
+    {
+      "artifact": "artifacts/isaac_lab_shared_api_smoke_001",
+      "result": {
+        "status": "PASS_SMOKE",
+        "runtime_source": "live_isaac_lab",
+        "task_id": "CUT-01",
+        "steps": 2,
+        "simulation_s": 0.04,
+        "task_metric_status": "NOT_RUN",
+        "task_success": false,
+        "api_exercised": [
+          "reset",
+          "step",
+          "observe",
+          "render",
+          "evaluate",
+          "close"
+        ],
+        "explicit_actions_exercised": true,
+        "policy_observation_keys": [
+          "rgb",
+          "depth_m",
+          "valid_mask",
+          "calibration",
+          "timestamp_s",
+          "proprio"
+        ],
+        "full_physics_camera_acceptance": "SEPARATE_AUDIT_REQUIRED"
+      },
+      "command": [
+        "/home/ningan/RoboticCuttingSim/scripts/run_cutting_task.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "CUT-01",
+        "--output-dir",
+        "artifacts/isaac_lab_shared_api_smoke_001",
+        "--steps",
+        "2",
+        "--exercise-actions",
+        "--worker"
+      ],
+      "config": {
+        "device": "cuda:0",
+        "material_device": "cuda:0",
+        "seed": 42,
+        "variant": "D0",
+        "task_id": "CUT-01",
+        "task_variant": "fixed",
+        "action_mode": "cartesian_edge_pose_world",
+        "surface_profile": "current_volume_v1",
+        "dx": 0.004,
+        "feedback": true,
+        "width": 640,
+        "height": 480,
+        "global_width": 1280,
+        "global_height": 960,
+        "velocity_feedforward": true,
+        "experiment": "cut",
+        "camera": true,
+        "static_scene": "/home/ningan/RoboticCuttingSim/artifacts/isaac_lab_shared_api_smoke_001/workcell/workcell.usda"
+      },
+      "packages": {
+        "newton": "1.6.1",
+        "warp-lang": "1.17.0",
+        "numpy": "2.5.2",
+        "scipy": "1.18.1",
+        "isaaclab": "28.0.0",
+        "isaacsim": null,
+        "torch": "2.11.0+cu128",
+        "usd-core": null,
+        "mujoco": "3.12.0",
+        "mujoco-warp": "3.12.0",
+        "newton-usd-schemas": "0.6.0",
+        "ovrtx": null,
+        "ovstage": null
+      },
+      "source_sha256": "5cbc2fe5295d97c725bc43890dcb7fada8a3feb6dabb9e4527329c79623c4604",
+      "receipt_sha256": "0b68a91955f3f7fe1245e90a9e7769eecef43bdd3821294ed08f3b454f0ec06c",
+      "manifest_sha256": "9861956df65506e8fea0cf4dbe8ccb4a3c9cb7fa4a811dd2e6bca801568f6c58"
+    },
+    {
+      "artifact": "artifacts/isaac_sim_shared_api_smoke_002",
+      "result": {
+        "status": "PASS_SMOKE",
+        "runtime_source": "live_isaac_sim",
+        "task_id": "TRIM-01",
+        "steps": 2,
+        "simulation_s": 0.04,
+        "task_metric_status": "NOT_RUN",
+        "task_success": false,
+        "api_exercised": [
+          "reset",
+          "step",
+          "observe",
+          "render",
+          "evaluate",
+          "close"
+        ],
+        "explicit_actions_exercised": true,
+        "policy_observation_keys": [
+          "rgb",
+          "depth_m",
+          "valid_mask",
+          "calibration",
+          "timestamp_s",
+          "proprio"
+        ],
+        "full_physics_camera_acceptance": "SEPARATE_AUDIT_REQUIRED"
+      },
+      "command": [
+        "/home/ningan/RoboticCuttingSim/scripts/run_cutting_task.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "TRIM-01",
+        "--gpu",
+        "0",
+        "--device",
+        "cuda:0",
+        "--output-dir",
+        "artifacts/isaac_sim_shared_api_smoke_002",
+        "--steps",
+        "2",
+        "--exercise-actions",
+        "--worker"
+      ],
+      "config": {
+        "seed": 42,
+        "steps": 2,
+        "control_dt": 0.02,
+        "robot_substeps": 10,
+        "material_dt": 0.0001,
+        "dx": 0.004,
+        "device": "cuda:0",
+        "gpu": 0,
+        "width": 640,
+        "height": 480,
+        "global_resolution_scale": 2,
+        "record_every": 10,
+        "render_warmup": 5,
+        "camera_mode": "native_single_view",
+        "feedback": true,
+        "velocity_feedforward": true,
+        "task_id": "TRIM-01",
+        "task_variant": "fixed",
+        "action_mode": "cartesian",
+        "native_noise": "off",
+        "surface_profile": "current_volume_v1",
+        "scene": null
+      },
+      "packages": {
+        "newton": "1.6.1",
+        "warp-lang": "1.17.0",
+        "numpy": "2.3.1",
+        "scipy": "1.17.0",
+        "isaaclab": null,
+        "isaacsim": "6.2.0.0",
+        "torch": "2.11.0+cu128",
+        "usd-core": null,
+        "mujoco": "3.12.0",
+        "mujoco-warp": "3.12.0",
+        "newton-usd-schemas": "0.5.0",
+        "ovrtx": null,
+        "ovstage": null
+      },
+      "source_sha256": "5cbc2fe5295d97c725bc43890dcb7fada8a3feb6dabb9e4527329c79623c4604",
+      "receipt_sha256": "a58852aa63f21c408c997df49dba4802c8070517a856fbc7308c4661a34f447c",
+      "manifest_sha256": "6be4b26d410695976207df1c89f6e4ec4ab20df4a0e52298586e487297861252"
+    }
+  ],
+  "preserved_failures": [
+    "artifacts/isaac_sim_shared_api_smoke_001.log: launcher initially omitted source path; corrected before native002"
+  ],
+  "policy_observation_force_oracle_global": false
+}

@@ -26,6 +26,17 @@ Live Kit影片與來源：[同步多視角](docs/media/live_isaac_kit_d0/synchro
 
 隔離安裝與完整指令：[Isaac Lab](docs/ISAAC_LAB_INTEGRATION.md)、[Isaac Sim](docs/ISAAC_SIM_VALIDATION.md)、[相機驗證](docs/CAMERA_VALIDATION.md)。目前正在接續新增共用架構的 **CUT-01 長條完整切斷** 與 **TRIM-01 長條表面切削**，保留D0–D3歷史基線；不進行模型訓練。
 
+**新增共用 Cutting Tasks**：CUT-01 已在Lab與Kit各完成8秒，144g連續長條永久
+分成兩個72g部分，通過獨立任務評分。TRIM-01完整測試進行中。
+任務設定與評分見[CUTTING_TASKS](docs/CUTTING_TASKS.md)，
+兩者共用的[實際環境API](docs/SHARED_TASK_API.md)提供
+`reset/step/observe/render/evaluate/close`、Cartesian／joint actions，正式觀測不含force／oracle。
+
+```bash
+.deps/isaacsim-venv/bin/python scripts/run_cutting_task.py \
+  --runtime isaac_sim --task CUT-01 --output-dir artifacts/cut01_api_fresh
+```
+
 已實測：
 
 - 刀刃通過後才產生切面歷史；切屑撤刀後獨立運動、落下及再次接觸，不刪粒子、不預分割凸起。
