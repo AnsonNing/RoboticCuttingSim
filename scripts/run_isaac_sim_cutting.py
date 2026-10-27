@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+"""Run genuine live Isaac Sim6.2 PhysX+TLMPM+RTX; preserve native startup failures.
+
+Run inside the dedicated Isaac Sim environment. --runtime-only tests application
+initialization only and can never report a cutting or physics pass.
+"""
+import argparse
+from dataclasses import asdict
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+import traceback
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"src"))
+
+from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig, LiveIsaacSimCutting, launch_app, runtime_versions
+from robotic_cutting_sim.recording import command, manifest, new_output, write_json
+
+
+def worker(args, config):
+    import numpy as np
+    from PIL import Image
+    out = args.output_dir
+    app = None
+    phase = "before_SimulationApp"
+    write_json(out/"phase.json",{"phase":phase,"versions":runtime_versions()})
+    try:
+        app = launch_app(config,out)
+        phase = "SimulationApp_initialized"
+        write_json(out/"phase.json",{"phase":phase})
+        if args.runtime_only:
+            for _ in range(5):
+                app.update()
+            result = {"status":"PASS_BOOTSTRAP","scope":"Isaac Sim6.2 SimulationApp initialization only",
+                      "app_updates":5,"physical_steps":0,"live_cutting":"NOT_RUN","full_isaac_integration":False}
+        else:
+            env = LiveIsaacSimCutting(app,config,out)
+            phase = "live_reset"
+            write_json(out/"phase.json",{"phase":phase})
+            initial = env.reset()
+            phase = "live_steps"
+            write_json(out/"phase.json",{"phase":phase})
+            for directory in ("observations","global_debug","camera_debug","surface_debug","oracle_debug"):
+                (out/directory).mkdir()
+            proprio, diagnostics, materials,body_poses = [initial], [], [],[env.body_poses()]
+            frame_rows = []
+            previous = {}
+            changed = {name:0 for name in ("d455_0","d455_1","global")}
+            def record():
+                frames, sensor_info = env.capture()
+                index = len(frame_rows)
+                for name,frame in frames.items():
+                    target = out/("global_debug" if name == "global" else "observations")
+                    debug_keys={key for key in frame if key.startswith("rtx_reference_") or key.startswith("depth_sensor_")
+                                or key in ("native_source_index_debug","native_raw_valid_mask")}
+                    public = {key:value for key,value in frame.items() if key not in debug_keys}
+                    np.savez_compressed(target/f"{name}_{index:04d}.npz",**public)
+                    Image.fromarray(frame["rgb"]).save(target/f"{name}_{index:04d}.png")
+                    reference = {key:value for key,value in frame.items() if key in debug_keys}
+                    if reference:
+                        np.savez_compressed(out/"camera_debug"/f"{name}_{index:04d}.npz",**reference)
+                    depth = frame.get("depth_m",frame.get("depth_sensor_distance_raw")).squeeze()
+                    if not np.isfinite(depth).all():
+                        # Native raw nonfinite pixels are preserved, never replaced by ideal depth.
+                        if config.camera_mode != "native_single_view":
+                            raise FloatingPointError("Nonfinite RTX optical depth")
+                    if name in previous:
+                        common = np.isfinite(depth)&np.isfinite(previous[name])&(depth>0)&(previous[name]>0)
+                        changed[name] += int(np.sum(common&(np.abs(depth-previous[name])>1e-5)))
+                    previous[name] = depth.copy()
+                state = env.material.debug_state()
+                materials.append({"positions":state["positions"].copy(),"velocities":state["velocities"].copy(),
+                                  "codes":state["codes"].copy(),"time_s":env.time_s})
+                vertices,triangles = env.surface_arrays
+                np.savez_compressed(out/"surface_debug"/f"surface_{index:04d}.npz",vertices_m=vertices,
+                    triangles=triangles,physics_timestamp_s=env.time_s)
+                frame_rows.append({"frame":index,"time_s":env.time_s,"native_physics_time_s":env.SimulationManager.get_simulation_time(),
+                    "surface":env.surface_receipt,"current_component_surface":env.surface_info,"native_sensor_info":sensor_info,
+                    "native_registration":{name:dict(value) for name,value in env.native_registration.items()}})
+                write_json(out/"frame_manifest.json",frame_rows)
+            record()
+            start = time.perf_counter()
+            for step in range(config.steps):
+                actual, diagnostic = env.step()
+                proprio.append(actual)
+                body_poses.append(env.body_poses())
+                diagnostics.append(diagnostic)
+                if (step+1)%config.record_every == 0 or step == config.steps-1:
+                    record()
+                if (step+1)%25 == 0:
+                    print(f"LIVE Kit step={step+1}/{config.steps} t={env.time_s:.2f}s "
+                          f"components={env.surface_info['mechanical_components']}",flush=True)
+            np.savez_compressed(out/"robot_state.npz",time_s=[p["timestamp_s"] for p in proprio],
+                q=[p["q"] for p in proprio],qdot=[p["qdot"] for p in proprio],
+                hand_pose_xyzw=[p["hand_pose"] for p in proprio],tool_pose_xyzw=[p["tool_pose"] for p in proprio],
+                body_pose=body_poses,body_prim_paths=env.rigid_link_paths,
+                commanded_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio],
+                desired_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio])
+            final=env.material.debug_state()
+            sample_indices=np.rint(np.asarray([s["time_s"] for s in materials])/config.control_dt).astype(int)
+            _,component_ids,_=env.surface.surface.partition.partition(final["codes"])
+            np.savez_compressed(out/"oracle_debug/physics_state.npz",time_s=[s["time_s"] for s in materials],
+                positions=[s["positions"] for s in materials],velocities=[s["velocities"] for s in materials],
+                codes=[s["codes"] for s in materials],mass_kg=env.material.masses,
+                tool_pose_xyzw=np.asarray([p["tool_pose"] for p in proprio])[sample_indices],
+                reference_positions=env.material.points,reference_indices=env.material.lattice,
+                reference_stencil_nodes=env.material.bed.nodes.numpy(),
+                reference_stencil_weights=env.material.bed.weights.numpy(),
+                reference_stencil_gradients=env.material.bed.gradients.numpy(),component_ids=component_ids,
+                component_provenance="final conservative actual reference-stencil graph including stress gradients; debug only",
+                final_F=final["F"],final_Fpi=final["Fpi"],final_cut_progress=final["cut_progress"],
+                final_plastic_strain=final["plastic_strain"])
+            write_json(out/"oracle_debug/diagnostics.json",diagnostics)
+            qmotion = float(np.max(np.abs(proprio[-1]["q"]-initial["q"])))
+            first_material=materials[0]["positions"].copy()
+            again=env.reset()
+            reset_material=env.material.debug_state()
+            reset_error=float(np.abs(again["q"]-initial["q"]).max())
+            reset_material_error=float(np.abs(reset_material["positions"]-first_material).max())
+            reset_codes=int(np.count_nonzero(reset_material["codes"]))
+            write_json(out/"reset_receipt.json",{"q_max_error_rad":reset_error,"material_max_error_m":reset_material_error,
+                "nonzero_cut_codes":reset_codes,"time_s":env.time_s,"dynamics_reset_measured":True,
+                "camera_reset_repeatability":"NOT_RUN"})
+            result = {"status":"PASS_EXECUTION" if qmotion>1e-5 else "FAIL",
+                "scope":"LIVE Isaac Sim6.2 native PhysX articulation + retained TLMPM + native RTX",
+                "steps":config.steps,"simulation_s":config.steps*config.control_dt,"wall_s":time.perf_counter()-start,
+                "native_physics_steps":diagnostics[-1]["relative_native_physics_steps"],
+                "robot_dynamics_source":"Isaac PhysX","standalone_robot_dynamics_steps":0,"replay_inputs":False,
+                "camera_mode":config.camera_mode,"camera_frames":len(frame_rows),"changed_depth_pixels_10um":changed,
+                "joint_motion_max_rad":qmotion,"final_mechanical_components":frame_rows[-1]["current_component_surface"]["mechanical_components"],
+                "full_isaac_integration":False,"physical_cutting":"NOT_SCORED","surface_flattening":"NOT_SCORED",
+                "native_single_view_calibration":"NOT_VALIDATED","reset_repeatability":"PARTIAL_DYNAMICS_AND_MATERIAL",
+                "native_single_view_registration":"VALIDATED_EXACT_PROFILE_APPLIED" if config.camera_mode=="native_single_view" else "NOT_RUN",
+                "observation_force_oracle_global":False,
+                "limitations":["Native PhysX trajectory differs from standalone MuJoCo and requires comparison",
+                    "20ms explicit reaction delay; no monolithic/converged energy claim",
+                    "Native raw SingleView depth is never replaced by RTX reference depth",
+                    "PASS_EXECUTION requires later independent task/camera acceptance"]}
+        write_json(out/"worker_result.json",result)
+        return 0 if result["status"].startswith("PASS") else 1
+    except Exception as error:
+        (out/"failure.log").write_text(traceback.format_exc())
+        write_json(out/"worker_result.json",{"status":"BLOCKED" if phase == "before_SimulationApp" else "FAIL",
+            "phase":phase,"error":str(error),"full_isaac_integration":False,"standalone_fallback":False})
+        raise
+    finally:
+        if app is not None:
+            app.close(wait_for_replicator=False)
+
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--output-dir",type=Path,required=True)
+    p.add_argument("--steps",type=int,default=400)
+    p.add_argument("--record-every",type=int,default=10)
+    p.add_argument("--seed",type=int,default=42)
+    p.add_argument("--gpu",type=int,default=1)
+    p.add_argument("--device",default="cuda:1")
+    p.add_argument("--camera-mode",choices=["rtx_rgbd","native_single_view"],default="rtx_rgbd")
+    p.add_argument("--scene",type=Path)
+    p.add_argument("--runtime-only",action="store_true")
+    p.add_argument("--no-feedback",action="store_true")
+    p.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
+    args=p.parse_args()
+    config=IsaacSimCuttingConfig(seed=args.seed,steps=args.steps,record_every=args.record_every,gpu=args.gpu,
+                device=args.device,camera_mode=args.camera_mode,feedback=not args.no_feedback,
+                scene=str(args.scene.resolve()) if args.scene else None)
+    if args.worker:
+        return worker(args,config)
+    out=new_output(args.output_dir)
+    files=[ROOT/"src/robotic_cutting_sim"/name for name in ("isaac_sim_runner.py","live_material.py","robot.py",
+           "tlmpm.py","material_config.py","cut_topology.py","cutting_surface.py","usd_surface_bridge.py","single_view_registration.py")]
+    files += [Path(__file__).resolve(),ROOT/"configs/isaac_sim_cutting.kit"]
+    (out/"implementation").mkdir()
+    hashes={str(f.relative_to(ROOT)):hashlib.sha256(f.read_bytes()).hexdigest() for f in files}
+    for f in files:
+        shutil.copyfile(f,out/"implementation"/f.name)
+    write_json(out/"manifest.json",{**manifest(asdict(config),"LIVE_IsaacSim6.2_cutting"),"versions":runtime_versions(),
+        "implementation_sha256":hashes,"nvidia_smi":command(["nvidia-smi","--query-gpu=name,driver_version","--format=csv"]),
+        "runtime_only":args.runtime_only})
+    argv=[sys.executable,str(Path(__file__).resolve()),"--output-dir",str(out.resolve()),
+          "--steps",str(args.steps),"--record-every",str(args.record_every),"--seed",str(args.seed),
+          "--gpu",str(args.gpu),"--device",args.device,"--camera-mode",args.camera_mode,"--worker"]
+    if args.scene:
+        argv.extend(["--scene",str(args.scene.resolve())])
+    if args.runtime_only:
+        argv.append("--runtime-only")
+    if args.no_feedback:
+        argv.append("--no-feedback")
+    env=os.environ.copy();env["OMNI_KIT_ACCEPT_EULA"]="YES";env["PYTHONUNBUFFERED"]="1"
+    start=time.perf_counter()
+    with (out/"stdout.log").open("w") as log:
+        process=subprocess.run(argv,cwd=ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
+    receipt={"command":argv,"returncode":process.returncode,"wall_s":time.perf_counter()-start}
+    write_json(out/"process_receipt.json",receipt)
+    if (out/"worker_result.json").exists():
+        result=json.loads((out/"worker_result.json").read_text())
+    else:
+        result={"status":"BLOCKED","reason":"Native runtime exited without a completion receipt",
+                "full_isaac_integration":False,"standalone_fallback":False}
+    if process.returncode != 0 and result["status"].startswith("PASS"):
+        result={**result,"status":"FAIL","reason":"Runtime process failed after writing its worker result"}
+    result["process"]=receipt
+    write_json(out/"result.json",result)
+    print(json.dumps(result,indent=2))
+    return 2 if result["status"] == "BLOCKED" else 0 if result["status"].startswith("PASS") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

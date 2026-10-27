@@ -1,0 +1,35 @@
+[package]
+title = "RoboticCuttingSim live Isaac Sim 6.2"
+version = "0.1.0"
+description = "Bounded headless PhysX articulation, custom TLMPM and RTX camera experience"
+
+[dependencies]
+"isaacsim.simulation_app" = {}
+"isaacsim.core.experimental.prims" = {}
+"isaacsim.core.simulation_manager" = {}
+"isaacsim.core.rendering_manager" = {}
+"isaacsim.sensors.experimental.rtx" = {}
+"isaacsim.storage.native" = {}
+"omni.kit.loop-isaac" = {}
+"omni.physics.physx" = {}
+"omni.physx.tensors" = {}
+"omni.hydra.rtx" = {}
+"omni.hydra.usdrt_delegate" = {}
+"omni.replicator.core" = {}
+"omni.warp.core" = {}
+
+[settings]
+app.window.hideUi = true
+app.renderer.resolution.width = 640
+app.renderer.resolution.height = 480
+app.viewport.displayOptions = 0
+app.settings.fabricDefaultStageFrameHistoryCount = 3
+omni.replicator.asyncRendering = false
+renderer.asyncInit = false
+renderer.multiGpu.enabled = false
+renderer.gpuEnumeration.glInterop.enabled = false
+rtx-transient.dlssg.enabled = false
+rtx.spg.enabled = true
+rtx.hydra.supportMultiTickRate = true
+rtx.rendering.perSensorTickTlas = true
+physics.autoPopupSimulationOutputWindow = false
