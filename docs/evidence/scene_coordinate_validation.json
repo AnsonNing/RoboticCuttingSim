@@ -1,0 +1,276 @@
+{
+  "scope": "offline_geometry_and_trajectory_audit",
+  "runtime_source_declared": "standalone_reference",
+  "protocol_id": "isaac_d0_acceptance_v1_20261028",
+  "protocol_sha256": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b",
+  "RT-01": "NOT_RUN by this offline audit",
+  "RT-02": "NOT_RUN by this offline audit",
+  "target": {
+    "workpiece_pose_world_xyzw": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "target_plane_local_z_m": 0.015,
+    "commanded_cut_plane_local_z_m": 0.0155,
+    "plane_world_abcd": [
+      0.0,
+      0.0,
+      1.0,
+      -0.015
+    ],
+    "current_TLMPM_nonidentity_pose_supported": true
+  },
+  "analytic_material_spec": {
+    "length_m": 0.12,
+    "width_m": 0.08,
+    "base_height_m": 0.015,
+    "bumps": [
+      {
+        "x_m": 0.0,
+        "y_m": 0.0,
+        "radius_x_m": 0.015,
+        "radius_y_m": 0.015,
+        "height_m": 0.008,
+        "family": "dome"
+      }
+    ]
+  },
+  "initial_particle_count": 19340,
+  "SC-02_dimension_sampling_assessment": {
+    "status": "PASS",
+    "checks": {
+      "length_m": true,
+      "width_m": true,
+      "base_height_m": true,
+      "one_central_dome": true,
+      "bump_height": true,
+      "bump_radii": true
+    },
+    "initial_codes_all_zero": true,
+    "recorded_initial_particles_vs_D0_sampler_max_abs_error_m": 0.0,
+    "scope": "analytic D0 configuration and actual initial samples; runtime loading is separate"
+  },
+  "initial_local_particle_bounds_m": [
+    [
+      -0.05900000035762787,
+      -0.039000000804662704,
+      0.0010000000474974513
+    ],
+    [
+      0.05900000035762787,
+      0.039000000804662704,
+      0.020999999716877937
+    ]
+  ],
+  "trajectory": {
+    "status": "FAIL",
+    "scope": "numeric edge tracking and analytic reach; runtime provenance is separate",
+    "metrics": {
+      "active_max_edge_position_error_m": 0.0012496853122777646,
+      "active_max_edge_height_error_from_command_m": 0.00021707387736540074,
+      "active_max_edge_rotation_error_deg": 0.031327186283481946,
+      "all_phase_max_edge_position_error_m": 0.005707793065014276,
+      "max_measured_edge_translation_per_control_step_m": 0.0014525381040662476
+    },
+    "checks": {
+      "active_max_edge_position_error_m": false,
+      "active_max_edge_height_error_from_command_m": true,
+      "active_max_edge_rotation_error_deg": true,
+      "all_phase_max_edge_position_error_m": false,
+      "max_measured_edge_translation_per_control_step_m": true,
+      "minimum_analytic_bump_cross_section_sweep_coverage": true,
+      "actual_edge_intersects_original_material": true
+    },
+    "active_interval_s": [
+      1.6,
+      5.6
+    ],
+    "active_sample_count": 200,
+    "sweep": {
+      "scope": "analytic workpiece-local finite-edge geometry only",
+      "cross_section_samples": 1992,
+      "cross_section_area_m2": 0.0004980000000000001,
+      "cross_section_sweep_coverage": 1.0,
+      "actual_edge_intersects_original_material": true,
+      "edge_endpoint_height_valid_fraction": 1.0,
+      "local_edge_center_bounds_m": [
+        [
+          -0.02978248514731161,
+          -6.289747569134885e-05,
+          0.015640417283820568
+        ],
+        [
+          0.04339896273930763,
+          -2.4058545119623177e-05,
+          0.0157170738773654
+        ]
+      ],
+      "cut_plane_local_z_m": 0.0155,
+      "target_plane_local_z_m": 0.015,
+      "sampling_spacing_m": 0.0005,
+      "height_tolerance_m": 0.0005
+    },
+    "active_local_edge_height_range_m": [
+      0.015640417283820568,
+      0.0157170738773654
+    ],
+    "active_plane_normal_tilt_max_deg": 0.031322828469249546
+  },
+  "fixed_mount_diagnostic": {
+    "status": "PASS",
+    "hand_from_edge_pose_xyzw": [
+      0.0,
+      0.0,
+      0.18,
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "best_recorded_body": {
+      "body_index": 8,
+      "max_translation_error_m": 8.326674449340461e-17,
+      "max_rotation_error_rad": 1.0926396707304223e-19
+    },
+    "fitting_candidate_count": 1,
+    "named_hand_identity_status": "NOT_VERIFIED in legacy recording; body names were not recorded",
+    "scope": "unique fixed-mount consistency with measured body poses; not a named-link runtime proof"
+  },
+  "material_task": {
+    "status": "MEASURED",
+    "scope": "mechanical component mass plus workpiece-local reference region; not an observation",
+    "component_provenance": "final conservative MPM reference-stencil compatibility graph, including derivative support",
+    "component_count": 2,
+    "reference_substrate_component_ids": [
+      1
+    ],
+    "detached_mass_kg": 0.001656,
+    "reference_above_target_mass_kg": 0.0016799999999999999,
+    "detached_initial_above_target_mass_kg": 0.001656,
+    "detached_initial_above_target_mass_fraction": 0.9857142857142858,
+    "remaining_initial_above_target_mass_kg": 2.4e-05,
+    "reference_plane_tolerance_m": 1e-07,
+    "current_substrate_particle_center_max_residual_m": 0.0002656976133584982,
+    "surface_flattening_status": "NOT_RUN; needs measured substrate surface/depth, not centers or a particle radius proxy"
+  },
+  "TASK-01_threshold_assessment": "PASS",
+  "TASK-02_threshold_assessment": "FAIL",
+  "surface": {
+    "metrics": {
+      "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+      "measurement_spacing_xy_m": [
+        0.001,
+        0.001
+      ],
+      "grid_shape_xy": [
+        120,
+        80
+      ],
+      "valid_surface_fraction": 1.0,
+      "missing_surface_fraction": 0.0,
+      "maximum_substrate_surface_residual_height_m": 0.0019145042432123123,
+      "surface_p95_absolute_plane_error_m": 0.0017090691648379975,
+      "surface_rms_plane_error_m": 0.001640696132517514,
+      "maximum_gouge_depth_m": 0.0,
+      "overcut_volume_m3": 0.0,
+      "overcut_volume_fraction_of_initial_base": 0.0
+    },
+    "threshold_assessment": {
+      "status": "FAIL",
+      "checks": {
+        "maximum_substrate_surface_residual_height_m": false,
+        "surface_p95_absolute_plane_error_m": false,
+        "surface_rms_plane_error_m": false,
+        "maximum_gouge_depth_m": true,
+        "overcut_volume_fraction_of_initial_base": true,
+        "missing_surface_fraction": true
+      },
+      "scope": "surface metric threshold assessment; runtime provenance and mesh/physics consistency assessed separately"
+    },
+    "source_mesh": "artifacts/simulation_benchmark_001/D0_seed42/surface/surface_debug/0080.npz",
+    "source_mesh_sha256": "35eb41144b61b77436be090bb1691c3b04aee7a2e166be3425a6d78f968a23d7",
+    "partition_rule": "current compatible reference-node MPM stencils, including nonzero stress gradients",
+    "future_component_ids_used": false,
+    "physics_timestamp_s": 7.999999999999917,
+    "selection_scope": "offline triangle statistics selected by current mechanical substrate provenance; no state or visibility changed"
+  },
+  "camera_calibration_geometry": {
+    "d455_0": {
+      "position_world_m": [
+        0.0,
+        -0.5,
+        0.55
+      ],
+      "optical_forward_world": [
+        2.5232335177157035e-08,
+        0.6828047082422235,
+        -0.7306009378602325
+      ],
+      "target_forward_cosine": 0.9999999999999972,
+      "target_optical_z_m": 0.7322738558763362,
+      "target_pixel_uv": [
+        319.99999200026195,
+        240.00002577621365
+      ],
+      "target_inside_image": true,
+      "scope": "recorded calibration geometry only; no native capture gate promoted"
+    },
+    "d455_1": {
+      "position_world_m": [
+        0.5,
+        -0.4,
+        0.25
+      ],
+      "optical_forward_world": [
+        -0.7330582528640599,
+        0.5864465918784796,
+        -0.34453736050246975
+      ],
+      "target_forward_cosine": 1.0000000000000002,
+      "target_optical_z_m": 0.6820740429015022,
+      "target_pixel_uv": [
+        320.00000257787957,
+        240.00000565710363
+      ],
+      "target_inside_image": true,
+      "scope": "recorded calibration geometry only; no native capture gate promoted"
+    },
+    "global": {
+      "position_world_m": [
+        1.65,
+        -1.75,
+        1.5
+      ],
+      "optical_forward_world": [
+        -0.6238642142280519,
+        0.661674213393003,
+        -0.415909458339632
+      ],
+      "target_forward_cosine": 0.9922994153684433,
+      "target_optical_z_m": 2.8049313725483946,
+      "target_pixel_uv": [
+        319.99998401711235,
+        302.69877438124803
+      ],
+      "target_inside_image": true,
+      "scope": "recorded calibration geometry only; no native capture gate promoted"
+    }
+  },
+  "input_hashes": {
+    "robot_state.npz": "cb160b785b14f7e65178e1cf66555de41f8977caeb16fccf7e5d2bc8c7943f46",
+    "physics_state.npz": "b3811c70a101a9162889d1f98b4c01a8d23ee3f086bed4a91d3ecb6348d72153",
+    "setup.json": "43ebdff6dadaf4182e523edb0bd6614cf8eab811bcc4ac9699e7d0bd35a090a8"
+  },
+  "validator_source_hashes": {
+    "driver": "6fe4112f84446a2c9c876443a8dc9ef1c85e09bdba81e108a5e94a787f7c9f1c",
+    "scene_frames": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+    "scene_validation": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+  },
+  "isaac_integration_pass": false,
+  "full_benchmark_ready": false
+}
