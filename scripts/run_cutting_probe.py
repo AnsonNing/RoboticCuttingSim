@@ -34,7 +34,7 @@ def tool_plan(times, case, z=.0155):
     velocity = np.gradient(position, times, axis=0)
     poses = np.c_[position, np.tile([0, 0, 0, 1], (len(times), 1))].astype(np.float32)
     twists = np.c_[velocity, np.zeros_like(velocity)].astype(np.float32)
-    active = ((times >= .30) & (times < 1.30) & (case in ("cut", "cut_recontact", "two_cuts"))).astype(np.int32)-1
+    active = ((times >= .30) & (times < 1.30) & (case in ("cut", "cut_recontact", "two_cuts", "no_contact"))).astype(np.int32)-1
     if case == "two_cuts":
         from scipy.spatial.transform import Rotation, Slerp
         second = times >= 1.7
