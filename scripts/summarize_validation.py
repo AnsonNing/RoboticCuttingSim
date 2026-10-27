@@ -20,19 +20,25 @@ def digest(path):
     with path.open("rb") as f:
         return hashlib.file_digest(f,"sha256").hexdigest()
 records=[]
-for path in sorted((root/"artifacts").iterdir()):
+artifact_root=root/"artifacts"
+paths=set()
+for pattern in ["*/result.json","*/*/result.json","*/failure.json","*/*/failure.json"]:
+    paths.update(p.parent for p in artifact_root.glob(pattern) if p.parent.name!="physics_preview")
+for path in sorted(paths):
     result=path/"result.json"
     if not result.exists():
         result=path/"failure.json"
     if not result.exists(): continue
-    record={"run":path.name,"local_path":str(path),"classification":invalid.get(path.name,"CURRENT_EVIDENCE"),
+    relative=str(path.relative_to(artifact_root))
+    record={"run":relative,"local_path":str(path),"classification":invalid.get(relative,"CURRENT_EVIDENCE"),
             "result":json.loads(result.read_text())}
     m=path/"manifest.json"
     if m.exists():
         manifest=json.loads(m.read_text())
         record["source"]={key:manifest.get(key) for key in ["git_sha","git_dirty","config_sha256","packages","source_checkouts"]}
     record["artifact_sha256"]={p.name:digest(p) for p in [result,m,path/"trace.csv",path/"physics_state.npz",path/"preview.mp4"] if p.is_file()}
-    receipt=root/"artifacts/runs"/(path.name+".receipt.json")
+    receipt=(root/"artifacts/runs"/(path.name+".receipt.json") if path.parent==artifact_root
+             else path.parent/(path.name+".receipt.json"))
     if receipt.is_file():
         r=json.loads(receipt.read_text()); peaks={}
         for sample in r["gpu_samples"]:
@@ -45,7 +51,11 @@ for path in sorted((root/"artifacts").iterdir()):
     records.append(record)
 summary={"date":"2026-10-28 Asia/Seoul","gate_states":{"PHYSICS_PROVEN":False,"VISION_PROVEN":False,"WORKCELL_PROVEN":False,"BENCHMARK_READY":False},
          "raw_evidence":"Local artifacts/ is ignored by Git; hashes are recorded here, binary data is not redistributed",
-         "runs":records}
+         "runs":records,"checks":{}}
+for name in ["reset_reproducibility.json","replay_validation.json","handoff_validation.json"]:
+    path=artifact_root/name
+    if path.is_file():
+        summary["checks"][name]=json.loads(path.read_text())
 (out/"validation_summary.json").write_text(json.dumps(summary,indent=2)+"\n")
 (root/"artifacts/RUN_VALIDITY.json").write_text(json.dumps(invalid,indent=2)+"\n")
 print(out/"validation_summary.json")
