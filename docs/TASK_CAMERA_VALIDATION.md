@@ -86,3 +86,85 @@ full D0 episode. The partial CUT debug audit is retained separately as
 `artifacts/live_camera_mesh_cut01_debug_001`. Camera audit commands deliberately
 exit nonzero when strict native CAM-04 fails; successful execution is not a
 replacement for the recorded failure.
+
+## Seeded randomized native episodes
+
+The actual seed42 recordings in
+`artifacts/isaac_native_randomized_benchmark_001/{cut-01_randomized_seed42,trim-01_randomized_seed42}`
+were audited over all41 captures each. They use a140mm bar with recorded
+XY translation and3.94736° workpiece yaw; CUT samples1mm particles and TRIM
+explicitly samples2mm particles, both on a4mm reference grid. TRIM contains
+three continuous bumps, including an irregular middle bump. The audit reads
+these recorded frames, fixtures, blade dimensions and meshes instead of
+regenerating geometry from current task defaults.
+
+The exact inputs, frozen gates, per-current-component visibility and media
+hashes are in
+[`task_randomized_camera_audit.json`](evidence/task_randomized_camera_audit.json).
+CPU source snapshots and full records remain in
+`artifacts/live_camera_mesh_{cut,trim}01_randomized_seed42_001` and
+`artifacts/task_object_visibility_{cut,trim}01_randomized_seed42_001`.
+No simulator or native renderer was rerun for these audits.
+
+| Randomized case | Geometry bridge | Time synchronization | Global CAM03 | Existing separated-component visibility | Strict native CAM04 |
+|---|---|---|---|---|---|
+| CUT-01 |PASS|PASS|PASS|PASS:416 native pixels|**FAIL**|
+| TRIM-01 |PASS|PASS|PASS|**FAIL**:10 pixels for the smallest current component|**FAIL**|
+
+The largest per-frame geometry/RTX p95 differences remain0.179µm in either
+local camera and0.715µm in Global; minimum geometry/RTX valid-mask IoU is
+0.9999663. Maximum material/camera/robot timestamp span is8.89e-16s. These
+are p95 and validity gates, not all-pixel error bounds; all large first-hit
+and native-depth tails remain recorded.
+
+| Randomized task | Global arm0 min pixels | Arm1 | Knife | Material | Table |
+|---|---:|---:|---:|---:|---:|
+| CUT-01 |18,478|27,791|81|483|161,857|
+| TRIM-01 |18,426|27,791|44|475|161,989|
+
+Whole-image native valid-mask IoUs remain far below the unchanged0.99 gate:
+
+| Case | Camera | Native mask IoU range | All-material native coverage | Material valid maximum error |
+|---|---|---:|---:|---:|
+| CUT-01 |D4550|.6486–.6581|96.5295%|6.1323mm|
+| CUT-01 |D4551|.3371–.3404|98.3853%|2.5811mm|
+| TRIM-01 |D4550|.6458–.6550|98.0006%|25.9428mm|
+| TRIM-01 |D4551|.3116–.3402|98.0308%|21.5078mm|
+
+The coverage values pool all41 frames within measured-mesh material ROIs.
+Whole-frame valid native error tails reach631/783mm for CUT and617/1,057mm
+for TRIM. Native noise is OFF; holes and every finite valid tail are retained,
+with no ideal replacement or observation repair. Local material coverage does
+not establish complete image quality or calibrated D455 fidelity.
+
+CUT produces two actual substantial pieces of66.6g and59.4g. In the14 captures
+with the final two-component state (5.4–8s), their native-valid pixel ranges
+are428–475 /220–409 in D4550 and235–338 /412–416 in D4551. These are severed
+parts, rather than small shaving chips.
+
+TRIM produces three actual chip components plus a126.096g substrate. Its
+task-flatness metrics remain FAIL. The final four-component phase spans17
+captures (4.8–8s); each chip is geometrically visible in every capture:
+
+| Actual chip mass | Particles | D4550 valid pixels | D4551 valid pixels | Global ideal pixels |
+|---|---:|---:|---:|---:|
+| .672g |56|9|9|5|
+| .768g |64|12|12|8|
+|1.044g |87|11–15|12–17|7–11|
+
+The two smaller chips have100% native ROI coverage in both local cameras in
+this final phase. The87-particle chip has98.73%/97.90% coverage, retaining one
+21.508mm valid D4551 outlier. Across every actual current detached chip in all
+41 frames, the largest native-visible single chip reaches15 pixels in D4550
+and17 in D4551. Thus visibility remains below25 pixels even when all chips
+are evaluated, rather than only the existing gate's smallest component. Chip
+pixels are not summed to redefine that criterion. Component IDs are interpreted
+with each frame's current particle count; early component1 can still be the
+connected substrate and is not labelled as a future detached chip.
+
+Each case also has six captured-array videos and its task-plane trajectory in
+its raw `media_001` directory: Global, two RGB, two measured-depth and
+synchronized multiview. All12 videos were verified as41 frames at5fps, with
+source hashes in the receipt. No additional media was copied to public proof
+directories. Formal observations retain native depth and validity; all oracle
+ROI and component measurements remain evaluator-only.
