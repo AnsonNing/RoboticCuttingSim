@@ -1,0 +1,4 @@
+# Optional isolated renderer; never install into the Isaac or Newton environment.
+# Tested with Python3.12, Linuxx86_64, NVIDIA570.211.01, RTX5090.
+ovrtx @ https://pypi.nvidia.com/ovrtx/ovrtx-0.6.0.1791947691-py3-none-manylinux_2_35_x86_64.whl#sha256=b56ee8687f7e9c2934bc2da5ce7aecbd3ef6e8123a43e0573f1f33b8db5fc3c7
+ovstage @ https://pypi.nvidia.com/ovstage/ovstage-0.3.0.1791986420-py3-none-manylinux_2_35_x86_64.whl#sha256=35aa0c10c47549c495e65896356ce3b910041d2eaa602888f092f7e300586cf8
