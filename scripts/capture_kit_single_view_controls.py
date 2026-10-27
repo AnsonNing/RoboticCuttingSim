@@ -9,10 +9,13 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 import time
 import traceback
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig, calibration_from_replicator, launch_app, numpy_data, runtime_versions
 from robotic_cutting_sim.recording import manifest, new_output, write_json
@@ -56,7 +59,7 @@ def main():
         sun = UsdLux.DistantLight.Define(stage, "/World/ProbeSun")
         sun.CreateIntensityAttr(1000.)
         UsdGeom.Xformable(sun).AddRotateXYZOp().Set(Gf.Vec3f(-35, 20, -45))
-        sensors, params = {}, {}
+        sensors, params, rgb_annotators = {}, {}, {}
         native_parameters = {"enabled": True, "baselineMM": 95., "focalLengthPixel": 317.0431137084961,
             "sensorSizePixel": 640., "maxDisparityPixel": 150., "confidenceThreshold": 1.,
             "noiseMean": noise, "noiseSigma": noise, "noiseDownscaleFactorPixel": 1.,
@@ -68,7 +71,7 @@ def main():
                                       annotators=["rgb", "distance_to_image_plane"])
             else:
                 sensor = SingleViewDepthCameraSensor(RtxCamera(camera_path, tick_rate=0.), resolution=(480,640),
-                    annotators=["rgb", "distance_to_image_plane", "depth_sensor_distance", "depth_sensor_point_cloud_position"])
+                    annotators=["distance_to_image_plane", "depth_sensor_distance", "depth_sensor_point_cloud_position"])
                 sensor.set_sensor_baseline(95.)
                 sensor.set_sensor_focal_length(317.0431137084961)
                 sensor.set_sensor_size(640.)
@@ -83,19 +86,27 @@ def main():
                 # API does not expose an IR emitter/effective-range setter.
                 stage.GetPrimAtPath(str(sensor.render_product.GetPath())).GetAttribute(
                     "omni:rtx:post:depthSensor:effectiveDistance").Set(4.)
+                rgb_annotators[name] = rep.AnnotatorRegistry.get_annotator("rgb")
+                rgb_annotators[name].attach(str(sensor.render_product.GetPath()))
             sensors[name] = sensor
             params[name] = rep.AnnotatorRegistry.get_annotator("camera_params")
             params[name].attach(str(sensor.render_product.GetPath()))
         manager = omni.kit.app.get_app().get_extension_manager()
         extension_id = manager.get_enabled_extension_id("omni.sensors.nv.camera")
         extension = manager.get_extension_dict(extension_id)
-        runtime = {"packages": runtime_versions(), "kit_version": omni.kit.app.get_app().get_app_version(),
+        runtime = {"packages": runtime_versions(), "kit_version": omni.kit.app.get_app().get_kit_version(),
+            "app_version": omni.kit.app.get_app().get_app_version(),
+            "kit_kernel_version": omni.kit.app.get_app().get_kernel_version(),
             "extensions": {"omni.sensors.nv.camera": extension.get("package",{}).get("version")},
             "camera_extension_id": extension_id}
         write_json(output / "runtime_audit.json", runtime)
         expected = protocol["runtime_profile"]
         assert runtime["packages"]["isaacsim"] == expected["isaacsim"]
         assert runtime["extensions"]["omni.sensors.nv.camera"] == expected["omni.sensors.nv.camera"]
+        assert runtime["kit_version"].startswith(expected["kit_major_minor"])
+        native_prim = stage.GetPrimAtPath(str(sensors["d455_0"].render_product.GetPath()))
+        native_parameters = {key: native_prim.GetAttribute("omni:rtx:post:depthSensor:"+key).Get()
+                             for key in native_parameters}
         write_json(output / "prepared.json", {"time_s":[case["time_s"] for case in fixture["frames"]],
             "fixture_sha256": hashlib.sha256((args.fixture_dir/"fixture.json").read_bytes()).hexdigest(),
             "protocol_sha256":fixture["protocol_sha256"], "depth_model_parameters": native_parameters})
@@ -111,8 +122,11 @@ def main():
             for warmup in range(40):
                 rep.orchestrator.step(rt_subframes=1, delta_time=0.)
                 latest = {name: {a:sensor.get_data(a) for a in (["rgb", "distance_to_image_plane"] if name == "global" else
-                    ["rgb", "distance_to_image_plane", "depth_sensor_distance", "depth_sensor_point_cloud_position"])}
+                    ["distance_to_image_plane", "depth_sensor_distance", "depth_sensor_point_cloud_position"])}
                     for name,sensor in sensors.items()}
+                for name, annotator in rgb_annotators.items():
+                    rgb = annotator.get_data()
+                    latest[name]["rgb"] = (rgb if np.asarray(rgb).size else None, {})
                 if warmup >= 9 and all(value[0] is not None for data in latest.values() for value in data.values()):
                     break
             else:
@@ -120,6 +134,9 @@ def main():
             cameras = {}
             for name, data in latest.items():
                 camera = calibration_from_replicator(params[name].get_data())
+                pose = np.asarray(camera["T_world_camera"])
+                if not np.allclose(pose[:3,3], fixture["cameras"][name][1], atol=1e-6, rtol=0):
+                    raise RuntimeError(f"Runtime camera alias/wrong location for {name}")
                 rgb = numpy_data(data["rgb"][0])[..., :3]
                 ideal = numpy_data(data["distance_to_image_plane"][0]).reshape(480,640,1)
                 target = output / ("global_debug" if name == "global" else "observations")

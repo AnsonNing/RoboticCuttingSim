@@ -11,16 +11,7 @@ This does not calibrate a physical D455 or align its separate color imager.
 import numpy as np
 
 
-def register_ovrtx_single_view_depth(pointcloud_usd, native_distance_m, camera, *,
-                                    ovrtx_version, ovstage_version, native_model_parameters):
-    """Use the independently held-out validated, exact-version association.
-
-    This is an empirical AOV sample-correspondence profile, not an assertion
-    about NVIDIA's private implementation or physical D455 calibration. Other
-    renderers/versions must run their own controls instead of inheriting it.
-    """
-    if (ovrtx_version, ovstage_version) != ("0.6.0.1791947691", "0.3.0.1791986420"):
-        raise ValueError("Native AOV source correspondence is unvalidated for this renderer version")
+def _require_controlled_optics_and_recipe(camera, native_model_parameters):
     if (int(camera["width"]), int(camera["height"])) != (640, 480):
         raise ValueError("Native AOV source correspondence requires independent controls at this resolution")
     k = np.asarray(camera["K"], dtype=float)
@@ -38,6 +29,19 @@ def register_ovrtx_single_view_depth(pointcloud_usd, native_distance_m, camera, 
     noise_pair = (native_model_parameters.get("noiseMean"), native_model_parameters.get("noiseSigma"))
     if noise_pair not in ((0., 0.), (.25, .25)):
         raise ValueError("Native AOV source correspondence requires independent controls for these noise settings")
+
+
+def register_ovrtx_single_view_depth(pointcloud_usd, native_distance_m, camera, *,
+                                    ovrtx_version, ovstage_version, native_model_parameters):
+    """Use the independently held-out validated, exact-version association.
+
+    This is an empirical AOV sample-correspondence profile, not an assertion
+    about NVIDIA's private implementation or physical D455 calibration. Other
+    renderers/versions must run their own controls instead of inheriting it.
+    """
+    if (ovrtx_version, ovstage_version) != ("0.6.0.1791947691", "0.3.0.1791986420"):
+        raise ValueError("Native AOV source correspondence is unvalidated for this renderer version")
+    _require_controlled_optics_and_recipe(camera, native_model_parameters)
     result = register_native_depth(pointcloud_usd, native_distance_m, camera, pointcloud_pixel_offset=(1., 0.))
     result["diagnostics"].update({
         "profile": "ovrtx_0_6_0_1791947691_single_view_640x480_v1",
@@ -46,6 +50,31 @@ def register_ovrtx_single_view_depth(pointcloud_usd, native_distance_m, camera, 
         "simulated_d455_calibration_validated": False,
         "noise_calibration_validated": False,
         "scope": "original virtual depth-camera RGB; no separate physical color-imager calibration",
+    })
+    return result
+
+
+def register_kit_single_view_depth(pointcloud_usd, native_distance_m, camera, *, isaacsim_version,
+                                   kit_version, camera_extension_version, native_model_parameters):
+    """Independent real Kit6.2 controls validate this exact sensor profile.
+
+    The calibration/noise realism of physical D455 hardware remains unproven.
+    This profile does not establish synchronization with a particular live
+    dynamics episode; that requires its own capture/state comparison.
+    """
+    if (isaacsim_version, kit_version, camera_extension_version) != (
+            "6.2.0.0", "110.4.0+feature.386251.187cf21b.gl", "1.4.0"):
+        raise ValueError("Native AOV source correspondence is unvalidated for this Kit runtime")
+    _require_controlled_optics_and_recipe(camera, native_model_parameters)
+    result = register_native_depth(pointcloud_usd, native_distance_m, camera, pointcloud_pixel_offset=(1., 0.))
+    result["diagnostics"].update({
+        "profile": "isaacsim_6_2_0_0_kit_110_4_0_camera_1_4_0_single_view_640x480_v1",
+        "source_correspondence_validated": True,
+        "control_protocol_sha256": "2107bf4101fcfe798a9b1958af15bf02dbab182ee80ebcdecaba241c0af4e851",
+        "simulated_d455_calibration_validated": False,
+        "noise_calibration_validated": False,
+        "live_dynamics_sensor_synchronization_validated": False,
+        "scope": "actual Kit native sensor controls, original virtual RGB; no physical color-imager calibration",
     })
     return result
 

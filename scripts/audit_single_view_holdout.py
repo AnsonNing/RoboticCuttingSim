@@ -30,6 +30,15 @@ def main():
     p.add_argument("output_dir", type=Path)
     args = p.parse_args()
     output = new_output(args.output_dir)
+    implementation = [Path(__file__), Path("src/robotic_cutting_sim/single_view_registration.py"),
+                      Path("src/robotic_cutting_sim/single_view_controls.py")]
+    snapshots = output / "implementation"
+    snapshots.mkdir()
+    implementation_hashes = {}
+    for path in implementation:
+        data = path.read_bytes()
+        (snapshots / path.name).write_bytes(data)
+        implementation_hashes[str(path)] = hashlib.sha256(data).hexdigest()
     fixture = json.loads((args.fixture / "fixture.json").read_text())
     protocol_bytes = (args.fixture / "protocol.json").read_bytes()
     protocol = json.loads(protocol_bytes)
@@ -38,6 +47,13 @@ def main():
     rows, arrays, indices, input_hashes = [], {}, {}, {}
     for label, run in (("off", args.noise_off), ("on", args.noise_on)):
         prepared = json.loads((run / "prepared.json").read_text())
+        runtime = json.loads((run / "runtime_audit.json").read_text())
+        for name in ("ovrtx", "ovstage", "isaacsim"):
+            if name in protocol["runtime_profile"]:
+                assert runtime["packages"][name] == protocol["runtime_profile"][name]
+        if "omni.sensors.nv.camera" in protocol["runtime_profile"]:
+            assert runtime["extensions"]["omni.sensors.nv.camera"] == protocol["runtime_profile"]["omni.sensors.nv.camera"]
+            assert runtime["kit_version"].startswith(protocol["runtime_profile"]["kit_major_minor"])
         assert len(prepared["time_s"]) == len(fixture["frames"])
         for camera_name in ("d455_0", "d455_1"):
             for frame_index, case in enumerate(fixture["frames"]):
@@ -47,6 +63,7 @@ def main():
                 assert float(payload["surface_timestamp_s"]) == case["time_s"]
                 camera = (decode_camera_params(payload["camera_params_raw"]) if "camera_params_raw" in payload else
                           json.loads(str(payload["camera_calibration_json"].item())))
+                assert np.allclose(np.asarray(camera["T_world_camera"])[:3, 3], fixture["cameras"][camera_name][1], atol=1e-6, rtol=0)
                 plane, expected, box = analytic_control(camera, case, protocol["scene"])
                 raw = native["depth_sensor_distance_raw"].squeeze(-1)
                 raw_valid = np.isfinite(raw) & (raw >= .52) & (raw <= 6.)
@@ -128,16 +145,17 @@ def main():
                 "frames": len(selected), "failed_frames": [{"case_id": r["case_id"], "camera": r["camera"],
                     "checks": r["checks"]} for r in selected if r["status"] != "PASS"]}
     promotion = all(summaries["H1"][s]["status"] == "PASS" for s in ("development", "held_out"))
+    is_kit = "isaacsim" in protocol["runtime_profile"]
     result = {"protocol_id": protocol["protocol_id"], "protocol_sha256": fixture["protocol_sha256"],
         "status": "PASS_SOURCE_CORRESPONDENCE_CONTROLS" if promotion else "BLOCKED",
         "source_correspondence_candidate_promoted": promotion, "summaries": summaries,
         "native_samples_exactly_preserved": all(r["registration"]["native_measurement_values_preserved_exactly"] for r in rows),
         "simulated_d455_validated": False, "physical_d455_calibration_validated": False,
-        "scope": "Standalone native OVRTX analytic controls, not live Isaac or hardware calibration",
+        "scope": ("Actual Isaac Sim6.2/Kit native camera analytic controls; no dynamics episode or hardware calibration" if is_kit else
+                  "Standalone native OVRTX analytic controls, not live Isaac or hardware calibration"),
         "rows": rows, "noise": noise, "static_temporal": temporal, "input_sha256": input_hashes,
-        "implementation_sha256": {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in
-            [Path(__file__), Path("src/robotic_cutting_sim/single_view_registration.py"),
-             Path("src/robotic_cutting_sim/single_view_controls.py")]}}
+        "implementation_sha256": implementation_hashes,
+        "implementation_snapshot": "Byte snapshots taken before analysis; imported helper code held unchanged during this audit"}
     write_json(output / "result.json", result)
     print(json.dumps({k: v for k, v in result.items() if k not in ("rows", "noise", "static_temporal", "input_sha256", "implementation_sha256")}, indent=2))
     return int(not promotion)

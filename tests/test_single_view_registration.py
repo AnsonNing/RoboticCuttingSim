@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from robotic_cutting_sim.single_view_registration import analytic_plane_depth, register_native_depth, register_ovrtx_single_view_depth
+from robotic_cutting_sim.single_view_registration import analytic_plane_depth, register_native_depth, register_ovrtx_single_view_depth, register_kit_single_view_depth
 
 
 CAMERA = {"K": [[4., 0, 2.], [0, 4., 1.]], "width": 4, "height": 2, "model": "pinhole"}
@@ -108,3 +108,12 @@ def test_validated_association_profile_rejects_uncontrolled_runtime_or_optics():
         register_ovrtx_single_view_depth(point, native, camera,
             ovrtx_version="0.6.0.1791947691", ovstage_version="0.3.0.1791986420",
             native_model_parameters={**parameters, "baselineMM": 55.})
+    kit = register_kit_single_view_depth(point, native, camera, isaacsim_version="6.2.0.0",
+        kit_version="110.4.0+feature.386251.187cf21b.gl", camera_extension_version="1.4.0",
+        native_model_parameters=parameters)
+    assert kit["depth_m"][240, 321] == native[0, 0]
+    assert kit["diagnostics"]["source_correspondence_validated"]
+    assert not kit["diagnostics"]["live_dynamics_sensor_synchronization_validated"]
+    with pytest.raises(ValueError, match="Kit runtime"):
+        register_kit_single_view_depth(point, native, camera, isaacsim_version="6.2.0.0",
+            kit_version="new_version", camera_extension_version="1.4.0", native_model_parameters=parameters)

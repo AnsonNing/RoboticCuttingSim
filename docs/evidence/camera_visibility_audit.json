@@ -1,0 +1,191 @@
+{
+  "status": "DIAGNOSTIC",
+  "scope": "CPU closest visual triangle hit, ordinary render purposes; not actual RTX segmentation",
+  "source_scene": "/home/ningan/RoboticCuttingSim/artifacts/coupled_surface_002/cutting_workcell_replay.usda",
+  "source_sha256": "681ec564daf5f34b5ff5f495a5ae796b7f6c04b1e6def513ba1c70d073354bdf",
+  "runtime_calibration": "/home/ningan/RoboticCuttingSim/artifacts/ovrtx_coupled_002/runtime_calibration.json",
+  "excluded_non_render_purpose_prims": [
+    "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad",
+    "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad",
+    "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_capsule",
+    "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/gripper",
+    "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad",
+    "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad",
+    "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_capsule",
+    "/World/Franka_1/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/gripper"
+  ],
+  "unsupported_geometry": [],
+  "records": [
+    {
+      "time_s": 0.0,
+      "camera": "d455_0",
+      "visible_pixels": {
+        "other": 909,
+        "franka_0": 34390,
+        "franka_1": 21289,
+        "knife": 71,
+        "material": 1279,
+        "table": 200623,
+        "fixture": 0
+      },
+      "hfov_deg": 90.53188201777215,
+      "vfov_deg": 74.25106677746366,
+      "material_optical_z_range_m": [
+        0.7044297456741333,
+        0.7558457851409912
+      ]
+    },
+    {
+      "time_s": 0.0,
+      "camera": "d455_1",
+      "visible_pixels": {
+        "other": 1039,
+        "franka_0": 19872,
+        "franka_1": 22502,
+        "knife": 71,
+        "material": 757,
+        "table": 164313,
+        "fixture": 0
+      },
+      "hfov_deg": 90.53188201777215,
+      "vfov_deg": 74.25106677746366,
+      "material_optical_z_range_m": [
+        0.6148011088371277,
+        0.7449072003364563
+      ]
+    },
+    {
+      "time_s": 0.0,
+      "camera": "global",
+      "visible_pixels": {
+        "other": 516,
+        "franka_0": 4718,
+        "franka_1": 6955,
+        "knife": 15,
+        "material": 167,
+        "table": 40496,
+        "fixture": 0
+      },
+      "hfov_deg": 64.99999995935066,
+      "vfov_deg": 51.0771934317756,
+      "material_optical_z_range_m": [
+        2.7475154399871826,
+        2.8626925945281982
+      ]
+    },
+    {
+      "time_s": 4.0,
+      "camera": "d455_0",
+      "visible_pixels": {
+        "other": 855,
+        "franka_0": 33984,
+        "franka_1": 21289,
+        "knife": 26,
+        "material": 1143,
+        "table": 199105,
+        "fixture": 0
+      },
+      "hfov_deg": 90.53188201777215,
+      "vfov_deg": 74.25106677746366,
+      "material_optical_z_range_m": [
+        0.7045173048973083,
+        0.7560450434684753
+      ]
+    },
+    {
+      "time_s": 4.0,
+      "camera": "d455_1",
+      "visible_pixels": {
+        "other": 1039,
+        "franka_0": 22416,
+        "franka_1": 22502,
+        "knife": 43,
+        "material": 714,
+        "table": 163316,
+        "fixture": 0
+      },
+      "hfov_deg": 90.53188201777215,
+      "vfov_deg": 74.25106677746366,
+      "material_optical_z_range_m": [
+        0.6147426962852478,
+        0.7454304099082947
+      ]
+    },
+    {
+      "time_s": 4.0,
+      "camera": "global",
+      "visible_pixels": {
+        "other": 515,
+        "franka_0": 4675,
+        "franka_1": 6955,
+        "knife": 8,
+        "material": 157,
+        "table": 40331,
+        "fixture": 0
+      },
+      "hfov_deg": 64.99999995935066,
+      "vfov_deg": 51.0771934317756,
+      "material_optical_z_range_m": [
+        2.7477829456329346,
+        2.8629446029663086
+      ]
+    },
+    {
+      "time_s": 8.0,
+      "camera": "d455_0",
+      "visible_pixels": {
+        "other": 899,
+        "franka_0": 34920,
+        "franka_1": 21289,
+        "knife": 91,
+        "material": 1370,
+        "table": 200428,
+        "fixture": 0
+      },
+      "hfov_deg": 90.53188201777215,
+      "vfov_deg": 74.25106677746366,
+      "material_optical_z_range_m": [
+        0.7045435309410095,
+        0.7560615539550781
+      ]
+    },
+    {
+      "time_s": 8.0,
+      "camera": "d455_1",
+      "visible_pixels": {
+        "other": 1008,
+        "franka_0": 23977,
+        "franka_1": 22502,
+        "knife": 91,
+        "material": 788,
+        "table": 164179,
+        "fixture": 0
+      },
+      "hfov_deg": 90.53188201777215,
+      "vfov_deg": 74.25106677746366,
+      "material_optical_z_range_m": [
+        0.614778459072113,
+        0.7454130053520203
+      ]
+    },
+    {
+      "time_s": 8.0,
+      "camera": "global",
+      "visible_pixels": {
+        "other": 507,
+        "franka_0": 4665,
+        "franka_1": 6955,
+        "knife": 15,
+        "material": 170,
+        "table": 40461,
+        "fixture": 0
+      },
+      "hfov_deg": 64.99999995935066,
+      "vfov_deg": 51.0771934317756,
+      "material_optical_z_range_m": [
+        2.7478206157684326,
+        2.86296010017395
+      ]
+    }
+  ]
+}
