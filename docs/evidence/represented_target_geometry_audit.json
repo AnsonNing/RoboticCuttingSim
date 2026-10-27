@@ -1,0 +1,944 @@
+{
+  "protocol_freeze_commit": "94c8aa0",
+  "helper_commit": "daefcaa",
+  "evaluation_commit": "a7dfd25",
+  "freeze_boundary": {
+    "protocol_file_written_before_unsolicited_coarse_completion_messages": true,
+    "protocol_git_commit_predates_runtime_completion": false,
+    "no_actual_coarse_arrays_opened_until_fixed_target_sealed": true,
+    "no_target_geometry_or_threshold_changed_after_completion_notifications": true
+  },
+  "protocol": {
+    "protocol_id": "represented_flatbar_2mm_whole_columns_v1_20261028",
+    "freeze_boundary": "Committed before target extraction or analysis of actual coarse full-runtime outcomes. No cut output determines target geometry, alignment, parameters or thresholds.",
+    "motivation": "Prior independent uncut H2 flatbar control fails the analytic-plane gouge bound at sharp outer corners. This distinct represented-solid goal retains all footprint columns and the original analytic-plane result separately.",
+    "target": {
+      "dimensions_m": [
+        0.16,
+        0.03,
+        0.02
+      ],
+      "particle_spacing_m": 0.002,
+      "density_kg_m3": 1500.0,
+      "total_F": "identity",
+      "world_from_workpiece_xyz_xyzw": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "no_bump": true,
+      "no_material_dynamics": true,
+      "surface_profile": "current_volume_v1 H2",
+      "surface_parameters": {
+        "voxel_size": 0.001,
+        "kernel_radius": 0.006,
+        "threshold": 0.5,
+        "kernel_scale": 0.5,
+        "smooth_lambda": 0.0,
+        "anisotropic": false,
+        "field_smooth_iterations": 0,
+        "mesh_smooth_iterations": 0
+      }
+    },
+    "measurement": {
+      "spacing_m": 0.001,
+      "grid_shape_xy": [
+        160,
+        30
+      ],
+      "whole_fixed_footprint_m": [
+        [
+          -0.08,
+          0.08
+        ],
+        [
+          -0.015,
+          0.015
+        ]
+      ],
+      "cell_centred": true,
+      "columns": 4800,
+      "empty_column_height_m": 0.0,
+      "missing_semantics": "No vertical solid intersection means an empty column of height0. Both-empty columns have zero represented-solid height difference but remain counted in each and union missing fractions. A one-sided actual gap incurs the full represented-target column deficit; target-empty actual-filled columns incur positive residual. No column is dropped or imputed with ideal depth.",
+      "error": "actual represented height minus fixed target represented height on ALL4800 columns",
+      "overcut_denominator": "Unchanged analytic initial base volume0.16*0.03*0.02m3",
+      "fitted_registration_or_bias_correction": false,
+      "edge_culling_or_interior_roi_promotion": false,
+      "all_valid_and_missing_column_tails_retained": true
+    },
+    "shape_limits": {
+      "maximum_positive_residual_m": 0.001,
+      "maximum_gouge_deficit_m": 0.001,
+      "p95_absolute_error_m": 0.0005,
+      "rms_error_m": 0.0005,
+      "overcut_volume_fraction_of_initial_base": 0.01,
+      "actual_missing_fraction": 0.01,
+      "target_missing_fraction": 0.01,
+      "union_missing_fraction": 0.01
+    },
+    "synthetic_controls": {
+      "exact_target": "Same target heights/validity, all errors0; missing columns remain counted",
+      "positive_vertical_offset_m": 0.0015,
+      "negative_vertical_offset_m": -0.0015,
+      "one_actual_missing_ray": {
+        "row": 15,
+        "column": 80
+      },
+      "require_offset_and_one_sided_missing_controls_fail": true
+    },
+    "required_physical_checks_for_combined_goal": [
+      "complete_episode",
+      "initial_continuous_graph",
+      "initial_codes_zero",
+      "reference_matches_single_continuous_task_sampler",
+      "reference_mass_budget_and_unchanged_count",
+      "persistent_history_no_digit_rewrites",
+      "postcut_disconnected_topology_persists",
+      "reference_above_plane_material_removed",
+      "surface_has_explicit_mechanical_provenance",
+      "surface_timestamp_matches_final_physics"
+    ],
+    "additional_physical_acceptance": "Existing finite positive-Jacobian, actual runtime, force, camera, reset and contact acceptance remain separate and cannot be inferred from this geometry metric.",
+    "promotion_boundary": "New represented-solid shape version only. Combined task goal requires ALL listed physical topology/removal/mass/history/provenance checks AND represented-shape limits. Original v1 analytic-plane failures remain unchanged; geometry alone never certifies physical cutting or full simulation.",
+    "original_analytic_task_v1_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "newton_version": "1.6.1",
+    "warp_version": "1.17.0"
+  },
+  "target_manifest": {
+    "timestamp": "2026-10-28T04:46:40.697789+09:00",
+    "command": [
+      "scripts/build_represented_flatbar_target.py",
+      "artifacts/represented_flatbar_target_002",
+      "--device",
+      "cuda:0"
+    ],
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "backend": "independent_represented_flatbar_target",
+    "git_sha": "daefcaaa4d3de9e2cf2dbab204bf80409a3ebbb2",
+    "git_dirty": true,
+    "config": {
+      "protocol_sha256": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+      "device": "cuda:0"
+    },
+    "config_sha256": "75abf564007189d8815a2fe42429673f98009c3808e648b92f52d10f3e6db3bb",
+    "packages": {
+      "newton": "1.6.1",
+      "warp-lang": "1.17.0",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "isaaclab": null,
+      "isaacsim": null,
+      "torch": null,
+      "usd-core": "26.8",
+      "mujoco": "3.12.0",
+      "mujoco-warp": "3.12.0",
+      "newton-usd-schemas": "0.6.0",
+      "ovrtx": null,
+      "ovstage": null
+    },
+    "source_checkouts": {
+      "newton": {
+        "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      },
+      "CRESSim-MPM": {
+        "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+        "tracked_patch_sha256": "869b881d787e2b096ca3cc52187de7912fb76abf8a4da1b4525cb9f0dd59df51",
+        "dirty": true
+      },
+      "IsaacLab": {
+        "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      }
+    },
+    "local_code_sha256": {
+      "src/robotic_cutting_sim/__init__.py": "d13a603c011d7f243d6af56b8c13125b575eb95fca279b0ac989deb7d1bfd680",
+      "src/robotic_cutting_sim/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+      "src/robotic_cutting_sim/benchmark.py": "f0ca2a16b9c8f360ddae0754167576ca2a7aeabd03d356fc4a84d3f873cd3b49",
+      "src/robotic_cutting_sim/camera.py": "f8449e563a19c90574dedc564e2b94730fb62b07e987e37c100d17e86e34aa2b",
+      "src/robotic_cutting_sim/cli.py": "9818801cb11b4ff0ee68b133a037019f15356f66325efae59e6e962aff620826",
+      "src/robotic_cutting_sim/coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316",
+      "src/robotic_cutting_sim/cressim_probe.py": "4088237a93f47993675528bac32752745308c1212e92036cb0bfc84bd535b79a",
+      "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+      "src/robotic_cutting_sim/cutting_surface.py": "7822b6aaa50274756d741a1f8781e7302c260b8c09a799af2c7b9259db4a0a17",
+      "src/robotic_cutting_sim/doctor.py": "50bc53dd5ce34b77ef10da68413a6e0c7fbadd7e430b06f15c168872d5dd36e7",
+      "src/robotic_cutting_sim/env.py": "5fb16c8951d892493215d04cf80f4e15cbc0fb32e16c27ce80405be8c7d75b20",
+      "src/robotic_cutting_sim/env_demo.py": "9db7ca309128d51e51c0442e659ece100750b3bc4cf2874111f2d60ee934acad",
+      "src/robotic_cutting_sim/fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+      "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+      "src/robotic_cutting_sim/isaac_lab_env.py": "f748118ac6636433432868425199fce3819e9fa6f0ae4d7d8436000fbca54a3e",
+      "src/robotic_cutting_sim/isaac_sim_runner.py": "b19c5b36beb5a7d62a89493474d334ccb10efd4196a53eca875b5842a996563a",
+      "src/robotic_cutting_sim/live_acceptance.py": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+      "src/robotic_cutting_sim/live_camera.py": "ca1277d1f5cfe892efdfde8496d3d4de3ae5e0240258f8c0e3b40d85ffd00a67",
+      "src/robotic_cutting_sim/live_env.py": "5cbc2fe5295d97c725bc43890dcb7fada8a3feb6dabb9e4527329c79623c4604",
+      "src/robotic_cutting_sim/live_material.py": "f43f289a98ff2161968cbc36fa0544b791f2ea68c8b8e6dc47864a42ec31e768",
+      "src/robotic_cutting_sim/material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+      "src/robotic_cutting_sim/newton_probe.py": "ab0bb411cac19f638334b382b78e7e2114d0911489ff3b176bc323273dc7e3b2",
+      "src/robotic_cutting_sim/preview.py": "a7afba89579420bfbb5edabb53a05bb7023a36c080dd5913c4549ad86833b3e1",
+      "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a",
+      "src/robotic_cutting_sim/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+      "src/robotic_cutting_sim/research_env.py": "3498efc26eef98e7368e14bfc131ad50c883277b63d0a875c97b12ee5c12fcc6",
+      "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+      "src/robotic_cutting_sim/rtx_outputs.py": "b9a3d38286d23132676c3be3e2ab5386bf674c0c36da10ebcfbee4bd24b75423",
+      "src/robotic_cutting_sim/scene.py": "90b3bc8fe13d343fac256b485deaf9fb5b59430b5d6aa5b4857f2e8e4901e03a",
+      "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+      "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+      "src/robotic_cutting_sim/sensor_contract.py": "b976a9c670855c7c8220251f11444576ddd100293e47e3656e7cbbc0ab0aab0a",
+      "src/robotic_cutting_sim/single_view_controls.py": "f0dfeefdb78866ef35f1116d97b295aaca265d85fbbf22a4423ef4d2487d3480",
+      "src/robotic_cutting_sim/single_view_registration.py": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df",
+      "src/robotic_cutting_sim/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+      "src/robotic_cutting_sim/tasks.py": "0e2d9d3778149babe576ce7043268e6576e7f397c3407280c1c9df8af58642df",
+      "src/robotic_cutting_sim/tlmpm.py": "7cb84840672f2bdfa924b0d13a0c84aa64aa3537e5d1906aa41732b1960b479f",
+      "src/robotic_cutting_sim/trajectory.py": "c780ed6f5503f0cf50a90e462b95715b48bab4834493e0352b5a25d8f93d9d88",
+      "src/robotic_cutting_sim/usd_surface_bridge.py": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3",
+      "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+      "src/robotic_cutting_sim/workcell.py": "62272655fb87ac282bd79c528e8a3bf8106e486fa2c8ede33f106403370bfc7b"
+    },
+    "physics_proven": false,
+    "vision_proven": false
+  },
+  "independent_target_controls": {
+    "status": "PASS_FROZEN_GEOMETRY_CONTROLS",
+    "protocol_sha256": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+    "target_file_sha256": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+    "target_particles": 12000,
+    "mass_kg": 0.14399999999999996,
+    "original_analytic_plane_metrics": {
+      "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+      "measurement_spacing_xy_m": [
+        0.001,
+        0.001
+      ],
+      "grid_shape_xy": [
+        160,
+        30
+      ],
+      "valid_surface_fraction": 0.9975,
+      "missing_surface_fraction": 0.0024999999999999467,
+      "maximum_substrate_surface_residual_height_m": 0.0,
+      "surface_p95_absolute_plane_error_m": 0.0015264345600143401,
+      "surface_rms_plane_error_m": 0.0004509890834806834,
+      "maximum_gouge_depth_m": 0.02,
+      "overcut_volume_m3": 1.0617202325853862e-06,
+      "overcut_volume_fraction_of_initial_base": 0.011059585756097775
+    },
+    "controls": {
+      "exact_target": {
+        "status": "PASS_REPRESENTED_SHAPE",
+        "scope": "Full fixed-footprint represented-solid column geometry only",
+        "metrics": {
+          "columns": 4800,
+          "maximum_positive_residual_m": 0.0,
+          "maximum_gouge_deficit_m": 0.0,
+          "p95_absolute_error_m": 0.0,
+          "rms_error_m": 0.0,
+          "overcut_volume_m3": 0.0,
+          "overcut_volume_fraction_of_initial_base": 0.0,
+          "actual_missing_columns": 12,
+          "target_missing_columns": 12,
+          "union_missing_columns": 12,
+          "both_empty_columns": 12,
+          "actual_empty_target_filled_columns": 0,
+          "actual_filled_target_empty_columns": 0,
+          "actual_missing_fraction": 0.0025,
+          "target_missing_fraction": 0.0025,
+          "union_missing_fraction": 0.0025,
+          "absolute_error_gt_0_5mm_columns": 0,
+          "absolute_error_gt_1mm_columns": 0,
+          "error_trimming_applied": false
+        },
+        "checks": {
+          "maximum_positive_residual_m": true,
+          "maximum_gouge_deficit_m": true,
+          "p95_absolute_error_m": true,
+          "rms_error_m": true,
+          "overcut_volume_fraction_of_initial_base": true,
+          "actual_missing_fraction": true,
+          "target_missing_fraction": true,
+          "union_missing_fraction": true
+        },
+        "empty_column_height_m": 0.0,
+        "all_columns_retained": true,
+        "physical_cutting_inferred": false,
+        "original_v1_result_overwritten": false
+      },
+      "positive_vertical_offset_m": {
+        "status": "FAIL_REPRESENTED_SHAPE",
+        "scope": "Full fixed-footprint represented-solid column geometry only",
+        "metrics": {
+          "columns": 4800,
+          "maximum_positive_residual_m": 0.0015000000000000013,
+          "maximum_gouge_deficit_m": 0.0,
+          "p95_absolute_error_m": 0.0015000000000000013,
+          "rms_error_m": 0.0014981238266578646,
+          "overcut_volume_m3": 0.0,
+          "overcut_volume_fraction_of_initial_base": 0.0,
+          "actual_missing_columns": 12,
+          "target_missing_columns": 12,
+          "union_missing_columns": 12,
+          "both_empty_columns": 12,
+          "actual_empty_target_filled_columns": 0,
+          "actual_filled_target_empty_columns": 0,
+          "actual_missing_fraction": 0.0025,
+          "target_missing_fraction": 0.0025,
+          "union_missing_fraction": 0.0025,
+          "absolute_error_gt_0_5mm_columns": 4788,
+          "absolute_error_gt_1mm_columns": 4788,
+          "error_trimming_applied": false
+        },
+        "checks": {
+          "maximum_positive_residual_m": false,
+          "maximum_gouge_deficit_m": true,
+          "p95_absolute_error_m": false,
+          "rms_error_m": false,
+          "overcut_volume_fraction_of_initial_base": true,
+          "actual_missing_fraction": true,
+          "target_missing_fraction": true,
+          "union_missing_fraction": true
+        },
+        "empty_column_height_m": 0.0,
+        "all_columns_retained": true,
+        "physical_cutting_inferred": false,
+        "original_v1_result_overwritten": false
+      },
+      "negative_vertical_offset_m": {
+        "status": "FAIL_REPRESENTED_SHAPE",
+        "scope": "Full fixed-footprint represented-solid column geometry only",
+        "metrics": {
+          "columns": 4800,
+          "maximum_positive_residual_m": 0.0,
+          "maximum_gouge_deficit_m": 0.0015000000000000013,
+          "p95_absolute_error_m": 0.0015000000000000013,
+          "rms_error_m": 0.0014981238266578646,
+          "overcut_volume_m3": 7.182000000000006e-06,
+          "overcut_volume_fraction_of_initial_base": 0.07481250000000007,
+          "actual_missing_columns": 12,
+          "target_missing_columns": 12,
+          "union_missing_columns": 12,
+          "both_empty_columns": 12,
+          "actual_empty_target_filled_columns": 0,
+          "actual_filled_target_empty_columns": 0,
+          "actual_missing_fraction": 0.0025,
+          "target_missing_fraction": 0.0025,
+          "union_missing_fraction": 0.0025,
+          "absolute_error_gt_0_5mm_columns": 4788,
+          "absolute_error_gt_1mm_columns": 4788,
+          "error_trimming_applied": false
+        },
+        "checks": {
+          "maximum_positive_residual_m": true,
+          "maximum_gouge_deficit_m": false,
+          "p95_absolute_error_m": false,
+          "rms_error_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "actual_missing_fraction": true,
+          "target_missing_fraction": true,
+          "union_missing_fraction": true
+        },
+        "empty_column_height_m": 0.0,
+        "all_columns_retained": true,
+        "physical_cutting_inferred": false,
+        "original_v1_result_overwritten": false
+      },
+      "one_actual_missing_ray": {
+        "status": "FAIL_REPRESENTED_SHAPE",
+        "scope": "Full fixed-footprint represented-solid column geometry only",
+        "metrics": {
+          "columns": 4800,
+          "maximum_positive_residual_m": 0.0,
+          "maximum_gouge_deficit_m": 0.019999369978904724,
+          "p95_absolute_error_m": 0.0,
+          "rms_error_m": 0.00028866604102358907,
+          "overcut_volume_m3": 1.9999369978904722e-08,
+          "overcut_volume_fraction_of_initial_base": 0.00020832677061359087,
+          "actual_missing_columns": 13,
+          "target_missing_columns": 12,
+          "union_missing_columns": 13,
+          "both_empty_columns": 12,
+          "actual_empty_target_filled_columns": 1,
+          "actual_filled_target_empty_columns": 0,
+          "actual_missing_fraction": 0.0027083333333333334,
+          "target_missing_fraction": 0.0025,
+          "union_missing_fraction": 0.0027083333333333334,
+          "absolute_error_gt_0_5mm_columns": 1,
+          "absolute_error_gt_1mm_columns": 1,
+          "error_trimming_applied": false
+        },
+        "checks": {
+          "maximum_positive_residual_m": true,
+          "maximum_gouge_deficit_m": false,
+          "p95_absolute_error_m": true,
+          "rms_error_m": true,
+          "overcut_volume_fraction_of_initial_base": true,
+          "actual_missing_fraction": true,
+          "target_missing_fraction": true,
+          "union_missing_fraction": true
+        },
+        "empty_column_height_m": 0.0,
+        "all_columns_retained": true,
+        "physical_cutting_inferred": false,
+        "original_v1_result_overwritten": false
+      }
+    },
+    "extraction_wall_s": 0.023845081916078925,
+    "wall_s": 1.9025069049093872,
+    "exclusive_timing": false,
+    "cut_output_used_for_target": false,
+    "physical_task_success_claimed": false,
+    "target_alignment_fitted": false,
+    "actual_runtime_or_v1_promoted": false
+  },
+  "preserved_failure_001": {
+    "status": "ERROR_PRESERVED",
+    "error": "HeightFieldSpec was called without explicit bumps=(); default bump violates this narrow no-bump domain",
+    "particle_and_mesh_generation_were_independent_no_bump_box": true,
+    "numeric_target_height_or_cut_output_not_used": true,
+    "log_path": "artifacts/represented_flatbar_target_001.log",
+    "log_sha256": "c8db70509bf01ce1390acd37f64486994cb7fddf24e4bc39173550b437662f0d"
+  },
+  "actual_comparisons": {
+    "lab": {
+      "protocol_id": "represented_flatbar_2mm_whole_columns_v1_20261028",
+      "protocol_sha256": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+      "episode": "artifacts/isaac_lab_trim01_coarse_001",
+      "fixed_target": "artifacts/represented_flatbar_target_002/fixed_target.npz",
+      "target_sha256": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+      "represented_shape": {
+        "status": "FAIL_REPRESENTED_SHAPE",
+        "scope": "Full fixed-footprint represented-solid column geometry only",
+        "metrics": {
+          "columns": 4800,
+          "maximum_positive_residual_m": 0.017537140966798356,
+          "maximum_gouge_deficit_m": 0.0005556270348790783,
+          "p95_absolute_error_m": 0.0004222915169099326,
+          "rms_error_m": 0.0005699430476332662,
+          "overcut_volume_m3": 9.887593653551635e-07,
+          "overcut_volume_fraction_of_initial_base": 0.01029957672244962,
+          "actual_missing_columns": 6,
+          "target_missing_columns": 12,
+          "union_missing_columns": 12,
+          "both_empty_columns": 6,
+          "actual_empty_target_filled_columns": 0,
+          "actual_filled_target_empty_columns": 6,
+          "actual_missing_fraction": 0.00125,
+          "target_missing_fraction": 0.0025,
+          "union_missing_fraction": 0.0025,
+          "absolute_error_gt_0_5mm_columns": 81,
+          "absolute_error_gt_1mm_columns": 6,
+          "error_trimming_applied": false
+        },
+        "checks": {
+          "maximum_positive_residual_m": false,
+          "maximum_gouge_deficit_m": true,
+          "p95_absolute_error_m": true,
+          "rms_error_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "actual_missing_fraction": true,
+          "target_missing_fraction": true,
+          "union_missing_fraction": true
+        },
+        "empty_column_height_m": 0.0,
+        "all_columns_retained": true,
+        "physical_cutting_inferred": false,
+        "original_v1_result_overwritten": false
+      },
+      "combined_goal": {
+        "status": "FAIL_REPRESENTED_GOAL",
+        "represented_shape_passed": false,
+        "required_physical_checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true
+        },
+        "missing_physical_checks": [],
+        "full_simulation_acceptance": false,
+        "original_v1_result_overwritten": false,
+        "scope": "Separate represented-solid task goal with explicit physical topology/removal/mass/history gates"
+      },
+      "original_analytic_plane_v1": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": true,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.0016079999999999998,
+            0.14402399999999996
+          ],
+          "recorded_mass_kg": 0.14563199999999998,
+          "expected_task_sampler_mass_kg": 0.14563199999999998,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 12136,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.9852941176470588,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.99875,
+            "missing_surface_fraction": 0.0012499999999999734,
+            "maximum_substrate_surface_residual_height_m": 0.00010881713543829663,
+            "surface_p95_absolute_plane_error_m": 0.0016733605810677163,
+            "surface_rms_plane_error_m": 0.0006145866541486542,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.9594009599957847e-06,
+            "overcut_volume_fraction_of_initial_base": 0.02041042666662276
+          }
+        },
+        "missing_evidence": []
+      },
+      "original_plane_metrics": {
+        "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+        "measurement_spacing_xy_m": [
+          0.001,
+          0.001
+        ],
+        "grid_shape_xy": [
+          160,
+          30
+        ],
+        "valid_surface_fraction": 0.99875,
+        "missing_surface_fraction": 0.0012499999999999734,
+        "maximum_substrate_surface_residual_height_m": 0.00010881713543829663,
+        "surface_p95_absolute_plane_error_m": 0.0016733605810677163,
+        "surface_rms_plane_error_m": 0.0006145866541486542,
+        "maximum_gouge_depth_m": 0.02,
+        "overcut_volume_m3": 1.9594009599957847e-06,
+        "overcut_volume_fraction_of_initial_base": 0.02041042666662276
+      },
+      "actual_mechanical_components": 2,
+      "substrate_component_ids": [
+        1
+      ],
+      "substrate_triangles": 35292,
+      "other_component_triangles": 1124,
+      "surface_timestamp_s": 8.0,
+      "physics_timestamp_s": 8.0,
+      "input_sha256": {
+        "artifacts/represented_flatbar_target_002/protocol.json": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+        "artifacts/represented_flatbar_target_002/fixed_target.npz": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+        "artifacts/represented_flatbar_target_002/result.json": "a142402d05fdc2a3a4dc2d5409debe6ab820f6d51cb7bc314a4667cf544a9ebc",
+        "artifacts/isaac_lab_trim01_coarse_001/setup.json": "90e941f79422b60d453fb5e7af950e7d44c0ea2792d1554a9a3333a2a580a9e2",
+        "artifacts/isaac_lab_trim01_coarse_001/physics_state.npz": "bec5b1dc293e6a791ad7576d041e98717714575dbf2b561f9c6157089235ab53",
+        "artifacts/isaac_lab_trim01_coarse_001/rgbd/surface_00400.npz": "bd9e13fb355eea9447a53b8da8042c9e0a20bd8f2c2092c27ba11fb95cf5f806",
+        "/home/ningan/RoboticCuttingSim/scripts/evaluate_represented_target.py": "093116462b05df3a16bca68662d1f5ddc4a6ff8f99c479a3b01e8b046ae0c31d",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/tasks.py": "fad5c7b7025a80c0b29cd55b4a20bbba1c7e5212c473dcbb3c7b6fcd1110c6bf",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+        "artifacts/isaac_lab_trim01_coarse_001/task.json": "ed0c3580207f3b64ccc783607102f4b4c97967ebe0d11b3a6821dd60bec57427",
+        "artifacts/isaac_lab_trim01_coarse_001/rgbd/surface_00400.json": "e02d2e981230b2008bd6a6cda309dc8001f5e746e256b14b6550447482e86a63"
+      },
+      "target_fitted_to_cut_data": false,
+      "input_files_modified": false,
+      "scope": "Separate full-column represented-solid task goal; original v1, runtime/cameras/numerical acceptance remain separate"
+    },
+    "kit": {
+      "protocol_id": "represented_flatbar_2mm_whole_columns_v1_20261028",
+      "protocol_sha256": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+      "episode": "artifacts/isaacsim_trim01_coarse_001",
+      "fixed_target": "artifacts/represented_flatbar_target_002/fixed_target.npz",
+      "target_sha256": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+      "represented_shape": {
+        "status": "FAIL_REPRESENTED_SHAPE",
+        "scope": "Full fixed-footprint represented-solid column geometry only",
+        "metrics": {
+          "columns": 4800,
+          "maximum_positive_residual_m": 0.017513087907851558,
+          "maximum_gouge_deficit_m": 0.00046726873602548347,
+          "p95_absolute_error_m": 0.0003694090041072103,
+          "rms_error_m": 0.000542983038091844,
+          "overcut_volume_m3": 9.527119226349136e-07,
+          "overcut_volume_fraction_of_initial_base": 0.009924082527447017,
+          "actual_missing_columns": 8,
+          "target_missing_columns": 12,
+          "union_missing_columns": 12,
+          "both_empty_columns": 8,
+          "actual_empty_target_filled_columns": 0,
+          "actual_filled_target_empty_columns": 4,
+          "actual_missing_fraction": 0.0016666666666666668,
+          "target_missing_fraction": 0.0025,
+          "union_missing_fraction": 0.0025,
+          "absolute_error_gt_0_5mm_columns": 4,
+          "absolute_error_gt_1mm_columns": 4,
+          "error_trimming_applied": false
+        },
+        "checks": {
+          "maximum_positive_residual_m": false,
+          "maximum_gouge_deficit_m": true,
+          "p95_absolute_error_m": true,
+          "rms_error_m": false,
+          "overcut_volume_fraction_of_initial_base": true,
+          "actual_missing_fraction": true,
+          "target_missing_fraction": true,
+          "union_missing_fraction": true
+        },
+        "empty_column_height_m": 0.0,
+        "all_columns_retained": true,
+        "physical_cutting_inferred": false,
+        "original_v1_result_overwritten": false
+      },
+      "combined_goal": {
+        "status": "FAIL_REPRESENTED_GOAL",
+        "represented_shape_passed": false,
+        "required_physical_checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true
+        },
+        "missing_physical_checks": [],
+        "full_simulation_acceptance": false,
+        "original_v1_result_overwritten": false,
+        "scope": "Separate represented-solid task goal with explicit physical topology/removal/mass/history gates"
+      },
+      "original_analytic_plane_v1": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": true,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.0016079999999999998,
+            0.14402399999999996
+          ],
+          "recorded_mass_kg": 0.14563199999999998,
+          "expected_task_sampler_mass_kg": 0.14563199999999998,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 12136,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.9852941176470588,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.9983333333333333,
+            "missing_surface_fraction": 0.0016666666666667052,
+            "maximum_substrate_surface_residual_height_m": 0.00010644691988081698,
+            "surface_p95_absolute_plane_error_m": 0.0016750875977892586,
+            "surface_rms_plane_error_m": 0.0005518935547026335,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.938375130582601e-06,
+            "overcut_volume_fraction_of_initial_base": 0.020191407610235426
+          }
+        },
+        "missing_evidence": []
+      },
+      "original_plane_metrics": {
+        "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+        "measurement_spacing_xy_m": [
+          0.001,
+          0.001
+        ],
+        "grid_shape_xy": [
+          160,
+          30
+        ],
+        "valid_surface_fraction": 0.9983333333333333,
+        "missing_surface_fraction": 0.0016666666666667052,
+        "maximum_substrate_surface_residual_height_m": 0.00010644691988081698,
+        "surface_p95_absolute_plane_error_m": 0.0016750875977892586,
+        "surface_rms_plane_error_m": 0.0005518935547026335,
+        "maximum_gouge_depth_m": 0.02,
+        "overcut_volume_m3": 1.938375130582601e-06,
+        "overcut_volume_fraction_of_initial_base": 0.020191407610235426
+      },
+      "actual_mechanical_components": 2,
+      "substrate_component_ids": [
+        1
+      ],
+      "substrate_triangles": 35232,
+      "other_component_triangles": 1128,
+      "surface_timestamp_s": 8.0,
+      "physics_timestamp_s": 8.0,
+      "input_sha256": {
+        "artifacts/represented_flatbar_target_002/protocol.json": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+        "artifacts/represented_flatbar_target_002/fixed_target.npz": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+        "artifacts/represented_flatbar_target_002/result.json": "a142402d05fdc2a3a4dc2d5409debe6ab820f6d51cb7bc314a4667cf544a9ebc",
+        "artifacts/isaacsim_trim01_coarse_001/setup.json": "c57cc284df40a5ced97c64c1bee08bf7cbe341743656e23ba2a891aaeed6ebd9",
+        "artifacts/isaacsim_trim01_coarse_001/oracle_debug/physics_state.npz": "8164849b43e4419b89257d3144584ab0e7de0673a304db02b7853a7ddb9342ec",
+        "artifacts/isaacsim_trim01_coarse_001/surface_debug/surface_0040.npz": "af7b446e393814de4be454094206bb5fedac4357dbbca8f02941774d74914848",
+        "/home/ningan/RoboticCuttingSim/scripts/evaluate_represented_target.py": "093116462b05df3a16bca68662d1f5ddc4a6ff8f99c479a3b01e8b046ae0c31d",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/tasks.py": "fad5c7b7025a80c0b29cd55b4a20bbba1c7e5212c473dcbb3c7b6fcd1110c6bf",
+        "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+        "artifacts/isaacsim_trim01_coarse_001/frame_manifest.json": "a2ec25c3f5a3a149fa2c7e42c82a7960b9d7b2fba7920e12e2afad4d291bb3e6"
+      },
+      "target_fitted_to_cut_data": false,
+      "input_files_modified": false,
+      "scope": "Separate full-column represented-solid task goal; original v1, runtime/cameras/numerical acceptance remain separate"
+    }
+  },
+  "descriptive_3D": {
+    "lab": {
+      "status": "DESCRIPTIVE_ONLY_NO_ACCEPTANCE_GATE",
+      "actual_to_target": {
+        "all_referenced_vertices": 17648,
+        "all_triangle_centroids": 35292,
+        "surface_area_m2": 0.016031039265233433,
+        "centroid_area_weighted_p95_distance_m": 0.00029157204721645767,
+        "centroid_area_weighted_rms_distance_m": 0.00014788805181000333,
+        "maximum_vertex_distance_m": 0.000555895792786032,
+        "maximum_centroid_distance_m": 0.0005552897346206009,
+        "maximum_all_sampled_distance_m": 0.000555895792786032,
+        "sampled_maximum_is_not_continuous_Hausdorff_bound": true,
+        "nearest_query": "exact triangle closest point, Warp CPU mesh_query_point_no_sign",
+        "error_trimming_or_roi_applied": false
+      },
+      "target_to_actual": {
+        "all_referenced_vertices": 27230,
+        "all_triangle_centroids": 54456,
+        "surface_area_m2": 0.01602066216046434,
+        "centroid_area_weighted_p95_distance_m": 0.00029191920657163856,
+        "centroid_area_weighted_rms_distance_m": 0.00014798870116712623,
+        "maximum_vertex_distance_m": 0.0005580827710218728,
+        "maximum_centroid_distance_m": 0.0005552282091230154,
+        "maximum_all_sampled_distance_m": 0.0005580827710218728,
+        "sampled_maximum_is_not_continuous_Hausdorff_bound": true,
+        "nearest_query": "exact triangle closest point, Warp CPU mesh_query_point_no_sign",
+        "error_trimming_or_roi_applied": false
+      },
+      "actual_volume": {
+        "signed_volume_m3": 9.389800491714239e-05,
+        "absolute_volume_m3": 9.389800491714239e-05,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "referenced_vertices": 17648,
+        "triangles": 35292
+      },
+      "fixed_target_volume": {
+        "signed_volume_m3": 9.40437317655547e-05,
+        "absolute_volume_m3": 9.40437317655547e-05,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "referenced_vertices": 27230,
+        "triangles": 54456
+      },
+      "signed_absolute_volume_difference_m3": -1.4572684841230189e-07,
+      "absolute_volume_difference_fraction_of_fixed_target": 0.0015495647150156702,
+      "volume_comparison_has_closed_oriented_inputs": true,
+      "new_pass_thresholds": null,
+      "prior_heightmap_or_v1_failures_overwritten": false,
+      "scope": "All currently attributed substrate triangles/vertices versus the independently fixed target; no chip/ROI relabeling, no fitted alignment",
+      "world_from_workpiece_xyzw": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "input_sha256": {
+        "artifacts/represented_goal_lab_coarse_001/column_comparison.npz": "c88e91460dc934c3462b89e48bac80456c8d544bf1650b69f5b5d94c4bc4bc47",
+        "artifacts/represented_flatbar_target_002/fixed_target.npz": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+        "/home/ningan/RoboticCuttingSim/scripts/describe_represented_mesh_distance.py": "518d5dc73203637671e8fa02b4930e0656ed9d192869d429453115d41e8f9c50"
+      }
+    },
+    "kit": {
+      "status": "DESCRIPTIVE_ONLY_NO_ACCEPTANCE_GATE",
+      "actual_to_target": {
+        "all_referenced_vertices": 17618,
+        "all_triangle_centroids": 35232,
+        "surface_area_m2": 0.01602878046835301,
+        "centroid_area_weighted_p95_distance_m": 0.00028508187812004956,
+        "centroid_area_weighted_rms_distance_m": 0.0001412414395541078,
+        "maximum_vertex_distance_m": 0.000474861211841926,
+        "maximum_centroid_distance_m": 0.0004674189549405128,
+        "maximum_all_sampled_distance_m": 0.000474861211841926,
+        "sampled_maximum_is_not_continuous_Hausdorff_bound": true,
+        "nearest_query": "exact triangle closest point, Warp CPU mesh_query_point_no_sign",
+        "error_trimming_or_roi_applied": false
+      },
+      "target_to_actual": {
+        "all_referenced_vertices": 27230,
+        "all_triangle_centroids": 54456,
+        "surface_area_m2": 0.01602066216046434,
+        "centroid_area_weighted_p95_distance_m": 0.00028524415563043615,
+        "centroid_area_weighted_rms_distance_m": 0.00014125326330572083,
+        "maximum_vertex_distance_m": 0.0004729662905447185,
+        "maximum_centroid_distance_m": 0.0004673928488045931,
+        "maximum_all_sampled_distance_m": 0.0004729662905447185,
+        "sampled_maximum_is_not_continuous_Hausdorff_bound": true,
+        "nearest_query": "exact triangle closest point, Warp CPU mesh_query_point_no_sign",
+        "error_trimming_or_roi_applied": false
+      },
+      "actual_volume": {
+        "signed_volume_m3": 9.389759566127703e-05,
+        "absolute_volume_m3": 9.389759566127703e-05,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "referenced_vertices": 17618,
+        "triangles": 35232
+      },
+      "fixed_target_volume": {
+        "signed_volume_m3": 9.40437317655547e-05,
+        "absolute_volume_m3": 9.40437317655547e-05,
+        "closed_oriented_manifold": true,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "referenced_vertices": 27230,
+        "triangles": 54456
+      },
+      "signed_absolute_volume_difference_m3": -1.4613610427766403e-07,
+      "absolute_volume_difference_fraction_of_fixed_target": 0.0015539164762407819,
+      "volume_comparison_has_closed_oriented_inputs": true,
+      "new_pass_thresholds": null,
+      "prior_heightmap_or_v1_failures_overwritten": false,
+      "scope": "All currently attributed substrate triangles/vertices versus the independently fixed target; no chip/ROI relabeling, no fitted alignment",
+      "world_from_workpiece_xyzw": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "input_sha256": {
+        "artifacts/represented_goal_kit_coarse_001/column_comparison.npz": "66026ffa88666f7c9c389b529a6a87e5fccabde8c13838d23daa794e0c81dd4f",
+        "artifacts/represented_flatbar_target_002/fixed_target.npz": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+        "/home/ningan/RoboticCuttingSim/scripts/describe_represented_mesh_distance.py": "518d5dc73203637671e8fa02b4930e0656ed9d192869d429453115d41e8f9c50"
+      }
+    }
+  },
+  "cpu_tests": {
+    "command": ".venv/bin/python -m pytest -q tests/test_represented_target.py tests/test_represented_mesh_distance.py",
+    "passed": 5
+  },
+  "no_v1_or_new_heightmap_failure_promoted": true,
+  "3D_has_no_pass_gates": true,
+  "artifact_sha256": {
+    "artifacts/represented_flatbar_target_001/gpu_before.json": "2155de28901cc459e809141bef46f324ef74e4eb08f73efaf04935a3ae87235a",
+    "artifacts/represented_flatbar_target_001/implementation/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+    "artifacts/represented_flatbar_target_001/implementation/build_represented_flatbar_target.py": "eec51a1e29398917f36e6a7e6e6f81c0a973d2a0dbec9d733b29c915b3327f6c",
+    "artifacts/represented_flatbar_target_001/implementation/represented_flatbar_target_v1.json": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+    "artifacts/represented_flatbar_target_001/implementation/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+    "artifacts/represented_flatbar_target_001/implementation/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+    "artifacts/represented_flatbar_target_001/implementation/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+    "artifacts/represented_flatbar_target_001/manifest.json": "188914807580c9b8abc52d6563463ad2bcd2a7a3925834f4e35c2d18985052f4",
+    "artifacts/represented_flatbar_target_001/protocol.json": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+    "artifacts/represented_flatbar_target_001/result.json": "91ec8edd3f1d40b4a42447a8a28eaf10959a0f6fa93cfd8f212b920be62c50ac",
+    "artifacts/represented_flatbar_target_002/exact_target.npz": "0073502358102d658eeb5226bc62cba661853012ff3dfbac263e9be73b0955eb",
+    "artifacts/represented_flatbar_target_002/fixed_target.npz": "782d959f4dfb74f8658dc4b7017b68e0d7b7408f162d3181f34c45556016ec01",
+    "artifacts/represented_flatbar_target_002/gpu_before.json": "24d74d088faf1673008df9619ff7abd3b9a2d334663f6250b88aa1ff2a70c320",
+    "artifacts/represented_flatbar_target_002/implementation/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+    "artifacts/represented_flatbar_target_002/implementation/build_represented_flatbar_target.py": "b4dc4f36e532903f898dfee1ec6252db861f41e9cbf81b54b99f1cba7844ddce",
+    "artifacts/represented_flatbar_target_002/implementation/represented_flatbar_target_v1.json": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+    "artifacts/represented_flatbar_target_002/implementation/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+    "artifacts/represented_flatbar_target_002/implementation/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+    "artifacts/represented_flatbar_target_002/implementation/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+    "artifacts/represented_flatbar_target_002/manifest.json": "2db415a9536d5e816f04f838ef66e5b88ef1f4bb61fed180dda15f04c9d6c8cb",
+    "artifacts/represented_flatbar_target_002/negative_vertical_offset_m.npz": "bcc7ea2bed17204286a99eb92afbb780af31ede2916421d45a7f313247a95194",
+    "artifacts/represented_flatbar_target_002/one_actual_missing_ray.npz": "2d19505d850a4b8cf65954b6b38dc1bc9bd7eaea0cbf46330f3cc943ad0037d3",
+    "artifacts/represented_flatbar_target_002/original_analytic_plane_metrics.json": "327c1f98a5a697154ba52ca7ff2166fd41397263a84981530783e4c6e8e79236",
+    "artifacts/represented_flatbar_target_002/positive_vertical_offset_m.npz": "bfc5331e26d825fb1abd14cd1136f292a24253965ddeb53ae249c3c22a095c56",
+    "artifacts/represented_flatbar_target_002/protocol.json": "6e1b4dc3f54d0d26fc386d986a903d48e0c423b2640c897535704adad3c735a4",
+    "artifacts/represented_flatbar_target_002/result.json": "a142402d05fdc2a3a4dc2d5409debe6ab820f6d51cb7bc314a4667cf544a9ebc",
+    "artifacts/represented_goal_lab_coarse_001/column_comparison.npz": "c88e91460dc934c3462b89e48bac80456c8d544bf1650b69f5b5d94c4bc4bc47",
+    "artifacts/represented_goal_lab_coarse_001/implementation/evaluate_represented_target.py": "093116462b05df3a16bca68662d1f5ddc4a6ff8f99c479a3b01e8b046ae0c31d",
+    "artifacts/represented_goal_lab_coarse_001/implementation/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+    "artifacts/represented_goal_lab_coarse_001/result.json": "a05c1237c06df4e0f0e9ed14ab1bb853a1aa19248c829870dcf007d5de4c826e",
+    "artifacts/represented_goal_kit_coarse_001/column_comparison.npz": "66026ffa88666f7c9c389b529a6a87e5fccabde8c13838d23daa794e0c81dd4f",
+    "artifacts/represented_goal_kit_coarse_001/implementation/evaluate_represented_target.py": "093116462b05df3a16bca68662d1f5ddc4a6ff8f99c479a3b01e8b046ae0c31d",
+    "artifacts/represented_goal_kit_coarse_001/implementation/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+    "artifacts/represented_goal_kit_coarse_001/result.json": "10843fb1ef0a2a0325dcf461aff49a215db477dea1a63407164397f8a9d22321",
+    "artifacts/represented_mesh_distance_lab_coarse_001/all_distance_samples.npz": "4e01f7a9e826aac577da7e19ccc3778a2517660d88b598a23a1c71db743e9ee2",
+    "artifacts/represented_mesh_distance_lab_coarse_001/describe_represented_mesh_distance.py": "518d5dc73203637671e8fa02b4930e0656ed9d192869d429453115d41e8f9c50",
+    "artifacts/represented_mesh_distance_lab_coarse_001/result.json": "47647c9c5b60a0945aafa397cdbebdc8b245a3b2f28e9cc58fc316453e729f23",
+    "artifacts/represented_mesh_distance_kit_coarse_001/all_distance_samples.npz": "9dd20012e65122eac79881b01fd0ecf08ded551ab6d9f365ddb939507eac9afa",
+    "artifacts/represented_mesh_distance_kit_coarse_001/describe_represented_mesh_distance.py": "518d5dc73203637671e8fa02b4930e0656ed9d192869d429453115d41e8f9c50",
+    "artifacts/represented_mesh_distance_kit_coarse_001/result.json": "1eacfc48d69624325b883afffcb49c5892cb602d07fbcf89cde9126837f1072e"
+  }
+}
