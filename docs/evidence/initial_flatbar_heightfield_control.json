@@ -1,0 +1,432 @@
+{
+  "artifact": "artifacts/initial_flatbar_heightfield_001",
+  "freeze_commit": "75ec819",
+  "protocol": {
+    "protocol_id": "initial_flatbar_whole_footprint_v1_20261028",
+    "seed": 42,
+    "dimensions_m": [
+      0.16,
+      0.03,
+      0.02
+    ],
+    "sample_source": "CUT-01 exact full-cell local sampler; no bump or dynamics",
+    "particle_spacing_m": 0.001,
+    "density_kg_m3": 1500.0,
+    "target_height_m": 0.02,
+    "total_deformation_gradient": "identity for every particle",
+    "surface_profile": "current_volume_v1 H2; no changes or tuning",
+    "surface_parameters": {
+      "voxel_size": 0.0005,
+      "kernel_radius": 0.003,
+      "threshold": 0.5,
+      "kernel_scale": 0.5,
+      "smooth_lambda": 0.0,
+      "anisotropic": false,
+      "field_smooth_iterations": 0,
+      "mesh_smooth_iterations": 0
+    },
+    "measurement_spacing_m": 0.001,
+    "measurement_footprint": "whole [-.080,.080] x [-.015,.015] fixed rectangle, cell-centred rays",
+    "descriptive_interior_margin_over_particle_spacing": 3.0,
+    "tail_counts_absolute_error_thresholds_m": [
+      0.0005,
+      0.001
+    ],
+    "v1_surface_limits": {
+      "maximum_substrate_surface_residual_height_m": 0.001,
+      "surface_p95_absolute_plane_error_m": 0.0005,
+      "surface_rms_plane_error_m": 0.0005,
+      "maximum_gouge_depth_m": 0.001,
+      "maximum_overcut_volume_fraction_of_initial_base": 0.01,
+      "maximum_missing_surface_fraction": 0.01
+    },
+    "unchanged_task_protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "unchanged_affine_profile_protocol_sha256": "b9e65ca4679c3d217c1a0af83eae8656362d6f988c0b192252e523b2e83384db",
+    "flatness_pass_is_not_full_task_success": true,
+    "missing_rays_keep_full_target_height_deficit": true,
+    "all_valid_error_tails_retained": true
+  },
+  "manifest": {
+    "timestamp": "2026-10-28T04:18:57.028333+09:00",
+    "command": [
+      "scripts/probe_flatbar_heightfield.py",
+      "artifacts/initial_flatbar_heightfield_001",
+      "--device",
+      "cuda:0"
+    ],
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "backend": "initial_flatbar_surface_geometry_control",
+    "git_sha": "75ec8195da4acb4063d4fe85a7a2735828aabcf1",
+    "git_dirty": true,
+    "config": {
+      "protocol_sha256": "d776b8324bf956cc784fe6116d9055bcc3c92bde9416ad888379eaa87aa59a08",
+      "device": "cuda:0"
+    },
+    "config_sha256": "8c28d034c0591310aad03ff1d4baca7921d3b489445aa9d469f41a595b4c996a",
+    "packages": {
+      "newton": "1.6.1",
+      "warp-lang": "1.17.0",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "isaaclab": null,
+      "isaacsim": null,
+      "torch": null,
+      "usd-core": "26.8",
+      "mujoco": "3.12.0",
+      "mujoco-warp": "3.12.0",
+      "newton-usd-schemas": "0.6.0",
+      "ovrtx": null,
+      "ovstage": null
+    },
+    "source_checkouts": {
+      "newton": {
+        "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      },
+      "CRESSim-MPM": {
+        "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+        "tracked_patch_sha256": "869b881d787e2b096ca3cc52187de7912fb76abf8a4da1b4525cb9f0dd59df51",
+        "dirty": true
+      },
+      "IsaacLab": {
+        "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+        "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "dirty": false
+      }
+    },
+    "local_code_sha256": {
+      "src/robotic_cutting_sim/__init__.py": "d13a603c011d7f243d6af56b8c13125b575eb95fca279b0ac989deb7d1bfd680",
+      "src/robotic_cutting_sim/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+      "src/robotic_cutting_sim/benchmark.py": "f0ca2a16b9c8f360ddae0754167576ca2a7aeabd03d356fc4a84d3f873cd3b49",
+      "src/robotic_cutting_sim/camera.py": "f8449e563a19c90574dedc564e2b94730fb62b07e987e37c100d17e86e34aa2b",
+      "src/robotic_cutting_sim/cli.py": "9818801cb11b4ff0ee68b133a037019f15356f66325efae59e6e962aff620826",
+      "src/robotic_cutting_sim/coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316",
+      "src/robotic_cutting_sim/cressim_probe.py": "4088237a93f47993675528bac32752745308c1212e92036cb0bfc84bd535b79a",
+      "src/robotic_cutting_sim/cut_topology.py": "b56f16d5445ac648584b8117240b8492940c2be5ffa1017e0108ba6c64cc4e30",
+      "src/robotic_cutting_sim/cutting_surface.py": "7822b6aaa50274756d741a1f8781e7302c260b8c09a799af2c7b9259db4a0a17",
+      "src/robotic_cutting_sim/doctor.py": "50bc53dd5ce34b77ef10da68413a6e0c7fbadd7e430b06f15c168872d5dd36e7",
+      "src/robotic_cutting_sim/env.py": "5fb16c8951d892493215d04cf80f4e15cbc0fb32e16c27ce80405be8c7d75b20",
+      "src/robotic_cutting_sim/env_demo.py": "9db7ca309128d51e51c0442e659ece100750b3bc4cf2874111f2d60ee934acad",
+      "src/robotic_cutting_sim/fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+      "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+      "src/robotic_cutting_sim/isaac_lab_env.py": "98bce3bb20ce1af9e81bdf030bd5f444c1f57b59c2bb32347bc28cb09c24e1be",
+      "src/robotic_cutting_sim/isaac_sim_runner.py": "865d91f068be65a6ea6122e075abd655bfb75b05584319a7e6719c4d635d426b",
+      "src/robotic_cutting_sim/live_acceptance.py": "994e194cf935cd198be27bc8388c3540854af5b300a2880d44b7e82383e1763f",
+      "src/robotic_cutting_sim/live_camera.py": "ca1277d1f5cfe892efdfde8496d3d4de3ae5e0240258f8c0e3b40d85ffd00a67",
+      "src/robotic_cutting_sim/live_env.py": "5cbc2fe5295d97c725bc43890dcb7fada8a3feb6dabb9e4527329c79623c4604",
+      "src/robotic_cutting_sim/live_material.py": "f43f289a98ff2161968cbc36fa0544b791f2ea68c8b8e6dc47864a42ec31e768",
+      "src/robotic_cutting_sim/material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+      "src/robotic_cutting_sim/newton_probe.py": "ab0bb411cac19f638334b382b78e7e2114d0911489ff3b176bc323273dc7e3b2",
+      "src/robotic_cutting_sim/preview.py": "a7afba89579420bfbb5edabb53a05bb7023a36c080dd5913c4549ad86833b3e1",
+      "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a",
+      "src/robotic_cutting_sim/research_env.py": "3498efc26eef98e7368e14bfc131ad50c883277b63d0a875c97b12ee5c12fcc6",
+      "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+      "src/robotic_cutting_sim/rtx_outputs.py": "b9a3d38286d23132676c3be3e2ab5386bf674c0c36da10ebcfbee4bd24b75423",
+      "src/robotic_cutting_sim/scene.py": "90b3bc8fe13d343fac256b485deaf9fb5b59430b5d6aa5b4857f2e8e4901e03a",
+      "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+      "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+      "src/robotic_cutting_sim/sensor_contract.py": "b976a9c670855c7c8220251f11444576ddd100293e47e3656e7cbbc0ab0aab0a",
+      "src/robotic_cutting_sim/single_view_controls.py": "f0dfeefdb78866ef35f1116d97b295aaca265d85fbbf22a4423ef4d2487d3480",
+      "src/robotic_cutting_sim/single_view_registration.py": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df",
+      "src/robotic_cutting_sim/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+      "src/robotic_cutting_sim/tasks.py": "997d41f38c8b28d9138d847aba22c9d3ffdf75e4660a27ae11559130f275eecd",
+      "src/robotic_cutting_sim/tlmpm.py": "7cb84840672f2bdfa924b0d13a0c84aa64aa3537e5d1906aa41732b1960b479f",
+      "src/robotic_cutting_sim/trajectory.py": "c780ed6f5503f0cf50a90e462b95715b48bab4834493e0352b5a25d8f93d9d88",
+      "src/robotic_cutting_sim/usd_surface_bridge.py": "5932024d1823981c6330051781078861713d428f09e0f8b3b298b97b59335ae3",
+      "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+      "src/robotic_cutting_sim/workcell.py": "62272655fb87ac282bd79c528e8a3bf8106e486fa2c8ede33f106403370bfc7b"
+    },
+    "physics_proven": false,
+    "vision_proven": false
+  },
+  "result": {
+    "status": "GEOMETRY_DIAGNOSTIC_COMPLETED",
+    "protocol_sha256": "d776b8324bf956cc784fe6116d9055bcc3c92bde9416ad888379eaa87aa59a08",
+    "h2_surface_v1_status": "FAIL_SURFACE_ONLY",
+    "analytic_surface_v1_status": "PASS_SURFACE_ONLY",
+    "particles": 96000,
+    "initial_mass_kg": 0.14399999999999996,
+    "particle_spacing_m": 0.001,
+    "target_height_m": 0.02,
+    "minimum_radius_m": 0.0005000000237487257,
+    "maximum_radius_m": 0.0005000000237487257,
+    "extraction_wall_s_including_compile": 0.028328697895631194,
+    "total_wall_s": 3.2968685219530016,
+    "exclusive_timing": false,
+    "knife_present": false,
+    "material_dynamics_steps": 0,
+    "initial_mechanical_continuum_prescribed_by_control": true,
+    "actual_trim_task_promoted": false,
+    "full_footprint_task_gates_unchanged": true,
+    "scope": "Initial flatbar renderer boundary floor, not physical knife gouging or trimming"
+  },
+  "h2": {
+    "name": "h2_initial_flatbar",
+    "whole_footprint_metrics": {
+      "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+      "measurement_spacing_xy_m": [
+        0.001,
+        0.001
+      ],
+      "grid_shape_xy": [
+        160,
+        30
+      ],
+      "valid_surface_fraction": 1.0,
+      "missing_surface_fraction": 0.0,
+      "maximum_substrate_surface_residual_height_m": 2.2865817475917205e-07,
+      "surface_p95_absolute_plane_error_m": 0.0003893917303941716,
+      "surface_rms_plane_error_m": 0.00011457932628377095,
+      "maximum_gouge_depth_m": 0.0012336233387977118,
+      "overcut_volume_m3": 1.598563603390851e-07,
+      "overcut_volume_fraction_of_initial_base": 0.0016651704201988034
+    },
+    "unchanged_v1_surface_checks": {
+      "maximum_substrate_surface_residual_height_m": true,
+      "surface_p95_absolute_plane_error_m": true,
+      "surface_rms_plane_error_m": true,
+      "maximum_gouge_depth_m": false,
+      "maximum_overcut_volume_fraction_of_initial_base": true,
+      "maximum_missing_surface_fraction": true
+    },
+    "unchanged_v1_surface_status": "FAIL_SURFACE_ONLY",
+    "whole_footprint_full_tail_summary": {
+      "sampled_rays": 4800,
+      "valid_rays": 4800,
+      "missing_rays": 0,
+      "missing_fraction": 0.0,
+      "p95_absolute_plane_error_m": 0.0003893917303941716,
+      "rms_plane_error_m": 0.00011457932628377095,
+      "maximum_absolute_plane_error_m": 0.0012336233387977118,
+      "maximum_gouge_with_missing_ray_deficit_m": 0.0012336233387977118,
+      "valid_absolute_error_gt_0_5mm_rays": 4,
+      "valid_absolute_error_gt_1mm_rays": 4,
+      "ray_xy_bounds_m": [
+        [
+          -0.0795,
+          -0.014499999999999999
+        ],
+        [
+          0.0795,
+          0.014500000000000002
+        ]
+      ],
+      "error_trimming_applied": false
+    },
+    "interior_3_spacing_descriptive_only": {
+      "sampled_rays": 3696,
+      "valid_rays": 3696,
+      "missing_rays": 0,
+      "missing_fraction": 0.0,
+      "p95_absolute_plane_error_m": 2.2679543276900305e-07,
+      "rms_plane_error_m": 2.264108703642235e-07,
+      "maximum_absolute_plane_error_m": 2.2865817475917205e-07,
+      "maximum_gouge_with_missing_ray_deficit_m": 0.0,
+      "valid_absolute_error_gt_0_5mm_rays": 0,
+      "valid_absolute_error_gt_1mm_rays": 0,
+      "ray_xy_bounds_m": [
+        [
+          -0.0765,
+          -0.0115
+        ],
+        [
+          0.0765,
+          0.0115
+        ]
+      ],
+      "error_trimming_applied": false
+    },
+    "interior_roi_promotes_task": false,
+    "worst_gouge_ray_tie_count": 1,
+    "first_worst_gouge_ray": {
+      "row": 29,
+      "column": 159,
+      "xy_m": [
+        0.0795,
+        0.014500000000000002
+      ],
+      "measured_height_m": 0.01876637666120229,
+      "valid": true,
+      "conservative_gouge_m": 0.0012336233387977118,
+      "distance_to_nearest_outer_edge_m": 0.000499999999999997
+    },
+    "all_valid_error_gt_1mm_rays": [
+      {
+        "row": 0,
+        "column": 0,
+        "xy_m": [
+          -0.0795,
+          -0.014499999999999999
+        ],
+        "measured_height_m": 0.01876637666121446,
+        "valid": true,
+        "conservative_gouge_m": 0.001233623338785541,
+        "distance_to_nearest_outer_edge_m": 0.0005000000000000004
+      },
+      {
+        "row": 0,
+        "column": 159,
+        "xy_m": [
+          0.0795,
+          -0.014499999999999999
+        ],
+        "measured_height_m": 0.01876637666121446,
+        "valid": true,
+        "conservative_gouge_m": 0.001233623338785541,
+        "distance_to_nearest_outer_edge_m": 0.0005000000000000004
+      },
+      {
+        "row": 29,
+        "column": 0,
+        "xy_m": [
+          -0.0795,
+          0.014500000000000002
+        ],
+        "measured_height_m": 0.018766376661214453,
+        "valid": true,
+        "conservative_gouge_m": 0.0012336233387855479,
+        "distance_to_nearest_outer_edge_m": 0.000499999999999997
+      },
+      {
+        "row": 29,
+        "column": 159,
+        "xy_m": [
+          0.0795,
+          0.014500000000000002
+        ],
+        "measured_height_m": 0.01876637666120229,
+        "valid": true,
+        "conservative_gouge_m": 0.0012336233387977118,
+        "distance_to_nearest_outer_edge_m": 0.000499999999999997
+      }
+    ]
+  },
+  "analytic": {
+    "name": "analytic_exact_flatbar",
+    "whole_footprint_metrics": {
+      "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+      "measurement_spacing_xy_m": [
+        0.001,
+        0.001
+      ],
+      "grid_shape_xy": [
+        160,
+        30
+      ],
+      "valid_surface_fraction": 1.0,
+      "missing_surface_fraction": 0.0,
+      "maximum_substrate_surface_residual_height_m": 0.0,
+      "surface_p95_absolute_plane_error_m": 0.0,
+      "surface_rms_plane_error_m": 0.0,
+      "maximum_gouge_depth_m": 0.0,
+      "overcut_volume_m3": 0.0,
+      "overcut_volume_fraction_of_initial_base": 0.0
+    },
+    "unchanged_v1_surface_checks": {
+      "maximum_substrate_surface_residual_height_m": true,
+      "surface_p95_absolute_plane_error_m": true,
+      "surface_rms_plane_error_m": true,
+      "maximum_gouge_depth_m": true,
+      "maximum_overcut_volume_fraction_of_initial_base": true,
+      "maximum_missing_surface_fraction": true
+    },
+    "unchanged_v1_surface_status": "PASS_SURFACE_ONLY",
+    "whole_footprint_full_tail_summary": {
+      "sampled_rays": 4800,
+      "valid_rays": 4800,
+      "missing_rays": 0,
+      "missing_fraction": 0.0,
+      "p95_absolute_plane_error_m": 0.0,
+      "rms_plane_error_m": 0.0,
+      "maximum_absolute_plane_error_m": 0.0,
+      "maximum_gouge_with_missing_ray_deficit_m": 0.0,
+      "valid_absolute_error_gt_0_5mm_rays": 0,
+      "valid_absolute_error_gt_1mm_rays": 0,
+      "ray_xy_bounds_m": [
+        [
+          -0.0795,
+          -0.014499999999999999
+        ],
+        [
+          0.0795,
+          0.014500000000000002
+        ]
+      ],
+      "error_trimming_applied": false
+    },
+    "interior_3_spacing_descriptive_only": {
+      "sampled_rays": 3696,
+      "valid_rays": 3696,
+      "missing_rays": 0,
+      "missing_fraction": 0.0,
+      "p95_absolute_plane_error_m": 0.0,
+      "rms_plane_error_m": 0.0,
+      "maximum_absolute_plane_error_m": 0.0,
+      "maximum_gouge_with_missing_ray_deficit_m": 0.0,
+      "valid_absolute_error_gt_0_5mm_rays": 0,
+      "valid_absolute_error_gt_1mm_rays": 0,
+      "ray_xy_bounds_m": [
+        [
+          -0.0765,
+          -0.0115
+        ],
+        [
+          0.0765,
+          0.0115
+        ]
+      ],
+      "error_trimming_applied": false
+    },
+    "interior_roi_promotes_task": false,
+    "worst_gouge_ray_tie_count": 4800,
+    "first_worst_gouge_ray": {
+      "row": 0,
+      "column": 0,
+      "xy_m": [
+        -0.0795,
+        -0.014499999999999999
+      ],
+      "measured_height_m": 0.02,
+      "valid": true,
+      "conservative_gouge_m": 0.0,
+      "distance_to_nearest_outer_edge_m": 0.0005000000000000004
+    },
+    "all_valid_error_gt_1mm_rays": []
+  },
+  "plot": {
+    "source_sha256": {
+      "artifacts/initial_flatbar_heightfield_001/analytic_exact_flatbar.npz": "01ea0e23b1ed44689824947f06167918a18c5788a23ee73a6eb9bbb80581b151",
+      "artifacts/initial_flatbar_heightfield_001/h2_initial_flatbar.npz": "af5b21b889f24b2d4d49bbc47ada4b7d2119674712719c82cf2ea4507b912c9c"
+    },
+    "renderer_sha256": "051fd7718656f108ab9b8d19337e9310815bed101db8a43f7b1f925a547bd110",
+    "image_sha256": "9b948366639b294ba168bc42e352e053237c02423670229b1186aacf86fe875a",
+    "display_range_mm": [
+      0.0,
+      1.5
+    ],
+    "full_numeric_arrays_unmodified": true
+  },
+  "source_sha256": {
+    "analytic_exact_flatbar.json": "9d341d9ae840e62ca5acc5bf689a836f4af44ed9edbb4039439f17cc54a986c7",
+    "analytic_exact_flatbar.npz": "01ea0e23b1ed44689824947f06167918a18c5788a23ee73a6eb9bbb80581b151",
+    "control.json": "9fa7b75bdd87b3eee16d5b5147fa452b8a04b5b7df20f2e888048a01cac07ece",
+    "control.png": "9b948366639b294ba168bc42e352e053237c02423670229b1186aacf86fe875a",
+    "gpu_before.json": "1b1a79039f9b288e504c6435906ee82f71ace7d18c2a0343132d63e90d496889",
+    "h2_initial_flatbar.json": "96cacb5175298179c8aa3a12056480e725d52236e1a314b38894b8f427363c75",
+    "h2_initial_flatbar.npz": "af5b21b889f24b2d4d49bbc47ada4b7d2119674712719c82cf2ea4507b912c9c",
+    "implementation/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+    "implementation/cutting_surface.py": "7822b6aaa50274756d741a1f8781e7302c260b8c09a799af2c7b9259db4a0a17",
+    "implementation/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "implementation/particle_surface.py": "388075d1f4262a1d40081622d30d72b66efc0402537ad9487bea05b1a6a7c4e2",
+    "implementation/particle_surface_affine_v1.json": "b9e65ca4679c3d217c1a0af83eae8656362d6f988c0b192252e523b2e83384db",
+    "implementation/particle_surface_kernels.py": "07be257e2cd9511744be2e66fa505ed5ed231c2936cceb8f13d93f9efe8de10e",
+    "implementation/probe_flatbar_heightfield.py": "efaf5e4982862d1d62707dd8d5f73a94c710e55a897c1c2e207ae442eb49aa4e",
+    "implementation/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+    "implementation/tasks.py": "997d41f38c8b28d9138d847aba22c9d3ffdf75e4660a27ae11559130f275eecd",
+    "initial_particles.npz": "7872eab45074246fa58333e8ee19b35e3f5aa7db2b0830e93b0095b598cbd5e2",
+    "manifest.json": "81b8433d3531f60bca141b8f304805e65fcdd8cfba255c6d455b495119948151",
+    "protocol.json": "ce13673621003bddd2b8af60b0f209c712e896f89089eedbd66fa49a283663e4",
+    "result.json": "ed7f4ece2a1e53faa843753aeed88c319aa92270edd584f21ecbefb9c3c129a7"
+  }
+}
