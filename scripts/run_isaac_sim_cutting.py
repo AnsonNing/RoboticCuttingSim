@@ -222,6 +222,7 @@ def main():
     p.add_argument("--native-noise",choices=["off","on"],default=None,
                    help="Native sensor control recipe; new tasks default off for geometry checks")
     p.add_argument("--surface-profile",choices=["legacy","current_volume_v1"],default=None)
+    p.add_argument("--particle-spacing",type=float,default=None,help="Explicit whole-initial-task sampling override in meters")
     p.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
     args=p.parse_args()
     config=IsaacSimCuttingConfig(seed=args.seed,steps=args.steps,record_every=args.record_every,gpu=args.gpu,
@@ -229,6 +230,7 @@ def main():
                 velocity_feedforward=args.velocity_feedforward,
                 task_id=args.task_id,task_variant=args.task_variant,action_mode=args.action_mode,native_noise=args.native_noise,
                 surface_profile=args.surface_profile,
+                particle_spacing_m=args.particle_spacing,
                 scene=str(args.scene.resolve()) if args.scene else None)
     if args.worker:
         return worker(args,config)
@@ -253,6 +255,8 @@ def main():
     argv += ["--action-mode",args.action_mode,"--native-noise",config.native_noise,"--surface-profile",config.surface_profile]
     if args.task_id:
         argv += ["--task-id",args.task_id,"--task-variant",args.task_variant]
+    if args.particle_spacing is not None:
+        argv += ["--particle-spacing",str(args.particle_spacing)]
     if args.scene:
         argv.extend(["--scene",str(args.scene.resolve())])
     if args.runtime_only:

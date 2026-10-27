@@ -41,6 +41,9 @@ def test_task_defaults_preserve_legacy_controller_and_declare_new_recipe():
     assert IsaacSimCuttingConfig(task_id="TRIM-01",velocity_feedforward=False,native_noise="on").velocity_feedforward is False
     with pytest.raises(ValueError,match="task_id"):
         IsaacSimCuttingConfig(task_id="UNKNOWN")
+    with pytest.raises(ValueError,match="legacy D0"):
+        IsaacSimCuttingConfig(particle_spacing_m=.002)
+    assert IsaacSimCuttingConfig(task_id="TRIM-01",particle_spacing_m=.002).particle_spacing_m==.002
 
 
 def test_native_explicit_actions_have_separate_joint_and_world_pose_semantics():

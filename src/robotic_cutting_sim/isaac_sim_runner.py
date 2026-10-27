@@ -37,6 +37,7 @@ class IsaacSimCuttingConfig:
     action_mode: str = "cartesian"
     native_noise: str | None = None
     surface_profile: str | None = None
+    particle_spacing_m: float | None = None
     scene: str | None = None
 
     def __post_init__(self):
@@ -63,6 +64,11 @@ class IsaacSimCuttingConfig:
             object.__setattr__(self,"surface_profile","current_volume_v1" if self.task_id else "legacy")
         if self.surface_profile not in ("legacy","current_volume_v1"):
             raise ValueError("surface_profile must be legacy or current_volume_v1")
+        if self.particle_spacing_m is not None:
+            if self.task_id is None:
+                raise ValueError("Explicit particle spacing requires CUT/TRIM task_id; legacy D0 is unchanged")
+            if not np.isfinite(self.particle_spacing_m) or self.particle_spacing_m<=0:
+                raise ValueError("Explicit task particle spacing must be finite and positive")
 
 
 def runtime_versions():
@@ -164,7 +170,7 @@ class LiveIsaacSimCutting:
         self.mount=np.array([0.,0.,.18,1.,0.,0.,0.])
         if c.task_id:
             from .tasks import make_task
-            self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant)
+            self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant,particle_spacing_m=c.particle_spacing_m)
             if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
                 raise ValueError("Native Kit control_dt/dx must match the shared task specification")
             self.reference_pose=self.task.reference_edge_pose_world
