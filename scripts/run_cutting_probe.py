@@ -42,7 +42,7 @@ def tool_plan(times, case, z=.0155):
         second_position = np.column_stack([np.interp(t, [1.7, 2., 4.5], [.022, 0., 0.]),
             np.interp(t, [1.7, 2., 2.4, 3.4, 4.5], [0., -.030, -.030, .030, .030]),
             np.interp(t, [1.7, 2., 2.3, 3.4, 3.55, 4.5], [.06, .06, .0125, .0125, .06, .06])])
-        rotations = Slerp([1.7, 2., 4.5], Rotation.from_euler("z", [0, 90, 90], degrees=True))
+        rotations = Slerp([1.7, 2., 4.5], Rotation.from_euler("z", np.array([0, 90, 90])[:, None], degrees=True))
         poses[second, :3] = second_position
         poses[second, 3:] = rotations(t).as_quat()
         twists[second, :3] = np.gradient(second_position, t, axis=0)
