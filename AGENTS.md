@@ -9,7 +9,10 @@ Record exact commands, versions, seeds, failures, timing and artifact paths.
 Report PASS / FAIL / BLOCKED / NOT_RUN independently; a skipped test is not a pass.
 Material parameters are provisional and uncalibrated. SI units, world Z up,
 quaternions XYZW. Keep force and oracle material state out of vision observations.
-Only integrate robot cutting after persistent separation and dynamic RGB-D gates.
+The user prioritized a usable research scene over strict stage gates: static
+dual-arm workcell and the environment API may proceed independently of formal
+cutting proof. Keep real supported capabilities distinct from unimplemented
+persistent cutting, articulated control and RTX sensors; do not block routine
+scene work on scientific acceptance labels.
 Do not overwrite experiment output. Preserve unsuccessful experiments.
 Run CPU tests with `.venv/bin/python -m pytest`; run GPU probes separately.
-

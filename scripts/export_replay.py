@@ -23,11 +23,22 @@ if len(tool)!=len(times):
     raise SystemExit("Pre-fix tool timeline not eligible for replay export")
 blade=UsdGeom.Xformable(stage.GetPrimAtPath("/World/KinematicBlade"))
 translate=next(op for op in blade.GetOrderedXformOps() if op.GetOpType()==UsdGeom.XformOp.TypeTranslate)
+scale=next(op for op in blade.GetOrderedXformOps() if op.GetOpType()==UsdGeom.XformOp.TypeScale)
+orientation=blade.AddOrientOp()
+blade.SetXformOpOrder([translate,orientation,scale])
 for t,pose in zip(times,tool):
     translate.Set(Gf.Vec3d(*pose[:3]),float(t)*60)
+    orientation.Set(Gf.Quatf(float(pose[6]),Gf.Vec3f(*map(float,pose[3:6]))),float(t)*60)
+first=True
 for path in sorted((camera/"surface").glob("*.npz")):
     data=np.load(path); t=float(data["physics_timestamp_s"])*60
     vertices=data["vertices_m"]; faces=data["triangles"]
+    if first:
+        mesh.GetPointsAttr().Set(Vt.Vec3fArray.FromNumpy(vertices))
+        mesh.GetFaceVertexIndicesAttr().Set(Vt.IntArray.FromNumpy(faces.ravel()))
+        mesh.GetFaceVertexCountsAttr().Set(Vt.IntArray.FromNumpy(np.full(len(faces),3,np.int32)))
+        mesh.CreateExtentAttr().Set([Gf.Vec3f(*map(float,vertices.min(0))),Gf.Vec3f(*map(float,vertices.max(0)))])
+        first=False
     mesh.GetPointsAttr().Set(Vt.Vec3fArray.FromNumpy(vertices),t)
     mesh.GetFaceVertexIndicesAttr().Set(Vt.IntArray.FromNumpy(faces.ravel()),t)
     mesh.GetFaceVertexCountsAttr().Set(Vt.IntArray.FromNumpy(np.full(len(faces),3,np.int32)),t)

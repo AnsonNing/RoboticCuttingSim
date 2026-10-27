@@ -29,10 +29,11 @@ class LiveCameras:
 
     def capture(self,positions,radii,tool_pose,tool_half):
         with wp.ScopedDevice(self.device):
-            vertices,indices,_=self.surface.extract(positions,radii)
+            vertices,indices,normals=self.surface.extract(positions,radii)
             if vertices is None or indices is None:
                 raise RuntimeError("Material surface extraction returned empty mesh")
-            chunks=[vertices.numpy()]; faces=[indices.numpy().reshape(-1,3)]
+            self.last_surface=(vertices.numpy(),indices.numpy().reshape(-1,3),normals.numpy())
+            chunks=[self.last_surface[0]]; faces=[self.last_surface[1]]
             colors=[np.tile([.72,.32,.13],(len(faces[0]),1))]
             offset=len(chunks[0])
             boxes=self.boxes+[(tool_pose[:3],tool_half,[.38,.65,.85])]
