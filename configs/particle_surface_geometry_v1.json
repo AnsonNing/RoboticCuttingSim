@@ -1,0 +1,35 @@
+{
+  "protocol_id": "particle_surface_geometry_v1_20261028",
+  "freeze_boundary": "Frozen before any new closed-box control extraction. No cut-result or TASK metrics are used to select this profile.",
+  "scope": "Independent renderer geometry and quadrature controls only; no cutting-physics or default renderer changes",
+  "newton_version": "1.6.1",
+  "warp_version": "1.17.0",
+  "density_kg_m3": 1500.0,
+  "spacing_m": [0.001, 0.0015, 0.002],
+  "recipes": {
+    "H0": {"voxel_size_m": 0.001, "kernel_radius_m": 0.003, "threshold": 0.25, "kernel_scale": 0.5},
+    "H1": {"voxel_size_over_spacing": 0.5, "kernel_radius_over_spacing": 3.0, "threshold": 0.5, "kernel_scale": 0.5}
+  },
+  "shared_recipe": {"smooth_lambda": 0.0, "anisotropic": false, "field_smooth_iterations": 0, "mesh_smooth_iterations": 0},
+  "candidate_rationale": "Normalized symmetric cubic B-spline density is one half on a continuum half-space boundary. H1 uses this fixed 0.5 isovalue; volume=8*r^3=spacing^3 and support=3*spacing. Voxel size=spacing/2 resolves the kernel independently of grid phase. No fit to material target height or global mesh volume is performed.",
+  "promotion_rule": "Only the fixed H1 is assessed. All development and held-out cases must pass. No alternate thresholds/kernel/voxel profiles may be selected after seeing held-out results.",
+  "criteria": {
+    "all_mesh_values_finite": true,
+    "require_closed_oriented_manifold": true,
+    "mesh_components": 1,
+    "euler_characteristic": 2,
+    "mesh_volume_relative_error_vs_analytic_max": 0.05,
+    "mesh_volume_relative_error_vs_mass_over_density_max": 0.05,
+    "full_mesh_area_weighted_p95_analytic_sdf_absolute_over_spacing_max": 0.5,
+    "full_mesh_vertex_max_analytic_sdf_absolute_over_spacing_max": 1.5,
+    "central_face_offset_absolute_over_spacing_max": 0.25,
+    "reason": "Half-particle p95 boundary accuracy, bounded whole-object volume bias and topological validity are geometry screens; they cannot pass a cut/flatness task. Sharp edges are included in whole-mesh statistics, never culled."
+  },
+  "central_face_definition": "Vertices within3*spacing of each finite face edge are excluded only from a separately reported face-center bias diagnostic. Full-mesh SDF/volume metrics always include all vertices/triangles.",
+  "cases": [
+    {"id": "flat_box", "split": "development", "dimensions_m": [0.048,0.036,0.018], "euler_xyz_rad": [0,0,0], "translation_m": [0.011,-0.007,0.032]},
+    {"id": "tilted_x_box", "split": "development", "dimensions_m": [0.048,0.036,0.018], "euler_xyz_rad": [0,0.18,0], "translation_m": [-0.013,0.009,0.031]},
+    {"id": "heldout_mixed_tilt", "split": "held_out", "dimensions_m": [0.048,0.036,0.018], "euler_xyz_rad": [-0.21,0.12,0.17], "translation_m": [0.0083,-0.0067,0.0291]},
+    {"id": "heldout_aspect_tilt", "split": "held_out", "dimensions_m": [0.054,0.030,0.024], "euler_xyz_rad": [0.27,-0.19,-0.11], "translation_m": [-0.0069,0.0121,0.0337]}
+  ]
+}
