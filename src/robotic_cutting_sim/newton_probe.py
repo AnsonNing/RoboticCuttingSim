@@ -80,7 +80,7 @@ class NewtonTestbed:
 
 def run(args, output):
     spec = Specimen.generate(args.seed, args.variant)
-    material = yaml.safe_load((ROOT/"configs/materials/plasticine_provisional.yaml").read_text())
+    material = yaml.safe_load(args.material.read_text())
     spacing = args.voxel_size / 2
     points, masses, _ = sample_particles(spec, spacing, material["density_kg_m3"])
     trajectory = Trajectory.load(args.trajectory) if args.trajectory else reference_trajectory(args.case)

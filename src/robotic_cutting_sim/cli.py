@@ -31,6 +31,7 @@ def main(argv=None):
     probe.add_argument("--voxel-size",type=positive,default=.004); probe.add_argument("--dt",type=positive,default=1/60)
     probe.add_argument("--substeps",type=int,default=4); probe.add_argument("--frames",type=int,default=120)
     probe.add_argument("--device",default="cuda:0"); probe.add_argument("--trajectory",type=Path)
+    probe.add_argument("--material",type=Path,default=ROOT/"configs/materials/plasticine_provisional.yaml")
     probe.add_argument("--output-dir",type=Path,required=True)
     camera=sub.add_parser("camera-check",help="Actual ParticleSurface extraction to ideal Warp RGB-D arrays")
     camera.add_argument("--input",type=Path,required=True); camera.add_argument("--surface-voxel-size",type=positive,default=.0015)

@@ -46,7 +46,13 @@ int main(int argc, char** argv) {
     if(!factory || !factory->isGpu()) return 5;
     SceneDesc sd{}; sd.solverType=MpmSolverType::eGpuMlsMpmSolver;
     sd.numMaxParticles=particles.size()+16; sd.gravity=Vec3f(0,0,-9.81f);
-    sd.gridBounds=Bounds3(Vec3f(0,0,.025f),Vec3f(.10f,.08f,.075f));
+    // C++ Bounds3 takes minimum/maximum, unlike the C API's center/extents struct.
+    sd.gridBounds=Bounds3(Vec3f(-.10f,-.08f,-.05f),Vec3f(.10f,.08f,.10f));
+    for(const auto& p:particles) {
+        if(!sd.gridBounds.contains(Vec3f(p[0],p[1],p[2]))) {
+            std::cerr << "Initial particle outside CRESSim grid bounds\n"; return 8;
+        }
+    }
     sd.gridCellSize=dx; sd.solverIntegrationStepSize=subdt;
     auto* scene=factory->createScene(sd); if(!scene) return 6;
     unsigned offset=0; if(!scene->allocateParticles(particles.size(),offset)) return 7;
