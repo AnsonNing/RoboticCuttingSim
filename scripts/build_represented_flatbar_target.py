@@ -57,7 +57,7 @@ def main():
         wp.synchronize_device(args.device)
         extraction_s = time.perf_counter()-tick
         vertices, faces = vertices.numpy().copy(), faces.numpy().reshape(-1, 3).copy()
-    geometry = HeightFieldSpec(*dimensions)
+    geometry = HeightFieldSpec(*dimensions, bumps=())
     target = WorkpieceTarget(height_m=dimensions[2], edge_clearance_m=0.)
     plane = mesh_heightfield_metrics(vertices, faces, target, geometry, measurement["spacing_m"])
     height, valid = plane.pop("measured_heightfield_local_m_debug"), plane.pop("valid_heightfield_debug")
