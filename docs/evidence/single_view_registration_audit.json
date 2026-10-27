@@ -1,0 +1,1487 @@
+{
+  "scope": "native measured-depth preservation succeeds; 1mm p95 slanted-plane registration gate remains BLOCKED",
+  "workcell_audit": {
+    "status": "PASS_NATIVE_SAMPLE_PRESERVATION",
+    "scope": "CPU registration audit of actual native NVIDIA SingleView captures",
+    "runs": {
+      "workcell": {
+        "source": "/home/ningan/RoboticCuttingSim/artifacts/ovrtx_d455_002",
+        "depth_model_parameters": {
+          "enabled": true,
+          "baselineMM": 95.0,
+          "focalLengthPixel": 317.0431199837856,
+          "sensorSizePixel": 640.0,
+          "maxDisparityPixel": 150.0,
+          "confidenceThreshold": 1.0,
+          "noiseMean": 0.25,
+          "noiseSigma": 0.25,
+          "noiseDownscaleFactorPixel": 1.0,
+          "minDistance": 0.52,
+          "maxDistance": 6.0,
+          "outlierRemovalEnabled": true,
+          "rgbDepthOutputMode": 0,
+          "effectiveDistance": 4.0
+        },
+        "frames": [
+          {
+            "frame": "d455_0_0000",
+            "registration": {
+              "raw_valid_samples": 122279,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 122279,
+              "duplicate_or_occluded_samples": 899,
+              "registered_pixels": 121380,
+              "pointcloud_geometry_depth_outside_native_range": 238,
+              "pointcloud_measurement_disagreement_gt_1um": 16452,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 15493,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 118828,
+              "mean_error_m": 0.0020965589939911907,
+              "mean_absolute_m": 0.021833281904748928,
+              "rmse_m": 0.07510457176350767,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.13063693046569821,
+              "p99_absolute_m": 0.40650116920471185,
+              "max_absolute_m": 0.5970213413238525,
+              "nonzero_above_1um_samples": 21216,
+              "outliers_above_1cm_samples": 19648
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 121236,
+              "mean_error_m": -0.00027449438425538767,
+              "mean_absolute_m": 0.0004374856954201598,
+              "rmse_m": 0.006898671388799364,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.002003908157348633,
+              "p99_absolute_m": 0.004910850524902338,
+              "max_absolute_m": 0.5048508644104004,
+              "nonzero_above_1um_samples": 16308,
+              "outliers_above_1cm_samples": 279
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 144,
+            "input_sha256": {
+              "artifacts/ovrtx_d455_002/observations/d455_0_0000.npz": "86566108b7844bf0edade0e715a3b144977bf09a016d6a4885555f90b802ec00",
+              "artifacts/ovrtx_d455_002/camera_debug/d455_0_0000.npz": "ac4f8253bbdbb18e9c5ba90e678a021b723a02ff800914221b8ca1b20560f293"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 16452,
+              "selected_samples_above_1um": 16452,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            }
+          },
+          {
+            "frame": "d455_0_0001",
+            "registration": {
+              "raw_valid_samples": 122512,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 122512,
+              "duplicate_or_occluded_samples": 871,
+              "registered_pixels": 121641,
+              "pointcloud_geometry_depth_outside_native_range": 239,
+              "pointcloud_measurement_disagreement_gt_1um": 16847,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 15359,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 119171,
+              "mean_error_m": 0.0019613727031295184,
+              "mean_absolute_m": 0.0218588088046523,
+              "rmse_m": 0.07548776174318332,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.1306682825088501,
+              "p99_absolute_m": 0.4087193965911866,
+              "max_absolute_m": 0.613445520401001,
+              "nonzero_above_1um_samples": 21311,
+              "outliers_above_1cm_samples": 19581
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 121496,
+              "mean_error_m": -0.0002830732156817968,
+              "mean_absolute_m": 0.00044157444673285646,
+              "rmse_m": 0.007075487699227956,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.001980304718017578,
+              "p99_absolute_m": 0.004933249950408943,
+              "max_absolute_m": 0.5048508644104004,
+              "nonzero_above_1um_samples": 16702,
+              "outliers_above_1cm_samples": 271
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 145,
+            "input_sha256": {
+              "artifacts/ovrtx_d455_002/observations/d455_0_0001.npz": "6ac5199ec3aafea56aa5782960efc7fe122679649ca39679fe51b308b326f4c4",
+              "artifacts/ovrtx_d455_002/camera_debug/d455_0_0001.npz": "03785d93e5a2f6b34e197a677e38649bb54639b706b359552878c781e52bcca7"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 16847,
+              "selected_samples_above_1um": 16847,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            }
+          },
+          {
+            "frame": "d455_0_0002",
+            "registration": {
+              "raw_valid_samples": 122220,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 122220,
+              "duplicate_or_occluded_samples": 888,
+              "registered_pixels": 121332,
+              "pointcloud_geometry_depth_outside_native_range": 238,
+              "pointcloud_measurement_disagreement_gt_1um": 16927,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 15456,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 118846,
+              "mean_error_m": 0.0019274196350640494,
+              "mean_absolute_m": 0.02185516331502887,
+              "rmse_m": 0.0752361671966253,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.13067889213562012,
+              "p99_absolute_m": 0.4069737076759339,
+              "max_absolute_m": 0.6114938259124756,
+              "nonzero_above_1um_samples": 21330,
+              "outliers_above_1cm_samples": 19616
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 121188,
+              "mean_error_m": -0.0002833861806870577,
+              "mean_absolute_m": 0.0004423901689057697,
+              "rmse_m": 0.007076619121140278,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.0019892811775207506,
+              "p99_absolute_m": 0.004906539916992192,
+              "max_absolute_m": 0.5048508644104004,
+              "nonzero_above_1um_samples": 16783,
+              "outliers_above_1cm_samples": 273
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 144,
+            "input_sha256": {
+              "artifacts/ovrtx_d455_002/observations/d455_0_0002.npz": "edc8f288323cda024d2ebe6376be89e28a363efac12be76bbfbe571a7126879d",
+              "artifacts/ovrtx_d455_002/camera_debug/d455_0_0002.npz": "d3b0dbc1e047ffeee16d6cf0fcfe9946b5887138087e91794bf91e3589a34d2a"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 16927,
+              "selected_samples_above_1um": 16927,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            }
+          },
+          {
+            "frame": "d455_1_0000",
+            "registration": {
+              "raw_valid_samples": 42949,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 42949,
+              "duplicate_or_occluded_samples": 217,
+              "registered_pixels": 42732,
+              "pointcloud_geometry_depth_outside_native_range": 165,
+              "pointcloud_measurement_disagreement_gt_1um": 6275,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 5898,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 38970,
+              "mean_error_m": 0.011816237435941668,
+              "mean_absolute_m": 0.024556319867154407,
+              "rmse_m": 0.0795773711764146,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.19332724809646565,
+              "p99_absolute_m": 0.3978674983978271,
+              "max_absolute_m": 0.6695194244384766,
+              "nonzero_above_1um_samples": 7174,
+              "outliers_above_1cm_samples": 6607
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 42567,
+              "mean_error_m": -0.0001852037057140165,
+              "mean_absolute_m": 0.0004894195843143953,
+              "rmse_m": 0.00536019285158401,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.0021491289138793855,
+              "p99_absolute_m": 0.006835327148437487,
+              "max_absolute_m": 0.3154134750366211,
+              "nonzero_above_1um_samples": 6110,
+              "outliers_above_1cm_samples": 260
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 165,
+            "input_sha256": {
+              "artifacts/ovrtx_d455_002/observations/d455_1_0000.npz": "3f89e8c1e7dcf74b833799b1666e8ff28d286e0cfc2f4fd9e19c0e501b9956fd",
+              "artifacts/ovrtx_d455_002/camera_debug/d455_1_0000.npz": "56b8e3ba56d2a33027e4495211476f49adb772b9fe6bc2d5ed60b646152057d6"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 6275,
+              "selected_samples_above_1um": 6275,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            }
+          },
+          {
+            "frame": "d455_1_0001",
+            "registration": {
+              "raw_valid_samples": 43152,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 43152,
+              "duplicate_or_occluded_samples": 226,
+              "registered_pixels": 42926,
+              "pointcloud_geometry_depth_outside_native_range": 162,
+              "pointcloud_measurement_disagreement_gt_1um": 6418,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 5944,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 39103,
+              "mean_error_m": 0.01183378487612754,
+              "mean_absolute_m": 0.023710078468524694,
+              "rmse_m": 0.07788396047776594,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.18805701732635505,
+              "p99_absolute_m": 0.3940641164779664,
+              "max_absolute_m": 0.6695194244384766,
+              "nonzero_above_1um_samples": 7098,
+              "outliers_above_1cm_samples": 6509
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 42764,
+              "mean_error_m": -0.00017081241636211127,
+              "mean_absolute_m": 0.0004587723735830378,
+              "rmse_m": 0.004882452018563163,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.0021084308624267564,
+              "p99_absolute_m": 0.006757161617279057,
+              "max_absolute_m": 0.35323500633239746,
+              "nonzero_above_1um_samples": 6256,
+              "outliers_above_1cm_samples": 257
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 162,
+            "input_sha256": {
+              "artifacts/ovrtx_d455_002/observations/d455_1_0001.npz": "33e398f2b74c9131968549bdb8204badc49a04059b7573aa6716415a88703a41",
+              "artifacts/ovrtx_d455_002/camera_debug/d455_1_0001.npz": "7ba97ebc2b917e0f50a08dd713292391598c64288bd90019b2b5ff1004fd8a8d"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 6418,
+              "selected_samples_above_1um": 6418,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            }
+          },
+          {
+            "frame": "d455_1_0002",
+            "registration": {
+              "raw_valid_samples": 42857,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 42857,
+              "duplicate_or_occluded_samples": 214,
+              "registered_pixels": 42643,
+              "pointcloud_geometry_depth_outside_native_range": 166,
+              "pointcloud_measurement_disagreement_gt_1um": 6383,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 5862,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 38898,
+              "mean_error_m": 0.011748699432375793,
+              "mean_absolute_m": 0.024397424912598577,
+              "rmse_m": 0.07886084651647642,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.19204478263854982,
+              "p99_absolute_m": 0.3957338404655456,
+              "max_absolute_m": 0.6695194244384766,
+              "nonzero_above_1um_samples": 7200,
+              "outliers_above_1cm_samples": 6610
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 42477,
+              "mean_error_m": -0.00019909061583926635,
+              "mean_absolute_m": 0.0004904437323878578,
+              "rmse_m": 0.005626189686005214,
+              "median_absolute_m": 0.0,
+              "p95_absolute_m": 0.0021017074584960896,
+              "p99_absolute_m": 0.006661739349365228,
+              "max_absolute_m": 0.35323500633239746,
+              "nonzero_above_1um_samples": 6217,
+              "outliers_above_1cm_samples": 253
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 166,
+            "input_sha256": {
+              "artifacts/ovrtx_d455_002/observations/d455_1_0002.npz": "dc8c964882528c3a1ace9600e3a7de567bf1ef9420ca2294d8dfcb092501df87",
+              "artifacts/ovrtx_d455_002/camera_debug/d455_1_0002.npz": "39f7e64ee73695aec3a37c4f721f70e4415ca38aacd2ae0a7745a626925acb8c"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 6383,
+              "selected_samples_above_1um": 6383,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            }
+          }
+        ]
+      }
+    },
+    "noise_controls": null,
+    "native_values_exactly_preserved": true,
+    "noise_off_analytic_plane_registration_pass": null,
+    "simulated_d455_validated": false,
+    "physical_d455_calibration_validated": false,
+    "registration_status": "PROTOTYPE",
+    "limitations": [
+      "Native XYZ is used only for pixel directions, never as measured depth",
+      "No consistency rejection, ideal replacement, smoothing, filling or synthetic noise",
+      "Noise affects native validity strongly; metric-depth behavior requires explicit control statistics",
+      "Target RGB is the original virtual depth camera, not the separate native D455 color imager"
+    ],
+    "implementation_sha256": {
+      "/home/ningan/RoboticCuttingSim/scripts/audit_single_view_registration.py": "1fef38bf7f25ef3d554c5b7beee5d8dc0739de4c06933c659cf13a0ef5d6159e",
+      "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/single_view_registration.py": "46adc13080674dc251d1221d29788c3968b638749e65eb6856dc342a477f81ce"
+    }
+  },
+  "slanted_plane_noise_control_audit": {
+    "status": "BLOCKED",
+    "scope": "CPU registration audit of actual native NVIDIA SingleView captures",
+    "runs": {
+      "off": {
+        "source": "/home/ningan/RoboticCuttingSim/artifacts/single_view_plane_noise_off_001",
+        "depth_model_parameters": {
+          "enabled": true,
+          "baselineMM": 95.0,
+          "focalLengthPixel": 317.04310808172426,
+          "sensorSizePixel": 640.0,
+          "maxDisparityPixel": 150.0,
+          "confidenceThreshold": 1.0,
+          "noiseMean": 0.0,
+          "noiseSigma": 0.0,
+          "noiseDownscaleFactorPixel": 1.0,
+          "minDistance": 0.52,
+          "maxDistance": 6.0,
+          "outlierRemovalEnabled": true,
+          "rgbDepthOutputMode": 0,
+          "effectiveDistance": 4.0
+        },
+        "frames": [
+          {
+            "frame": "d455_0_0000",
+            "registration": {
+              "raw_valid_samples": 288873,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 288873,
+              "duplicate_or_occluded_samples": 470,
+              "registered_pixels": 288403,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 288393,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 288393,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 288873,
+              "mean_error_m": -0.024217659246410943,
+              "mean_absolute_m": 0.024217659246410943,
+              "rmse_m": 0.024483254520920764,
+              "median_absolute_m": 0.023700594902038574,
+              "p95_absolute_m": 0.030705928802490234,
+              "p99_absolute_m": 0.03274846076965332,
+              "max_absolute_m": 0.034887075424194336,
+              "nonzero_above_1um_samples": 288873,
+              "outliers_above_1cm_samples": 288873
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 288403,
+              "mean_error_m": 0.0008263677839241603,
+              "mean_absolute_m": 0.0008263677839241603,
+              "rmse_m": 0.0008647341197706759,
+              "median_absolute_m": 0.0007739067077636719,
+              "p95_absolute_m": 0.001309514045715332,
+              "p99_absolute_m": 0.001489400863647461,
+              "max_absolute_m": 0.0016586780548095703,
+              "nonzero_above_1um_samples": 287923,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_off_001/observations/d455_0_0000.npz": "4414baa6846654cece6b76643a0ff582f51a0360d8135474c98e03d80a5a3c5b",
+              "artifacts/single_view_plane_noise_off_001/camera_debug/d455_0_0000.npz": "f6539d3bb931e9586d368049f1c01949196afa2ccdc53f2d5944e648f539ec42"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 288393,
+              "selected_samples_above_1um": 287923,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 288403,
+              "mean_error_m": 0.0008264267664632686,
+              "mean_absolute_m": 0.000826426767722668,
+              "rmse_m": 0.0008647817885196945,
+              "median_absolute_m": 0.0007739645825063368,
+              "p95_absolute_m": 0.0013094674418707667,
+              "p99_absolute_m": 0.0014894364834285344,
+              "max_absolute_m": 0.0016585400249471416,
+              "nonzero_above_1um_samples": 287923,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_0_0001",
+            "registration": {
+              "raw_valid_samples": 288873,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 288873,
+              "duplicate_or_occluded_samples": 470,
+              "registered_pixels": 288403,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 288393,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 288393,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 288873,
+              "mean_error_m": -0.024217659246410943,
+              "mean_absolute_m": 0.024217659246410943,
+              "rmse_m": 0.024483254520920764,
+              "median_absolute_m": 0.023700594902038574,
+              "p95_absolute_m": 0.030705928802490234,
+              "p99_absolute_m": 0.03274846076965332,
+              "max_absolute_m": 0.034887075424194336,
+              "nonzero_above_1um_samples": 288873,
+              "outliers_above_1cm_samples": 288873
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 288403,
+              "mean_error_m": 0.0008263677839241603,
+              "mean_absolute_m": 0.0008263677839241603,
+              "rmse_m": 0.0008647341197706759,
+              "median_absolute_m": 0.0007739067077636719,
+              "p95_absolute_m": 0.001309514045715332,
+              "p99_absolute_m": 0.001489400863647461,
+              "max_absolute_m": 0.0016586780548095703,
+              "nonzero_above_1um_samples": 287923,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_off_001/observations/d455_0_0001.npz": "0d3cf3fc6d94d9b56a4072d10aa3041a8e88a4a93d818178d8e6db8e5d26d560",
+              "artifacts/single_view_plane_noise_off_001/camera_debug/d455_0_0001.npz": "f6539d3bb931e9586d368049f1c01949196afa2ccdc53f2d5944e648f539ec42"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 288393,
+              "selected_samples_above_1um": 287923,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 288403,
+              "mean_error_m": 0.0008264267664632686,
+              "mean_absolute_m": 0.000826426767722668,
+              "rmse_m": 0.0008647817885196945,
+              "median_absolute_m": 0.0007739645825063368,
+              "p95_absolute_m": 0.0013094674418707667,
+              "p99_absolute_m": 0.0014894364834285344,
+              "max_absolute_m": 0.0016585400249471416,
+              "nonzero_above_1um_samples": 287923,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_0_0002",
+            "registration": {
+              "raw_valid_samples": 288873,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 288873,
+              "duplicate_or_occluded_samples": 470,
+              "registered_pixels": 288403,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 288393,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 288393,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 288873,
+              "mean_error_m": -0.024217659246410943,
+              "mean_absolute_m": 0.024217659246410943,
+              "rmse_m": 0.024483254520920764,
+              "median_absolute_m": 0.023700594902038574,
+              "p95_absolute_m": 0.030705928802490234,
+              "p99_absolute_m": 0.03274846076965332,
+              "max_absolute_m": 0.034887075424194336,
+              "nonzero_above_1um_samples": 288873,
+              "outliers_above_1cm_samples": 288873
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 288403,
+              "mean_error_m": 0.0008263677839241603,
+              "mean_absolute_m": 0.0008263677839241603,
+              "rmse_m": 0.0008647341197706759,
+              "median_absolute_m": 0.0007739067077636719,
+              "p95_absolute_m": 0.001309514045715332,
+              "p99_absolute_m": 0.001489400863647461,
+              "max_absolute_m": 0.0016586780548095703,
+              "nonzero_above_1um_samples": 287923,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_off_001/observations/d455_0_0002.npz": "6be8f73bbddf5dfa1686dd5f1eaf30004aed33687895b20dc1df04fd9772c758",
+              "artifacts/single_view_plane_noise_off_001/camera_debug/d455_0_0002.npz": "f6539d3bb931e9586d368049f1c01949196afa2ccdc53f2d5944e648f539ec42"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 288393,
+              "selected_samples_above_1um": 287923,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 288403,
+              "mean_error_m": 0.0008264267664632686,
+              "mean_absolute_m": 0.000826426767722668,
+              "rmse_m": 0.0008647817885196945,
+              "median_absolute_m": 0.0007739645825063368,
+              "p95_absolute_m": 0.0013094674418707667,
+              "p99_absolute_m": 0.0014894364834285344,
+              "max_absolute_m": 0.0016585400249471416,
+              "nonzero_above_1um_samples": 287923,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_1_0000",
+            "registration": {
+              "raw_valid_samples": 289315,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 289315,
+              "duplicate_or_occluded_samples": 469,
+              "registered_pixels": 288846,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 288798,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 288798,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 289315,
+              "mean_error_m": -0.024198554173754955,
+              "mean_absolute_m": 0.024198554173754955,
+              "rmse_m": 0.024464167770834853,
+              "median_absolute_m": 0.023688077926635742,
+              "p95_absolute_m": 0.0307081937789917,
+              "p99_absolute_m": 0.03268241882324219,
+              "max_absolute_m": 0.034841179847717285,
+              "nonzero_above_1um_samples": 289315,
+              "outliers_above_1cm_samples": 289315
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 288846,
+              "mean_error_m": 0.000847341962550805,
+              "mean_absolute_m": 0.000847341962550805,
+              "rmse_m": 0.0008868086769520545,
+              "median_absolute_m": 0.0007938146591186523,
+              "p95_absolute_m": 0.0013443231582641602,
+              "p99_absolute_m": 0.0015265941619873047,
+              "max_absolute_m": 0.001700282096862793,
+              "nonzero_above_1um_samples": 288329,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_off_001/observations/d455_1_0000.npz": "7cf0553562176028100189afec8933d61fc3be39423fc8e7f84cb2465ddd2cdf",
+              "artifacts/single_view_plane_noise_off_001/camera_debug/d455_1_0000.npz": "3f17f54bb56ef1317d62830cfcc2379ce157acf5bec6dc5f2f9a6ff9d3b2394d"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 288798,
+              "selected_samples_above_1um": 288329,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 288846,
+              "mean_error_m": 0.0008474000377833414,
+              "mean_absolute_m": 0.0008474000504647907,
+              "rmse_m": 0.0008868553639483278,
+              "median_absolute_m": 0.0007939110122729964,
+              "p95_absolute_m": 0.001344375755175653,
+              "p99_absolute_m": 0.001526519355536271,
+              "max_absolute_m": 0.001700151997182875,
+              "nonzero_above_1um_samples": 288329,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_1_0001",
+            "registration": {
+              "raw_valid_samples": 289315,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 289315,
+              "duplicate_or_occluded_samples": 469,
+              "registered_pixels": 288846,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 288798,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 288798,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 289315,
+              "mean_error_m": -0.024198554173754955,
+              "mean_absolute_m": 0.024198554173754955,
+              "rmse_m": 0.024464167770834853,
+              "median_absolute_m": 0.023688077926635742,
+              "p95_absolute_m": 0.0307081937789917,
+              "p99_absolute_m": 0.03268241882324219,
+              "max_absolute_m": 0.034841179847717285,
+              "nonzero_above_1um_samples": 289315,
+              "outliers_above_1cm_samples": 289315
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 288846,
+              "mean_error_m": 0.000847341962550805,
+              "mean_absolute_m": 0.000847341962550805,
+              "rmse_m": 0.0008868086769520545,
+              "median_absolute_m": 0.0007938146591186523,
+              "p95_absolute_m": 0.0013443231582641602,
+              "p99_absolute_m": 0.0015265941619873047,
+              "max_absolute_m": 0.001700282096862793,
+              "nonzero_above_1um_samples": 288329,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_off_001/observations/d455_1_0001.npz": "cb95de129861a51f72107944f68bffd6b71991b5ccb3824219472a48f12ccb84",
+              "artifacts/single_view_plane_noise_off_001/camera_debug/d455_1_0001.npz": "3f17f54bb56ef1317d62830cfcc2379ce157acf5bec6dc5f2f9a6ff9d3b2394d"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 288798,
+              "selected_samples_above_1um": 288329,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 288846,
+              "mean_error_m": 0.0008474000377833414,
+              "mean_absolute_m": 0.0008474000504647907,
+              "rmse_m": 0.0008868553639483278,
+              "median_absolute_m": 0.0007939110122729964,
+              "p95_absolute_m": 0.001344375755175653,
+              "p99_absolute_m": 0.001526519355536271,
+              "max_absolute_m": 0.001700151997182875,
+              "nonzero_above_1um_samples": 288329,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_1_0002",
+            "registration": {
+              "raw_valid_samples": 289315,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 289315,
+              "duplicate_or_occluded_samples": 469,
+              "registered_pixels": 288846,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 288798,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 288798,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 289315,
+              "mean_error_m": -0.024198554173754955,
+              "mean_absolute_m": 0.024198554173754955,
+              "rmse_m": 0.024464167770834853,
+              "median_absolute_m": 0.023688077926635742,
+              "p95_absolute_m": 0.0307081937789917,
+              "p99_absolute_m": 0.03268241882324219,
+              "max_absolute_m": 0.034841179847717285,
+              "nonzero_above_1um_samples": 289315,
+              "outliers_above_1cm_samples": 289315
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 288846,
+              "mean_error_m": 0.000847341962550805,
+              "mean_absolute_m": 0.000847341962550805,
+              "rmse_m": 0.0008868086769520545,
+              "median_absolute_m": 0.0007938146591186523,
+              "p95_absolute_m": 0.0013443231582641602,
+              "p99_absolute_m": 0.0015265941619873047,
+              "max_absolute_m": 0.001700282096862793,
+              "nonzero_above_1um_samples": 288329,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_off_001/observations/d455_1_0002.npz": "2bb2e0492ce98ac7970e365f2739eac62729628b64874f69220e2c8c842409b9",
+              "artifacts/single_view_plane_noise_off_001/camera_debug/d455_1_0002.npz": "3f17f54bb56ef1317d62830cfcc2379ce157acf5bec6dc5f2f9a6ff9d3b2394d"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 288798,
+              "selected_samples_above_1um": 288329,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 288846,
+              "mean_error_m": 0.0008474000377833414,
+              "mean_absolute_m": 0.0008474000504647907,
+              "rmse_m": 0.0008868553639483278,
+              "median_absolute_m": 0.0007939110122729964,
+              "p95_absolute_m": 0.001344375755175653,
+              "p99_absolute_m": 0.001526519355536271,
+              "max_absolute_m": 0.001700151997182875,
+              "nonzero_above_1um_samples": 288329,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          }
+        ]
+      },
+      "on": {
+        "source": "/home/ningan/RoboticCuttingSim/artifacts/single_view_plane_noise_on_001",
+        "depth_model_parameters": {
+          "enabled": true,
+          "baselineMM": 95.0,
+          "focalLengthPixel": 317.04310808172426,
+          "sensorSizePixel": 640.0,
+          "maxDisparityPixel": 150.0,
+          "confidenceThreshold": 1.0,
+          "noiseMean": 0.25,
+          "noiseSigma": 0.25,
+          "noiseDownscaleFactorPixel": 1.0,
+          "minDistance": 0.52,
+          "maxDistance": 6.0,
+          "outlierRemovalEnabled": true,
+          "rgbDepthOutputMode": 0,
+          "effectiveDistance": 4.0
+        },
+        "frames": [
+          {
+            "frame": "d455_0_0000",
+            "registration": {
+              "raw_valid_samples": 143074,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 143074,
+              "duplicate_or_occluded_samples": 216,
+              "registered_pixels": 142858,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 142594,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 142594,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 143074,
+              "mean_error_m": -0.024195186294404782,
+              "mean_absolute_m": 0.024195186294404782,
+              "rmse_m": 0.02446058175724613,
+              "median_absolute_m": 0.023692846298217773,
+              "p95_absolute_m": 0.03067636489868164,
+              "p99_absolute_m": 0.0326918363571167,
+              "max_absolute_m": 0.03487074375152588,
+              "nonzero_above_1um_samples": 143074,
+              "outliers_above_1cm_samples": 143074
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 142858,
+              "mean_error_m": 0.0008246857053291045,
+              "mean_absolute_m": 0.0008246857053291045,
+              "rmse_m": 0.0008636228151910136,
+              "median_absolute_m": 0.0007731318473815918,
+              "p95_absolute_m": 0.0013080835342407227,
+              "p99_absolute_m": 0.0014869999885559065,
+              "max_absolute_m": 0.0016494989395141602,
+              "nonzero_above_1um_samples": 142378,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_on_001/observations/d455_0_0000.npz": "08d2bd04126a924a3d0ad6118c0004f578f4e80b6d8b08511dfffbdab36c2e4b",
+              "artifacts/single_view_plane_noise_on_001/camera_debug/d455_0_0000.npz": "0fb402d9c3999f1a20976a6008056570664aa63137666ba46f2340609e28112e"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 142594,
+              "selected_samples_above_1um": 142378,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 142858,
+              "mean_error_m": 0.0008247445703278495,
+              "mean_absolute_m": 0.0008247445728703363,
+              "rmse_m": 0.0008636702557139414,
+              "median_absolute_m": 0.0007731793723247948,
+              "p95_absolute_m": 0.0013081687936094323,
+              "p99_absolute_m": 0.0014870375768281441,
+              "max_absolute_m": 0.0016495960257052467,
+              "nonzero_above_1um_samples": 142378,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_0_0001",
+            "registration": {
+              "raw_valid_samples": 143478,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 143478,
+              "duplicate_or_occluded_samples": 227,
+              "registered_pixels": 143251,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 142998,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 142998,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 143478,
+              "mean_error_m": -0.024202243916674877,
+              "mean_absolute_m": 0.024202243916674877,
+              "rmse_m": 0.024468671799552585,
+              "median_absolute_m": 0.02368563413619995,
+              "p95_absolute_m": 0.030688881874084473,
+              "p99_absolute_m": 0.032720208168029785,
+              "max_absolute_m": 0.034887075424194336,
+              "nonzero_above_1um_samples": 143478,
+              "outliers_above_1cm_samples": 143478
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 143251,
+              "mean_error_m": 0.000825318243057344,
+              "mean_absolute_m": 0.000825318243057344,
+              "rmse_m": 0.0008644516067033902,
+              "median_absolute_m": 0.0007730722427368164,
+              "p95_absolute_m": 0.0013087987899780273,
+              "p99_absolute_m": 0.0014891624450683594,
+              "max_absolute_m": 0.0016558170318603516,
+              "nonzero_above_1um_samples": 142771,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_on_001/observations/d455_0_0001.npz": "d6ee6435c19587a91b769e3eb0c799cd168d13fd3a6bdd4d892f888002f9d3ed",
+              "artifacts/single_view_plane_noise_on_001/camera_debug/d455_0_0001.npz": "12ff886c54a4f115d4c0888220af4545c8a7e2cdf82fb0cbbb9d7a71cf33be62"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 142998,
+              "selected_samples_above_1um": 142771,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 143251,
+              "mean_error_m": 0.0008253771691472548,
+              "mean_absolute_m": 0.0008253771716827663,
+              "rmse_m": 0.0008644990807773532,
+              "median_absolute_m": 0.0007731197676802415,
+              "p95_absolute_m": 0.0013087579693837892,
+              "p99_absolute_m": 0.0014892004490353328,
+              "max_absolute_m": 0.0016556692582414545,
+              "nonzero_above_1um_samples": 142771,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_0_0002",
+            "registration": {
+              "raw_valid_samples": 143751,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 143751,
+              "duplicate_or_occluded_samples": 232,
+              "registered_pixels": 143519,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 143270,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 143270,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 143751,
+              "mean_error_m": -0.024200970435802455,
+              "mean_absolute_m": 0.024200970435802455,
+              "rmse_m": 0.024467073821078347,
+              "median_absolute_m": 0.023693203926086426,
+              "p95_absolute_m": 0.030667543411254883,
+              "p99_absolute_m": 0.032720327377319336,
+              "max_absolute_m": 0.034887075424194336,
+              "nonzero_above_1um_samples": 143751,
+              "outliers_above_1cm_samples": 143751
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 143519,
+              "mean_error_m": 0.0008252225425600393,
+              "mean_absolute_m": 0.0008252225425600393,
+              "rmse_m": 0.0008642632126558001,
+              "median_absolute_m": 0.0007736682891845703,
+              "p95_absolute_m": 0.0013079762458801276,
+              "p99_absolute_m": 0.0014887833595275887,
+              "max_absolute_m": 0.0016558170318603516,
+              "nonzero_above_1um_samples": 143038,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_on_001/observations/d455_0_0002.npz": "d3e08ac123baa5ba594e6afd0fa4262ef11f9b85bd37e0f08d411ba85214a111",
+              "artifacts/single_view_plane_noise_on_001/camera_debug/d455_0_0002.npz": "d55610f2dc71888e179c2cf63d01a144b6b6a63115576d821770384dae35fdc2"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 143270,
+              "selected_samples_above_1um": 143038,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 143519,
+              "mean_error_m": 0.0008252813490342713,
+              "mean_absolute_m": 0.0008252813515650482,
+              "rmse_m": 0.0008643106438890465,
+              "median_absolute_m": 0.0007737312481819192,
+              "p95_absolute_m": 0.0013078529569287025,
+              "p99_absolute_m": 0.0014887527259371156,
+              "max_absolute_m": 0.0016556692582414545,
+              "nonzero_above_1um_samples": 143038,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_1_0000",
+            "registration": {
+              "raw_valid_samples": 143422,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 143422,
+              "duplicate_or_occluded_samples": 226,
+              "registered_pixels": 143196,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 142919,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 142919,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 143422,
+              "mean_error_m": -0.02417727741947305,
+              "mean_absolute_m": 0.02417727741947305,
+              "rmse_m": 0.02444329067349907,
+              "median_absolute_m": 0.0236508846282959,
+              "p95_absolute_m": 0.030658602714538574,
+              "p99_absolute_m": 0.03264331817626953,
+              "max_absolute_m": 0.034841179847717285,
+              "nonzero_above_1um_samples": 143422,
+              "outliers_above_1cm_samples": 143422
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 143196,
+              "mean_error_m": 0.0008457967948905582,
+              "mean_absolute_m": 0.0008457967948905582,
+              "rmse_m": 0.0008859606203444659,
+              "median_absolute_m": 0.0007928609848022461,
+              "p95_absolute_m": 0.0013460516929626465,
+              "p99_absolute_m": 0.0015239715576171875,
+              "max_absolute_m": 0.001700282096862793,
+              "nonzero_above_1um_samples": 142693,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_on_001/observations/d455_1_0000.npz": "10d40d18f95cd9a3ab2d93c687c374196bc3354d1df12f346f067612ec39c78f",
+              "artifacts/single_view_plane_noise_on_001/camera_debug/d455_1_0000.npz": "9805a3098b308a8368bf5116e926a9344b65f99e4b3a3c94ff894e2177ae3d96"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 142919,
+              "selected_samples_above_1um": 142693,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 143196,
+              "mean_error_m": 0.0008458546618421928,
+              "mean_absolute_m": 0.0008458546796432839,
+              "rmse_m": 0.0008860069717444953,
+              "median_absolute_m": 0.0007930011448615826,
+              "p95_absolute_m": 0.001346027438729691,
+              "p99_absolute_m": 0.0015239678226863895,
+              "max_absolute_m": 0.001700151997182875,
+              "nonzero_above_1um_samples": 142693,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_1_0001",
+            "registration": {
+              "raw_valid_samples": 143875,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 143875,
+              "duplicate_or_occluded_samples": 228,
+              "registered_pixels": 143647,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 143368,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 143368,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 143875,
+              "mean_error_m": -0.024179226847134083,
+              "mean_absolute_m": 0.024179226847134083,
+              "rmse_m": 0.02444548424647613,
+              "median_absolute_m": 0.023653864860534668,
+              "p95_absolute_m": 0.0306704044342041,
+              "p99_absolute_m": 0.03265798091888428,
+              "max_absolute_m": 0.03477680683135986,
+              "nonzero_above_1um_samples": 143875,
+              "outliers_above_1cm_samples": 143875
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 143647,
+              "mean_error_m": 0.0008458868327301439,
+              "mean_absolute_m": 0.0008458868327301439,
+              "rmse_m": 0.0008861119187550391,
+              "median_absolute_m": 0.0007926225662231445,
+              "p95_absolute_m": 0.0013470292091369608,
+              "p99_absolute_m": 0.001525108814239503,
+              "max_absolute_m": 0.0016970634460449219,
+              "nonzero_above_1um_samples": 143140,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_on_001/observations/d455_1_0001.npz": "adeb257197738685d0285c48c59af6bb71995f5a24914a70959a3627eae2582b",
+              "artifacts/single_view_plane_noise_on_001/camera_debug/d455_1_0001.npz": "9869554c4621f92a42fd2daf322dc32271f28a6c816436b7c79f108a33d91656"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 143368,
+              "selected_samples_above_1um": 143140,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 143647,
+              "mean_error_m": 0.0008459448372079735,
+              "mean_absolute_m": 0.0008459448585516063,
+              "rmse_m": 0.0008861584924210508,
+              "median_absolute_m": 0.0007926499072521409,
+              "p95_absolute_m": 0.0013469951141488635,
+              "p99_absolute_m": 0.0015250306695012794,
+              "max_absolute_m": 0.001696890576953436,
+              "nonzero_above_1um_samples": 143140,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          },
+          {
+            "frame": "d455_1_0002",
+            "registration": {
+              "raw_valid_samples": 144118,
+              "point_direction_invalid_samples": 0,
+              "outside_rgb_image_samples": 0,
+              "projected_samples": 144118,
+              "duplicate_or_occluded_samples": 231,
+              "registered_pixels": 143887,
+              "pointcloud_geometry_depth_outside_native_range": 0,
+              "pointcloud_measurement_disagreement_gt_1um": 143612,
+              "pointcloud_measurement_disagreement_gt_0_1mm": 143612,
+              "consistency_filter_applied": false,
+              "native_measurement_values_preserved_exactly": true,
+              "projection": "native left-camera USD XYZ to CV axes, runtime K, floor to pixel, measured-Z z-buffer",
+              "depth": "raw native DepthSensorDistance optical Z in meters; invalid=0",
+              "rgb_target": "original virtual depth camera LdrColor; not the separate physical D455 color imager"
+            },
+            "raw_grid_vs_ideal_rgb_grid": {
+              "samples": 144118,
+              "mean_error_m": -0.024186879234727943,
+              "mean_absolute_m": 0.024186879234727943,
+              "rmse_m": 0.024453131749451497,
+              "median_absolute_m": 0.023665904998779297,
+              "p95_absolute_m": 0.03065788745880127,
+              "p99_absolute_m": 0.03266625404357898,
+              "max_absolute_m": 0.034841179847717285,
+              "nonzero_above_1um_samples": 144118,
+              "outliers_above_1cm_samples": 144118
+            },
+            "registered_vs_ideal_rgb_grid": {
+              "samples": 143887,
+              "mean_error_m": 0.0008464742113803624,
+              "mean_absolute_m": 0.0008464742113803624,
+              "rmse_m": 0.0008866476314928353,
+              "median_absolute_m": 0.0007938146591186523,
+              "p95_absolute_m": 0.0013452768325805664,
+              "p99_absolute_m": 0.001525282859802246,
+              "max_absolute_m": 0.001700282096862793,
+              "nonzero_above_1um_samples": 143381,
+              "outliers_above_1cm_samples": 0
+            },
+            "native_valid_registered_at_ideal_invalid_pixels": 0,
+            "input_sha256": {
+              "artifacts/single_view_plane_noise_on_001/observations/d455_1_0002.npz": "b0e9cfb87e9ce0f3e3db4b4c53db7fbed44933a38f77c673a1178f842aa6e920",
+              "artifacts/single_view_plane_noise_on_001/camera_debug/d455_1_0002.npz": "0b79b14fd1603cbcc581b03cb41f56d3b725ea13765ef003770781942f83de31"
+            },
+            "native_scalar_vs_geometric_cloud_differences": {
+              "input_samples_above_1um": 143612,
+              "selected_samples_above_1um": 143381,
+              "note": "Not filtered; native outliers and z-buffer/sample collisions remain explicit"
+            },
+            "analytic_plane": {
+              "samples": 143887,
+              "mean_error_m": 0.0008465321084622736,
+              "mean_absolute_m": 0.000846532128020501,
+              "rmse_m": 0.0008866940556196678,
+              "median_absolute_m": 0.0007939110122729964,
+              "p95_absolute_m": 0.0013452508510274352,
+              "p99_absolute_m": 0.0015251498787911544,
+              "max_absolute_m": 0.001700151997182875,
+              "nonzero_above_1um_samples": 143381,
+              "outliers_above_1cm_samples": 0,
+              "p95_tolerance_m": 0.001,
+              "status": "FAIL"
+            }
+          }
+        ]
+      }
+    },
+    "noise_controls": {
+      "d455_0": {
+        "native": {
+          "off_valid_samples": 866619,
+          "on_valid_samples": 430303,
+          "validity_changed_samples": 437782,
+          "on_minus_off_common_samples": {
+            "samples": 429570,
+            "mean_error_m": -1.1556033141054049e-07,
+            "mean_absolute_m": 1.1556033141054049e-07,
+            "rmse_m": 1.0434180396649366e-05,
+            "median_absolute_m": 0.0,
+            "p95_absolute_m": 0.0,
+            "p99_absolute_m": 0.0,
+            "max_absolute_m": 0.0013842582702636719,
+            "nonzero_above_1um_samples": 57,
+            "outliers_above_1cm_samples": 0
+          },
+          "temporal": {
+            "off": {
+              "validity_changed_samples": 0,
+              "consecutive_common_samples": {
+                "samples": 577746,
+                "mean_error_m": 0.0,
+                "mean_absolute_m": 0.0,
+                "rmse_m": 0.0,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0,
+                "nonzero_above_1um_samples": 0,
+                "outliers_above_1cm_samples": 0
+              }
+            },
+            "on": {
+              "validity_changed_samples": 275333,
+              "consecutive_common_samples": {
+                "samples": 149224,
+                "mean_error_m": 1.8542770763469407e-08,
+                "mean_absolute_m": 2.478000076374522e-07,
+                "rmse_m": 1.5196760788448019e-05,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0013842582702636719,
+                "nonzero_above_1um_samples": 43,
+                "outliers_above_1cm_samples": 0
+              }
+            }
+          }
+        },
+        "registered": {
+          "off_valid_samples": 865209,
+          "on_valid_samples": 429628,
+          "validity_changed_samples": 435581,
+          "on_minus_off_common_samples": {
+            "samples": 429628,
+            "mean_error_m": -1.2337745817021908e-09,
+            "mean_absolute_m": 1.2337745817021908e-09,
+            "rmse_m": 8.08690064635478e-07,
+            "median_absolute_m": 0.0,
+            "p95_absolute_m": 0.0,
+            "p99_absolute_m": 0.0,
+            "max_absolute_m": 0.0005300641059875488,
+            "nonzero_above_1um_samples": 1,
+            "outliers_above_1cm_samples": 0
+          },
+          "temporal": {
+            "off": {
+              "validity_changed_samples": 0,
+              "consecutive_common_samples": {
+                "samples": 576806,
+                "mean_error_m": 0.0,
+                "mean_absolute_m": 0.0,
+                "rmse_m": 0.0,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0,
+                "nonzero_above_1um_samples": 0,
+                "outliers_above_1cm_samples": 0
+              }
+            },
+            "on": {
+              "validity_changed_samples": 273987,
+              "consecutive_common_samples": {
+                "samples": 149446,
+                "mean_error_m": -3.5468604444919826e-09,
+                "mean_absolute_m": 3.5468604444919826e-09,
+                "rmse_m": 1.371154043341682e-06,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0005300641059875488,
+                "nonzero_above_1um_samples": 1,
+                "outliers_above_1cm_samples": 0
+              }
+            }
+          }
+        }
+      },
+      "d455_1": {
+        "native": {
+          "off_valid_samples": 867945,
+          "on_valid_samples": 431415,
+          "validity_changed_samples": 437918,
+          "on_minus_off_common_samples": {
+            "samples": 430721,
+            "mean_error_m": -1.0570998699102828e-07,
+            "mean_absolute_m": 1.0570998699102828e-07,
+            "rmse_m": 9.834069855621743e-06,
+            "median_absolute_m": 0.0,
+            "p95_absolute_m": 0.0,
+            "p99_absolute_m": 0.0,
+            "max_absolute_m": 0.0014787912368774414,
+            "nonzero_above_1um_samples": 54,
+            "outliers_above_1cm_samples": 0
+          },
+          "temporal": {
+            "off": {
+              "validity_changed_samples": 0,
+              "consecutive_common_samples": {
+                "samples": 578630,
+                "mean_error_m": 0.0,
+                "mean_absolute_m": 0.0,
+                "rmse_m": 0.0,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0,
+                "nonzero_above_1um_samples": 0,
+                "outliers_above_1cm_samples": 0
+              }
+            },
+            "on": {
+              "validity_changed_samples": 275614,
+              "consecutive_common_samples": {
+                "samples": 149838,
+                "mean_error_m": 1.7729674833080796e-09,
+                "mean_absolute_m": 2.2493455873322193e-07,
+                "rmse_m": 1.4195516935415728e-05,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0013655424118041992,
+                "nonzero_above_1um_samples": 41,
+                "outliers_above_1cm_samples": 0
+              }
+            }
+          }
+        },
+        "registered": {
+          "off_valid_samples": 866538,
+          "on_valid_samples": 430730,
+          "validity_changed_samples": 435808,
+          "on_minus_off_common_samples": {
+            "samples": 430730,
+            "mean_error_m": -1.2629990779954733e-09,
+            "mean_absolute_m": 1.2629990779954733e-09,
+            "rmse_m": 8.289065931740026e-07,
+            "median_absolute_m": 0.0,
+            "p95_absolute_m": 0.0,
+            "p99_absolute_m": 0.0,
+            "max_absolute_m": 0.0005440115928649902,
+            "nonzero_above_1um_samples": 1,
+            "outliers_above_1cm_samples": 0
+          },
+          "temporal": {
+            "off": {
+              "validity_changed_samples": 0,
+              "consecutive_common_samples": {
+                "samples": 577692,
+                "mean_error_m": 0.0,
+                "mean_absolute_m": 0.0,
+                "rmse_m": 0.0,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0,
+                "nonzero_above_1um_samples": 0,
+                "outliers_above_1cm_samples": 0
+              }
+            },
+            "on": {
+              "validity_changed_samples": 274225,
+              "consecutive_common_samples": {
+                "samples": 150076,
+                "mean_error_m": 0.0,
+                "mean_absolute_m": 0.0,
+                "rmse_m": 0.0,
+                "median_absolute_m": 0.0,
+                "p95_absolute_m": 0.0,
+                "p99_absolute_m": 0.0,
+                "max_absolute_m": 0.0,
+                "nonzero_above_1um_samples": 0,
+                "outliers_above_1cm_samples": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "native_values_exactly_preserved": true,
+    "noise_off_analytic_plane_registration_pass": false,
+    "simulated_d455_validated": false,
+    "physical_d455_calibration_validated": false,
+    "registration_status": "BLOCKED_AT_1MM_P95_PLANE_CRITERION",
+    "limitations": [
+      "Native XYZ is used only for pixel directions, never as measured depth",
+      "No consistency rejection, ideal replacement, smoothing, filling or synthetic noise",
+      "Noise affects native validity strongly; metric-depth behavior requires explicit control statistics",
+      "Target RGB is the original virtual depth camera, not the separate native D455 color imager"
+    ],
+    "implementation_sha256": {
+      "/home/ningan/RoboticCuttingSim/scripts/audit_single_view_registration.py": "1fef38bf7f25ef3d554c5b7beee5d8dc0739de4c06933c659cf13a0ef5d6159e",
+      "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/single_view_registration.py": "46adc13080674dc251d1221d29788c3968b638749e65eb6856dc342a477f81ce"
+    }
+  },
+  "fixture": {
+    "status": "AUTHORED_CONTROL_FIXTURE",
+    "scene": "/home/ningan/RoboticCuttingSim/artifacts/single_view_plane_fixture_001/slanted_plane.usda",
+    "plane_world_equation": {
+      "normal": [
+        -0.25,
+        -0.1,
+        1.0
+      ],
+      "offset": -1.0
+    },
+    "depth_equation": "n dot (camera_origin + optical_Z * world_ray) + offset = 0",
+    "cameras": {
+      "d455_0": [
+        "/World/D455_0/RSD455/Camera_Pseudo_Depth",
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "d455_1": [
+        "/World/D455_1/RSD455/Camera_Pseudo_Depth",
+        [
+          0.1,
+          0.0,
+          0.0
+        ]
+      ],
+      "global": [
+        "/World/GlobalCamera",
+        [
+          0.0,
+          -0.15,
+          0.0
+        ]
+      ]
+    },
+    "source_times_s": [
+      0.0,
+      1.0,
+      2.0
+    ],
+    "scope": "analytic renderer control, no physics or physical D455 calibration"
+  },
+  "runtime_packages": {
+    "ovrtx": "0.6.0.1791947691",
+    "ovstage": "0.3.0.1791986420",
+    "numpy": "2.5.4"
+  },
+  "primary_sources": [
+    "https://docs.omniverse.nvidia.com/kit/docs/omni.sensors.nv.camera/latest/camera_extension.html",
+    "https://docs.omniverse.nvidia.com/kit/docs/omni.sensors.nv.camera/1.4.0/CHANGELOG.html"
+  ]
+}
