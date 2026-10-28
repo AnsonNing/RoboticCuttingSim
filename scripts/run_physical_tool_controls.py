@@ -243,6 +243,9 @@ def open_backend(args, output, protocol):
     grip=replace(ToolGraspConfig(), **protocol["normal_grip"])
     spacing=.002 if args.task_id == "TRIM-01" else .001
     if args.runtime == "isaac_sim":
+        # Same process-local acknowledgement as the installed native launcher;
+        # the existing runtime was explicitly installed with accepted terms.
+        os.environ.setdefault("OMNI_KIT_ACCEPT_EULA","YES")
         from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig, LiveIsaacSimCutting, launch_app
         config=IsaacSimCuttingConfig(task_id=args.task_id, seed=args.seed, task_variant="fixed", gpu=args.gpu,
             device=f"cuda:{args.gpu}", particle_spacing_m=spacing, camera=False,
