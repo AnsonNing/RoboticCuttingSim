@@ -53,3 +53,13 @@ def test_wrist_names_and_optional_global_never_expose_debug_state():
     calibration["wrist_d405_0"]["timestamp_s"] = .01
     with pytest.raises(ValueError, match="Calibration"):
         vision_observation(renamed, calibration, .02, "vision_proprio", proprio)
+
+
+@pytest.mark.parametrize("recorded_time", [.01, float("nan")])
+@pytest.mark.parametrize("source", ["frame", "calibration"])
+def test_native_physics_timestamp_must_match_current_surface_and_robot(recorded_time, source):
+    frames, calibration, proprio = payload()
+    container = frames if source == "frame" else calibration
+    container["d455_0"]["physics_timestamp_s"] = recorded_time
+    with pytest.raises(ValueError, match="timestamps must match"):
+        vision_observation(frames, calibration, .02, "vision_proprio", proprio)

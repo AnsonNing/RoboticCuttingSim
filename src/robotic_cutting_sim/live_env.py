@@ -20,7 +20,8 @@ class CuttingTaskEnv:
     targets are absolute WORLD knife-edge XYZ+XYZW; joint targets are seven
     active-arm positions in radians. None runs the scripted reference baseline.
     Explicit actions arm cutting independently of the reference-path schedule.
-    Franka2 remains parked. No force, oracle state or Global image enters observe().
+    The second Franka holds its observation posture. No force or oracle state
+    enters observe(); Global RGB-D is an explicit opt-in.
     """
 
     def __init__(self, backend, task_id=None, *, seed=42, action_mode=ACTION_MODES[0],

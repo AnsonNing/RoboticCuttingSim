@@ -52,10 +52,12 @@ def vision_observation(frames, calibration, timestamp_s, profile, proprio=None, 
     if include_global_camera:
         names += ("global_d455" if wrist else "global",)
     for name in names:
-        if abs(float(frames[name].get("timestamp_s", timestamp_s))-timestamp_s) > 1e-9:
-            raise ValueError("Camera and physics timestamps must match")
-        if "timestamp_s" in calibration[name] and abs(float(calibration[name]["timestamp_s"])-timestamp_s) > 1e-9:
-            raise ValueError("Calibration and camera timestamps must match")
+        for source, description in ((frames[name], "Camera and physics"),
+                                    (calibration[name], "Calibration and camera")):
+            for field in ("timestamp_s", "physics_timestamp_s"):
+                recorded_time = float(source.get(field, timestamp_s))
+                if not np.isfinite(recorded_time) or abs(recorded_time-timestamp_s) > 1e-9:
+                    raise ValueError(description+" timestamps must match")
     validated = {name: validate_frame(frames[name]["rgb"], frames[name]["depth_m"],
                     timestamp_s, frames[name]["surface_timestamp_s"]) for name in names}
     observation = {key: {name: validated[name][key] for name in names}
