@@ -436,7 +436,7 @@
   "cache_boundary": {
     "download_cache": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-20261028/.deps/uv-cache",
     "dedicated_uv_download_cache_reused_from_attempt001": true,
-    "old_environment_site_packages_copied_or_linked_into_new_environments": false,
+    "old_environment_paths_used_as_installation_sources": false,
     "uv_hardlinks_from_verified_package_download_cache": true,
     "original_project_venvs_not_used_as_dependency_sources": true,
     "existing_explicit_python312_interpreter_used_to_create_new_venvs": true,
