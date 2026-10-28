@@ -43,6 +43,8 @@ class LiveCuttingMaterial:
         self.cutting_law = 1 if cutting_law is None else int(cutting_law)
         self.slice_efficiency, self.max_cuts = float(slice_efficiency), int(max_cuts)
         self.obstacle_boxes_edge = obstacle_boxes_edge
+        self.obstacle_reaction_recipients = None
+        self.pending_obstacle_wrenches = {}
         self.target = target or WorkpieceTarget()
         self.task = task
         # The retained floor/tray implementation is in the world identity frame.
@@ -66,6 +68,27 @@ class LiveCuttingMaterial:
 
     def _pose_local(self, pose):
         return transform_poses(self.T_local_world, pose) if self.task else pose
+
+    def configure_pad_obstacles(self, boxes, recipients):
+        """Configure before reset; handle reaction stays on tool, pads on fingers."""
+        if self.tool_profile is None:
+            raise ValueError('Finger obstacles are opt-in for profile tasks only')
+        boxes = np.asarray(boxes, np.float32)
+        if boxes.shape != (3, 2, 3) or len(recipients) != 3 or recipients[0] is not None:
+            raise ValueError('Expected one handle and two measured pad boxes')
+        if not np.isfinite(boxes).all() or np.any(boxes[:, 1] <= 0):
+            raise ValueError('Pad bounds must be finite and nonempty')
+        self.obstacle_boxes_edge = boxes
+        self.obstacle_reaction_recipients = tuple(recipients)
+
+    def update_pad_obstacles(self, boxes):
+        boxes = np.asarray(boxes, np.float32)
+        if self.obstacle_reaction_recipients is None or boxes.shape != (3, 2, 3):
+            raise ValueError('Configure the actual pad recipients before updating geometry')
+        if not np.isfinite(boxes).all() or np.any(boxes[:, 1] <= 0):
+            raise ValueError('Pad bounds must be finite and nonempty')
+        self.bed.box_centers.assign(boxes[:, 0].copy())
+        self.bed.box_halves.assign(boxes[:, 1].copy())
 
     def reset(self, measured_edge_pose, seed=42):
         import warp as wp
@@ -120,7 +143,8 @@ class LiveCuttingMaterial:
             self.parameter_receipt = {**self.parameter_receipt, "solver": "tlmpm_v2", "tool_profile": profile.to_dict(),
                 "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency, "max_cuts": self.max_cuts,
                 "obstacle_boxes_edge": None if self.obstacle_boxes_edge is None
-                    else np.asarray(self.obstacle_boxes_edge, float).tolist()}
+                    else np.asarray(self.obstacle_boxes_edge, float).tolist(),
+                'obstacle_reaction_recipients': self.obstacle_reaction_recipients}
         self.bed = TLMPM(self.points, self.masses, self.spacing, self.material_config, c.device,
                          **fixture_kwargs, **solver_kwargs)
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
@@ -136,6 +160,7 @@ class LiveCuttingMaterial:
         else:
             self.graph = None  # CPU: no graph capture; advance() replays the substeps.
         self.pending_wrench = np.zeros(6)
+        self.pending_obstacle_wrenches = {}
         self.time_s = 0.
         self.last_diagnostics = {}
         return {"seed": self.seed, "material": asdict(self.material_config),
@@ -169,6 +194,8 @@ class LiveCuttingMaterial:
         self.bed.cuts.assign(np.full(self.substeps+1, cut, np.int32))
         self.bed.index.zero_()
         self.bed.reaction.zero_()
+        if self.tool_profile is not None:
+            self.bed.box_reactions.zero_()
         self.bed.stats.zero_()
         start = time.perf_counter()
         if self.graph is None:
@@ -180,14 +207,27 @@ class LiveCuttingMaterial:
         impulse = self.bed.reaction.numpy()[0].astype(float)
         if self.task:
             impulse = rotate_wrench_at_same_point(self.T_world_local, impulse)
+        total_impulse = impulse.copy()
+        obstacle_wrenches = {}
+        if self.obstacle_reaction_recipients is not None:
+            for recipient, box_impulse in zip(self.obstacle_reaction_recipients, self.bed.box_reactions.numpy()):
+                if recipient is not None:
+                    value = box_impulse.astype(float)
+                    if self.task:
+                        value = rotate_wrench_at_same_point(self.T_world_local, value)
+                    impulse -= value
+                    obstacle_wrenches[recipient] = value / c.control_dt
         previous = self.pending_wrench.copy()
         self.pending_wrench = impulse/c.control_dt
+        self.pending_obstacle_wrenches = obstacle_wrenches
         self.time_s = float(time_s)
         self.last_pose = actual.copy()
         self.last_diagnostics = {
             "timestamp_s": self.time_s, "measured_tool_pose": actual,
             "applied_previous_material_wrench_world": previous if c.feedback else np.zeros(6),
             "current_material_reaction_impulse_world": impulse,
+            'current_total_material_reaction_impulse_world': total_impulse,
+            'next_finger_wrenches_about_edge_world': obstacle_wrenches,
             "next_material_wrench_world": self.pending_wrench.copy(),
             "material_contact_statistics": self.bed.stats.numpy().copy(),
             "feedback_enabled": c.feedback, "feedback_delay_s": c.control_dt,

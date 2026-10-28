@@ -336,7 +336,8 @@ def _obstacle_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), m
                        twists: wp.array(dtype=wp.spatial_vector), index: wp.array(dtype=int),
                        reaction: wp.array(dtype=wp.spatial_vector), radius: float, dt: float,
                        stiffness: float, friction: float, box_centers: wp.array(dtype=wp.vec3),
-                       box_halves: wp.array(dtype=wp.vec3), box: int):
+                       box_halves: wp.array(dtype=wp.vec3), box: int,
+                       box_reactions: wp.array(dtype=wp.spatial_vector)):
     """Blunt tool parts (handle, finger pads): push material, never cut.
 
     One launch per edge-frame box keeps _rigid_contacts identical to v1 law 1.
@@ -358,6 +359,7 @@ def _obstacle_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), m
         impulse[p] = impulse[p]+jb
         torque = wp.cross(lever, -jb)
         wp.atomic_add(reaction, 0, wp.spatial_vector(-jb[0], -jb[1], -jb[2], torque[0], torque[1], torque[2]))
+        wp.atomic_add(box_reactions, box, wp.spatial_vector(-jb[0], -jb[1], -jb[2], torque[0], torque[1], torque[2]))
 
 
 @wp.kernel
@@ -591,6 +593,7 @@ class TLMPM:
             padded = obstacles if len(obstacles) else np.ones((1, 2, 3), np.float32)
             self.box_centers = wp.array(padded[:, 0].copy(), dtype=wp.vec3)
             self.box_halves = wp.array(padded[:, 1].copy(), dtype=wp.vec3)
+            self.box_reactions = wp.zeros(len(padded), dtype=wp.spatial_vector)
             self.reference = wp.array(points, dtype=wp.vec3)
             self.x = wp.array(points, dtype=wp.vec3)
             self.v = wp.zeros(self.n, dtype=wp.vec3)
@@ -653,7 +656,7 @@ class TLMPM:
                 for box in range(len(self.obstacle_boxes_edge)):
                     wp.launch(_obstacle_contacts, n, [self.x, self.v, self.mass, self.impulse, self.poses,
                         self.twists, self.index, self.reaction, self.radius, c.dt, c.contact_stiffness,
-                        c.contact_friction, self.box_centers, self.box_halves, box])
+                        c.contact_friction, self.box_centers, self.box_halves, box, self.box_reactions])
             if self.fixture_data is not None:
                 kernel, centers, halves, plane = self.fixture_data
                 wp.launch(kernel, n, [self.x, self.v, self.mass, self.impulse, centers, halves,

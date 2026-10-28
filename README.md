@@ -11,6 +11,13 @@ captures from Global D455 and both wrist D405s with camera rig v5.
 [Camera v5 validation](docs/WRIST_CAMERA_V5.md). Previous images and recordings
 remain preserved.
 
+WP-10 adds opt-in ruler-knife tasks and bounded control for policies, Gym/RL
+and agents. CPU regression currently passes **461 tests**; both real Isaac
+runtimes have completed the ruler startup smokes. Full task, angle and learned
+controller validation is in progress. See [the plan](docs/WP10_SPECIFICATION.md),
+[control interface](docs/POLICY_CONTROL.md), [WP-10B](docs/reports/WP-10B.md)
+and [WP-10C](docs/reports/WP-10C.md).
+
 ### CUT-01 — bar cutting
 
 ![CUT-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_current_v5.png)

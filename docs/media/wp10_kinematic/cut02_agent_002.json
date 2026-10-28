@@ -1,0 +1,37 @@
+{
+ "command": [
+  "scripts/render_kinematic_episode.py",
+  "--device",
+  "cuda:1",
+  "--every",
+  "10",
+  "--fps",
+  "5",
+  "--task",
+  "CUT-02",
+  "--controller",
+  "agent_api",
+  "--out",
+  "docs/media/wp10_kinematic/cut02_agent_002.mp4"
+ ],
+ "frames": 41,
+ "seed": 42,
+ "wall_s": 12.310863937949762,
+ "commit": "dda39a4eaef0056b90a8fc82b24af69b940304ed",
+ "config": {
+  "task": "CUT-02",
+  "controller": "agent_api",
+  "spacing": 0.004,
+  "material_dt": 0.0005,
+  "device": "cuda:1",
+  "every": 10,
+  "fps": 5,
+  "out": "docs/media/wp10_kinematic/cut02_agent_002.mp4"
+ },
+ "output_sha256": "029b46c6d4f165263a11525747f1c9cf06d1717b4bacd3300c231f71112533eb",
+ "outcome": {
+  "status": "PASS_TASK_METRICS",
+  "success": true
+ },
+ "runtime_source": "kinematic_ideal_tracking"
+}

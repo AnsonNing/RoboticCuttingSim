@@ -95,8 +95,11 @@ class IsaacSimCuttingConfig:
             raise ValueError("The validated native global D455 profile requires640x480")
         if self.observation_motion_probe and self.camera_layout != "wrist_d405_global_d455":
             raise ValueError("The observation motion probe requires the wrist-camera layout")
-        if self.task_id not in (None, "CUT-01", "TRIM-01"):
-            raise ValueError("task_id must be CUT-01, TRIM-01 or None for the legacy D0 recipe")
+        from .tasks import TASK_IDS, ProfileTaskSpec
+        if self.task_id not in (None, *TASK_IDS):
+            raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
+        if self.task_id in ProfileTaskSpec.TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
+            raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
         if self.action_mode not in ("cartesian", "joint"):
             raise ValueError("action_mode must be cartesian or joint")
         if self.velocity_feedforward is None:
@@ -208,6 +211,7 @@ class LiveIsaacSimCutting:
             self.config=replace(self.config,seed=int(seed))
         c = self.config
         self.physical_grasp = c.tool_attachment_mode == "physical_grasp"
+        self.pad_geometry = []
         if hasattr(self, "tool_contacts"):
             self.tool_contacts.close()
         self.external_tool_wrench = np.zeros(6)
@@ -366,6 +370,10 @@ class LiveIsaacSimCutting:
         self.hand_paths = hand_paths
         if self.physical_grasp:
             self.tool_body = RigidPrim(self.tool_path)
+            if getattr(self.task, 'tool_profile_id', None):
+                from .finger_geometry import discover_pads
+                self.pad_geometry = discover_pads(stage, hand_paths[0])
+                self.pad_bodies = RigidPrim([pad['body_path'] for pad in self.pad_geometry])
         SimulationManager.initialize_physics()
         if not self.arms.is_physics_tensor_entity_valid() or not self.hand.is_physics_tensor_entity_valid():
             raise RuntimeError("Actual PhysX articulation/hand tensor views did not initialize")
@@ -429,7 +437,14 @@ class LiveIsaacSimCutting:
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
         self.material = (LiveCuttingMaterial(material_config,task=self.task) if self.task else LiveCuttingMaterial(material_config))
+        if self.pad_geometry:
+            self.material.configure_pad_obstacles(self._pad_boxes(initial['tool_pose']),
+                [None] + [pad['body_path'] for pad in self.pad_geometry])
         material_setup = self.material.reset(initial["tool_pose"], c.seed)
+        if self.pad_geometry:
+            write_json(self.output / f'finger_geometry_{self.reset_index:02d}.json',
+                       {'pads': self.pad_geometry, 'boxes_edge': self._pad_boxes(initial['tool_pose']),
+                        'scope': 'Actual USD pads; conservative edge-aligned bounds at each coupling boundary; separate finger reactions'})
         spacing=self.task.particle_spacing_m if self.task else c.dx/2
         voxel=spacing/2 if c.surface_profile=="current_volume_v1" else min(spacing,.0015)
         self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
@@ -680,6 +695,17 @@ class LiveIsaacSimCutting:
                 "hand_pose_both_xyzw":hand_both,
                 "tool_pose":tool, "timestamp_s":self.time_s, **extra}
 
+    def _pad_poses(self):
+        positions, orientations = self.pad_bodies.get_world_poses()
+        return {pad['body_path']: pose_from_wxyz(p, q) for pad, p, q in zip(
+            self.pad_geometry, numpy_data(positions), numpy_data(orientations))}
+
+    def _pad_boxes(self, edge):
+        from .finger_geometry import pad_boxes_edge
+        from .tool_profile import handle_box_edge
+        return np.asarray([handle_box_edge(self.task.tool_profile),
+                           *pad_boxes_edge(self.pad_geometry, self._pad_poses(), edge)], np.float32)
+
     def _update_surface(self):
         vertices, faces, self.surface_info = self.surface.extract(self.material.bed)
         if self.task:
@@ -896,6 +922,11 @@ class LiveIsaacSimCutting:
             receiver = self.tool_body if self.physical_grasp else self.hand
             receiver.apply_forces_and_torques_at_pos(wrench[None,:3],wrench[None,3:],
                          positions=current["tool_pose"][None,:3],local_frame=False)
+            if self.pad_geometry and c.feedback:
+                finger_wrenches = np.asarray([self.material.pending_obstacle_wrenches.get(
+                    pad['body_path'], np.zeros(6)) for pad in self.pad_geometry])
+                self.pad_bodies.apply_forces_and_torques_at_pos(finger_wrenches[:, :3], finger_wrenches[:, 3:],
+                    positions=np.tile(current['tool_pose'][:3], (len(self.pad_geometry), 1)), local_frame=False)
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             manager.step()
             if self.physical_grasp:
@@ -914,6 +945,8 @@ class LiveIsaacSimCutting:
         self.physx.update_transformations(False,True,True)
         actual = self.proprioception()
         attachment=self._check_attachment(actual["tool_pose"])
+        if self.pad_geometry:
+            self.material.update_pad_obstacles(self._pad_boxes(actual['tool_pose']))
         diagnostics = self.material.advance(actual["tool_pose"],self.time_s,cutting=cutting,
                            cut_index=self._command_cut_index if action is not None else None)
         if not np.array_equal(diagnostics["applied_previous_material_wrench_world"],applied):

@@ -268,7 +268,8 @@ def main():
     p.add_argument("--no-feedback",action="store_true")
     p.add_argument("--velocity-feedforward",action=argparse.BooleanOptionalAction,default=None,
                    help="Set native drive velocity targets from successive IK commands (new tasks default on)")
-    p.add_argument("--task-id",choices=["CUT-01","TRIM-01"])
+    from robotic_cutting_sim.tasks import TASK_IDS
+    p.add_argument("--task-id",choices=TASK_IDS)
     p.add_argument("--task-variant",default="fixed")
     p.add_argument("--workpiece-kind",choices=["rectangle","capsule"],default="rectangle")
     p.add_argument("--action-mode",choices=["cartesian","joint"],default="cartesian")

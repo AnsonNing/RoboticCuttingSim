@@ -2,7 +2,7 @@
 """Recorded WP-10 validation on a real Isaac runtime (never a replay backend)."""
 import argparse
 from contextlib import contextmanager
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import json
 from pathlib import Path
 import sys
@@ -44,24 +44,39 @@ class EpisodeRecorder:
         self.output.mkdir(exist_ok=False)
         (self.output / 'observations').mkdir()
         self.rows, self.samples, self.states, self.errors, self.rotation_errors = [], [], [], [], []
+        self.body_states = [self.body_poses()]
         self.events = dict(rejected=0, clamped=0, cutting_steps=0)
         self.steps = 0
         self.stream = (self.output / 'actions.jsonl').open('w')
+        config = getattr(env.backend, 'options', getattr(env.backend, 'config', None))
+        write_json(self.output / 'manifest.json', manifest(jsonable(dict(
+            controller=controller, runtime_source=env.runtime_source, config=asdict(config),
+            task_id=env.task.task_id, seed=env.task.seed)), 'wp10_actual_live_episode'))
         self.capture()
 
     def measured(self):
         backend = self.env.backend
         return backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
 
+    def body_poses(self):
+        backend = self.env.backend
+        return backend.body_poses().copy() if hasattr(backend, 'body_poses') else backend.measured()['body_pose'].copy()
+
     def capture(self):
         env = self.env
         backend = env.backend
         index = len(self.rows)
         frames = env._frames
+        if not frames and getattr(getattr(backend, 'config', None), 'camera', False):
+            frames, _ = backend.capture()
         # State episodes may record no cameras; this is explicit in every receipt.
         for name, frame in frames.items():
             public = {key: value for key, value in frame.items() if not key.startswith('rtx_reference_')
                       and not key.startswith('depth_sensor_') and key != 'native_source_index_debug'}
+            timestamp = float(frame.get('physics_timestamp_s', frame.get('timestamp_s', float('nan'))))
+            if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
+                raise ValueError('Only current, measured camera frames may be recorded')
+            public['physics_timestamp_s'] = timestamp
             np.savez_compressed(self.output / 'observations' / f'{name}_{index:04d}.npz', **public)
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
@@ -73,6 +88,7 @@ class EpisodeRecorder:
 
     def step(self, action, result):
         self.steps += 1
+        self.body_states.append(self.body_poses())
         observation, reward, terminated, truncated, info = result
         report = info.get('action_report') or {}
         target = report.get('resolved_target_world_xyz_xyzw')
@@ -96,6 +112,8 @@ class EpisodeRecorder:
                    terminated=terminated, truncated=truncated, tracking_error_m=error,
                    rotation_error_rad=rotation_error,
                    material_diagnostics=diagnostics.get('material', diagnostics.get('material_diagnostics', {})),
+                   privileged_diagnostics=diagnostics,
+                   observation_proprio=self.env.observe().get('proprio', {}),
                    grasp_status=diagnostics.get('grasp_status'),
                    resolved_target_world_xyz_xyzw=target,
                    accepted_target_world_xyz_xyzw=self.env._commanded)
@@ -119,6 +137,25 @@ class EpisodeRecorder:
             reference_stencil_weights=material.bed.weights.numpy(),
             reference_stencil_gradients=material.bed.gradients.numpy())
         write_json(self.output / 'robot_state.json', self.states)
+        backend = env.backend
+        body_paths = getattr(backend, 'rigid_link_paths', None)
+        if body_paths is None:
+            body_paths = list(backend.model.body_label)
+        np.savez_compressed(self.output / 'robot_state.npz',
+            time_s=np.arange(len(self.body_states)) * env.task.control_dt_s,
+            body_pose=self.body_states, body_prim_paths=body_paths)
+        trace = getattr(backend, 'camera_pose_trace', [])
+        if trace:
+            write_json(self.output / 'camera_pose_trace.json', dict(samples=trace))
+            rig = getattr(backend, 'camera_specs', None)
+            if rig is None:
+                rig = backend.camera_rig.specs
+            write_json(self.output / 'camera_rig.json', dict(specs=rig))
+            stage = getattr(backend, 'stage', None)
+            if stage is None:
+                stage = backend.sim.stage
+            stage.Export(str((self.output / 'final_live_scene.usda').resolve()))
+            write_json(self.output / 'setup.json', dict(body_labels=body_paths))
         write_json(self.output / 'task.json', env.task.to_dict())
         write_json(self.output / 'material.json', material.parameter_receipt)
         metrics = dict(steps=self.steps, events=self.events,
@@ -130,13 +167,14 @@ class EpisodeRecorder:
         return metrics
 
 
-def fuzz_action(step, rng):
+def fuzz_action(step, rng, pattern='balanced'):
     # Fixed requests independent of runtime responses, including unreachable requests,
     # saturated translations and flips. ActionLimits must bound all executed targets.
     if step % 100 < 10:
-        delta = np.r_[rng.normal(0, 2., 3), [0., np.pi, 0.]]
+        delta = np.r_[rng.normal(0, 2., 3), [0., np.pi * (-1 if pattern == 'balanced' and step % 2 else 1), 0.]]
     elif step % 100 < 70:
-        delta = np.r_[[0., 0., .0001], [0., .2, 0.]]
+        angle = .003 * (-1 if step // 10 % 2 else 1) if pattern == 'balanced' else .2
+        delta = np.r_[[0., 0., .0001], [0., angle, 0.]]
     else:
         delta = np.r_[rng.normal(0, .0002, 3), rng.normal(0, .01, 3)]
     return dict(mode=DELTA_MODE, target=delta, frame='world', cut_enabled=False, cut_index=0)
@@ -147,9 +185,12 @@ def main():
     p.add_argument('--runtime', choices=('isaac_sim', 'isaac_lab'), required=True)
     p.add_argument('--task', default='CUT-01')
     p.add_argument('--preset', choices=('legacy', 'policy'), default='legacy')
-    p.add_argument('--controller', choices=('reference', 'scripted', 'fuzz', 'gym_hold'), default='reference')
+    p.add_argument('--tool-attachment-mode', choices=('legacy_fixed_tool', 'physical_grasp'))
+    p.add_argument('--controller', choices=('reference', 'scripted', 'fuzz', 'gym_hold', 'reject_probe'), default='reference')
+    p.add_argument('--fuzz-pattern', choices=('balanced', 'stress'), default='balanced')
     p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
     p.add_argument('--gym', action='store_true')
+    p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
     p.add_argument('--gpu', type=int, default=1)
     p.add_argument('--seed', type=int, default=42)
     p.add_argument('--steps', type=int, default=400)
@@ -164,7 +205,11 @@ def main():
     write_json(out / 'manifest.json', manifest(jsonable(vars(a)), 'wp10_actual_live_validation'))
     results, start = [], time.monotonic()
     options = policy_preset(a.runtime) if a.preset == 'policy' else {}
-    options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state')
+    if a.tool_attachment_mode is not None:
+        options['tool_attachment_mode'] = a.tool_attachment_mode
+        if a.runtime == 'isaac_lab' and a.tool_attachment_mode == 'legacy_fixed_tool':
+            options.pop('grip_contact_profile', None)
+    options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state' or a.record_cameras)
     if a.runtime == 'isaac_sim':
         options.update(gpu=a.gpu, device=f'cuda:{a.gpu}')
     else:
@@ -196,9 +241,16 @@ def main():
                     policy = WaypointPolicy(env.task, plan, env.action_limits or ActionLimits())
                 rng = np.random.default_rng(seed)
                 for step in range(a.steps):
-                    action = (fuzz_action(step, rng) if a.controller == 'fuzz' else
+                    action = (fuzz_action(step, rng, a.fuzz_pattern) if a.controller == 'fuzz' else
                               policy(observation) if policy else
                               dict(mode=DELTA_MODE, target=np.zeros(6), cut_enabled=False) if gym else None)
+                    saved_limits = env.action_limits
+                    if a.controller == 'reject_probe':
+                        # Separate IK-layer probe, explicitly disabling absolute clamping
+                        # for an impossible request; the default fuzz retains ActionLimits().
+                        env.action_limits = replace(env.action_limits or ActionLimits(), limit_absolute=False)
+                        action = dict(mode='cartesian_edge_pose_world',
+                                      target=np.r_[[1000., 1000., 1000.], env._commanded[3:]], cut_enabled=False)
                     if gym:
                         limits = env.action_limits
                         gym.cut_enabled = action['cut_enabled']
@@ -209,6 +261,7 @@ def main():
                     else:
                         result = env.step(action)
                         observation = result[0]
+                    env.action_limits = saved_limits
                     recorder.step(action, result)
                     if (step + 1) % 25 == 0:
                         print(f'{a.runtime} {a.task} {a.controller} episode={episode} step={step+1} t={env.time_s:.2f}', flush=True)

@@ -1,0 +1,37 @@
+{
+ "command": [
+  "scripts/render_kinematic_episode.py",
+  "--device",
+  "cuda:1",
+  "--every",
+  "10",
+  "--fps",
+  "5",
+  "--task",
+  "CUT-01-R",
+  "--controller",
+  "oblique20_policy",
+  "--out",
+  "docs/media/wp10_kinematic/cut01r_oblique20_002.mp4"
+ ],
+ "frames": 41,
+ "seed": 42,
+ "wall_s": 10.915819446090609,
+ "commit": "dda39a4eaef0056b90a8fc82b24af69b940304ed",
+ "config": {
+  "task": "CUT-01-R",
+  "controller": "oblique20_policy",
+  "spacing": 0.004,
+  "material_dt": 0.0005,
+  "device": "cuda:1",
+  "every": 10,
+  "fps": 5,
+  "out": "docs/media/wp10_kinematic/cut01r_oblique20_002.mp4"
+ },
+ "output_sha256": "ba1227084e8b3d5dadc64102003e26f15b0b6b7624cf63461df036a2be5c76ef",
+ "outcome": {
+  "status": "FAIL_TASK_METRICS",
+  "success": false
+ },
+ "runtime_source": "kinematic_ideal_tracking"
+}
