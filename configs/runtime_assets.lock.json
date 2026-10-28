@@ -1,0 +1,71 @@
+{
+  "source": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.2",
+  "scope": "OfficialUSDcompositiononly; nativeassetsnotredistributed; MDLshaderpackagesnotincluded",
+  "files": [
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/franka_panda.usda",
+      "bytes": 2096,
+      "sha256": "eaf27723ba1934d792c6876679eb75491bdff944ad108d4e59734fa07dc65809"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/Physics/mujoco.usda",
+      "bytes": 25544,
+      "sha256": "82f363dd872bd8ca88847a76b1daf267fdace4095f6d505f3eb16acf49596f8d"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/Physics/physics.usda",
+      "bytes": 29884,
+      "sha256": "0dc38454f02ea14d9ddd2437995fdc7c4a65634443cacdcc2a04e3de25655e00"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/Physics/physx.usda",
+      "bytes": 4452,
+      "sha256": "cf5d9c127149518114dcdb84fac18ff89bb4700bb9aabe9e803114e85372f070"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/base.usda",
+      "bytes": 51610,
+      "sha256": "17091b4d8e3136901541d497c0c8fe671a3192f5f4763e709193d477fc9618d0"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/base_flat_hulls.usda",
+      "bytes": 6384,
+      "sha256": "9cfd0feccf60022c9c1fd08c5d2e25035f4196f7ade03c2cecd0fc4bea21f4a2"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/base_flat_primitives.usda",
+      "bytes": 13052,
+      "sha256": "12d94dbad7b60dfa794d9717f9f82f311911f2b4ba0334ee89bb49168d4ca4e7"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/geometries.usd",
+      "bytes": 7097437,
+      "sha256": "c64f015a69302f5b277040fc54fc7addedab49c47e67d1b79f374414dd4e991b"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/instances.usda",
+      "bytes": 36752,
+      "sha256": "d151d980980479a03818fe6be4ba983a99b9a5482caa6de233d11fd5bd247726"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/instances_physx_hulls_clean.usda",
+      "bytes": 68529,
+      "sha256": "50254bc251e240439ae5bcce491c8d84ef5eae6da21d6ff5115b113b368b0a4d"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/materials.usda",
+      "bytes": 6716,
+      "sha256": "3b87896947047adc23abafac72ccb113b26a32293645db8e755c51f2abe58b9b"
+    },
+    {
+      "path": "Isaac/IsaacLab/Robots/FrankaEmika/payloads/robot.usda",
+      "bytes": 5328,
+      "sha256": "060bd8bc6f47b6d57ef918d05629af36763998a275c5102bd4aa4540e0fcf15b"
+    },
+    {
+      "path": "Isaac/Sensors/RealSense/D455/rsd455.usd",
+      "bytes": 14070691,
+      "sha256": "441c2bf503f7007f5ff284283459bf5c21507ae562074f37f54f9223ea3956a7"
+    }
+  ]
+}
