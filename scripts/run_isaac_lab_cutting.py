@@ -40,6 +40,8 @@ def main():
     parser.add_argument("--grip-friction", type=float)
     parser.add_argument("--grip-force", type=float, help="Finite maximum effort per actual finger in N")
     parser.add_argument("--grip-target", type=float, help="Finger closing target in metres")
+    parser.add_argument("--grip-initial-position", type=float,
+        help="Explicit initial per-finger opening in metres; physical settling remains required")
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--no-camera", action="store_true")
     parser.add_argument("--no-feedback", action="store_true")
@@ -77,7 +79,8 @@ def main():
         tool_attachment_mode=args.tool_attachment_mode, tool_init_mode=args.tool_init_mode,
         static_scene=str(scene_path.resolve()))
     overrides = {name: value for name, value in {"friction": args.grip_friction,
-        "max_finger_force_n": args.grip_force, "closed_target_m": args.grip_target}.items() if value is not None}
+        "max_finger_force_n": args.grip_force, "closed_target_m": args.grip_target,
+        "initial_finger_position_m": args.grip_initial_position}.items() if value is not None}
     if overrides:options = replace(options, grasp=replace(options.grasp, **overrides))
     cfg = make_lab_cfg(options)
     record = manifest(asdict(options), "live_isaac_lab")
