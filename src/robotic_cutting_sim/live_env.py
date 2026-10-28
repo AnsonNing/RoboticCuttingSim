@@ -24,12 +24,13 @@ class CuttingTaskEnv:
     """
 
     def __init__(self, backend, task_id=None, *, seed=42, action_mode=ACTION_MODES[0],
-                 observation_profile="vision_proprio"):
+                 observation_profile="vision_proprio", include_global_camera=False):
         if action_mode not in ACTION_MODES or observation_profile not in ("vision_proprio", "vision_only"):
             raise ValueError("Unsupported action mode or observation profile")
         task = getattr(backend, "task", None)
         self.task = task or make_task(task_id, seed=seed)
         self.backend, self.action_mode, self.observation_profile = backend, action_mode, observation_profile
+        self.include_global_camera = bool(include_global_camera)
         self._closed, self._ready = False, False
         self._history, self._observation = [], None
 
@@ -67,7 +68,8 @@ class CuttingTaskEnv:
             self._frames, _ = self.backend.capture()
             proprio = self.backend.proprioception()
         self._observation = vision_observation(self._frames, self.backend.calibration,
-            self.time_s, self.observation_profile, proprio)
+            self.time_s, self.observation_profile, proprio,
+            include_global_camera=self.include_global_camera)
 
     def _record_oracle(self):
         state = self.backend.material.world_state()
@@ -95,6 +97,8 @@ class CuttingTaskEnv:
 
     def render(self, camera="global", mode="rgb_array"):
         self._require_ready()
+        if camera == "global" and "global_d455" in self._frames:
+            camera = "global_d455"
         if camera not in self._frames or mode not in ("rgb_array", "depth_array"):
             raise ValueError("Choose an available camera and rgb_array/depth_array")
         return self._frames[camera]["rgb" if mode == "rgb_array" else "depth_m"].copy()
@@ -142,7 +146,8 @@ class CuttingTaskEnv:
 
 @contextmanager
 def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=42,
-                     action_mode=ACTION_MODES[0], observation_profile="vision_proprio", **backend_options):
+                     action_mode=ACTION_MODES[0], observation_profile="vision_proprio",
+                     include_global_camera=False, camera_layout="wrist_d405_global_d455", **backend_options):
     """Start a pinned live runtime in its dedicated venv, then close it on exit.
 
     Use a fresh output directory. Isaac Sim defaults to real native SingleView
@@ -159,12 +164,14 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
         from .isaac_sim_runner import IsaacSimCuttingConfig, LiveIsaacSimCutting, launch_app
         mode = "joint" if action_mode == ACTION_MODES[1] else "cartesian"
         config = IsaacSimCuttingConfig(task_id=task_id, seed=seed, action_mode=mode,
-            **{"camera_mode": "native_single_view", **backend_options})
-        write_json(output/"manifest.json", manifest(asdict(config), "live_isaac_sim_shared_api"))
+            **{"camera_mode": "native_single_view", "camera_layout": camera_layout, **backend_options})
+        write_json(output/"manifest.json", manifest({**asdict(config),
+            "formal_observation": {"profile": observation_profile, "include_global_camera": bool(include_global_camera)}}, "live_isaac_sim_shared_api"))
         app = launch_app(config, output)
         try:
             wrapper = CuttingTaskEnv(LiveIsaacSimCutting(app, config, output), task_id, seed=seed,
-                action_mode=action_mode, observation_profile=observation_profile)
+                action_mode=action_mode, observation_profile=observation_profile,
+                include_global_camera=include_global_camera)
             yield wrapper
         finally:
             if wrapper:
@@ -180,12 +187,15 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
         static.mkdir()
         export(Namespace(variant="D0", family="dome", seed=seed, spacing=.002, asset_root=None), static)
         config = LabCuttingConfig(task_id=task_id, seed=seed, action_mode=action_mode,
-            static_scene=str((static/"workcell.usda").resolve()), **backend_options)
-        write_json(output/"manifest.json", manifest(asdict(config), "live_isaac_lab_shared_api"))
+            static_scene=str((static/"workcell.usda").resolve()), camera_layout=camera_layout,
+            include_global_camera=include_global_camera, **backend_options)
+        write_json(output/"manifest.json", manifest({**asdict(config),
+            "formal_observation": {"profile": observation_profile, "include_global_camera": bool(include_global_camera)}}, "live_isaac_lab_shared_api"))
         cfg = make_lab_cfg(config)
         with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": config.device}):
             wrapper = CuttingTaskEnv(IsaacLabCuttingEnv(cfg, config), task_id, seed=seed,
-                action_mode=action_mode, observation_profile=observation_profile)
+                action_mode=action_mode, observation_profile=observation_profile,
+                include_global_camera=include_global_camera)
             try:
                 yield wrapper
             finally:

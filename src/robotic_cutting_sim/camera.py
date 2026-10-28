@@ -30,19 +30,21 @@ def calibration(eye, target=(0,0,.015), width=640, height=480, hfov_deg=87):
 @wp.kernel
 def ray_camera(mesh_id: wp.uint64, eye: wp.vec3, rotation: wp.mat33,
                fx: float, fy: float, cx: float, cy: float, near: float, far: float,
+               rgb_far: float, separate_rgb_range: int,
                face_colors: wp.array(dtype=wp.vec3),
                depth: wp.array2d(dtype=float), rgb: wp.array2d(dtype=wp.vec3)):
     y, x = wp.tid()
     local = wp.vec3((float(x)+.5-cx)/fx, (float(y)+.5-cy)/fy, 1.0)
     local = wp.normalize(local)
     direction = rotation * local
-    query = wp.mesh_query_ray(mesh_id, eye, direction, far)
+    query = wp.mesh_query_ray(mesh_id, eye, direction, rgb_far / local[2])
     depth[y,x] = 0.0
     rgb[y,x] = wp.vec3(.12,.15,.19)
     if query.result:
         z = query.t * local[2]
         if z >= near and z <= far:
             depth[y,x] = z
+        if separate_rgb_range == 1 or (z >= near and z <= far):
             shade = .3 + .7*wp.abs(wp.dot(query.normal, wp.normalize(wp.vec3(-.4,-.3,1.0))))
             rgb[y,x] = face_colors[query.face]*shade
 
@@ -57,7 +59,9 @@ def capture(vertices, indices, calib, device, face_colors=None):
     k = np.array(calib["K"])
     wp.launch(ray_camera, dim=depth.shape,
               inputs=[mesh.id,wp.vec3(*transform[:3,3]),wp.mat33(transform[:3,:3]),
-                      k[0,0],k[1,1],k[0,2],k[1,2],calib["near_m"],calib["far_m"],face_colors,depth,rgb],device=device)
+                      k[0,0],k[1,1],k[0,2],k[1,2],calib["near_m"],calib["far_m"],
+                      calib.get("rgb_far_m", calib["far_m"]), int("rgb_far_m" in calib),
+                      face_colors,depth,rgb],device=device)
     return np.clip(rgb.numpy()*255,0,255).astype(np.uint8), depth.numpy()
 
 

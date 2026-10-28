@@ -31,6 +31,8 @@ def main():
     parser.add_argument("--task-variant", default="fixed")
     parser.add_argument("--particle-spacing", type=float, help="Explicit task-only initial quadrature override in metres")
     parser.add_argument("--action-mode", choices=("cartesian_edge_pose_world", "joint_position_rad"), default="cartesian_edge_pose_world")
+    parser.add_argument("--camera-layout", choices=("legacy_fixed_d455", "wrist_d405_global_d455"), default="legacy_fixed_d455")
+    parser.add_argument("--include-global-camera", action="store_true")
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--no-camera", action="store_true")
     parser.add_argument("--no-feedback", action="store_true")
@@ -61,6 +63,7 @@ def main():
         seed=args.seed, variant=args.variant, camera=not args.no_camera, feedback=not args.no_feedback,
         task_id=args.task_id, task_variant=args.task_variant, action_mode=args.action_mode,
         particle_spacing_m=args.particle_spacing,
+        camera_layout=args.camera_layout, include_global_camera=args.include_global_camera,
         velocity_feedforward=args.velocity_feedforward, global_width=args.global_width, global_height=args.global_height,
         experiment=args.experiment,
         static_scene=str(scene_path.resolve()))
@@ -87,6 +90,9 @@ def main():
         ROOT/"src/robotic_cutting_sim/live_material.py", ROOT/"src/robotic_cutting_sim/tlmpm.py",
         ROOT/"src/robotic_cutting_sim/coupled_robot.py", ROOT/"src/robotic_cutting_sim/cutting_surface.py",
         ROOT/"src/robotic_cutting_sim/material_config.py", ROOT/"src/robotic_cutting_sim/scene_frames.py"]
+    if args.camera_layout == "wrist_d405_global_d455":
+        loaded += [ROOT/"src/robotic_cutting_sim/camera_rig.py", ROOT/"configs/wrist_camera_rig_v1.json",
+                   ROOT/"src/robotic_cutting_sim/camera.py", ROOT/"src/robotic_cutting_sim/usd_surface_bridge.py"]
     if args.task_id:
         loaded += [ROOT/"src/robotic_cutting_sim/tasks.py", ROOT/"src/robotic_cutting_sim/fixture_contacts.py",
                    ROOT/"configs/cutting_tasks_v1.json"]
@@ -97,6 +103,12 @@ def main():
     for path in loaded:
         shutil.copyfile(path, implementation/path.name)
     write_json(output/"manifest.json", record)
+    def verify_sources(phase):
+        changed = [str(path.relative_to(ROOT)) for path in loaded
+            if hashlib.sha256(path.read_bytes()).hexdigest() != record["implementation_sha256"][str(path.relative_to(ROOT))]]
+        write_json(output/"source_integrity.json", {"phase": phase, "status": "FAIL" if changed else "PASS", "changed": changed})
+        if changed:
+            raise RuntimeError(f"Implementation changed during the recorded run: {changed}")
     (output/"rgbd").mkdir()
     writers = {}
     states, material, material_times, diagnostics, rows = [], [], [], [], []
@@ -106,6 +118,7 @@ def main():
         env = IsaacLabCuttingEnv(cfg, options)
         try:
             obs, info = env.reset(seed=args.seed)
+            verify_sources("AFTER_ACTUAL_RESET")
             write_json(output/"setup.json", {**env.setup_receipt, "model_bodies": env.model.body_count,
                 "model_joint_coordinates": env.model.joint_coord_count,
                 "cutting_hand_body_index": env.hand, "cutting_hand_body_label": env.model.body_label[env.hand],
@@ -116,10 +129,18 @@ def main():
                 "articulations": [{"type": type(robot).__module__+"."+type(robot).__name__,
                     "joint_names": robot.joint_names, "body_names": robot.body_names} for robot in env.robots],
                 "calibration": env.calibration, "observation_fields": list(obs["policy"])})
+            wrist = args.camera_layout == "wrist_d405_global_d455"
+            camera_ids = tuple(env.frames) if options.camera else ()
+            if wrist and options.camera:
+                write_json(output/"camera_rig.json", {"specs": env.camera_rig.specs,
+                    "paths": env.camera_rig_paths, "hand_body_indices": env.hands,
+                    "mount_collision_model": "visual geometry only; no camera mass/colliders added to robot physics",
+                    "d405_model": "ideal_d405_prototype", "global_model": "ideal_rgbd_from_official_d455_asset"})
             write_json(output/"phase.json", {"phase": "LIVE_STEPPING", "initial_time_s": env.time_s})
             if options.camera:
                 import imageio.v2 as imageio
-                for name in ("global", "d455_0", "d455_1", "depth", "multiview"):
+                video_ids = (*camera_ids, *(name+"_depth" for name in camera_ids), "multiview") if wrist else ("global", "d455_0", "d455_1", "depth", "multiview")
+                for name in video_ids:
                     writers[name] = imageio.get_writer(str(output/(name+".mp4")), fps=50,
                         codec="libx264", macro_block_size=1, quality=7)
 
@@ -140,24 +161,39 @@ def main():
                     draw.text((6, 8), f"LIVE ISAAC LAB 3.0 | ideal Warp RGB-D | {name} | t={env.time_s:.2f}s", fill="white")
                     labeled[name] = np.asarray(image)
                     writers[name].append_data(labeled[name])
-                z = env.frames["d455_0"]["depth_m"]
                 import matplotlib
-                depth = (matplotlib.colormaps["turbo"](np.clip((z-.52)/.32, 0, 1))[..., :3]*255).astype(np.uint8)
-                depth[z <= 0] = 0
-                image = Image.fromarray(depth)
-                draw = ImageDraw.Draw(image)
-                draw.rectangle((0, 0, 640, 27), fill=(0, 0, 0))
-                draw.text((6, 8), f"LIVE ISAAC LAB | ideal optical Z | range .52-.84 m | t={env.time_s:.2f}s", fill="white")
-                depth = np.asarray(image)
-                writers["depth"].append_data(depth)
-                global_tile = np.asarray(Image.fromarray(labeled["global"]).resize((640, 480)))
-                writers["multiview"].append_data(np.vstack([np.hstack([global_tile, labeled["d455_0"]]),
-                    np.hstack([labeled["d455_1"], depth])]))
+                if wrist:
+                    depth_tiles = []
+                    for name in camera_ids:
+                        z = env.frames[name]["depth_m"]
+                        near, far = env.calibration[name]["near_m"], env.calibration[name]["far_m"]
+                        depth = (matplotlib.colormaps["turbo"](np.clip((z-near)/(far-near), 0, 1))[..., :3]*255).astype(np.uint8)
+                        depth[z <= 0] = 0
+                        image = Image.fromarray(depth)
+                        ImageDraw.Draw(image).text((6, 8), f"{name} | ideal Z {near:.2f}-{far:.2f}m | t={env.time_s:.2f}s", fill="white")
+                        depth = np.asarray(image)
+                        writers[name+"_depth"].append_data(depth)
+                        depth_tiles.append(depth)
+                    writers["multiview"].append_data(np.vstack([np.hstack([labeled[name] for name in camera_ids]), np.hstack(depth_tiles)]))
+                else:
+                    z = env.frames["d455_0"]["depth_m"]
+                    depth = (matplotlib.colormaps["turbo"](np.clip((z-.52)/.32, 0, 1))[..., :3]*255).astype(np.uint8)
+                    depth[z <= 0] = 0
+                    image = Image.fromarray(depth)
+                    draw = ImageDraw.Draw(image)
+                    draw.rectangle((0, 0, 640, 27), fill=(0, 0, 0))
+                    draw.text((6, 8), f"LIVE ISAAC LAB | ideal optical Z | range .52-.84 m | t={env.time_s:.2f}s", fill="white")
+                    depth = np.asarray(image)
+                    writers["depth"].append_data(depth)
+                    global_tile = np.asarray(Image.fromarray(labeled["global"]).resize((640, 480)))
+                    writers["multiview"].append_data(np.vstack([np.hstack([global_tile, labeled["d455_0"]]),
+                        np.hstack([labeled["d455_1"], depth])]))
                 if step % args.record_every == 0 or step == args.steps:
                     data = {name+"_"+key: frame[key] for name, frame in env.frames.items()
                             for key in ("rgb", "depth_m", "valid_mask")}
                     np.savez_compressed(output/"rgbd"/f"frame_{step:05d}.npz", timestamp_s=env.time_s,
                         surface_timestamp_s=env.time_s, **data)
+                    write_json(output/"rgbd"/f"calibration_{step:05d}.json", env.calibration)
                     vertices, faces = env.surface
                     np.savez_compressed(output/"rgbd"/f"surface_{step:05d}.npz", timestamp_s=env.time_s,
                         vertices=vertices, triangles=faces)
@@ -188,6 +224,7 @@ def main():
                     write_json(output/"phase.json", {"phase": "LIVE_STEPPING", **row})
                 if not finite:
                     raise FloatingPointError("Nonfinite live material state")
+            verify_sources("AFTER_LIVE_EPISODE")
             bed = env.material.bed
             count, component_ids = mechanical_components(bed.nodes.numpy(), bed.weights.numpy(), data["codes"],
                 1, gradients=bed.gradients.numpy())
@@ -198,6 +235,7 @@ def main():
             np.savez_compressed(output/"robot_state.npz", time_s=[s["timestamp_s"] for s in states],
                 q=[s["q"] for s in states], qdot=[s["qdot"] for s in states],
                 body_pose=[s["body_pose"] for s in states], hand_pose_xyzw=[s["hand_pose"] for s in states],
+                hand_poses_world_xyzw=[s["hand_poses"] for s in states],
                 tool_pose_xyzw=[s["tool_pose"] for s in states],
                 desired_tool_pose_xyzw=command, commanded_hand_pose_xyzw=compose_pose(command, edge_from_hand),
                 next_material_wrench_world=[d["next_material_wrench_world"] for d in diagnostics],
@@ -224,6 +262,8 @@ def main():
                     "surface_timestamp_s": env.time_s})
                 write_json(output/"task_evaluation.json", evaluation)
             env.sim.stage.Export(str(output/"final_live_scene.usda"))
+            if wrist:
+                write_json(output/"camera_pose_trace.json", env.camera_pose_trace)
             write_json(output/"diagnostics.json", diagnostics)
             write_json(output/"trace.json", rows)
             result = {"source": "live_isaac_lab", "status": "PASS_EXECUTION" if args.steps == 400 else "PASS_SMOKE",

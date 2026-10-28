@@ -29,7 +29,8 @@ def worker(args):
         options["material_device"] = args.device
     try:
         with open_cutting_env(args.task, runtime=args.runtime, output_dir=args.output_dir,
-                seed=args.seed, action_mode=args.action_mode, **options) as env:
+                seed=args.seed, action_mode=args.action_mode, camera_layout=args.camera_layout,
+                include_global_camera=args.include_global_camera, task_variant=args.task_variant, **options) as env:
             implementation = args.output_dir/"implementation"
             implementation.mkdir()
             source = [Path(__file__).resolve(), Path(__file__).resolve().parents[1]/"src/robotic_cutting_sim/live_env.py"]
@@ -62,11 +63,12 @@ def worker(args):
                 if index % args.record_every == 0 or index == args.steps:
                     from PIL import Image
                     payload = {name+"_"+field: observation[field][name]
-                        for name in ("d455_0", "d455_1") for field in ("rgb", "depth_m", "valid_mask")}
+                        for name in observation["rgb"] for field in ("rgb", "depth_m", "valid_mask")}
                     np.savez_compressed(args.output_dir/"api_observations"/f"frame_{index:05d}.npz",
                         timestamp_s=observation["timestamp_s"], q=observation["proprio"]["q"],
                         qdot=observation["proprio"]["qdot"], **payload)
                     Image.fromarray(env.render("global")).save(args.output_dir/"api_observations"/f"global_{index:05d}.png")
+                    write_json(args.output_dir/"api_observations"/f"calibration_{index:05d}.json", observation["calibration"])
             evaluation = env.evaluate()
             write_json(args.output_dir/"task_evaluation.json", evaluation)
             write_json(args.output_dir/"api_trace.json", trace)
@@ -95,6 +97,9 @@ def main():
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--task-variant", choices=("fixed", "randomized"), default="fixed")
+    parser.add_argument("--camera-layout", choices=("legacy_fixed_d455", "wrist_d405_global_d455"), default="wrist_d405_global_d455")
+    parser.add_argument("--include-global-camera", action="store_true")
     parser.add_argument("--device")
     parser.add_argument("--particle-spacing", type=float, help="Explicit initial task quadrature in metres; frozen defaults remain available")
     parser.add_argument("--gpu", type=int, default=1)

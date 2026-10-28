@@ -39,3 +39,17 @@ def test_d455_mode_cannot_silently_fall_back_to_ideal():
 def test_vision_only_has_no_proprioception():
     frames, calibration, proprio = payload()
     assert "proprio" not in vision_observation(frames, calibration, .02, "vision_only", proprio)
+
+
+def test_wrist_names_and_optional_global_never_expose_debug_state():
+    frames, calibration, proprio = payload()
+    renamed = dict(zip(("wrist_d405_0", "wrist_d405_1", "global_d455"), frames.values()))
+    calibration = {name: {"timestamp_s": .02, "sensor_model": "ideal_d405_prototype"} for name in renamed}
+    observation = vision_observation(renamed, calibration, .02, "vision_proprio", proprio)
+    assert set(observation["rgb"]) == {"wrist_d405_0", "wrist_d405_1"}
+    observation = vision_observation(renamed, calibration, .02, "vision_proprio", proprio, include_global_camera=True)
+    assert set(observation["rgb"]) == set(renamed)
+    assert "force" not in observation and "particle_oracle" not in observation
+    calibration["wrist_d405_0"]["timestamp_s"] = .01
+    with pytest.raises(ValueError, match="Calibration"):
+        vision_observation(renamed, calibration, .02, "vision_proprio", proprio)

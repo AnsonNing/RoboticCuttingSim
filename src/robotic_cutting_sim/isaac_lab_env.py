@@ -109,9 +109,13 @@ class LabCuttingConfig:
     velocity_feedforward: bool | None = None
     experiment: str = "cut"
     camera: bool = True
+    camera_layout: str = "legacy_fixed_d455"
+    include_global_camera: bool = False
     static_scene: str = str(ROOT/"artifacts/research_handoff_001/workcell/workcell.usda")
 
     def __post_init__(self):
+        if self.camera_layout not in ("legacy_fixed_d455", "wrist_d405_global_d455"):
+            raise ValueError("Unsupported camera layout")
         if self.task_id not in (None, "CUT-01", "TRIM-01"):
             raise ValueError("Unsupported live cutting task")
         if self.particle_spacing_m is not None and self.task_id is None:
@@ -138,6 +142,9 @@ def make_lab_cfg(options):
         q["panda_finger_joint.*"] = .04
         if index == 1:
             q["panda_joint1"] = -np.pi/2
+            if options.camera_layout == "wrist_d405_global_d455":
+                from .camera_rig import SECONDARY_OBSERVATION_JOINTS
+                q.update(dict(zip([f"panda_joint{i}" for i in range(1, 8)], SECONDARY_OBSERVATION_JOINTS)))
         return ArticulationCfg(prim_path=f"/World/Franka_{index}",
             spawn=sim_utils.UsdFileCfg(usd_path=str(asset), func=partial(_spawn_franka, task=task) if task else _spawn_franka,
                 variants={"Physics": "mujoco", "Colliders": "convex_hulls"},
@@ -186,9 +193,17 @@ def make_lab_cfg(options):
 
     observation = {"q": [2, 7], "qdot": [2, 7], "tool_pose": 7}
     if options.camera:
-        for name in ("d455_0", "d455_1"):
-            observation[name+"_rgb"] = [options.height, options.width, 3]
-            observation[name+"_depth_m"] = [options.height, options.width]
+        camera_ids = ("wrist_d405_0", "wrist_d405_1") if options.camera_layout == "wrist_d405_global_d455" else ("d455_0", "d455_1")
+        if options.include_global_camera:
+            camera_ids += ("global_d455" if options.camera_layout == "wrist_d405_global_d455" else "global",)
+        if options.camera_layout == "wrist_d405_global_d455":
+            from .camera_rig import make_rig
+            camera_specs = make_rig(options.task_id or "TRIM-01").specs
+        for name in camera_ids:
+            height, width = ((camera_specs[name]["height"], camera_specs[name]["width"])
+                if options.camera_layout == "wrist_d405_global_d455" else (options.height, options.width))
+            observation[name+"_rgb"] = [height, width, 3]
+            observation[name+"_depth_m"] = [height, width]
     cfg = DirectRLEnvCfg(seed=options.seed, decimation=10, episode_length_s=8.,
         action_space=7, observation_space=observation, ui_window_class_type=None,
         scene=scene_cfg,
@@ -222,6 +237,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self.robots = [self.scene[f"franka_{i}"] for i in range(2)]
         self.hand = next(i for i, label in enumerate(self.model.body_label)
                          if "Franka_0/" in label and label.endswith("/panda_hand"))
+        self.hands = [next(i for i, label in enumerate(self.model.body_label)
+                          if f"Franka_{arm}/" in label and label.endswith("/panda_hand")) for arm in range(2)]
         self.knife_shape = next(i for i, label in enumerate(self.model.shape_label) if label.endswith("/Knife"))
         if int(self.model.shape_body.numpy()[self.knife_shape]) != self.hand:
             raise RuntimeError("Physical wedge collider is not attached to the measured Panda hand")
@@ -243,6 +260,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         # Reuse only static workcell objects. Neither robots nor material replay
         # are imported from the preview; both are owned by this live task.
         selected = ["D455_0", "D455_1", "GlobalCamera", "EnvironmentLight"]
+        if self.options.camera_layout == "wrist_d405_global_d455":
+            selected = ["EnvironmentLight"]
         for name in selected:
             path = "/World/"+name
             if not Sdf.CopySpec(source.GetRootLayer(), path, stage.GetRootLayer(), path):
@@ -318,7 +337,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         hand = body[self.hand].astype(float)
         return {"q": np.array([q[indices][:7] for indices in self._joint_coords]),
             "qdot": np.array([v[indices][:7] for indices in self._joint_coords]),
-            "hand_pose": hand, "body_pose": body,
+            "hand_pose": hand, "hand_poses": body[self.hands].astype(float), "body_pose": body,
             "tool_pose": compose_tool_pose(hand, self.mount[:3], self.mount[3:]), "timestamp_s": self.time_s}
 
     def reference_pose(self, time_s):
@@ -369,6 +388,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         from .usd_surface_bridge import DynamicSurfaceBridge
         self._bridge = DynamicSurfaceBridge(self.sim.stage)
         self._capture_time = None
+        self.camera_pose_trace = []
         self.last_diagnostics = {}
         self._step_cut_enabled, self._step_cut_index = True, None
 
@@ -449,6 +469,10 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self._surface = ComponentSurface(self.material.spacing, self.options.material_device,
             voxel_size=self.material.spacing/2 if self.options.surface_profile == "current_volume_v1" else min(self.material.spacing, .0015),
             profile=self.options.surface_profile)
+        if self.options.camera_layout == "wrist_d405_global_d455":
+            self.camera_rig = None
+            self.calibration = {}
+            return
         paths = {"d455_0": "/World/D455_0/RSD455/Camera_Pseudo_Depth",
                  "d455_1": "/World/D455_1/RSD455/Camera_Pseudo_Depth", "global": "/World/GlobalCamera"}
         self.calibration = {name: usd_camera_calibration(self.sim.stage, path,
@@ -472,6 +496,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             self._bridge.mesh.CreateDisplayColorAttr([Gf.Vec3f(.72, .32, .13)])
             for i, op in self._body_ops:
                 op.Set(Gf.Matrix4d(pose_matrix(measured["body_pose"][i]).T.tolist()))
+            if self.options.camera and self.options.camera_layout == "wrist_d405_global_d455":
+                self._update_wrist_cameras(measured)
             self.frames = {}
             if self.options.camera:
                 points, triangles, colors, _ = stage_triangles(self.sim.stage)
@@ -484,13 +510,46 @@ class IsaacLabCuttingEnv(DirectRLEnv):
                         rgb, depth = capture(points, indices, calibration, device, colors)
                         self.frames[name] = {"rgb": rgb, "depth_m": depth, "valid_mask": depth > 0,
                             "timestamp_s": self.time_s, "surface_timestamp_s": self.time_s,
-                            "source": "live_isaac_lab_ideal_warp_rgbd"}
+                            "source": "live_isaac_lab_ideal_warp_rgbd",
+                            "sensor_model": calibration["sensor_model"]}
             self._capture_time = self.time_s
         if self.options.camera:
-            for name in ("d455_0", "d455_1"):
+            names = ("wrist_d405_0", "wrist_d405_1") if self.options.camera_layout == "wrist_d405_global_d455" else ("d455_0", "d455_1")
+            if self.options.include_global_camera:
+                names += ("global_d455" if self.options.camera_layout == "wrist_d405_global_d455" else "global",)
+            for name in names:
                 for key in ("rgb", "depth_m"):
                     policy[name+"_"+key] = torch.as_tensor(self.frames[name][key][None], device=self.device)
         return {"policy": policy}
+
+    def _update_wrist_cameras(self, measured):
+        from .camera_rig import make_rig
+        from .usd_surface_bridge import usd_camera_calibration
+        if self.camera_rig is None:
+            self.camera_rig = make_rig(self.task.task_id if self.task else "TRIM-01",
+                initial_hand_poses_world_xyzw=measured["hand_poses"])
+            self.camera_rig_paths = self.camera_rig.author_usd(self.sim.stage,
+                [self.model.body_label[index] for index in self.hands],
+                global_d455_asset_path=str(ROOT/"artifacts/workcell_asset_cache"/ASSETS["d455"]))
+        calibration = self.camera_rig.calibrations(measured["hand_poses"])
+        row = {"timestamp_s": self.time_s, "T_world_hand": [pose_matrix(p).tolist() for p in measured["hand_poses"]],
+               "cameras": {}}
+        for name, spec in calibration.items():
+            actual = usd_camera_calibration(self.sim.stage, self.camera_rig_paths[name]["depth_camera_path"],
+                spec["width"], spec["height"], near_m=spec["near_m"], far_m=spec["far_m"])
+            expected = np.asarray(spec["T_world_camera"])
+            observed = np.asarray(actual["T_world_camera"])
+            error = float(np.max(np.abs(expected-observed)))
+            if error > 3e-6:
+                raise RuntimeError(f"Wrist camera does not follow its measured hand: {name}, error={error}")
+            model = "ideal_d405_prototype" if name.startswith("wrist_") else "ideal_rgbd_from_official_d455_asset"
+            self.calibration[name] = {**spec, **actual, "sensor_model": model, "timestamp_s": self.time_s,
+                                      "rgb_far_m": 20.}
+            row["cameras"][name] = {"T_world_camera": observed.tolist(),
+                "T_camera_world": np.linalg.inv(observed).tolist(),
+                "T_hand_camera": self.camera_rig.specs[name].get("T_hand_optical_cv"),
+                "composition_max_abs_error": error, "sensor_model": model}
+        self.camera_pose_trace.append(row)
 
     def reference_action(self):
         trajectory_time = self.time_s+self.step_dt if self.options.experiment == "cut" else 0.

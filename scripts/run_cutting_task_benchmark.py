@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--variants", nargs="+", choices=("fixed", "randomized"), default=["fixed"])
     parser.add_argument("--seeds", type=int, nargs="+", default=[42])
     parser.add_argument("--gpu", type=int, default=1)
+    parser.add_argument("--camera-layout", choices=("legacy_fixed_d455", "wrist_d405_global_d455"), default="wrist_d405_global_d455")
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--particle-spacing", type=float, help="Explicit override for all cases; otherwise CUT1mm/TRIM2mm")
     args = parser.parse_args()
@@ -67,7 +68,7 @@ def main():
         spacing = args.particle_spacing if args.particle_spacing is not None else (.002 if task == "TRIM-01" else .001)
         command = [str(executable), str(runner), "--task-id", task, "--task-variant", variant,
             "--seed", str(seed), "--steps", str(args.steps), "--output-dir", str(case),
-            "--device", f"cuda:{args.gpu}", "--particle-spacing", str(spacing)]
+            "--device", f"cuda:{args.gpu}", "--particle-spacing", str(spacing), "--camera-layout", args.camera_layout]
         command += (["--gpu", str(args.gpu), "--camera-mode", "native_single_view"] if args.runtime == "isaac_sim" else
                     ["--material-device", f"cuda:{args.gpu}", "--reset-check"])
         print(f"RUN {name}: actual {args.runtime}, spacing={spacing}m", flush=True)

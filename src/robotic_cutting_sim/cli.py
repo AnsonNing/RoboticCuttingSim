@@ -21,6 +21,7 @@ def main(argv=None):
     scene=sub.add_parser("scene",help="Create a static USD preview and continuous particle sample")
     scene.add_argument("--preset",choices=["physics_only","workcell"],default="physics_only")
     scene.add_argument("--asset-root",help="Complete local or official Isaac asset root for workcell composition")
+    scene.add_argument("--camera-layout", choices=("legacy_fixed_d455", "wrist_d405_global_d455"), default="legacy_fixed_d455")
     scene.add_argument("--variant",choices=["D0","D1"],default="D0")
     scene.add_argument("--family",choices=["dome","gaussian","ellipsoid_cap","ridge"],default="dome")
     scene.add_argument("--seed",type=int,default=42); scene.add_argument("--spacing",type=positive,default=.002)

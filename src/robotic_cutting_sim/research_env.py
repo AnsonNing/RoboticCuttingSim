@@ -43,10 +43,19 @@ class ResearchEnvConfig:
             raise ValueError("control_dt must be an integer multiple of material_dt")
 
 
-def vision_observation(frames, calibration, timestamp_s, profile, proprio=None):
-    """Allowlist public observations; global images and debug fields stay outside."""
+def vision_observation(frames, calibration, timestamp_s, profile, proprio=None, *,
+                       include_global_camera=False):
+    """Allowlist named RGB-D sensors; global inclusion is an explicit option."""
     from .sensor_contract import validate_frame
-    names = ("d455_0", "d455_1")
+    wrist = "wrist_d405_0" in frames or "wrist_d405_1" in frames
+    names = ("wrist_d405_0", "wrist_d405_1") if wrist else ("d455_0", "d455_1")
+    if include_global_camera:
+        names += ("global_d455" if wrist else "global",)
+    for name in names:
+        if abs(float(frames[name].get("timestamp_s", timestamp_s))-timestamp_s) > 1e-9:
+            raise ValueError("Camera and physics timestamps must match")
+        if "timestamp_s" in calibration[name] and abs(float(calibration[name]["timestamp_s"])-timestamp_s) > 1e-9:
+            raise ValueError("Calibration and camera timestamps must match")
     validated = {name: validate_frame(frames[name]["rgb"], frames[name]["depth_m"],
                     timestamp_s, frames[name]["surface_timestamp_s"]) for name in names}
     observation = {key: {name: validated[name][key] for name in names}
