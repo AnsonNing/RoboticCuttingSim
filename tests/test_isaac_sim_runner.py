@@ -1,9 +1,38 @@
 import numpy as np
 import pytest
+import json
 
 from robotic_cutting_sim.isaac_sim_runner import (
     IsaacSimCuttingConfig, LiveIsaacSimCutting, calibration_from_replicator, pose_from_wxyz, require_sim_62, validate_native_action,
 )
+
+
+def test_cold_workcell_wait_uses_elapsed_time_not_a_300_tick_cap(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from robotic_cutting_sim import isaac_sim_runner as module
+    calls = []
+    app = SimpleNamespace(update=lambda: calls.append(1))
+    context = SimpleNamespace(get_stage_loading_status=lambda: (0, 0, int(len(calls) <= 350)))
+    monkeypatch.setattr(module.time, "monotonic", lambda: len(calls)*.01)
+    monkeypatch.setattr(module.time, "sleep", lambda _: None)
+    receipt = tmp_path/"load.json"
+    module.wait_for_workcell_stage(app, context, receipt, timeout_s=10.)
+    result = json.loads(receipt.read_text())
+    assert result["status"] == "PASS_STAGE_LOADED" and result["kit_updates"] == 351
+
+
+def test_workcell_wait_preserves_a_bounded_timeout_diagnostic(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from robotic_cutting_sim import isaac_sim_runner as module
+    calls = []
+    app = SimpleNamespace(update=lambda: calls.append(1))
+    context = SimpleNamespace(get_stage_loading_status=lambda: (2, 1, 1))
+    monkeypatch.setattr(module.time, "monotonic", lambda: len(calls))
+    monkeypatch.setattr(module.time, "sleep", lambda _: None)
+    receipt = tmp_path/"timeout.json"
+    with pytest.raises(TimeoutError, match="loading status"):
+        module.wait_for_workcell_stage(app, context, receipt, timeout_s=2.)
+    assert json.loads(receipt.read_text())["status"] == "BLOCKED_STAGE_LOAD_TIMEOUT"
 
 
 def test_native_gpu_selection_supports_single_gpu_and_explicit_devices():

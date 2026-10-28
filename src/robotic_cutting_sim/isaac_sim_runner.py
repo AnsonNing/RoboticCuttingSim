@@ -14,6 +14,25 @@ import numpy as np
 from .recording import ROOT, write_json
 
 
+def wait_for_workcell_stage(app, context, receipt_path, timeout_s=300.):
+    """Allow cold shader/asset work time without a host-speed-dependent tick cap."""
+    start, updates = time.monotonic(), 0
+    while True:
+        app.update()
+        updates += 1
+        status = list(context.get_stage_loading_status())
+        elapsed = time.monotonic()-start
+        loaded = status[2] == 0
+        if loaded or elapsed >= timeout_s:
+            write_json(receipt_path, {"status": "PASS_STAGE_LOADED" if loaded else "BLOCKED_STAGE_LOAD_TIMEOUT",
+                "wall_s": elapsed, "kit_updates": updates, "loading_status": status,
+                "timeout_s": timeout_s, "physics_or_camera_smoke": "NOT_RUN_BY_THIS_CHECK"})
+            if not loaded:
+                raise TimeoutError(f"Workcell loading exceeded {timeout_s}s; loading status={status}")
+            return
+        time.sleep(.01)
+
+
 @dataclass(frozen=True)
 class IsaacSimCuttingConfig:
     seed: int = 42
@@ -201,12 +220,7 @@ class LiveIsaacSimCutting:
             source = scene_dir/"workcell.usda"
         if not context.open_stage(str(source)):
             raise RuntimeError("Isaac could not open the initial workcell")
-        for _ in range(300):
-            self.app.update()
-            if context.get_stage_loading_status()[2] == 0:
-                break
-        else:
-            raise TimeoutError("Workcell loading exceeded300 Kit updates")
+        wait_for_workcell_stage(self.app, context, self.output/f"stage_load_{self.reset_index:02d}.json")
         stage = self.stage = context.get_stage()
         stage.SetEditTarget(stage.GetSessionLayer())
         if UsdGeom.GetStageMetersPerUnit(stage) != 1. or UsdGeom.GetStageUpAxis(stage) != "Z":
