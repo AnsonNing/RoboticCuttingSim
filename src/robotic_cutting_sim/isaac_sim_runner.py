@@ -836,6 +836,8 @@ class LiveIsaacSimCutting:
         mode=c.action_mode
         self._command_cut_index=0
         if isinstance(action,dict):
+            from .control import validate_cut_index
+            validate_cut_index(action, self.material)
             if self.task is None:
                 raise ValueError("Task action mappings require a shared CUT/TRIM specification")
             command=self.task.validate_action(action)

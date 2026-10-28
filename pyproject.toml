@@ -13,6 +13,7 @@ dependencies = ["numpy>=2,<3", "scipy>=1.11", "PyYAML>=6"]
 newton = ["newton==1.6.1", "warp-lang==1.17.0"]
 robot = ["newton==1.6.1", "warp-lang==1.17.0", "mujoco==3.12.0", "mujoco-warp==3.12.0", "newton-usd-schemas==0.6.0"]
 tools = ["pytest>=8", "matplotlib>=3.8", "usd-core<26.9"]
+policy = ["gymnasium==1.4.0"]
 
 [project.scripts]
 robotic-cutting-sim = "robotic_cutting_sim.cli:main"

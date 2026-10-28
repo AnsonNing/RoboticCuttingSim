@@ -1,5 +1,13 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## In progress: WP-10B live policy validation
+
+Server baseline CPU: 454 PASS / 2 SKIP in 89.39 s. GPU 1 is available and used
+without changing existing processes. Actual Native/Lab interface smokes are
+underway, with pre-step cut-digit validation, full command recording and the
+opt-in policy CLI preset. Initial failures are preserved. See
+[WP-10B](reports/WP-10B.md). WP-10C–G remain NOT_RUN at this checkpoint.
+
 ## Current: WP-10 ruler knife, general knife motions and policy control (parts A/B, CPU only)
 
 Branch `claude/lucid-mendel-vt7n82`, handed off to Codex for the GPU/live work.

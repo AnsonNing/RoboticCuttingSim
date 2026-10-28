@@ -867,6 +867,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             self._step_action_mode = "cartesian_edge_pose_world"
             action = self.reference_action()
         elif isinstance(action, dict):
+            from .control import validate_cut_index
+            validate_cut_index(action, self.material)
             if not self.task:
                 raise ValueError("Task action mappings require a CUT/TRIM task")
             command = self.task.validate_action(action)

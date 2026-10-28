@@ -9,7 +9,7 @@ from dataclasses import asdict
 
 import numpy as np
 
-from .control import DELTA_FRAMES, DELTA_MODE, ActionLimits, IKFailure, bound_target, nominal_edge_pose, resolve_delta
+from .control import DELTA_FRAMES, DELTA_MODE, ActionLimits, IKFailure, bound_target, nominal_edge_pose, resolve_delta, validate_cut_index
 from .research_env import proprio_observation, vision_observation
 from .tasks import ACTION_MODES, make_task
 
@@ -95,7 +95,10 @@ class CuttingTaskEnv:
         if hasattr(self.backend, "measured"):
             self._frames, proprio = self.backend.frames, self.backend.measured()
         else:
-            self._frames, _ = self.backend.capture()
+            if self.observation_profile != 'state':
+                self._frames, _ = self.backend.capture()
+            else:
+                self._frames = {}
             proprio = self.backend.proprioception()
         self._proprio = proprio
         if self.observation_profile == "state":
@@ -144,6 +147,7 @@ class CuttingTaskEnv:
             raise RuntimeError("Grasp lost or sensor invalid; call reset")
         report = None
         if action is not None:
+            validate_cut_index(action, self.backend.material)
             gripper = None
             if not isinstance(action, dict):
                 action = {"mode": self.action_mode, "target": action, "cut_enabled": True}
@@ -161,6 +165,8 @@ class CuttingTaskEnv:
                     action={"mode":"joint_position_rad","target":measured["q"][0],"cut_enabled":False}
             if action:
                 action, report = self._resolve(action)
+                if report is not None:
+                    report['resolved_target_world_xyz_xyzw'] = np.asarray(action['target']).tolist()
             action = self.task.validate_action(action)
             if gripper is not None:
                 self.backend.set_gripper(gripper)
@@ -191,7 +197,8 @@ class CuttingTaskEnv:
         self._record_oracle()
         # Goal success is deliberately evaluated separately from elapsed time.
         diagnostics=getattr(self.backend,"last_diagnostics",{})
-        grasp_status = diagnostics.get("grasp_status", {}).get("status")
+        grasp_payload = diagnostics.get("grasp_status", {})
+        grasp_status = grasp_payload.get('status') if isinstance(grasp_payload, dict) else grasp_payload
         self._terminated = bool(diagnostics.get("grasp_lost",False) or grasp_status == "INVALID_CONTACT_DATA")
         reason = grasp_status if self._terminated else None
         if (not self._terminated and self.max_consecutive_ik_failures is not None

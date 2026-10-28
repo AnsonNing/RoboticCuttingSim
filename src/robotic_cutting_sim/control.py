@@ -32,6 +32,15 @@ class IKFailure(RuntimeError):
         self.info = dict(info or {})
 
 
+def validate_cut_index(action, material):
+    """Reject unavailable material-history digits before robot state can change."""
+    if isinstance(action, dict) and 'cut_index' in action:
+        index = action['cut_index']
+        if (isinstance(index, (bool, np.bool_)) or not isinstance(index, (int, np.integer))
+                or not 0 <= index < material.max_cuts):
+            raise ValueError('Explicit cut index exceeds retained material history')
+
+
 @dataclass(frozen=True)
 class ActionLimits:
     """Per-control-step motion bounds and an edge-position workspace box.

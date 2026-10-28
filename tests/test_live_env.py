@@ -80,6 +80,16 @@ def test_same_api_keeps_privileged_payload_out_and_separates_time_from_success(k
         env.observe()
 
 
+@pytest.mark.parametrize('payload', ['HELD', {'status': 'HELD'}])
+def test_runtime_grasp_status_formats_are_accepted(payload):
+    b = backend('lab')
+    b.last_diagnostics = {'grasp_status': payload, 'grasp_lost': False}
+    env = CuttingTaskEnv(b)
+    env.reset()
+    _, _, terminated, _, info = env.step()
+    assert not terminated and info['grasp_status'] == 'HELD'
+
+
 def test_wrapper_rejects_stale_camera_and_preserves_vision_only_contract():
     native = backend("kit")
     env = CuttingTaskEnv(native, observation_profile="vision_only")

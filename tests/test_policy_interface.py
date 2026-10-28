@@ -16,6 +16,18 @@ from test_live_env import backend
 EDGE = np.array([0., 0., .05, *Rotation.from_euler("y", 90, degrees=True).as_quat()])
 
 
+def test_unavailable_cut_digit_rejected_before_backend_step():
+    b = tracking_backend()
+    b.material.max_cuts = 1
+    env = CuttingTaskEnv(b, action_mode=DELTA_MODE, observation_profile='state')
+    env.reset()
+    before = b.time_s
+    with pytest.raises(ValueError, match='cut index'):
+        env.step({'mode': DELTA_MODE, 'target': [0.]*6, 'cut_index': 1})
+    assert b.time_s == before
+    assert b.attempts == []
+
+
 def tracking_backend(reachable=lambda pose: True, task_id="CUT-01"):
     """Fake Lab backend whose measured edge follows reachable Cartesian targets."""
     b = backend("lab")

@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""Recorded WP-10 validation on a real Isaac runtime (never a replay backend)."""
+import argparse
+from contextlib import contextmanager
+from dataclasses import asdict
+import json
+from pathlib import Path
+import sys
+import time
+import traceback
+
+import numpy as np
+from scipy.spatial.transform import Rotation
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'src'))
+from robotic_cutting_sim.control import ActionLimits, DELTA_MODE
+from robotic_cutting_sim.live_env import open_cutting_env
+from robotic_cutting_sim.policy_config import policy_preset
+from robotic_cutting_sim.recording import manifest, new_output, write_json
+
+
+def jsonable(value):
+    return json.loads(json.dumps(value, default=lambda v: v.tolist() if isinstance(v, np.ndarray)
+                                else v.item() if isinstance(v, np.generic) else str(v)))
+
+
+@contextmanager
+def failure_receipt(output):
+    # Native Kit may exit Python during app.close(); write failures before closing it.
+    try:
+        yield
+    except BaseException as error:
+        write_json(output / 'failure.json', dict(error=repr(error), traceback=traceback.format_exc()))
+        write_json(output / 'result.json', dict(status='FAIL_EXECUTION', error=repr(error)))
+        traceback.print_exc()
+        raise
+
+
+class EpisodeRecorder:
+    """Raw RGB-D, poses, commands and actual material history, with fresh names."""
+    def __init__(self, output, env, controller, every=10):
+        self.output, self.env, self.controller, self.every = Path(output), env, controller, every
+        self.output.mkdir(exist_ok=False)
+        (self.output / 'observations').mkdir()
+        self.rows, self.samples, self.states, self.errors, self.rotation_errors = [], [], [], [], []
+        self.events = dict(rejected=0, clamped=0, cutting_steps=0)
+        self.steps = 0
+        self.stream = (self.output / 'actions.jsonl').open('w')
+        self.capture()
+
+    def measured(self):
+        backend = self.env.backend
+        return backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
+
+    def capture(self):
+        env = self.env
+        backend = env.backend
+        index = len(self.rows)
+        frames = env._frames
+        # State episodes may record no cameras; this is explicit in every receipt.
+        for name, frame in frames.items():
+            public = {key: value for key, value in frame.items() if not key.startswith('rtx_reference_')
+                      and not key.startswith('depth_sensor_') and key != 'native_source_index_debug'}
+            np.savez_compressed(self.output / 'observations' / f'{name}_{index:04d}.npz', **public)
+        self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
+                              camera_calibration=jsonable(backend.calibration),
+                              cut_enabled=getattr(self, 'last_cut', False)))
+        state = backend.material.world_state()
+        self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
+        self.states.append(jsonable(self.measured()))
+        write_json(self.output / 'frame_manifest.json', self.rows)
+
+    def step(self, action, result):
+        self.steps += 1
+        observation, reward, terminated, truncated, info = result
+        report = info.get('action_report') or {}
+        target = report.get('resolved_target_world_xyz_xyzw')
+        if target is None:
+            target = self.env._commanded
+        measured = self.measured()
+        target = np.asarray(target, float)
+        actual = np.asarray(measured['tool_pose'], float)
+        error = float(np.linalg.norm(actual[:3] - target[:3]))
+        rotation_error = float((Rotation.from_quat(actual[3:]) * Rotation.from_quat(target[3:]).inv()).magnitude())
+        self.errors.append(error)
+        self.rotation_errors.append(rotation_error)
+        self.last_cut = action is None or bool(action.get('cut_enabled', True))
+        self.events['cutting_steps'] += self.last_cut
+        self.events['rejected'] += info.get('ik_status') == 'rejected'
+        self.events['clamped'] += any(report.get(key, False) for key in
+                                      ('translation_clamped', 'rotation_clamped', 'workspace_clamped'))
+        diagnostics = self.env.backend.last_diagnostics
+        row = dict(step=self.steps, time_s=self.env.time_s, controller=self.controller,
+                   submitted=action, info=info, measured=measured, reward=reward,
+                   terminated=terminated, truncated=truncated, tracking_error_m=error,
+                   rotation_error_rad=rotation_error,
+                   material_diagnostics=diagnostics.get('material', diagnostics.get('material_diagnostics', {})),
+                   grasp_status=diagnostics.get('grasp_status'),
+                   resolved_target_world_xyz_xyzw=target,
+                   accepted_target_world_xyz_xyzw=self.env._commanded)
+        self.stream.write(json.dumps(jsonable(row), allow_nan=False) + '\n')
+        self.stream.flush()
+        if self.steps % self.every == 0 or terminated or truncated:
+            self.capture()
+
+    def finish(self, result):
+        self.stream.close()
+        env, material = self.env, self.env.backend.material
+        if self.rows[-1]['time_s'] != env.time_s:
+            self.capture()
+        samples = self.samples
+        np.savez_compressed(self.output / 'physics_state.npz',
+            time_s=[row['time_s'] for row in self.rows],
+            **{key: np.asarray([s[key] for s in samples]) for key in ('positions', 'velocities', 'codes')},
+            mass_kg=material.masses, reference_positions=material.world_points,
+            reference_positions_local=material.points, reference_indices=material.lattice,
+            reference_stencil_nodes=material.bed.nodes.numpy(),
+            reference_stencil_weights=material.bed.weights.numpy(),
+            reference_stencil_gradients=material.bed.gradients.numpy())
+        write_json(self.output / 'robot_state.json', self.states)
+        write_json(self.output / 'task.json', env.task.to_dict())
+        write_json(self.output / 'material.json', material.parameter_receipt)
+        metrics = dict(steps=self.steps, events=self.events,
+                       tracking_error_m={key: float(value) for key, value in zip(
+                           ('p50', 'p95', 'max'), np.percentile(self.errors or [0.], [50, 95, 100]))},
+                       rotation_error_rad={key: float(value) for key, value in zip(
+                           ('p50', 'p95', 'max'), np.percentile(self.rotation_errors or [0.], [50, 95, 100]))})
+        write_json(self.output / 'result.json', {**result, **metrics})
+        return metrics
+
+
+def fuzz_action(step, rng):
+    # Fixed requests independent of runtime responses, including unreachable requests,
+    # saturated translations and flips. ActionLimits must bound all executed targets.
+    if step % 100 < 10:
+        delta = np.r_[rng.normal(0, 2., 3), [0., np.pi, 0.]]
+    elif step % 100 < 70:
+        delta = np.r_[[0., 0., .0001], [0., .2, 0.]]
+    else:
+        delta = np.r_[rng.normal(0, .0002, 3), rng.normal(0, .01, 3)]
+    return dict(mode=DELTA_MODE, target=delta, frame='world', cut_enabled=False, cut_index=0)
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--runtime', choices=('isaac_sim', 'isaac_lab'), required=True)
+    p.add_argument('--task', default='CUT-01')
+    p.add_argument('--preset', choices=('legacy', 'policy'), default='legacy')
+    p.add_argument('--controller', choices=('reference', 'scripted', 'fuzz', 'gym_hold'), default='reference')
+    p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
+    p.add_argument('--gym', action='store_true')
+    p.add_argument('--gpu', type=int, default=1)
+    p.add_argument('--seed', type=int, default=42)
+    p.add_argument('--steps', type=int, default=400)
+    p.add_argument('--episodes', type=int, default=1)
+    p.add_argument('--spacing', type=float)
+    p.add_argument('--record-every', type=int, default=10)
+    p.add_argument('--out', type=Path, required=True)
+    a = p.parse_args()
+    if not 1 <= a.steps <= 400 or a.episodes < 1:
+        p.error('A task episode has 1..400 steps')
+    out = new_output(a.out)
+    write_json(out / 'manifest.json', manifest(jsonable(vars(a)), 'wp10_actual_live_validation'))
+    results, start = [], time.monotonic()
+    options = policy_preset(a.runtime) if a.preset == 'policy' else {}
+    options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state')
+    if a.runtime == 'isaac_sim':
+        options.update(gpu=a.gpu, device=f'cuda:{a.gpu}')
+    else:
+        options.update(device=f'cuda:{a.gpu}', material_device=f'cuda:{a.gpu}')
+    try:
+        with open_cutting_env(a.task, runtime=a.runtime, output_dir=out / 'runtime', seed=a.seed,
+                              observation_profile=a.observation, **options) as env, failure_receipt(out):
+            for episode in range(a.episodes):
+                seed, episode_start = a.seed + episode, time.monotonic()
+                if a.gym or a.controller == 'gym_hold':
+                    from robotic_cutting_sim.gym_env import CuttingGymEnv
+                    gym = CuttingGymEnv(env, seed=seed)
+                    observation = env.observe()
+                else:
+                    gym = None
+                    observation, _ = env.reset(seed=seed)
+                recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every)
+                before = env.time_s
+                try:
+                    env.step(dict(mode=DELTA_MODE, target=np.zeros(6), cut_index=1))
+                except ValueError as error:
+                    cut_index_check = dict(status='PASS' if env.time_s == before else 'FAIL', error=str(error))
+                else:
+                    cut_index_check = dict(status='FAIL', reason='Unavailable digit was accepted')
+                policy = None
+                if a.controller == 'scripted':
+                    from robotic_cutting_sim.policies import WaypointPolicy, through_cut, skim
+                    plan = skim(env.task) if env.task.goal_kind == 'flatten' else through_cut(env.task)
+                    policy = WaypointPolicy(env.task, plan, env.action_limits or ActionLimits())
+                rng = np.random.default_rng(seed)
+                for step in range(a.steps):
+                    action = (fuzz_action(step, rng) if a.controller == 'fuzz' else
+                              policy(observation) if policy else
+                              dict(mode=DELTA_MODE, target=np.zeros(6), cut_enabled=False) if gym else None)
+                    if gym:
+                        limits = env.action_limits
+                        gym.cut_enabled = action['cut_enabled']
+                        vector = np.r_[action['target'][:3] / limits.max_translation_m,
+                                       action['target'][3:] / limits.max_rotation_rad]
+                        result = gym.step(vector)
+                        observation = env.observe()
+                    else:
+                        result = env.step(action)
+                        observation = result[0]
+                    recorder.step(action, result)
+                    if (step + 1) % 25 == 0:
+                        print(f'{a.runtime} {a.task} {a.controller} episode={episode} step={step+1} t={env.time_s:.2f}', flush=True)
+                    if result[2] or result[3]:
+                        break
+                strict = env.evaluate()
+                research = env.evaluate(profile='research')
+                row = dict(runtime=a.runtime, task_id=a.task, controller=a.controller, seed=seed,
+                           status='PASS_EXECUTION', task_status=strict.get('status'), strict=strict, research=research,
+                           cut_index_check=cut_index_check, runtime_source=env.runtime_source,
+                           observation_profile=a.observation, wall_s=time.monotonic() - episode_start)
+                row.update(recorder.finish(row))
+                results.append(row)
+                write_json(out / 'results.json', results)
+            write_json(out / 'result.json', dict(status='PASS_EXECUTION', rows=results,
+                                                wall_s=time.monotonic() - start))
+        status = 'PASS_EXECUTION'
+    except BaseException as error:
+        status = 'FAIL_EXECUTION'
+        write_json(out / 'failure.json', dict(error=repr(error), traceback=traceback.format_exc()))
+        traceback.print_exc()
+    write_json(out / 'result.json', dict(status=status, rows=results, wall_s=time.monotonic() - start))
+    return 0 if status == 'PASS_EXECUTION' else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())
