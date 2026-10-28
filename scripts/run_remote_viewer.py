@@ -30,7 +30,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--task", choices=("CUT-01", "TRIM-01"), default="TRIM-01")
-    parser.add_argument("--gpu", type=int, default=1)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--ip", help="Host Tailscale IPv4; detected from tailscale ip -4 by default")
     parser.add_argument("--signal-port", type=int, default=49100)

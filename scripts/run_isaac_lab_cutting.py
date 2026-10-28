@@ -91,7 +91,8 @@ def main():
         ROOT/"src/robotic_cutting_sim/coupled_robot.py", ROOT/"src/robotic_cutting_sim/cutting_surface.py",
         ROOT/"src/robotic_cutting_sim/material_config.py", ROOT/"src/robotic_cutting_sim/scene_frames.py"]
     if args.camera_layout == "wrist_d405_global_d455":
-        loaded += [ROOT/"src/robotic_cutting_sim/camera_rig.py", ROOT/"configs/wrist_camera_rig_v2.json",
+        from robotic_cutting_sim.camera_rig import CONFIG_PATH
+        loaded += [ROOT/"src/robotic_cutting_sim/camera_rig.py", CONFIG_PATH,
                    ROOT/"src/robotic_cutting_sim/camera.py", ROOT/"src/robotic_cutting_sim/usd_surface_bridge.py"]
     if args.task_id:
         loaded += [ROOT/"src/robotic_cutting_sim/tasks.py", ROOT/"src/robotic_cutting_sim/fixture_contacts.py",

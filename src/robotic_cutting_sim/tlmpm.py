@@ -371,7 +371,7 @@ def _remember_cut(cuts: wp.array(dtype=int), index: wp.array(dtype=int), previou
 
 class TLMPM:
     """GPU physics state; all particles are initially one uncut continuum."""
-    def __init__(self, points, masses, spacing, config=TLMPMConfig(), device="cuda:1", *,
+    def __init__(self, points, masses, spacing, config=TLMPMConfig(), device="cuda:0", *,
                  fixture_boxes=None, table_plane=None):
         if config.cuts not in (1, 2):
             raise ValueError("One or two retained cuts supported by this prototype")

@@ -126,7 +126,7 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case",choices=["fast_sweep","second_pass","coarse_particles"],required=True)
     parser.add_argument("--protocol",type=Path,help="Explicit frozen protocol; defaults to the original A/B controls")
-    parser.add_argument("--device",default="cuda:1")
+    parser.add_argument("--device",default="cuda:0")
     parser.add_argument("--output-dir",type=Path,required=True)
     arguments=parser.parse_args()
     try:
