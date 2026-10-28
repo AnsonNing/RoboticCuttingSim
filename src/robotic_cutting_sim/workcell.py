@@ -228,6 +228,29 @@ def export(args, output):
     global_camera.CreateClippingRangeAttr(Gf.Vec2f(.01, 20))
     cameras["global"] = {**global_calibration, "prim_path": "/World/GlobalCamera"}
 
+    # Keep the historical static export byte-for-byte in behavior unless the
+    # caller explicitly selects the wrist profile. Articulated runtimes seed
+    # actual joint states and author these visual mounts after body import.
+    camera_layout = getattr(args, "camera_layout", "legacy_fixed_d455")
+    if camera_layout == "wrist_d405_global_d455":
+        from .camera_rig import author_camera_rig
+        from .usd_surface_bridge import usd_camera_calibration
+        hand_paths = []
+        for index in (0, 1):
+            hand = next(p for p in Usd.PrimRange(stage.GetPrimAtPath(f"/World/Franka_{index}"),
+                                                Usd.TraverseInstanceProxies())
+                        if p.GetName() == "panda_hand")
+            hand_paths.append(str(hand.GetPath()))
+        cameras = author_camera_rig(stage, hand_paths, sources["d455"],
+                                   task_id=getattr(args, "task_id", "TRIM-01"))
+        for name, camera_spec in cameras.items():
+            actual = usd_camera_calibration(stage, camera_spec["depth_camera_path"],
+                camera_spec["width"], camera_spec["height"], near_m=camera_spec["near_m"], far_m=camera_spec["far_m"])
+            cameras[name] = {**actual, **camera_spec,
+                "static_pose_scope": "Official authored robot rest transforms; observation joint posture is applied only by dynamic runtimes"}
+    elif camera_layout not in ("legacy_fixed_d455", "fixed_d455"):
+        raise ValueError(f"Unknown camera layout: {camera_layout}")
+
     local_composed = all(check["status"] == "PASS" for check in checks.values())
     capabilities = {"static_workcell_authored": True, "official_assets_composed": local_composed,
         "robot_articulation_validated": False, "ik_validated": False, "robot_tool_coupling_validated": False,
@@ -237,7 +260,7 @@ def export(args, output):
     spec = {"status": "STATIC_RESEARCH_WORKCELL", "units": "m,kg,s; quaternion XYZW; world Z up",
         "scene": str(path.resolve()), "asset_root": selected_root, "asset_root_override": override,
         "canonical_official_asset_root": ASSET_ROOT, "asset_composition": checks,
-        "robots": robots, "cameras": cameras, "capabilities": capabilities,
+        "robots": robots, "cameras": cameras, "camera_layout": camera_layout, "capabilities": capabilities,
         "material": json.loads((base_output / "specimen.json").read_text()),
         "tool": {"prim_path": "/World/KinematicBlade", "representation": "detached box proxy",
                  "attached_to_robot": False},
@@ -258,6 +281,15 @@ def export(args, output):
             if len(meshes) < 10:
                 raise RuntimeError(f"Franka_{index} has only {len(meshes)} composed mesh prims")
             topology[f"franka_{index}_mesh_prims"] = len(meshes)
+            if camera_layout == "wrist_d405_global_d455":
+                camera_spec = cameras[f"wrist_d405_{index}"]
+                camera = stage.GetPrimAtPath(camera_spec["depth_camera_path"])
+                if not camera.IsA(UsdGeom.Camera):
+                    raise RuntimeError(f"Wrist D405_{index} prototype camera did not compose")
+                if not str(camera.GetPath()).startswith(camera_spec["parent_hand_prim_path"]+"/"):
+                    raise RuntimeError("Wrist camera is not a child of its actual Panda hand")
+                topology[f"wrist_d405_{index}_hand_child_composed"] = True
+                continue
             camera = stage.GetPrimAtPath(cameras[f"d455_{index}"]["depth_camera_path"])
             if not camera.IsA(UsdGeom.Camera):
                 raise RuntimeError(f"D455_{index} native depth camera did not compose")

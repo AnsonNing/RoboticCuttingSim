@@ -1,0 +1,739 @@
+{
+  "schema": "wrist_camera_rig_geometry_audit_v1",
+  "timestamp_utc": "2026-10-28T06:00:19.856885+00:00",
+  "status": "PASS_STATIC_RIG_CONTRACT",
+  "scope": "Shared camera-rig implementation, primary-source specs/asset discovery, actual imported-robot FK/static collider check, and exact official visual-hand triangle/OBB diagnostics. This receipt does not establish runtime sensor calibration, native camera contact dynamics, full-trajectory clearance, or complete task visibility.",
+  "layout": "wrist_d405_global_d455",
+  "camera_ids": [
+    "wrist_d405_0",
+    "wrist_d405_1",
+    "global_d455"
+  ],
+  "spec_profile": "configs/wrist_camera_rig_v1.json",
+  "frozen_sources": {
+    "src/robotic_cutting_sim/camera_rig.py": "b4df13111f60f92afc69f5604b57d66acf26d73d7d32bd7925dc439d26616431",
+    "configs/wrist_camera_rig_v1.json": "346ba2845adef7a22622b5808b758d87b2edfdc077a6412d25ab333283d882f4",
+    "src/robotic_cutting_sim/workcell.py": "3c8a496bc5997cd27720de078c692f6e1a7c330a5e5df16323374519cd8cebf1",
+    "scripts/solve_secondary_observation_pose.py": "a70187e1fbbd249fc54e77591f58185f57241455dedba2c97d0b884b36598eff",
+    "scripts/audit_camera_mount_geometry.py": "1201c6724fba637eeba15606d288d4895adccf118a44aa2f42f4727a5eb80238",
+    "tests/test_camera_rig.py": "83627c45a8e3334c6073185d4b10df12ada574f67699e8046ba29f727fa30412"
+  },
+  "profile": {
+    "wrist_resolution": [
+      848,
+      480
+    ],
+    "wrist_K": [
+      [
+        446.80277311912806,
+        0.0,
+        424.0
+      ],
+      [
+        0.0,
+        446.80277311912806,
+        240.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "wrist_effective_fov_deg": [
+      87.0,
+      56.48491576038499
+    ],
+    "wrist_nominal_product_fov_deg": [
+      87,
+      58
+    ],
+    "logical_depth_range_m": [
+      0.07,
+      0.5
+    ],
+    "render_clipping_m": [
+      0.001,
+      20
+    ],
+    "right_imager_reference_only_baseline_m": 0.018,
+    "global_resolution": [
+      640,
+      480
+    ],
+    "global_public_depth_range_m": [
+      0.6,
+      6
+    ],
+    "global_native_model_input_range_m": [
+      0.52,
+      6
+    ],
+    "global_intrinsics_scope": "Official USD authored lens; actual RTX runtime aspect-fitted K must be recorded separately"
+  },
+  "reference_extrinsics": {
+    "wrist_d405_0": [
+      [
+        0.6839411288813297,
+        -0.6396927014676884,
+        0.3507389056171316,
+        -0.125
+      ],
+      [
+        -0.7295372041400852,
+        -0.5997119076259578,
+        0.32881772401606085,
+        -0.075
+      ],
+      [
+        0.0,
+        -0.4807690459468096,
+        -0.8768472640428289,
+        0.26
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "wrist_d405_1": [
+      [
+        -0.7612432304867113,
+        0.5582259360369592,
+        -0.3299887094641518,
+        0.115
+      ],
+      [
+        0.648466455599791,
+        0.6553087075216479,
+        -0.3873780502405261,
+        0.135
+      ],
+      [
+        0.0,
+        -0.5088755271989094,
+        -0.8608401116456134,
+        0.32
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "global_d455": [
+      [
+        0.7275894061853055,
+        0.285319259569189,
+        -0.6238642289198861,
+        1.65
+      ],
+      [
+        0.6860128686890024,
+        -0.3026113359067157,
+        0.6616741821877581,
+        -1.75
+      ],
+      [
+        -0.0,
+        -0.9094060146599221,
+        -0.4159094859465908,
+        1.5
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "secondary_observation_pose_candidates": [
+    {
+      "source": "artifacts/secondary_observation_pose_001/result.json",
+      "source_sha256": "6d066839608424156f313f8a00816c0d7557d711354d3289982c33383b1a8bf0",
+      "raw_status": "PASS_KINEMATIC_LAYOUT",
+      "selected": false,
+      "joint_positions_rad": [
+        -1.1860288381576538,
+        -1.7069745063781738,
+        1.1606838703155518,
+        -3.0717999935150146,
+        1.170377254486084,
+        1.4070916175842285,
+        2.8058271408081055
+      ],
+      "position_error_m": 1.8110349264163565e-06,
+      "rotation_error_rad": 4.6932721817127663e-07,
+      "secondary_arm_minimum_joint_limit_margin_rad": 0.0,
+      "negative_contact_count": 0,
+      "interpretation": "Retained exploratory IK branch; not the final observation posture"
+    },
+    {
+      "source": "artifacts/secondary_observation_pose_002/result.json",
+      "source_sha256": "97f47902ed2988e157060c95a3e3f500b16f5b987f6e87bd807273a608f4d0ef",
+      "raw_status": "PASS_KINEMATIC_LAYOUT",
+      "selected": false,
+      "joint_positions_rad": [
+        0.6535519361495972,
+        -1.7070529460906982,
+        -1.1607118844985962,
+        -3.0717999935150146,
+        -1.1704109907150269,
+        1.4070154428482056,
+        -1.7675094604492188
+      ],
+      "position_error_m": 2.643854035966545e-07,
+      "rotation_error_rad": 2.2302005190196393e-07,
+      "secondary_arm_minimum_joint_limit_margin_rad": 0.0,
+      "negative_contact_count": 2,
+      "interpretation": "Retained exploratory IK branch; not the final observation posture"
+    },
+    {
+      "source": "artifacts/secondary_observation_pose_003/result.json",
+      "source_sha256": "425725de0471973d33fcd413b95cb9c4298c559b9f1266dd7c8995887089fc06",
+      "raw_status": "PASS_KINEMATIC_LAYOUT",
+      "selected": false,
+      "joint_positions_rad": [
+        -1.2101918458938599,
+        -1.4172589778900146,
+        1.0018970966339111,
+        -2.9270033836364746,
+        0.9847347736358643,
+        1.6068655252456665,
+        2.8973000049591064
+      ],
+      "position_error_m": 7.439617197087357e-07,
+      "rotation_error_rad": 3.4755169795513206e-07,
+      "secondary_arm_minimum_joint_limit_margin_rad": 0.0,
+      "negative_contact_count": 0,
+      "interpretation": "Retained exploratory IK branch; not the final observation posture"
+    },
+    {
+      "source": "artifacts/secondary_observation_pose_004/result.json",
+      "source_sha256": "cda065c7bc4c70991da5c2c8acc0ba365185a7838236a7bcba0e3ba449d3a21e",
+      "raw_status": "PASS_KINEMATIC_LAYOUT",
+      "selected": true,
+      "joint_positions_rad": [
+        -1.2734662294387817,
+        -1.512477159500122,
+        1.0369349718093872,
+        -2.916372299194336,
+        1.0367738008499146,
+        1.5141336917877197,
+        2.847289562225342
+      ],
+      "position_error_m": 1.3261866030988543e-07,
+      "rotation_error_rad": 8.429367753131969e-08,
+      "secondary_arm_minimum_joint_limit_margin_rad": 0.05001044273376465,
+      "negative_contact_count": 0,
+      "interpretation": "Final static FK/interior-limit/contact candidate"
+    }
+  ],
+  "visual_mount_checks": [
+    {
+      "path": "artifacts/wrist_camera_mount_geometry_001/result.json",
+      "sha256": "b8ccb66b07753a25ac00e24367a7a4f84ef572afb9054cd55cfb17a6d6a7e1c7",
+      "result": {
+        "status": "FAIL_HOUSING_GEOMETRY",
+        "scope": "Static official hand visual triangle/OBB intersections; no contact, other-link, table, material, or full-trajectory clearance claim",
+        "criteria": {
+          "housing_triangle_intersections": 0,
+          "tolerance_m": 1e-08,
+          "finger_joints_m": [
+            0.04,
+            0.04
+          ]
+        },
+        "camera_mounts": {
+          "wrist_d405_0": {
+            "boxes": [
+              {
+                "name": "Housing",
+                "intersecting_triangles": 0,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.042,
+                  0.023,
+                  0.042
+                ],
+                "T_hand_obb": [
+                  [
+                    0.9061831399952655,
+                    -0.39074907324235836,
+                    0.16170120144439012,
+                    -0.038428065470621074
+                  ],
+                  [
+                    0.4228854653311239,
+                    0.8373194426621965,
+                    -0.3465025745236931,
+                    0.08234585457990229
+                  ],
+                  [
+                    0.0,
+                    0.3823758788157364,
+                    0.9240068653965149,
+                    -0.039588945546406115
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              },
+              {
+                "name": "Bracket",
+                "intersecting_triangles": 4,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 4,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.008,
+                  0.008,
+                  0.08362397542669858
+                ],
+                "T_hand_obb": [
+                  [
+                    0.7252621606864974,
+                    0.41910939018509624,
+                    -0.546207027907029,
+                    -0.02065317342816561
+                  ],
+                  [
+                    0.6884728014063832,
+                    -0.44150499666612536,
+                    0.5753942471405945,
+                    0.06675680020321201
+                  ],
+                  [
+                    -0.0,
+                    -0.7933603575787749,
+                    -0.6087522837924131,
+                    -0.03301813387523204
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              }
+            ],
+            "central_forward_ray_hand_first_hit_m": null,
+            "housing_triangle_clear": true
+          },
+          "wrist_d405_1": {
+            "boxes": [
+              {
+                "name": "Housing",
+                "intersecting_triangles": 418,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 2,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 159,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 257
+                },
+                "dimensions_m": [
+                  0.042,
+                  0.023,
+                  0.042
+                ],
+                "T_hand_obb": [
+                  [
+                    -0.685364699004991,
+                    0.5746957711326909,
+                    -0.447213595499958,
+                    -0.02051907177540089
+                  ],
+                  [
+                    -0.7281999926928029,
+                    -0.5408901375366503,
+                    0.42090691341172515,
+                    0.011076773435671417
+                  ],
+                  [
+                    0.0,
+                    0.6141356769947384,
+                    0.7892004626469846,
+                    0.0032689501918839424
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              },
+              {
+                "name": "Bracket",
+                "intersecting_triangles": 0,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.008,
+                  0.008,
+                  0.012406384657382282
+                ],
+                "T_hand_obb": [
+                  [
+                    0.8265208494475823,
+                    -0.09949232011171148,
+                    0.5540438282908995,
+                    -0.013779334887750818
+                  ],
+                  [
+                    -0.5629061071159621,
+                    -0.14608560094250703,
+                    0.8135082739399886,
+                    0.001792315188471354
+                  ],
+                  [
+                    0.0,
+                    -0.9842562041643708,
+                    -0.17674762958508008,
+                    -0.01038940902161619
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              }
+            ],
+            "central_forward_ray_hand_first_hit_m": null,
+            "housing_triangle_clear": false
+          }
+        },
+        "official_hand_visual_triangle_count": 8326
+      },
+      "interpretation": "Retained v1 FAIL: secondary housing intersects hand; original camera0 bracket also intersects hand"
+    },
+    {
+      "path": "artifacts/wrist_camera_mount_geometry_003/result.json",
+      "sha256": "02c317761cdbfd0f6748abd79084d83b70c887e71d35ff75339e04cbeec531a4",
+      "result": {
+        "status": "PASS_HOUSING_GEOMETRY",
+        "scope": "Static official hand visual triangle/OBB intersections; no contact, other-link, table, material, or full-trajectory clearance claim",
+        "criteria": {
+          "housing_triangle_intersections": 0,
+          "tolerance_m": 1e-08,
+          "finger_joints_m": [
+            0.04,
+            0.04
+          ]
+        },
+        "camera_mounts": {
+          "wrist_d405_0": {
+            "boxes": [
+              {
+                "name": "Housing",
+                "intersecting_triangles": 0,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.042,
+                  0.023,
+                  0.042
+                ],
+                "T_hand_obb": [
+                  [
+                    0.6839411288813297,
+                    -0.6396927014676884,
+                    0.3507389056171316,
+                    -0.08128019463915122
+                  ],
+                  [
+                    0.7295372041400852,
+                    0.5997119076259578,
+                    -0.32881772401606085,
+                    0.08853677058640125
+                  ],
+                  [
+                    0.0,
+                    0.4807690459468096,
+                    0.8768472640428289,
+                    -0.03858916199770797
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              },
+              {
+                "name": "Bracket",
+                "intersecting_triangles": 0,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.008,
+                  0.008,
+                  0.09609895589505318
+                ],
+                "T_hand_obb": [
+                  [
+                    0.7328869933440991,
+                    0.3027019273467493,
+                    -0.6093014017443336,
+                    -0.06683940865953407
+                  ],
+                  [
+                    0.680350391333059,
+                    -0.326076545613421,
+                    0.6563516065446722,
+                    0.058911945618313186
+                  ],
+                  [
+                    -0.0,
+                    -0.8955700026136326,
+                    -0.44492063384228214,
+                    -0.03459852164883516
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              }
+            ],
+            "central_forward_ray_hand_first_hit_m": null,
+            "housing_triangle_clear": true
+          },
+          "wrist_d405_1": {
+            "boxes": [
+              {
+                "name": "Housing",
+                "intersecting_triangles": 0,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.042,
+                  0.023,
+                  0.042
+                ],
+                "T_hand_obb": [
+                  [
+                    -0.7612432304867113,
+                    0.5582259360369592,
+                    -0.3299887094641518,
+                    -0.08485542843374039
+                  ],
+                  [
+                    -0.648466455599791,
+                    -0.6553087075216479,
+                    0.3873780502405261,
+                    0.030951387234502713
+                  ],
+                  [
+                    0.0,
+                    0.5088755271989094,
+                    0.8608401116456134,
+                    0.001750189633113016
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              },
+              {
+                "name": "Bracket",
+                "intersecting_triangles": 0,
+                "per_mesh": {
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                  "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+                },
+                "dimensions_m": [
+                  0.008,
+                  0.008,
+                  0.054910219413199256
+                ],
+                "T_hand_obb": [
+                  [
+                    0.6811463834928843,
+                    0.25865800875817746,
+                    -0.6849347697115538,
+                    -0.05606522016544904
+                  ],
+                  [
+                    0.7321472558540151,
+                    -0.24064007044811375,
+                    0.6372226865391424,
+                    0.014946128020309733
+                  ],
+                  [
+                    -0.0,
+                    -0.9355150404990724,
+                    -0.353286865026169,
+                    -0.005286382177089452
+                  ],
+                  [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                  ]
+                ]
+              }
+            ],
+            "central_forward_ray_hand_first_hit_m": null,
+            "housing_triangle_clear": true
+          }
+        },
+        "official_hand_visual_triangle_count": 8326
+      },
+      "interpretation": "Final fixed v2 mounts, actual 40mm-open fingers; no hand visual triangle intersects either housing/bracket and central hand-directed rays are unobstructed. Other-link/world clearance is separate."
+    }
+  ],
+  "official_asset_http_head": {
+    "timestamp_utc": "2026-10-28T05:56:43.721605+00:00",
+    "method": "HTTP HEAD on explicit conventional official6.2 asset paths; no broad resolver search",
+    "requests": [
+      {
+        "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.2/Isaac/Sensors/RealSense/D405/rsd405.usd",
+        "http_status": 404
+      },
+      {
+        "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.2/Isaac/Sensors/RealSense/D405/rsd405.usda",
+        "http_status": 404
+      },
+      {
+        "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.2/Isaac/Sensors/RealSense/D405/d405.usd",
+        "http_status": 404
+      },
+      {
+        "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.2/Isaac/Sensors/RealSense/D455/rsd455.usd",
+        "http_status": 200,
+        "content_length": "14070691"
+      }
+    ],
+    "conclusion_scope": "No D405 found at these tested paths; absence here is not proof that no other official path exists."
+  },
+  "checks": [
+    {
+      "command": ".venv/bin/python -m pytest -q tests/test_camera_rig.py",
+      "result": "7 passed"
+    },
+    {
+      "command": ".venv/bin/python scripts/solve_secondary_observation_pose.py artifacts/secondary_observation_pose_004",
+      "result": "PASS_KINEMATIC_LAYOUT: 0.133um FK error, 0.05001rad secondary joint-limit margin, no negative static contacts"
+    },
+    {
+      "command": ".venv/bin/python scripts/audit_camera_mount_geometry.py artifacts/wrist_camera_mount_geometry_003 --specs configs/wrist_camera_rig_v1.json",
+      "result": "PASS_HOUSING_GEOMETRY: all four OBB/hand-triangle intersection counts zero"
+    },
+    {
+      "command": "workcell.export(Namespace(asset_root=artifacts/workcell_asset_cache,camera_layout=wrist_d405_global_d455,task_id=TRIM-01,seed=42,variant=D0,family=dome,spacing=.004), new_output(artifacts/wrist_workcell_export_001))",
+      "result": "PASS static USD composition only"
+    },
+    {
+      "command": "Same direct workcell.export API with camera_layout=legacy_fixed_d455 and artifacts/legacy_workcell_export_001",
+      "result": "PASS legacy static composition; existing runtime legacy behavior unchanged"
+    }
+  ],
+  "runtime_pilots_scope": {
+    "initial_pilot": "artifacts/isaacsim_wrist_rig_smoke_001",
+    "pixel_aspect_probe": "artifacts/isaacsim_wrist_pixel_aspect_smoke_001",
+    "note": "Earlier VGA/prototype mounts retained as diagnostics. PixelAspectRatio was ignored by actual Kit RTX. The probe had a prelaunch/import source race and is explicitly noncanonical; final848x480 mounted-runtime captures are owned/reported separately."
+  },
+  "capabilities": {
+    "rigid_mount_math_tested": true,
+    "official_robot_static_fk_tested": true,
+    "static_hand_visual_housing_clearance_tested": true,
+    "housing_collision_physics_enabled": false,
+    "full_trajectory_clearance_validated": false,
+    "validated_d405_model": false,
+    "physical_d405_calibration": false,
+    "stereo_depth_solver_implemented": false
+  },
+  "limitations": [
+    "Custom D405 visual-only prototype; no official D405 asset was discovered in the checked Sim6.2 catalog or conventional asset paths.",
+    "Housing/bracket has no mass/inertia/contact feedback; geometry checks cannot establish real contact safety.",
+    "D405 depth/color optical frames are co-located to represent the left color depth imager plus ISP. No second RGB imager is invented.",
+    "Right optical frame is reference geometry only; no native stereo disparity/occlusion/interference/noise model is claimed.",
+    "Nominal product87x58deg and datasheetHD84x58deg differ. Prototype declares its actual87x56.4849deg pinhole geometry, not factory calibration.",
+    "The global official D455 retains native provisional sensor modeling and separate authored/runtime calibration evidence."
+  ]
+}
