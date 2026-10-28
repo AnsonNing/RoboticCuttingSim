@@ -1,0 +1,2222 @@
+{
+  "schema": "wrist_camera_rig_geometry_audit_v2",
+  "timestamp_utc": "2026-10-28T06:14:27.674496+00:00",
+  "status": "PASS_STATIC_GEOMETRY_V2_AND_OFFLINE_GLOBAL_SCREEN",
+  "scope": "Corrected primary-source mechanical geometry plus offline measured-pilot camera-mount screening. Native runtime sensor validity/visibility/contact safety are independent later receipts.",
+  "previous_profile": {
+    "path": "configs/wrist_camera_rig_v1.json",
+    "sha256": "346ba2845adef7a22622b5808b758d87b2edfdc077a6412d25ab333283d882f4",
+    "previous_evidence": "docs/evidence/wrist_camera_rig_geometry.json",
+    "preserved": true
+  },
+  "profile": {
+    "path": "configs/wrist_camera_rig_v2.json",
+    "sha256": "ce7b03d5195a2a08a77e10bc52b33c798f097b2ee4fc717566ca14c9b3079c7e",
+    "D405_dimensions_width_height_depth_m": [
+      0.042,
+      0.042,
+      0.023
+    ],
+    "D405_housing_center_in_left_optical_cv_m": [
+      0.009,
+      0,
+      -0.0117
+    ],
+    "visual_bracket_rear_attachment_behind_optical_m": 0.02,
+    "global_eye_world_m": [
+      1.1,
+      -1.2,
+      1.05
+    ],
+    "global_target_world_m": [
+      0,
+      0,
+      0.25
+    ],
+    "rigid_hand_optical_mounts_identical_to_v1": {
+      "wrist_d405_0": true,
+      "wrist_d405_1": true
+    },
+    "intrinsics_resolutions_ranges_changed": false,
+    "physics_mass_inertia_colliders_added": false
+  },
+  "primary_mechanical_source": {
+    "url": "https://realsenseai.com/wp-content/uploads/2025/09/Intel-RealSense-D400-Series-Datasheet-October-2025.pdf",
+    "sha256": "d0156b43a82da64e809c6ae45a5b5d41f34d8697363534ed81f2e4407f38eaa4",
+    "bytes": 5536987,
+    "status": "PASS_PRIMARY_MECHANICAL_CONFIRMATION",
+    "table": "3-54",
+    "table_page": 69,
+    "figure": "10-13",
+    "drawing_page": 146,
+    "confirmed_dimensions_width_height_depth_mm": [
+      42,
+      42,
+      23
+    ],
+    "visual_inspection": "Rendered actual downloaded official PDF table69 and drawing146 confirm square42x42 front and23mm body depth.",
+    "infrastructure": "Initial direct download completed while a premature timeout receipt was being prepared. kill returned no-such-process; no termination occurred. Preserve premature_download_receipt.json as corrected bookkeeping history, not an actual download failure. Separate bounded25s retry partially downloaded another PDF and exited28; partial file/log retained."
+  },
+  "correction": "The original marketing Length x Depth x Height label was interpreted as height23/depth42. The explicit official mechanical Table3-54 and actual Figure10-13 show height42/depth23. V1 runs/receipts remain preserved and are not relabeled as v2.",
+  "static_visual_clearance": {
+    "path": "artifacts/wrist_camera_mount_geometry_005/result.json",
+    "sha256": "c2ca445866e666ec67a557a9d8d9de2948b52ccf14914226c161e5e42edb3e5a",
+    "result": {
+      "status": "PASS_HOUSING_GEOMETRY",
+      "scope": "Static official hand visual triangle/OBB intersections; no contact, other-link, table, material, or full-trajectory clearance claim",
+      "criteria": {
+        "housing_triangle_intersections": 0,
+        "tolerance_m": 1e-08,
+        "finger_joints_m": [
+          0.04,
+          0.04
+        ]
+      },
+      "camera_mounts": {
+        "wrist_d405_0": {
+          "boxes": [
+            {
+              "name": "Housing",
+              "intersecting_triangles": 0,
+              "per_mesh": {
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+              },
+              "dimensions_m": [
+                0.042,
+                0.042,
+                0.023
+              ],
+              "T_hand_obb": [
+                [
+                  0.6839411288813297,
+                  -0.6396927014676884,
+                  0.3507389056171316,
+                  -0.07794817503578848
+                ],
+                [
+                  0.7295372041400852,
+                  0.5997119076259578,
+                  -0.32881772401606085,
+                  0.08541300220824867
+                ],
+                [
+                  0.0,
+                  0.4807690459468096,
+                  0.8768472640428289,
+                  -0.030259112989301097
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ]
+            },
+            {
+              "name": "Bracket",
+              "intersecting_triangles": 0,
+              "per_mesh": {
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+              },
+              "dimensions_m": [
+                0.008,
+                0.008,
+                0.08133773656873305
+              ],
+              "T_hand_obb": [
+                [
+                  0.7390323266686001,
+                  0.2070211574841441,
+                  -0.6410721180122568,
+                  -0.06350738905617132
+                ],
+                [
+                  0.6736699638092793,
+                  -0.2271072422763496,
+                  0.7032716974021035,
+                  0.05578817724016061
+                ],
+                [
+                  -0.0,
+                  -0.9516115493517072,
+                  -0.3073035293328785,
+                  -0.026268472640428288
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ]
+            }
+          ],
+          "central_forward_ray_hand_first_hit_m": null,
+          "housing_triangle_clear": true
+        },
+        "wrist_d405_1": {
+          "boxes": [
+            {
+              "name": "Housing",
+              "intersecting_triangles": 0,
+              "per_mesh": {
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+              },
+              "dimensions_m": [
+                0.042,
+                0.042,
+                0.023
+              ],
+              "T_hand_obb": [
+                [
+                  -0.7612432304867113,
+                  0.5582259360369592,
+                  -0.3299887094641518,
+                  -0.08799032117364983
+                ],
+                [
+                  -0.648466455599791,
+                  -0.6553087075216479,
+                  0.3873780502405261,
+                  0.03463147871178771
+                ],
+                [
+                  0.0,
+                  0.5088755271989094,
+                  0.8608401116456134,
+                  0.009928170693746342
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ]
+            },
+            {
+              "name": "Bracket",
+              "intersecting_triangles": 0,
+              "per_mesh": {
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_0/finger_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/finger_1/finger_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_0/hand_0": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_1/hand_1": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_2/hand_2": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_3/hand_3": 0,
+                "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/hand_4/hand_4": 0
+              },
+              "dimensions_m": [
+                0.008,
+                0.008,
+                0.06150110799425151
+              ],
+              "T_hand_obb": [
+                [
+                  0.6962985676065472,
+                  0.0029085433588139187,
+                  -0.7177463654555142,
+                  -0.05920011290535848
+                ],
+                [
+                  0.7177522586164885,
+                  -0.0028216066898450343,
+                  0.6962928505927783,
+                  0.018626219497594732
+                ],
+                [
+                  -0.0,
+                  -0.999991789421902,
+                  -0.0040522942615608265,
+                  0.0028915988835438743
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ]
+            }
+          ],
+          "central_forward_ray_hand_first_hit_m": null,
+          "housing_triangle_clear": true
+        }
+      },
+      "official_hand_visual_triangle_count": 8326
+    }
+  },
+  "observation_arm_posture": {
+    "unchanged": true,
+    "path": "artifacts/secondary_observation_pose_004/result.json",
+    "sha256": "cda065c7bc4c70991da5c2c8acc0ba365185a7838236a7bcba0e3ba449d3a21e",
+    "secondary_arm_joint_limit_margin_rad": 0.05001044273376465,
+    "static_penetrating_contacts": 0,
+    "scope": "Official imported robot FK/static collider test, no camera contact or trajectory safety claim"
+  },
+  "offline_global_screen": {
+    "source": "artifacts/isaacsim_wrist_rig_smoke_002",
+    "protocol": {
+      "scope": "Offline full-stage geometry prediction for three fixed Global camera mounts.\n\nNo simulator or native camera is advanced. Actual pilot mesh/body states and\nruntime K are reused; CPU first hits are predictions, not new RTX/D455 evidence.\nCandidates are declared before raycasting; no native noise/holes are synthesized.\n",
+      "candidates": {
+        "frozen_v1": {
+          "eye_world_m": [
+            1.65,
+            -1.75,
+            1.5
+          ],
+          "target_world_m": [
+            0.0,
+            0.0,
+            0.4
+          ]
+        },
+        "closer_overview_a": {
+          "eye_world_m": [
+            1.1,
+            -1.2,
+            1.05
+          ],
+          "target_world_m": [
+            0.0,
+            0.0,
+            0.25
+          ]
+        },
+        "closer_overview_b": {
+          "eye_world_m": [
+            1.2,
+            -1.3,
+            1.1
+          ],
+          "target_world_m": [
+            0.0,
+            0.0,
+            0.3
+          ]
+        }
+      },
+      "frames": [
+        0,
+        2
+      ],
+      "camera_source": "actual recorded global_d455 runtime K/resolution; no intrinsic fitting",
+      "geometric_screening_criteria": {
+        "full_table_and_both_robots_inside_rgb": true,
+        "minimum_public_optical_depth_m": 0.6,
+        "minimum_predicted_knife_pixels": 8,
+        "minimum_geometric_depth_valid_fraction": 0.1
+      },
+      "native_acceptance_boundary": "Native depth validity/registration/noise and actual knife pixels require a fresh runtime capture; no native PASS follows from this offline screen"
+    },
+    "source_hashes": {
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002",
+      "input_sha256": {
+        "/home/ningan/RoboticCuttingSim/scripts/compare_global_camera_mounts.py": "d324865248e15118f70ec75525fba54f3caba7c003386f51561fe2510570ee2d",
+        "/home/ningan/RoboticCuttingSim/scripts/audit_wrist_camera_rig.py": "dce8d52fadff59950203de84e9b10a1b3ee6a45e6576065ec7c054457e1a2c00",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/setup.json": "e300eba1a540fc08653c6988ab4d3dc9bfc748fd86709e853d57535df242f58d",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/camera_rig.json": "43587230ac8767c381803d48ee335b63a0bbd1c7882c0c9373436440ec7025cd",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/robot_state.npz": "656d2d4b8fe43d3f3f666d0b66ea8ba0d5283f7f4e0cac3722cffee8c1c4f364",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/frame_manifest.json": "c9ceef928881b26b19c3225965dca65ce3cbb8c518df2452c5b16513171df382",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/final_live_scene.usda": "defda51f1c0719ddf9c99780f2c5a42f21ea05f32c5ab854056477a1bf493d58",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/surface_debug/surface_0000.npz": "ddfe92431ee81d262d9437ba506962d2bad93cd74eff06d81080f969b3a694cc",
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_rig_smoke_002/surface_debug/surface_0002.npz": "30f472dbbec05e234cd510c21f70afe54313db17008f493271e1a68519b75d47"
+      }
+    },
+    "result": {
+      "status": "OFFLINE_GEOMETRY_PREDICTION_ONLY",
+      "records": [
+        {
+          "candidate": "frozen_v1",
+          "frame": 0,
+          "time_s": 0.0,
+          "T_world_camera": [
+            [
+              0.7275894061853055,
+              0.285319259569189,
+              -0.6238642289198861,
+              1.65
+            ],
+            [
+              0.6860128686890024,
+              -0.3026113359067157,
+              0.6616741821877581,
+              -1.75
+            ],
+            [
+              -0.0,
+              -0.9094060146599221,
+              -0.4159094859465908,
+              1.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "projected_bounds": {
+            "table": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                -0.009999999776482582
+              ],
+              "projected_uv_min_px": [
+                206.53378781366104,
+                234.49745014258886
+              ],
+              "projected_uv_max_px": [
+                447.5463127523842,
+                384.6520399743155
+              ],
+              "optical_z_min_max_m": [
+                1.8568468039907657,
+                3.7946069103073046
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "material": {
+              "mesh_vertex_count": 27050,
+              "world_bbox_min_m": [
+                -0.08000045269727707,
+                -0.015000454150140285,
+                -4.5418741478897573e-07
+              ],
+              "world_bbox_max_m": [
+                0.08000045269727707,
+                0.015000453218817711,
+                0.02751309424638748
+              ],
+              "projected_uv_min_px": [
+                312.5065778943032,
+                275.45474687242614
+              ],
+              "projected_uv_max_px": [
+                327.7111143612262,
+                284.84092951640827
+              ],
+              "optical_z_min_max_m": [
+                2.7452546010694,
+                2.8687672643004394
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_0_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                -0.6140859723091125,
+                -0.1176590621471405,
+                -0.009999994188547134
+              ],
+              "world_bbox_max_m": [
+                -0.000978152034804225,
+                0.24919021129608154,
+                0.6942421197891235
+              ],
+              "projected_uv_min_px": [
+                280.97570045738195,
+                193.48351163443587
+              ],
+              "projected_uv_max_px": [
+                325.31905737646673,
+                269.1535753149691
+              ],
+              "optical_z_min_max_m": [
+                2.635582449554663,
+                3.3102895947486943
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "knife": {
+              "mesh_vertex_count": 6,
+              "world_bbox_min_m": [
+                -0.057001080363988876,
+                -0.025000043213367462,
+                0.05960003659129143
+              ],
+              "world_bbox_max_m": [
+                -0.0450010672211647,
+                0.024999961256980896,
+                0.06400005519390106
+              ],
+              "projected_uv_min_px": [
+                313.37050859586213,
+                271.48817096013045
+              ],
+              "projected_uv_max_px": [
+                318.2537498904781,
+                274.4408759931825
+              ],
+              "optical_z_min_max_m": [
+                2.7977481136942233,
+                2.838484558324746
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_1_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                0.08580924570560455,
+                -0.26464149355888367,
+                -0.01000000350177288
+              ],
+              "world_bbox_max_m": [
+                0.6140859723091125,
+                0.2839460074901581,
+                0.5286628603935242
+              ],
+              "projected_uv_min_px": [
+                334.60109258599067,
+                225.7993090660407
+              ],
+              "projected_uv_max_px": [
+                390.21854386055685,
+                307.342465342246
+              ],
+              "optical_z_min_max_m": [
+                2.1301622046072572,
+                2.7625419493123906
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "fixture": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.09000000357627869,
+                -0.02500000037252903,
+                -0.009999999776482582
+              ],
+              "world_bbox_max_m": [
+                0.09000000357627869,
+                0.02500000037252903,
+                -1.1175870645585562e-10
+              ],
+              "projected_uv_min_px": [
+                310.81010144731005,
+                276.33622757403475
+              ],
+              "projected_uv_max_px": [
+                329.452547690797,
+                286.94432689786794
+              ],
+              "optical_z_min_max_m": [
+                2.738480387877668,
+                2.8880187578678664
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "own_global_camera_housing": {
+              "mesh_vertex_count": 38327,
+              "world_bbox_min_m": [
+                1.606916904449463,
+                -1.8079018592834473,
+                1.4896167516708374
+              ],
+              "world_bbox_max_m": [
+                1.709272861480713,
+                -1.7093349695205688,
+                1.5208463668823242
+              ],
+              "projected_uv_min_px": [
+                -18481808131.147438,
+                -3076280522.763535
+              ],
+              "projected_uv_max_px": [
+                4418177875.38724,
+                584495130.8758782
+              ],
+              "optical_z_min_max_m": [
+                -0.02600007705575395,
+                7.572260075165124e-08
+              ],
+              "vertices_inside_rgb_frame_fraction": 0.0,
+              "vertices_inside_public_depth_frame_fraction": 0.0,
+              "all_vertices_inside_rgb_frame": false,
+              "all_vertices_inside_public_depth_frame": false
+            },
+            "entire_workcell_excluding_own_global_housing": {
+              "mesh_vertex_count": 822012,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                0.6942421197891235
+              ],
+              "projected_uv_min_px": [
+                206.53378781366104,
+                193.48351163443587
+              ],
+              "projected_uv_max_px": [
+                447.5463127523842,
+                384.6520399743155
+              ],
+              "optical_z_min_max_m": [
+                1.8568468039907657,
+                3.7946069103073046
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            }
+          },
+          "cpu_geometric_depth_valid_fraction": 0.06466145833333334,
+          "cpu_predicted_visible_knife_pixels": 5,
+          "cpu_predicted_visible_material_pixels": 55,
+          "cpu_predicted_visible_material_component_pixels": {
+            "0": 55
+          },
+          "full_table_and_both_robots_inside_rgb": true,
+          "mesh_vertex_eye_clearance_m": 2.0408576580083904,
+          "global_housing_max_optical_radius_m": 0.06398515334591925,
+          "eye_to_enclosing_workcell_AABB_lower_bound_m": 1.5919314502981716,
+          "conservative_housing_to_workcell_lower_bound_m": 1.5279462969522524,
+          "clearance_scope": "Distance to enclosing scene AABB minus maximum actual housing radius; conservative sufficient clearance if positive, not an exact minimum triangle distance",
+          "unsupported_geometry": [],
+          "offline_geometric_screen_pass": false,
+          "native_runtime_validated": false
+        },
+        {
+          "candidate": "closer_overview_a",
+          "frame": 0,
+          "time_s": 0.0,
+          "T_world_camera": [
+            [
+              0.7371541402007413,
+              0.2980312375736948,
+              -0.6064496310619685,
+              1.1
+            ],
+            [
+              0.6757246285173464,
+              -0.3251249864440306,
+              0.6615814157039654,
+              -1.2
+            ],
+            [
+              -0.0,
+              -0.8974804313298763,
+              -0.441054277135977,
+              1.05
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "projected_bounds": {
+            "table": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                -0.009999999776482582
+              ],
+              "projected_uv_min_px": [
+                156.8708004077368,
+                214.608158613545
+              ],
+              "projected_uv_max_px": [
+                510.4184648950716,
+                473.27282833358925
+              ],
+              "optical_z_min_max_m": [
+                0.9857563079858812,
+                2.893316058734954
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "material": {
+              "mesh_vertex_count": 27050,
+              "world_bbox_min_m": [
+                -0.08000045269727707,
+                -0.015000454150140285,
+                -4.5418741478897573e-07
+              ],
+              "world_bbox_max_m": [
+                0.08000045269727707,
+                0.015000453218817711,
+                0.02751309424638748
+              ],
+              "projected_uv_min_px": [
+                309.001764022623,
+                268.8551840207249
+              ],
+              "projected_uv_max_px": [
+                331.4523005464249,
+                282.6634259984041
+              ],
+              "optical_z_min_max_m": [
+                1.8591049651101919,
+                1.98027252135522
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_0_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                -0.6140859723091125,
+                -0.1176590621471405,
+                -0.009999994188547134
+              ],
+              "world_bbox_max_m": [
+                -0.000978152034804225,
+                0.24919021129608154,
+                0.6942421197891235
+              ],
+              "projected_uv_min_px": [
+                264.1441192900515,
+                149.1378649525239
+              ],
+              "projected_uv_max_px": [
+                327.5746154119992,
+                259.71863566040344
+              ],
+              "optical_z_min_max_m": [
+                1.7378392813971137,
+                2.413078590944952
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "knife": {
+              "mesh_vertex_count": 6,
+              "world_bbox_min_m": [
+                -0.057001080363988876,
+                -0.025000043213367462,
+                0.05960003659129143
+              ],
+              "world_bbox_max_m": [
+                -0.0450010672211647,
+                0.024999961256980896,
+                0.06400005519390106
+              ],
+              "projected_uv_min_px": [
+                310.24110440160155,
+                263.0929494356284
+              ],
+              "projected_uv_max_px": [
+                317.341520606614,
+                267.4511685944536
+              ],
+              "optical_z_min_max_m": [
+                1.9083873273488714,
+                1.9489202157768395
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_1_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                0.08580924570560455,
+                -0.26464149355888367,
+                -0.01000000350177288
+              ],
+              "world_bbox_max_m": [
+                0.6140859723091125,
+                0.2839460074901581,
+                0.5286628603935242
+              ],
+              "projected_uv_min_px": [
+                342.82900494886417,
+                193.3103277885461
+              ],
+              "projected_uv_max_px": [
+                431.3846903494284,
+                317.8303586698832
+              ],
+              "optical_z_min_max_m": [
+                1.241042042305351,
+                1.8715335983600172
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "fixture": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.09000000357627869,
+                -0.02500000037252903,
+                -0.009999999776482582
+              ],
+              "world_bbox_max_m": [
+                0.09000000357627869,
+                0.02500000037252903,
+                -1.1175870645585562e-10
+              ],
+              "projected_uv_min_px": [
+                306.55054558707195,
+                270.0989696879533
+              ],
+              "projected_uv_max_px": [
+                333.9919930871813,
+                285.7961770472501
+              ],
+              "optical_z_min_max_m": [
+                1.852979279451524,
+                1.9996298312819438
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "own_global_camera_housing": {
+              "mesh_vertex_count": 38327,
+              "world_bbox_min_m": [
+                1.0562710762023926,
+                -1.2573909759521484,
+                1.0397987365722656
+              ],
+              "world_bbox_max_m": [
+                1.1594294309616089,
+                -1.1598354578018188,
+                1.0713515281677246
+              ],
+              "projected_uv_min_px": [
+                -13711468104.279459,
+                -2436101504.8633666
+              ],
+              "projected_uv_max_px": [
+                13872715743.614399,
+                609025508.2633002
+              ],
+              "optical_z_min_max_m": [
+                -0.026000085671054426,
+                7.360887388417662e-08
+              ],
+              "vertices_inside_rgb_frame_fraction": 0.0,
+              "vertices_inside_public_depth_frame_fraction": 0.0,
+              "all_vertices_inside_rgb_frame": false,
+              "all_vertices_inside_public_depth_frame": false
+            },
+            "entire_workcell_excluding_own_global_housing": {
+              "mesh_vertex_count": 822012,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                0.6942421197891235
+              ],
+              "projected_uv_min_px": [
+                156.8708004077368,
+                149.1378649525239
+              ],
+              "projected_uv_max_px": [
+                510.4184648950716,
+                473.27282833358925
+              ],
+              "optical_z_min_max_m": [
+                0.9857563079858812,
+                2.893316058734954
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            }
+          },
+          "cpu_geometric_depth_valid_fraction": 0.16233723958333332,
+          "cpu_predicted_visible_knife_pixels": 12,
+          "cpu_predicted_visible_material_pixels": 122,
+          "cpu_predicted_visible_material_component_pixels": {
+            "0": 122
+          },
+          "full_table_and_both_robots_inside_rgb": true,
+          "mesh_vertex_eye_clearance_m": 1.2343419220186351,
+          "global_housing_max_optical_radius_m": 0.06398510821089785,
+          "eye_to_enclosing_workcell_AABB_lower_bound_m": 0.725647056259895,
+          "conservative_housing_to_workcell_lower_bound_m": 0.6616619480489971,
+          "clearance_scope": "Distance to enclosing scene AABB minus maximum actual housing radius; conservative sufficient clearance if positive, not an exact minimum triangle distance",
+          "unsupported_geometry": [],
+          "offline_geometric_screen_pass": true,
+          "native_runtime_validated": false
+        },
+        {
+          "candidate": "closer_overview_b",
+          "frame": 0,
+          "time_s": 0.0,
+          "T_world_camera": [
+            [
+              0.7348034446274879,
+              0.2794656205011502,
+              -0.6180314431495257,
+              1.2
+            ],
+            [
+              0.6782801027330658,
+              -0.3027544222095794,
+              0.6695340634119862,
+              -1.3
+            ],
+            [
+              -0.0,
+              -0.9111743668422916,
+              -0.41202096209968386,
+              1.1
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "projected_bounds": {
+            "table": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                -0.009999999776482582
+              ],
+              "projected_uv_min_px": [
+                167.7013648523207,
+                224.21681126359783
+              ],
+              "projected_uv_max_px": [
+                496.87613957819497,
+                453.18515180745726
+              ],
+              "optical_z_min_max_m": [
+                1.111426543943885,
+                3.0479250678077663
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "material": {
+              "mesh_vertex_count": 27050,
+              "world_bbox_min_m": [
+                -0.08000045269727707,
+                -0.015000454150140285,
+                -4.5418741478897573e-07
+              ],
+              "world_bbox_max_m": [
+                0.08000045269727707,
+                0.015000453218817711,
+                0.02751309424638748
+              ],
+              "projected_uv_min_px": [
+                309.7710396688034,
+                274.4734532447718
+              ],
+              "projected_uv_max_px": [
+                330.62997969474753,
+                287.14319804647073
+              ],
+              "optical_z_min_max_m": [
+                1.999759274544298,
+                2.122510455380402
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_0_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                -0.6140859723091125,
+                -0.1176590621471405,
+                -0.009999994188547134
+              ],
+              "world_bbox_max_m": [
+                -0.000978152034804225,
+                0.24919021129608154,
+                0.6942421197891235
+              ],
+              "projected_uv_min_px": [
+                268.2096800302908,
+                163.77977307564933
+              ],
+              "projected_uv_max_px": [
+                327.0830018208741,
+                265.69744902640525
+              ],
+              "optical_z_min_max_m": [
+                1.8909296306518726,
+                2.562325723446772
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "knife": {
+              "mesh_vertex_count": 6,
+              "world_bbox_min_m": [
+                -0.057001080363988876,
+                -0.025000043213367462,
+                0.05960003659129143
+              ],
+              "world_bbox_max_m": [
+                -0.0450010672211647,
+                0.024999961256980896,
+                0.06400005519390106
+              ],
+              "projected_uv_min_px": [
+                310.93246407784056,
+                269.043624776983
+              ],
+              "projected_uv_max_px": [
+                317.5504320044573,
+                273.01996515028856
+              ],
+              "optical_z_min_max_m": [
+                2.051607493426528,
+                2.092665383254621
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_1_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                0.08580924570560455,
+                -0.26464149355888367,
+                -0.01000000350177288
+              ],
+              "world_bbox_max_m": [
+                0.6140859723091125,
+                0.2839460074901581,
+                0.5286628603935242
+              ],
+              "projected_uv_min_px": [
+                340.8737307108264,
+                204.46823545694787
+              ],
+              "projected_uv_max_px": [
+                421.5834005756792,
+                318.97421910176286
+              ],
+              "optical_z_min_max_m": [
+                1.387482344442936,
+                2.0210050326534454
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "fixture": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.09000000357627869,
+                -0.02500000037252903,
+                -0.009999999776482582
+              ],
+              "world_bbox_max_m": [
+                0.09000000357627869,
+                0.02500000037252903,
+                -1.1175870645585562e-10
+              ],
+              "projected_uv_min_px": [
+                307.4804426406517,
+                275.6895559932323
+              ],
+              "projected_uv_max_px": [
+                333.00003855349706,
+                290.0382942551474
+              ],
+              "optical_z_min_max_m": [
+                1.9928938886422813,
+                2.1417364659819986
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "own_global_camera_housing": {
+              "mesh_vertex_count": 38327,
+              "world_bbox_min_m": [
+                1.1565115451812744,
+                -1.357655644416809,
+                1.0895894765853882
+              ],
+              "world_bbox_max_m": [
+                1.2595196962356567,
+                -1.2597999572753906,
+                1.1207674741744995
+              ],
+              "projected_uv_min_px": [
+                -14344043985.458532,
+                -651943950.6068555
+              ],
+              "projected_uv_max_px": [
+                14344049875.105167,
+                2607776384.8098583
+              ],
+              "optical_z_min_max_m": [
+                -0.026000093716799965,
+                9.700553422890844e-08
+              ],
+              "vertices_inside_rgb_frame_fraction": 0.0,
+              "vertices_inside_public_depth_frame_fraction": 0.0,
+              "all_vertices_inside_rgb_frame": false,
+              "all_vertices_inside_public_depth_frame": false
+            },
+            "entire_workcell_excluding_own_global_housing": {
+              "mesh_vertex_count": 822012,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                0.6942421197891235
+              ],
+              "projected_uv_min_px": [
+                167.7013648523207,
+                163.77977307564933
+              ],
+              "projected_uv_max_px": [
+                496.87613957819497,
+                453.18515180745726
+              ],
+              "optical_z_min_max_m": [
+                1.111426543943885,
+                3.0479250678077663
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            }
+          },
+          "cpu_geometric_depth_valid_fraction": 0.134609375,
+          "cpu_predicted_visible_knife_pixels": 11,
+          "cpu_predicted_visible_material_pixels": 105,
+          "cpu_predicted_visible_material_component_pixels": {
+            "0": 105
+          },
+          "full_table_and_both_robots_inside_rgb": true,
+          "mesh_vertex_eye_clearance_m": 1.346142630047168,
+          "global_housing_max_optical_radius_m": 0.06398513020544422,
+          "eye_to_enclosing_workcell_AABB_lower_bound_m": 0.8629249320072626,
+          "conservative_housing_to_workcell_lower_bound_m": 0.7989398018018183,
+          "clearance_scope": "Distance to enclosing scene AABB minus maximum actual housing radius; conservative sufficient clearance if positive, not an exact minimum triangle distance",
+          "unsupported_geometry": [],
+          "offline_geometric_screen_pass": true,
+          "native_runtime_validated": false
+        },
+        {
+          "candidate": "frozen_v1",
+          "frame": 2,
+          "time_s": 0.04,
+          "T_world_camera": [
+            [
+              0.7275894061853055,
+              0.285319259569189,
+              -0.6238642289198861,
+              1.65
+            ],
+            [
+              0.6860128686890024,
+              -0.3026113359067157,
+              0.6616741821877581,
+              -1.75
+            ],
+            [
+              -0.0,
+              -0.9094060146599221,
+              -0.4159094859465908,
+              1.5
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "projected_bounds": {
+            "table": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                -0.009999999776482582
+              ],
+              "projected_uv_min_px": [
+                206.53378781366104,
+                234.49745014258886
+              ],
+              "projected_uv_max_px": [
+                447.5463127523842,
+                384.6520399743155
+              ],
+              "optical_z_min_max_m": [
+                1.8568468039907657,
+                3.7946069103073046
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "material": {
+              "mesh_vertex_count": 17994,
+              "world_bbox_min_m": [
+                -0.08007019758224487,
+                -0.015047232620418072,
+                -0.00012795746442861855
+              ],
+              "world_bbox_max_m": [
+                0.08007019758224487,
+                0.015049822628498077,
+                0.027220645919442177
+              ],
+              "projected_uv_min_px": [
+                312.50196926792785,
+                275.47267696957425
+              ],
+              "projected_uv_max_px": [
+                327.7162838765232,
+                284.85451022423234
+              ],
+              "optical_z_min_max_m": [
+                2.74530818495089,
+                2.8688783365100234
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_0_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                -0.6140859723091125,
+                -0.11774769425392151,
+                -0.009999990463256836
+              ],
+              "world_bbox_max_m": [
+                -0.0007063494995236397,
+                0.24919098615646362,
+                0.6939658522605896
+              ],
+              "projected_uv_min_px": [
+                280.97570043861833,
+                193.5421644941807
+              ],
+              "projected_uv_max_px": [
+                325.3451384526923,
+                269.2718808274973
+              ],
+              "optical_z_min_max_m": [
+                2.6359137797032743,
+                3.3102895931993106
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "knife": {
+              "mesh_vertex_count": 6,
+              "world_bbox_min_m": [
+                -0.05632087215781212,
+                -0.025165151804685593,
+                0.05863972753286362
+              ],
+              "world_bbox_max_m": [
+                -0.04430770501494408,
+                0.024837251752614975,
+                0.0630543977022171
+              ],
+              "projected_uv_min_px": [
+                313.4135269411938,
+                271.6146528153582
+              ],
+              "projected_uv_max_px": [
+                318.2974735357651,
+                274.56567508656497
+              ],
+              "optical_z_min_max_m": [
+                2.7975927798215494,
+                2.8383423653727804
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_1_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                0.08580924570560455,
+                -0.26464149355888367,
+                -0.01000000350177288
+              ],
+              "world_bbox_max_m": [
+                0.6140859723091125,
+                0.2839460074901581,
+                0.5286628603935242
+              ],
+              "projected_uv_min_px": [
+                334.60109258599067,
+                225.7993090660407
+              ],
+              "projected_uv_max_px": [
+                390.21854386055685,
+                307.342465342246
+              ],
+              "optical_z_min_max_m": [
+                2.1301622046072572,
+                2.7625419493123906
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "fixture": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.09000000357627869,
+                -0.02500000037252903,
+                -0.009999999776482582
+              ],
+              "world_bbox_max_m": [
+                0.09000000357627869,
+                0.02500000037252903,
+                -1.1175870645585562e-10
+              ],
+              "projected_uv_min_px": [
+                310.81010144731005,
+                276.33622757403475
+              ],
+              "projected_uv_max_px": [
+                329.452547690797,
+                286.94432689786794
+              ],
+              "optical_z_min_max_m": [
+                2.738480387877668,
+                2.8880187578678664
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "own_global_camera_housing": {
+              "mesh_vertex_count": 38327,
+              "world_bbox_min_m": [
+                1.606916904449463,
+                -1.8079018592834473,
+                1.4896167516708374
+              ],
+              "world_bbox_max_m": [
+                1.709272861480713,
+                -1.7093349695205688,
+                1.5208463668823242
+              ],
+              "projected_uv_min_px": [
+                -18481808131.147438,
+                -3076280522.763535
+              ],
+              "projected_uv_max_px": [
+                4418177875.38724,
+                584495130.8758782
+              ],
+              "optical_z_min_max_m": [
+                -0.02600007705575395,
+                7.572260075165124e-08
+              ],
+              "vertices_inside_rgb_frame_fraction": 0.0,
+              "vertices_inside_public_depth_frame_fraction": 0.0,
+              "all_vertices_inside_rgb_frame": false,
+              "all_vertices_inside_public_depth_frame": false
+            },
+            "entire_workcell_excluding_own_global_housing": {
+              "mesh_vertex_count": 812956,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                0.6939658522605896
+              ],
+              "projected_uv_min_px": [
+                206.53378781366104,
+                193.5421644941807
+              ],
+              "projected_uv_max_px": [
+                447.5463127523842,
+                384.6520399743155
+              ],
+              "optical_z_min_max_m": [
+                1.8568468039907657,
+                3.7946069103073046
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            }
+          },
+          "cpu_geometric_depth_valid_fraction": 0.06464192708333333,
+          "cpu_predicted_visible_knife_pixels": 5,
+          "cpu_predicted_visible_material_pixels": 55,
+          "cpu_predicted_visible_material_component_pixels": {
+            "0": 55
+          },
+          "full_table_and_both_robots_inside_rgb": true,
+          "mesh_vertex_eye_clearance_m": 2.0408576580083904,
+          "global_housing_max_optical_radius_m": 0.06398515334591925,
+          "eye_to_enclosing_workcell_AABB_lower_bound_m": 1.5920713012451775,
+          "conservative_housing_to_workcell_lower_bound_m": 1.5280861478992582,
+          "clearance_scope": "Distance to enclosing scene AABB minus maximum actual housing radius; conservative sufficient clearance if positive, not an exact minimum triangle distance",
+          "unsupported_geometry": [],
+          "offline_geometric_screen_pass": false,
+          "native_runtime_validated": false
+        },
+        {
+          "candidate": "closer_overview_a",
+          "frame": 2,
+          "time_s": 0.04,
+          "T_world_camera": [
+            [
+              0.7371541402007413,
+              0.2980312375736948,
+              -0.6064496310619685,
+              1.1
+            ],
+            [
+              0.6757246285173464,
+              -0.3251249864440306,
+              0.6615814157039654,
+              -1.2
+            ],
+            [
+              -0.0,
+              -0.8974804313298763,
+              -0.441054277135977,
+              1.05
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "projected_bounds": {
+            "table": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                -0.009999999776482582
+              ],
+              "projected_uv_min_px": [
+                156.8708004077368,
+                214.608158613545
+              ],
+              "projected_uv_max_px": [
+                510.4184648950716,
+                473.27282833358925
+              ],
+              "optical_z_min_max_m": [
+                0.9857563079858812,
+                2.893316058734954
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "material": {
+              "mesh_vertex_count": 17994,
+              "world_bbox_min_m": [
+                -0.08007019758224487,
+                -0.015047232620418072,
+                -0.00012795746442861855
+              ],
+              "world_bbox_max_m": [
+                0.08007019758224487,
+                0.015049822628498077,
+                0.027220645919442177
+              ],
+              "projected_uv_min_px": [
+                308.9957602133935,
+                268.88103097160393
+              ],
+              "projected_uv_max_px": [
+                331.4593182489056,
+                282.6831528910986
+              ],
+              "optical_z_min_max_m": [
+                1.8591570532467672,
+                1.980380493085928
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_0_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                -0.6140859723091125,
+                -0.11774769425392151,
+                -0.009999990463256836
+              ],
+              "world_bbox_max_m": [
+                -0.0007063494995236397,
+                0.24919098615646362,
+                0.6939658522605896
+              ],
+              "projected_uv_min_px": [
+                264.14477641006823,
+                149.21320981593993
+              ],
+              "projected_uv_max_px": [
+                327.61355912066784,
+                259.893015494276
+              ],
+              "optical_z_min_max_m": [
+                1.7381916284275234,
+                2.413078589301897
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "knife": {
+              "mesh_vertex_count": 6,
+              "world_bbox_min_m": [
+                -0.05632087215781212,
+                -0.025165151804685593,
+                0.05863972753286362
+              ],
+              "world_bbox_max_m": [
+                -0.04430770501494408,
+                0.024837251752614975,
+                0.0630543977022171
+              ],
+              "projected_uv_min_px": [
+                310.30542996541044,
+                263.2763644036301
+              ],
+              "projected_uv_max_px": [
+                317.4066116466263,
+                267.63329918488944
+              ],
+              "optical_z_min_max_m": [
+                1.9082671649699607,
+                1.9488142746570012
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_1_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                0.08580924570560455,
+                -0.26464149355888367,
+                -0.01000000350177288
+              ],
+              "world_bbox_max_m": [
+                0.6140859723091125,
+                0.2839460074901581,
+                0.5286628603935242
+              ],
+              "projected_uv_min_px": [
+                342.82900494886417,
+                193.3103277885461
+              ],
+              "projected_uv_max_px": [
+                431.3846903494284,
+                317.8303586698832
+              ],
+              "optical_z_min_max_m": [
+                1.241042042305351,
+                1.8715335983600172
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "fixture": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.09000000357627869,
+                -0.02500000037252903,
+                -0.009999999776482582
+              ],
+              "world_bbox_max_m": [
+                0.09000000357627869,
+                0.02500000037252903,
+                -1.1175870645585562e-10
+              ],
+              "projected_uv_min_px": [
+                306.55054558707195,
+                270.0989696879533
+              ],
+              "projected_uv_max_px": [
+                333.9919930871813,
+                285.7961770472501
+              ],
+              "optical_z_min_max_m": [
+                1.852979279451524,
+                1.9996298312819438
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "own_global_camera_housing": {
+              "mesh_vertex_count": 38327,
+              "world_bbox_min_m": [
+                1.0562710762023926,
+                -1.2573909759521484,
+                1.0397987365722656
+              ],
+              "world_bbox_max_m": [
+                1.1594294309616089,
+                -1.1598354578018188,
+                1.0713515281677246
+              ],
+              "projected_uv_min_px": [
+                -13711468104.279459,
+                -2436101504.8633666
+              ],
+              "projected_uv_max_px": [
+                13872715743.614399,
+                609025508.2633002
+              ],
+              "optical_z_min_max_m": [
+                -0.026000085671054426,
+                7.360887388417662e-08
+              ],
+              "vertices_inside_rgb_frame_fraction": 0.0,
+              "vertices_inside_public_depth_frame_fraction": 0.0,
+              "all_vertices_inside_rgb_frame": false,
+              "all_vertices_inside_public_depth_frame": false
+            },
+            "entire_workcell_excluding_own_global_housing": {
+              "mesh_vertex_count": 812956,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                0.6939658522605896
+              ],
+              "projected_uv_min_px": [
+                156.8708004077368,
+                149.21320981593993
+              ],
+              "projected_uv_max_px": [
+                510.4184648950716,
+                473.27282833358925
+              ],
+              "optical_z_min_max_m": [
+                0.9857563079858812,
+                2.893316058734954
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            }
+          },
+          "cpu_geometric_depth_valid_fraction": 0.1623046875,
+          "cpu_predicted_visible_knife_pixels": 12,
+          "cpu_predicted_visible_material_pixels": 122,
+          "cpu_predicted_visible_material_component_pixels": {
+            "0": 122
+          },
+          "full_table_and_both_robots_inside_rgb": true,
+          "mesh_vertex_eye_clearance_m": 1.2343419220186351,
+          "global_housing_max_optical_radius_m": 0.06398510821089785,
+          "eye_to_enclosing_workcell_AABB_lower_bound_m": 0.7257825399408856,
+          "conservative_housing_to_workcell_lower_bound_m": 0.6617974317299877,
+          "clearance_scope": "Distance to enclosing scene AABB minus maximum actual housing radius; conservative sufficient clearance if positive, not an exact minimum triangle distance",
+          "unsupported_geometry": [],
+          "offline_geometric_screen_pass": true,
+          "native_runtime_validated": false
+        },
+        {
+          "candidate": "closer_overview_b",
+          "frame": 2,
+          "time_s": 0.04,
+          "T_world_camera": [
+            [
+              0.7348034446274879,
+              0.2794656205011502,
+              -0.6180314431495257,
+              1.2
+            ],
+            [
+              0.6782801027330658,
+              -0.3027544222095794,
+              0.6695340634119862,
+              -1.3
+            ],
+            [
+              -0.0,
+              -0.9111743668422916,
+              -0.41202096209968386,
+              1.1
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "projected_bounds": {
+            "table": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                -0.009999999776482582
+              ],
+              "projected_uv_min_px": [
+                167.7013648523207,
+                224.21681126359783
+              ],
+              "projected_uv_max_px": [
+                496.87613957819497,
+                453.18515180745726
+              ],
+              "optical_z_min_max_m": [
+                1.111426543943885,
+                3.0479250678077663
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "material": {
+              "mesh_vertex_count": 17994,
+              "world_bbox_min_m": [
+                -0.08007019758224487,
+                -0.015047232620418072,
+                -0.00012795746442861855
+              ],
+              "world_bbox_max_m": [
+                0.08007019758224487,
+                0.015049822628498077,
+                0.027220645919442177
+              ],
+              "projected_uv_min_px": [
+                309.7651538821288,
+                274.4978093740814
+              ],
+              "projected_uv_max_px": [
+                330.63679853065895,
+                287.1618059983678
+              ],
+              "optical_z_min_max_m": [
+                1.9998123574461082,
+                2.1226204891262084
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_0_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                -0.6140859723091125,
+                -0.11774769425392151,
+                -0.009999990463256836
+              ],
+              "world_bbox_max_m": [
+                -0.0007063494995236397,
+                0.24919098615646362,
+                0.6939658522605896
+              ],
+              "projected_uv_min_px": [
+                268.2103003507948,
+                163.84990588632186
+              ],
+              "projected_uv_max_px": [
+                327.1190843514999,
+                265.85954815515476
+              ],
+              "optical_z_min_max_m": [
+                1.8912564745485951,
+                2.562325721911874
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "knife": {
+              "mesh_vertex_count": 6,
+              "world_bbox_min_m": [
+                -0.05632087215781212,
+                -0.025165151804685593,
+                0.05863972753286362
+              ],
+              "world_bbox_max_m": [
+                -0.04430770501494408,
+                0.024837251752614975,
+                0.0630543977022171
+              ],
+              "projected_uv_min_px": [
+                310.9918673160973,
+                269.214733407704
+              ],
+              "projected_uv_max_px": [
+                317.61069724982656,
+                273.1896946808149
+              ],
+              "optical_z_min_max_m": [
+                2.0514512926441903,
+                2.0925222161519743
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "franka_1_including_wrist_rig": {
+              "mesh_vertex_count": 397470,
+              "world_bbox_min_m": [
+                0.08580924570560455,
+                -0.26464149355888367,
+                -0.01000000350177288
+              ],
+              "world_bbox_max_m": [
+                0.6140859723091125,
+                0.2839460074901581,
+                0.5286628603935242
+              ],
+              "projected_uv_min_px": [
+                340.8737307108264,
+                204.46823545694787
+              ],
+              "projected_uv_max_px": [
+                421.5834005756792,
+                318.97421910176286
+              ],
+              "optical_z_min_max_m": [
+                1.387482344442936,
+                2.0210050326534454
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "fixture": {
+              "mesh_vertex_count": 8,
+              "world_bbox_min_m": [
+                -0.09000000357627869,
+                -0.02500000037252903,
+                -0.009999999776482582
+              ],
+              "world_bbox_max_m": [
+                0.09000000357627869,
+                0.02500000037252903,
+                -1.1175870645585562e-10
+              ],
+              "projected_uv_min_px": [
+                307.4804426406517,
+                275.6895559932323
+              ],
+              "projected_uv_max_px": [
+                333.00003855349706,
+                290.0382942551474
+              ],
+              "optical_z_min_max_m": [
+                1.9928938886422813,
+                2.1417364659819986
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            },
+            "own_global_camera_housing": {
+              "mesh_vertex_count": 38327,
+              "world_bbox_min_m": [
+                1.1565115451812744,
+                -1.357655644416809,
+                1.0895894765853882
+              ],
+              "world_bbox_max_m": [
+                1.2595196962356567,
+                -1.2597999572753906,
+                1.1207674741744995
+              ],
+              "projected_uv_min_px": [
+                -14344043985.458532,
+                -651943950.6068555
+              ],
+              "projected_uv_max_px": [
+                14344049875.105167,
+                2607776384.8098583
+              ],
+              "optical_z_min_max_m": [
+                -0.026000093716799965,
+                9.700553422890844e-08
+              ],
+              "vertices_inside_rgb_frame_fraction": 0.0,
+              "vertices_inside_public_depth_frame_fraction": 0.0,
+              "all_vertices_inside_rgb_frame": false,
+              "all_vertices_inside_public_depth_frame": false
+            },
+            "entire_workcell_excluding_own_global_housing": {
+              "mesh_vertex_count": 812956,
+              "world_bbox_min_m": [
+                -0.8999999761581421,
+                -0.6000000238418579,
+                -0.05999999865889549
+              ],
+              "world_bbox_max_m": [
+                0.8999999761581421,
+                0.6000000238418579,
+                0.6939658522605896
+              ],
+              "projected_uv_min_px": [
+                167.7013648523207,
+                163.84990588632186
+              ],
+              "projected_uv_max_px": [
+                496.87613957819497,
+                453.18515180745726
+              ],
+              "optical_z_min_max_m": [
+                1.111426543943885,
+                3.0479250678077663
+              ],
+              "vertices_inside_rgb_frame_fraction": 1.0,
+              "vertices_inside_public_depth_frame_fraction": 1.0,
+              "all_vertices_inside_rgb_frame": true,
+              "all_vertices_inside_public_depth_frame": true
+            }
+          },
+          "cpu_geometric_depth_valid_fraction": 0.13459635416666665,
+          "cpu_predicted_visible_knife_pixels": 10,
+          "cpu_predicted_visible_material_pixels": 105,
+          "cpu_predicted_visible_material_component_pixels": {
+            "0": 105
+          },
+          "full_table_and_both_robots_inside_rgb": true,
+          "mesh_vertex_eye_clearance_m": 1.346142630047168,
+          "global_housing_max_optical_radius_m": 0.06398513020544422,
+          "eye_to_enclosing_workcell_AABB_lower_bound_m": 0.8630548708262901,
+          "conservative_housing_to_workcell_lower_bound_m": 0.7990697406208458,
+          "clearance_scope": "Distance to enclosing scene AABB minus maximum actual housing radius; conservative sufficient clearance if positive, not an exact minimum triangle distance",
+          "unsupported_geometry": [],
+          "offline_geometric_screen_pass": true,
+          "native_runtime_validated": false
+        }
+      ],
+      "native_runtime_validated": false,
+      "no_source_rig_modified": true
+    },
+    "selected_candidate": "closer_overview_a",
+    "actual_native_v1_baseline": [
+      {
+        "frame": 0,
+        "valid_fraction": 0.06361979166666666,
+        "path": "artifacts/isaacsim_wrist_rig_smoke_002/observations/global_d455_0000.npz",
+        "sha256": "07d965a1480ed90e1aeaf80650c7103eb4d3a37eb4290d4c0b9de43bac90a179"
+      },
+      {
+        "frame": 2,
+        "valid_fraction": 0.06360677083333334,
+        "path": "artifacts/isaacsim_wrist_rig_smoke_002/observations/global_d455_0002.npz",
+        "sha256": "3bd052926641789cbd892f085d3a7d79b4bf02d9b463ef710d34e743fd0a4a65"
+      }
+    ],
+    "native_v2_validated_by_this_audit": false,
+    "earlier_artifact": "artifacts/global_camera_mount_predictions_001",
+    "earlier_clearance_note": "Initial001 nearest-vertex-minus-radius was incorrectly described as a clearance lower bound. Its pixel/bounds predictions remain valid, but that clearance label is superseded by002 using distance to enclosing full-scene AABB minus maximum actual housing radius."
+  },
+  "checks": [
+    {
+      "command": ".venv/bin/python -m pytest -q tests/test_camera_rig.py",
+      "result": "7 passed"
+    },
+    {
+      "command": ".venv/bin/python scripts/audit_camera_mount_geometry.py artifacts/wrist_camera_mount_geometry_005 --specs configs/wrist_camera_rig_v2.json",
+      "result": "PASS: 0 triangle intersections for all4 housing/bracket boxes against8326 actual opened-hand/finger triangles; both central rays clear"
+    },
+    {
+      "command": ".venv/bin/python scripts/compare_global_camera_mounts.py artifacts/isaacsim_wrist_rig_smoke_002 artifacts/global_camera_mount_predictions_002",
+      "result": "Offline screen candidateA: geometricvalid16.23%, knife12px/material122px, alltable/arms inframe, minopticalZ.985756m, conservativehousingclearance>=.66166m. No native camera advanced."
+    },
+    {
+      "command": "workcell.export direct API, camera_layout=wrist_d405_global_d455, artifacts/wrist_workcell_export_v2_001",
+      "result": "PASS static USD composition"
+    },
+    {
+      "command": "workcell.export direct API, camera_layout=legacy_fixed_d455, artifacts/legacy_workcell_export_v2_001",
+      "result": "PASS legacy static USD composition"
+    }
+  ],
+  "frozen_sources": {
+    "src/robotic_cutting_sim/camera_rig.py": "056f505b2ae67243e63170f09e743ee9f3f5d9ba2aac60f95666de4c444f1650",
+    "configs/wrist_camera_rig_v2.json": "ce7b03d5195a2a08a77e10bc52b33c798f097b2ee4fc717566ca14c9b3079c7e",
+    "tests/test_camera_rig.py": "d1d6c15bc6a5c620d13c6c3d6f9dcfd61d3352610148967b02749d76d5ffa4cb",
+    "scripts/compare_global_camera_mounts.py": "d324865248e15118f70ec75525fba54f3caba7c003386f51561fe2510570ee2d",
+    "scripts/audit_camera_mount_geometry.py": "1201c6724fba637eeba15606d288d4895adccf118a44aa2f42f4727a5eb80238",
+    "src/robotic_cutting_sim/workcell.py": "3c8a496bc5997cd27720de078c692f6e1a7c330a5e5df16323374519cd8cebf1"
+  },
+  "limitations": [
+    "D405 ideal geometry prototype, not calibrated hardware or native stereo/noise model.",
+    "Visual-only housing/bracket has no collision or inertia. Static exact hand triangle/OBB checks do not prove full native contact safety.",
+    "Whole-stage CPU ray predictions are offline engineering evidence. Native D455 validity, holes, tails, RGB and knife pixels require fresh runtime capture.",
+    "Near occluders remain rendered with0.001m near/20m far; D4050.07..0.5m and Global0.6..6m are logical depth-validity filters after first-hit rendering.",
+    "Native Global authoredK and actual runtimeK remain separate; offline comparison reused actual recorded runtime fx=fy317.0431,640x480."
+  ]
+}

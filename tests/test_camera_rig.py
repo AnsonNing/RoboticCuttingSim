@@ -7,7 +7,7 @@ import pytest
 from scipy.spatial.transform import Rotation
 
 from robotic_cutting_sim.camera_rig import (
-    LEGACY_LAYOUT, SECONDARY_OBSERVATION_JOINTS, author_camera_rig, make_rig, pose_matrix,
+    CONFIG_PATH, LEGACY_LAYOUT, SECONDARY_OBSERVATION_JOINTS, author_camera_rig, make_rig, pose_matrix,
 )
 
 
@@ -44,8 +44,12 @@ def test_prototype_fov_and_logical_depth_range_are_explicit():
         assert (spec["near_m"], spec["far_m"]) == (.07, .50)
         assert spec["render_near_m"] < .01 and spec["render_far_m"] >= 20
         housing = spec["visual_obbs"][0]
+        assert housing["dimensions_m"] == [.042, .042, .023]
+        assert spec["physical_dimensions_m"] == {"width": .042, "height": .042, "depth": .023}
         center_z = np.asarray(housing["T_optical_cv_obb"])[2, 3]
         assert center_z + housing["dimensions_m"][2]/2 < 0
+    assert CONFIG_PATH.name == "wrist_camera_rig_v2.json"
+    np.testing.assert_allclose(np.asarray(rig.specs["global_d455"]["T_world_camera"])[:3, 3], [1.1, -1.2, 1.05])
 
 
 @pytest.fixture
