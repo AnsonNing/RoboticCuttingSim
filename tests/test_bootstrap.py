@@ -9,6 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"scripts"))
+import bootstrap_runtime
 from bootstrap_runtime import expected_pins, installer_environment, main, probe_environment, select_python
 from fetch_runtime_assets import fetch_assets
 
@@ -43,6 +44,25 @@ def test_large_download_defaults_respect_explicit_environment_overrides(tmp_path
     actual = installer_environment(tmp_path, True)
     assert actual["UV_HTTP_TIMEOUT"] == "1800" and actual["UV_CONCURRENT_DOWNLOADS"] == "2"
     assert actual["OMNI_KIT_ACCEPT_EULA"] == "YES"
+
+
+def test_managed_python_cannot_select_an_existing_project_venv(tmp_path, monkeypatch):
+    managed = tmp_path/"managed"
+    selected = managed/"cpython-3.12.12/bin/python3.12"
+    monkeypatch.setattr(bootstrap_runtime.shutil, "which", lambda name: None)
+    monkeypatch.setattr(bootstrap_runtime, "run", lambda *a, **k: None)
+    commands = []
+    def probe(command, **kwargs):
+        commands.append(command)
+        return "3.10" if "-c" in command else str(selected)
+    monkeypatch.setattr(subprocess, "check_output", probe)
+    actual = select_python(None, "uv", {"UV_PYTHON_INSTALL_DIR": str(managed)}, True, tmp_path/"python.log")
+    assert actual == str(selected)
+    assert "--managed-python" in commands[-1] and "--no-project" in commands[-1]
+    monkeypatch.setattr(subprocess, "check_output", lambda command, **kwargs:
+                        "3.10" if "-c" in command else str(tmp_path/"wrong-project/.venv/bin/python"))
+    with pytest.raises(RuntimeError, match="escaped"):
+        select_python(None, "uv", {"UV_PYTHON_INSTALL_DIR": str(managed)}, True, tmp_path/"python.log")
 
 
 def test_dry_run_relocates_with_checkout_and_writes_nothing(tmp_path):

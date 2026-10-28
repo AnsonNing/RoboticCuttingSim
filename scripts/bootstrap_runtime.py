@@ -143,7 +143,11 @@ def select_python(requested, uv, environment, managed, log):
     if not managed:
         raise RuntimeError("Python3.12 was not found. Pass --python PATH or --managed-python for a project-local download")
     run([uv, "python", "install", "3.12.12"], log, environment)
-    return subprocess.check_output([str(uv), "python", "find", "3.12.12"], env=environment, text=True).strip()
+    selected = subprocess.check_output([str(uv), "python", "find", "--managed-python", "--no-project", "3.12.12"],
+                                       env=environment, text=True).strip()
+    if not Path(selected).resolve().is_relative_to(Path(environment["UV_PYTHON_INSTALL_DIR"]).resolve()):
+        raise RuntimeError(f"Managed interpreter escaped the project-local install directory: {selected}")
+    return selected
 
 
 def ensure_source(name, target, refs, log):
