@@ -77,3 +77,19 @@ def test_cut_vertical_ruler_spine_stays_above_the_bar_at_full_depth():
         points = _tool_points_world(task, task.active_cut_interval_s[1])
         top = task.geometry.base_height_m
         assert points["handle"][:, 2].min() > top                    # only the blade enters the bar
+
+
+def test_runtime_tool_dispatch_keeps_v1_and_uses_profiles_for_v2():
+    from robotic_cutting_sim.physical_tool import make_tool_spec
+    from robotic_cutting_sim.tool_profile import require_task_tool, tool_spec_for_task
+    for task_id in ("CUT-01", "TRIM-01"):
+        task = make_task(task_id)
+        assert tool_spec_for_task(task).to_dict() == make_tool_spec(task).to_dict()
+        require_task_tool(tool_spec_for_task(task), task)
+    for task_id in ("CUT-01-R", "TRIM-01-R", "CUT-02"):
+        task = make_task(task_id)
+        spec = tool_spec_for_task(task)
+        assert spec.tool_id == "ruler_knife_v1" and [s.role for s in spec.shapes] == ["handle", "blade"]
+        require_task_tool(spec, task)
+        with pytest.raises(NotImplementedError):
+            require_task_tool(make_tool_spec(make_task("CUT-01")), task)

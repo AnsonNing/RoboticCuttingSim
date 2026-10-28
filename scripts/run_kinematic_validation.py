@@ -26,16 +26,15 @@ CONTROLLERS = ("reference", "push_policy", "saw_policy", "oblique20_policy", "ya
 
 
 def _plan(task, controller):
+    """Waypoints for a scripted controller, or None when it does not apply to the task."""
     from robotic_cutting_sim.policies import skim, through_cut
     if task.goal_kind == "flatten":
         options = {"push_policy": {}, "saw_policy": {"saw_amplitude_m": .006}, "gym_saw_policy": {"saw_amplitude_m": .006}}
-        if controller not in options:
-            return None
-        return skim(task, speed_m_s=.02, **options[controller])
+        return skim(task, **options[controller]) if controller in options else None
     options = {"push_policy": {}, "saw_policy": {"saw_amplitude_m": .01, "saw_period_s": .6},
                "gym_saw_policy": {"saw_amplitude_m": .01, "saw_period_s": .6},
                "oblique20_policy": {"tilt_deg": 20.}, "yaw30_policy": {"yaw_deg": 30.}}
-    return through_cut(task, cut_speed_m_s=.01, **options[controller])
+    return through_cut(task, cut_speed_m_s=.01, **options[controller]) if controller in options else None
 
 
 def _agent_session(env):
@@ -52,11 +51,12 @@ def _agent_session(env):
         calls.append(("cut_along", agent.cut_along("advance", top+.012, speed_m_s=.01, saw_amplitude_m=.008)))
         calls.append(("move_edge_by", agent.move_edge_by([0, 0, .04])))
     else:
-        start = task.reference_edge_pose_world(task.active_cut_interval_s[0])[:3]
-        start[0] = -task.geometry.length_m/2-.012
+        from robotic_cutting_sim.policies import skim
+        plan = skim(task)  # same pass a scripted policy uses, issued as agent tool calls
+        start, end = np.asarray(plan[1].pose[:3]), np.asarray(plan[2].pose[:3])
         calls.append(("move_edge_to", agent.move_edge_to(start+[0, 0, .03], rpy)))
         calls.append(("move_edge_to", agent.move_edge_to(start, rpy)))
-        calls.append(("cut_along", agent.cut_along([1., 0., 0.], task.geometry.length_m+.024, speed_m_s=.02)))
+        calls.append(("cut_along", agent.cut_along(list(end-start), float(np.linalg.norm(end-start)), speed_m_s=.025)))
         calls.append(("move_edge_by", agent.move_edge_by([0, 0, .03])))
     calls.append(("finish_episode", agent.finish_episode()))
     return [{"call": name, "result": result} for name, result in calls]
@@ -77,7 +77,7 @@ def run_one(job):
         env = make_kinematic_env(task_id, particle_spacing_m=spacing, material_dt=material_dt, device=device,
                                  action_limits=limits, ik_failure="reject", delta_frame="world")
         env.reward = CuttingReward(env.task)
-        if controller != "reference" and _plan(env.task, controller) is None and controller != "agent_api":
+        if controller not in ("reference", "agent_api") and _plan(env.task, controller) is None:
             return {**row, "status": "NOT_APPLICABLE"}
         adapter = None
         if controller.startswith("gym_"):
@@ -128,6 +128,13 @@ def run_one(job):
                                 "removed_reference_above_plane_mass_fraction", "surface") if k in metrics},
                     "material_receipt": {k: env.backend.material.parameter_receipt.get(k)
                                          for k in ("solver", "cutting_law", "max_cuts")}})
+        try:
+            research = env.evaluate(profile="research")
+            row["evaluation_v2_research"] = {"assessment": research.get("assessment"),
+                "cutting_outcome_status": research.get("cutting_outcome", {}).get("status"),
+                "surface_quality_status": research.get("surface_quality", {}).get("status")}
+        except Exception as error:  # recorded, never hidden
+            row["evaluation_v2_research"] = {"error": f"{type(error).__name__}: {error}"}
     except Exception as error:  # preserved as a failed row, never hidden
         row.update({"status": "ERROR", "error": f"{type(error).__name__}: {error}"})
     row["wall_s"] = round(time.time()-start, 2)

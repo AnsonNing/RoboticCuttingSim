@@ -278,11 +278,18 @@ class LiveIsaacSimCutting:
                           else c.grasp or ToolGraspConfig())
             self.grip_force_limit_n=self.grasp.max_finger_force_n
             self.grip_friction=self.grasp.friction
-            self.tool_spec = c.tool_spec or make_tool_spec(self.task,
-                hand_from_edge_xyz_xyzw=self.mount, blade_length_m=blade_dimensions[0],
-                blade_height_m=blade_dimensions[1], blade_half_width_m=blade_dimensions[2])
-            from .tool_compatibility import require_matching_blade
-            require_matching_blade(self.tool_spec,self.mount,blade_dimensions)
+            from .tasks import ProfileTaskSpec
+            if isinstance(self.task, ProfileTaskSpec):
+                # v2 task: the profile tool; v1 tasks keep the original path below.
+                from .tool_profile import require_task_tool, tool_spec_for_task
+                self.tool_spec = c.tool_spec or tool_spec_for_task(self.task)
+                require_task_tool(self.tool_spec, self.task)
+            else:
+                self.tool_spec = c.tool_spec or make_tool_spec(self.task,
+                    hand_from_edge_xyz_xyzw=self.mount, blade_length_m=blade_dimensions[0],
+                    blade_height_m=blade_dimensions[1], blade_half_width_m=blade_dimensions[2])
+                from .tool_compatibility import require_matching_blade
+                require_matching_blade(self.tool_spec,self.mount,blade_dimensions)
             self.finger_paths = [next(str(p.GetPath()) for p in Usd.PrimRange(stage.GetPrimAtPath(hand_paths[0]))
                                      if p.GetName() == name)
                                  for name in ("panda_leftfinger", "panda_rightfinger")]

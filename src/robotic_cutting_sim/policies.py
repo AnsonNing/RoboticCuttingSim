@@ -128,8 +128,12 @@ def through_cut(task, *, tilt_deg=0., yaw_deg=0., roll_deg=0., saw_amplitude_m=0
             Waypoint(_pose(start+np.array([0., 0., .03]), rotation))]
 
 
-def skim(task, *, clearance_m=None, margin_m=.012, speed_m_s=.02, saw_amplitude_m=0.):
-    """Move the edge across the workpiece at the target plane (TRIM)."""
+def skim(task, *, clearance_m=None, margin_m=.03, speed_m_s=.025, saw_amplitude_m=0.):
+    """Move the edge across the material above the target plane (TRIM).
+
+    The pass spans the bumps (or the whole workpiece without bumps) plus
+    ``margin_m`` on each side, at the target plane plus the edge clearance.
+    """
     rotation = Rotation.from_quat(task.reference_edge_pose_world(0.)[3:])
     advance = rotation.apply([1., 0., 0.])
     direction = advance-advance[2]*np.array([0., 0., 1.])
@@ -138,9 +142,15 @@ def skim(task, *, clearance_m=None, margin_m=.012, speed_m_s=.02, saw_amplitude_
     clearance = task.edge_clearance_m if clearance_m is None else clearance_m
     T = task.T_world_workpiece
     center = T[:3, 3]
-    half = task.geometry.length_m/2+margin_m
-    start = center-direction*half
-    end = center+direction*half
+    if task.geometry.bumps:
+        along = [(T[:3, :3]@np.array([b.x_m, b.y_m, 0.]))@direction for b in task.geometry.bumps]
+        reach = [b.radius_x_m+b.radius_y_m for b in task.geometry.bumps]  # conservative footprint
+        low = min(a-r/2 for a, r in zip(along, reach))-margin_m
+        high = max(a+r/2 for a, r in zip(along, reach))+margin_m
+    else:
+        low, high = -task.geometry.length_m/2-margin_m, task.geometry.length_m/2+margin_m
+    start = center+direction*low
+    end = center+direction*high
     for point in (start, end):  # put the edge at the target plane plus clearance
         point[2] += clearance-(point@plane[:3]+plane[3])/plane[2]
     above = start+np.array([0., 0., .03])

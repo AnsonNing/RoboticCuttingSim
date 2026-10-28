@@ -31,7 +31,8 @@ from .recording import ROOT
 from .robot import compose_tool_pose, wedge_mesh
 from .scene_frames import WorkpieceTarget, compose_pose, invert_transform, matrix_pose, pose_matrix
 from .workcell import ASSETS, PARK_JOINTS, SECONDARY_PARK_JOINTS
-from .physical_tool import ToolGraspConfig, make_tool_spec
+from .physical_tool import ToolGraspConfig
+from .tool_profile import tool_spec_for_task
 from .pad_contact import POINT_PROFILE, PATCH_PROFILE, patch_receipt
 
 
@@ -172,7 +173,7 @@ def make_lab_cfg(options):
     task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
                      particle_spacing_m=options.particle_spacing_m, workpiece_kind=options.workpiece_kind) if options.task_id else None
     physical = options.tool_attachment_mode == "physical_grasp"
-    tool_spec = make_tool_spec(task) if physical else None
+    tool_spec = tool_spec_for_task(task) if physical else None
 
     def robot(index):
         q = dict(zip([f"panda_joint{i}" for i in range(1, 8)], PARK_JOINTS))
@@ -276,7 +277,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self.task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
             particle_spacing_m=options.particle_spacing_m, workpiece_kind=options.workpiece_kind) if options.task_id else None
         self.mount = np.array(self.task.hand_from_edge_xyz_xyzw if self.task else (0, 0, .18, 1, 0, 0, 0), float)
-        self.tool_spec = make_tool_spec(self.task) if self.physical_tool else None
+        self.tool_spec = tool_spec_for_task(self.task) if self.physical_tool else None
         self.gripper_mode = "hold" if options.tool_init_mode == "pregrasped" else "release"
         self.gripper_target_m = options.grasp.closed_target_m
         self.external_tool_wrench_world = np.zeros(6)

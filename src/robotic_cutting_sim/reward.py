@@ -10,13 +10,13 @@ from dataclasses import asdict, dataclass
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-VERSION = "cutting_reward_v0"
+VERSION = "cutting_reward_v1"  # v0 (label-based progress) was replaced before any recorded use
 
 
 @dataclass(frozen=True)
 class RewardWeights:
-    progress: float = 10.        # per unit increase of target-band separation fraction
-    off_target: float = 2.       # per unit increase of labelled fraction outside the target band
+    progress: float = 10.        # per unit increase of severed target-plane column fraction
+    off_target: float = 2.       # per unit increase of severed-bond fraction away from the target
     gouge_per_m: float = 200.    # armed edge below a flatten target plane
     lateral_per_m: float = 50.   # edge motion across the blade plane while inside the workpiece
     ik_reject: float = .1
@@ -41,34 +41,67 @@ class CuttingReward:
 
     def to_dict(self):
         return {"version": VERSION, "weights": asdict(self.weights), "band_m": self.band_m,
-                "privileged_inputs": ["reference particles", "cut codes", "measured tool edge pose"],
+                "privileged_inputs": ["reference particles and lattice", "cut codes", "measured tool edge pose"],
+                "progress": "fraction of target-plane columns with a severed reference bond",
                 "status": "PROVISIONAL_SHAPING_NOT_SUCCESS"}
 
     def _start(self, env):
-        reference = np.asarray(env.backend.material.world_points, float)
+        """Reference bonds, their target columns and the off-target set (fixed per episode).
+
+        Progress is measured on severed reference bonds (opposite cut sides on
+        the two particles), not on labels: a label on one side only separates
+        nothing and must not earn reward.
+        """
+        material = env.backend.material
+        reference = np.asarray(material.world_points, float)
+        lattice = np.asarray(material.lattice)
+        self._cuts = int(getattr(getattr(material, "material_config", None), "cuts", 2) or 2)
         plane = self.task.target_plane_world()
-        self._signed = reference@plane[:3]+plane[3]
+        signed = reference@plane[:3]+plane[3]
+        lookup = {tuple(v): i for i, v in enumerate(lattice)}
+        pairs = np.array([(i, lookup[tuple(v+step)]) for i, v in enumerate(lattice)
+                          for step in np.eye(3, dtype=int) if tuple(v+step) in lookup])
+        a, b = pairs.T
+        middle = (signed[a]+signed[b])/2
+        crossing = (np.abs(middle) <= self.band_m) & (np.abs(signed[a]-signed[b]) > .5*self.task.particle_spacing_m)
+        # Columns along the target plane: a column counts once any of its bonds is severed.
+        normal = plane[:3]
+        tangent = np.cross(normal, [1., 0., 0.] if abs(normal[0]) < .9 else [0., 1., 0.])
+        tangent /= np.linalg.norm(tangent)
+        bitangent = np.cross(normal, tangent)
+        midpoint = (reference[a]+reference[b])/2
+        cells = np.round(np.c_[midpoint@tangent, midpoint@bitangent]/self.task.particle_spacing_m).astype(int)
+        if self.task.goal_kind == "flatten":
+            above = signed > self.band_m
+            above_cells = {tuple(c) for c in np.round(np.c_[reference[above]@tangent, reference[above]@bitangent]
+                                                      / self.task.particle_spacing_m).astype(int)}
+            crossing &= np.array([tuple(c) in above_cells for c in cells], bool)
+            off = middle < -self.band_m-self.task.particle_spacing_m
+        else:
+            off = np.abs(middle) > 3*self.task.grid_dx_m
+        if not crossing.any():
+            raise ValueError("Reward target region contains no reference bonds")
+        self._a, self._b = a, b
+        self._target_bonds = np.flatnonzero(crossing)
+        _, self._column = np.unique(cells[crossing], axis=0, return_inverse=True)
+        self._columns = int(self._column.max()+1)
+        self._off_bonds = np.flatnonzero(off)
+        self._bond_count = len(a)
         local = self.task.points_to_local(reference)
         self._box = (local.min(0)-self.margin_m, local.max(0)+self.margin_m)
-        if self.task.goal_kind == "flatten":
-            self._target = self._signed > self.band_m
-        else:
-            self._target = np.abs(self._signed) <= self.band_m
-        if not self._target.any():
-            raise ValueError("Reward target region contains no reference particles")
         self._progress, self._off_target, self._edge = 0., 0., None
 
     def terms(self, env, info):
+        from .cut_topology import conflicting
         if self._episode_key != id(env._history[0]):
             self._episode_key = id(env._history[0])
             self._start(env)
         codes = np.asarray(env._history[-1]["codes"])
-        labelled = codes != 0
-        progress = float(labelled[self._target].mean())
-        if self.task.goal_kind == "flatten":
-            off_target = float((labelled & (self._signed < -self.band_m)).mean())
-        else:
-            off_target = float((labelled & ~self._target & (np.abs(self._signed) > 3*self.task.grid_dx_m)).mean())
+        target = self._target_bonds
+        severed = conflicting(codes[self._a[target]], codes[self._b[target]], 2)
+        progress = float(len(np.unique(self._column[severed]))/self._columns)
+        off = self._off_bonds
+        off_target = float(conflicting(codes[self._a[off]], codes[self._b[off]], 2).sum()/self._bond_count) if len(off) else 0.
         edge = np.asarray(env._proprio["tool_pose"], float)
         gouge = lateral = 0.
         plane = self.task.target_plane_world()

@@ -131,7 +131,8 @@ def test_ik_failure_raises_by_default_and_rejects_with_hold():
 class _Material:
     def __init__(self, task):
         self.task = task
-        self.world_points = task.points_to_world(task.sample_particles()[0])
+        points, _, self.lattice = task.sample_particles()
+        self.world_points = task.points_to_world(points)
         self.codes = np.zeros(len(self.world_points), np.int32)
         self.masses = np.ones(len(self.world_points))
 
@@ -141,10 +142,11 @@ class _Material:
 
 
 @pytest.mark.parametrize("task_id", ["CUT-01", "TRIM-01"])
-def test_reward_tracks_target_progress_and_penalties(task_id):
+def test_reward_counts_severed_bonds_not_labels(task_id):
     b = tracking_backend(task_id=task_id)
     task = make_task(task_id, particle_spacing_m=.004)
-    b.task.goal_kind, b.task.grid_dx_m = task.goal_kind, task.grid_dx_m
+    b.task.goal_kind, b.task.grid_dx_m, b.task.particle_spacing_m = task.goal_kind, task.grid_dx_m, task.particle_spacing_m
+    b.task.target_plane_world, b.task.points_to_local = task.target_plane_world, task.points_to_local
     b.material = _Material(task)
     env = CuttingTaskEnv(b, action_mode=DELTA_MODE, delta_frame="world", reward=CuttingReward(task))
     env.reset()
@@ -152,12 +154,22 @@ def test_reward_tracks_target_progress_and_penalties(task_id):
     assert info["reward_terms"]["target_progress"] == 0 and idle < 0
     plane = task.target_plane_world()
     signed = b.material.world_points@plane[:3]+plane[3]
-    band = (task.grid_dx_m+task.particle_spacing_m)/2
-    target = signed > band if task_id == "TRIM-01" else np.abs(signed) <= band
-    b.material.codes[target] = 1
+    # One-sided labels (what an armed but non-cutting blade could leave) earn nothing.
+    b.material.codes[np.abs(signed) < .01] = 1
+    _, _, _, _, info = env.step(np.zeros(6))
+    assert info["reward_terms"]["target_progress"] == 0
+    # A crack at the target plane: opposite sides on the two particles of each bond.
+    b.material.codes[:] = 0
+    b.material.codes[(signed > 0) & (signed < .01)] = 2
+    b.material.codes[(signed <= 0) & (signed > -.01)] = 1
     _, reward, _, _, info = env.step(np.zeros(6))
     assert info["reward_terms"]["target_progress"] == 1 and reward > 9
-    b.material.codes[signed < -3*task.grid_dx_m] = 2
+    # A second crack far below / beside the target is penalized.
+    far = signed < -.012 if task_id == "TRIM-01" else signed > .04
+    side = (b.material.world_points[:, 2] if task_id == "TRIM-01" else b.material.world_points[:, 0])
+    split = np.median(side[far])
+    b.material.codes[far & (side > split)] = 2
+    b.material.codes[far & (side <= split)] = 1
     _, reward, _, _, info = env.step(np.zeros(6))
     assert info["reward_terms"]["off_target"] > 0 and reward < 0
 

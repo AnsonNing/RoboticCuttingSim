@@ -150,3 +150,30 @@ def require_profile_consistency(spec, profile):
     if not np.allclose([spec.blade_length_m, spec.blade_height_m, spec.blade_half_width_m],
                        [profile.blade_depth_m, profile.thickness_m, profile.half_width_m], atol=1e-12, rtol=0):
         raise NotImplementedError("ToolSpec blade dimensions differ from the profile")
+
+
+def tool_spec_for_task(task):
+    """The physical tool a runtime authors for a task.
+
+    v2 (profile) tasks get their profile tool; v1 tasks keep make_tool_spec(task)
+    exactly, so their colliders, mass and receipts are unchanged.
+    """
+    from .physical_tool import make_tool_spec
+    from .tasks import ProfileTaskSpec
+    if isinstance(task, ProfileTaskSpec):
+        return make_profile_tool_spec(task.tool_profile)
+    return make_tool_spec(task)
+
+
+def require_task_tool(spec, task):
+    """Reject a tool whose blade or mount differs from what the task's TLMPM and IK use."""
+    from .tasks import ProfileTaskSpec
+    if isinstance(task, ProfileTaskSpec):
+        require_profile_consistency(spec, task.tool_profile)
+        if not np.allclose(spec.T_hand_tool@spec.T_tool_edge, pose_matrix(task.hand_from_edge_xyz_xyzw), atol=1e-10, rtol=0):
+            raise NotImplementedError("Tool hand-to-edge frame differs from the task's IK mount")
+        return
+    from .tool_compatibility import require_matching_blade
+    require_matching_blade(spec, task.hand_from_edge_xyz_xyzw,
+                           [task.blade_length_m, task.blade_height_m, task.blade_half_width_m])
+
