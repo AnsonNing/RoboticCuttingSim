@@ -22,7 +22,8 @@ physical D455 color/depth hardware calibration remains unvalidated.
 
 The shared rig is defined in
 [`camera_rig.py`](../src/robotic_cutting_sim/camera_rig.py) and
-[`wrist_camera_rig_v1.json`](../configs/wrist_camera_rig_v1.json). Housing and
+the active [`wrist_camera_rig_v2.json`](../configs/wrist_camera_rig_v2.json).
+Version1 remains available as the original farther-Global baseline. Housing and
 brackets are visual geometry with no additional mass, inertia or contact model.
 The native runner rejects active rigid-body or collision APIs under these camera
 roots. Both wrist roots must be actual children of their corresponding Panda
@@ -118,6 +119,18 @@ PhysX substeps and three captures. It records all three camera IDs, three
 20 ms pose samples and the composed final scene. Measured-versus-USD wrist
 translation errors are at most 63.7 nm and 4.4 nm; Global drift is zero in
 that short recording. This is `PASS_SMOKE`, not full task or sensor acceptance.
+
+The subsequent source-frozen v2 pilot
+`artifacts/isaacsim_wrist_rig_smoke_003` uses corrected D405 housing dimensions
+and moves Global to `[1.10, -1.20, 1.05] m`, looking at `[0, 0, 0.25] m`.
+Its three frames retain15.908–15.913% valid native Global depth, compared with
+approximately6.36% in the farther-view pilot. Independent whole-scene CPU
+audit `artifacts/wrist_camera_native_pilot003_audit_001` passes measured
+kinematics, the unchanged engineering visibility/optics checks and conservative
+visual clearance. The first Global frame contains122 depth-consistent material
+pixels and12 knife pixels, above the existing25/8 thresholds. All three frames
+pass those checks. A rare approximately0.85m valid native error remains in the
+receipt; no native tail is filtered and full sensor acceptance is not scored.
 
 The native worker verifies every frozen source and snapshot before application
 startup and again before live reset. A mismatch writes an explicit integrity
