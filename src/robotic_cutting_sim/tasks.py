@@ -4,10 +4,12 @@ Sampling is LOCAL and initially unlabelled. Recorded evaluator coordinates are
 WORLD. Oracle topology/surface metrics never become policy observations and do
 not establish robot, camera, runtime or calibrated-fracture acceptance.
 """
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 
@@ -18,6 +20,7 @@ from .scene_frames import (WorkpieceTarget, compose_pose, invert_transform, matr
 from .scene_validation import material_task_metrics, mesh_heightfield_metrics
 
 PROTOCOL_PATH = Path(__file__).resolve().parents[2]/"configs/cutting_tasks_v1.json"
+PROTOCOL_V2_PATH = PROTOCOL_PATH.with_name("cutting_tasks_v2.json")
 ACTION_MODES = ("cartesian_edge_pose_world", "joint_position_rad")
 
 
@@ -64,9 +67,10 @@ class CuttingTaskSpec:
     edge_orientation_local_xyzw: tuple
     edge_position_knots_local_txyz: tuple
     active_cut_interval_s: tuple = (1.6, 5.6)
+    TASK_IDS: ClassVar[tuple] = ("CUT-01", "TRIM-01")
 
     def __post_init__(self):
-        if self.task_id not in ("CUT-01", "TRIM-01") or self.goal_kind not in ("sever", "flatten"):
+        if self.task_id not in self.TASK_IDS or self.goal_kind not in ("sever", "flatten"):
             raise ValueError("Unsupported task/goal")
         if self.variant not in ("fixed", "randomized"):
             raise ValueError("Task variant must be fixed or randomized")
@@ -90,6 +94,20 @@ class CuttingTaskSpec:
         if (knots.ndim != 2 or knots.shape[1] != 4 or not np.isfinite(knots).all()
                 or np.any(np.diff(knots[:, 0]) <= 0) or knots[0, 0] != 0 or knots[-1, 0] != self.duration_s):
             raise ValueError("Scripted edge knots must span the episode with increasing finite times")
+
+    @property
+    def protocol_path(self):
+        return PROTOCOL_PATH
+
+    def protocol_document(self):
+        """Protocol whose [task_id] entry holds this task's frozen thresholds."""
+        return _protocol()
+
+    @property
+    def tool_profile(self):
+        """The cutting head as a ToolProfile (the retained wedge for v1 tasks)."""
+        from .tool_profile import legacy_profile
+        return legacy_profile(self)
 
     @property
     def control_dt(self):
@@ -179,12 +197,13 @@ class CuttingTaskSpec:
         return {"mode": mode, "target": target.copy(), "cut_enabled": bool(enabled)}
 
     def to_dict(self):
-        result = {**asdict(self), "protocol_id": _protocol()["protocol_id"],
-                "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
+        protocol = self.protocol_document()
+        result = {**asdict(self), "protocol_id": protocol["protocol_id"],
+                "protocol_sha256": hashlib.sha256(self.protocol_path.read_bytes()).hexdigest(),
                 "sample_coordinate_frame": "workpiece_local", "evaluator_coordinate_frame": "world",
                 "action_modes": ACTION_MODES, "runtime_validated": False,
-                "numerical_overrides": {"particle_spacing_m": {"protocol": _protocol()[self.task_id]["particle_spacing_m"],
-                    "actual": self.particle_spacing_m}} if self.particle_spacing_m != _protocol()[self.task_id]["particle_spacing_m"] else {}}
+                "numerical_overrides": {"particle_spacing_m": {"protocol": protocol[self.task_id]["particle_spacing_m"],
+                    "actual": self.particle_spacing_m}} if self.particle_spacing_m != protocol[self.task_id]["particle_spacing_m"] else {}}
         if self.variant == "randomized":
             from .task_randomization import randomization_receipt
             result["randomization"] = randomization_receipt(self)
@@ -206,6 +225,64 @@ def _protocol():
     return json.loads(PROTOCOL_PATH.read_text())
 
 
+def _protocol_v2():
+    return json.loads(PROTOCOL_V2_PATH.read_text())
+
+
+def _v2_task_config(task_id):
+    """Base v1 task entry with the v2 overrides applied (thresholds inherited)."""
+    entry = _protocol_v2()["tasks"][task_id]
+    config = deepcopy(_protocol()[entry["base"]])
+    config.update({key: deepcopy(value) for key, value in entry.items() if key not in ("base", "tool_profile")})
+    return entry["base"], entry["tool_profile"], config
+
+
+@dataclass(frozen=True)
+class ProfileTaskSpec(CuttingTaskSpec):
+    """A v2 task: a v1 base task's thresholds with a parametric tool profile.
+
+    Blade dimensions and the nominal hand-to-edge mount come from the profile,
+    so runtimes, TLMPM and IK cannot disagree about the cutting head.
+    """
+
+    tool_profile_id: str = ""
+    base_task_id: str = ""
+    TASK_IDS: ClassVar[tuple] = ("CUT-01-R", "TRIM-01-R", "CUT-02")
+
+    def __post_init__(self):
+        super().__post_init__()
+        profile = self.tool_profile
+        if self.base_task_id not in CuttingTaskSpec.TASK_IDS:
+            raise ValueError("A v2 task needs a v1 base task")
+        if not np.allclose([self.blade_length_m, self.blade_height_m, self.blade_half_width_m],
+                           [profile.blade_depth_m, profile.thickness_m, profile.half_width_m], atol=1e-12, rtol=0):
+            raise ValueError("Task blade dimensions must equal the tool profile")
+        if not np.allclose(pose_matrix(self.hand_from_edge_xyz_xyzw), pose_matrix(profile.hand_from_edge()),
+                           atol=1e-12, rtol=0):
+            raise ValueError("Task hand-to-edge mount must equal the tool profile mount")
+
+    @property
+    def protocol_path(self):
+        return PROTOCOL_V2_PATH
+
+    def protocol_document(self):
+        v2 = _protocol_v2()
+        return {"protocol_id": v2["protocol_id"], "common": _protocol()["common"],
+                self.task_id: _v2_task_config(self.task_id)[2]}
+
+    @property
+    def tool_profile(self):
+        from .tool_profile import PROFILES
+        return PROFILES[self.tool_profile_id]
+
+    def to_dict(self):
+        return {**super().to_dict(), "tool_profile": self.tool_profile.to_dict(),
+                "inherited_protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest()}
+
+
+TASK_IDS = CuttingTaskSpec.TASK_IDS+ProfileTaskSpec.TASK_IDS
+
+
 def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1),
               particle_spacing_m=None, workpiece_kind="rectangle"):
     if workpiece_kind not in ("rectangle", "capsule"):
@@ -213,11 +290,23 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
     if variant == "randomized" and (not isinstance(seed, (int, np.integer)) or isinstance(seed, (bool, np.bool_)) or seed < 0):
         raise ValueError("Randomized task seed must be a nonnegative integer")
     protocol = _protocol()
-    if task_id not in ("CUT-01", "TRIM-01"):
-        raise ValueError("task_id must be CUT-01 or TRIM-01; legacy D0 is unchanged")
-    config = protocol[task_id]
+    if task_id not in TASK_IDS:
+        raise ValueError(f"task_id must be one of {TASK_IDS}; legacy D0 is unchanged")
+    extra, cls = {}, CuttingTaskSpec
+    if task_id in ProfileTaskSpec.TASK_IDS:
+        if variant == "randomized":
+            raise NotImplementedError("Randomized variants are defined only for the v1 tasks")
+        from .tool_profile import PROFILES
+        base, profile_id, config = _v2_task_config(task_id)
+        profile = PROFILES[profile_id]
+        config.update({"blade_length_m": profile.blade_depth_m, "blade_height_m": profile.thickness_m,
+                       "blade_half_width_m": profile.half_width_m,
+                       "hand_from_edge_xyz_xyzw": list(profile.hand_from_edge())})
+        extra, cls = {"tool_profile_id": profile_id, "base_task_id": base}, ProfileTaskSpec
+    else:
+        config = protocol[task_id]
     geometry = config["geometry"]
-    task = CuttingTaskSpec(task_id, int(seed), "fixed" if variant == "randomized" else variant,
+    task = cls(task_id, int(seed), "fixed" if variant == "randomized" else variant,
         HeightFieldSpec(geometry["length_m"], geometry["width_m"], geometry["base_height_m"],
             tuple(Bump(**row) for row in geometry["bumps"])),
         config["particle_spacing_m"] if particle_spacing_m is None else float(particle_spacing_m), config["grid_dx_m"],
@@ -227,7 +316,7 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
         config["goal_kind"], tuple(config["target_origin_local_m"]), tuple(config["target_normal_local"]),
         config.get("edge_clearance_m", 0.), config["blade_length_m"], config["blade_height_m"], config["blade_half_width_m"],
         tuple(config["edge_orientation_local_xyzw"]), tuple(tuple(row) for row in config["edge_position_knots_local_txyz"]),
-        tuple(protocol["episode"]["active_cut_interval_s"]))
+        tuple(protocol["episode"]["active_cut_interval_s"]), **extra)
     if variant == "randomized":
         from .task_randomization import randomize_task
         task = randomize_task(task)
@@ -279,7 +368,8 @@ def evaluate_task_oracle(task, data):
                 "reference_stencil_nodes", "reference_stencil_weights", "reference_stencil_gradients")
     missing = [name for name in required if name not in data]
     base = {"task_id": task.task_id, "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
-            "protocol_id": _protocol()["protocol_id"], "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
+            "protocol_id": task.protocol_document()["protocol_id"],
+            "protocol_sha256": hashlib.sha256(task.protocol_path.read_bytes()).hexdigest(),
             "full_simulation_acceptance": False, "policy_observation": False}
     if task.workpiece_kind != "rectangle":
         base.update(workpiece_kind=task.workpiece_kind,
@@ -295,7 +385,7 @@ def evaluate_task_oracle(task, data):
             or nodes.dtype.kind not in "iu" or np.any(masses <= 0)
             or not all(np.isfinite(value).all() for value in (time, positions, reference, masses, weights, gradients))):
         raise ValueError("Oracle recording shapes, one-cut history, mass or numeric state are invalid")
-    protocol = _protocol()
+    protocol = task.protocol_document()
     common, limits = protocol["common"], protocol[task.task_id]
     initial_count, _ = mechanical_components(nodes, weights, codes[0], 1, gradients=gradients)
     final_count, labels = mechanical_components(nodes, weights, codes[-1], 1, gradients=gradients)

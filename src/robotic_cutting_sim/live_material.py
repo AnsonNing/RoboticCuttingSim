@@ -18,11 +18,31 @@ from .scene_frames import (WorkpieceTarget, pose_matrix, invert_transform, trans
 
 
 class LiveCuttingMaterial:
-    def __init__(self, config=None, target=None, *, task=None, tool_profile=None):
+    def __init__(self, config=None, target=None, *, task=None, tool_profile=None, cutting_law=None,
+                 slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1):
         """``tool_profile`` (tool_profile.ToolProfile) selects the tlmpm_v2 solver
-        with that blade polygon; None keeps the frozen v1 solver and task wedge."""
+        with that blade polygon; None keeps the frozen v1 solver and task wedge.
+
+        v2 tasks (tasks.ProfileTaskSpec) default to their profile, cutting law 2
+        and the handle as a blunt obstacle. ``max_cuts`` (1 or 2) sets how many
+        cut digits the material keeps; it requires tlmpm_v2 above 1.
+        """
+        from .tasks import ProfileTaskSpec
+        from .tool_profile import handle_box_edge
         self.config = config or CouplingConfig()
+        if isinstance(task, ProfileTaskSpec):
+            tool_profile = tool_profile or task.tool_profile
+            cutting_law = 2 if cutting_law is None else cutting_law
+            if obstacle_boxes_edge is None:
+                obstacle_boxes_edge = [handle_box_edge(tool_profile)]
+        if max_cuts not in (1, 2) or (max_cuts == 2 and tool_profile is None):
+            raise ValueError("max_cuts is 1 or 2; two cut digits require a tool profile (tlmpm_v2)")
+        if tool_profile is None and (cutting_law not in (None, 1) or obstacle_boxes_edge is not None):
+            raise ValueError("Cutting law 2 and tool obstacles require a tool profile (tlmpm_v2)")
         self.tool_profile = tool_profile
+        self.cutting_law = 1 if cutting_law is None else int(cutting_law)
+        self.slice_efficiency, self.max_cuts = float(slice_efficiency), int(max_cuts)
+        self.obstacle_boxes_edge = obstacle_boxes_edge
         self.target = target or WorkpieceTarget()
         self.task = task
         # The retained floor/tray implementation is in the world identity frame.
@@ -55,7 +75,9 @@ class LiveCuttingMaterial:
         else:
             from .tlmpm_v2 import TLMPM
             polygon, _ = self.tool_profile.tlmpm_profile()
-            solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm_v2", {"blade_profile_xz": polygon}
+            solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm_v2", {"blade_profile_xz": polygon,
+                "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency,
+                "obstacle_boxes_edge": self.obstacle_boxes_edge}
 
         start = time.perf_counter()
         c = self.config
@@ -94,8 +116,11 @@ class LiveCuttingMaterial:
         if self.tool_profile is not None:
             profile = self.tool_profile
             self.material_config = replace(self.material_config, blade_length=profile.blade_depth_m,
-                blade_height=profile.thickness_m, blade_half_width=profile.half_width_m)
-            self.parameter_receipt = {**self.parameter_receipt, "solver": "tlmpm_v2", "tool_profile": profile.to_dict()}
+                blade_height=profile.thickness_m, blade_half_width=profile.half_width_m, cuts=self.max_cuts)
+            self.parameter_receipt = {**self.parameter_receipt, "solver": "tlmpm_v2", "tool_profile": profile.to_dict(),
+                "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency, "max_cuts": self.max_cuts,
+                "obstacle_boxes_edge": None if self.obstacle_boxes_edge is None
+                    else np.asarray(self.obstacle_boxes_edge, float).tolist()}
         self.bed = TLMPM(self.points, self.masses, self.spacing, self.material_config, c.device,
                          **fixture_kwargs, **solver_kwargs)
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),

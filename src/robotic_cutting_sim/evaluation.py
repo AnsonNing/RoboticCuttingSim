@@ -51,12 +51,17 @@ class GoalSpec:
                 raise ValueError("Thresholds are named metric paths with finite min/max limits")
 
 
+def _task_source(task):
+    """Goal source label; v1 tasks keep their exact historical string."""
+    return getattr(task, "protocol_path", Path("cutting_tasks_v1.json")).name+"/"+task.task_id
+
+
 def goal_for_task(task):
     """Task-derived ROIs/targets are fixed before looking at final outcomes."""
     if task.goal_kind == "sever":
         return GoalSpec("sever", world_from_goal_xyzw=task.world_from_workpiece_xyzw,
             applicable_metrics=("components", "mass", "cut_location", "persistence"),
-            source="cutting_tasks_v1.json/"+task.task_id)
+            source=_task_source(task))
     length, width = task.geometry.length_m, task.geometry.width_m
     bounds = ((-length/2, -width/2), (length/2, width/2))
     band = json.loads(PROTOCOL_PATH.read_text())["roi"]["boundary_band_m"]
@@ -70,11 +75,11 @@ def goal_for_task(task):
         parameters={"length_m":length,"width_m":width}
         domain=RegionSpec("object_footprint","capsule",parameters,"initial_task_capsule")
         regions[0]=RegionSpec("boundary","capsule",{**parameters,"boundary_band_m":band},"initial_task_capsule_boundary")
-    return GoalSpec("trim_surface", TargetGeometry("plane", "cutting_tasks_v1.json/"+task.task_id,
+    return GoalSpec("trim_surface", TargetGeometry("plane", _task_source(task),
         "analytic_task_v1", parameters={"origin_m": task.target_origin_local_m, "normal": task.target_normal_local}),
         bounds, tuple(regions), world_from_goal_xyzw=task.world_from_workpiece_xyzw,
         applicable_metrics=("detached_reference_mass", "per_bump_removal", "surface", "protected_material_deficit"),
-        source="cutting_tasks_v1.json/"+task.task_id,domain=domain)
+        source=_task_source(task),domain=domain)
 
 
 def _integrity(data, duration_s):
@@ -207,7 +212,7 @@ def _assess_thresholds(result, thresholds):
 
 def _inherited_outcome_checks(task, goal, strict):
     if (strict is None or task is None or goal.goal_type != ("sever" if task.goal_kind == "sever" else "trim_surface")
-            or goal.source != "cutting_tasks_v1.json/"+task.task_id):
+            or goal.source != _task_source(task)):
         return None
     expected = goal_for_task(task)
     if (goal.frame_id != expected.frame_id or (goal.target is None) != (expected.target is None)

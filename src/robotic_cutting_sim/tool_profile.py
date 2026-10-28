@@ -130,6 +130,14 @@ def make_profile_tool_spec(profile):
                     tuple(half), profile.blade_depth_m, profile.thickness_m, profile.half_width_m, shapes, None)
 
 
+def handle_box_edge(profile):
+    """Handle as an edge-frame (center, half extents) box for blunt material contact."""
+    spec = make_profile_tool_spec(profile)
+    corners = transform_points(invert_transform(spec.T_tool_edge), spec.shapes[0].vertices_tool_m)
+    low, high = corners.min(0), corners.max(0)
+    return (high+low)/2, (high-low)/2
+
+
 def require_profile_consistency(spec, profile):
     """Reject a ToolSpec whose blade collider is not exactly the profile's blade."""
     blades = [shape for shape in spec.shapes if shape.role == "blade"]
