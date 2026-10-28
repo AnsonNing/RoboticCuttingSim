@@ -1,0 +1,62 @@
+{
+  "schema": "portable_managed_preference_v1",
+  "recorded_utc": "2026-10-28T10:26:45.737026+00:00",
+  "status": "PASS_MANAGED_PYTHON_PREFERENCE",
+  "scope": "Explicit --managed-python prefers the pinned project-local3.12.12 even when another3.12 is discoverable; explicit --python remains an override",
+  "command": [
+    "bash",
+    "scripts/bootstrap.sh",
+    "--runtime",
+    "base",
+    "--managed-python",
+    "--base-env",
+    "artifacts/bootstrap_managed_preference_001/base-venv",
+    "--skip-assets",
+    "--output-dir",
+    "artifacts/bootstrap_managed_preference_001/receipt"
+  ],
+  "path_restricted_for_test": false,
+  "discoverable_unmanaged_python": {
+    "path": "/home/ningan/.local/bin/python3.12",
+    "resolved_path": "/mnt/data/ningan/uv_tools/python/cpython-3.12.12-linux-x86_64-gnu/bin/python3.12",
+    "version": "Python 3.12.12",
+    "sha256": "20341168c41f91f4328c68d1f1a8d563f5734d515e617ff80a8dcfce323218b7"
+  },
+  "selected_managed_python": {
+    "path": "/home/ningan/RoboticCuttingSim/.deps/python/cpython-3.12.12-linux-x86_64-gnu/bin/python3.12",
+    "resolved_path": "/home/ningan/RoboticCuttingSim/.deps/python/cpython-3.12.12-linux-x86_64-gnu/bin/python3.12",
+    "sha256": "4304de9fdcd8465bbf4bf0814bb7abadd6d33971bab26ae38d1080c355fec983",
+    "matches_validated_managed_build4304": true
+  },
+  "created_new_base_environment": {
+    "version": [
+      3,
+      12,
+      12
+    ],
+    "prefix": "/home/ningan/RoboticCuttingSim/artifacts/bootstrap_managed_preference_001/base-venv",
+    "base_prefix": "/home/ningan/RoboticCuttingSim/.deps/python/cpython-3.12.12-linux-x86_64-gnu",
+    "executable": "/home/ningan/RoboticCuttingSim/artifacts/bootstrap_managed_preference_001/base-venv/bin/python"
+  },
+  "metadata_status": "PASS_INSTALL_METADATA",
+  "project_origin": "/home/ningan/RoboticCuttingSim/src/robotic_cutting_sim/__init__.py",
+  "unit_tests": "12 passed in 0.10s",
+  "explicit_python_override": "PASS; parametrized unit test covers both managedFalse and managedTrue",
+  "managed_python_and_official_package_download_cache_reused": true,
+  "old_environment_paths_used_as_package_sources": false,
+  "original_environments_or_global_python_modified": false,
+  "gpu_work": "NOT_RUN",
+  "fresh_clone003_physics_or_runtime_source_modified": false,
+  "reference_frozen_runtime_commit": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+  "base_commit_before_scoped_change": "8ec04cbfa1b946137ec839c456f5e4414b7e4714",
+  "raw_evidence_sha256": {
+    "scripts/bootstrap_runtime.py": "54edab0af6e4b7610ba4d3be808dde5a26a2f995ef9337c1f557779109923416",
+    "tests/test_bootstrap.py": "436e9f63eb08272d87fb079af1f431f32e64ac415fa49bf217750179481530c8",
+    "scripts/bootstrap.sh": "30efb7a2849ebbb6312090291aac5738a2175ac23ccd0f03dd2a2c3dbf34f5d6",
+    "artifacts/bootstrap_managed_preference_001/receipt/bootstrap.json": "c6765486878e9279637639517e72d0e056b23f9473b8496c8f19dd63e857edc0",
+    "artifacts/bootstrap_managed_preference_001/receipt/python.log": "b2b32e9f24623cafc73c61bf599d1d6a53ced1ea1f274f652a24c872f4483854",
+    "artifacts/bootstrap_managed_preference_001/receipt/base_install.log": "3be0ec110a71e913158db5ec363aacb88fb960fefe363caa818c6a603ab1c9eb",
+    "artifacts/bootstrap_managed_preference_001.log": "3f22d200567cfbea8081a1de59c5586ea3aa19e0659d82575a812dda37e30900",
+    "artifacts/bootstrap_managed_preference_001/bootstrap_tests.log": "ac2f36e71645a1de73da7440fcbb6859ffac97f0e92a46c130cee96e3a6add79"
+  }
+}

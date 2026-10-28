@@ -129,7 +129,12 @@ def ensure_uv(cache, refs):
 
 
 def select_python(requested, uv, environment, managed, log):
-    candidates = [requested] if requested else [shutil.which("python3.12"), sys.executable]
+    if requested:
+        candidates = [requested]
+    elif managed:
+        candidates = []  # An explicit managed request selects the pinned build below.
+    else:
+        candidates = [shutil.which("python3.12"), sys.executable]
     for candidate in candidates:
         if not candidate:
             continue
@@ -225,8 +230,8 @@ def parser():
         "Partial failed environments are preserved. Retry in a new checkout or use new explicit environment paths. "
         "UV_HTTP_TIMEOUT (default900s), UV_CONCURRENT_DOWNLOADS (default4) and UV_HTTP_RETRIES are configurable.")
     p.add_argument("--runtime", choices=("base", "isaac_sim", "isaac_lab", "all"), default="base")
-    p.add_argument("--python", help="Explicit Python3.12 interpreter; never a shared site-packages environment")
-    p.add_argument("--managed-python", action="store_true", help="Download project-local Python3.12.12 if absent")
+    p.add_argument("--python", help="Explicit Python3.12 interpreter, overriding --managed-python; packages stay isolated")
+    p.add_argument("--managed-python", action="store_true", help="Always use pinned project-local Python3.12.12 unless --python is explicit")
     p.add_argument("--base-env", type=Path, default=ROOT/".venv")
     p.add_argument("--sim-env", type=Path, default=ROOT/".deps/isaacsim-venv")
     p.add_argument("--lab-env", type=Path, default=ROOT/".deps/isaaclab-venv")

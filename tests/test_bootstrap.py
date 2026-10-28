@@ -26,11 +26,12 @@ def test_runtime_locks_keep_usd_providers_separate():
     assert "torchaudio" in sim and "torchaudio" not in lab
 
 
-def test_explicit_python_command_resolves_path_before_creating_environment(tmp_path, monkeypatch):
+@pytest.mark.parametrize("managed", [False, True])
+def test_explicit_python_command_resolves_path_before_creating_environment(tmp_path, monkeypatch, managed):
     alias = tmp_path/"python3.12"
     alias.symlink_to(sys.executable)
     monkeypatch.setenv("PATH", str(tmp_path))
-    selected = select_python("python3.12", None, {}, False, tmp_path/"unused.log")
+    selected = select_python("python3.12", None, {}, managed, tmp_path/"unused.log")
     assert selected == str(alias)
     assert Path(selected).is_file()
 
@@ -61,15 +62,16 @@ def test_bootstrap_excludes_caller_python_paths_before_entry_and_install(tmp_pat
 def test_managed_python_cannot_select_an_existing_project_venv(tmp_path, monkeypatch):
     managed = tmp_path/"managed"
     selected = managed/"cpython-3.12.12/bin/python3.12"
-    monkeypatch.setattr(bootstrap_runtime.shutil, "which", lambda name: None)
+    monkeypatch.setattr(bootstrap_runtime.shutil, "which", lambda name: "/existing/python3.12")
     monkeypatch.setattr(bootstrap_runtime, "run", lambda *a, **k: None)
     commands = []
     def probe(command, **kwargs):
         commands.append(command)
-        return "3.10" if "-c" in command else str(selected)
+        return "3.12" if "-c" in command else str(selected)
     monkeypatch.setattr(subprocess, "check_output", probe)
     actual = select_python(None, "uv", {"UV_PYTHON_INSTALL_DIR": str(managed)}, True, tmp_path/"python.log")
     assert actual == str(selected)
+    assert all("-c" not in command for command in commands)
     assert "--managed-python" in commands[-1] and "--no-project" in commands[-1]
     monkeypatch.setattr(subprocess, "check_output", lambda command, **kwargs:
                         "3.10" if "-c" in command else str(tmp_path/"wrong-project/.venv/bin/python"))
