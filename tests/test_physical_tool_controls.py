@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 import numpy as np
+import pytest
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
@@ -126,3 +127,42 @@ def test_outside_handle_finger_point_is_excluded_from_handle_load_without_invent
     assert sample["left_load_n"] == 0. and sample["right_load_n"] == 1.
     assert sample["loaded_finger_points_outside_handle"] == 1
     assert abs(sample["maximum_loaded_finger_point_outside_handle_m"]-2e-6) < 1e-12
+
+
+def test_moving_rigid_contact_uses_actual_detection_pose_without_expanding_handle_region(tmp_path):
+    # A handle moving 1 mm after detection makes the old world contact point
+    # leave its POST-step box. The actual detection pose still contains it.
+    before=[0.,0.,0.,0.,0.,0.,1.];after=[-.001,0.,0.,0.,0.,0.,1.]
+    contact={"body0":"/World/Tools/CuttingTool_0","body1":"/World/Franka_0/panda_leftfinger",
+        "raw_impulse_world_ns":[0.,.002,0.],"dt_s":.002,"time_s":.002,"position_world_m":[.008,0.,0.]}
+    row={"native_time_s":.002,"hand_pose_xyzw":after,"tool_body_pose_xyzw":after,
+        "tool_body_pose_before_step_xyzw":before,"tool_linear_velocity_world_m_s":[-.5,0.,0.],
+        "tool_angular_velocity_world_rad_s":[0.,0.,0.],"contacts":{"contacts":[contact],"raw_contact_count":1,
+            "sensor_valid":True,"sensor_fresh":True,"new_physics_step":True,
+            "tensor_forces":{"status":"VALID_NATIVE_NORMAL_AND_FRICTION_DATA"},
+            "contact_geometry_frame":"PRE_STEP_MEASURED_TOOL_POSE","contact_geometry_time_s":0.,
+            "contact_geometry_tool_pose_xyzw":before}}
+    path=tmp_path/"raw.jsonl";path.write_text(json.dumps(row)+"\n");spec={"handle_half_extents_m":[.008,.011,.02]}
+    sample=native_samples(path,0.,.002,spec,.05,geometry_profile="PRE_STEP_MEASURED_TOOL_POSE")[0]
+    assert sample["left_load_n"] == 1. and sample["loaded_finger_points_outside_handle"] == 0
+    row["contacts"].pop("contact_geometry_frame");row["contacts"].pop("contact_geometry_tool_pose_xyzw")
+    path.write_text(json.dumps(row)+"\n")
+    legacy=native_samples(path,0.,.002,spec,.05)[0]
+    assert legacy["left_load_n"] == 0. and legacy["loaded_finger_points_outside_handle"] == 1
+    with pytest.raises(ValueError,match="frozen profile"):
+        native_samples(path,0.,.002,spec,.05,geometry_profile="PRE_STEP_MEASURED_TOOL_POSE")
+
+
+def test_pre_step_profile_rejects_unmatched_pose_or_timestamp(tmp_path):
+    before=[0.,0.,0.,0.,0.,0.,1.]
+    row={"native_time_s":.002,"tool_body_pose_xyzw":before,"tool_body_pose_before_step_xyzw":before,
+        "contacts":{"contact_geometry_frame":"PRE_STEP_MEASURED_TOOL_POSE",
+            "contact_geometry_tool_pose_xyzw":before,"contact_geometry_time_s":.002}}
+    path=tmp_path/"raw.jsonl";path.write_text(json.dumps(row)+"\n")
+    with pytest.raises(ValueError,match="pose/time"):
+        native_samples(path,0.,.002,{"handle_half_extents_m":[.008,.011,.02]},.05)
+    row["contacts"]["contact_geometry_time_s"]=0.
+    row["tool_body_pose_before_step_xyzw"]=[.001,0.,0.,0.,0.,0.,1.]
+    path.write_text(json.dumps(row)+"\n")
+    with pytest.raises(ValueError,match="pose/time"):
+        native_samples(path,0.,.002,{"handle_half_extents_m":[.008,.011,.02]},.05)

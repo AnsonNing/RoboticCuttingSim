@@ -79,7 +79,7 @@ def pose_error(reference, poses):
         Rotation.from_quat(poses[:, 3:])*Rotation.from_quat(reference[3:]).inv()).magnitude()
 
 
-def native_samples(path, start, end, spec, minimum_load):
+def native_samples(path, start, end, spec, minimum_load, geometry_profile=None, rigid_dt_s=.002):
     """Derive bilateral evidence from actual decoded raw tool/finger pairs."""
     half = np.asarray(spec["handle_half_extents_m"], float)
     samples = []
@@ -88,7 +88,23 @@ def native_samples(path, start, end, spec, minimum_load):
         if not start+1e-7 < t <= end+1e-7: continue
         sensor = row["contacts"]
         tool = np.asarray(row["tool_body_pose_xyzw"], float)
-        rotation = Rotation.from_quat(tool[3:])
+        # Native contact reports describe collision detection before the
+        # integrated POST-step actor pose. Use only an explicitly recorded,
+        # cross-checked PRE-step pose; old recordings retain their old profile.
+        frame = sensor.get("contact_geometry_frame", "LEGACY_POST_STEP_TOOL_POSE")
+        if geometry_profile is not None and frame != geometry_profile:
+            raise ValueError("Recorded Native contact geometry does not match the required frozen profile")
+        if frame == "PRE_STEP_MEASURED_TOOL_POSE":
+            geometry = np.asarray(sensor.get("contact_geometry_tool_pose_xyzw"), float)
+            before = np.asarray(row.get("tool_body_pose_before_step_xyzw"), float)
+            if (geometry.shape != (7,) or before.shape != (7,) or not np.isfinite(geometry).all()
+                    or not np.array_equal(geometry, before)
+                    or abs(float(sensor.get("contact_geometry_time_s", float("inf")))+rigid_dt_s-t) > 1e-7):
+                raise ValueError("PRE-step Native contact geometry lacks matching actual pose/time evidence")
+        elif frame == "LEGACY_POST_STEP_TOOL_POSE":
+            geometry = tool
+        else: raise ValueError("Unknown recorded Native contact geometry frame: "+str(frame))
+        rotation = Rotation.from_quat(geometry[3:])
         loads = {"left_finger": 0., "right_finger": 0.}
         unexpected = 0; outside_handle = 0; stale_finger = 0; outside_extent = 0.
         for c in sensor["contacts"]:
@@ -98,7 +114,7 @@ def native_samples(path, start, end, spec, minimum_load):
             other = bodies[1 if matches[0] else 0]
             role = "left_finger" if other.endswith("/panda_leftfinger") else "right_finger" if other.endswith("/panda_rightfinger") else "other"
             force = float(np.linalg.norm(c["raw_impulse_world_ns"])/c["dt_s"])
-            local = rotation.inv().apply(np.asarray(c["position_world_m"])-tool[:3])
+            local = rotation.inv().apply(np.asarray(c["position_world_m"])-geometry[:3])
             handle = bool(np.all(np.abs(local) <= half+1e-6))
             current = abs(t-c["time_s"]) <= max(1e-7, 4*np.finfo(np.float32).eps*max(1., abs(t)))
             if role in loads:
@@ -121,6 +137,7 @@ def native_samples(path, start, end, spec, minimum_load):
             "valid": bool(sensor["sensor_valid"] and sensor["sensor_fresh"] and sensor["new_physics_step"]
                 and tensor.get("status") == "VALID_NATIVE_NORMAL_AND_FRICTION_DATA"),
             "unexpected": unexpected, "loaded_finger_points_outside_handle": outside_handle,
+            "contact_geometry_frame": frame,
             "loaded_finger_points_stale": stale_finger, "maximum_loaded_finger_point_outside_handle_m": outside_extent,
             "contact_count": sensor["raw_contact_count"], "penetration_m": penetration,
             "contact_force": tensor.get("total_filtered_force_world_on_tool_n", [0., 0., 0.])})
@@ -191,6 +208,8 @@ def measure_case(samples, control_rows, initial_state, spec, protocol, duration)
         "arm_samples_complete": bool(len(q) == round(duration/protocol["control_dt_s"])),
         "rigid_samples": len(samples), "raw_sampling_complete": bool(len(samples) == round(duration/dt) and np.all(np.diff(times)>0) and np.max(np.diff(times)) <= dt*1.01),
         "all_contact_samples_valid": bool(all(r["valid"] for r in samples)),
+        "contact_geometry_frames": {name:sum(r.get("contact_geometry_frame", "ACTUAL_CONTACT_SHAPE_IDS") == name for r in samples)
+            for name in sorted({r.get("contact_geometry_frame", "ACTUAL_CONTACT_SHAPE_IDS") for r in samples})},
         "max_relative_translation_m": float(translation.max()), "max_relative_rotation_rad": float(rotation.max()),
         "maximum_downward_tool_displacement_m": float(max(0., np.asarray(initial_state["tool_body_pose_xyzw"])[2]-tool[:, 2].min())),
         "maximum_relative_linear_speed_last_window_m_s": float(np.linalg.norm(velocities[window[1:]], axis=1).max()),
@@ -400,8 +419,9 @@ def worker(args, protocol):
                 result["material_final"]=material_fingerprint(env)
                 result["material_unchanged"]=result["material_initial"] == result["material_final"]
                 if args.runtime=="isaac_lab":env.dynamic_tool.save_raw_trace(raw_path)
-                samples=(native_samples if args.runtime=="isaac_sim" else lab_samples)(raw_path,raw_start,raw_end,
-                    result["tool_spec"],protocol["measurement"]["minimum_loaded_finger_force_n"])
+                arguments=(raw_path,raw_start,raw_end,result["tool_spec"],protocol["measurement"]["minimum_loaded_finger_force_n"])
+                samples=(native_samples(*arguments,geometry_profile=protocol.get("native_contact_geometry_profile"),rigid_dt_s=protocol["rigid_dt_s"])
+                    if args.runtime=="isaac_sim" else lab_samples(*arguments))
                 result["metrics"]=measure_case(samples,control_rows,state,result["tool_spec"],protocol,cfg["duration_s"])
                 result["classification"]=classify_case(args.case,result["metrics"],protocol)
                 result["status"]="EXECUTED_RIGID_CONTROL"
