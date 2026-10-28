@@ -15,7 +15,7 @@ from .tasks import ACTION_MODES, make_task
 
 OBSERVATION_PROFILES = ("vision_proprio", "vision_only", "state")
 IK_FAILURE_MODES = ("raise", "reject")
-WRAPPER_OPTIONS = ("action_limits", "delta_frame", "ik_failure", "max_consecutive_ik_failures", "reward")
+WRAPPER_OPTIONS = ("action_limits", "delta_frame", "ik_failure", "max_consecutive_ik_failures", "reward", "history_stride")
 
 
 class CuttingTaskEnv:
@@ -41,12 +41,15 @@ class CuttingTaskEnv:
     def __init__(self, backend, task_id=None, *, seed=42, action_mode=ACTION_MODES[0],
                  observation_profile="vision_proprio", include_global_camera=False,
                  action_limits=None, delta_frame="edge", ik_failure="raise",
-                 max_consecutive_ik_failures=None, reward=None):
+                 max_consecutive_ik_failures=None, reward=None, history_stride=1):
         if (action_mode not in ACTION_MODES+(DELTA_MODE,) or observation_profile not in OBSERVATION_PROFILES
                 or delta_frame not in DELTA_FRAMES or ik_failure not in IK_FAILURE_MODES):
             raise ValueError("Unsupported action mode, observation profile, delta frame or IK failure mode")
         if max_consecutive_ik_failures is not None and int(max_consecutive_ik_failures) < 1:
             raise ValueError("max_consecutive_ik_failures must be positive or None")
+        if not isinstance(history_stride, (int, np.integer)) or history_stride < 1:
+            raise ValueError('History stride must be a positive integer')
+        self.history_stride, self._control_steps_count = int(history_stride), 0
         task = getattr(backend, "task", None)
         self.task = task or make_task(task_id, seed=seed)
         self.backend, self.action_mode, self.observation_profile = backend, action_mode, observation_profile
@@ -68,6 +71,7 @@ class CuttingTaskEnv:
         self._history, self._ready = [], True
         self._terminated = False
         self._ik_failures = 0
+        self._control_steps_count = 0
         self._refresh()
         self._commanded = self._nominal_edge()
         self._record_oracle()
@@ -134,8 +138,11 @@ class CuttingTaskEnv:
             action = {**action, "target": target}
         return action, report
 
-    def _record_oracle(self):
-        state = self.backend.material.world_state()
+    def _record_oracle(self, force=False):
+        if self._history and not force and self._control_steps_count % self.history_stride:
+            return
+        material = self.backend.material
+        state = (material.history_state() if hasattr(material, 'history_state') else material.world_state())
         self._history.append({"time_s": self.time_s,
             **{name: state[name].copy() for name in ("positions", "velocities", "codes")}})
 
@@ -146,6 +153,11 @@ class CuttingTaskEnv:
         if self._terminated:
             raise RuntimeError("Grasp lost or sensor invalid; call reset")
         report = None
+        requested_reference = None
+        if action is None:
+            reference = getattr(self.task, 'reference_edge_pose_world', None)
+            if reference is not None:
+                requested_reference = reference(self.time_s + self.task.control_dt_s)
         if action is not None:
             validate_cut_index(action, self.backend.material)
             gripper = None
@@ -194,7 +206,7 @@ class CuttingTaskEnv:
         self._refresh()
         if action is None or action["mode"] != ACTION_MODES[0]:
             self._commanded = self._nominal_edge()
-        self._record_oracle()
+        self._control_steps_count += 1
         # Goal success is deliberately evaluated separately from elapsed time.
         diagnostics=getattr(self.backend,"last_diagnostics",{})
         grasp_payload = diagnostics.get("grasp_status", {})
@@ -204,10 +216,13 @@ class CuttingTaskEnv:
         if (not self._terminated and self.max_consecutive_ik_failures is not None
                 and self._ik_failures >= self.max_consecutive_ik_failures):
             self._terminated, reason = True, "IK_FAILURES"
+        self._record_oracle(force=self._terminated or self.time_s >= self.task.duration_s-1e-9)
         info = {"task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source,
                 "grasp_status": grasp_status, "termination_reason": reason,
                 "ik_status": ik_status, "ik_info": ik_info, "action_report": report,
                 "consecutive_ik_failures": self._ik_failures}
+        if requested_reference is not None:
+            info['requested_reference_target_world_xyz_xyzw'] = np.asarray(requested_reference).tolist()
         reward = 0. if self.reward is None else float(self.reward(self, info))
         return self.observe(), reward, self._terminated, self.time_s >= self.task.duration_s-1e-9, info
 
@@ -256,6 +271,14 @@ class CuttingTaskEnv:
             "surface_vertices_world": vertices, "surface_triangles": triangles,
             "surface_triangle_component_ids": face_components,
             "surface_component_provenance": metadata["partition_rule"], "surface_timestamp_s": self.time_s}
+        if getattr(material, 'max_cuts', 1) > 1:
+            from .multi_cut_evaluation import MultiCutGoal, evaluate_multi_cut
+            if not isinstance(goal, MultiCutGoal):
+                return {'status':'NOT_RUN_EXPLICIT_MULTICUT_GOAL_REQUIRED', 'success':False,
+                    'runtime_source':self.runtime_source,
+                    'reason':'Declare MultiCutGoal before scoring two-digit history; the v1 oracle is single-cut'}
+            data['reference_indices'] = material.lattice
+            return {**evaluate_multi_cut(data, goal), 'runtime_source':self.runtime_source}
         if profile is not None:
             from .evaluation import evaluate_recording
             import hashlib

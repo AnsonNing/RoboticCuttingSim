@@ -1,0 +1,36 @@
+{
+  "version": "wp10_scenarios_v1",
+  "scenarios": {
+    "raised_workpiece_50mm_v1": {
+      "world_translation_m": [
+        0.0,
+        0.0,
+        0.05
+      ],
+      "extend_fixture_bases_to_table": true,
+      "allowed_tasks": [
+        "CUT-01-R",
+        "TRIM-01-R",
+        "CUT-02"
+      ],
+      "reason": "The original 25-degree ruler-rake path puts the real Panda palm collider through the table. Elevate the static workpiece and its fixed support fixture; retain local geometry, tool, cutting law and every goal threshold. This is an explicit new execution scenario; original origin-height failures remain preserved.",
+      "initial_joint_positions": {
+        "TRIM-01-R": [
+          0.5051085948944092,
+          -0.22340348362922668,
+          -1.0592894554138184,
+          -2.9520440101623535,
+          2.5729122161865234,
+          2.3632194995880127,
+          2.3490357398986816
+        ]
+      },
+      "seed_source": {
+        "path": "artifacts/wp10/c_raised_trim_branch_002.json",
+        "sha256": "bb90c7ef027cb07282139271836f5bd5c287f964cbfa780b8e52fddcd9dd1dbf",
+        "scope": "Primary arm task IK branch only; secondary park and camera mounts unchanged",
+        "sampled_joint_margin_rad": 0.11585783958435059
+      }
+    }
+  }
+}

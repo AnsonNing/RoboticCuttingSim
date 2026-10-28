@@ -1,0 +1,27 @@
+{
+  "version": "wp10_scenarios_v2",
+  "scenarios": {
+    "ruler_workcell_v2": {
+      "world_translation_m": [0.0, 0.0, 0.05],
+      "extend_fixture_bases_to_table": true,
+      "allowed_tasks": ["CUT-01-R", "TRIM-01-R", "CUT-02"],
+      "trim_rake_deg": 35.0,
+      "reason": "Actual pad corners at 25 degrees extend about 1.8 mm below the trimming plane; 35 degrees provides about 8 mm nominal clearance. Raise the workpiece/anchored fixtures by 50 mm to clear the real palm from the table. All local material geometry and scoring thresholds remain inherited. Original 25-degree attempts and scenario v1 remain available.",
+      "initial_joint_positions": {
+        "TRIM-01-R": [
+          0.5095252990722656,
+          -0.2797490358352661,
+          -0.9728004932403564,
+          -2.854095935821533,
+          2.643202781677246,
+          2.681626558303833,
+          2.3575243949890137
+        ]
+      },
+      "seed_source": {
+        "path": "artifacts/wp10/c_workcell_v2_preflight_001/result.json",
+        "scope": "Primary-arm Newton geometry preflight only; live execution NOT_RUN. Franka 1 park and both hand-local cameras are unchanged."
+      }
+    }
+  }
+}

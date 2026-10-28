@@ -1,5 +1,16 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## User-requested checkpoint: Claude continuation
+
+Codex work stopped at the user's request. Resume from
+[the WP-10 handoff](HANDOFF_WP10_CLAUDE_20261029.md) on
+`claude/lucid-mendel-vt7n82`. WP-10B is complete; C/D are partial, and E/F/G
+formal validation is NOT_RUN. Final checkpoint checks: 451 quick CPU tests
+PASS, 18 cpu_sim tests deselected; v3 syntax/CPU kernel compilation PASS,
+v3 physical validation NOT_RUN. The latest full CPU run before subsequent
+drafts remains 461 PASS. No learned policy, PPO, actual LLM-agent run or final
+WP-10 robot-video matrix has been produced. No final PR or merge.
+
 ## Completed validation: WP-10B live policy interface
 
 Both actual runtimes complete 1,200 identical fixed-tool control-fuzz steps,
@@ -10,14 +21,22 @@ steps but loses the tool in Lab (209 total steps); this holding limitation is
 preserved. Full CPU regression is 461 PASS / 0 SKIP in 92.45 s.
 [WP-10B](reports/WP-10B.md).
 
-WP-10C live ruler validation is running. Native CUT-01-R strict PASS; the first
-Lab CUT-01-R has bottom-layer bridges and strict FAIL. Initial Native TRIM-01-R
-has unreachable low-rake targets and strict FAIL. Both runtimes pass the frozen
-seven-case ruler rigid-grasp controls and the complete 401-pose CUT camera/tool
-visual-clearance audit. Original attempts are retained while these control/path
-limits are diagnosed. [WP-10C](reports/WP-10C.md).
+WP-10C is partial: Native CUT-01-R and CUT-02 strict PASS; both Lab cuts strict
+FAIL with a connected component. Initial Native TRIM-01-R has 394 rejected IK
+commands and strict FAIL; Lab TRIM fails pregrasp before the formal episode.
+Both runtimes pass the frozen seven-case ruler rigid-grasp controls and the
+complete 401-pose CUT camera/tool visual-clearance audit. A raised 35-degree
+candidate passes scoped Newton geometry preflight; live execution is NOT_RUN.
+An ideal-tracking 1 mm law-2 TRIM still removes 0%. [WP-10C](reports/WP-10C.md).
 
-## Current: WP-10 ruler knife, general knife motions and policy control (parts A/B, CPU only)
+WP-10D GPU probes have a 0.037611 slicing/push resistance ratio and a PASS
+three-part/two-digit outcome. Skim separation FAIL and the CUDA graph position
+comparison FAIL (5.375594 µm versus 1 µm tolerance) remain visible. Two provisional
+food profiles have finite-state dt sweeps, without force convergence or
+calibration. Exact armed-withdrawal and full live angle matrices remain NOT_RUN.
+[WP-10D](reports/WP-10D.md), [C/D evidence](evidence/wp10/wp10cd_handoff_v1.json).
+
+## Historical input checkpoint: WP-10 parts A/B, CPU only
 
 Branch `claude/lucid-mendel-vt7n82`, handed off to Codex for the GPU/live work.
 Done and CPU-verified: opt-in policy interface (delta actions, step limits, IK

@@ -26,13 +26,25 @@ def jsonable(value):
 
 
 @contextmanager
-def failure_receipt(output):
+def failure_receipt(output, env=None):
     # Native Kit may exit Python during app.close(); write failures before closing it.
     try:
         yield
     except BaseException as error:
         write_json(output / 'failure.json', dict(error=repr(error), traceback=traceback.format_exc()))
         write_json(output / 'result.json', dict(status='FAIL_EXECUTION', error=repr(error)))
+        if env is not None:
+            backend = env.backend
+            try:
+                for name in ('grasp_initialization', 'grasp_settling_trace', 'grasp_reset_receipt'):
+                    value = getattr(backend, name, None)
+                    if value is not None:
+                        write_json(output / ('failure_' + name + '.json'), jsonable(value))
+                tool = getattr(backend, 'dynamic_tool', None)
+                if tool is not None:
+                    tool.save_raw_trace(output / 'failure_tool_substeps.npz')
+            except Exception as capture_error:
+                (output / 'failure_trace_capture_error.txt').write_text(repr(capture_error))
         traceback.print_exc()
         raise
 
@@ -81,17 +93,17 @@ class EpisodeRecorder:
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
                               cut_enabled=getattr(self, 'last_cut', False)))
-        state = backend.material.world_state()
+        state = backend.material.history_state()
         self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
         self.states.append(jsonable(self.measured()))
         write_json(self.output / 'frame_manifest.json', self.rows)
 
-    def step(self, action, result):
+    def step(self, action, result, before_observation=None, step_wall_s=None):
         self.steps += 1
         self.body_states.append(self.body_poses())
         observation, reward, terminated, truncated, info = result
         report = info.get('action_report') or {}
-        target = report.get('resolved_target_world_xyz_xyzw')
+        target = report.get('resolved_target_world_xyz_xyzw', info.get('requested_reference_target_world_xyz_xyzw'))
         if target is None:
             target = self.env._commanded
         measured = self.measured()
@@ -114,6 +126,8 @@ class EpisodeRecorder:
                    material_diagnostics=diagnostics.get('material', diagnostics.get('material_diagnostics', {})),
                    privileged_diagnostics=diagnostics,
                    observation_proprio=self.env.observe().get('proprio', {}),
+                   input_observation_proprio=(before_observation or {}).get('proprio', {}),
+                   input_timestamp_s=(before_observation or {}).get('timestamp_s'), step_wall_s=step_wall_s,
                    grasp_status=diagnostics.get('grasp_status'),
                    resolved_target_world_xyz_xyzw=target,
                    accepted_target_world_xyz_xyzw=self.env._commanded)
@@ -191,6 +205,19 @@ def main():
     p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
     p.add_argument('--gym', action='store_true')
     p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
+    p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2'))
+    p.add_argument('--material-profile')
+    p.add_argument('--material-dt', type=float, default=.0001)
+    p.add_argument('--max-cuts', type=int, default=1)
+    p.add_argument('--ik-iterations', type=int, default=48)
+    p.add_argument('--oracle-stride', type=int, default=1)
+    p.add_argument('--motion', choices=('push', 'saw', 'oblique', 'yaw', 'roll'), default='push')
+    p.add_argument('--angle', type=float, default=0.)
+    p.add_argument('--speed', type=float, default=.01)
+    p.add_argument('--reward', action='store_true')
+    p.add_argument('--grip-force', type=float)
+    p.add_argument('--settle-seconds', type=float)
+    p.add_argument('--grip-friction', type=float)
     p.add_argument('--gpu', type=int, default=1)
     p.add_argument('--seed', type=int, default=42)
     p.add_argument('--steps', type=int, default=400)
@@ -210,13 +237,23 @@ def main():
         if a.runtime == 'isaac_lab' and a.tool_attachment_mode == 'legacy_fixed_tool':
             options.pop('grip_contact_profile', None)
     options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state' or a.record_cameras)
+    options.update(scenario=a.scenario, material_profile_id=a.material_profile, material_dt=a.material_dt,
+                   max_cuts=a.max_cuts, ik_iterations=a.ik_iterations, history_stride=a.oracle_stride)
+    grip_overrides = {key: value for key, value in dict(max_finger_force_n=a.grip_force,
+        settle_s=a.settle_seconds, friction=a.grip_friction).items() if value is not None}
+    if grip_overrides:
+        from robotic_cutting_sim.physical_tool import ToolGraspConfig
+        options['grasp'] = replace(options.get('grasp') or ToolGraspConfig(), **grip_overrides)
     if a.runtime == 'isaac_sim':
         options.update(gpu=a.gpu, device=f'cuda:{a.gpu}')
     else:
         options.update(device=f'cuda:{a.gpu}', material_device=f'cuda:{a.gpu}')
     try:
         with open_cutting_env(a.task, runtime=a.runtime, output_dir=out / 'runtime', seed=a.seed,
-                              observation_profile=a.observation, **options) as env, failure_receipt(out):
+                              observation_profile=a.observation, **options) as env, failure_receipt(out, env):
+            if a.reward:
+                from robotic_cutting_sim.reward import CuttingReward
+                env.reward = CuttingReward(env.task)
             for episode in range(a.episodes):
                 seed, episode_start = a.seed + episode, time.monotonic()
                 if a.gym or a.controller == 'gym_hold':
@@ -229,7 +266,7 @@ def main():
                 recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every)
                 before = env.time_s
                 try:
-                    env.step(dict(mode=DELTA_MODE, target=np.zeros(6), cut_index=1))
+                    env.step(dict(mode=DELTA_MODE, target=np.zeros(6), cut_index=env.backend.material.max_cuts))
                 except ValueError as error:
                     cut_index_check = dict(status='PASS' if env.time_s == before else 'FAIL', error=str(error))
                 else:
@@ -237,7 +274,11 @@ def main():
                 policy = None
                 if a.controller == 'scripted':
                     from robotic_cutting_sim.policies import WaypointPolicy, through_cut, skim
-                    plan = skim(env.task) if env.task.goal_kind == 'flatten' else through_cut(env.task)
+                    saw = .006 if a.motion == 'saw' else 0.
+                    motion_args = {'saw_amplitude_m': saw, 'cut_speed_m_s': a.speed}
+                    if a.motion in ('oblique', 'yaw', 'roll'):
+                        motion_args[{'oblique':'tilt_deg','yaw':'yaw_deg','roll':'roll_deg'}[a.motion]] = a.angle
+                    plan = skim(env.task, saw_amplitude_m=saw) if env.task.goal_kind == 'flatten' else through_cut(env.task, **motion_args)
                     policy = WaypointPolicy(env.task, plan, env.action_limits or ActionLimits())
                 rng = np.random.default_rng(seed)
                 for step in range(a.steps):
@@ -245,6 +286,8 @@ def main():
                               policy(observation) if policy else
                               dict(mode=DELTA_MODE, target=np.zeros(6), cut_enabled=False) if gym else None)
                     saved_limits = env.action_limits
+                    before_observation = env.observe()
+                    step_start = time.monotonic()
                     if a.controller == 'reject_probe':
                         # Separate IK-layer probe, explicitly disabling absolute clamping
                         # for an impossible request; the default fuzz retains ActionLimits().
@@ -262,7 +305,7 @@ def main():
                         result = env.step(action)
                         observation = result[0]
                     env.action_limits = saved_limits
-                    recorder.step(action, result)
+                    recorder.step(action, result, before_observation, time.monotonic()-step_start)
                     if (step + 1) % 25 == 0:
                         print(f'{a.runtime} {a.task} {a.controller} episode={episode} step={step+1} t={env.time_s:.2f}', flush=True)
                     if result[2] or result[3]:

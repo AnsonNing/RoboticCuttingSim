@@ -150,6 +150,12 @@ class LabCuttingConfig:
     # None keeps the historical position-only Lab IK gate; policy use sets
     # the Native rotation gate (0.01 rad) so orientation errors are not silent.
     ik_rotation_tolerance_rad: float | None = None
+    scenario: str | None = None
+    material_profile_id: str | None = None
+    material_dt: float = .0001
+    max_cuts: int = 1
+    ik_iterations: int = 48
+    initial_joint_positions: tuple | None = None
 
     def __post_init__(self):
         if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
@@ -171,6 +177,10 @@ class LabCuttingConfig:
             raise ValueError("Unsupported live cutting task")
         if self.task_id in ProfileTaskSpec.TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
             raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
+        if self.max_cuts not in (1, 2) or self.material_dt <= 0 or self.ik_iterations < 1:
+            raise ValueError('Require one/two cut digits, positive material dt and IK iterations')
+        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2) and self.task_id not in ProfileTaskSpec.TASK_IDS:
+            raise ValueError('Scenarios, food profiles and two-cut history require opt-in v2 tasks')
         if self.particle_spacing_m is not None and self.task_id is None:
             raise ValueError("Particle-spacing overrides require a CUT/TRIM task; legacy recipes remain fixed")
         if self.action_mode not in ("cartesian_edge_pose_world", "joint_position_rad"):
@@ -189,6 +199,9 @@ def make_lab_cfg(options):
     from .tasks import make_task
     task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
                      particle_spacing_m=options.particle_spacing_m, workpiece_kind=options.workpiece_kind) if options.task_id else None
+    if task is not None:
+        from .task_scenarios import configure_task
+        task = configure_task(task, scenario=options.scenario, material_profile_id=options.material_profile_id)
     physical = options.tool_attachment_mode == "physical_grasp"
     tool_spec = tool_spec_for_task(task) if physical else None
 
@@ -293,6 +306,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         from .tasks import make_task
         self.task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
             particle_spacing_m=options.particle_spacing_m, workpiece_kind=options.workpiece_kind) if options.task_id else None
+        if self.task is not None:
+            from .task_scenarios import configure_task
+            self.task = configure_task(self.task, scenario=options.scenario, material_profile_id=options.material_profile_id)
         self.mount = np.array(self.task.hand_from_edge_xyz_xyzw if self.task else (0, 0, .18, 1, 0, 0, 0), float)
         self.tool_spec = tool_spec_for_task(self.task) if self.physical_tool else None
         self.gripper_mode = "hold" if options.tool_init_mode == "pregrasped" else "release"
@@ -300,7 +316,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self.external_tool_wrench_world = np.zeros(6)
         self.grasp_settling_trace = []
         self.material = LiveCuttingMaterial(CouplingConfig(dx=options.dx,
-            device=options.material_device, feedback=options.feedback, variant=options.variant), self.target, task=self.task)
+            device=options.material_device, material_dt=options.material_dt, feedback=options.feedback, variant=options.variant),
+            self.target, task=self.task, max_cuts=options.max_cuts)
         self._bound = False
         self._capture_time = None
         self.time_s = 0.
@@ -426,7 +443,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self._ik_q.assign(state.joint_q.numpy().reshape(1, -1))
         self._position.set_target_position(0, wp.vec3(*desired[:3]))
         self._rotation.set_target_rotation(0, wp.vec4(*desired[3:]))
-        self._ik.step(self._ik_q, self._ik_q, iterations=48)
+        self._ik.step(self._ik_q, self._ik_q, iterations=self.options.ik_iterations)
         q = self._ik_q.numpy()[0]
         # A free tool adds seven coordinates but six DOFs. Clip only actual
         # robot scalar joints, never quaternion/free-body coordinates.
@@ -486,7 +503,12 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         # Lab initializes reset defaults, but a DirectRLEnv subclass must write
         # them. Seed IK from the nonsingular Panda park configuration.
         for arm, robot in enumerate(self.robots):
-            values = self._park_q[self._joint_coords[arm]]
+            values = self._park_q[self._joint_coords[arm]].copy()
+            if arm == 0:
+                from .task_scenarios import initial_joints
+                seed = self.options.initial_joint_positions or initial_joints(self.options.scenario, self.options.task_id)
+                if seed is not None:
+                    values[:7] = seed
             tensor = torch.tensor(values[None], device=self.device, dtype=torch.float32)
             robot.write_joint_position_to_sim_index(position=tensor)
             robot.write_joint_velocity_to_sim_index(velocity=torch.zeros_like(tensor))

@@ -28,6 +28,17 @@ def test_unavailable_cut_digit_rejected_before_backend_step():
     assert b.attempts == []
 
 
+def test_sparse_history_keeps_initial_and_terminal_measurements():
+    b = tracking_backend()
+    b.task.duration_s = .04
+    env = CuttingTaskEnv(b, action_mode=DELTA_MODE, observation_profile='state', history_stride=10)
+    env.reset()
+    env.step({'mode': DELTA_MODE, 'target': [0.]*6})
+    assert len(env._history) == 1
+    env.step({'mode': DELTA_MODE, 'target': [0.]*6})
+    assert [row['time_s'] for row in env._history] == [0., .04]
+
+
 def tracking_backend(reachable=lambda pose: True, task_id="CUT-01"):
     """Fake Lab backend whose measured edge follows reachable Cartesian targets."""
     b = backend("lab")

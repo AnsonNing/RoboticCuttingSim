@@ -1,0 +1,33 @@
+{
+  "version": "food_profiles_v1",
+  "status": "PROVISIONAL_UNCALIBRATED",
+  "frozen_before_gpu_force_measurements": true,
+  "reference": {
+    "title": "Dairy versus non-dairy cheese texture: Sensory and instrumental contrasts",
+    "doi": "10.1111/jtxs.12863",
+    "url": "https://doi.org/10.1111/jtxs.12863",
+    "scope": "Table 3 reports dairy cream-cheese modulus 25933 Pa and dairy cheddar modulus 477861 Pa. These motivate stiffness orders only. J2 yield, fracture energy, density, friction, Poisson ratio and contact parameters below are engineering assumptions, not values identified by that experiment. Volumetric toughness is not equated to area fracture energy."
+  },
+  "profiles": {
+    "cream_cheese_provisional_v1": {
+      "density_kg_m3": 1100.0,
+      "young_modulus_pa": 26000.0,
+      "poisson_ratio": 0.3,
+      "yield_stress_pa": 2500.0,
+      "friction": 0.3,
+      "fracture_energy_j_m2": 5.0,
+      "material_dt_s": 0.0001
+    },
+    "cheddar_provisional_v1": {
+      "density_kg_m3": 1100.0,
+      "young_modulus_pa": 480000.0,
+      "poisson_ratio": 0.3,
+      "yield_stress_pa": 30000.0,
+      "friction": 0.3,
+      "fracture_energy_j_m2": 50.0,
+      "material_dt_s": 0.00002
+    }
+  },
+  "numerical_selection": "Nominal dt uses longitudinal elastic-wave CFL <= 0.2 on the 4 mm material grid; actual stability must also be measured. Probe all dt candidates 100, 50, 20, 10 us without changing task scoring.",
+  "limitations": ["Isotropic perfect J2 plasticity is not cheese viscoelasticity", "No measured force calibration", "No anisotropy, temperature or rate dependence"]
+}

@@ -28,6 +28,8 @@ class KinematicConfig:
     cutting_law: int | None = None             # None = task default (v1 tasks 1, v2 tasks 2)
     max_cuts: int = 1
     slice_efficiency: float = 1.
+    scenario: str | None = None
+    material_profile_id: str | None = None
 
     def __post_init__(self):
         if self.max_cuts not in (1, 2) or self.material_dt <= 0 or not np.isfinite(self.material_dt):
@@ -43,6 +45,8 @@ class KinematicCuttingBackend:
         self.config = config
         self.options = config  # CuttingTaskEnv reads tool_attachment_mode from here
         self.task = make_task(config.task_id, seed=config.seed, particle_spacing_m=config.particle_spacing_m)
+        from .task_scenarios import configure_task
+        self.task = configure_task(self.task, scenario=config.scenario, material_profile_id=config.material_profile_id)
         self.material, self.edge, self.time_s = None, None, 0.
         self.frames, self.calibration = {}, {}
         self.last_diagnostics = {}
@@ -55,6 +59,8 @@ class KinematicCuttingBackend:
     def reset(self, seed=42):
         c = self.config
         self.task = make_task(c.task_id, seed=int(seed), particle_spacing_m=c.particle_spacing_m)
+        from .task_scenarios import configure_task
+        self.task = configure_task(self.task, scenario=c.scenario, material_profile_id=c.material_profile_id)
         coupling = CouplingConfig(control_dt=self.task.control_dt_s, material_dt=c.material_dt,
                                   dx=self.task.grid_dx_m, device=c.device)
         kwargs = {"cutting_law": c.cutting_law, "max_cuts": c.max_cuts, "slice_efficiency": c.slice_efficiency}
@@ -133,12 +139,12 @@ class KinematicCuttingBackend:
 
 def make_kinematic_env(task_id="CUT-01-R", *, seed=42, particle_spacing_m=None, material_dt=.0001,
                        device="cpu", cutting_law=None, max_cuts=1, slice_efficiency=1.,
-                       observation_profile="state", **wrapper_options):
+                       observation_profile="state", scenario=None, material_profile_id=None, **wrapper_options):
     """CuttingTaskEnv over the kinematic backend (state observations only)."""
     from .live_env import CuttingTaskEnv
     if observation_profile != "state":
         raise ValueError("The kinematic backend renders no cameras; use observation_profile='state'")
     backend = KinematicCuttingBackend(KinematicConfig(task_id, seed, particle_spacing_m, material_dt, device,
-                                                      cutting_law, max_cuts, slice_efficiency))
+                                                      cutting_law, max_cuts, slice_efficiency, scenario, material_profile_id))
     env = CuttingTaskEnv(backend, seed=seed, observation_profile="state", **wrapper_options)
     return env

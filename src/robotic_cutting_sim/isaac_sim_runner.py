@@ -66,6 +66,11 @@ class IsaacSimCuttingConfig:
     tool_spec: object | None = None
     workpiece_kind: str = "rectangle"
     camera: bool = True
+    scenario: str | None = None
+    material_profile_id: str | None = None
+    max_cuts: int = 1
+    ik_iterations: int = 48
+    initial_joint_positions: tuple | None = None
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -100,6 +105,10 @@ class IsaacSimCuttingConfig:
             raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
         if self.task_id in ProfileTaskSpec.TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
             raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
+        if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
+            raise ValueError('One or two cut digits and positive IK iterations are required')
+        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2) and self.task_id not in ProfileTaskSpec.TASK_IDS:
+            raise ValueError('Scenarios, food profiles and two-cut history require opt-in v2 tasks')
         if self.action_mode not in ("cartesian", "joint"):
             raise ValueError("action_mode must be cartesian or joint")
         if self.velocity_feedforward is None:
@@ -211,6 +220,8 @@ class LiveIsaacSimCutting:
             self.config=replace(self.config,seed=int(seed))
         c = self.config
         self.physical_grasp = c.tool_attachment_mode == "physical_grasp"
+        from .task_scenarios import initial_joints
+        self.initial_joints = c.initial_joint_positions or initial_joints(c.scenario, c.task_id)
         self.pad_geometry = []
         if hasattr(self, "tool_contacts"):
             self.tool_contacts.close()
@@ -227,6 +238,8 @@ class LiveIsaacSimCutting:
             from .tasks import make_task
             self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant,particle_spacing_m=c.particle_spacing_m,
                                 workpiece_kind=c.workpiece_kind)
+            from .task_scenarios import configure_task
+            self.task = configure_task(self.task, scenario=c.scenario, material_profile_id=c.material_profile_id)
             if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
                 raise ValueError("Native Kit control_dt/dx must match the shared task specification")
             self.reference_pose=self.task.reference_edge_pose_world
@@ -344,7 +357,10 @@ class LiveIsaacSimCutting:
                 tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
                 wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
             reset_q=self.ik.initial_q.reshape(2,9).copy()
-            reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.))
+            if self.initial_joints is not None:
+                reset_q[0, :7] = self.ik._validate_joints(self.initial_joints)
+                self.ik.state.joint_q.assign(reset_q.ravel())
+            reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
             self.ik.state.joint_q.assign(reset_q.ravel())
             self.ik.newton.eval_fk(self.ik.model,self.ik.state.joint_q,self.ik.state.joint_qd,self.ik.state)
             body_q=self.ik.state.body_q.numpy()
@@ -398,7 +414,11 @@ class LiveIsaacSimCutting:
             paths.append(f"/World/Franka_{index//self.ik.bodies_per_arm}"+source_path[len("/panda"):])
         self.rigid_link_paths=paths+([self.tool_path] if self.physical_grasp else [])
         self.rigid_links=RigidPrim(self.rigid_link_paths)
-        joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.))
+        if self.initial_joints is not None:
+            seed_q = self.ik.initial_q.copy()
+            seed_q[:7] = self.ik._validate_joints(self.initial_joints)
+            self.ik.state.joint_q.assign(seed_q)
+        joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
         if not ik_info["converged"]:
             raise RuntimeError(f"Initial IK failed: {ik_info}")
         q = self.park_q.copy()
@@ -436,7 +456,7 @@ class LiveIsaacSimCutting:
         attachment=self._check_attachment(initial["tool_pose"])
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
-        self.material = (LiveCuttingMaterial(material_config,task=self.task) if self.task else LiveCuttingMaterial(material_config))
+        self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts) if self.task else LiveCuttingMaterial(material_config))
         if self.pad_geometry:
             self.material.configure_pad_obstacles(self._pad_boxes(initial['tool_pose']),
                 [None] + [pad['body_path'] for pad in self.pad_geometry])
@@ -883,7 +903,7 @@ class LiveIsaacSimCutting:
         if action is None or mode=="cartesian":
             if action is not None:
                 desired=validate_native_action(action,"cartesian")
-            targets, ik_info = self.ik.inverse_kinematics(desired)
+            targets, ik_info = self.ik.inverse_kinematics(desired, iterations=c.ik_iterations)
             if not ik_info["converged"]:
                 from .control import IKFailure
                 raise IKFailure(f"IK failed before native articulation step: {ik_info}", ik_info)

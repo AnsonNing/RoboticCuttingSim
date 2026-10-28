@@ -96,9 +96,12 @@ class LiveCuttingMaterial:
             from .tlmpm import TLMPM
             solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm", {}
         else:
-            from .tlmpm_v2 import TLMPM
+            if self.cutting_law == 3:
+                from .tlmpm_v3 import TLMPM
+            else:
+                from .tlmpm_v2 import TLMPM
             polygon, _ = self.tool_profile.tlmpm_profile()
-            solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm_v2", {"blade_profile_xz": polygon,
+            solver_module, solver_kwargs = TLMPM.__module__, {"blade_profile_xz": polygon,
                 "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency,
                 "obstacle_boxes_edge": self.obstacle_boxes_edge}
 
@@ -140,7 +143,7 @@ class LiveCuttingMaterial:
             profile = self.tool_profile
             self.material_config = replace(self.material_config, blade_length=profile.blade_depth_m,
                 blade_height=profile.thickness_m, blade_half_width=profile.half_width_m, cuts=self.max_cuts)
-            self.parameter_receipt = {**self.parameter_receipt, "solver": "tlmpm_v2", "tool_profile": profile.to_dict(),
+            self.parameter_receipt = {**self.parameter_receipt, "solver": solver_module.rsplit('.',1)[-1], "tool_profile": profile.to_dict(),
                 "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency, "max_cuts": self.max_cuts,
                 "obstacle_boxes_edge": None if self.obstacle_boxes_edge is None
                     else np.asarray(self.obstacle_boxes_edge, float).tolist(),
@@ -244,4 +247,12 @@ class LiveCuttingMaterial:
         if self.task:
             state["positions"] = transform_points(self.T_world_local, state["positions"])
             state["velocities"] = state["velocities"]@self.T_world_local[:3, :3].T
+        return state
+
+    def history_state(self):
+        """Same recorded positions/velocities/codes without copying unused F tensors."""
+        state = dict(positions=self.bed.x.numpy(), velocities=self.bed.v.numpy(), codes=self.bed.code.numpy())
+        if self.task:
+            state['positions'] = transform_points(self.T_world_local, state['positions'])
+            state['velocities'] = state['velocities'] @ self.T_world_local[:3, :3].T
         return state
