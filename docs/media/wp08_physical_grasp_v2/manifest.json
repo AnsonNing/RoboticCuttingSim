@@ -1,0 +1,92 @@
+{
+  "scope": "Actual captured RGB-D evidence from independent freely grasped tools; no replay or new renderer. Wrist D405 geometric prototype; Global D455 native provisional. Task scores and acceptance are separate.",
+  "raw_arrays_modified": false,
+  "episodes": {
+    "cut01": {
+      "source_media": "/home/ningan/RoboticCuttingSim/artifacts/wp08_native_physical_cut_v2_media_001",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "all_mp4s_fully_decoded": true,
+      "files": {
+        "global_d455.mp4": {
+          "sha256": "b0b1860f8e5e73c59343a9593526b7a8519289c6bc2632181470eeb5675bfbdb",
+          "bytes": 92372
+        },
+        "global_d455_depth.mp4": {
+          "sha256": "562c72663221d30cadad4e128f59e07165886bec3807c24d89ebc8791cba1ccb",
+          "bytes": 48592
+        },
+        "synchronized_multiview.mp4": {
+          "sha256": "1cb63f5b6a15d4277dc84819d5098cc3b52ab02c73d5a2fc32d4a5c67b5eff96",
+          "bytes": 455280
+        },
+        "wrist_d405_0.mp4": {
+          "sha256": "05f72d83e9be5cc0102a72d0500664b13d0c86b9ef9350b015136303619d3daa",
+          "bytes": 118560
+        },
+        "wrist_d405_0_depth.mp4": {
+          "sha256": "665ae32f2bc7b353983c1fc34719697dddba4e0dacef5f4454e4511374ca63c8",
+          "bytes": 76702
+        },
+        "wrist_d405_1.mp4": {
+          "sha256": "ef086a6122b3f3f95c3f84d5ff201a02d1fb415b12c47ee27e72a3dbe410f57a",
+          "bytes": 129722
+        },
+        "wrist_d405_1_depth.mp4": {
+          "sha256": "56a5d0ce0d9f58bc5a014985c2870cfa81afd05cc7c4c763022b76097650b6e9",
+          "bytes": 80705
+        },
+        "preview.png": {
+          "sha256": "1b08356660209e4935513b6a8bf41df2c918872f2e813342d86b4699a6d2bc82",
+          "bytes": 586981
+        },
+        "provenance.json": {
+          "sha256": "a18e5ebbab0131f0fab76a5c67a103fe54f6fc3217a0375f951f2487ea47e335",
+          "bytes": 39502
+        }
+      }
+    },
+    "trim01": {
+      "source_media": "/home/ningan/RoboticCuttingSim/artifacts/wp08_native_physical_trim_v2_media_001",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "all_mp4s_fully_decoded": true,
+      "files": {
+        "global_d455.mp4": {
+          "sha256": "2594fdbb80ef2ec6f6e964acd5621335d3b4205a882dec4cfc00c1d750548694",
+          "bytes": 98684
+        },
+        "global_d455_depth.mp4": {
+          "sha256": "8cd290e8b8e39e2d02ac4f76de7286b82c00d68bc653ce4725f3c21306bf0bf6",
+          "bytes": 52253
+        },
+        "synchronized_multiview.mp4": {
+          "sha256": "c54ac1c70ddb28cc7974cf3e562c3fcefcea74b3d64c3ce55e7b84b43eeeed06",
+          "bytes": 475096
+        },
+        "wrist_d405_0.mp4": {
+          "sha256": "f14fd2653459db9e1c1405f2fc28f7b52eb0fda26d2099c4624a1b05685f5da4",
+          "bytes": 123917
+        },
+        "wrist_d405_0_depth.mp4": {
+          "sha256": "7df8db358f65351a38caaed128f6decb07c093a91931dbdab9a1c9b7d2041c84",
+          "bytes": 57308
+        },
+        "wrist_d405_1.mp4": {
+          "sha256": "b3cef8fad8de1603b135e5ae3793bd6b850f78f08dd86aa13cf9a7b0bb66a66f",
+          "bytes": 143506
+        },
+        "wrist_d405_1_depth.mp4": {
+          "sha256": "f56062f9002bffa5012cb446c7e0c102e7d3bf61545eedd1f27c72f762f9981f",
+          "bytes": 95631
+        },
+        "preview.png": {
+          "sha256": "d64abae1c9ba50244d3cc1c81291cca29ba1707c927782b11b66410dc361db9a",
+          "bytes": 602110
+        },
+        "provenance.json": {
+          "sha256": "5e3c0ca166a5cbf10e2e437cc322f84dac3bda45922d70101f7487c8536d9281",
+          "bytes": 39626
+        }
+      }
+    }
+  }
+}
