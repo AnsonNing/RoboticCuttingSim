@@ -132,16 +132,22 @@ def main():
             count = int(np.ceil(duration/config.control_dt))
             rotations = Slerp([0.,1.],Rotation.from_quat([start[3:],edge[3:]]))
             previous = env.proprioception()["q"][0]
-            for index in range(1,count+1):
-                u = index/count; a = 10*u**3-15*u**4+6*u**5
-                desired = np.r_[start[:3]+a*(edge[:3]-start[:3]),rotations(a).as_quat()]
-                q, info = env.solve_edge_ik(desired)
+            u = 0.
+            while u < 1.-1e-12:
+                next_u = min(1.,u+1/count)
+                for attempt in range(20):
+                    a = 10*next_u**3-15*next_u**4+6*next_u**5
+                    desired = np.r_[start[:3]+a*(edge[:3]-start[:3]),rotations(a).as_quat()]
+                    q, info = env.solve_edge_ik(desired)
+                    if np.max(np.abs(q-previous)) <= protocol["transfer"]["maximum_joint_increment_rad"]:
+                        break
+                    next_u = (u+next_u)/2
+                else:
+                    raise RuntimeError("Rack Cartesian IK cannot respect the frozen joint increment in "+phase)
                 if (info["position_error_m"] > protocol["transfer"]["maximum_ik_position_error_m"]
                         or info["rotation_error_rad"] > protocol["transfer"]["maximum_ik_rotation_error_rad"]):
                     raise RuntimeError("Tool skill IK failed: "+str(info))
-                if np.max(np.abs(q-previous)) > protocol["transfer"]["maximum_joint_increment_rad"]:
-                    raise RuntimeError("Rack Cartesian path exceeds its finite joint increment bound")
-                step(q,phase); previous = q
+                step(q,phase); previous = q; u = next_u
             capture(phase)
 
         def hold(seconds,phase):

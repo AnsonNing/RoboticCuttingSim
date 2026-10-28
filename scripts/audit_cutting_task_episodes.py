@@ -245,7 +245,8 @@ def audit(directory, output):
     input_pose = recorded_task.get("randomization", {}).get("input_world_from_workpiece_xyzw", recorded_task["world_from_workpiece_xyzw"])
     task = make_task(recorded_task["task_id"], recorded_task["seed"], recorded_task["variant"],
                      world_from_workpiece_xyzw=input_pose,
-                     particle_spacing_m=recorded_task["particle_spacing_m"])
+                     particle_spacing_m=recorded_task["particle_spacing_m"],
+                     workpiece_kind=recorded_task.get("workpiece_kind", "rectangle"))
     # Refuse to score an episode using a different current recipe or threshold.
     generated = json.loads(json.dumps(asdict(task)))
     recorded = {k: recorded_task[k] for k in generated}
