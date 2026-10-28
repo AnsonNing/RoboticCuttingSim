@@ -30,8 +30,11 @@ contacts = NativeToolContacts(
     handle_bounds_tool_m=(handle_lower_corner, handle_upper_corner),
 )
 
-# After native physics advances, read the independent body's actual pose.
-report = contacts.sample(tool_pose_xyzw=measured_tool_pose_xyzw)
+# Save the actual body pose before stepping; read the integrated pose after.
+report = contacts.sample(
+    tool_pose_xyzw=measured_tool_pose_after_step_xyzw,
+    contact_geometry_pose_xyzw=measured_tool_pose_before_step_xyzw,
+)
 ```
 
 The sensor uses `Contact.create()` / `ContactSensor.get_sensor_reading()` /
@@ -45,10 +48,21 @@ distinct, including unintended tool contacts. A fixture-parent transform is
 not assumed to be a contact actor: tensor filters resolve actual rigid-body
 or static-collider prim paths.
 
-Handle attribution requires the measured tool pose and tool-frame bounds.
-It transforms the **reported contact point** into that frame. Without these
-inputs the report says `NOT_CLASSIFIED`; the presence of the tool between
-the fingers is never used as contact evidence.
+Handle attribution requires the actual detection-geometry pose and
+tool-frame bounds. Native discrete contact reports describe geometry before
+integration; the actor pose read after stepping already includes that step's
+motion. The runtime now saves both poses and passes the actual pre-step pose
+explicitly. The report records `PRE_STEP_MEASURED_TOOL_POSE`, the pose itself
+and its timestamp. No pose is extrapolated, corrected or written to the tool.
+
+The helper transforms the **reported contact point** into that detection
+frame. Old callers without a pre-step pose retain the explicitly labelled
+`LEGACY_POST_STEP_TOOL_POSE` profile. Preserved old recordings and failed
+classifications are unchanged. Without a pose/bounds the report says
+`NOT_CLASSIFIED`; the presence of the tool between the fingers is never used
+as contact evidence. See the new and original
+[rigid control matrices](PHYSICAL_TOOL_CONTROLS.md) for the measured timing
+effect and the unchanged 1 micrometre handle-region tolerance.
 
 ## Timing, force and validity
 
@@ -69,8 +83,8 @@ impulses. They are not labelled a complete frictional wrench. The additional
 native `RigidPrim` contact view records normal forces, contact points,
 separation distances and **separate tangential friction forces**. Both APIs
 receive the actual rigid `dt`: their default `dt=1` would return impulses.
-Optional moments are about the measured **tool-frame origin**, not an
-unrecorded center of mass. Forces on bodies outside the declared filters are
+Optional moments are about the recorded detection-geometry **tool-frame
+origin**, not an unrecorded center of mass. Forces on bodies outside the declared filters are
 not included in the tensor force sum. Raw unexpected tool pairs remain
 visible independently.
 

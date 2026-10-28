@@ -46,10 +46,10 @@ within 20% of gravity. No threshold is adjusted to the measured outcome.
 ```bash
 .venv/bin/python -m pytest -q tests/test_physical_tool_controls.py
 .venv/bin/python scripts/run_physical_tool_controls.py \
-  --runtime isaac_sim --gpu 1 \
+  --runtime isaac_sim --gpu 1 --protocol configs/physical_tool_controls_v2.json \
   --output-dir artifacts/wp08_native_controls_NEW
 .venv/bin/python scripts/run_physical_tool_controls.py \
-  --runtime isaac_lab --gpu 1 \
+  --runtime isaac_lab --gpu 1 --protocol configs/physical_tool_controls_v2.json \
   --output-dir artifacts/wp08_lab_controls_NEW
 ```
 
@@ -153,5 +153,59 @@ The separately frozen [v2 control protocol](../configs/physical_tool_controls_v2
 uses that explicit contact timing and the 11.2 mm initial finger clearance
 candidate frozen in `6ec2303`. Grip effort, friction, task geometry, transfer,
 load cases and every acceptance threshold are unchanged. New candidate
-matrices remain separate from both original matrices. Full physical
-acceptance remains false.
+matrices remain separate from both original matrices.
+
+## Candidate v2 results and evidence checkpoint
+
+| Matrix | Actual perturbations completed | Frozen aggregate |
+| --- | --- | --- |
+| `wp08_native_controls_matrix_001` | 7/7; 6,250 evaluation substeps | FAIL: original POST-step handle attribution |
+| `wp08_lab_controls_matrix_001` | 3/7; 3,000 evaluation substeps | FAIL: four clearance transfers |
+| `wp08_native_controls_matrix_v2_001` | 7/7; 6,250 evaluation substeps | PASS_FROZEN_RIGID_CONTROLS |
+| `wp08_lab_controls_matrix_v2_001` | 4/7; 3,250 evaluation substeps | FAIL: three clearance transfers |
+
+The Native v2 matrix passes all seven frozen engineering controls. Baseline,
+nominal and torque have 100% loaded handle attribution with independently
+cross-checked PRE-step poses. Their maximum relative translations are
+0.621, 0.689 and 0.691 micrometres; their maximum reported finger-contact
+penetrations remain below 9.457 micrometres. The nominal steady contact-force
+change is 0.999999873 N, with 0.475645 mrad final arm-response difference.
+Torque gives a 0.023842 mrad arm-response difference. Weak grip and low
+friction increase relative translation by 265.771 and 265.794 mm compared
+with the matched nominal case. Release moves independently by 276.315 mm
+and has 192 ms unsupported motion with fitted acceleration
+-9.80998967 m/s². Every case has unchanged source and material hashes and
+zero C++ simulation/contact-view invalidations. This remains engineering
+rigid-control evidence, separate from material reaction transfer.
+
+The Lab v2 matrix still fails baseline, stress and low-friction clearance
+transfer. Its worst endpoint misses by 94.382 mm and 1.26417 rad. Nominal,
+torque, weak grip and release execute actual perturbations. Nominal satisfies
+the frozen stability checks and its matched weak-grip response increases by
+366.644 mm. Release moves independently by 273.675 mm and has 190 ms
+unsupported motion at -9.81001473 m/s². These measured positive controls do
+not fill the missing cases. The raw signed-distance tails after weak-grip
+and release drops are -21.579 and -11.325 mm. They are retained as reported
+contact-ledger distances, without a claim of independent mesh-penetration
+verification or full contact-quality acceptance.
+
+Across these four matrices, all 28 fresh starts and their source snapshots
+are preserved. Twenty-one perturbations complete, with 18,750 actual 2 ms
+evaluation samples. The seven transfer failures have no invented load
+response. Every stored implementation copy and every raw-trace hash matches
+its case receipt. The [compact evidence](evidence/physical_tool_controls.json)
+contains all cases, strict failures, source/raw hashes, runtime versions,
+clearance errors and paired outcomes. Observed wall times include startup,
+shutdown and trace I/O; concurrent authorized jobs prevent treating them
+as an exclusive performance benchmark.
+
+![Actual relative tool motion for all four preserved matrices](media/physical_tool_controls.png)
+
+The Lab transfer instability remains a limitation of its current contact
+recipe. In MuJoCo, `condim=4` adds resistance to rotation about the contact
+normal; the manual describes its use for soft-finger grasp models.
+[MuJoCo contact documentation](https://mujoco.readthedocs.io/en/latest/computation/#condim)
+A finite pad-patch candidate is being prepared separately. It has no control
+or task acceptance in this evidence checkpoint. No friction, effort,
+acceptance threshold or past failure is changed by this explanation.
+Full physical acceptance remains false.
