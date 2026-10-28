@@ -11,6 +11,7 @@ import pytest
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from run_physical_tool_controls import (
+    cartesian_ik_step,cartesian_reference,hand_planning_edge_pose,
     classify_case, compare_cases, measure_case, native_samples, smooth_joint_targets, summarize_matrix,
 )
 
@@ -191,3 +192,33 @@ def test_lab_only_contact_protocol_cannot_silently_run_on_native_backend(tmp_pat
         capture_output=True,text=True,check=False)
     assert result.returncode == 2 and "allowed_runtimes" in result.stderr
     assert not output.exists()
+
+
+def test_constant_orientation_cartesian_reference_has_straight_path_and_slow_endpoints():
+    start=np.array([0.,0.,.05,0.,0.,0.,1.]);goal=np.array([-.2,-.15,.18,0.,0.,0.,-1.])
+    points=np.array([cartesian_reference(start,goal,u) for u in np.linspace(0.,1.,101)])
+    np.testing.assert_allclose(points[[0,-1],:3],[start[:3],goal[:3]],atol=1e-14)
+    assert np.max(np.abs(points[:,:3]-start[:3]-((points[:,0]-start[0])/(goal[0]-start[0]))[:,None]*(goal[:3]-start[:3]))) < 1e-14
+    assert np.max(np.abs(points[:,3:6])) < 1e-14
+    assert np.linalg.norm(points[1,:3]-points[0,:3]) < np.linalg.norm(points[50,:3]-points[49,:3])/100
+
+
+def test_cartesian_planner_mount_composes_measured_hand_in_world_frame():
+    hand=[1.,2.,3.,0.,0.,np.sqrt(.5),np.sqrt(.5)]
+    spec={"hand_from_tool_xyz_xyzw":[.1,0.,0.,0.,0.,0.,1.],"tool_from_edge_xyz_xyzw":[0.,0.,.2,0.,0.,0.,1.]}
+    pose=hand_planning_edge_pose(hand,spec)
+    np.testing.assert_allclose(pose[:3],[1.,2.1,3.2],atol=1e-14)
+    np.testing.assert_allclose(pose[3:],hand[3:],atol=1e-14)
+
+
+def test_cartesian_adaptation_slows_progress_instead_of_clipping_unsafe_ik():
+    transfer={**PROTOCOL["transfer"],"maximum_adaptive_subdivisions":20}
+    start=np.array([0.,0.,0.,0.,0.,0.,1.]);goal=start.copy();goal[0]=1.
+    def solve(pose):return np.r_[pose[0]*10,np.zeros(6)],{"position_error_m":0.,"rotation_error_rad":0.}
+    u,desired,q,_,subdivisions=cartesian_ik_step(start,goal,0.,10,np.zeros(7),solve,transfer)
+    assert 0. < u < .1 and subdivisions > 0
+    np.testing.assert_allclose(q[0],desired[0]*10)
+    assert np.max(np.abs(q)) <= .005
+    def jump(_):return np.ones(7),{"position_error_m":0.,"rotation_error_rad":0.}
+    with pytest.raises(ValueError,match="no target issued"):
+        cartesian_ik_step(start,goal,0.,10,np.zeros(7),jump,transfer)

@@ -21,7 +21,7 @@ import time
 import traceback
 
 import numpy as np
-from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Rotation, Slerp
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"src"))
@@ -64,6 +64,38 @@ def smooth_joint_targets(start, target, transfer, dt):
     if np.max(np.abs(increments)) > transfer["maximum_joint_increment_rad"]+1e-10:
         raise ValueError("Quintic targets exceed the frozen joint-increment bound")
     return targets
+
+
+def hand_planning_edge_pose(hand_pose, spec):
+    """Planner-only nominal mount on the measured HAND; never a tool update."""
+    from robotic_cutting_sim.scene_frames import compose_pose
+    mount=compose_pose(spec["hand_from_tool_xyz_xyzw"],spec["tool_from_edge_xyz_xyzw"])
+    return compose_pose(hand_pose,mount)
+
+
+def cartesian_reference(start, goal, u):
+    start,goal=np.asarray(start,float),np.asarray(goal,float)
+    if start.shape != (7,) or goal.shape != (7,) or not np.isfinite(np.r_[start,goal]).all() or not 0. <= u <= 1.:
+        raise ValueError("Cartesian reference requires finite XYZ+XYZW endpoints and progress in[0,1]")
+    a=float(np.clip(10*u**3-15*u**4+6*u**5,0.,1.))
+    rotations=Slerp([0.,1.],Rotation.from_quat([start[3:],goal[3:]]))
+    return np.r_[start[:3]+a*(goal[:3]-start[:3]),rotations(a).as_quat()]
+
+
+def cartesian_ik_step(start,goal,u,count,previous,solve,transfer):
+    """Slow reference progress when needed; never clip or jump joint targets."""
+    next_u=min(1.,u+1/count)
+    for attempt in range(transfer["maximum_adaptive_subdivisions"]):
+        desired=cartesian_reference(start,goal,next_u)
+        q,info=solve(desired);q=np.asarray(q,float)
+        if q.shape != (7,) or not np.isfinite(q).all():raise ValueError("IK returned invalid arm targets")
+        if np.max(np.abs(q-previous)) <= transfer["maximum_joint_increment_rad"]+1e-10:
+            if (info.get("position_error_m",float("inf")) > transfer["maximum_ik_position_error_m"]
+                    or info.get("rotation_error_rad",float("inf")) > transfer["maximum_ik_rotation_error_rad"]):
+                raise ValueError("Cartesian IK failed the unchanged frozen residual bounds")
+            return next_u,desired,q,info,attempt
+        next_u=(u+next_u)/2
+    raise ValueError("Cartesian IK cannot respect the frozen joint increment; no target issued")
 
 
 def relative_poses(hand, tool):
@@ -374,7 +406,7 @@ def worker(args, protocol):
                 trace=output/"control_trace.jsonl"
                 last_target=measured(env)["q"][0].copy()
 
-                def step(target,phase,wrench):
+                def step(target,phase,wrench,desired_edge=None):
                     nonlocal last_target
                     if np.max(np.abs(np.asarray(target)-last_target)) > protocol["transfer"]["maximum_joint_increment_rad"]+1e-9:
                         raise RuntimeError("Actual issued joint targets exceed the frozen per-control increment")
@@ -384,16 +416,38 @@ def worker(args, protocol):
                     row={"phase":phase,"native_time_s":native,"raw_trace_time_s":raw,
                         "state":measured(env),"commanded_joint_positions_rad":np.asarray(target).copy(),
                         "commanded_external_edge_wrench_world":np.asarray(wrench).copy(),"diagnostics":diagnostics}
+                    if desired_edge is not None:row["commanded_edge_pose_xyzw"]=np.asarray(desired_edge).copy()
                     control_rows.append(row)
                     last_target=np.asarray(target).copy()
                     with trace.open("a") as stream:stream.write(json.dumps(row,default=json_default,allow_nan=False)+"\n")
                     return row
 
-                state=measured(env);initial_edge=state["tool_pose"].copy()
+                state=measured(env)
+                cartesian=protocol["transfer"].get("reference_profile")=="cartesian_hand_mount_v4"
+                initial_edge=(hand_planning_edge_pose(state["hand_pose"],result["tool_spec"]) if cartesian else state["tool_pose"].copy())
+                result["transfer_reference_profile"]=protocol["transfer"].get("reference_profile","legacy_joint_chord")
+                result["transfer_planning_start_pose_xyzw"]=initial_edge.copy()
+                result["actual_free_edge_before_transfer_xyzw"]=state["tool_pose"].copy()
                 goal=initial_edge.copy();goal[:3]=protocol["transfer"]["world_edge_position_m"]
                 lift=initial_edge.copy();lift[2]=max(lift[2],goal[2])
                 result["transfer_waypoints"]=[]
                 for edge in (lift,goal):
+                    if cartesian:
+                        start=hand_planning_edge_pose(measured(env)["hand_pose"],result["tool_spec"])
+                        duration=max(protocol["transfer"]["minimum_waypoint_duration_s"],
+                            1.875*np.linalg.norm(edge[:3]-start[:3])/protocol["transfer"]["maximum_cartesian_speed_m_s"])
+                        count=max(1,int(math.ceil(duration/protocol["control_dt_s"])));u=0.;issued=0
+                        waypoint={"desired_edge_pose_xyzw":edge.copy(),"planning_start_pose_xyzw":start.copy(),
+                            "nominal_duration_s":count*protocol["control_dt_s"],"steps":0,"adaptive_subdivisions":0}
+                        result["transfer_waypoints"].append(waypoint)
+                        while u < 1.-1e-12:
+                            if issued >= math.ceil(count*protocol["transfer"]["maximum_time_scale"]):
+                                raise RuntimeError("Cartesian transfer exceeded the prefrozen time-scale cap")
+                            u,desired,q,info,subdivisions=cartesian_ik_step(start,edge,u,count,last_target,env.solve_edge_ik,protocol["transfer"])
+                            step(q,"clearance_transfer",np.zeros(6),desired)
+                            issued+=1;waypoint.update(steps=issued,ik=info)
+                            waypoint["adaptive_subdivisions"]+=subdivisions
+                        continue
                     q,info=env.solve_edge_ik(edge)
                     if (info.get("position_error_m",float("inf")) > protocol["transfer"]["maximum_ik_position_error_m"]
                             or info.get("rotation_error_rad",float("inf")) > protocol["transfer"]["maximum_ik_rotation_error_rad"]):
