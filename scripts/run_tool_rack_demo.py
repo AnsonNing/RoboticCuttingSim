@@ -102,6 +102,10 @@ def main():
 
         def capture(phase):
             nonlocal capture_index
+            # Rigid-only probes deliberately bypass formal material/render
+            # work. Derive sensor calibration from the *measured* hands before
+            # capturing; never animate a camera or advance physics to render.
+            env._update_camera_extrinsics(env.proprioception()["hand_pose_both_xyzw"])
             frames,_ = env.capture()
             payload={"timestamp_s":env.time_s}
             for name, values in frames.items():
