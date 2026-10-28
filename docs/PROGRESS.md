@@ -1,5 +1,24 @@
 # Progress — 2026-10-28 Asia/Seoul
 
+## WP-08 in progress: independent tool and physical finger grasp
+
+Baseline `1500ed7` is frozen on branch `wp08/physical-tool-grasp`, with the
+original CUT/TRIM criteria and all WP-07 evidence retained. Baseline CPU277 and
+both actual legacy runtime smokes passed before implementation. `legacy_fixed_tool`
+remains explicit and the default until end-to-end physical grasp is validated.
+
+The shared compound tool now has a continuous handle/shaft/blade, derived
+finite mass/inertia, nominal grasp frames and a separate measured edge. Native
+PhysX physical-grasp smoke002 established actual bilateral loaded handle contacts
+for a2s pre-episode settling phase, then executed2 control steps with all three
+RGB-D streams. This is a grasp/runtime smoke, not physical cutting acceptance.
+Its first API integration failure and all traces are preserved. Independent
+release, weak-grip, load, complete cutting and Newton parity remain in progress.
+The current native contact API's force/sign/unit controls passed separately.
+
+See [the supplied specification](WP08_SPECIFICATION.md). No driver, unrelated
+project, solver cutting law or frozen scoring criterion was changed.
+
 ## Latest: target-centred Global, interactive viewing and portable deployment
 
 The current v3 scene keeps both D405 cameras mounted on actual articulated

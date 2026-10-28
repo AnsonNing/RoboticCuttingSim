@@ -63,3 +63,17 @@ def test_native_physics_timestamp_must_match_current_surface_and_robot(recorded_
     container["d455_0"]["physics_timestamp_s"] = recorded_time
     with pytest.raises(ValueError, match="timestamps must match"):
         vision_observation(frames, calibration, .02, "vision_proprio", proprio)
+
+
+def test_physical_tool_truth_stays_privileged_while_finger_encoders_are_observed():
+    frames, calibration, proprio = payload()
+    proprio.update(tool_attachment_mode='physical_grasp', hand_pose=np.r_[np.zeros(6),1.],
+                   finger_q=np.full((2,2),.011),finger_qdot=np.zeros((2,2)),
+                   tool_body_pose_xyzw=np.r_[1.,2.,3.,0.,0.,0.,1.],
+                   exact_contact_impulse=np.ones(6),cut_topology=np.ones(10))
+    obs=vision_observation(frames,calibration,.02,'vision_proprio',proprio)
+    assert set(obs['proprio'])=={'q','qdot','hand_pose','finger_q','finger_qdot'}
+    assert 'tool_pose' not in obs['proprio']
+    assert not any(k in obs['proprio'] for k in ('tool_body_pose_xyzw','exact_contact_impulse','cut_topology'))
+    proprio['finger_q'][0,0]=0.
+    assert obs['proprio']['finger_q'][0,0]==.011
