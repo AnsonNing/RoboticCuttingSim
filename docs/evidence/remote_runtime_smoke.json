@@ -1,0 +1,114 @@
+{
+  "status": "PASS_SMOKE",
+  "canonical_artifact": "artifacts/remote_runtime_smoke_002",
+  "prior_artifact": "artifacts/remote_runtime_smoke_001",
+  "verification_scope": "Same-instance Kit GUI/WebRTC startup, explicit coupled stepping, actual RGB-D arrays, idle-state invariance, safe viewport source selection",
+  "same_process_native_backend": true,
+  "existing_physics_code_modified": false,
+  "gpu": 1,
+  "packages": {
+    "isaacsim": "6.2.0.0",
+    "isaacsim-kernel": "6.2.0.0",
+    "isaacsim-core": "6.2.0.0",
+    "isaacsim-sensor": "6.2.0.0",
+    "torch": "2.11.0+cu128",
+    "warp-lang": "1.17.0",
+    "newton": "1.6.1"
+  },
+  "kit_version": "110.4.0+feature.386251.187cf21b.gl",
+  "extensions": {
+    "omni.kit.livestream.app": "omni.kit.livestream.app-10.4.1",
+    "omni.kit.livestream.webrtc": "omni.kit.livestream.webrtc-10.7.4",
+    "omni.kit.livestream.streamsdk": null,
+    "omni.kit.viewport.window": "omni.kit.viewport.window-110.0.5",
+    "omni.kit.window.stage": "omni.kit.window.stage-2.6.4",
+    "omni.kit.window.property": "omni.kit.window.property-1.15.2"
+  },
+  "stream": {
+    "streamType": "webrtc",
+    "publicIp": "100.111.162.17",
+    "signalPort": 49100,
+    "streamPort": 47998,
+    "targetFps": 30
+  },
+  "manual_physics": {
+    "automatic_physics": false,
+    "timeline_auto_update": false,
+    "callbacks": {
+      "on_stop": false,
+      "stage_open": true,
+      "stage_close": true,
+      "warm_start": false,
+      "post_warm_start": true
+    },
+    "stepping_owner": "LiveIsaacSimCutting.step: measured PhysX articulation then retained TLMPM"
+  },
+  "paused_gui_updates": 40,
+  "postcapture_gui_updates": 5,
+  "paused_entire_state_bit_identical": true,
+  "postcapture_entire_state_bit_identical": true,
+  "coupled_control_steps": 2,
+  "final_episode_time_s": 0.04,
+  "captures": {
+    "wrist_d405_0": {
+      "rgb_shape": [
+        480,
+        848,
+        3
+      ],
+      "depth_shape": [
+        480,
+        848
+      ],
+      "valid_depth_fraction": 0.8859424135220125,
+      "physics_timestamp_s": 0.04
+    },
+    "wrist_d405_1": {
+      "rgb_shape": [
+        480,
+        848,
+        3
+      ],
+      "depth_shape": [
+        480,
+        848
+      ],
+      "valid_depth_fraction": 0.93125,
+      "physics_timestamp_s": 0.04
+    },
+    "global_d455": {
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "valid_depth_fraction": 0.2759244791666667,
+      "physics_timestamp_s": 0.04
+    }
+  },
+  "viewport_choices_tested": [
+    "free",
+    "wrist_d405_0",
+    "wrist_d405_1",
+    "global_d455"
+  ],
+  "signaling_tcp_observed": true,
+  "media_port_announced_by_official_extension": 47998,
+  "media_udp_socket_observed_before_client": false,
+  "nvenc_library_present": "libnvidia-encode.so.570.211.01",
+  "nvenc_encoded_frames_validated": false,
+  "actual_browser_client_verified": false,
+  "full_task_success_evaluated": false,
+  "source_and_artifact_sha256": {
+    "artifacts/remote_runtime_smoke_002/result.json": "ec4e0bd19247b979585d4d55af343d57f3a2040af740ceb28b46d99c0b5c1492",
+    "artifacts/remote_runtime_smoke_002/streaming_runtime.json": "a6e0011d40758033c528f316f3bcc8167d5ee48885fc01335ed2cade0c236431",
+    "artifacts/remote_runtime_smoke_002/run.py": "a770babb8a0a05f83e9f136bd4047babaaec071e853b494a296feb2936a2cc8a",
+    "artifacts/remote_runtime_smoke_002/kit.log": "f31bce35d0d48743700862e917d1d0d4a106e29300b772dc74373d489ab2e82a",
+    "src/robotic_cutting_sim/remote_runtime.py": "cbebd47ae3ace40c75b62a793b50a23d132edca16b2f6f9bc87e93c3e5516dcc",
+    "configs/isaac_sim_cutting_streaming.kit": "01aeb407e942e15be520d72dff3bd064f370a46dd07488372f63af5c19c09233"
+  }
+}

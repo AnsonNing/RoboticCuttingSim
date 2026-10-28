@@ -1,0 +1,67 @@
+[package]
+title = "RoboticCuttingSim Remote Interactive Viewer"
+version = "0.1.0"
+description = "The live cutting process with Kit GUI, viewport and official WebRTC streaming"
+
+[dependencies]
+"isaacsim.simulation_app" = {}
+"isaacsim.core.experimental.prims" = {}
+"isaacsim.core.simulation_manager" = {}
+"isaacsim.core.rendering_manager" = {}
+"isaacsim.sensors.experimental.rtx" = {}
+"isaacsim.storage.native" = {}
+"omni.kit.loop-isaac" = {}
+"omni.physics.physx" = {}
+"omni.physx.tensors" = {}
+"omni.hydra.rtx" = {}
+"omni.hydra.usdrt_delegate" = {}
+"omni.replicator.core" = {}
+"omni.warp.core" = {}
+"omni.kit.mainwindow" = {}
+"omni.kit.viewport.window" = {}
+"omni.kit.viewport.utility" = {}
+"omni.kit.manipulator.camera" = {}
+"omni.kit.menu.common" = {}
+"omni.kit.window.stage" = {}
+"omni.kit.window.property" = {}
+"omni.kit.window.toolbar" = {}
+"omni.kit.window.console" = {}
+"omni.kit.livestream.app" = {}
+
+[settings]
+app.window.hideUi = false
+app.window.title = "RoboticCuttingSim Remote Interactive Viewer"
+app.window.drawMouse = false
+app.player.playSimulations = false
+app.renderer.skipWhileMinimized = false
+app.renderer.skipWhileInvisible = false
+app.renderer.resolution.width = 1280
+app.renderer.resolution.height = 800
+app.viewport.displayOptions = 0
+app.settings.fabricDefaultStageFrameHistoryCount = 3
+omni.replicator.asyncRendering = false
+renderer.asyncInit = false
+renderer.multiGpu.enabled = false
+renderer.gpuEnumeration.glInterop.enabled = false
+rtx-transient.dlssg.enabled = false
+rtx.spg.enabled = true
+rtx.hydra.supportMultiTickRate = true
+rtx.rendering.perSensorTickTlas = true
+physics.autoPopupSimulationOutputWindow = false
+exts."omni.kit.viewport.window".startup.disableWindowOnLoad = false
+exts."omni.kit.viewport.window".startup.dockTabInvisible = false
+
+[settings.app.livestream]
+allowResize = true
+outDirectory = "${data}"
+
+[settings.exts."omni.kit.livestream.app".primaryStream]
+streamType = "webrtc"
+signalPort = 49100
+streamPort = 47998
+publicIp = ""
+targetFps = 30
+allowDynamicResize = true
+enableAudioCapture = false
+enableEventTracing = true
+enableOpenTelemetry = false
