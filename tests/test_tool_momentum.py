@@ -61,7 +61,8 @@ def test_angular_momentum_uses_rotating_full_inertia_not_I_times_delta_omega():
 def test_summary_retains_worst_single_step_failure():
     good = evaluate(velocity_after=np.array([0., 0., -.02, 0., 0., 0.]))
     bad = evaluate()
-    result = audit.summary([good] * 100 + [bad], "linear")
+    result = audit.summary([good] * 100 + [bad], "linear", absolute_budget=2e-5)
     assert result["status"] == "FAIL_IMPULSE_BALANCE"
     assert result["failing_steps"] == 1
     assert result["first_failing_row_indices"] == [100]
+    assert result["standalone_absolute_component_diagnostic"]["exceeding_steps"] == 1

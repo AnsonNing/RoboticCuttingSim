@@ -50,18 +50,24 @@ def balance_step(*, mass, inertia, pose_before, pose_after, velocity_before,
     return output
 
 
-def summary(rows, key):
+def summary(rows, key, absolute_budget=None):
     if not rows:
         return {"status": "NOT_SCORED_NO_ROWS"}
     values = np.array([r[key]["residual_norm"] for r in rows])
     usage = np.array([r[key]["budget_usage"] for r in rows])
     failures = [i for i, r in enumerate(rows) if not r[key]["pass"]]
-    return {"status": "FAIL_IMPULSE_BALANCE" if failures else "PASS_ENGINEERING_IMPULSE_BALANCE",
+    result = {"status": "FAIL_IMPULSE_BALANCE" if failures else "PASS_ENGINEERING_IMPULSE_BALANCE",
             "steps": len(rows), "failing_steps": len(failures), "first_failing_row_indices": failures[:10],
             "residual_norm_quantiles": dict(zip(("p50", "p95", "p99", "max"), np.quantile(values, [.5, .95, .99, 1]).tolist())),
             "maximum_budget_usage": float(usage.max()),
             "accumulated_vector_residual": np.sum([r[key]["residual"] for r in rows], axis=0).tolist(),
             "sum_residual_norms": float(values.sum()), "all_tails_retained": True}
+    if absolute_budget is not None:
+        result["standalone_absolute_component_diagnostic"] = {
+            "status": "FAIL" if np.any(values > absolute_budget) else "PASS",
+            "budget": absolute_budget, "exceeding_steps": int(np.count_nonzero(values > absolute_budget)),
+            "scope": "Additional cancellation-sensitive diagnostic using the prefrozen absolute term alone; original absolute+relative acceptance formula remains unchanged"}
+    return result
 
 
 def check_properties(mass, inertia):
@@ -214,7 +220,8 @@ def audit(episode, protocol):
     rows, errors, properties = (lab_rows if is_lab else native_rows)(episode, setup, limits)
     source = source_audit(episode, manifest)
     logs = runtime_log_audit(episode)
-    linear, angular = summary(rows, "linear"), summary(rows, "angular")
+    linear = summary(rows, "linear", limits["linear_absolute_budget_n_s"])
+    angular = summary(rows, "angular", limits["angular_absolute_budget_n_m_s"])
     if is_lab and not properties.get("linear_scoring_available", False):
         linear = {"status": "NOT_SCORED_RIGID_GRAVITY_READBACK_NOT_RECORDED", "assumed_gravity_diagnostic": linear}
     invalid = bool(errors) or not source["pass"] or logs["status"].startswith("FAIL")
@@ -223,7 +230,8 @@ def audit(episode, protocol):
               "properties": properties, "source": source, "runtime_logs": logs,
               "rows_evaluated": len(rows), "bookkeeping_failures": errors, "linear": linear, "angular": angular,
               "input_sha256": {p.name: digest(p) for p in (episode / "setup.json", episode / "manifest.json") if p.is_file()},
-              "material_interface_work_convergence": "NOT_SCORED_SEPARATE_AUDIT", "full_physics_acceptance": False}
+              "material_interface_work_convergence": "NOT_SCORED_SEPARATE_AUDIT",
+              "angular_closure_acceptance": "NOT_ESTABLISHED_BY_ENGINEERING_BUDGET_SCREEN", "full_physics_acceptance": False}
     statuses = [linear["status"], angular["status"]]
     result["status"] = ("NOT_SCORED_INCOMPLETE_OR_INVALID_BOOKKEEPING" if invalid or not rows else
                          "FAIL_ENGINEERING_IMPULSE_BALANCE" if any(s.startswith("FAIL") for s in statuses) else
