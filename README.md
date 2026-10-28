@@ -32,7 +32,7 @@ Both fixed tasks have completed 400 control steps / 8 simulated seconds in actua
 | CUT-01: sever a 160×30×20 mm bar | Continuous 144 g bar → two 72 g parts; sampled persistent separation for 2.4 s after withdrawal | **PASS_TASK_METRICS** |
 | TRIM-01: trim a continuous single bump | Explicit 2 mm particles; 1.608 g chip + 144.024 g base; 98.5294% target-material removal | Permanent separation passes; strict full-surface accuracy **FAIL_TASK_METRICS** |
 
-The newest close-Global version has two new complete native episodes and two separate two-step Lab camera smokes. The earlier wrist-overview version retains four complete episodes, one per Task/runtime. See [current close-view validation](docs/GLOBAL_CLOSE_VIEW.md), [camera architecture](docs/WRIST_CAMERAS.md) and [previous four-episode audit](docs/WRIST_CAMERA_VALIDATION.md).
+The close-Global scene has now also completed all four full Task/runtime episodes from a new clone with freshly installed, isolated environments. CUT passes its strict score in both runtimes; 2 mm TRIM separates but retains its strict surface FAIL. See [clean-environment deployment validation](docs/PORTABLE_DEPLOYMENT_VALIDATION.md), [close-view validation](docs/GLOBAL_CLOSE_VIEW.md), [camera architecture](docs/WRIST_CAMERAS.md) and [preserved wrist-overview audit](docs/WRIST_CAMERA_VALIDATION.md).
 
 Material/fracture parameters remain provisional. TRIM surface accuracy and coupling-work limits still fail; resolution convergence and hardware sensor calibration are unestablished. Native invalid pixels and rare depth outliers are retained. The secondary wrist's knife view is palm-occluded after TRIM withdrawal; the primary mount rod intersects its own wrist flange at the anchor, failing the unchanged strict visual-clearance criterion. All Global/housing robot-surface checks pass at the recorded poses, without a validated camera contact/mass model. Episode completion never means every benchmark gate passes.
 
@@ -63,7 +63,7 @@ bootstrap never upgrades the driver or changes another project. Install either
 runtime separately with `--runtime isaac_sim` / `isaac_lab`. A smoke verifies
 actual physics and RGB-D; it does not certify full cutting success. See
 [portable deployment](docs/PORTABLE_DEPLOYMENT.md) for full400-step regression,
-GPU selection, troubleshooting and measured clean-environment reproduction.
+GPU selection and troubleshooting. [Actual reproduction results](docs/PORTABLE_DEPLOYMENT_VALIDATION.md) include installation failures, both live runtimes, four full episodes and new [CUT](docs/media/deployment_cut01/synchronized_multiview.mp4) / [TRIM](docs/media/deployment_trim01/synchronized_multiview.mp4) recordings. Independent cross-host reproduction remains **NOT_RUN**.
 
 ## Run the headless scenes
 

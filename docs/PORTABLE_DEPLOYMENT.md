@@ -22,8 +22,8 @@ bash scripts/bootstrap.sh --runtime isaac_lab --managed-python
 ```
 
 Git, Python3.10+ for the bootstrap itself, HTTPS access and an existing compatible
-NVIDIA driver are needed. `--managed-python` installs project-local CPython3.12.12
-when no suitable3.12 interpreter exists. `--python /path/to/python3.12` uses an
+NVIDIA driver are needed. `--managed-python` selects pinned project-local CPython3.12.12,
+even when a different system Python3.12 is available. `--python /path/to/python3.12` uses an
 existing interpreter to create independent venvs without inheriting packages.
 The bootstrap does not run sudo/apt, change a driver or alter global Python/npm.
 `--accept-eula` records acceptance of NVIDIA's Omniverse terms for Sim.
@@ -114,6 +114,11 @@ runner passes the selected physical index consistently to Kit, Lab and TLMPM.
 Do not remap `CUDA_VISIBLE_DEVICES`: CUDA/renderer device-numbering mismatches
 are diagnosed instead of silently rendering on a different card. Available
 VRAM is measured at launch; concurrent research jobs can change it.
+
+The identity mask `CUDA_VISIBLE_DEVICES=0` with `--gpu 0` is also supported and
+was actually smoke-tested in both runtimes. That test exposes one CUDA device
+on the existing two-card host; physical single-card hardware has not yet been
+tested. Other ambiguous masks remain blocked by the doctor.
 
 Smoke PASS requires actual articulation, physical steps, both wrists and Global
 RGB-D, synchronized timestamps and reset evidence. It does not imply full

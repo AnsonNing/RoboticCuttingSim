@@ -1,0 +1,4285 @@
+{
+  "schema": "wp07_final_deployment_evidence_v1",
+  "date": "2026-10-28",
+  "status": "PASS_DEPLOYMENT_WITH_EXPECTED_TRIM_SURFACE_FAILURE",
+  "scope": "Clean environments on the original host; no independent cross-host reproduction or complete scientific benchmark acceptance",
+  "source_commit_full_episodes": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+  "source_commit_final_bootstrap_preference": "156b2623edaa001cba2fc90924690b282f1f249b",
+  "clean_clone": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028",
+  "seed": 42,
+  "driver_changed": false,
+  "other_projects_changed": false,
+  "policy_training": false,
+  "cache_boundary": {
+    "fresh_venvs": true,
+    "fresh_project_local_python": true,
+    "fresh_lab_source_checkout": true,
+    "official_usd_fresh_download": true,
+    "reused": "Verified package download cache and verified shader archive; no old venv/site-packages/official USD directory copied",
+    "host_kit_user_caches": "May be reused; no independent host or cold user-cache assertion"
+  },
+  "installation_attempts": [
+    {
+      "attempt": 1,
+      "status": "FAIL_DOWNLOAD_TIMEOUT",
+      "wall_s": 229.48325425293297,
+      "base": "PASS",
+      "isaac_lab_environment": "NOT_RUN",
+      "gpu_tests": "NOT_RUN",
+      "source_commit": "3d6cb9f3164b0b3294f4f59d225096f28bd2231b",
+      "preserved_receipts": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-20261028/artifacts/bootstrap_all_001.receipt.json",
+          "sha256": "16aafe4922ad2d6906e88e87434f0d98992704118dcf94e64c81886dddc38fae"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-20261028/artifacts/bootstrap_all_001/bootstrap.json",
+          "sha256": "d42bda01c87293fdb8ab9fd0b480439dab11027255c96dddc828c0707bd4e9c1"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "status": "PASS_INSTALL_METADATA",
+      "wall_s": 802.1639853760134,
+      "live_native": "FAIL_300_KIT_UPDATE_LOAD_DEADLINE",
+      "native_full_cases": "BLOCKED",
+      "live_lab_full_cut": "PASS_TASK_METRICS",
+      "live_lab_full_trim": "SEPARATION_PASS_STRICT_SURFACE_FAIL",
+      "installation_source_commit": "a72cffcad5261be70bf8b7793b8e659681c4c759",
+      "validation_source_commit": "674c463912e18de8039250ce078d8eb5bcbf2cb3",
+      "preserved_receipts": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-002-20261028/artifacts/bootstrap_all_002.receipt.json",
+          "sha256": "d4bc01588d0301f41c41ae6d3fd589975b598ce872b2915bde82064933e3c790"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-002-20261028/artifacts/bootstrap_all_002/bootstrap.json",
+          "sha256": "6f11509e78985bba3535ea073c8dd5a0d57153ab1348cda9478e2eab427dac17"
+        }
+      ]
+    },
+    {
+      "attempt": 3,
+      "status": "PASS_INSTALL_METADATA",
+      "wall_s": 516.0670727069955,
+      "source_commit": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+      "python": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/python/cpython-3.12.12-linux-x86_64-gnu/bin/python3.12",
+      "python_binary_sha256": "4304de9fdcd8465bbf4bf0814bb7abadd6d33971bab26ae38d1080c355fec983",
+      "launch_path": "/usr/bin:/bin",
+      "receipt": {
+        "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/bootstrap_all_003/bootstrap.json",
+        "sha256": "9fd89a96c69d13a3620c828dd8550c6ee0d8f460f8d1716b2d6550fd596f320d",
+        "bytes": 17643
+      }
+    }
+  ],
+  "bootstrap": {
+    "usd_providers": {
+      "base": "usd-core26.8",
+      "isaac_sim": "Isaac6.2 bundled USD25.11",
+      "isaac_lab": "usd-exchange3.0.1"
+    },
+    "lab_source": {
+      "url": "https://github.com/isaac-sim/IsaacLab",
+      "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+      "license": "BSD-3-Clause",
+      "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/IsaacLab",
+      "tracked_modified_files": []
+    },
+    "lock_sha256": {
+      "requirements-robot.lock": "b68a2ce72a1b3134a644de46f3471a0949f3bafb1fa496def312a19b3a9b50ad",
+      "requirements.lock": "14dccc883d735ab06fde3a603513fe3bd86c0dfe7d9a00592a281f35e384c086",
+      "requirements-isaac-sim.lock": "17e44a34762e88cc09026bdf06f0ac3b9db1ba59961fa726a4c84faf9760f61c",
+      "requirements-isaac-lab.lock": "957153e51ef2468c7ebf6be0f56aa7572c841508c6575b41d4821cf3830facf5",
+      "requirements-torch-cu128.lock": "06209d9a99eec5dfc048dd95189c0095e7496b94151c35a4fc1ca36550ae4b00",
+      "bootstrap_refs.json": "6c7ccf2b133a9750b639135f3378907caf4d4149114d28503873ab51025edc5a",
+      "source_refs.json": "59349de1d5b24e9a2a36c09a3f4ab36994fc45be1ced31b7bab0f628b31188d2",
+      "runtime_assets.lock.json": "1910dc73b181611de1e32e66433e8299b48add08cb2d24a8ac938a71d4e94781"
+    },
+    "download_settings": {
+      "UV_HTTP_TIMEOUT": "900",
+      "UV_HTTP_RETRIES": "8",
+      "UV_CONCURRENT_DOWNLOADS": "4"
+    },
+    "environments": [
+      {
+        "runtime": "base",
+        "status": "PASS_INSTALL_METADATA",
+        "version": [
+          3,
+          12,
+          12
+        ],
+        "project_origin": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/src/robotic_cutting_sim/__init__.py",
+        "packages": {
+          "iniconfig": "2.3.1",
+          "pytest": "9.1.1",
+          "etils": "1.14.0",
+          "tzdata": "2026.5",
+          "fsspec": "2026.9.0",
+          "warp-lang": "1.17.0",
+          "newton-usd-schemas": "0.6.0",
+          "pyparsing": "3.3.3",
+          "setuptools": "78.1.0",
+          "packaging": "26.3",
+          "typing-extensions": "4.16.0",
+          "python-dateutil": "3.0.0",
+          "scipy": "1.18.1",
+          "pluggy": "1.7.0",
+          "robotic-cutting-sim": "0.2.0",
+          "contourpy": "1.4.0",
+          "mujoco": "3.12.0",
+          "glfw": "2.11.0",
+          "wheel": "0.45.1",
+          "pip": "25.0.1",
+          "pyyaml": "6.0.3",
+          "kiwisolver": "1.5.1",
+          "newton": "1.6.1",
+          "pyopengl": "3.1.10",
+          "cycler": "0.12.1",
+          "pygments": "2.21.0",
+          "fonttools": "4.67.0",
+          "six": "1.17.0",
+          "pillow": "13.0.0",
+          "mujoco-warp": "3.12.0",
+          "absl-py": "2.5.1",
+          "usd-core": "26.8",
+          "matplotlib": "3.11.2",
+          "zipp": "4.1.2",
+          "numpy": "2.5.4"
+        }
+      },
+      {
+        "runtime": "isaac_sim",
+        "status": "PASS_INSTALL_METADATA",
+        "version": [
+          3,
+          12,
+          12
+        ],
+        "project_origin": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/src/robotic_cutting_sim/__init__.py",
+        "packages": {
+          "pydantic-core": "2.50.1",
+          "fastapi": "0.139.2",
+          "contourpy": "1.3.3",
+          "propcache": "0.2.1",
+          "nvidia-cusolver-cu12": "11.7.3.90",
+          "botocore": "1.41.5",
+          "flatbuffers": "25.12.19",
+          "portalocker": "2.7.0",
+          "isaacsim-core": "6.2.0.0",
+          "nvidia-cufft-cu12": "11.3.3.83",
+          "torchaudio": "2.11.0+cu128",
+          "pycparser": "3.12",
+          "cffi": "2.1.1",
+          "psutil": "5.9.8",
+          "azure-identity": "1.13.0",
+          "jmespath": "1.0.1",
+          "kiwisolver": "1.4.9",
+          "nvidia-cuda-runtime-cu12": "12.8.90",
+          "nvidia-cusparselt-cu12": "0.7.1",
+          "h11": "0.16.0",
+          "annotated-doc": "0.0.5",
+          "nvidia-cublas-cu12": "12.8.4.1",
+          "wrapt": "1.16.0",
+          "mujoco-usd-converter": "0.6.1",
+          "isaacsim-app": "6.2.0.0",
+          "pydantic": "2.14.1",
+          "cryptography": "50.0.1",
+          "multidict": "6.1.0",
+          "cbor2": "5.9.0",
+          "qrcode": "7.4.2",
+          "aiobotocore": "2.26.0",
+          "oauthlib": "3.2.2",
+          "pypng": "0.20220715.0",
+          "numpy": "2.3.1",
+          "idna": "3.10",
+          "python-multipart": "0.0.32",
+          "python-dateutil": "2.9.0.post0",
+          "aiohttp": "3.14.3",
+          "httptools": "0.6.1",
+          "pillow": "12.3.0",
+          "warp-lang": "1.17.0",
+          "nvidia-curand-cu12": "10.3.9.90",
+          "pycollada": "0.9.3",
+          "osqp": "1.0.5",
+          "pyperclip": "1.11.0",
+          "isaacsim-utils": "6.2.0.0",
+          "trimesh": "4.11.1",
+          "aiosignal": "1.4.0",
+          "setuptools": "78.1.0",
+          "isaacsim-replicator": "6.2.0.0",
+          "sympy": "1.14.0",
+          "newton-usd-schemas": "0.5.0",
+          "triton": "3.6.0",
+          "typing-extensions": "4.16.0",
+          "markupsafe": "3.0.4",
+          "isaacsim-robot-motion": "6.2.0.0",
+          "requests": "2.32.3",
+          "nvidia-nvshmem-cu12": "3.4.5",
+          "typing-inspection": "0.4.4",
+          "etils": "1.13.0",
+          "robotic-cutting-sim": "0.2.0",
+          "async-timeout": "5.0.1",
+          "awscrt": "0.23.8",
+          "pyopengl-accelerate": "3.1.10",
+          "coverage": "7.17.0",
+          "imageio": "2.37.2",
+          "qdldl": "0.1.7.post5",
+          "isaacsim-robot": "6.2.0.0",
+          "tinyobjloader": "2.0.0rc13",
+          "mujoco": "3.12.0",
+          "yarl": "1.18.3",
+          "absl-py": "2.4.0",
+          "py-trees": "2.4.0",
+          "nest-asyncio": "1.6.0",
+          "wheel": "0.45.1",
+          "boto3": "1.41.5",
+          "azure-core": "1.38.0",
+          "annotated-types": "0.8.0",
+          "requests-oauthlib": "1.3.1",
+          "uvicorn": "0.29.0",
+          "watchdog": "4.0.0",
+          "isodate": "0.6.1",
+          "pydot": "4.0.1",
+          "pip": "25.0.1",
+          "isaacsim": "6.2.0.0",
+          "fonttools": "4.61.1",
+          "scipy": "1.17.0",
+          "idna-ssl": "1.1.0",
+          "isaacsim-gui": "6.2.0.0",
+          "pyyaml": "6.0.3",
+          "torch": "2.11.0+cu128",
+          "websockets": "14.2",
+          "pyjwt": "2.13.0",
+          "click": "8.3.3",
+          "coacd": "1.0.7",
+          "nvidia-cuda-nvrtc-cu12": "12.8.93",
+          "opencv-python-headless-noffmpeg": "4.14.0.94rc3",
+          "newton": "1.6.1",
+          "aioitertools": "0.11.0",
+          "python-utils": "4.1.4",
+          "fsspec": "2026.2.0",
+          "certifi": "2026.10.23",
+          "cuda-pathfinder": "1.6.0",
+          "imgui-bundle": "1.92.601",
+          "pycares": "5.0.1",
+          "pyopengl": "3.1.10",
+          "aiodns": "3.1.1",
+          "isaacsim-sensor": "6.2.0.0",
+          "nvidia-cufile-cu12": "1.13.1.3",
+          "attrs": "25.1.0",
+          "cycler": "0.12.1",
+          "onnxruntime-gpu": "1.26.0",
+          "numpy-stl": "4.1.1",
+          "cloudpickle": "3.1.2",
+          "transitions": "0.9.3",
+          "nvidia-nvtx-cu12": "12.8.90",
+          "networkx": "3.6.1",
+          "msal": "1.38.0",
+          "aiofiles": "23.2.1",
+          "starlette": "1.10.0",
+          "cuda-toolkit": "12.8.1",
+          "toml": "0.10.2",
+          "llvmlite": "0.46.0",
+          "torchvision": "0.26.0+cu128",
+          "asteval": "1.0.6",
+          "nvidia-cudnn-cu12": "9.19.0.56",
+          "six": "1.17.0",
+          "isaacsim-asset": "6.2.0.0",
+          "matplotlib": "3.10.8",
+          "pyparsing": "3.3.2",
+          "urdf-usd-converter": "0.3.2",
+          "anyio": "4.14.2",
+          "mpmath": "1.3.0",
+          "filelock": "3.25.2",
+          "nvidia-cuda-cupti-cu12": "12.8.90",
+          "mujoco-warp": "3.12.0",
+          "protobuf": "7.36.2",
+          "jinja2": "3.1.6",
+          "pytz": "2024.1",
+          "nvidia-nccl-cu12": "2.28.9",
+          "s3transfer": "0.15.0",
+          "msal-extensions": "1.3.1",
+          "glfw": "2.10.0",
+          "azure-storage-blob": "12.17.0",
+          "rtree": "1.4.1",
+          "isaacsim-storage": "6.2.0.0",
+          "nvidia-cusparse-cu12": "12.5.8.93",
+          "urllib3": "2.7.0",
+          "frozenlist": "1.5.0",
+          "aiohappyeyeballs": "2.6.1",
+          "packaging": "26.0",
+          "nvidia-nvjitlink-cu12": "12.8.93",
+          "isaacsim-kernel": "6.2.0.0",
+          "sentry-sdk": "2.42.1",
+          "cuda-bindings": "12.9.7",
+          "isaacsim-test": "6.2.0.0",
+          "charset-normalizer": "3.3.2"
+        }
+      },
+      {
+        "runtime": "isaac_lab",
+        "status": "PASS_INSTALL_METADATA",
+        "version": [
+          3,
+          12,
+          12
+        ],
+        "project_origin": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/src/robotic_cutting_sim/__init__.py",
+        "packages": {
+          "nvidia-cusolver-cu12": "11.7.3.90",
+          "mdurl": "0.1.2",
+          "urllib3": "2.8.0",
+          "farama-notifications": "0.0.6",
+          "nvidia-cufft-cu12": "11.3.3.83",
+          "requests": "2.34.2",
+          "fonttools": "4.68.0",
+          "nvidia-cuda-runtime-cu12": "12.8.90",
+          "nvidia-cusparselt-cu12": "0.7.1",
+          "nvidia-cublas-cu12": "12.8.4.1",
+          "charset-normalizer": "3.5.2",
+          "etils": "1.14.0",
+          "filelock": "3.32.3",
+          "isaaclab-physx": "8.0.0",
+          "isaaclab-ov": "5.1.5",
+          "tzdata": "2026.5",
+          "pillow": "12.3.0",
+          "warp-lang": "1.17.0",
+          "nvidia-curand-cu12": "10.3.9.90",
+          "rich": "15.0.0",
+          "newton-usd-schemas": "0.6.0",
+          "pyparsing": "3.3.3",
+          "usd-exchange": "3.0.1",
+          "setuptools": "78.1.0",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "sympy": "1.14.0",
+          "triton": "3.6.0",
+          "typing-extensions": "4.16.0",
+          "isaaclab-assets": "2.0.1",
+          "nvidia-nvshmem-cu12": "3.4.5",
+          "gymnasium": "1.4.0",
+          "python-dateutil": "3.0.0",
+          "scipy": "1.18.1",
+          "robotic-cutting-sim": "0.2.0",
+          "isaaclab-ppisp": "0.3.1",
+          "isaaclab-visualizers": "2.1.0",
+          "omniverseclient": "2.74.0",
+          "contourpy": "1.4.0",
+          "mujoco": "3.12.0",
+          "isaaclab": "28.0.0",
+          "glfw": "2.11.0",
+          "tqdm": "4.70.1",
+          "wheel": "0.45.1",
+          "omegaconf": "2.3.1",
+          "lazy-loader": "0.6",
+          "pip": "25.0.1",
+          "trimesh": "5.2.0",
+          "isaaclab-contrib": "3.2.0",
+          "pyyaml": "6.0.3",
+          "torch": "2.11.0+cu128",
+          "imageio": "2.38.1",
+          "nvidia-cuda-nvrtc-cu12": "12.8.93",
+          "markupsafe": "3.0.3",
+          "kiwisolver": "1.5.1",
+          "newton": "1.6.1",
+          "certifi": "2026.10.23",
+          "cuda-pathfinder": "1.6.0",
+          "hydra-core": "1.3.8",
+          "pyopengl": "3.1.10",
+          "nvidia-cufile-cu12": "1.13.1.3",
+          "cycler": "0.12.1",
+          "markdown-it-py": "4.2.0",
+          "wcwidth": "0.9.4",
+          "pygments": "2.21.0",
+          "cloudpickle": "3.1.2",
+          "idna": "3.20",
+          "nvidia-nvtx-cu12": "12.8.90",
+          "networkx": "3.6.1",
+          "cuda-toolkit": "12.8.1",
+          "h5py": "3.16.0",
+          "torchvision": "0.26.0+cu128",
+          "nvidia-cudnn-cu12": "9.19.0.56",
+          "six": "1.17.0",
+          "mpmath": "1.3.0",
+          "prettytable": "3.18.0",
+          "antlr4-python3-runtime": "4.9.3",
+          "nvidia-cuda-cupti-cu12": "12.8.90",
+          "imageio-ffmpeg": "0.6.0",
+          "mujoco-warp": "3.12.0",
+          "jinja2": "3.1.6",
+          "nvidia-nccl-cu12": "2.28.9",
+          "isaaclab-newton": "9.1.4",
+          "fsspec": "2026.7.0",
+          "absl-py": "2.5.1",
+          "pyglet": "2.1.19",
+          "psutil": "7.2.2",
+          "nvidia-cusparse-cu12": "12.5.8.93",
+          "nvidia-nvjitlink-cu12": "12.8.93",
+          "cuda-bindings": "12.9.7",
+          "matplotlib": "3.11.2",
+          "zipp": "4.1.2"
+        }
+      }
+    ],
+    "shadercache": {
+      "status": "PINNED_OFFICIAL_ARCHIVE_INSTALLED",
+      "source": "existing_verified",
+      "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-extension-cache/omni.hydra.rtx.shadercache.vulkan-1.0.0",
+      "version": "1.0.0+187cf21b.lx64.r",
+      "url": "https://d4i3qtqj3r0z5.cloudfront.net/omni.hydra.rtx.shadercache.vulkan-62cc1d6a06ffcf9d.zip",
+      "sha256": "ce1230814a7e3dbc32926adb5802c0c79ab09665036d54dfcbe74b57db459549",
+      "bytes": 1493911023,
+      "extension_name": "omni.hydra.rtx.shadercache.vulkan-1.0.0",
+      "config_sha256": "26b060c5853a0db684335ff09e5fe1249f46ee4fc7dd6c378f98a8370d120efd"
+    }
+  },
+  "doctor": {
+    "status": "PASS_METADATA_PRECHECK_WITH_WARNINGS",
+    "host": {
+      "os": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+      "distribution": {
+        "NAME": "Ubuntu",
+        "ID": "ubuntu",
+        "PRETTY_NAME": "Ubuntu 22.04.5 LTS",
+        "VERSION_ID": "22.04",
+        "VERSION": "22.04.5 LTS (Jammy Jellyfish)",
+        "VERSION_CODENAME": "jammy",
+        "ID_LIKE": "debian",
+        "HOME_URL": "https://www.ubuntu.com/",
+        "SUPPORT_URL": "https://help.ubuntu.com/",
+        "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+        "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+        "UBUNTU_CODENAME": "jammy"
+      },
+      "machine": "x86_64",
+      "cpu_count": 64,
+      "doctor_python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+      "ram": {
+        "MemTotal_bytes": 66718298112,
+        "MemAvailable_bytes": 48703123456,
+        "SwapTotal_bytes": 2147479552,
+        "SwapFree_bytes": 860160
+      }
+    },
+    "gpus": [
+      {
+        "physical_index": 0,
+        "uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+        "name": "NVIDIA GeForce RTX 5090",
+        "memory_total_mib": 32607,
+        "memory_free_mib": 31132,
+        "driver_version": "570.211.01",
+        "compute_capability": "12.0",
+        "utilization_percent": 4.0,
+        "rtx_family_candidate": true
+      },
+      {
+        "physical_index": 1,
+        "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+        "name": "NVIDIA GeForce RTX 5090",
+        "memory_total_mib": 32607,
+        "memory_free_mib": 24579,
+        "driver_version": "570.211.01",
+        "compute_capability": "12.0",
+        "utilization_percent": 52.0,
+        "rtx_family_candidate": true
+      }
+    ],
+    "selected_gpu": {
+      "status": "SELECTED_CANDIDATE",
+      "physical_index": 0,
+      "cuda_device": "cuda:0",
+      "uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "name": "NVIDIA GeForce RTX 5090",
+      "memory_free_mib": 31132,
+      "basis": "Most free VRAM among RTX-family candidates; native smoke must verify actual compatibility",
+      "native_compatibility_validated": false,
+      "cuda_visible_devices_modified": false,
+      "cuda_visible_devices": null,
+      "physical_cuda_numbering_unambiguous": true
+    },
+    "driver_advertised_max_cuda": "12.8",
+    "asset_cache": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache",
+      "roots": {
+        "Isaac/IsaacLab/Robots/FrankaEmika/franka_panda.usda": {
+          "present": true,
+          "bytes": 2096
+        },
+        "Isaac/Sensors/RealSense/D455/rsd455.usd": {
+          "present": true,
+          "bytes": 14070691
+        }
+      },
+      "composition_validated": false,
+      "pinned_file_checks": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/franka_panda.usda",
+          "expected_sha256": "eaf27723ba1934d792c6876679eb75491bdff944ad108d4e59734fa07dc65809",
+          "actual_sha256": "eaf27723ba1934d792c6876679eb75491bdff944ad108d4e59734fa07dc65809",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/Physics/mujoco.usda",
+          "expected_sha256": "82f363dd872bd8ca88847a76b1daf267fdace4095f6d505f3eb16acf49596f8d",
+          "actual_sha256": "82f363dd872bd8ca88847a76b1daf267fdace4095f6d505f3eb16acf49596f8d",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/Physics/physics.usda",
+          "expected_sha256": "0dc38454f02ea14d9ddd2437995fdc7c4a65634443cacdcc2a04e3de25655e00",
+          "actual_sha256": "0dc38454f02ea14d9ddd2437995fdc7c4a65634443cacdcc2a04e3de25655e00",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/Physics/physx.usda",
+          "expected_sha256": "cf5d9c127149518114dcdb84fac18ff89bb4700bb9aabe9e803114e85372f070",
+          "actual_sha256": "cf5d9c127149518114dcdb84fac18ff89bb4700bb9aabe9e803114e85372f070",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/base.usda",
+          "expected_sha256": "17091b4d8e3136901541d497c0c8fe671a3192f5f4763e709193d477fc9618d0",
+          "actual_sha256": "17091b4d8e3136901541d497c0c8fe671a3192f5f4763e709193d477fc9618d0",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/base_flat_hulls.usda",
+          "expected_sha256": "9cfd0feccf60022c9c1fd08c5d2e25035f4196f7ade03c2cecd0fc4bea21f4a2",
+          "actual_sha256": "9cfd0feccf60022c9c1fd08c5d2e25035f4196f7ade03c2cecd0fc4bea21f4a2",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/base_flat_primitives.usda",
+          "expected_sha256": "12d94dbad7b60dfa794d9717f9f82f311911f2b4ba0334ee89bb49168d4ca4e7",
+          "actual_sha256": "12d94dbad7b60dfa794d9717f9f82f311911f2b4ba0334ee89bb49168d4ca4e7",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/geometries.usd",
+          "expected_sha256": "c64f015a69302f5b277040fc54fc7addedab49c47e67d1b79f374414dd4e991b",
+          "actual_sha256": "c64f015a69302f5b277040fc54fc7addedab49c47e67d1b79f374414dd4e991b",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/instances.usda",
+          "expected_sha256": "d151d980980479a03818fe6be4ba983a99b9a5482caa6de233d11fd5bd247726",
+          "actual_sha256": "d151d980980479a03818fe6be4ba983a99b9a5482caa6de233d11fd5bd247726",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/instances_physx_hulls_clean.usda",
+          "expected_sha256": "50254bc251e240439ae5bcce491c8d84ef5eae6da21d6ff5115b113b368b0a4d",
+          "actual_sha256": "50254bc251e240439ae5bcce491c8d84ef5eae6da21d6ff5115b113b368b0a4d",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/materials.usda",
+          "expected_sha256": "3b87896947047adc23abafac72ccb113b26a32293645db8e755c51f2abe58b9b",
+          "actual_sha256": "3b87896947047adc23abafac72ccb113b26a32293645db8e755c51f2abe58b9b",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/IsaacLab/Robots/FrankaEmika/payloads/robot.usda",
+          "expected_sha256": "060bd8bc6f47b6d57ef918d05629af36763998a275c5102bd4aa4540e0fcf15b",
+          "actual_sha256": "060bd8bc6f47b6d57ef918d05629af36763998a275c5102bd4aa4540e0fcf15b",
+          "status": "PASS"
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache/Isaac/Sensors/RealSense/D455/rsd455.usd",
+          "expected_sha256": "441c2bf503f7007f5ff284283459bf5c21507ae562074f37f54f9223ea3956a7",
+          "actual_sha256": "441c2bf503f7007f5ff284283459bf5c21507ae562074f37f54f9223ea3956a7",
+          "status": "PASS"
+        }
+      ],
+      "scope": "Presence only; missing cache may be fetched by the bounded static exporter, composition is tested by validation"
+    },
+    "advisories": [
+      {
+        "check": "platform",
+        "status": "PASS",
+        "value": [
+          "Linux",
+          "x86_64"
+        ]
+      },
+      {
+        "check": "tested_distribution",
+        "status": "PASS",
+        "value": {
+          "NAME": "Ubuntu",
+          "ID": "ubuntu",
+          "PRETTY_NAME": "Ubuntu 22.04.5 LTS",
+          "VERSION_ID": "22.04",
+          "VERSION": "22.04.5 LTS (Jammy Jellyfish)",
+          "VERSION_CODENAME": "jammy",
+          "ID_LIKE": "debian",
+          "HOME_URL": "https://www.ubuntu.com/",
+          "SUPPORT_URL": "https://help.ubuntu.com/",
+          "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+          "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+          "UBUNTU_CODENAME": "jammy"
+        }
+      },
+      {
+        "check": "driver_reference",
+        "status": "PASS_RECORDED_REFERENCE_ONLY",
+        "value": "570.211.01",
+        "scope": "570.211.01 was measured here, not a universal minimum; only an actual smoke verifies this machine"
+      },
+      {
+        "check": "free_vram",
+        "status": "PASS_ADVISORY_ONLY",
+        "value_mib": 31132,
+        "scope": "4GiB is an advisory compact-scene headroom reference, never an arbitrary compatibility block"
+      },
+      {
+        "check": "disk_installation_headroom",
+        "status": "PASS_ADVISORY_ONLY",
+        "free_gib": 130.58466339111328,
+        "missing_installation_reference_gib": 0.0,
+        "scope": "Reference sizes only; existing envs are not duplicated, no deletion is performed"
+      },
+      {
+        "check": "extensions",
+        "status": "PRESENT_NOT_BOOT_VALIDATED",
+        "action": "Existing Kit launch fetches missing pinned extensions; doctor never boots it"
+      },
+      {
+        "check": "asset_cache",
+        "status": "PASS_PINNED_HASHES",
+        "action": "Use scripts/fetch_runtime_assets.py for pinned official cache; static validation checks composition"
+      }
+    ],
+    "receipt": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/doctor_all_final_003/result.json",
+      "sha256": "d8719aa8a1e484239806bc04483936f0fad715307f287f9107bdd5a59d8c7af7",
+      "bytes": 27322
+    }
+  },
+  "validation": {
+    "status": "PASS_DEPLOYMENT_WITH_EXPECTED_TRIM_SURFACE_FAILURE",
+    "requested_scope_pass": true,
+    "tier": "full",
+    "runtime_contracts_pass": true,
+    "full_episode_physical_separation_pass": true,
+    "all_strict_full_task_metrics_pass": false,
+    "allow_expected_trim_geometry_fail": true,
+    "full_benchmark_ready": false,
+    "hardware_sensor_calibration_validated": false,
+    "scope": "Deployment execution, named RGB-D and sampled separation; strict geometry, native accuracy, contact, coupling-energy and convergence remain separate",
+    "tool_sources_unchanged": true,
+    "doctor": "doctor/result.json",
+    "protocol": "protocol.json"
+  },
+  "validation_wall_s_including_audits": 1594.2961793050636,
+  "protocol": {
+    "schema": "portable_deployment_validation_v1",
+    "tier": "full",
+    "runtime": "both",
+    "seed": 42,
+    "gpu_selection": {
+      "status": "SELECTED_CANDIDATE",
+      "physical_index": 0,
+      "cuda_device": "cuda:0",
+      "uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "name": "NVIDIA GeForce RTX 5090",
+      "memory_free_mib": 31132,
+      "basis": "Most free VRAM among RTX-family candidates; native smoke must verify actual compatibility",
+      "native_compatibility_validated": false,
+      "cuda_visible_devices_modified": false,
+      "cuda_visible_devices": null,
+      "physical_cuda_numbering_unambiguous": true
+    },
+    "commands": [
+      {
+        "name": "cpu_regression",
+        "kind": "cpu",
+        "runtime": "base",
+        "output_dir": null,
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q"
+        ]
+      },
+      {
+        "name": "static_workcell",
+        "kind": "static",
+        "runtime": "base",
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/static_workcell",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "scene",
+          "--preset",
+          "workcell",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--seed",
+          "42",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/static_workcell"
+        ]
+      },
+      {
+        "name": "isaac_sim_smoke_cut",
+        "kind": "episode",
+        "runtime": "isaac_sim",
+        "task_id": "CUT-01",
+        "steps": 2,
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "2",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "1",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut",
+          "--gpu",
+          "0",
+          "--camera-mode",
+          "native_single_view",
+          "--native-noise",
+          "off"
+        ],
+        "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut_camera_audit",
+        "camera_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+          "--episode",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut_camera_audit"
+        ],
+        "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut_task_audit",
+        "task_audit_command": null
+      },
+      {
+        "name": "isaac_sim_full_cut",
+        "kind": "episode",
+        "runtime": "isaac_sim",
+        "task_id": "CUT-01",
+        "steps": 400,
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+          "--gpu",
+          "0",
+          "--camera-mode",
+          "native_single_view",
+          "--native-noise",
+          "off"
+        ],
+        "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut_camera_audit",
+        "camera_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+          "--episode",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut_camera_audit"
+        ],
+        "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut_task_audit",
+        "task_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_cutting_task_episodes.py",
+          "--recording-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut_task_audit"
+        ]
+      },
+      {
+        "name": "isaac_sim_full_trim",
+        "kind": "episode",
+        "runtime": "isaac_sim",
+        "task_id": "TRIM-01",
+        "steps": 400,
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+          "--task-id",
+          "TRIM-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+          "--gpu",
+          "0",
+          "--camera-mode",
+          "native_single_view",
+          "--native-noise",
+          "off",
+          "--particle-spacing",
+          "0.002"
+        ],
+        "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim_camera_audit",
+        "camera_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+          "--episode",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim_camera_audit"
+        ],
+        "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim_task_audit",
+        "task_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_cutting_task_episodes.py",
+          "--recording-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim_task_audit"
+        ]
+      },
+      {
+        "name": "isaac_lab_smoke_cut",
+        "kind": "episode",
+        "runtime": "isaac_lab",
+        "task_id": "CUT-01",
+        "steps": 2,
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "2",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "1",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut",
+          "--material-device",
+          "cuda:0",
+          "--reset-check"
+        ],
+        "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut_camera_audit",
+        "camera_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+          "--episode",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut_camera_audit"
+        ],
+        "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut_task_audit",
+        "task_audit_command": null
+      },
+      {
+        "name": "isaac_lab_full_cut",
+        "kind": "episode",
+        "runtime": "isaac_lab",
+        "task_id": "CUT-01",
+        "steps": 400,
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut",
+          "--material-device",
+          "cuda:0",
+          "--reset-check"
+        ],
+        "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut_camera_audit",
+        "camera_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+          "--episode",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut_camera_audit"
+        ],
+        "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut_task_audit",
+        "task_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_cutting_task_episodes.py",
+          "--recording-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut_task_audit"
+        ]
+      },
+      {
+        "name": "isaac_lab_full_trim",
+        "kind": "episode",
+        "runtime": "isaac_lab",
+        "task_id": "TRIM-01",
+        "steps": 400,
+        "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim",
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+          "--task-id",
+          "TRIM-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim",
+          "--material-device",
+          "cuda:0",
+          "--reset-check",
+          "--particle-spacing",
+          "0.002"
+        ],
+        "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim_camera_audit",
+        "camera_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+          "--episode",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim_camera_audit"
+        ],
+        "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim_task_audit",
+        "task_audit_command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_cutting_task_episodes.py",
+          "--recording-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim_task_audit"
+        ]
+      }
+    ],
+    "tool_source_sha256": {
+      "scripts/run_deployment_validation.py": "703d0732bdcb0a535ed9ec7636a92f12ab8ae038a4b4dffa6ade1c1a11f61a64",
+      "src/robotic_cutting_sim/deployment_doctor.py": "f1c581461cb885429bf52688ce5ef57a4a60119ed7d6a38873c2c28201b8c7e8",
+      "src/robotic_cutting_sim/deployment_validation.py": "96c6d3a20e03d839f513f76c41c157a06143cd5987828e3e6ff198f5b802a652"
+    },
+    "allow_expected_trim_geometry_fail": true,
+    "scope": "Static composition, actual runtime/named RGB-D contracts and optional full sampled separation; no complete scientific/hardware acceptance",
+    "full_case_recipe": "400x20ms; CUT1mm particles, TRIM explicit2mm; existing4mm material grid and current v3 wrist/Global rig",
+    "doctor_does_not_boot_kit": true,
+    "driver_or_dependencies_changed": false
+  },
+  "stages": [
+    {
+      "name": "cpu_regression",
+      "kind": "cpu",
+      "runtime": "base",
+      "status": "PASS",
+      "tests_passed": 276,
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "-m",
+          "pytest",
+          "-q"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/cpu_regression.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 3.472703185863793,
+        "log_sha256": "8d49cbda4131b0ba5121ef6f07b44ac9c625859f5ca24a1f8317377aeaffd2be"
+      }
+    },
+    {
+      "name": "static_workcell",
+      "kind": "static",
+      "runtime": "base",
+      "status": "PASS",
+      "checks": {
+        "process": true,
+        "result_status": true,
+        "official_assets_composed": true,
+        "static_topology": true,
+        "named_camera_prims": true,
+        "usd_exists": true
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+          "-m",
+          "robotic_cutting_sim.cli",
+          "scene",
+          "--preset",
+          "workcell",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--seed",
+          "42",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/static_workcell"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/static_workcell.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 0.9668677570298314,
+        "log_sha256": "47ac973703746748b88011d9f35fcd78b25ea6cab9c85e462fb12d801275b5ec"
+      }
+    },
+    {
+      "name": "isaac_sim_smoke_cut",
+      "kind": "episode",
+      "runtime": "isaac_sim",
+      "status": "PASS",
+      "task_id": "CUT-01",
+      "steps": 2,
+      "classification": {
+        "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+        "checks": {
+          "process_exit_zero": true,
+          "actual_result_receipt": true,
+          "requested_task_id": true,
+          "expected_control_steps": true,
+          "positive_expected_simulation_time": true,
+          "camera_audit_receipt": true,
+          "camera_fk_and_timestamps": true,
+          "camera_source_bytes_resolved": true,
+          "enough_actual_camera_frames": true,
+          "actual_native_articulation": true,
+          "actual_native_substeps": true,
+          "no_standalone_robot_dynamics": true,
+          "no_replay": true,
+          "actual_native_pipeline": true,
+          "measured_reset_receipt": true,
+          "reset_joints_restored": true,
+          "reset_all_dofs_restored": true,
+          "reset_bodies_restored": true,
+          "reset_material_restored": true,
+          "reset_cut_history_cleared": true,
+          "reset_clock_zero": true,
+          "named_rgbd_streams": true,
+          "camera_count_matches_payloads": true,
+          "camera_payload_range_calibration_contract": true,
+          "rgbd_frame_timestamps": true,
+          "wrist_runtime_optics": true
+        },
+        "physical_cutting": "NOT_RUN_SMOKE",
+        "strict_task_metrics": "NOT_RUN",
+        "expected_trim_surface_failure": false,
+        "camera_engineering_visibility": "PASS",
+        "current_component_visibility": "NOT_RUN_NO_SPLIT",
+        "sensor_scope": {
+          "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+          "global_camera": "native SingleView D455"
+        },
+        "full_benchmark_ready": false,
+        "reset_clock_scope": "MEASURED_ZERO",
+        "camera_reset_repeatability": {
+          "wrist_d405_0": {
+            "max_depth_error_m": 0.03729715943336487,
+            "valid_mask_changed_pixels": 0
+          },
+          "wrist_d405_1": {
+            "max_depth_error_m": 0.033241599798202515,
+            "valid_mask_changed_pixels": 0
+          },
+          "global_d455": {
+            "max_depth_error_m": 0.7607010006904602,
+            "valid_mask_changed_pixels": 212
+          }
+        },
+        "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "2",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "1",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut",
+          "--gpu",
+          "0",
+          "--camera-mode",
+          "native_single_view",
+          "--native-noise",
+          "off"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 100.84168425085954,
+        "log_sha256": "ba12cb946ee3c18873a8984572753ae2f7a0011914b9e6d764fd4fb43716b49e"
+      },
+      "actual": {
+        "steps": 2,
+        "simulation_s": 0.04,
+        "wall_s": 9.982985868118703,
+        "native_physics_steps": 20,
+        "camera_frames": 3,
+        "camera_ids": [
+          "wrist_d405_0",
+          "wrist_d405_1",
+          "global_d455"
+        ],
+        "robot_dynamics_source": "Isaac PhysX",
+        "per_camera_sensor_models": {
+          "wrist_d405_0": "ideal_d405_prototype",
+          "wrist_d405_1": "ideal_d405_prototype",
+          "global_d455": "native_single_view_d455_provisional"
+        }
+      },
+      "manifest": {
+        "git_sha": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+        "git_dirty": false,
+        "config_sha256": "940bf7b0ff106cf311ec2f0701972ccc1366795aa82904cde718b09caaaf0c73",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.3.1",
+          "scipy": "1.17.0",
+          "isaaclab": null,
+          "isaacsim": "6.2.0.0",
+          "torch": "2.11.0+cu128",
+          "usd-core": null,
+          "mujoco": "3.12.0",
+          "mujoco-warp": "3.12.0",
+          "newton-usd-schemas": "0.5.0",
+          "ovrtx": null,
+          "ovstage": null
+        },
+        "source_checkouts": {
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "kinematics": {
+        "status": "PASS",
+        "checks": {
+          "trace_time_is_nondecreasing": true,
+          "complete_robot_time_span": true,
+          "every_control_interval_sampled": true,
+          "timestamps_match_actual_robot": true,
+          "wrist_d405_0_actual_fk": true,
+          "wrist_d405_0_current_usd": true,
+          "wrist_d405_0_inverse": true,
+          "wrist_d405_0_actual_hand_and_immutable_mount": true,
+          "wrist_d405_1_actual_fk": true,
+          "wrist_d405_1_current_usd": true,
+          "wrist_d405_1_inverse": true,
+          "wrist_d405_1_actual_hand_and_immutable_mount": true,
+          "global_d455_actual_fk": true,
+          "global_d455_current_usd": true,
+          "global_d455_inverse": true,
+          "global_d455_actual_hand_and_immutable_mount": true
+        },
+        "trace_samples": 3,
+        "unique_timestamps": 3,
+        "robot_samples": 3,
+        "robot_duration_s": 0.04,
+        "maximum_unique_sample_interval_s": 0.02,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 6.7543104241646565e-09,
+            "current_usd_rotation_error_rad": 1.0326293532378018e-07,
+            "inverse_max_abs_identity_error": 1.1102230246251565e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 4.393959586019642e-09,
+            "current_usd_rotation_error_rad": 7.444854768202421e-08,
+            "inverse_max_abs_identity_error": 1.1102230246251565e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 2.220446049250313e-16
+          }
+        }
+      },
+      "visibility_and_optics": {
+        "status": "PASS",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": true,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "minimum_camera_metrics": {
+        "wrist_d405_0": {
+          "valid_depth_fraction": 0.8859424135220125,
+          "depth_consistent_material_pixels": 13086,
+          "depth_consistent_knife_pixels": 3897,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "wrist_d405_1": {
+          "valid_depth_fraction": 0.9350948309748428,
+          "depth_consistent_material_pixels": 6848,
+          "depth_consistent_knife_pixels": 1502,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "global_d455": {
+          "valid_depth_fraction": 0.2738802083333333,
+          "depth_consistent_material_pixels": 1127,
+          "depth_consistent_knife_pixels": 153,
+          "resolution_wh": [
+            640,
+            480
+          ]
+        }
+      },
+      "reset": {
+        "q_max_error_rad": 0.0,
+        "material_max_error_m": 0.0,
+        "nonzero_cut_codes": 0,
+        "time_s": 0.0,
+        "dynamics_reset_measured": true,
+        "all_nine_dofs_max_error_rad": 0.0,
+        "all_body_pose_max_abs_error": 0.0,
+        "surface_arrays_bitwise_equal": false,
+        "camera_reset_repeatability": {
+          "wrist_d405_0": {
+            "max_depth_error_m": 0.03729715943336487,
+            "valid_mask_changed_pixels": 0
+          },
+          "wrist_d405_1": {
+            "max_depth_error_m": 0.033241599798202515,
+            "valid_mask_changed_pixels": 0
+          },
+          "global_d455": {
+            "max_depth_error_m": 0.7607010006904602,
+            "valid_mask_changed_pixels": 212
+          }
+        },
+        "sensor_info": {
+          "wrist_d405_0": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}"
+          },
+          "wrist_d405_1": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}"
+          },
+          "global_d455": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}",
+            "depth_sensor_distance": "{}",
+            "depth_sensor_point_cloud_position": "{}"
+          }
+        }
+      },
+      "preserved_inputs": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut/result.json",
+          "sha256": "ba12cb946ee3c18873a8984572753ae2f7a0011914b9e6d764fd4fb43716b49e",
+          "bytes": 3019
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut/manifest.json",
+          "sha256": "ae10bb11e7dd1824ca94e8f08a5b68bfc801c9018eeed243b764718bd2db36e8",
+          "bytes": 11554
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut/robot_state.npz",
+          "sha256": "1504f361ee80611a760f2bc5fa622283164e7fcd81baeaa32b3222fadedce5c5",
+          "bytes": 4819
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut/camera_pose_trace.json",
+          "sha256": "6bf6a35dac912e5ab6751d20fdcb840abaaf551cd9e547e3808bcfa8baee9c47",
+          "bytes": 30755
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut_camera_audit/result.json",
+          "sha256": "f1e20e48d915cef95dc117a6f0d5928ffda542652f9c30988710ae1c09ab1733",
+          "bytes": 51144
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_smoke_cut/oracle_debug/physics_state.npz",
+          "sha256": "48c30b279a8d44fc22cf681a906bfbf696f4cb6c54929b7ea73f9766734279f7",
+          "bytes": 7924789
+        }
+      ]
+    },
+    {
+      "name": "isaac_sim_full_cut",
+      "kind": "episode",
+      "runtime": "isaac_sim",
+      "status": "PASS",
+      "task_id": "CUT-01",
+      "steps": 400,
+      "classification": {
+        "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+        "checks": {
+          "process_exit_zero": true,
+          "actual_result_receipt": true,
+          "requested_task_id": true,
+          "expected_control_steps": true,
+          "positive_expected_simulation_time": true,
+          "camera_audit_receipt": true,
+          "camera_fk_and_timestamps": true,
+          "camera_source_bytes_resolved": true,
+          "enough_actual_camera_frames": true,
+          "actual_native_articulation": true,
+          "actual_native_substeps": true,
+          "no_standalone_robot_dynamics": true,
+          "no_replay": true,
+          "actual_native_pipeline": true,
+          "measured_reset_receipt": true,
+          "reset_joints_restored": true,
+          "reset_all_dofs_restored": true,
+          "reset_bodies_restored": true,
+          "reset_material_restored": true,
+          "reset_cut_history_cleared": true,
+          "reset_clock_zero": true,
+          "named_rgbd_streams": true,
+          "camera_count_matches_payloads": true,
+          "camera_payload_range_calibration_contract": true,
+          "rgbd_frame_timestamps": true,
+          "wrist_runtime_optics": true,
+          "complete_camera_episode": true,
+          "independent_task_source_bytes": true,
+          "recorded_task_recomputed": true,
+          "finite_available_numerical_screens": true
+        },
+        "physical_cutting": "PASS_SAMPLED_SEPARATION",
+        "strict_task_metrics": "PASS_TASK_METRICS",
+        "expected_trim_surface_failure": false,
+        "camera_engineering_visibility": "PASS",
+        "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE",
+        "sensor_scope": {
+          "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+          "global_camera": "native SingleView D455"
+        },
+        "full_benchmark_ready": false,
+        "reset_clock_scope": "MEASURED_ZERO",
+        "camera_reset_repeatability": {
+          "wrist_d405_0": {
+            "max_depth_error_m": 0.03729715943336487,
+            "valid_mask_changed_pixels": 0
+          },
+          "wrist_d405_1": {
+            "max_depth_error_m": 0.033241599798202515,
+            "valid_mask_changed_pixels": 0
+          },
+          "global_d455": {
+            "max_depth_error_m": 0.7607010006904602,
+            "valid_mask_changed_pixels": 212
+          }
+        },
+        "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+          "--gpu",
+          "0",
+          "--camera-mode",
+          "native_single_view",
+          "--native-noise",
+          "off"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 300.0211091910023,
+        "log_sha256": "bccfacb6f01b1f875e52da801f02e2c207a59f8526a7d8ee50da7c8b35be8403"
+      },
+      "actual": {
+        "steps": 400,
+        "simulation_s": 8.0,
+        "wall_s": 288.29222089401446,
+        "native_physics_steps": 4000,
+        "camera_frames": 41,
+        "camera_ids": [
+          "wrist_d405_0",
+          "wrist_d405_1",
+          "global_d455"
+        ],
+        "robot_dynamics_source": "Isaac PhysX",
+        "per_camera_sensor_models": {
+          "wrist_d405_0": "ideal_d405_prototype",
+          "wrist_d405_1": "ideal_d405_prototype",
+          "global_d455": "native_single_view_d455_provisional"
+        }
+      },
+      "manifest": {
+        "git_sha": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+        "git_dirty": false,
+        "config_sha256": "867177c0ad16fd3e516933e1f17c491688945c183dc2110a72c439ff6c6debfe",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.3.1",
+          "scipy": "1.17.0",
+          "isaaclab": null,
+          "isaacsim": "6.2.0.0",
+          "torch": "2.11.0+cu128",
+          "usd-core": null,
+          "mujoco": "3.12.0",
+          "mujoco-warp": "3.12.0",
+          "newton-usd-schemas": "0.5.0",
+          "ovrtx": null,
+          "ovstage": null
+        },
+        "source_checkouts": {
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "kinematics": {
+        "status": "PASS",
+        "checks": {
+          "trace_time_is_nondecreasing": true,
+          "complete_robot_time_span": true,
+          "every_control_interval_sampled": true,
+          "timestamps_match_actual_robot": true,
+          "full_episode_has_at_least_401_unique_samples": true,
+          "wrist_d405_0_actual_fk": true,
+          "wrist_d405_0_current_usd": true,
+          "wrist_d405_0_inverse": true,
+          "wrist_d405_0_actual_hand_and_immutable_mount": true,
+          "wrist_d405_1_actual_fk": true,
+          "wrist_d405_1_current_usd": true,
+          "wrist_d405_1_inverse": true,
+          "wrist_d405_1_actual_hand_and_immutable_mount": true,
+          "global_d455_actual_fk": true,
+          "global_d455_current_usd": true,
+          "global_d455_inverse": true,
+          "global_d455_actual_hand_and_immutable_mount": true
+        },
+        "trace_samples": 401,
+        "unique_timestamps": 401,
+        "robot_samples": 401,
+        "robot_duration_s": 8.0,
+        "maximum_unique_sample_interval_s": 0.020000000000000462,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 1.9401465369682486e-08,
+            "current_usd_rotation_error_rad": 1.646238782988206e-07,
+            "inverse_max_abs_identity_error": 2.779731963827309e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 4.393959586019642e-09,
+            "current_usd_rotation_error_rad": 7.444854768202421e-08,
+            "inverse_max_abs_identity_error": 1.1102230246251565e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 2.220446049250313e-16
+          }
+        }
+      },
+      "visibility_and_optics": {
+        "status": "PASS",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": true,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "minimum_camera_metrics": {
+        "wrist_d405_0": {
+          "valid_depth_fraction": 0.8859424135220125,
+          "depth_consistent_material_pixels": 13086,
+          "depth_consistent_knife_pixels": 2905,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "wrist_d405_1": {
+          "valid_depth_fraction": 0.9166838639937107,
+          "depth_consistent_material_pixels": 5716,
+          "depth_consistent_knife_pixels": 755,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "global_d455": {
+          "valid_depth_fraction": 0.27052734375,
+          "depth_consistent_material_pixels": 878,
+          "depth_consistent_knife_pixels": 102,
+          "resolution_wh": [
+            640,
+            480
+          ]
+        }
+      },
+      "task_score": {
+        "task_id": "CUT-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "PASS_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "two_substantial_physical_parts": true,
+          "two_main_parts_retain_mass": true,
+          "cut_at_workpiece_local_target_plane": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.07199999999999998,
+            0.07199999999999998
+          ],
+          "recorded_mass_kg": 0.14399999999999996,
+          "expected_task_sampler_mass_kg": 0.14399999999999996,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 96000,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 2009088,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+          "substantial_parts": 2,
+          "two_main_parts_mass_fraction": 1.0,
+          "minor_parts_mass_fraction": 0.0
+        },
+        "missing_evidence": []
+      },
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.002165102316740406,
+          "rms_edge_position_error_m": 0.0003577646821087487,
+          "maximum_edge_local_z_error_m": 0.0018065461007799183,
+          "maximum_edge_rotation_error_deg": 0.22003581217797755
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00021165392164751315,
+          "rms_edge_position_error_m": 7.233297533591565e-05,
+          "maximum_edge_local_z_error_m": 0.0001474406803297114,
+          "maximum_edge_rotation_error_deg": 0.02530100028763841
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0016907895536803534,
+        "commanded_vs_task_schedule_max_position_m": 0.0,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.0001568390324700207
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.08636622875928879,
+            0.12491539865732193,
+            -0.181664377450943,
+            -2.484315872192383,
+            0.044849786907434464,
+            2.6077380180358887,
+            0.4548097550868988
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.06841909885406494,
+            0.2701207995414734,
+            -0.1530923694372177,
+            -2.477008819580078,
+            0.10481014102697372,
+            2.7421116828918457,
+            0.4980458915233612
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.034453924745321274,
+            0.210347518324852,
+            0.048584263771772385,
+            0.05726205185055733,
+            0.0808376744389534,
+            0.17951150238513947,
+            0.058140624314546585
+          ],
+          [
+            3.0860456551318194e-11,
+            3.25832798242498e-11,
+            1.5365142491674533e-10,
+            1.682976952244175e-10,
+            1.8795003331462112e-09,
+            3.615298616033158e-10,
+            7.159821069357974e-10
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.016094781458377838,
+            0.14195147156715393,
+            0.026750147342681885,
+            0.00656580924987793,
+            0.059747662395238876,
+            0.13285613059997559,
+            0.04308432340621948
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 0.0,
+        "parked_second_arm_max_speed_rad_s": 1.8795003331462112e-09,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "minimum_detF_all_control_intervals": 0.9446390867233276,
+        "minimum_final_particle_detF": 0.9486590623855591,
+        "maximum_saved_material_speed_m_s": 0.053284708350541485,
+        "maximum_control_interval_material_speed_m_s": 0.06393598765134811,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": null,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 6540106,
+          "control_intervals_with_tool_contacts": 138,
+          "peak_next_reaction_force_N": 0.2803580360427996,
+          "peak_next_reaction_torque_Nm": 0.0031630044506957976,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.054791847963088,
+            -0.0003238957856912042,
+            0.12284022016112317,
+            5.304918977983367e-06,
+            -0.0019051167935184993,
+            6.5868263425528095e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.1610517162564453,
+          "reaction_force_times_dt_impulse_max_abs_error": 1.1882855810441129e-16,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0013592386970424641,
+          "robot_applied_material_wrench_work_J": -0.0011201851770426088,
+          "robot_work_source": "Recorded actual wrench and measured world edge increments",
+          "robot_boundary_reconstruction_work_J": -0.0011201851770426088,
+          "interface_work_residual_fraction": 0.17587309758028988,
+          "maximum_material_fixture_penetration_m": 0.00023931951727718115,
+          "maximum_tool_material_penetration_m": 0.00043758077663369477,
+          "maximum_material_pair_overlap_m": 0.00012318167136982083,
+          "material_pair_events_unattributed": 94080,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.001689614412271112,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "reset": {
+        "q_max_error_rad": 0.0,
+        "material_max_error_m": 0.0,
+        "nonzero_cut_codes": 0,
+        "time_s": 0.0,
+        "dynamics_reset_measured": true,
+        "all_nine_dofs_max_error_rad": 0.0,
+        "all_body_pose_max_abs_error": 0.0,
+        "surface_arrays_bitwise_equal": false,
+        "camera_reset_repeatability": {
+          "wrist_d405_0": {
+            "max_depth_error_m": 0.03729715943336487,
+            "valid_mask_changed_pixels": 0
+          },
+          "wrist_d405_1": {
+            "max_depth_error_m": 0.033241599798202515,
+            "valid_mask_changed_pixels": 0
+          },
+          "global_d455": {
+            "max_depth_error_m": 0.7607010006904602,
+            "valid_mask_changed_pixels": 212
+          }
+        },
+        "sensor_info": {
+          "wrist_d405_0": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}"
+          },
+          "wrist_d405_1": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}"
+          },
+          "global_d455": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}",
+            "depth_sensor_distance": "{}",
+            "depth_sensor_point_cloud_position": "{}"
+          }
+        }
+      },
+      "preserved_inputs": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/result.json",
+          "sha256": "bccfacb6f01b1f875e52da801f02e2c207a59f8526a7d8ee50da7c8b35be8403",
+          "bytes": 3043
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/manifest.json",
+          "sha256": "d0fa164b483a610f6e6a57795a5e6bc6668c4011af61fe2e8dcd5cd8d1413ea1",
+          "bytes": 11559
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/robot_state.npz",
+          "sha256": "c5c7b2476fea46e144a19967fc83ec8c9b080169bebf8e77b3ab27468b257a53",
+          "bytes": 193425
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/camera_pose_trace.json",
+          "sha256": "e9fa36819379601190e203301c8c2cb118482e65dba4a17119d56cd8b68cf12c",
+          "bytes": 4082222
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut_camera_audit/result.json",
+          "sha256": "cac262baa07632a7c7fa024aab7922b9d8a4726d07d28c702efab7dd412382fd",
+          "bytes": 1231890
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut_task_audit/result.json",
+          "sha256": "d9976892257d7fb940a33178dc572b8f20cef245ae4a3e607d18c8870183a342",
+          "bytes": 24394
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/oracle_debug/physics_state.npz",
+          "sha256": "4473ea35c7dbff16e9cf87fa59f4fc06a0bfde24b065ae70f3ba9ec70fd873a8",
+          "bytes": 92161302
+        }
+      ]
+    },
+    {
+      "name": "isaac_sim_full_trim",
+      "kind": "episode",
+      "runtime": "isaac_sim",
+      "status": "PASS",
+      "task_id": "TRIM-01",
+      "steps": 400,
+      "classification": {
+        "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+        "checks": {
+          "process_exit_zero": true,
+          "actual_result_receipt": true,
+          "requested_task_id": true,
+          "expected_control_steps": true,
+          "positive_expected_simulation_time": true,
+          "camera_audit_receipt": true,
+          "camera_fk_and_timestamps": true,
+          "camera_source_bytes_resolved": true,
+          "enough_actual_camera_frames": true,
+          "actual_native_articulation": true,
+          "actual_native_substeps": true,
+          "no_standalone_robot_dynamics": true,
+          "no_replay": true,
+          "actual_native_pipeline": true,
+          "measured_reset_receipt": true,
+          "reset_joints_restored": true,
+          "reset_all_dofs_restored": true,
+          "reset_bodies_restored": true,
+          "reset_material_restored": true,
+          "reset_cut_history_cleared": true,
+          "reset_clock_zero": true,
+          "named_rgbd_streams": true,
+          "camera_count_matches_payloads": true,
+          "camera_payload_range_calibration_contract": true,
+          "rgbd_frame_timestamps": true,
+          "wrist_runtime_optics": true,
+          "complete_camera_episode": true,
+          "independent_task_source_bytes": true,
+          "recorded_task_recomputed": true,
+          "finite_available_numerical_screens": true
+        },
+        "physical_cutting": "PASS_SAMPLED_SEPARATION",
+        "strict_task_metrics": "FAIL_TASK_METRICS",
+        "expected_trim_surface_failure": true,
+        "camera_engineering_visibility": "FAIL",
+        "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE",
+        "sensor_scope": {
+          "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+          "global_camera": "native SingleView D455"
+        },
+        "full_benchmark_ready": false,
+        "reset_clock_scope": "MEASURED_ZERO",
+        "camera_reset_repeatability": {
+          "wrist_d405_0": {
+            "max_depth_error_m": 0.0323411226272583,
+            "valid_mask_changed_pixels": 0
+          },
+          "wrist_d405_1": {
+            "max_depth_error_m": 0.03689643740653992,
+            "valid_mask_changed_pixels": 0
+          },
+          "global_d455": {
+            "max_depth_error_m": 0.7607010006904602,
+            "valid_mask_changed_pixels": 198
+          }
+        },
+        "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+          "--task-id",
+          "TRIM-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+          "--gpu",
+          "0",
+          "--camera-mode",
+          "native_single_view",
+          "--native-noise",
+          "off",
+          "--particle-spacing",
+          "0.002"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 121.64284030790441,
+        "log_sha256": "26b28676a14068def5c3cce658b3b39d29aa89f4bea260e1b2c7d5aef07eee3f"
+      },
+      "actual": {
+        "steps": 400,
+        "simulation_s": 8.0,
+        "wall_s": 110.97482842113823,
+        "native_physics_steps": 4000,
+        "camera_frames": 41,
+        "camera_ids": [
+          "wrist_d405_0",
+          "wrist_d405_1",
+          "global_d455"
+        ],
+        "robot_dynamics_source": "Isaac PhysX",
+        "per_camera_sensor_models": {
+          "wrist_d405_0": "ideal_d405_prototype",
+          "wrist_d405_1": "ideal_d405_prototype",
+          "global_d455": "native_single_view_d455_provisional"
+        }
+      },
+      "manifest": {
+        "git_sha": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+        "git_dirty": false,
+        "config_sha256": "136f955eb5b435eb626a5de36022bf4cfc38fe707f830f1f17aee5eba1b6de4a",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.3.1",
+          "scipy": "1.17.0",
+          "isaaclab": null,
+          "isaacsim": "6.2.0.0",
+          "torch": "2.11.0+cu128",
+          "usd-core": null,
+          "mujoco": "3.12.0",
+          "mujoco-warp": "3.12.0",
+          "newton-usd-schemas": "0.5.0",
+          "ovrtx": null,
+          "ovstage": null
+        },
+        "source_checkouts": {
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "kinematics": {
+        "status": "PASS",
+        "checks": {
+          "trace_time_is_nondecreasing": true,
+          "complete_robot_time_span": true,
+          "every_control_interval_sampled": true,
+          "timestamps_match_actual_robot": true,
+          "full_episode_has_at_least_401_unique_samples": true,
+          "wrist_d405_0_actual_fk": true,
+          "wrist_d405_0_current_usd": true,
+          "wrist_d405_0_inverse": true,
+          "wrist_d405_0_actual_hand_and_immutable_mount": true,
+          "wrist_d405_1_actual_fk": true,
+          "wrist_d405_1_current_usd": true,
+          "wrist_d405_1_inverse": true,
+          "wrist_d405_1_actual_hand_and_immutable_mount": true,
+          "global_d455_actual_fk": true,
+          "global_d455_current_usd": true,
+          "global_d455_inverse": true,
+          "global_d455_actual_hand_and_immutable_mount": true
+        },
+        "trace_samples": 401,
+        "unique_timestamps": 401,
+        "robot_samples": 401,
+        "robot_duration_s": 8.0,
+        "maximum_unique_sample_interval_s": 0.020000000000000462,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 6.559557962127193e-08,
+            "current_usd_rotation_error_rad": 1.6081698846679958e-07,
+            "inverse_max_abs_identity_error": 2.797858027361138e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 4.393959586019642e-09,
+            "current_usd_rotation_error_rad": 7.444854768202421e-08,
+            "inverse_max_abs_identity_error": 1.1102230246251565e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 2.220446049250313e-16
+          }
+        }
+      },
+      "visibility_and_optics": {
+        "status": "FAIL",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": false,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "minimum_camera_metrics": {
+        "wrist_d405_0": {
+          "valid_depth_fraction": 0.8859424135220125,
+          "depth_consistent_material_pixels": 8264,
+          "depth_consistent_knife_pixels": 1633,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "wrist_d405_1": {
+          "valid_depth_fraction": 0.9171039701257861,
+          "depth_consistent_material_pixels": 1334,
+          "depth_consistent_knife_pixels": 0,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "global_d455": {
+          "valid_depth_fraction": 0.27232747395833334,
+          "depth_consistent_material_pixels": 999,
+          "depth_consistent_knife_pixels": 71,
+          "resolution_wh": [
+            640,
+            480
+          ]
+        }
+      },
+      "task_score": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": true,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.0016079999999999998,
+            0.14402399999999996
+          ],
+          "recorded_mass_kg": 0.14563199999999998,
+          "expected_task_sampler_mass_kg": 0.14563199999999998,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 12136,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.9852941176470588,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.9983333333333333,
+            "missing_surface_fraction": 0.0016666666666667052,
+            "maximum_substrate_surface_residual_height_m": 0.00010668440710053656,
+            "surface_p95_absolute_plane_error_m": 0.0016756256981198473,
+            "surface_rms_plane_error_m": 0.000551782739886365,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.938034183860988e-06,
+            "overcut_volume_fraction_of_initial_base": 0.020187856081885294
+          }
+        },
+        "missing_evidence": []
+      },
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.0019642634707707756,
+          "rms_edge_position_error_m": 0.0003735039706919829,
+          "maximum_edge_local_z_error_m": 0.0014267816314768311,
+          "maximum_edge_rotation_error_deg": 0.16086668282578911
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00022156578547277028,
+          "rms_edge_position_error_m": 0.00019377736413764775,
+          "maximum_edge_local_z_error_m": 3.45186145604727e-05,
+          "maximum_edge_rotation_error_deg": 0.017706982342808264
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0016483250582772224,
+        "commanded_vs_task_schedule_max_position_m": 0.0,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00022217954937532938
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.07549106329679489,
+            -0.00294744735583663,
+            -0.20692390203475952,
+            -2.627049684524536,
+            -0.0012181601487100124,
+            2.4902639389038086,
+            0.4631185829639435
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.05063612014055252,
+            0.3000791072845459,
+            -0.16167740523815155,
+            -2.2070748805999756,
+            0.09658745676279068,
+            2.7378833293914795,
+            0.5128142237663269
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.019571984186768532,
+            0.12599702179431915,
+            0.019681347534060478,
+            0.15755407512187958,
+            0.061368003487586975,
+            0.17957904934883118,
+            0.04405408352613449
+          ],
+          [
+            3.0860456551318194e-11,
+            3.25832798242498e-11,
+            1.5365142491674533e-10,
+            1.682976952244175e-10,
+            1.8795003331462112e-09,
+            3.615298616033158e-10,
+            7.159821069357974e-10
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.024102993309497833,
+            0.30302655696868896,
+            0.04524649679660797,
+            0.41735148429870605,
+            0.09780561923980713,
+            0.13127779960632324,
+            0.04167422652244568
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 0.0,
+        "parked_second_arm_max_speed_rad_s": 1.8795003331462112e-09,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "minimum_detF_all_control_intervals": 0.9158214926719666,
+        "minimum_final_particle_detF": 0.9392194151878357,
+        "maximum_saved_material_speed_m_s": 0.06035706640902196,
+        "maximum_control_interval_material_speed_m_s": 0.2219957858324051,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": null,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 283589,
+          "control_intervals_with_tool_contacts": 134,
+          "peak_next_reaction_force_N": 0.6714602709145057,
+          "peak_next_reaction_torque_Nm": 0.004563882175877032,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.039774367543031985,
+            0.0015475489758980387,
+            0.04139236697301385,
+            -0.00015072818443773173,
+            0.00038303343486556507,
+            3.1384586089984456e-05
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.14817639150650896,
+          "reaction_force_times_dt_impulse_max_abs_error": 4.683753385137379e-17,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0012333426631983002,
+          "robot_applied_material_wrench_work_J": -0.0008266213796231328,
+          "robot_work_source": "Recorded actual wrench and measured world edge increments",
+          "robot_boundary_reconstruction_work_J": -0.0008266213796231328,
+          "interface_work_residual_fraction": 0.32977151906872265,
+          "maximum_material_fixture_penetration_m": 4.165491554886103e-05,
+          "maximum_tool_material_penetration_m": 0.0004344873013906181,
+          "maximum_material_pair_overlap_m": 0.0007935722824186087,
+          "material_pair_events_unattributed": 225153,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.048429346783279925,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "reset": {
+        "q_max_error_rad": 0.0,
+        "material_max_error_m": 0.0,
+        "nonzero_cut_codes": 0,
+        "time_s": 0.0,
+        "dynamics_reset_measured": true,
+        "all_nine_dofs_max_error_rad": 0.0,
+        "all_body_pose_max_abs_error": 0.0,
+        "surface_arrays_bitwise_equal": false,
+        "camera_reset_repeatability": {
+          "wrist_d405_0": {
+            "max_depth_error_m": 0.0323411226272583,
+            "valid_mask_changed_pixels": 0
+          },
+          "wrist_d405_1": {
+            "max_depth_error_m": 0.03689643740653992,
+            "valid_mask_changed_pixels": 0
+          },
+          "global_d455": {
+            "max_depth_error_m": 0.7607010006904602,
+            "valid_mask_changed_pixels": 198
+          }
+        },
+        "sensor_info": {
+          "wrist_d405_0": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}"
+          },
+          "wrist_d405_1": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}"
+          },
+          "global_d455": {
+            "rgb": "{}",
+            "distance_to_image_plane": "{}",
+            "depth_sensor_distance": "{}",
+            "depth_sensor_point_cloud_position": "{}"
+          }
+        }
+      },
+      "preserved_inputs": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim/result.json",
+          "sha256": "26b28676a14068def5c3cce658b3b39d29aa89f4bea260e1b2c7d5aef07eee3f",
+          "bytes": 3087
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim/manifest.json",
+          "sha256": "15227637531a305c48cb23921ec4be51de2a3a9a86419844c91e628fc0644e69",
+          "bytes": 11602
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim/robot_state.npz",
+          "sha256": "e31e9aa48bace606b7ea30afc3066745fc1a881528545d3c010176e490d644a1",
+          "bytes": 194368
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim/camera_pose_trace.json",
+          "sha256": "4336a528df5a2fe905d8975b5597322610ed7767015aeb3f8f07196f9118256f",
+          "bytes": 4081269
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim_camera_audit/result.json",
+          "sha256": "2c57bc6b7ecaf8eed5b9f0c755c638ce669d69cecbe1559703802445a8fa789e",
+          "bytes": 1231951
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim_task_audit/result.json",
+          "sha256": "39e5b6dcba46ce6a345101567ee9f37446534dae1a875c5a52518188dc9f20e4",
+          "bytes": 25613
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim/oracle_debug/physics_state.npz",
+          "sha256": "b21104d78a83e57e40b92b1025f3e9c5b4b673e6fef669089920c766a4840bba",
+          "bytes": 11603084
+        }
+      ]
+    },
+    {
+      "name": "isaac_lab_smoke_cut",
+      "kind": "episode",
+      "runtime": "isaac_lab",
+      "status": "PASS",
+      "task_id": "CUT-01",
+      "steps": 2,
+      "classification": {
+        "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+        "checks": {
+          "process_exit_zero": true,
+          "actual_result_receipt": true,
+          "requested_task_id": true,
+          "expected_control_steps": true,
+          "positive_expected_simulation_time": true,
+          "camera_audit_receipt": true,
+          "camera_fk_and_timestamps": true,
+          "camera_source_bytes_resolved": true,
+          "enough_actual_camera_frames": true,
+          "actual_lab_scene_env_task": true,
+          "actual_lab_source": true,
+          "actual_lab_runtime_clock": true,
+          "measured_reset_receipt": true,
+          "reset_joints_restored": true,
+          "reset_material_restored": true,
+          "reset_cut_history_cleared": true,
+          "named_rgbd_streams": true,
+          "camera_count_matches_payloads": true,
+          "camera_payload_range_calibration_contract": true,
+          "rgbd_frame_timestamps": true,
+          "wrist_runtime_optics": true
+        },
+        "physical_cutting": "NOT_RUN_SMOKE",
+        "strict_task_metrics": "NOT_RUN",
+        "expected_trim_surface_failure": false,
+        "camera_engineering_visibility": "PASS",
+        "current_component_visibility": "NOT_RUN_NO_SPLIT",
+        "sensor_scope": {
+          "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+          "global_camera": "explicit ideal Warp RGB-D from official D455 asset"
+        },
+        "full_benchmark_ready": false,
+        "reset_clock_scope": "NOT_RECORDED_BY_EXISTING_LAB_RESET_RECEIPT",
+        "camera_reset_repeatability": {
+          "wrist_d405_0": 8.940696716308594e-08,
+          "wrist_d405_1": 5.960464477539063e-08,
+          "global_d455": 1.1920928955078125e-07
+        },
+        "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "2",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "1",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut",
+          "--material-device",
+          "cuda:0",
+          "--reset-check"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 19.25368612096645,
+        "log_sha256": "3735f5bf36540871c63658b2f556f5b906a9ca08aadf42d9555ec7d433842323"
+      },
+      "actual": {
+        "steps": 2,
+        "simulation_s": 0.04,
+        "wall_s": 9.97825078992173
+      },
+      "manifest": {
+        "git_sha": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+        "git_dirty": false,
+        "config_sha256": "9dde3416b51e90d121e3452766dfb91f4d259465f6eafb80b0332bc6a68c41db",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "isaaclab": "28.0.0",
+          "isaacsim": null,
+          "torch": "2.11.0+cu128",
+          "usd-core": null,
+          "mujoco": "3.12.0",
+          "mujoco-warp": "3.12.0",
+          "newton-usd-schemas": "0.6.0",
+          "ovrtx": null,
+          "ovstage": null
+        },
+        "source_checkouts": {
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "kinematics": {
+        "status": "PASS",
+        "checks": {
+          "trace_time_is_nondecreasing": true,
+          "complete_robot_time_span": true,
+          "every_control_interval_sampled": true,
+          "timestamps_match_actual_robot": true,
+          "wrist_d405_0_actual_fk": true,
+          "wrist_d405_0_current_usd": true,
+          "wrist_d405_0_inverse": true,
+          "wrist_d405_0_actual_hand_and_immutable_mount": true,
+          "wrist_d405_1_actual_fk": true,
+          "wrist_d405_1_current_usd": true,
+          "wrist_d405_1_inverse": true,
+          "wrist_d405_1_actual_hand_and_immutable_mount": true,
+          "global_d455_actual_fk": true,
+          "global_d455_current_usd": true,
+          "global_d455_inverse": true,
+          "global_d455_actual_hand_and_immutable_mount": true
+        },
+        "trace_samples": 3,
+        "unique_timestamps": 3,
+        "robot_samples": 3,
+        "robot_duration_s": 0.04,
+        "maximum_unique_sample_interval_s": 0.02,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 1.3877787807814457e-17,
+            "rotation_error_rad": 8.556738855332967e-17,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 1.3877787807814457e-17,
+            "current_usd_rotation_error_rad": 8.556738855332967e-17,
+            "inverse_max_abs_identity_error": 1.7964641727839778e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 2.7755575615628914e-17,
+            "rotation_error_rad": 3.3080508214129955e-17,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 2.7755575615628914e-17,
+            "current_usd_rotation_error_rad": 3.3080508214129955e-17,
+            "inverse_max_abs_identity_error": 1.2686097943808957e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 1.129042938928394e-16
+          }
+        }
+      },
+      "visibility_and_optics": {
+        "status": "PASS",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": true,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "minimum_camera_metrics": {
+        "wrist_d405_0": {
+          "valid_depth_fraction": 0.8508230149371069,
+          "depth_consistent_material_pixels": 13022,
+          "depth_consistent_knife_pixels": 3897,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "wrist_d405_1": {
+          "valid_depth_fraction": 0.9368047366352201,
+          "depth_consistent_material_pixels": 6720,
+          "depth_consistent_knife_pixels": 1503,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "global_d455": {
+          "valid_depth_fraction": 0.32669270833333336,
+          "depth_consistent_material_pixels": 1365,
+          "depth_consistent_knife_pixels": 242,
+          "resolution_wh": [
+            640,
+            480
+          ]
+        }
+      },
+      "reset": {
+        "scope": "same-process reset to original seed; full repeat assessed separately",
+        "joint_max_abs_error_rad": 0.0,
+        "material_max_abs_error_m": 0.0,
+        "nonzero_cut_codes": 0,
+        "depth_max_abs_error_m": {
+          "wrist_d405_0": 8.940696716308594e-08,
+          "wrist_d405_1": 5.960464477539063e-08,
+          "global_d455": 1.1920928955078125e-07
+        },
+        "depth_valid_mask_exact": {
+          "wrist_d405_0": true,
+          "wrist_d405_1": true,
+          "global_d455": true
+        }
+      },
+      "preserved_inputs": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut/result.json",
+          "sha256": "58f7e1b1987a7f6caa841db30f8da44e3ef74264ee810808811553b983021c87",
+          "bytes": 984
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut/manifest.json",
+          "sha256": "287833193551309aa06718da56aee0c2b6a5bcfd022cc01642780878ed78acc1",
+          "bytes": 10843
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut/robot_state.npz",
+          "sha256": "8b4aad6688d62260d107876234f40413979ec097f61b889c3ba196fdd8c912d8",
+          "bytes": 4239
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut/camera_pose_trace.json",
+          "sha256": "1e038062aad347d5f7af82809ccab6250eed73b3fd026a3a9d5e87cec64ee184",
+          "bytes": 18813
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut_camera_audit/result.json",
+          "sha256": "0ed1fb6b902e3429b3041d1e57b6087ae9a03e002e10035fdbd3e345b86211eb",
+          "bytes": 43891
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut/physics_state.npz",
+          "sha256": "61ae98d758024a2110fda3c76c77b0be94234c4ae7417a2521eedeef57d864d3",
+          "bytes": 7923851
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_smoke_cut/trace.json",
+          "sha256": "8f2c0ef07c9b66b8b1cbb3e759dd82327f892af01f8f204d00653c37c02b3140",
+          "bytes": 660
+        }
+      ]
+    },
+    {
+      "name": "isaac_lab_full_cut",
+      "kind": "episode",
+      "runtime": "isaac_lab",
+      "status": "PASS",
+      "task_id": "CUT-01",
+      "steps": 400,
+      "classification": {
+        "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+        "checks": {
+          "process_exit_zero": true,
+          "actual_result_receipt": true,
+          "requested_task_id": true,
+          "expected_control_steps": true,
+          "positive_expected_simulation_time": true,
+          "camera_audit_receipt": true,
+          "camera_fk_and_timestamps": true,
+          "camera_source_bytes_resolved": true,
+          "enough_actual_camera_frames": true,
+          "actual_lab_scene_env_task": true,
+          "actual_lab_source": true,
+          "actual_lab_runtime_clock": true,
+          "measured_reset_receipt": true,
+          "reset_joints_restored": true,
+          "reset_material_restored": true,
+          "reset_cut_history_cleared": true,
+          "named_rgbd_streams": true,
+          "camera_count_matches_payloads": true,
+          "camera_payload_range_calibration_contract": true,
+          "rgbd_frame_timestamps": true,
+          "wrist_runtime_optics": true,
+          "complete_camera_episode": true,
+          "independent_task_source_bytes": true,
+          "recorded_task_recomputed": true,
+          "finite_available_numerical_screens": true
+        },
+        "physical_cutting": "PASS_SAMPLED_SEPARATION",
+        "strict_task_metrics": "PASS_TASK_METRICS",
+        "expected_trim_surface_failure": false,
+        "camera_engineering_visibility": "PASS",
+        "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE",
+        "sensor_scope": {
+          "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+          "global_camera": "explicit ideal Warp RGB-D from official D455 asset"
+        },
+        "full_benchmark_ready": false,
+        "reset_clock_scope": "NOT_RECORDED_BY_EXISTING_LAB_RESET_RECEIPT",
+        "camera_reset_repeatability": {
+          "wrist_d405_0": 5.960464477539063e-08,
+          "wrist_d405_1": 8.940696716308594e-08,
+          "global_d455": 1.1920928955078125e-07
+        },
+        "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+          "--task-id",
+          "CUT-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut",
+          "--material-device",
+          "cuda:0",
+          "--reset-check"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 496.2192377599422,
+        "log_sha256": "db921fbdfd3cb671b42e579e1e4ba672cb2b18a4dc17d1483ab2ae9aecafcaec"
+      },
+      "actual": {
+        "steps": 400,
+        "simulation_s": 8.0,
+        "wall_s": 489.04800443793647
+      },
+      "manifest": {
+        "git_sha": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+        "git_dirty": false,
+        "config_sha256": "423d0a9b99b156aae33c016d15568c9f25b7d1ae0a48a01e2c02410448eaae31",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "isaaclab": "28.0.0",
+          "isaacsim": null,
+          "torch": "2.11.0+cu128",
+          "usd-core": null,
+          "mujoco": "3.12.0",
+          "mujoco-warp": "3.12.0",
+          "newton-usd-schemas": "0.6.0",
+          "ovrtx": null,
+          "ovstage": null
+        },
+        "source_checkouts": {
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "kinematics": {
+        "status": "PASS",
+        "checks": {
+          "trace_time_is_nondecreasing": true,
+          "complete_robot_time_span": true,
+          "every_control_interval_sampled": true,
+          "timestamps_match_actual_robot": true,
+          "full_episode_has_at_least_401_unique_samples": true,
+          "wrist_d405_0_actual_fk": true,
+          "wrist_d405_0_current_usd": true,
+          "wrist_d405_0_inverse": true,
+          "wrist_d405_0_actual_hand_and_immutable_mount": true,
+          "wrist_d405_1_actual_fk": true,
+          "wrist_d405_1_current_usd": true,
+          "wrist_d405_1_inverse": true,
+          "wrist_d405_1_actual_hand_and_immutable_mount": true,
+          "global_d455_actual_fk": true,
+          "global_d455_current_usd": true,
+          "global_d455_inverse": true,
+          "global_d455_actual_hand_and_immutable_mount": true
+        },
+        "trace_samples": 401,
+        "unique_timestamps": 401,
+        "robot_samples": 401,
+        "robot_duration_s": 8.0,
+        "maximum_unique_sample_interval_s": 0.020000000000000462,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 3.1031676915590914e-17,
+            "rotation_error_rad": 9.235884161433257e-17,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 3.1031676915590914e-17,
+            "current_usd_rotation_error_rad": 9.235884161433257e-17,
+            "inverse_max_abs_identity_error": 3.3306690738754696e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 2.7755575615628914e-17,
+            "rotation_error_rad": 3.3080508214129955e-17,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 2.7755575615628914e-17,
+            "current_usd_rotation_error_rad": 3.3080508214129955e-17,
+            "inverse_max_abs_identity_error": 1.2686097943808957e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 1.129042938928394e-16
+          }
+        }
+      },
+      "visibility_and_optics": {
+        "status": "PASS",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": true,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "minimum_camera_metrics": {
+        "wrist_d405_0": {
+          "valid_depth_fraction": 0.8508230149371069,
+          "depth_consistent_material_pixels": 13022,
+          "depth_consistent_knife_pixels": 2903,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "wrist_d405_1": {
+          "valid_depth_fraction": 0.9187106918238994,
+          "depth_consistent_material_pixels": 5699,
+          "depth_consistent_knife_pixels": 755,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "global_d455": {
+          "valid_depth_fraction": 0.3223470052083333,
+          "depth_consistent_material_pixels": 1091,
+          "depth_consistent_knife_pixels": 146,
+          "resolution_wh": [
+            640,
+            480
+          ]
+        }
+      },
+      "task_score": {
+        "task_id": "CUT-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "PASS_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "two_substantial_physical_parts": true,
+          "two_main_parts_retain_mass": true,
+          "cut_at_workpiece_local_target_plane": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.07199999999999998,
+            0.07199999999999998
+          ],
+          "recorded_mass_kg": 0.14399999999999996,
+          "expected_task_sampler_mass_kg": 0.14399999999999996,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 96000,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 2009088,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+          "substantial_parts": 2,
+          "two_main_parts_mass_fraction": 1.0,
+          "minor_parts_mass_fraction": 0.0
+        },
+        "missing_evidence": []
+      },
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.002314836037911128,
+          "rms_edge_position_error_m": 0.00039820261646708144,
+          "maximum_edge_local_z_error_m": 0.0019551270571946944,
+          "maximum_edge_rotation_error_deg": 0.2362422787509937
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.00022157764951073104,
+          "rms_edge_position_error_m": 8.920085684096156e-05,
+          "maximum_edge_local_z_error_m": 0.00015213570963754086,
+          "maximum_edge_rotation_error_deg": 0.02660876463533268
+        },
+        "maximum_measured_translation_per_control_step_m": 0.00171423698930479,
+        "commanded_vs_task_schedule_max_position_m": 1.8477439855946187e-09,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00016593848696866024
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.08645009994506836,
+            0.12455885857343674,
+            -0.18237076699733734,
+            -2.4843266010284424,
+            0.04476320371031761,
+            2.607408046722412,
+            0.45482975244522095
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.06767098605632782,
+            0.27016299962997437,
+            -0.1530117243528366,
+            -2.4770116806030273,
+            0.1047811508178711,
+            2.7421488761901855,
+            0.49810755252838135
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.036722827702760696,
+            0.2142898589372635,
+            0.04933403059840202,
+            0.05460328981280327,
+            0.08216790854930878,
+            0.1817834973335266,
+            0.05911456048488617
+          ],
+          [
+            5.368232223190716e-07,
+            1.6265889257738309e-07,
+            4.298218811982224e-07,
+            2.097061440053949e-07,
+            2.7106497668683005e-07,
+            2.3800475901225582e-07,
+            1.0493852187209995e-06
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.016181208193302155,
+            0.14199379086494446,
+            0.02683328092098236,
+            0.0065631866455078125,
+            0.05971771478652954,
+            0.13289332389831543,
+            0.04306367039680481
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 0.0,
+        "parked_second_arm_max_speed_rad_s": 1.0493852187209995e-06,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true,
+          "native_non_tool_rigid_penetration": true
+        },
+        "minimum_detF_all_control_intervals": 0.9447104334831238,
+        "minimum_final_particle_detF": 0.9487928748130798,
+        "maximum_saved_material_speed_m_s": 0.07091788016433048,
+        "maximum_control_interval_material_speed_m_s": 0.07091787457466125,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": 3.249384826631285e-05,
+        "native_rigid_contact_coverage": "All recorded native substeps plus boundaries",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 6541196,
+          "control_intervals_with_tool_contacts": 138,
+          "peak_next_reaction_force_N": 0.2854705360392464,
+          "peak_next_reaction_torque_Nm": 0.0032428244444939486,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.054737822719232554,
+            -0.0003141903018643033,
+            0.12307784907295627,
+            5.395824396632609e-06,
+            -0.001897761997290609,
+            7.10805667232528e-06
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.15998503498529162,
+          "reaction_force_times_dt_impulse_max_abs_error": 1.205632815803881e-16,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0013749404556993028,
+          "robot_applied_material_wrench_work_J": -0.0011387739680558033,
+          "robot_work_source": "Recorded native applied-wrench work ledger",
+          "robot_boundary_reconstruction_work_J": -0.0011387739680558033,
+          "interface_work_residual_fraction": 0.171764883827921,
+          "maximum_material_fixture_penetration_m": 0.00025854550767689943,
+          "maximum_tool_material_penetration_m": 0.0004355381242930889,
+          "maximum_material_pair_overlap_m": 0.00012175377923995256,
+          "material_pair_events_unattributed": 93759,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.0016836703770195527,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "reset": {
+        "scope": "same-process reset to original seed; full repeat assessed separately",
+        "joint_max_abs_error_rad": 0.0,
+        "material_max_abs_error_m": 0.0,
+        "nonzero_cut_codes": 0,
+        "depth_max_abs_error_m": {
+          "wrist_d405_0": 5.960464477539063e-08,
+          "wrist_d405_1": 8.940696716308594e-08,
+          "global_d455": 1.1920928955078125e-07
+        },
+        "depth_valid_mask_exact": {
+          "wrist_d405_0": true,
+          "wrist_d405_1": true,
+          "global_d455": true
+        }
+      },
+      "preserved_inputs": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut/result.json",
+          "sha256": "f796382360d1de37afcb45c6ae0981a8b7c3174b0592e6d50ff0b8b5eed71d9e",
+          "bytes": 1024
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut/manifest.json",
+          "sha256": "65ee4c052ef0212dfe61b553f4d1d2b8829c1e9b147845c025e53e3341fdb49d",
+          "bytes": 10844
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut/robot_state.npz",
+          "sha256": "8bac8336a289078c9227ccd2c625f0970ee20e3715adee153f328b68ae2b1b77",
+          "bytes": 164003
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut/camera_pose_trace.json",
+          "sha256": "719881e3a559fda6adabb647512c7d2c4791495d1a6f13900199e8b006038d97",
+          "bytes": 2515438
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut_camera_audit/result.json",
+          "sha256": "db121c22069bf7b336de525a9af0a103fd42f087172c9ef8425e846de584ae59",
+          "bytes": 1190418
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut_task_audit/result.json",
+          "sha256": "72f20100ffada7598f608a64650a57d44136ce055eb7227181cfc2aaacf156f9",
+          "bytes": 21212
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut/physics_state.npz",
+          "sha256": "57ed2a8bac7bcf1e4631857c06c655f68bf8ce6af47e07b120c0dbc83e42c2c1",
+          "bytes": 884829165
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_cut/trace.json",
+          "sha256": "a110c9e3279e4410a3e79a2841a5871902660b6587ee131aed1c47f60554c7ed",
+          "bytes": 137288
+        }
+      ]
+    },
+    {
+      "name": "isaac_lab_full_trim",
+      "kind": "episode",
+      "runtime": "isaac_lab",
+      "status": "PASS",
+      "task_id": "TRIM-01",
+      "steps": 400,
+      "classification": {
+        "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+        "checks": {
+          "process_exit_zero": true,
+          "actual_result_receipt": true,
+          "requested_task_id": true,
+          "expected_control_steps": true,
+          "positive_expected_simulation_time": true,
+          "camera_audit_receipt": true,
+          "camera_fk_and_timestamps": true,
+          "camera_source_bytes_resolved": true,
+          "enough_actual_camera_frames": true,
+          "actual_lab_scene_env_task": true,
+          "actual_lab_source": true,
+          "actual_lab_runtime_clock": true,
+          "measured_reset_receipt": true,
+          "reset_joints_restored": true,
+          "reset_material_restored": true,
+          "reset_cut_history_cleared": true,
+          "named_rgbd_streams": true,
+          "camera_count_matches_payloads": true,
+          "camera_payload_range_calibration_contract": true,
+          "rgbd_frame_timestamps": true,
+          "wrist_runtime_optics": true,
+          "complete_camera_episode": true,
+          "independent_task_source_bytes": true,
+          "recorded_task_recomputed": true,
+          "finite_available_numerical_screens": true
+        },
+        "physical_cutting": "PASS_SAMPLED_SEPARATION",
+        "strict_task_metrics": "FAIL_TASK_METRICS",
+        "expected_trim_surface_failure": true,
+        "camera_engineering_visibility": "FAIL",
+        "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE",
+        "sensor_scope": {
+          "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+          "global_camera": "explicit ideal Warp RGB-D from official D455 asset"
+        },
+        "full_benchmark_ready": false,
+        "reset_clock_scope": "NOT_RECORDED_BY_EXISTING_LAB_RESET_RECEIPT",
+        "camera_reset_repeatability": {
+          "wrist_d405_0": 5.960464477539063e-08,
+          "wrist_d405_1": 5.960464477539063e-08,
+          "global_d455": 5.960464477539063e-08
+        },
+        "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+      },
+      "process": {
+        "command": [
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+          "--task-id",
+          "TRIM-01",
+          "--steps",
+          "400",
+          "--seed",
+          "42",
+          "--camera-layout",
+          "wrist_d405_global_d455",
+          "--device",
+          "cuda:0",
+          "--record-every",
+          "10",
+          "--output-dir",
+          "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim",
+          "--material-device",
+          "cuda:0",
+          "--reset-check",
+          "--particle-spacing",
+          "0.002"
+        ],
+        "log": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim.log",
+        "returncode": 0,
+        "timed_out": false,
+        "wall_s": 205.07517868606374,
+        "log_sha256": "d38b717bb193d07a1d465c7aa53b5bf44600a9caca88f9c31a7413d79cd025fb"
+      },
+      "actual": {
+        "steps": 400,
+        "simulation_s": 8.0,
+        "wall_s": 198.6357393770013
+      },
+      "manifest": {
+        "git_sha": "f2bf2403a90cc12e182399e80d3a91a4b80d23c3",
+        "git_dirty": false,
+        "config_sha256": "0877a4642d9384bfdc038f51ada54e5a249eb8dc782fbd977d73402408d9cdcd",
+        "packages": {
+          "newton": "1.6.1",
+          "warp-lang": "1.17.0",
+          "numpy": "2.5.2",
+          "scipy": "1.18.1",
+          "isaaclab": "28.0.0",
+          "isaacsim": null,
+          "torch": "2.11.0+cu128",
+          "usd-core": null,
+          "mujoco": "3.12.0",
+          "mujoco-warp": "3.12.0",
+          "newton-usd-schemas": "0.6.0",
+          "ovrtx": null,
+          "ovstage": null
+        },
+        "source_checkouts": {
+          "IsaacLab": {
+            "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+            "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "dirty": false
+          }
+        }
+      },
+      "kinematics": {
+        "status": "PASS",
+        "checks": {
+          "trace_time_is_nondecreasing": true,
+          "complete_robot_time_span": true,
+          "every_control_interval_sampled": true,
+          "timestamps_match_actual_robot": true,
+          "full_episode_has_at_least_401_unique_samples": true,
+          "wrist_d405_0_actual_fk": true,
+          "wrist_d405_0_current_usd": true,
+          "wrist_d405_0_inverse": true,
+          "wrist_d405_0_actual_hand_and_immutable_mount": true,
+          "wrist_d405_1_actual_fk": true,
+          "wrist_d405_1_current_usd": true,
+          "wrist_d405_1_inverse": true,
+          "wrist_d405_1_actual_hand_and_immutable_mount": true,
+          "global_d455_actual_fk": true,
+          "global_d455_current_usd": true,
+          "global_d455_inverse": true,
+          "global_d455_actual_hand_and_immutable_mount": true
+        },
+        "trace_samples": 401,
+        "unique_timestamps": 401,
+        "robot_samples": 401,
+        "robot_duration_s": 8.0,
+        "maximum_unique_sample_interval_s": 0.020000000000000462,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 5.551115123125783e-17,
+            "rotation_error_rad": 1.0947285796431927e-16,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 5.551115123125783e-17,
+            "current_usd_rotation_error_rad": 1.0947285796431927e-16,
+            "inverse_max_abs_identity_error": 3.1977220340878277e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 2.7755575615628914e-17,
+            "rotation_error_rad": 3.3080508214129955e-17,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 2.7755575615628914e-17,
+            "current_usd_rotation_error_rad": 3.3080508214129955e-17,
+            "inverse_max_abs_identity_error": 1.2686097943808957e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 1.129042938928394e-16
+          }
+        }
+      },
+      "visibility_and_optics": {
+        "status": "FAIL",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": false,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "minimum_camera_metrics": {
+        "wrist_d405_0": {
+          "valid_depth_fraction": 0.8508230149371069,
+          "depth_consistent_material_pixels": 8169,
+          "depth_consistent_knife_pixels": 1633,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "wrist_d405_1": {
+          "valid_depth_fraction": 0.9187401729559749,
+          "depth_consistent_material_pixels": 1261,
+          "depth_consistent_knife_pixels": 0,
+          "resolution_wh": [
+            848,
+            480
+          ]
+        },
+        "global_d455": {
+          "valid_depth_fraction": 0.32323893229166667,
+          "depth_consistent_material_pixels": 1204,
+          "depth_consistent_knife_pixels": 95,
+          "resolution_wh": [
+            640,
+            480
+          ]
+        }
+      },
+      "task_score": {
+        "task_id": "TRIM-01",
+        "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+        "protocol_id": "cutting_tasks_v1_20261028",
+        "protocol_sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "full_simulation_acceptance": false,
+        "policy_observation": false,
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": true,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.0016079999999999998,
+            0.14402399999999996
+          ],
+          "recorded_mass_kg": 0.14563199999999998,
+          "expected_task_sampler_mass_kg": 0.14563199999999998,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 12136,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.9852941176470588,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.99875,
+            "missing_surface_fraction": 0.0012499999999999734,
+            "maximum_substrate_surface_residual_height_m": 0.00011055870926841155,
+            "surface_p95_absolute_plane_error_m": 0.0016726539190242689,
+            "surface_rms_plane_error_m": 0.000615179099378533,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.9595015810868808e-06,
+            "overcut_volume_fraction_of_initial_base": 0.020411474802988345
+          }
+        },
+        "missing_evidence": []
+      },
+      "tracking": {
+        "all": {
+          "samples": 401,
+          "maximum_edge_position_error_m": 0.002159714006629813,
+          "rms_edge_position_error_m": 0.00042786151602466525,
+          "maximum_edge_local_z_error_m": 0.001540239680618477,
+          "maximum_edge_rotation_error_deg": 0.17481051685602653
+        },
+        "active": {
+          "samples": 200,
+          "maximum_edge_position_error_m": 0.0002670921453267745,
+          "rms_edge_position_error_m": 0.00023585599450427097,
+          "maximum_edge_local_z_error_m": 3.055444281893638e-05,
+          "maximum_edge_rotation_error_deg": 0.021671381644725634
+        },
+        "maximum_measured_translation_per_control_step_m": 0.0016719820711043683,
+        "commanded_vs_task_schedule_max_position_m": 3.733197188510009e-09,
+        "commanded_vs_task_schedule_max_rotation_deg": 0.0,
+        "active_source": "Recorded actually armed material intervals, aligned to their ending robot sample",
+        "maximum_measured_local_target_plane_signed_distance_active_m": 0.00022395287333167382
+      },
+      "joints": {
+        "all_joint_positions_and_velocities_finite": true,
+        "actual_q_min_rad": [
+          [
+            -0.07514774799346924,
+            -0.002948166336864233,
+            -0.20692133903503418,
+            -2.6270546913146973,
+            -0.0012184601509943604,
+            2.489938735961914,
+            0.4629521369934082
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "actual_q_max_rad": [
+          [
+            -0.05034775286912918,
+            0.30015724897384644,
+            -0.1618676781654358,
+            -2.2066802978515625,
+            0.09672155976295471,
+            2.738096237182617,
+            0.5128076672554016
+          ],
+          [
+            -1.2734662294387817,
+            -1.512477159500122,
+            1.0369349718093872,
+            -2.916372299194336,
+            1.0367738008499146,
+            1.5141336917877197,
+            2.847289562225342
+          ]
+        ],
+        "maximum_joint_speed_rad_s_by_arm_joint": [
+          [
+            0.01935454271733761,
+            0.12835636734962463,
+            0.019634556025266647,
+            0.15916047990322113,
+            0.06169261410832405,
+            0.18254519999027252,
+            0.04428141936659813
+          ],
+          [
+            5.365682795854809e-07,
+            1.6336105090886122e-07,
+            4.256347949649353e-07,
+            2.0818848156523018e-07,
+            2.704420580812439e-07,
+            2.3799312032224407e-07,
+            1.0493904483155347e-06
+          ]
+        ],
+        "maximum_joint_excursion_from_initial_rad_by_arm_joint": [
+          [
+            0.0243939608335495,
+            0.3031054139137268,
+            0.04505366086959839,
+            0.41774654388427734,
+            0.09794002026319504,
+            0.13160276412963867,
+            0.041840970516204834
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "parked_second_arm_max_drift_from_initial_rad": 0.0,
+        "parked_second_arm_max_speed_rad_s": 1.0493904483155347e-06,
+        "parked_scope": "Measured throughout episode; no new acceptance threshold is fitted to these outcomes",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "contact_and_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true,
+          "native_non_tool_rigid_penetration": true
+        },
+        "minimum_detF_all_control_intervals": 0.9153795838356018,
+        "minimum_final_particle_detF": 0.9390034675598145,
+        "maximum_saved_material_speed_m_s": 0.26318839285634554,
+        "maximum_control_interval_material_speed_m_s": 0.2631883919239044,
+        "interval_state_sampling_complete": true,
+        "native_non_tool_rigid_penetration_m": 3.249384826631285e-05,
+        "native_rigid_contact_coverage": "All recorded native substeps plus boundaries",
+        "threshold_source": "Unchanged broad ENV-02 engineering screens; not promotion of the complete 18-gate protocol",
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "reaction": {
+          "all_wrenches_and_impulses_finite": true,
+          "tool_contact_particle_substep_events": 284406,
+          "control_intervals_with_tool_contacts": 133,
+          "peak_next_reaction_force_N": 0.7068267694978093,
+          "peak_next_reaction_torque_Nm": 0.004631588992924042,
+          "sum_reaction_impulse_world_Ns_Nms": [
+            -0.039617758421172766,
+            0.0014366831994929719,
+            0.04479729077411321,
+            -0.00015090055949462666,
+            0.0003956606238655347,
+            3.083127562357457e-05
+          ],
+          "sum_reaction_linear_impulse_norm_Ns": 0.15146101057030908,
+          "reaction_force_times_dt_impulse_max_abs_error": 4.640385298237959e-17,
+          "previous_interval_feedback_carry_max_abs_error": 0.0,
+          "initial_applied_feedback_max_abs": 0.0,
+          "material_boundary_work_J": 0.0012938719037975943,
+          "robot_applied_material_wrench_work_J": -0.0008274697649991129,
+          "robot_work_source": "Recorded native applied-wrench work ledger",
+          "robot_boundary_reconstruction_work_J": -0.000827469764999113,
+          "interface_work_residual_fraction": 0.3604701032842294,
+          "maximum_material_fixture_penetration_m": 4.267797339707613e-05,
+          "maximum_tool_material_penetration_m": 0.00043408499914221466,
+          "maximum_material_pair_overlap_m": 0.0006219539791345596,
+          "material_pair_events_unattributed": 227176,
+          "material_pair_accumulated_impulse_norm_Ns_unattributed": 0.04891220945501118,
+          "contact_scope": "Actual retained MPM event counters; pair counters include within-component events and do not prove recontact. Work is a partitioned interface diagnostic, not total energy convergence."
+        }
+      },
+      "reset": {
+        "scope": "same-process reset to original seed; full repeat assessed separately",
+        "joint_max_abs_error_rad": 0.0,
+        "material_max_abs_error_m": 0.0,
+        "nonzero_cut_codes": 0,
+        "depth_max_abs_error_m": {
+          "wrist_d405_0": 5.960464477539063e-08,
+          "wrist_d405_1": 5.960464477539063e-08,
+          "global_d455": 5.960464477539063e-08
+        },
+        "depth_valid_mask_exact": {
+          "wrist_d405_0": true,
+          "wrist_d405_1": true,
+          "global_d455": true
+        }
+      },
+      "preserved_inputs": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim/result.json",
+          "sha256": "9bd3ce509724ddaa6b32619d3abf35e2ee1ee2fe855d97e3df72966e2b632546",
+          "bytes": 1025
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim/manifest.json",
+          "sha256": "c2c15b83ea1f1e3ef62ade2db7345d592826894a821fc7959e1e863f4fbc1ffd",
+          "bytes": 10888
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim/robot_state.npz",
+          "sha256": "bc4040d4f0bb7d0547edc234e44d3b10fab30c4e46591d7dbd9263f0658a902b",
+          "bytes": 160637
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim/camera_pose_trace.json",
+          "sha256": "eeb7dcc1680e05c811a03538c3e410baa9e27d407b77fb612e1a8d684ef786d8",
+          "bytes": 2513734
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim_camera_audit/result.json",
+          "sha256": "c53a85a11c79a8a2b9852bedaca3dc6ea4d8edfff3b9d3b8e3527a6fe0205e9d",
+          "bytes": 1191040
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim_task_audit/result.json",
+          "sha256": "e214bb17bc92e429168432141b4684cf965d50ea32362c912b72160d6bafe051",
+          "bytes": 22407
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim/physics_state.npz",
+          "sha256": "f2ed9b344489944926baf289ba2d6cfd1da7b584e23df0d1a5f8f6bb82ba723d",
+          "bytes": 111237619
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_lab_full_trim/trace.json",
+          "sha256": "26313f758896ad0e5dab12031bf9bbc7615a3c3fae12adce2e6c66c58c2f996f",
+          "bytes": 137472
+        }
+      ]
+    }
+  ],
+  "final_cpu_regression": {
+    "source_commit": "156b2623edaa001cba2fc90924690b282f1f249b",
+    "command": ".venv/bin/python -m pytest -q",
+    "status": "PASS",
+    "tests_passed": 277,
+    "wall_s_reported_by_pytest": 2.19
+  },
+  "cross_host": {
+    "status": "NOT_RUN_SSH_AUTHENTICATION_UNAVAILABLE",
+    "linux_peers_checked": 3,
+    "all_rejected_batch_authentication": true,
+    "remote_command_executed": false,
+    "remote_hardware_queried": false,
+    "installation_or_simulation_executed": false,
+    "global_ssh_configuration_changed": false,
+    "raw_receipt": {
+      "path": "/home/ningan/RoboticCuttingSim/artifacts/wp07_remote_availability_001/result.json",
+      "sha256": "8c258101e8ea267a9de4e96db024310e8e208c08c8088e6e6969e99bd183be1d",
+      "bytes": 11043
+    }
+  },
+  "source_portability_audit": {
+    "source_commit": "156b2623edaa001cba2fc90924690b282f1f249b",
+    "command": [
+      "rg",
+      "-n",
+      "/home/|/mnt/|cuda:1",
+      "src",
+      "scripts",
+      "configs",
+      "--glob",
+      "*.py",
+      "--glob",
+      "*.sh",
+      "--glob",
+      "*.json",
+      "--glob",
+      "*.kit"
+    ],
+    "matches": [],
+    "status": "PASS_NO_HOST_PATH_OR_SECOND_GPU_DEFAULT",
+    "scope": "Active source/scripts/config; historical docs retain host provenance",
+    "forbidden_generated_tracked_files": []
+  },
+  "regenerated_scene_references": {
+    "status": "PASS_REGENERATED_LOCAL_REFERENCES",
+    "scene_sha256": "c18dcf2cb2812c2f93ca20f447e1adb5ba649e5128cda026e5221f62bf10faaf",
+    "old_research_checkout_references": false,
+    "official_asset_cache": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/workcell_asset_cache",
+    "scope": "USD generated in this clean clone; no official assets or old USD copied"
+  },
+  "media_decode": {
+    "status": "PASS",
+    "videos": [
+      {
+        "path": "docs/media/deployment_cut01/global_d455.mp4",
+        "sha256": "8a69f4e1b85d878fef4d0a9e1169ccaab2792e7663b765c8e26788521e12d3ee",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_cut01/global_d455_depth.mp4",
+        "sha256": "b33637ae62b4bddc7c6e6d5ecff2700b82e78b75e14c81739c74be81f1770bec",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_cut01/synchronized_multiview.mp4",
+        "sha256": "b8ce6556f573d2384dbf50d9475c715179148a642436879118827022ff87ce75",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_cut01/wrist_d405_0.mp4",
+        "sha256": "47b860d03a4af7c6f9ba2e6612c2b0a7ad98e5e3bd8344507b814536bb2ade6b",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_cut01/wrist_d405_0_depth.mp4",
+        "sha256": "47adea064328a1efe1758b0f0f6b5b93344eaa0b932b4f038e2c4f3eb9f34505",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_cut01/wrist_d405_1.mp4",
+        "sha256": "ec9b964886eb2dc70cc84ab5828cd4e93786cbaf49f11ca98eb1e3624f425ac8",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_cut01/wrist_d405_1_depth.mp4",
+        "sha256": "577928014d4e433e8aa6d4546e5cae56573360c0c968b0ad5cd4690382f8c2ca",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/global_d455.mp4",
+        "sha256": "250bec5550f57ab2fc3c3c4208a7183094e89800c3ba404f7c0e979c980fa384",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/global_d455_depth.mp4",
+        "sha256": "ca6094da0d593f0a80079153b21abb5b615f9e55c15bdba78b67a8359e45b1e8",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/synchronized_multiview.mp4",
+        "sha256": "9cd2fb1be4df839c868c7f5e3bcaf0af68684d22602e3e55e76c92b332efaa3b",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/wrist_d405_0.mp4",
+        "sha256": "5594b097b27344a919e90a286153f4fa41358d70001172e698f42a39eb2ff61d",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/wrist_d405_0_depth.mp4",
+        "sha256": "b0a8d6f0b856ebe3d208edfdc4eb1543e3ea41e1d4015eb9a76f981ae17d5559",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/wrist_d405_1.mp4",
+        "sha256": "8d5ee2a38398ec37d51849b6ce29c59ff062c1efc9c40f3dca7da7edb7954773",
+        "full_decode": "PASS"
+      },
+      {
+        "path": "docs/media/deployment_trim01/wrist_d405_1_depth.mp4",
+        "sha256": "c469443d43fec5cf3651243176296a893f720dffe4cabf9a12142c83598dee10",
+        "full_decode": "PASS"
+      }
+    ]
+  },
+  "full_benchmark_ready": false,
+  "hardware_sensor_calibration_validated": false,
+  "remaining_failures": [
+    "TRIM strict p95/RMS/gouge/overcut surface criteria",
+    "Native exact camera reset masks/depth and surface arrays are not repeatable",
+    "Secondary wrist knife occluded after TRIM withdrawal",
+    "Existing strict primary mount/flange clearance screen",
+    "Existing coupling-work, material calibration and convergence gates"
+  ],
+  "not_run": [
+    "Independent cross-host reproduction",
+    "Physical single-card host reproduction",
+    "Full new D0-D3 GPU matrix (CPU golden sampler regression retained)",
+    "Hardware D405/D455 calibration"
+  ],
+  "single_visible_cuda": {
+    "status": "PASS_REQUESTED_DEPLOYMENT_SCOPE",
+    "requested_scope_pass": true,
+    "scope": "CUDA_VISIBLE_DEVICES=0 on the original dual-card host; not a physical single-card machine",
+    "protocol": {
+      "schema": "portable_deployment_validation_v1",
+      "tier": "smoke",
+      "runtime": "both",
+      "seed": 42,
+      "gpu_selection": {
+        "status": "SELECTED_CANDIDATE",
+        "physical_index": 0,
+        "cuda_device": "cuda:0",
+        "uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+        "name": "NVIDIA GeForce RTX 5090",
+        "memory_free_mib": 31132,
+        "basis": "Explicit physical GPU index",
+        "native_compatibility_validated": false,
+        "cuda_visible_devices_modified": false,
+        "cuda_visible_devices": "0",
+        "physical_cuda_numbering_unambiguous": true
+      },
+      "commands": [
+        {
+          "name": "cpu_regression",
+          "kind": "cpu",
+          "runtime": "base",
+          "output_dir": null,
+          "command": [
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+            "-m",
+            "pytest",
+            "-q"
+          ]
+        },
+        {
+          "name": "static_workcell",
+          "kind": "static",
+          "runtime": "base",
+          "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/static_workcell",
+          "command": [
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+            "-m",
+            "robotic_cutting_sim.cli",
+            "scene",
+            "--preset",
+            "workcell",
+            "--camera-layout",
+            "wrist_d405_global_d455",
+            "--seed",
+            "42",
+            "--output-dir",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/static_workcell"
+          ]
+        },
+        {
+          "name": "isaac_sim_smoke_cut",
+          "kind": "episode",
+          "runtime": "isaac_sim",
+          "task_id": "CUT-01",
+          "steps": 2,
+          "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_sim_smoke_cut",
+          "command": [
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaacsim-venv/bin/python",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_sim_cutting.py",
+            "--task-id",
+            "CUT-01",
+            "--steps",
+            "2",
+            "--seed",
+            "42",
+            "--camera-layout",
+            "wrist_d405_global_d455",
+            "--device",
+            "cuda:0",
+            "--record-every",
+            "1",
+            "--output-dir",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_sim_smoke_cut",
+            "--gpu",
+            "0",
+            "--camera-mode",
+            "native_single_view",
+            "--native-noise",
+            "off"
+          ],
+          "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_sim_smoke_cut_camera_audit",
+          "camera_audit_command": [
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+            "--episode",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_sim_smoke_cut",
+            "--output-dir",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_sim_smoke_cut_camera_audit"
+          ],
+          "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_sim_smoke_cut_task_audit",
+          "task_audit_command": null
+        },
+        {
+          "name": "isaac_lab_smoke_cut",
+          "kind": "episode",
+          "runtime": "isaac_lab",
+          "task_id": "CUT-01",
+          "steps": 2,
+          "output_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_lab_smoke_cut",
+          "command": [
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.deps/isaaclab-venv/bin/python",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/run_isaac_lab_cutting.py",
+            "--task-id",
+            "CUT-01",
+            "--steps",
+            "2",
+            "--seed",
+            "42",
+            "--camera-layout",
+            "wrist_d405_global_d455",
+            "--device",
+            "cuda:0",
+            "--record-every",
+            "1",
+            "--output-dir",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_lab_smoke_cut",
+            "--material-device",
+            "cuda:0",
+            "--reset-check"
+          ],
+          "camera_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_lab_smoke_cut_camera_audit",
+          "camera_audit_command": [
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/.venv/bin/python",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/scripts/audit_wrist_camera_rig.py",
+            "--episode",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_lab_smoke_cut",
+            "--output-dir",
+            "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_lab_smoke_cut_camera_audit"
+          ],
+          "task_audit_dir": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/isaac_lab_smoke_cut_task_audit",
+          "task_audit_command": null
+        }
+      ],
+      "tool_source_sha256": {
+        "scripts/run_deployment_validation.py": "703d0732bdcb0a535ed9ec7636a92f12ab8ae038a4b4dffa6ade1c1a11f61a64",
+        "src/robotic_cutting_sim/deployment_doctor.py": "f1c581461cb885429bf52688ce5ef57a4a60119ed7d6a38873c2c28201b8c7e8",
+        "src/robotic_cutting_sim/deployment_validation.py": "96c6d3a20e03d839f513f76c41c157a06143cd5987828e3e6ff198f5b802a652"
+      },
+      "allow_expected_trim_geometry_fail": false,
+      "scope": "Static composition, actual runtime/named RGB-D contracts and optional full sampled separation; no complete scientific/hardware acceptance",
+      "full_case_recipe": "400x20ms; CUT1mm particles, TRIM explicit2mm; existing4mm material grid and current v3 wrist/Global rig",
+      "doctor_does_not_boot_kit": true,
+      "driver_or_dependencies_changed": false
+    },
+    "stages": [
+      {
+        "name": "cpu_regression",
+        "status": "SKIPPED_BY_REQUEST",
+        "classification": null
+      },
+      {
+        "name": "static_workcell",
+        "status": "PASS",
+        "classification": null
+      },
+      {
+        "name": "isaac_sim_smoke_cut",
+        "status": "PASS",
+        "classification": {
+          "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+          "checks": {
+            "process_exit_zero": true,
+            "actual_result_receipt": true,
+            "requested_task_id": true,
+            "expected_control_steps": true,
+            "positive_expected_simulation_time": true,
+            "camera_audit_receipt": true,
+            "camera_fk_and_timestamps": true,
+            "camera_source_bytes_resolved": true,
+            "enough_actual_camera_frames": true,
+            "actual_native_articulation": true,
+            "actual_native_substeps": true,
+            "no_standalone_robot_dynamics": true,
+            "no_replay": true,
+            "actual_native_pipeline": true,
+            "measured_reset_receipt": true,
+            "reset_joints_restored": true,
+            "reset_all_dofs_restored": true,
+            "reset_bodies_restored": true,
+            "reset_material_restored": true,
+            "reset_cut_history_cleared": true,
+            "reset_clock_zero": true,
+            "named_rgbd_streams": true,
+            "camera_count_matches_payloads": true,
+            "camera_payload_range_calibration_contract": true,
+            "rgbd_frame_timestamps": true,
+            "wrist_runtime_optics": true
+          },
+          "physical_cutting": "NOT_RUN_SMOKE",
+          "strict_task_metrics": "NOT_RUN",
+          "expected_trim_surface_failure": false,
+          "camera_engineering_visibility": "PASS",
+          "current_component_visibility": "NOT_RUN_NO_SPLIT",
+          "sensor_scope": {
+            "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+            "global_camera": "native SingleView D455"
+          },
+          "full_benchmark_ready": false,
+          "reset_clock_scope": "MEASURED_ZERO",
+          "camera_reset_repeatability": {
+            "wrist_d405_0": {
+              "max_depth_error_m": 0.03729715943336487,
+              "valid_mask_changed_pixels": 0
+            },
+            "wrist_d405_1": {
+              "max_depth_error_m": 0.033241599798202515,
+              "valid_mask_changed_pixels": 0
+            },
+            "global_d455": {
+              "max_depth_error_m": 0.7607010006904602,
+              "valid_mask_changed_pixels": 212
+            }
+          },
+          "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+        }
+      },
+      {
+        "name": "isaac_lab_smoke_cut",
+        "status": "PASS",
+        "classification": {
+          "status": "PASS_REQUESTED_RUNTIME_CONTRACT",
+          "checks": {
+            "process_exit_zero": true,
+            "actual_result_receipt": true,
+            "requested_task_id": true,
+            "expected_control_steps": true,
+            "positive_expected_simulation_time": true,
+            "camera_audit_receipt": true,
+            "camera_fk_and_timestamps": true,
+            "camera_source_bytes_resolved": true,
+            "enough_actual_camera_frames": true,
+            "actual_lab_scene_env_task": true,
+            "actual_lab_source": true,
+            "actual_lab_runtime_clock": true,
+            "measured_reset_receipt": true,
+            "reset_joints_restored": true,
+            "reset_material_restored": true,
+            "reset_cut_history_cleared": true,
+            "named_rgbd_streams": true,
+            "camera_count_matches_payloads": true,
+            "camera_payload_range_calibration_contract": true,
+            "rgbd_frame_timestamps": true,
+            "wrist_runtime_optics": true
+          },
+          "physical_cutting": "NOT_RUN_SMOKE",
+          "strict_task_metrics": "NOT_RUN",
+          "expected_trim_surface_failure": false,
+          "camera_engineering_visibility": "PASS",
+          "current_component_visibility": "NOT_RUN_NO_SPLIT",
+          "sensor_scope": {
+            "wrist_cameras": "ideal_d405_prototype, not validated hardware calibration/noise",
+            "global_camera": "explicit ideal Warp RGB-D from official D455 asset"
+          },
+          "full_benchmark_ready": false,
+          "reset_clock_scope": "NOT_RECORDED_BY_EXISTING_LAB_RESET_RECEIPT",
+          "camera_reset_repeatability": {
+            "wrist_d405_0": 5.960464477539063e-08,
+            "wrist_d405_1": 8.940696716308594e-08,
+            "global_d455": 1.1920928955078125e-07
+          },
+          "reset_scope": "Measured physical state restoration; camera exact-mask/depth repeatability is separate"
+        }
+      }
+    ],
+    "tool_sources_unchanged": true,
+    "receipt": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/single_visible_gpu_smoke_001/result.json",
+      "sha256": "ab0de173c982a0a1ac373beabd404e29f5a0dafb1455f33f5c571840665621dc",
+      "bytes": 11740
+    }
+  },
+  "ci": {
+    "source_commit": "156b2623edaa001cba2fc90924690b282f1f249b",
+    "status": "PASS",
+    "url": "https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/40672294114",
+    "tests_passed": 277,
+    "wall_s_reported_by_pytest": 5.88
+  },
+  "final_root_vs_frozen_runtime_implementation": {
+    "isaac_sim_full_cut": {
+      "recorded_files_checked": 51,
+      "differences": [],
+      "status": "PASS"
+    },
+    "isaac_sim_full_trim": {
+      "recorded_files_checked": 51,
+      "differences": [],
+      "status": "PASS"
+    },
+    "isaac_lab_full_cut": {
+      "recorded_files_checked": 51,
+      "differences": [],
+      "status": "PASS"
+    },
+    "isaac_lab_full_trim": {
+      "recorded_files_checked": 51,
+      "differences": [],
+      "status": "PASS"
+    }
+  },
+  "sampled_total_gpu_memory": {
+    "physical_index": 0,
+    "minimum_mib": 980,
+    "maximum_mib": 6971,
+    "scope": "nvidia-smi device-wide memory includes baseline/co-tenants, sampled during full validation; not allocator peak"
+  },
+  "prior_installation_receipt": "portable_installation.json"
+}
