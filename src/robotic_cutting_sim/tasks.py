@@ -178,8 +178,8 @@ class CuttingTaskSpec:
         A 7-vector joint action explicitly leaves the second arm parked; no
         dynamics, IK, observations, forces or hidden cut schedule are added here.
         """
-        if not isinstance(action, dict) or set(action)-{"mode", "target", "cut_enabled"}:
-            raise ValueError("Action is a mapping with mode, target and optional cut_enabled only")
+        if not isinstance(action, dict) or set(action)-{"mode", "target", "cut_enabled", "cut_index"}:
+            raise ValueError("Action is a mapping with mode, target and optional cut_enabled/cut_index only")
         mode = action.get("mode")
         target = np.asarray(action.get("target"), float)
         if mode == ACTION_MODES[0]:
@@ -194,7 +194,14 @@ class CuttingTaskSpec:
         enabled = action.get("cut_enabled", True)
         if not isinstance(enabled, (bool, np.bool_)):
             raise ValueError("cut_enabled must be an explicit Boolean arming flag")
-        return {"mode": mode, "target": target.copy(), "cut_enabled": bool(enabled)}
+        command = {"mode": mode, "target": target.copy(), "cut_enabled": bool(enabled)}
+        if "cut_index" in action:
+            # Which persistent cut digit this action writes (material max_cuts bounds it).
+            index = action["cut_index"]
+            if not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_)) or not 0 <= index <= 1:
+                raise ValueError("cut_index must be the integer 0 or 1")
+            command["cut_index"] = int(index)
+        return command
 
     def to_dict(self):
         protocol = self.protocol_document()

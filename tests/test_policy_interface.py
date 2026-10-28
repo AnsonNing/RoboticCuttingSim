@@ -176,3 +176,15 @@ def test_gym_adapter_spaces_and_step():
     from gymnasium.utils.env_checker import check_env
     check_env(CuttingGymEnv(CuttingTaskEnv(tracking_backend(), action_mode=DELTA_MODE,
                                            observation_profile="state")), skip_render_check=True)
+
+
+def test_delta_action_may_name_its_frame():
+    b = tracking_backend()
+    env = CuttingTaskEnv(b, action_mode=DELTA_MODE)  # env default frame: edge
+    env.reset()
+    env.step({"mode": DELTA_MODE, "frame": "world", "target": [.001, 0, 0, 0, 0, 0]})
+    assert np.allclose(b.edge[:3], [.001, 0, .05])
+    env.step({"mode": DELTA_MODE, "target": [.001, 0, 0, 0, 0, 0]})  # edge +x points down here
+    assert np.allclose(b.edge[:3], [.001, 0, .049])
+    with pytest.raises(ValueError):
+        env.step({"mode": DELTA_MODE, "frame": "tool", "target": np.zeros(6)})

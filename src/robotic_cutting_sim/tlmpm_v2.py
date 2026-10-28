@@ -236,8 +236,7 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                     friction: float, gc: float, sharpness: float, profile: wp.array(dtype=wp.vec2),
                     profile_count: int, blade_width: float, floor: int, walls: int, tool: int,
                     law: int, slice_efficiency: float, zone: float, zone_rear: float, flags: wp.array(dtype=int),
-                    segments: int, box_centers: wp.array(dtype=wp.vec3),
-                    box_halves: wp.array(dtype=wp.vec3), box_count: int):
+                    segments: int):
     p = wp.tid()
     impulse[p] = wp.vec3(0.0)
     xp, vp, mp = x[p], v[p], mass[p]
@@ -329,16 +328,36 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
             wp.atomic_add(stats, 1, 1.0)
             wp.atomic_add(stats, 2, wp.dot(ji, linear+wp.cross(angular, lever)))
             wp.atomic_max(stats, 3, wp.max(-gap, 0.0))
-        for b in range(box_count):
-            box = _box_sdf(local-box_centers[b], box_halves[b])
-            box_normal = wp.transform_vector(pose, wp.vec3(box[0], box[1], box[2]))
-            box_lever = xp-wp.transform_get_translation(pose)-box_normal*radius
-            box_relative = vp-linear-wp.cross(angular, box_lever)
-            jb = _contact_impulse(box[3]-radius, box_normal, box_relative, mp, dt, stiffness, friction)
-            impulse[p] = impulse[p]+jb
-            box_torque = wp.cross(box_lever, -jb)
-            wp.atomic_add(reaction, 0, wp.spatial_vector(-jb[0], -jb[1], -jb[2],
-                                                         box_torque[0], box_torque[1], box_torque[2]))
+
+
+@wp.kernel
+def _obstacle_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), mass: wp.array(dtype=float),
+                       impulse: wp.array(dtype=wp.vec3), poses: wp.array(dtype=wp.transform),
+                       twists: wp.array(dtype=wp.spatial_vector), index: wp.array(dtype=int),
+                       reaction: wp.array(dtype=wp.spatial_vector), radius: float, dt: float,
+                       stiffness: float, friction: float, box_centers: wp.array(dtype=wp.vec3),
+                       box_halves: wp.array(dtype=wp.vec3), box: int):
+    """Blunt tool parts (handle, finger pads): push material, never cut.
+
+    One launch per edge-frame box keeps _rigid_contacts identical to v1 law 1.
+    """
+    p = wp.tid()
+    xp, vp, mp = x[p], v[p], mass[p]
+    i = index[0]
+    pose = poses[i]
+    local = wp.transform_point(wp.transform_inverse(pose), xp)
+    hit = _box_sdf(local-box_centers[box], box_halves[box])
+    normal = wp.transform_vector(pose, wp.vec3(hit[0], hit[1], hit[2]))
+    twist = twists[i]
+    linear = wp.vec3(twist[0], twist[1], twist[2])
+    angular = wp.vec3(twist[3], twist[4], twist[5])
+    lever = xp-wp.transform_get_translation(pose)-normal*radius
+    relative = vp-linear-wp.cross(angular, lever)
+    jb = _contact_impulse(hit[3]-radius, normal, relative, mp, dt, stiffness, friction)
+    if wp.length_sq(jb) > 0.0:
+        impulse[p] = impulse[p]+jb
+        torque = wp.cross(lever, -jb)
+        wp.atomic_add(reaction, 0, wp.spatial_vector(-jb[0], -jb[1], -jb[2], torque[0], torque[1], torque[2]))
 
 
 @wp.kernel
@@ -519,16 +538,16 @@ class TLMPM:
             raise ValueError("Blade profile must be a finite counter-clockwise strictly convex polygon")
         if cutting_law not in (1, 2) or not np.isfinite(slice_efficiency) or slice_efficiency < 0:
             raise ValueError("cutting_law must be 1 or 2 with a finite nonnegative slice efficiency")
-        boxes = np.asarray([] if obstacle_boxes_edge is None else obstacle_boxes_edge, np.float32).reshape(-1, 2, 3)
+        obstacles = np.asarray([] if obstacle_boxes_edge is None else obstacle_boxes_edge, np.float32).reshape(-1, 2, 3)
         if edge_segments is None:
             edge_segments = int(np.clip(np.ceil(2*config.blade_half_width/spacing), 1, 4096))
-        if not np.isfinite(boxes).all() or np.any(boxes[:, 1] <= 0) or not 1 <= int(edge_segments) <= 4096:
+        if not np.isfinite(obstacles).all() or np.any(obstacles[:, 1] <= 0) or not 1 <= int(edge_segments) <= 4096:
             raise ValueError("Obstacle boxes need finite centers and positive half extents in the edge frame")
         wp.init()
         self.config, self.device, self.spacing = config, device, spacing
         self.blade_profile_xz = profile
         self.cutting_law, self.slice_efficiency = int(cutting_law), float(slice_efficiency)
-        self.edge_segments, self.obstacle_boxes_edge = int(edge_segments), boxes
+        self.edge_segments, self.obstacle_boxes_edge = int(edge_segments), obstacles
         self.n = len(points)
         self.volume = spacing**3
         self.radius = config.contact_radius_scale*spacing*.5
@@ -569,7 +588,7 @@ class TLMPM:
         with wp.ScopedDevice(device):
             self.profile = wp.array(profile, dtype=wp.vec2)
             self.edge_flags = wp.zeros(self.edge_segments, dtype=int)
-            padded = boxes if len(boxes) else np.ones((1, 2, 3), np.float32)
+            padded = obstacles if len(obstacles) else np.ones((1, 2, 3), np.float32)
             self.box_centers = wp.array(padded[:, 0].copy(), dtype=wp.vec3)
             self.box_halves = wp.array(padded[:, 1].copy(), dtype=wp.vec3)
             self.reference = wp.array(points, dtype=wp.vec3)
@@ -629,7 +648,12 @@ class TLMPM:
                 c.contact_friction, c.cutting_energy, c.sharpness, self.profile,
                 len(self.blade_profile_xz), c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool),
                 self.cutting_law, self.slice_efficiency, float(self.spacing), 2*c.dx, self.edge_flags,
-                self.edge_segments, self.box_centers, self.box_halves, len(self.obstacle_boxes_edge)])
+                self.edge_segments])
+            if c.tool:
+                for box in range(len(self.obstacle_boxes_edge)):
+                    wp.launch(_obstacle_contacts, n, [self.x, self.v, self.mass, self.impulse, self.poses,
+                        self.twists, self.index, self.reaction, self.radius, c.dt, c.contact_stiffness,
+                        c.contact_friction, self.box_centers, self.box_halves, box])
             if self.fixture_data is not None:
                 kernel, centers, halves, plane = self.fixture_data
                 wp.launch(kernel, n, [self.x, self.v, self.mass, self.impulse, centers, halves,

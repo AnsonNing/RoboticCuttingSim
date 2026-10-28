@@ -870,7 +870,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
                 raise ValueError("Task action mappings require a CUT/TRIM task")
             command = self.task.validate_action(action)
             self._step_action_mode = command["mode"]
-            self._step_cut_enabled, self._step_cut_index = command["cut_enabled"], 0
+            self._step_cut_enabled, self._step_cut_index = command["cut_enabled"], command.get("cut_index", 0)
             values = command["target"]
             if values.shape == (2, 7):
                 parked = self._park_q[self._joint_coords[1]][:7]

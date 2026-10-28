@@ -76,6 +76,9 @@ class CuttingTaskEnv:
 
     @property
     def runtime_source(self):
+        declared = getattr(self.backend, "runtime_source", None)
+        if isinstance(declared, str):
+            return declared
         return ("live_isaac_lab" if hasattr(self.backend, "measured") else "live_isaac_sim")
 
     @property
@@ -116,9 +119,12 @@ class CuttingTaskEnv:
         """Delta/bounded actions -> one validated absolute action and a report."""
         report = None
         if action.get("mode") == DELTA_MODE:
+            # A delta may name its own frame ("edge" | "world"); otherwise the env default.
+            frame = action.get("frame", self.delta_frame)
             target, report = resolve_delta(self._commanded, action.get("target"), self._limits(),
-                frame=self.delta_frame, T_world_workpiece=self.task.T_world_workpiece)
-            action = {**action, "mode": ACTION_MODES[0], "target": target}
+                frame=frame, T_world_workpiece=self.task.T_world_workpiece)
+            action = {key: value for key, value in action.items() if key != "frame"}
+            action.update({"mode": ACTION_MODES[0], "target": target})
         elif action.get("mode") == ACTION_MODES[0] and self.action_limits and self.action_limits.limit_absolute:
             target, report = bound_target(self._commanded, action.get("target"), self.action_limits,
                                           self.task.T_world_workpiece)
@@ -168,11 +174,12 @@ class CuttingTaskEnv:
             ik_status, ik_info = "rejected", failure.info
             self._ik_failures += 1
             hold = {"mode": ACTION_MODES[0], "target": self._commanded,
-                    "cut_enabled": bool(action["cut_enabled"]) if action else True}
+                    "cut_enabled": bool(action["cut_enabled"]) if action else True,
+                    **({"cut_index": action["cut_index"]} if action and "cut_index" in action else {})}
             try:
                 self.backend.step(self.task.validate_action(hold))
             except IKFailure:
-                hold = {"mode": ACTION_MODES[1], "target": np.asarray(self._proprio["q"])[0], "cut_enabled": hold["cut_enabled"]}
+                hold = {**hold, "mode": ACTION_MODES[1], "target": np.asarray(self._proprio["q"])[0]}
                 self.backend.step(self.task.validate_action(hold))
         else:
             self._ik_failures = 0

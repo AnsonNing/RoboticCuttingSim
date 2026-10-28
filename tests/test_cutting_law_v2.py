@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 pytest.importorskip("warp")
+pytestmark = pytest.mark.cpu_sim
 
 from robotic_cutting_sim.blade_probe import FLAT_SKIM, VERTICAL_CUT, Phase, drive_blade
 from robotic_cutting_sim.tool_profile import RULER_KNIFE_V1
@@ -70,3 +71,17 @@ def test_two_cut_digits_make_three_pieces():
               Phase((.24, 0, 0), .1, -1), Phase((0, 0, -.1), .2, 1)]
     result = run(VERTICAL_CUT, [-.012, 0, TOP+.004], phases, cuts=2)
     assert result["components"] >= 3 and min(result["mass_fractions"][:3]) > .25
+
+
+def test_obstacles_are_not_confused_with_fixture_boxes():
+    # Regression: the fixture setup once overwrote the obstacle array, so the
+    # support floor was applied a second time in the blade frame.
+    from robotic_cutting_sim import tlmpm_v2
+    from robotic_cutting_sim.blade_probe import block
+    from robotic_cutting_sim.material_config import TLMPMConfig
+    points, masses = block()
+    obstacle = [[[-.06, 0., 0.], [.02, .05, .011]]]
+    bed = tlmpm_v2.TLMPM(points, masses, .004, TLMPMConfig(floor=False, cuts=1), "cpu",
+                         fixture_boxes=[[[0., 0., -.005], [.09, .025, .005]]], table_plane=[0., 0., 1., .01],
+                         obstacle_boxes_edge=obstacle)
+    assert np.allclose(bed.box_centers.numpy(), [obstacle[0][0]]) and np.allclose(bed.box_halves.numpy(), [obstacle[0][1]])

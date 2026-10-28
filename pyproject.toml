@@ -22,4 +22,5 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["gpu: explicitly invoked Newton GPU test", "expensive: convergence experiment"]
+markers = ["gpu: explicitly invoked Newton GPU test", "expensive: convergence experiment",
+           "cpu_sim: Warp-CPU material simulation, minutes; deselect with -m 'not cpu_sim' for quick runs"]

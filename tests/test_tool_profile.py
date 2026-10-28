@@ -157,6 +157,7 @@ def test_profile_sdf_matches_ruler_polygon_geometry():
     assert np.allclose(np.linalg.norm(values[:, :3], axis=1), 1, atol=1e-5)
 
 
+@pytest.mark.cpu_sim
 @pytest.mark.parametrize("tilt_deg", [0., 25.])
 def test_ruler_blade_severs_a_bar_on_cpu(tilt_deg):
     pytest.importorskip("warp")

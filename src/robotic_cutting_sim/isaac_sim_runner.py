@@ -827,6 +827,7 @@ class LiveIsaacSimCutting:
         if c.observation_motion_probe and action is not None:
             raise ValueError("The separate observation motion probe uses scripted actions only")
         mode=c.action_mode
+        self._command_cut_index=0
         if isinstance(action,dict):
             if self.task is None:
                 raise ValueError("Task action mappings require a shared CUT/TRIM specification")
@@ -834,6 +835,7 @@ class LiveIsaacSimCutting:
             mode="cartesian" if command["mode"]=="cartesian_edge_pose_world" else "joint"
             action=command["target"]
             cutting=bool(cutting and command["cut_enabled"])
+            self._command_cut_index=command.get("cut_index",0)
         desired = self.reference_pose(self.time_s+c.control_dt)
         # Seed IK from current PHYSX joints, without advancing Newton dynamics.
         q = numpy_data(self.arms.get_dof_positions())
@@ -899,7 +901,7 @@ class LiveIsaacSimCutting:
         actual = self.proprioception()
         attachment=self._check_attachment(actual["tool_pose"])
         diagnostics = self.material.advance(actual["tool_pose"],self.time_s,cutting=cutting,
-                           cut_index=0 if action is not None else None)
+                           cut_index=self._command_cut_index if action is not None else None)
         if not np.array_equal(diagnostics["applied_previous_material_wrench_world"],applied):
             raise AssertionError("The material receipt does not match the wrench actually applied to PhysX")
         state=self.material.debug_state()
