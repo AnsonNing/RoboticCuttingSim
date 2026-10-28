@@ -1,0 +1,21 @@
+{
+  "protocol_id": "wp08_physical_tool_task_regression_v1",
+  "status_at_freeze": "NOT_RUN",
+  "tool_attachment_mode": "physical_grasp",
+  "tool_init_mode": "pregrasped",
+  "initial_finger_position_m": 0.0112,
+  "steps": 400,
+  "record_every": 10,
+  "camera_layout": "wrist_d405_global_d455",
+  "camera_ids": ["wrist_d405_0", "wrist_d405_1", "global_d455"],
+  "task_thresholds": "Unchanged configs/cutting_tasks_v1.json; preserve any strict FAIL",
+  "cases": [
+    {"task_id":"CUT-01", "variant":"randomized", "seed":43, "workpiece_kind":"rectangle", "particle_spacing_m":0.001},
+    {"task_id":"TRIM-01", "variant":"randomized", "seed":43, "workpiece_kind":"rectangle", "particle_spacing_m":0.002},
+    {"task_id":"CUT-01", "variant":"randomized", "seed":44, "workpiece_kind":"rectangle", "particle_spacing_m":0.001},
+    {"task_id":"TRIM-01", "variant":"randomized", "seed":44, "workpiece_kind":"rectangle", "particle_spacing_m":0.002},
+    {"task_id":"CUT-01", "variant":"fixed", "seed":42, "workpiece_kind":"capsule", "particle_spacing_m":0.002}
+  ],
+  "support_scope": "Existing provisional Plasticine-like TLMPM only; additional capsule footprint is sampled into one connected volume before physics, never a visual-only import or runtime deletion",
+  "full_physics_acceptance": false
+}
