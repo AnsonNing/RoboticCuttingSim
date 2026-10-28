@@ -9,10 +9,13 @@ remains explicit and the default until end-to-end physical grasp is validated.
 
 The shared compound tool now has a continuous handle/shaft/blade, derived
 finite mass/inertia, nominal grasp frames and a separate measured edge. Native
-PhysX physical-grasp smoke002 established actual bilateral loaded handle contacts
-for a2s pre-episode settling phase, then executed2 control steps with all three
-RGB-D streams. This is a grasp/runtime smoke, not physical cutting acceptance.
-Its first API integration failure and all traces are preserved. Independent
+PhysX pregrasp002 established actual bilateral loaded handle contacts for a2s
+pre-episode settling phase. Its subsequent runtime falsely returned PASS_SMOKE
+after camera edits invalidated a rigid tensor view; the first full attempt was
+therefore aborted and rejected. Camera assets now precede physics views, and
+smoke003 completed two formal steps with fresh contact data, all three RGB-D
+streams and no invalid-view errors. Neither smoke proves physical cutting.
+All API/initialization failures and raw traces are preserved. Independent
 release, weak-grip, load, complete cutting and Newton parity remain in progress.
 The current native contact API's force/sign/unit controls passed separately.
 

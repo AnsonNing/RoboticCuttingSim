@@ -318,6 +318,28 @@ class LiveIsaacSimCutting:
             shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*color))
             material.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
             UsdShade.MaterialBindingAPI.Apply(prim).Bind(material, UsdShade.Tokens.strongerThanDescendants)
+        self.pre_authored_camera_specs=None
+        if self.physical_grasp and c.camera and c.camera_layout == "wrist_d405_global_d455":
+            # Contact sensors create a view over every rigid in the stage.
+            # Finish camera deletions/API removal before any view is created.
+            # Nominal FK only chooses a fixed optical mount at reset; every
+            # runtime camera extrinsic still comes from the actual articulation.
+            from .camera_rig import author_camera_rig, SECONDARY_OBSERVATION_JOINTS
+            from .scene_frames import matrix_pose
+            from .workcell import ASSETS
+            self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+                tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
+                wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
+            reset_q=self.ik.initial_q.reshape(2,9).copy()
+            reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.))
+            reset_q[1,:7]=SECONDARY_OBSERVATION_JOINTS
+            self.ik.state.joint_q.assign(reset_q.ravel())
+            self.ik.newton.eval_fk(self.ik.model,self.ik.state.joint_q,self.ik.state.joint_qd,self.ik.state)
+            body_q=self.ik.state.body_q.numpy()
+            nominal_hands=[body_q[self.ik.hand_local+i*self.ik.bodies_per_arm] for i in range(2)]
+            self.pre_authored_camera_specs=author_camera_rig(stage,hand_paths,
+                ROOT/"artifacts/workcell_asset_cache"/ASSETS["d455"],task_id=c.task_id or "TRIM-01",
+                camera_layout=c.camera_layout,initial_hand_poses_world_xyzw=nominal_hands)
         SimulationManager.setup_simulation(dt=c.control_dt/c.robot_substeps, device="cpu")
         if not SimulationManager.switch_physics_engine("physx"):
             raise RuntimeError("Native Isaac PhysX engine is unavailable")
@@ -349,7 +371,8 @@ class LiveIsaacSimCutting:
                                     [80.]*4+[40.]*3+[self.grasp.damping_n_s_m]*2)
             self.arms.set_dof_max_efforts([87.]*4+[12.]*3+[self.grasp.max_finger_force_n]*2)
         self.arms.set_solver_iteration_counts(position_counts=16, velocity_counts=4)
-        self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+        if not (self.physical_grasp and self.pre_authored_camera_specs is not None):
+            self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
                    tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
                    wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
         self.park_q=self.ik.initial_q.reshape(2,9).copy()
@@ -531,6 +554,9 @@ class LiveIsaacSimCutting:
         relative = matrix_pose(np.linalg.inv(pose_matrix(state["hand_pose"])) @
                                pose_matrix(state["tool_body_pose_xyzw"]))
         contacts = self.tool_contacts.sample(tool_pose_xyzw=state["tool_body_pose_xyzw"])
+        if phase != "pregrasp_settling" and not all(contacts.get(key) for key in
+                ("sensor_valid","sensor_fresh","new_physics_step")):
+            raise RuntimeError("INVALID_OR_STALE_NATIVE_CONTACT_VIEW: reset instead of using stale rigid state")
         row = {"phase":phase, "native_time_s":self.SimulationManager.get_simulation_time(),
                "hand_pose_xyzw":state["hand_pose"], "tool_body_pose_xyzw":state["tool_body_pose_xyzw"],
                "measured_edge_pose_xyzw":state["tool_pose"], "relative_tool_pose_xyzw":relative,
@@ -684,9 +710,10 @@ class LiveIsaacSimCutting:
             asset=ROOT/"artifacts/workcell_asset_cache"/ASSETS["d455"]
             if not asset.is_file():
                 raise FileNotFoundError(f"The official Isaac6.2 D455 asset is required: {asset}")
-            self.camera_specs=author_camera_rig(self.stage,self.hand_paths,asset,
+            self.camera_specs=(self.pre_authored_camera_specs if self.pre_authored_camera_specs is not None else
+                author_camera_rig(self.stage,self.hand_paths,asset,
                 task_id=c.task_id or "TRIM-01",camera_layout=c.camera_layout,
-                initial_hand_poses_world_xyzw=self.proprioception()["hand_pose_both_xyzw"])
+                initial_hand_poses_world_xyzw=self.proprioception()["hand_pose_both_xyzw"]))
             paths={name:spec["optical_prim_path"] for name,spec in self.camera_specs.items()}
             if set(paths)!={"wrist_d405_0","wrist_d405_1","global_d455"}:
                 raise ValueError("The new native rig must expose both wrist D405 IDs and global_d455")

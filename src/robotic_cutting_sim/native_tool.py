@@ -78,6 +78,8 @@ def nominal_tool_pose(edge_pose, spec):
 def tool_state(rigid, spec):
     from .isaac_sim_runner import numpy_data, pose_from_wxyz
     from .physical_tool import measured_edge_pose
+    if not rigid.is_physics_tensor_entity_valid():
+        raise RuntimeError("Independent tool physics tensor view is invalid; USD fallback is forbidden")
     p, q = rigid.get_world_poses()
     pose = pose_from_wxyz(numpy_data(p)[0], numpy_data(q)[0])
     linear_native, angular_native = rigid.get_velocities()
