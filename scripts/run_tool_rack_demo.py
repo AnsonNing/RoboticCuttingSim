@@ -67,7 +67,7 @@ def main():
     implementation = out/"implementation"; implementation.mkdir()
     files = [Path(__file__),ROOT/"scripts/run_physical_tool_controls.py"]
     files += [ROOT/"src/robotic_cutting_sim"/name for name in (
-        "isaac_sim_runner.py","native_tool.py","physical_tool.py","physical_contacts.py","grasp_monitor.py","robot.py","live_material.py","tlmpm.py")]
+        "isaac_sim_runner.py","native_tool.py","physical_tool.py","physical_contacts.py","grasp_monitor.py","tool_compatibility.py","robot.py","live_material.py","tlmpm.py")]
     hashes = {str(path.relative_to(ROOT)):hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     for path in files:shutil.copyfile(path,implementation/path.name)
     os.environ.setdefault("OMNI_KIT_ACCEPT_EULA","YES")
@@ -127,7 +127,7 @@ def main():
             # A joint-space chord can sweep the shaft sideways into the rack
             # slot. Follow a straight Cartesian path at fixed/interpolated
             # orientation, converting each target through the existing IK.
-            start = env.proprioception()["tool_pose"].copy()
+            start = matrix_pose(pose_matrix(env.proprioception()["hand_pose"]) @ spec.T_hand_tool @ spec.T_tool_edge)
             duration = max(2.,1.875*np.linalg.norm(edge[:3]-start[:3])/.04)
             count = int(np.ceil(duration/config.control_dt))
             rotations = Slerp([0.,1.],Rotation.from_quat([start[3:],edge[3:]]))
@@ -168,7 +168,8 @@ def main():
         move(place,"place_tool")
         env.set_gripper("release"); hold(protocol["release_wait_s"],"release_onto_rack")
         rested = env.proprioception()["tool_body_pose_xyzw"].copy()
-        retract = env.proprioception()["tool_pose"].copy(); retract[2] += protocol["open_retract_m"]
+        retract = matrix_pose(pose_matrix(env.proprioception()["hand_pose"]) @ spec.T_hand_tool @ spec.T_tool_edge)
+        retract[2] += protocol["open_retract_m"]
         move(retract,"withdraw_open_hand")
         # Approach the actually resting tool. This changes only an IK target.
         pickup = matrix_pose(pose_matrix(env.proprioception()["tool_body_pose_xyzw"]) @ spec.T_tool_edge)
