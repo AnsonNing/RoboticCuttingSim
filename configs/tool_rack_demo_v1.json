@@ -1,0 +1,28 @@
+{
+  "protocol_id": "wp08_native_tool_rack_v1",
+  "status_at_freeze": "NOT_RUN",
+  "scope": "Optional native PhysX place/release/reacquire/lift skill; rigid physics only, no material advance or cutting score",
+  "rack_handle_center_world_m": [-0.2, -0.15, 0.18],
+  "release_clearance_m": 0.002,
+  "clearance_edge_height_m": 0.22,
+  "open_retract_m": 0.08,
+  "lift_m": 0.08,
+  "release_wait_s": 0.75,
+  "close_wait_s": 1.0,
+  "hold_s": 2.0,
+  "initial_finger_position_m": 0.0112,
+  "maximum_placement_center_error_m": 0.005,
+  "minimum_lift_m": 0.05,
+  "minimum_bilateral_loaded_fraction": 0.95,
+  "maximum_relative_translation_m": 0.002,
+  "maximum_relative_rotation_rad": 0.05235987755982988,
+  "maximum_grasp_penetration_m": 0.001,
+  "transfer": {
+    "minimum_waypoint_duration_s": 2.0,
+    "maximum_joint_speed_rad_s": 0.25,
+    "maximum_joint_increment_rad": 0.005,
+    "maximum_ik_position_error_m": 0.001,
+    "maximum_ik_rotation_error_rad": 0.01
+  },
+  "prohibited": ["tool pose correction", "fixed or kinematic attachment", "material steps counted as cutting", "claiming Newton pickup parity"]
+}
