@@ -9,6 +9,22 @@ from robotic_cutting_sim.deployment_doctor import (
 from robotic_cutting_sim.deployment_validation import CAMERA_IDS, classify_episode, make_plan, summarize_validation
 
 
+def test_physical_deployment_uses_both_real_runtimes_and_both_tasks_without_promoting_smoke():
+    plan = make_plan("/tmp/repo", "/tmp/output", tool_attachment_mode="physical_grasp",
+        initial_finger_position_m=.0112, gpu=0)
+    episodes = [s for s in plan if s["kind"] == "episode"]
+    assert len(episodes) == 4
+    assert {(s["runtime"],s["task_id"]) for s in episodes} == {
+        (r,t) for r in ("isaac_sim","isaac_lab") for t in ("CUT-01","TRIM-01")}
+    for stage in episodes:
+        assert stage["steps"] == 2 and stage["task_audit_command"] is None
+        assert "physical_grasp" in stage["command"] and "0.0112" in stage["command"]
+        assert stage["physical_tool_audit_command"]
+    legacy = make_plan("/tmp/repo", "/tmp/output")
+    assert len([s for s in legacy if s["kind"] == "episode"]) == 2
+    assert all(s["physical_tool_audit_command"] is None for s in legacy if s["kind"] == "episode")
+
+
 def test_gpu_auto_prefers_free_rtx_and_supports_a_single_physical_gpu():
     rows = parse_gpu_csv("0, GPU-a, NVIDIA RTX 5090, 32607, 29000, 570.211.01, 12.0, 0\n"
                          "1, GPU-b, NVIDIA RTX 5090, 32607, 18000, 570.211.01, 12.0, 5\n"

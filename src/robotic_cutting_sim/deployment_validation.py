@@ -17,7 +17,10 @@ def _number(value, default=-1.):
         return default
 
 
-def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None, seed=42):
+def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None, seed=42,
+              tool_attachment_mode="legacy_fixed_tool", initial_finger_position_m=None):
+    if tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
+        raise ValueError("Unsupported tool attachment mode")
     root, output = Path(root).resolve(), Path(output).resolve()
     pythons = {k: str(Path(v).expanduser().absolute()) for k, v in (pythons or {}).items()}
     python = lambda name: pythons.get(name, str(root/RUNTIME_PATHS[name]))
@@ -32,6 +35,8 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
         return stages
     for backend in selected:
         cases = [("smoke_cut", "CUT-01", 2)]
+        if tool_attachment_mode == "physical_grasp":
+            cases += [("smoke_trim", "TRIM-01", 2)]
         if tier == "full":
             cases += [("full_cut", "CUT-01", 400), ("full_trim", "TRIM-01", 400)]
         for suffix, task, steps in cases:
@@ -47,6 +52,9 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
                 command += ["--material-device", f"cuda:{gpu}", "--reset-check"]
             if task == "TRIM-01":
                 command += ["--particle-spacing", "0.002"]
+            command += ["--tool-attachment-mode", tool_attachment_mode]
+            if initial_finger_position_m is not None:
+                command += ["--grip-initial-position", str(initial_finger_position_m)]
             stages.append({"name": name, "kind": "episode", "runtime": backend, "task_id": task, "steps": steps,
                 "output_dir": str(directory), "command": command,
                 "camera_audit_dir": str(output/(name+"_camera_audit")),
@@ -54,7 +62,10 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
                                          "--output-dir", str(output/(name+"_camera_audit"))],
                 "task_audit_dir": str(output/(name+"_task_audit")),
                 "task_audit_command": [base, str(root/"scripts/audit_cutting_task_episodes.py"), "--recording-dir", str(directory),
-                                       "--output-dir", str(output/(name+"_task_audit"))] if steps == 400 else None})
+                                       "--output-dir", str(output/(name+"_task_audit"))] if steps == 400 else None,
+                "physical_tool_audit_dir": str(output/(name+"_physical_audit")),
+                "physical_tool_audit_command": [base,str(root/"scripts/audit_physical_tool.py"),str(directory),
+                    str(output/(name+"_physical_audit"))] if tool_attachment_mode == "physical_grasp" else None})
     return stages
 
 

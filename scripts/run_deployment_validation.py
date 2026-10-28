@@ -67,6 +67,8 @@ def main():
     parser.add_argument("--sim-python", type=Path)
     parser.add_argument("--lab-python", type=Path)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--tool-attachment-mode",choices=("legacy_fixed_tool","physical_grasp"),default="legacy_fixed_tool")
+    parser.add_argument("--grip-initial-position",type=float,help="Explicit per-finger pregrasp opening in metres")
     parser.add_argument("--timeout", type=float, default=1800., help="Seconds per recorder or audit subprocess")
     parser.add_argument("--dry-run", action="store_true", help="Write plans only; status remains NOT_RUN")
     parser.add_argument("--skip-cpu-tests", action="store_true", help="Explicitly omit CPU regression; retain SKIPPED_BY_REQUEST")
@@ -84,13 +86,15 @@ def main():
     write_new_report(output/"doctor", doctor)
     selected = doctor["gpu_selection"]["physical_index"]
     plan = make_plan(ROOT, output, tier=args.tier, runtime=args.runtime, gpu=selected if selected is not None else 0,
-                     pythons=pythons, seed=args.seed)
+                     pythons=pythons, seed=args.seed, tool_attachment_mode=args.tool_attachment_mode,
+                     initial_finger_position_m=args.grip_initial_position)
     sources = [Path(__file__), ROOT/"src/robotic_cutting_sim/deployment_doctor.py", ROOT/"src/robotic_cutting_sim/deployment_validation.py"]
     hashes = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
     snapshot = output/"deployment_sources";snapshot.mkdir()
     for path in sources:(snapshot/path.name).write_bytes(path.read_bytes())
     protocol = {"schema": "portable_deployment_validation_v1", "tier": args.tier, "runtime": args.runtime,
         "seed": args.seed, "gpu_selection": doctor["gpu_selection"], "commands": plan, "tool_source_sha256": hashes,
+        "tool_attachment_mode":args.tool_attachment_mode,"initial_finger_position_m":args.grip_initial_position,
         "allow_expected_trim_geometry_fail": args.allow_expected_trim_geometry_fail,
         "scope": "Static composition, actual runtime/named RGB-D contracts and optional full sampled separation; no complete scientific/hardware acceptance",
         "full_case_recipe": "400x20ms; CUT1mm particles, TRIM explicit2mm; existing4mm material grid and current v3 wrist/Global rig",
@@ -148,6 +152,15 @@ def main():
                 row["classification"] = classify_episode(result, camera, task, runtime=stage["runtime"],
                     expected_steps=stage["steps"], returncode=process["returncode"], task_id=stage["task_id"],
                     reset=read(directory/"reset_receipt.json") if stage["runtime"] == "isaac_sim" else (result or {}).get("reset_check"))
+                if stage["physical_tool_audit_command"]:
+                    row["physical_tool_audit_process"] = run_logged(stage["physical_tool_audit_command"],output/(stage["name"]+"_physical_audit.log"),args.timeout)
+                    physical = read(Path(stage["physical_tool_audit_dir"])/"result.json") or {}
+                    physical_ok = (row["physical_tool_audit_process"]["returncode"] == 0
+                        and physical.get("status") == "PASS_OFFLINE_ENGINEERING_AUDIT")
+                    row["classification"]["checks"]["independent_physical_tool_smoke_audit"] = physical_ok
+                    row["classification"]["physical_tool_scope"] = "Recorded structure, actual mass/inertia, pregrasp, measured edge and wrench routing; negative controls and full physics remain separate"
+                    if not physical_ok:
+                        row["classification"]["status"] = "FAIL_RUNTIME_CONTRACT"
                 row["status"] = "PASS" if row["classification"]["status"] == "PASS_REQUESTED_RUNTIME_CONTRACT" else "FAIL"
                 if stage["steps"] == 2 and row["status"] != "PASS":failed_smokes.add(stage["runtime"])
         stages.append(row)
