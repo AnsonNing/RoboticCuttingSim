@@ -15,7 +15,7 @@ import shutil
 import sys
 
 import numpy as np
-from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Rotation, Slerp
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"src"))
@@ -124,12 +124,24 @@ def main():
             return state
 
         def move(edge,phase):
-            q, info = env.solve_edge_ik(edge)
-            if (info["position_error_m"] > protocol["transfer"]["maximum_ik_position_error_m"]
-                    or info["rotation_error_rad"] > protocol["transfer"]["maximum_ik_rotation_error_rad"]):
-                raise RuntimeError("Tool skill IK failed: "+str(info))
-            start = env.proprioception()["q"][0]
-            for target in smooth_joint_targets(start,q,protocol["transfer"],config.control_dt):step(target,phase)
+            # A joint-space chord can sweep the shaft sideways into the rack
+            # slot. Follow a straight Cartesian path at fixed/interpolated
+            # orientation, converting each target through the existing IK.
+            start = env.proprioception()["tool_pose"].copy()
+            duration = max(2.,1.875*np.linalg.norm(edge[:3]-start[:3])/.04)
+            count = int(np.ceil(duration/config.control_dt))
+            rotations = Slerp([0.,1.],Rotation.from_quat([start[3:],edge[3:]]))
+            previous = env.proprioception()["q"][0]
+            for index in range(1,count+1):
+                u = index/count; a = 10*u**3-15*u**4+6*u**5
+                desired = np.r_[start[:3]+a*(edge[:3]-start[:3]),rotations(a).as_quat()]
+                q, info = env.solve_edge_ik(desired)
+                if (info["position_error_m"] > protocol["transfer"]["maximum_ik_position_error_m"]
+                        or info["rotation_error_rad"] > protocol["transfer"]["maximum_ik_rotation_error_rad"]):
+                    raise RuntimeError("Tool skill IK failed: "+str(info))
+                if np.max(np.abs(q-previous)) > protocol["transfer"]["maximum_joint_increment_rad"]:
+                    raise RuntimeError("Rack Cartesian path exceeds its finite joint increment bound")
+                step(q,phase); previous = q
             capture(phase)
 
         def hold(seconds,phase):
