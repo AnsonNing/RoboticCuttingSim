@@ -2,6 +2,7 @@
 from copy import deepcopy
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import numpy as np
@@ -166,3 +167,27 @@ def test_pre_step_profile_rejects_unmatched_pose_or_timestamp(tmp_path):
     path.write_text(json.dumps(row)+"\n")
     with pytest.raises(ValueError,match="pose/time"):
         native_samples(path,0.,.002,{"handle_half_extents_m":[.008,.011,.02]},.05)
+
+
+def test_another_robot_finger_is_unintended_support_not_an_active_grasp(tmp_path):
+    contact={"body0":"/World/Tools/CuttingTool_0","body1":"/World/Franka_1/panda_leftfinger",
+        "raw_impulse_world_ns":[0.,.002,0.],"dt_s":.002,"time_s":.002,"position_world_m":[0.,0.,0.]}
+    row={"native_time_s":.002,"hand_pose_xyzw":[0.,0.,0.,0.,0.,0.,1.],
+        "tool_body_pose_xyzw":[0.,0.,0.,0.,0.,0.,1.],"tool_linear_velocity_world_m_s":[0.,0.,0.],
+        "tool_angular_velocity_world_rad_s":[0.,0.,0.],"contacts":{"contacts":[contact],"raw_contact_count":1,
+            "sensor_valid":True,"sensor_fresh":True,"new_physics_step":True,
+            "tensor_forces":{"status":"VALID_NATIVE_NORMAL_AND_FRICTION_DATA"}}}
+    path=tmp_path/"raw.jsonl";path.write_text(json.dumps(row)+"\n")
+    sample=native_samples(path,0.,.002,{"handle_half_extents_m":[.008,.011,.02]},.05)[0]
+    assert sample["left_load_n"] == 0. and sample["unexpected"] == 1
+
+
+def test_lab_only_contact_protocol_cannot_silently_run_on_native_backend(tmp_path):
+    protocol=deepcopy(PROTOCOL);protocol["allowed_runtimes"]=["isaac_lab"]
+    frozen=tmp_path/"protocol.json";frozen.write_text(json.dumps(protocol))
+    output=tmp_path/"forbidden_run"
+    result=subprocess.run([sys.executable,str(ROOT/"scripts/run_physical_tool_controls.py"),
+        "--protocol",str(frozen),"--runtime","isaac_sim","--output-dir",str(output),"--dry-run"],
+        capture_output=True,text=True,check=False)
+    assert result.returncode == 2 and "allowed_runtimes" in result.stderr
+    assert not output.exists()

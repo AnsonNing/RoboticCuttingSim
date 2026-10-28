@@ -112,7 +112,8 @@ def native_samples(path, start, end, spec, minimum_load, geometry_profile=None, 
             matches = [b == "/World/Tools/CuttingTool_0" or b.startswith("/World/Tools/CuttingTool_0/") for b in bodies]
             if sum(matches) != 1: continue
             other = bodies[1 if matches[0] else 0]
-            role = "left_finger" if other.endswith("/panda_leftfinger") else "right_finger" if other.endswith("/panda_rightfinger") else "other"
+            active = other.startswith("/World/Franka_0/")
+            role = "left_finger" if active and other.endswith("/panda_leftfinger") else "right_finger" if active and other.endswith("/panda_rightfinger") else "other"
             force = float(np.linalg.norm(c["raw_impulse_world_ns"])/c["dt_s"])
             local = rotation.inv().apply(np.asarray(c["position_world_m"])-geometry[:3])
             handle = bool(np.all(np.abs(local) <= half+1e-6))
@@ -297,9 +298,12 @@ def open_backend(args, output, protocol):
         from robotic_cutting_sim.workcell import export
         static=output/"workcell";static.mkdir()
         export(Namespace(variant="D0",family="dome",seed=args.seed,spacing=.002,asset_root=None),static)
+        lab_overrides={}
+        if "lab_contact_profile" in protocol:
+            lab_overrides["grip_contact_profile"]=protocol["lab_contact_profile"]
         config=LabCuttingConfig(task_id=args.task_id,seed=args.seed,device=f"cuda:{args.gpu}",material_device=f"cuda:{args.gpu}",
             particle_spacing_m=spacing,camera=False,camera_layout="wrist_d405_global_d455",grasp=grip,
-            tool_attachment_mode="physical_grasp",tool_init_mode="pregrasped",static_scene=str(static/"workcell.usda"))
+            tool_attachment_mode="physical_grasp",tool_init_mode="pregrasped",static_scene=str(static/"workcell.usda"),**lab_overrides)
         write_json(output/"runtime_config.json",asdict(config))
         cfg=make_lab_cfg(config)
         with launch_simulation(cfg,{"headless":True,"visualizer":[],"device":config.device}):
@@ -338,6 +342,9 @@ def worker(args, protocol):
     paths += [ROOT/"src/robotic_cutting_sim"/name for name in
         (("isaac_sim_runner.py","native_tool.py","physical_contacts.py") if args.runtime == "isaac_sim" else ("isaac_lab_env.py","newton_tool.py"))]
     if args.runtime == "isaac_sim":paths.append(ROOT/"configs/isaac_sim_cutting.kit")
+    elif (ROOT/"src/robotic_cutting_sim/pad_contact.py").is_file():
+        paths.append(ROOT/"src/robotic_cutting_sim/pad_contact.py")
+        if "lab_contact_profile" in protocol:paths.append(ROOT/"configs/lab_grip_contact_v3.json")
     hashes={str(path.relative_to(ROOT)):sha256(path) for path in paths}
     for path in paths:(implementation/path.name).write_bytes(path.read_bytes())
     from robotic_cutting_sim.recording import manifest
@@ -501,6 +508,9 @@ def main():
     args=parser.parse_args();args.protocol=args.protocol.resolve()
     if args.gpu < 0 or args.timeout <= 0:parser.error("GPU index must be nonnegative and timeout positive")
     protocol=read_json(args.protocol)
+    runtimes=("isaac_sim","isaac_lab") if args.runtime=="both" else (args.runtime,)
+    if any(runtime not in protocol.get("allowed_runtimes",("isaac_sim","isaac_lab")) for runtime in runtimes):
+        parser.error("The selected runtime is outside the frozen protocol's allowed_runtimes")
     if args.worker:
         if args.runtime=="both" or args.case not in protocol["cases"]:parser.error("Worker requires one explicit runtime and frozen case")
         return worker(args,protocol)
@@ -511,7 +521,6 @@ def main():
     index={"schema_version":"wp08_physical_controls_index_v1","protocol":{"path":"protocol.json","sha256":sha256(args.protocol)},
         "task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"cases":{},"status":"PLAN_ONLY_NOT_RUN" if args.dry_run else "RUNNING",
         "scope":"Independent fresh-process physical pregrasp/rigid controls; no material advance or task completion"}
-    runtimes=("isaac_sim","isaac_lab") if args.runtime=="both" else (args.runtime,)
     for runtime in runtimes:
         executable=ROOT/(".deps/isaacsim-venv/bin/python" if runtime=="isaac_sim" else ".deps/isaaclab-venv/bin/python")
         for name in selected:
