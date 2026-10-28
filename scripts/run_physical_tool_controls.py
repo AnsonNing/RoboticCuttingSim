@@ -13,6 +13,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
@@ -410,7 +411,9 @@ def summarize_matrix(index, output, protocol):
         path=output/row["directory"]/"result.json"
         if path.is_file():
             result=read_json(path)
-            if result.get("status")=="EXECUTED_RIGID_CONTROL" and result.get("metrics",{}).get("evidence_available"):
+            if (row.get("status")=="EXECUTED_RIGID_CONTROL" and row.get("returncode")==0
+                    and row.get("native_contact_view_invalidations",0)==0
+                    and result.get("status")=="EXECUTED_RIGID_CONTROL" and result.get("metrics",{}).get("evidence_available")):
                 available[key]=result
     comparisons={}
     for runtime in sorted({row["runtime"] for row in index["cases"].values()}):
@@ -497,6 +500,13 @@ def main():
         result=read_json(result_path) if result_path.is_file() else {}
         status=result.get("status","FAIL_MISSING_RESULT")
         if status=="RUNNING":status="FAIL_INCOMPLETE_WORKER_RESULT"
+        log_paths=[log,output/row["directory"]/"kit.log"]
+        invalidations=[{"log":str(path.relative_to(output)),"line":line} for path in log_paths if path.is_file()
+            for line in path.read_text(errors="replace").splitlines()
+            if re.search(r"(?:simulation\s*view|tensor\s*view).*invalidat",line,re.I)]
+        row["native_contact_view_invalidations"]=len(invalidations)
+        row["native_contact_view_invalidation_records"]=invalidations
+        if invalidations:status="FAIL_NATIVE_CONTACT_VIEW_INVALIDATION"
         row.update(returncode=code,wall_s=time.monotonic()-start,status=status,source_sha256=result.get("source_sha256",{}),log=log.name)
         write_json(output/"index.json",index)
         print("DONE",key,row["status"],flush=True)

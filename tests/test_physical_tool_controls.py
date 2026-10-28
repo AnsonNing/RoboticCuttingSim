@@ -96,3 +96,13 @@ def test_exit_zero_or_empty_matrix_does_not_prove_control_execution(tmp_path):
     assert result["status"]=="FAIL_OR_INCOMPLETE_RIGID_CONTROLS"
     assert not result["all_requested_cases_executed"]
     assert not result["full_physics_acceptance"]
+
+
+def test_invalidated_native_view_cannot_be_hidden_by_a_success_receipt(tmp_path):
+    case=tmp_path/"case";case.mkdir()
+    (case/"result.json").write_text(json.dumps({"status":"EXECUTED_RIGID_CONTROL","metrics":{"evidence_available":True}}))
+    index={"cases":{"isaac_sim/baseline_hold":{"directory":"case","runtime":"isaac_sim","returncode":0,
+        "status":"FAIL_NATIVE_CONTACT_VIEW_INVALIDATION","native_contact_view_invalidations":1}}}
+    result=summarize_matrix(index,tmp_path,PROTOCOL)
+    assert result["status"]=="FAIL_OR_INCOMPLETE_RIGID_CONTROLS"
+    assert not result["all_requested_cases_executed"]
