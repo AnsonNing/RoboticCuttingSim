@@ -1,0 +1,13 @@
+{
+  "protocol_id": "recorded_wrist_robot_visual_clearance_v1_20261028",
+  "freeze_boundary": "Defined before opening the final v2 full-episode camera/robot outputs. No thresholds are adjusted from their results.",
+  "scope": "Every saved 20 ms robot pose; camera visual OBBs versus actual official robot visual triangle surfaces from the exported composed scene. This is neither native collision geometry nor a rigid-contact acceptance test.",
+  "attachment_rule": "Only a Bracket OBB against its exact own parent panda_hand body is an intentional attachment. Its intersections are still counted. Fingers, other links, and every Housing pair are tested without that exception.",
+  "maximum_unexcepted_triangle_surface_intersections": 0,
+  "triangle_obb_numeric_tolerance_m": 0.00000001,
+  "maximum_final_export_body_translation_error_m": 0.00001,
+  "maximum_final_export_body_rotation_error_rad": 0.0001,
+  "minimum_expected_robot_samples_for_8s": 401,
+  "surface_interpretation": "Zero triangle intersections establishes only the sampled visual-surface test. Closed-volume containment, minimum exact mesh distance, continuous swept collision, native contacts, and camera mass/inertia are not measured here.",
+  "existing_obstacle_protocol": "configs/wrist_camera_audit_v1.json independently checks conservative camera bounds against table, fixtures and knife."
+}
