@@ -8,6 +8,7 @@ import argparse
 from dataclasses import asdict
 import hashlib
 import importlib.metadata
+import importlib.util
 from pathlib import Path
 import subprocess
 import shutil
@@ -69,9 +70,13 @@ def main():
         static_scene=str(scene_path.resolve()))
     cfg = make_lab_cfg(options)
     record = manifest(asdict(options), "live_isaac_lab")
+    lab_module = Path(importlib.util.find_spec("isaaclab").origin).resolve()
+    lab_source_root = subprocess.check_output(
+        ["git", "-C", str(lab_module.parent), "rev-parse", "--show-toplevel"], text=True).strip()
     record["runtime"] = {"source": "live_isaac_lab", "kitless": True,
         "isaac_lab_release": "3.0.0", "isaac_lab_source_sha": subprocess.check_output(
-            ["git", "-C", str(ROOT/".deps/IsaacLab"), "rev-parse", "HEAD"], text=True).strip(),
+            ["git", "-C", lab_source_root, "rev-parse", "HEAD"], text=True).strip(),
+        "isaac_lab_source_root": lab_source_root,
         "distribution_versions": {name: importlib.metadata.version(name) for name in
             ("isaaclab", "isaaclab-newton", "torch", "warp-lang", "newton", "usd-exchange")},
         "articulation_owner": "isaaclab.scene.InteractiveScene/NewtonManager",
