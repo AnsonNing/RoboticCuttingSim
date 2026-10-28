@@ -21,17 +21,23 @@ robot/material state. Keyboard and external Mac-client results are recorded
 separately in [the interactive viewer report](REMOTE_INTERACTIVE_VIEWER.md).
 No independent simulator/container or alternative cutting engine is used.
 
-WP-07 Portable Deployment & Reproducibility is in progress. The pinned,
-isolated bootstrap is implemented; read-only doctor and validation tools are
-being tested separately from the optional viewer. The first actual public
-clean clone installed base successfully but failed the large Torch download
-at120s timeout; its full logs and partial environments are preserved. Timeout,
-concurrency and strict editable-origin checks were corrected, and a second
-fresh clone/new environments are being installed. No clean-environment PASS
-is claimed yet; independent cross-host verification remains NOT_RUN.
-See [deployment workflow](PORTABLE_DEPLOYMENT.md) and
-[actual attempt report](PORTABLE_DEPLOYMENT_VALIDATION.md). No drivers, RSI,
-other projects or policies are changed.
+WP-07 Portable Deployment & Reproducibility completed clean-environment
+verification on the original host. The third public clone installed new managed
+Python and all three isolated environments in 516.067 s, then ran both actual
+runtime smokes and four 400-step CUT/TRIM episodes at frozen source `f2bf240`.
+All runtime, RGB-D and physical-separation contracts passed; strict CUT metrics
+passed and strict TRIM surface metrics remain FAIL. The scoped result is
+`PASS_DEPLOYMENT_WITH_EXPECTED_TRIM_SURFACE_FAILURE`, with
+`full_benchmark_ready=false`. The frozen run passed 276 CPU tests; later local
+and CI checks passed 277 separately. A one-CUDA-visible-GPU smoke passed both
+runtimes on the same dual-card host. Independent cross-host reproduction is
+NOT_RUN because all three checked Linux peers rejected SSH authentication.
+The first download-timeout failure and second native stage-loading failure are
+preserved, together with exact native camera-reset and other known limitations.
+See [deployment workflow](PORTABLE_DEPLOYMENT.md),
+[actual validation report](PORTABLE_DEPLOYMENT_VALIDATION.md) and
+[machine-readable receipt](evidence/portable_deployment_validation.json).
+No drivers, RSI, other projects or policies were changed.
 
 Final local streamed-input proof passed14GUI transactions, including typed
 Cartesian/joint actions and coupled material steps. The active same-instance
