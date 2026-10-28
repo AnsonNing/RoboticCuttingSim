@@ -20,7 +20,7 @@ def native_row():
     return {"native_time_s": .002, "tool_body_pose_xyzw": [.01, 0., 0., 0., 0., 0., 1.],
         "tool_body_pose_before_step_xyzw": POSE, "hand_pose_xyzw": POSE,
         "tool_linear_velocity_world_m_s": [0., 0., 0.], "tool_angular_velocity_world_rad_s": [0., 0., 0.],
-        "finger_q_m": [0., 0.], "finger_qdot_m_s": [0., 0.],
+        "finger_q_m": [[0., 0.], [0., 0.]], "finger_qdot_m_s": [[0., 0.], [0., 0.]],
         "contacts": {"contact_geometry_frame": "PRE_STEP_MEASURED_TOOL_POSE", "contact_geometry_tool_pose_xyzw": POSE,
           "contact_geometry_time_s": 0., "sensor_valid": True, "sensor_fresh": True, "new_physics_step": True,
           "sensor_time_s": .002, "contacts": records,
@@ -31,6 +31,7 @@ def test_actual_pre_contact_geometry_distinguishes_contact_and_post_state():
     row = native_row()
     new = audit.native_sample(row, HALF, .002, "PRE_STEP_MEASURED_TOOL_POSE")
     assert new["valid"] and np.all(new["loads"] == 1.)
+    assert new["fingers"].shape == (8,)
     row["contacts"]["contact_geometry_frame"] = "LEGACY_POST_STEP_TOOL_POSE"
     old = audit.native_sample(row, HALF, .002, None)
     assert np.all(old["loads"] == 0.)

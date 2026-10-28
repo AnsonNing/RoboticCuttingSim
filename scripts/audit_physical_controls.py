@@ -77,7 +77,7 @@ def native_sample(row, half, dt, geometry_profile):
     penetration = max([max(0., -x["separation_m"]) for x in tensor.get("records", []) if x.get("separation_m") is not None] or [0.])
     return {"time": now, "hand": row["hand_pose_xyzw"], "tool": pose, "loads": loads,
             "velocity": np.r_[row["tool_linear_velocity_world_m_s"], row["tool_angular_velocity_world_rad_s"]],
-            "fingers": np.r_[row["finger_q_m"], row["finger_qdot_m_s"]],
+            "fingers": np.r_[np.asarray(row["finger_q_m"]).ravel(), np.asarray(row["finger_qdot_m_s"]).ravel()],
             "valid": bool(valid), "unexpected": unexpected, "outside": outside, "penetration": penetration,
             "free": len(sensor.get("contacts", [])) == 0, "errors": errors,
             "force": np.asarray(tensor.get("total_filtered_force_world_on_tool_n", [np.nan] * 3))}
