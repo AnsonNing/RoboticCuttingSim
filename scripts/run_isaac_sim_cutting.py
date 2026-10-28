@@ -306,7 +306,7 @@ def main():
     files += [Path(__file__).resolve(),ROOT/"configs/isaac_sim_cutting.kit"]
     if config.tool_attachment_mode == "physical_grasp":
         files += [ROOT/"src/robotic_cutting_sim"/name for name in
-                  ("physical_tool.py","native_tool.py","physical_contacts.py","grasp_monitor.py","scene_frames.py")]
+                  ("physical_tool.py","native_tool.py","physical_contacts.py","grasp_monitor.py","tool_compatibility.py","scene_frames.py")]
     if args.workpiece_kind != "rectangle":
         files += [ROOT/"src/robotic_cutting_sim/workpieces.py"]
     if args.camera_layout == "wrist_d405_global_d455":

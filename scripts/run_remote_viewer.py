@@ -62,7 +62,7 @@ def main():
             "configs/wrist_camera_rig_v3.json"):
         shutil.copyfile(ROOT/relative, implementation/Path(relative).name)
     if config.tool_attachment_mode == "physical_grasp":
-        for name in ("physical_tool.py","physical_contacts.py","native_tool.py","grasp_monitor.py"):
+        for name in ("physical_tool.py","physical_contacts.py","native_tool.py","grasp_monitor.py","tool_compatibility.py"):
             shutil.copyfile(ROOT/"src/robotic_cutting_sim"/name,implementation/name)
     write_json(implementation/"sha256.json", {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
         for p in implementation.iterdir() if p.is_file()})
