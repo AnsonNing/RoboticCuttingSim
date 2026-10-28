@@ -24,6 +24,16 @@ LAB_PACKAGES = ("isaaclab", "isaaclab_newton", "isaaclab_ov", "isaaclab_physx",
                 "isaaclab_visualizers", "isaaclab_assets", "isaaclab_ppisp", "isaaclab_contrib")
 
 
+def installer_environment(cache, accept_eula):
+    """Large CUDA wheels need bounded concurrency and a longer HTTP timeout."""
+    return {**os.environ, "UV_CACHE_DIR": str(cache), "UV_PYTHON_INSTALL_DIR": str(ROOT/".deps/python"),
+            "UV_PYTHON_BIN_DIR": str(ROOT/".deps/python/bin"),
+            "UV_HTTP_TIMEOUT": os.environ.get("UV_HTTP_TIMEOUT", "900"),
+            "UV_HTTP_RETRIES": os.environ.get("UV_HTTP_RETRIES", "8"),
+            "UV_CONCURRENT_DOWNLOADS": os.environ.get("UV_CONCURRENT_DOWNLOADS", "4"),
+            "OMNI_KIT_ACCEPT_EULA": "YES" if accept_eula else "NO"}
+
+
 def read_pins(path):
     pins = {}
     for raw in Path(path).read_text().splitlines():
@@ -201,7 +211,9 @@ def install_shadercache(cache, refs):
 
 
 def parser():
-    p = argparse.ArgumentParser(description=__doc__)
+    p = argparse.ArgumentParser(description=__doc__, epilog=
+        "Partial failed environments are preserved. Retry in a new checkout or use new explicit environment paths. "
+        "UV_HTTP_TIMEOUT (default900s), UV_CONCURRENT_DOWNLOADS (default4) and UV_HTTP_RETRIES are configurable.")
     p.add_argument("--runtime", choices=("base", "isaac_sim", "isaac_lab", "all"), default="base")
     p.add_argument("--python", help="Explicit Python3.12 interpreter; never a shared site-packages environment")
     p.add_argument("--managed-python", action="store_true", help="Download project-local Python3.12.12 if absent")
@@ -228,6 +240,8 @@ def main(argv=None):
         raise ValueError("Base, Sim and Lab must use three different environments")
     plan = {"root": str(ROOT), "runtimes": list(runtimes), "environments": {name: str(paths[name]) for name in runtimes},
             "cache_dir": str(args.cache_dir.resolve()), "existing_environments": "validate_and_skip_without_mutation",
+            "download_settings": {key: installer_environment(args.cache_dir, args.accept_eula)[key] for key in
+                                  ("UV_HTTP_TIMEOUT", "UV_HTTP_RETRIES", "UV_CONCURRENT_DOWNLOADS")},
             "usd_providers": {"base": "usd-core26.8", "isaac_sim": "Isaac6.2 bundled USD25.11", "isaac_lab": "usd-exchange3.0.1"},
             "gpu_validation": "NOT_RUN", "driver_changes": False}
     if args.dry_run:
@@ -265,9 +279,7 @@ def main(argv=None):
             if needed:
                 cache = args.cache_dir.resolve(); cache.mkdir(parents=True, exist_ok=True)
                 uv = ensure_uv(cache, refs)
-                environment = {**os.environ, "UV_CACHE_DIR": str(cache), "UV_PYTHON_INSTALL_DIR": str(ROOT/".deps/python"),
-                               "UV_PYTHON_BIN_DIR": str(ROOT/".deps/python/bin"), "UV_HTTP_TIMEOUT": "120",
-                               "UV_HTTP_RETRIES": "8", "OMNI_KIT_ACCEPT_EULA": "YES" if args.accept_eula else "NO"}
+                environment = installer_environment(cache, args.accept_eula)
                 python = select_python(args.python, uv, environment, args.managed_python, output/"python.log")
                 receipt["python"] = python
                 if "isaac_lab" in needed:

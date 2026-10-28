@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"scripts"))
-from bootstrap_runtime import expected_pins, main, probe_environment, select_python
+from bootstrap_runtime import expected_pins, installer_environment, main, probe_environment, select_python
 from fetch_runtime_assets import fetch_assets
 
 
@@ -31,6 +31,18 @@ def test_explicit_python_command_resolves_path_before_creating_environment(tmp_p
     selected = select_python("python3.12", None, {}, False, tmp_path/"unused.log")
     assert selected == str(alias)
     assert Path(selected).is_file()
+
+
+def test_large_download_defaults_respect_explicit_environment_overrides(tmp_path, monkeypatch):
+    monkeypatch.delenv("UV_HTTP_TIMEOUT", raising=False)
+    monkeypatch.delenv("UV_CONCURRENT_DOWNLOADS", raising=False)
+    initial = installer_environment(tmp_path, False)
+    assert initial["UV_HTTP_TIMEOUT"] == "900" and initial["UV_CONCURRENT_DOWNLOADS"] == "4"
+    monkeypatch.setenv("UV_HTTP_TIMEOUT", "1800")
+    monkeypatch.setenv("UV_CONCURRENT_DOWNLOADS", "2")
+    actual = installer_environment(tmp_path, True)
+    assert actual["UV_HTTP_TIMEOUT"] == "1800" and actual["UV_CONCURRENT_DOWNLOADS"] == "2"
+    assert actual["OMNI_KIT_ACCEPT_EULA"] == "YES"
 
 
 def test_dry_run_relocates_with_checkout_and_writes_nothing(tmp_path):
