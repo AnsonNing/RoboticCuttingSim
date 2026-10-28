@@ -3019,6 +3019,30 @@
           "contact_force_change_detected": true,
           "scope": "Controlled external wrench; not material-feedback ON/OFF"
         }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_native_grasp_controls_record_001/command.json",
+        "sha256": "0aa7edc3912cf2e505fab57443f744df53c0351750a139a07a07e8fd3520d99b",
+        "command": [
+          ".venv/bin/python",
+          "scripts/run_physical_tool_controls.py",
+          "--runtime",
+          "isaac_sim",
+          "--gpu",
+          "0",
+          "--task-id",
+          "CUT-01-R",
+          "--protocol",
+          "configs/physical_tool_controls_v5_ruler_native.json",
+          "--output-dir",
+          "artifacts/wp10/c_native_grasp_controls_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 293.9324815068394,
+        "status": "PASS",
+        "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_snapshot_path": "artifacts/wp10/c_native_grasp_controls_record_001/source"
       }
     },
     "c_lab_grasp_controls_001": {
@@ -3080,6 +3104,30 @@
           "contact_force_change_detected": true,
           "scope": "Controlled external wrench; not material-feedback ON/OFF"
         }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_grasp_controls_record_001/command.json",
+        "sha256": "f5c864d41adc9ca98a4a01624c374352701cfe6fc1b3a72bfe34dfcbf58f9181",
+        "command": [
+          ".venv/bin/python",
+          "scripts/run_physical_tool_controls.py",
+          "--runtime",
+          "isaac_lab",
+          "--gpu",
+          "1",
+          "--task-id",
+          "CUT-01-R",
+          "--protocol",
+          "configs/physical_tool_controls_v6_ruler_lab.json",
+          "--output-dir",
+          "artifacts/wp10/c_lab_grasp_controls_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 451.1467665019445,
+        "status": "PASS",
+        "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_snapshot_path": "artifacts/wp10/c_lab_grasp_controls_record_001/source"
       }
     },
     "c_native_cut01r_clearance_001": {
@@ -3100,6 +3148,24 @@
           "maximum_unexcepted_triangle_surface_intersections_per_sample": 0,
           "protocol_sha256": "99a624e18b355dbfa63a88b31e33ccd2f7ed4008800d806e30de8dbd5e881ee1"
         }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_native_clearance_record_001/command.json",
+        "sha256": "6164f17b357be48e68b53c3fcdc54fbb54776a9c2a503ea5e4fbccc563b7f141",
+        "command": [
+          ".venv/bin/python",
+          "scripts/audit_wrist_camera_clearance.py",
+          "--episode",
+          "artifacts/wp10/c_native_cut01r_reference_001/episode_000",
+          "--output-dir",
+          "artifacts/wp10/c_native_cut01r_clearance_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 40.232932086801156,
+        "status": "PASS",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_native_clearance_record_001/source"
       }
     },
     "c_lab_cut01r_clearance_001": {
@@ -3120,6 +3186,24 @@
           "maximum_unexcepted_triangle_surface_intersections_per_sample": 0,
           "protocol_sha256": "99a624e18b355dbfa63a88b31e33ccd2f7ed4008800d806e30de8dbd5e881ee1"
         }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_clearance_record_001/command.json",
+        "sha256": "d247d9ee98d033cf650d4dcafa3008278b55ef795c80b0501e34db0aad83c934",
+        "command": [
+          ".venv/bin/python",
+          "scripts/audit_wrist_camera_clearance.py",
+          "--episode",
+          "artifacts/wp10/c_lab_cut01r_reference_001/episode_000",
+          "--output-dir",
+          "artifacts/wp10/c_lab_cut01r_clearance_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 38.74982695886865,
+        "status": "PASS",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_lab_clearance_record_001/source"
       }
     }
   },

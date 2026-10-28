@@ -10,6 +10,9 @@ PASS, 18 cpu_sim tests deselected; v3 syntax/CPU kernel compilation PASS,
 v3 physical validation NOT_RUN. The latest full CPU run before subsequent
 drafts remains 461 PASS. No learned policy, PPO, actual LLM-agent run or final
 WP-10 robot-video matrix has been produced. No final PR or merge.
+The original owned viewer is restored READY and paused in
+`rcs-wrist-v5-remote-restored` on GPU 0, with fresh output and
+[restoration receipt](evidence/wp10/viewer_restoration_20261029.json).
 
 ## Completed validation: WP-10B live policy interface
 

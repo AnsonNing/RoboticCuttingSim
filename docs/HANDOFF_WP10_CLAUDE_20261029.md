@@ -5,6 +5,8 @@ checkpoint, not WP-10 completion. Work is on `claude/lucid-mendel-vt7n82` in
 `/home/ningan/RoboticCuttingSim`. Last completed package is WP-10B, commit
 `02ceca61f04dfb4cd1426effe31f077b202e1f08`; the later handoff commit preserves
 partial C/D implementation and experimental drafts. No final PR or merge.
+The preserved C/D source checkpoint is `3ce2506`; subsequent wrap-up changes
+only add handoff/evidence documentation.
 
 Read `AGENTS.md`, `docs/PROGRESS.md`, `docs/WP10_SPECIFICATION.md`,
 `docs/POLICY_CONTROL.md`, ADRs 0003–0005 and reports A–D. The specification's
@@ -141,3 +143,16 @@ actual-robot synchronized RGB-D movie annotated with controller/time/cut/result
 in `docs/media/wp10/`. These movies have **not** been delivered. Existing
 `docs/media/wp10_kinematic/` movies are supplements only. Complete reports and
 README links, push each finished package, then open a PR to main without merging.
+
+## Restored viewer
+
+The previously owned v5 CUT-01 viewer is restored and READY, paused at initial
+simulation time, in tmux `rcs-wrist-v5-remote-restored` on GPU 0. The existing
+web server remains at `http://100.111.162.17:8210`. Fresh output:
+`artifacts/remote_interactive_v5_wp10_restore_001`; startup log:
+`artifacts/wp10/viewer_restore_001.log`. See
+[restoration receipt](evidence/wp10/viewer_restoration_20261029.json).
+Browser/Mac connectivity was not revalidated during wrap-up. If GPU 0 is
+needed, stop this specific owned viewer gracefully with
+`touch artifacts/remote_interactive_v5_wp10_restore_001/STOP`, then verify its
+PID exits. Do not stop unrelated jobs. Original viewer output is preserved.
