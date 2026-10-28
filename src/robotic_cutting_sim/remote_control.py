@@ -22,6 +22,7 @@ class RemoteControlLoop:
         self.error = ""
         self.step_count = 0
         self.last_evaluation = None
+        self.terminated = False
 
     def request(self, command, **values):
         self.commands.append({"command": command, **values})
@@ -32,6 +33,8 @@ class RemoteControlLoop:
         if command:
             name = command["command"]
             try:
+                if self.terminated and name in ("play", "step", "action", "gripper"):
+                    raise ValueError("Grasp lost; use Pregrasped Reset before advancing")
                 if name == "play":
                     self.playing = True
                 elif name == "pause":
@@ -62,6 +65,7 @@ class RemoteControlLoop:
                     finally:
                         self.loading = False
                     self.step_count, self.last_evaluation = 0, None
+                    self.terminated = False
                 elif name == "camera":
                     self.set_camera(command["camera"])
                     self.camera = command["camera"]
@@ -83,7 +87,12 @@ class RemoteControlLoop:
                 self.playing = False
                 return
             before = self.env.time_s
-            self.env.step(action)
+            result = self.env.step(action)
+            if result is not None and len(result) == 5 and result[2]:
+                self.terminated, self.playing = True, False
+                self.error = "Grasp lost or contact data invalid; reset required"
+                self.on_event({"event":"episode_terminated", "simulation_s":self.env.time_s,
+                    "reason":result[4].get("termination_reason")})
             if not np.isclose(self.env.time_s-before, self.env.task.control_dt_s, rtol=0, atol=1e-9):
                 raise RuntimeError("The coupled environment did not advance exactly one control interval")
             self.step_count += 1
@@ -97,4 +106,5 @@ class RemoteControlLoop:
         return {"task_id": self.env.task.task_id, "simulation_s": self.env.time_s,
             "playing": self.playing, "loading": self.loading, "camera": self.camera,
             "control_steps_since_reset": self.step_count, "error": self.error,
+            "terminated": self.terminated,
             "evaluation": self.last_evaluation}

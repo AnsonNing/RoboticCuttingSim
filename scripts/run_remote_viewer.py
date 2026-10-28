@@ -33,6 +33,7 @@ def main():
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--tool-attachment-mode",choices=("legacy_fixed_tool","physical_grasp"),default="legacy_fixed_tool")
+    parser.add_argument("--grip-initial-position",type=float,help="Explicit pregrasp finger opening per side, metres")
     parser.add_argument("--ip", help="Host Tailscale IPv4; detected from tailscale ip -4 by default")
     parser.add_argument("--signal-port", type=int, default=49100)
     parser.add_argument("--media-port", type=int, default=47998)
@@ -46,7 +47,8 @@ def main():
     config = IsaacSimCuttingConfig(task_id=args.task, gpu=args.gpu, device=f"cuda:{args.gpu}", seed=args.seed,
         camera_layout="wrist_d405_global_d455", camera_mode="native_single_view",
         particle_spacing_m=.002 if args.task == "TRIM-01" else None,
-        tool_attachment_mode=args.tool_attachment_mode)
+        tool_attachment_mode=args.tool_attachment_mode,
+        grasp=None if args.grip_initial_position is None else {"initial_finger_position_m":args.grip_initial_position})
     arguments = {key: str(value) if isinstance(value, Path) else value for key, value in vars(args).items()}
     write_json(output/"manifest.json", manifest({**asdict(config), "remote_viewer": arguments,
                "tailscale_ip": ip, "loop": "existing native PhysX + TLMPM; automatic GUI physics disabled"},
@@ -60,7 +62,7 @@ def main():
             "configs/wrist_camera_rig_v3.json"):
         shutil.copyfile(ROOT/relative, implementation/Path(relative).name)
     if config.tool_attachment_mode == "physical_grasp":
-        for name in ("physical_tool.py","physical_contacts.py","native_tool.py"):
+        for name in ("physical_tool.py","physical_contacts.py","native_tool.py","grasp_monitor.py"):
             shutil.copyfile(ROOT/"src/robotic_cutting_sim"/name,implementation/name)
     write_json(implementation/"sha256.json", {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
         for p in implementation.iterdir() if p.is_file()})

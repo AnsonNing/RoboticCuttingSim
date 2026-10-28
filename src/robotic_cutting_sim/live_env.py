@@ -43,6 +43,7 @@ class CuttingTaskEnv:
         self.backend.reset(seed=int(seed))
         self.task = self.backend.task
         self._history, self._ready = [], True
+        self._terminated = False
         self._refresh()
         self._record_oracle()
         return self.observe(), {"task_id": self.task.task_id, "seed": int(seed),
@@ -81,6 +82,8 @@ class CuttingTaskEnv:
         self._require_ready()
         if self.time_s >= self.task.duration_s-1e-9:
             raise RuntimeError("Episode ended; call reset")
+        if self._terminated:
+            raise RuntimeError("Grasp lost or sensor invalid; call reset")
         if action is not None:
             gripper = None
             if not isinstance(action, dict):
@@ -105,8 +108,11 @@ class CuttingTaskEnv:
         self._record_oracle()
         # Goal success is deliberately evaluated separately from elapsed time.
         diagnostics=getattr(self.backend,"last_diagnostics",{})
-        return self.observe(), 0., bool(diagnostics.get("grasp_lost",False)), self.time_s >= self.task.duration_s-1e-9, {
-            "task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source}
+        grasp_status = diagnostics.get("grasp_status", {}).get("status")
+        self._terminated = bool(diagnostics.get("grasp_lost",False) or grasp_status == "INVALID_CONTACT_DATA")
+        return self.observe(), 0., self._terminated, self.time_s >= self.task.duration_s-1e-9, {
+            "task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source,
+            "grasp_status": grasp_status, "termination_reason": grasp_status if self._terminated else None}
 
     def observe(self):
         self._require_ready()

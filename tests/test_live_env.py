@@ -131,3 +131,18 @@ def test_gripper_cannot_release_a_legacy_attachment():
     with pytest.raises(ValueError,match='physical_grasp'):
         env.step({'gripper':'release'})
     assert not b.commands
+
+
+def test_loss_is_a_latched_episode_end_and_reset_recovers():
+    b = backend("kit")
+    env = CuttingTaskEnv(b)
+    env.reset()
+    b.last_diagnostics = {"grasp_lost":True, "grasp_status":{"status":"LOST"}}
+    observation, _, terminated, _, info = env.step()
+    assert terminated and info["termination_reason"] == "LOST"
+    assert "grasp_status" not in observation  # privileged state is not a policy sensor
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step()
+    env.reset()
+    b.last_diagnostics = {}
+    assert not env.step()[2]

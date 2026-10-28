@@ -211,11 +211,11 @@ class RemoteCuttingSession:
         actual = self.backend.proprioception()
         grasp = {}
         if self.backend.config.tool_attachment_mode == "physical_grasp":
-            from .physical_tool import grasp_relative_state
-            grasp=grasp_relative_state(actual["hand_pose"],actual["tool_body_pose_xyzw"],self.backend.tool_spec)
-            self.grasp_label.text=("Physical contact grasp | %s\nSlip %.3fmm / %.2fdeg" % (
-                self.backend.gripper_command,1000*grasp["nominal_translation_error_m"],
-                np.degrees(grasp["nominal_rotation_error_rad"])))
+            monitor = getattr(self.backend, "grasp_monitor", None)
+            grasp = monitor.last if monitor is not None else {"status":"FREE_TOOL"}
+            self.grasp_label.text=("%s | %s\nSlip since settling %.3fmm / %.2fdeg" % (
+                grasp["status"], self.backend.gripper_command,1000*grasp.get("slip_since_settling_m",0.),
+                np.degrees(grasp.get("rotation_since_settling_rad",0.))))
         status = {"phase": "READY", "pid": os.getpid(), **self.loop.snapshot(),
             "tool_attachment_mode":self.backend.config.tool_attachment_mode,"privileged_grasp_debug":grasp,
             "episode": str(self.backend.output), "native_physics_steps": self.physics_clock()[0],
