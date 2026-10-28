@@ -1,5 +1,23 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## Current: WP-10 ruler knife and policy-facing interface (part A, CPU only)
+
+Branch `claude/lucid-mendel-vt7n82`. Part A adds an opt-in policy interface
+(relative `cartesian_edge_delta` actions, per-step limits, workspace box,
+`IKFailure` rejection with hold, `state` observation profile, provisional
+`cutting_reward_v0`, optional Gymnasium adapter), the parametric
+`ruler_knife_v1` profile (120 mm edge, 40 mm deep, 1.5 mm, 25 deg double
+bevel, spine handle) and `tlmpm_v2` (convex-polygon blade, CPU-compilable;
+legacy triangle matches a renamed frozen v1 bit for bit on CPU including
+cutting). Defaults keep every historical behavior; `tlmpm.py` is untouched.
+CPU: 428 PASS, 2 environment-only bootstrap failures (no Python 3.12 on that
+host). GPU runtime use of all of this is **NOT_RUN**; the ruler knife is not
+yet built by either runtime. Diagnosis, decisions and the remaining work
+packages (GPU validation, runtime tool integration, cutting law v2 for general
+knife motions, motion/angle matrix, RL speed, end-to-end policy/RL/agent
+validation): [WP-10 specification](WP10_SPECIFICATION.md),
+[ADR 0003](adr/0003-ruler-knife-and-policy-interface.md).
+
 ## Current: WP-09 Evaluation v2 and hand-aligned wrist-camera v5
 
 Evaluation v2 is implemented and validated as a read-only, shared CUT/TRIM
