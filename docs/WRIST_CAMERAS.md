@@ -4,6 +4,13 @@ The new layout is `wrist_d405_global_d455`. The old fixed cameras remain availab
 as `legacy_fixed_d455`; all prior recordings and scores are preserved. No policy
 training is included.
 
+The current v3 layout uses a **target-centred close Global view**, at
+`(0.28,-0.42,0.46)` m looking toward `(0,0,0.02)` m, about0.67 m away.
+This supersedes the earlier whole-workcell composition below. Two complete
+new native episodes and two separate Lab smokes are reported in
+[GLOBAL_CLOSE_VIEW](GLOBAL_CLOSE_VIEW.md); the latest videos are first in
+[README](../README.md). The wrist mounts, optics and depth ranges are unchanged.
+
 | Camera ID | Mount | Live Isaac Lab | Live Isaac Sim |
 | --- | --- | --- | --- |
 | `wrist_d405_0` | Actual Franka0 `panda_hand` child | Ideal Warp RGB-D | Actual RTX geometric RGB-D |
@@ -25,7 +32,7 @@ imager supplies co-located ideal Depth/Color optical frames; a right optical
 reference frame is18 mm along camera X, without a second sensor or stereo solver.
 Official references and the exact asset checks are in
 [the final geometry receipt](evidence/wrist_camera_rig_geometry_v2.json) and
-[the shared configuration](../configs/wrist_camera_rig_v2.json). The original
+[the shared configuration](../configs/wrist_camera_rig_v3.json). The original
 marketing-axis interpretation is preserved with the first rig version; the
 final axes follow the manufacturer's mechanical drawing/table.
 
@@ -68,10 +75,10 @@ park put the second wrist about0.9 m from the material, beyond D405 range.
 The new hand target is approximately `(0.20,0.18,0.34)` m with downward orientation.
 Its actual official-model FK, joint margins and initial contact check are saved.
 
-The final Global position is `(1.10,-1.20,1.05)` m, looking toward
-`(0,0,0.25)` m. This closer placement follows the user's requested clearer
-overview and still includes the table and both robots. The earlier placement
-`(1.65,-1.75,1.50)` m is retained in the version1 configuration and recordings.
+The current Global position is `(0.28,-0.42,0.46)` m, looking toward
+`(0,0,0.02)` m. This prioritizes the workpiece and knife, intentionally cropping
+the workstation. The v2 overview at `(1.10,-1.20,1.05)` m and the v1 placement
+`(1.65,-1.75,1.50)` m remain in their versioned configurations and recordings.
 
 The camera roots are actual children of both articulated `panda_hand` prims.
 Each20 ms environment step checks:
@@ -171,7 +178,7 @@ Incomplete runs remain partial. All errors and invalid samples are retained;
 prototype optics, task physics and native hardware-model validation have
 independent statuses.
 
-## Completed episodes and evidence
+## Preserved v2 episodes and evidence
 
 Both CUT-01 and TRIM-01 completed 400 control intervals / 8 seconds in both
 Isaac runtimes with the final rig. All 1,604 pose samples pass FK, inverse,

@@ -1,6 +1,33 @@
 # Progress — 2026-10-28 Asia/Seoul
 
-## Latest: moving wrist D405 prototypes and closer Global D455
+## Latest: target-centred Global, interactive viewing and portable deployment
+
+The current v3 scene keeps both D405 cameras mounted on actual articulated
+hands and places Global D455 at `(0.28,-0.42,0.46)` m looking toward
+`(0,0,0.02)` m, about0.67 m from the target. Two new400-step native CUT/TRIM
+episodes retain their physical outcomes and Task statuses. Actual Global
+material-pixel minima improve8.13×/8.92× over v2; full-workcell coverage is
+intentionally superseded by the user's close-cutting-view request. Both Lab
+two-step camera smokes pass separately. All earlier evidence is preserved.
+See [the new close-view report](GLOBAL_CLOSE_VIEW.md),
+[compact receipt](evidence/global_close_view.json) and latest [README](../README.md).
+
+The Remote Interactive Viewer reuses the existing Isaac Sim environment and
+native runner, adding one full Kit GUI/WebRTC bootstrap and a queued control
+panel. Actual local Chrome connected through the Tailscale URL has decoded
+1280×800 video and acknowledged streamed camera, step/reset/play/pause and
+Task-selection clicks. GPU startup/idle tests prove rendering does not advance
+robot/material state. Keyboard and external Mac-client results are recorded
+separately in [the interactive viewer report](REMOTE_INTERACTIVE_VIEWER.md).
+No independent simulator/container or alternative cutting engine is used.
+
+WP-07 Portable Deployment & Reproducibility is in progress. Its bootstrap,
+read-only doctor and validation tools remain separate from the viewer work.
+Clean-clone installation and full-task reproduction will be measured before
+any portability PASS is claimed; independent cross-host validation is NOT_RUN.
+No drivers, RSI, other projects or policies are changed.
+
+## Preserved v2: moving wrist D405 prototypes and workcell overview
 
 The new `wrist_d405_global_d455` layout has completed CUT-01 and TRIM-01 in
 both actual Isaac runtimes: four full 400-step / 8-second episodes, 492 captured
