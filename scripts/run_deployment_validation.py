@@ -69,6 +69,7 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--tool-attachment-mode",choices=("legacy_fixed_tool","physical_grasp"),default="legacy_fixed_tool")
     parser.add_argument("--grip-initial-position",type=float,help="Explicit per-finger pregrasp opening in metres")
+    parser.add_argument("--lab-grip-contact-profile",choices=("legacy_point_contact","finite_pad_patch_v3"),default="legacy_point_contact")
     parser.add_argument("--timeout", type=float, default=1800., help="Seconds per recorder or audit subprocess")
     parser.add_argument("--dry-run", action="store_true", help="Write plans only; status remains NOT_RUN")
     parser.add_argument("--skip-cpu-tests", action="store_true", help="Explicitly omit CPU regression; retain SKIPPED_BY_REQUEST")
@@ -87,7 +88,7 @@ def main():
     selected = doctor["gpu_selection"]["physical_index"]
     plan = make_plan(ROOT, output, tier=args.tier, runtime=args.runtime, gpu=selected if selected is not None else 0,
                      pythons=pythons, seed=args.seed, tool_attachment_mode=args.tool_attachment_mode,
-                     initial_finger_position_m=args.grip_initial_position)
+                     initial_finger_position_m=args.grip_initial_position,lab_grip_contact_profile=args.lab_grip_contact_profile)
     sources = [Path(__file__), ROOT/"src/robotic_cutting_sim/deployment_doctor.py", ROOT/"src/robotic_cutting_sim/deployment_validation.py"]
     hashes = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
     snapshot = output/"deployment_sources";snapshot.mkdir()
@@ -95,6 +96,7 @@ def main():
     protocol = {"schema": "portable_deployment_validation_v1", "tier": args.tier, "runtime": args.runtime,
         "seed": args.seed, "gpu_selection": doctor["gpu_selection"], "commands": plan, "tool_source_sha256": hashes,
         "tool_attachment_mode":args.tool_attachment_mode,"initial_finger_position_m":args.grip_initial_position,
+        "lab_grip_contact_profile":args.lab_grip_contact_profile,
         "allow_expected_trim_geometry_fail": args.allow_expected_trim_geometry_fail,
         "scope": "Static composition, actual runtime/named RGB-D contracts and optional full sampled separation; no complete scientific/hardware acceptance",
         "full_case_recipe": "400x20ms; CUT1mm particles, TRIM explicit2mm; existing4mm material grid and current v3 wrist/Global rig",

@@ -11,7 +11,7 @@ from robotic_cutting_sim.deployment_validation import CAMERA_IDS, classify_episo
 
 def test_physical_deployment_uses_both_real_runtimes_and_both_tasks_without_promoting_smoke():
     plan = make_plan("/tmp/repo", "/tmp/output", tool_attachment_mode="physical_grasp",
-        initial_finger_position_m=.0112, gpu=0)
+        initial_finger_position_m=.0112, gpu=0,lab_grip_contact_profile="finite_pad_patch_v3")
     episodes = [s for s in plan if s["kind"] == "episode"]
     assert len(episodes) == 4
     assert {(s["runtime"],s["task_id"]) for s in episodes} == {
@@ -20,6 +20,7 @@ def test_physical_deployment_uses_both_real_runtimes_and_both_tasks_without_prom
         assert stage["steps"] == 2 and stage["task_audit_command"] is None
         assert "physical_grasp" in stage["command"] and "0.0112" in stage["command"]
         assert stage["physical_tool_audit_command"]
+        assert ("finite_pad_patch_v3" in stage["command"]) == (stage["runtime"] == "isaac_lab")
     legacy = make_plan("/tmp/repo", "/tmp/output")
     assert len([s for s in legacy if s["kind"] == "episode"]) == 2
     assert all(s["physical_tool_audit_command"] is None for s in legacy if s["kind"] == "episode")

@@ -18,7 +18,8 @@ def _number(value, default=-1.):
 
 
 def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None, seed=42,
-              tool_attachment_mode="legacy_fixed_tool", initial_finger_position_m=None):
+              tool_attachment_mode="legacy_fixed_tool", initial_finger_position_m=None,
+              lab_grip_contact_profile="legacy_point_contact"):
     if tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
         raise ValueError("Unsupported tool attachment mode")
     root, output = Path(root).resolve(), Path(output).resolve()
@@ -50,6 +51,7 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
                 command += ["--gpu", str(gpu), "--camera-mode", "native_single_view", "--native-noise", "off"]
             else:
                 command += ["--material-device", f"cuda:{gpu}", "--reset-check"]
+                command += ["--grip-contact-profile",lab_grip_contact_profile]
             if task == "TRIM-01":
                 command += ["--particle-spacing", "0.002"]
             command += ["--tool-attachment-mode", tool_attachment_mode]
