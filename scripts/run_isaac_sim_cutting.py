@@ -5,6 +5,7 @@ Run inside the dedicated Isaac Sim environment. --runtime-only tests application
 initialization only and can never report a cutting or physics pass.
 """
 import argparse
+import copy
 from dataclasses import asdict
 import hashlib
 import json
@@ -23,6 +24,23 @@ from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig, LiveIsaa
 from robotic_cutting_sim.recording import command, manifest, new_output, write_json
 
 
+def verify_frozen_sources(output, phase, root=ROOT):
+    frozen=json.loads((Path(output)/"manifest.json").read_text())["implementation_sha256"]
+    mismatches=[]
+    for relative,expected in frozen.items():
+        source=Path(root)/relative
+        snapshot=Path(output)/"implementation"/Path(relative).name
+        observed=hashlib.sha256(source.read_bytes()).hexdigest() if source.is_file() else None
+        copied=hashlib.sha256(snapshot.read_bytes()).hexdigest() if snapshot.is_file() else None
+        if observed!=expected or copied!=expected:
+            mismatches.append({"source":relative,"frozen_sha256":expected,
+                               "current_sha256":observed,"snapshot_sha256":copied})
+    write_json(Path(output)/f"source_integrity_{phase}.json",{"status":"FAIL" if mismatches else "PASS",
+        "phase":phase,"source_files":len(frozen),"mismatches":mismatches})
+    if mismatches:
+        raise RuntimeError(f"Frozen native source changed before {phase}: {mismatches}")
+
+
 def worker(args, config):
     import numpy as np
     from PIL import Image
@@ -31,6 +49,7 @@ def worker(args, config):
     phase = "before_SimulationApp"
     write_json(out/"phase.json",{"phase":phase,"versions":runtime_versions()})
     try:
+        verify_frozen_sources(out,"before_app")
         app = launch_app(config,out)
         phase = "SimulationApp_initialized"
         write_json(out/"phase.json",{"phase":phase})
@@ -40,6 +59,7 @@ def worker(args, config):
             result = {"status":"PASS_BOOTSTRAP","scope":"Isaac Sim6.2 SimulationApp initialization only",
                       "app_updates":5,"physical_steps":0,"live_cutting":"NOT_RUN","full_isaac_integration":False}
         else:
+            verify_frozen_sources(out,"before_live_reset")
             env = LiveIsaacSimCutting(app,config,out)
             phase = "live_reset"
             write_json(out/"phase.json",{"phase":phase})
@@ -54,7 +74,7 @@ def worker(args, config):
             def material_state():
                 return env.material.world_state() if env.task else env.material.debug_state()
             previous = {}
-            changed = {name:0 for name in ("d455_0","d455_1","global")}
+            changed = {name:0 for name in env.cameras}
             def record():
                 frames, sensor_info = env.capture()
                 index = len(frame_rows)
@@ -87,6 +107,9 @@ def worker(args, config):
                     triangles=triangles,physics_timestamp_s=env.time_s)
                 frame_rows.append({"frame":index,"time_s":env.time_s,"native_physics_time_s":env.SimulationManager.get_simulation_time(),
                     "surface":env.surface_receipt,"current_component_surface":env.surface_info,"native_sensor_info":sensor_info,
+                    "camera_calibration":copy.deepcopy(env.calibration),
+                    "camera_extrinsics":copy.deepcopy(env.camera_extrinsics),
+                    "camera_runtime_extrinsic_checks":copy.deepcopy(env.camera_runtime_extrinsic_checks),
                     "native_registration":{name:dict(value) for name,value in env.native_registration.items()}})
                 write_json(out/"frame_manifest.json",frame_rows)
             record()
@@ -107,6 +130,7 @@ def worker(args, config):
             np.savez_compressed(out/"robot_state.npz",time_s=[p["timestamp_s"] for p in proprio],
                 q=[p["q"] for p in proprio],qdot=[p["qdot"] for p in proprio],
                 hand_pose_xyzw=[p["hand_pose"] for p in proprio],tool_pose_xyzw=[p["tool_pose"] for p in proprio],
+                hand_pose_both_xyzw=[p["hand_pose_both_xyzw"] for p in proprio],
                 body_pose=body_poses,body_prim_paths=env.rigid_link_paths,
                 commanded_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio],
                 desired_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio])
@@ -144,6 +168,16 @@ def worker(args, config):
                 write_json(out/"oracle_debug/task_evaluation.json",task_evaluation)
             qmotion = float(max(np.max(np.abs(state["q"]-initial["q"])) for state in proprio))
             final_q_displacement=float(np.max(np.abs(proprio[-1]["q"]-initial["q"])))
+            if env.camera_pose_trace:
+                write_json(out/"camera_pose_trace.json",{"camera_layout":config.camera_layout,
+                    "camera_ids":list(env.cameras),"samples":env.camera_pose_trace,
+                    "source":"Each actual native control step, including initial state; no interpolation or replay"})
+                scene_path=out/"final_live_scene.usda"
+                if not env.stage.Export(str(scene_path)):
+                    raise RuntimeError("Failed to export the actual composed final native stage")
+                write_json(out/"final_live_scene_receipt.json",{"path":str(scene_path),
+                    "sha256":hashlib.sha256(scene_path.read_bytes()).hexdigest(),
+                    "physics_timestamp_s":env.time_s,"scope":"Actual composed native scene before terminal reset"})
             first_material=materials[0]["positions"].copy()
             again=env.reset()
             reset_material=material_state()
@@ -179,13 +213,21 @@ def worker(args, config):
                 "native_physics_steps":diagnostics[-1]["relative_native_physics_steps"],
                 "robot_dynamics_source":"Isaac PhysX","standalone_robot_dynamics_steps":0,"replay_inputs":False,
                 "camera_mode":config.camera_mode,"camera_frames":len(frame_rows),"changed_depth_pixels_10um":changed,
+                "camera_layout":config.camera_layout,"camera_ids":list(changed),"all_recorded_camera_ids":list(changed),
+                "policy_default_camera_ids":(["wrist_d405_0","wrist_d405_1"] if config.camera_layout=="wrist_d405_global_d455"
+                                             else ["d455_0","d455_1"]),
+                "global_policy_inclusion":"Shared API include_global_camera opt-in; raw recording saves every sensor",
+                "per_camera_sensor_models":{name:spec["sensor_model"] for name,spec in env.camera_specs.items()},
+                "observation_motion_probe":config.observation_motion_probe,
                 "task_id":config.task_id,"task_goal_status":task_evaluation["status"] if task_evaluation else "NOT_RUN",
                 "joint_motion_max_rad":qmotion,"final_mechanical_components":frame_rows[-1]["current_component_surface"]["mechanical_components"],
                 "final_joint_displacement_rad":final_q_displacement,
                 "full_isaac_integration":False,"physical_cutting":"NOT_SCORED","surface_flattening":"NOT_SCORED",
                 "native_single_view_calibration":"NOT_VALIDATED","reset_repeatability":"MEASURED_DYNAMICS_MATERIAL_CAMERAS",
                 "native_single_view_registration":"VALIDATED_EXACT_PROFILE_APPLIED" if config.camera_mode=="native_single_view" else "NOT_RUN",
-                "observation_force_oracle_global":False,
+                "observation_force_oracle":False,
+                "global_camera_debug_only":config.camera_layout=="legacy_fixed_d455",
+                "observation_force_oracle_global":False if config.camera_layout=="legacy_fixed_d455" else None,
                 "limitations":["Native PhysX trajectory differs from standalone MuJoCo and requires comparison",
                     "20ms explicit reaction delay; no monolithic/converged energy claim",
                     "Native raw SingleView depth is never replaced by RTX reference depth",
@@ -211,6 +253,8 @@ def main():
     p.add_argument("--gpu",type=int,default=1)
     p.add_argument("--device",default="cuda:1")
     p.add_argument("--camera-mode",choices=["rtx_rgbd","native_single_view"],default="rtx_rgbd")
+    p.add_argument("--camera-layout",choices=["legacy_fixed_d455","wrist_d405_global_d455"],default="legacy_fixed_d455")
+    p.add_argument("--observation-motion-probe",action="store_true",help="Separate arm1 actual-joint motion probe; off in physical baselines")
     p.add_argument("--scene",type=Path)
     p.add_argument("--runtime-only",action="store_true")
     p.add_argument("--no-feedback",action="store_true")
@@ -227,6 +271,7 @@ def main():
     args=p.parse_args()
     config=IsaacSimCuttingConfig(seed=args.seed,steps=args.steps,record_every=args.record_every,gpu=args.gpu,
                 device=args.device,camera_mode=args.camera_mode,feedback=not args.no_feedback,
+                camera_layout=args.camera_layout,observation_motion_probe=args.observation_motion_probe,
                 velocity_feedforward=args.velocity_feedforward,
                 task_id=args.task_id,task_variant=args.task_variant,action_mode=args.action_mode,native_noise=args.native_noise,
                 surface_profile=args.surface_profile,
@@ -238,6 +283,9 @@ def main():
     files=[ROOT/"src/robotic_cutting_sim"/name for name in ("isaac_sim_runner.py","live_material.py","robot.py",
            "tlmpm.py","material_config.py","cut_topology.py","cutting_surface.py","usd_surface_bridge.py","single_view_registration.py")]
     files += [Path(__file__).resolve(),ROOT/"configs/isaac_sim_cutting.kit"]
+    if args.camera_layout == "wrist_d405_global_d455":
+        files += [ROOT/"src/robotic_cutting_sim"/name for name in ("camera_rig.py","native_camera_geometry.py","scene_frames.py")]
+        files += [ROOT/"configs/wrist_camera_rig_v1.json"]
     if args.task_id:
         files += [ROOT/"src/robotic_cutting_sim"/name for name in ("tasks.py","geometry.py","scene_frames.py","scene_validation.py",
                   "benchmark.py","workcell.py","coupled_robot.py","fixture_contacts.py","affine_surface_controls.py")]
@@ -254,6 +302,9 @@ def main():
     argv=[sys.executable,str(Path(__file__).resolve()),"--output-dir",str(out.resolve()),
           "--steps",str(args.steps),"--record-every",str(args.record_every),"--seed",str(args.seed),
           "--gpu",str(args.gpu),"--device",args.device,"--camera-mode",args.camera_mode,"--worker"]
+    argv += ["--camera-layout",args.camera_layout]
+    if args.observation_motion_probe:
+        argv.append("--observation-motion-probe")
     argv += ["--action-mode",args.action_mode,"--native-noise",config.native_noise,"--surface-profile",config.surface_profile]
     if args.task_id:
         argv += ["--task-id",args.task_id,"--task-variant",args.task_variant]
