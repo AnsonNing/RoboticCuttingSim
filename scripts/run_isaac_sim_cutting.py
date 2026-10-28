@@ -306,7 +306,7 @@ def main():
     files += [Path(__file__).resolve(),ROOT/"configs/isaac_sim_cutting.kit"]
     if config.tool_attachment_mode == "physical_grasp":
         files += [ROOT/"src/robotic_cutting_sim"/name for name in
-                  ("physical_tool.py","native_tool.py","physical_contacts.py","scene_frames.py")]
+                  ("physical_tool.py","native_tool.py","physical_contacts.py","grasp_monitor.py","scene_frames.py")]
     if args.workpiece_kind != "rectangle":
         files += [ROOT/"src/robotic_cutting_sim/workpieces.py"]
     if args.camera_layout == "wrist_d405_global_d455":
@@ -363,6 +363,12 @@ def main():
                 "full_isaac_integration":False,"standalone_fallback":False}
     if process.returncode != 0 and result["status"].startswith("PASS"):
         result={**result,"status":"FAIL","reason":"Runtime process failed after writing its worker result"}
+    if config.tool_attachment_mode == "physical_grasp":
+        invalidation_lines = [line for line in (out/"stdout.log").read_text(errors="replace").splitlines()
+            if "invalidat" in line.lower() and any(word in line.lower() for word in ("physics view", "physics tensor", "simulation view"))]
+        result["native_view_invalidation_log_count"] = len(invalidation_lines)
+        if invalidation_lines:
+            result.update(status="FAIL_INVALID_PHYSICS_VIEW", reason="Actual native logs report a physics-view invalidation; stale state cannot certify execution")
     result["process"]=receipt
     write_json(out/"result.json",result)
     print(json.dumps(result,indent=2))

@@ -177,7 +177,7 @@ class NativeToolContacts:
             "total_filtered_force_world_on_tool_n": sum(role_forces.values(), np.zeros(3)).tolist(),
             "scope": "Native tool contact-view forces on the declared filters; unlisted bodies are not included"}
 
-    def sample(self, *, tool_pose_xyzw=None):
+    def sample(self, *, tool_pose_xyzw=None, contact_geometry_pose_xyzw=None):
         """Read actual post-step data. Invalid/stale readings cannot certify grip."""
         now, step = self.manager.get_simulation_time(), self.manager.get_num_physics_steps()
         reading = self.sensor.get_sensor_reading()
@@ -185,19 +185,28 @@ class NativeToolContacts:
         age = float(now)-float(reading.time)
         fresh = valid and abs(age) <= _time_tolerance(float(now))
         raw = self.sensor.get_raw_data() if valid else []
+        # Native discrete contact points belong to the detection geometry, not
+        # the integrated actor pose returned after step(). This was measured
+        # independently on both full tasks and matches PhysX callback semantics.
+        # The explicit pre-step pose is supplied by the owner of step(); no pose
+        # is extrapolated or changed. Legacy callers retain their old classifier.
+        geometry_pose = contact_geometry_pose_xyzw if contact_geometry_pose_xyzw is not None else tool_pose_xyzw
         records = contact_records(raw, tool_path=self.tool_path, role_paths=self.role_paths,
             physics_time_s=float(now), dt=self.dt, decode_body=self.decode_body,
-            handle_bounds_tool_m=self.handle_bounds_tool_m, tool_pose_xyzw=tool_pose_xyzw)
+            handle_bounds_tool_m=self.handle_bounds_tool_m, tool_pose_xyzw=geometry_pose)
         summary = summarize_contacts(records, valid=valid, fresh=fresh, role_names=tuple(self.role_paths)+("other",))
         result = {"source": "isaacsim.sensors.experimental.physics.ContactSensor", "sensor_path": self.sensor_path,
             "sensor_valid": valid, "sensor_fresh": bool(fresh), "native_time_s": float(now), "native_step": int(step),
             "new_physics_step": step != self._last_step, "sensor_time_s": float(reading.time), "sensor_age_s": age,
             "sensor_in_contact": bool(reading.in_contact), "sensor_force_magnitude_n": float(reading.value),
             "raw_contact_count": len(records), "contacts": records, **summary,
+            "contact_geometry_tool_pose_xyzw": None if geometry_pose is None else np.asarray(geometry_pose).tolist(),
+            "contact_geometry_time_s": float(now)-self.dt if contact_geometry_pose_xyzw is not None else float(now),
+            "contact_geometry_frame": "PRE_STEP_MEASURED_TOOL_POSE" if contact_geometry_pose_xyzw is not None else "LEGACY_POST_STEP_TOOL_POSE",
             "handle_region_classification": "MEASURED_CONTACT_POINT_IN_TOOL_FRAME" if tool_pose_xyzw is not None and self.handle_bounds_tool_m is not None else "NOT_CLASSIFIED",
             "impulse_sign_scope": "Raw native body ordering retained; no assumed signed tool wrench",
             "raw_impulse_scope": "Normal contact reports; friction is recorded separately by the native tensor contact view",
-            "tensor_forces": self._tensor_sample(tool_pose_xyzw) if valid and fresh else {"status": "NOT_RUN_INVALID_OR_STALE_SENSOR"},
+            "tensor_forces": self._tensor_sample(geometry_pose) if valid and fresh else {"status": "NOT_RUN_INVALID_OR_STALE_SENSOR"},
             "privileged_debug_only": True}
         self._last_step = step
         return result

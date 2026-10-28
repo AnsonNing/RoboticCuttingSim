@@ -415,6 +415,11 @@ class LiveIsaacSimCutting:
         self.physx.update_transformations(False,True,True)
         self.time_s, self.step_index = 0., 0
         initial = self.proprioception()
+        self.last_diagnostics = {}
+        self.grasp_monitor = None
+        if self.physical_grasp and c.tool_init_mode == "pregrasped":
+            from .grasp_monitor import GraspMonitor
+            self.grasp_monitor = GraspMonitor(initial["hand_pose"], initial["tool_body_pose_xyzw"], self.tool_spec)
         attachment=self._check_attachment(initial["tool_pose"])
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
@@ -553,7 +558,8 @@ class LiveIsaacSimCutting:
         state = self.proprioception()
         relative = matrix_pose(np.linalg.inv(pose_matrix(state["hand_pose"])) @
                                pose_matrix(state["tool_body_pose_xyzw"]))
-        contacts = self.tool_contacts.sample(tool_pose_xyzw=state["tool_body_pose_xyzw"])
+        contacts = self.tool_contacts.sample(tool_pose_xyzw=state["tool_body_pose_xyzw"],
+            contact_geometry_pose_xyzw=None if application_state is None else application_state["tool_body_pose_xyzw"])
         if phase != "pregrasp_settling" and not all(contacts.get(key) for key in
                 ("sensor_valid","sensor_fresh","new_physics_step")):
             raise RuntimeError("INVALID_OR_STALE_NATIVE_CONTACT_VIEW: reset instead of using stale rigid state")
@@ -566,6 +572,8 @@ class LiveIsaacSimCutting:
                "gripper_command":self.gripper_command, "contacts":contacts}
         row.update(commanded_finger_force_limit_n=getattr(self,"grip_force_limit_n",self.grasp.max_finger_force_n),
                    commanded_contact_friction=getattr(self,"grip_friction",self.grasp.friction))
+        if application_state is not None:
+            row["tool_body_pose_before_step_xyzw"] = application_state["tool_body_pose_xyzw"].copy()
         if applied_edge_wrench is not None:
             from .physical_tool import edge_wrench_to_com, world_com_position
             row.update(applied_edge_material_wrench_world=np.asarray(applied_edge_wrench).copy(),
@@ -607,9 +615,10 @@ class LiveIsaacSimCutting:
             return
         steps = int(np.ceil(g.settle_s/(c.control_dt/c.robot_substeps)))
         for _ in range(steps):
+            before = self.proprioception()
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             manager.step()
-            self._grasp_sample("pregrasp_settling")
+            self._grasp_sample("pregrasp_settling", application_state=before)
         final = self.grasp_trace[-1]["native_time_s"]
         rows = [r for r in self.grasp_trace if r["native_time_s"] >= final-g.stability_window_s-1e-9]
         relative = np.asarray([r["relative_tool_pose_xyzw"] for r in rows])
@@ -907,7 +916,15 @@ class LiveIsaacSimCutting:
         physical = {}
         if self.physical_grasp:
             from .physical_tool import edge_wrench_to_com
+            interval_rows = self.grasp_trace[-c.robot_substeps:]
+            operational = self.grasp_monitor.update(actual["hand_pose"], actual["tool_body_pose_xyzw"],
+                time_s=self.time_s,
+                bilateral_loaded_tool_fraction=float(np.mean([r["contacts"]["bilateral_loaded_tool_contact"] for r in interval_rows])),
+                contacts_valid=all(r["contacts"]["sensor_valid"] and r["contacts"]["sensor_fresh"] for r in interval_rows),
+                gripper_command=self.gripper_command) if self.grasp_monitor is not None else {
+                    "status":"FREE_TOOL", "grasp_lost":False}
             physical = {"tool_attachment_mode":"physical_grasp", "wrench_recipient":self.tool_path,
+                "grasp_lost": operational["grasp_lost"], "grasp_status": operational,
                 "direct_hand_material_wrench":False, "external_edge_wrench_world":self.external_tool_wrench.copy(),
                 "applied_total_tool_wrench_about_com_world":edge_wrench_to_com(
                     applied+self.external_tool_wrench, actual["tool_body_pose_xyzw"], self.tool_spec),
@@ -917,7 +934,7 @@ class LiveIsaacSimCutting:
                 "grasp":self.grasp_trace[-1], "gripper_command":self.gripper_command,
                 "applied_tool_wrench_work_j":material_work,
                 "external_tool_wrench_work_j":external_work}
-        return actual, {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,
+        self.last_diagnostics = {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,
                  "commanded_joint_positions_rad":target_q[:,:7].copy(),"action_mode":mode,
                  "commanded_joint_velocity_rad_s":velocity_target,"velocity_feedforward":c.velocity_feedforward,
                  "ik":ik_info,"rendered_attachment":attachment,
@@ -926,6 +943,7 @@ class LiveIsaacSimCutting:
                  "native_relative_timestamp_s":native_relative,
                  "relative_native_physics_steps":manager.get_num_physics_steps()-self.native_step_origin,
                  **physical}
+        return actual, self.last_diagnostics
 
     def capture(self):
         import omni.replicator.core as rep
