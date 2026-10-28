@@ -45,6 +45,15 @@ class RemoteControlLoop:
                     action = self.env.task.validate_action({"mode": command["mode"],
                         "target": target, "cut_enabled": bool(command.get("cut_enabled", False))})
                     self.playing, advance = False, True
+                elif name == "gripper":
+                    backend=getattr(self.env,"backend",None)
+                    options=getattr(backend,"options",getattr(backend,"config",None))
+                    if getattr(options,"tool_attachment_mode",None) != "physical_grasp":
+                        raise ValueError("A legacy fixed tool cannot be released; choose physical_grasp")
+                    if command["mode"] not in ("hold","close","open","release"):
+                        raise ValueError("Unknown physical gripper command")
+                    action={"gripper":command["mode"]}
+                    self.playing,advance=False,True
                 elif name == "reset":
                     self.playing = False
                     self.loading = True

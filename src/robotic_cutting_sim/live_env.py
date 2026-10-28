@@ -82,14 +82,30 @@ class CuttingTaskEnv:
         if self.time_s >= self.task.duration_s-1e-9:
             raise RuntimeError("Episode ended; call reset")
         if action is not None:
+            gripper = None
             if not isinstance(action, dict):
                 action = {"mode": self.action_mode, "target": action, "cut_enabled": True}
+            if "gripper" in action:
+                action = dict(action)
+                gripper = action.pop("gripper")
+                options=getattr(self.backend,"options",getattr(self.backend,"config",None))
+                if getattr(options,"tool_attachment_mode",None) != "physical_grasp":
+                    raise ValueError("Gripper release/hold requires physical_grasp")
+                if gripper not in ("hold","close","open","release"):
+                    raise ValueError("Unknown physical gripper command")
+                if not action:
+                    measured=(self.backend.measured() if hasattr(self.backend,"measured")
+                              else self.backend.proprioception())
+                    action={"mode":"joint_position_rad","target":measured["q"][0],"cut_enabled":False}
             action = self.task.validate_action(action)
+            if gripper is not None:
+                self.backend.set_gripper(gripper)
         self.backend.step(action)
         self._refresh()
         self._record_oracle()
         # Goal success is deliberately evaluated separately from elapsed time.
-        return self.observe(), 0., False, self.time_s >= self.task.duration_s-1e-9, {
+        diagnostics=getattr(self.backend,"last_diagnostics",{})
+        return self.observe(), 0., bool(diagnostics.get("grasp_lost",False)), self.time_s >= self.task.duration_s-1e-9, {
             "task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source}
 
     def observe(self):

@@ -55,3 +55,14 @@ def test_camera_selection_and_evaluation_do_not_advance_physics():
     loop.request("evaluate"); loop.tick()
     assert cameras == ["wrist_d405_1"] and loop.env.time_s == 0.
     assert loop.snapshot()["evaluation"]["status"] == "NOT_RUN"
+
+
+def test_physical_gripper_command_is_same_loop_and_legacy_release_is_rejected():
+    loop,_,events=controller()
+    loop.env.backend=SimpleNamespace(config=SimpleNamespace(tool_attachment_mode='legacy_fixed_tool'))
+    loop.request('gripper',mode='release');loop.tick()
+    assert not loop.env.actions and events[-1]['status']=='REJECTED'
+    loop.env.backend.config.tool_attachment_mode='physical_grasp'
+    loop.request('gripper',mode='release');loop.tick()
+    assert loop.env.actions==[{'gripper':'release'}]
+    assert loop.env.time_s==.02
