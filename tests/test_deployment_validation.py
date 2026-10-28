@@ -1,8 +1,10 @@
 """Portable preflight, physical evidence and expected-failure boundaries."""
 from copy import deepcopy
+from pathlib import Path
+import venv
 
 from robotic_cutting_sim.deployment_doctor import (
-    REQUIRED, assess_runtime, classify_pip_check, parse_gpu_csv, select_gpu,
+    REQUIRED, assess_runtime, classify_pip_check, parse_gpu_csv, probe_runtime, select_gpu,
 )
 from robotic_cutting_sim.deployment_validation import CAMERA_IDS, classify_episode, make_plan, summarize_validation
 
@@ -51,6 +53,25 @@ def test_foreign_or_missing_project_origin_is_blocked(tmp_path):
     assert assess_runtime("base", good, {}, project_root=tmp_path)["status"].startswith("BLOCKED")
     good["project_import_origin"] = str(tmp_path/"another_checkout/src/robotic_cutting_sim/__init__.py")
     assert assess_runtime("base", good, {}, project_root=tmp_path)["status"].startswith("BLOCKED")
+
+
+def test_probe_ignores_injected_python_paths_without_project_install(tmp_path, monkeypatch):
+    # A genuine empty venv must not inherit an apparently valid project origin
+    # from PYTHONPATH, nor fail to start because of a foreign PYTHONHOME.
+    environment = tmp_path/"empty-venv"
+    venv.EnvBuilder(with_pip=False).create(environment)
+    root = Path(__file__).resolve().parents[1]
+    foreign = tmp_path/"foreign"
+    (foreign/"robotic_cutting_sim").mkdir(parents=True)
+    (foreign/"robotic_cutting_sim/__init__.py").write_text("raise AssertionError('not executed')\n")
+    monkeypatch.setenv("PYTHONHOME", str(tmp_path/"nonexistent-python-home"))
+    for injected in (root/"src", foreign):
+        monkeypatch.setenv("PYTHONPATH", str(injected))
+        result = probe_runtime("base", environment/"bin/python", root=root)
+        assert result["status"].startswith("BLOCKED")
+        assert result["metadata"]["project_import_origin"] is None
+        assert result["project_origin_matches_checkout"] is False
+        assert result["pip_check"]["raw"]["command"][1:4] == ["-I", "-m", "pip"]
 
 
 def test_plan_has_no_second_gpu_dependency_and_retains_trim_override(tmp_path):

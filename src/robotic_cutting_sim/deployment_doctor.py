@@ -132,12 +132,14 @@ for name in names:
 project=u.find_spec('robotic_cutting_sim');lab=u.find_spec('isaaclab')
 print(json.dumps({'python_version':sys.version,'python_version_info':list(sys.version_info[:3]),'executable':sys.executable,'prefix':sys.prefix,'packages':packages,'distribution_locations':locations,'project_import_origin':project.origin if project else None,'isaaclab_import_origin':lab.origin if lab else None,'project_package_executed':False}))
 """
-    raw = run_command([executable, "-c", code, json.dumps(names)], cwd=root)
+    # Isolated mode ignores caller PYTHONPATH/PYTHONHOME and the working directory,
+    # while retaining the selected venv's installed editable-package machinery.
+    raw = run_command([executable, "-I", "-c", code, json.dumps(names)], cwd=root)
     try:
         metadata = json.loads(raw["stdout"]) if raw["returncode"] == 0 else {"probe_error": raw["stderr"]}
     except (json.JSONDecodeError, TypeError):
         metadata = {"probe_error": "Metadata subprocess did not return its JSON contract", "raw": raw}
-    pip = classify_pip_check(runtime, run_command([executable, "-m", "pip", "check"], cwd=root))
+    pip = classify_pip_check(runtime, run_command([executable, "-I", "-m", "pip", "check"], cwd=root))
     result = assess_runtime(runtime, metadata, pip, project_root=root)
     result["requested_python"] = str(executable)
     return result
