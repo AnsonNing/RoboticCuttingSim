@@ -124,6 +124,21 @@ known strict surface failure for orchestration; it never relabels that Task PASS
 or ignores failed separation, mass conservation, history or camera checks.
 Without the flag a strict TRIM failure deliberately produces a nonzero result.
 
+## Encode recorded views without another simulator
+
+The full recorder retains raw RGB-D arrays and commanded/measured traces.
+Encode timestamped RGB/depth videos and transform plots after a run:
+
+```bash
+.deps/isaaclab-venv/bin/python scripts/render_wrist_camera_evidence.py \
+  artifacts/full_NEW/isaac_sim_full_cut artifacts/cut_media_NEW
+```
+
+This reads captured arrays; it never launches physics, Kit, a renderer or USD
+replay. When system FFmpeg is absent, the encoder uses the Lab environment's
+pinned `imageio-ffmpeg` binary. An actual test with `PATH=/nonexistent` encoded
+all seven videos successfully. Raw arrays and invalid pixels remain unchanged.
+
 ## Troubleshooting and evidence boundaries
 
 - **Wrong Python or existing venv mismatch:** use Python3.12 and a new isolated

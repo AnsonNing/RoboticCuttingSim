@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 
 import matplotlib
@@ -30,7 +31,14 @@ class RecordedVideo:
 
     def close(self):
         if self.count:
-            subprocess.run(["ffmpeg", "-n", "-loglevel", "error", "-framerate", str(self.fps),
+            encoder = shutil.which("ffmpeg")
+            if encoder is None:
+                try:
+                    from imageio_ffmpeg import get_ffmpeg_exe
+                except ImportError as error:
+                    raise RuntimeError("No FFmpeg found; run this encoder with the Lab environment's pinned imageio-ffmpeg package") from error
+                encoder = get_ffmpeg_exe()
+            subprocess.run([encoder, "-n", "-loglevel", "error", "-framerate", str(self.fps),
                 "-i", str(self.directory/"frame_%05d.png"), "-c:v", "libx264", "-threads", "2",
                 "-pix_fmt", "yuv420p", str(self.path)], check=True)
 
