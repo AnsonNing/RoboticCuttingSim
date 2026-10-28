@@ -136,7 +136,7 @@ def main():
             while u < 1.-1e-12:
                 next_u = min(1.,u+1/count)
                 for attempt in range(20):
-                    a = 10*next_u**3-15*next_u**4+6*next_u**5
+                    a = float(np.clip(10*next_u**3-15*next_u**4+6*next_u**5,0.,1.))
                     desired = np.r_[start[:3]+a*(edge[:3]-start[:3]),rotations(a).as_quat()]
                     q, info = env.solve_edge_ik(desired)
                     if np.max(np.abs(q-previous)) <= protocol["transfer"]["maximum_joint_increment_rad"]:
