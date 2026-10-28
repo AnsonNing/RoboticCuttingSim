@@ -284,8 +284,9 @@ def main():
            "tlmpm.py","material_config.py","cut_topology.py","cutting_surface.py","usd_surface_bridge.py","single_view_registration.py")]
     files += [Path(__file__).resolve(),ROOT/"configs/isaac_sim_cutting.kit"]
     if args.camera_layout == "wrist_d405_global_d455":
+        from robotic_cutting_sim.camera_rig import CONFIG_PATH
         files += [ROOT/"src/robotic_cutting_sim"/name for name in ("camera_rig.py","native_camera_geometry.py","scene_frames.py")]
-        files += [ROOT/"configs/wrist_camera_rig_v1.json"]
+        files += [Path(CONFIG_PATH)]
     if args.task_id:
         files += [ROOT/"src/robotic_cutting_sim"/name for name in ("tasks.py","geometry.py","scene_frames.py","scene_validation.py",
                   "benchmark.py","workcell.py","coupled_robot.py","fixture_contacts.py","affine_surface_controls.py")]
