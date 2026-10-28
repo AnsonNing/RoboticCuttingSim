@@ -76,6 +76,15 @@ def test_existing_conflicting_usd_provider_is_rejected_and_preserved(tmp_path, m
     assert python.read_text() == "preserve this"
 
 
+def test_existing_environment_without_project_installation_is_rejected(tmp_path, monkeypatch):
+    (tmp_path/"bin").mkdir()
+    (tmp_path/"bin/python").write_text("preserved incomplete environment")
+    data = {"version": [3, 12, 12], "packages": expected_pins("base"), "project_origin": None}
+    monkeypatch.setattr(subprocess, "check_output", lambda *a, **k: json.dumps(data))
+    with pytest.raises(RuntimeError, match="Missing editable project installation"):
+        probe_environment(tmp_path, "base")
+
+
 def test_asset_manifest_rejects_escaping_paths(tmp_path):
     manifest = tmp_path/"manifest.json"
     manifest.write_text(json.dumps({"source": "file:///unused", "files": [{"path": "../outside"}]}))

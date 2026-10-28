@@ -80,10 +80,12 @@ print(json.dumps({'version':list(sys.version_info[:3]),'packages':{d.metadata['N
     forbidden = ({"usd-exchange"} if runtime == "base" else
                  {"usd-core", "isaacsim"} if runtime == "isaac_lab" else {"usd-core", "usd-exchange"})
     problems.extend(f"Forbidden USD/runtime provider: {name}" for name in sorted(forbidden & actual.keys()))
-    if result["project_origin"] is not None and Path(result["project_origin"]).resolve() != ROOT/"src/robotic_cutting_sim/__init__.py":
+    if result["project_origin"] is None:
+        problems.append("Missing editable project installation for this checkout")
+    elif Path(result["project_origin"]).resolve() != ROOT/"src/robotic_cutting_sim/__init__.py":
         problems.append("Editable project must point to this checkout, not another repository")
     result["project_install"] = ("this_checkout_editable" if result["project_origin"] else
-                                 "not_installed; existing repository scripts explicitly add src")
+                                 "missing_project_installation")
     if runtime == "isaac_lab":
         for name in LAB_PACKAGES:
             if name.replace("_", "-") not in actual:
