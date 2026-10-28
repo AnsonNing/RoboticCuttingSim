@@ -48,8 +48,16 @@ def test_prototype_fov_and_logical_depth_range_are_explicit():
         assert spec["physical_dimensions_m"] == {"width": .042, "height": .042, "depth": .023}
         center_z = np.asarray(housing["T_optical_cv_obb"])[2, 3]
         assert center_z + housing["dimensions_m"][2]/2 < 0
-    assert CONFIG_PATH.name == "wrist_camera_rig_v2.json"
-    np.testing.assert_allclose(np.asarray(rig.specs["global_d455"]["T_world_camera"])[:3, 3], [1.1, -1.2, 1.05])
+    assert CONFIG_PATH.name == "wrist_camera_rig_v3.json"
+    global_view = rig.specs["global_d455"]
+    np.testing.assert_allclose(np.asarray(global_view["T_world_camera"])[:3, 3], [.28, -.42, .46])
+    np.testing.assert_allclose(global_view["look_at_target_world_m"], [0., 0., .02])
+    # A close view must retain useful depth across the complete fixed bar,
+    # including its bump and endpoints, rather than merely its centre point.
+    vertices = np.array([[x, y, z] for x in (-.08, .08) for y in (-.015, .015) for z in (0., .04)])
+    transform = np.asarray(global_view["T_world_camera"])
+    optical = (vertices-transform[:3, 3]) @ transform[:3, :3]
+    assert np.all((optical[:, 2] >= global_view["near_m"]) & (optical[:, 2] <= global_view["far_m"]))
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ from scipy.spatial.transform import Rotation
 
 WRIST_LAYOUT = "wrist_d405_global_d455"
 LEGACY_LAYOUT = "legacy_fixed_d455"
-CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v2.json"
+CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v3.json"
 SECONDARY_OBSERVATION_JOINTS = (
     -1.2734662294387817, -1.512477159500122, 1.0369349718093872,
     -2.916372299194336, 1.0367738008499146, 1.5141336917877197, 2.847289562225342,
@@ -113,7 +113,7 @@ class CameraRig:
                 "render_near_m": .001, "render_far_m": 20.,
                 "T_hand_optical_cv": mount.tolist(), "T_hand_camera": mount.tolist(),
                 "physical_dimensions_m": {"width": .042, "height": .042, "depth": .023},
-                "rig_profile": "wrist_camera_rig_v2",
+                "rig_profile": "wrist_camera_rig_v3",
                 "dimensions_source": "Official D400 datasheet Table 3-54: width42mm, height42mm, depth23mm",
                 "visual_obbs": obbs, "rgb_depth_optical_transform": np.eye(4).tolist(),
                 "T_left_right_optical_cv": [[1., 0., 0., .018], [0., 1., 0., 0.],
@@ -129,10 +129,15 @@ class CameraRig:
                 "physics_scope": "Visual-only housing/bracket; no colliders, mass or inertia; clearance unvalidated",
                 "initial_hand_pose_world_xyzw": hands[index].tolist(),
             }
-        transform = _look_at([1.10, -1.20, 1.05], [0., 0., .25])
+        global_target = np.array([0., 0., .020])
+        transform = _look_at([.28, -.42, .46], global_target)
         self.specs["global_d455"] = {
             "camera_id": "global_d455", "model": "Official Isaac Sim 6.2 RealSense D455 asset",
-            "rig_profile": "wrist_camera_rig_v2",
+            "rig_profile": "wrist_camera_rig_v3",
+            "view_goal": "World-fixed close view of the workpiece, knife and cutting region",
+            "look_at_target_world_m": global_target.tolist(),
+            "working_distance_to_target_m": float(np.linalg.norm(transform[:3, 3]-global_target)),
+            "whole_workcell_coverage_required": False,
             "sensor_model": "native_single_view_d455_provisional", "capability": "native_single_view_d455_provisional",
             "d455_hardware_calibration_validated": False, "parent_hand_index": None, "arm_index": None,
             "width": 640, "height": 480, "near_m": .60, "far_m": 6.,
