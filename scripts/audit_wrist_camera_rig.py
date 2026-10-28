@@ -242,7 +242,7 @@ def audit(directory, output, protocol, selected_frames=None):
         unsupported = scene.update(robot["body_pose"][robot_index], frame["vertices"], frame["triangles"], ranges)
         row = {"frame": frame["index"], "time_s": stamp, "current_mechanical_components": count,
             "current_codes_sha256": code_hash, "unsupported_geometry": unsupported,
-            "surface_file_hash_bound_to_actual_state": True, "cameras": {},
+            "surface_partition_bound_to_actual_current_support_and_codes": True, "cameras": {},
             "timestamp_alignment_error_s": max(abs(float(robot["time_s"][robot_index])-stamp),
                 abs(float(physics["time_s"][state_index])-stamp), abs(float(trace_sample["timestamp_s"])-stamp), abs(frame["surface_time_s"]-stamp))}
         projected_masks = []
