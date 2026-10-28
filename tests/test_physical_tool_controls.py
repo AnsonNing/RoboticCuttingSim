@@ -9,7 +9,7 @@ import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from run_physical_tool_controls import (
-    classify_case, compare_cases, measure_case, smooth_joint_targets, summarize_matrix,
+    classify_case, compare_cases, measure_case, native_samples, smooth_joint_targets, summarize_matrix,
 )
 
 PROTOCOL=json.loads((ROOT/"configs/physical_tool_controls_v1.json").read_text())
@@ -106,3 +106,23 @@ def test_invalidated_native_view_cannot_be_hidden_by_a_success_receipt(tmp_path)
     result=summarize_matrix(index,tmp_path,PROTOCOL)
     assert result["status"]=="FAIL_OR_INCOMPLETE_RIGID_CONTROLS"
     assert not result["all_requested_cases_executed"]
+
+
+def test_outside_handle_finger_point_is_excluded_from_handle_load_without_inventing_other_body(tmp_path):
+    def contact(other, point):
+        return {"body0":"/World/Tools/CuttingTool_0","body1":other,
+            "raw_impulse_world_ns":[0.,.002,0.],"dt_s":.002,"time_s":.002,"position_world_m":point}
+    contacts=[contact("/World/Franka_0/panda_leftfinger",[.008002,0.,0.]),
+        contact("/World/Franka_0/panda_rightfinger",[0.,.011,0.]),
+        contact("/World/Table",[0.,0.,-.02])]
+    row={"native_time_s":.002,"hand_pose_xyzw":[0.,0.,0.,0.,0.,0.,1.],
+        "tool_body_pose_xyzw":[0.,0.,0.,0.,0.,0.,1.],"tool_linear_velocity_world_m_s":[0.,0.,0.],
+        "tool_angular_velocity_world_rad_s":[0.,0.,0.],
+        "contacts":{"contacts":contacts,"raw_contact_count":3,"sensor_valid":True,"sensor_fresh":True,
+            "new_physics_step":True,"tensor_forces":{"status":"VALID_NATIVE_NORMAL_AND_FRICTION_DATA"}}}
+    path=tmp_path/"raw.jsonl";path.write_text(json.dumps(row)+"\n")
+    sample=native_samples(path,0.,.002,{"handle_half_extents_m":[.008,.011,.02]},.05)[0]
+    assert sample["unexpected"] == 1  # Actual table pair, independent of the finger-region test.
+    assert sample["left_load_n"] == 0. and sample["right_load_n"] == 1.
+    assert sample["loaded_finger_points_outside_handle"] == 1
+    assert abs(sample["maximum_loaded_finger_point_outside_handle_m"]-2e-6) < 1e-12

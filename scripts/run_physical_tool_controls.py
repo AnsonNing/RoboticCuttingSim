@@ -90,7 +90,7 @@ def native_samples(path, start, end, spec, minimum_load):
         tool = np.asarray(row["tool_body_pose_xyzw"], float)
         rotation = Rotation.from_quat(tool[3:])
         loads = {"left_finger": 0., "right_finger": 0.}
-        unexpected = 0
+        unexpected = 0; outside_handle = 0; stale_finger = 0; outside_extent = 0.
         for c in sensor["contacts"]:
             bodies = [c["body0"], c["body1"]]
             matches = [b == "/World/Tools/CuttingTool_0" or b.startswith("/World/Tools/CuttingTool_0/") for b in bodies]
@@ -101,7 +101,16 @@ def native_samples(path, start, end, spec, minimum_load):
             local = rotation.inv().apply(np.asarray(c["position_world_m"])-tool[:3])
             handle = bool(np.all(np.abs(local) <= half+1e-6))
             current = abs(t-c["time_s"]) <= max(1e-7, 4*np.finfo(np.float32).eps*max(1., abs(t)))
-            if role in loads and handle and current: loads[role] += force
+            if role in loads:
+                if handle and current: loads[role] += force
+                # A failed handle-region or timestamp test is not evidence of
+                # a different supporting body. Retain it separately and never
+                # include that point in the loaded-handle fraction.
+                if force > minimum_load:
+                    if not handle:
+                        outside_handle += 1
+                        outside_extent = max(outside_extent, float(np.max(np.abs(local)-half)))
+                    if not current: stale_finger += 1
             elif force > minimum_load: unexpected += 1
         tensor = sensor.get("tensor_forces", {})
         points = tensor.get("records", [])
@@ -111,7 +120,9 @@ def native_samples(path, start, end, spec, minimum_load):
             "left_load_n": loads["left_finger"], "right_load_n": loads["right_finger"],
             "valid": bool(sensor["sensor_valid"] and sensor["sensor_fresh"] and sensor["new_physics_step"]
                 and tensor.get("status") == "VALID_NATIVE_NORMAL_AND_FRICTION_DATA"),
-            "unexpected": unexpected, "contact_count": sensor["raw_contact_count"], "penetration_m": penetration,
+            "unexpected": unexpected, "loaded_finger_points_outside_handle": outside_handle,
+            "loaded_finger_points_stale": stale_finger, "maximum_loaded_finger_point_outside_handle_m": outside_extent,
+            "contact_count": sensor["raw_contact_count"], "penetration_m": penetration,
             "contact_force": tensor.get("total_filtered_force_world_on_tool_n", [0., 0., 0.])})
     return samples
 
@@ -187,6 +198,10 @@ def measure_case(samples, control_rows, initial_state, spec, protocol, duration)
         "bilateral_loaded_handle_fraction": float(bilateral.mean()),
         "maximum_contact_penetration_m": float(max(r["penetration_m"] for r in samples)),
         "unintended_loaded_contact_steps": sum(r["unexpected"] > 0 for r in samples),
+        "loaded_finger_outside_handle_steps": sum(r.get("loaded_finger_points_outside_handle", 0) > 0 for r in samples),
+        "loaded_finger_outside_handle_points": sum(r.get("loaded_finger_points_outside_handle", 0) for r in samples),
+        "loaded_finger_stale_points": sum(r.get("loaded_finger_points_stale", 0) for r in samples),
+        "maximum_loaded_finger_point_outside_handle_m": max(r.get("maximum_loaded_finger_point_outside_handle_m", 0.) for r in samples),
         "mean_contact_force_last_window_world_n": np.mean([r["contact_force"] for r, selected in zip(samples, window) if selected],axis=0).tolist(),
         "maximum_arm_deflection_rad": float(np.max(np.abs(qdelta))) if len(qdelta) else None,
         "final_arm_deflection_rad": qdelta[-1].tolist() if len(qdelta) else None,
