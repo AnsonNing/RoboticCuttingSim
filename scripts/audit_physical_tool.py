@@ -371,6 +371,44 @@ def wrench_application_state_audit(rows, spec):
             "scope": "Application point/COM checked against preceding actual free-tool pose, before each rigid step"}
 
 
+def contact_geometry_schema_audit(rows, spec, hand_paths):
+    """Verify explicit native event geometry, without changing region tolerance."""
+    explicit, failures, fractions = 0, [], []
+    half = np.asarray(spec["handle_half_extents_m"])
+    for previous, row in zip(rows[:-1], rows[1:]):
+        if row.get("phase") != "coupled_episode":
+            continue
+        contact = row.get("contacts", {})
+        frame = contact.get("contact_geometry_frame", "LEGACY_POST_STEP_TOOL_POSE")
+        if frame != "PRE_STEP_MEASURED_TOOL_POSE":
+            continue
+        explicit += 1
+        geometry = contact.get("contact_geometry_tool_pose_xyzw")
+        before = row.get("tool_body_pose_before_step_xyzw")
+        dt = float(row.get("wrench_interval_dt_s", contact.get("tensor_forces", {}).get("dt_s", 0.)))
+        valid = (geometry is not None and before is not None and np.array_equal(geometry, before)
+                 and pose_check(previous["tool_body_pose_xyzw"], before)["pass"]
+                 and abs(float(contact.get("contact_geometry_time_s", -1)) - row["native_time_s"] + dt) <= 1e-9
+                 and abs(float(contact.get("contact_geometry_time_s", -1)) - previous["native_time_s"]) <= 1e-9)
+        if valid:
+            modified = {**row, "tool_body_pose_xyzw": geometry}
+            measured = native_contacts(modified, "/World/Tools/CuttingTool_0", half, hand_paths, dt)
+            fractions.append(measured["bilateral_loaded"])
+            inverse = invert_transform(pose_matrix(geometry))
+            for item in contact.get("contacts", []):
+                if item.get("position_tool_m") is not None:
+                    point = transform_points(inverse, item["position_world_m"])
+                    valid &= bool(np.allclose(point, item["position_tool_m"], atol=1e-10, rtol=0))
+                    valid &= item.get("in_handle_region") == bool(np.all(np.abs(point) <= half + LIMITS["handle_point_margin_m"]))
+        if not valid:
+            failures.append(float(row["native_time_s"]))
+    return {"status": "LEGACY_POST_STEP_CLASSIFIER_RETAINED" if not explicit else "FAIL" if failures else "PASS_EXPLICIT_PRESTEP_CONTACT_GEOMETRY",
+            "explicit_formal_rows": explicit, "invalid_geometry_times_s": failures[:10],
+            "bilateral_loaded_handle_fraction": float(np.mean(fractions)) if fractions else None,
+            "unchanged_region_margin_m": LIMITS["handle_point_margin_m"],
+            "scope": "Geometry pose equals recorded before-state and preceding measured pose; geometry time equals current-dt; post-step kinematic states remain unchanged"}
+
+
 def material_input_audit(diagnostics, state):
     matches = []
     for row in diagnostics:
@@ -572,6 +610,7 @@ def audit_episode(episode):
     result["wrench"] = wrench_audit(rows)
     result["wrench_application_state"] = wrench_application_state_audit(rows, spec)
     result["formal_contact_freshness"] = coupled_contact_audit(rows)
+    result["contact_geometry_schema"] = contact_geometry_schema_audit(rows, spec, hand_paths)
     grasp = read_json(episode / "grasp_reset_00.json", {})
     result["pregrasp"] = hold_audit(hold_rows, grasp.get("config", setup.get("grasp")))
     result["trace_state_alignment"] = trace_state_audit(rows, state, spec, setup.get("native_time_origin_s", 0.))
@@ -626,6 +665,7 @@ def audit_episode(episode):
         if "raw_lab_substeps" in result:
             required.append(result["raw_lab_substeps"]["status"] == "PASS_RAW_SUBSTEP_ENGINEERING")
     required += [result["wrench"]["status"] != "FAIL", result["wrench_application_state"]["status"] != "FAIL",
+                 result["contact_geometry_schema"]["status"] != "FAIL",
                  result["material_input"]["status"] != "FAIL", result["recipient"]["status"] != "FAIL", result.get("stage_receipt_matches", True)]
     result["status"] = "PASS_OFFLINE_ENGINEERING_AUDIT" if all(required) else "FAIL_OFFLINE_ENGINEERING_AUDIT"
     recorded_status = read_json(episode / "result.json", {}).get("status")

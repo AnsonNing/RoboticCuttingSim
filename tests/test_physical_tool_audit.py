@@ -293,3 +293,20 @@ def test_invalid_evidence_writes_failure_receipt_instead_of_success_or_serializa
     result = json.loads((output / "result.json").read_text())
     assert result["status"] == "FAIL_INVALID_OR_UNSUPPORTED_EVIDENCE"
     assert not result["full_physics_acceptance"]
+
+
+def test_explicit_contact_geometry_must_match_before_pose_and_current_minus_dt():
+    previous, row = contact_row(.1), contact_row(.2, "coupled_episode")
+    row["tool_body_pose_before_step_xyzw"] = previous["tool_body_pose_xyzw"]
+    row["wrench_interval_dt_s"] = .1
+    sensor = row["contacts"]
+    sensor.update(contact_geometry_frame="PRE_STEP_MEASURED_TOOL_POSE",
+                  contact_geometry_tool_pose_xyzw=previous["tool_body_pose_xyzw"], contact_geometry_time_s=.1)
+    for item in sensor["contacts"]:
+        item["position_tool_m"] = (np.asarray(item["position_world_m"]) - np.asarray(previous["tool_body_pose_xyzw"][:3])).tolist()
+    spec = make_tool_spec().to_dict()
+    good = audit.contact_geometry_schema_audit([previous, row], spec, [HAND])
+    assert good["status"] == "PASS_EXPLICIT_PRESTEP_CONTACT_GEOMETRY"
+    assert good["bilateral_loaded_handle_fraction"] == 1.
+    sensor["contact_geometry_time_s"] = .2
+    assert audit.contact_geometry_schema_audit([previous, row], spec, [HAND])["status"] == "FAIL"
