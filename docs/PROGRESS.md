@@ -1,131 +1,131 @@
 # Progress — 2026-10-28 Asia/Seoul
 
-## 最新：兩個 Cutting Tasks 已完成實際物理執行
+## Latest: both cutting tasks completed actual physical execution
 
-固定 CUT-01 與 TRIM-01 均已在 **Isaac Lab 3.0 GA 與 Isaac Sim 6.2**
-各完成400控制步／8秒，實際 Franka 持固定刀具、量測刀刃接觸材料，TLMPM 產生
-永久分離，材料反作用回饋手臂。第二臂停泊。兩個任務共用同一個
-`reset/step/observe/render/evaluate/close` 介面與獨立 Task evaluator；
-沒有訓練模型、改動 RSI、其他環境或 driver。
+Fixed CUT-01 and TRIM-01 have each run in **Isaac Lab 3.0 GA and Isaac Sim 6.2**,
+completing 400 control steps / 8 seconds. An actual Franka holds the fixed blade, the measured edge contacts material, and TLMPM produces
+persistent separation with material reaction fed back to the arm. The second arm remains parked. Both tasks share the
+`reset/step/observe/render/evaluate/close` interface and independent Task evaluator;
+no models were trained and no RSI, other environments or drivers were modified.
 
-| 本輪交付 | 實際結果 | 狀態與界線 |
+| Delivery this round | Actual result | Status and boundaries |
 | --- | --- | --- |
-| 固定 CUT-01 | Lab／Sim各一次；144g→72g+72g，1→2實際MPM分量，切割位置reference-support上界1.5mm，撤刀後2.4s持續分離 | **PASS_TASK_METRICS**；完整相機／耦合驗收另計 |
-| 固定 TRIM-01 | 明示2mm粒子初始取樣，Lab／Sim各一次；145.632g不變，1.608g切屑，98.5294%目標材料移除 | **物理分離PASS**；原始全表面精度 **FAIL_TASK_METRICS** |
-| 隨機化 | 凍結分布：不同長度、切割位置、XY/yaw、1–3個連續Dome/Gaussian/Ridge/irregular凸起；native seed42兩任務均完整實跑 | CUT分成66.6/59.4g並通過Task；TRIM形成三個切屑、移除96.2791%，幾何目標仍FAIL；不宣稱成功率 |
-| 原生相機 | 每集41幀雙640×480 RGB-D＋1280×960 Global；當下表面／實際robot姿態進入Kit原生管線 | geometry/time/CAM-03 PASS；CAM-04、chip像素與嚴格reset仍有FAIL；Lab為明示ideal Warp |
-| 公開影片 | 兩固定任務各有Global、雙RGB、雙Depth、同步視角、command/actual刀路與來源hash | 由實際capture編碼；raw保留；沒有USD replay冒充live |
-| 回歸 | 205項CPU測試；舊D0–D3 sampler的8組golden hash不變；另做Lab D0實際5步前綴比較 | code/reference/mass一致，位置最大差52.15nm；不是完整D0–D3動力學重跑 |
+| Fixed CUT-01 | One Lab/Sim episode each; 144g→72g+72g, 1→2 actual MPM components, cut-location reference-support bound 1.5mm, persistent separation for 2.4s after withdrawal | **PASS_TASK_METRICS**; complete camera/coupling acceptance is separate |
+| Fixed TRIM-01 | Explicit 2mm initial particle sampling; one Lab/Sim episode each; unchanged 145.632g, 1.608g chip, 98.5294% target-material removal | **Physical separation PASS**; original full-surface accuracy **FAIL_TASK_METRICS** |
+| Randomization | Frozen distribution: variable lengths, cut positions, XY/yaw and 1–3 continuous dome/Gaussian/ridge/irregular bumps; both native seed42 tasks fully executed | CUT produces 66.6/59.4g parts and passes Task; TRIM produces three chips with 96.2791% removal, geometry still FAIL; no success-rate claim |
+| Native cameras | Per episode: 41 frames of dual 640×480 RGB-D + 1280×960 Global; current surfaces and actual robot poses enter the native Kit pipeline | Geometry/time/CAM-03 PASS; CAM-04, chip pixels and strict reset still include FAIL; Lab explicitly uses ideal Warp |
+| Public videos | Both fixed tasks provide Global, dual RGB, dual depth, synchronized views, command/actual paths and source hashes | Encoded from actual captures; raw retained; no USD replay presented as live |
+| Regression | 205 CPU tests; 8 golden hashes for the old D0–D3 sampler unchanged; additional actual 5-step Lab D0 prefix comparison | Code/reference/mass agree, maximum position difference 52.15nm; not a complete D0–D3 dynamics rerun |
 
-原始1mm TRIM兩次live仍FAIL：兩個code0粒子橋接，沒有真正斷開。延長刀路、
-第二次真切削與改2mm網格的負結果均保存，之後2mm粒子配置才在兩個live runtime
-產生分離。這是明示的解析度相關工程結果，沒有改寫預設、刪粒子或宣稱收斂。
+Both original 1mm live TRIM runs still FAIL: two code0 particles bridge the material, preventing actual disconnection. Extended-path,
+second actual-cut and 2mm-grid negative results are preserved; only the later 2mm-particle configuration produced separation in both live runtimes.
+This is an explicit resolution-dependent engineering result, without changing defaults, deleting particles or claiming convergence.
 
-固定粗粒子TRIM的正向最高殘留約0.106–0.109mm，但全footprint p95約1.67mm、
-overcut約2%，仍未達原始標準。獨立無凸起target控制與三維表面距離已完成：
-represented-column指標仍FAIL；雙向表面距離p95約0.29mm僅作描述，未重新訂門檻。
-固定任務的分割耦合功殘差仍超標，材料／斷裂參數未實物校準。隨機TRIM雖分離，
-參考撤刀後仍有tool contact，不能宣稱三塊切屑全部blade-clear自由飛行。
+Fixed coarse-particle TRIM has maximum positive residual approximately 0.106–0.109mm, but full-footprint p95 approximately 1.67mm
+and overcut approximately 2%, still failing the original criteria. Independent no-bump target controls and three-dimensional surface-distance measurements are complete:
+represented-column metrics still FAIL; bidirectional surface-distance p95 approximately 0.29mm is descriptive only, with no new thresholds fitted.
+Fixed-task partitioned coupling-work residuals remain over the limit, and material/fracture parameters are not calibrated against real samples. Randomized TRIM separates,
+but retains tool contact after reference withdrawal; not all three chips can be claimed blade-clear or in free flight.
 
-主要新增證據：`artifacts/isaac_lab_cut01_001`、`isaacsim_cut01_001`、
-`isaac_lab_trim01_coarse_001`、`isaacsim_trim01_coarse_001`、
-`isaac_native_randomized_benchmark_001`；精簡source/hash/量測與FAIL在公開docs。
-完整表格與指令：[CUTTING_BENCHMARK](CUTTING_BENCHMARK.md)、
-[固定實驗](reports/CUTTING_TASK_EPISODES.md)、
-[隨機實驗](reports/RANDOMIZED_TASK_EPISODES.md)、
-[原生相機](TASK_CAMERA_VALIDATION.md)、
-[共用API](SHARED_TASK_API.md)、[表面控制](REPRESENTED_TARGET_VALIDATION.md)。
-影片入口在[README](../README.md)。本機raw未刪除，大型資產不提交Git。
+Main new evidence: `artifacts/isaac_lab_cut01_001`, `isaacsim_cut01_001`,
+`isaac_lab_trim01_coarse_001`, `isaacsim_trim01_coarse_001`,
+`isaac_native_randomized_benchmark_001`; compact sources/hashes/measurements and FAIL results are in public docs.
+Complete tables and commands: [CUTTING_BENCHMARK](CUTTING_BENCHMARK.md),
+[fixed experiments](reports/CUTTING_TASK_EPISODES.md),
+[randomized experiments](reports/RANDOMIZED_TASK_EPISODES.md),
+[native cameras](TASK_CAMERA_VALIDATION.md),
+[shared API](SHARED_TASK_API.md), [surface controls](REPRESENTED_TARGET_VALIDATION.md).
+Videos are linked from [README](../README.md). Local raw data is retained; large assets are not committed to Git.
 
-## 已保存：先前 Isaac runtime 整合與驗收
+## Preserved: previous Isaac runtime integration and acceptance
 
-本輪已在原機器、原 driver 570.211.01 實際執行 Isaac Lab 3.0 GA 與
-Isaac Sim 6.2／Kit110.4；使用官方支援的 Torch2.11/cu128 隔離環境。
-先前將完整 runtime 一概列為 CUDA13 BLOCKED 的判斷已被實測取代。
-沒有升級 driver、重開機、修改 RSI 或其他專案環境，也沒有訓練任何模型。
+This round actually executed Isaac Lab 3.0 GA and
+Isaac Sim 6.2 / Kit110.4 on the original machine and driver 570.211.01, using officially supported isolated Torch2.11/cu128 environments.
+Measurements supersede the earlier blanket CUDA13 BLOCKED classification for the complete runtime.
+No driver upgrade, reboot, RSI/other-project environment modification or model training occurred.
 
-| 實際路線 | 完成內容 | 驗收邊界 |
+| Actual path | Completed work | Acceptance boundary |
 |---|---|---|
-| Live Lab | 真實 DirectRLEnv／InteractiveScene／NewtonManager；400steps、8s；實際雙 Franka、固定刀具、TLMPM 與反作用回饋；1.656g切屑、兩個機械分量 | Kit-less 相機是明確標記的全場景 ideal Warp RGB-D；不算 native D455 |
-| Live Kit | Sim6.2原生 PhysX；400控制／4000剛體steps、8s；兩路native SingleView D455＋1280×960 Global、永久分離、實際相機資料及影片 | 完成 episode 與全部18項驗收分開；不宣稱 full integration PASS |
-| 軌跡修正 | 可選 joint-velocity feedforward；同刀路／材料／gains；Lab active max0.507mm、Kit0.480mm，通過1mm門檻 | 原控制器1.24–1.26mm失敗保留；改進追蹤不自動代表耦合能量或整平通過 |
-| Native depth | OFF／ON與開發／held-out控制事前固定；實際OVRTX和實際Kit的取樣對應各自通過 | RAW Z完整保留；不是實體D455校準；原H0失敗、噪聲、invalid pixels均保留 |
-| 幾何控制 | 已知閉合box／旋轉／解析volume測試，分開指出2mm取樣的16mm等效底座與density0.25表面膨脹 | 不藉縮小渲染表面冒充物理整平；新profile仍須deformation／task驗證 |
+| Live Lab | Actual DirectRLEnv/InteractiveScene/NewtonManager; 400steps, 8s; actual dual Frankas, fixed blade, TLMPM and reaction feedback; 1.656g chip and two mechanical components | Kit-less cameras are explicitly labelled full-scene ideal Warp RGB-D, not native D455 |
+| Live Kit | Sim6.2 native PhysX; 400 control / 4000 rigid steps, 8s; dual native SingleView D455 + 1280×960 Global, persistent separation, actual camera data/videos | Episode execution is separate from all 18 acceptance gates; no full-integration PASS claim |
+| Trajectory correction | Optional joint-velocity feedforward with identical path/material/gains; Lab active max0.507mm, Kit0.480mm, passing the 1mm limit | Original-controller 1.24–1.26mm failures preserved; improved tracking does not automatically pass coupling energy or flattening |
+| Native depth | OFF/ON and development/held-out controls frozen in advance; actual OVRTX and actual Kit sampling correspondence pass separately | Complete RAW Z retained; not physical D455 calibration; original H0 failure, noise and invalid pixels retained |
+| Geometry controls | Known closed boxes, rotations and analytic-volume tests distinguish the 16mm equivalent base from 2mm sampling and surface expansion at density0.25 | Shrinking the rendered surface is not physical flattening; new profiles still need deformation/task validation |
 
-目前明確未通過：D0重建表面最大殘留約1.9–2.0mm；FF的20ms延遲耦合介面功
-相對殘差超過5%；部分FF撤刀後沒有滿足跨分量再接觸門檻；Kit嚴格camera reset／
-逐粒子重現性也失敗。這些保留為 FAIL／NOT_RUN，沒有放寬事前門檻。
-Lab初始reset的q／材料／ideal-depth差異為0；同source完整repeat仍有逐粒子差異，
-ENV-01為FAIL。新原生剛體穿透稽核最大32.494µm／刀具對剛體0，ENV-02通過。
+Explicit remaining failures: D0 reconstructed-surface maximum residual approximately 1.9–2.0mm; FF's 20ms delayed coupling interface-work
+relative residual exceeds 5%; some FF episodes do not meet postwithdraw cross-component recontact thresholds; strict Kit camera reset and
+per-particle repeatability also fail. These remain FAIL / NOT_RUN, without relaxing prefrozen thresholds.
+Lab initial-reset q/material/ideal-depth differences are 0; full same-source repetition still has per-particle differences,
+so ENV-01 FAIL. New native rigid-penetration audit: maximum 32.494µm / tool-to-rigid 0; ENV-02 passes.
 
-主要證據：`artifacts/isaac_lab_d0_001`、`isaac_lab_d0_feedback_off_001`、
-`isaac_lab_d0_feedforward_001`、`isaacsim_live_native_d0_001`、
-`isaacsim_live_native_d0_ff_001`、`single_view_kit_audit_003`。
-詳細見 [ISAAC_LAB_INTEGRATION](ISAAC_LAB_INTEGRATION.md)、
-[ISAAC_SIM_VALIDATION](ISAAC_SIM_VALIDATION.md)、[CAMERA_VALIDATION](CAMERA_VALIDATION.md)。
+Main evidence: `artifacts/isaac_lab_d0_001`, `isaac_lab_d0_feedback_off_001`,
+`isaac_lab_d0_feedforward_001`, `isaacsim_live_native_d0_001`,
+`isaacsim_live_native_d0_ff_001`, `single_view_kit_audit_003`.
+Details: [ISAAC_LAB_INTEGRATION](ISAAC_LAB_INTEGRATION.md),
+[ISAAC_SIM_VALIDATION](ISAAC_SIM_VALIDATION.md), [CAMERA_VALIDATION](CAMERA_VALIDATION.md).
 
-使用者新增的下一階段為 CUT-01 長條完整切斷 → TRIM-01 長條單凸起整平 →
-隨機化 → 回歸測試。會在目前整合證據與未解決問題保存後，以共用 Task／
-Geometry／Fixture、workpiece-local目標及統一API接續；原D0–D3基線保留。
+The user's next stage is CUT-01 complete bar severing → TRIM-01 single-bump bar flattening →
+randomization → regression testing. After preserving current integration evidence and unresolved issues, continue with shared Task/
+Geometry/Fixture definitions, workpiece-local targets and a unified API; retain the original D0–D3 baselines.
 
-### 先前 CUT-01／1mm TRIM-01 實作與負結果
+### Earlier CUT-01 / 1mm TRIM-01 implementation and negative results
 
-已固定兩個任務的幾何、材料、治具、固定刀具座與獨立評分標準，見
-[CUTTING_TASKS](CUTTING_TASKS.md)。新增可選工件座標材料介面與有限治具接觸；
-舊 D0–D3 的預設接觸／表面設定保留。新任務採用1mm完整粒子體積取樣，
-CUT-01為96,000粒子／144g，TRIM-01為97,044粒子／145.566g。
+Geometry, material, fixtures, fixed blade mounts and independent scoring criteria for both tasks are frozen; see
+[CUTTING_TASKS](CUTTING_TASKS.md). Added an optional workpiece-frame material interface and finite fixture contacts;
+old D0–D3 contact/surface defaults remain. New tasks use complete 1mm particle-volume sampling:
+CUT-01 has 96,000 particles / 144g, and TRIM-01 has 97,044 particles / 145.566g.
 
-Lab與Kit均已完成固定CUT-01的400步／8秒實跑，獨立Task評分通過：
-144g分為兩個72g主體，實際MPM支撐圖1→2，撤刀後2.4秒持續分離，切割位置
-midpoint上界1.5mm。兩個固定TRIM-01也完成8秒，但均為FAIL_TASK_METRICS：
-兩個被推離原位置的code0粒子仍橋接底座與切屑，不能以97%粒子已有側向label
-冒充真實分離。正在以事前固定的延長刀路／第二次真實切削診斷改善，尚未升格。
-四次完整實驗與原始失敗見[Task episodes](reports/CUTTING_TASK_EPISODES.md)。
-初次啟動的JSON布林序列化失敗另存，修正後使用新輸出目錄。
-新任務使用經獨立閉合仿射幾何控制通過的current-volume表面profile；其驗證
-不等於任務整平通過，也沒有改動切削物理或舊D0的renderer預設。
+Both Lab and Kit completed fixed CUT-01 in actual 400-step / 8-second episodes and passed independent Task scoring:
+144g splits into two 72g main parts, actual MPM support graph 1→2, separation persisting for 2.4 seconds after withdrawal, and cut-location
+midpoint bound 1.5mm. Both fixed TRIM-01 episodes also complete 8 seconds but are FAIL_TASK_METRICS:
+two displaced code0 particles still bridge the base and chip; 97% of particles having side labels
+cannot substitute for actual separation. Prefrozen extended-path / second actual-cut diagnostics are being investigated, without promotion yet.
+The four complete experiments and original failures are in [Task episodes](reports/CUTTING_TASK_EPISODES.md).
+Initial JSON Boolean-serialization failures are preserved separately; corrected runs use fresh output directories.
+New tasks use the current-volume surface profile that passed independent closed affine-geometry controls; this validation
+does not establish task flattening and does not alter cutting physics or the old D0 renderer defaults.
 
-共用[實際環境API](SHARED_TASK_API.md)已在Lab/CUT與Kit/TRIM各用實際Cartesian及joint
-指令通過2步驗證；正式觀測只含雙RGB-D與proprio。獨立[相機稽核](TASK_CAMERA_VALIDATION.md)
-顯示材料區域原生深度覆蓋率約97.5–99.1%，全畫面CAM-04的缺值／離群仍FAIL。
-軌跡、全幾何與timestamp稽核通過，不將其當成全部相機或切削驗收通過。
+The shared [actual environment API](SHARED_TASK_API.md) passed actual Cartesian and joint
+command checks over 2 steps each in Lab/CUT and Kit/TRIM; official observations contain only dual RGB-D and proprioception. Independent [camera audits](TASK_CAMERA_VALIDATION.md)
+show native depth coverage approximately 97.5–99.1% in material regions; full-frame CAM-04 holes/outliers still FAIL.
+Trajectory, full-geometry and timestamp audits pass, without promotion to complete camera or cutting acceptance.
 
-## 先前 standalone 基線與歷史紀錄
+## Previous standalone baselines and historical record
 
-本輪已沿 Physical Cutting → Franka Control → RGB-D → Simulation Benchmark
-實際執行並整合，交付可接續研究的 standalone 環境。使用者授權 public
-GitHub、持續 commit/push、agents，以及合理調整原報告的階段門檻。數值與
-能力狀態不因門檻調整而改寫；未修改 RSI、其他專案、driver 或訓練 Policy。
+This round actually executed and integrated Physical Cutting → Franka Control → RGB-D → Simulation Benchmark,
+delivering a standalone environment for continued research. The user authorized public
+GitHub, ongoing commits/pushes, agents and reasonable adjustments to the original report's stage gates. Numerical results and
+capability statuses are not rewritten when gates change; no RSI, other projects or drivers were modified, and no Policy was trained.
 
-| Package | 已交付／實測 | 仍待驗證 |
+| Package | Delivered/measured | Remaining validation |
 |---|---|---|
-| WP-00 | 獨立 repo、環境／版本／官方 source pins、官方 standalone Newton smoke、CPU CI；本輪另完成真正Lab／Kit live D0 | 歷史四個source-only失敗保留；cu130與本輪cu128相容性分開 |
-| WP-01 | 連續基座＋凸起、形狀／seed、Newton MPM 靜置／壓入／刮推、治具、trace／影片 | 材料未校準；完整收斂待完成 |
-| WP-02 | CRESSim 七項源碼修正＋16個 actual-header controls及GPU穩定性；新增獨立 Warp TLMPM online persistent cut | CRESSim 無持久分離；自研 TLMPM 為未校準原型，非 BladeMaster 官方程式 |
-| WP-03 | Current-mechanical-component ParticleSurface、live 全場景理想雙 RGB-D；本輪另完成native Kit管線與held-out取樣對應 | 硬體噪聲校準、嚴格reset與完整動態depth一致性仍分別驗收 |
-| WP-04 | 雙 Panda 動力學、IK／joint／Cartesian、碰撞、固定同幾何楔形刀；材料反作用實際回饋 |20 ms explicit delay，未做單體式或耦合能量收斂；第二臂停泊 |
-| WP-05 | ResearchCuttingEnv reset/step/observe/render/close，400 steps完整測試；D0–D3四個物理＋影像 benchmark | 多凸起固定路徑仍有殘留；D3部分參數未接入；沒有學習或任務成功率宣稱 |
-| WP-06 | 程式、命令、精簡hash證據、數值trace、影片路徑、負結果、CI與本文件 | 大型raw artifacts保留本機；完整科學benchmark驗收尚未完成 |
+| WP-00 | Independent repo, environment/versions/official source pins, official standalone Newton smoke, CPU CI; this round adds actual live Lab/Kit D0 | Four historical source-only failures preserved; distinguish cu130 compatibility from this round's cu128 |
+| WP-01 | Continuous base+bump, shapes/seeds, Newton MPM settling/indentation/scraping, fixtures, traces/videos | Material uncalibrated; complete convergence outstanding |
+| WP-02 | Seven CRESSim source corrections, 16 actual-header controls and GPU stability; independent Warp TLMPM online persistent cuts | CRESSim lacks persistent separation; project TLMPM is an uncalibrated prototype, not official BladeMaster code |
+| WP-03 | Current-mechanical-component ParticleSurface and live full-scene ideal dual RGB-D; native Kit pipeline and held-out sampling correspondence added this round | Hardware-noise calibration, strict reset and full dynamic-depth agreement remain separate acceptance items |
+| WP-04 | Dual-Panda dynamics, IK/joint/Cartesian control, collisions, fixed matching-geometry wedge blade and actual material-reaction feedback | 20 ms explicit delay; no monolithic/coupling-energy convergence; second arm parked |
+| WP-05 | ResearchCuttingEnv reset/step/observe/render/close, complete 400-step test; four D0–D3 physics+image benchmarks | Fixed multi-bump paths leave residuals; some D3 parameters not connected; no learning or task-success-rate claim |
+| WP-06 | Code, commands, compact hash evidence, numerical traces, video paths, negative results, CI and this document | Large raw artifacts retained locally; full scientific benchmark acceptance incomplete |
 
-可用能力：`persistent_cutting_D0=PASS_EXPERIMENTAL`、`articulated_control=PASS`、
-`coupled_cutting_D0=PASS_EXPERIMENTAL`、`live_ideal_rgbd=PASS`、`standalone_rtx_rgbd=PASS`、
-`benchmark_executable=true`。原始完整科學旗標 `PHYSICS_PROVEN / VISION_PROVEN /
-WORKCELL_PROVEN / BENCHMARK_READY` 仍不宣稱全部通過；它們不等於目前環境不可使用。
+Available capabilities: `persistent_cutting_D0=PASS_EXPERIMENTAL`, `articulated_control=PASS`,
+`coupled_cutting_D0=PASS_EXPERIMENTAL`, `live_ideal_rgbd=PASS`, `standalone_rtx_rgbd=PASS`,
+`benchmark_executable=true`. The original complete scientific flags `PHYSICS_PROVEN / VISION_PROVEN /
+WORKCELL_PROVEN / BENCHMARK_READY` are not all claimed passed; this does not make the current environment unusable.
 
-## 實測重點與正式邊界
+## Measured highlights and formal boundaries
 
-- Frozen TLMPM matrix：11個完成的物理案例＋保留的 setup failure；單刀、撤刀、獨立切屑運動及再接觸有工程證據。19,340粒子、單刀140粒子／1.680 g切屑；七個實際 GPU 數學／局部 impulse controls通過。
-- 同seed重跑位置最大差10.59 µm、速度0.00452 m/s，符合事前工程容差；不是 bitwise deterministic，曾有一個中間frame的單粒子label時機不同。最後labels/components相同。
-- Frozen第二刀為有限局部切口，沒有額外斷開，T6 FAIL原樣保留。後續改為有平坦剛性支撐、移除邊牆且跨完整截面的交叉刀路：1→2→3分量、4.5 s、最低detF0.9027、既有digits不改寫。兩個失敗free-specimen控制仍保留；這不是雙方向Franka驗證。
-- 完整耦合 D0：8 s、1.656 g實際切屑、最大材料反作用1.041 N；ON/OFF回饋對照造成刀具0.345 mm差異，確認反作用會影響機器人。20 ms延遲；介面功殘差0.326 mJ只是診斷，非全能量收斂。
-- Live API：400steps／8 s、164.55 s wall、每步雙640×480RGB-D及量測proprio；reset初始q/depth誤差0、截斷通過，觀測無force／oracle／global。
-- Native RTX coupled002：41個目前機械表面、401個量測robot poses；切屑可見於兩路depth；mesh-depth QA通過。完整 native D455後處理與理想RGB-D分別記錄，未將fallback冒充感測器驗證。
-- Native SingleView fresh斜面 noise OFF／ON：保留實際RAW depth的註冊helper已實作；p95 1.309/1.344 mm超過事前1 mm門檻，主要噪聲變化在valid mask，`simulated_d455`維持BLOCKED/prototype，見[SINGLE_VIEW_REGISTRATION](SINGLE_VIEW_REGISTRATION.md)。
-- D0–D3 seed42：四個8 s物理＋5幀全場景理想RGB-D case皆PASS_EXECUTION；D2/D3殘留高度proxy21.7/16.0 mm，不算任務成功。
-- 4/3/2 mm與半dt探查顯示chip mass仍變化，尚未收斂；coarse recontact overlap、J2材料參數及sharp-blade模型限制已明列。
-- 乾淨CPU-only隔離環境（無Newton/Warp/CUDA）93項測試通過；實際GPU／RTX／控制與CPU tests分別記錄。
+- Frozen TLMPM matrix: 11 completed physics cases plus preserved setup failure; engineering evidence for single cuts, withdrawal, independent chip motion and recontact. 19,340 particles; single-cut chip 140 particles / 1.680 g; seven actual GPU mathematics/local-impulse controls pass.
+- Same-seed repetition: maximum position difference 10.59 µm and velocity difference 0.00452 m/s, within prefrozen engineering tolerances; not bitwise deterministic, with one particle's label timing differing in an intermediate frame. Final labels/components agree.
+- Frozen second cut was a finite local incision and did not create another separated part; T6 FAIL is preserved. A later full-cross-section crossing path with flat rigid support, removed side walls produces 1→2→3 components over 4.5 s, minimum detF0.9027 and unchanged existing digits. Two failed free-specimen controls remain; this is not two-direction Franka validation.
+- Complete coupled D0: 8 s, actual 1.656 g chip, maximum material reaction 1.041 N; ON/OFF feedback control changes tool motion by 0.345 mm, confirming reaction affects the robot. Delay 20 ms; interface-work residual 0.326 mJ is diagnostic, not total-energy convergence.
+- Live API: 400steps / 8 s, 164.55 s wall, dual 640×480 RGB-D and measured proprioception every step; initial reset q/depth error 0, truncation passes, no force/oracle/global in observations.
+- Native RTX coupled002: 41 current mechanical surfaces and 401 measured robot poses; chip visible in both depth streams; mesh-depth QA passes. Native D455 postprocessing and ideal RGB-D are recorded separately; fallback is not presented as sensor validation.
+- Native SingleView fresh tilted-plane noise OFF/ON: registration helper preserving actual RAW depth implemented; p95 1.309/1.344 mm exceeds prefrozen 1 mm, with noise mainly changing the valid mask. `simulated_d455` remains BLOCKED/prototype; see [SINGLE_VIEW_REGISTRATION](SINGLE_VIEW_REGISTRATION.md).
+- D0–D3 seed42: all four 8 s physics + 5-frame full-scene ideal RGB-D cases PASS_EXECUTION; D2/D3 residual-height proxies 21.7/16.0 mm do not establish task success.
+- 4/3/2 mm and half-dt probes show chip mass still changes, without convergence; coarse recontact overlap, J2 parameters and sharp-blade model limitations are explicit.
+- A clean isolated CPU-only environment without Newton/Warp/CUDA passes 93 tests; actual GPU/RTX/control evidence and CPU tests are recorded separately.
 
-## 主要入口與本機證據
+## Main entry points and local evidence
 
 ```bash
 .venv/bin/python -m robotic_cutting_sim.cli research-demo --output-dir artifacts/fresh_live
@@ -133,17 +133,17 @@ WORKCELL_PROVEN / BENCHMARK_READY` 仍不宣稱全部通過；它們不等於目
 .venv/bin/python -m pytest -q
 ```
 
-| Evidence | 本機 artifact |
+| Evidence | Local artifact |
 |---|---|
-| Frozen physics／repeat／refinement | `artifacts/TLMPM_validation_001`、`TLMPM_validation_two_cuts_001` |
-| 完整截面第二刀 | `artifacts/tlmpm_supported_cross_cuts_001` |
-| 實際機器人反作用耦合＋對照 | `artifacts/coupled_robot_cut_002` |
-| Live API | `artifacts/research_env_full_001`，`research_env_demo.mp4` |
-| Actual cutting RTX | `artifacts/ovrtx_coupled_002`、`ovrtx_coupled_closeup_002`及`coupled_rgbd_qa_002` |
+| Frozen physics/repeat/refinement | `artifacts/TLMPM_validation_001`, `TLMPM_validation_two_cuts_001` |
+| Full-cross-section second cut | `artifacts/tlmpm_supported_cross_cuts_001` |
+| Actual robot-reaction coupling and control | `artifacts/coupled_robot_cut_002` |
+| Live API | `artifacts/research_env_full_001`,`research_env_demo.mp4` |
+| Actual cutting RTX | `artifacts/ovrtx_coupled_002`, `ovrtx_coupled_closeup_002` and `coupled_rgbd_qa_002` |
 | D0–D3 benchmark | `artifacts/simulation_benchmark_001` |
-| CRESSim修正前後 | `artifacts/CRESSim_candidate`、`cressim_scrape_promoted_001`；歷史FAIL不刪除 |
+| CRESSim before/after corrections | `artifacts/CRESSim_candidate`, `cressim_scrape_promoted_001`; historical FAIL results retained |
 
-詳細命令／hash／負結果見 [TLMPM_VALIDATION](reports/TLMPM_VALIDATION.md)、
-[COUPLED_ROBOT_VALIDATION](COUPLED_ROBOT_VALIDATION.md)、[WP-03-cutting](reports/WP-03-cutting.md)、
-[RESEARCH_ENVIRONMENT](RESEARCH_ENVIRONMENT.md)、[BENCHMARK_REPORT](BENCHMARK_REPORT.md)。
-Public repo：https://github.com/AnsonNing/RoboticCuttingSim 。大型資料與官方資產不提交 Git。
+Detailed commands/hashes/negative results: [TLMPM_VALIDATION](reports/TLMPM_VALIDATION.md),
+[COUPLED_ROBOT_VALIDATION](COUPLED_ROBOT_VALIDATION.md), [WP-03-cutting](reports/WP-03-cutting.md),
+[RESEARCH_ENVIRONMENT](RESEARCH_ENVIRONMENT.md), [BENCHMARK_REPORT](BENCHMARK_REPORT.md).
+Public repo: https://github.com/AnsonNing/RoboticCuttingSim . Large data and official assets are not committed to Git.
