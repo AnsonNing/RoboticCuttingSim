@@ -24,6 +24,14 @@ from robotic_cutting_sim.wrist_camera_audit import (depth_comparison, effective_
 PROTOCOL_PATH = ROOT/"configs/wrist_camera_audit_v1.json"
 
 
+def tool_part_label(path):
+    """Keep material component IDs separate from the real rigid tool parts."""
+    physical = {"/World/Tools/CuttingTool_0/Blade": 1,
+                "/World/Tools/CuttingTool_0/Handle": -3,
+                "/World/Tools/CuttingTool_0/Shaft": -4}
+    return physical.get(path, 1 if path.endswith(("/Knife", "/LiveKnife")) else None)
+
+
 def read_json(path):
     return json.loads(Path(path).read_text())
 
@@ -128,8 +136,9 @@ class SceneReference:
         ids, sides = np.zeros(len(triangles), np.int32), np.zeros(len(triangles), np.int32)
         for prim in metadata["prims"]:
             path, offset, count = prim["prim_path"], prim["first_triangle"], prim["triangles"]
-            if path.endswith(("/Knife", "/LiveKnife")):
-                ids[offset:offset+count] = 1
+            part = tool_part_label(path)
+            if part is not None:
+                ids[offset:offset+count] = part
             if "ContinuousSpecimen" in path:
                 for row in component_ranges:
                     start = offset+row["first_triangle"]
@@ -154,7 +163,13 @@ class SceneReference:
         depth, labels = wp.empty(shape, dtype=float, device="cpu"), wp.empty(shape, dtype=int, device="cpu")
         wp.launch(self.kernel, dim=shape, inputs=[self.mesh.id, wp.mat44(np.asarray(calibration["T_world_camera"])),
             wp.mat33(np.asarray(calibration["K"])), .001, 20., self.ids, self.sides, depth, labels], device="cpu")
-        return depth.numpy(), labels.numpy()
+        attribution = labels.numpy()
+        self.last_tool_part_labels = attribution
+        # Handle/shaft remain real occluders. The existing audit uses IDs>=2
+        # exclusively for actual material components, so return them as other.
+        ordinary = attribution.copy()
+        ordinary[(ordinary == -3) | (ordinary == -4)] = 0
+        return depth.numpy(), ordinary
 
 
 def clearance_metrics(trace, specs, robot, task):
@@ -277,6 +292,12 @@ def audit(directory, output, protocol, selected_frames=None):
                 "current_component_depth_consistent_pixels": per_component,
                 "actual_depth_vs_current_whole_scene": depth_comparison(depth, valid, expected, geometry_valid),
                 "depth_match_scope": "Counts verified by full current-scene first hit; all valid errors/holes reported without trimming"}
+            if setup.get("tool_attachment_mode") == "physical_grasp":
+                view["physical_tool_parts"] = {part: {
+                    "first_hit_pixels": int(np.count_nonzero(scene.last_tool_part_labels == label)),
+                    "working_range_pixels": int(np.count_nonzero((scene.last_tool_part_labels == label) & geometry_valid)),
+                    "actual_depth_consistent_pixels": int(np.count_nonzero((scene.last_tool_part_labels == label) & consistent))}
+                    for part, label in (("blade", 1), ("handle", -3), ("shaft", -4))}
             if name in frame["raw_reference"]:
                 raw = frame["raw_reference"][name]
                 raw_valid = np.isfinite(raw) & (raw > 0) & (raw <= 20.)
