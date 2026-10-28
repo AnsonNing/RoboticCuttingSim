@@ -12,3 +12,4 @@ dist/
 *.npz
 *.npy
 *.so
+/NvStreamer-*.etli

@@ -60,6 +60,8 @@ class RemoteCuttingSession:
             self.viewport = ViewportCameraPreview(self.backend)
             self.last_view = self.viewport.select(self.loop.camera)
             self.reset_count += 1
+            if hasattr(self, "action_text"):
+                self.current_action(False)
             self.record_observation()
             self.event({"event": "task_reset", "task_id": task_id, "episode": str(episode),
                         "simulation_s": self.env.time_s, "same_application_pid": os.getpid()})
@@ -132,6 +134,7 @@ class RemoteCuttingSession:
                 with ui.HStack(height=30, spacing=6):
                     button("current_cartesian", "Current Cartesian", lambda: self.current_action(False))
                     button("current_joints", "Current joints", lambda: self.current_action(True))
+                    button("clear_action", "Clear", self.clear_action)
                 with ui.HStack(height=24):
                     self.cut_enabled = ui.CheckBox(width=24)
                     ui.Label("Enable cutting for explicit action", height=24)
@@ -154,6 +157,12 @@ class RemoteCuttingSession:
         self.request("action", mode="joint_position_rad" if mode else "cartesian_edge_pose_world",
                      target=self.action_text.model.get_value_as_string(),
                      cut_enabled=self.cut_enabled.model.get_value_as_bool())
+
+    def clear_action(self):
+        # A visible GUI operation also works when a browser/SDK consumes the
+        # remote text field's Ctrl+A or Home/End selection shortcuts.
+        self.action_text.model.set_value("")
+        self.event({"event": "action_field_cleared", "source": "omni_ui"})
 
     def physics_clock(self):
         manager = self.backend.SimulationManager
@@ -201,6 +210,9 @@ class RemoteCuttingSession:
             "robot_q": actual["q"], "actual_tool_pose_world_xyzw": actual["tool_pose"],
             "rgbd_timestamps_s": {name: values.get("physics_timestamp_s", values.get("timestamp_s")) for name, values in self.env._frames.items()},
             "camera_ids": list(self.env._frames), "viewport": self.last_view,
+            "action_input": {"mode": self.action_mode.model.get_item_value_model().get_value_as_int(),
+                "json_text": self.action_text.model.get_value_as_string(),
+                "cut_enabled": self.cut_enabled.model.get_value_as_bool()},
             "ui_regions": rectangles, "ui_region_coordinates": "Kit framebuffer pixels, top-left origin",
             "manual_physics": self.manual_physics, "same_live_simulation": True,
             "policy_force_oracle": False, "wall_time_s": time.time()}

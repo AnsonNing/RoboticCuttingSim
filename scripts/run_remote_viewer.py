@@ -97,6 +97,11 @@ def main():
             "standalone_or_replay_fallback": False})
         raise
     finally:
+        if ready and session:
+            existing = json.loads((output/"status.json").read_text())
+            if existing.get("phase") == "READY":
+                write_json(output/"status.json", {"phase": "CLOSED", "pid": os.getpid(),
+                    "viewer_url": viewer_url, "last_state": session.loop.snapshot()})
         if session:
             try:
                 session.close()
