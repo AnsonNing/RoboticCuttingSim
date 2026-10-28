@@ -13,7 +13,8 @@ remain preserved.
 
 WP-10 adds opt-in ruler-knife tasks and bounded control for policies, Gym/RL
 and agents. CPU regression currently passes **461 tests**; both real Isaac
-runtimes have completed the ruler startup smokes. Full task, angle and learned
+runtimes pass the 1,200-step interface fuzz, legacy regression and Gym checks,
+with physical-grasp holding limits reported separately. Full task, angle and learned
 controller validation is in progress. See [the plan](docs/WP10_SPECIFICATION.md),
 [control interface](docs/POLICY_CONTROL.md), [WP-10B](docs/reports/WP-10B.md)
 and [WP-10C](docs/reports/WP-10C.md).

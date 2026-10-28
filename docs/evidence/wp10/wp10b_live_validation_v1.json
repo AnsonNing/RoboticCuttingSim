@@ -1,0 +1,1107 @@
+{
+  "status": "PASS_INTERFACE_WITH_PHYSICAL_GRASP_LIMITATIONS",
+  "seed": [
+    42,
+    43,
+    44
+  ],
+  "source_commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+  "rows": [
+    {
+      "runtime": "isaac_sim",
+      "case": "interface_fuzz",
+      "artifact": "artifacts/wp10/b_native_interface_fuzz_006",
+      "result_sha256": "77316ff4bf81421bb9feeeb6a8cc97acbbda6776727a24586ef7c267ffb51387",
+      "status": "PASS_EXECUTION",
+      "steps": 1200,
+      "wall_s": 126.63397964788601,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 40,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0005885567645106937,
+            "p95": 0.012683121369767738,
+            "max": 0.025006588686124518
+          },
+          "rotation_error_rad": {
+            "p50": 0.0016934729569794567,
+            "p95": 0.05714248925573959,
+            "max": 0.125605951123392
+          },
+          "wall_s": 41.13431949308142
+        },
+        {
+          "seed": 43,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 41,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0006872245683597576,
+            "p95": 0.014712688632472817,
+            "max": 0.0227644362705407
+          },
+          "rotation_error_rad": {
+            "p50": 0.001850899696540321,
+            "p95": 0.05521893415094784,
+            "max": 0.10289089685652275
+          },
+          "wall_s": 42.03336978005245
+        },
+        {
+          "seed": 44,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 40,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0005062012343275156,
+            "p95": 0.01730609483491412,
+            "max": 0.024580030566190337
+          },
+          "rotation_error_rad": {
+            "p50": 0.0015341687634459736,
+            "p95": 0.05922616087690651,
+            "max": 0.09220151830840048
+          },
+          "wall_s": 38.09432718111202
+        }
+      ],
+      "scope": "explicit fixed tool, 4mm; isolates action interface; not physical-grasp evidence",
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "6d7a3ac0e088f4cc0b7b82070672b428ed4239088c71cd2cda7e40b8ebf7dc0c",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--preset",
+        "policy",
+        "--tool-attachment-mode",
+        "legacy_fixed_tool",
+        "--controller",
+        "fuzz",
+        "--fuzz-pattern",
+        "balanced",
+        "--observation",
+        "state",
+        "--steps",
+        "400",
+        "--episodes",
+        "3",
+        "--spacing",
+        ".004",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_interface_fuzz_006"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_interface_fuzz_record_006/source",
+      "source_patch_sha256": "934842a575d5ab447a0fe70a176e957a15326f35318110951286d9fd54e7cb13"
+    },
+    {
+      "runtime": "isaac_sim",
+      "case": "fuzz",
+      "artifact": "artifacts/wp10/b_native_fuzz_005",
+      "result_sha256": "286a7f633fecdf51aaa420395035a8a9b668bff4f7703972c29659b2eca54674",
+      "status": "PASS_EXECUTION",
+      "steps": 1200,
+      "wall_s": 848.7336240049917,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 40,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0008474799036172654,
+            "p95": 0.01314212437695068,
+            "max": 0.02558997313801429
+          },
+          "rotation_error_rad": {
+            "p50": 0.0021509168673172693,
+            "p95": 0.05770035249588988,
+            "max": 0.12651000389889094
+          },
+          "wall_s": 277.9753962010145
+        },
+        {
+          "seed": 43,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 41,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0009091942423821288,
+            "p95": 0.015019238287366966,
+            "max": 0.024046325580732712
+          },
+          "rotation_error_rad": {
+            "p50": 0.0023056586080120985,
+            "p95": 0.05645055622564064,
+            "max": 0.10648953575101207
+          },
+          "wall_s": 279.49116703891195
+        },
+        {
+          "seed": 44,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 40,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0007407191048065549,
+            "p95": 0.017453146665828378,
+            "max": 0.025169364360548944
+          },
+          "rotation_error_rad": {
+            "p50": 0.001949092554003874,
+            "p95": 0.060052807125943054,
+            "max": 0.0932949928643499
+          },
+          "wall_s": 257.1466475930065
+        }
+      ],
+      "physical_holding_status": "PASS_1200_STEPS",
+      "scope": "physical grasp stress, normal loss termination retained",
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "27a670ba850e21e1f4191e063eb77f64a91b4e1d708bbfd5d2ca26535cd30f91",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "policy",
+        "--controller",
+        "fuzz",
+        "--observation",
+        "state",
+        "--episodes",
+        "3",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_fuzz_005",
+        "--fuzz-pattern",
+        "balanced"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_batch_005/fuzz/source",
+      "source_patch_sha256": "340f761b1ecd517f77a5365fd61280209b7a7eaf09a1fa1548081ec1cff59cd7"
+    },
+    {
+      "runtime": "isaac_sim",
+      "case": "reject_probe",
+      "artifact": "artifacts/wp10/b_native_reject_probe_005",
+      "result_sha256": "2013ec76d77397a0d67b62b0b4cc74db7e82a3fca25e51d04ca767b68815e2d4",
+      "status": "PASS_EXECUTION",
+      "steps": 2,
+      "wall_s": 15.336473183939233,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 2,
+          "task_status": "NOT_RUN",
+          "events": {
+            "rejected": 2,
+            "clamped": 0,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.00033062752560542095,
+            "p95": 0.00036907578292136284,
+            "max": 0.00037334781151202305
+          },
+          "rotation_error_rad": {
+            "p50": 0.0002328660812897811,
+            "p95": 0.000300893372588313,
+            "max": 0.0003084519605103721
+          },
+          "wall_s": 10.500353001058102
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "6e7c7b2f8404c6288fef83ccf3e3aeb038553415c109e68bb24eade4947a2466",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--preset",
+        "policy",
+        "--controller",
+        "reject_probe",
+        "--steps",
+        "2",
+        "--spacing",
+        ".004",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_reject_probe_005"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_batch_005/reject_probe/source",
+      "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5"
+    },
+    {
+      "runtime": "isaac_sim",
+      "case": "legacy_cut",
+      "artifact": "artifacts/wp10/b_native_legacy_cut_005",
+      "result_sha256": "55d3114e38a5237850444a7a5ef82e4009560f755a647e3676dafbafabaeeaf1",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 272.0601391841192,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "PASS_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 5.551115288561903e-17
+          },
+          "rotation_error_rad": {
+            "p50": 2.220446049343714e-16,
+            "p95": 4.440892098537204e-16,
+            "max": 6.661338147795789e-16
+          },
+          "wall_s": 258.4878823070321
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "d65fc4b9c68ba35d314232f1fbf27ca12087401e41d25833cf49d93e9e357fa1",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "legacy",
+        "--controller",
+        "reference",
+        "--observation",
+        "state",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_legacy_cut_005"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_batch_005/legacy_cut/source",
+      "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5"
+    },
+    {
+      "runtime": "isaac_sim",
+      "case": "legacy_trim",
+      "artifact": "artifacts/wp10/b_native_legacy_trim_005",
+      "result_sha256": "c364136922a93179cb29a637e58889b82bc7a166248c3b5880bdb28fbd3785b6",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 354.60684505314566,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 2.77555756673277e-17
+          },
+          "rotation_error_rad": {
+            "p50": 0.0,
+            "p95": 1.3658078529721446e-20,
+            "max": 4.40405004383099e-19
+          },
+          "wall_s": 340.68382095498964
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "33b550c2efdff07dd7ce646e184c9c1bbfa8e1cd1ab335c9b07f58ed2bb92186",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "TRIM-01",
+        "--preset",
+        "legacy",
+        "--controller",
+        "reference",
+        "--observation",
+        "state",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_legacy_trim_005"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_batch_005/legacy_trim/source",
+      "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5"
+    },
+    {
+      "runtime": "isaac_sim",
+      "case": "gym_state",
+      "artifact": "artifacts/wp10/b_native_gym_state_005",
+      "result_sha256": "520d5ab3339ecace29c111e6723c2aeb6c228e1a1de62363b5e4b0a2eff69036",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 269.3780973639805,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.00042562286987015026,
+            "p95": 0.0004258234841163415,
+            "max": 0.0004511901495025952
+          },
+          "rotation_error_rad": {
+            "p50": 0.0004043693516741722,
+            "p95": 0.0004064142933628979,
+            "max": 0.00045068018838806753
+          },
+          "wall_s": 254.78454220900312
+        }
+      ],
+      "implementation_commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+      "manifest_sha256": "c2cceed5a64bf093d745c88df9158b365fd500ee501f895c9752ed2ead04f7a1",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "policy",
+        "--controller",
+        "gym_hold",
+        "--observation",
+        "state",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_gym_state_005",
+        "--gym"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_batch_005/gym_state/source",
+      "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790"
+    },
+    {
+      "runtime": "isaac_sim",
+      "case": "gym_vision",
+      "artifact": "artifacts/wp10/b_native_gym_vision_005",
+      "result_sha256": "53b8b64da91addc2598d2cda4c1c4a4468d71444c794715d36c1c85c7b0bd2fb",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 413.48920621699654,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.00035339751663386495,
+            "p95": 0.0003537989294124515,
+            "max": 0.00037960492603758995
+          },
+          "rotation_error_rad": {
+            "p50": 0.0004051885263487052,
+            "p95": 0.000407277212191085,
+            "max": 0.0004537951718381458
+          },
+          "wall_s": 399.17822105786763
+        }
+      ],
+      "implementation_commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+      "manifest_sha256": "75287c67d526f12f38c29713319632968c883da5cad0954d2ed5931de5700118",
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "policy",
+        "--controller",
+        "gym_hold",
+        "--observation",
+        "vision_proprio",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_native_gym_vision_005",
+        "--gym"
+      ],
+      "source_snapshot": "artifacts/wp10/b_native_batch_005/gym_vision/source",
+      "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "interface_fuzz",
+      "artifact": "artifacts/wp10/b_lab_interface_fuzz_006",
+      "result_sha256": "3dcf522af191293fd4def9a1eb5862556c7184002500e8b11979bae078ef3870",
+      "status": "PASS_EXECUTION",
+      "steps": 1200,
+      "wall_s": 282.7337701159995,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 40,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.003994506867607251,
+            "p95": 0.08513697092694396,
+            "max": 0.12064533614171277
+          },
+          "rotation_error_rad": {
+            "p50": 0.023960855071785938,
+            "p95": 0.25534625591511995,
+            "max": 0.3425966440659179
+          },
+          "wall_s": 93.27798622497357
+        },
+        {
+          "seed": 43,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 41,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.005704778851985273,
+            "p95": 0.08218347988999199,
+            "max": 0.10780584170499878
+          },
+          "rotation_error_rad": {
+            "p50": 0.026810900485374545,
+            "p95": 0.26403918482879857,
+            "max": 0.3264569131396969
+          },
+          "wall_s": 91.28444277402014
+        },
+        {
+          "seed": 44,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 40,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.00781228356986472,
+            "p95": 0.09750439102325695,
+            "max": 0.126749950042885
+          },
+          "rotation_error_rad": {
+            "p50": 0.03308476802449445,
+            "p95": 0.28560513003976706,
+            "max": 0.36108036676545824
+          },
+          "wall_s": 91.83854648983106
+        }
+      ],
+      "scope": "explicit fixed tool, 4mm; isolates action interface; not physical-grasp evidence",
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "93f00804a82ff2d0bb362d4060538d5678bfca00ad16de3fb1f8e7bbc91b6c59",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--preset",
+        "policy",
+        "--tool-attachment-mode",
+        "legacy_fixed_tool",
+        "--controller",
+        "fuzz",
+        "--fuzz-pattern",
+        "balanced",
+        "--observation",
+        "state",
+        "--steps",
+        "400",
+        "--episodes",
+        "3",
+        "--spacing",
+        ".004",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_interface_fuzz_006"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_interface_fuzz_record_006/source",
+      "source_patch_sha256": "934842a575d5ab447a0fe70a176e957a15326f35318110951286d9fd54e7cb13"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "fuzz",
+      "artifact": "artifacts/wp10/b_lab_fuzz_005",
+      "result_sha256": "ed9ca6f18771db7913ecf3deb191de3c7a753dd379fa4b7c6f8dd60af83f1888",
+      "status": "PASS_EXECUTION",
+      "steps": 209,
+      "wall_s": 183.3426286999602,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 99,
+          "task_status": "NOT_RUN",
+          "events": {
+            "rejected": 0,
+            "clamped": 10,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.018601808007805583,
+            "p95": 0.09771840738957095,
+            "max": 0.12004124580702816
+          },
+          "rotation_error_rad": {
+            "p50": 0.10239877435019253,
+            "p95": 0.40364230562070647,
+            "max": 0.6349006276608549
+          },
+          "wall_s": 73.64882453903556
+        },
+        {
+          "seed": 43,
+          "steps": 102,
+          "task_status": "NOT_RUN",
+          "events": {
+            "rejected": 0,
+            "clamped": 12,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.019293697345591006,
+            "p95": 0.06940358251572358,
+            "max": 0.08306249803294304
+          },
+          "rotation_error_rad": {
+            "p50": 0.3310897546576871,
+            "p95": 0.4958910218318754,
+            "max": 0.5167318396743901
+          },
+          "wall_s": 81.01375199086033
+        },
+        {
+          "seed": 44,
+          "steps": 8,
+          "task_status": "NOT_RUN",
+          "events": {
+            "rejected": 0,
+            "clamped": 8,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.022918991876303658,
+            "p95": 0.03025636980170253,
+            "max": 0.03134577249589648
+          },
+          "rotation_error_rad": {
+            "p50": 0.12288945599699506,
+            "p95": 0.3906067920560631,
+            "max": 0.4190850833165672
+          },
+          "wall_s": 17.589791279984638
+        }
+      ],
+      "physical_holding_status": "FAIL_GRASP_LOSS",
+      "scope": "physical grasp stress, normal loss termination retained",
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "159103f518ee7d785f3dcc3337a14d2dbbd8c9979b164b27b75fd5c4cbf277f9",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "policy",
+        "--controller",
+        "fuzz",
+        "--observation",
+        "state",
+        "--episodes",
+        "3",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_fuzz_005",
+        "--fuzz-pattern",
+        "balanced"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_batch_005/fuzz/source",
+      "source_patch_sha256": "340f761b1ecd517f77a5365fd61280209b7a7eaf09a1fa1548081ec1cff59cd7"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "reject_probe",
+      "artifact": "artifacts/wp10/b_lab_reject_probe_005",
+      "result_sha256": "41e73c0be22ec5e9fc33a4be59d50cd2a2df14d3ded1548dee8c0df4f8d6d558",
+      "status": "PASS_EXECUTION",
+      "steps": 2,
+      "wall_s": 20.26233863295056,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 2,
+          "task_status": "NOT_RUN",
+          "events": {
+            "rejected": 2,
+            "clamped": 0,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.00035857509938630716,
+            "p95": 0.0004071986138710485,
+            "max": 0.0004126012265915753
+          },
+          "rotation_error_rad": {
+            "p50": 0.000889348127408136,
+            "p95": 0.0009880610629867785,
+            "max": 0.000999029166939961
+          },
+          "wall_s": 14.518179698847234
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "3b75f0c8d60ac54b58634a3beb9331b6cb8932928421191e54c0ce63cf9170c6",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--preset",
+        "policy",
+        "--controller",
+        "reject_probe",
+        "--steps",
+        "2",
+        "--spacing",
+        ".004",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_reject_probe_005"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_batch_005/reject_probe/source",
+      "source_patch_sha256": "934842a575d5ab447a0fe70a176e957a15326f35318110951286d9fd54e7cb13"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "legacy_cut",
+      "artifact": "artifacts/wp10/b_lab_legacy_cut_005",
+      "result_sha256": "ec8602f2ee5621c7c694b7701061965a6e5535a1ac3b2b0c6c30132783d4198a",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 387.3935038340278,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "PASS_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0,
+            "p95": 8.32667268479638e-17,
+            "max": 1.1102278222623432e-16
+          },
+          "rotation_error_rad": {
+            "p50": 1.1102233224101406e-16,
+            "p95": 4.440892098500823e-16,
+            "max": 6.661338151197525e-16
+          },
+          "wall_s": 372.16130996402353
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "0a31195c56ae0c10393c4d6d475b1faff6819bf9c7f0bce27804e63614bdbc3f",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "legacy",
+        "--controller",
+        "reference",
+        "--observation",
+        "state",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_legacy_cut_005"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_batch_005/legacy_cut/source",
+      "source_patch_sha256": "934842a575d5ab447a0fe70a176e957a15326f35318110951286d9fd54e7cb13"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "legacy_trim",
+      "artifact": "artifacts/wp10/b_lab_legacy_trim_005",
+      "result_sha256": "07ad960a7d62b124a15284194350e1b26f9d2ccca7eea949fce09f498992a933",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 354.5093132329639,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0,
+            "p95": 8.326672684719639e-17,
+            "max": 8.326674449340461e-17
+          },
+          "rotation_error_rad": {
+            "p50": 0.0,
+            "p95": 1.397032725479074e-20,
+            "max": 4.40405004383099e-19
+          },
+          "wall_s": 340.2169940741733
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "94c17366ff393f52be35ee848539899d4a02a21c81455787e0b372eb3f835b93",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "TRIM-01",
+        "--preset",
+        "legacy",
+        "--controller",
+        "reference",
+        "--observation",
+        "state",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_legacy_trim_005"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_batch_005/legacy_trim/source",
+      "source_patch_sha256": "212778daf30dfabc8c034456a2ea14830393ea8ddaaaa1808a91751e5e451360"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "gym_state",
+      "artifact": "artifacts/wp10/b_lab_gym_state_005",
+      "result_sha256": "72385fd9b32bc2844e3eae75e70550e53e12d1270de100a5825d48fee23cf015",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 275.6426524221897,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0007084895960847566,
+            "p95": 0.0009361189657553866,
+            "max": 0.0009614776414852397
+          },
+          "rotation_error_rad": {
+            "p50": 0.002148111007802679,
+            "p95": 0.0030564096038691495,
+            "max": 0.003155524786287102
+          },
+          "wall_s": 260.37726982194
+        }
+      ],
+      "implementation_commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+      "manifest_sha256": "2c120b3708c96cd81c7464db4380d9cbf7786b4bf5e892c632cb7fd400c15b5f",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "policy",
+        "--controller",
+        "gym_hold",
+        "--observation",
+        "state",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_gym_state_005",
+        "--gym"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_batch_005/gym_state/source",
+      "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5"
+    },
+    {
+      "runtime": "isaac_lab",
+      "case": "gym_vision",
+      "artifact": "artifacts/wp10/b_lab_gym_vision_005",
+      "result_sha256": "6b7e92167af2e5ebc7233280667940a0eea478c0285ada31bafbba56682e2341",
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "wall_s": 463.5089835820254,
+      "episodes": [
+        {
+          "seed": 42,
+          "steps": 400,
+          "task_status": "FAIL_TASK_METRICS",
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 0
+          },
+          "cut_index_check": {
+            "status": "PASS",
+            "error": "Explicit cut index exceeds retained material history"
+          },
+          "tracking_error_m": {
+            "p50": 0.0007225749680761552,
+            "p95": 0.0009635108098363957,
+            "max": 0.0009903235412396583
+          },
+          "rotation_error_rad": {
+            "p50": 0.002186470512361018,
+            "p95": 0.0031261808246671424,
+            "max": 0.003227738648129366
+          },
+          "wall_s": 447.67715318198316
+        }
+      ],
+      "implementation_commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+      "manifest_sha256": "630301adc378e46416a8b651c5840a8c89de664c7324e38d0ac56f088dac344a",
+      "command": [
+        ".deps/isaaclab-venv/bin/python",
+        "scripts/run_wp10_live.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "CUT-01",
+        "--preset",
+        "policy",
+        "--controller",
+        "gym_hold",
+        "--observation",
+        "vision_proprio",
+        "--episodes",
+        "1",
+        "--gpu",
+        "1",
+        "--out",
+        "artifacts/wp10/b_lab_gym_vision_005",
+        "--gym"
+      ],
+      "source_snapshot": "artifacts/wp10/b_lab_batch_005/gym_vision/source",
+      "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "paired_interface": {
+    "compared_steps": 1200,
+    "same_requests": 1200,
+    "same_ik_status": 1200,
+    "max_applied_translation_m": 0.002000000000000004,
+    "max_applied_rotation_rad": 0.0349065850398866,
+    "cutting_task_claim": false
+  },
+  "cpu": {
+    "baseline": "artifacts/wp10/baseline_cpu_001",
+    "baseline_passed": 454,
+    "baseline_skipped": 2,
+    "baseline_wall_s": 89.39,
+    "full": "artifacts/wp10/cpu_full_002",
+    "full_passed": 461,
+    "full_skipped": 0,
+    "full_wall_s": 92.45
+  },
+  "frozen_source_sha256": {
+    "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe"
+  },
+  "preserved_failures": [
+    "artifacts/wp10/b_native_api_smoke_001",
+    "artifacts/wp10/b_lab_api_smoke_001",
+    "artifacts/wp10/kinematic_validation_gpu_coarse_003.json"
+  ],
+  "preserved_aborted_pilots": [
+    "artifacts/wp10/b_native_batch_003",
+    "artifacts/wp10/b_lab_batch_003",
+    "artifacts/wp10/b_native_batch_004",
+    "artifacts/wp10/b_lab_batch_004"
+  ]
+}

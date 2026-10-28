@@ -1,12 +1,21 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## In progress: WP-10B live policy validation
+## Completed validation: WP-10B live policy interface
 
-Server baseline CPU: 454 PASS / 2 SKIP in 89.39 s. GPU 1 is available and used
-without changing existing processes. Actual Native/Lab interface smokes are
-underway, with pre-step cut-digit validation, full command recording and the
-opt-in policy CLI preset. Initial failures are preserved. See
-[WP-10B](reports/WP-10B.md). WP-10C–G remain NOT_RUN at this checkpoint.
+Both actual runtimes complete 1,200 identical fixed-tool control-fuzz steps,
+with identical IK statuses and bounded deltas, legacy CUT PASS / default TRIM
+FAIL regression, explicit IK rejection/hold, cut-digit checks, and complete Gym
+state/vision episodes. Separate physical-grasp stress succeeds for 1,200 Native
+steps but loses the tool in Lab (209 total steps); this holding limitation is
+preserved. Full CPU regression is 461 PASS / 0 SKIP in 92.45 s.
+[WP-10B](reports/WP-10B.md).
+
+WP-10C live ruler validation is running. Native CUT-01-R strict PASS; the first
+Lab CUT-01-R has bottom-layer bridges and strict FAIL. Initial Native TRIM-01-R
+has unreachable low-rake targets and strict FAIL. Both runtimes pass the frozen
+seven-case ruler rigid-grasp controls and the complete 401-pose CUT camera/tool
+visual-clearance audit. Original attempts are retained while these control/path
+limits are diagnosed. [WP-10C](reports/WP-10C.md).
 
 ## Current: WP-10 ruler knife, general knife motions and policy control (parts A/B, CPU only)
 
