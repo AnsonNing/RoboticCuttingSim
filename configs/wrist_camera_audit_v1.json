@@ -3,6 +3,14 @@
   "freeze_boundary": "Defined before reading the new final wrist-layout episode outputs; no result-based adjustment under this version.",
   "scope": "Recorded measured transforms, programmable RGB-D usability, current physical component visibility and conservative visual OBB bounds. Not physical D405 calibration, native contact acceptance or full simulation promotion.",
   "camera_ids": ["wrist_d405_0", "wrist_d405_1", "global_d455"],
+  "optics": {
+    "scope": "Effective runtime K and actual frame dimensions; authored lens metadata alone cannot pass. D405 optical criteria added after a preserved640x480 pilot revealed ignored vertical aperture, before final full episodes.",
+    "wrist_nominal_horizontal_fov_deg": 87.0,
+    "wrist_nominal_vertical_fov_deg": 58.0,
+    "wrist_fov_tolerance_deg": 2.0,
+    "working_range_endpoint_tolerance_m": 0.000001,
+    "resolution": "Use recorded per-camera dimensions; no shared640-pixel assumption. Native D455 Global optics are measured/reported separately."
+  },
   "transforms": {
     "maximum_hand_camera_translation_error_m": 0.00001,
     "maximum_hand_camera_rotation_error_rad": 0.0001,
