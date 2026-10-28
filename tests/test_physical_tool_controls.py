@@ -1,0 +1,98 @@
+"""Analytic negative controls for control classification; no simulator claims."""
+from copy import deepcopy
+import json
+from pathlib import Path
+import sys
+
+import numpy as np
+
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"scripts"))
+from run_physical_tool_controls import (
+    classify_case, compare_cases, measure_case, smooth_joint_targets, summarize_matrix,
+)
+
+PROTOCOL=json.loads((ROOT/"configs/physical_tool_controls_v1.json").read_text())
+
+
+def analytic_trace(duration=2., release=False, hand_moves=False):
+    times=np.arange(1,round(duration/.002)+1)*.002
+    initial={"hand_pose":[0.,0.,.3,0.,0.,0.,1.],"tool_body_pose_xyzw":[0.,0.,.25,0.,0.,0.,1.],"q":np.zeros((2,7))}
+    samples=[]
+    for t in times:
+        hand=np.array(initial["hand_pose"]);tool=np.array(initial["tool_body_pose_xyzw"])
+        if hand_moves:hand[0]=t;tool[0]=t
+        if release:tool[2]-=.5*9.81*t*t
+        samples.append(dict(time_s=t,hand=hand,tool=tool,linear=[0,0,-9.81*t if release else 0],angular=[0,0,0],
+            left_load_n=0. if release else 10.,right_load_n=0. if release else 10.,valid=True,unexpected=0,
+            contact_count=0 if release else 4,penetration_m=0.,contact_force=[0.,0.,.3]))
+    control=[{"phase":"perturbation","state":{"q":np.zeros((2,7))}} for _ in range(round(duration/.02))]
+    return samples,control,initial,{"com_tool_m":[0.,0.,0.]}
+
+
+def test_quintic_targets_respect_speed_and_step_bounds_at_large_joint_motion():
+    start=np.zeros(7);target=np.array([2.,-.8,.4,-1.,.2,.6,-.1])
+    trajectory=smooth_joint_targets(start,target,PROTOCOL["transfer"],.02)
+    np.testing.assert_allclose(trajectory[-1],target)
+    delta=np.diff(np.vstack([start,trajectory]),axis=0)
+    assert np.max(np.abs(delta)) <= .005+1e-10
+    assert np.max(np.abs(delta))/.02 <= .25+1e-10
+    assert len(trajectory)*.02 >= 1.875*2/.25
+    assert np.max(np.abs(delta[0])) < .00001 and np.max(np.abs(delta[-1])) < .00001
+
+
+def test_arm_motion_cannot_masquerade_as_independent_release():
+    samples,control,initial,spec=analytic_trace(.5,hand_moves=True)
+    m=measure_case(samples,control,initial,spec,PROTOCOL,.5)
+    assert m["max_relative_translation_m"] == 0.
+    assert classify_case("release",m,PROTOCOL)["status"]=="FAIL_CASE_ENGINEERING_SCREENS"
+
+
+def test_unsupported_parabolic_com_motion_passes_release_but_not_stable_hold():
+    samples,control,initial,spec=analytic_trace(.5,release=True)
+    m=measure_case(samples,control,initial,spec,PROTOCOL,.5)
+    assert abs(m["freeflight_vertical_acceleration_m_s2"]+9.81)<1e-10
+    assert classify_case("release",m,PROTOCOL)["status"]=="PASS_CASE_ENGINEERING_SCREENS"
+    assert classify_case("baseline_hold",m,PROTOCOL)["status"]=="FAIL_CASE_ENGINEERING_SCREENS"
+
+
+def test_missing_substeps_or_invalid_sensor_cannot_pass_stable_grasp():
+    samples,control,initial,spec=analytic_trace()
+    good=measure_case(samples,control,initial,spec,PROTOCOL,2.)
+    assert classify_case("baseline_hold",good,PROTOCOL)["status"]=="PASS_CASE_ENGINEERING_SCREENS"
+    missing=measure_case(samples[::10],control,initial,spec,PROTOCOL,2.)
+    assert classify_case("baseline_hold",missing,PROTOCOL)["status"]=="FAIL_CASE_ENGINEERING_SCREENS"
+    samples[0]["valid"]=False
+    invalid=measure_case(samples,control,initial,spec,PROTOCOL,2.)
+    assert not classify_case("baseline_hold",invalid,PROTOCOL)["checks"]["all_contact_samples_valid"]
+
+
+def test_weak_response_requires_same_load_source_and_matched_actual_start():
+    initial=analytic_trace()[2]
+    strong={"runtime":"isaac_sim","initial_state":initial,"source_sha256":{"solver":"a"},
+        "case_config":{"edge_wrench_world":[0,0,-1,0,0,0]},
+        "metrics":{"max_relative_translation_m":.0001,"max_relative_rotation_rad":.001}}
+    weak=deepcopy(strong);weak["metrics"]["max_relative_translation_m"] = .03
+    assert compare_cases(strong,weak,PROTOCOL)["larger_weak_response"]
+    weak["initial_state"]["tool_body_pose_xyzw"][0] += .02
+    assert not compare_cases(strong,weak,PROTOCOL)["matched"]
+    weak=deepcopy(strong);weak["metrics"]["max_relative_translation_m"] = .03
+    weak["source_sha256"]["solver"]="different"
+    assert not compare_cases(strong,weak,PROTOCOL)["larger_weak_response"]
+    weak=deepcopy(strong);weak["metrics"]["max_relative_translation_m"] = .03
+    weak["case_config"]["edge_wrench_world"][2]=-10
+    assert not compare_cases(strong,weak,PROTOCOL)["matched"]
+
+
+def test_stress_can_hold_without_being_falsely_required_to_drop():
+    samples,control,initial,spec=analytic_trace()
+    m=measure_case(samples,control,initial,spec,PROTOCOL,2.)
+    assert classify_case("stress_load",m,PROTOCOL)["status"]=="PASS_CASE_ENGINEERING_SCREENS"
+    assert not classify_case("stress_load",m,PROTOCOL)["full_physics_acceptance"]
+
+
+def test_exit_zero_or_empty_matrix_does_not_prove_control_execution(tmp_path):
+    result=summarize_matrix({"cases":{"isaac_sim/baseline_hold":{"directory":"missing","runtime":"isaac_sim","returncode":0}}},tmp_path,PROTOCOL)
+    assert result["status"]=="FAIL_OR_INCOMPLETE_RIGID_CONTROLS"
+    assert not result["all_requested_cases_executed"]
+    assert not result["full_physics_acceptance"]
