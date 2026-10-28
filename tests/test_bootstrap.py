@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"scripts"))
-from bootstrap_runtime import expected_pins, main, probe_environment
+from bootstrap_runtime import expected_pins, main, probe_environment, select_python
 from fetch_runtime_assets import fetch_assets
 
 
@@ -22,6 +22,15 @@ def test_runtime_locks_keep_usd_providers_separate():
         assert pins["torch"] == "2.11.0+cu128"
         assert pins["warp-lang"] == "1.17.0" and pins["newton"] == "1.6.1"
     assert "torchaudio" in sim and "torchaudio" not in lab
+
+
+def test_explicit_python_command_resolves_path_before_creating_environment(tmp_path, monkeypatch):
+    alias = tmp_path/"python3.12"
+    alias.symlink_to(sys.executable)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    selected = select_python("python3.12", None, {}, False, tmp_path/"unused.log")
+    assert selected == str(alias)
+    assert Path(selected).is_file()
 
 
 def test_dry_run_relocates_with_checkout_and_writes_nothing(tmp_path):

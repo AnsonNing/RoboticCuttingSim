@@ -118,10 +118,12 @@ def select_python(requested, uv, environment, managed, log):
     for candidate in candidates:
         if not candidate:
             continue
+        candidate = os.path.expanduser(str(candidate))
+        candidate = shutil.which(candidate) or str(Path(candidate).absolute())
         try:
             version = subprocess.check_output([str(candidate), "-c", "import sys; print('%d.%d'%sys.version_info[:2])"], text=True).strip()
             if version == "3.12":
-                return str(Path(candidate).absolute())
+                return str(candidate)
         except (OSError, subprocess.CalledProcessError):
             pass
     if requested:
