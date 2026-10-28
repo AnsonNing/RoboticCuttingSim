@@ -843,7 +843,8 @@ class LiveIsaacSimCutting:
                 desired=validate_native_action(action,"cartesian")
             targets, ik_info = self.ik.inverse_kinematics(desired)
             if not ik_info["converged"]:
-                raise RuntimeError(f"IK failed before native articulation step: {ik_info}")
+                from .control import IKFailure
+                raise IKFailure(f"IK failed before native articulation step: {ik_info}", ik_info)
         else:
             target=validate_native_action(action,"joint")
             if self.task and target.ndim==2 and not np.allclose(target[1],self.park_q[1,:7],atol=1e-6,rtol=0):

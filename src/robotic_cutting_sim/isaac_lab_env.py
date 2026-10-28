@@ -132,6 +132,9 @@ class LabCuttingConfig:
     grasp: ToolGraspConfig = field(default_factory=ToolGraspConfig)
     grip_contact_profile: str = POINT_PROFILE
     static_scene: str = str(ROOT/"artifacts/research_handoff_001/workcell/workcell.usda")
+    # None keeps the historical position-only Lab IK gate; policy use sets
+    # the Native rotation gate (0.01 rad) so orientation errors are not silent.
+    ik_rotation_tolerance_rad: float | None = None
 
     def __post_init__(self):
         if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
@@ -404,8 +407,13 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         newton.eval_fk(self.model, self._ik_state.joint_q, self.model.joint_qd, self._ik_state)
         edge = compose_tool_pose(self._ik_state.body_q.numpy()[self.hand], self.mount[:3], self.mount[3:])
         error = float(np.linalg.norm(edge[:3]-desired[:3]))
-        if error > .001:
-            raise RuntimeError(f"Active Lab model IK position error {error}m")
+        rotation_error = float((Rotation.from_quat(edge[3:]).inv()*Rotation.from_quat(desired[3:])).magnitude())
+        self._ik_rotation_error = rotation_error
+        tolerance = self.options.ik_rotation_tolerance_rad
+        if error > .001 or (tolerance is not None and rotation_error > tolerance):
+            from .control import IKFailure
+            raise IKFailure(f"Active Lab model IK error {error}m, {rotation_error}rad",
+                            {"position_error_m": error, "rotation_error_rad": rotation_error, "converged": False})
         return q, error
 
     def measured(self):
