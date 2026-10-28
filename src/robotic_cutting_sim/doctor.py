@@ -1,5 +1,6 @@
 """Read-only audit; the official stack is assessed independently of standalone MPM."""
 import platform
+from pathlib import Path
 import shutil
 import sys
 
@@ -11,12 +12,12 @@ def run(output):
     commands = {"uname": ["uname", "-a"], "os": ["cat", "/etc/os-release"],
                 "cpu": ["lscpu"], "ram": ["free", "-b"],
                 "gpu": ["nvidia-smi", "--query-gpu=index,name,memory.total,memory.used,driver_version,compute_cap", "--format=csv,noheader,nounits"],
-                "nvidia_smi": ["nvidia-smi"], "nvcc": ["/usr/local/cuda-12.8/bin/nvcc", "--version"],
+                "nvidia_smi": ["nvidia-smi"], "nvcc": [shutil.which("nvcc") or "nvcc", "--version"],
                 "cmake": ["cmake", "--version"]}
     report = manifest({}, "audit")
     report["system"] = {name: command(args) for name, args in commands.items()}
     report["disk"] = {str(p): dict(zip(("total", "used", "free"), shutil.disk_usage(p)))
-                      for p in [ROOT, ROOT.parent, "/mnt/data"] if __import__("pathlib").Path(p).exists()}
+                      for p in {ROOT, ROOT.parent, Path.home()} if p.exists()}
     report["python_executable"] = sys.executable
     report["machine"] = platform.machine()
     report["source_shas"] = {name: command(["git", "rev-parse", "HEAD"], cwd=ROOT/".deps"/name)
