@@ -1,0 +1,886 @@
+{
+  "schema": "global_close_view_v1",
+  "scope": "Independent recorded-state close-target Global D455 validation. Two new full native CUT/TRIM episodes; two Lab startup/optics smokes. No new policy training, no replay labeled live, no promotion of complete camera/physics accuracy.",
+  "timestamp_utc": "2026-10-28T09:03:25.464967+00:00",
+  "profile": {
+    "path": "configs/wrist_camera_rig_v3.json",
+    "sha256": "a9641ac3517b676e813ba6ebffbdc942ee6914f925cec7a1635727c6e10a8b4e"
+  },
+  "global_mount": {
+    "eye_world_m": [
+      0.28,
+      -0.42,
+      0.46
+    ],
+    "target_world_m": [
+      0,
+      0,
+      0.02
+    ],
+    "eye_to_target_distance_m": 0.6696267617113283,
+    "role": "World-fixed close target view; complete table/robots may be cropped",
+    "native_resolution_wh": [
+      640,
+      480
+    ],
+    "public_optical_depth_range_m": [
+      0.6,
+      6.0
+    ],
+    "render_clipping_m": [
+      0.001,
+      20.0
+    ],
+    "virtual_zoom_or_sensor_roi_added": false,
+    "wrist_mounts_resolutions_intrinsics_ranges_changed": false
+  },
+  "measurement_definition": "Material/knife counts are actual valid depth pixels agreeing within unchanged2mm nativeGlobal tolerance with full measured-scene CPU first-hit attribution. They are engineering usability counts, not a native semantic AOV. Full error tails and invalid pixels remain in separate statistics.",
+  "unchanged_protocols": {
+    "configs/wrist_camera_audit_v1.json": "01023302145ca684e58f323f21d6152dd3df321c6ce941409d4421f96b5d75c6",
+    "configs/wrist_camera_clearance_audit_v1.json": "99a624e18b355dbfa63a88b31e33ccd2f7ed4008800d806e30de8dbd5e881ee1",
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b"
+  },
+  "analysis_source_stability": {
+    "camera": true,
+    "task": true,
+    "robot_clearance": true,
+    "lab_smoke_camera": true
+  },
+  "analysis_receipts": {
+    "camera": {
+      "path": "artifacts/global_close_camera_audit_001/result.json",
+      "sha256": "cddc5440bd468151d289e7017c4de4f7a7d7050bb582ca87f35fdc75188c6fb3"
+    },
+    "task": {
+      "path": "artifacts/global_close_task_audit_001/result.json",
+      "sha256": "ea9a61abbdfda3443a779bf05b3f364901168b95755570e4b6bec2d6ffeb56f1"
+    },
+    "clearance": {
+      "path": "artifacts/global_close_clearance_audit_001/result.json",
+      "sha256": "e06021bf0a5ee99a19fd628154447bc149ab21c7443c7027223dee977a375e15"
+    },
+    "Lab_smokes": {
+      "path": "artifacts/global_close_lab_smoke_camera_audit_001/result.json",
+      "sha256": "c7858d41a379883a03c8a2d1f19dbdc86f33948b5d9d34fed52a06f0dfb32a5e"
+    }
+  },
+  "cases": {
+    "isaacsim_global_close_cut01_001": {
+      "recording": {
+        "path": "artifacts/isaacsim_global_close_cut01_001/result.json",
+        "sha256": "7726121ffa1c8bdb776094503fc93e197bcc677f039cc9afe6e012db8ba4feb2"
+      },
+      "manifest": {
+        "path": "artifacts/isaacsim_global_close_cut01_001/manifest.json",
+        "sha256": "b2956c55740382066e5d722c3e0b8f2fbc83889463fc44a5314c5e1cfcb40d4e"
+      },
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 41,
+        "material_sampling_max_dt_s": 0.20000000000000018,
+        "wall_s": 259.0428512301296,
+        "runtime_backend": "LIVE_IsaacSim6.2_cutting"
+      },
+      "actual_native_physics_steps": 4000,
+      "actual_native_rgbd_frames": 41,
+      "replay_inputs": false,
+      "native_noise": "off",
+      "audits": {
+        "camera": {
+          "path": "artifacts/global_close_camera_audit_001/isaacsim_global_close_cut01_001/result.json",
+          "sha256": "0f305fa0bb1537f32195fe1f647ba5be2a9d96bbf4f21d056111a29c5a2aa712"
+        },
+        "task": {
+          "path": "artifacts/global_close_task_audit_001/isaacsim_global_close_cut01_001/result.json",
+          "sha256": "69075b99223a9a78fe79bf1483733aff3e9ef5ce04b204d9dc957009959caf19"
+        },
+        "sampled_robot_clearance": {
+          "path": "artifacts/global_close_clearance_audit_001/isaacsim_global_close_cut01_001/result.json",
+          "sha256": "1633426878ce8f299d84a9fc3d0b60913aa911faa26afeabe4c15e83e1cc2953"
+        }
+      },
+      "all_recorded_runtime_implementation_bytes_resolved": true,
+      "runtime_camera_implementation": {
+        "src/robotic_cutting_sim/isaac_sim_runner.py": "940a31e43c7318673b2e22974d6d686108edd9ae402e42596fbc4a50a5d3af27",
+        "scripts/run_isaac_sim_cutting.py": "10d5176e1d51eda57077a818248d11b9bdd4cbc9d5ec22ac406e7f89d7f65c31",
+        "src/robotic_cutting_sim/camera_rig.py": "0032076d29e744d9b09ae858d826ff8f015dfd6e6073aab0b729d8cc46cad1ef",
+        "configs/wrist_camera_rig_v3.json": "a9641ac3517b676e813ba6ebffbdc942ee6914f925cec7a1635727c6e10a8b4e"
+      },
+      "rig_kinematics": {
+        "status": "PASS",
+        "trace_samples": 401,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 1.9401465369682486e-08,
+            "current_usd_rotation_error_rad": 1.5760988049079088e-07,
+            "inverse_max_abs_identity_error": 2.5194648056574025e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 4.393959586019642e-09,
+            "current_usd_rotation_error_rad": 7.444854768202421e-08,
+            "inverse_max_abs_identity_error": 1.1102230246251565e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 2.220446049250313e-16
+          }
+        }
+      },
+      "camera_optics_and_visibility": {
+        "status": "PASS",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": true,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE",
+      "close_global": {
+        "frames": 41,
+        "resolution_wh": [
+          640,
+          480
+        ],
+        "runtime_K": [
+          [
+            317.04312011949685,
+            0.0,
+            320.0
+          ],
+          [
+            0.0,
+            317.04312011949685,
+            240.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "minimum_valid_depth_fraction": 0.27052734375,
+        "maximum_valid_depth_fraction": 0.2739127604166667,
+        "minimum_depth_consistent_material_pixels": 878,
+        "maximum_depth_consistent_material_pixels": 1139,
+        "minimum_depth_consistent_knife_pixels": 102,
+        "maximum_depth_consistent_knife_pixels": 153,
+        "minimum_whole_frame_valid_mask_iou_vs_geometry": 0.9669668621427907,
+        "maximum_frame_p95_absolute_error_m": 2.384185791015625e-07,
+        "maximum_absolute_depth_error_m": 0.21270453929901123,
+        "maximum_frame_rms_error_m": 0.0012383504336915818,
+        "sum_pixel_frame_errors_gt_1mm": 419,
+        "sum_pixel_frame_errors_gt_5mm": 277,
+        "all_valid_error_tails_retained": true
+      },
+      "preserved_v2_global": {
+        "audit": {
+          "path": "artifacts/wrist_native_cut_v2_camera_audit_001/isaacsim_wrist_cut01_002/result.json",
+          "sha256": "5c7eaa24f8e11012d520725879657d5a5a4ceeff18aa02e503b2a947b527fe22"
+        },
+        "metrics": {
+          "frames": 41,
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "minimum_valid_depth_fraction": 0.15833658854166666,
+          "maximum_valid_depth_fraction": 0.15897135416666666,
+          "minimum_depth_consistent_material_pixels": 108,
+          "maximum_depth_consistent_material_pixels": 128,
+          "minimum_depth_consistent_knife_pixels": 19,
+          "maximum_depth_consistent_knife_pixels": 30,
+          "minimum_whole_frame_valid_mask_iou_vs_geometry": 0.9795963405826178,
+          "maximum_frame_p95_absolute_error_m": 4.76837158203125e-07,
+          "maximum_absolute_depth_error_m": 0.8490928411483765,
+          "maximum_frame_rms_error_m": 0.006652591910556506,
+          "sum_pixel_frame_errors_gt_1mm": 580,
+          "sum_pixel_frame_errors_gt_5mm": 492,
+          "all_valid_error_tails_retained": true
+        }
+      },
+      "minimum_material_pixel_gain_vs_v2": 8.12962962962963,
+      "minimum_knife_pixel_gain_vs_v2": 5.368421052631579,
+      "task_score": {
+        "status": "PASS_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "two_substantial_physical_parts": true,
+          "two_main_parts_retain_mass": true,
+          "cut_at_workpiece_local_target_plane": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.07199999999999998,
+            0.07199999999999998
+          ],
+          "recorded_mass_kg": 0.14399999999999996,
+          "expected_task_sampler_mass_kg": 0.14399999999999996,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 96000,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 2009088,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+          "substantial_parts": 2,
+          "two_main_parts_mass_fraction": 1.0,
+          "minor_parts_mass_fraction": 0.0
+        },
+        "recorded_score_recomputation": {
+          "same_checks": true,
+          "same_metrics": true,
+          "same_status": true
+        }
+      },
+      "available_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "partitioned_interface_work_residual_fraction": 0.1760028193165958,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "sampled_visual_clearance": {
+        "status": "FAIL_SAMPLED_VISUAL_SURFACES",
+        "samples": 401,
+        "checks": {
+          "all_sampled_unexcepted_visual_surface_pairs_clear": false,
+          "final_export_matches_actual_recorded_bodies": true,
+          "every_robot_time_has_a_pose_sample": true,
+          "samples_match_robot_timestamps": true,
+          "at_least_401_samples_for_8s": true
+        },
+        "maximum_global_robot_surface_intersections": 0,
+        "maximum_wrist_housing_robot_surface_intersections": 0,
+        "nonzero_pairs": [
+          {
+            "camera": "wrist_d405_0",
+            "box": "Bracket",
+            "body_prim_path": "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7",
+            "intentional_parent_palm_attachment": false,
+            "samples": 401,
+            "minimum_bounding_box_signed_projection_gap_m": -0.027913414799124934,
+            "maximum_surface_intersections_per_sample": 74,
+            "samples_with_surface_intersections": 401,
+            "first_clipped_bounds_hand_local_m": [
+              [
+                -0.03977069508400556,
+                0.02363985951455548,
+                -0.019216743341747843
+              ],
+              [
+                -0.034849283792985464,
+                0.03273279261737533,
+                -0.012008151996817883
+              ]
+            ],
+            "all_time_clipped_bounds_hand_local_m": [
+              [
+                -0.039770708045760265,
+                0.023639856062771906,
+                -0.019216745766404284
+              ],
+              [
+                -0.03484928010893388,
+                0.03273279826186935,
+                -0.012008106862165226
+              ]
+            ],
+            "maximum_clipped_bounds_change_from_first_m": 4.513465265768013e-08,
+            "nominal_rod_endpoints_hand_m": {
+              "anchor": [
+                -0.039999999999999994,
+                0.030000000000000006,
+                -0.015000000000000001
+              ],
+              "housing_rear": [
+                -0.08701477811234264,
+                0.08157635448032122,
+                -0.037536945280856576
+              ],
+              "source": "Recorded bracket transform and full length; retained _bracket_obb adds 8mm total endpoint padding"
+            },
+            "all_time_surface_axis_distance_from_nominal_anchor_m": [
+              -0.0040000000000000036,
+              0.001335160614289621
+            ]
+          }
+        ],
+        "native_contact_acceptance": "NOT_SCORED",
+        "closed_volume_containment": "NOT_SCORED",
+        "continuous_swept_collision": "NOT_SCORED"
+      },
+      "reset_receipt": {
+        "path": "artifacts/isaacsim_global_close_cut01_001/reset_receipt.json",
+        "sha256": "e2e484e0474659dab6f512f8b8e5b52e29b6f4d65c142f36e50c3ef0829438ad"
+      }
+    },
+    "isaacsim_global_close_trim01_001": {
+      "recording": {
+        "path": "artifacts/isaacsim_global_close_trim01_001/result.json",
+        "sha256": "096a2328b2b1115d7c35c86ae4974a29698b314ae1b4c1b5fd454a737d1bb0f1"
+      },
+      "manifest": {
+        "path": "artifacts/isaacsim_global_close_trim01_001/manifest.json",
+        "sha256": "4e9ea7a77d6cf965d1fe9607f848828c67b2a60062eb1657fdf4aad0ac79e407"
+      },
+      "execution": {
+        "recorded_status": "PASS_EXECUTION",
+        "control_steps": 400,
+        "robot_duration_s": 8.0,
+        "material_duration_s": 8.0,
+        "material_frames": 41,
+        "material_sampling_max_dt_s": 0.20000000000000018,
+        "wall_s": 94.39586370601319,
+        "runtime_backend": "LIVE_IsaacSim6.2_cutting"
+      },
+      "actual_native_physics_steps": 4000,
+      "actual_native_rgbd_frames": 41,
+      "replay_inputs": false,
+      "native_noise": "off",
+      "audits": {
+        "camera": {
+          "path": "artifacts/global_close_camera_audit_001/isaacsim_global_close_trim01_001/result.json",
+          "sha256": "a263ec377e67e3e25dcb2b1a4ce1cb5f69aaffa873faa5f3ea39d59c35782274"
+        },
+        "task": {
+          "path": "artifacts/global_close_task_audit_001/isaacsim_global_close_trim01_001/result.json",
+          "sha256": "80938cb89c2bc5d3407a9efa4a794f4d6f7e4f58c42549a12840c45d6cb60038"
+        },
+        "sampled_robot_clearance": {
+          "path": "artifacts/global_close_clearance_audit_001/isaacsim_global_close_trim01_001/result.json",
+          "sha256": "b53a331df85b65ddebb1ed7e5125779c95477ac5e6e935257987335762c00cfd"
+        }
+      },
+      "all_recorded_runtime_implementation_bytes_resolved": true,
+      "runtime_camera_implementation": {
+        "src/robotic_cutting_sim/isaac_sim_runner.py": "940a31e43c7318673b2e22974d6d686108edd9ae402e42596fbc4a50a5d3af27",
+        "scripts/run_isaac_sim_cutting.py": "10d5176e1d51eda57077a818248d11b9bdd4cbc9d5ec22ac406e7f89d7f65c31",
+        "src/robotic_cutting_sim/camera_rig.py": "0032076d29e744d9b09ae858d826ff8f015dfd6e6073aab0b729d8cc46cad1ef",
+        "configs/wrist_camera_rig_v3.json": "a9641ac3517b676e813ba6ebffbdc942ee6914f925cec7a1635727c6e10a8b4e"
+      },
+      "rig_kinematics": {
+        "status": "PASS",
+        "trace_samples": 401,
+        "maximum_errors_by_camera": {
+          "wrist_d405_0": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 6.576303175897458e-08,
+            "current_usd_rotation_error_rad": 1.646605537483066e-07,
+            "inverse_max_abs_identity_error": 2.6616705838087486e-16
+          },
+          "wrist_d405_1": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 4.393959586019642e-09,
+            "current_usd_rotation_error_rad": 7.444854768202421e-08,
+            "inverse_max_abs_identity_error": 1.1102230246251565e-16
+          },
+          "global_d455": {
+            "translation_error_m": 0.0,
+            "rotation_error_rad": 0.0,
+            "recorded_hand_translation_error_m": 0.0,
+            "recorded_hand_rotation_error_rad": 0.0,
+            "fixed_mount_translation_error_m": 0.0,
+            "fixed_mount_rotation_error_rad": 0.0,
+            "current_usd_translation_error_m": 0.0,
+            "current_usd_rotation_error_rad": 0.0,
+            "inverse_max_abs_identity_error": 2.220446049250313e-16
+          }
+        }
+      },
+      "camera_optics_and_visibility": {
+        "status": "FAIL",
+        "checks": {
+          "frame_timestamps": true,
+          "reference_footprint_union_coverage": true,
+          "wrist_d405_0_nonempty_working_depth": true,
+          "wrist_d405_0_material_visible": true,
+          "wrist_d405_0_knife_visible": true,
+          "wrist_d405_0_finite_range_and_masks": true,
+          "wrist_d405_0_calibration_measured_pose": true,
+          "wrist_d405_0_runtime_optics": true,
+          "wrist_d405_1_nonempty_working_depth": true,
+          "wrist_d405_1_material_visible": true,
+          "wrist_d405_1_knife_visible": false,
+          "wrist_d405_1_finite_range_and_masks": true,
+          "wrist_d405_1_calibration_measured_pose": true,
+          "wrist_d405_1_runtime_optics": true,
+          "global_d455_nonempty_working_depth": true,
+          "global_d455_material_visible": true,
+          "global_d455_knife_visible": true,
+          "global_d455_finite_range_and_masks": true,
+          "global_d455_calibration_measured_pose": true
+        }
+      },
+      "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE",
+      "close_global": {
+        "frames": 41,
+        "resolution_wh": [
+          640,
+          480
+        ],
+        "runtime_K": [
+          [
+            317.04312011949685,
+            0.0,
+            320.0
+          ],
+          [
+            0.0,
+            317.04312011949685,
+            240.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "minimum_valid_depth_fraction": 0.27232747395833334,
+        "maximum_valid_depth_fraction": 0.2760091145833333,
+        "minimum_depth_consistent_material_pixels": 999,
+        "maximum_depth_consistent_material_pixels": 1092,
+        "minimum_depth_consistent_knife_pixels": 71,
+        "maximum_depth_consistent_knife_pixels": 118,
+        "minimum_whole_frame_valid_mask_iou_vs_geometry": 0.9657087021496724,
+        "maximum_frame_p95_absolute_error_m": 2.384185791015625e-07,
+        "maximum_absolute_depth_error_m": 0.6080522537231445,
+        "maximum_frame_rms_error_m": 0.002963658444624907,
+        "sum_pixel_frame_errors_gt_1mm": 407,
+        "sum_pixel_frame_errors_gt_5mm": 293,
+        "all_valid_error_tails_retained": true
+      },
+      "preserved_v2_global": {
+        "audit": {
+          "path": "artifacts/wrist_native_trim_v2_camera_audit_001/isaacsim_wrist_trim01_001/result.json",
+          "sha256": "6dfbffafa10e691b4a682cc6a24552599b2718608d0d6bb59886f127d360e90e"
+        },
+        "metrics": {
+          "frames": 41,
+          "resolution_wh": [
+            640,
+            480
+          ],
+          "runtime_K": [
+            [
+              317.04312011949685,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              317.04312011949685,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "minimum_valid_depth_fraction": 0.15848958333333332,
+          "maximum_valid_depth_fraction": 0.159130859375,
+          "minimum_depth_consistent_material_pixels": 112,
+          "maximum_depth_consistent_material_pixels": 123,
+          "minimum_depth_consistent_knife_pixels": 9,
+          "maximum_depth_consistent_knife_pixels": 14,
+          "minimum_whole_frame_valid_mask_iou_vs_geometry": 0.9796291093003653,
+          "maximum_frame_p95_absolute_error_m": 4.76837158203125e-07,
+          "maximum_absolute_depth_error_m": 0.8490928411483765,
+          "maximum_frame_rms_error_m": 0.006838001880665531,
+          "sum_pixel_frame_errors_gt_1mm": 582,
+          "sum_pixel_frame_errors_gt_5mm": 482,
+          "all_valid_error_tails_retained": true
+        }
+      },
+      "minimum_material_pixel_gain_vs_v2": 8.919642857142858,
+      "minimum_knife_pixel_gain_vs_v2": 7.888888888888889,
+      "task_score": {
+        "status": "FAIL_TASK_METRICS",
+        "checks": {
+          "complete_episode": true,
+          "initial_continuous_graph": true,
+          "initial_codes_zero": true,
+          "reference_matches_single_continuous_task_sampler": true,
+          "reference_mass_budget_and_unchanged_count": true,
+          "persistent_history_no_digit_rewrites": true,
+          "postcut_disconnected_topology_persists": true,
+          "reference_above_plane_material_removed": true,
+          "surface_has_explicit_mechanical_provenance": true,
+          "surface_timestamp_matches_final_physics": true,
+          "maximum_substrate_surface_residual_height_m": true,
+          "surface_p95_absolute_plane_error_m": false,
+          "surface_rms_plane_error_m": false,
+          "maximum_gouge_depth_m": false,
+          "overcut_volume_fraction_of_initial_base": false,
+          "missing_surface_fraction": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "final_components": 2,
+          "component_masses_kg": [
+            0.0016079999999999998,
+            0.14402399999999996
+          ],
+          "recorded_mass_kg": 0.14563199999999998,
+          "expected_task_sampler_mass_kg": 0.14563199999999998,
+          "reference_mass_absolute_error_kg": 0.0,
+          "particle_count_all_frames": 12136,
+          "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+          "nonzero_digit_rewrites": 0,
+          "postcut_graph_count_minimum": 2,
+          "postcut_persistence_time_s": 2.3999999999999995,
+          "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+          "removed_reference_above_plane_mass_fraction": 0.9852941176470588,
+          "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+          "surface": {
+            "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "valid_surface_fraction": 0.9983333333333333,
+            "missing_surface_fraction": 0.0016666666666667052,
+            "maximum_substrate_surface_residual_height_m": 0.00010599615974819787,
+            "surface_p95_absolute_plane_error_m": 0.0016737694942476878,
+            "surface_rms_plane_error_m": 0.000551944789682529,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 1.938441881368551e-06,
+            "overcut_volume_fraction_of_initial_base": 0.02019210293092241
+          }
+        },
+        "recorded_score_recomputation": {
+          "same_checks": true,
+          "same_metrics": true,
+          "same_status": true
+        }
+      },
+      "available_numerical_screens": {
+        "status": "PASS_AVAILABLE_SCREENS",
+        "checks": {
+          "finite_saved_material_and_reaction": true,
+          "maximum_saved_material_speed": true,
+          "tool_material_penetration": true,
+          "material_overlap": true,
+          "minimum_detF": true,
+          "maximum_control_interval_material_speed": true
+        },
+        "missing_controls": [
+          "Matched settle/elastic material control",
+          "Matched feedback ON/OFF episode",
+          "Full same-source task repetition",
+          "Time/grid convergence and calibrated material fracture"
+        ],
+        "partitioned_interface_work_residual_fraction": 0.33010698359444224,
+        "native_rigid_contact_coverage": "NOT_RUN; native rigid penetration samples absent",
+        "asset_joint_limit_check": {
+          "status": "NOT_RUN",
+          "reason": "'panda_joint1'",
+          "scope": "Runtime joint-limit tensors and a readable composed USD are unavailable"
+        }
+      },
+      "sampled_visual_clearance": {
+        "status": "FAIL_SAMPLED_VISUAL_SURFACES",
+        "samples": 401,
+        "checks": {
+          "all_sampled_unexcepted_visual_surface_pairs_clear": false,
+          "final_export_matches_actual_recorded_bodies": true,
+          "every_robot_time_has_a_pose_sample": true,
+          "samples_match_robot_timestamps": true,
+          "at_least_401_samples_for_8s": true
+        },
+        "maximum_global_robot_surface_intersections": 0,
+        "maximum_wrist_housing_robot_surface_intersections": 0,
+        "nonzero_pairs": [
+          {
+            "camera": "wrist_d405_0",
+            "box": "Bracket",
+            "body_prim_path": "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7",
+            "intentional_parent_palm_attachment": false,
+            "samples": 401,
+            "minimum_bounding_box_signed_projection_gap_m": -0.027913414124113006,
+            "maximum_surface_intersections_per_sample": 74,
+            "samples_with_surface_intersections": 401,
+            "first_clipped_bounds_hand_local_m": [
+              [
+                -0.039770695471674895,
+                0.02363986283953442,
+                -0.019216743553116023
+              ],
+              [
+                -0.03484928382102573,
+                0.03273279434085646,
+                -0.012008141437375844
+              ]
+            ],
+            "all_time_clipped_bounds_hand_local_m": [
+              [
+                -0.039770710154176964,
+                0.02363985832087239,
+                -0.01921674762057128
+              ],
+              [
+                -0.03484927732347454,
+                0.03273280375118616,
+                -0.012008110291306488
+              ]
+            ],
+            "maximum_clipped_bounds_change_from_first_m": 3.114606935555875e-08,
+            "nominal_rod_endpoints_hand_m": {
+              "anchor": [
+                -0.039999999999999994,
+                0.030000000000000006,
+                -0.015000000000000001
+              ],
+              "housing_rear": [
+                -0.08701477811234264,
+                0.08157635448032122,
+                -0.037536945280856576
+              ],
+              "source": "Recorded bracket transform and full length; retained _bracket_obb adds 8mm total endpoint padding"
+            },
+            "all_time_surface_axis_distance_from_nominal_anchor_m": [
+              -0.0040000000000000036,
+              0.0013351666479560834
+            ]
+          }
+        ],
+        "native_contact_acceptance": "NOT_SCORED",
+        "closed_volume_containment": "NOT_SCORED",
+        "continuous_swept_collision": "NOT_SCORED"
+      },
+      "reset_receipt": {
+        "path": "artifacts/isaacsim_global_close_trim01_001/reset_receipt.json",
+        "sha256": "5d02a88a7231c2984cd692110ea69918308da3eb2fd103ab940d0c72d10b4690"
+      }
+    }
+  },
+  "lab_smokes": {
+    "isaac_lab_global_close_cut_smoke_001": {
+      "recording": {
+        "path": "artifacts/isaac_lab_global_close_cut_smoke_001/result.json",
+        "sha256": "0c44282a5112bf7933288ab4c44cb469c3c3efb48d624590eb16e51c7959ee52"
+      },
+      "camera_audit": {
+        "path": "artifacts/global_close_lab_smoke_camera_audit_001/isaac_lab_global_close_cut_smoke_001/result.json",
+        "sha256": "3010f70b1d873890a6a516cc5efd67a4ff48555cfc265769c2e49bb8211ef758"
+      },
+      "status": "PASS_SMOKE",
+      "steps": 2,
+      "simulation_s": 0.04,
+      "task_success": "NOT_RUN",
+      "full_episode": false,
+      "camera_kinematics": "PASS",
+      "camera_optics_and_visibility": "PASS",
+      "camera_frames": 3,
+      "global": {
+        "frames": 3,
+        "resolution_wh": [
+          640,
+          480
+        ],
+        "runtime_K": [
+          [
+            317.0431199837856,
+            0,
+            320.0
+          ],
+          [
+            0,
+            377.65998731803694,
+            240.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "minimum_valid_depth_fraction": 0.32669270833333336,
+        "maximum_valid_depth_fraction": 0.326748046875,
+        "minimum_depth_consistent_material_pixels": 1365,
+        "maximum_depth_consistent_material_pixels": 1367,
+        "minimum_depth_consistent_knife_pixels": 242,
+        "maximum_depth_consistent_knife_pixels": 243,
+        "minimum_whole_frame_valid_mask_iou_vs_geometry": 1.0,
+        "maximum_frame_p95_absolute_error_m": 1.7881393432617188e-07,
+        "maximum_absolute_depth_error_m": 2.0265579223632812e-06,
+        "maximum_frame_rms_error_m": 1.0143354273459969e-07,
+        "sum_pixel_frame_errors_gt_1mm": 0,
+        "sum_pixel_frame_errors_gt_5mm": 0,
+        "all_valid_error_tails_retained": true
+      },
+      "source_bytes_resolved": true
+    },
+    "isaac_lab_global_close_trim_smoke_001": {
+      "recording": {
+        "path": "artifacts/isaac_lab_global_close_trim_smoke_001/result.json",
+        "sha256": "79c5fe7053a2de95e5b71e027f612f427bbf41ded675ead52a8eb382e4fb41f5"
+      },
+      "camera_audit": {
+        "path": "artifacts/global_close_lab_smoke_camera_audit_001/isaac_lab_global_close_trim_smoke_001/result.json",
+        "sha256": "cc2a762e26fe37c7e4e6d956e1930049d14228867eed951a14ed8fbac77e9e2f"
+      },
+      "status": "PASS_SMOKE",
+      "steps": 2,
+      "simulation_s": 0.04,
+      "task_success": "NOT_RUN",
+      "full_episode": false,
+      "camera_kinematics": "PASS",
+      "camera_optics_and_visibility": "PASS",
+      "camera_frames": 3,
+      "global": {
+        "frames": 3,
+        "resolution_wh": [
+          640,
+          480
+        ],
+        "runtime_K": [
+          [
+            317.0431199837856,
+            0,
+            320.0
+          ],
+          [
+            0,
+            377.65998731803694,
+            240.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "minimum_valid_depth_fraction": 0.3281380208333333,
+        "maximum_valid_depth_fraction": 0.3282389322916667,
+        "minimum_depth_consistent_material_pixels": 1303,
+        "maximum_depth_consistent_material_pixels": 1306,
+        "minimum_depth_consistent_knife_pixels": 121,
+        "maximum_depth_consistent_knife_pixels": 134,
+        "minimum_whole_frame_valid_mask_iou_vs_geometry": 0.9999900828085486,
+        "maximum_frame_p95_absolute_error_m": 1.7881393432617188e-07,
+        "maximum_absolute_depth_error_m": 2.086162567138672e-06,
+        "maximum_frame_rms_error_m": 1.0130107326303215e-07,
+        "sum_pixel_frame_errors_gt_1mm": 0,
+        "sum_pixel_frame_errors_gt_5mm": 0,
+        "all_valid_error_tails_retained": true
+      },
+      "source_bytes_resolved": true
+    }
+  },
+  "all_prior_failures_preserved": true,
+  "full_benchmark_ready": false,
+  "physical_d455_calibration_validated": false,
+  "d405_hardware_model_validated": false,
+  "limitations": [
+    "D405 streams remain ideal_d405_prototype. Global actual SingleView noise-off and registered raw outputs do not establish hardware calibration.",
+    "TRIM retains its frozen surface-accuracy failure and secondary wrist knife occlusion after withdrawal.",
+    "Strict primary bracket/own-link7 clearance failure remains74 intersectingtriangles at every sampled pose; no exception was expanded. All Global and housing pairs are clear only within sampled visual-surface scope.",
+    "Native depth holes/tails remain; minimum mask IoU is below the original0.99CAM04 threshold. Engineering visibility PASS is separate from native depth-accuracy acceptance.",
+    "Partitioned interface-work residuals remain above5%; no same-source matched ON/OFF/convergence/material-calibration control was added. Native joint-limit tensor/contact audit coverage remains incomplete.",
+    "Only native close-view tasks were rerun for full8seconds. Lab close-view validation is two2-step smokes; prior full Lab v2 evidence is preserved separately.",
+    "No full-workcell-fit criterion is claimed for the new close target composition."
+  ],
+  "receipt_builder_source": {
+    "path": "artifacts/global_target_closeup_screen_001/build_live_receipt.py",
+    "sha256": "7c6bb20042d3c19c23e8abe28a017dee417e064f3b90b598d4632505e41b8bbc"
+  }
+}
