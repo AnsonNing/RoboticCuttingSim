@@ -195,6 +195,12 @@ class CuttingTaskSpec:
     def evaluate_oracle(self, recording):
         return evaluate_task_oracle(self, recording)
 
+    def evaluate(self, recording, *, profile="diagnostic", goal=None, represented_target=None):
+        """Read-only Evaluation v2; evaluate_oracle retains frozen v1 semantics."""
+        from .evaluation import evaluate_recording
+        return evaluate_recording(recording, task=self, goal=goal, profile=profile,
+                                  represented_target=represented_target)[0]
+
 
 def _protocol():
     return json.loads(PROTOCOL_PATH.read_text())

@@ -14,12 +14,7 @@ from scipy.spatial.transform import Rotation
 
 WRIST_LAYOUT = "wrist_d405_global_d455"
 LEGACY_LAYOUT = "legacy_fixed_d455"
-CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v3.json"
-SECONDARY_OBSERVATION_JOINTS = (
-    -1.2734662294387817, -1.512477159500122, 1.0369349718093872,
-    -2.916372299194336, 1.0367738008499146, 1.5141336917877197, 2.847289562225342,
-)
-SECONDARY_OBSERVATION_HAND_XYZW = (.20, .18, .34, 1., 0., 0., 0.)
+CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v5.json"
 _CV_TO_USD = np.diag([1., -1., -1., 1.])
 
 
@@ -74,27 +69,22 @@ class CameraRig:
         if camera_layout not in (WRIST_LAYOUT, LEGACY_LAYOUT):
             raise ValueError(f"Unknown camera layout: {camera_layout}")
         self.task_id, self.camera_layout = str(task_id), camera_layout
-        if initial_hand_poses_world_xyzw is None:
-            initial_hand_poses_world_xyzw = [[-.045, 0., .24, 1., 0., 0., 0.],
-                                           SECONDARY_OBSERVATION_HAND_XYZW]
-        hands = np.asarray(initial_hand_poses_world_xyzw, float)
-        if hands.shape != (2, 7):
-            raise ValueError("Expected two measured XYZ+XYZW hand poses")
-        hand_world = [pose_matrix(pose) for pose in hands]
+        hands = None
+        if initial_hand_poses_world_xyzw is not None:
+            hands = np.asarray(initial_hand_poses_world_xyzw, float)
+            if hands.shape != (2, 7):
+                raise ValueError("Expected two measured XYZ+XYZW hand poses")
+            for pose in hands:
+                pose_matrix(pose)
         self.specs = {}
         if camera_layout == LEGACY_LAYOUT:
             # Legacy stages and sensor initialization remain owned by the caller.
             return
         for index in (0, 1):
-            if index == 0:
-                mount = _look_at([-.080, .075, -.020], [0., 0., .18], up=(0., 0., -1.))
-            else:
-                # A physical bracket must have one constant transform across
-                # seeds/resets. Measured reset poses never retarget the mount.
-                nominal_hand = pose_matrix(SECONDARY_OBSERVATION_HAND_XYZW)
-                eye = nominal_hand @ np.array([-.085, .045, .020, 1.])
-                world_camera = _look_at(eye[:3], [0., 0., .020])
-                mount = np.linalg.inv(nominal_hand) @ world_camera
+            # Both cameras use the same hardware mount, parallel to hand axes.
+            # No wrist camera aims at a world target or nominal cutting edge.
+            mount = np.eye(4)
+            mount[:3, 3] = [-.085, .045, .020]
             housing = np.eye(4)
             # The RGB/depth optical origin is the left imager. A nominal 18mm
             # stereo baseline places the housing center 9mm to its right.
@@ -103,7 +93,7 @@ class CameraRig:
             obbs = [{"name": "Housing", "T_hand_obb": housing_hand.tolist(),
                      "T_optical_cv_obb": housing.tolist(), "dimensions_m": [.042, .042, .023],
                      "scope": "Dimensioned D405 prototype housing; no contact or mass model"},
-                    _bracket_obb(mount, [-.040, .030, -.015] if index == 0 else [-.040, 0., .003])]
+                    _bracket_obb(mount, [-.040, 0., .003])]
             self.specs[f"wrist_d405_{index}"] = {
                 "camera_id": f"wrist_d405_{index}", "model": "RealSense D405 geometry prototype",
                 "sensor_model": "ideal_d405_prototype", "capability": "ideal_d405_prototype",
@@ -113,7 +103,8 @@ class CameraRig:
                 "render_near_m": .001, "render_far_m": 20.,
                 "T_hand_optical_cv": mount.tolist(), "T_hand_camera": mount.tolist(),
                 "physical_dimensions_m": {"width": .042, "height": .042, "depth": .023},
-                "rig_profile": "wrist_camera_rig_v3",
+                "rig_profile": "wrist_camera_rig_v5",
+                "visibility_role": "optional_parked_wrist" if index == 1 else "cutting_wrist",
                 "dimensions_source": "Official D400 datasheet Table 3-54: width42mm, height42mm, depth23mm",
                 "visual_obbs": obbs, "rgb_depth_optical_transform": np.eye(4).tolist(),
                 "T_left_right_optical_cv": [[1., 0., 0., .018], [0., 1., 0., 0.],
@@ -127,13 +118,13 @@ class CameraRig:
                 "minimum_z_scope": "Official 70mm MinZ mode at 848x480; prototype optical range only, no validated stereo matching",
                 "mount_scope": "Fixed hand-local transform; camera follows actual measured hand, without a gimbal",
                 "physics_scope": "Visual-only housing/bracket; no colliders, mass or inertia; clearance unvalidated",
-                "initial_hand_pose_world_xyzw": hands[index].tolist(),
+                "initial_hand_pose_world_xyzw": None if hands is None else hands[index].tolist(),
             }
         global_target = np.array([0., 0., .020])
         transform = _look_at([.28, -.42, .46], global_target)
         self.specs["global_d455"] = {
             "camera_id": "global_d455", "model": "Official Isaac Sim 6.2 RealSense D455 asset",
-            "rig_profile": "wrist_camera_rig_v3",
+            "rig_profile": "wrist_camera_rig_v5",
             "view_goal": "World-fixed close view of the workpiece, knife and cutting region",
             "look_at_target_world_m": global_target.tolist(),
             "working_distance_to_target_m": float(np.linalg.norm(transform[:3, 3]-global_target)),

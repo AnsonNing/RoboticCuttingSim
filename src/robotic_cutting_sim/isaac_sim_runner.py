@@ -326,7 +326,7 @@ class LiveIsaacSimCutting:
             # Finish camera deletions/API removal before any view is created.
             # Nominal FK only chooses a fixed optical mount at reset; every
             # runtime camera extrinsic still comes from the actual articulation.
-            from .camera_rig import author_camera_rig, SECONDARY_OBSERVATION_JOINTS
+            from .camera_rig import author_camera_rig
             from .scene_frames import matrix_pose
             from .workcell import ASSETS
             self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
@@ -334,7 +334,6 @@ class LiveIsaacSimCutting:
                 wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
             reset_q=self.ik.initial_q.reshape(2,9).copy()
             reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.))
-            reset_q[1,:7]=SECONDARY_OBSERVATION_JOINTS
             self.ik.state.joint_q.assign(reset_q.ravel())
             self.ik.newton.eval_fk(self.ik.model,self.ik.state.joint_q,self.ik.state.joint_qd,self.ik.state)
             body_q=self.ik.state.body_q.numpy()
@@ -378,9 +377,6 @@ class LiveIsaacSimCutting:
                    tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
                    wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
         self.park_q=self.ik.initial_q.reshape(2,9).copy()
-        if c.camera_layout == "wrist_d405_global_d455":
-            from .camera_rig import SECONDARY_OBSERVATION_JOINTS
-            self.park_q[1,:7]=SECONDARY_OBSERVATION_JOINTS
         paths=[]
         for index,label in enumerate(self.ik.model.body_label):
             source_path=label.split("/",1)[1]

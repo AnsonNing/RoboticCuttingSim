@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Solve and audit a reachable secondary Panda wrist-camera observation pose.
+"""Historical v1-v3 observation-pose experiment; never used by the v4 runtime.
 
 Official asset/FK/IK plus a static MuJoCo contact diagnostic; no cutting episode.
+Retained solely for reproducing old observation-arm experiments. Current
+Franka 1 stays at its normal park with a fixed hand-local wrist camera.
 """
 import argparse
 from pathlib import Path

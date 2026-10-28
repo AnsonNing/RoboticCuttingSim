@@ -148,6 +148,17 @@ def test_reset_or_wrong_task_cannot_be_masked_by_process_success():
 
 def test_exit_zero_missing_receipts_does_not_validate_runtime():
     assert classify((None, None, None))["status"] == "FAIL_RUNTIME_CONTRACT"
+
+
+def test_parked_secondary_may_have_no_working_depth_but_still_requires_valid_payloads():
+    result,camera,task=valid_receipts(2)
+    checks=camera["visibility_and_optics"]["checks"]
+    checks["wrist_d405_1_nonempty_working_depth"]=False
+    assert classify((result,camera,task),steps=2)["status"] == "FAIL_RUNTIME_CONTRACT"
+    camera["optional_visibility_camera_ids"]=["wrist_d405_1"]
+    assert classify((result,camera,task),steps=2)["status"] == "PASS_REQUESTED_RUNTIME_CONTRACT"
+    checks["wrist_d405_1_calibration_measured_pose"]=False
+    assert classify((result,camera,task),steps=2)["status"] == "FAIL_RUNTIME_CONTRACT"
     result, camera, task = valid_receipts()
     result["native_physics_steps"] = 0
     assert classify((result, camera, task))["status"] == "FAIL_RUNTIME_CONTRACT"

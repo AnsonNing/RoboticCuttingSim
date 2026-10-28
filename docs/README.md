@@ -7,11 +7,20 @@
 | Install, select a GPU and reproduce | [Portable deployment](PORTABLE_DEPLOYMENT.md) · [Setup](SETUP.md) |
 | Run physical-grasp CUT/TRIM | [Physical tool use](PHYSICAL_TOOL.md) |
 | Control or connect a research adapter | [Shared environment API](SHARED_TASK_API.md) |
+| Measure cutting outcome and geometry independently | [Evaluation v2](EVALUATION_V2.md) |
+| Check both hand-aligned wrist cameras | [Camera rig v5](WRIST_CAMERA_V5.md) |
 | Use the same-instance remote GUI | [Remote interactive viewer](REMOTE_INTERACTIVE_VIEWER.md) |
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
 
 ## Current scene and validation
 
+- [Evaluation v2](EVALUATION_V2.md): separate integrity, cutting outcome and
+  geometry; Diagnostic/Research/Precision profiles and preserved strict scores.
+- [Hand-aligned wrist-camera v5](WRIST_CAMERA_V5.md): both cameras use fixed
+  hand-local rotations, with Franka 1 parked and no wrist-target aiming.
+  The [v4 checkpoint](WRIST_CAMERA_V4.md) preserves the earlier primary slant.
+- [Interrupted-work resumption](RESUMPTION_20261029.md): recovered WP-08
+  bootstrap/randomized/capsule outcomes and explicit remaining failures.
 - [Independent physical-tool validation](PHYSICAL_TOOL_INDEPENDENT_VALIDATION.md):
   task, contact, reaction, camera and numerical results, with acceptance limits.
 - [Grip perturbation controls](PHYSICAL_TOOL_CONTROLS.md) and
@@ -20,8 +29,9 @@
   measured wrist mounts, sensor models and known occlusion limitations.
 - [Task definitions](CUTTING_TASKS.md) and [benchmark](CUTTING_BENCHMARK.md):
   workpiece-local goals and independent success criteria.
-- [Latest physical-grasp RGB-D recordings](media/wp08_physical_grasp_v2/README.md):
-  videos and source hashes for both fixed tasks.
+- [Current v5 CUT RGB-D](media/wrist_v5_cut01/synchronized_multiview.mp4),
+  [v5 TRIM RGB-D](media/wrist_v5_trim01/synchronized_multiview.mp4) and
+  [preserved v3 physical-grasp recordings](media/wp08_physical_grasp_v2/README.md).
 
 ## Runtime and reproduction references
 

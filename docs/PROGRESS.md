@@ -1,5 +1,37 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## Current: WP-09 Evaluation v2 and hand-aligned wrist-camera v5
+
+Evaluation v2 is implemented and validated as a read-only, shared CUT/TRIM
+interface with separate recorded-state integrity, cutting outcome and surface
+quality. Diagnostic/Research/Precision profiles retain the exact original
+strict benchmark and report continuous metrics, full missing masks, independent
+analytic/represented targets, nonflat/mesh/implicit geometry and predeclared
+regions. Eight actual historical/new episodes match every original recorded
+strict status/check/metric. Fixed TRIM still removes 98.5294% and fails precision;
+the seed42 three-bump recording reports 96.2791% overall and per-bump values.
+The new research outcome label does not assert flatness or full physical
+fidelity. Full CPU regression: 414 PASS. See [Evaluation v2](EVALUATION_V2.md)
+and [compact evidence](evidence/evaluation_v2_validation.json).
+
+Franka 1 now stays at its original safe park in both runtimes. Both v5 D405s use
+axis-aligned constant hand-local mounts without observation pose or wrist aiming.
+V4's actual Native/Lab full CUT, Lab CUT/TRIM smokes and explicit secondary
+motion remain preserved. New v5 Native CUT/TRIM each run 400 steps and Lab's
+separate two-step smoke passes RGB-D/FK/clock contracts. Both camera mounts
+clear all 401 sampled robot poses of the new Native CUT; v4's primary
+bracket/link7 intersection remains a preserved historical failure. The original
+full-wrist-footprint visibility screen still fails and remains separate from
+cutting. README media and the live remote viewer use the new rig.
+See [camera v5](WRIST_CAMERA_V5.md) and
+[the recovered interruption checkpoint](RESUMPTION_20261029.md).
+
+The earlier clean-bootstrap and randomized/capsule jobs have completed:
+physical smokes and both capsule CUT task scores PASS; seed43 randomized CUT
+executes/splits but retains its strict cut-location FAIL. Lab's Cartesian
+transfer control remains failed/incomplete. No old evidence was overwritten
+and full WP-08 physics acceptance remains false.
+
 ## WP-08 in progress: independent tool and physical finger grasp
 
 Baseline `1500ed7` is frozen on branch `wp08/physical-tool-grasp`, with the

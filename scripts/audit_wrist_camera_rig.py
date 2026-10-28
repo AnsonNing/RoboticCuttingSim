@@ -21,7 +21,7 @@ from robotic_cutting_sim.scene_frames import pose_matrix, transform_points
 from robotic_cutting_sim.wrist_camera_audit import (depth_comparison, effective_fov_deg,
     obb_signed_projection_gap, project_points, trace_metrics, transform_error)
 
-PROTOCOL_PATH = ROOT/"configs/wrist_camera_audit_v1.json"
+PROTOCOL_PATH = ROOT/"configs/wrist_camera_audit_v3.json"
 
 
 def tool_part_label(path):
@@ -324,6 +324,14 @@ def audit(directory, output, protocol, selected_frames=None):
         checks[name+"_finite_range_and_masks"] = all(not view["nonfinite_depth_values"] and not view["valid_mask_disagreement_with_positive_depth_pixels"] and not view["valid_depth_outside_declared_working_range_pixels"] for view in views)
         checks[name+"_calibration_measured_pose"] = all(view["calibration_vs_measured_trace_translation_error_m"] <= protocol["transforms"]["maximum_hand_camera_translation_error_m"] and view["calibration_vs_measured_trace_rotation_error_rad"] <= protocol["transforms"]["maximum_hand_camera_rotation_error_rad"] for view in views)
         if name.startswith("wrist_"):checks[name+"_runtime_optics"] = all(view["nominal_optics_check"] for view in views)
+    # v1-v3 recordings keep their original strict observation-camera screen.
+    # v4's parked wrist still requires valid payloads, optics, FK and clocks;
+    # working depth and object visibility are advisory for this camera only.
+    optional_visibility = [name for name, spec in rig["specs"].items()
+        if name == "wrist_d405_1" and spec.get("rig_profile") in ("wrist_camera_rig_v4", "wrist_camera_rig_v5")
+        and spec.get("visibility_role") == "optional_parked_wrist"]
+    advisory = {key: checks.pop(key) for name in optional_visibility
+        for key in (name+"_nonempty_working_depth", name+"_material_visible", name+"_knife_visible")}
     split = [row for row in records if row["current_mechanical_components"] > 1]
     component_visible = bool(split) and all(min(row["current_component_best_view_pixels"].values()) >= visibility["minimum_current_component_depth_consistent_pixels_in_any_postsplit_view"] for row in split)
     gap_min = min((row["signed_projection_gap_m"] for row in gaps), default=None)
@@ -338,7 +346,9 @@ def audit(directory, output, protocol, selected_frames=None):
         for path, expected in manifest.get("implementation_sha256", {}).items()}
     result = {"episode": str(directory.resolve()), "scope": "Independent measured-rig and current-scene RGB-D engineering audit; no new sensor capture or native semantic AOV",
         "complete_8s_episode": complete, "frame_subset": selected_frames, "kinematics": kinematics,
-        "visibility_and_optics": {"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks},
+        "visibility_and_optics": {"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks,
+            "advisory_checks": advisory},
+        "optional_visibility_camera_ids": optional_visibility,
         "current_component_visibility": "PASS_MINIMAL_PIXEL_EVIDENCE" if component_visible else "FAIL" if split else "NOT_RUN_NO_SPLIT",
         "component_visibility_scope": "Every current component in every recorded post-split partition needs at least one verified pixel in some camera; IDs are never carried across different partitions",
         "visual_clearance": clearance, "frames": len(records), "records": records,

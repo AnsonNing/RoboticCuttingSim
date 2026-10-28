@@ -30,7 +30,7 @@ from .live_material import LiveCuttingMaterial
 from .recording import ROOT
 from .robot import compose_tool_pose, wedge_mesh
 from .scene_frames import WorkpieceTarget, compose_pose, invert_transform, matrix_pose, pose_matrix
-from .workcell import ASSETS, PARK_JOINTS
+from .workcell import ASSETS, PARK_JOINTS, SECONDARY_PARK_JOINTS
 from .physical_tool import ToolGraspConfig, make_tool_spec
 from .pad_contact import POINT_PROFILE, PATCH_PROFILE, patch_receipt
 
@@ -177,10 +177,7 @@ def make_lab_cfg(options):
         if physical and index == 0:
             q["panda_finger_joint.*"] = options.grasp.initial_finger_position_m
         if index == 1:
-            q["panda_joint1"] = -np.pi/2
-            if options.camera_layout == "wrist_d405_global_d455":
-                from .camera_rig import SECONDARY_OBSERVATION_JOINTS
-                q.update(dict(zip([f"panda_joint{i}" for i in range(1, 8)], SECONDARY_OBSERVATION_JOINTS)))
+            q.update(dict(zip([f"panda_joint{i}" for i in range(1, 8)], SECONDARY_PARK_JOINTS)))
         return ArticulationCfg(prim_path=f"/World/Franka_{index}",
             spawn=sim_utils.UsdFileCfg(usd_path=str(asset),
                 func=partial(_spawn_franka, task=task, tool_attachment_mode=options.tool_attachment_mode),

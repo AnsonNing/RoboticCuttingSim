@@ -1,0 +1,130 @@
+{
+  "schema": "wrist_camera_v5_validation_20261029",
+  "status": "PASS_FIXED_MOUNT_RUNTIME_AND_SAMPLED_CLEARANCE",
+  "scope": "Actual axis-aligned fixed wrist mounts, named RGB-D/FK/clock payloads and sampled visual clearance; full visibility, calibrated sensors and physical camera colliders remain separate",
+  "runs": {
+    "wrist_v5_native_cut_001": {
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "task_status": "PASS_TASK_METRICS",
+      "both_optical_rotations_identity_in_measured_hand_frames": true
+    },
+    "wrist_v5_native_trim_001": {
+      "status": "PASS_EXECUTION",
+      "steps": 400,
+      "task_status": "FAIL_TASK_METRICS",
+      "both_optical_rotations_identity_in_measured_hand_frames": true
+    },
+    "wrist_v5_lab_smoke_001": {
+      "status": "PASS_SMOKE",
+      "steps": 2,
+      "task_status": "NOT_RUN",
+      "both_optical_rotations_identity_in_measured_hand_frames": true
+    }
+  },
+  "camera_contracts": {
+    "wrist_v5_lab_smoke_001": {
+      "kinematics_status": "PASS",
+      "original_visibility_and_optics_status": "PASS",
+      "original_failed_checks": [],
+      "payload_masks_calibration_optics_clock_checks": {
+        "frame_timestamps": true,
+        "wrist_d405_0_finite_range_and_masks": true,
+        "wrist_d405_0_calibration_measured_pose": true,
+        "wrist_d405_0_runtime_optics": true,
+        "wrist_d405_1_finite_range_and_masks": true,
+        "wrist_d405_1_calibration_measured_pose": true,
+        "wrist_d405_1_runtime_optics": true,
+        "global_d455_finite_range_and_masks": true,
+        "global_d455_calibration_measured_pose": true
+      },
+      "advisory_checks": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      },
+      "frames": 2
+    },
+    "wrist_v5_native_trim_001": {
+      "kinematics_status": "PASS",
+      "original_visibility_and_optics_status": "FAIL",
+      "original_failed_checks": [
+        "reference_footprint_union_coverage"
+      ],
+      "payload_masks_calibration_optics_clock_checks": {
+        "frame_timestamps": true,
+        "wrist_d405_0_finite_range_and_masks": true,
+        "wrist_d405_0_calibration_measured_pose": true,
+        "wrist_d405_0_runtime_optics": true,
+        "wrist_d405_1_finite_range_and_masks": true,
+        "wrist_d405_1_calibration_measured_pose": true,
+        "wrist_d405_1_runtime_optics": true,
+        "global_d455_finite_range_and_masks": true,
+        "global_d455_calibration_measured_pose": true
+      },
+      "advisory_checks": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      },
+      "frames": 41
+    },
+    "wrist_v5_native_cut_001": {
+      "kinematics_status": "PASS",
+      "original_visibility_and_optics_status": "FAIL",
+      "original_failed_checks": [
+        "reference_footprint_union_coverage"
+      ],
+      "payload_masks_calibration_optics_clock_checks": {
+        "frame_timestamps": true,
+        "wrist_d405_0_finite_range_and_masks": true,
+        "wrist_d405_0_calibration_measured_pose": true,
+        "wrist_d405_0_runtime_optics": true,
+        "wrist_d405_1_finite_range_and_masks": true,
+        "wrist_d405_1_calibration_measured_pose": true,
+        "wrist_d405_1_runtime_optics": true,
+        "global_d455_finite_range_and_masks": true,
+        "global_d455_calibration_measured_pose": true
+      },
+      "advisory_checks": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      },
+      "frames": 41
+    }
+  },
+  "sampled_visual_clearance": {
+    "status": "PASS_SAMPLED_VISUAL_SURFACES",
+    "samples": 401,
+    "maximum_unexcepted_triangle_intersections_per_sample": 0
+  },
+  "secondary_mount_identical_to_v4_actual_motion_probe": true,
+  "secondary_motion_evidence": "artifacts/wrist_v4_native_motion_001",
+  "v4_evidence_receipt": "docs/evidence/wrist_camera_v4_validation.json",
+  "browser_final_status": "PASS_WEBRTC_VIDEO_AND_KIT_INPUT",
+  "browser_first_timeout_preserved": "artifacts/wrist_v5_browser_actions_001/result.json",
+  "videos": 14,
+  "fully_decoded_and_byte_identical_media": true,
+  "source_input_sha256": {
+    "configs/wrist_camera_rig_v4.json": "1c190ade4e39e538d8885d730a0f8b2ac58853465b28740977f53f0246d4c3e2",
+    "configs/wrist_camera_rig_v5.json": "515b07c3b492641d86663f472b2c9cf31a4138cb2ba2bf17e64ff5eb96042586",
+    "configs/wrist_camera_audit_v3.json": "dc1fee3e941ff9a71e50148f379541bd151474caf46c27fd91f265548bd9e291",
+    "artifacts/wrist_v5_mount_geometry_001/result.json": "9f9f2b2b083ba66bf9afb243acb3f3eadbc3afb0a7e72788aecaf4b695c02998",
+    "artifacts/wrist_v5_initial_clearance_001/result.json": "3d813e265faf5d72e55fb280a365eb30b5d83a5eecd19cf1a56a07f77f3ca124",
+    "artifacts/wrist_v5_full_clearance_001/result.json": "3982aa81cc10042ba2dae056a8a1d1f8e3ff64426ed2f03727bbc1cc351ee5cc",
+    "artifacts/wrist_v5_camera_audit_001/result.json": "e9ed04761fec22c37c43e0e3f0353f3423b3d7a5c6ba3999d71e7b3f54903024",
+    "artifacts/wrist_v5_cut_camera_audit_001/result.json": "be4e9d904b265f105339ae05fd35b25bc9303cc89846f216592598bce72db095",
+    "artifacts/wrist_v5_browser_actions_001/result.json": "15667c8f404867ea8cd53307ded361f14870f53080209dd25cd374223a51b2c8",
+    "artifacts/wrist_v5_browser_actions_002/result.json": "c67a215f65e3d1d1eedd16aa9e0a165ee098b3431f9b956aaa6c33984ab2ee34",
+    "artifacts/wrist_v5_media_decode_001.json": "16d979e504abaee3c55ebc58d244617dcf742dd858ccbdf4846ae4a190a40c39",
+    "docs/media/scene_current_v5.json": "0703dc9115b1848ed6fec503e039b2fef8d56cdc95c14291613c82d72ddde8e1",
+    "artifacts/wrist_v5_native_cut_001/result.json": "6f37326ae592298195fc0718d1cc10bdffc8db7fe53c4e37b4a4ef7cbf1ed828",
+    "artifacts/wrist_v5_native_cut_001/camera_rig.json": "b53cb76be7d05b190f04a16ddec9363a9a8553e8ec9aedfc942f9167e107e6ba",
+    "artifacts/wrist_v5_native_trim_001/result.json": "9aa840991728424d68caf25cb8a266dcc5ca06851360050ffb63af0b63e5830f",
+    "artifacts/wrist_v5_native_trim_001/camera_rig.json": "cc349cd6b08b8c7833003f04fb2798ee56d5c699d776597087c79bad8d23f8d2",
+    "artifacts/wrist_v5_lab_smoke_001/result.json": "87783615e20761a572281303bb71119f99a234633f4c8d547ecfe52ab14d7308",
+    "artifacts/wrist_v5_lab_smoke_001/camera_rig.json": "d07282f2541f3ccfc0e0873f419e8843b6fa2e3f401a3075fdf7a5523705f08c"
+  },
+  "full_physics_or_hardware_acceptance": false
+}

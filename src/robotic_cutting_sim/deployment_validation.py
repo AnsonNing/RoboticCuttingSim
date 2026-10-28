@@ -109,9 +109,11 @@ def classify_episode(result, camera, task, *, runtime, expected_steps, returncod
     views = camera.get("visibility_and_optics", {}).get("checks", {})
     checks["named_rgbd_streams"] = bool(records) and all(set(row.get("cameras", {})) == CAMERA_IDS for row in records)
     checks["camera_count_matches_payloads"] = len(records) == camera.get("frames")
+    optional_visibility = set(camera.get("optional_visibility_camera_ids", [])) & {"wrist_d405_1"}
     checks["camera_payload_range_calibration_contract"] = bool(records) and all(
         views.get(name+suffix) is True for name in CAMERA_IDS
-        for suffix in ("_finite_range_and_masks", "_calibration_measured_pose", "_nonempty_working_depth"))
+        for suffix in ("_finite_range_and_masks", "_calibration_measured_pose", "_nonempty_working_depth")
+        if suffix != "_nonempty_working_depth" or name not in optional_visibility)
     checks["rgbd_frame_timestamps"] = views.get("frame_timestamps") is True
     checks["wrist_runtime_optics"] = all(views.get(n+"_runtime_optics") is True for n in CAMERA_IDS if n.startswith("wrist"))
     if expected_steps == 400:

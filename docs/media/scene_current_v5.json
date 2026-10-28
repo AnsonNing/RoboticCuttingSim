@@ -1,0 +1,33 @@
+{
+  "scope": "Lay out three actual synchronized Native RGB captures; no new rendering.",
+  "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+  "source_manifest_sha256": "5d104cd58724f40b3c7be25790c1ff868763f1a41fc4f60d1b02e50b173a6f7f",
+  "camera_rig_sha256": "b53cb76be7d05b190f04a16ddec9363a9a8553e8ec9aedfc942f9167e107e6ba",
+  "frame": 20,
+  "physics_timestamp_s": 4.0,
+  "camera_rig_version": "wrist_camera_rig_v5",
+  "inputs": [
+    {
+      "camera_id": "global_d455",
+      "file": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001/observations/global_d455_0020.npz",
+      "sha256": "ba5385aa050d6de7656bfbda62bb061188346539e049e6316cad18a152484148",
+      "physics_timestamp_s": 4.0
+    },
+    {
+      "camera_id": "wrist_d405_0",
+      "file": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001/observations/wrist_d405_0_0020.npz",
+      "sha256": "19b38ab0581b37a26a08f70f6a95faff738c1d704affc03c17cfdd8a28f82135",
+      "physics_timestamp_s": 4.0
+    },
+    {
+      "camera_id": "wrist_d405_1",
+      "file": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001/observations/wrist_d405_1_0020.npz",
+      "sha256": "681aa8465fb3247e67fadbe3794b635ebc168fbf44e55d842948a6ee04d03944",
+      "physics_timestamp_s": 4.0
+    }
+  ],
+  "output_sha256": "96b822285b0c641825ab5cbdd17b7df455bbe004e376dd9edfbf7a8db69fd32f",
+  "encoder_sha256": "556d595294e3fdc96c5b25b660fadc9bd0b67b4ca6a6c6d99ae44b110652ebc8",
+  "encoder_source_file": "docs/media/scene_current_v5.encoder.py",
+  "display": "Aspect-preserving resizing and labels only; original RGB-D arrays and historical README image remain unchanged"
+}

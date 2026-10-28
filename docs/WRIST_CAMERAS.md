@@ -1,10 +1,16 @@
 # Dual wrist D405 and fixed Global D455
 
+**Current: camera rig v5.** Both cameras use an axis-aligned fixed hand-local
+mount. Franka 1 uses the normal safe park. No wrist-target aiming or observation
+posture is used; secondary object visibility is advisory. See [v5 configuration
+and validation](WRIST_CAMERA_V5.md) and the preserved [v4 checkpoint](WRIST_CAMERA_V4.md).
+The v3 configuration and observation-arm experiments below remain historical.
+
 The new layout is `wrist_d405_global_d455`. The old fixed cameras remain available
 as `legacy_fixed_d455`; all prior recordings and scores are preserved. No policy
 training is included.
 
-The current v3 layout uses a **target-centred close Global view**, at
+The preserved v3 layout uses a **target-centred close Global view**, at
 `(0.28,-0.42,0.46)` m looking toward `(0,0,0.02)` m, about0.67 m away.
 This supersedes the earlier whole-workcell composition below. Two complete
 new native episodes and two separate Lab smokes are reported in

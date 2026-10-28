@@ -5,23 +5,33 @@ dual Franka Panda, a physically grasped knife, continuous soft material and
 permanent TLMPM separation. Two wrist-mounted D405 RGB-D prototypes and a close
 Global D455 provide vision observations. No policy is trained.
 
-![Current live scene: physical knife grasp, close Global view and two wrist views](docs/media/scene_current.png)
+![Actual camera rig v5: both wrist cameras aligned with their hands, with Franka 1 parked](docs/media/scene_current_v5.png)
 
 Actual synchronized RGB captures from live CUT-01 at **t = 4 s**.
-[Image provenance](docs/media/scene_current.json).
+[Image provenance](docs/media/scene_current_v5.json). Both wrist cameras use
+fixed mounts parallel to their hands; Franka 1 stays in its normal park posture.
+[Camera v5 validation](docs/WRIST_CAMERA_V5.md). Previous images and recordings
+remain preserved.
 
 ## Tasks
 
 | Task | Goal | Current fixed-task result | Actual RGB-D video |
 | --- | --- | --- | --- |
-| **CUT-01** | Cut a continuous bar into two parts | Permanent separation; strict task score **PASS** in both runtimes | [Watch](docs/media/wp08_physical_grasp_v2/cut01/synchronized_multiview.mp4) |
-| **TRIM-01** | Remove a continuous surface bump | Chip separation; strict surface-quality score **FAIL** | [Watch](docs/media/wp08_physical_grasp_v2/trim01/synchronized_multiview.mp4) |
+| **CUT-01** | Cut a continuous bar into two parts | Permanent separation; strict task score **PASS** in both runtimes | [Watch v5](docs/media/wrist_v5_cut01/synchronized_multiview.mp4) |
+| **TRIM-01** | Remove a continuous surface bump | Chip separation; strict surface-quality score **FAIL** | [Watch v5](docs/media/wrist_v5_trim01/synchronized_multiview.mp4) |
 
 The knife is an independent rigid body held by finite finger contact and
 friction. Material reaction acts on the tool and reaches the arm through the
 gripper. The historical attachment remains selectable as `legacy_fixed_tool`.
 Materials and sensors are provisional; coupling-work, contact-model and camera
 limitations remain explicit in the [validation report](docs/PHYSICAL_TOOL_INDEPENDENT_VALIDATION.md).
+
+**Evaluation v2** reports recorded-state integrity, cutting outcome and surface
+quality separately. Choose Diagnostic for measurements, Research for task goals,
+or Precision for the unchanged strict benchmark. Missing surface intersections
+remain unknown; they are not measured knife gouges. Fixed TRIM still removes
+98.5294% of target material and still fails the original precision score.
+[Evaluation API, measured results and reproduction](docs/EVALUATION_V2.md).
 
 ## Quick start
 

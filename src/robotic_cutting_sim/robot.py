@@ -13,7 +13,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from .recording import ROOT
-from .workcell import ASSETS, PARK_JOINTS
+from .workcell import ASSETS, PARK_JOINTS, SECONDARY_PARK_JOINTS
 
 
 @dataclass(frozen=True)
@@ -138,8 +138,8 @@ class DualFrankaController:
             builder.add_builder(single, xform=wp.transform(wp.vec3(-.46, .12, -.01)), label_prefix="arm_0")
             builder.add_builder(single, xform=wp.transform(wp.vec3(.46, .12, -.01),
                                 wp.quat_from_axis_angle(wp.vec3(0, 0, 1), wp.pi)), label_prefix="arm_1")
-            builder.joint_q[9] = -np.pi / 2  # park toward +Y, away from the cutting arm
-            builder.joint_target_q[9] = -np.pi / 2
+            builder.joint_q[9:16] = SECONDARY_PARK_JOINTS
+            builder.joint_target_q[9:16] = SECONDARY_PARK_JOINTS
             cfg = newton.ModelBuilder.ShapeConfig(density=7800., mu=.35, gap=.001)
             mount = wp.transform(wp.vec3(*self.config.tool_offset_m), wp.quat(*self.config.tool_rotation_xyzw))
             if self.config.tool_shape == "cut_wedge":

@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT/"src"))
 from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig
 from robotic_cutting_sim.recording import manifest, new_output, write_json
 from robotic_cutting_sim.remote_runtime import StreamingPorts, launch_streaming_app
+from robotic_cutting_sim.camera_rig import CONFIG_PATH
 
 
 def tailnet_ip():
@@ -59,7 +60,7 @@ def main():
             "src/robotic_cutting_sim/remote_control.py", "src/robotic_cutting_sim/remote_runtime.py",
             "src/robotic_cutting_sim/isaac_sim_runner.py", "src/robotic_cutting_sim/live_env.py",
             "src/robotic_cutting_sim/camera_rig.py", "configs/isaac_sim_cutting_streaming.kit",
-            "configs/wrist_camera_rig_v3.json"):
+            str(CONFIG_PATH.relative_to(ROOT))):
         shutil.copyfile(ROOT/relative, implementation/Path(relative).name)
     if config.tool_attachment_mode == "physical_grasp":
         for name in ("physical_tool.py","physical_contacts.py","native_tool.py","grasp_monitor.py","tool_compatibility.py"):

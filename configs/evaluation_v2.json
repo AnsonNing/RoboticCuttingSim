@@ -1,0 +1,19 @@
+{
+  "protocol_id": "cutting_evaluation_v2_20261029",
+  "scope": "Read-only recorded-state integrity, goal outcome and independent geometric quality. No solver, trajectory, legacy threshold or observation changes.",
+  "profiles": {
+    "diagnostic": {"success_gate": false, "surface_gate": false},
+    "research": {
+      "success_gate": true,
+      "surface_gate": false,
+      "reason": "Existing task outcome thresholds are inherited unchanged from cutting_tasks_v1.json. Surface precision is measured separately and is not a universal task goal. Custom research limits must be explicitly declared in GoalSpec before evaluation."
+    },
+    "precision": {"success_gate": true, "surface_gate": true, "legacy_task_protocol": "cutting_tasks_v1.json"}
+  },
+  "missing_surface": "Unknown mesh intersection; never a measured zero height, zero error or physical gouge. All ray locations, values and masks are exported. Paired statistics are explicitly conditional and have no whole-region PASS when coverage is unknown.",
+  "reference_targets": "Analytic and independently frozen represented targets are reported separately; no fitted registration or output-dependent target adjustment.",
+  "roi": {"boundary_band_m": 0.003, "source": "Predeclared geometry diagnostic only, never an exclusion from whole-object quality"},
+  "units": {"distance": "m", "area": "m2", "volume": "m3", "mass": "kg", "time": "s", "fraction": "1"},
+  "precision_benchmark_unchanged": true,
+  "new_universal_research_thresholds": null
+}

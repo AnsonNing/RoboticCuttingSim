@@ -20,6 +20,7 @@ ASSETS = {
     "d455": "Isaac/Sensors/RealSense/D455/rsd455.usd",
 }
 PARK_JOINTS = [0.0, -0.5, 0.0, -2.0, 0.0, 1.5, np.pi / 4]
+SECONDARY_PARK_JOINTS = (-np.pi / 2, *PARK_JOINTS[1:])
 USD_SUFFIXES = (".usd", ".usda", ".usdc")
 
 
