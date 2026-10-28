@@ -1,0 +1,205 @@
+{
+  "status": "DESCRIPTIVE_ACTUAL_ARTICULATION_MOTION_PROOF",
+  "episode": "artifacts/isaacsim_wrist_motion_probe_001",
+  "runtime_execution_status": "PASS_SMOKE",
+  "task_goal_status": "NOT_RUN",
+  "scope": "Separate actual native PhysX arm1 motion and measured wrist RGB-D calibration; incomplete2s task, no task-success or physical-sensor calibration claim",
+  "action": "Arm1 joint1 target = declared secondary observation posture +0.08*sin(2*pi*t/2) rad; all other arm1 targets held. Arm0 retains the ordinary scripted task reference.",
+  "robot_dynamics_source": "Isaac PhysX",
+  "standalone_robot_dynamics_steps": 0,
+  "replay_inputs": false,
+  "native_control_steps": 100,
+  "native_physics_steps": 1000,
+  "duration_s": 2.0,
+  "camera_capture_count": 21,
+  "per_step_pose_samples": 101,
+  "pose_sample_interval_max_s": 0.020000000000000018,
+  "actual_joint_max_excursion_per_arm_rad": [
+    0.1359579712152481,
+    0.08121705055236816
+  ],
+  "actual_secondary_hand_translation_excursion_m": 0.021740581819007055,
+  "camera_metrics": {
+    "wrist_d405_0": {
+      "sensor_model": "ideal_d405_prototype",
+      "resolution_wh": [
+        848,
+        480
+      ],
+      "public_optical_depth_range_m": [
+        0.07,
+        0.5
+      ],
+      "optical_translation_excursion_m": 0.04084887943639669,
+      "optical_rotation_excursion_rad": 0.0020336855592658107,
+      "captured_runtime_inverse_identity_max_abs_error": 2.220446049250313e-16,
+      "per_step_current_USD_max_translation_error_m": 6.587111712987408e-08,
+      "per_step_current_USD_max_rotation_error_rad": 1.6711566775373392e-07,
+      "public_valid_depth_fraction_min_max": [
+        0.8859424135220125,
+        0.8859424135220125
+      ],
+      "observation_array_keys": [
+        "rgb",
+        "depth_m",
+        "valid_mask",
+        "physics_timestamp_s",
+        "surface_timestamp_s",
+        "native_physics_timestamp_s",
+        "live_source",
+        "camera_id",
+        "sensor_model",
+        "K",
+        "T_world_camera",
+        "T_camera_world",
+        "camera_extrinsics_timestamp_s",
+        "prototype_sensor_model",
+        "physical_sensor_calibration_validated",
+        "T_world_hand",
+        "T_hand_camera"
+      ],
+      "physical_sensor_calibration_validated": false,
+      "per_step_camera_vs_recorded_parent_composition_max_translation_error_m": 0.0,
+      "per_step_camera_vs_recorded_parent_composition_max_rotation_error_rad": 0.0,
+      "captured_runtime_camera_vs_recorded_parent_composition_max_translation_error_m": 6.447266022031415e-08,
+      "captured_runtime_camera_vs_recorded_parent_composition_max_rotation_error_rad": 1.336181955240591e-07,
+      "expected_parent_composition_source": "Separately saved actual PhysX hand pose from robot_state.npz composed with recorded immutable hand-to-optical matrix"
+    },
+    "wrist_d405_1": {
+      "sensor_model": "ideal_d405_prototype",
+      "resolution_wh": [
+        848,
+        480
+      ],
+      "public_optical_depth_range_m": [
+        0.07,
+        0.5
+      ],
+      "optical_translation_excursion_m": 0.02811264387430981,
+      "optical_rotation_excursion_rad": 0.08144003131981042,
+      "captured_runtime_inverse_identity_max_abs_error": 2.220446049250313e-16,
+      "per_step_current_USD_max_translation_error_m": 1.7143412328521847e-08,
+      "per_step_current_USD_max_rotation_error_rad": 1.815622835912936e-07,
+      "public_valid_depth_fraction_min_max": [
+        0.9259237421383648,
+        0.933891018081761
+      ],
+      "observation_array_keys": [
+        "rgb",
+        "depth_m",
+        "valid_mask",
+        "physics_timestamp_s",
+        "surface_timestamp_s",
+        "native_physics_timestamp_s",
+        "live_source",
+        "camera_id",
+        "sensor_model",
+        "K",
+        "T_world_camera",
+        "T_camera_world",
+        "camera_extrinsics_timestamp_s",
+        "prototype_sensor_model",
+        "physical_sensor_calibration_validated",
+        "T_world_hand",
+        "T_hand_camera"
+      ],
+      "physical_sensor_calibration_validated": false,
+      "per_step_camera_vs_recorded_parent_composition_max_translation_error_m": 0.0,
+      "per_step_camera_vs_recorded_parent_composition_max_rotation_error_rad": 0.0,
+      "captured_runtime_camera_vs_recorded_parent_composition_max_translation_error_m": 1.5652950969027094e-08,
+      "captured_runtime_camera_vs_recorded_parent_composition_max_rotation_error_rad": 1.462381186746048e-07,
+      "expected_parent_composition_source": "Separately saved actual PhysX hand pose from robot_state.npz composed with recorded immutable hand-to-optical matrix"
+    },
+    "global_d455": {
+      "sensor_model": "native_single_view_d455_provisional",
+      "resolution_wh": [
+        640,
+        480
+      ],
+      "public_optical_depth_range_m": [
+        0.6,
+        6.0
+      ],
+      "optical_translation_excursion_m": 0.0,
+      "optical_rotation_excursion_rad": 0.0,
+      "captured_runtime_inverse_identity_max_abs_error": 8.551072960381147e-17,
+      "per_step_current_USD_max_translation_error_m": 0.0,
+      "per_step_current_USD_max_rotation_error_rad": 0.0,
+      "public_valid_depth_fraction_min_max": [
+        0.15860677083333333,
+        0.159130859375
+      ],
+      "observation_array_keys": [
+        "rgb",
+        "depth_m",
+        "valid_mask",
+        "physics_timestamp_s",
+        "surface_timestamp_s",
+        "native_physics_timestamp_s",
+        "live_source",
+        "native_depth_rgb_registered",
+        "camera_id",
+        "sensor_model",
+        "K",
+        "T_world_camera",
+        "T_camera_world",
+        "camera_extrinsics_timestamp_s",
+        "prototype_sensor_model",
+        "physical_sensor_calibration_validated"
+      ],
+      "physical_sensor_calibration_validated": false,
+      "per_step_camera_vs_recorded_parent_composition_max_translation_error_m": 1.7943564172216577e-07,
+      "per_step_camera_vs_recorded_parent_composition_max_rotation_error_rad": 6.882551511810908e-08,
+      "captured_runtime_camera_vs_recorded_parent_composition_max_translation_error_m": 1.794356415955165e-07,
+      "captured_runtime_camera_vs_recorded_parent_composition_max_rotation_error_rad": 6.882551524738705e-08,
+      "expected_parent_composition_source": "Recorded fixed Global design transform (absolute design discrepancy); zero-drift metric is measured relative to first actual optical sample"
+    }
+  },
+  "source_snapshot_bytes_verified": {
+    "src/robotic_cutting_sim/isaac_sim_runner.py": true,
+    "src/robotic_cutting_sim/live_material.py": true,
+    "src/robotic_cutting_sim/robot.py": true,
+    "src/robotic_cutting_sim/tlmpm.py": true,
+    "src/robotic_cutting_sim/material_config.py": true,
+    "src/robotic_cutting_sim/cut_topology.py": true,
+    "src/robotic_cutting_sim/cutting_surface.py": true,
+    "src/robotic_cutting_sim/usd_surface_bridge.py": true,
+    "src/robotic_cutting_sim/single_view_registration.py": true,
+    "scripts/run_isaac_sim_cutting.py": true,
+    "configs/isaac_sim_cutting.kit": true,
+    "src/robotic_cutting_sim/camera_rig.py": true,
+    "src/robotic_cutting_sim/native_camera_geometry.py": true,
+    "src/robotic_cutting_sim/scene_frames.py": true,
+    "configs/wrist_camera_rig_v2.json": true,
+    "src/robotic_cutting_sim/tasks.py": true,
+    "src/robotic_cutting_sim/geometry.py": true,
+    "src/robotic_cutting_sim/scene_validation.py": true,
+    "src/robotic_cutting_sim/benchmark.py": true,
+    "src/robotic_cutting_sim/workcell.py": true,
+    "src/robotic_cutting_sim/coupled_robot.py": true,
+    "src/robotic_cutting_sim/fixture_contacts.py": true,
+    "src/robotic_cutting_sim/affine_surface_controls.py": true,
+    "configs/cutting_tasks_v1.json": true,
+    "configs/particle_surface_affine_v1.json": true
+  },
+  "source_integrity_before_app": "PASS",
+  "source_integrity_before_live_reset": "PASS",
+  "input_sha256": {
+    "artifacts/isaacsim_wrist_motion_probe_001/result.json": "b71683e473eb5dd48031b6885134227bb46903c506a1ba50382c9421484b41d7",
+    "artifacts/isaacsim_wrist_motion_probe_001/manifest.json": "4c0fc865f691abb52c1fedc7de57bf9f799ed642edb31a765dba5a95ddcb98f5",
+    "artifacts/isaacsim_wrist_motion_probe_001/setup.json": "fcaefd201a777e0595de3ad643aa65942b876148a13e7b6233b9a23562741817",
+    "artifacts/isaacsim_wrist_motion_probe_001/robot_state.npz": "2ed1f1a20171b7c774ea03cbb3900fd3da1029f9f1df86e1a38c080ee093005d",
+    "artifacts/isaacsim_wrist_motion_probe_001/camera_pose_trace.json": "27e8420114d04b09a15b7d6c7f283278790d0f3e3f8369921fd82ad39d9ed677",
+    "artifacts/isaacsim_wrist_motion_probe_001/frame_manifest.json": "cc564702ce6a975441bf6ba3216d6e15bfb696b1281cd96880c1e341671ca2ca",
+    "artifacts/isaacsim_wrist_motion_probe_001/final_live_scene_receipt.json": "bc6911d3a06b98ddf74322e791ac944c7fae909a950a62c7e6eeaaba18a07b24",
+    "artifacts/isaacsim_wrist_motion_probe_001/source_integrity_before_app.json": "e87fb1bf53047a171cf0a570db2df7373bbe430d1f7adef8888f359932e0b5f4",
+    "artifacts/isaacsim_wrist_motion_probe_001/source_integrity_before_live_reset.json": "7448ebb6545c340af9ec571bd9b825e13df9fe0080a9a42fef4519a138b2606e"
+  },
+  "equations": "Expected camera T_world_camera = pose_matrix(actual_hand_pose_xyzw) @ immutable T_hand_optical_cv; compare all per-step trace matrices and independently captured native runtime matrices. Fixed Global is compared with its recorded static rig transform.",
+  "limitations": [
+    "No full8s task metric evaluation",
+    "D405 remains ideal_d405_prototype; no disparity/noise or hardware calibration validation",
+    "Global native holes and valid outliers are retained; motion proof is not depth-accuracy acceptance",
+    "No force or oracle labels added to observations"
+  ]
+}

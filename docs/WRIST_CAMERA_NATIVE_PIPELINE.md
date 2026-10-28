@@ -123,13 +123,13 @@ that short recording. This is `PASS_SMOKE`, not full task or sensor acceptance.
 The subsequent source-frozen v2 pilot
 `artifacts/isaacsim_wrist_rig_smoke_003` uses corrected D405 housing dimensions
 and moves Global to `[1.10, -1.20, 1.05] m`, looking at `[0, 0, 0.25] m`.
-Its three frames retain15.908–15.913% valid native Global depth, compared with
-approximately6.36% in the farther-view pilot. Independent whole-scene CPU
+Its three frames retain 15.908–15.913% valid native Global depth, compared with
+approximately 6.36% in the farther-view pilot. Independent whole-scene CPU
 audit `artifacts/wrist_camera_native_pilot003_audit_001` passes measured
 kinematics, the unchanged engineering visibility/optics checks and conservative
-visual clearance. The first Global frame contains122 depth-consistent material
-pixels and12 knife pixels, above the existing25/8 thresholds. All three frames
-pass those checks. A rare approximately0.85m valid native error remains in the
+visual clearance. The first Global frame contains 122 depth-consistent material
+pixels and 12 knife pixels, above the existing 25/8 thresholds. All three frames
+pass those checks. A rare approximately 0.85 m valid native error remains in the
 receipt; no native tail is filtered and full sensor acceptance is not scored.
 
 The native worker verifies every frozen source and snapshot before application
@@ -150,3 +150,47 @@ both-hand frame composition, inverse transforms, active camera contacts and
 source/snapshot startup races. Full CUT/TRIM task metrics, whole-trajectory
 clearance, native depth holes, reset repeatability and the separate actual
 secondary-arm motion probe require their own episode/audit receipts.
+
+## Completed v2 native episodes and secondary-arm motion
+
+Both final v2 native recordings complete 400 control intervals, 4,000 PhysX
+substeps, 8 simulated seconds, 401 actual dual-hand/camera pose samples and 41
+three-camera capture sets. Runtime and rig sources stay frozen through both
+episodes; native source-integrity checks pass.
+
+| Native recording | Physical outcome | Shared task metrics |
+|---|---|---|
+| `artifacts/isaacsim_wrist_cut01_002` | Two 72 g parts; graph 1→2; 2.4 s post-cut persistence; zero history rewrites | `PASS_TASK_METRICS` |
+| `artifacts/isaacsim_wrist_trim01_001` | 1.608 g detached chip and 144.024 g substrate; 98.5294% reference cap mass disconnected; 2.4 s persistence; zero history rewrites | `FAIL_TASK_METRICS`: surface p95/RMS, gouge and overcut criteria remain failed |
+
+The loop/evaluation/reset times are 256.89 s and 91.81 s respectively, while the
+other GPU also runs Lab work; these are not isolated performance measurements.
+Task metrics do not promote native hardware sensor calibration or complete
+benchmark acceptance. The first farther-Global CUT recording remains preserved
+as `artifacts/isaacsim_wrist_cut01_001`.
+
+The independent motion recording `artifacts/isaacsim_wrist_motion_probe_001`
+then runs 100 actual controls/1,000 PhysX substeps over 2 s, producing 101 per-step
+pose samples and 21 three-camera captures. The declared secondary observation
+posture receives only a joint 1 sinusoid of 0.08 rad amplitude and 2 s period; it
+is disabled in the complete task baselines. Actual arm1 joint excursion is
+0.081217 rad, actual hand translation 21.74 mm, and wrist1 optical translation
+28.11 mm with 0.081440 rad rotation. The Global optical transform has exactly
+zero translation and rotation drift in this recording.
+
+For all 21 captures, native runtime wrist1 extrinsics match the separately
+recorded actual PhysX hand composition within 15.7 nm translation. Every 20 ms
+USD optical sample agrees within 17.2 nm. Both source-integrity checks pass.
+This proves actual articulation-driven wrist-camera movement without writing
+commanded camera world poses. The recording remains `PASS_SMOKE`, with task
+metrics `NOT_RUN` for its incomplete 2 s task. The compact input hashes,
+source verification and per-camera numerical evidence are in
+[`native_wrist_motion_proof.json`](evidence/native_wrist_motion_proof.json).
+
+```bash
+.deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
+  --task-id TRIM-01 --particle-spacing .002 --steps 100 --record-every 5 \
+  --camera-layout wrist_d405_global_d455 --camera-mode native_single_view \
+  --observation-motion-probe --gpu 1 --device cuda:1 \
+  --output-dir artifacts/native_wrist_motion_fresh
+```
