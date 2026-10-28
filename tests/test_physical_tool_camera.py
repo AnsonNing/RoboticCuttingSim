@@ -36,7 +36,9 @@ def test_physical_tool_parts_are_occluders_and_never_become_material_labels(tmp_
     for label in (1, -3, -4):
         mask = reference.last_tool_part_labels == label
         assert mask.any()
-        np.testing.assert_allclose(depth[mask], .29, atol=1e-6)
+        # Edge rays hit side faces as well as the front face of each real box.
+        assert np.all((depth[mask] >= .29 - 1e-6) & (depth[mask] <= .31 + 1e-6))
+        np.testing.assert_allclose(depth[mask].min(), .29, atol=1e-6)
         assert np.all(labels[mask] == (1 if label == 1 else 0))
     assert np.any(labels == 2)
     assert module.tool_part_label("/World/Legacy/Knife") == 1
