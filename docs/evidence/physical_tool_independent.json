@@ -3794,7 +3794,41 @@
         }
       ],
       "scope": "Saved implementation hashes and recorded runtime checks; current checkout may differ"
-    }
+    },
+    "task_audit": {
+      "path": "artifacts/wp08_physical_task_lab_cut_v3_audit_001/result.json",
+      "sha256": "c9d60df749f3ac394a4bf9ee2efc27292fa1d18901dec10cf701aecb6e7f345e"
+    },
+    "task_status": "PASS_TASK_METRICS",
+    "task_score_recomputation": {
+      "same_checks": true,
+      "same_metrics": true,
+      "same_status": true
+    },
+    "task_metrics": {
+      "initial_components": 1,
+      "final_components": 2,
+      "component_masses_kg": [
+        0.07199999999999998,
+        0.07199999999999998
+      ],
+      "recorded_mass_kg": 0.14399999999999996,
+      "expected_task_sampler_mass_kg": 0.14399999999999996,
+      "reference_mass_absolute_error_kg": 0.0,
+      "particle_count_all_frames": 96000,
+      "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+      "nonzero_digit_rewrites": 0,
+      "postcut_graph_count_minimum": 2,
+      "postcut_persistence_time_s": 2.3999999999999995,
+      "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+      "cross_component_reference_node_count": 54,
+      "severed_particle_pair_node_incidences": 2009088,
+      "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+      "substantial_parts": 2,
+      "two_main_parts_mass_fraction": 1.0,
+      "minor_parts_mass_fraction": 0.0
+    },
+    "analysis_sources_unchanged": true
   },
   "optional_native_rack007": {
     "audit": {

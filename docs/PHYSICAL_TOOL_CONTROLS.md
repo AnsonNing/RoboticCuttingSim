@@ -155,7 +155,7 @@ candidate frozen in `6ec2303`. Grip effort, friction, task geometry, transfer,
 load cases and every acceptance threshold are unchanged. New candidate
 matrices remain separate from both original matrices.
 
-## Candidate v2 results and evidence checkpoint
+## Preserved matrix results
 
 | Matrix | Actual perturbations completed | Frozen aggregate |
 | --- | --- | --- |
@@ -163,6 +163,7 @@ matrices remain separate from both original matrices.
 | `wp08_lab_controls_matrix_001` | 3/7; 3,000 evaluation substeps | FAIL: four clearance transfers |
 | `wp08_native_controls_matrix_v2_001` | 7/7; 6,250 evaluation substeps | PASS_FROZEN_RIGID_CONTROLS |
 | `wp08_lab_controls_matrix_v2_001` | 4/7; 3,250 evaluation substeps | FAIL: three clearance transfers |
+| `wp08_lab_controls_matrix_v3_001` | 3/7; 3,000 evaluation substeps | FAIL: four clearance transfers with the finite pad model |
 
 The Native v2 matrix passes all seven frozen engineering controls. Baseline,
 nominal and torque have 100% loaded handle attribution with independently
@@ -189,9 +190,9 @@ and release drops are -21.579 and -11.325 mm. They are retained as reported
 contact-ledger distances, without a claim of independent mesh-penetration
 verification or full contact-quality acceptance.
 
-Across these four matrices, all 28 fresh starts and their source snapshots
-are preserved. Twenty-one perturbations complete, with 18,750 actual 2 ms
-evaluation samples. The seven transfer failures have no invented load
+Across these five matrices, all 35 fresh starts and their source snapshots
+are preserved. Twenty-four perturbations complete, with 21,750 actual 2 ms
+evaluation samples. The eleven transfer failures have no invented load
 response. Every stored implementation copy and every raw-trace hash matches
 its case receipt. The [compact evidence](evidence/physical_tool_controls.json)
 contains all cases, strict failures, source/raw hashes, runtime versions,
@@ -199,13 +200,48 @@ clearance errors and paired outcomes. Observed wall times include startup,
 shutdown and trace I/O; concurrent authorized jobs prevent treating them
 as an exclusive performance benchmark.
 
-![Actual relative tool motion for all four preserved matrices](media/physical_tool_controls.png)
+![Actual relative tool motion for all preserved matrices](media/physical_tool_controls.png)
 
 The Lab transfer instability remains a limitation of its current contact
 recipe. In MuJoCo, `condim=4` adds resistance to rotation about the contact
 normal; the manual describes its use for soft-finger grasp models.
 [MuJoCo contact documentation](https://mujoco.readthedocs.io/en/latest/computation/#condim)
-A finite pad-patch candidate is being prepared separately. It has no control
-or task acceptance in this evidence checkpoint. No friction, effort,
-acceptance threshold or past failure is changed by this explanation.
+The separately frozen [finite pad model](../configs/lab_grip_contact_v3.json)
+uses the nominal handle/pad overlap rectangle and uniform pressure to derive
+a finite torsional coefficient: sliding friction times mean patch radius.
+At friction 0.6 it is 0.0037306 m. This is a documented approximation, not a
+calibrated real Franka pad model. The actual failed baseline has 31,014
+tool/finger contact records with dimension 4 and that coefficient; its
+direct normal-axis contact moment reaches 0.025660 N m. Actual pre-step
+hand external wrench is zero. The profile is active, but those facts do not
+establish robust transport.
+
+The [v3 Lab control protocol](../configs/physical_tool_controls_v3_lab.json)
+changes no measurement threshold, load case, effort, friction or initial
+opening. Baseline, nominal, low-friction and release still fail clearance.
+Their endpoint position errors are 14.500, 41.353, 9.718 and 30.905 mm;
+their orientation errors are 0.127921, 0.448699, 0.193225 and 0.289870 rad.
+The 9.718 mm position alone does not pass its simultaneous orientation gate.
+Torque, stress and weak grip execute. Weak grip drops by 380.369 mm relative
+to the hand and retains a -19.914 mm raw contact-distance tail. A missing
+nominal case prevents a matched comparison. There is no v3 release result.
+The original joint-space transport remains an explicit limitation.
+
+An independent raw audit of Native v2 reports
+`PASS_INDEPENDENT_CONTROL_SCREENS` for the complete seven-case matrix,
+including the PRE-step pose/time identity, matched weak/friction responses
+and actual arm response. Its receipt is
+`artifacts/wp08_independent_native_controls_matrix_v2_001_retry002/result.json`;
+the compact evidence includes its exact index, protocol, result and auditor
+hashes. Material reaction ON/OFF remains separate.
+
+```bash
+.venv/bin/python scripts/audit_physical_controls.py \
+  artifacts/wp08_native_controls_matrix_v2_001/index.json \
+  artifacts/independent_physical_controls_NEW
+```
+
+These matrices use CUT-01's 35 mm blade and its declared 51.5131 g tool.
+Full TRIM episodes with the shorter blade have their own runtime receipts.
+All retained failures, finite efforts and friction limits remain unchanged.
 Full physical acceptance remains false.
