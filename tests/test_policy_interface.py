@@ -200,3 +200,25 @@ def test_delta_action_may_name_its_frame():
     assert np.allclose(b.edge[:3], [.001, 0, .049])
     with pytest.raises(ValueError):
         env.step({"mode": DELTA_MODE, "frame": "tool", "target": np.zeros(6)})
+
+
+def test_agent_api_writes_views_and_reports_without_cameras(tmp_path):
+    import zlib
+    from robotic_cutting_sim.agent_api import CuttingAgentAPI
+    env = CuttingTaskEnv(tracking_backend(), action_mode=DELTA_MODE)
+    agent = CuttingAgentAPI(env)
+    agent.reset()
+    views = agent.save_views(tmp_path)
+    assert len(views["images"]) == 2
+    data = open(views["images"][0], "rb").read()
+    assert data[:8] == b"\x89PNG\r\n\x1a\n" and b"IHDR" in data and b"IEND" in data
+    width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    assert (height, width) == (2, 3)
+    start = data.index(b"IDAT")-4
+    length = int.from_bytes(data[start:start+4], "big")
+    assert len(zlib.decompress(data[start+8:start+8+length])) == height*(1+3*width)
+    state_only = CuttingAgentAPI(CuttingTaskEnv(tracking_backend(), observation_profile="state"))
+    state_only.reset()
+    assert state_only.save_views(tmp_path)["images"] == []
+    moved = agent.move_edge_by([0, 0, .004])
+    assert moved["reached"] and moved["steps"] == 2

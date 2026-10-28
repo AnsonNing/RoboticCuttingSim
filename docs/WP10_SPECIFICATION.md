@@ -116,6 +116,11 @@ Franka 夾著刀具切割物體，完成任務（切斷、切除凸起物等）�
 
 完成條件：一張總表，列出控制方式 × 任務 × runtime 的「動作正確性」與「任務完成」結果（PASS／FAIL／BLOCKED／NOT_RUN 與數字），附所有原始紀錄與影片路徑。
 
+### 交接時尚未完成的小項（請先做）
+
+- 重跑 `scripts/run_kinematic_validation.py`（第 002 輪在交接時被停止，沒有結果）：確認 agent_api 在 CUT 任務的腳本 bug 已修、`skim` 縮短後 TRIM-01-R 的「切後持續分離」通過；表面精度在 4 mm 下預期仍 FAIL，要在 GPU 1 mm 重跑。
+- 用 `scripts/render_kinematic_episode.py` 補錄 kinematic 示意影片（TRIM-01-R 削平、CUT-02 agent、CUT-01-R 斜切），放在 `docs/media/wp10_kinematic/`。這些只是補充，WP-10G 仍必須交實際機器人影片。
+
 ## 4. 交付
 
 - 在 `claude/lucid-mendel-vt7n82` 繼續，每個工作包完成就 commit、push。

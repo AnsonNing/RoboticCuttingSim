@@ -1,21 +1,21 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## Current: WP-10 ruler knife and policy-facing interface (part A, CPU only)
+## Current: WP-10 ruler knife, general knife motions and policy control (parts A/B, CPU only)
 
-Branch `claude/lucid-mendel-vt7n82`. Part A adds an opt-in policy interface
-(relative `cartesian_edge_delta` actions, per-step limits, workspace box,
-`IKFailure` rejection with hold, `state` observation profile, provisional
-`cutting_reward_v0`, optional Gymnasium adapter), the parametric
-`ruler_knife_v1` profile (120 mm edge, 40 mm deep, 1.5 mm, 25 deg double
-bevel, spine handle) and `tlmpm_v2` (convex-polygon blade, CPU-compilable;
-legacy triangle matches a renamed frozen v1 bit for bit on CPU including
-cutting). Defaults keep every historical behavior; `tlmpm.py` is untouched.
-CPU: 428 PASS, 2 environment-only bootstrap failures (no Python 3.12 on that
-host). GPU runtime use of all of this is **NOT_RUN**; the ruler knife is not
-yet built by either runtime. Diagnosis, decisions and the remaining work
-packages (GPU validation, runtime tool integration, cutting law v2 for general
-knife motions, motion/angle matrix, RL speed, end-to-end policy/RL/agent
-validation): [WP-10 specification](WP10_SPECIFICATION.md),
+Branch `claude/lucid-mendel-vt7n82`, handed off to Codex for the GPU/live work.
+Done and CPU-verified: opt-in policy interface (delta actions, step limits, IK
+rejection, state profile, severed-bond reward, Gym adapter, agent tools with
+PNG views), `ruler_knife_v1`, `tlmpm_v2` with opt-in cutting law 2 (slicing
+work, energy-gated labels, blunt handle) whose law 1 equals frozen v1 bit for
+bit, `cutting_tasks_v2` (CUT-01-R, TRIM-01-R, CUT-02; v1 thresholds), an
+ideal-tracking kinematic backend, scripted knife-motion policies and
+validation/probe/video scripts. Kinematic full episodes: CUT-01-R, CUT-02 and
+CUT-01 PASS the frozen oracle for scripted reference, push, saw and Gym
+controllers; TRIM-01-R removes the bump but fails strict surface metrics at
+4 mm. Every GPU, Isaac Sim and Isaac Lab result is **NOT_RUN**; the ruler
+knife is not yet authored by either live runtime. Report:
+[WP-10A](reports/WP-10A.md); plan: [WP-10 specification](WP10_SPECIFICATION.md);
+usage: [POLICY_CONTROL.md](POLICY_CONTROL.md); decisions:
 [ADR 0003](adr/0003-ruler-knife-and-policy-interface.md).
 
 ## Current: WP-09 Evaluation v2 and hand-aligned wrist-camera v5

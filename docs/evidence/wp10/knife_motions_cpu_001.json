@@ -1,0 +1,496 @@
+{
+ "command": "scripts/probe_knife_motions.py --out /tmp/claude-0/-home-user/3078c62b-8dac-53f9-a45b-1a378a33253e/scratchpad/e2e/knife_motions_cpu_001.json",
+ "commit": "aa4c8b7eaae1375ad39e9da13f73eb82ed6cea56",
+ "profile": "ruler_knife_v1",
+ "scope": "Kinematic blade; uncalibrated provisional material; not robot evidence",
+ "rows": [
+  {
+   "motion": "push_down",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    216
+   ],
+   "severed_bonds": 18,
+   "pieces": 2,
+   "largest_mass_fractions": [
+    0.5333,
+    0.4667
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.22852496802806854,
+      6.460967938437534e-07,
+      0.11360087245702744
+     ],
+     "peak_abs_N": [
+      0.4106810986995697,
+      0.0012697007041424513,
+      0.29306256771087646
+     ]
+    }
+   ],
+   "wall_s": 8.19
+  },
+  {
+   "motion": "push_down",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    216
+   ],
+   "severed_bonds": 18,
+   "pieces": 2,
+   "largest_mass_fractions": [
+    0.5333,
+    0.4667
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.23471802473068237,
+      1.2491960887928144e-07,
+      0.027456512674689293
+     ],
+     "peak_abs_N": [
+      0.38276299834251404,
+      0.000593770993873477,
+      0.21506595611572266
+     ]
+    }
+   ],
+   "wall_s": 7.58
+  },
+  {
+   "motion": "oblique20_push",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    216
+   ],
+   "severed_bonds": 24,
+   "pieces": 2,
+   "largest_mass_fractions": [
+    0.5556,
+    0.4444
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.026507651433348656,
+      -6.925037610017171e-07,
+      0.15311996638774872
+     ],
+     "peak_abs_N": [
+      0.41011154651641846,
+      0.000150765961734578,
+      1.3196989297866821
+     ]
+    }
+   ],
+   "wall_s": 8.21
+  },
+  {
+   "motion": "oblique20_push",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    210
+   ],
+   "severed_bonds": 24,
+   "pieces": 2,
+   "largest_mass_fractions": [
+    0.5556,
+    0.4444
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.02984924614429474,
+      -2.6418597087740636e-08,
+      0.07127845287322998
+     ],
+     "peak_abs_N": [
+      0.34798306226730347,
+      0.00025100179482251406,
+      0.9891798496246338
+     ]
+    }
+   ],
+   "wall_s": 8.03
+  },
+  {
+   "motion": "slow_push",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    72
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.09319322556257248,
+      4.095466010767268e-07,
+      0.05541299283504486
+     ],
+     "peak_abs_N": [
+      0.2885180413722992,
+      0.00035757353180088103,
+      0.18453407287597656
+     ]
+    }
+   ],
+   "wall_s": 6.89
+  },
+  {
+   "motion": "slow_push",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    72
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.09883773326873779,
+      5.418024215941841e-07,
+      0.059284377843141556
+     ],
+     "peak_abs_N": [
+      0.28374946117401123,
+      6.566727824974805e-05,
+      0.18453407287597656
+     ]
+    }
+   ],
+   "wall_s": 7.25
+  },
+  {
+   "motion": "slice_along_edge",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    72
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.104651540517807,
+      -0.035489652305841446,
+      0.044783253222703934
+     ],
+     "peak_abs_N": [
+      0.2418816089630127,
+      0.07459770888090134,
+      0.14006011188030243
+     ]
+    }
+   ],
+   "wall_s": 7.07
+  },
+  {
+   "motion": "slice_along_edge",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    72
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.1289338320493698,
+      -0.001416224054992199,
+      0.0037757093086838722
+     ],
+     "peak_abs_N": [
+      0.292244017124176,
+      0.04077937826514244,
+      0.10621019452810287
+     ]
+    }
+   ],
+   "wall_s": 7.09
+  },
+  {
+   "motion": "sideways_push",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    98
+   ],
+   "severed_bonds": 0,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      -0.2810803949832916,
+      1.780014486030268e-06,
+      0.03215630725026131
+     ],
+     "peak_abs_N": [
+      0.44954556226730347,
+      0.00013868827954865992,
+      0.06846970319747925
+     ]
+    }
+   ],
+   "wall_s": 5.85
+  },
+  {
+   "motion": "sideways_push",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    0
+   ],
+   "severed_bonds": 0,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      -0.2945989668369293,
+      3.386220157608477e-07,
+      0.04157833382487297
+     ],
+     "peak_abs_N": [
+      0.4532604515552521,
+      7.460358028765768e-05,
+      0.06573060899972916
+     ]
+    }
+   ],
+   "wall_s": 5.8
+  },
+  {
+   "motion": "flat_press",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    38
+   ],
+   "severed_bonds": 0,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      -0.21966829895973206,
+      3.2406353511760244e-07,
+      2.610956907272339
+     ],
+     "peak_abs_N": [
+      0.3962489068508148,
+      0.0003376897075213492,
+      6.498966217041016
+     ]
+    }
+   ],
+   "wall_s": 5.54
+  },
+  {
+   "motion": "flat_press",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    32
+   ],
+   "severed_bonds": 0,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      -0.1440504640340805,
+      7.359322353295283e-06,
+      2.7392709255218506
+     ],
+     "peak_abs_N": [
+      0.2938601076602936,
+      0.028206845745444298,
+      7.140081882476807
+     ]
+    }
+   ],
+   "wall_s": 5.54
+  },
+  {
+   "motion": "cut_half_then_pull_out",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    72,
+    72
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.10965941846370697,
+      5.474503694813393e-08,
+      0.06918399780988693
+     ],
+     "peak_abs_N": [
+      0.3305569589138031,
+      6.322125045699067e-06,
+      0.21506595611572266
+     ]
+    },
+    {
+     "mean_N": [
+      0.015683094039559364,
+      2.4228711481555365e-08,
+      -0.000466923724161461
+     ],
+     "peak_abs_N": [
+      0.3413614332675934,
+      6.092193416407099e-06,
+      0.091537244617939
+     ]
+    }
+   ],
+   "wall_s": 7.46
+  },
+  {
+   "motion": "cut_half_then_pull_out",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    74,
+    74
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.13115344941616058,
+      1.7364476434522658e-07,
+      0.03269384056329727
+     ],
+     "peak_abs_N": [
+      0.3783928155899048,
+      1.0483347978151869e-05,
+      0.21506595611572266
+     ]
+    },
+    {
+     "mean_N": [
+      0.019907550886273384,
+      -1.1350254958131245e-08,
+      -0.0013974340399727225
+     ],
+     "peak_abs_N": [
+      0.4050986170768738,
+      5.81650283493218e-06,
+      0.03346214070916176
+     ]
+    }
+   ],
+   "wall_s": 7.09
+  },
+  {
+   "motion": "cut_half_then_sideways",
+   "cutting_law": 1,
+   "labelled_after_phase": [
+    72,
+    90
+   ],
+   "severed_bonds": 6,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.10965941846370697,
+      5.474503694813393e-08,
+      0.06918399780988693
+     ],
+     "peak_abs_N": [
+      0.3305569589138031,
+      6.322125045699067e-06,
+      0.21506595611572266
+     ]
+    },
+    {
+     "mean_N": [
+      -0.45051419734954834,
+      3.608383394748671e-06,
+      0.09336832910776138
+     ],
+     "peak_abs_N": [
+      0.5515719652175903,
+      0.0009055861737579107,
+      0.12508265674114227
+     ]
+    }
+   ],
+   "wall_s": 7.1
+  },
+  {
+   "motion": "cut_half_then_sideways",
+   "cutting_law": 2,
+   "labelled_after_phase": [
+    74,
+    108
+   ],
+   "severed_bonds": 10,
+   "pieces": 1,
+   "largest_mass_fractions": [
+    1.0
+   ],
+   "forces": [
+    {
+     "mean_N": [
+      0.13115344941616058,
+      1.7364476434522658e-07,
+      0.03269384056329727
+     ],
+     "peak_abs_N": [
+      0.3783928155899048,
+      1.0483347978151869e-05,
+      0.21506595611572266
+     ]
+    },
+    {
+     "mean_N": [
+      -0.4660806655883789,
+      -4.067994814249687e-05,
+      0.07027356326580048
+     ],
+     "peak_abs_N": [
+      0.6145647764205933,
+      0.01989290677011013,
+      0.23004406690597534
+     ]
+    }
+   ],
+   "wall_s": 7.52
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+{
+ "scope": "Diagnosis before WP-10 changes: frozen v1 TLMPM (C++-keyword argument renamed for Warp CPU, otherwise identical), CUT-01 bar at 2 mm spacing, legacy CUT wedge driven kinematically at 20 mm/s through the bar center, task material (E 50 kPa, Gc 0.05 J/m^2), material dt 0.1 ms. Not robot evidence.",
+ "cases": {
+  "vertical_baseline": "task CUT orientation",
+  "oblique_tilt20": "rotated 20 deg about the edge line, moved along the blade",
+  "yaw30": "rotated 30 deg about world z",
+  "edge_roll15": "rotated 15 deg about the blade normal",
+  "motion_misaligned15": "blade vertical, motion 15 deg out of the blade plane (a legitimate oblique push)"
+ },
+ "rows": [
+  {
+   "case": "edge_roll15",
+   "particles": 12000,
+   "components": 2,
+   "largest_mass_fractions": [
+    0.5,
+    0.5
+   ],
+   "severed": true,
+   "labelled_fraction": 0.2986666666666667,
+   "peak_reaction_N": 0.22897730852083023,
+   "mean_reaction_N": 0.10244884181134047,
+   "wall_s": 1058.1
+  },
+  {
+   "case": "motion_misaligned15",
+   "particles": 12000,
+   "components": 2,
+   "largest_mass_fractions": [
+    0.5262,
+    0.4737
+   ],
+   "severed": true,
+   "labelled_fraction": 0.29875,
+   "peak_reaction_N": 0.4533388903838707,
+   "mean_reaction_N": 0.19574429401091817,
+   "wall_s": 1024.3
+  },
+  {
+   "case": "oblique_tilt20",
+   "particles": 12000,
+   "components": 2,
+   "largest_mass_fractions": [
+    0.5175,
+    0.4825
+   ],
+   "severed": true,
+   "labelled_fraction": 0.3175,
+   "peak_reaction_N": 0.3405258413014187,
+   "mean_reaction_N": 0.17057429003178914,
+   "wall_s": 1031.4
+  },
+  {
+   "case": "vertical_baseline",
+   "particles": 12000,
+   "components": 2,
+   "largest_mass_fractions": [
+    0.5,
+    0.5
+   ],
+   "severed": true,
+   "labelled_fraction": 0.29875,
+   "peak_reaction_N": 0.25173274442778365,
+   "mean_reaction_N": 0.1051722504929177,
+   "wall_s": 1057.6
+  },
+  {
+   "case": "yaw30",
+   "particles": 12000,
+   "components": 2,
+   "largest_mass_fractions": [
+    0.502,
+    0.498
+   ],
+   "severed": true,
+   "labelled_fraction": 0.33258333333333334,
+   "peak_reaction_N": 0.16159212755655356,
+   "mean_reaction_N": 0.07487165387652442,
+   "wall_s": 1060.2
+  }
+ ]
+}

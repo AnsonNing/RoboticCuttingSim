@@ -83,7 +83,7 @@ and sawing cuts; `skim(task, speed_m_s=, saw_amplitude_m=)` for surface trimming
 ## LLM agent tools
 
 `agent_api.CuttingAgentAPI(env)`: `describe_task()`, `reset()`, `observe()`,
-`status()`, `move_edge_to(position_m, rpy_deg)`, `move_edge_by(delta_m,
+`status()`, `save_views(directory)` (current RGB views as PNG files for the agent to read), `move_edge_to(position_m, rpy_deg)`, `move_edge_by(delta_m,
 delta_rpy_deg, frame=)`, `cut_along("advance" | world_vector, distance_m,
 speed_m_s=, saw_amplitude_m=)`, `wait(steps)`, `finish_episode()`,
 `set_gripper(cmd)`, `evaluate()`. Each returns a JSON-serializable dict and

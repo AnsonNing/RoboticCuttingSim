@@ -7,11 +7,30 @@ one control step at a time, so per-step limits, IK rejection and termination
 apply unchanged. ``describe_task`` gives the a-priori task description
 (goal and nominal workpiece geometry); it never exposes oracle material state.
 """
+from pathlib import Path
+import struct
+import zlib
+
 import numpy as np
 from scipy.spatial.transform import Rotation
 
 from .control import DELTA_MODE, ActionLimits
 from .policies import Waypoint, WaypointPolicy, edge_from_observation
+
+
+def write_png(path, rgb):
+    """Minimal dependency-free RGB8 PNG writer (agents read images from files)."""
+    image = np.ascontiguousarray(np.asarray(rgb)[..., :3], dtype=np.uint8)
+    if image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError("Expected an HxWx3 RGB image")
+    height, width = image.shape[:2]
+    raw = b"".join(b"\x00"+image[row].tobytes() for row in range(height))
+
+    def chunk(kind, data):
+        return struct.pack(">I", len(data))+kind+data+struct.pack(">I", zlib.crc32(kind+data) & 0xffffffff)
+    Path(path).write_bytes(b"\x89PNG\r\n\x1a\n"+chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+                           + chunk(b"IDAT", zlib.compress(raw, 6))+chunk(b"IEND", b""))
+    return str(path)
 
 
 def _floats(values, digits=5):
@@ -60,6 +79,20 @@ class CuttingAgentAPI:
         if self.observation is not None and "rgb" in self.observation:
             result["cameras"] = sorted(self.observation["rgb"])
         return result
+
+    def save_views(self, directory, prefix=None):
+        """Write the current RGB camera views to PNG files and return their paths.
+
+        Depth stays in the observation; this is for agents that look at images.
+        Backends without cameras (kinematic) return an empty list and a reason.
+        """
+        if self.observation is None or "rgb" not in self.observation:
+            return {"images": [], "reason": "This environment provides no camera images (use vision_proprio)"}
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=True)
+        stem = prefix or f"t{self.env.time_s:07.3f}"
+        paths = [write_png(directory/f"{stem}_{name}.png", rgb) for name, rgb in sorted(self.observation["rgb"].items())]
+        return {"images": paths, "time_s": round(self.env.time_s, 4)}
 
     # ----- control -----------------------------------------------------
     def reset(self, seed=None):
