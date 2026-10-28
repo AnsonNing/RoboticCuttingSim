@@ -26,12 +26,15 @@ LAB_PACKAGES = ("isaaclab", "isaaclab_newton", "isaaclab_ov", "isaaclab_physx",
 
 def installer_environment(cache, accept_eula):
     """Large CUDA wheels need bounded concurrency and a longer HTTP timeout."""
-    return {**os.environ, "UV_CACHE_DIR": str(cache), "UV_PYTHON_INSTALL_DIR": str(ROOT/".deps/python"),
+    environment = {**os.environ, "UV_CACHE_DIR": str(cache), "UV_PYTHON_INSTALL_DIR": str(ROOT/".deps/python"),
             "UV_PYTHON_BIN_DIR": str(ROOT/".deps/python/bin"),
             "UV_HTTP_TIMEOUT": os.environ.get("UV_HTTP_TIMEOUT", "900"),
             "UV_HTTP_RETRIES": os.environ.get("UV_HTTP_RETRIES", "8"),
             "UV_CONCURRENT_DOWNLOADS": os.environ.get("UV_CONCURRENT_DOWNLOADS", "4"),
             "OMNI_KIT_ACCEPT_EULA": "YES" if accept_eula else "NO"}
+    environment.pop("PYTHONPATH", None)
+    environment.pop("PYTHONHOME", None)
+    return environment
 
 
 def read_pins(path):
@@ -133,7 +136,8 @@ def select_python(requested, uv, environment, managed, log):
         candidate = os.path.expanduser(str(candidate))
         candidate = shutil.which(candidate) or str(Path(candidate).absolute())
         try:
-            version = subprocess.check_output([str(candidate), "-c", "import sys; print('%d.%d'%sys.version_info[:2])"], text=True).strip()
+            version = subprocess.check_output([str(candidate), "-c", "import sys; print('%d.%d'%sys.version_info[:2])"],
+                                               text=True, env=environment).strip()
             if version == "3.12":
                 return str(candidate)
         except (OSError, subprocess.CalledProcessError):

@@ -1,6 +1,7 @@
 """Installation safety and relocation checks, without network/GPU dependencies."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -44,6 +45,17 @@ def test_large_download_defaults_respect_explicit_environment_overrides(tmp_path
     actual = installer_environment(tmp_path, True)
     assert actual["UV_HTTP_TIMEOUT"] == "1800" and actual["UV_CONCURRENT_DOWNLOADS"] == "2"
     assert actual["OMNI_KIT_ACCEPT_EULA"] == "YES"
+
+
+def test_bootstrap_excludes_caller_python_paths_before_entry_and_install(tmp_path, monkeypatch):
+    monkeypatch.setenv("PYTHONPATH", str(tmp_path/"other-project"))
+    monkeypatch.setenv("PYTHONHOME", str(tmp_path/"other-python"))
+    environment = installer_environment(tmp_path, False)
+    assert "PYTHONPATH" not in environment and "PYTHONHOME" not in environment
+    inherited = {**os.environ, "RCS_BOOTSTRAP_PYTHON": sys.executable}
+    result = subprocess.run(["bash", str(ROOT/"scripts/bootstrap.sh"), "--dry-run"], env=inherited,
+                            capture_output=True, text=True, check=True)
+    assert json.loads(result.stdout)["status"] == "DRY_RUN"
 
 
 def test_managed_python_cannot_select_an_existing_project_venv(tmp_path, monkeypatch):
