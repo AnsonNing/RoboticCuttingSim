@@ -32,6 +32,7 @@ from .robot import compose_tool_pose, wedge_mesh
 from .scene_frames import WorkpieceTarget, compose_pose, invert_transform, matrix_pose, pose_matrix
 from .workcell import ASSETS, PARK_JOINTS
 from .physical_tool import ToolGraspConfig, make_tool_spec
+from .pad_contact import POINT_PROFILE, PATCH_PROFILE, patch_receipt
 
 
 @wp.kernel
@@ -91,14 +92,16 @@ def _spawn_franka(prim_path, cfg, translation=None, orientation=None, *, task=No
     return prim
 
 
-def _spawn_free_tool(prim_path, cfg, translation=None, orientation=None, *, spec, grasp, **kwargs):
+def _spawn_free_tool(prim_path, cfg, translation=None, orientation=None, *, spec, grasp,
+                     contact_profile=POINT_PROFILE, **kwargs):
     from .newton_tool import TOOL_PATH, author_newton_tool
     if prim_path != TOOL_PATH:
         raise ValueError("The single live tool must be outside the robot hierarchy")
     orientation = (1., 0., 0., 0.) if orientation is None else orientation
     translation = (0., 0., .4) if translation is None else translation
     pose = np.array([*translation, *orientation[1:], orientation[0]], float)
-    return author_newton_tool(sim_utils.SimulationContext.instance().stage, spec, pose, grasp)
+    return author_newton_tool(sim_utils.SimulationContext.instance().stage, spec, pose, grasp,
+        contact_profile=contact_profile)
 
 
 @dataclass(frozen=True)
@@ -127,9 +130,14 @@ class LabCuttingConfig:
     tool_attachment_mode: str = "legacy_fixed_tool"
     tool_init_mode: str = "pregrasped"
     grasp: ToolGraspConfig = field(default_factory=ToolGraspConfig)
+    grip_contact_profile: str = POINT_PROFILE
     static_scene: str = str(ROOT/"artifacts/research_handoff_001/workcell/workcell.usda")
 
     def __post_init__(self):
+        if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
+            raise ValueError("Unsupported Lab grip contact profile")
+        if self.grip_contact_profile != POINT_PROFILE and self.tool_attachment_mode != "physical_grasp":
+            raise ValueError("Finite pad contacts require an independent physical-grasp tool")
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
             raise ValueError("Unsupported tool attachment mode")
         if self.tool_init_mode not in ("pregrasped", "free", "pickup"):
@@ -216,7 +224,8 @@ def make_lab_cfg(options):
     if physical:
         from .newton_tool import TOOL_PATH
         scene_cfg.cutting_tool = RigidObjectCfg(prim_path=TOOL_PATH,
-            spawn=sim_utils.SpawnerCfg(func=partial(_spawn_free_tool, spec=tool_spec, grasp=options.grasp)),
+            spawn=sim_utils.SpawnerCfg(func=partial(_spawn_free_tool, spec=tool_spec, grasp=options.grasp,
+                contact_profile=options.grip_contact_profile)),
             init_state=RigidObjectCfg.InitialStateCfg(pos=(0., 0., .4)))
     if task:
         for name in ("tray_floor", "tray_left", "tray_right", "tray_front", "tray_back"):
@@ -288,7 +297,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self._native_solver = self.sim.physics_manager._solver
         if self.physical_tool:
             from .newton_tool import NewtonTool
-            self.dynamic_tool = NewtonTool(self.model, self._native_solver, self.tool_spec)
+            self.dynamic_tool = NewtonTool(self.model, self._native_solver, self.tool_spec,
+                contact_profile=options.grip_contact_profile)
             self.knife_shape = next(i for i in self.dynamic_tool.shapes if any(
                 s.role == "blade" and self.model.shape_label[i].endswith("/"+s.name) for s in self.tool_spec.shapes))
         else:
@@ -333,7 +343,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
                 wp.launch(apply_tool_wrench, dim=1, inputs=[state.body_q, self.model.body_com,
                     self._force_buffer, self.dynamic_tool.body, wp.vec3(*self.tool_spec.tool_from_edge_xyz_xyzw[:3]),
                     self.physics_dt, state.body_f, self.dynamic_tool.applied_impulse,
-                    self.dynamic_tool.current_applied_com, self.dynamic_tool.current_applied_pose], device=self.model.device)
+                    self.dynamic_tool.current_applied_com, self.dynamic_tool.current_applied_pose,
+                    self.hand, self.dynamic_tool.current_pre_hand_wrench], device=self.model.device)
             else:
                 self._sample_native_contacts()
                 wp.launch(_edge_wrench, dim=1, inputs=[state.body_q, self.model.body_com,
@@ -485,6 +496,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             self._runtime_time_origin = self.sim.physics_manager.get_simulation_time()
             self.dynamic_tool.begin_interval()
             self.dynamic_tool.phase = "formal_episode"
+            from .grasp_monitor import GraspMonitor
+            settled = self.measured()
+            self.grasp_monitor = GraspMonitor(settled["hand_pose"], settled["tool_body_pose_xyzw"], self.tool_spec)
         self.setup_receipt = self.material.reset(self.measured()["tool_pose"], self.cfg.seed)
         self.setup_receipt["native_contact_reset_refresh"] = "native coordinate sync + fwd_position; zero integration"
         self._last_joint_targets = [q[self._joint_coords[0]].copy(), self._park_q[self._joint_coords[1]].copy()]
@@ -500,6 +514,13 @@ class IsaacLabCuttingEnv(DirectRLEnv):
                 actual_tool_mass_kg=float(self.model.body_mass.numpy()[self.dynamic_tool.body]),
                 actual_tool_com_local_m=self.model.body_com.numpy()[self.dynamic_tool.body].tolist(),
                 actual_tool_inertia_local_kg_m2=self.model.body_inertia.numpy()[self.dynamic_tool.body].tolist(),
+                rigid_model_gravity_world_m_s2=self.model.gravity.numpy().tolist(),
+                tool_body_world_index=int(self.model.body_world.numpy()[self.dynamic_tool.body]),
+                native_mujoco_gravity_world_m_s2=self._native_solver.mjw_model.opt.gravity.numpy().tolist(),
+                grip_contact_profile=self.options.grip_contact_profile,
+                finite_pad_patch=patch_receipt(self.tool_spec.handle_half_extents_m, self.options.grasp.friction)
+                    if self.options.grip_contact_profile == PATCH_PROFILE else None,
+                grasp_monitor_reference=self.grasp_monitor.last,
                 tool_force_receiver="independent tool body only; never panda_hand",
                 measured_tool_pose_source="Newton free joint/body_q; no episode pose correction",
                 settling_runtime_origin_s=self._runtime_time_origin)
@@ -590,9 +611,14 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         mask = np.isin(bodies, [self.dynamic_tool.body, self.dynamic_tool.left, self.dynamic_tool.right])
         mu = self.model.shape_material_mu.numpy();mu[mask] = coefficient
         self.model.shape_material_mu.assign(mu)
+        torsional = None
+        if self.options.grip_contact_profile == PATCH_PROFILE:
+            torsional = patch_receipt(self.tool_spec.handle_half_extents_m, coefficient)["torsional_friction_length_m"]
+            values = self.model.shape_material_mu_torsional.numpy();values[mask] = torsional
+            self.model.shape_material_mu_torsional.assign(values)
         NewtonManager.add_model_change(newton.ModelFlags.SHAPE_PROPERTIES)
         return {"coefficient": float(coefficient), "applied_to": "actual tool AND both finger collision shapes",
-                "shape_indices": np.flatnonzero(mask).tolist()}
+                "torsional_coefficient_m": torsional, "shape_indices": np.flatnonzero(mask).tolist()}
 
     def set_external_tool_wrench(self, wrench_world):
         wrench = np.asarray(wrench_world, float)
@@ -697,11 +723,16 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             "applied_tool_wrench_work_j": float(applied[:3]@(measured["tool_pose"][:3]-self._previous["tool_pose"][:3])
                 + applied[3:]@delta_rotation)}
         if self.physical_tool:
+            grasp_status = self.grasp_monitor.update(measured["hand_pose"], measured["tool_body_pose_xyzw"],
+                time_s=self.time_s, bilateral_loaded_tool_fraction=tool_debug["bilateral_substep_fraction"],
+                contacts_valid=tool_debug["observed_substeps"] == self.cfg.decimation,
+                gripper_command=self.gripper_mode)
             self.last_diagnostics.update(physical_tool=tool_debug, gripper_control_mode=self.gripper_mode,
                 gripper_target_m=self._finger_target(), finger_q=measured["finger_q"], finger_qdot=measured["finger_qdot"],
                 tool_external_wrench_edge_world=self.external_tool_wrench_world.copy(),
                 applied_wrench_receiver_body_index=self.dynamic_tool.body,
                 direct_hand_material_wrench=False,
+                grasp_monitor=grasp_status, grasp_status=grasp_status["status"], grasp_lost=grasp_status["grasp_lost"],
                 grasp_contact_valid=tool_debug["bilateral_substep_fraction"] >= self.options.grasp.min_bilateral_contact_fraction)
         return torch.zeros(1, device=self.device)
 

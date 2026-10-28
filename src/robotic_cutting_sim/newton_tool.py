@@ -9,15 +9,19 @@ import warp as wp
 
 from .physical_tool import measured_edge_pose
 from .scene_frames import matrix_pose, pose_matrix
+from .pad_contact import POINT_PROFILE, PATCH_PROFILE, patch_receipt
 
 
 TOOL_PATH = "/World/Tools/CuttingTool_0"
 MIN_LOAD_BEARING_NORMAL_N = .05
 
 
-def author_newton_tool(stage, spec, world_pose, grasp):
+def author_newton_tool(stage, spec, world_pose, grasp, *, contact_profile=POINT_PROFILE):
     """Use shared geometry/mass, with no PhysxSchema dependency in kit-less Lab."""
     from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
+    if contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
+        raise ValueError("Unknown Lab grip contact profile")
+    patch = patch_receipt(spec.handle_half_extents_m, grasp.friction) if contact_profile == PATCH_PROFILE else None
     UsdGeom.Xform.Define(stage, "/World/Tools")
     body = UsdGeom.Xform.Define(stage, TOOL_PATH)
     body.AddTranslateOp().Set(Gf.Vec3d(*world_pose[:3]))
@@ -39,6 +43,9 @@ def author_newton_tool(stage, spec, world_pose, grasp):
         physics.CreateStaticFrictionAttr(float(grasp.friction))
         physics.CreateDynamicFrictionAttr(float(grasp.friction))
         physics.CreateRestitutionAttr(0.)
+        if patch:
+            for name in ("mjc:torsionalfriction", "newton:torsionalFriction"):
+                material.GetPrim().CreateAttribute(name, Sdf.ValueTypeNames.Double).Set(patch["torsional_friction_length_m"])
         return material
     # Lab imports each asset subtree into a separate builder. Physics material
     # bindings must resolve inside that subtree rather than a sibling asset.
@@ -80,7 +87,11 @@ def author_newton_tool(stage, spec, world_pose, grasp):
                 name in str(prim.GetPath()) for name in ("panda_leftfinger", "panda_rightfinger")):
             if prim.HasAPI(UsdPhysics.CollisionAPI):
                 UsdShade.MaterialBindingAPI.Apply(prim).Bind(finger_material, materialPurpose="physics")
+                if patch and prim.GetName() in ("left_finger_pad", "right_finger_pad"):
+                    prim.AddAppliedSchema("MjcCollisionAPI")
+                    prim.CreateAttribute("mjc:condim", Sdf.ValueTypeNames.Int).Set(4)
     body.GetPrim().SetCustomDataByKey("research:tool_attachment_mode", "physical_grasp")
+    body.GetPrim().SetCustomDataByKey("research:grip_contact_profile", contact_profile)
     body.GetPrim().SetCustomDataByKey("research:contact_owner", "MuJoCo-Warp rigid contacts; TLMPM soft contact only")
     edge = UsdGeom.Xform.Define(stage, TOOL_PATH+"/CuttingEdge")
     p = spec.tool_from_edge_xyz_xyzw
@@ -94,7 +105,8 @@ def apply_tool_wrench(body_q: wp.array(dtype=wp.transform), body_com: wp.array(d
                       wrench_edge: wp.array(dtype=wp.spatial_vector), tool_body: int,
                       edge_offset: wp.vec3, dt: float,
                       body_f: wp.array(dtype=wp.spatial_vector), impulse: wp.array(dtype=float),
-                      applied_com: wp.array(dtype=wp.spatial_vector), applied_pose: wp.array(dtype=wp.transform)):
+                      applied_com: wp.array(dtype=wp.spatial_vector), applied_pose: wp.array(dtype=wp.transform),
+                      hand_body: int, pre_hand_wrench: wp.array(dtype=wp.spatial_vector)):
     pose = body_q[tool_body]
     edge = wp.transform_point(pose, edge_offset)
     center = wp.transform_point(pose, body_com[tool_body])
@@ -104,6 +116,7 @@ def apply_tool_wrench(body_q: wp.array(dtype=wp.transform), body_com: wp.array(d
     body_f[tool_body] = body_f[tool_body]+wp.spatial_vector(force, torque)
     applied_com[0] = wp.spatial_vector(force, torque)
     applied_pose[0] = pose
+    pre_hand_wrench[0] = body_f[hand_body]
     for k in range(3):
         impulse[k] = impulse[k]+dt*force[k]
         impulse[k+3] = impulse[k+3]+dt*torque[k]
@@ -181,9 +194,10 @@ def relative_pose_error(reference, measured):
 
 class NewtonTool:
     """Measured free-body state and actual MJWarp contact forces; debug only."""
-    def __init__(self, model, solver, spec):
+    def __init__(self, model, solver, spec, *, contact_profile=POINT_PROFILE):
         import newton
         self.model, self.solver, self.spec = model, solver, spec
+        self.contact_profile = contact_profile
         self.body = list(model.body_label).index(TOOL_PATH)
         children = model.joint_child.numpy()
         self.joint = next(i for i, child in enumerate(children) if child == self.body)
@@ -210,6 +224,7 @@ class NewtonTool:
         self.applied_impulse = wp.zeros(6, dtype=float, device=model.device)
         self.current_applied_com = wp.zeros(1, dtype=wp.spatial_vector, device=model.device)
         self.current_applied_pose = wp.zeros(1, dtype=wp.transform, device=model.device)
+        self.current_pre_hand_wrench = wp.zeros(1, dtype=wp.spatial_vector, device=model.device)
         self.hand = next(i for i, label in enumerate(model.body_label) if "Franka_0/" in label and label.endswith("/panda_hand"))
         finger_joints = [next(i for i, label in enumerate(model.joint_label) if "Franka_0/" in label and label.endswith("/panda_finger_joint"+str(j))) for j in (1, 2)]
         self.finger_coords = model.joint_q_start.numpy()[finger_joints]
@@ -217,6 +232,10 @@ class NewtonTool:
         self.raw_trace = []
         self.phase = "settling"
         self.rigid_time_s = 0.
+        if contact_profile == PATCH_PROFILE:
+            pads = [i for i, label in enumerate(model.shape_label) if label.endswith(("/left_finger_pad", "/right_finger_pad")) and "Franka_0/" in label]
+            if len(pads) != 2 or not np.all(model.mujoco.condim.numpy()[pads] == 4):
+                raise RuntimeError("Finite pad profile was not imported as actual condim4 pad shapes")
 
     def reset_pose(self, state, pose):
         q = state.joint_q.numpy();qd = state.joint_qd.numpy()
@@ -253,12 +272,14 @@ class NewtonTool:
             "finger_qdot": state.joint_qd.numpy()[self.finger_dofs].copy(),
             "applied_wrench_com_world": self.current_applied_com.numpy()[0].copy(),
             "applied_at_tool_pose_xyzw": self.current_applied_pose.numpy()[0].copy(),
+            "pre_step_hand_external_wrench_world": self.current_pre_hand_wrench.numpy()[0].copy(),
             "shape0": self.contacts.rigid_contact_shape0.numpy()[:count].copy(),
             "shape1": self.contacts.rigid_contact_shape1.numpy()[:count].copy(),
             "contact_wrench_on_shape0_world": self.contacts.force.numpy()[:count].copy(),
             "point_world": data.contact.pos.numpy()[:count].copy(),
             "normal_world": self.contacts.rigid_contact_normal.numpy()[:count].copy(),
             "friction": data.contact.friction.numpy()[:count].copy(),
+            "contact_dimension": data.contact.dim.numpy()[:count].copy(),
             "hand_external_wrench_world": state.body_f.numpy()[self.hand].copy(),
             "distance_m": data.contact.dist.numpy()[:count].copy()})
 
@@ -270,7 +291,8 @@ class NewtonTool:
         if not rows:raise RuntimeError("No actual tool substeps to save")
         fixed = ["rigid_time_s", "tool_body_pose_xyzw", "hand_pose_xyzw", "tool_velocity_com_world",
                  "finger_q", "finger_qdot", "applied_wrench_com_world", "applied_at_tool_pose_xyzw", "hand_external_wrench_world"]
-        variable = ["shape0", "shape1", "contact_wrench_on_shape0_world", "point_world", "normal_world", "friction", "distance_m"]
+        fixed += ["pre_step_hand_external_wrench_world"]
+        variable = ["shape0", "shape1", "contact_wrench_on_shape0_world", "point_world", "normal_world", "friction", "distance_m", "contact_dimension"]
         arrays = {key: np.asarray([r[key] for r in rows]) for key in fixed}
         arrays.update({key: np.concatenate([r[key] for r in rows], axis=0) for key in variable})
         arrays["contact_offsets"] = np.r_[0, np.cumsum([len(r["shape0"]) for r in rows])]
@@ -282,12 +304,19 @@ class NewtonTool:
             "handle_shape_indices": self.handles, "tool_mass_kg": self.model.body_mass.numpy()[self.body],
             "tool_com_local_m": self.model.body_com.numpy()[self.body],
             "tool_inertia_com_local_kg_m2": self.model.body_inertia.numpy()[self.body],
+            "rigid_model_gravity_world_m_s2": self.model.gravity.numpy(),
+            "tool_body_world_index": int(self.model.body_world.numpy()[self.body]),
+            "native_mujoco_gravity_world_m_s2": self.solver.mjw_model.opt.gravity.numpy(),
+            "shape_contact_dimension": self.model.mujoco.condim.numpy(),
+            "grip_contact_profile": self.contact_profile,
             "dt_s": .002, "samples": len(rows), "runtime_tool_pose_writes": 0,
             "contact_wrench_reference": "world axes at contact point; force on shape0. Shift torque to COM with recorded lever arm.",
             "applied_wrench_reference": "actual tool COM, world axes, computed at recorded preintegration tool pose",
             "normal_contact_profile": {"mjc_solref": [.01, 1.], "mjc_solimp": [.99, .995, .01, .5, 2.],
                 "source": "same finite profile as official Panda pads"},
-            "handle_collision": "exact native box; shaft/blade exact convex hull meshes"})
+            "handle_collision": "exact native box; shaft/blade exact convex hull meshes",
+            "finite_pad_patch": patch_receipt(self.spec.handle_half_extents_m,
+                float(self.model.shape_material_mu.numpy()[self.handles[0]])) if self.contact_profile == PATCH_PROFILE else None})
 
     def measured(self, state):
         pose = state.body_q.numpy()[self.body].astype(float)

@@ -1,0 +1,14 @@
+{
+  "protocol_id": "wp08_lab_finite_pad_patch_v3_20261029",
+  "status_at_freeze": "NOT_RUN_PHYSICAL_CANDIDATE",
+  "profile": "finite_pad_patch_v3",
+  "baseline_profile": "legacy_point_contact",
+  "scope": "Optional Isaac Lab/Newton MuJoCo soft-finger contact approximation; no task or physics gate relaxation",
+  "motivation": "Preserved .014 and .0112 controls spin about the finger-pad normal during a finite joint transfer, despite stable down-facing pregrasp. Default condim3 has no torsional contact moment.",
+  "geometry_basis": {"official_pad_half_xyz_m": [0.00875, 0.0076, 0.00825], "tool_handle_half_xyz_m": [0.008, 0.011, 0.02], "nominal_overlap_half_xz_m": [0.008, 0.00825], "normal_axis_in_hand": "Y"},
+  "contact_model": {"pad_condim": 4, "other_shape_condim": 3, "pressure": "uniform nominal overlap rectangle", "torsional_coefficient": "actual_sliding_mu * area_average(sqrt(x*x+z*z))", "radius_computation": "256x256 independent Gauss quadrature", "mean_overlap_radius_m": 0.006217662283278273, "independent_closed_form_radius_m": 0.0062176620327126664, "normal_mu": 0.6, "normal_torsional_coefficient_m": 0.0037305973699669637, "low_mu": 0.02, "low_torsional_coefficient_m": 0.00012435324566556547, "rolling_friction_active": false, "adhesion": 0},
+  "unchanged": ["Shared ToolSpec geometry, mass, COM and inertia", "20N maximum effort per finger", "Closing target .002m; stiffness2000N/m; damping20Ns/m", "Initial opening .0112m and real2s settling", "All current stability/contact/transfer/load thresholds", "Task v1 metrics including strict TRIM failures", "Material solver, trajectory and material parameters", "Actual measured independent edge drives material; reaction only applied to free tool"],
+  "planned_validation": ["Actual imported pad condim and both-side torsional coefficient receipt", "Pregrasp and 2step live Isaac Lab smoke", "Same full seven-case frozen control matrix with only explicit Lab profile override", "Hold and nominal load remain stable; reduced force/friction and opening remain capable of slip/drop", "Full CUT/TRIM400steps with all three RGBD streams and unchanged task evaluation", "Matched actual material-feedback ON/OFF response and separate impulse/work audit"],
+  "limitations": ["Uniform-pressure patch is a documented simulation approximation, not a calibrated real Franka pad model", "Retain all condim3 failures and reported penetration tails", "No infinite friction, extra fixation, pose synchronization, direct-hand wrench or ghost tool material contact", "Candidate remains opt-in until actual end-to-end validation"],
+  "primary_sources": ["https://mujoco.readthedocs.io/en/latest/computation/#condim", "https://mujoco.readthedocs.io/en/latest/modeling.html#contact-parameters", "Pinned Newton solver_mujoco.py custom mjc:condim attribute default3", "Official Isaac/IsaacLab/Robots/FrankaEmika Panda USD left_finger_pad/right_finger_pad size2 and composed Cube scales"]
+}

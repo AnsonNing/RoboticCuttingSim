@@ -42,6 +42,8 @@ def main():
     parser.add_argument("--grip-target", type=float, help="Finger closing target in metres")
     parser.add_argument("--grip-initial-position", type=float,
         help="Explicit initial per-finger opening in metres; physical settling remains required")
+    parser.add_argument("--grip-contact-profile", choices=("legacy_point_contact", "finite_pad_patch_v3"),
+        default="legacy_point_contact", help="Optional finite soft-pad torsional contact model")
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--no-camera", action="store_true")
     parser.add_argument("--no-feedback", action="store_true")
@@ -77,6 +79,7 @@ def main():
         velocity_feedforward=args.velocity_feedforward, global_width=args.global_width, global_height=args.global_height,
         experiment=args.experiment,
         tool_attachment_mode=args.tool_attachment_mode, tool_init_mode=args.tool_init_mode,
+        grip_contact_profile=args.grip_contact_profile,
         static_scene=str(scene_path.resolve()))
     overrides = {name: value for name, value in {"friction": args.grip_friction,
         "max_finger_force_n": args.grip_force, "closed_target_m": args.grip_target,
@@ -111,7 +114,9 @@ def main():
         ROOT/"src/robotic_cutting_sim/coupled_robot.py", ROOT/"src/robotic_cutting_sim/cutting_surface.py",
         ROOT/"src/robotic_cutting_sim/material_config.py", ROOT/"src/robotic_cutting_sim/scene_frames.py"]
     if options.tool_attachment_mode == "physical_grasp":
-        loaded += [ROOT/"src/robotic_cutting_sim/physical_tool.py", ROOT/"src/robotic_cutting_sim/newton_tool.py"]
+        loaded += [ROOT/"src/robotic_cutting_sim/physical_tool.py", ROOT/"src/robotic_cutting_sim/newton_tool.py",
+                   ROOT/"src/robotic_cutting_sim/pad_contact.py", ROOT/"src/robotic_cutting_sim/grasp_monitor.py"]
+        if options.grip_contact_profile == "finite_pad_patch_v3":loaded += [ROOT/"configs/lab_grip_contact_v3.json"]
     if args.camera_layout == "wrist_d405_global_d455":
         from robotic_cutting_sim.camera_rig import CONFIG_PATH
         loaded += [ROOT/"src/robotic_cutting_sim/camera_rig.py", CONFIG_PATH,
@@ -315,6 +320,8 @@ def main():
             result["tool_attachment_mode"], result["tool_init_mode"] = options.tool_attachment_mode, options.tool_init_mode
             if env.physical_tool:
                 result.update(grasp_initialization=env.grasp_initialization,
+                    grasp_status=env.grasp_monitor.last["status"], grasp_lost=env.grasp_monitor.last["grasp_lost"],
+                    grip_contact_profile=options.grip_contact_profile,
                     measured_tool_pose_source="independent Newton rigid body",
                     material_wrench_receiver="independent tool COM with actual edge lever arm",
                     direct_hand_material_wrench=False,

@@ -22,14 +22,16 @@ def test_tool_wrench_has_actual_lever_and_no_hand_receiver():
     impulse = wp.zeros(6, dtype=float, device="cpu")
     applied_com = wp.zeros(1, dtype=wp.spatial_vector, device="cpu")
     applied_pose = wp.zeros(1, dtype=wp.transform, device="cpu")
+    hand_wrench = wp.zeros(1, dtype=wp.spatial_vector, device="cpu")
     edge = np.array([.02, -.03, .08])
     wp.launch(apply_tool_wrench, dim=1, inputs=[poses, com, payload, 1, wp.vec3(*edge), .002, forces, impulse,
-        applied_com, applied_pose], device="cpu")
+        applied_com, applied_pose, 0, hand_wrench], device="cpu")
     lever = Rotation.from_quat(rotation).apply(edge-np.array([.01, .02, .03]))
     expected = np.r_[wrench[:3], wrench[3:]+np.cross(lever, wrench[:3])]
     assert np.array_equal(forces.numpy()[0], np.zeros(6))
     assert np.allclose(forces.numpy()[1], expected, atol=1e-7)
     assert np.allclose(impulse.numpy(), .002*expected, atol=1e-9)
+    assert np.array_equal(hand_wrench.numpy(), np.zeros((1, 6)))
 
 
 def test_contact_order_preserves_action_reaction_and_world_com_moment():
@@ -87,3 +89,25 @@ def test_relative_slip_metrics_are_invariant_to_world_frame():
     assert np.allclose(relative_pose_error(expected, measured), [0, 0], atol=1e-12)
     slipped = expected.copy();slipped[0] += .003
     assert np.isclose(relative_pose_error(expected, slipped)[0], .003)
+
+
+def test_optional_patch_authors_only_soft_pad_dimensions_and_finite_pair_material():
+    from pxr import Usd, UsdGeom, UsdPhysics, UsdShade
+    from robotic_cutting_sim.pad_contact import PATCH_PROFILE, patch_receipt
+    spec = make_tool_spec();stage = Usd.Stage.CreateInMemory()
+    UsdGeom.Xform.Define(stage, "/World/Franka_0")
+    pads = []
+    for side in ("left", "right"):
+        pad = UsdGeom.Cube.Define(stage, f"/World/Franka_0/panda_{side}finger/{side}_finger_pad")
+        UsdPhysics.CollisionAPI.Apply(pad.GetPrim());pads.append(pad.GetPrim())
+    author_newton_tool(stage, spec, np.array([0, 0, .3, 0, 0, 0, 1]), ToolGraspConfig(), contact_profile=PATCH_PROFILE)
+    expected = patch_receipt(spec.handle_half_extents_m, .6)["torsional_friction_length_m"]
+    for pad in pads:
+        assert pad.GetAttribute("mjc:condim").Get() == 4
+        material, _ = UsdShade.MaterialBindingAPI(pad).ComputeBoundMaterial(materialPurpose="physics")
+        assert np.isclose(material.GetPrim().GetAttribute("mjc:torsionalfriction").Get(), expected)
+    for shape in spec.shapes:
+        prim = stage.GetPrimAtPath(TOOL_PATH+"/"+shape.name)
+        assert not prim.GetAttribute("mjc:condim").HasAuthoredValueOpinion()
+        material, _ = UsdShade.MaterialBindingAPI(prim).ComputeBoundMaterial(materialPurpose="physics")
+        assert np.isclose(material.GetPrim().GetAttribute("mjc:torsionalfriction").Get(), expected)
