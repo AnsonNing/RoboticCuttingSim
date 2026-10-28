@@ -6,7 +6,32 @@ keyword that broke Warp's CPU backend); (2) the blade is any counter-clockwise
 convex polygon in the edge (x, z) plane extruded along y (``_profile_sdf``),
 whose per-edge arithmetic equals the v1 ``_wedge_sdf`` for the legacy triangle;
 (3) ``TLMPM(..., blade_profile_xz=...)`` supplies that polygon, defaulting to
-the legacy triangle from the config. v1 remains the default everywhere.
+the legacy triangle from the config; (4) opt-in ``cutting_law=2`` and blunt
+tool obstacles (below). v1 remains the default everywhere, and ``cutting_law=1``
+without obstacles is the v1 algorithm.
+
+Cutting law 2 (provisional, uncalibrated) changes only the edge-work and
+labelling rules so that general knife motions behave plausibly:
+- edge zone: particles within one spacing of the blade plane, from 2r ahead of
+  the edge to the v1 rear window (2 grid cells) behind it, can receive cutting
+  work, so separation does not depend on the lattice phase relative to the
+  blade plane, and cut particles keep marking their edge segment as cutting
+  while they are in the wake;
+- work = [push work (contact impulse along the advance direction x forward edge
+  speed) + ``slice_efficiency`` x drag work along the edge (contact impulse
+  along the edge x edge-tangential speed)] x cos^2 of the angle between the
+  edge's relative motion and the blade plane: slicing and sawing cut, a
+  backward pull or a sideways (blade-normal) push does not;
+- once a particle's progress reaches 1 its in-plane resistance is removed, as
+  in v1, so the edge can pass;
+- separation labels (same v1 band and rear window) are written only where the
+  edge segment (one particle spacing along the edge) or a neighboring segment
+  has an edge-zone particle at progress 1 in this substep; v1 labels the
+  window whenever cutting is armed.
+  A blade pressed flat or pushed sideways therefore labels (almost) nothing.
+Obstacle boxes (edge-frame center/half extents, e.g. the handle or finger pads)
+are blunt rigid contacts: they push material and add to the tool reaction but
+never cut.
 
 
 Independent implementation of logical-grid separation (BladeMaster, 2026), not
@@ -163,6 +188,12 @@ def _profile_sdf(p: wp.vec3, profile: wp.array(dtype=wp.vec2), count: int, half_
 
 
 @wp.func
+def _edge_segment(y: float, half_width: float, segments: int):
+    k = int((y+half_width)/(2.0*half_width)*float(segments))
+    return wp.clamp(k, 0, segments-1)
+
+
+@wp.func
 def _contact_impulse(gap: float, normal: wp.vec3, relative_v: wp.vec3,
                      mass: float, dt: float, stiffness: float, friction: float):
     vn = wp.dot(relative_v, normal)
@@ -203,7 +234,10 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                     reaction: wp.array(dtype=wp.spatial_vector), stats: wp.array(dtype=float),
                     radius: float, volume: float, dt: float, stiffness: float,
                     friction: float, gc: float, sharpness: float, profile: wp.array(dtype=wp.vec2),
-                    profile_count: int, blade_width: float, floor: int, walls: int, tool: int):
+                    profile_count: int, blade_width: float, floor: int, walls: int, tool: int,
+                    law: int, slice_efficiency: float, zone: float, zone_rear: float, flags: wp.array(dtype=int),
+                    segments: int, box_centers: wp.array(dtype=wp.vec3),
+                    box_halves: wp.array(dtype=wp.vec3), box_count: int):
     p = wp.tid()
     impulse[p] = wp.vec3(0.0)
     xp, vp, mp = x[p], v[p], mass[p]
@@ -251,16 +285,43 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
         ji = _contact_impulse(gap, normal, relative, mp, dt, stiffness, friction)
         advance = wp.transform_vector(pose, wp.vec3(1.0, 0.0, 0.0))
         uc = wp.dot(-relative, advance)
-        if cuts[i] >= 0 and local[0] >= 0.0 and local[0] <= 2.0*radius and uc > 1.0e-5:
-            dw = wp.max(wp.dot(ji, advance), 0.0)*uc
-            threshold = gc*wp.pow(volume, 2.0/3.0)*(1.0-sharpness)/sharpness
-            remaining = wp.max((1.0-progress[p])*threshold, 0.0)
-            fraction = float(1.0)
-            if dw > 1.0e-20:
-                fraction = wp.min(remaining/dw, 1.0)
-            contact_work[p] = contact_work[p]+fraction*dw
-            progress[p] = wp.min(progress[p]+fraction*dw/wp.max(threshold, 1.0e-12), 1.0)
-            ji = ji-(1.0-fraction)*wp.max(wp.dot(ji, advance), 0.0)*advance
+        if law == 1:
+            if cuts[i] >= 0 and local[0] >= 0.0 and local[0] <= 2.0*radius and uc > 1.0e-5:
+                dw = wp.max(wp.dot(ji, advance), 0.0)*uc
+                threshold = gc*wp.pow(volume, 2.0/3.0)*(1.0-sharpness)/sharpness
+                remaining = wp.max((1.0-progress[p])*threshold, 0.0)
+                fraction = float(1.0)
+                if dw > 1.0e-20:
+                    fraction = wp.min(remaining/dw, 1.0)
+                contact_work[p] = contact_work[p]+fraction*dw
+                progress[p] = wp.min(progress[p]+fraction*dw/wp.max(threshold, 1.0e-12), 1.0)
+                ji = ji-(1.0-fraction)*wp.max(wp.dot(ji, advance), 0.0)*advance
+        else:
+            in_zone = (local[0] >= -zone_rear and local[0] <= 2.0*radius and wp.abs(local[2]) <= zone
+                       and wp.abs(local[1]) <= blade_width)
+            if cuts[i] >= 0 and in_zone:
+                along = wp.transform_vector(pose, wp.vec3(0.0, 1.0, 0.0))
+                us = wp.dot(-relative, along)
+                slice_dir = along*wp.sign(us)
+                push = wp.max(wp.dot(ji, advance), 0.0)
+                drag = wp.max(wp.dot(ji, slice_dir), 0.0)
+                # Only the in-plane part of the edge's relative motion opens the
+                # crack: weight by cos^2 of the angle between motion and blade plane.
+                blade_normal = wp.transform_vector(pose, wp.vec3(0.0, 0.0, 1.0))
+                un = wp.dot(-relative, blade_normal)
+                in_plane = wp.max(wp.length_sq(relative)-un*un, 0.0)
+                alignment = in_plane/(in_plane+un*un+1.0e-20)
+                dw = (push*wp.max(uc, 0.0)+slice_efficiency*drag*wp.abs(us))*alignment
+                if dw > 1.0e-20:
+                    threshold = gc*wp.pow(volume, 2.0/3.0)*(1.0-sharpness)/sharpness
+                    remaining = wp.max((1.0-progress[p])*threshold, 0.0)
+                    fraction = wp.min(remaining/dw, 1.0)
+                    contact_work[p] = contact_work[p]+fraction*dw
+                    progress[p] = wp.min(progress[p]+fraction*dw/wp.max(threshold, 1.0e-12), 1.0)
+                    # Material already cut no longer resists in-plane edge motion.
+                    ji = ji-(1.0-fraction)*(push*advance+drag*slice_dir)
+                if progress[p] >= 1.0:
+                    wp.atomic_max(flags, _edge_segment(local[1], blade_width, segments), 1)
         impulse[p] = impulse[p]+ji
         torque = wp.cross(lever, -ji)
         wp.atomic_add(reaction, 0, wp.spatial_vector(-ji[0], -ji[1], -ji[2], torque[0], torque[1], torque[2]))
@@ -268,6 +329,16 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
             wp.atomic_add(stats, 1, 1.0)
             wp.atomic_add(stats, 2, wp.dot(ji, linear+wp.cross(angular, lever)))
             wp.atomic_max(stats, 3, wp.max(-gap, 0.0))
+        for b in range(box_count):
+            box = _box_sdf(local-box_centers[b], box_halves[b])
+            box_normal = wp.transform_vector(pose, wp.vec3(box[0], box[1], box[2]))
+            box_lever = xp-wp.transform_get_translation(pose)-box_normal*radius
+            box_relative = vp-linear-wp.cross(angular, box_lever)
+            jb = _contact_impulse(box[3]-radius, box_normal, box_relative, mp, dt, stiffness, friction)
+            impulse[p] = impulse[p]+jb
+            box_torque = wp.cross(box_lever, -jb)
+            wp.atomic_add(reaction, 0, wp.spatial_vector(-jb[0], -jb[1], -jb[2],
+                                                         box_torque[0], box_torque[1], box_torque[2]))
 
 
 @wp.kernel
@@ -378,7 +449,8 @@ def _deformation(F: wp.array(dtype=wp.mat33), code: wp.array(dtype=int),
 def _assign(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), code: wp.array(dtype=int),
             poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=wp.spatial_vector),
             cuts: wp.array(dtype=int), index: wp.array(dtype=int),
-            band: float, edge_width: float, rear: float, dt: float):
+            band: float, edge_width: float, rear: float, dt: float,
+            law: int, flags: wp.array(dtype=int), segments: int):
     p = wp.tid()
     i = index[0]
     cut = cuts[i]
@@ -395,10 +467,17 @@ def _assign(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), code: wp.arr
             displacement = wp.max(wp.dot(tool_v-v[p], forward)*dt, 0.0)
             if wp.abs(local[2]) <= band and wp.abs(local[1]) <= edge_width:
                 if local[0] <= 0.0 and local[0] >= -rear-displacement:
-                    digit = 2
-                    if local[2] < 0.0:
-                        digit = 1
-                    code[p] = code[p]+factor*digit
+                    allowed = int(1)
+                    if law != 1:
+                        # A segment is one particle spacing; accept a cutting
+                        # neighbor so small lateral drift cannot open gaps.
+                        k = _edge_segment(local[1], edge_width, segments)
+                        allowed = wp.max(flags[k], wp.max(flags[wp.max(k-1, 0)], flags[wp.min(k+1, segments-1)]))
+                    if allowed != 0:
+                        digit = 2
+                        if local[2] < 0.0:
+                            digit = 1
+                        code[p] = code[p]+factor*digit
 
 
 @wp.kernel
@@ -425,7 +504,8 @@ def _remember_cut(cuts: wp.array(dtype=int), index: wp.array(dtype=int), previou
 class TLMPM:
     """GPU physics state; all particles are initially one uncut continuum."""
     def __init__(self, points, masses, spacing, config=TLMPMConfig(), device="cuda:0", *,
-                 fixture_boxes=None, table_plane=None, blade_profile_xz=None):
+                 fixture_boxes=None, table_plane=None, blade_profile_xz=None,
+                 cutting_law=1, slice_efficiency=1., obstacle_boxes_edge=None, edge_segments=None):
         if config.cuts not in (1, 2):
             raise ValueError("One or two retained cuts supported by this prototype")
         if not 0 <= config.pic <= 1 or not 0 < config.sharpness < 1:
@@ -437,9 +517,18 @@ class TLMPM:
         if (profile.ndim != 2 or profile.shape[1] != 2 or len(profile) < 3 or not np.isfinite(profile).all()
                 or np.any(edges[:, 0]*np.roll(edges, -1, 0)[:, 1]-edges[:, 1]*np.roll(edges, -1, 0)[:, 0] <= 0)):
             raise ValueError("Blade profile must be a finite counter-clockwise strictly convex polygon")
+        if cutting_law not in (1, 2) or not np.isfinite(slice_efficiency) or slice_efficiency < 0:
+            raise ValueError("cutting_law must be 1 or 2 with a finite nonnegative slice efficiency")
+        boxes = np.asarray([] if obstacle_boxes_edge is None else obstacle_boxes_edge, np.float32).reshape(-1, 2, 3)
+        if edge_segments is None:
+            edge_segments = int(np.clip(np.ceil(2*config.blade_half_width/spacing), 1, 4096))
+        if not np.isfinite(boxes).all() or np.any(boxes[:, 1] <= 0) or not 1 <= int(edge_segments) <= 4096:
+            raise ValueError("Obstacle boxes need finite centers and positive half extents in the edge frame")
         wp.init()
         self.config, self.device, self.spacing = config, device, spacing
         self.blade_profile_xz = profile
+        self.cutting_law, self.slice_efficiency = int(cutting_law), float(slice_efficiency)
+        self.edge_segments, self.obstacle_boxes_edge = int(edge_segments), boxes
         self.n = len(points)
         self.volume = spacing**3
         self.radius = config.contact_radius_scale*spacing*.5
@@ -479,6 +568,10 @@ class TLMPM:
         total = self.node_count*self.code_count
         with wp.ScopedDevice(device):
             self.profile = wp.array(profile, dtype=wp.vec2)
+            self.edge_flags = wp.zeros(self.edge_segments, dtype=int)
+            padded = boxes if len(boxes) else np.ones((1, 2, 3), np.float32)
+            self.box_centers = wp.array(padded[:, 0].copy(), dtype=wp.vec3)
+            self.box_halves = wp.array(padded[:, 1].copy(), dtype=wp.vec3)
             self.reference = wp.array(points, dtype=wp.vec3)
             self.x = wp.array(points, dtype=wp.vec3)
             self.v = wp.zeros(self.n, dtype=wp.vec3)
@@ -529,11 +622,14 @@ class TLMPM:
             wp.launch(_start_cut, n, [self.progress, self.cuts, self.index, self.previous_cut])
             wp.launch(_remember_cut, 1, [self.cuts, self.index, self.previous_cut])
             wp.launch(_stress, n, [self.F, self.Fpi, self.stress, self.plastic, lam, mu, c.yield_stress])
+            self.edge_flags.zero_()
             wp.launch(_rigid_contacts, n, [self.x, self.v, self.mass, self.impulse, self.progress,
                 self.contact_work, self.poses, self.twists, self.cuts, self.index,
                 self.reaction, self.stats, self.radius, self.volume, c.dt, c.contact_stiffness,
                 c.contact_friction, c.cutting_energy, c.sharpness, self.profile,
-                len(self.blade_profile_xz), c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool)])
+                len(self.blade_profile_xz), c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool),
+                self.cutting_law, self.slice_efficiency, float(self.spacing), 2*c.dx, self.edge_flags,
+                self.edge_segments, self.box_centers, self.box_halves, len(self.obstacle_boxes_edge)])
             if self.fixture_data is not None:
                 kernel, centers, halves, plane = self.fixture_data
                 wp.launch(kernel, n, [self.x, self.v, self.mass, self.impulse, centers, halves,
@@ -559,7 +655,8 @@ class TLMPM:
             wp.launch(_deformation, n, [self.F, self.code, self.nodes, self.gradients,
                 self.new_v, self.node_count, c.dt])
             wp.launch(_assign, n, [self.x, self.v, self.code, self.poses, self.twists,
-                self.cuts, self.index, 6*c.dx, c.blade_half_width, 2*c.dx, c.dt])
+                self.cuts, self.index, 6*c.dx, c.blade_half_width, 2*c.dx, c.dt,
+                self.cutting_law, self.edge_flags, self.edge_segments])
             if advance:
                 wp.launch(_advance, 1, [self.index])
 
