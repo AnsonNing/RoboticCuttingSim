@@ -58,3 +58,13 @@ calibration remains provisional. See [CAMERA_VALIDATION](CAMERA_VALIDATION.md),
 [ISAAC_LAB_INTEGRATION](ISAAC_LAB_INTEGRATION.md), [ISAAC_SIM_VALIDATION](ISAAC_SIM_VALIDATION.md),
 [WP-03-next](reports/WP-03-next.md) and
 [WP-03-cutting](reports/WP-03-cutting.md) for exact receipts and limits.
+
+## Portable installation
+
+The active bootstrap uses the actually measured cu128 recipe with separate
+base/Sim/Lab environments and pinned sources. The new read-only
+`scripts/deployment_doctor.py` replaces the original WP-00 audit as the current
+deployment preflight; the old audit's cu130 gate is historical and is not a
+cu128 execution verdict. [PORTABLE_DEPLOYMENT](PORTABLE_DEPLOYMENT.md) explains
+installation and actual runtime checks. Clean-clone and independent cross-host
+claims are recorded separately in its validation report.

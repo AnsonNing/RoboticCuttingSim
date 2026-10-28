@@ -42,7 +42,28 @@ The remote viewer streams the **full Kit GUI and viewport of the same live Isaac
 
 The Kit control panel provides CUT-01 / TRIM-01 selection, Play, Pause, Reset, Step, explicit Cartesian / joint actions, task evaluation and Free / Global / Wrist camera views. Native physics, TLMPM, articulation and RGB-D advance together through the retained environment. Camera previews use separate viewport cameras so mouse navigation cannot edit sensor mounts. Only one browser client should connect at a time.
 
+Actual local Chrome through the Tailscale URL has passed14 streamed GUI transactions, including typed Cartesian/joint actions. External Mac connectivity is separately pending confirmation. [Full live GUI screenshot](docs/media/remote_web_viewer.png).
+
 Setup, start/stop commands, ports, same-loop checks and actual browser/client evidence: [REMOTE_INTERACTIVE_VIEWER](docs/REMOTE_INTERACTIVE_VIEWER.md). The viewer is for operation and inspection; code development remains in VS Code Remote-SSH.
+
+## Quick Start: portable headless deployment
+
+```bash
+git clone https://github.com/AnsonNing/RoboticCuttingSim.git
+cd RoboticCuttingSim
+bash scripts/bootstrap.sh --runtime all --managed-python --accept-eula
+python3 scripts/deployment_doctor.py --gpu auto --output-dir artifacts/doctor_NEW
+python3 scripts/run_deployment_validation.py --tier smoke --runtime both \
+  --gpu auto --output-dir artifacts/smoke_NEW
+```
+
+Ubuntu x86_64, an existing compatible NVIDIA RTX driver and adequate disk/VRAM
+are required. Base, Sim6.2 and Lab3.0 use separate pinned Python3.12 environments;
+bootstrap never upgrades the driver or changes another project. Install either
+runtime separately with `--runtime isaac_sim` / `isaac_lab`. A smoke verifies
+actual physics and RGB-D; it does not certify full cutting success. See
+[portable deployment](docs/PORTABLE_DEPLOYMENT.md) for full400-step regression,
+GPU selection, troubleshooting and measured clean-environment reproduction.
 
 ## Run the headless scenes
 
@@ -51,12 +72,12 @@ The original benchmark launchers remain available. Use the dedicated environment
 ```bash
 # Actual Isaac Sim / PhysX / TLMPM / native Global RGB-D, newest camera rig
 .deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
-  --task-id CUT-01 --steps 400 --gpu 1 --device cuda:1 \
+  --task-id CUT-01 --steps 400 --gpu 0 --device cuda:0 \
   --camera-layout wrist_d405_global_d455 --camera-mode native_single_view \
   --output-dir artifacts/cut01_NEW
 
 .deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
-  --task-id TRIM-01 --particle-spacing 0.002 --steps 400 --gpu 1 --device cuda:1 \
+  --task-id TRIM-01 --particle-spacing 0.002 --steps 400 --gpu 0 --device cuda:0 \
   --camera-layout wrist_d405_global_d455 --camera-mode native_single_view \
   --output-dir artifacts/trim01_NEW
 
@@ -67,7 +88,7 @@ The original benchmark launchers remain available. Use the dedicated environment
 
 # Sequential fixed / randomized matrix; no training
 .venv/bin/python scripts/run_cutting_task_benchmark.py \
-  --runtime isaac_sim --variants fixed randomized --seeds 42 --gpu 1 \
+  --runtime isaac_sim --variants fixed randomized --seeds 42 --gpu 0 \
   --output-dir artifacts/task_matrix_NEW
 ```
 

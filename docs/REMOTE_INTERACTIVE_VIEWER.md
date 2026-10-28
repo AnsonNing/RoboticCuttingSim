@@ -110,3 +110,12 @@ entry and external Mac acceptance are reported separately in the progress
 receipt; local Chrome through a Tailscale address is not an independent Mac
 connection test. Native D455 fidelity, ideal D405 limitations and task failures
 are unchanged by the viewer.
+
+The final Clear-button follow-up passed14 actual streamed GUI transactions,
+including typed Cartesian and joint JSON targets followed by accepted actions
+and coupled material clocks0.02s /0.04s. It decoded2,073frames /4,063,442video
+bytes with zero packet loss; the actual input channel carried269messages /
+7,679bytes. The browser disconnected after resetting TRIM to paused Global
+at t=0, releasing the single-client slot. See [compact browser proof](evidence/remote_web_viewer.json)
+and [actual full-GUI screenshot](media/remote_web_viewer.png). External Mac
+verification remains pending until a real remote client connects.

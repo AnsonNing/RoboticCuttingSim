@@ -21,11 +21,23 @@ robot/material state. Keyboard and external Mac-client results are recorded
 separately in [the interactive viewer report](REMOTE_INTERACTIVE_VIEWER.md).
 No independent simulator/container or alternative cutting engine is used.
 
-WP-07 Portable Deployment & Reproducibility is in progress. Its bootstrap,
-read-only doctor and validation tools remain separate from the viewer work.
-Clean-clone installation and full-task reproduction will be measured before
-any portability PASS is claimed; independent cross-host validation is NOT_RUN.
-No drivers, RSI, other projects or policies are changed.
+WP-07 Portable Deployment & Reproducibility is in progress. The pinned,
+isolated bootstrap is implemented; read-only doctor and validation tools are
+being tested separately from the optional viewer. The first actual public
+clean clone installed base successfully but failed the large Torch download
+at120s timeout; its full logs and partial environments are preserved. Timeout,
+concurrency and strict editable-origin checks were corrected, and a second
+fresh clone/new environments are being installed. No clean-environment PASS
+is claimed yet; independent cross-host verification remains NOT_RUN.
+See [deployment workflow](PORTABLE_DEPLOYMENT.md) and
+[actual attempt report](PORTABLE_DEPLOYMENT_VALIDATION.md). No drivers, RSI,
+other projects or policies are changed.
+
+Final local streamed-input proof passed14GUI transactions, including typed
+Cartesian/joint actions and coupled material steps. The active same-instance
+Kit session is paused on Global, with the browser client slot released for
+external Mac verification. The local proof does not substitute for that Mac
+client test. See [browser receipt](evidence/remote_web_viewer.json).
 
 ## Preserved v2: moving wrist D405 prototypes and workcell overview
 
