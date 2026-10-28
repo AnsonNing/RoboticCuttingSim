@@ -2974,6 +2974,257 @@
       "material_fingerprint_scope": "Recorded before/after particle-state fingerprints agree; no particle snapshots stored by rigid-only controls",
       "full_physics_acceptance": false,
       "material_reaction_on_off": "NOT_RUN_SEPARATE_CONTROL_REQUIRED"
+    },
+    "lab_v3": {
+      "audit": {
+        "path": "artifacts/wp08_independent_lab_controls_matrix_v3_001/result.json",
+        "sha256": "627a4c7703b1db7b62779f899d60a12e0c54d17da428c65f07cec2284b6df8f2"
+      },
+      "status": "FAIL_INDEPENDENT_CONTROL_SCREENS",
+      "index": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/index.json",
+      "index_sha256": "5aa6ee0f72b3781d7f8f52c00a36b617bc9c926dc10f4a3898bc6803373b26a6",
+      "protocol_sha256": "dad600220df07b348a5b4935d915881e2e6aa4c4fdb94fb8a47622ce8d1d4303",
+      "auditor_sha256": "a24730a9b0c4dde089d1fd9382b3eceeac66015f6af9e365b04e27462fad7396",
+      "cases": {
+        "isaac_lab/baseline_hold": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/baseline_hold",
+          "recorded_execution_status": "FAIL_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": false,
+            "no_native_tensor_view_invalidations": true
+          },
+          "input_sha256": {
+            "result.json": "b896bcbafd1ecd074ee52a8674a27cea44e0b3fc1900c445e8337562d8db9d99",
+            "manifest.json": "19267c235bc5154b5e57fd51a768b0df62b7a7fd803a3d12afa18420449a940c"
+          },
+          "status": "FAIL_PREGRASP_OR_TRANSFER_NO_PERTURBATION"
+        },
+        "isaac_lab/nominal_load": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/nominal_load",
+          "recorded_execution_status": "FAIL_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": false,
+            "no_native_tensor_view_invalidations": true
+          },
+          "input_sha256": {
+            "result.json": "4b8b8ce2c511f00b5a1cfc5db427dffd5ccf7918fb78ce8b80d016d223653533",
+            "manifest.json": "4e5f665ca8d85fcedc62c5da79fe46088f69b52277faeba53a06187d3d381cf1"
+          },
+          "status": "FAIL_PREGRASP_OR_TRANSFER_NO_PERTURBATION"
+        },
+        "isaac_lab/edge_torque": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/edge_torque",
+          "recorded_execution_status": "EXECUTED_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": true,
+            "no_native_tensor_view_invalidations": true,
+            "complete_2ms_sampling": true,
+            "complete_20ms_arm_samples": true,
+            "finite": true,
+            "all_fresh_valid": true
+          },
+          "input_sha256": {
+            "result.json": "e69a00b853fd303ab1d9675578160a1b2f8bac2905760a6dd2e3e6230c2b659b",
+            "manifest.json": "a036d587f873c75ad470b8b04f98a6ebed48c90ada5b4744105ddf799a9a58a4",
+            "tool_substeps.npz": "297e55bde74185d3b17463f900b817fd403b2885fde436709cc3427493a758b2",
+            "control_trace.jsonl": "4d55bf0f69d841e9d03b834e60b6a200357c377942e061b2392add6fd1334a1c"
+          },
+          "metrics": {
+            "samples": 1000,
+            "complete_2ms_sampling": true,
+            "finite": true,
+            "all_fresh_valid": true,
+            "max_relative_translation_m": 0.00027712559559971665,
+            "max_relative_rotation_rad": 0.043277445558301444,
+            "maximum_relative_linear_speed_m_s": 0.00013348812511731619,
+            "maximum_relative_angular_speed_rad_s": 0.021892630874645082,
+            "bilateral_loaded_handle_fraction": 1.0,
+            "maximum_penetration_m": 0.00010146268323296681,
+            "unintended_loaded_support_steps": 0,
+            "finger_points_outside_handle_steps": 0,
+            "mean_contact_force_last_window_world_n": [
+              5.860133949978893e-07,
+              1.2918297513072708e-07,
+              0.5053444368935439
+            ],
+            "freeflight_duration_s": 0.0,
+            "freeflight_acceleration_z_m_s2": null,
+            "downward_displacement_m": 0.00042948126792907715,
+            "complete_20ms_arm_samples": true,
+            "final_arm_deflection_rad": [
+              5.364418029785156e-07,
+              0.00019180774688720703,
+              -3.650784492492676e-05,
+              -0.0002319812774658203,
+              -1.7017126083374023e-05,
+              -0.0001049041748046875,
+              -1.043081283569336e-07
+            ]
+          },
+          "status": "PASS_INDEPENDENT_CASE_SCREENS"
+        },
+        "isaac_lab/stress_load": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/stress_load",
+          "recorded_execution_status": "EXECUTED_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": true,
+            "no_native_tensor_view_invalidations": true,
+            "complete_2ms_sampling": true,
+            "complete_20ms_arm_samples": true,
+            "finite": true,
+            "all_fresh_valid": true
+          },
+          "input_sha256": {
+            "result.json": "d76599c7d15fae6710351916cc192a01dd84feaddda83654d801c0ccd50e3a82",
+            "manifest.json": "9ca177620e396a05db4452d61818fa5cc5f90424435a6c39713f01c75f9b6c71",
+            "tool_substeps.npz": "8b2c06025f8f9a811713dae9a7c47fe98383e07fad17c68031fa405fccd82acc",
+            "control_trace.jsonl": "26dd6be73e78bf70c68bffe9cc34bda5b10cd0aed55e7ff79e61918645b1e4d0"
+          },
+          "metrics": {
+            "samples": 1000,
+            "complete_2ms_sampling": true,
+            "finite": true,
+            "all_fresh_valid": true,
+            "max_relative_translation_m": 0.008213554991437732,
+            "max_relative_rotation_rad": 0.009045554883466584,
+            "maximum_relative_linear_speed_m_s": 0.05502231450712105,
+            "maximum_relative_angular_speed_rad_s": 2.586301134716452,
+            "bilateral_loaded_handle_fraction": 1.0,
+            "maximum_penetration_m": 0.0002649113012012094,
+            "unintended_loaded_support_steps": 0,
+            "finger_points_outside_handle_steps": 0,
+            "mean_contact_force_last_window_world_n": [
+              4.401313608504861e-06,
+              -3.3606571030331798e-06,
+              10.505351913996426
+            ],
+            "freeflight_duration_s": 0.0,
+            "freeflight_acceleration_z_m_s2": null,
+            "downward_displacement_m": 0.011489063501358032,
+            "complete_20ms_arm_samples": true,
+            "final_arm_deflection_rad": [
+              -8.940696716308594e-08,
+              0.0034988820552825928,
+              -0.0008353888988494873,
+              -0.004468441009521484,
+              -4.351139068603516e-06,
+              -0.0014948844909667969,
+              1.4901161193847656e-08
+            ]
+          },
+          "status": "PASS_INDEPENDENT_CASE_SCREENS"
+        },
+        "isaac_lab/weak_grip": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/weak_grip",
+          "recorded_execution_status": "EXECUTED_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": true,
+            "no_native_tensor_view_invalidations": true,
+            "complete_2ms_sampling": true,
+            "complete_20ms_arm_samples": true,
+            "finite": true,
+            "all_fresh_valid": true
+          },
+          "input_sha256": {
+            "result.json": "e119e71539320ca29934b5f757f920104de8407aae0533b30a1e96296b42fc15",
+            "manifest.json": "d8cabec6e3ef6580c76f11582e424483684a7fd2a7fa7488f9a13065bec57a34",
+            "tool_substeps.npz": "27ca805271cb98821aba24c9f0ea53256542d7db8d22bfed273cbc37e66a908f",
+            "control_trace.jsonl": "9b209fc511c7f89479366f11e362ad86bee3a868526eb1b2ec9680309fb1263a"
+          },
+          "metrics": {
+            "samples": 1000,
+            "complete_2ms_sampling": true,
+            "finite": true,
+            "all_fresh_valid": true,
+            "max_relative_translation_m": 0.38036895416777927,
+            "max_relative_rotation_rad": 1.3734637236333127,
+            "maximum_relative_linear_speed_m_s": 0.14235639806310574,
+            "maximum_relative_angular_speed_rad_s": 13.242703613531994,
+            "bilateral_loaded_handle_fraction": 0.02,
+            "maximum_penetration_m": 0.019913511350750923,
+            "unintended_loaded_support_steps": 912,
+            "finger_points_outside_handle_steps": 0,
+            "mean_contact_force_last_window_world_n": [
+              0.0011095907168084407,
+              -0.0005540339150039323,
+              1.5074293029260826
+            ],
+            "freeflight_duration_s": 0.07000000000000828,
+            "freeflight_acceleration_z_m_s2": -29.224479532701043,
+            "downward_displacement_m": 0.26363542675971985,
+            "complete_20ms_arm_samples": true,
+            "final_arm_deflection_rad": [
+              -5.066394805908203e-07,
+              -1.1920928955078125e-07,
+              -4.172325134277344e-07,
+              -1.430511474609375e-06,
+              2.9802322387695312e-08,
+              -1.1920928955078125e-06,
+              1.341104507446289e-07
+            ]
+          },
+          "status": "PASS_INDEPENDENT_CASE_SCREENS"
+        },
+        "isaac_lab/low_friction": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/low_friction",
+          "recorded_execution_status": "FAIL_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": false,
+            "no_native_tensor_view_invalidations": true
+          },
+          "input_sha256": {
+            "result.json": "9785ea6320bc8b71c2c4bbe427a6eccd8659677980f01ba45a0763765e2400da",
+            "manifest.json": "332cdc06f3f36fa1d38dbdd14427af6700fb0cf51e8eacfb583860620fd52561"
+          },
+          "status": "FAIL_PREGRASP_OR_TRANSFER_NO_PERTURBATION"
+        },
+        "isaac_lab/release": {
+          "directory": "/home/ningan/RoboticCuttingSim/artifacts/wp08_lab_controls_matrix_v3_001/isaac_lab/release",
+          "recorded_execution_status": "FAIL_RIGID_CONTROL",
+          "source_mismatches": [],
+          "checks": {
+            "frozen_source_and_config_match": true,
+            "recorded_material_fingerprints_equal": false,
+            "no_native_tensor_view_invalidations": true
+          },
+          "input_sha256": {
+            "result.json": "6aeafd3074013faed40b9787c5e2336371218e4739d617829fd53004352f33bf",
+            "manifest.json": "ee8be6affbdd2bc57485bd78404530bcdb846652dfa523e4bc89198c704e613f"
+          },
+          "status": "FAIL_PREGRASP_OR_TRANSFER_NO_PERTURBATION"
+        }
+      },
+      "comparisons": {
+        "isaac_lab/weak_grip": {
+          "status": "NOT_RUN_UNMATCHED_OR_FAILED_TRANSFER"
+        },
+        "isaac_lab/low_friction": {
+          "status": "NOT_RUN_UNMATCHED_OR_FAILED_TRANSFER"
+        },
+        "isaac_lab/nominal_load_arm_response": {
+          "status": "NOT_RUN_MISSING_TRANSFER_OR_BASELINE"
+        },
+        "isaac_lab/edge_torque_arm_response": {
+          "status": "NOT_RUN_MISSING_TRANSFER_OR_BASELINE"
+        }
+      },
+      "complete_seven_case_matrix": true,
+      "scope": "Independent raw contact/state recomputation of existing frozen engineering limits; original results preserved",
+      "material_fingerprint_scope": "Recorded before/after particle-state fingerprints agree; no particle snapshots stored by rigid-only controls",
+      "full_physics_acceptance": false,
+      "material_reaction_on_off": "NOT_RUN_SEPARATE_CONTROL_REQUIRED"
     }
   },
   "historical_failures": {
@@ -3416,10 +3667,385 @@
     "scripts/audit_wrist_camera_rig.py": "abc7aedc80c8e958deff64b2a641ffc366fa2de7732c66990d227fb86670a2fd",
     "scripts/audit_cutting_task_episodes.py": "d1acdabd27403c62975d46340a545e2ca75ce6d73f18f300537d1fcde6a76095",
     "scripts/compare_material_feedback.py": "b8f682525f107cd6e6c99203c39b7c6fb7e7a65cb59e005ebf6b0786b4a0e56d",
-    "scripts/render_wrist_camera_evidence.py": "6d8ff07ebf03fb434f421ee0c80030e29fd0764ae84ac67c96d57404a38b1baa"
+    "scripts/render_wrist_camera_evidence.py": "6d8ff07ebf03fb434f421ee0c80030e29fd0764ae84ac67c96d57404a38b1baa",
+    "scripts/audit_tool_rack.py": "28c73742f158dc7da3fa148cf62eeec1cb01a1b08b6f8709beced5073f6ee402"
   },
   "receipt_builder": {
     "path": "/home/ningan/RoboticCuttingSim/artifacts/wp08_independent_evidence_build_001.py",
     "sha256": "3d453dc518a3a16ee2fa2c55490c1c5dec3023a67f828c85a8073d6368c717a3"
+  },
+  "additional_lab_full_cut_v3": {
+    "scope": "Full400step/8s actual Lab CUT with actual rigid/native gravity readback; priorv2 missing-gravity NOT_SCORED remains unchanged. General grasp-transfer controls still fail.",
+    "momentum_audit": {
+      "path": "artifacts/wp08_tool_momentum_lab_cut_v3_001/result.json",
+      "sha256": "dfd6812c70c54b67c2153959bf621ecc6b25d3026fe41cab30e89dee1cd5d033"
+    },
+    "momentum": {
+      "status": "PASS_ENGINEERING_IMPULSE_BALANCE",
+      "rows_evaluated": 4000,
+      "properties": {
+        "mass_kg": 0.05151308327913284,
+        "inertia_body_com_kg_m2": [
+          [
+            4.012105637229979e-05,
+            1.362082579923153e-23,
+            -5.632132342725527e-07
+          ],
+          [
+            1.3620835265562391e-23,
+            3.359570473548956e-05,
+            -2.907691112469303e-21
+          ],
+          [
+            -5.632132342725527e-07,
+            -2.907691112469303e-21,
+            7.300461675185943e-06
+          ]
+        ],
+        "gravity_world_m_s2": [
+          0.0,
+          0.0,
+          -9.8100004196167
+        ],
+        "diagnostic_assumed_gravity_world_m_s2": [
+          0.0,
+          0.0,
+          -9.8100004196167
+        ],
+        "linear_scoring_available": true,
+        "gravity_source": "Actual rigid-model/native readbacks",
+        "pre_step_hand_force_numeric_recorded": true,
+        "angular_scoring_available": true,
+        "body_index": 22,
+        "raw_sha256": "3146602df2832b84606655d1e72f3b3b217e2f8af4b005dbacb49693869e1108",
+        "raw_metadata_sha256": "9ac45592570ce8be0adafd1da38637715545bd552ff9908e8106a84bb5e359c9",
+        "velocity_convention": "Recorded actual Newton body COM velocity, linear then angular",
+        "contact_convention": "world axes at contact point; force on shape0. Shift torque to COM with recorded lever arm."
+      },
+      "linear": {
+        "status": "PASS_ENGINEERING_IMPULSE_BALANCE",
+        "steps": 4000,
+        "failing_steps": 0,
+        "first_failing_row_indices": [],
+        "residual_norm_quantiles": {
+          "p50": 2.3692633788767432e-09,
+          "p95": 8.496255844983936e-09,
+          "p99": 2.802446398385156e-08,
+          "max": 1.6552191448776278e-07
+        },
+        "maximum_budget_usage": 4.54226166751064e-05,
+        "accumulated_vector_residual": [
+          -5.094820704036681e-07,
+          -1.1459654547569677e-07,
+          -1.8891953737119275e-07
+        ],
+        "sum_residual_norms": 1.4100478098229704e-05,
+        "all_tails_retained": true,
+        "standalone_absolute_component_diagnostic": {
+          "status": "PASS",
+          "budget": 2e-05,
+          "exceeding_steps": 0,
+          "scope": "Additional cancellation-sensitive diagnostic using the prefrozen absolute term alone; original absolute+relative acceptance formula remains unchanged"
+        }
+      },
+      "angular": {
+        "status": "PASS_ENGINEERING_IMPULSE_BALANCE",
+        "steps": 4000,
+        "failing_steps": 0,
+        "first_failing_row_indices": [],
+        "residual_norm_quantiles": {
+          "p50": 8.88740468136213e-11,
+          "p95": 2.82064085183293e-10,
+          "p99": 7.59740924522732e-10,
+          "max": 4.956788676764202e-09
+        },
+        "maximum_budget_usage": 3.81800531224674e-05,
+        "accumulated_vector_residual": [
+          1.5690801195860243e-08,
+          -1.8269511099134937e-08,
+          -2.9814188544488235e-08
+        ],
+        "sum_residual_norms": 4.894419351134886e-07,
+        "all_tails_retained": true,
+        "standalone_absolute_component_diagnostic": {
+          "status": "PASS",
+          "budget": 1e-06,
+          "exceeding_steps": 0,
+          "scope": "Additional cancellation-sensitive diagnostic using the prefrozen absolute term alone; original absolute+relative acceptance formula remains unchanged"
+        }
+      },
+      "angular_closure_acceptance": "NOT_ESTABLISHED_BY_ENGINEERING_BUDGET_SCREEN",
+      "full_physics_acceptance": false
+    },
+    "tool_audit": {
+      "path": "artifacts/wp08_physical_tool_audit_lab_cut_v3_001/result.json",
+      "sha256": "e5334ec0c313d18729fea3dc4af13b3e8a15f37db0484a1b7054908ab0f1bcda"
+    },
+    "tool_status": "PASS_OFFLINE_ENGINEERING_AUDIT",
+    "sources": {
+      "pass": true,
+      "snapshot_count": 20,
+      "mismatches": [],
+      "runtime_integrity_receipts": [
+        {
+          "file": "source_integrity.json",
+          "status": "PASS",
+          "sha256": "336ce667e84a7782c2f52c9f603facbdb6fca274e42e0836fbe138f8b78ff6db"
+        }
+      ],
+      "scope": "Saved implementation hashes and recorded runtime checks; current checkout may differ"
+    }
+  },
+  "optional_native_rack007": {
+    "audit": {
+      "path": "artifacts/wp08_independent_native_rack007_001/result.json",
+      "sha256": "5718dd0ad70f5ab2d4d2deb9850c4a46e7bde9819678ac886e4ff674a261b1cc"
+    },
+    "status": "PASS_AVAILABLE_RACK_ENGINEERING_SCREENS",
+    "episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007",
+    "checks": {
+      "archived_sources_match": true,
+      "independent_dynamic_tool_structure": true,
+      "no_known_tensor_view_invalidations": true,
+      "all_actual_contact_steps_fresh": true,
+      "measured_release_center_within_original_budget": true,
+      "actual_fingers_open_clear_of_handle": true,
+      "loaded_rack_support_at_release_and_withdrawal": true,
+      "actual_hand_withdrawal": true,
+      "tool_remains_within_original_placement_budget_during_withdrawal": true,
+      "actual_tool_liftoff": true,
+      "loaded_bilateral_reacquired_handle": true,
+      "stable_reacquired_relative_position": true,
+      "stable_reacquired_relative_rotation": true,
+      "bounded_reacquired_penetration": true,
+      "no_loaded_rack_table_palm_support_during_final_hold": true
+    },
+    "sources": {
+      "pass": true,
+      "snapshot_count": 11,
+      "mismatches": [],
+      "runtime_integrity_receipts": [],
+      "scope": "Saved implementation hashes and recorded runtime checks; current checkout may differ"
+    },
+    "runtime_logs": {
+      "status": "PASS_NO_KNOWN_VIEW_INVALIDATION_LOGS",
+      "files": [
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007/kit.log",
+          "sha256": "c7d4de1142310fe4a2812c0abb6a7e2fe38115adecd036d3b1a811c8c5b54514",
+          "invalidated_view_lines": 0,
+          "first_matches": []
+        },
+        {
+          "path": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007.log",
+          "sha256": "d7584cd6ec5f9cf9593d1264c9d27f9a4f6771b5fb621482e7fce2916455cee2",
+          "invalidated_view_lines": 0,
+          "first_matches": []
+        }
+      ],
+      "scope": "Native C++ tensor-view failures can coexist with Python fresh flags and finite cached states"
+    },
+    "usd": {
+      "pass": true,
+      "checks": {
+        "outside_hand_hierarchy": true,
+        "stage_is_si_z_up": true,
+        "dynamic_rigid_body_enabled": true,
+        "no_tool_attachment_joint": true,
+        "nonzero_mass_inertia": true,
+        "mass_matches_recorded_tool": true,
+        "com_matches_recorded_tool": true,
+        "inertia_matches_recorded_tool": true,
+        "actual_hand_and_two_finger_bodies_exist": true,
+        "no_rigid_body_parent": true,
+        "compound_colliders_match_owned_geometry": true,
+        "tool_gravity_not_disabled": true,
+        "tool_has_no_authored_gravity_compensation": true
+      },
+      "body_path": "/World/Tools/CuttingTool_0",
+      "joint_connections": [],
+      "mass_kg": 0.05151308327913284,
+      "com_tool_m": [
+        0.0007926543476060033,
+        -7.436713530418179e-19,
+        0.034338440746068954
+      ],
+      "principal_moments_kg_m2": [
+        7.2907992034743074e-06,
+        3.359570473548956e-05,
+        4.0130718844011426e-05
+      ],
+      "shapes": [
+        {
+          "name": "Handle",
+          "pass": true
+        },
+        {
+          "name": "Shaft",
+          "pass": true
+        },
+        {
+          "name": "Blade",
+          "pass": true
+        }
+      ],
+      "gravity_configuration": [
+        {
+          "path": "/PhysicsScene",
+          "explicit_magnitude_m_s2": 9.8100004196167,
+          "direction": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "scope": "AUTHORED"
+        }
+      ],
+      "gravity_behavior": "NOT_RUN_FREE_DROP_CONTROL_REQUIRED"
+    },
+    "phases": {
+      "lift_before_transfer": {
+        "actual_rigid_steps": 3990,
+        "native_start_s": 2.0060000000000002,
+        "native_end_s": 9.986,
+        "loaded_rack_contact_steps": 0,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ]
+      },
+      "transfer_above_rack": {
+        "actual_rigid_steps": 5860,
+        "native_start_s": 9.985999999999999,
+        "native_end_s": 21.706,
+        "loaded_rack_contact_steps": 0,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ]
+      },
+      "place_tool": {
+        "actual_rigid_steps": 2680,
+        "native_start_s": 21.706,
+        "native_end_s": 27.066,
+        "loaded_rack_contact_steps": 0,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ]
+      },
+      "release_onto_rack": {
+        "actual_rigid_steps": 380,
+        "native_start_s": 27.066000000000003,
+        "native_end_s": 27.826,
+        "loaded_rack_contact_steps": 371,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/ToolRack/RailLeft",
+          "/World/ToolRack/RailRight"
+        ]
+      },
+      "withdraw_open_hand": {
+        "actual_rigid_steps": 1880,
+        "native_start_s": 27.826,
+        "native_end_s": 31.586,
+        "loaded_rack_contact_steps": 1880,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/ToolRack/RailLeft",
+          "/World/ToolRack/RailRight"
+        ]
+      },
+      "approach_measured_handle": {
+        "actual_rigid_steps": 1920,
+        "native_start_s": 31.586000000000002,
+        "native_end_s": 35.426,
+        "loaded_rack_contact_steps": 1920,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/ToolRack/RailLeft",
+          "/World/ToolRack/RailRight"
+        ]
+      },
+      "close_on_handle": {
+        "actual_rigid_steps": 500,
+        "native_start_s": 35.425999999999995,
+        "native_end_s": 36.426,
+        "loaded_rack_contact_steps": 399,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger",
+          "/World/ToolRack/RailLeft",
+          "/World/ToolRack/RailRight"
+        ]
+      },
+      "lift_tool_from_rack": {
+        "actual_rigid_steps": 1880,
+        "native_start_s": 36.425999999999995,
+        "native_end_s": 40.186,
+        "loaded_rack_contact_steps": 68,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger",
+          "/World/ToolRack/RailLeft",
+          "/World/ToolRack/RailRight"
+        ]
+      },
+      "hold_reacquired_tool": {
+        "actual_rigid_steps": 1000,
+        "native_start_s": 40.186,
+        "native_end_s": 42.186,
+        "loaded_rack_contact_steps": 0,
+        "loaded_other_nonfinger_steps": 0,
+        "contact_body_paths": [
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+          "/World/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ]
+      }
+    },
+    "release_finger_q_m": [
+      0.039999984204769135,
+      0.039999984204769135
+    ],
+    "release_center_error_m": 0.0001340628812042917,
+    "hand_withdrawal_xyz_m": [
+      -6.213784217834473e-06,
+      2.1412968635559082e-05,
+      0.0799436867237091
+    ],
+    "tool_motion_during_withdrawal_m": 4.9421560620597e-08,
+    "tool_lift_m": 0.07962729036808014,
+    "bilateral_loaded_handle_fraction": 1.0,
+    "hold_translation_drift_m": 5.31053587620671e-07,
+    "hold_rotation_drift_rad": 1.1539683013519258e-05,
+    "hold_max_penetration_m": 1.0129989277629647e-05,
+    "actual_formal_rigid_steps": 20090,
+    "settling_steps": 1000,
+    "control_steps": 2009,
+    "duration_s": 40.18,
+    "rack_force_scope": "RAW positive normal impulses identify support; rack is not in tensor filters, so full signed rack normal+friction wrench is NOT_SCORED",
+    "material_scope": "NOT_RUN_RIGID_ONLY; recorded material_unchanged check is source-backed but original before/after hash values were not serialized for independent recomputation",
+    "recorded_result_status": "PASS_NATIVE_TOOL_SKILL_ENGINEERING",
+    "newton_pickup": "NOT_RUN",
+    "full_physics_acceptance": false,
+    "auditor_sha256": "28c73742f158dc7da3fa148cf62eeec1cb01a1b08b6f8709beced5073f6ee402",
+    "input_sha256": {
+      "setup.json": "6132e3ea1b3e74559447b935a4f572d52fc95375797a863c4ff15ea681e9ab58",
+      "manifest.json": "4355aed2643b7f0167f2a7c4f03217df1a8544a3ddfc835516d59dcc60c62f73",
+      "protocol.json": "fd9d34fc154493b7dc45ad2190d2895a1a30deb531f1062eca724a526edcf78b",
+      "result.json": "73faa12137a9f90123d5edd571ba050f53e4efb14d7cffae6139fd35fd6ba5aa",
+      "control_trace.jsonl": "701c24f0ebbaf484fd88789799a9a756651e73f196982fe068c618bbf9700044",
+      "physical_grasp_trace_00.jsonl": "300c941dd61b98f4a449a9ab61dbac081e8c73bb3db8da994a86bf5a88932b2e",
+      "final_live_scene.usda": "b6fcf8b8f667844a335bd721248cfb38159ff08edf89a63005dbe967608d5cb0"
+    },
+    "actual_keyframes": {
+      "path": "docs/media/wp08_tool_rack_007/provenance.json",
+      "sha256": "9db3f6c72e735c0f4d334fd166e3a2d231dda006c2f7efdf386c00405fb2378a"
+    }
   }
 }

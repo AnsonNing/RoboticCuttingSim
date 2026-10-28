@@ -1,0 +1,54 @@
+{
+  "scope": "Actual Native rigid-only place/release/reacquire Global RGB keyframes; not material cutting or hardware calibration",
+  "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007",
+  "source_result_sha256": "73faa12137a9f90123d5edd571ba050f53e4efb14d7cffae6139fd35fd6ba5aa",
+  "frames": [
+    {
+      "frame": 4,
+      "phase": {
+        "phase": "release_onto_rack",
+        "timestamp_s": 25.82
+      },
+      "source_file": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007/rgbd/frame_00004.npz",
+      "sha256": "88ba34e8ce0ce140a37555369adb73d6b29e482315ff6d9d6d9c67c51fe4215c",
+      "rgb_array_sha256": "a8b163f31eb81d9dd337397950683368eb2b50b2a40e2537d4a91e71db14fbe4",
+      "display": "Entire640x480 actual RGB, no crop/reconstruction"
+    },
+    {
+      "frame": 5,
+      "phase": {
+        "phase": "withdraw_open_hand",
+        "timestamp_s": 29.580000000000002
+      },
+      "source_file": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007/rgbd/frame_00005.npz",
+      "sha256": "c8d66446e99844dde0e98897b4e8e7167e1fa1c358068ab3a4f4a298c1218135",
+      "rgb_array_sha256": "150d6e2e61e2354f264f3da1b361f5df264a2e82fcc25e5c2fe4397e4f41ea9a",
+      "display": "Entire640x480 actual RGB, no crop/reconstruction"
+    },
+    {
+      "frame": 7,
+      "phase": {
+        "phase": "close_on_handle",
+        "timestamp_s": 34.42
+      },
+      "source_file": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007/rgbd/frame_00007.npz",
+      "sha256": "878a6f6e03f0f04d9dd6c60181562f0ba73f25fe7fc726783f4660b1908a4432",
+      "rgb_array_sha256": "ebbc00d8e5b868dec1aeb317c80f28fac68cf6a18d062c4844452b42cfc9e75e",
+      "display": "Entire640x480 actual RGB, no crop/reconstruction"
+    },
+    {
+      "frame": 9,
+      "phase": {
+        "phase": "hold_reacquired_tool",
+        "timestamp_s": 40.18
+      },
+      "source_file": "/mnt/data/ningan/RoboticCuttingSim-wp08-rack-final-20261029/artifacts/wp08_native_tool_rack_007/rgbd/frame_00009.npz",
+      "sha256": "06dbeebf5b925202554608bc742cdb7d0a96af2ad145260a419fba2bf78c04cf",
+      "rgb_array_sha256": "c73bf86f5b647f493005711e3aa5e78a96406711a5169468379f833b75946eba",
+      "display": "Entire640x480 actual RGB, no crop/reconstruction"
+    }
+  ],
+  "output_sha256": "929a48e2468823b830d2ab6d1abf3dc7ee165cbb86a34fe64629473907a93bb3",
+  "no_simulation_or_renderer_invoked": true,
+  "raw_arrays_modified": false
+}
