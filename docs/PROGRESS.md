@@ -23,6 +23,8 @@ clear all 401 sampled robot poses of the new Native CUT; v4's primary
 bracket/link7 intersection remains a preserved historical failure. The original
 full-wrist-footprint visibility screen still fails and remains separate from
 cutting. README media and the live remote viewer use the new rig.
+The README now shows separate CUT-01 and TRIM-01 v5 scene images from the
+actual synchronized t=4s captures, with provenance and episode videos for both.
 See [camera v5](WRIST_CAMERA_V5.md) and
 [the recovered interruption checkpoint](RESUMPTION_20261029.md).
 

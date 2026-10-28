@@ -5,13 +5,28 @@ dual Franka Panda, a physically grasped knife, continuous soft material and
 permanent TLMPM separation. Two wrist-mounted D405 RGB-D prototypes and a close
 Global D455 provide vision observations. No policy is trained.
 
-![Actual camera rig v5: both wrist cameras aligned with their hands, with Franka 1 parked](docs/media/scene_current_v5.png)
-
-Actual synchronized RGB captures from live CUT-01 at **t = 4 s**.
-[Image provenance](docs/media/scene_current_v5.json). Both wrist cameras use
-fixed mounts parallel to their hands; Franka 1 stays in its normal park posture.
+Both wrist cameras use fixed mounts parallel to their hands; Franka 1 stays
+in its normal park posture. Each scene below shows actual synchronized RGB
+captures from Global D455 and both wrist D405s with camera rig v5.
 [Camera v5 validation](docs/WRIST_CAMERA_V5.md). Previous images and recordings
 remain preserved.
+
+### CUT-01 — bar cutting
+
+![CUT-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_current_v5.png)
+
+Actual Native CUT-01 at **t = 4 s**.
+[Image provenance](docs/media/scene_current_v5.json) ·
+[Watch the episode](docs/media/wrist_v5_cut01/synchronized_multiview.mp4).
+
+### TRIM-01 — surface trimming
+
+![TRIM-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_trim01_v5.png)
+
+Actual Native TRIM-01 at **t = 4 s**. The completed episode separates a chip;
+its strict surface-quality score remains **FAIL**.
+[Image provenance](docs/media/scene_trim01_v5.json) ·
+[Watch the episode](docs/media/wrist_v5_trim01/synchronized_multiview.mp4).
 
 ## Tasks
 

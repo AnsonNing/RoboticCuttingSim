@@ -23,6 +23,9 @@ def main():
     args=parser.parse_args()
     if args.output.exists() or args.output.with_suffix('.json').exists() or args.output.with_suffix('.encoder.py').exists():
         raise FileExistsError("Use a fresh image/provenance name")
+    result_path=args.episode/'result.json'
+    result=json.loads(result_path.read_text())
+    task_id=result['task_id']
     frames=json.loads((args.episode/'frame_manifest.json').read_text())
     row=min(frames,key=lambda r:abs(r['time_s']-args.time))
     if abs(row['time_s']-args.time)>1e-9:
@@ -35,7 +38,7 @@ def main():
     draw=ImageDraw.Draw(canvas)
     font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',19)
     panels=[('global_d455','Close Global D455',(0,40,1000,750)),
-        ('wrist_d405_0','Wrist D405 0 | cutting hand',(1000,40,600,340)),
+        ('wrist_d405_0','Wrist D405 0 | tool hand',(1000,40,600,340)),
         ('wrist_d405_1','Wrist D405 1 | normal parked arm',(1000,440,600,340))]
     inputs=[]
     for name,label,(x,y,w,h) in panels:
@@ -50,11 +53,14 @@ def main():
         canvas.paste(picture,(x+(w-picture.width)//2,y+(h-picture.height)//2))
         draw.text((x+14,y-28),label,fill='#22303c',font=font)
         inputs.append({'camera_id':name,'file':str(path.resolve()),'sha256':digest(path),'physics_timestamp_s':timestamp})
-    draw.text((14,808),f"Actual Native CUT-01 | t={row['time_s']:.1f}s | physical grasp | {profile} | Franka 1 stays parked",fill='#22303c',font=font)
+    attachment=result['tool_attachment_mode'].replace('_',' ')
+    draw.text((14,808),f"Actual Native {task_id} | t={row['time_s']:.1f}s | {attachment} | {profile} | Franka 1 stays parked",fill='#22303c',font=font)
     canvas.save(args.output,optimize=True)
     encoder_path=args.output.with_suffix('.encoder.py')
     encoder_path.write_bytes(Path(__file__).read_bytes())
     write_json(args.output.with_suffix('.json'),{'scope':__doc__,'source_episode':str(args.episode.resolve()),
+        'task_id':task_id,'source_result_sha256':digest(result_path),
+        'source_execution_status':result['status'],'source_task_goal_status':result['task_goal_status'],
         'source_manifest_sha256':digest(args.episode/'manifest.json'),'camera_rig_sha256':digest(args.episode/'camera_rig.json'),
         'frame':row['frame'],'physics_timestamp_s':row['time_s'],'camera_rig_version':profile,
         'inputs':inputs,'output_sha256':digest(args.output),'encoder_sha256':digest(Path(__file__)),
