@@ -281,6 +281,7 @@ def main():
     p.add_argument("--grip-friction",type=float)
     p.add_argument("--grip-force",type=float,help="Finite maximum force per finger, N")
     p.add_argument("--grip-target",type=float,help="Closing target per finger, metres")
+    p.add_argument("--grip-initial-position",type=float,help="Reset finger opening per side, metres; physical closure follows")
     p.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
     args=p.parse_args()
     config=IsaacSimCuttingConfig(seed=args.seed,steps=args.steps,record_every=args.record_every,gpu=args.gpu,
@@ -293,7 +294,8 @@ def main():
                 particle_spacing_m=args.particle_spacing,
                 tool_attachment_mode=args.tool_attachment_mode,tool_init_mode=args.tool_init_mode,
                 grasp=({key:value for key,value in {"friction":args.grip_friction,
-                    "max_finger_force_n":args.grip_force,"closed_target_m":args.grip_target}.items()
+                    "max_finger_force_n":args.grip_force,"closed_target_m":args.grip_target,
+                    "initial_finger_position_m":args.grip_initial_position}.items()
                     if value is not None} or None),
                 scene=str(args.scene.resolve()) if args.scene else None)
     if args.worker:
@@ -329,7 +331,8 @@ def main():
           "--gpu",str(args.gpu),"--device",config.device,"--camera-mode",args.camera_mode,"--worker"]
     argv += ["--tool-attachment-mode",args.tool_attachment_mode,"--tool-init-mode",args.tool_init_mode]
     argv += ["--workpiece-kind",args.workpiece_kind]
-    for flag,value in (("--grip-friction",args.grip_friction),("--grip-force",args.grip_force),("--grip-target",args.grip_target)):
+    for flag,value in (("--grip-friction",args.grip_friction),("--grip-force",args.grip_force),("--grip-target",args.grip_target),
+                       ("--grip-initial-position",args.grip_initial_position)):
         if value is not None:
             argv += [flag,str(value)]
     argv += ["--camera-layout",args.camera_layout]
