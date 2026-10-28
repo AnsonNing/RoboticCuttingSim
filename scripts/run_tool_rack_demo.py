@@ -42,8 +42,8 @@ def author_rack(stage, spec, center):
     physics.CreateRestitutionAttr(0.)
     boxes = [("Base", (x,y,.005), (.03,.03,.005))]
     # Inner9mm gap clears the actual6mm-wide shaft at the mating face.
-    for side in (-1,1):
-        boxes.append(("Rail"+str(side), (x+side*.00625,y,(top+.01)/2), (.00175,.015,(top-.01)/2)))
+    for side, name in ((-1,"RailLeft"),(1,"RailRight")):
+        boxes.append((name, (x+side*.00625,y,(top+.01)/2), (.00175,.015,(top-.01)/2)))
     for name, position, half in boxes:
         cube = UsdGeom.Cube.Define(stage, "/World/ToolRack/"+name)
         cube.CreateSizeAttr(2.)
