@@ -1,0 +1,830 @@
+{
+  "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+  "source_manifest_sha256": "d0fa164b483a610f6e6a57795a5e6bc6668c4011af61fe2e8dcd5cd8d1413ea1",
+  "source_result_sha256": "bccfacb6f01b1f875e52da801f02e2c207a59f8526a7d8ee50da7c8b35be8403",
+  "source_backend": "LIVE_IsaacSim6.2_cutting",
+  "source_execution_status": "PASS_EXECUTION",
+  "source_task_metric_status": "PASS_TASK_METRICS",
+  "encoder_source_sha256": "6d8ff07ebf03fb434f421ee0c80030e29fd0764ae84ac67c96d57404a38b1baa",
+  "source_kind": "Actual captured live RGB-D arrays",
+  "simulation_or_renderer_invoked": false,
+  "frames": 41,
+  "playback_fps": 4.999999999999996,
+  "camera_ids": [
+    "wrist_d405_0",
+    "wrist_d405_1",
+    "global_d455"
+  ],
+  "sensor_models": {
+    "wrist_d405_0": "ideal_d405_prototype",
+    "wrist_d405_1": "ideal_d405_prototype",
+    "global_d455": "native_single_view_d455_provisional"
+  },
+  "raw_arrays_modified": false,
+  "invalid_pixels": "black; no filling or tail rejection",
+  "display": "Individual videos preserve input dimensions; mosaic panels resized to640x480 for display only",
+  "input_payload_sha256": [
+    {
+      "frame": 0,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0000.npz",
+      "sha256": "89435b6278939db8f275ae7047a25ca4a1f68aca9c5c88b726e7089129cf3820"
+    },
+    {
+      "frame": 0,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0000.npz",
+      "sha256": "d889b4ec203c81201323ca935c7888f0a84aba0e98e9b5813bc50623095d5cea"
+    },
+    {
+      "frame": 0,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0000.npz",
+      "sha256": "f98b3c5828c71a6c425195faa27b28a5e1aa5a092d7da33c8fb58e9e99d39b00"
+    },
+    {
+      "frame": 1,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0001.npz",
+      "sha256": "7de68a36ca6a132713bc42aa931a47df967fe295ee4087fa57366e38e7715f56"
+    },
+    {
+      "frame": 1,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0001.npz",
+      "sha256": "c8c3011288fdc0454c55bad7c3250f50de83b076008e921e64bde536a56b4511"
+    },
+    {
+      "frame": 1,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0001.npz",
+      "sha256": "147a05ef7801af4e1bfeb8beaaf9da026d1d562e94d2f7d27aa089893357f13f"
+    },
+    {
+      "frame": 2,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0002.npz",
+      "sha256": "388c2ffcb178d61aee26bdeaadb136d6db5dfa682184665fb4654adf9420a7e7"
+    },
+    {
+      "frame": 2,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0002.npz",
+      "sha256": "6f5da8c3e3d084362cf54f5b84c52e63d25415221d092d8dd39a041269dd171b"
+    },
+    {
+      "frame": 2,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0002.npz",
+      "sha256": "275c33206cccdea7d5c4fe3aca543c70c6614b97aa37f4f2caf1ce2618cb65f0"
+    },
+    {
+      "frame": 3,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0003.npz",
+      "sha256": "00913dc00baf6e51c98ca474f0f01a0ee836c115d5b96acb2e50b3a01dc27f95"
+    },
+    {
+      "frame": 3,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0003.npz",
+      "sha256": "b0f85152863582110ca4556e3441bf23d38a799c4463320dcfd968d69f0eac3e"
+    },
+    {
+      "frame": 3,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0003.npz",
+      "sha256": "8002cbf4746c9d5e1d43eab96df233b6e4c67f1550a43db727cef86174a7b0a5"
+    },
+    {
+      "frame": 4,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0004.npz",
+      "sha256": "3c9d4a7c510ded26ca443f270d0b23fde8488afd4a90718c7475748038b60572"
+    },
+    {
+      "frame": 4,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0004.npz",
+      "sha256": "ef75d478bbd2cf4ed074bbbcab890ac7faaf3f53f64532b1eb2f7e4f65dfca67"
+    },
+    {
+      "frame": 4,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0004.npz",
+      "sha256": "47a9e0b552931664a9d505c692a9f6d406f41b6c55d2420e20d2e00d76155457"
+    },
+    {
+      "frame": 5,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0005.npz",
+      "sha256": "1921881b35f57ab9ae55900e0600221f64e8e40118bb317e871d2150f1cbc0a6"
+    },
+    {
+      "frame": 5,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0005.npz",
+      "sha256": "cbcaccc36168add36a06956494cfb0cff5f02078eaad17e98b99c361c7dba589"
+    },
+    {
+      "frame": 5,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0005.npz",
+      "sha256": "7ec16b51bcc68cffcf4dd8f6965358738e921da6df1d80ccdc1a6c0e70987184"
+    },
+    {
+      "frame": 6,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0006.npz",
+      "sha256": "2c395d8f072d5232e15ac48994fb43b362a847249c4a62a4ea46629965977711"
+    },
+    {
+      "frame": 6,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0006.npz",
+      "sha256": "abc1861da9308d1c9575fbdf6473dea960a1735048ba922e0791a972f1549639"
+    },
+    {
+      "frame": 6,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0006.npz",
+      "sha256": "44b93d8195fb5ae4ffcd851975c56330924c166e5abaff1a1ff74b26318a2606"
+    },
+    {
+      "frame": 7,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0007.npz",
+      "sha256": "4bf911f8b3439c9d521c8a671d43af86df2a7a0bac3c99d5df20e6798383e872"
+    },
+    {
+      "frame": 7,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0007.npz",
+      "sha256": "cca28f3378edd81a0d1d7cf2fa0820c243d95aca37f279a506f3c7c384543816"
+    },
+    {
+      "frame": 7,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0007.npz",
+      "sha256": "c4d9adfca635439668abecd728d0095ada7c5283f77882f8eee08fe26a5b5903"
+    },
+    {
+      "frame": 8,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0008.npz",
+      "sha256": "80fa4a8bd6767fb949845501b8dde2c44bf9729c08b852892a831af6c624ab23"
+    },
+    {
+      "frame": 8,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0008.npz",
+      "sha256": "5edbb170ba97f17b3c5b2a36f4e2a3ff13a7bff502de30489f7ce25858d2f36e"
+    },
+    {
+      "frame": 8,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0008.npz",
+      "sha256": "76f189dfec074ccd70049fc9040752085228d6398b56b115c292f2cf913fd1e4"
+    },
+    {
+      "frame": 9,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0009.npz",
+      "sha256": "e5db13d1ca96f2e6006e718895cb30f8f373c9da2afda838f79ec8b2a649c9ae"
+    },
+    {
+      "frame": 9,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0009.npz",
+      "sha256": "d34a51b9601eb5c4776da4563abad944e36e3696648906a438a425212ab4a7ee"
+    },
+    {
+      "frame": 9,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0009.npz",
+      "sha256": "f7e3f992a4d11db94f465aa038528d8b130ba71468ef281ebc76051c79710aff"
+    },
+    {
+      "frame": 10,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0010.npz",
+      "sha256": "f03f07fa93e2fc19ea053e154543f9f7b7185744de1745f02253914c31282607"
+    },
+    {
+      "frame": 10,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0010.npz",
+      "sha256": "57420b4e58ce446be4f1429e3668156e731c02959305931810d84b149396b183"
+    },
+    {
+      "frame": 10,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0010.npz",
+      "sha256": "82ad0c28a19c2ae12ff9c2337e5245c92d96ce27c715cb6d85e2cd2d06c4db4d"
+    },
+    {
+      "frame": 11,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0011.npz",
+      "sha256": "fc4fc85ee9ec3caa895f99a6f13cc5549a1c7acf1757adf949ffa61bf1d7f651"
+    },
+    {
+      "frame": 11,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0011.npz",
+      "sha256": "88e9b469a460cbc7035a5b9cb4dd59093e86cb108ad6bd58657e3806c171cf3b"
+    },
+    {
+      "frame": 11,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0011.npz",
+      "sha256": "5f06a76dd6e9401bedb28f92608ef454a70b9603e7be2b6e256beebb62a2ba20"
+    },
+    {
+      "frame": 12,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0012.npz",
+      "sha256": "b02096bd607552602a28eec38ae846248ee5cd468541815ae65ec683e2963a07"
+    },
+    {
+      "frame": 12,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0012.npz",
+      "sha256": "81966d456c9e2b7d3e6b3c840fad8e2f67999e3bed6cf6a8ab8ed9f80aa7503e"
+    },
+    {
+      "frame": 12,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0012.npz",
+      "sha256": "6f570fff71817804a9f6ac3f0f998c6436d79a20fae9f93b9ad2bc07e694ea00"
+    },
+    {
+      "frame": 13,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0013.npz",
+      "sha256": "33bfeda641388b0b0e39911ee06e199a9348b21ed60b714791ec980cf8ac05d7"
+    },
+    {
+      "frame": 13,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0013.npz",
+      "sha256": "e63252f10b77337e70e86ad24e4cf1fe5effb3be4044e831c55b5d0ea49b01c8"
+    },
+    {
+      "frame": 13,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0013.npz",
+      "sha256": "25f92d473c42c74bfb26fac150d9be4af3801765148fe2fb966367dd691e2de7"
+    },
+    {
+      "frame": 14,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0014.npz",
+      "sha256": "54494fd2547349f6da8a3b00d8a729f834757879b8fac5d8f5e586d0b0382c0e"
+    },
+    {
+      "frame": 14,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0014.npz",
+      "sha256": "7c7710d197e85083f844310f1e1db41ede0600a825a6f8a21b639eab1d28986e"
+    },
+    {
+      "frame": 14,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0014.npz",
+      "sha256": "57932723457adb22bc67f94c22a0149893a54f7d1877756fe0abe47147c68bc1"
+    },
+    {
+      "frame": 15,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0015.npz",
+      "sha256": "2dde214a29b390daa87060afc221b4aced1b5afe415b59c96d5070a0ae2363e3"
+    },
+    {
+      "frame": 15,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0015.npz",
+      "sha256": "0372f80a66398fd28025497031398e8077cbb807883c4951cac40a8b3261bfa3"
+    },
+    {
+      "frame": 15,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0015.npz",
+      "sha256": "b1b328e895028434c14aeb90058eeb35f1896643035b0951b93a2c5a1988e329"
+    },
+    {
+      "frame": 16,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0016.npz",
+      "sha256": "a1199270028ea19982603b47f5c2ea45c2d21cd3c2944ce6d264c0925b717a4b"
+    },
+    {
+      "frame": 16,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0016.npz",
+      "sha256": "f2b3b9b2043df779f74f47e9eee4365ecb4fbb3749cf53001dfe87b7c946e6aa"
+    },
+    {
+      "frame": 16,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0016.npz",
+      "sha256": "3bd769cdc53557c8818790cc54e3677f58842095482fb170b32a94be2267e79c"
+    },
+    {
+      "frame": 17,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0017.npz",
+      "sha256": "4e35379e96a6c55258250495ef716f7dd27f7974de46a3d448ed597513b755b7"
+    },
+    {
+      "frame": 17,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0017.npz",
+      "sha256": "e51402d1a981dac5eea2886be17edf71f8009dd09be35963eb307b197893dc4d"
+    },
+    {
+      "frame": 17,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0017.npz",
+      "sha256": "30c802aca96de46d085d712509ad2d91725bc4ce16d5f58f122ce2036933a5a2"
+    },
+    {
+      "frame": 18,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0018.npz",
+      "sha256": "4e4725814c2d014e6faa3b938cb6ccecda6266d20994533bb247090638a2351f"
+    },
+    {
+      "frame": 18,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0018.npz",
+      "sha256": "e45f80e14d74a64af11d2d00848d5aa4729a406ac4f1970b37d403eebac900b3"
+    },
+    {
+      "frame": 18,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0018.npz",
+      "sha256": "30dcf499d85a3e622e759d7769186f30a6665cdcb1596560979023a106847b31"
+    },
+    {
+      "frame": 19,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0019.npz",
+      "sha256": "62a20e05465d6148a847a0d7ed2c1b009810db87bbfb2d50595d9f3b1034f099"
+    },
+    {
+      "frame": 19,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0019.npz",
+      "sha256": "ac86091fe292b777d855793d51070a8403c5772e73f12552d3fecb226d3dd065"
+    },
+    {
+      "frame": 19,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0019.npz",
+      "sha256": "8bab4d8cc28231e36b657197827a9b6d84efd789ffae4bf9515e26eda387d18b"
+    },
+    {
+      "frame": 20,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0020.npz",
+      "sha256": "aaf5020e4cc9d77593ba642384ed2f04fa98acec71d5417486adf8e056794b03"
+    },
+    {
+      "frame": 20,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0020.npz",
+      "sha256": "75fe547bb645ada6e9f6e6b99562cfe8ea22fc3b47d31902047947bf0363b1b3"
+    },
+    {
+      "frame": 20,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0020.npz",
+      "sha256": "d9d8493c85e88f6343ac44e3d76d11f0509ca63a9350133c4bd8d8bd6127bf2d"
+    },
+    {
+      "frame": 21,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0021.npz",
+      "sha256": "ff04002eeb070d8588377f4bc2bb139bae6571e45c0c56c18d9880e99e58c116"
+    },
+    {
+      "frame": 21,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0021.npz",
+      "sha256": "1be071b0ea5e743db9b2a4c347f5f9fca4d09f4b30eb035529a1ae28c804c84f"
+    },
+    {
+      "frame": 21,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0021.npz",
+      "sha256": "8e7025df87a059a07b03abce3f76db410023649719ee3e60eef2d429292a5bd4"
+    },
+    {
+      "frame": 22,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0022.npz",
+      "sha256": "b56baee39e3b921e0921a4c0d6c3ed2f9af626e7c5a3c1e97faa8c6e285d6d96"
+    },
+    {
+      "frame": 22,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0022.npz",
+      "sha256": "d23967271a28a939dc095a905d161812ba44150949da953c30c735c7f947fcbd"
+    },
+    {
+      "frame": 22,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0022.npz",
+      "sha256": "df7c972347861646758a27f084489fec7a182a2fec075c146dbabdecb0ce4fc5"
+    },
+    {
+      "frame": 23,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0023.npz",
+      "sha256": "2bd8ceaae452496f30384c431a53876ec2ebd06e745d5fc0c4787b218b1a7906"
+    },
+    {
+      "frame": 23,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0023.npz",
+      "sha256": "fcacd0ee382be073b01d306b90868cb76a8f8f486dd62b13add6cbd2bf129802"
+    },
+    {
+      "frame": 23,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0023.npz",
+      "sha256": "a7028015ba5ff3c02fbc9efa2b112e300d99af26a0bcdd4ed4923313136de530"
+    },
+    {
+      "frame": 24,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0024.npz",
+      "sha256": "4370290aa28b959b31be101945a951b04fb0530551a9fd3aff8e13daa1a7eff9"
+    },
+    {
+      "frame": 24,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0024.npz",
+      "sha256": "3013e2bd1dd8a2b87e4ba5520ac772dfc2d5b65d2c3f928564b17f9bb3f20d19"
+    },
+    {
+      "frame": 24,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0024.npz",
+      "sha256": "a73a648ad242fdfe5b92845262c69a789d622f8f24290ab571173153feb7cdfe"
+    },
+    {
+      "frame": 25,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0025.npz",
+      "sha256": "3a12c6686c64ce42882c0f2009837c1ebe57aec4f8095af173f3343bdac23260"
+    },
+    {
+      "frame": 25,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0025.npz",
+      "sha256": "6a41e244936ee73dbeec2f89c26f099f3ae65e0ca80c0770239af50708d9c656"
+    },
+    {
+      "frame": 25,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0025.npz",
+      "sha256": "79ce043084f5b327e99c4673d11f942437f398e5ed8e71b697121b269ad98913"
+    },
+    {
+      "frame": 26,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0026.npz",
+      "sha256": "3c30693483a7a3166df112bd006edbb7d7896898689da329fabe2bb5d81c738e"
+    },
+    {
+      "frame": 26,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0026.npz",
+      "sha256": "5d4d6397b3186e05bed9ea2e65e386f26d7e2cd68146e49254dd5a18034ac84d"
+    },
+    {
+      "frame": 26,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0026.npz",
+      "sha256": "539ee0b0f72a9c5103b240568d0c50cd58b359776a6ae68c012951d050db467b"
+    },
+    {
+      "frame": 27,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0027.npz",
+      "sha256": "085d78011a98b35b53c3fa722d95994fd396ef5d8816aa0782f4698a0fa393f0"
+    },
+    {
+      "frame": 27,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0027.npz",
+      "sha256": "3418f245e56b2193883bd481bba3c2d1d3e91e272e1f7891c30a273753628879"
+    },
+    {
+      "frame": 27,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0027.npz",
+      "sha256": "e74749792886d740469b8d98a059a3629a33826bbd488274bc7887bb25351395"
+    },
+    {
+      "frame": 28,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0028.npz",
+      "sha256": "fe4c9e28843711033eb350ac34f577bf4c9f9d4eed63335984702898a04dbea2"
+    },
+    {
+      "frame": 28,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0028.npz",
+      "sha256": "5d2cc26e563f424f6519b2d190799f33639ea5732fcdfc99b136777544f2f814"
+    },
+    {
+      "frame": 28,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0028.npz",
+      "sha256": "5f4201424a578f3e47e224b097a49f61f4aaeda6a6e2a5c794cf154bb8658331"
+    },
+    {
+      "frame": 29,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0029.npz",
+      "sha256": "c26de69eafa546e86cc884310b8f550d81e24522c633d4534fdda767b64ad004"
+    },
+    {
+      "frame": 29,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0029.npz",
+      "sha256": "3b9b6959dad7ab7d9f1c42c21ba2e8ba87717d77bfe805b281a0d0b4eeb4b5c8"
+    },
+    {
+      "frame": 29,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0029.npz",
+      "sha256": "8c732622d2f7abd06521c30d802d1a617331f0f7b5102dd276e928e7a16d47b6"
+    },
+    {
+      "frame": 30,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0030.npz",
+      "sha256": "b25182fa99430790f0c16bd20405839045a18d5a6cd64fdd9dc27b79df7ccb17"
+    },
+    {
+      "frame": 30,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0030.npz",
+      "sha256": "053fcefa1bba3330846cf126a70d994e204a01b6107cde961523dae6512bcfea"
+    },
+    {
+      "frame": 30,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0030.npz",
+      "sha256": "9a3fc558687fae36c3e8cbe6c35b4a5724de66d08a1d997383e21971f07fb8f5"
+    },
+    {
+      "frame": 31,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0031.npz",
+      "sha256": "2ffd5ad3d98793b5aa6db04f1c67c6915fcdece6ecbdc2375ae0ebd19545eed0"
+    },
+    {
+      "frame": 31,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0031.npz",
+      "sha256": "d7adacbddd9d4d709b1152ef63cc4db85ff89d17a85676c6f05788aa13592ec5"
+    },
+    {
+      "frame": 31,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0031.npz",
+      "sha256": "5e0bf5710929a5f6636071880fd90c03ebc1dcb37356b0025888f7ae4c64aaf6"
+    },
+    {
+      "frame": 32,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0032.npz",
+      "sha256": "b0755eb16bfd73601e1d35197b85d91b518a02da5631867032bcee319d657a20"
+    },
+    {
+      "frame": 32,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0032.npz",
+      "sha256": "3dff42b3024e815d4deb7f267954c6abe04c1819e5ea875720464651aec311b5"
+    },
+    {
+      "frame": 32,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0032.npz",
+      "sha256": "5c72a6c14748902512ef7229219a83e93b1a631d6ea66fe7eaa450021890c5cc"
+    },
+    {
+      "frame": 33,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0033.npz",
+      "sha256": "0202cc496ca6bc64de55dcef806bf6c93c0e826737917f96d8adfeeb720742f4"
+    },
+    {
+      "frame": 33,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0033.npz",
+      "sha256": "71a58d59433d7981ad88b8853c3b9575565bf9d574cbac046c0ec8861fdafb24"
+    },
+    {
+      "frame": 33,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0033.npz",
+      "sha256": "f14c4e9eac46c0ed199d4ad43f37c2eec729c12e64c9f6c0b95d565782ed5bd0"
+    },
+    {
+      "frame": 34,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0034.npz",
+      "sha256": "cd11462be53c665cc99da40b5257f37b829fa2d29b69be31c4f8c6de64a05596"
+    },
+    {
+      "frame": 34,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0034.npz",
+      "sha256": "196ee64ce2d776d2e129527c68d6b49a88e60d368dacb620b2d29a32c186d550"
+    },
+    {
+      "frame": 34,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0034.npz",
+      "sha256": "df71c6793562a24fa39821fb163f63b6ab34c476f5dbbae117e08491ae53e591"
+    },
+    {
+      "frame": 35,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0035.npz",
+      "sha256": "449850cfa00717c0b484ebf96ed3bef0f256c1a9b5285f2ee310b15391d6246c"
+    },
+    {
+      "frame": 35,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0035.npz",
+      "sha256": "d9452d3bf9d69ad2135f4ca1f06cdfed72dba736462e1499d68beddf2a91ac1e"
+    },
+    {
+      "frame": 35,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0035.npz",
+      "sha256": "68fad19171ad5066ea5bffb6b6b27c940d0a611bd53cd2b02453908f58b9e06a"
+    },
+    {
+      "frame": 36,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0036.npz",
+      "sha256": "7794787f5bdd0840f58176cba76cbd023560a42406eae0a944336e62bc555e1b"
+    },
+    {
+      "frame": 36,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0036.npz",
+      "sha256": "6ccd1104ed4794cc0ee2effaefd885bc217a8dabe8b416283bfa4ec42ce8e09a"
+    },
+    {
+      "frame": 36,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0036.npz",
+      "sha256": "b8c27a5dac0d990149950ff2d4bf6b021ab68b063240adb7c6fc5903e9795425"
+    },
+    {
+      "frame": 37,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0037.npz",
+      "sha256": "7c6917105727908f0472cee3733a913f5de19374cbce1f9a69356b67d00e2828"
+    },
+    {
+      "frame": 37,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0037.npz",
+      "sha256": "a847454ebfbbc9ce23d22abb397e94dde2fda53a118f4ed0240c8ba214961b8d"
+    },
+    {
+      "frame": 37,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0037.npz",
+      "sha256": "07f389ea3dce78728ae10754acc75e653d79ea584f75f965eb897e5fd357a809"
+    },
+    {
+      "frame": 38,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0038.npz",
+      "sha256": "b0b456a8cc356c6d89455ce40f221d73f10177bcb431d315d58e82fc9bbe6d88"
+    },
+    {
+      "frame": 38,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0038.npz",
+      "sha256": "8a7a6141d268c9d8e7302e628776e1054b4e3a556a5414ae7a78e8c6825a7fdc"
+    },
+    {
+      "frame": 38,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0038.npz",
+      "sha256": "e2774ccbad9afc5aab5099cd6b6eb44f8c56ee2fc8751dee6dd80994d2f66d55"
+    },
+    {
+      "frame": 39,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0039.npz",
+      "sha256": "7bd46df999a39c9d9aae2f9a2c35d7f259064e703d68b672dbe1c152579d983e"
+    },
+    {
+      "frame": 39,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0039.npz",
+      "sha256": "de56a7252244f91cba2ec66eb0f4307a354c1a408286ec4390e4695311edbb10"
+    },
+    {
+      "frame": 39,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0039.npz",
+      "sha256": "4aa644d5afe534d4f2a4d60af20446572f8f2c1364a5104537781d923c0c7faa"
+    },
+    {
+      "frame": 40,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_0_0040.npz",
+      "sha256": "7f80449aaad2b5a76eba0d19444b5eba7306b57effbe9a568efab36eada12c5a"
+    },
+    {
+      "frame": 40,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/wrist_d405_1_0040.npz",
+      "sha256": "a5bf9d412e0d6802f4803467640f70478b06dc5dc43743165182965b2683eb5a"
+    },
+    {
+      "frame": 40,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/observations/global_d455_0040.npz",
+      "sha256": "169c48d9f683ee2bdea182ffe35cc137ee1cef5e28b3912053f87e2d2fcaddad"
+    }
+  ],
+  "files": [
+    {
+      "file": "global_d455.mp4",
+      "bytes": 91966,
+      "sha256": "8a69f4e1b85d878fef4d0a9e1169ccaab2792e7663b765c8e26788521e12d3ee"
+    },
+    {
+      "file": "global_d455_depth.mp4",
+      "bytes": 49408,
+      "sha256": "b33637ae62b4bddc7c6e6d5ecff2700b82e78b75e14c81739c74be81f1770bec"
+    },
+    {
+      "file": "synchronized_multiview.mp4",
+      "bytes": 462645,
+      "sha256": "b8ce6556f573d2384dbf50d9475c715179148a642436879118827022ff87ce75"
+    },
+    {
+      "file": "wrist_d405_0.mp4",
+      "bytes": 120996,
+      "sha256": "47b860d03a4af7c6f9ba2e6612c2b0a7ad98e5e3bd8344507b814536bb2ade6b"
+    },
+    {
+      "file": "wrist_d405_0_depth.mp4",
+      "bytes": 80206,
+      "sha256": "47adea064328a1efe1758b0f0f6b5b93344eaa0b932b4f038e2c4f3eb9f34505"
+    },
+    {
+      "file": "wrist_d405_1.mp4",
+      "bytes": 129844,
+      "sha256": "ec9b964886eb2dc70cc84ab5828cd4e93786cbaf49f11ca98eb1e3624f425ac8"
+    },
+    {
+      "file": "wrist_d405_1_depth.mp4",
+      "bytes": 83808,
+      "sha256": "577928014d4e433e8aa6d4546e5cae56573360c0c968b0ad5cd4690382f8c2ca"
+    }
+  ],
+  "pose_source": {
+    "file": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut/camera_pose_trace.json",
+    "sha256": "e9fa36819379601190e203301c8c2cb118482e65dba4a17119d56cd8b68cf12c",
+    "samples": 401
+  },
+  "auxiliary_files": [
+    {
+      "file": "preview.png",
+      "bytes": 583599,
+      "sha256": "f64416ec6e4da3bde2ff5b6651db948597ce2d8ea09cbc6b4d2e21e9763f6d69"
+    },
+    {
+      "file": "camera_transforms.npz",
+      "bytes": 87770,
+      "sha256": "35fae6618dec05eab7d598f9a4e0635a67eae6a8ad6622d7bab1694807c66141"
+    },
+    {
+      "file": "camera_pose_tracking.png",
+      "bytes": 166150,
+      "sha256": "8a813b9c9a4eb98f300f6815555d5066423fbc7f36403bcf174845d6ec75e23b"
+    },
+    {
+      "file": "camera_pose_trace.csv",
+      "bytes": 121704,
+      "sha256": "a429a7fab70192e4e296b2bf96301e9ba1425fc95e1cb13839ea0cbf65eced00"
+    }
+  ]
+}
