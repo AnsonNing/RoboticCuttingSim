@@ -1,16 +1,23 @@
 # RoboticCuttingSim
 
-A physics-based cutting research environment with two Franka Panda arms, a rigid knife attached to the active arm, continuous Plasticine-like material, persistent TLMPM separation, two hand-mounted D405 RGB-D prototypes and a fixed Global D455. Both tasks share control, observations and independent evaluation. No policy is trained.
+A physics-based cutting research environment with two Franka Panda arms, an independent rigid knife held through actual finger contacts, continuous Plasticine-like material, persistent TLMPM separation, two hand-mounted D405 RGB-D prototypes and a close fixed Global D455. Both tasks share control, observations and independent evaluation. No policy is trained. The historical hand-attached knife remains available as `legacy_fixed_tool`.
 
-**Latest scene: both Wrist D405 cameras are attached to the actual articulated hands; Global D455 is now a close view of the material and cutting region.**
+**Latest scene: a real independent handle/shaft/blade tool, two hand-mounted Wrist D405 cameras and a close Global D455 view.**
 
-![Latest live Isaac Sim scene: two hand-mounted wrist views and target-centered Global RGB-D at t=4.0s](docs/media/global_close_trim01/preview.png)
+![Actual independent-tool CUT-01 at t=4s, synchronized wrist and close Global RGB-D](docs/media/wp08_physical_grasp_v2/cut01/preview.png)
+
+WP-08 `physical_grasp` uses finite grip force and friction, measured free-tool motion for TLMPM, and material reaction applied only to the tool. Candidate-v2 full CUT/TRIM runs have executed in both real runtimes: CUT passes unchanged task criteria; TRIM separates its chip but keeps its strict surface-quality FAIL. Native hold/load/weak-grip/low-friction/release controls pass; Newton contact-model transfer limitations and coupling-work failures remain under investigation. [Physical-tool architecture, commands and limitations](docs/PHYSICAL_TOOL.md).
+
+| Latest physical-grasp episode | Actual recorded views | Raw-source provenance |
+| --- | --- | --- |
+| CUT-01: two independent72g parts | [Synchronized RGB-D](docs/media/wp08_physical_grasp_v2/cut01/synchronized_multiview.mp4) / [Global](docs/media/wp08_physical_grasp_v2/cut01/global_d455.mp4) | [Hashes](docs/media/wp08_physical_grasp_v2/cut01/provenance.json) |
+| TRIM-01: separated1.608g chip; strict surface FAIL | [Synchronized RGB-D](docs/media/wp08_physical_grasp_v2/trim01/synchronized_multiview.mp4) / [Global](docs/media/wp08_physical_grasp_v2/trim01/global_d455.mp4) | [Hashes](docs/media/wp08_physical_grasp_v2/trim01/provenance.json) |
 
 Global's optical centre is now **(0.28, -0.42, 0.46) m**, aimed at **(0, 0, 0.02) m**, about **0.67 m from the target**. It intentionally crops the wider workstation. Actual native recordings show **8.13× / 8.92× more minimum visible material pixels** for CUT / TRIM than the previous workcell overview. The old overview and fixed-camera recordings remain unchanged below.
 
 The camera IDs are `wrist_d405_0`, `wrist_d405_1` and `global_d455`. Wrist mounts use fixed hand-to-camera transforms and measured articulation state checked every 20 ms. Both D405 streams remain **`ideal_d405_prototype`**; stereo, noise and hardware calibration are unvalidated. Global uses the official D455 asset and native SingleView pipeline in Sim, and ideal Warp RGB-D in kit-less Lab.
 
-## Latest captured videos
+## Preserved fixed-tool close-view videos
 
 These videos contain actual RGB-D captured during live Isaac Sim execution, with 41 synchronized captures and 401 measured poses per full episode. They are encoded from recorded arrays, not USD replay. The second arm holds an observation posture during cutting; its camera stays still because that arm stays still.
 
