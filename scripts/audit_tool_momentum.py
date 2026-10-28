@@ -79,6 +79,23 @@ def check_properties(mass, inertia):
     return inertia
 
 
+def recorded_lab_gravity(metadata, setup):
+    """Select the recorded body's world, never infer gravity from residuals."""
+    if "rigid_model_gravity_world_m_s2" in metadata:
+        values = np.asarray(metadata["rigid_model_gravity_world_m_s2"], float).reshape(-1, 3)
+        world = int(metadata["tool_body_world_index"])
+        if world < -1 or world >= len(values):
+            raise ValueError("Tool world index does not identify recorded rigid gravity")
+        gravity = values[world]
+        native = np.asarray(metadata["native_mujoco_gravity_world_m_s2"], float).reshape(-1, 3)
+        selected = native[0 if len(native) == 1 else world]
+        if not np.isfinite(gravity).all() or not np.allclose(gravity, selected, atol=1e-7, rtol=0):
+            raise ValueError("Actual Newton and native MJWarp gravity readbacks disagree")
+        return gravity
+    recorded = setup.get("actual_rigid_gravity_world_m_s2")
+    return None if recorded is None else np.asarray(recorded, float)
+
+
 def native_rows(episode, setup, limits):
     trace = episode / "physical_grasp_trace_00.jsonl"
     properties = setup.get("dynamic_tool_properties", {})
@@ -171,7 +188,7 @@ def lab_rows(episode, setup, limits):
     mass = float(metadata["tool_mass_kg"])
     inertia = check_properties(mass, metadata["tool_inertia_com_local_kg_m2"])
     com = np.asarray(metadata["tool_com_local_m"])
-    gravity = setup.get("actual_rigid_gravity_world_m_s2")
+    gravity = recorded_lab_gravity(metadata, setup)
     # The legacy recorder retains TLMPM gravity, not a rigid-model readback.
     # Keep that distinction explicit; angular balance has no gravity torque.
     assumed_gravity = np.array([0., 0., -9.81]) if gravity is None else np.asarray(gravity)
@@ -185,7 +202,9 @@ def lab_rows(episode, setup, limits):
         before = raw["tool_body_pose_xyzw"][index - 1]
         if (abs(dt - metadata["dt_s"]) > 1e-9 or
                 not np.allclose(raw["applied_at_tool_pose_xyzw"][index], before, atol=1e-6, rtol=0) or
-                np.max(np.abs(raw["hand_external_wrench_world"][index])) > 1e-8):
+                np.max(np.abs(raw["hand_external_wrench_world"][index])) > 1e-8 or
+                ("pre_step_hand_external_wrench_world" in raw and
+                 np.max(np.abs(raw["pre_step_hand_external_wrench_world"][index])) > 1e-8)):
             errors.append({"raw_row": index, "reasons": ["Inconsistent PRE state, interval or direct hand force"]})
             continue
         center = before[:3] + Rotation.from_quat(before[3:]).as_matrix() @ com
@@ -206,6 +225,8 @@ def lab_rows(episode, setup, limits):
                           "gravity_world_m_s2": None if gravity is None else assumed_gravity.tolist(),
                           "diagnostic_assumed_gravity_world_m_s2": assumed_gravity.tolist(),
                           "linear_scoring_available": gravity is not None,
+                          "gravity_source": "Actual rigid-model/native readbacks" if gravity is not None else "Missing; TLMPM material gravity is not substituted",
+                          "pre_step_hand_force_numeric_recorded": "pre_step_hand_external_wrench_world" in raw,
                           "angular_scoring_available": True, "body_index": body,
                           "raw_sha256": digest(path), "raw_metadata_sha256": digest(path.with_suffix(".json")),
                           "velocity_convention": "Recorded actual Newton body COM velocity, linear then angular",

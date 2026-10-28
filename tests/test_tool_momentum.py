@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation
 
 SPEC = importlib.util.spec_from_file_location("tool_momentum", Path(__file__).resolve().parents[1] / "scripts/audit_tool_momentum.py")
@@ -66,3 +67,13 @@ def test_summary_retains_worst_single_step_failure():
     assert result["failing_steps"] == 1
     assert result["first_failing_row_indices"] == [100]
     assert result["standalone_absolute_component_diagnostic"]["exceeding_steps"] == 1
+
+
+def test_gravity_uses_explicit_body_world_and_native_readback_only():
+    metadata = {"rigid_model_gravity_world_m_s2": [[1., 2., 3.], [0., 0., -9.81]],
+                "tool_body_world_index": -1, "native_mujoco_gravity_world_m_s2": [[0., 0., -9.81]]}
+    assert np.array_equal(audit.recorded_lab_gravity(metadata, {}), [0., 0., -9.81])
+    assert audit.recorded_lab_gravity({}, {"material": {"gravity": [0., 0., -9.81]}}) is None
+    metadata["native_mujoco_gravity_world_m_s2"] = [[0., 0., -5.]]
+    with pytest.raises(ValueError, match="disagree"):
+        audit.recorded_lab_gravity(metadata, {})
