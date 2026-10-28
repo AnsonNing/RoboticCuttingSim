@@ -1,0 +1,9 @@
+{
+  "signalingServer": "100.111.162.17",
+  "signalingPort": 49100,
+  "mediaServer": "100.111.162.17",
+  "mediaPort": 47998,
+  "width": 1280,
+  "height": 800,
+  "fps": 30
+}

@@ -1,0 +1,43 @@
+{
+  "official_isaac_sim_recipe": {
+    "repository": "https://github.com/isaac-sim/IsaacSim",
+    "ref": "v6.2.0",
+    "commit": "74a9356b20250dd60337d90b4b4d913c9454d32b",
+    "path": "tools/docker/web-viewer/Dockerfile",
+    "source_sha256": "23e7ba945d463ac37310756df95dee7588f752a536496e8c2bb326e78f2684dc",
+    "url": "https://github.com/isaac-sim/IsaacSim/blob/v6.2.0/tools/docker/web-viewer/Dockerfile"
+  },
+  "generator": {
+    "package": "@nvidia/create-ov-web-rtc-app",
+    "version": "2.1.5",
+    "tarball": "https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/@nvidia/create-ov-web-rtc-app/-/@nvidia/create-ov-web-rtc-app-2.1.5.tgz",
+    "npm_integrity": "sha512-QjKV9C1sbwRC9tJn+HSwNXTqbGSCr98ymEKju2hjFaB4+T8gPORijS9H+8kiFhDdpt3TQs+FMN3fAoHIgeKRfQ==",
+    "archive_sha256": "b789ca90f20bd1a9ae152df6bf812116acd73fd5c069fab00ca251fe6050be8b",
+    "license_file_sha256": "29ee0e5903fae80280cf7b30017172b55139aba1232fdfd325ab1eac574d565e",
+    "license": "SEE LICENSE IN LICENSE.txt"
+  },
+  "sdk": {
+    "package": "@nvidia/ov-web-rtc",
+    "version": "6.8.2",
+    "tarball": "https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/@nvidia/ov-web-rtc/-/@nvidia/ov-web-rtc-6.8.2.tgz",
+    "npm_integrity": "sha512-s2xNYlKg7SjxQo++MDm8aE3tuGdDHsLzaQnJzEdcI27Uf1wVwmNDueGOccJCGLk18HNsVin4+vePdJBNvnRnFQ==",
+    "archive_sha256": "c2620d4c510bee7a202ff68562ef85925e48868d3b161620a05e923f18641e34",
+    "license_file_sha256": "026edb2fdcd7089d98ff1d6544bcbe686b77bf28bd26275832fe3c754d69b7ad",
+    "license": "SEE LICENSE IN LICENSE.txt"
+  },
+  "node": {
+    "version": "v22.23.4",
+    "npm_version": "10.9.9",
+    "platform": "linux-x64",
+    "url": "https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz",
+    "sha256": "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce"
+  },
+  "package_lock_sha256": "65cd30ef9338c8ef22a9a712f49326b26142aa092883068328366db952129fed",
+  "reference_scaffold": {
+    "path": ".deps/remote-viewer/reference/official-local-viewer",
+    "generated_with": "@nvidia/create-ov-web-rtc-app@2.1.5 local-sample / React / web-rtc6.8.2",
+    "emitted_frontend_license": "MIT headers; retained reference only, not vendored into this original TypeScript wrapper",
+    "main_tsx_sha256": "4a271c571ae24c6d1f4c0a849d05cf915fe807aa616ab3469e4bb62682916901"
+  },
+  "source_boundary": "Official SDK is an npm dependency, not committed third-party source or a compiled Git asset. Only the original small viewer integration and reproducible build metadata are tracked."
+}

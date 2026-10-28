@@ -1,0 +1,750 @@
+{
+  "status": "PASS_WEBRTC_VIDEO_AND_KIT_INPUT",
+  "scope": "One actual local Chrome client connected through the host Tailscale URL to the same running Isaac Sim Kit application; no replay or HTTP task-command engine",
+  "browser_version": "146.0.7680.153",
+  "url": "http://100.111.162.17:8210",
+  "page_count": 1,
+  "checks": {
+    "connected_peer": true,
+    "actual_video_rtp_received_and_decoded": true,
+    "html_video_frames_advanced": true,
+    "video_dimensions_match_requested": true
+  },
+  "actual_rtp_video": [
+    {
+      "type": "inbound-rtp",
+      "kind": "video",
+      "framesDecoded": 2073,
+      "framesReceived": 2073,
+      "bytesReceived": 4063442,
+      "packetsReceived": 6030,
+      "packetsLost": 0,
+      "framesPerSecond": 60,
+      "frameWidth": 1280,
+      "frameHeight": 800,
+      "jitter": 0,
+      "freezeCount": 0,
+      "totalFreezesDuration": 0
+    }
+  ],
+  "actual_remote_media_candidates": [
+    {
+      "address": "100.111.162.17",
+      "port": 47998,
+      "protocol": "udp",
+      "candidate_type": "host"
+    }
+  ],
+  "actual_sdk_stream_statistics": {
+    "action": "update",
+    "status": "success",
+    "info": "stat-update",
+    "data": {
+      "stats": {
+        "codec": "H264",
+        "fps": 59,
+        "rtd": 1,
+        "avgDecodeTime": 0.6350979782270606,
+        "frameLoss": 0,
+        "packetLoss": 0,
+        "totalBandwidth": 33.33,
+        "currentBitrate": 2.0114392747252237,
+        "utilizedBandwidth": 6.034921316307302,
+        "streamingResolutionHeight": 800,
+        "streamingResolutionWidth": 1280
+      }
+    }
+  },
+  "html_video_final": {
+    "readyState": 4,
+    "width": 1280,
+    "height": 800,
+    "currentTime": 34.658614,
+    "paused": false,
+    "playbackQuality": {
+      "totalVideoFrames": 2073,
+      "droppedVideoFrames": 12
+    }
+  },
+  "actual_data_channel_sends": [
+    {
+      "label": "input_channel_v1",
+      "sentMessages": 269,
+      "sentBytes": 7679
+    },
+    {
+      "label": "cursor_channel",
+      "sentMessages": 0,
+      "sentBytes": 0
+    },
+    {
+      "label": "stats_channel",
+      "sentMessages": 216,
+      "sentBytes": 2691
+    },
+    {
+      "label": "control_channel",
+      "sentMessages": 7,
+      "sentBytes": 782
+    },
+    {
+      "label": "remote_trace_channel",
+      "sentMessages": 0,
+      "sentBytes": 0
+    }
+  ],
+  "verified_gui_transactions": [
+    {
+      "kind": "click",
+      "region": "camera_wrist_d405_0",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "camera": "wrist_d405_0"
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179212.3467288,
+          "pid": 2249274,
+          "command": "camera",
+          "source": "omni_ui",
+          "camera": "wrist_d405_0",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "camera_wrist_d405_1",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "camera": "wrist_d405_1"
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179212.6146338,
+          "pid": 2249274,
+          "command": "camera",
+          "source": "omni_ui",
+          "camera": "wrist_d405_1",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "camera_global_d455",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "camera": "global_d455"
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179212.915533,
+          "pid": 2249274,
+          "command": "camera",
+          "source": "omni_ui",
+          "camera": "global_d455",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "step",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "material_time_s": 0.02
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179213.3833885,
+          "pid": 2249274,
+          "command": "step",
+          "source": "omni_ui",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        },
+        {
+          "wall_time_s": 1793179214.0722363,
+          "pid": 2249274,
+          "event": "coupled_step",
+          "simulation_s": 0.02,
+          "action": "scripted_reference",
+          "task_id": "TRIM-01"
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0.02,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.026
+    },
+    {
+      "kind": "click",
+      "region": "reset",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "material_time_s": 0
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179217.7559376,
+          "pid": 2249274,
+          "event": "task_reset",
+          "task_id": "TRIM-01",
+          "episode": "artifacts/remote_interactive_003/episodes/001_trim-01",
+          "simulation_s": 0,
+          "same_application_pid": 2249274
+        },
+        {
+          "wall_time_s": 1793179217.7559652,
+          "pid": 2249274,
+          "command": "reset",
+          "source": "omni_ui",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0.02,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.026,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "play",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "playing": true
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179217.9680786,
+          "pid": 2249274,
+          "command": "play",
+          "source": "omni_ui",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        },
+        {
+          "wall_time_s": 1793179218.4633956,
+          "pid": 2249274,
+          "event": "coupled_step",
+          "simulation_s": 0.02,
+          "action": "scripted_reference",
+          "task_id": "TRIM-01"
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0.02,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.026
+    },
+    {
+      "kind": "click",
+      "region": "pause",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "playing": false
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179219.1381571,
+          "pid": 2249274,
+          "event": "coupled_step",
+          "simulation_s": 0.04,
+          "action": "scripted_reference",
+          "task_id": "TRIM-01"
+        },
+        {
+          "wall_time_s": 1793179219.325205,
+          "pid": 2249274,
+          "command": "pause",
+          "source": "omni_ui",
+          "status": "ACCEPTED",
+          "simulation_s": 0.04
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0.02,
+      "material_time_after_s": 0.04,
+      "native_physics_time_before_s": 0.026,
+      "native_physics_time_after_s": 0.046
+    },
+    {
+      "kind": "click",
+      "region": "task_CUT-01",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "task_id": "CUT-01"
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179223.6841826,
+          "pid": 2249274,
+          "event": "task_reset",
+          "task_id": "CUT-01",
+          "episode": "artifacts/remote_interactive_003/episodes/002_cut-01",
+          "simulation_s": 0,
+          "same_application_pid": 2249274
+        },
+        {
+          "wall_time_s": 1793179223.6842148,
+          "pid": 2249274,
+          "command": "reset",
+          "source": "omni_ui",
+          "task_id": "CUT-01",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0.04,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.046,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "task_TRIM-01",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "task_id": "TRIM-01"
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179226.3641407,
+          "pid": 2249274,
+          "event": "task_reset",
+          "task_id": "TRIM-01",
+          "episode": "artifacts/remote_interactive_003/episodes/003_trim-01",
+          "simulation_s": 0,
+          "same_application_pid": 2249274
+        },
+        {
+          "wall_time_s": 1793179226.3641667,
+          "pid": 2249274,
+          "command": "reset",
+          "source": "omni_ui",
+          "task_id": "TRIM-01",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "type",
+      "region": "action_text",
+      "prepare_region": "current_cartesian",
+      "clear_region": "clear_action",
+      "submit_region": "apply_action",
+      "typed_text": "[-0.045,0,0.0601,0,0,0,-1]",
+      "expected_actual_state": {
+        "control_steps_since_reset": 1,
+        "material_time_s": 0.02
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": true,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179226.9163563,
+          "pid": 2249274,
+          "event": "action_field_cleared",
+          "source": "omni_ui"
+        },
+        {
+          "wall_time_s": 1793179230.3271546,
+          "pid": 2249274,
+          "command": "action",
+          "source": "omni_ui",
+          "mode": "cartesian_edge_pose_world",
+          "target": "[-0.045,0,0.0601,0,0,0,-1]",
+          "cut_enabled": false,
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        },
+        {
+          "wall_time_s": 1793179230.824355,
+          "pid": 2249274,
+          "event": "coupled_step",
+          "simulation_s": 0.02,
+          "action": {
+            "mode": "cartesian_edge_pose_world",
+            "target": [
+              -0.045,
+              0,
+              0.0601,
+              0,
+              0,
+              0,
+              -1
+            ],
+            "cut_enabled": false
+          },
+          "task_id": "TRIM-01"
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0.02,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.026
+    },
+    {
+      "kind": "type",
+      "region": "action_text",
+      "prepare_region": "current_joints",
+      "clear_region": "clear_action",
+      "submit_region": "apply_action",
+      "typed_text": "[-0.0746391,-0.0029474,-0.2069239,-2.6244264,-0.0012182,2.6215417,0.5047928]",
+      "expected_actual_state": {
+        "control_steps_since_reset": 2,
+        "material_time_s": 0.04
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": true,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179231.3660066,
+          "pid": 2249274,
+          "event": "action_field_cleared",
+          "source": "omni_ui"
+        },
+        {
+          "wall_time_s": 1793179239.834073,
+          "pid": 2249274,
+          "command": "action",
+          "source": "omni_ui",
+          "mode": "joint_position_rad",
+          "target": "[-0.0746391,-0.0029474,-0.2069239,-2.6244264,-0.0012182,2.6215417,0.5047928]",
+          "cut_enabled": false,
+          "status": "ACCEPTED",
+          "simulation_s": 0.02
+        },
+        {
+          "wall_time_s": 1793179240.3011272,
+          "pid": 2249274,
+          "event": "coupled_step",
+          "simulation_s": 0.04,
+          "action": {
+            "mode": "joint_position_rad",
+            "target": [
+              -0.0746391,
+              -0.0029474,
+              -0.2069239,
+              -2.6244264,
+              -0.0012182,
+              2.6215417,
+              0.5047928
+            ],
+            "cut_enabled": false
+          },
+          "task_id": "TRIM-01"
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0.02,
+      "material_time_after_s": 0.04,
+      "native_physics_time_before_s": 0.026,
+      "native_physics_time_after_s": 0.046
+    },
+    {
+      "kind": "click",
+      "region": "reset",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "control_steps_since_reset": 0,
+        "material_time_s": 0
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179244.1093774,
+          "pid": 2249274,
+          "event": "task_reset",
+          "task_id": "TRIM-01",
+          "episode": "artifacts/remote_interactive_003/episodes/004_trim-01",
+          "simulation_s": 0,
+          "same_application_pid": 2249274
+        },
+        {
+          "wall_time_s": 1793179244.1094062,
+          "pid": 2249274,
+          "command": "reset",
+          "source": "omni_ui",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0.04,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.046,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "camera_wrist_d405_0",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "camera": "wrist_d405_0"
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179244.3849902,
+          "pid": 2249274,
+          "command": "camera",
+          "source": "omni_ui",
+          "camera": "wrist_d405_0",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.006
+    },
+    {
+      "kind": "click",
+      "region": "camera_global_d455",
+      "prepare_region": null,
+      "clear_region": null,
+      "submit_region": null,
+      "typed_text": null,
+      "expected_actual_state": {
+        "camera": "global_d455",
+        "playing": false,
+        "material_time_s": 0
+      },
+      "actual_kit_expectation_matched": true,
+      "accepted_typed_target_matches_exactly": null,
+      "new_actual_kit_events": [
+        {
+          "wall_time_s": 1793179244.8869677,
+          "pid": 2249274,
+          "command": "camera",
+          "source": "omni_ui",
+          "camera": "global_d455",
+          "status": "ACCEPTED",
+          "simulation_s": 0
+        }
+      ],
+      "actual_application_pid": 2249274,
+      "material_time_before_s": 0,
+      "material_time_after_s": 0,
+      "native_physics_time_before_s": 0.006,
+      "native_physics_time_after_s": 0.006
+    }
+  ],
+  "keyboard_clear_boundary": "Ctrl+A and Home/Shift+End replacement failed in earlier retained attempts. Final test uses the actual Kit Clear button, then real typed characters and Apply. Accepted target JSON matches the typed targets exactly.",
+  "requested_configuration": {
+    "signalingServer": "100.111.162.17",
+    "signalingPort": 49100,
+    "mediaServer": "100.111.162.17",
+    "mediaPort": 47998,
+    "width": 1280,
+    "height": 800,
+    "fps": 30
+  },
+  "actual_simulation_after_probe": {
+    "phase": "READY",
+    "pid": 2249274,
+    "task_id": "TRIM-01",
+    "camera": "global_d455",
+    "playing": false,
+    "material_time_s": 0.0,
+    "error": "",
+    "same_live_simulation": true,
+    "policy_force_oracle": false
+  },
+  "http_service": {
+    "pid": 2231782,
+    "tmux_session": "rcs-web-viewer",
+    "url": "http://100.111.162.17:8210",
+    "args": [
+      "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+      "-u",
+      "/home/ningan/RoboticCuttingSim/scripts/serve_remote_web_viewer.py"
+    ],
+    "previous_own_http_pid": 2168341,
+    "scope": "HTTP viewer only; live simulator session untouched",
+    "log": "/home/ningan/RoboticCuttingSim/artifacts/remote_web_viewer_http_001/server_tmux.log"
+  },
+  "browser_disconnected_after_probe": true,
+  "external_Mac_client_validation": "NOT_RUN; requires a separate remote browser connection and user confirmation",
+  "failed_attempts": [
+    {
+      "receipt": "artifacts/remote_web_viewer_browser_no_server_001/result.json",
+      "sha256": "495cda0f1f09269a10a43ecf3af1f5f9018e2bcc90e085ab7b46a55379d947f3",
+      "status": "FAIL",
+      "error": "TimeoutError: page.waitForFunction: Timeout 3000ms exceeded.",
+      "scope": "Preserved failure; later actual GUI Clear+keyboard test is a separate run"
+    },
+    {
+      "receipt": "artifacts/remote_web_viewer_browser_keyboard_001/result.json",
+      "sha256": "02b92176fa4a418e73adb768e03408fc48d6fae090b6bc03cfb20aa03c9bdd0c",
+      "status": "FAIL",
+      "error": "Error: Actual Kit did not acknowledge action 0; no HTTP task command was sent",
+      "scope": "Preserved failure; later actual GUI Clear+keyboard test is a separate run"
+    },
+    {
+      "receipt": "artifacts/remote_web_viewer_browser_keyboard_002/result.json",
+      "sha256": "98270f1823a7b06f4b596d935e0ed0b10bfcfea89816cb2690528579d8ed1309",
+      "status": "FAIL",
+      "error": "Error: Actual Kit did not acknowledge action 0; no HTTP task command was sent",
+      "scope": "Preserved failure; later actual GUI Clear+keyboard test is a separate run"
+    }
+  ],
+  "source_provenance": {
+    "upstream": {
+      "official_isaac_sim_recipe": {
+        "repository": "https://github.com/isaac-sim/IsaacSim",
+        "ref": "v6.2.0",
+        "commit": "74a9356b20250dd60337d90b4b4d913c9454d32b",
+        "path": "tools/docker/web-viewer/Dockerfile",
+        "source_sha256": "23e7ba945d463ac37310756df95dee7588f752a536496e8c2bb326e78f2684dc",
+        "url": "https://github.com/isaac-sim/IsaacSim/blob/v6.2.0/tools/docker/web-viewer/Dockerfile"
+      },
+      "generator": {
+        "package": "@nvidia/create-ov-web-rtc-app",
+        "version": "2.1.5",
+        "tarball": "https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/@nvidia/create-ov-web-rtc-app/-/@nvidia/create-ov-web-rtc-app-2.1.5.tgz",
+        "npm_integrity": "sha512-QjKV9C1sbwRC9tJn+HSwNXTqbGSCr98ymEKju2hjFaB4+T8gPORijS9H+8kiFhDdpt3TQs+FMN3fAoHIgeKRfQ==",
+        "archive_sha256": "b789ca90f20bd1a9ae152df6bf812116acd73fd5c069fab00ca251fe6050be8b",
+        "license_file_sha256": "29ee0e5903fae80280cf7b30017172b55139aba1232fdfd325ab1eac574d565e",
+        "license": "SEE LICENSE IN LICENSE.txt"
+      },
+      "sdk": {
+        "package": "@nvidia/ov-web-rtc",
+        "version": "6.8.2",
+        "tarball": "https://edge.urm.nvidia.com/artifactory/api/npm/omniverse-client-npm/@nvidia/ov-web-rtc/-/@nvidia/ov-web-rtc-6.8.2.tgz",
+        "npm_integrity": "sha512-s2xNYlKg7SjxQo++MDm8aE3tuGdDHsLzaQnJzEdcI27Uf1wVwmNDueGOccJCGLk18HNsVin4+vePdJBNvnRnFQ==",
+        "archive_sha256": "c2620d4c510bee7a202ff68562ef85925e48868d3b161620a05e923f18641e34",
+        "license_file_sha256": "026edb2fdcd7089d98ff1d6544bcbe686b77bf28bd26275832fe3c754d69b7ad",
+        "license": "SEE LICENSE IN LICENSE.txt"
+      },
+      "node": {
+        "version": "v22.23.4",
+        "npm_version": "10.9.9",
+        "platform": "linux-x64",
+        "url": "https://nodejs.org/dist/v22.23.4/node-v22.23.4-linux-x64.tar.xz",
+        "sha256": "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce"
+      },
+      "package_lock_sha256": "65cd30ef9338c8ef22a9a712f49326b26142aa092883068328366db952129fed",
+      "reference_scaffold": {
+        "path": ".deps/remote-viewer/reference/official-local-viewer",
+        "generated_with": "@nvidia/create-ov-web-rtc-app@2.1.5 local-sample / React / web-rtc6.8.2",
+        "emitted_frontend_license": "MIT headers; retained reference only, not vendored into this original TypeScript wrapper",
+        "main_tsx_sha256": "4a271c571ae24c6d1f4c0a849d05cf915fe807aa616ab3469e4bb62682916901"
+      },
+      "source_boundary": "Official SDK is an npm dependency, not committed third-party source or a compiled Git asset. Only the original small viewer integration and reproducible build metadata are tracked."
+    },
+    "probe_source_copied_before_browser_launch": true,
+    "probe_source_sha256": "620d9705e82e1ac3f25e210e0c00ec6e6878d95c7be332ddcfd9424683d8c3af",
+    "runtime_manifest_sha256": "abd2bb9b7c8602598f64cd38418fa02b670fbbcc6131efea6f6a40844a5085a0",
+    "runtime_implementation_snapshots": {
+      "camera_rig.py": "0032076d29e744d9b09ae858d826ff8f015dfd6e6073aab0b729d8cc46cad1ef",
+      "isaac_sim_runner.py": "4e02ea50931a7aed335e0d9722d03a13d6a4b8f147e524ccf3b731ab6645d4f0",
+      "remote_runtime.py": "cbebd47ae3ace40c75b62a793b50a23d132edca16b2f6f9bc87e93c3e5516dcc",
+      "isaac_sim_cutting_streaming.kit": "01aeb407e942e15be520d72dff3bd064f370a46dd07488372f63af5c19c09233",
+      "live_env.py": "c1a5f02d4c47549c1731c50cf62d015280ebfbaf7e72dbc279d97bd12956a210",
+      "remote_viewer.py": "22463c9943f8a57c79324bec7c27788dc8f96004839425a6e2e018348f53815c",
+      "wrist_camera_rig_v3.json": "a9641ac3517b676e813ba6ebffbdc942ee6914f925cec7a1635727c6e10a8b4e",
+      "remote_control.py": "da1761fbc09138b969a432a64de670b1d7105fcaf8b6e37300764ebbb625a126",
+      "run_remote_viewer.py": "d1195dcd9c255ae2f742d541e8d899e816fc12d11698c4cdefc6bebe9b638a88"
+    }
+  },
+  "raw_evidence_sha256": {
+    "protocol.json": "0a78c2ff544e6c78ac5a13cb35350e9ea5f4ab5ac89e14933e2df7534a692c90",
+    "result.json": "fc9af73efd3cc6d3ae17c0487e7a0289436bcf2991e3f71f7e4c9b366b693797",
+    "actions.json": "cb4f7ef50c686e575b7abe3aa3481b47363089bd0aa228e2514eb863944fd4b6",
+    "connected.png": "3e511918b3b5f459d29fe76eabc882578ba7758d37b39cb3c4fd2ed37b2c2ff5",
+    "final.png": "56b6662dd4a4036090ed662ed8355b0e91769474ccfdd1daa925cf86a1223195",
+    "browser_console.json": "a11c462a1bca1ae766aee81376bdd7da20b627a0830f24091dae935033e54bad",
+    "browser_network.json": "7e33670930e3ac17ad990cadd1db21b176d60a23c09fcc105a707158799def02"
+  },
+  "raw_evidence_directory": "artifacts/remote_web_viewer_browser_final_001",
+  "final_probe_command": ".deps/remote-viewer-node/bin/node viewer/scripts/probe_remote.mjs --out artifacts/remote_web_viewer_browser_final_001 --timeout 30000 --ui-status artifacts/remote_interactive_003/status.json --kit-events artifacts/remote_interactive_003/events.jsonl --actions artifacts/remote_web_viewer_final_actions_001.json",
+  "full_physics_or_sensor_benchmark_promotion": false
+}

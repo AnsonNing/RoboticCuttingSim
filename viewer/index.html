@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>RoboticCuttingSim Remote Viewer</title>
+  </head>
+  <body>
+    <header>
+      <strong>RoboticCuttingSim</strong>
+      <span id="status" role="status">Connecting to Isaac Sim…</span>
+      <button id="reconnect" type="button">Reconnect</button>
+      <button id="fullscreen" type="button">Fullscreen</button>
+    </header>
+    <main id="stream-container" tabindex="0" aria-label="Live Isaac Sim GUI">
+      <video id="remote-video" width="1280" height="800" autoplay muted playsinline tabindex="0"></video>
+      <audio id="remote-audio" autoplay></audio>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

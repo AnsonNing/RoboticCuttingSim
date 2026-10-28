@@ -1,0 +1,26 @@
+{
+  "name": "robotic-cutting-sim-remote-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "description": "Official NVIDIA WebRTC transport for the live Isaac Sim Kit GUI",
+  "scripts": {
+    "dev": "vite --host 100.111.162.17 --port 8210 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 100.111.162.17 --port 8210 --strictPort",
+    "probe": "node scripts/probe_remote.mjs"
+  },
+  "dependencies": {
+    "@nvidia/ov-web-rtc": "6.8.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "typescript": "5.9.3",
+    "vite": "6.4.5"
+  },
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.2.3"
+  }
+}
