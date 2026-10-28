@@ -1,0 +1,36 @@
+{
+  "scope": "CPU CI dependency correction; no camera or solver change",
+  "initial_remote_ci": {
+    "commit": "e52e663cacbcd436572f4743024f44e8859319f3",
+    "run_id": 40645822035,
+    "url": "https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/40645822035",
+    "conclusion": "FAIL",
+    "stage": "pytest collection",
+    "reason": "ModuleNotFoundError: No module named 'warp' in tests/test_camera_mesh_audit.py"
+  },
+  "correction": "Install warp-lang in the CPU workflow with the existing requirements.lock constraint (1.17.0); run the CPU ray kernels instead of skipping their tests",
+  "local_clean_recheck": {
+    "status": "PASS",
+    "tests_passed": 235,
+    "pytest_wall_s": 1.49,
+    "command": "CUDA_VISIBLE_DEVICES=-1 .deps/cpu-test-venv/bin/python -m pytest -q",
+    "environment": "isolated cpu-test-venv; no Isaac/Kit/Newton",
+    "cuda_visible_devices": "-1",
+    "packages": {
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "pytest": "9.1.1",
+      "usd-core": "26.8",
+      "PyYAML": "6.0.3",
+      "warp-lang": "1.17.0"
+    }
+  },
+  "input_sha256": {
+    "artifacts/wrist_remote_ci_failure_001/job.log": "418947e9afb90f3412e7be63aeb425f86d03628c93d76dc694158ca853a0102a",
+    "artifacts/wrist_clean_cpu_ci_001.log": "bb774be78990e627d56e9f104357581b98e9c7d65648f1ff86cdd7c202d9a3bd",
+    "artifacts/wrist_cpu_ci_dependency_install_001.log": "585aadf87daa53f3d393542329c6bf10fd07741c748684c714584d59c3fe5825",
+    ".github/workflows/tests.yml": "22ebdeeb6988031f92c804b7267ba6cf7d38991df520aeb4df0696747a4654bb"
+  },
+  "physical_experiment_results_modified": false,
+  "test_assertions_relaxed": false
+}

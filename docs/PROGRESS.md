@@ -41,6 +41,14 @@ Earlier far-Global wrist runs, source-race trial, rejected geometry, VGA optics
 trial and all original D0–D3 / fixed-camera evidence are preserved separately.
 No training, real-robot operation, RSI changes, driver changes or reboot occurred.
 
+The first public CI run for this camera delivery failed during collection:
+the new CPU reference-ray test imports Warp, absent from the workflow's old
+install list. The workflow now explicitly installs the existing pinned
+`warp-lang==1.17.0`; no assertion is skipped or relaxed. An isolated environment
+without Isaac/Newton, with GPUs hidden, passes all235 tests in1.49 s. The
+[initial failed run, logs, versions and clean recheck](evidence/wrist_ci_validation.json)
+are retained independently of the physical episodes.
+
 ## Preserved: fixed-camera cutting task delivery
 
 Fixed CUT-01 and TRIM-01 have each run in **Isaac Lab 3.0 GA and Isaac Sim 6.2**,

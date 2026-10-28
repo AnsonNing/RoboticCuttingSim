@@ -112,4 +112,9 @@ Details: [shared API](docs/SHARED_TASK_API.md), [task definitions and success cr
 .venv/bin/python -m pytest -q
 ```
 
+CPU CI includes pinned Warp for its CPU-only reference-ray kernels; neither
+Isaac nor a GPU is required. A clean isolated environment with GPUs hidden
+also passes all 235 tests. The initial missing-Warp CI collection failure and
+dependency correction are retained in [the CI receipt](docs/evidence/wrist_ci_validation.json).
+
 235 CPU tests pass, counted separately from actual GPU/Isaac episodes. Fixed-seed D0–D3 specimen-sampling hashes remain unchanged; an actual 5-step Lab D0 physics-prefix regression also completed, without claiming a full rerun. All historical standalone, D0–D3, Newton implicit MPM and CRESSim evidence is preserved; see the [original benchmark](docs/BENCHMARK_REPORT.md), [TLMPM validation](docs/reports/TLMPM_VALIDATION.md), [D0 live acceptance](docs/reports/ISAAC_LIVE_ACCEPTANCE.md) and [D0 video](docs/media/live_isaac_kit_d0/synchronized_multiview.mp4). Large raw data and official assets remain in local ignored caches.
