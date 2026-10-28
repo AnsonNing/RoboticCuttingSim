@@ -18,8 +18,11 @@ from .scene_frames import (WorkpieceTarget, pose_matrix, invert_transform, trans
 
 
 class LiveCuttingMaterial:
-    def __init__(self, config=None, target=None, *, task=None):
+    def __init__(self, config=None, target=None, *, task=None, tool_profile=None):
+        """``tool_profile`` (tool_profile.ToolProfile) selects the tlmpm_v2 solver
+        with that blade polygon; None keeps the frozen v1 solver and task wedge."""
         self.config = config or CouplingConfig()
+        self.tool_profile = tool_profile
         self.target = target or WorkpieceTarget()
         self.task = task
         # The retained floor/tray implementation is in the world identity frame.
@@ -46,7 +49,13 @@ class LiveCuttingMaterial:
 
     def reset(self, measured_edge_pose, seed=42):
         import warp as wp
-        from .tlmpm import TLMPM
+        if self.tool_profile is None:
+            from .tlmpm import TLMPM
+            solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm", {}
+        else:
+            from .tlmpm_v2 import TLMPM
+            polygon, _ = self.tool_profile.tlmpm_profile()
+            solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm_v2", {"blade_profile_xz": polygon}
 
         start = time.perf_counter()
         c = self.config
@@ -82,16 +91,25 @@ class LiveCuttingMaterial:
             self.specimen = Specimen.generate(self.seed, c.variant, c.family)
             self.points, self.masses, self.lattice = sample_particles(
                 self.specimen, self.spacing, self.material_config.density)
-        self.bed = TLMPM(self.points, self.masses, self.spacing, self.material_config, c.device, **fixture_kwargs)
+        if self.tool_profile is not None:
+            profile = self.tool_profile
+            self.material_config = replace(self.material_config, blade_length=profile.blade_depth_m,
+                blade_height=profile.thickness_m, blade_half_width=profile.half_width_m)
+            self.parameter_receipt = {**self.parameter_receipt, "solver": "tlmpm_v2", "tool_profile": profile.to_dict()}
+        self.bed = TLMPM(self.points, self.masses, self.spacing, self.material_config, c.device,
+                         **fixture_kwargs, **solver_kwargs)
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
-        wp.load_module(module="robotic_cutting_sim.tlmpm", device=c.device)
+        wp.load_module(module=solver_module, device=c.device)
         if self.task:
             wp.load_module(module="robotic_cutting_sim.fixture_contacts", device=c.device)
-        with wp.ScopedCapture(device=c.device) as capture:
-            for _ in range(self.substeps):
-                self.bed.step()
-        self.graph = capture.graph
+        if wp.get_device(c.device).is_cuda:
+            with wp.ScopedCapture(device=c.device) as capture:
+                for _ in range(self.substeps):
+                    self.bed.step()
+            self.graph = capture.graph
+        else:
+            self.graph = None  # CPU: no graph capture; advance() replays the substeps.
         self.pending_wrench = np.zeros(6)
         self.time_s = 0.
         self.last_diagnostics = {}
@@ -128,7 +146,11 @@ class LiveCuttingMaterial:
         self.bed.reaction.zero_()
         self.bed.stats.zero_()
         start = time.perf_counter()
-        wp.capture_launch(self.graph)
+        if self.graph is None:
+            for _ in range(self.substeps):
+                self.bed.step()
+        else:
+            wp.capture_launch(self.graph)
         wp.synchronize_device(c.device)
         impulse = self.bed.reaction.numpy()[0].astype(float)
         if self.task:
