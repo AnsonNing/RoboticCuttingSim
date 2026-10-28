@@ -4,6 +4,13 @@ Project type: independent Isaac Lab / Isaac Sim simulation research platform
 Primary users: researchers in robotics, physical simulation, visual perception and machine learning
 This document is a plan to execute, not a report of completed implementation or validated performance.
 
+Current camera addendum (2026-10-28): the user's later specification supersedes
+the fixed-camera layout in this original plan. The active shared API uses two
+hand-mounted `ideal_d405_prototype` cameras and a closer fixed Global D455.
+See [current camera configuration](docs/WRIST_CAMERAS.md) and
+[actual validation](docs/WRIST_CAMERA_VALIDATION.md). Original stage gates,
+fixed-camera experiments and failed results remain in the historical record.
+
 0. Execution instructions for Codex (read first)
 Build a new independent repository, provisionally named RoboticCuttingSim, for a physical simulation environment in which a robot uses a knife to remove irregular bumps from soft/plastic material fixed to a table, bringing its surface close to a target plane.
 

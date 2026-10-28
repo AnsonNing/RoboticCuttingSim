@@ -1,0 +1,683 @@
+{
+  "scope": "Actual live API two-step observations and command smoke; not full cutting acceptance",
+  "status": "PASS_SMOKE",
+  "audit_source_sha256": "6606282de219780e60bf8bba6071eb5b2c43b47657e49b8f7136f66012fa2547",
+  "checks_source": "artifacts/wrist_api_observation_audit_001/audit.py",
+  "episodes": [
+    {
+      "episode": "artifacts/isaac_lab_wrist_api_cut_002",
+      "status": "PASS_SMOKE",
+      "runtime_source": "live_isaac_lab",
+      "task_id": "CUT-01",
+      "task_metrics": "NOT_RUN",
+      "command": [
+        "/home/ningan/RoboticCuttingSim/scripts/run_cutting_task.py",
+        "--runtime",
+        "isaac_lab",
+        "--task",
+        "CUT-01",
+        "--steps",
+        "2",
+        "--record-every",
+        "1",
+        "--exercise-actions",
+        "--output-dir",
+        "artifacts/isaac_lab_wrist_api_cut_002",
+        "--worker"
+      ],
+      "seed": 42,
+      "source_git_sha": "0c6f0d613678f0df066a9c7672664d49e8cb1a62",
+      "process": {
+        "returncode": 0,
+        "wall_s": 11.719622344942763
+      },
+      "camera_ids": [
+        "wrist_d405_0",
+        "wrist_d405_1"
+      ],
+      "include_global_camera": false,
+      "explicit_action_modes": [
+        "cartesian_edge_pose_world",
+        "joint_position_rad"
+      ],
+      "observations": [
+        {
+          "timestamp_s": 0.0,
+          "cameras": {
+            "wrist_d405_0": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.80275942743236,
+                  0,
+                  424.0
+                ],
+                [
+                  0,
+                  446.8027661627362,
+                  240.0
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.8508230149371069
+            },
+            "wrist_d405_1": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.80275942743236,
+                  0,
+                  424.0
+                ],
+                [
+                  0,
+                  446.8027661627362,
+                  240.0
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.9369644261006289
+            }
+          }
+        },
+        {
+          "timestamp_s": 0.02,
+          "cameras": {
+            "wrist_d405_0": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.80275942743236,
+                  0,
+                  424.0
+                ],
+                [
+                  0,
+                  446.8027661627362,
+                  240.0
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.8508230149371069
+            },
+            "wrist_d405_1": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.80275942743236,
+                  0,
+                  424.0
+                ],
+                [
+                  0,
+                  446.8027661627362,
+                  240.0
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.9369644261006289
+            }
+          }
+        },
+        {
+          "timestamp_s": 0.04,
+          "cameras": {
+            "wrist_d405_0": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.80275942743236,
+                  0,
+                  424.0
+                ],
+                [
+                  0,
+                  446.8027661627362,
+                  240.0
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.8508230149371069
+            },
+            "wrist_d405_1": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.80275942743236,
+                  0,
+                  424.0
+                ],
+                [
+                  0,
+                  446.8027661627362,
+                  240.0
+                ],
+                [
+                  0,
+                  0,
+                  1
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.9369742531446541
+            }
+          }
+        }
+      ],
+      "implementation_sha256": {
+        "src/robotic_cutting_sim/camera_rig.py": "056f505b2ae67243e63170f09e743ee9f3f5d9ba2aac60f95666de4c444f1650",
+        "src/robotic_cutting_sim/live_env.py": "c1a5f02d4c47549c1731c50cf62d015280ebfbaf7e72dbc279d97bd12956a210",
+        "src/robotic_cutting_sim/research_env.py": "3a40471d65b5aa9f7502f4f670900925b067441614a470eb0b13f82845497b79"
+      },
+      "inputs": [
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/frame_00000.npz",
+          "sha256": "34779018d557fe9f58e0c31dc25bb86ff762358c6636336d7fc07d0ddceac140"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/calibration_00000.json",
+          "sha256": "d868707e0849b31910bb156d5d472d0d241f95f7619abab1789530b2036ecd1f"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/global_00000.png",
+          "sha256": "8ad4da1f514dd7bf3f8c8e2117678cd73f619d7d40436ef3d104fd9f19701aa9"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/frame_00001.npz",
+          "sha256": "95cfb834eebf6c8cadc00432a8420a1e88fcdd36266973e5a881d65b9daaacea"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/calibration_00001.json",
+          "sha256": "df5a630a7d10d9b8803fb9c16f1b2b828cc2e295123375942284f9be17313b12"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/global_00001.png",
+          "sha256": "9c1fdcfc3cc441c46b91393db6390a92bfe6511c4cf559f9f62781579ef2e76c"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/frame_00002.npz",
+          "sha256": "4a2ac782ffef1d83ca84ff68d02fdd6507b94d79e99736c100c8f458e4cd37d6"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/calibration_00002.json",
+          "sha256": "e45a79472ce5cf367d106005f93623595119f34c859657c1e7f6c6cbee7b7416"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_observations/global_00002.png",
+          "sha256": "707a8685f99df945d27c07c26e0d67c15334ccdc7c4feb0bab9e8aee15550013"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/manifest.json",
+          "sha256": "092685f17efaf700a8a2977a30ea7c956412aa5ab29cd64064f6ec3e72f67678"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/result.json",
+          "sha256": "0b68a91955f3f7fe1245e90a9e7769eecef43bdd3821294ed08f3b454f0ec06c"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/process_receipt.json",
+          "sha256": "fb1282ec65ac18377c9dcbbd02a49c2e481e2de3df102a89eba8167c2db1f7b5"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/api_trace.json",
+          "sha256": "5f57eb7e8da1313a71bd00becd192b86e72b00415270ba3f6d0113de77410f60"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/task_evaluation.json",
+          "sha256": "cdea50f57ccf605af500d92da487ebe4b7b294181ab714db5db10fa4d3564bd4"
+        },
+        {
+          "file": "artifacts/isaac_lab_wrist_api_cut_002/implementation/sha256.json",
+          "sha256": "1aaf320530d49bf5bb13b3229f4d7c42f9a47955f73d70982d223b136ba79061"
+        }
+      ],
+      "checks": {
+        "named_observation_allowlist": true,
+        "force_oracle_absent_from_saved_observations": true,
+        "camera_calibration_timestamp_agreement": true,
+        "rgb_depth_calibration_dimensions": true,
+        "range_invalid_mask_preserved": true,
+        "global_render_available": true
+      }
+    },
+    {
+      "episode": "artifacts/isaacsim_wrist_api_trim_002",
+      "status": "PASS_SMOKE",
+      "runtime_source": "live_isaac_sim",
+      "task_id": "TRIM-01",
+      "task_metrics": "NOT_RUN",
+      "command": [
+        "/home/ningan/RoboticCuttingSim/scripts/run_cutting_task.py",
+        "--runtime",
+        "isaac_sim",
+        "--task",
+        "TRIM-01",
+        "--particle-spacing",
+        "0.002",
+        "--steps",
+        "2",
+        "--record-every",
+        "1",
+        "--exercise-actions",
+        "--include-global-camera",
+        "--gpu",
+        "1",
+        "--output-dir",
+        "artifacts/isaacsim_wrist_api_trim_002",
+        "--worker"
+      ],
+      "seed": 42,
+      "source_git_sha": "0c6f0d613678f0df066a9c7672664d49e8cb1a62",
+      "process": {
+        "returncode": 0,
+        "wall_s": 11.068706805817783
+      },
+      "camera_ids": [
+        "global_d455",
+        "wrist_d405_0",
+        "wrist_d405_1"
+      ],
+      "include_global_camera": true,
+      "explicit_action_modes": [
+        "cartesian_edge_pose_world",
+        "joint_position_rad"
+      ],
+      "observations": [
+        {
+          "timestamp_s": 0.0,
+          "cameras": {
+            "global_d455": {
+              "width": 640,
+              "height": 480,
+              "sensor_model": "native_single_view_d455_provisional",
+              "K": [
+                [
+                  317.04312011949685,
+                  0.0,
+                  320.0
+                ],
+                [
+                  0.0,
+                  317.04312011949685,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.6,
+                6.0
+              ],
+              "valid_depth_fraction": 0.159130859375
+            },
+            "wrist_d405_0": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.8027594274324,
+                  0.0,
+                  424.0
+                ],
+                [
+                  0.0,
+                  446.8027594274324,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.8859424135220125
+            },
+            "wrist_d405_1": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.8027594274324,
+                  0.0,
+                  424.0
+                ],
+                [
+                  0.0,
+                  446.8027594274324,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.9309207940251573
+            }
+          }
+        },
+        {
+          "timestamp_s": 0.02,
+          "cameras": {
+            "global_d455": {
+              "width": 640,
+              "height": 480,
+              "sensor_model": "native_single_view_d455_provisional",
+              "K": [
+                [
+                  317.04312011949685,
+                  0.0,
+                  320.0
+                ],
+                [
+                  0.0,
+                  317.04312011949685,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.6,
+                6.0
+              ],
+              "valid_depth_fraction": 0.15913411458333335
+            },
+            "wrist_d405_0": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.8027594274324,
+                  0.0,
+                  424.0
+                ],
+                [
+                  0.0,
+                  446.8027594274324,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.8859424135220125
+            },
+            "wrist_d405_1": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.8027594274324,
+                  0.0,
+                  424.0
+                ],
+                [
+                  0.0,
+                  446.8027594274324,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.9309207940251573
+            }
+          }
+        },
+        {
+          "timestamp_s": 0.04,
+          "cameras": {
+            "global_d455": {
+              "width": 640,
+              "height": 480,
+              "sensor_model": "native_single_view_d455_provisional",
+              "K": [
+                [
+                  317.04312011949685,
+                  0.0,
+                  320.0
+                ],
+                [
+                  0.0,
+                  317.04312011949685,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.6,
+                6.0
+              ],
+              "valid_depth_fraction": 0.15913411458333335
+            },
+            "wrist_d405_0": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.8027594274324,
+                  0.0,
+                  424.0
+                ],
+                [
+                  0.0,
+                  446.8027594274324,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.8859424135220125
+            },
+            "wrist_d405_1": {
+              "width": 848,
+              "height": 480,
+              "sensor_model": "ideal_d405_prototype",
+              "K": [
+                [
+                  446.8027594274324,
+                  0.0,
+                  424.0
+                ],
+                [
+                  0.0,
+                  446.8027594274324,
+                  240.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "depth_range_m": [
+                0.07,
+                0.5
+              ],
+              "valid_depth_fraction": 0.9309306210691823
+            }
+          }
+        }
+      ],
+      "implementation_sha256": {
+        "src/robotic_cutting_sim/camera_rig.py": "056f505b2ae67243e63170f09e743ee9f3f5d9ba2aac60f95666de4c444f1650",
+        "src/robotic_cutting_sim/live_env.py": "c1a5f02d4c47549c1731c50cf62d015280ebfbaf7e72dbc279d97bd12956a210",
+        "src/robotic_cutting_sim/research_env.py": "3a40471d65b5aa9f7502f4f670900925b067441614a470eb0b13f82845497b79"
+      },
+      "inputs": [
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/frame_00000.npz",
+          "sha256": "d3960f82d10c9cce79bb7c6cbb1ad7a0d0ed5204e64e95e1f72ed2cf514fd5b9"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/calibration_00000.json",
+          "sha256": "f9205de2bdf3efa7d0b1174b9a1e20621593413bb53474d20a5b6ebb80c9b1e8"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/global_00000.png",
+          "sha256": "ef797b34f89e3ec4945e3c9c633d97accbca57dca1aeb921ef9b8c272028e86f"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/frame_00001.npz",
+          "sha256": "ecd75725f92cc50f602c5eb47c235f68f71ac7e6ab8f7067898c6e92e46c1c8f"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/calibration_00001.json",
+          "sha256": "08c88b36276eaa2d46e06721e0168a65285fb7771db0b92509c960c269e54abd"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/global_00001.png",
+          "sha256": "2a48fce5614c011249ed2696072f29850b31fa19bb75195ad8774c5617450d55"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/frame_00002.npz",
+          "sha256": "ff5b3ce608a742e0cf8b80597aa749bdd27e4813aea90fbe4012b92fce7faf5a"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/calibration_00002.json",
+          "sha256": "4067cce8920a89282b96fb404cbf10709320dde4d6423cd446b4245157c45827"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_observations/global_00002.png",
+          "sha256": "453c13b92e5b7ba316e7d8adcdf8eff6659759531882937aff69e5b74d087ecb"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/manifest.json",
+          "sha256": "9759ba8b1852d880891255b71b85a230298e35bcf5a87348d384f99218ef53b3"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/result.json",
+          "sha256": "a58852aa63f21c408c997df49dba4802c8070517a856fbc7308c4661a34f447c"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/process_receipt.json",
+          "sha256": "a40978cba1d53e0f7c5bb4cc46d1615cde7b19eb7109d9ad85a2d82f7317a6cb"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/api_trace.json",
+          "sha256": "5cc4505ffc1b10c1343ff2e5017924b3f701dbb92802f91e9efa1f39397dc788"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/task_evaluation.json",
+          "sha256": "240409a0d01e4d70de425d5f1724356b30017da91e04252a4760350e96cebf53"
+        },
+        {
+          "file": "artifacts/isaacsim_wrist_api_trim_002/implementation/sha256.json",
+          "sha256": "1aaf320530d49bf5bb13b3229f4d7c42f9a47955f73d70982d223b136ba79061"
+        }
+      ],
+      "checks": {
+        "named_observation_allowlist": true,
+        "force_oracle_absent_from_saved_observations": true,
+        "camera_calibration_timestamp_agreement": true,
+        "rgb_depth_calibration_dimensions": true,
+        "range_invalid_mask_preserved": true,
+        "global_render_available": true
+      }
+    }
+  ],
+  "limits": [
+    "Not a new full cutting episode",
+    "D405 remains ideal_d405_prototype",
+    "No hardware calibration or stereo/noise validation",
+    "Full physics and camera failures remain separately recorded"
+  ]
+}

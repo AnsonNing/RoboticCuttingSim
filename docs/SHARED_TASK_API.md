@@ -3,7 +3,26 @@
 `CUT-01` and `TRIM-01` use the same `CuttingTaskEnv` API over actual Isaac Lab or
 Isaac Sim backends. The wrapper implements no cutting physics or robot dynamics.
 Task definitions, fixtures, material and workpiece-local goals are shared.
-The second Franka remains parked. No model training is included.
+The second Franka holds a safe observation posture in the new camera layout.
+No model training is included.
+
+The factory now defaults to `camera_layout="wrist_d405_global_d455"`:
+`wrist_d405_0` and `wrist_d405_1` are articulated hand-mounted streams;
+`global_d455` is World-fixed. Both wrists are `ideal_d405_prototype`, with
+no validated stereo/noise/hardware calibration. The Kit Global uses the
+official D455 asset and native SingleView pipeline; the Lab route is ideal
+Warp. Legacy fixed cameras remain available with
+`camera_layout="legacy_fixed_d455"`. See [camera details](WRIST_CAMERAS.md).
+
+The final named-camera API smokes use two actual control steps in each runtime,
+explicit Cartesian and joint actions, three synchronized saved observations,
+Global rendering, independent evaluation and clean close. Lab/CUT tests the
+default two-wrist observation; native Sim/TRIM tests
+`include_global_camera=True`. Both retain `NOT_RUN` task success for the
+unfinished episode. Sources and measured payload checks are in
+[the wrist API receipt](evidence/wrist_task_api_smoke.json).
+
+The following fixed-camera smokes are preserved historical evidence.
 
 Actual API validation on2026-10-28: Lab/CUT-01 and native Kit/TRIM-01 each ran
 reset, explicit Cartesian and joint actions, two synchronized RGB-D observations,
@@ -62,6 +81,7 @@ Use `PYTHONPATH=src` when the project is not installed in that isolated environm
 from robotic_cutting_sim.live_env import open_cutting_env
 
 with open_cutting_env("CUT-01", runtime="isaac_sim",
+                      include_global_camera=False,
                       output_dir="artifacts/my_reference") as env:
     observation, info = env.reset(seed=42)
     for _ in range(400):
@@ -95,12 +115,22 @@ of the reference time window; the retained single-cut history stays permanent.
 This version supports one cut plane per episode; arbitrary repeated cut planes
 and moving workpiece frames need further solver work.
 
-`observe()` includes only two RGB arrays, optical-Z depth in metres, valid masks,
-camera calibration and time. The default `vision_proprio` profile additionally
-provides measured `q`, `qdot` and the knife-edge pose. `vision_only` omits those.
-Force, material particles, cut labels, target-plane oracle and Global images
-remain outside formal observations. Global and depth debug views are available
-through `render(camera, mode="rgb_array" | "depth_array")`.
+`observe()` defaults to two wrist RGB arrays, optical-Z depth in metres, valid
+masks, camera calibration and time, keyed by `wrist_d405_0` / `wrist_d405_1`.
+Each wrist image is 848×480; Global is 640×480. The default `vision_proprio`
+profile additionally provides measured `q`, `qdot` and the knife-edge pose.
+`vision_only` omits those. Set `include_global_camera=True` to add Global RGB-D
+and calibration under `global_d455`. Force, material particles, cut labels and
+target-plane oracle always remain outside formal observations.
+Global and individual depth views are also available through
+`render(camera, mode="rgb_array" | "depth_array")`; `"global"` aliases
+`"global_d455"` in the new layout.
+
+Each step checks measured hand / fixed-mount composition. Camera, calibration,
+surface and robot timestamps must agree; stale or nonfinite camera/calibration
+timestamps are rejected. Raw recordings preserve all three sensors regardless
+of formal observation inclusion. Full measured transforms, native runtime
+intrinsics and prototype/physical model labels remain distinct.
 
 `evaluate()` independently recomputes task metrics from actual reference MPM
 stencils, persistent codes, immutable masses and attributed current surfaces.
@@ -112,5 +142,6 @@ history; strict camera/numerical repeatability has separately recorded limits.
 
 Current material parameters and fracture behavior remain provisional. The
 reaction is applied with an explicit20ms coupling delay. Lab kit-less cameras
-are ideal; Kit uses actual native sensors. Camera and complete-physics acceptance
+are ideal; Kit wrists use ideal geometric RTX and Global uses native SingleView.
+Camera and complete-physics acceptance
 are audited separately from the task's `PASS_TASK_METRICS` result.

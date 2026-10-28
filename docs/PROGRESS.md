@@ -1,6 +1,47 @@
 # Progress — 2026-10-28 Asia/Seoul
 
-## Latest: both cutting tasks completed actual physical execution
+## Latest: moving wrist D405 prototypes and closer Global D455
+
+The new `wrist_d405_global_d455` layout has completed CUT-01 and TRIM-01 in
+both actual Isaac runtimes: four full 400-step / 8-second episodes, 492 captured
+camera frames and 1,604 measured hand/camera samples. No solver, material or
+frozen Task success criterion was changed for the camera update. The preserved
+fixed-camera recordings and all unsuccessful pilots remain available.
+
+| Camera / validation | Measured result | Status and boundary |
+| --- | --- | --- |
+| `wrist_d405_0` / `wrist_d405_1` | True children of each actual `panda_hand`; fixed hand-to-camera transforms, actual articulated poses checked every 20 ms; synchronized 848×480 RGB-D | FK / inverse / timestamps / runtime optics **PASS** in all four episodes; both sensors explicitly **`ideal_d405_prototype`** |
+| Closer `global_d455` | Official D455 USD, World-fixed at `(1.10,-1.20,1.05)` m; native 640×480 RGB-D, whole workcell in view | Minimum valid-depth fraction 15.8337% / 15.8490% in native CUT / TRIM versus 6.3249% in the preserved far CUT; engineering visibility **PASS**, native sensor calibration **NOT_VALIDATED** |
+| Actual secondary-arm motion probe | Native PhysX joint excursion 0.081217 rad; hand translation 21.74 mm; optical translation 28.11 mm; fixed Global drift zero | Separate 2-second / 100-step motion proof **PASS**; cutting goal **NOT_RUN** |
+| CUT-01 physical regression | Both runtimes retain 96,000 particles / 144 g, actual support graph 1→2, two 72 g parts and 2.4 s sampled separation persistence | Independent Task metrics **PASS**; delayed interface-work limits still **FAIL** |
+| TRIM-01 physical regression | Explicit 2 mm particles, 1.608 g chip + 144.024 g base, 98.5294% target-material removal; no history rewriting | Permanent separation **PASS**; strict surface accuracy and interface-work limits **FAIL**, same as the earlier coarse baseline |
+| Visibility and mount limits | All three cameras see the knife throughout active TRIM; secondary wrist is palm-occluded at 6.4–8.0 s after withdrawal. All housings and other robot pairs clear; primary bracket overlaps its own link7 flange at the fixed anchor | Frozen all-frame secondary-knife and strict bracket clearance screens **FAIL**; visual camera mass/colliders are not modelled |
+| API / recording / regression | New named streams; optional Global policy input; explicit Cartesian/joint actions in both live runtimes; synchronized videos, per-step transform bundles, independent source/hash checks | Full Task execution, API smoke, prototype optics and hardware-model fidelity are reported independently; 235 CPU tests pass |
+
+Native depth tails and invalid pixels are retained, including a rare Global
+valid-depth error of approximately 0.849 m. Programmable views and geometric
+synchronization do not establish calibrated sensor accuracy. D405 working-range
+controls at 6 / 8 / 49 / 51 cm and near-foreground occlusion were actually run
+on the GPU; these validate ideal first-hit optics, not stereo/noise/calibration.
+The final profile is 848×480, effective 87×56.485° FOV, logical range 0.07–0.50 m.
+
+Code and commands: [WRIST_CAMERAS](WRIST_CAMERAS.md),
+[native integration](WRIST_CAMERA_NATIVE_PIPELINE.md),
+[independent full validation](WRIST_CAMERA_VALIDATION.md),
+[compact receipt](evidence/wrist_camera_audit.json),
+[actual motion proof](evidence/native_wrist_motion_proof.json),
+[shared API](SHARED_TASK_API.md). Current three-camera videos and full measured
+transform bundles are linked from [README](../README.md). Repository text,
+configurations, evidence labels and documentation are English.
+
+Final raw episodes: `artifacts/isaac_lab_wrist_cut01_002`,
+`isaacsim_wrist_cut01_002`, `isaac_lab_wrist_trim01_001`,
+`isaacsim_wrist_trim01_001`. Motion proof: `isaacsim_wrist_motion_probe_001`.
+Earlier far-Global wrist runs, source-race trial, rejected geometry, VGA optics
+trial and all original D0–D3 / fixed-camera evidence are preserved separately.
+No training, real-robot operation, RSI changes, driver changes or reboot occurred.
+
+## Preserved: fixed-camera cutting task delivery
 
 Fixed CUT-01 and TRIM-01 have each run in **Isaac Lab 3.0 GA and Isaac Sim 6.2**,
 completing 400 control steps / 8 seconds. An actual Franka holds the fixed blade, the measured edge contacts material, and TLMPM produces

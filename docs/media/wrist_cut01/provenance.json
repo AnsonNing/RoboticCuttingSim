@@ -1,0 +1,830 @@
+{
+  "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+  "source_manifest_sha256": "7adb0d2b26b22add53d147e3e4ca74aed3995eec2519beb9d11101aad361f649",
+  "source_result_sha256": "34adde6931e0f1a5d0063eec3b2b2720fe3cf06a00aeed10a14e1941847144b3",
+  "source_backend": "LIVE_IsaacSim6.2_cutting",
+  "source_execution_status": "PASS_EXECUTION",
+  "source_task_metric_status": "PASS_TASK_METRICS",
+  "encoder_source_sha256": "9c7f0673e034e220394ce30e5782918f387abc2af5b818f4dc00513f1bfcd635",
+  "source_kind": "Actual captured live RGB-D arrays",
+  "simulation_or_renderer_invoked": false,
+  "frames": 41,
+  "playback_fps": 4.999999999999996,
+  "camera_ids": [
+    "wrist_d405_0",
+    "wrist_d405_1",
+    "global_d455"
+  ],
+  "sensor_models": {
+    "wrist_d405_0": "ideal_d405_prototype",
+    "wrist_d405_1": "ideal_d405_prototype",
+    "global_d455": "native_single_view_d455_provisional"
+  },
+  "raw_arrays_modified": false,
+  "invalid_pixels": "black; no filling or tail rejection",
+  "display": "Individual videos preserve input dimensions; mosaic panels resized to640x480 for display only",
+  "input_payload_sha256": [
+    {
+      "frame": 0,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0000.npz",
+      "sha256": "16beb14dabc582058fdea98fbc09a0620e95428ee6260c3eafacd3fa2c65308a"
+    },
+    {
+      "frame": 0,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0000.npz",
+      "sha256": "7d01ff70122b55b0ebca5f6e70f59803b1d2a83ae94abf5452757a9715cbb8f4"
+    },
+    {
+      "frame": 0,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0000.npz",
+      "sha256": "954cb5dd48a5459f71a5256fa6b15ed9694d64827bfbcc5984def5af76a525b6"
+    },
+    {
+      "frame": 1,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0001.npz",
+      "sha256": "1812700fa2a810faab5cc277ee8d069b094a6fd8151f815259094e8a42bda1f5"
+    },
+    {
+      "frame": 1,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0001.npz",
+      "sha256": "504bfc98eb21c5a14fa20d95045f240a7506525cbced6c3d9a80f1817ac8d434"
+    },
+    {
+      "frame": 1,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0001.npz",
+      "sha256": "0697cdc2277e544732e3c0321b0e1d97183fc9467181a3deb427e95cf5b3e54f"
+    },
+    {
+      "frame": 2,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0002.npz",
+      "sha256": "6816094a4ec5cc3b54b2a66b0c0b49c56fc6d3a3cda4565d69a2dbccc34cc7d5"
+    },
+    {
+      "frame": 2,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0002.npz",
+      "sha256": "8e050479cc2dc13acfd9c4c91e8b25b4c1cc3930c4c0fb309fd3729cf8022102"
+    },
+    {
+      "frame": 2,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0002.npz",
+      "sha256": "6d7b73f129dfb6a2eb453c067b074da007a9330944f6497d4828545c4bb6652f"
+    },
+    {
+      "frame": 3,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0003.npz",
+      "sha256": "f22f8610084bb76ce26b4271602ebab3aba2dd19c527e1465289fdc77d952a8b"
+    },
+    {
+      "frame": 3,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0003.npz",
+      "sha256": "14df2b4e83458c9c31c2c4ecefe6bbbf20f5eedefec2f14aaebe568bb647928b"
+    },
+    {
+      "frame": 3,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0003.npz",
+      "sha256": "37c83e14bacd23c8c1c023cfaf246428e4c6e4f6f959e77961c8fb2943385581"
+    },
+    {
+      "frame": 4,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0004.npz",
+      "sha256": "b5b16366827a1ef01f80670ac444a7dd9b666933187574339a906b15e6194e03"
+    },
+    {
+      "frame": 4,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0004.npz",
+      "sha256": "713b4536f97d1913d5d61844166964d80e10f25de3af56e6c1d0265ce610770e"
+    },
+    {
+      "frame": 4,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0004.npz",
+      "sha256": "00dbe310e085692dd4baa9cd46e1a163a7b6f021e93198ebb19e0bda34b17ee2"
+    },
+    {
+      "frame": 5,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0005.npz",
+      "sha256": "97ae0a168eb31330899650c00e69c16aa77e5175dcd1834f5fc09265cbc8280c"
+    },
+    {
+      "frame": 5,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0005.npz",
+      "sha256": "7bfebedd8b73e21404aace219a39bdf3a7792b618e319e85beb9a7c48aff0dec"
+    },
+    {
+      "frame": 5,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0005.npz",
+      "sha256": "5f83b11c7c5232d0c2bb81315ce3b84ded3df4f644bbfc7ebb49219ece8d83e5"
+    },
+    {
+      "frame": 6,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0006.npz",
+      "sha256": "aff22988c72aecf6d5037875b1f9a13404ca68a64fd54d2d7ba2eb0a095b5bdb"
+    },
+    {
+      "frame": 6,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0006.npz",
+      "sha256": "29c5e336da3b5251fc0eb0825c8fa59b681af615b0600c142b2dbf6441fce229"
+    },
+    {
+      "frame": 6,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0006.npz",
+      "sha256": "84b6b9dd7e3915b0c8e64166626f91e944c7573f1d8722530f8cb3d4b95414b7"
+    },
+    {
+      "frame": 7,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0007.npz",
+      "sha256": "ff8869de58b2eb745fe241d52cea9ff1e56d5040e65645d9c011833663aaa6d1"
+    },
+    {
+      "frame": 7,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0007.npz",
+      "sha256": "63bdb5cce17e7d2aa43e9fc62c8a95b9d15582469bff8ea29cc3b6beeb62cc28"
+    },
+    {
+      "frame": 7,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0007.npz",
+      "sha256": "5bd41d626529d7ab4193114f2b03eb6705db18833fd663c921a45ba3cc980ec0"
+    },
+    {
+      "frame": 8,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0008.npz",
+      "sha256": "e3422bd05c18c349c44f7ac70b87cd2c561bfdb5912e2599b267196ba8609a9e"
+    },
+    {
+      "frame": 8,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0008.npz",
+      "sha256": "8818443a6e906ae5beff1a623ffc2f58c0bd1bc3bb48ae83a80bdb978d4ab498"
+    },
+    {
+      "frame": 8,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0008.npz",
+      "sha256": "0127aa8860dca2712c6c4f05b1fef60c2451fb56bfdabfba57d8e449a10fd352"
+    },
+    {
+      "frame": 9,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0009.npz",
+      "sha256": "87587e8b39358da58884f1e24a9d72c9014acd24f18d183460675b58f1b8db85"
+    },
+    {
+      "frame": 9,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0009.npz",
+      "sha256": "378d8eff1d31b99ce5d71c28a340d9996885f6c6a68146a8069b1bd4a9288e16"
+    },
+    {
+      "frame": 9,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0009.npz",
+      "sha256": "17bd658619f62ec4890ad7e4f422115c4c092bb58e0eda4ed72ea5ff77d90d3b"
+    },
+    {
+      "frame": 10,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0010.npz",
+      "sha256": "386d9398d4d4a5d897ab0ed571fb269e289d10e1690f896af7cbbccb9ac68ee2"
+    },
+    {
+      "frame": 10,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0010.npz",
+      "sha256": "74f390b24e88b63b68f273da8211c22cb039b6df5df78e59a1452115f8d2dc8b"
+    },
+    {
+      "frame": 10,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0010.npz",
+      "sha256": "a77a93ad8942d53cf494a1f04e20bfd6ea8b4ec52d253e49643276015b5b0c92"
+    },
+    {
+      "frame": 11,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0011.npz",
+      "sha256": "ad28f0965c4d1314569cbf5b8411945ed5c35f1c1a475e11c4c03dba0702c397"
+    },
+    {
+      "frame": 11,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0011.npz",
+      "sha256": "63b1b646fb54a8f4a5a20aa60873ad089813312b0935ecb1fe85cb48960a6371"
+    },
+    {
+      "frame": 11,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0011.npz",
+      "sha256": "21d47a3b06af5c78fa01261ecf12f6e7d95277a437c46c5df87237882bc7b617"
+    },
+    {
+      "frame": 12,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0012.npz",
+      "sha256": "a743bebde08880f02085cd0b073b3f41621558b356d5aa4d643f5a6cee849735"
+    },
+    {
+      "frame": 12,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0012.npz",
+      "sha256": "f56e3784a496d9363a1f0b80557051006d82805cd94e0c0423404952049a882d"
+    },
+    {
+      "frame": 12,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0012.npz",
+      "sha256": "16c713cd67196634978205c7e3b7949ea48f414ee841386c559804208ab6e20f"
+    },
+    {
+      "frame": 13,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0013.npz",
+      "sha256": "e03adacaedcba8d3ecaa1146fe6df8c7cd286ebb08ac3dc1b299383a69ed170f"
+    },
+    {
+      "frame": 13,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0013.npz",
+      "sha256": "271bbbb43f700389509ec338e43ab691fbfd3e7c59511adf1af3f98a0805b808"
+    },
+    {
+      "frame": 13,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0013.npz",
+      "sha256": "635fe059c517b0f4dc72c46fc809ffc135dc51d71e49eef8993f78cb4f282a5f"
+    },
+    {
+      "frame": 14,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0014.npz",
+      "sha256": "c36671889372290d93f122560dca88c84c6c56c71420872440c5a5f7fff50805"
+    },
+    {
+      "frame": 14,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0014.npz",
+      "sha256": "20f51db38003150d9ca13710ecfd6375a52b0ac2f206ae8d397a75fe4f6543ce"
+    },
+    {
+      "frame": 14,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0014.npz",
+      "sha256": "364eacdb8c659ab3c0b4216f3bb7da455115a66292c0855c08d14c18a50446a8"
+    },
+    {
+      "frame": 15,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0015.npz",
+      "sha256": "58b60c105db6ebd10da71e796cc2f83223ac82f53d827850731d020f1b05f588"
+    },
+    {
+      "frame": 15,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0015.npz",
+      "sha256": "dd419293fa8beabc4471f616122771a8ab77df78ed361135e6fd29a98bc144ee"
+    },
+    {
+      "frame": 15,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0015.npz",
+      "sha256": "46f67edf76940faf798238ee6b5dcec324616c508c98cd606b15f89759d05cfa"
+    },
+    {
+      "frame": 16,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0016.npz",
+      "sha256": "a46fad6f0bdd07e0049a94a036309ba547ce533c1f68d9678cbdfcd7d4a78bca"
+    },
+    {
+      "frame": 16,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0016.npz",
+      "sha256": "85b6fac0a348be61b700caa4f0da13100d1e47e9c60740a2be11548ee48ae06f"
+    },
+    {
+      "frame": 16,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0016.npz",
+      "sha256": "8b25d759db415215d3b0bd55671f5b9fe28ecf32770720a9a69216092eefb1a4"
+    },
+    {
+      "frame": 17,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0017.npz",
+      "sha256": "60c01013f777540b92bbf3fe74441acd04cbddee8c163e7f765af307f5bdb539"
+    },
+    {
+      "frame": 17,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0017.npz",
+      "sha256": "a1f368d38007f2150a849e005393c95723e3f30cc4716ce068d55ec54c3c38e0"
+    },
+    {
+      "frame": 17,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0017.npz",
+      "sha256": "278374d45342a3d9bfb220f492061861ea97d0f365110d26b31b3cc9b9bc5b8a"
+    },
+    {
+      "frame": 18,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0018.npz",
+      "sha256": "18570dfecf1381386cf94b90d72f453e112b7451fc9a111e61f5b092a8c508f4"
+    },
+    {
+      "frame": 18,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0018.npz",
+      "sha256": "b0feddd3d0c7b7d901d05155630aea419a599480c5175c37b372f0458bed76c4"
+    },
+    {
+      "frame": 18,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0018.npz",
+      "sha256": "a0b8c203fcc05d03855788fa78d6609a9df2872c4743abdcc4f4676cc9b8fede"
+    },
+    {
+      "frame": 19,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0019.npz",
+      "sha256": "691b1232213c7b7bd8941e2d6f1af4f382dd76d501e65deb32c66ab27ad41c88"
+    },
+    {
+      "frame": 19,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0019.npz",
+      "sha256": "c9a906c02a9687041e01634a13bfd9c68089ad345d9178fc87ecce6031b78fec"
+    },
+    {
+      "frame": 19,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0019.npz",
+      "sha256": "77254e2b971d550cf7f2e2283c6e7e9554d896dbd4f39a429c652ac638619cd6"
+    },
+    {
+      "frame": 20,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0020.npz",
+      "sha256": "076ac8002af242fd158e9a741786072abbfa9f374aa2be7b823f48eeee019ac3"
+    },
+    {
+      "frame": 20,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0020.npz",
+      "sha256": "7f3ae445a7ec70ec83e9789f109c04f65cc85575ec24573d40f50cecf02cd364"
+    },
+    {
+      "frame": 20,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0020.npz",
+      "sha256": "67aa964af7744031c3ddc24a4490158d87476c07b87fcc47c353d5730ecfc0f6"
+    },
+    {
+      "frame": 21,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0021.npz",
+      "sha256": "05b51297d81285609a50171f4b01dba2e4592db51e5c73740158c06639d2ff64"
+    },
+    {
+      "frame": 21,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0021.npz",
+      "sha256": "80a831678afce34c6c38db28d763110b9b9cf5a7b8fdafe0fef4f9618c82e18f"
+    },
+    {
+      "frame": 21,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0021.npz",
+      "sha256": "1f319281f33161adf5ecb379b910a851e6f1e97a31200369799ff138c6a809fc"
+    },
+    {
+      "frame": 22,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0022.npz",
+      "sha256": "4b028b630a6e762e3a215a2c6514e8e8512c185a26ec21a8e505baa4e7645487"
+    },
+    {
+      "frame": 22,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0022.npz",
+      "sha256": "341ded26d0a0249f3313cae50db4d18a908321bf67634e5daae7ef28c01d1385"
+    },
+    {
+      "frame": 22,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0022.npz",
+      "sha256": "590ede46074dab99a257e8aa83c3aade56c29a5de3dd848e8e526a1cb94e3db3"
+    },
+    {
+      "frame": 23,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0023.npz",
+      "sha256": "81a1dd5e23b2ab1237b0edddbfa5130edbecf0c654c0e32f661f44f29c372c12"
+    },
+    {
+      "frame": 23,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0023.npz",
+      "sha256": "39c3867c047fde964b4e98ad141c8d31635f910f6b68612d1e7595d2a24a4dda"
+    },
+    {
+      "frame": 23,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0023.npz",
+      "sha256": "db33746d13f08908f3ce70d50d1519eee507df886b4bac80e5aa945d32590813"
+    },
+    {
+      "frame": 24,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0024.npz",
+      "sha256": "1686800def30ea001c6267eede83f71966354f5e19571434da75763e6a8a022a"
+    },
+    {
+      "frame": 24,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0024.npz",
+      "sha256": "e1d8ffce7aed58b0a73dc08bfe099a09b53f536452f3f155e588165f1a0fb7c4"
+    },
+    {
+      "frame": 24,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0024.npz",
+      "sha256": "b4902823638ab6266b15b14f300b735d870de1604eadf533d4861028b6c5aee7"
+    },
+    {
+      "frame": 25,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0025.npz",
+      "sha256": "bf968e2d47c87a3e20887c136f8928903635a0d3eab36b3c744ba5c336262d68"
+    },
+    {
+      "frame": 25,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0025.npz",
+      "sha256": "dd940a5e493ba2fb06dce55ca6375b64e2428500192b726a969ec6330193a213"
+    },
+    {
+      "frame": 25,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0025.npz",
+      "sha256": "089f8579900e7116234845692c315a48b8601cba31395b43afd25b00d428c65b"
+    },
+    {
+      "frame": 26,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0026.npz",
+      "sha256": "96868039401d29a927417d364a195121a90ab8e720427c3a1322b0b8d122dda8"
+    },
+    {
+      "frame": 26,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0026.npz",
+      "sha256": "a19961495278c1cb82c6a0680c8fe1a0d1f0668af41943a9f35fce82799d0b69"
+    },
+    {
+      "frame": 26,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0026.npz",
+      "sha256": "ea41d7f02806525a930b2b603ec5dcfc760a6f04e4b1a66ef5bbdf011dc7c3ff"
+    },
+    {
+      "frame": 27,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0027.npz",
+      "sha256": "5dd565bd73d0f527eeccb4f7307f3a40e520c3a122841e13d8db4a3d5cd7e3d3"
+    },
+    {
+      "frame": 27,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0027.npz",
+      "sha256": "71dc9f353b182778876840565536b1d9e4f11990595a7f8c75182ea6bb11c02f"
+    },
+    {
+      "frame": 27,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0027.npz",
+      "sha256": "96934be829f62b1716a94b57a5943f77f039e60661ad7da0cc02cb6c0f850efd"
+    },
+    {
+      "frame": 28,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0028.npz",
+      "sha256": "4116eaa605359c5429b81b90b70facdef0ecbad5e282372552cd7cf9b2ea22c5"
+    },
+    {
+      "frame": 28,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0028.npz",
+      "sha256": "fa9862445f94d4e28f74866f440288a3a0ee2fa83380cc5c3a8250950326e42d"
+    },
+    {
+      "frame": 28,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0028.npz",
+      "sha256": "26801593c33c0f00ee38ca5fc53b32bb8eb4a7e192738f616938c99421cba5f3"
+    },
+    {
+      "frame": 29,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0029.npz",
+      "sha256": "163351cff48778b93cffd2373e46d47fad814e3e38905fd5901f4b4fc38c76c8"
+    },
+    {
+      "frame": 29,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0029.npz",
+      "sha256": "9ee5916a7018043134e101feedbc21a47ef7fef87d072289a0680374489a296a"
+    },
+    {
+      "frame": 29,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0029.npz",
+      "sha256": "a6946e470450f9cd0b49751c5549cd62b90a060fca0e508176ff349e6933d697"
+    },
+    {
+      "frame": 30,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0030.npz",
+      "sha256": "a0b401fb2ffa5573cc6934e0b40a1ef21fd41c8f70eec0625a44452d0d81ff84"
+    },
+    {
+      "frame": 30,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0030.npz",
+      "sha256": "37e765ba0776117a2ff5a2475986a10bfc7a61f53e43d602aa0de55f32754f7d"
+    },
+    {
+      "frame": 30,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0030.npz",
+      "sha256": "e16aef7ba1d534771ad7d40c4cd0c7d9b8a93494503e121267f1c0006e86bcbd"
+    },
+    {
+      "frame": 31,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0031.npz",
+      "sha256": "8b4229c0ec44a0ca627a09e802f805d59cc5622012446b1c9b45aed1c46596d2"
+    },
+    {
+      "frame": 31,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0031.npz",
+      "sha256": "264139a6a99c0f99ee47e33d3924314b1a161483aeefe917821250f2a7b4cbac"
+    },
+    {
+      "frame": 31,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0031.npz",
+      "sha256": "a9a459c07a2cf693e359fa93cbf73ef89eaecfcacd7ad4c643cf0049f2bb2cdf"
+    },
+    {
+      "frame": 32,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0032.npz",
+      "sha256": "7c96462ac670f9a9127b205dcdf155299344960becc139dbe92f28dbad84f7c5"
+    },
+    {
+      "frame": 32,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0032.npz",
+      "sha256": "fa291eed50660ede5717374ac8b5c232302b2ac224964debf2456755f17fc31a"
+    },
+    {
+      "frame": 32,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0032.npz",
+      "sha256": "6dadcc67c2f4a3d5b31e47f35c0267915951ca59a608392e308f903814c04bf7"
+    },
+    {
+      "frame": 33,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0033.npz",
+      "sha256": "d69c88e3f6360d7ac5c72f815387e7895a69cde7f6dd45aef157934f8a37ca91"
+    },
+    {
+      "frame": 33,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0033.npz",
+      "sha256": "acc227707b80e21da2df78c01dde7e7080df734f5cb1cc7648d47ecdd213def7"
+    },
+    {
+      "frame": 33,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0033.npz",
+      "sha256": "4321cbc1a18a3869daa4978fe488ecf4747b2f7d7934a2a0712c6440a4fa8e8e"
+    },
+    {
+      "frame": 34,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0034.npz",
+      "sha256": "b9a8432196e29397796693d7623334044648991abf1d1f21dd035477909675fd"
+    },
+    {
+      "frame": 34,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0034.npz",
+      "sha256": "9d83dafa00c2930d117fca89337f0323ace0980799f74e2539b2c801800637cc"
+    },
+    {
+      "frame": 34,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0034.npz",
+      "sha256": "18e7676c6938d03f2104644a33f10979bfc9ea210b547e081e52644267e362f8"
+    },
+    {
+      "frame": 35,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0035.npz",
+      "sha256": "4a159096c7fec22ec54ac6ce70b0d7224835b73b6706d95e88ed84b5610d497f"
+    },
+    {
+      "frame": 35,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0035.npz",
+      "sha256": "17a3b1e7d898bab3806be9ae1980107f6d2cda618f41e45fb762a96b6cf08f0b"
+    },
+    {
+      "frame": 35,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0035.npz",
+      "sha256": "9b5b61818f8954165367a7f169b754bf342d802fd3951dadfab409b2aa6560d8"
+    },
+    {
+      "frame": 36,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0036.npz",
+      "sha256": "fe36154abccaaa88f3434c4815fd3cc78e5f322b498f093ca4fc235e0ee6cff9"
+    },
+    {
+      "frame": 36,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0036.npz",
+      "sha256": "735bc579b49ae6038480a5d8579ce857bf0b6dcba62a7c7a9ee3ec508da2eb4f"
+    },
+    {
+      "frame": 36,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0036.npz",
+      "sha256": "63113286c97687906832ded340df01563374119925abf6bca8de0a9b50a38574"
+    },
+    {
+      "frame": 37,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0037.npz",
+      "sha256": "4cf9b5c44259c3824c80d7179190cccfc09f0533798588d3347a51325c48eab5"
+    },
+    {
+      "frame": 37,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0037.npz",
+      "sha256": "9c6ae23759fc55c4817f382663070867c98e6784b1e46ac91159f697bc88abd4"
+    },
+    {
+      "frame": 37,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0037.npz",
+      "sha256": "1492663920759a86a25e31efb40e2753ae20a1c5286c5a0ec1562097a199d762"
+    },
+    {
+      "frame": 38,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0038.npz",
+      "sha256": "8133bb0f350b017811aff8ac912ce1cdedeefa9c29e1f6537f7613f24761ea77"
+    },
+    {
+      "frame": 38,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0038.npz",
+      "sha256": "442d5ed83f852a236b4917c90f596e744a5e5d2e38d021270eb198120ba8ea57"
+    },
+    {
+      "frame": 38,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0038.npz",
+      "sha256": "83b2151dacdb1d721ee164cd12b917d8bbcedc428610b185fc201429877f700a"
+    },
+    {
+      "frame": 39,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0039.npz",
+      "sha256": "8f8554e856de34022636e5e450705a00a8edc1dbe0653ea63a8b0aad655e26bd"
+    },
+    {
+      "frame": 39,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0039.npz",
+      "sha256": "81dda7a4540e3048889d0699f5ae6a89858fa01babe5610f9ebce5836593d121"
+    },
+    {
+      "frame": 39,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0039.npz",
+      "sha256": "113b756b4092914925a17d96514e7ce486dd2eb53c0fbdefa27b5758c04429d5"
+    },
+    {
+      "frame": 40,
+      "camera_id": "wrist_d405_0",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_0_0040.npz",
+      "sha256": "3186e9ee7d5a6ef0930a2de3be7814edd9c7aa1be0395c4b1eddc3d3d40c44c3"
+    },
+    {
+      "frame": 40,
+      "camera_id": "wrist_d405_1",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/wrist_d405_1_0040.npz",
+      "sha256": "b1104bc4fce51a2e4bfe0ed6266d3d6bef303adad568d6e02568b071aed1cd2c"
+    },
+    {
+      "frame": 40,
+      "camera_id": "global_d455",
+      "file": "artifacts/isaacsim_wrist_cut01_002/observations/global_d455_0040.npz",
+      "sha256": "ee48f89053109bb7eaa257192688aa3298a93f62112286cdcc38208e89401dc3"
+    }
+  ],
+  "files": [
+    {
+      "file": "global_d455.mp4",
+      "bytes": 28709,
+      "sha256": "db4aef411c3b5ba1b114a643a6477c7522708f11c449ba683b0ce1e7f7fb512a"
+    },
+    {
+      "file": "global_d455_depth.mp4",
+      "bytes": 35432,
+      "sha256": "7d7cb842642d7d6b922f093ce850bb6610b05ceb62e355f554a37b323619ed21"
+    },
+    {
+      "file": "synchronized_multiview.mp4",
+      "bytes": 387370,
+      "sha256": "7da11b26e51e1deb3a87f22bbd422977e3ba722623c240afd62f372704bd1ddf"
+    },
+    {
+      "file": "wrist_d405_0.mp4",
+      "bytes": 122282,
+      "sha256": "87ecf51e6d59403993773c38b51fdc1d807a822329047449b0b117a7bece331c"
+    },
+    {
+      "file": "wrist_d405_0_depth.mp4",
+      "bytes": 79354,
+      "sha256": "08e81431da2db70db97c25a381d9ebac574318c0b14b18df8378bde61b6f3303"
+    },
+    {
+      "file": "wrist_d405_1.mp4",
+      "bytes": 132703,
+      "sha256": "8be7285f5450ef99e6e0225ea2903a9d91816379dd50c33ee171f1ca1f14adec"
+    },
+    {
+      "file": "wrist_d405_1_depth.mp4",
+      "bytes": 83010,
+      "sha256": "9505ca68452dc8a94a2a2c4b80254da6e1352cdf6bfd4bc94d2285598a788a0b"
+    }
+  ],
+  "pose_source": {
+    "file": "artifacts/isaacsim_wrist_cut01_002/camera_pose_trace.json",
+    "sha256": "05eb384e5f250c2cd5dc74dcc161f6277403139ea2185fca361acffa55f01424",
+    "samples": 401
+  },
+  "auxiliary_files": [
+    {
+      "file": "preview.png",
+      "bytes": 498372,
+      "sha256": "cee923efc1020542b5dc82dbbe447e1d2eb548551357c5b1d032631193d5557e"
+    },
+    {
+      "file": "camera_transforms.npz",
+      "bytes": 87720,
+      "sha256": "3eb5d279a7c3a28adb09e0f7aba22827697f1d868dbc549fcc874a016e10739f"
+    },
+    {
+      "file": "camera_pose_tracking.png",
+      "bytes": 166147,
+      "sha256": "78c93db1d5f1f305eb3b30826ed06a11c97236773bb02b3a13a0a6c622ae8442"
+    },
+    {
+      "file": "camera_pose_trace.csv",
+      "bytes": 121704,
+      "sha256": "79e2c381a66ef9f5e772d2337439d18973556e78d638d7db6d0ecb9d1a545677"
+    }
+  ]
+}
