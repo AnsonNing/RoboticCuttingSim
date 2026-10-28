@@ -15,12 +15,16 @@ The official Isaac Sim 6.2 Python installation instructions explicitly support
 the cu128 Torch variant. The default Lab cu130 stack has different requirements.
 
 ```bash
-.venv/bin/python -m venv .deps/isaaclab-venv
-bash scripts/install_isaac_lab.sh
+bash scripts/bootstrap.sh --runtime isaac_lab --managed-python
 .venv/bin/python scripts/run_logged.py artifacts/lab_d0_new.log -- \
   .deps/isaaclab-venv/bin/python scripts/run_isaac_lab_cutting.py \
   --output-dir artifacts/lab_d0_new --steps 400
 ```
+
+Let bootstrap create the environment; do not precreate an empty venv. The
+installer preserves and rejects an incomplete existing environment. Current
+installation, source overrides and deployment checks are documented in
+[PORTABLE_DEPLOYMENT](PORTABLE_DEPLOYMENT.md).
 
 Output directories must be new. The runner exports a fresh static workcell and
 reuses only its cameras and lights; material and robot animation are computed

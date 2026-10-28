@@ -1,5 +1,9 @@
 # Live Isaac Sim6.2 validation
 
+For reproducible installation use [PORTABLE_DEPLOYMENT](PORTABLE_DEPLOYMENT.md)
+and `scripts/bootstrap.sh`; the attempts below retain their historical commands
+and failures. Current CUT/TRIM deployment smokes are separate from full episodes.
+
 Actual runtime initialization now succeeds on the unchanged RTX5090 host with
 driver570.211.01. Isaac Sim6.2.0.0 uses Kit110.4.0, bundled USD25.11, native
 PhysX110.4.4 and `omni.sensors.nv.camera`1.4.0. The dedicated environment is

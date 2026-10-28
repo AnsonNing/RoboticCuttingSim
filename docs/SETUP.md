@@ -27,7 +27,7 @@ changes; a mismatched environment is preserved and installation stops.
 |`.deps/isaaclab-venv`|Actual kit-less Lab / NewtonManager|`usd-exchange3.0.1`|
 
 Never install `usd-core` into either Isaac environment or `usd-exchange` into
-Sim. Bootstrap installs the frozen complete wheel lists without resolving
+Sim. Bootstrap installs the frozen complete package lists without resolving
 unused converter dependencies that would add a conflicting USD provider.
 Torch2.11/cu128 is the measured recipe on RTX5090 / driver570.211.01; the
 system CUDA toolkit is not required for these wheels. No driver is upgraded.

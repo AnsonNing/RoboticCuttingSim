@@ -1,0 +1,43 @@
+{
+  "successful_managed_fallback": {
+    "status": "PASS_MANAGED_PYTHON_BOOTSTRAP",
+    "restricted_path": "/usr/bin:/bin",
+    "bootstrap_python": "/usr/bin/python3",
+    "bootstrap_python_version": "Python 3.10.12",
+    "selected_interpreter": "/home/ningan/RoboticCuttingSim/.deps/python/cpython-3.12.12-linux-x86_64-gnu/bin/python3.12",
+    "selected_interpreter_sha256": "4304de9fdcd8465bbf4bf0814bb7abadd6d33971bab26ae38d1080c355fec983",
+    "selected_is_project_local": true,
+    "probe": {
+      "executable": "/home/ningan/RoboticCuttingSim/artifacts/bootstrap_managed_python_002/base-venv/bin/python",
+      "base_prefix": "/home/ningan/RoboticCuttingSim/.deps/python/cpython-3.12.12-linux-x86_64-gnu",
+      "prefix": "/home/ningan/RoboticCuttingSim/artifacts/bootstrap_managed_python_002/base-venv",
+      "version": [
+        3,
+        12,
+        12
+      ]
+    },
+    "receipt": "receipt/bootstrap.json",
+    "receipt_sha256": "97819041ce6569cda7c1e6f2be54f66764a0027bcee55d0eb54fcb7602da684d",
+    "bootstrap_source_sha256": "c7f6c92b99152d915ecadcfdb82171a73021ef1334b77994fcd8c89d18030221",
+    "prior_failed_selection_preserved": "artifacts/bootstrap_managed_python_001/managed_interpreter_result.json",
+    "managed_download_reused_from_prior_001": true,
+    "official_wheel_cache_reused": true,
+    "gpu_work": "NOT_RUN",
+    "original_environments_targeted_by_installer": false,
+    "global_python_or_shell_config_modified": false,
+    "cpu_tests": "272 passed in 2.94s"
+  },
+  "preserved_failed_selection": {
+    "status": "FAIL_MANAGED_INTERPRETER_SELECTION",
+    "restricted_path": "/usr/bin:/bin",
+    "bootstrap_python": "/usr/bin/python3",
+    "managed_download": "PASS; actualPython3.12.12installedproject-local",
+    "selected_interpreter": "/home/ningan/RoboticCuttingSim/.venv/bin/python3",
+    "reason": "uvpythonfind preferredexistingprojectvenv; noexistingpackagesinheritedbutdeclaredproject-localinterpretercriterionfailed",
+    "bootstrap_metadata_receipt": "receipt/bootstrap.json",
+    "original_environments_modified": false,
+    "gpu_work": "NOT_RUN"
+  },
+  "independent_cross_host": "NOT_RUN"
+}

@@ -33,7 +33,7 @@ changed with `--base-env`, `--sim-env`, `--lab-env` and `--lab-source`; defaults
 are `.venv`, `.deps/isaacsim-venv`, `.deps/isaaclab-venv`, `.deps/IsaacLab`.
 Use the same explicit paths in doctor/validation commands when overriding.
 Large-wheel HTTP timeout and download concurrency can be configured with
-`UV_HTTP_TIMEOUT` and `UV_CONCURRENT_DOWNLOADS`. Failed download/install logs
+`UV_HTTP_TIMEOUT` (default900s) and `UV_CONCURRENT_DOWNLOADS` (default4). Failed download/install logs
 are retained. Retry a partial installation in new environment paths or a new
 clone; a partial existing environment is intentionally preserved and rejected.
 Existing environments are inspected before installation and skipped only if
@@ -139,6 +139,10 @@ Without the flag a strict TRIM failure deliberately produces a nonzero result.
 - **Driver/CUDA launch failure:** retain the doctor and actual startup log as
   BLOCKED. This installer never upgrades the driver. The original R570/cu128
   execution is a measured host result, not a universal driver certification.
+- **Cold stage startup:** the native runner waits for actual stage readiness
+  with a300s wall-clock deadline and a short event-loop yield. It writes
+  per-reset `stage_load_NN.json`; the old300-update cap was insufficient in
+  a fresh clone. A stage-loaded receipt alone is not a physics/camera PASS.
 - **Kit extension download stalls:** check HTTPS/CDN access, disk and the pinned
   shadercache receipt. User-level Kit caches may still be used by Kit. Reused
   caches must be disclosed in reproduction reports.
