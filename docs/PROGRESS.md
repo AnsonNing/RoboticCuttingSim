@@ -1,4 +1,4 @@
-# Progress — 2026-10-28 Asia/Seoul
+# Progress — 2026-10-29 Asia/Seoul
 
 ## WP-08 in progress: independent tool and physical finger grasp
 
@@ -15,9 +15,33 @@ after camera edits invalidated a rigid tensor view; the first full attempt was
 therefore aborted and rejected. Camera assets now precede physics views, and
 smoke003 completed two formal steps with fresh contact data, all three RGB-D
 streams and no invalid-view errors. Neither smoke proves physical cutting.
-All API/initialization failures and raw traces are preserved. Independent
-release, weak-grip, load, complete cutting and Newton parity remain in progress.
-The current native contact API's force/sign/unit controls passed separately.
+All API/initialization failures and raw traces are preserved. Full candidate-v2
+CUT/TRIM episodes now execute in both actual runtimes with three RGB-D streams
+and reset checks. Both CUT strict task scores pass; both2mm TRIM episodes
+separate1.608g chips and retain strict surface FAIL. Native material ON/OFF
+matched runs pass the frozen causal-response engineering screen, with actual
+arm/tool/contact differences; full coupling-energy acceptance remains separate.
+
+Native v2 also passes all seven frozen hold/load/torque/stress/weak-grip/
+low-friction/release controls. A contact-event geometry timing bug was corrected
+using explicitly recorded pre-step poses without changing contact tolerances;
+old strict failures remain intact. Opening fingers gives an independently
+measured unsupported gravity interval. Newton's initial point-contact model
+retains actual clearance-transfer failures despite passing the full cutting
+paths. A finite, geometry-derived finger-patch torsion model is being evaluated
+as a separate candidate, without changing TLMPM or task scoring.
+
+The shared API and same-instance GUI now distinguish actual tool, commanded
+edge and measured hand, expose physical gripper commands, and pause on grasp
+loss until reset. Local Chrome over the Tailscale URL passed11 real streamed
+GUI transactions, including release/drop/automatic loss termination, reset,
+CUT/TRIM switching, camera selection and typed joint control. External Mac
+connectivity remains NOT_RUN. New actual physical-grasp RGB-D videos are linked
+from README. Randomized/capsule regression and a fresh isolated bootstrap are
+running; optional rack skill attempts and their failures are preserved.
+
+See [physical tool use](PHYSICAL_TOOL.md), [frozen controls](PHYSICAL_TOOL_CONTROLS.md)
+and [latest physical-grasp media](media/wp08_physical_grasp_v2/manifest.json).
 
 See [the supplied specification](WP08_SPECIFICATION.md). No driver, unrelated
 project, solver cutting law or frozen scoring criterion was changed.
