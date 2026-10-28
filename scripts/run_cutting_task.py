@@ -102,7 +102,7 @@ def main():
     parser.add_argument("--include-global-camera", action="store_true")
     parser.add_argument("--device")
     parser.add_argument("--particle-spacing", type=float, help="Explicit initial task quadrature in metres; frozen defaults remain available")
-    parser.add_argument("--gpu", type=int, default=1)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--record-every", type=int, default=10)
     parser.add_argument("--action-mode", choices=("cartesian_edge_pose_world", "joint_position_rad"), default="cartesian_edge_pose_world")
     parser.add_argument("--exercise-actions", action="store_true", help="Short control smoke: explicit Cartesian then joint action")

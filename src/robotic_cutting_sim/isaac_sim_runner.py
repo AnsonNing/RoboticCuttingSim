@@ -22,8 +22,8 @@ class IsaacSimCuttingConfig:
     robot_substeps: int = 10
     material_dt: float = .0001
     dx: float = .004
-    device: str = "cuda:1"
-    gpu: int = 1
+    device: str | None = None
+    gpu: int = 0
     width: int = 640
     height: int = 480
     global_resolution_scale: int = 2
@@ -43,6 +43,10 @@ class IsaacSimCuttingConfig:
     scene: str | None = None
 
     def __post_init__(self):
+        if self.gpu < 0:
+            raise ValueError("gpu must be a nonnegative physical GPU index")
+        if self.device is None:
+            object.__setattr__(self, "device", f"cuda:{self.gpu}")
         if min(self.steps, self.robot_substeps, self.width, self.height, self.global_resolution_scale, self.record_every, self.render_warmup) < 1:
             raise ValueError("Step counts, resolution and recording intervals must be positive")
         values = np.asarray([self.control_dt, self.material_dt, self.dx])

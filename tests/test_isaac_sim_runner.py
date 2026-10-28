@@ -6,6 +6,15 @@ from robotic_cutting_sim.isaac_sim_runner import (
 )
 
 
+def test_native_gpu_selection_supports_single_gpu_and_explicit_devices():
+    assert IsaacSimCuttingConfig().gpu == 0
+    assert IsaacSimCuttingConfig().device == "cuda:0"
+    assert IsaacSimCuttingConfig(gpu=3).device == "cuda:3"
+    assert IsaacSimCuttingConfig(gpu=1, device="cpu").device == "cpu"
+    with pytest.raises(ValueError, match="nonnegative"):
+        IsaacSimCuttingConfig(gpu=-1)
+
+
 def test_live_runner_rejects_older_or_missing_runtime_and_no_ideal_fallback():
     with pytest.raises(RuntimeError,match="6.2.0.0"):
         require_sim_62({"isaacsim":"6.1.0.0"})

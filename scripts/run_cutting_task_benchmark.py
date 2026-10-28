@@ -40,7 +40,7 @@ def main():
     parser.add_argument("--tasks", nargs="+", choices=("CUT-01", "TRIM-01"), default=["CUT-01", "TRIM-01"])
     parser.add_argument("--variants", nargs="+", choices=("fixed", "randomized"), default=["fixed"])
     parser.add_argument("--seeds", type=int, nargs="+", default=[42])
-    parser.add_argument("--gpu", type=int, default=1)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--camera-layout", choices=("legacy_fixed_d455", "wrist_d405_global_d455"), default="wrist_d405_global_d455")
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--particle-spacing", type=float, help="Explicit override for all cases; otherwise CUT1mm/TRIM2mm")
