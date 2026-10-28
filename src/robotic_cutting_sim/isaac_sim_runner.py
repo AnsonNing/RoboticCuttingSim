@@ -60,8 +60,20 @@ class IsaacSimCuttingConfig:
     surface_profile: str | None = None
     particle_spacing_m: float | None = None
     scene: str | None = None
+    tool_attachment_mode: str = "legacy_fixed_tool"
+    tool_init_mode: str = "pregrasped"
+    grasp: object | None = None
+    tool_spec: object | None = None
+    workpiece_kind: str = "rectangle"
+    camera: bool = True
 
     def __post_init__(self):
+        if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
+            raise ValueError("Unknown tool attachment mode; no implicit fixed-tool fallback")
+        if self.tool_init_mode not in ("pregrasped", "free", "pickup"):
+            raise ValueError("Unknown tool initialization mode")
+        if self.tool_attachment_mode == "physical_grasp" and self.tool_init_mode == "pickup":
+            raise NotImplementedError("Use the explicit rack pickup demonstration; cutting reset starts pregrasped")
         if self.gpu < 0:
             raise ValueError("gpu must be a nonnegative physical GPU index")
         if self.device is None:
@@ -195,6 +207,12 @@ class LiveIsaacSimCutting:
         if seed is not None:
             self.config=replace(self.config,seed=int(seed))
         c = self.config
+        self.physical_grasp = c.tool_attachment_mode == "physical_grasp"
+        if hasattr(self, "tool_contacts"):
+            self.tool_contacts.close()
+        self.external_tool_wrench = np.zeros(6)
+        self.gripper_command = "hold"
+        self._rigid_probe_only = False
         self.reset_index += 1
         self.SimulationManager = SimulationManager
         self.compose_tool_pose = compose_tool_pose
@@ -203,7 +221,8 @@ class LiveIsaacSimCutting:
         self.mount=np.array([0.,0.,.18,1.,0.,0.,0.])
         if c.task_id:
             from .tasks import make_task
-            self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant,particle_spacing_m=c.particle_spacing_m)
+            self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant,particle_spacing_m=c.particle_spacing_m,
+                                workpiece_kind=c.workpiece_kind)
             if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
                 raise ValueError("Native Kit control_dt/dx must match the shared task specification")
             self.reference_pose=self.task.reference_edge_pose_world
@@ -249,18 +268,41 @@ class LiveIsaacSimCutting:
         # pose is written to this mesh during any episode step.
         knife_path = hand_paths[0]+"/LiveKnife"
         self.knife_path=knife_path
-        knife = UsdGeom.Mesh.Define(stage, knife_path)
         blade_dimensions=([self.task.blade_length_m,self.task.blade_height_m,self.task.blade_half_width_m]
                           if self.task else [.012,.004,.025])
-        vertices, faces = wedge_mesh(*blade_dimensions)
-        knife.CreatePointsAttr(vertices)
-        knife.CreateFaceVertexCountsAttr([3]*len(faces))
-        knife.CreateFaceVertexIndicesAttr(faces.ravel())
-        knife.CreateSubdivisionSchemeAttr("none")
-        knife.CreateDisplayColorAttr([Gf.Vec3f(.38, .65, .85)])
-        xf = UsdGeom.Xformable(knife)
-        xf.AddTranslateOp().Set(Gf.Vec3d(*self.mount[:3]))
-        xf.AddOrientOp().Set(Gf.Quatf(float(self.mount[6]),Gf.Vec3f(*self.mount[3:6])))
+        if self.physical_grasp:
+            from .physical_tool import ToolGraspConfig, make_tool_spec
+            from .native_tool import author_tool, nominal_tool_pose
+            from .physical_contacts import NativeToolContacts
+            self.grasp = (ToolGraspConfig(**c.grasp) if isinstance(c.grasp, dict)
+                          else c.grasp or ToolGraspConfig())
+            self.grip_force_limit_n=self.grasp.max_finger_force_n
+            self.grip_friction=self.grasp.friction
+            self.tool_spec = c.tool_spec or make_tool_spec(self.task,
+                hand_from_edge_xyz_xyzw=self.mount, blade_length_m=blade_dimensions[0],
+                blade_height_m=blade_dimensions[1], blade_half_width_m=blade_dimensions[2])
+            from .tool_compatibility import require_matching_blade
+            require_matching_blade(self.tool_spec,self.mount,blade_dimensions)
+            self.finger_paths = [next(str(p.GetPath()) for p in Usd.PrimRange(stage.GetPrimAtPath(hand_paths[0]))
+                                     if p.GetName() == name)
+                                 for name in ("panda_leftfinger", "panda_rightfinger")]
+            self.tool_path = author_tool(stage, self.tool_spec,
+                nominal_tool_pose(self.reference_pose(0.), self.tool_spec), self.grasp, self.finger_paths)
+            knife_path = self.knife_path = self.tool_path+"/CuttingEdge"
+            half = np.asarray(self.tool_spec.handle_half_extents_m)
+            self.tool_contacts = NativeToolContacts(stage, self.tool_path, self.finger_paths,
+                hand_paths[0], c.control_dt/c.robot_substeps, handle_bounds_tool_m=(-half, half))
+        else:
+            knife = UsdGeom.Mesh.Define(stage, knife_path)
+            vertices, faces = wedge_mesh(*blade_dimensions)
+            knife.CreatePointsAttr(vertices)
+            knife.CreateFaceVertexCountsAttr([3]*len(faces))
+            knife.CreateFaceVertexIndicesAttr(faces.ravel())
+            knife.CreateSubdivisionSchemeAttr("none")
+            knife.CreateDisplayColorAttr([Gf.Vec3f(.38, .65, .85)])
+            xf = UsdGeom.Xformable(knife)
+            xf.AddTranslateOp().Set(Gf.Vec3d(*self.mount[:3]))
+            xf.AddOrientOp().Set(Gf.Quatf(float(self.mount[6]),Gf.Vec3f(*self.mount[3:6])))
         if self.task:
             self._author_task_fixture()
         for name in ("Table", "TrayFloor", "TrayLeft", "TrayRight", "TrayFront", "TrayBack"):
@@ -278,15 +320,45 @@ class LiveIsaacSimCutting:
             shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*color))
             material.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
             UsdShade.MaterialBindingAPI.Apply(prim).Bind(material, UsdShade.Tokens.strongerThanDescendants)
+        self.pre_authored_camera_specs=None
+        if self.physical_grasp and c.camera and c.camera_layout == "wrist_d405_global_d455":
+            # Contact sensors create a view over every rigid in the stage.
+            # Finish camera deletions/API removal before any view is created.
+            # Nominal FK only chooses a fixed optical mount at reset; every
+            # runtime camera extrinsic still comes from the actual articulation.
+            from .camera_rig import author_camera_rig
+            from .scene_frames import matrix_pose
+            from .workcell import ASSETS
+            self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+                tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
+                wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
+            reset_q=self.ik.initial_q.reshape(2,9).copy()
+            reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.))
+            self.ik.state.joint_q.assign(reset_q.ravel())
+            self.ik.newton.eval_fk(self.ik.model,self.ik.state.joint_q,self.ik.state.joint_qd,self.ik.state)
+            body_q=self.ik.state.body_q.numpy()
+            nominal_hands=[body_q[self.ik.hand_local+i*self.ik.bodies_per_arm] for i in range(2)]
+            self.pre_authored_camera_specs=author_camera_rig(stage,hand_paths,
+                ROOT/"artifacts/workcell_asset_cache"/ASSETS["d455"],task_id=c.task_id or "TRIM-01",
+                camera_layout=c.camera_layout,initial_hand_poses_world_xyzw=nominal_hands)
         SimulationManager.setup_simulation(dt=c.control_dt/c.robot_substeps, device="cpu")
         if not SimulationManager.switch_physics_engine("physx"):
             raise RuntimeError("Native Isaac PhysX engine is unavailable")
         SimulationManager.enable_gpu_dynamics(False)
         SimulationManager.enable_fabric(False)
+        if self.physical_grasp:
+            scenes=[p for p in stage.Traverse() if p.IsA(UsdPhysics.Scene)]
+            if len(scenes) != 1:
+                raise RuntimeError("Physical tool requires one explicit gravity scene")
+            physics_scene=UsdPhysics.Scene(scenes[0])
+            physics_scene.CreateGravityDirectionAttr(Gf.Vec3f(0,0,-1))
+            physics_scene.CreateGravityMagnitudeAttr(9.81)
         self.arms = Articulation(["/World/Franka_0", "/World/Franka_1"])
         self.hand = RigidPrim(hand_paths[0])
         self.hands = RigidPrim(hand_paths)
         self.hand_paths = hand_paths
+        if self.physical_grasp:
+            self.tool_body = RigidPrim(self.tool_path)
         SimulationManager.initialize_physics()
         if not self.arms.is_physics_tensor_entity_valid() or not self.hand.is_physics_tensor_entity_valid():
             raise RuntimeError("Actual PhysX articulation/hand tensor views did not initialize")
@@ -295,25 +367,29 @@ class LiveIsaacSimCutting:
             raise RuntimeError(f"Unexpected PhysX DOF order: {self.arms.dof_names}")
         self.arms.set_dof_gains([1000.]*4+[600.]*3+[350.,350.], [80.]*4+[40.]*3+[10.,10.])
         self.arms.set_dof_max_efforts([87.]*4+[12.]*3+[20.,20.])
+        if self.physical_grasp:
+            self.arms.set_dof_gains([1000.]*4+[600.]*3+[self.grasp.stiffness_n_m]*2,
+                                    [80.]*4+[40.]*3+[self.grasp.damping_n_s_m]*2)
+            self.arms.set_dof_max_efforts([87.]*4+[12.]*3+[self.grasp.max_finger_force_n]*2)
         self.arms.set_solver_iteration_counts(position_counts=16, velocity_counts=4)
-        self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+        if not (self.physical_grasp and self.pre_authored_camera_specs is not None):
+            self.ik = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
                    tool_offset_m=tuple(self.mount[:3]),tool_rotation_xyzw=tuple(self.mount[3:]),
                    wedge_length_m=blade_dimensions[0],wedge_height_m=blade_dimensions[1],wedge_half_width_m=blade_dimensions[2]))
         self.park_q=self.ik.initial_q.reshape(2,9).copy()
-        if c.camera_layout == "wrist_d405_global_d455":
-            from .camera_rig import SECONDARY_OBSERVATION_JOINTS
-            self.park_q[1,:7]=SECONDARY_OBSERVATION_JOINTS
         paths=[]
         for index,label in enumerate(self.ik.model.body_label):
             source_path=label.split("/",1)[1]
             paths.append(f"/World/Franka_{index//self.ik.bodies_per_arm}"+source_path[len("/panda"):])
-        self.rigid_links=RigidPrim(paths)
-        self.rigid_link_paths=paths
+        self.rigid_link_paths=paths+([self.tool_path] if self.physical_grasp else [])
+        self.rigid_links=RigidPrim(self.rigid_link_paths)
         joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.))
         if not ik_info["converged"]:
             raise RuntimeError(f"Initial IK failed: {ik_info}")
         q = self.park_q.copy()
         q[0, :7] = joints
+        if self.physical_grasp:
+            q[0, 7:] = self.grasp.initial_finger_position_m
         self.arms.set_dof_positions(q)  # reset only; never called by step()
         self.arms.set_dof_velocities(np.zeros_like(q))
         self.arms.set_dof_position_targets(q)
@@ -321,6 +397,15 @@ class LiveIsaacSimCutting:
         self.previous_command_q=q.copy()
         self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
         SimulationManager.step()
+        if self.physical_grasp:
+            com_position,com_orientation=self.tool_body.get_coms()
+            self.dynamic_tool_properties={"path":self.tool_path,
+                "mass_kg":numpy_data(self.tool_body.get_masses()).tolist(),
+                "com_pose_native_position":numpy_data(com_position).tolist(),
+                "com_pose_native_orientation_wxyz":numpy_data(com_orientation).tolist(),
+                "inertia_native_flat_kg_m2":numpy_data(self.tool_body.get_inertias()).tolist(),
+                "gravity_world_m_s2":[0.,0.,-9.81],"readback_source":"actual PhysX tensor view"}
+            self._settle_grasp(q)
         self.native_time_origin = SimulationManager.get_simulation_time()
         self.native_step_origin = SimulationManager.get_num_physics_steps()
         import omni.physx
@@ -328,6 +413,11 @@ class LiveIsaacSimCutting:
         self.physx.update_transformations(False,True,True)
         self.time_s, self.step_index = 0., 0
         initial = self.proprioception()
+        self.last_diagnostics = {}
+        self.grasp_monitor = None
+        if self.physical_grasp and c.tool_init_mode == "pregrasped":
+            from .grasp_monitor import GraspMonitor
+            self.grasp_monitor = GraspMonitor(initial["hand_pose"], initial["tool_body_pose_xyzw"], self.tool_spec)
         attachment=self._check_attachment(initial["tool_pose"])
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
@@ -338,7 +428,10 @@ class LiveIsaacSimCutting:
         self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
         self.bridge = DynamicSurfaceBridge(stage)
         self._update_surface()
-        self._create_cameras()
+        if c.camera:
+            self._create_cameras()
+        else:
+            self.cameras,self.calibration,self.camera_specs,self.camera_pose_trace = {},{},{},[]
         setup = {"config":asdict(c), "source_scene":str(source), "initial_ik":ik_info,
             "material":material_setup["material"],"material_setup":material_setup,
             "initial_mass_kg":material_setup["initial_mass_kg"],
@@ -347,7 +440,13 @@ class LiveIsaacSimCutting:
             "blade_dimensions_m":dict(zip(("length","height","half_width"),blade_dimensions)),
             "task":self.task.to_dict() if self.task else None,
             "cutting_hand_body_label":self.ik.model.body_label[self.ik.hand_local],
-            "cutting_hand_body_index":self.ik.hand_local,"physical_knife_body_index":self.ik.hand_local,
+            "cutting_hand_body_index":self.ik.hand_local,
+            "physical_knife_body_index":len(paths) if self.physical_grasp else self.ik.hand_local,
+            "tool_attachment_mode":c.tool_attachment_mode,
+            "tool_init_mode":c.tool_init_mode,
+            "physical_tool":self.tool_spec.to_dict() if self.physical_grasp else None,
+            "dynamic_tool_properties":getattr(self,"dynamic_tool_properties",None),
+            "grasp_stabilization":getattr(self, "grasp_reset_receipt", None),
             "joint_names":[self.arms.dof_names[:7],self.arms.dof_names[:7]],
             "robot_physics":"Isaac Sim6.2 native PhysX CPU articulation",
             "ik":"Newton analytic IK only; zero standalone robot dynamics steps",
@@ -390,6 +489,167 @@ class LiveIsaacSimCutting:
         p,r=numpy_data(positions),numpy_data(orientations)
         return np.asarray([pose_from_wxyz(position,orientation) for position,orientation in zip(p,r)])
 
+    def set_gripper(self, command):
+        if not self.physical_grasp:
+            raise ValueError("Gripper tool skills require physical_grasp; legacy attachment cannot release")
+        if command not in ("hold", "close", "open", "release"):
+            raise ValueError("Choose hold, close, open or release")
+        self.gripper_command = command
+
+    def set_external_tool_wrench(self, wrench_world):
+        value = np.asarray(wrench_world, float)
+        if not self.physical_grasp or value.shape != (6,) or not np.isfinite(value).all():
+            raise ValueError("A physical tool and finite world-frame edge force/torque are required")
+        self.external_tool_wrench = value.copy()
+
+    def set_grip_force_limit(self, limit_n):
+        if not self.physical_grasp or not np.isfinite(limit_n) or not 0 <= limit_n <= 70:
+            raise ValueError("Physical finger effort limit must be finite and between0 and70N")
+        self.grip_force_limit_n = float(limit_n)
+        self.arms.set_dof_max_efforts([87.]*4+[12.]*3+[float(limit_n)]*2)
+
+    def set_grip_friction(self, coefficient):
+        from pxr import UsdPhysics
+        if not self.physical_grasp or not np.isfinite(coefficient) or not 0 <= coefficient <= 2:
+            raise ValueError("Finite contact friction between0 and2 is required")
+        material=UsdPhysics.MaterialAPI(self.stage.GetPrimAtPath("/World/Tools/GripMaterial"))
+        material.CreateStaticFrictionAttr(float(coefficient))
+        material.CreateDynamicFrictionAttr(float(coefficient))
+        self.grip_friction = float(coefficient)
+
+    def solve_edge_ik(self, edge_pose):
+        measured=numpy_data(self.arms.get_dof_positions())
+        self.ik.state.joint_q.assign(measured.ravel().astype(np.float32))
+        return self.ik.inverse_kinematics(edge_pose)
+
+    def rigid_probe_step(self, joint_targets=None):
+        """Same rigid bodies/contact controller, no material solve or Task claim.
+
+        A subsequent cutting step requires reset, because its material clock
+        has deliberately not advanced during these independent grasp controls.
+        """
+        if not self.physical_grasp:
+            raise ValueError("Rigid tool controls require physical_grasp")
+        self._rigid_probe_only=True
+        target=self.previous_command_q.copy()
+        if joint_targets is not None:
+            target[0,:7]=self.ik._validate_joints(joint_targets)
+        target[0,7:] = .04 if self.gripper_command in ("open","release") else self.grasp.closed_target_m
+        self.arms.set_dof_position_targets(target)
+        self.arms.set_dof_velocity_targets(np.zeros_like(target))
+        self.previous_command_q=target.copy()
+        for _ in range(self.config.robot_substeps):
+            before=self.proprioception()
+            wrench=self.external_tool_wrench
+            self.tool_body.apply_forces_and_torques_at_pos(wrench[None,:3],wrench[None,3:],
+                positions=before["tool_pose"][None,:3],local_frame=False)
+            self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
+            self.SimulationManager.step()
+            self._grasp_sample("rigid_control_probe",np.zeros(6),before)
+        self.step_index += 1
+        self.time_s=self.step_index*self.config.control_dt
+        self.physx.update_transformations(False,True,True)
+        return self.proprioception(),self.grasp_trace[-1]
+
+    def _grasp_sample(self, phase, applied_edge_wrench=None, application_state=None):
+        from .scene_frames import matrix_pose, pose_matrix
+        state = self.proprioception()
+        relative = matrix_pose(np.linalg.inv(pose_matrix(state["hand_pose"])) @
+                               pose_matrix(state["tool_body_pose_xyzw"]))
+        contacts = self.tool_contacts.sample(tool_pose_xyzw=state["tool_body_pose_xyzw"],
+            contact_geometry_pose_xyzw=None if application_state is None else application_state["tool_body_pose_xyzw"])
+        if phase != "pregrasp_settling" and not all(contacts.get(key) for key in
+                ("sensor_valid","sensor_fresh","new_physics_step")):
+            raise RuntimeError("INVALID_OR_STALE_NATIVE_CONTACT_VIEW: reset instead of using stale rigid state")
+        row = {"phase":phase, "native_time_s":self.SimulationManager.get_simulation_time(),
+               "hand_pose_xyzw":state["hand_pose"], "tool_body_pose_xyzw":state["tool_body_pose_xyzw"],
+               "measured_edge_pose_xyzw":state["tool_pose"], "relative_tool_pose_xyzw":relative,
+               "tool_linear_velocity_world_m_s":state["tool_linear_velocity_world_m_s"],
+               "tool_angular_velocity_world_rad_s":state["tool_angular_velocity_world_rad_s"],
+               "finger_q_m":state["finger_q"], "finger_qdot_m_s":state["finger_qdot"],
+               "gripper_command":self.gripper_command, "contacts":contacts}
+        row.update(commanded_finger_force_limit_n=getattr(self,"grip_force_limit_n",self.grasp.max_finger_force_n),
+                   commanded_contact_friction=getattr(self,"grip_friction",self.grasp.friction))
+        if application_state is not None:
+            row["tool_body_pose_before_step_xyzw"] = application_state["tool_body_pose_xyzw"].copy()
+        if applied_edge_wrench is not None:
+            from .physical_tool import edge_wrench_to_com, world_com_position
+            row.update(applied_edge_material_wrench_world=np.asarray(applied_edge_wrench).copy(),
+                applied_external_edge_wrench_world=self.external_tool_wrench.copy(),
+                force_application_point_world_m=application_state["tool_pose"][:3].copy(),
+                tool_com_before_step_world_m=world_com_position(application_state["tool_body_pose_xyzw"],self.tool_spec),
+                tool_body_pose_before_step_xyzw=application_state["tool_body_pose_xyzw"].copy(),
+                tool_linear_velocity_before_step_world_m_s=application_state["tool_linear_velocity_world_m_s"].copy(),
+                tool_angular_velocity_before_step_world_rad_s=application_state["tool_angular_velocity_world_rad_s"].copy(),
+                applied_total_wrench_about_com_world=edge_wrench_to_com(
+                    applied_edge_wrench+self.external_tool_wrench, application_state["tool_body_pose_xyzw"],self.tool_spec),
+                wrench_interval_dt_s=self.config.control_dt/self.config.robot_substeps,
+                direct_hand_wrench_injection=False)
+        self.grasp_trace.append(row)
+        import json
+        def json_default(value):
+            if isinstance(value, np.ndarray):
+                return value.tolist()
+            if isinstance(value, np.generic):
+                return value.item()
+            raise TypeError(type(value).__name__)
+        with (self.output/f"physical_grasp_trace_{self.reset_index:02d}.jsonl").open("a") as stream:
+            stream.write(json.dumps(row,default=json_default,allow_nan=False)+"\n")
+        return row
+
+    def _settle_grasp(self, q):
+        """Actual finger actuation before material exists or the episode starts."""
+        from scipy.spatial.transform import Rotation
+        from .scene_frames import pose_errors
+        c, g, manager = self.config, self.grasp, self.SimulationManager
+        self.grasp_trace = []
+        hold = q.copy()
+        hold[0, 7:] = g.closed_target_m if c.tool_init_mode == "pregrasped" else .04
+        self.arms.set_dof_position_targets(hold)
+        if c.tool_init_mode == "free":
+            self.gripper_command = "release"
+            self.grasp_reset_receipt = {"status":"NOT_REQUESTED_FREE_TOOL", "material_steps":0,
+                                        "task_time_consumed_s":0.}
+            return
+        steps = int(np.ceil(g.settle_s/(c.control_dt/c.robot_substeps)))
+        for _ in range(steps):
+            before = self.proprioception()
+            self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
+            manager.step()
+            self._grasp_sample("pregrasp_settling", application_state=before)
+        final = self.grasp_trace[-1]["native_time_s"]
+        rows = [r for r in self.grasp_trace if r["native_time_s"] >= final-g.stability_window_s-1e-9]
+        relative = np.asarray([r["relative_tool_pose_xyzw"] for r in rows])
+        translation, rotation = pose_errors(np.tile(relative[0], (len(rows), 1)), relative)
+        dt = np.diff([r["native_time_s"] for r in rows])
+        speed = np.linalg.norm(np.diff(relative[:, :3], axis=0), axis=1)/dt
+        angular = (Rotation.from_quat(relative[1:, 3:]) * Rotation.from_quat(relative[:-1, 3:]).inv()).magnitude()/dt
+        bilateral = np.mean([r["contacts"]["bilateral_loaded_handle_contact"] for r in rows])
+        penetration = max([max(0.,-point["separation_m"]) for r in rows
+            for point in r["contacts"]["tensor_forces"].get("records",[])
+            if point.get("separation_m") is not None] or [0.])
+        checks = {"sampled_final_window":len(rows)>2,
+                  "both_fingers_contact_handle":bool(bilateral >= g.min_bilateral_contact_fraction),
+                  "relative_translation":bool(translation.max() <= g.translation_tolerance_m),
+                  "relative_rotation":bool(rotation.max() <= g.rotation_tolerance_rad),
+                  "relative_linear_speed":bool(speed.max() <= g.linear_speed_tolerance_m_s),
+                  "relative_angular_speed":bool(angular.max() <= g.angular_speed_tolerance_rad_s),
+                  "recorded_native_contact_separations":all(r["contacts"]["tensor_forces"].get("status") ==
+                      "VALID_NATIVE_NORMAL_AND_FRICTION_DATA" for r in rows),
+                  "rigid_contact_penetration":bool(penetration <= g.max_penetration_m),
+                  "no_unintended_support":all(r["contacts"]["unintended_contact_count"] == 0 for r in rows)}
+        self.grasp_reset_receipt = {"status":"PASS_STABLE_GRASP" if all(checks.values()) else "FAIL_GRASP_STABILIZATION",
+            "checks":checks, "rigid_steps":steps, "settling_s":steps*c.control_dt/c.robot_substeps,
+            "task_time_consumed_s":0., "material_steps":0, "hidden_attachment":False,
+            "max_relative_translation_m":float(translation.max()),
+            "max_relative_rotation_rad":float(rotation.max()), "max_relative_linear_speed_m_s":float(speed.max()),
+            "max_relative_angular_speed_rad_s":float(angular.max()), "bilateral_handle_contact_fraction":float(bilateral),
+            "maximum_native_rigid_contact_penetration_m":float(penetration),
+            "config":asdict(g)}
+        write_json(self.output/f"grasp_reset_{self.reset_index:02d}.json",self.grasp_reset_receipt)
+        if not all(checks.values()):
+            raise RuntimeError("FAIL_GRASP_STABILIZATION: independent tool did not establish a stable bilateral handle grasp")
+
     def proprioception(self):
         q = numpy_data(self.arms.get_dof_positions())
         qdot = numpy_data(self.arms.get_dof_velocities())
@@ -400,11 +660,18 @@ class LiveIsaacSimCutting:
             raise ValueError("Expected both actual native PhysX hand poses")
         hand = hand_both[0]
         tool = self.compose_tool_pose(hand, self.mount[:3], self.mount[3:])
+        extra = {}
+        if getattr(self,"physical_grasp",False):
+            from .native_tool import tool_state
+            extra = tool_state(self.tool_body,self.tool_spec)
+            tool = extra["tool_pose"]
+            extra.update(finger_q=q[:,7:].copy(),finger_qdot=qdot[:,7:].copy(),
+                         tool_attachment_mode="physical_grasp")
         if not np.isfinite(np.r_[q.ravel(),qdot.ravel(),tool]).all():
             raise FloatingPointError("Nonfinite native PhysX state")
         return {"q":q[:,:7].copy(), "qdot":qdot[:,:7].copy(), "hand_pose":hand,
                 "hand_pose_both_xyzw":hand_both,
-                "tool_pose":tool, "timestamp_s":self.time_s}
+                "tool_pose":tool, "timestamp_s":self.time_s, **extra}
 
     def _update_surface(self):
         vertices, faces, self.surface_info = self.surface.extract(self.material.bed)
@@ -450,9 +717,10 @@ class LiveIsaacSimCutting:
             asset=ROOT/"artifacts/workcell_asset_cache"/ASSETS["d455"]
             if not asset.is_file():
                 raise FileNotFoundError(f"The official Isaac6.2 D455 asset is required: {asset}")
-            self.camera_specs=author_camera_rig(self.stage,self.hand_paths,asset,
+            self.camera_specs=(self.pre_authored_camera_specs if self.pre_authored_camera_specs is not None else
+                author_camera_rig(self.stage,self.hand_paths,asset,
                 task_id=c.task_id or "TRIM-01",camera_layout=c.camera_layout,
-                initial_hand_poses_world_xyzw=self.proprioception()["hand_pose_both_xyzw"])
+                initial_hand_poses_world_xyzw=self.proprioception()["hand_pose_both_xyzw"]))
             paths={name:spec["optical_prim_path"] for name,spec in self.camera_specs.items()}
             if set(paths)!={"wrist_d405_0","wrist_d405_1","global_d455"}:
                 raise ValueError("The new native rig must expose both wrist D405 IDs and global_d455")
@@ -554,6 +822,8 @@ class LiveIsaacSimCutting:
 
     def step(self,action=None,*,cutting=True):
         c, manager = self.config, self.SimulationManager
+        if self._rigid_probe_only:
+            raise RuntimeError("Reset after rigid-only controls before starting coupled cutting")
         if c.observation_motion_probe and action is not None:
             raise ValueError("The separate observation motion probe uses scripted actions only")
         mode=c.action_mode
@@ -587,22 +857,38 @@ class LiveIsaacSimCutting:
             target_q[:,:7]=targets
         else:
             target_q[0,:7]=targets
+        if self.physical_grasp:
+            target_q[0,7:] = (.04 if self.gripper_command in ("open","release")
+                              else self.grasp.closed_target_m)
         if c.observation_motion_probe:
             # Actual articulation motion for a separate camera calibration probe;
             # disabled in all main physical task baselines.
             target_q[1,0] += .08*np.sin(2*np.pi*(self.time_s+c.control_dt)/2.)
         self.arms.set_dof_position_targets(target_q)
         velocity_target=(target_q-self.previous_command_q)/c.control_dt if c.velocity_feedforward else np.zeros_like(target_q)
+        if self.physical_grasp:
+            velocity_target[:,7:] = 0.
         self.arms.set_dof_velocity_targets(velocity_target)
         self.previous_command_q=target_q.copy()
         applied = self.material.pending_wrench.copy() if c.feedback else np.zeros(6)
         start = time.perf_counter()
+        material_work, external_work = 0., 0.
         for _ in range(c.robot_substeps):
             current = self.proprioception()
-            self.hand.apply_forces_and_torques_at_pos(applied[None,:3],applied[None,3:],
+            wrench = applied+(self.external_tool_wrench if self.physical_grasp else 0.)
+            receiver = self.tool_body if self.physical_grasp else self.hand
+            receiver.apply_forces_and_torques_at_pos(wrench[None,:3],wrench[None,3:],
                          positions=current["tool_pose"][None,:3],local_frame=False)
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             manager.step()
+            if self.physical_grasp:
+                from scipy.spatial.transform import Rotation
+                row = self._grasp_sample("coupled_episode", applied, current)
+                after = row["measured_edge_pose_xyzw"]
+                displacement = np.r_[after[:3]-current["tool_pose"][:3],
+                    (Rotation.from_quat(after[3:])*Rotation.from_quat(current["tool_pose"][3:]).inv()).as_rotvec()]
+                material_work += float(applied@displacement)
+                external_work += float(self.external_tool_wrench@displacement)
         self.step_index += 1
         self.time_s = self.step_index*c.control_dt
         native_relative = manager.get_simulation_time()-self.native_time_origin
@@ -623,16 +909,39 @@ class LiveIsaacSimCutting:
                            maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
         self._update_surface()
-        if c.camera_layout == "wrist_d405_global_d455":
+        if c.camera and c.camera_layout == "wrist_d405_global_d455":
             self._update_camera_extrinsics(actual["hand_pose_both_xyzw"])
-        return actual, {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,
+        physical = {}
+        if self.physical_grasp:
+            from .physical_tool import edge_wrench_to_com
+            interval_rows = self.grasp_trace[-c.robot_substeps:]
+            operational = self.grasp_monitor.update(actual["hand_pose"], actual["tool_body_pose_xyzw"],
+                time_s=self.time_s,
+                bilateral_loaded_tool_fraction=float(np.mean([r["contacts"]["bilateral_loaded_tool_contact"] for r in interval_rows])),
+                contacts_valid=all(r["contacts"]["sensor_valid"] and r["contacts"]["sensor_fresh"] for r in interval_rows),
+                gripper_command=self.gripper_command) if self.grasp_monitor is not None else {
+                    "status":"FREE_TOOL", "grasp_lost":False}
+            physical = {"tool_attachment_mode":"physical_grasp", "wrench_recipient":self.tool_path,
+                "grasp_lost": operational["grasp_lost"], "grasp_status": operational,
+                "direct_hand_material_wrench":False, "external_edge_wrench_world":self.external_tool_wrench.copy(),
+                "applied_total_tool_wrench_about_com_world":edge_wrench_to_com(
+                    applied+self.external_tool_wrench, actual["tool_body_pose_xyzw"], self.tool_spec),
+                "tool_body_pose_xyzw":actual["tool_body_pose_xyzw"],
+                "tool_linear_velocity_world_m_s":actual["tool_linear_velocity_world_m_s"],
+                "tool_angular_velocity_world_rad_s":actual["tool_angular_velocity_world_rad_s"],
+                "grasp":self.grasp_trace[-1], "gripper_command":self.gripper_command,
+                "applied_tool_wrench_work_j":material_work,
+                "external_tool_wrench_work_j":external_work}
+        self.last_diagnostics = {**diagnostics,"commanded_tool_pose":desired,"desired_tool_pose":desired,
                  "commanded_joint_positions_rad":target_q[:,:7].copy(),"action_mode":mode,
                  "commanded_joint_velocity_rad_s":velocity_target,"velocity_feedforward":c.velocity_feedforward,
                  "ik":ik_info,"rendered_attachment":attachment,
                  "robot_physics_wall_s":time.perf_counter()-start,
                  "native_physics_timestamp_s":manager.get_simulation_time(),
                  "native_relative_timestamp_s":native_relative,
-                 "relative_native_physics_steps":manager.get_num_physics_steps()-self.native_step_origin}
+                 "relative_native_physics_steps":manager.get_num_physics_steps()-self.native_step_origin,
+                 **physical}
+        return actual, self.last_diagnostics
 
     def capture(self):
         import omni.replicator.core as rep

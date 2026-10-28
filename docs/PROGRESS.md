@@ -1,4 +1,84 @@
-# Progress — 2026-10-28 Asia/Seoul
+# Progress — 2026-10-29 Asia/Seoul
+
+## Current: WP-09 Evaluation v2 and hand-aligned wrist-camera v5
+
+Evaluation v2 is implemented and validated as a read-only, shared CUT/TRIM
+interface with separate recorded-state integrity, cutting outcome and surface
+quality. Diagnostic/Research/Precision profiles retain the exact original
+strict benchmark and report continuous metrics, full missing masks, independent
+analytic/represented targets, nonflat/mesh/implicit geometry and predeclared
+regions. Eight actual historical/new episodes match every original recorded
+strict status/check/metric. Fixed TRIM still removes 98.5294% and fails precision;
+the seed42 three-bump recording reports 96.2791% overall and per-bump values.
+The new research outcome label does not assert flatness or full physical
+fidelity. Full CPU regression: 414 PASS. See [Evaluation v2](EVALUATION_V2.md)
+and [compact evidence](evidence/evaluation_v2_validation.json).
+
+Franka 1 now stays at its original safe park in both runtimes. Both v5 D405s use
+axis-aligned constant hand-local mounts without observation pose or wrist aiming.
+V4's actual Native/Lab full CUT, Lab CUT/TRIM smokes and explicit secondary
+motion remain preserved. New v5 Native CUT/TRIM each run 400 steps and Lab's
+separate two-step smoke passes RGB-D/FK/clock contracts. Both camera mounts
+clear all 401 sampled robot poses of the new Native CUT; v4's primary
+bracket/link7 intersection remains a preserved historical failure. The original
+full-wrist-footprint visibility screen still fails and remains separate from
+cutting. README media and the live remote viewer use the new rig.
+The README now shows separate CUT-01 and TRIM-01 v5 scene images from the
+actual synchronized t=4s captures, with provenance and episode videos for both.
+See [camera v5](WRIST_CAMERA_V5.md) and
+[the recovered interruption checkpoint](RESUMPTION_20261029.md).
+
+The earlier clean-bootstrap and randomized/capsule jobs have completed:
+physical smokes and both capsule CUT task scores PASS; seed43 randomized CUT
+executes/splits but retains its strict cut-location FAIL. Lab's Cartesian
+transfer control remains failed/incomplete. No old evidence was overwritten
+and full WP-08 physics acceptance remains false.
+
+## WP-08 in progress: independent tool and physical finger grasp
+
+Baseline `1500ed7` is frozen on branch `wp08/physical-tool-grasp`, with the
+original CUT/TRIM criteria and all WP-07 evidence retained. Baseline CPU277 and
+both actual legacy runtime smokes passed before implementation. `legacy_fixed_tool`
+remains explicit and the default until end-to-end physical grasp is validated.
+
+The shared compound tool now has a continuous handle/shaft/blade, derived
+finite mass/inertia, nominal grasp frames and a separate measured edge. Native
+PhysX pregrasp002 established actual bilateral loaded handle contacts for a2s
+pre-episode settling phase. Its subsequent runtime falsely returned PASS_SMOKE
+after camera edits invalidated a rigid tensor view; the first full attempt was
+therefore aborted and rejected. Camera assets now precede physics views, and
+smoke003 completed two formal steps with fresh contact data, all three RGB-D
+streams and no invalid-view errors. Neither smoke proves physical cutting.
+All API/initialization failures and raw traces are preserved. Full candidate-v2
+CUT/TRIM episodes now execute in both actual runtimes with three RGB-D streams
+and reset checks. Both CUT strict task scores pass; both2mm TRIM episodes
+separate1.608g chips and retain strict surface FAIL. Native material ON/OFF
+matched runs pass the frozen causal-response engineering screen, with actual
+arm/tool/contact differences; full coupling-energy acceptance remains separate.
+
+Native v2 also passes all seven frozen hold/load/torque/stress/weak-grip/
+low-friction/release controls. A contact-event geometry timing bug was corrected
+using explicitly recorded pre-step poses without changing contact tolerances;
+old strict failures remain intact. Opening fingers gives an independently
+measured unsupported gravity interval. Newton's initial point-contact model
+retains actual clearance-transfer failures despite passing the full cutting
+paths. A finite, geometry-derived finger-patch torsion model is being evaluated
+as a separate candidate, without changing TLMPM or task scoring.
+
+The shared API and same-instance GUI now distinguish actual tool, commanded
+edge and measured hand, expose physical gripper commands, and pause on grasp
+loss until reset. Local Chrome over the Tailscale URL passed11 real streamed
+GUI transactions, including release/drop/automatic loss termination, reset,
+CUT/TRIM switching, camera selection and typed joint control. External Mac
+connectivity remains NOT_RUN. New actual physical-grasp RGB-D videos are linked
+from README. Randomized/capsule regression and a fresh isolated bootstrap are
+running; optional rack skill attempts and their failures are preserved.
+
+See [physical tool use](PHYSICAL_TOOL.md), [frozen controls](PHYSICAL_TOOL_CONTROLS.md)
+and [latest physical-grasp media](media/wp08_physical_grasp_v2/manifest.json).
+
+See [the supplied specification](WP08_SPECIFICATION.md). No driver, unrelated
+project, solver cutting law or frozen scoring criterion was changed.
 
 ## Latest: target-centred Global, interactive viewing and portable deployment
 

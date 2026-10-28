@@ -106,3 +106,43 @@ def test_omitted_reset_seed_preserves_constructed_task_seed(kind):
     env = CuttingTaskEnv(native)
     _, info = env.reset()
     assert received == [73] and info["seed"] == 73
+
+
+@pytest.mark.parametrize('kind',['lab','kit'])
+def test_gripper_only_control_holds_arm_and_rejects_invalid_arm_transaction(kind):
+    b=backend(kind)
+    b.options=SimpleNamespace(tool_attachment_mode='physical_grasp')
+    b.gripper_commands=[]
+    b.set_gripper=b.gripper_commands.append
+    env=CuttingTaskEnv(b)
+    env.reset()
+    with pytest.raises(ValueError):
+        env.step({'gripper':'release','mode':'joint_position_rad','target':[1,2]})
+    assert not b.gripper_commands and not b.commands
+    env.step({'gripper':'release'})
+    assert b.gripper_commands==['release']
+    assert b.commands[0]['mode']=='joint_position_rad'
+    assert not b.commands[0]['cut_enabled']
+
+
+def test_gripper_cannot_release_a_legacy_attachment():
+    b=backend('kit');b.options=SimpleNamespace(tool_attachment_mode='legacy_fixed_tool')
+    env=CuttingTaskEnv(b);env.reset()
+    with pytest.raises(ValueError,match='physical_grasp'):
+        env.step({'gripper':'release'})
+    assert not b.commands
+
+
+def test_loss_is_a_latched_episode_end_and_reset_recovers():
+    b = backend("kit")
+    env = CuttingTaskEnv(b)
+    env.reset()
+    b.last_diagnostics = {"grasp_lost":True, "grasp_status":{"status":"LOST"}}
+    observation, _, terminated, _, info = env.step()
+    assert terminated and info["termination_reason"] == "LOST"
+    assert "grasp_status" not in observation  # privileged state is not a policy sensor
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step()
+    env.reset()
+    b.last_diagnostics = {}
+    assert not env.step()[2]

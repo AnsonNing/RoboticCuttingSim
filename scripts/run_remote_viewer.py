@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT/"src"))
 from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig
 from robotic_cutting_sim.recording import manifest, new_output, write_json
 from robotic_cutting_sim.remote_runtime import StreamingPorts, launch_streaming_app
+from robotic_cutting_sim.camera_rig import CONFIG_PATH
 
 
 def tailnet_ip():
@@ -32,6 +33,8 @@ def main():
     parser.add_argument("--task", choices=("CUT-01", "TRIM-01"), default="TRIM-01")
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--tool-attachment-mode",choices=("legacy_fixed_tool","physical_grasp"),default="legacy_fixed_tool")
+    parser.add_argument("--grip-initial-position",type=float,help="Explicit pregrasp finger opening per side, metres")
     parser.add_argument("--ip", help="Host Tailscale IPv4; detected from tailscale ip -4 by default")
     parser.add_argument("--signal-port", type=int, default=49100)
     parser.add_argument("--media-port", type=int, default=47998)
@@ -44,7 +47,9 @@ def main():
     output = new_output(args.output_dir)
     config = IsaacSimCuttingConfig(task_id=args.task, gpu=args.gpu, device=f"cuda:{args.gpu}", seed=args.seed,
         camera_layout="wrist_d405_global_d455", camera_mode="native_single_view",
-        particle_spacing_m=.002 if args.task == "TRIM-01" else None)
+        particle_spacing_m=.002 if args.task == "TRIM-01" else None,
+        tool_attachment_mode=args.tool_attachment_mode,
+        grasp=None if args.grip_initial_position is None else {"initial_finger_position_m":args.grip_initial_position})
     arguments = {key: str(value) if isinstance(value, Path) else value for key, value in vars(args).items()}
     write_json(output/"manifest.json", manifest({**asdict(config), "remote_viewer": arguments,
                "tailscale_ip": ip, "loop": "existing native PhysX + TLMPM; automatic GUI physics disabled"},
@@ -55,8 +60,11 @@ def main():
             "src/robotic_cutting_sim/remote_control.py", "src/robotic_cutting_sim/remote_runtime.py",
             "src/robotic_cutting_sim/isaac_sim_runner.py", "src/robotic_cutting_sim/live_env.py",
             "src/robotic_cutting_sim/camera_rig.py", "configs/isaac_sim_cutting_streaming.kit",
-            "configs/wrist_camera_rig_v3.json"):
+            str(CONFIG_PATH.relative_to(ROOT))):
         shutil.copyfile(ROOT/relative, implementation/Path(relative).name)
+    if config.tool_attachment_mode == "physical_grasp":
+        for name in ("physical_tool.py","physical_contacts.py","native_tool.py","grasp_monitor.py","tool_compatibility.py"):
+            shutil.copyfile(ROOT/"src/robotic_cutting_sim"/name,implementation/name)
     write_json(implementation/"sha256.json", {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
         for p in implementation.iterdir() if p.is_file()})
     viewer_url = f"http://{ip}:{args.web_port}"

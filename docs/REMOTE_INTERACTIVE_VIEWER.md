@@ -6,6 +6,40 @@ workpiece generator, task evaluator and camera recorder are reused. It is not
 required by portable deployment or headless benchmarks. Development stays in
 VS Code Remote-SSH.
 
+## WP-08 physical-tool viewer
+
+The current live session uses the independent contact-grasped knife, with
+Hold/Close/Open/Release controls and slip measured since actual pregrasp
+settling. Opening fingers permits a real drop; detected grasp loss pauses
+the shared episode until Reset. Tool truth in the GUI/status file is privileged
+debug information and does not enter deployable observations.
+
+```bash
+# Reuse the installed native runtime and existing HTTP viewer.
+OMNI_KIT_ACCEPT_EULA=YES .deps/isaacsim-venv/bin/python scripts/run_remote_viewer.py \
+  --task CUT-01 --gpu 0 --tool-attachment-mode physical_grasp \
+  --grip-initial-position 0.0112 --output-dir artifacts/physical_viewer_NEW
+
+# Graceful stop of this example session only.
+touch artifacts/physical_viewer_NEW/STOP
+```
+
+The running original-host instance is currently
+`artifacts/remote_interactive_physical_001`, tmux `rcs-wp08-remote`, at
+[http://100.111.162.17:8210](http://100.111.162.17:8210).
+The previous `remote_interactive_003` legacy instance was gracefully closed,
+and its evidence remains unchanged. The HTTP viewer still serves the same
+official client and ports; no second simulator or container was introduced.
+
+Actual local Chrome connected through this Tailscale URL and passed15 streamed
+transactions: wrist/global selection, step, release, play-to-physical-drop and
+automatic termination, pregrasped reset, CUT/TRIM switching, and typed joint
+and Cartesian actions. Video RTP decode and advancing1280×800 frames were
+measured independently of GUI acknowledgement. See the
+[compact receipt](evidence/physical_tool_viewer.json) and
+[actual screenshot](media/physical_tool_viewer.png). An external Mac client
+remains **NOT_RUN**; this local browser test does not certify it.
+
 ## Start
 
 Connect both hosts to the same Tailscale network. On the simulation host, from

@@ -7,7 +7,7 @@ import pytest
 from scipy.spatial.transform import Rotation
 
 from robotic_cutting_sim.camera_rig import (
-    CONFIG_PATH, LEGACY_LAYOUT, SECONDARY_OBSERVATION_JOINTS, author_camera_rig, make_rig, pose_matrix,
+    CONFIG_PATH, LEGACY_LAYOUT, author_camera_rig, make_rig, pose_matrix,
 )
 
 
@@ -27,7 +27,6 @@ def test_rigid_wrist_mounts_follow_measured_hands_and_global_is_fixed():
             np.testing.assert_allclose(np.linalg.inv(pose_matrix(poses[index])) @ spec["T_world_camera"],
                                        spec["T_hand_optical_cv"], atol=1e-14)
         np.testing.assert_array_equal(calibs["global_d455"]["T_world_camera"], reference["global_d455"]["T_world_camera"])
-    assert len(SECONDARY_OBSERVATION_JOINTS) == 7
 
 
 def test_prototype_fov_and_logical_depth_range_are_explicit():
@@ -48,7 +47,7 @@ def test_prototype_fov_and_logical_depth_range_are_explicit():
         assert spec["physical_dimensions_m"] == {"width": .042, "height": .042, "depth": .023}
         center_z = np.asarray(housing["T_optical_cv_obb"])[2, 3]
         assert center_z + housing["dimensions_m"][2]/2 < 0
-    assert CONFIG_PATH.name == "wrist_camera_rig_v3.json"
+    assert CONFIG_PATH.name == "wrist_camera_rig_v5.json"
     global_view = rig.specs["global_d455"]
     np.testing.assert_allclose(np.asarray(global_view["T_world_camera"])[:3, 3], [.28, -.42, .46])
     np.testing.assert_allclose(global_view["look_at_target_world_m"], [0., 0., .02])
@@ -164,3 +163,23 @@ def test_invalid_measured_pose_rejected():
         make_rig(initial_hand_poses_world_xyzw=np.zeros((2, 7)))
     with pytest.raises(ValueError):
         make_rig().calibrations(np.zeros((1, 7)))
+
+
+def test_v5_wrist_mounts_align_with_hands_and_keep_v3_v4_frozen():
+    import json
+    from robotic_cutting_sim.workcell import PARK_JOINTS, SECONDARY_PARK_JOINTS
+    spec = make_rig().specs["wrist_d405_1"]
+    np.testing.assert_array_equal(np.asarray(spec["T_hand_optical_cv"])[:3,:3],np.eye(3))
+    np.testing.assert_array_equal(np.asarray(spec["T_hand_optical_cv"])[:3,3],[-.085,.045,.020])
+    assert spec["visibility_role"] == "optional_parked_wrist"
+    assert spec["initial_hand_pose_world_xyzw"] is None
+    np.testing.assert_array_equal(SECONDARY_PARK_JOINTS,[-np.pi/2,*PARK_JOINTS[1:]])
+    config=json.loads(CONFIG_PATH.read_text())
+    assert config["specs"]["wrist_d405_1"]["T_hand_optical_cv"] == spec["T_hand_optical_cv"]
+    old=json.loads(CONFIG_PATH.with_name("wrist_camera_rig_v3.json").read_text())
+    assert old["schema"] == "wrist_camera_rig_v3" and "secondary_observation_joints_rad" in old
+    v4=json.loads(CONFIG_PATH.with_name("wrist_camera_rig_v4.json").read_text())
+    assert v4['schema']=='wrist_camera_rig_v4'
+    for index in (0,1):
+        np.testing.assert_array_equal(np.asarray(make_rig().specs[f'wrist_d405_{index}']['T_hand_optical_cv'])[:3,:3],np.eye(3))
+    assert not np.array_equal(np.asarray(v4['specs']['wrist_d405_0']['T_hand_optical_cv'])[:3,:3],np.eye(3))

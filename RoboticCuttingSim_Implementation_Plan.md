@@ -4,6 +4,14 @@ Project type: independent Isaac Lab / Isaac Sim simulation research platform
 Primary users: researchers in robotics, physical simulation, visual perception and machine learning
 This document is a plan to execute, not a report of completed implementation or validated performance.
 
+Current addendum (2026-10-29): camera rig v5 keeps Franka 1 at its normal safe
+park and gives both wrists axis-aligned fixed hand-local D405s, without
+observation-pose optimization or wrist-target aiming. Evaluation v2 separates recorded-state integrity, cutting
+outcome and geometric quality while preserving the original precision score.
+See [camera v5](docs/WRIST_CAMERA_V5.md), [Evaluation v2](docs/EVALUATION_V2.md)
+and the latest [progress](docs/PROGRESS.md). Historical requirements/evidence
+below remain preserved under their original protocols.
+
 Current camera addendum (2026-10-28): the user's later specification supersedes
 the fixed-camera layout in this original plan. The active shared API uses two
 hand-mounted `ideal_d405_prototype` cameras and a closer fixed Global D455.

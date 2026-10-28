@@ -1,0 +1,16 @@
+{
+  "protocol_id": "wp08_matched_material_feedback_v1_20261029",
+  "status_at_freeze": "NOT_RUN_PAIRED_COMPARISON",
+  "scope": "Matched same-backend physical-grasp material-feedback ON/OFF engineering response; not complete physics or task acceptance",
+  "runtime": ["isaac_sim", "isaac_lab"],
+  "task": "Same task, seed, workpiece, controller, tool, grasp, trajectory, material and solver; only feedback enabled changes",
+  "reference_case": {"task_id": "CUT-01", "seed": 42, "steps": 400, "duration_s": 8.0, "initial_finger_position_m": 0.0112},
+  "control_dt_s": 0.02,
+  "rigid_dt_s": 0.002,
+  "matching": {"initial_joint_atol_rad": 0.000001, "initial_tool_position_atol_m": 0.000001, "initial_tool_rotation_atol_rad": 0.00001, "desired_pose_atol": 0.000000000001},
+  "ledger": {"wrench_atol": 0.000001, "wrench_rtol": 0.00001, "off_payload_atol": 0.000000000001, "minimum_on_material_force_n": 0.05},
+  "response": {"minimum_arm_joint_difference_rad": 0.00001, "minimum_tool_position_difference_m": 0.000001, "minimum_finger_contact_force_difference_n": 0.05},
+  "threshold_basis": "Arm 1e-5 rad and contact .05 N reuse pre-existing physical_tool_controls_v1 engineering detection limits. Tool 1um and rotation 1e-5 rad reuse independent geometric representation tolerances; they are not physical calibration accuracy.",
+  "required_records": ["Actual initial states and timestamps", "Unchanged saved implementation hashes", "Actual same desired Cartesian action sequence", "Material reaction impulses", "Applied world tool-COM wrench and pre-step application pose", "Actual finger-contact forces", "Measured joint and independent tool response"],
+  "boundaries": ["Do not label injected external-load controls as material coupling", "Keep the one-control-interval feedback delay explicit", "No source/trajectory/initial-state mismatch may be silently accepted", "No external tool wrench or direct-hand material injection allowed", "Do not infer task success or complete physical-grasp acceptance from this response screen", "Interface-work residual and impulse closure require their separate independent audits; existing failures remain visible", "Preserve failed comparisons and do not change these thresholds after outcomes"]
+}

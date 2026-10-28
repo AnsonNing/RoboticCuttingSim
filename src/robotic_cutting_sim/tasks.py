@@ -110,8 +110,21 @@ class CuttingTaskSpec:
         origin = self.points_to_world(self.target_origin_local_m)
         return np.r_[normal, -normal@origin]
 
+    @property
+    def workpiece_kind(self):
+        # A property, not a new dataclass field: legacy asdict receipts stay exact.
+        return "rectangle"
+
+    @property
+    def workpiece(self):
+        from .workpieces import WorkpieceSpec
+        return WorkpieceSpec(self.geometry, self.workpiece_kind, self.world_from_workpiece_xyzw,
+                             self.material, self.fixture_boxes_local)
+
     def sample_particles(self):
         """Return LOCAL points, immutable reference masses, lattice; never cut labels."""
+        if self.workpiece_kind != "rectangle":
+            return self.workpiece.sample_particles(self.particle_spacing_m, seed=self.seed, variant=self.task_id)
         points, masses, lattice, _ = sample_specimen(
             BenchmarkSpec(self.task_id, self.seed, self.geometry, self.material), self.particle_spacing_m)
         return points, masses, lattice
@@ -175,10 +188,18 @@ class CuttingTaskSpec:
         if self.variant == "randomized":
             from .task_randomization import randomization_receipt
             result["randomization"] = randomization_receipt(self)
+        if self.workpiece_kind != "rectangle":
+            result["workpiece"] = self.workpiece.to_dict()
         return result
 
     def evaluate_oracle(self, recording):
         return evaluate_task_oracle(self, recording)
+
+    def evaluate(self, recording, *, profile="diagnostic", goal=None, represented_target=None):
+        """Read-only Evaluation v2; evaluate_oracle retains frozen v1 semantics."""
+        from .evaluation import evaluate_recording
+        return evaluate_recording(recording, task=self, goal=goal, profile=profile,
+                                  represented_target=represented_target)[0]
 
 
 def _protocol():
@@ -186,7 +207,9 @@ def _protocol():
 
 
 def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1),
-              particle_spacing_m=None):
+              particle_spacing_m=None, workpiece_kind="rectangle"):
+    if workpiece_kind not in ("rectangle", "capsule"):
+        raise ValueError("Supported workpiece kinds are rectangle and capsule")
     if variant == "randomized" and (not isinstance(seed, (int, np.integer)) or isinstance(seed, (bool, np.bool_)) or seed < 0):
         raise ValueError("Randomized task seed must be a nonnegative integer")
     protocol = _protocol()
@@ -207,7 +230,10 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
         tuple(protocol["episode"]["active_cut_interval_s"]))
     if variant == "randomized":
         from .task_randomization import randomize_task
-        return randomize_task(task)
+        task = randomize_task(task)
+    if workpiece_kind != "rectangle":
+        from .workpieces import with_workpiece_footprint
+        task = with_workpiece_footprint(task, workpiece_kind)
     return task
 
 
@@ -255,6 +281,10 @@ def evaluate_task_oracle(task, data):
     base = {"task_id": task.task_id, "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
             "protocol_id": _protocol()["protocol_id"], "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
             "full_simulation_acceptance": False, "policy_observation": False}
+    if task.workpiece_kind != "rectangle":
+        base.update(workpiece_kind=task.workpiece_kind,
+                    evaluation_profile="Existing particle/topology/severing thresholds on an explicit new initial footprint",
+                    original_rectangular_benchmark=False)
     if missing:
         return {**base, "status": "NOT_RUN", "missing_evidence": missing, "checks": {}}
     time, positions, reference, masses, codes, nodes, weights, gradients = [np.asarray(data[name]) for name in required]
@@ -320,6 +350,9 @@ def evaluate_task_oracle(task, data):
         surface_fields = ("surface_vertices_world", "surface_triangles", "surface_triangle_component_ids",
                           "surface_component_provenance", "surface_timestamp_s")
         missing = [name for name in surface_fields if name not in data]
+        if task.workpiece_kind != "rectangle":
+            missing.append("Footprint-specific surface scorer; the frozen rectangular surface profile is inapplicable")
+            metrics["surface_evaluation_status"] = "NOT_RUN_UNSUPPORTED_SURFACE_FOOTPRINT"
         if not missing:
             triangles = np.asarray(data["surface_triangles"])
             face_component = np.asarray(data["surface_triangle_component_ids"])
@@ -346,4 +379,7 @@ def evaluate_task_oracle(task, data):
         status = "NOT_RUN"
     else:
         status = "FAIL_TASK_METRICS" if not all(checks.values()) else "NOT_RUN" if missing else "PASS_TASK_METRICS"
+    if task.workpiece_kind != "rectangle" and task.goal_kind == "flatten" and checks["complete_episode"]:
+        base["particle_topology_status"] = "PASS_PARTICLE_TOPOLOGY_METRICS" if all(checks.values()) else "FAIL_PARTICLE_TOPOLOGY_METRICS"
+        status = "NOT_RUN_UNSUPPORTED_SURFACE_FOOTPRINT"
     return {**base, "status": status, "checks": checks, "metrics": metrics, "missing_evidence": missing}

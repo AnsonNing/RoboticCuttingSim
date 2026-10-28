@@ -1,133 +1,90 @@
 # RoboticCuttingSim
 
-A physics-based cutting research environment with two Franka Panda arms, a rigid knife attached to the active arm, continuous Plasticine-like material, persistent TLMPM separation, two hand-mounted D405 RGB-D prototypes and a fixed Global D455. Both tasks share control, observations and independent evaluation. No policy is trained.
+A robotic cutting research environment for **Isaac Sim 6.2 / Isaac Lab 3.0**:
+dual Franka Panda, a physically grasped knife, continuous soft material and
+permanent TLMPM separation. Two wrist-mounted D405 RGB-D prototypes and a close
+Global D455 provide vision observations. No policy is trained.
 
-**Latest scene: both Wrist D405 cameras are attached to the actual articulated hands; Global D455 is now a close view of the material and cutting region.**
+Both wrist cameras use fixed mounts parallel to their hands; Franka 1 stays
+in its normal park posture. Each scene below shows actual synchronized RGB
+captures from Global D455 and both wrist D405s with camera rig v5.
+[Camera v5 validation](docs/WRIST_CAMERA_V5.md). Previous images and recordings
+remain preserved.
 
-![Latest live Isaac Sim scene: two hand-mounted wrist views and target-centered Global RGB-D at t=4.0s](docs/media/global_close_trim01/preview.png)
+### CUT-01 — bar cutting
 
-Global's optical centre is now **(0.28, -0.42, 0.46) m**, aimed at **(0, 0, 0.02) m**, about **0.67 m from the target**. It intentionally crops the wider workstation. Actual native recordings show **8.13× / 8.92× more minimum visible material pixels** for CUT / TRIM than the previous workcell overview. The old overview and fixed-camera recordings remain unchanged below.
+![CUT-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_current_v5.png)
 
-The camera IDs are `wrist_d405_0`, `wrist_d405_1` and `global_d455`. Wrist mounts use fixed hand-to-camera transforms and measured articulation state checked every 20 ms. Both D405 streams remain **`ideal_d405_prototype`**; stereo, noise and hardware calibration are unvalidated. Global uses the official D455 asset and native SingleView pipeline in Sim, and ideal Warp RGB-D in kit-less Lab.
+Actual Native CUT-01 at **t = 4 s**.
+[Image provenance](docs/media/scene_current_v5.json) ·
+[Watch the episode](docs/media/wrist_v5_cut01/synchronized_multiview.mp4).
 
-## Latest captured videos
+### TRIM-01 — surface trimming
 
-These videos contain actual RGB-D captured during live Isaac Sim execution, with 41 synchronized captures and 401 measured poses per full episode. They are encoded from recorded arrays, not USD replay. The second arm holds an observation posture during cutting; its camera stays still because that arm stays still.
+![TRIM-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_trim01_v5.png)
 
-| Task | Close Global RGB / depth | Wrist D405 0 RGB / depth | Wrist D405 1 RGB / depth | Synchronized views / measured transforms / provenance |
-| --- | --- | --- | --- | --- |
-| CUT-01 | [RGB](docs/media/global_close_cut01/global_d455.mp4) / [depth](docs/media/global_close_cut01/global_d455_depth.mp4) | [RGB](docs/media/global_close_cut01/wrist_d405_0.mp4) / [depth](docs/media/global_close_cut01/wrist_d405_0_depth.mp4) | [RGB](docs/media/global_close_cut01/wrist_d405_1.mp4) / [depth](docs/media/global_close_cut01/wrist_d405_1_depth.mp4) | [Three views](docs/media/global_close_cut01/synchronized_multiview.mp4) / [tracking](docs/media/global_close_cut01/camera_pose_tracking.png) / [matrices](docs/media/global_close_cut01/camera_transforms.npz) / [hashes](docs/media/global_close_cut01/provenance.json) |
-| TRIM-01 | [RGB](docs/media/global_close_trim01/global_d455.mp4) / [depth](docs/media/global_close_trim01/global_d455_depth.mp4) | [RGB](docs/media/global_close_trim01/wrist_d405_0.mp4) / [depth](docs/media/global_close_trim01/wrist_d405_0_depth.mp4) | [RGB](docs/media/global_close_trim01/wrist_d405_1.mp4) / [depth](docs/media/global_close_trim01/wrist_d405_1_depth.mp4) | [Three views](docs/media/global_close_trim01/synchronized_multiview.mp4) / [tracking](docs/media/global_close_trim01/camera_pose_tracking.png) / [matrices](docs/media/global_close_trim01/camera_transforms.npz) / [hashes](docs/media/global_close_trim01/provenance.json) |
+Actual Native TRIM-01 at **t = 4 s**. The completed episode separates a chip;
+its strict surface-quality score remains **FAIL**.
+[Image provenance](docs/media/scene_trim01_v5.json) ·
+[Watch the episode](docs/media/wrist_v5_trim01/synchronized_multiview.mp4).
 
-![Latest close Global D455: actual live TRIM cutting region at t=4.0s](docs/media/global_close_trim01/global_contact.png)
+## Tasks
 
-An independent actual second-arm motion probe shows **28.11 mm wrist-camera translation with zero Global drift**: [wrist video](docs/media/wrist_motion_probe/wrist_d405_1.mp4), [three views](docs/media/wrist_motion_probe/synchronized_multiview.mp4), [tracking](docs/media/wrist_motion_probe/camera_pose_tracking.png) and [source proof](docs/evidence/native_wrist_motion_proof.json). This preserved motion probe uses the earlier Global overview and is not relabelled as a new close-view episode.
+| Task | Goal | Current fixed-task result | Actual RGB-D video |
+| --- | --- | --- | --- |
+| **CUT-01** | Cut a continuous bar into two parts | Permanent separation; strict task score **PASS** in both runtimes | [Watch v5](docs/media/wrist_v5_cut01/synchronized_multiview.mp4) |
+| **TRIM-01** | Remove a continuous surface bump | Chip separation; strict surface-quality score **FAIL** | [Watch v5](docs/media/wrist_v5_trim01/synchronized_multiview.mp4) |
 
-## Actual cutting results and limits
+The knife is an independent rigid body held by finite finger contact and
+friction. Material reaction acts on the tool and reaches the arm through the
+gripper. The historical attachment remains selectable as `legacy_fixed_tool`.
+Materials and sensors are provisional; coupling-work, contact-model and camera
+limitations remain explicit in the [validation report](docs/PHYSICAL_TOOL_INDEPENDENT_VALIDATION.md).
 
-Both fixed tasks have completed 400 control steps / 8 simulated seconds in actual Isaac Lab 3.0 GA and Isaac Sim 6.2. The measured Franka blade drives material contact, and material reaction feeds back to the arm. No particles are deleted or bumps presegmented.
+**Evaluation v2** reports recorded-state integrity, cutting outcome and surface
+quality separately. Choose Diagnostic for measurements, Research for task goals,
+or Precision for the unchanged strict benchmark. Missing surface intersections
+remain unknown; they are not measured knife gouges. Fixed TRIM still removes
+98.5294% of target material and still fails the original precision score.
+[Evaluation API, measured results and reproduction](docs/EVALUATION_V2.md).
 
-| Task | Physical result | Independent task score |
-| --- | --- | --- |
-| CUT-01: sever a 160×30×20 mm bar | Continuous 144 g bar → two 72 g parts; sampled persistent separation for 2.4 s after withdrawal | **PASS_TASK_METRICS** |
-| TRIM-01: trim a continuous single bump | Explicit 2 mm particles; 1.608 g chip + 144.024 g base; 98.5294% target-material removal | Permanent separation passes; strict full-surface accuracy **FAIL_TASK_METRICS** |
+## Quick start
 
-The close-Global scene has now also completed all four full Task/runtime episodes from a new clone with freshly installed, isolated environments. CUT passes its strict score in both runtimes; 2 mm TRIM separates but retains its strict surface FAIL. See [clean-environment deployment validation](docs/PORTABLE_DEPLOYMENT_VALIDATION.md), [close-view validation](docs/GLOBAL_CLOSE_VIEW.md), [camera architecture](docs/WRIST_CAMERAS.md) and [preserved wrist-overview audit](docs/WRIST_CAMERA_VALIDATION.md).
-
-Material/fracture parameters remain provisional. TRIM surface accuracy and coupling-work limits still fail; resolution convergence and hardware sensor calibration are unestablished. Native invalid pixels and rare depth outliers are retained. The secondary wrist's knife view is palm-occluded after TRIM withdrawal; the primary mount rod intersects its own wrist flange at the anchor, failing the unchanged strict visual-clearance criterion. All Global/housing robot-surface checks pass at the recorded poses, without a validated camera contact/mass model. Episode completion never means every benchmark gate passes.
-
-## Remote interactive GUI
-
-The remote viewer streams the **full Kit GUI and viewport of the same live Isaac Sim cutting process** using NVIDIA's official WebRTC extension and web SDK. It does not run another simulator/container. Use **[http://100.111.162.17:8210](http://100.111.162.17:8210)** from Chrome on the same Tailscale network while the server is running.
-
-The Kit control panel provides CUT-01 / TRIM-01 selection, Play, Pause, Reset, Step, explicit Cartesian / joint actions, task evaluation and Free / Global / Wrist camera views. Native physics, TLMPM, articulation and RGB-D advance together through the retained environment. Camera previews use separate viewport cameras so mouse navigation cannot edit sensor mounts. Only one browser client should connect at a time.
-
-Actual local Chrome through the Tailscale URL has passed14 streamed GUI transactions, including typed Cartesian/joint actions. External Mac connectivity is separately pending confirmation. [Full live GUI screenshot](docs/media/remote_web_viewer.png).
-
-Setup, start/stop commands, ports, same-loop checks and actual browser/client evidence: [REMOTE_INTERACTIVE_VIEWER](docs/REMOTE_INTERACTIVE_VIEWER.md). The viewer is for operation and inspection; code development remains in VS Code Remote-SSH.
-
-## Quick Start: portable headless deployment
+Use an Ubuntu + NVIDIA RTX host with a compatible existing driver.
+Bootstrap creates isolated project environments and does not change the driver.
 
 ```bash
 git clone https://github.com/AnsonNing/RoboticCuttingSim.git
 cd RoboticCuttingSim
 bash scripts/bootstrap.sh --runtime all --managed-python --accept-eula
-python3 scripts/deployment_doctor.py --gpu auto --output-dir artifacts/doctor_NEW
-python3 scripts/run_deployment_validation.py --tier smoke --runtime both \
-  --gpu auto --output-dir artifacts/smoke_NEW
+
+# Actual two-step CUT/TRIM smokes in both runtimes; this is not full cutting validation.
+.venv/bin/python scripts/run_deployment_validation.py --tier smoke --runtime both \
+  --gpu auto --tool-attachment-mode physical_grasp --grip-initial-position 0.0112 \
+  --lab-grip-contact-profile finite_pad_patch_v3 --output-dir artifacts/smoke_NEW
 ```
 
-Ubuntu x86_64, an existing compatible NVIDIA RTX driver and adequate disk/VRAM
-are required. Base, Sim6.2 and Lab3.0 use separate pinned Python3.12 environments;
-bootstrap never upgrades the driver or changes another project. Install either
-runtime separately with `--runtime isaac_sim` / `isaac_lab`. A smoke verifies
-actual physics and RGB-D; it does not certify full cutting success. See
-[portable deployment](docs/PORTABLE_DEPLOYMENT.md) for full400-step regression,
-GPU selection and troubleshooting. [Actual reproduction results](docs/PORTABLE_DEPLOYMENT_VALIDATION.md) include installation failures, both live runtimes, four full episodes and new [CUT](docs/media/deployment_cut01/synchronized_multiview.mp4) / [TRIM](docs/media/deployment_trim01/synchronized_multiview.mp4) recordings. Independent cross-host reproduction remains **NOT_RUN**.
+For full episodes, GPU selection and installation details, see
+[run instructions](docs/PHYSICAL_TOOL.md#reproduce) and
+[portable deployment](docs/PORTABLE_DEPLOYMENT.md).
 
-## Run the headless scenes
+## Use the environment
 
-The original benchmark launchers remain available. Use the dedicated environments and a fresh output directory; versions/install instructions are in [SETUP](docs/SETUP.md), [Lab integration](docs/ISAAC_LAB_INTEGRATION.md) and [Sim validation](docs/ISAAC_SIM_VALIDATION.md).
+Both tasks expose `reset()`, `step(action)`, `observe()`, `render()`, `evaluate()`
+and `close()`. Joint and Cartesian actions share the same underlying scene.
+Policy observations use RGB-D and robot proprioception; force and oracle state
+stay in separate debug/evaluation data. See the [shared API](docs/SHARED_TASK_API.md).
 
-```bash
-# Actual Isaac Sim / PhysX / TLMPM / native Global RGB-D, newest camera rig
-.deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
-  --task-id CUT-01 --steps 400 --gpu 0 --device cuda:0 \
-  --camera-layout wrist_d405_global_d455 --camera-mode native_single_view \
-  --output-dir artifacts/cut01_NEW
+The optional [remote viewer](docs/REMOTE_INTERACTIVE_VIEWER.md) provides the
+same live simulation's GUI, task selection, gripper controls and camera views.
+On the original host, open [the Tailscale viewer](http://100.111.162.17:8210)
+while its server is running.
 
-.deps/isaacsim-venv/bin/python scripts/run_isaac_sim_cutting.py \
-  --task-id TRIM-01 --particle-spacing 0.002 --steps 400 --gpu 0 --device cuda:0 \
-  --camera-layout wrist_d405_global_d455 --camera-mode native_single_view \
-  --output-dir artifacts/trim01_NEW
+## Documentation
 
-# Actual kit-less Lab / NewtonManager; cameras explicitly use ideal Warp
-.deps/isaaclab-venv/bin/python scripts/run_isaac_lab_cutting.py \
-  --task-id TRIM-01 --particle-spacing 0.002 --steps 400 --reset-check \
-  --camera-layout wrist_d405_global_d455 --output-dir artifacts/lab_trim01_NEW
+Start with the [documentation index](docs/README.md) for setup, physics,
+validation and preserved experiments. [Progress and known issues](docs/PROGRESS.md)
+record PASS / FAIL / BLOCKED / NOT_RUN separately.
 
-# Sequential fixed / randomized matrix; no training
-.venv/bin/python scripts/run_cutting_task_benchmark.py \
-  --runtime isaac_sim --variants fixed randomized --seeds 42 --gpu 0 \
-  --output-dir artifacts/task_matrix_NEW
-```
-
-CUT uses 1 mm particles; physically separated TRIM uses explicit 2 mm initial sampling; both grids are 4 mm. The Task/API factory retains its original 1 mm default, so specify the TRIM override. The original 1 mm TRIM and all negative controls remain FAIL. New close-Global coverage for randomized variants has not been rerun; earlier randomized physical results are separately preserved in [the benchmark](docs/CUTTING_BENCHMARK.md).
-
-## Shared research API
-
-Both tasks provide `reset()`, `step(action)`, `observe()`, `render()`, `close()` and `evaluate()`. Actions support Cartesian knife-edge world poses and active-arm joint positions. Observations default to both wrist RGB-D streams, calibration, timestamps and optional robot proprioception. Global RGB-D is an explicit opt-in; force and oracle material state stay outside observations.
-
-```python
-from robotic_cutting_sim.live_env import open_cutting_env
-
-with open_cutting_env("TRIM-01", runtime="isaac_sim",
-                      particle_spacing_m=0.002,
-                      include_global_camera=False,
-                      output_dir="artifacts/my_trim_api_NEW") as env:
-    observation, info = env.reset(seed=42)
-    for _ in range(400):
-        observation, reward, terminated, truncated, info = env.step()
-    result = env.evaluate()  # Strict surface criteria can still FAIL
-```
-
-Object, Material, Fixture, Robot, Camera, Physics and Task Goal remain separate; targets use the workpiece-local frame. Future RL/IL/VLA/Agent adapters can use the same cutting scene. Dynamic object holding, arbitrary additional cut planes and coordinated dual-arm manipulation require extensions. Details: [shared API](docs/SHARED_TASK_API.md), [task criteria](docs/CUTTING_TASKS.md) and [progress](docs/PROGRESS.md).
-
-## Preserved overview and fixed-camera baselines
-
-The previous v2 wrist/whole-workcell recordings are preserved: [CUT overview](docs/media/wrist_cut01/global_d455.mp4), [TRIM overview](docs/media/wrist_trim01/global_d455.mp4), [four-episode report](docs/WRIST_CAMERA_VALIDATION.md) and [v2 configuration](configs/wrist_camera_rig_v2.json). Current defaults use [v3](configs/wrist_camera_rig_v3.json); reproduce the earlier source revision to run v2 exactly.
-
-| Original fixed cameras | Global | Dual RGB | Dual measured depth | Synchronized / commanded vs actual / provenance |
-| --- | --- | --- | --- | --- |
-| CUT-01 | [Video](docs/media/cut01/global.mp4) | [0](docs/media/cut01/d455_0_rgb.mp4) / [1](docs/media/cut01/d455_1_rgb.mp4) | [0](docs/media/cut01/d455_0_depth.mp4) / [1](docs/media/cut01/d455_1_depth.mp4) | [Views](docs/media/cut01/synchronized_multiview.mp4) / [trajectory](docs/media/cut01/trajectory.png) / [hashes](docs/media/cut01/provenance.json) |
-| TRIM-01 | [Video](docs/media/trim01/global.mp4) | [0](docs/media/trim01/d455_0_rgb.mp4) / [1](docs/media/trim01/d455_1_rgb.mp4) | [0](docs/media/trim01/d455_0_depth.mp4) / [1](docs/media/trim01/d455_1_depth.mp4) | [Views](docs/media/trim01/synchronized_multiview.mp4) / [trajectory](docs/media/trim01/trajectory.png) / [hashes](docs/media/trim01/provenance.json) |
-
-All original D0–D3, Newton MPM, CRESSim, TLMPM, live runtime and unsuccessful evidence remains: [original benchmark](docs/BENCHMARK_REPORT.md), [TLMPM](docs/reports/TLMPM_VALIDATION.md), [D0 acceptance](docs/reports/ISAAC_LIVE_ACCEPTANCE.md) and [D0 video](docs/media/live_isaac_kit_d0/synchronized_multiview.mp4). Large raw data and official assets stay in ignored local caches.
-
-## Regression checks
-
-```bash
-.venv/bin/python -m pytest -q
-```
-
-CPU tests are separate from actual GPU/Isaac/WebRTC runs. Fixed-seed D0–D3 sampler hashes remain unchanged. The preserved actual five-step Lab D0 prefix regression has maximum position difference 52.15 nm; it is not a new complete D0–D3 dynamics rerun. CPU CI includes pinned Warp for CPU reference-ray kernels, without Isaac or a GPU. The earlier missing-Warp CI failure and correction are retained in [the CI receipt](docs/evidence/wrist_ci_validation.json).
+Run CPU regression checks with `.venv/bin/python -m pytest -q`.
+Actual GPU/runtime and physics acceptance are tested separately.

@@ -1,0 +1,28 @@
+{
+  "schema_version": "wp08_tool_momentum_audit_v1",
+  "status_at_freeze": "NOT_RUN",
+  "scope": "Offline rigid-tool Newton-Euler bookkeeping over actual native rigid substeps; not TLMPM/interface energy convergence or hardware calibration",
+  "selection": "All coupled_episode rows with explicit before-step tool pose, COM velocities, current NORMAL+FRICTION forces, actual mass/inertia and applied COM wrench; no residual-based exclusion",
+  "linear_equation": "m*(v_after-v_before) = dt*(sum(contact_force_on_tool)+applied_force+m*gravity)",
+  "angular_equation": "R_after*I_body*R_after^T*omega_after - R_before*I_body*R_before^T*omega_before = dt*(sum((contact_point-COM_before) cross contact_force_on_tool)+applied_torque_about_COM)",
+  "scale": "Sum of norms of each constituent impulse, before vector cancellation; gravity, applied load and every normal/friction contact retained separately",
+  "per_step_acceptance": {
+    "formula": "norm(residual) <= absolute_budget + relative_budget*sum_constituent_impulse_norms",
+    "linear_absolute_budget_n_s": 0.00002,
+    "angular_absolute_budget_n_m_s": 0.000001,
+    "relative_budget": 0.05,
+    "required_passing_fraction": 1.0
+  },
+  "budget_rationale": "Finite engineering bookkeeping budgets fixed before actual force/velocity residuals are read. At the 2 ms rigid step the absolute terms correspond to 0.01 N and 0.0005 N m; the 5 percent term allows finite solver/integration error while retaining cancellation-sensitive support checks. Report all tails and accumulated residual even if this engineering screen passes.",
+  "required_bookkeeping": [
+    "Actual mass and body-frame COM inertia read back from the rigid solver, with positive eigenvalues",
+    "Actual PRE and POST COM velocities and body orientations, world axes, SI, XYZW",
+    "Fresh current native contact sensor and tensor views with no capacity overflow or C++ invalidation logs",
+    "NORMAL and FRICTION forces on tool with their actual world contact points; no normal-only substitution",
+    "Applied wrench about actual PRE COM; gravity included once, no direct hidden hand/tool wrench",
+    "Unlisted loaded contact bodies or ambiguous velocity/inertia/point conventions cause NOT_SCORED rather than passing"
+  ],
+  "lab_extension": "Use consecutive actual MJWarp COM velocities/body orientations and signed shape0 contact wrenches only when same-interval contact/apply timestamps and actual model properties can be established; otherwise NOT_SCORED with reason. No fitted sign, scale, shift or frame chosen from residuals.",
+  "report": ["Every selected row and input hash", "Absolute residual p50/p95/p99/max and normalized budget usage", "Accumulated vector residual", "All failures, no trimming", "Linear and angular statuses separately"],
+  "does_not_establish": ["Material-reaction ON/OFF causality", "Coupling energy convergence", "Calibrated contact/material properties", "Complete WP08 physics acceptance"]
+}

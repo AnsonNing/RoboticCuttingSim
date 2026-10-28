@@ -1,0 +1,36 @@
+{
+  "scope": "README display layout from actual synchronized live RGB arrays; no simulation or new rendering",
+  "task_id": "CUT-01",
+  "physics_timestamp_s": 4.0,
+  "tool_attachment_mode": "physical_grasp",
+  "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+  "source_manifest_sha256": "552acedcc5e2bb81aa08d9210fc5858c88167a3fd389b8f2ae45040234376f56",
+  "inputs": [
+    {
+      "frame": 20,
+      "camera_id": "wrist_d405_0",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001/observations/wrist_d405_0_0020.npz",
+      "sha256": "56ed8c4d7aaafeb9b200baf87998c2447e5c5fc8ea5300ee9b17a368ac1e8a2e"
+    },
+    {
+      "frame": 20,
+      "camera_id": "wrist_d405_1",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001/observations/wrist_d405_1_0020.npz",
+      "sha256": "433bdcbc661bfea655bab801ab549c6dcfb9832fe0063ce8d5fa129d45b57f82"
+    },
+    {
+      "frame": 20,
+      "camera_id": "global_d455",
+      "file": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001/observations/global_d455_0020.npz",
+      "sha256": "04f4864a8b410c117573cf00e6e590959a22944c26c42ab35e84fe166bfe63d8"
+    }
+  ],
+  "encoder_sha256": "58bc0c9d3023aab8b2481d0bf4f19469b9ff997109c0f289b43d2c71989fb0ea",
+  "output_sha256": "3789a8e0df81322933b6080b3a660cd351f7ac94d12b568f17730f0a962a6265",
+  "display": "Only aspect-preserving resizing and labels; original RGB/depth arrays unchanged",
+  "sensor_models": {
+    "wrist_d405_0": "ideal_d405_prototype",
+    "wrist_d405_1": "ideal_d405_prototype",
+    "global_d455": "native_single_view_d455_provisional"
+  }
+}

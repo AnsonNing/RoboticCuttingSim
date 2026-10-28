@@ -133,7 +133,12 @@ def worker(args, config):
                 hand_pose_both_xyzw=[p["hand_pose_both_xyzw"] for p in proprio],
                 body_pose=body_poses,body_prim_paths=env.rigid_link_paths,
                 commanded_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio],
-                desired_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio])
+                desired_tool_pose_xyzw=[env.reference_pose(p["timestamp_s"]) for p in proprio],
+                **({"tool_body_pose_xyzw":[p["tool_body_pose_xyzw"] for p in proprio],
+                    "tool_linear_velocity_world_m_s":[p["tool_linear_velocity_world_m_s"] for p in proprio],
+                    "tool_angular_velocity_world_rad_s":[p["tool_angular_velocity_world_rad_s"] for p in proprio],
+                    "finger_q_m":[p["finger_q"] for p in proprio],
+                    "finger_qdot_m_s":[p["finger_qdot"] for p in proprio]} if env.physical_grasp else {}))
             final=material_state()
             sample_indices=np.rint(np.asarray([s["time_s"] for s in materials])/config.control_dt).astype(int)
             _,component_ids,_=env.surface.surface.partition.partition(final["codes"])
@@ -220,6 +225,9 @@ def worker(args, config):
                 "per_camera_sensor_models":{name:spec["sensor_model"] for name,spec in env.camera_specs.items()},
                 "observation_motion_probe":config.observation_motion_probe,
                 "task_id":config.task_id,"task_goal_status":task_evaluation["status"] if task_evaluation else "NOT_RUN",
+                "tool_attachment_mode":config.tool_attachment_mode,
+                "tool_init_mode":config.tool_init_mode,
+                "grasp_stabilization":getattr(env,"grasp_reset_receipt",None),
                 "joint_motion_max_rad":qmotion,"final_mechanical_components":frame_rows[-1]["current_component_surface"]["mechanical_components"],
                 "final_joint_displacement_rad":final_q_displacement,
                 "full_isaac_integration":False,"physical_cutting":"NOT_SCORED","surface_flattening":"NOT_SCORED",
@@ -262,20 +270,33 @@ def main():
                    help="Set native drive velocity targets from successive IK commands (new tasks default on)")
     p.add_argument("--task-id",choices=["CUT-01","TRIM-01"])
     p.add_argument("--task-variant",default="fixed")
+    p.add_argument("--workpiece-kind",choices=["rectangle","capsule"],default="rectangle")
     p.add_argument("--action-mode",choices=["cartesian","joint"],default="cartesian")
     p.add_argument("--native-noise",choices=["off","on"],default=None,
                    help="Native sensor control recipe; new tasks default off for geometry checks")
     p.add_argument("--surface-profile",choices=["legacy","current_volume_v1"],default=None)
     p.add_argument("--particle-spacing",type=float,default=None,help="Explicit whole-initial-task sampling override in meters")
+    p.add_argument("--tool-attachment-mode",choices=["legacy_fixed_tool","physical_grasp"],default="legacy_fixed_tool")
+    p.add_argument("--tool-init-mode",choices=["pregrasped","free","pickup"],default="pregrasped")
+    p.add_argument("--grip-friction",type=float)
+    p.add_argument("--grip-force",type=float,help="Finite maximum force per finger, N")
+    p.add_argument("--grip-target",type=float,help="Closing target per finger, metres")
+    p.add_argument("--grip-initial-position",type=float,help="Reset finger opening per side, metres; physical closure follows")
     p.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
     args=p.parse_args()
     config=IsaacSimCuttingConfig(seed=args.seed,steps=args.steps,record_every=args.record_every,gpu=args.gpu,
                 device=args.device,camera_mode=args.camera_mode,feedback=not args.no_feedback,
                 camera_layout=args.camera_layout,observation_motion_probe=args.observation_motion_probe,
                 velocity_feedforward=args.velocity_feedforward,
-                task_id=args.task_id,task_variant=args.task_variant,action_mode=args.action_mode,native_noise=args.native_noise,
+                task_id=args.task_id,task_variant=args.task_variant,workpiece_kind=args.workpiece_kind,
+                action_mode=args.action_mode,native_noise=args.native_noise,
                 surface_profile=args.surface_profile,
                 particle_spacing_m=args.particle_spacing,
+                tool_attachment_mode=args.tool_attachment_mode,tool_init_mode=args.tool_init_mode,
+                grasp=({key:value for key,value in {"friction":args.grip_friction,
+                    "max_finger_force_n":args.grip_force,"closed_target_m":args.grip_target,
+                    "initial_finger_position_m":args.grip_initial_position}.items()
+                    if value is not None} or None),
                 scene=str(args.scene.resolve()) if args.scene else None)
     if args.worker:
         return worker(args,config)
@@ -283,6 +304,11 @@ def main():
     files=[ROOT/"src/robotic_cutting_sim"/name for name in ("isaac_sim_runner.py","live_material.py","robot.py",
            "tlmpm.py","material_config.py","cut_topology.py","cutting_surface.py","usd_surface_bridge.py","single_view_registration.py")]
     files += [Path(__file__).resolve(),ROOT/"configs/isaac_sim_cutting.kit"]
+    if config.tool_attachment_mode == "physical_grasp":
+        files += [ROOT/"src/robotic_cutting_sim"/name for name in
+                  ("physical_tool.py","native_tool.py","physical_contacts.py","grasp_monitor.py","tool_compatibility.py","scene_frames.py")]
+    if args.workpiece_kind != "rectangle":
+        files += [ROOT/"src/robotic_cutting_sim/workpieces.py"]
     if args.camera_layout == "wrist_d405_global_d455":
         from robotic_cutting_sim.camera_rig import CONFIG_PATH
         files += [ROOT/"src/robotic_cutting_sim"/name for name in ("camera_rig.py","native_camera_geometry.py","scene_frames.py")]
@@ -302,7 +328,13 @@ def main():
         "runtime_only":args.runtime_only})
     argv=[sys.executable,str(Path(__file__).resolve()),"--output-dir",str(out.resolve()),
           "--steps",str(args.steps),"--record-every",str(args.record_every),"--seed",str(args.seed),
-          "--gpu",str(args.gpu),"--device",args.device,"--camera-mode",args.camera_mode,"--worker"]
+          "--gpu",str(args.gpu),"--device",config.device,"--camera-mode",args.camera_mode,"--worker"]
+    argv += ["--tool-attachment-mode",args.tool_attachment_mode,"--tool-init-mode",args.tool_init_mode]
+    argv += ["--workpiece-kind",args.workpiece_kind]
+    for flag,value in (("--grip-friction",args.grip_friction),("--grip-force",args.grip_force),("--grip-target",args.grip_target),
+                       ("--grip-initial-position",args.grip_initial_position)):
+        if value is not None:
+            argv += [flag,str(value)]
     argv += ["--camera-layout",args.camera_layout]
     if args.observation_motion_probe:
         argv.append("--observation-motion-probe")
@@ -331,6 +363,12 @@ def main():
                 "full_isaac_integration":False,"standalone_fallback":False}
     if process.returncode != 0 and result["status"].startswith("PASS"):
         result={**result,"status":"FAIL","reason":"Runtime process failed after writing its worker result"}
+    if config.tool_attachment_mode == "physical_grasp":
+        invalidation_lines = [line for line in (out/"stdout.log").read_text(errors="replace").splitlines()
+            if "invalidat" in line.lower() and any(word in line.lower() for word in ("physics view", "physics tensor", "simulation view"))]
+        result["native_view_invalidation_log_count"] = len(invalidation_lines)
+        if invalidation_lines:
+            result.update(status="FAIL_INVALID_PHYSICS_VIEW", reason="Actual native logs report a physics-view invalidation; stale state cannot certify execution")
     result["process"]=receipt
     write_json(out/"result.json",result)
     print(json.dumps(result,indent=2))

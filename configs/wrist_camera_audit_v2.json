@@ -1,0 +1,80 @@
+{
+  "protocol_id": "wrist_camera_engineering_audit_v1_20261028",
+  "freeze_boundary": "Defined before reading the new final wrist-layout episode outputs; no result-based adjustment under this version.",
+  "scope": "Recorded measured transforms, programmable RGB-D usability, current physical component visibility and conservative visual OBB bounds. Not physical D405 calibration, native contact acceptance or full simulation promotion.",
+  "camera_ids": [
+    "wrist_d405_0",
+    "wrist_d405_1",
+    "global_d455"
+  ],
+  "optics": {
+    "scope": "Effective runtime K and actual frame dimensions; authored lens metadata alone cannot pass. D405 optical criteria added after a preserved640x480 pilot revealed ignored vertical aperture, before final full episodes.",
+    "wrist_nominal_horizontal_fov_deg": 87.0,
+    "wrist_nominal_vertical_fov_deg": 58.0,
+    "wrist_fov_tolerance_deg": 2.0,
+    "working_range_endpoint_tolerance_m": 1e-06,
+    "resolution": "Use recorded per-camera dimensions; no shared640-pixel assumption. Native D455 Global optics are measured/reported separately."
+  },
+  "transforms": {
+    "maximum_hand_camera_translation_error_m": 1e-05,
+    "maximum_hand_camera_rotation_error_rad": 0.0001,
+    "maximum_inverse_identity_error": 1e-07,
+    "maximum_global_translation_drift_m": 1e-07,
+    "maximum_global_rotation_drift_rad": 1e-07,
+    "maximum_timestamp_alignment_error_s": 1e-06,
+    "maximum_pose_sample_interval_s": 0.0200001,
+    "minimum_unique_pose_samples_for_8s_episode": 401
+  },
+  "visibility": {
+    "reference_flat_base_top_grid_spacing_m": 0.001,
+    "minimum_reference_footprint_fraction_in_union_wrist_frusta": 0.9,
+    "minimum_valid_depth_fraction": {
+      "wrist_d405_0": 0.05,
+      "wrist_d405_1": 0.05,
+      "global_d455": 0.1
+    },
+    "minimum_depth_consistent_material_pixels": {
+      "wrist_d405_0": 128,
+      "wrist_d405_1": 128,
+      "global_d455": 25
+    },
+    "minimum_depth_consistent_knife_pixels": {
+      "wrist_d405_0": 16,
+      "wrist_d405_1": 8,
+      "global_d455": 8
+    },
+    "ideal_depth_geometric_match_tolerance_m": 0.001,
+    "native_global_depth_geometric_match_tolerance_m": 0.002,
+    "minimum_current_component_depth_consistent_pixels_in_any_postsplit_view": 1,
+    "error_tail_trimming_allowed": false,
+    "visibility_attribution": "Current recorded mechanical surface ranges and measured knife pose, checked against actual measured depth; no future component labels or native semantic-AOV claim."
+  },
+  "visual_clearance": {
+    "minimum_certified_obb_separation_from_table_fixture_tool_m": 0.002,
+    "method": "Separating-axis signed projection gaps of visual OBBs. A positive gap is a conservative separation lower bound; overlap requires finer inspection and is not measured native penetration.",
+    "material_component_bounds": "Current component AABBs reported descriptively; bounding overlap does not establish actual mesh penetration.",
+    "native_rigid_contact_acceptance": "NOT_SCORED"
+  },
+  "promotion_boundary": "Report all camera/time/view measurements, including FAIL and NOT_RUN. Prototype wrist RGB-D and Lab ideal Global stay explicitly separate from native Kit D455; task-physics regression is evaluated independently.",
+  "previous_protocol": {
+    "path": "configs/wrist_camera_audit_v1.json",
+    "scope": "Historical observation-arm visibility requirements retained for v1-v3 recordings"
+  },
+  "parked_wrist_v4": {
+    "camera_id": "wrist_d405_1",
+    "required": [
+      "RGB-D payloads",
+      "range/mask validity",
+      "runtime optics",
+      "measured hand FK",
+      "fixed local mount",
+      "timestamps"
+    ],
+    "advisory": [
+      "material visibility",
+      "knife visibility",
+      "nonempty working depth"
+    ],
+    "task_goal_gate": false
+  }
+}

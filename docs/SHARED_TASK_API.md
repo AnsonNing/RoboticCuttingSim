@@ -3,7 +3,9 @@
 `CUT-01` and `TRIM-01` use the same `CuttingTaskEnv` API over actual Isaac Lab or
 Isaac Sim backends. The wrapper implements no cutting physics or robot dynamics.
 Task definitions, fixtures, material and workpiece-local goals are shared.
-The second Franka holds a safe observation posture in the new camera layout.
+The second Franka holds its normal safe park in camera rig v5; both wrist
+cameras are axis-aligned with their own hand. The second camera has no
+material-visibility requirement.
 No model training is included.
 
 The factory now defaults to `camera_layout="wrist_d405_global_d455"`:
@@ -145,3 +147,17 @@ reaction is applied with an explicit20ms coupling delay. Lab kit-less cameras
 are ideal; Kit wrists use ideal geometric RTX and Global uses native SingleView.
 Camera and complete-physics acceptance
 are audited separately from the task's `PASS_TASK_METRICS` result.
+# Evaluation v2 and parked wrist camera update
+
+The current camera rig is v5: Franka 1 holds its normal park posture and both
+D405s have axis-aligned fixed hand-local mounts. Secondary material/knife visibility is not
+a task success or execution condition. Historical camera protocols remain
+versioned separately; see [v5 validation](WRIST_CAMERA_V5.md).
+
+`env.evaluate()` preserves the original v1 score. The optional
+`env.evaluate(profile="diagnostic" | "research" | "precision")` returns
+Evaluation v2's separate episode, recorded-state integrity, outcome and geometry
+results. Live values have explicit incomplete source-audit status; the offline
+recording evaluator verifies archived bytes and physics/mesh provenance.
+Evaluation never stops physics or prevents saving a failed episode. See
+[the new API and profiles](EVALUATION_V2.md).

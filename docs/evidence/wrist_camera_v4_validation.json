@@ -1,0 +1,105 @@
+{
+  "schema": "wrist_camera_v4_validation_20261029",
+  "scope": "Historical passive secondary wrist v4; primary slant is superseded by v5",
+  "runs": {
+    "wrist_v4_native_cut_001": {
+      "status": "PASS_EXECUTION",
+      "task_status": "PASS_TASK_METRICS",
+      "steps": 400,
+      "receipt_sha256": "bc3333092af7c3e98962dd946650ce594c2864efd269fc264e80b8c1b7bff27a"
+    },
+    "wrist_v4_native_trim_001": {
+      "status": "PASS_EXECUTION",
+      "task_status": "FAIL_TASK_METRICS",
+      "steps": 400,
+      "receipt_sha256": "eeb295218a9c90cc9d8402a1a64e84776e350ece3256440e3e4954739912c8e2"
+    },
+    "wrist_v4_lab_cut_001": {
+      "status": "PASS_EXECUTION",
+      "task_status": "PASS_TASK_METRICS",
+      "steps": 400,
+      "receipt_sha256": "adf27b0b044e11168fb7d60880d047b7f129580cd431ec8f200e953e97888680"
+    }
+  },
+  "secondary_motion": {
+    "camera_translation_m": 0.024946552059850958,
+    "maximum_local_mount_change": 0.0,
+    "global_drift_m": 0.0
+  },
+  "secondary_sampled_visual_intersections": 0,
+  "primary_preserved_maximum_visual_intersections": 74,
+  "camera_audits": {
+    "wrist_v4_native_cut_001": {
+      "kinematics": "PASS",
+      "optics": "PASS",
+      "advisory": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      }
+    },
+    "isaac_lab_smoke_cut": {
+      "kinematics": "PASS",
+      "optics": "PASS",
+      "advisory": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      }
+    },
+    "isaac_lab_smoke_trim": {
+      "kinematics": "PASS",
+      "optics": "PASS",
+      "advisory": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      }
+    },
+    "wrist_v4_native_motion_001": {
+      "kinematics": "PASS",
+      "optics": "PASS",
+      "advisory": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      }
+    },
+    "wrist_v4_native_trim_001": {
+      "kinematics": "PASS",
+      "optics": "PASS",
+      "advisory": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      }
+    },
+    "wrist_v4_lab_cut_001": {
+      "kinematics": "PASS",
+      "optics": "PASS",
+      "advisory": {
+        "wrist_d405_1_nonempty_working_depth": true,
+        "wrist_d405_1_material_visible": false,
+        "wrist_d405_1_knife_visible": false
+      }
+    }
+  },
+  "source_input_sha256": {
+    "configs/wrist_camera_rig_v3.json": "a9641ac3517b676e813ba6ebffbdc942ee6914f925cec7a1635727c6e10a8b4e",
+    "configs/wrist_camera_rig_v4.json": "1c190ade4e39e538d8885d730a0f8b2ac58853465b28740977f53f0246d4c3e2",
+    "artifacts/wrist_v4_mount_geometry_001/result.json": "659c0f68665a2b3d261417004a74b166184f39c8ea82a78e90aa90f90691cbef",
+    "artifacts/wrist_v4_static_park_002/result.json": "01be21273d4e2f1c28b05f5fadb48babe9e9e2954a1d17627d1dac65a589a131",
+    "artifacts/wrist_v4_camera_audit_001/result.json": "93a127a24b7508c9f030739bed06dc6f1daf9c78323dd2292935ce760a180b4d",
+    "artifacts/wrist_v4_motion_audit_001/result.json": "308826797ac354da8d797be3dd28cb621cc7728fa1f6005c44de0d92c29f44ad",
+    "artifacts/wrist_v4_final_camera_audit_001/result.json": "d80c4066ea833554df6bfdc8ada3b442ac29bc15c73824e76db2dac5c94b7f80",
+    "artifacts/wrist_v4_clearance_001/result.json": "bc0c0bb6f1308a6ed1c1a6b47924f5f9411ad2c03c1733a15aeefc3b9861c446",
+    "artifacts/wrist_v4_browser_actions_001/result.json": "52833674db02026d11c07447351a618d34d42f72c918ab5c8bf9ac96a293b5d9",
+    "artifacts/wrist_v4_media_decode_final.json": "24edb0a0ff2405e38a956d41586c3a653a4133e31c7299bd93644afbeb222d6d",
+    "artifacts/wrist_v4_native_cut_001/result.json": "bc3333092af7c3e98962dd946650ce594c2864efd269fc264e80b8c1b7bff27a",
+    "artifacts/wrist_v4_native_trim_001/result.json": "eeb295218a9c90cc9d8402a1a64e84776e350ece3256440e3e4954739912c8e2",
+    "artifacts/wrist_v4_lab_cut_001/result.json": "adf27b0b044e11168fb7d60880d047b7f129580cd431ec8f200e953e97888680"
+  },
+  "video_count": 14,
+  "all_media_fully_decoded": true,
+  "full_physics_acceptance": false
+}

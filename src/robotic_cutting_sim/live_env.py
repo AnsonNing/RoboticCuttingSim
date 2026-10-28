@@ -20,7 +20,7 @@ class CuttingTaskEnv:
     targets are absolute WORLD knife-edge XYZ+XYZW; joint targets are seven
     active-arm positions in radians. None runs the scripted reference baseline.
     Explicit actions arm cutting independently of the reference-path schedule.
-    The second Franka holds its observation posture. No force or oracle state
+    The second Franka holds its normal park posture. No force or oracle state
     enters observe(); Global RGB-D is an explicit opt-in.
     """
 
@@ -43,6 +43,7 @@ class CuttingTaskEnv:
         self.backend.reset(seed=int(seed))
         self.task = self.backend.task
         self._history, self._ready = [], True
+        self._terminated = False
         self._refresh()
         self._record_oracle()
         return self.observe(), {"task_id": self.task.task_id, "seed": int(seed),
@@ -81,16 +82,37 @@ class CuttingTaskEnv:
         self._require_ready()
         if self.time_s >= self.task.duration_s-1e-9:
             raise RuntimeError("Episode ended; call reset")
+        if self._terminated:
+            raise RuntimeError("Grasp lost or sensor invalid; call reset")
         if action is not None:
+            gripper = None
             if not isinstance(action, dict):
                 action = {"mode": self.action_mode, "target": action, "cut_enabled": True}
+            if "gripper" in action:
+                action = dict(action)
+                gripper = action.pop("gripper")
+                options=getattr(self.backend,"options",getattr(self.backend,"config",None))
+                if getattr(options,"tool_attachment_mode",None) != "physical_grasp":
+                    raise ValueError("Gripper release/hold requires physical_grasp")
+                if gripper not in ("hold","close","open","release"):
+                    raise ValueError("Unknown physical gripper command")
+                if not action:
+                    measured=(self.backend.measured() if hasattr(self.backend,"measured")
+                              else self.backend.proprioception())
+                    action={"mode":"joint_position_rad","target":measured["q"][0],"cut_enabled":False}
             action = self.task.validate_action(action)
+            if gripper is not None:
+                self.backend.set_gripper(gripper)
         self.backend.step(action)
         self._refresh()
         self._record_oracle()
         # Goal success is deliberately evaluated separately from elapsed time.
-        return self.observe(), 0., False, self.time_s >= self.task.duration_s-1e-9, {
-            "task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source}
+        diagnostics=getattr(self.backend,"last_diagnostics",{})
+        grasp_status = diagnostics.get("grasp_status", {}).get("status")
+        self._terminated = bool(diagnostics.get("grasp_lost",False) or grasp_status == "INVALID_CONTACT_DATA")
+        return self.observe(), 0., self._terminated, self.time_s >= self.task.duration_s-1e-9, {
+            "task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source,
+            "grasp_status": grasp_status, "termination_reason": grasp_status if self._terminated else None}
 
     def observe(self):
         self._require_ready()
@@ -104,7 +126,7 @@ class CuttingTaskEnv:
             raise ValueError("Choose an available camera and rgb_array/depth_array")
         return self._frames[camera]["rgb" if mode == "rgb_array" else "depth_m"].copy()
 
-    def evaluate(self):
+    def evaluate(self, profile=None, *, goal=None, represented_target=None):
         """Independent oracle score; a completed episode alone never means success."""
         self._require_ready()
         if len(self._history) < 2:
@@ -125,15 +147,30 @@ class CuttingTaskEnv:
             face_components[first:first+row["triangles"]] = row["mechanical_component"]
         if np.any(face_components < 0):
             raise ValueError("Every scored triangle needs actual current mechanical provenance")
-        result = self.task.evaluate_oracle({
+        data = {
             "time_s": [s["time_s"] for s in self._history],
-            **{name: np.asarray([s[name] for s in self._history]) for name in ("positions", "codes")},
+            **{name: np.asarray([s[name] for s in self._history]) for name in ("positions", "velocities", "codes")},
             "mass_kg": material.masses, "reference_positions": material.world_points,
             "reference_stencil_nodes": bed.nodes.numpy(), "reference_stencil_weights": bed.weights.numpy(),
             "reference_stencil_gradients": bed.gradients.numpy(),
             "surface_vertices_world": vertices, "surface_triangles": triangles,
             "surface_triangle_component_ids": face_components,
-            "surface_component_provenance": metadata["partition_rule"], "surface_timestamp_s": self.time_s})
+            "surface_component_provenance": metadata["partition_rule"], "surface_timestamp_s": self.time_s}
+        if profile is not None:
+            from .evaluation import evaluate_recording
+            import hashlib
+            nodes, weights, gradients = [data[k] for k in ("reference_stencil_nodes", "reference_stencil_weights", "reference_stencil_gradients")]
+            data["surface_graph_verified"] = (metadata.get("stencil_sha256") == hashlib.sha256(nodes.tobytes()+weights.tobytes()+gradients.tobytes()).hexdigest()
+                and metadata.get("codes_sha256") == hashlib.sha256(data["codes"][-1].tobytes()).hexdigest()
+                and metadata.get("future_component_ids_used") is False)
+            data["geometry_frame_id"] = "workpiece_local"
+            data["source_evidence"] = {"implementation_verified": False,
+                "physics_state_from_recording": True, "contact_deformation_traceable": False,
+                "scope": "Live in-memory measurements; archived source/contact validation requires the offline evaluator"}
+            result, _ = evaluate_recording(data, task=self.task, goal=goal, profile=profile,
+                represented_target=represented_target)
+            return {**result, "runtime_source": self.runtime_source}
+        result = self.task.evaluate_oracle(data)
         return {**result, "success": result["status"] == "PASS_TASK_METRICS",
                 "episode_complete": self.time_s >= self.task.duration_s-1e-9, "runtime_source": self.runtime_source}
 

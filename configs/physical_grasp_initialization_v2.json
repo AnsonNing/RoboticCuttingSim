@@ -1,0 +1,31 @@
+{
+  "protocol_id": "physical_grasp_initialization_v2_20261028",
+  "status_at_freeze": "NOT_RUN",
+  "baseline": "ToolGraspConfig.initial_finger_position_m=0.014; Native a9009a4 CUT002 physically separates but strict cut-location score FAIL",
+  "change": {"initial_finger_position_m": 0.0112},
+  "geometry_basis": {"handle_half_width_m": 0.011, "initial_clearance_per_pad_m": 0.0002},
+  "reason": "Start the pregrasped fingers close to the actual handle without initial overlap, reducing unsupported gravitational motion during closure. No dynamic tool pose is corrected.",
+  "unchanged": {
+    "closed_target_m": 0.002,
+    "max_finger_force_n": 20.0,
+    "friction": 0.6,
+    "stiffness_n_m": 2000.0,
+    "damping_n_s_m": 20.0,
+    "settle_s": 2.0,
+    "stability_window_s": 0.5,
+    "cutting_tasks_protocol": "configs/cutting_tasks_v1.json",
+    "all_task_acceptance_thresholds": true,
+    "material_solver_and_parameters": true,
+    "tool_geometry_mass_and_inertia": true,
+    "cutting_reference_trajectory": true
+  },
+  "planned_cases": [
+    "Native CUT-01, seed42,400steps,1mm particles",
+    "Native TRIM-01, seed42,400steps,2mm particles",
+    "Lab matched2step pregrasp camera probes, initial14mm vs11.2mm",
+    "Lab CUT-01 and TRIM-01 full episodes if stable pregrasp",
+    "Independent hold/release/friction/effort/load controls for any promoted default"
+  ],
+  "no_hidden_attachment_or_pose_synchronization": true,
+  "negative_result_policy": "Keep all original runs and unchanged strict failures; this is a new initialization recipe, not a relabelled baseline"
+}

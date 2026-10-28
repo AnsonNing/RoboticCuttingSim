@@ -1,0 +1,156 @@
+{
+  "status": "PASS_ISOLATED_NATIVE_CONTACT_CONTROL",
+  "scope": "Actual native CPU PhysX with GPU Kit startup: floor support, two-sided V-cradle contact and unsupported gravity; no Franka/gripper or material validation",
+  "formal_physical_grasp_validated": false,
+  "two_way_cutting_coupling_validated": false,
+  "command": ".deps/isaacsim-venv/bin/python scripts/probe_physical_contacts.py --output-dir artifacts/wp08_native_contacts_004 --gpu 0",
+  "actual_result": {
+    "status": "PASS_ISOLATED_NATIVE_CONTACT_CONTROL",
+    "checks": {
+      "finite_raw_force": true,
+      "floor_weight": true,
+      "bilateral_actual_cradle_contact": true,
+      "unsupported_gravity_motion": true,
+      "floor_friction_balances_external_lateral_load": true
+    },
+    "floor_force_n": 0.9810000681877136,
+    "expected_weight_n": 0.981,
+    "fresh_bilateral_cradle_steps": 266,
+    "free_body_drop_m": 2.4239688515663147,
+    "steps": 350,
+    "simulation_s": 0.704,
+    "initial_native_time_s": 0.004,
+    "stepped_simulation_s": 0.7,
+    "floor_friction_x_n": -0.19999976143240927,
+    "floor_total_contact_force_world_n": [
+      -0.19999976143240927,
+      9.058043360710145e-08,
+      0.9810000541806221
+    ],
+    "physical_grasp_validated": false,
+    "scope": "Actual native CPU PhysX with GPU Kit startup: floor support, two-sided V-cradle contact and unsupported gravity; no Franka/gripper or material validation"
+  },
+  "actual_max_contact_timestamp_error_s": 3e-08,
+  "actual_bilateral_loaded_cradle_steps": 266,
+  "all_recorded_tensor_forces_and_points_finite": true,
+  "recorded_normal_separation_m": {
+    "floor": {
+      "minimum": -0.0018732286989688873,
+      "maximum": 7.161232133512385e-06,
+      "maximum_penetration": 0.0018732286989688873,
+      "contact_points": 1104,
+      "scope": "All actual recorded normal contacts; descriptive, no new penetration PASS threshold"
+    },
+    "cradle": {
+      "minimum": -0.00037653185427188873,
+      "maximum": 0.0006002305308356881,
+      "maximum_penetration": 0.00037653185427188873,
+      "contact_points": 1600,
+      "scope": "All actual recorded normal contacts; descriptive, no new penetration PASS threshold"
+    }
+  },
+  "initialization_clock": {
+    "actual_native_initial_time_s": 0.004,
+    "actual_native_final_time_s": 0.704,
+    "recorded_loop_duration_s": 0.7,
+    "note": "Physics initialization precedes the 350-step recorded loop; no zero-origin time is invented"
+  },
+  "cpu_controls": {
+    "command": ".venv/bin/python -m pytest -q tests/test_physical_contacts.py",
+    "exit_code": 0,
+    "passed": 6,
+    "scope": "Actual targeted pytest output; pair/units/staleness/handle attribution; not native grasp proof"
+  },
+  "runtime_distribution_versions": {
+    "isaacsim": "6.2.0.0",
+    "isaacsim-core": "6.2.0.0",
+    "isaacsim-sensor": "6.2.0.0",
+    "numpy": "2.3.1",
+    "warp-lang": "1.17.0"
+  },
+  "actual_protocol": {
+    "scope": "Actual native CPU PhysX with GPU Kit startup: floor support, two-sided V-cradle contact and unsupported gravity; no Franka/gripper or material validation",
+    "dt_s": 0.002,
+    "steps": 350,
+    "mass_kg": 0.1,
+    "gravity_m_s2": 9.81,
+    "gpu": 0,
+    "floor_external_lateral_force_n": 0.2,
+    "source_sha256": {
+      "scripts/probe_physical_contacts.py": "9cfa2ca7ac721ebe2ae3e8fb92c83dddca839d3836ed194b7d5b8109d849a195",
+      "src/robotic_cutting_sim/physical_contacts.py": "d2a877822d5fe3e3d175a15cbcc2005733d75c23492608bae434b1b189a8c238",
+      "configs/isaac_sim_cutting.kit": "1d3fd180908617e07ae2a343e016027b80c245fbcf48b0a186ad72ec969542e3"
+    },
+    "acceptance": {
+      "finite_raw_force": true,
+      "floor_weight_relative_error_max": 0.05,
+      "fresh_bilateral_cradle_steps_min": 20,
+      "unsupported_downward_displacement_min_m": 0.1,
+      "floor_friction_relative_error_max": 0.05
+    }
+  },
+  "source_bytes_unchanged_after_execution": {
+    "scripts/probe_physical_contacts.py": true,
+    "src/robotic_cutting_sim/physical_contacts.py": true,
+    "configs/isaac_sim_cutting.kit": true
+  },
+  "raw_trace": {
+    "path": "artifacts/wp08_native_contacts_004/trace.json",
+    "bytes": 8547295,
+    "sha256": "4ed6d0958b068a86e178686066a9895e3ec8139d801d1ccf487e5ab7df49115c"
+  },
+  "raw_result_sha256": "e2cbb9deb90ddefb60a87485fb9a2ef129a86ab4882c0f4244398b5b60ae754e",
+  "installed_api_source_files": {
+    "contact_sensor": {
+      "installed_path": ".deps/isaacsim-venv/lib/python3.12/site-packages/isaacsim/exts/isaacsim.sensors.experimental.physics/isaacsim/sensors/experimental/physics/impl/contact_sensor.py",
+      "sha256": "19380228d1e17aed8cae9d777684b2cfbe2cfa220d51781b65922e24b732402c"
+    },
+    "contact_authoring": {
+      "installed_path": ".deps/isaacsim-venv/lib/python3.12/site-packages/isaacsim/exts/isaacsim.sensors.experimental.physics/isaacsim/sensors/experimental/physics/impl/contact.py",
+      "sha256": "dad656b6c9ead01af52348ee097783c784d62cf473c98c8348fced998f70eb80"
+    },
+    "contact_tests": {
+      "installed_path": ".deps/isaacsim-venv/lib/python3.12/site-packages/isaacsim/exts/isaacsim.sensors.experimental.physics/isaacsim/sensors/experimental/physics/tests/test_contact_sensor.py",
+      "sha256": "6de15fc587aa1a51dff3d058390fd80e6432cf6b28d8fb3d1d894dda6cf45a1c"
+    },
+    "rigid_prim": {
+      "installed_path": ".deps/isaacsim-venv/lib/python3.12/site-packages/isaacsim/exts/isaacsim.core.experimental.prims/isaacsim/core/experimental/prims/impl/rigid_prim.py",
+      "sha256": "47b3a902523c9a63349bacea11902ab9688e2c65b846dbb6b65c0cb7b51f67ce"
+    }
+  },
+  "official_sources": [
+    "https://docs.isaacsim.omniverse.nvidia.com/6.2.0/py/source/extensions/isaacsim.sensors.experimental.physics/docs/index.html",
+    "https://docs.isaacsim.omniverse.nvidia.com/6.2.0/sensors/isaacsim_sensors_physics_contact.html",
+    "https://docs.isaacsim.omniverse.nvidia.com/6.0.0/overview/release_notes.html"
+  ],
+  "api_history": "Experimental physics sensor API introduced by 6.0, verified in installed 6.2; old sensors.physics deprecated",
+  "retained_attempts": [
+    {
+      "directory": "artifacts/wp08_native_contacts_001",
+      "status": "BLOCKED_KIT_STARTUP",
+      "exit_code": 55,
+      "physics_executed": false,
+      "reason": "Default vendor experience requires unavailable isaacsim.anim.robot.schema"
+    },
+    {
+      "directory": "artifacts/wp08_native_contacts_002",
+      "status": "FAIL",
+      "reason": "Probe requested Fabric updates before enabling Fabric"
+    },
+    {
+      "directory": "artifacts/wp08_native_contacts_003",
+      "status": "PASS_ISOLATED_NATIVE_CONTACT_CONTROL",
+      "scope": "Raw sensor path only, before tensor friction extension",
+      "result_sha256": "c785c0583e550c4986b4797228f99b9cefcb74dabc9d84fd29a34f9a1dfdc9ef"
+    }
+  ],
+  "runtime_cache_effect": "Kit automatically fetched official omni.physx.fabric110.4.4 in attempt003; no pip, driver or vendor source changes",
+  "limitations": [
+    "Static cradle surfaces are not actuated Franka fingers",
+    "No articulated grasp/support, release or weak-grip validation is claimed",
+    "No material reaction or cutting runs occur in this control",
+    "Tensor sums cover declared filters only; raw unexpected pairs remain separately recorded",
+    "Raw sensor impulses are normal contact reports; tensor tangential forces are distinct",
+    "No force or oracle state is added to policy observations"
+  ]
+}

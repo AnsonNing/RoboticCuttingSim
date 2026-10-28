@@ -174,7 +174,8 @@ def collect_report(*, root=ROOT, gpu="auto", runtime="both", pythons=None, asset
     extension_roots = [root/".deps/isaacsim-extension-cache", Path.home()/".local/share/ov/data/exts/v2"]
     extension_roots += [Path(p)/"isaacsim/extscache" for p in site_dirs]
     extension_roots += [Path(p)/"isaacsim/exts" for p in site_dirs]
-    extensions = _directory_inventory(extension_roots, ["omni.sensors.nv.camera*", "omni.physx*", "omni.syntheticdata*", "omni.kit.livestream*"])
+    extensions = _directory_inventory(extension_roots, ["omni.sensors.nv.camera*", "omni.physx*", "omni.syntheticdata*", "omni.kit.livestream*",
+        "isaacsim.sensors.experimental.physics*", "isaacsim.robot.schema*"])
     cache = Path(asset_cache or root/"artifacts/workcell_asset_cache").expanduser().resolve()
     required_assets = ["Isaac/IsaacLab/Robots/FrankaEmika/franka_panda.usda", "Isaac/Sensors/RealSense/D455/rsd455.usd"]
     asset_status = {p: {"present": (cache/p).is_file(), "bytes": (cache/p).stat().st_size if (cache/p).is_file() else 0} for p in required_assets}

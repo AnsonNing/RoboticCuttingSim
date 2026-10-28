@@ -1,0 +1,714 @@
+{
+  "schema": "wrist_camera_rig_v4",
+  "camera_layout": "wrist_d405_global_d455",
+  "scope": "Franka 1 is a normal parked arm with a fixed hand-local D405; no observation pose or target aiming. Franka 0 and Global optics/mounts unchanged.",
+  "secondary_park_joints_rad": [
+    -1.5707963267948966,
+    -0.5,
+    0.0,
+    -2.0,
+    0.0,
+    1.5,
+    0.7853981633974483
+  ],
+  "secondary_posture_role": "parked",
+  "specs": {
+    "wrist_d405_0": {
+      "camera_id": "wrist_d405_0",
+      "model": "RealSense D405 geometry prototype",
+      "sensor_model": "ideal_d405_prototype",
+      "capability": "ideal_d405_prototype",
+      "d405_sensor_model_validated": false,
+      "hardware_calibration_validated": false,
+      "parent_hand_index": 0,
+      "arm_index": 0,
+      "width": 848,
+      "height": 480,
+      "near_m": 0.07,
+      "far_m": 0.5,
+      "K": [
+        [
+          446.80277311912806,
+          0.0,
+          424.0
+        ],
+        [
+          0.0,
+          446.80277311912806,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "render_near_m": 0.001,
+      "render_far_m": 20.0,
+      "T_hand_optical_cv": [
+        [
+          0.6839411288813297,
+          -0.6396927014676884,
+          0.3507389056171316,
+          -0.08
+        ],
+        [
+          0.7295372041400852,
+          0.5997119076259578,
+          -0.32881772401606085,
+          0.075
+        ],
+        [
+          0.0,
+          0.4807690459468096,
+          0.8768472640428289,
+          -0.02
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_hand_camera": [
+        [
+          0.6839411288813297,
+          -0.6396927014676884,
+          0.3507389056171316,
+          -0.08
+        ],
+        [
+          0.7295372041400852,
+          0.5997119076259578,
+          -0.32881772401606085,
+          0.075
+        ],
+        [
+          0.0,
+          0.4807690459468096,
+          0.8768472640428289,
+          -0.02
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "physical_dimensions_m": {
+        "width": 0.042,
+        "height": 0.042,
+        "depth": 0.023
+      },
+      "rig_profile": "wrist_camera_rig_v4",
+      "visibility_role": "cutting_wrist",
+      "dimensions_source": "Official D400 datasheet Table 3-54: width42mm, height42mm, depth23mm",
+      "visual_obbs": [
+        {
+          "name": "Housing",
+          "T_hand_obb": [
+            [
+              0.6839411288813297,
+              -0.6396927014676884,
+              0.3507389056171316,
+              -0.07794817503578848
+            ],
+            [
+              0.7295372041400852,
+              0.5997119076259578,
+              -0.32881772401606085,
+              0.08541300220824867
+            ],
+            [
+              0.0,
+              0.4807690459468096,
+              0.8768472640428289,
+              -0.030259112989301097
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_optical_cv_obb": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.009
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              -0.0117
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "dimensions_m": [
+            0.042,
+            0.042,
+            0.023
+          ],
+          "scope": "Dimensioned D405 prototype housing; no contact or mass model"
+        },
+        {
+          "name": "Bracket",
+          "T_hand_obb": [
+            [
+              0.7390323266686001,
+              0.2070211574841441,
+              -0.6410721180122568,
+              -0.06350738905617132
+            ],
+            [
+              0.6736699638092793,
+              -0.2271072422763496,
+              0.7032716974021035,
+              0.05578817724016061
+            ],
+            [
+              -0.0,
+              -0.9516115493517072,
+              -0.3073035293328785,
+              -0.026268472640428288
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "dimensions_m": [
+            0.008,
+            0.008,
+            0.08133773656873305
+          ],
+          "scope": "Visual bracket; no contact or mass model"
+        }
+      ],
+      "rgb_depth_optical_transform": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_left_right_optical_cv": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.018
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stereo_baseline_m": 0.018,
+      "stereo_scope": "Right optical reference only; no second imager, disparity or stereo noise implementation",
+      "nominal_product_fov_deg": [
+        87.0,
+        58.0
+      ],
+      "effective_pinhole_fov_deg": [
+        87.0,
+        56.48491576038499
+      ],
+      "rgb_source": "D405 left color depth imager with onboard ISP; co-located ideal optical frames",
+      "calibration_scope": "848x480 square-pixel pinhole with nominal 87 degree HFOV and effective 56.5 degree VFOV; no factory intrinsics or physical calibration",
+      "minimum_z_scope": "Official 70mm MinZ mode at 848x480; prototype optical range only, no validated stereo matching",
+      "mount_scope": "Fixed hand-local transform; camera follows actual measured hand, without a gimbal",
+      "physics_scope": "Visual-only housing/bracket; no colliders, mass or inertia; clearance unvalidated",
+      "initial_hand_pose_world_xyzw": null
+    },
+    "wrist_d405_1": {
+      "camera_id": "wrist_d405_1",
+      "model": "RealSense D405 geometry prototype",
+      "sensor_model": "ideal_d405_prototype",
+      "capability": "ideal_d405_prototype",
+      "d405_sensor_model_validated": false,
+      "hardware_calibration_validated": false,
+      "parent_hand_index": 1,
+      "arm_index": 1,
+      "width": 848,
+      "height": 480,
+      "near_m": 0.07,
+      "far_m": 0.5,
+      "K": [
+        [
+          446.80277311912806,
+          0.0,
+          424.0
+        ],
+        [
+          0.0,
+          446.80277311912806,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "render_near_m": 0.001,
+      "render_far_m": 20.0,
+      "T_hand_optical_cv": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.085
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.045
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.02
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_hand_camera": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.085
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.045
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.02
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "physical_dimensions_m": {
+        "width": 0.042,
+        "height": 0.042,
+        "depth": 0.023
+      },
+      "rig_profile": "wrist_camera_rig_v4",
+      "visibility_role": "optional_parked_wrist",
+      "dimensions_source": "Official D400 datasheet Table 3-54: width42mm, height42mm, depth23mm",
+      "visual_obbs": [
+        {
+          "name": "Housing",
+          "T_hand_obb": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              -0.07600000000000001
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.045
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              0.0083
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_optical_cv_obb": [
+            [
+              1.0,
+              0.0,
+              0.0,
+              0.009
+            ],
+            [
+              0.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0,
+              -0.0117
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "dimensions_m": [
+            0.042,
+            0.042,
+            0.023
+          ],
+          "scope": "Dimensioned D405 prototype housing; no contact or mass model"
+        },
+        {
+          "name": "Bracket",
+          "T_hand_obb": [
+            [
+              0.7071067811865475,
+              0.03329635791060135,
+              -0.7063224140220168,
+              -0.0625
+            ],
+            [
+              0.7071067811865477,
+              -0.03329635791060134,
+              0.7063224140220166,
+              0.0225
+            ],
+            [
+              -0.0,
+              -0.9988907373180405,
+              -0.04708816093480111,
+              0.0015
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "dimensions_m": [
+            0.008,
+            0.008,
+            0.07171028174478591
+          ],
+          "scope": "Visual bracket; no contact or mass model"
+        }
+      ],
+      "rgb_depth_optical_transform": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_left_right_optical_cv": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.018
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stereo_baseline_m": 0.018,
+      "stereo_scope": "Right optical reference only; no second imager, disparity or stereo noise implementation",
+      "nominal_product_fov_deg": [
+        87.0,
+        58.0
+      ],
+      "effective_pinhole_fov_deg": [
+        87.0,
+        56.48491576038499
+      ],
+      "rgb_source": "D405 left color depth imager with onboard ISP; co-located ideal optical frames",
+      "calibration_scope": "848x480 square-pixel pinhole with nominal 87 degree HFOV and effective 56.5 degree VFOV; no factory intrinsics or physical calibration",
+      "minimum_z_scope": "Official 70mm MinZ mode at 848x480; prototype optical range only, no validated stereo matching",
+      "mount_scope": "Fixed hand-local transform; camera follows actual measured hand, without a gimbal",
+      "physics_scope": "Visual-only housing/bracket; no colliders, mass or inertia; clearance unvalidated",
+      "initial_hand_pose_world_xyzw": null
+    },
+    "global_d455": {
+      "camera_id": "global_d455",
+      "model": "Official Isaac Sim 6.2 RealSense D455 asset",
+      "rig_profile": "wrist_camera_rig_v4",
+      "view_goal": "World-fixed close view of the workpiece, knife and cutting region",
+      "look_at_target_world_m": [
+        0.0,
+        0.0,
+        0.02
+      ],
+      "working_distance_to_target_m": 0.6696267617113283,
+      "whole_workcell_coverage_required": false,
+      "sensor_model": "native_single_view_d455_provisional",
+      "capability": "native_single_view_d455_provisional",
+      "d455_hardware_calibration_validated": false,
+      "parent_hand_index": null,
+      "arm_index": null,
+      "width": 640,
+      "height": 480,
+      "near_m": 0.6,
+      "far_m": 6.0,
+      "native_near_m": 0.52,
+      "native_far_m": 6.0,
+      "render_near_m": 0.001,
+      "render_far_m": 20.0,
+      "K": [
+        [
+          317.0431199301764,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          377.6599873131353,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.8320502943378436,
+          0.3644837696082358,
+          -0.41814338376264926,
+          0.28
+        ],
+        [
+          0.5547001962252291,
+          -0.5467256544123537,
+          0.6272150756439738,
+          -0.42
+        ],
+        [
+          -0.0,
+          -0.753818705326124,
+          -0.6570824601984487,
+          0.46
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "physical_dimensions_m": {
+        "width": 0.124,
+        "height": 0.029,
+        "depth": 0.025
+      },
+      "physics_scope": "World-fixed visual-only official housing; rigid-body/collision/mass APIs disabled",
+      "calibration_scope": "Authored official USD pseudo-depth lens; runtime render-product K must be recorded independently",
+      "visual_obbs": []
+    }
+  },
+  "source_audit": {
+    "sources": [
+      {
+        "url": "https://www.realsenseai.com/product-family/d405-series/",
+        "kind": "manufacturer product",
+        "facts": {
+          "range_m": [
+            0.07,
+            0.5
+          ],
+          "nominal_depth_fov_deg": [
+            87,
+            58
+          ],
+          "dimensions_length_depth_height_mm": [
+            42,
+            42,
+            23
+          ],
+          "rgb": "Left depth color imager with onboard ISP; no separate RGB imager"
+        }
+      },
+      {
+        "url": "https://www.intel.com/content/www/us/en/products/sku/229218/intel-realsense-depth-camera-d405/specifications.html",
+        "kind": "Intel official specifications",
+        "facts": {
+          "nominal_depth_fov_deg": [
+            87,
+            58
+          ],
+          "range_m": [
+            0.07,
+            0.5
+          ]
+        }
+      },
+      {
+        "url": "https://realsenseai.com/wp-content/uploads/2025/08/Intel-RealSense-D400-Series-Datasheet-August-2025.pdf",
+        "kind": "manufacturer datasheet",
+        "facts": {
+          "D405_min_z_mm_by_resolution": {
+            "1280x720": 100,
+            "848x480": 70,
+            "640x480": null,
+            "640x360": 55,
+            "480x270": 45,
+            "424x240": 40
+          },
+          "D405_stereo_baseline_mm": 18,
+          "HD_depth_fov_deg": [
+            84,
+            58
+          ],
+          "VGA_hardware_intrinsics": "not established by this prototype"
+        }
+      },
+      {
+        "url": "https://docs.isaacsim.omniverse.nvidia.com/6.2.0/assets/usd_assets_depth_sensors.html",
+        "kind": "NVIDIA official asset catalog",
+        "facts": {
+          "listed_RealSense_models": [
+            "D455",
+            "D457",
+            "D555"
+          ],
+          "D405_entry_found": false,
+          "D455_relative_asset": "Isaac/Sensors/RealSense/D455/rsd455.usd"
+        }
+      },
+      {
+        "url": "https://realsenseai.com/wp-content/uploads/2025/09/Intel-RealSense-D400-Series-Datasheet-October-2025.pdf",
+        "kind": "Official manufacturer mechanical table and drawing",
+        "table": "3-54",
+        "table_page": 69,
+        "figure": "10-13",
+        "drawing_page": 146,
+        "facts": {
+          "D405_dimensions_width_height_depth_mm": [
+            42,
+            42,
+            23
+          ],
+          "D405_left_imager_center_offset_mm": 9,
+          "D405_stereo_baseline_mm": 18
+        }
+      }
+    ],
+    "D405_asset_status": "No D405 entry in official Sim6.2 catalog; three conventional official URLs returned404; a custom dimensioned visual housing is used, not an official D405 asset.",
+    "calibration_limitations": [
+      "Current product nominal FOV87x58 degrees and datasheet HD84x58 differ. Prototype uses87deg HFOV with square pixels at848x480, giving measured/configured56.48491576deg VFOV; no factory intrinsics or hardware calibration.",
+      "Official70mm MinZ is specified for848x480. This does not validate actual stereo matching or close-range noise in the prototype.",
+      "Earlier640x480 prototype and ignored Kit pixelAspectRatio probe are retained as noncanonical pilot receipts; they are not current calibration.",
+      "D405 native noise/interference/ISP/colorimetric and stereo occlusion behavior are not validated.",
+      "The official D455 authored lens and actual runtime render-product K are separate receipts."
+    ],
+    "actual_head_probe": "artifacts/d405_official_asset_head_002.json"
+  },
+  "previous_profile": {
+    "path": "configs/wrist_camera_rig_v3.json",
+    "sha256": "a9641ac3517b676e813ba6ebffbdc942ee6914f925cec7a1635727c6e10a8b4e"
+  },
+  "revision_reason": "User requested normal safe park and a passive wrist camera; secondary object/tool visibility is advisory and never gates task execution or success."
+}

@@ -1,0 +1,172 @@
+{
+  "scope": "Actual local Chrome over Tailscale URL; full Kit GUI of the same live native cutting process",
+  "status": "PASS_WEBRTC_VIDEO_AND_PHYSICAL_GRIPPER_GUI",
+  "url": "http://100.111.162.17:8210",
+  "pid": 3992264,
+  "tool_attachment_mode": "physical_grasp",
+  "actual_streamed_transactions": 15,
+  "tests": [
+    {
+      "path": "artifacts/wp08_physical_viewer_browser_001",
+      "result_sha256": "94f2e1cf532f843c3f9d8b3f0eb3205f49412d6b30d3fb500baa0a7b0f2617cf",
+      "status": "PASS_WEBRTC_VIDEO_AND_KIT_INPUT",
+      "checks": {
+        "connected_peer": true,
+        "actual_video_rtp_received_and_decoded": true,
+        "html_video_frames_advanced": true,
+        "video_dimensions_match_requested": true
+      },
+      "actual_streamed_transactions": 11,
+      "browser_version": "146.0.7680.153",
+      "actions": [
+        {
+          "kind": "click",
+          "region": "camera_wrist_d405_0",
+          "expected": {
+            "camera": "wrist_d405_0"
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "step",
+          "expected": {
+            "control_steps_since_reset": 1
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "gripper_release",
+          "expected": {
+            "control_steps_since_reset": 2
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "play",
+          "expected": {
+            "terminated": true
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "reset",
+          "expected": {
+            "control_steps_since_reset": 0,
+            "terminated": false
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "task_TRIM-01",
+          "expected": {
+            "task_id": "TRIM-01"
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "camera_global_d455",
+          "expected": {
+            "camera": "global_d455"
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "step",
+          "expected": {
+            "control_steps_since_reset": 1
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "task_CUT-01",
+          "expected": {
+            "task_id": "CUT-01",
+            "control_steps_since_reset": 0
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "type",
+          "region": "action_text",
+          "expected": {
+            "control_steps_since_reset": 1
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "reset",
+          "expected": {
+            "control_steps_since_reset": 0
+          },
+          "acknowledged": true
+        }
+      ]
+    },
+    {
+      "path": "artifacts/wp08_physical_viewer_cartesian_001",
+      "result_sha256": "40eea1fb9947b1426b75446b80cfda8e7fdea21f9fb207d08257a736189f0fb4",
+      "status": "PASS_WEBRTC_VIDEO_AND_KIT_INPUT",
+      "checks": {
+        "connected_peer": true,
+        "actual_video_rtp_received_and_decoded": true,
+        "html_video_frames_advanced": true,
+        "video_dimensions_match_requested": true
+      },
+      "actual_streamed_transactions": 4,
+      "browser_version": "146.0.7680.153",
+      "actions": [
+        {
+          "kind": "click",
+          "region": "camera_wrist_d405_1",
+          "expected": {
+            "camera": "wrist_d405_1"
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "type",
+          "region": "action_text",
+          "expected": {
+            "control_steps_since_reset": 1
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "camera_global_d455",
+          "expected": {
+            "camera": "global_d455"
+          },
+          "acknowledged": true
+        },
+        {
+          "kind": "click",
+          "region": "reset",
+          "expected": {
+            "control_steps_since_reset": 0
+          },
+          "acknowledged": true
+        }
+      ]
+    }
+  ],
+  "remote_Mac_client": "NOT_RUN",
+  "full_physics_acceptance": false,
+  "same_loop_evidence": "Every coupled step records actual native clock, material clock, measured articulation and all three RGB-D timestamps; GUI rendering never advances physics independently.",
+  "original_legacy_session": "artifacts/remote_interactive_003 gracefully CLOSED; all prior evidence retained",
+  "current_state": {
+    "task": "CUT-01",
+    "time_s": 0.0,
+    "playing": false,
+    "grasp_status": "HOLDING"
+  }
+}

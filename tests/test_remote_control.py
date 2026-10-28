@@ -55,3 +55,31 @@ def test_camera_selection_and_evaluation_do_not_advance_physics():
     loop.request("evaluate"); loop.tick()
     assert cameras == ["wrist_d405_1"] and loop.env.time_s == 0.
     assert loop.snapshot()["evaluation"]["status"] == "NOT_RUN"
+
+
+def test_physical_gripper_command_is_same_loop_and_legacy_release_is_rejected():
+    loop,_,events=controller()
+    loop.env.backend=SimpleNamespace(config=SimpleNamespace(tool_attachment_mode='legacy_fixed_tool'))
+    loop.request('gripper',mode='release');loop.tick()
+    assert not loop.env.actions and events[-1]['status']=='REJECTED'
+    loop.env.backend.config.tool_attachment_mode='physical_grasp'
+    loop.request('gripper',mode='release');loop.tick()
+    assert loop.env.actions==[{'gripper':'release'}]
+    assert loop.env.time_s==.02
+
+
+def test_loss_pauses_viewer_and_allows_inspection_and_explicit_reset():
+    loop, cameras, events = controller()
+    original = loop.env.step
+    def lose(action):
+        original(action)
+        return {}, 0., True, False, {"termination_reason":"LOST"}
+    loop.env.step = lose
+    loop.request("play"); loop.tick(); loop.tick()
+    assert loop.terminated and not loop.playing and loop.env.time_s == .02
+    loop.request("step"); loop.tick()
+    assert loop.env.time_s == .02 and events[-1]["status"] == "REJECTED"
+    loop.request("camera", camera="wrist_d405_0"); loop.tick()
+    assert cameras == ["wrist_d405_0"]
+    loop.request("reset"); loop.tick()
+    assert not loop.terminated and loop.env.time_s == 0.

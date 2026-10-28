@@ -16,3 +16,11 @@ persistent cutting, articulated control and RTX sensors; do not block routine
 scene work on scientific acceptance labels.
 Do not overwrite experiment output. Preserve unsuccessful experiments.
 Run CPU tests with `.venv/bin/python -m pytest`; run GPU probes separately.
+Current camera rig is v5: both wrist D405s have an identity optical rotation
+relative to their actual hand, with the same fixed side mount. Franka 1 stays
+at the shared normal safe park. Do not restore wrist look-at aiming,
+observation-pose optimization or a secondary object-visibility gate. Preserve v1-v4
+configurations/evidence. Evaluation v2 is a read-only consumer with separate
+integrity/outcome/quality layers; `evaluate_oracle` and no-argument live
+`evaluate()` retain the frozen v1 precision benchmark. Never modify v1
+thresholds, physics or records to improve a score.

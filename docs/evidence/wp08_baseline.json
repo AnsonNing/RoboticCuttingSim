@@ -1,0 +1,41 @@
+{
+  "baseline_commit": "1500ed70eaca41c9109b7d0b1a475a47bfc435a9",
+  "implementation_branch": "wp08/physical-tool-grasp",
+  "frozen_sha256": {
+    "src/robotic_cutting_sim/isaac_sim_runner.py": "0241e6dad26c96ff731512398639bf0bfefa1eb18570f6389ed3a2ee9e1022a5",
+    "src/robotic_cutting_sim/isaac_lab_env.py": "b0c99b1af6f803f6a47b635b2e47135a0bb611ed75f2471e41020109d5f86486",
+    "src/robotic_cutting_sim/robot.py": "5a87131f74a322d288cfe49e37ce4d0f048213b77c5f8c8b04c1d658315a1024",
+    "src/robotic_cutting_sim/live_material.py": "f43f289a98ff2161968cbc36fa0544b791f2ea68c8b8e6dc47864a42ec31e768",
+    "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+    "src/robotic_cutting_sim/tasks.py": "fad5c7b7025a80c0b29cd55b4a20bbba1c7e5212c473dcbb3c7b6fcd1110c6bf",
+    "src/robotic_cutting_sim/live_env.py": "c1a5f02d4c47549c1731c50cf62d015280ebfbaf7e72dbc279d97bd12956a210",
+    "src/robotic_cutting_sim/remote_viewer.py": "22463c9943f8a57c79324bec7c27788dc8f96004839425a6e2e018348f53815c",
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "configs/isaac_acceptance.json": "ee364198b44e7720be4c065bb3b02a28ead8904c97154c32f8af619d5857441b"
+  },
+  "scope": "Freeze before WP08 implementation; existing episodes/failures/media preserved, no numerical thresholds changed",
+  "cpu_baseline": {
+    "tests_passed": 277,
+    "pytest_wall_s": 2.33,
+    "status": "PASS"
+  },
+  "live_baseline_receipt": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/wp08_legacy_smoke_001/result.json",
+  "live_baseline_status": "PASS_REQUESTED_DEPLOYMENT_SCOPE",
+  "predeclared_grasp_protocol": {
+    "friction": 0.6,
+    "max_finger_force_n": 20.0,
+    "initial_finger_position_m": 0.014,
+    "closed_target_m": 0.002,
+    "stiffness_n_m": 2000.0,
+    "damping_n_s_m": 20.0,
+    "settle_s": 2.0,
+    "stability_window_s": 0.5,
+    "translation_tolerance_m": 0.002,
+    "rotation_tolerance_rad": 0.05235987755982988,
+    "linear_speed_tolerance_m_s": 0.02,
+    "angular_speed_tolerance_rad_s": 0.2,
+    "min_bilateral_contact_fraction": 0.95,
+    "max_penetration_m": 0.001
+  },
+  "thresholds_unchanged": true
+}

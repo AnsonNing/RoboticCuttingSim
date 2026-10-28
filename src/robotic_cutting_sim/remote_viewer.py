@@ -120,6 +120,12 @@ class RemoteCuttingSession:
                     for name in ("play", "pause", "step", "reset"):
                         button(name, name.title(), lambda name=name: self.request(name))
                 ui.Separator(height=8)
+                ui.Label("Physical tool / finger contact", height=22)
+                with ui.HStack(height=30, spacing=4):
+                    for name in ("hold", "close", "open", "release"):
+                        button("gripper_"+name, name.title(), lambda name=name: self.request("gripper",mode=name))
+                self.grasp_label=ui.Label("Legacy tool or grasp diagnostics pending",height=40,word_wrap=True)
+                ui.Separator(height=8)
                 ui.Label("Viewport", height=22)
                 with ui.HStack(height=30, spacing=4):
                     for label, camera in (("Free", "free"), ("Global", "global_d455"),
@@ -203,7 +209,15 @@ class RemoteCuttingSession:
             rectangles[name] = {"x": float(widget.screen_position_x), "y": float(widget.screen_position_y),
                                 "width": float(widget.computed_width), "height": float(widget.computed_height)}
         actual = self.backend.proprioception()
+        grasp = {}
+        if self.backend.config.tool_attachment_mode == "physical_grasp":
+            monitor = getattr(self.backend, "grasp_monitor", None)
+            grasp = monitor.last if monitor is not None else {"status":"FREE_TOOL"}
+            self.grasp_label.text=("%s | %s\nSlip since settling %.3fmm / %.2fdeg" % (
+                grasp["status"], self.backend.gripper_command,1000*grasp.get("slip_since_settling_m",0.),
+                np.degrees(grasp.get("rotation_since_settling_rad",0.))))
         status = {"phase": "READY", "pid": os.getpid(), **self.loop.snapshot(),
+            "tool_attachment_mode":self.backend.config.tool_attachment_mode,"privileged_grasp_debug":grasp,
             "episode": str(self.backend.output), "native_physics_steps": self.physics_clock()[0],
             "native_physics_time_s": self.physics_clock()[1], "material_time_s": self.backend.material.time_s,
             "surface_timestamp_s": self.backend.surface_receipt.get("physics_timestamp_s", self.env.time_s),

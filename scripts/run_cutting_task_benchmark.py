@@ -44,6 +44,9 @@ def main():
     parser.add_argument("--camera-layout", choices=("legacy_fixed_d455", "wrist_d405_global_d455"), default="wrist_d405_global_d455")
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--particle-spacing", type=float, help="Explicit override for all cases; otherwise CUT1mm/TRIM2mm")
+    parser.add_argument("--tool-attachment-mode",choices=("legacy_fixed_tool","physical_grasp"),default="legacy_fixed_tool")
+    parser.add_argument("--grip-initial-position",type=float)
+    parser.add_argument("--workpiece-kind",choices=("rectangle","capsule"),default="rectangle")
     args = parser.parse_args()
     if not 1 <= args.steps <= 400:
         parser.error("steps must be1..400")
@@ -53,7 +56,8 @@ def main():
     from robotic_cutting_sim.tasks import make_task
     for task, variant, seed in matrix:
         make_task(task, seed=seed, variant=variant,
-            particle_spacing_m=args.particle_spacing if args.particle_spacing is not None else (.002 if task == "TRIM-01" else .001))
+            particle_spacing_m=args.particle_spacing if args.particle_spacing is not None else (.002 if task == "TRIM-01" else .001),
+            workpiece_kind=args.workpiece_kind)
     output = new_output(args.output_dir)
     source = Path(__file__).resolve()
     shutil.copyfile(source, output/source.name)
@@ -69,6 +73,8 @@ def main():
         command = [str(executable), str(runner), "--task-id", task, "--task-variant", variant,
             "--seed", str(seed), "--steps", str(args.steps), "--output-dir", str(case),
             "--device", f"cuda:{args.gpu}", "--particle-spacing", str(spacing), "--camera-layout", args.camera_layout]
+        command += ["--tool-attachment-mode",args.tool_attachment_mode,"--workpiece-kind",args.workpiece_kind]
+        if args.grip_initial_position is not None:command += ["--grip-initial-position",str(args.grip_initial_position)]
         command += (["--gpu", str(args.gpu), "--camera-mode", "native_single_view"] if args.runtime == "isaac_sim" else
                     ["--material-device", f"cuda:{args.gpu}", "--reset-check"])
         print(f"RUN {name}: actual {args.runtime}, spacing={spacing}m", flush=True)

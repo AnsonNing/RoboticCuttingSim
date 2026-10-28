@@ -9,6 +9,23 @@ from robotic_cutting_sim.deployment_doctor import (
 from robotic_cutting_sim.deployment_validation import CAMERA_IDS, classify_episode, make_plan, summarize_validation
 
 
+def test_physical_deployment_uses_both_real_runtimes_and_both_tasks_without_promoting_smoke():
+    plan = make_plan("/tmp/repo", "/tmp/output", tool_attachment_mode="physical_grasp",
+        initial_finger_position_m=.0112, gpu=0,lab_grip_contact_profile="finite_pad_patch_v3")
+    episodes = [s for s in plan if s["kind"] == "episode"]
+    assert len(episodes) == 4
+    assert {(s["runtime"],s["task_id"]) for s in episodes} == {
+        (r,t) for r in ("isaac_sim","isaac_lab") for t in ("CUT-01","TRIM-01")}
+    for stage in episodes:
+        assert stage["steps"] == 2 and stage["task_audit_command"] is None
+        assert "physical_grasp" in stage["command"] and "0.0112" in stage["command"]
+        assert stage["physical_tool_audit_command"]
+        assert ("finite_pad_patch_v3" in stage["command"]) == (stage["runtime"] == "isaac_lab")
+    legacy = make_plan("/tmp/repo", "/tmp/output")
+    assert len([s for s in legacy if s["kind"] == "episode"]) == 2
+    assert all(s["physical_tool_audit_command"] is None for s in legacy if s["kind"] == "episode")
+
+
 def test_gpu_auto_prefers_free_rtx_and_supports_a_single_physical_gpu():
     rows = parse_gpu_csv("0, GPU-a, NVIDIA RTX 5090, 32607, 29000, 570.211.01, 12.0, 0\n"
                          "1, GPU-b, NVIDIA RTX 5090, 32607, 18000, 570.211.01, 12.0, 5\n"
@@ -131,6 +148,17 @@ def test_reset_or_wrong_task_cannot_be_masked_by_process_success():
 
 def test_exit_zero_missing_receipts_does_not_validate_runtime():
     assert classify((None, None, None))["status"] == "FAIL_RUNTIME_CONTRACT"
+
+
+def test_parked_secondary_may_have_no_working_depth_but_still_requires_valid_payloads():
+    result,camera,task=valid_receipts(2)
+    checks=camera["visibility_and_optics"]["checks"]
+    checks["wrist_d405_1_nonempty_working_depth"]=False
+    assert classify((result,camera,task),steps=2)["status"] == "FAIL_RUNTIME_CONTRACT"
+    camera["optional_visibility_camera_ids"]=["wrist_d405_1"]
+    assert classify((result,camera,task),steps=2)["status"] == "PASS_REQUESTED_RUNTIME_CONTRACT"
+    checks["wrist_d405_1_calibration_measured_pose"]=False
+    assert classify((result,camera,task),steps=2)["status"] == "FAIL_RUNTIME_CONTRACT"
     result, camera, task = valid_receipts()
     result["native_physics_steps"] = 0
     assert classify((result, camera, task))["status"] == "FAIL_RUNTIME_CONTRACT"

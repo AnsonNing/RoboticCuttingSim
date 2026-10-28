@@ -17,7 +17,11 @@ def _number(value, default=-1.):
         return default
 
 
-def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None, seed=42):
+def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None, seed=42,
+              tool_attachment_mode="legacy_fixed_tool", initial_finger_position_m=None,
+              lab_grip_contact_profile="legacy_point_contact"):
+    if tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
+        raise ValueError("Unsupported tool attachment mode")
     root, output = Path(root).resolve(), Path(output).resolve()
     pythons = {k: str(Path(v).expanduser().absolute()) for k, v in (pythons or {}).items()}
     python = lambda name: pythons.get(name, str(root/RUNTIME_PATHS[name]))
@@ -32,6 +36,8 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
         return stages
     for backend in selected:
         cases = [("smoke_cut", "CUT-01", 2)]
+        if tool_attachment_mode == "physical_grasp":
+            cases += [("smoke_trim", "TRIM-01", 2)]
         if tier == "full":
             cases += [("full_cut", "CUT-01", 400), ("full_trim", "TRIM-01", 400)]
         for suffix, task, steps in cases:
@@ -45,8 +51,12 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
                 command += ["--gpu", str(gpu), "--camera-mode", "native_single_view", "--native-noise", "off"]
             else:
                 command += ["--material-device", f"cuda:{gpu}", "--reset-check"]
+                command += ["--grip-contact-profile",lab_grip_contact_profile]
             if task == "TRIM-01":
                 command += ["--particle-spacing", "0.002"]
+            command += ["--tool-attachment-mode", tool_attachment_mode]
+            if initial_finger_position_m is not None:
+                command += ["--grip-initial-position", str(initial_finger_position_m)]
             stages.append({"name": name, "kind": "episode", "runtime": backend, "task_id": task, "steps": steps,
                 "output_dir": str(directory), "command": command,
                 "camera_audit_dir": str(output/(name+"_camera_audit")),
@@ -54,7 +64,10 @@ def make_plan(root, output, *, tier="smoke", runtime="both", gpu=0, pythons=None
                                          "--output-dir", str(output/(name+"_camera_audit"))],
                 "task_audit_dir": str(output/(name+"_task_audit")),
                 "task_audit_command": [base, str(root/"scripts/audit_cutting_task_episodes.py"), "--recording-dir", str(directory),
-                                       "--output-dir", str(output/(name+"_task_audit"))] if steps == 400 else None})
+                                       "--output-dir", str(output/(name+"_task_audit"))] if steps == 400 else None,
+                "physical_tool_audit_dir": str(output/(name+"_physical_audit")),
+                "physical_tool_audit_command": [base,str(root/"scripts/audit_physical_tool.py"),str(directory),
+                    str(output/(name+"_physical_audit"))] if tool_attachment_mode == "physical_grasp" else None})
     return stages
 
 
@@ -96,9 +109,11 @@ def classify_episode(result, camera, task, *, runtime, expected_steps, returncod
     views = camera.get("visibility_and_optics", {}).get("checks", {})
     checks["named_rgbd_streams"] = bool(records) and all(set(row.get("cameras", {})) == CAMERA_IDS for row in records)
     checks["camera_count_matches_payloads"] = len(records) == camera.get("frames")
+    optional_visibility = set(camera.get("optional_visibility_camera_ids", [])) & {"wrist_d405_1"}
     checks["camera_payload_range_calibration_contract"] = bool(records) and all(
         views.get(name+suffix) is True for name in CAMERA_IDS
-        for suffix in ("_finite_range_and_masks", "_calibration_measured_pose", "_nonempty_working_depth"))
+        for suffix in ("_finite_range_and_masks", "_calibration_measured_pose", "_nonempty_working_depth")
+        if suffix != "_nonempty_working_depth" or name not in optional_visibility)
     checks["rgbd_frame_timestamps"] = views.get("frame_timestamps") is True
     checks["wrist_runtime_optics"] = all(views.get(n+"_runtime_optics") is True for n in CAMERA_IDS if n.startswith("wrist"))
     if expected_steps == 400:
