@@ -13,7 +13,7 @@ import numpy as np
 import warp as wp
 
 from robotic_cutting_sim.camera import capture
-from robotic_cutting_sim.camera_rig import make_rig
+from robotic_cutting_sim.camera_rig import CONFIG_PATH, make_rig
 from robotic_cutting_sim.recording import ROOT, manifest, new_output, write_json
 
 
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
     output = new_output(args.output_dir)
     source = [Path(__file__), ROOT/"src/robotic_cutting_sim/camera.py",
-              ROOT/"src/robotic_cutting_sim/camera_rig.py", ROOT/"configs/wrist_camera_rig_v1.json"]
+              ROOT/"src/robotic_cutting_sim/camera_rig.py", CONFIG_PATH]
     implementation = output/"implementation"
     implementation.mkdir()
     for path in source:
