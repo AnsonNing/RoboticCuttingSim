@@ -774,6 +774,13 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             near_m=.52 if name != "global" else .01,
             far_m=6. if name != "global" else 20.) for name, path in paths.items()}
 
+    def refresh_surface_for_evaluation(self):
+        if self._capture_time != self.time_s:
+            vertices, faces, self.surface_metadata = self._surface.extract(self.material.bed)
+            if self.task:
+                vertices = self.task.points_to_world(vertices).astype(np.float32)
+            self.surface = (vertices, faces)
+
     def _get_observations(self):
         from pxr import Gf
         from .usd_surface_bridge import stage_triangles
@@ -781,6 +788,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         measured = self.measured()
         keys = ("q", "qdot", "finger_q", "finger_qdot", "hand_pose") if self.physical_tool else ("q", "qdot", "tool_pose")
         policy = {key: torch.as_tensor(measured[key][None], device=self.device) for key in keys}
+        if not self.options.camera:
+            self.frames = {}
+            return {'policy': policy}
         if self._capture_time != self.time_s:
             vertices, faces, self.surface_metadata = self._surface.extract(self.material.bed)
             if self.task:

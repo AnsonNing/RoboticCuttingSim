@@ -232,6 +232,9 @@ class CuttingTaskEnv:
                     "runtime_source": self.runtime_source}
         material = self.backend.material
         bed = material.bed
+        refresh_surface = getattr(self.backend, 'refresh_surface_for_evaluation', None)
+        if refresh_surface is not None:
+            refresh_surface()
         if hasattr(self.backend, "surface_arrays"):
             vertices, triangles = self.backend.surface_arrays
             metadata = self.backend.surface_info

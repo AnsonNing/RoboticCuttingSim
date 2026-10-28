@@ -686,6 +686,11 @@ class LiveIsaacSimCutting:
             vertices=self.task.points_to_world(vertices).astype(np.float32)
         self.surface_receipt = self.bridge.update(vertices, faces, self.time_s)
         self.surface_arrays = (vertices, faces)
+        self._surface_time = self.time_s
+
+    def refresh_surface_for_evaluation(self):
+        if getattr(self, '_surface_time', None) != self.time_s:
+            self._update_surface()
 
     def _check_attachment(self, measured_edge):
         from pxr import Usd, UsdGeom
@@ -920,7 +925,8 @@ class LiveIsaacSimCutting:
         diagnostics.update(minimum_detF=float(determinant.min()),
                            maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
-        self._update_surface()
+        if c.camera:
+            self._update_surface()
         if c.camera and c.camera_layout == "wrist_d405_global_d455":
             self._update_camera_extrinsics(actual["hand_pose_both_xyzw"])
         physical = {}

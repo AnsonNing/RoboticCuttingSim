@@ -9,9 +9,12 @@ runtime_source is kinematic_ideal_tracking and is printed on every frame.
   python scripts/render_kinematic_episode.py --task CUT-01-R --controller saw_policy --out artifacts/saw.mp4
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
+import subprocess
+import time
 
 import numpy as np
 
@@ -20,12 +23,12 @@ sys.path.insert(0, str(ROOT/"src"))
 sys.path.insert(0, str(ROOT/"scripts"))
 
 
-def record(task_id, controller, spacing, material_dt, every):
+def record(task_id, controller, spacing, material_dt, every, device='cpu'):
     from run_kinematic_validation import _agent_session, _plan
     from robotic_cutting_sim.control import ActionLimits
     from robotic_cutting_sim.kinematic_env import make_kinematic_env
     from robotic_cutting_sim.policies import WaypointPolicy
-    env = make_kinematic_env(task_id, particle_spacing_m=spacing, material_dt=material_dt,
+    env = make_kinematic_env(task_id, particle_spacing_m=spacing, material_dt=material_dt, device=device,
                              action_limits=ActionLimits(), ik_failure="reject", delta_frame="world")
     frames, step = [], env.step
 
@@ -123,17 +126,22 @@ def main():
     parser.add_argument("--controller", default="saw_policy")
     parser.add_argument("--spacing", type=float, default=.004)
     parser.add_argument("--material-dt", type=float, default=.0005)
+    parser.add_argument("--device", default='cpu')
     parser.add_argument("--every", type=int, default=4, help="record every N control steps")
     parser.add_argument("--fps", type=int, default=12)
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     out = Path(args.out)
-    if out.exists():
+    if out.exists() or out.with_suffix('.json').exists():
         raise SystemExit(f"Refusing to overwrite {out}")
     out.parent.mkdir(parents=True, exist_ok=True)
-    env, frames, outcome = record(args.task, args.controller, args.spacing, args.material_dt, args.every)
+    start=time.monotonic()
+    env, frames, outcome = record(args.task, args.controller, args.spacing, args.material_dt, args.every, args.device)
     render(env, frames, outcome, args.controller, out, args.fps)
-    out.with_suffix(".json").write_text(json.dumps({"command": " ".join(sys.argv), "frames": len(frames),
+    out.with_suffix(".json").write_text(json.dumps({"command": sys.argv, "frames": len(frames),
+                                                    "seed":42,"wall_s":time.monotonic()-start,
+                                                    "commit":subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
+                                                    "config":vars(args),"output_sha256":hashlib.sha256(out.read_bytes()).hexdigest(),
                                                     "outcome": outcome, "runtime_source": "kinematic_ideal_tracking"},
                                                    indent=1)+"\n")
     print(out, outcome)
