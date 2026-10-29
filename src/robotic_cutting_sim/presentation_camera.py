@@ -13,7 +13,7 @@ PRIM_PATH = "/World/PresentationCamera/Overview"
 CAMERA_ID = "overview_rgb"
 # 3/4 view from the front-right (world -y is the front, +x the right) of the workpiece.
 EYE_OFFSET_M = (.38, -.68, .24)
-WIDTH, HEIGHT, HFOV_DEG = 960, 540, 42.  # presentation only; 42 deg frames the board, knife and hand
+WIDTH, HEIGHT, HFOV_DEG = 960, 540, 65.
 FRANKA_BASES_WORLD_M = {"franka_0": (-.46, .12, -.01), "franka_1": (.46, .12, -.01)}
 FRANKA_0_SHOULDER_WORLD_M = (-.46, .12, .323)  # approximate joint-2 height above the base
 
