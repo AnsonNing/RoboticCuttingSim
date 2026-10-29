@@ -115,7 +115,8 @@ class EpisodeRecorder:
         self.states.append(jsonable(self.measured()))
         write_json(self.output / 'frame_manifest.json', self.rows)
 
-    def step(self, action, result, before_observation=None, step_wall_s=None, policy_phase=None):
+    def step(self, action, result, before_observation=None, step_wall_s=None, policy_phase=None,
+             controller_profile=None, policy_tracking=None):
         self.steps += 1
         if policy_phase is not None:
             self.phases.append(((before_observation or {}).get('timestamp_s', self.env.time_s - self.env.task.control_dt_s),
@@ -153,6 +154,10 @@ class EpisodeRecorder:
                    accepted_target_world_xyz_xyzw=self.env._commanded)
         if policy_phase is not None:
             row['policy_phase'] = policy_phase
+        if controller_profile is not None:
+            row['controller_profile'] = controller_profile
+        if policy_tracking is not None:
+            row['policy_tracking'] = policy_tracking
         self.stream.write(json.dumps(jsonable(row), allow_nan=False) + '\n')
         self.stream.flush()
         if self.steps % self.every == 0 or terminated or truncated:
@@ -255,6 +260,8 @@ def validate_arguments(p, a):
         p.error('--overview-camera is Native-only and needs recorded cameras (--record-cameras or a vision observation)')
     if (a.edge_feedback != 'nominal' or a.position_tolerance is not None) and a.controller != 'scripted':
         p.error('--edge-feedback/--position-tolerance apply to the scripted controller only')
+    if a.controller_profile != 'v1' and a.controller != 'scripted':
+        p.error('--controller-profile applies to the scripted controller only')
     if a.position_tolerance is not None and not 0 < a.position_tolerance < .01:
         p.error('--position-tolerance must be in (0, 0.01) m')
     from robotic_cutting_sim.tasks import DemoTaskSpec, make_task
@@ -295,21 +302,31 @@ def measured_edge_estimator(env):
     return estimate
 
 
+def controller_profile_receipt(a):
+    """Scripted controller profile name and parameters (v1 = the frozen point-to-point controller)."""
+    from robotic_cutting_sim.policies import CONTROLLER_PROFILES
+    receipt = dict(CONTROLLER_PROFILES[a.controller_profile])
+    if a.position_tolerance is not None:
+        receipt['position_tolerance_m'] = a.position_tolerance  # explicit --position-tolerance wins
+    return receipt
+
+
 def scripted_policy(env, a):
-    from robotic_cutting_sim.policies import WaypointPolicy, skim, slice_push, through_cut
+    from robotic_cutting_sim.policies import WaypointPolicy, controller_profile, skim, slice_push, through_cut
+    profile_policy, profile_plan = controller_profile(getattr(a, 'controller_profile', 'v1'))
     saw = .006 if a.motion == 'saw' else 0.
     if is_demo_task(env.task):
-        plan = slice_push(env.task, cut_speed_m_s=a.speed)
+        plan = slice_push(env.task, cut_speed_m_s=a.speed, **profile_plan)
     elif env.task.goal_kind == 'flatten':
-        plan = skim(env.task, saw_amplitude_m=saw)
+        plan = skim(env.task, saw_amplitude_m=saw, **profile_plan)
     else:
-        motion_args = {'saw_amplitude_m': saw, 'cut_speed_m_s': a.speed}
+        motion_args = {'saw_amplitude_m': saw, 'cut_speed_m_s': a.speed, **profile_plan}
         if getattr(a, 'offset', 0.):
             motion_args['offset_m'] = a.offset
         if a.motion in ('oblique', 'yaw', 'roll'):
             motion_args[{'oblique':'tilt_deg','yaw':'yaw_deg','roll':'roll_deg'}[a.motion]] = a.angle
         plan = through_cut(env.task, **motion_args)
-    options = {}
+    options = dict(profile_policy)
     if a.edge_feedback == 'measured':
         options['edge_estimator'] = measured_edge_estimator(env)
     if a.position_tolerance is not None:
@@ -346,7 +363,11 @@ def main(argv=None):
                    help='Scripted controller edge source: nominal hand-mount edge (default) or the measured '
                         'simulator tool-edge pose (measured_tool_edge_feedback; not material oracle state)')
     p.add_argument('--position-tolerance', type=float,
-                   help='Scripted waypoint position tolerance in m (default: WaypointPolicy default 0.5 mm)')
+                   help='Scripted waypoint position tolerance in m (default: the controller profile; v1 0.5 mm)')
+    p.add_argument('--controller-profile', choices=('v1', 'path_v2'), default='v1',
+                   help='Scripted controller profile: v1 (default, frozen point-to-point waypoints) or path_v2 '
+                        '(opt-in: cut segments tracked from the planned start with cross-track feedback 0.5, '
+                        'final 10 mm approach at 0.02 m/s, 0.3 s settle, 0.3 mm position tolerance)')
     p.add_argument('--material-profile')
     p.add_argument('--material-dt', type=float, default=.0001)
     p.add_argument('--max-cuts', type=int, default=1)
@@ -417,9 +438,10 @@ def main(argv=None):
                     cut_index_check = dict(status='PASS' if env.time_s == before else 'FAIL', error=str(error))
                 else:
                     cut_index_check = dict(status='FAIL', reason='Unavailable digit was accepted')
-                policy = None
+                policy, profile_receipt = None, None
                 if a.controller == 'scripted':
                     policy = scripted_policy(env, a)
+                    profile_receipt = controller_profile_receipt(a)
                 rng = np.random.default_rng(seed)
                 for step in range(a.steps):
                     action = (fuzz_action(step, rng, a.fuzz_pattern) if a.controller == 'fuzz' else
@@ -446,7 +468,9 @@ def main(argv=None):
                         observation = result[0]
                     env.action_limits = saved_limits
                     recorder.step(action, result, before_observation, time.monotonic()-step_start,
-                                  policy_phase=policy.phase if policy is not None else None)
+                                  policy_phase=policy.phase if policy is not None else None,
+                                  controller_profile=profile_receipt,
+                                  policy_tracking=policy.last_tracking if policy is not None else None)
                     if (step + 1) % 25 == 0:
                         print(f'{a.runtime} {a.task} {a.controller} episode={episode} step={step+1} t={env.time_s:.2f}', flush=True)
                     if result[2] or result[3]:
@@ -462,7 +486,7 @@ def main(argv=None):
                 if policy is not None:
                     row.update(policy_plan=policy_plan_name(env.task), edge_feedback=edge_feedback_receipt(a),
                                policy_position_tolerance_m=policy.position_tolerance_m,
-                               policy_final_phase=policy.phase,
+                               policy_final_phase=policy.phase, controller_profile=profile_receipt,
                                policy_motion=dict(motion=a.motion, angle_deg=a.angle, offset_m=a.offset, speed_m_s=a.speed))
                 row.update(recorder.finish(row))
                 results.append(row)

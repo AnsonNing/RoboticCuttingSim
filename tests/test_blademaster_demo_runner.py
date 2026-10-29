@@ -507,3 +507,78 @@ def test_publish_names_include_run_id_and_never_overwrite(runner, tmp_path):
     assert (target/"R1_r002_demo1a.gif").is_file() and (root/"R1"/"demo1a"/"publish_receipt_r002.json").is_file()
     assert runner.publish_names(runner.DEMOS["3"], "X") == {"demo.gif": "X_demo3.gif", "poster.png": "X_demo3_poster.png",
                                                              "demo.mp4": "X_demo3.mp4", "provenance": "X_demo3.json"}
+
+
+# ------------------------------------------------------------------------------------------------ controller profile
+
+def _set_manifest(demo_dir, **changes):
+    path = demo_dir/"manifest.json"
+    manifest = json.loads(path.read_text())
+    config = manifest["config"]
+    for key, value in changes.items():
+        if value is None:
+            config.pop(key, None)
+        else:
+            config[key] = value
+    path.write_text(json.dumps(manifest))
+
+
+@pytest.mark.parametrize("key", ["1a", "1b", "2", "3"])
+def test_controller_profile_passthrough_and_v1_default(runner, key, tmp_path):
+    spec = runner.DEMOS[key]
+    demo_dir = tmp_path/spec.dirname
+    v1 = runner.run_argv(spec, demo_dir, python="PY")
+    assert v1 == runner.run_argv(spec, demo_dir, python="PY", controller_profile="v1") and "--controller-profile" not in v1
+    argv = runner.run_argv(spec, demo_dir, python="PY", controller_profile="path_v2")
+    assert argv == [*v1[:-8], "--controller-profile", "path_v2", *v1[-8:]]
+    out = _parse_live(argv[2:])
+    assert out["status"] == 1
+    for name, value in runner.expected_config(spec, "path_v2").items():
+        assert out["config"][name] == value, name
+    assert runner.expected_config(spec)["controller_profile"] == "v1"
+    assert runner.build_parser().parse_args([]).controller_profile == "v1"
+    with pytest.raises(ValueError):
+        runner.run_argv(spec, demo_dir, controller_profile="v9")
+
+
+def test_dry_run_and_run_stage_pass_the_profile(runner, tmp_path, capsys, monkeypatch):
+    root = tmp_path/"demos"
+    assert runner.main(["--demo", "2", "--dry-run", "--run-id", "R1", "--root", str(root), "--controller-profile",
+                        "path_v2"]) == 0
+    assert "--controller-profile path_v2 --steps 400" in capsys.readouterr().out and not root.exists()
+    calls = []
+
+    class Process:
+        pid = 1
+
+        def __init__(self, argv, **kwargs):
+            calls.append(argv)
+            Path(argv[argv.index("--out")+1]).mkdir(parents=True)
+
+        def wait(self, timeout=None):
+            return 0
+
+    monkeypatch.setattr(runner.subprocess, "Popen", Process)
+    monkeypatch.setattr(runner, "gpu_snapshot", lambda: {"stub": True})
+    monkeypatch.setattr(runner, "git_info", lambda: {"stub": True})
+    options = runner.build_parser().parse_args(["--run-id", "R1", "--root", str(root), "--native-python", "PY",
+                                                "--controller-profile", "path_v2"])
+    receipt = runner.stage_run(options, runner.DEMOS["2"])
+    assert calls[0][calls[0].index("--controller-profile")+1] == "path_v2" and receipt["controller_profile"] == "path_v2"
+
+
+def test_evaluation_checks_the_recorded_controller_profile(runner, tmp_path):
+    spec, demo_dir, _ = _cut_episode(runner, tmp_path/"legacy", "1a")
+    _set_manifest(demo_dir, controller_profile=None)                    # recorded before the flag existed
+    legacy = runner.evaluate_demo_dir(spec, demo_dir)
+    assert legacy["verdict"] == "PASS" and legacy["controller_profile"]["recorded"] == "v1"
+    assert legacy["execution"]["controller_profile"]["expected"] == "v1" and "controller" not in legacy["label"]
+    wrong = runner.evaluate_demo_dir(spec, demo_dir, controller_profile="path_v2")
+    assert wrong["verdict"] == "FAIL" and not wrong["execution"]["checks"]["command_matches_demo_definition"]
+    assert wrong["execution"]["manifest_mismatches"] == {"controller_profile": {"expected": "path_v2", "recorded": "v1"}}
+    spec, demo_dir, _ = _cut_episode(runner, tmp_path/"v2", "1a")
+    _set_manifest(demo_dir, controller_profile="path_v2")
+    summary = runner.evaluate_demo_dir(spec, demo_dir, controller_profile="path_v2")
+    assert summary["verdict"] == "PASS" and summary["label"].endswith("| controller path_v2")
+    assert summary["controller_profile"]["parameters"] == runner.CONTROLLER_PROFILES["path_v2"]
+    assert runner.evaluate_demo_dir(spec, demo_dir)["verdict"] == "FAIL"   # v1 definition, path_v2 recording

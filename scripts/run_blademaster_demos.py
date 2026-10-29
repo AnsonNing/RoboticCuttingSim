@@ -28,6 +28,12 @@ Usage::
   .venv/bin/python scripts/run_blademaster_demos.py --demo all --gpu 1 --run-id <id>
   .venv/bin/python scripts/run_blademaster_demos.py --demo 2 --run-id <id> --stage evaluate --stage render
   .venv/bin/python scripts/run_blademaster_demos.py --demo all --run-id <id> --stage publish
+  .venv/bin/python scripts/run_blademaster_demos.py --demo 2 --gpu 1 --run-id <id> --controller-profile path_v2
+
+``--controller-profile`` (default ``v1``, the frozen demo definitions) selects
+the scripted controller profile of run_wp10_live; ``path_v2`` is the opt-in
+path-tracking controller. Pass the same value to every stage of a run: the
+evaluate stage checks the recorded profile against it.
 
 ``--stage all`` (the default) is run -> evaluate -> render, plus publish with
 ``--publish``. Evaluation never modifies the episode (its files are hashed
@@ -53,6 +59,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
+from robotic_cutting_sim.policies import CONTROLLER_PROFILES  # noqa: E402
 
 SCRIPTS = ROOT / 'scripts'
 DEFAULT_ROOT = ROOT / 'artifacts' / 'wp10_claude' / 'demos'
@@ -208,11 +215,18 @@ def deep(mapping, *keys, default=None):
 
 # ----------------------------------------------------------------------------- commands
 
-def run_argv(spec, demo_dir, *, python=DEFAULT_NATIVE_PYTHON, gpu=1, cutting_law=5, seed=42):
+def profile_flags(controller_profile):
+    """run_wp10_live flags of a scripted controller profile (v1, the default, adds none)."""
+    if controller_profile not in CONTROLLER_PROFILES:
+        raise ValueError(f'unknown controller profile {controller_profile!r}')
+    return () if controller_profile == 'v1' else ('--controller-profile', controller_profile)
+
+
+def run_argv(spec, demo_dir, *, python=DEFAULT_NATIVE_PYTHON, gpu=1, cutting_law=5, seed=42, controller_profile='v1'):
     """Exact run_wp10_live command line of one demo."""
     return [str(python), str(SCRIPTS / 'run_wp10_live.py'), '--runtime', 'isaac_sim', '--task', spec.task_id,
-            *COMMON_FLAGS, '--cutting-law', str(cutting_law), *spec.extra, '--steps', str(spec.steps),
-            '--seed', str(seed), '--gpu', str(gpu), '--out', str(demo_dir)]
+            *COMMON_FLAGS, '--cutting-law', str(cutting_law), *spec.extra, *profile_flags(controller_profile),
+            '--steps', str(spec.steps), '--seed', str(seed), '--gpu', str(gpu), '--out', str(demo_dir)]
 
 
 def render_argv(spec, episode_dir, out, label, *, python=DEFAULT_RENDER_PYTHON):
@@ -220,8 +234,14 @@ def render_argv(spec, episode_dir, out, label, *, python=DEFAULT_RENDER_PYTHON):
             '--title', spec.title, '--label', label]
 
 
-def expected_config(spec):
-    return {**COMMON_CONFIG, **dict(spec.config)}
+def expected_config(spec, controller_profile='v1'):
+    return {**COMMON_CONFIG, **dict(spec.config), 'controller_profile': controller_profile}
+
+
+def recorded_config(config, key):
+    """Recorded manifest value; recordings made before --controller-profile existed ran the v1 controller."""
+    value = config.get(key)
+    return 'v1' if key == 'controller_profile' and value is None else value
 
 
 def shell_line(argv, tmpdir):
@@ -315,13 +335,14 @@ def grasp_summary(rows):
 
 # ----------------------------------------------------------------------------- layers
 
-def execution_layer(spec, demo_dir, episode, loaded):
+def execution_layer(spec, demo_dir, episode, loaded, controller_profile='v1'):
     manifest, top, row, receipt = loaded['manifest'], loaded['top_result'], loaded['row'], loaded['run_receipt']
     config = (manifest or {}).get('config') or {}
-    expected = expected_config(spec)
-    mismatched = {key: {'expected': value, 'recorded': config.get(key)} for key, value in expected.items()
-                  if not (config.get(key) == value or (isinstance(value, float)
-                          and isinstance(config.get(key), (int, float)) and abs(config.get(key) - value) < 1e-12))}
+    expected = expected_config(spec, controller_profile)
+    recorded = {key: recorded_config(config, key) for key in expected}
+    mismatched = {key: {'expected': value, 'recorded': recorded[key]} for key, value in expected.items()
+                  if not (recorded[key] == value or (isinstance(value, float)
+                          and isinstance(recorded[key], (int, float)) and abs(recorded[key] - value) < 1e-12))}
     rows, physics, frames = loaded['actions'], loaded['physics'], loaded['frame_manifest']
     grasp = grasp_summary(rows)
     events = row.get('events') or {}
@@ -351,6 +372,9 @@ def execution_layer(spec, demo_dir, episode, loaded):
             'runtime_source': row.get('runtime_source'), 'policy_plan': row.get('policy_plan'),
             'policy_final_phase': row.get('policy_final_phase'), 'edge_feedback': row.get('edge_feedback'),
             'policy_motion': row.get('policy_motion'), 'cut_index_check': row.get('cut_index_check'),
+            'controller_profile': {'expected': controller_profile, 'recorded': recorded['controller_profile'],
+                                   'receipt': row.get('controller_profile'),
+                                   'position_tolerance_m': row.get('policy_position_tolerance_m')},
             'manifest_mismatches': mismatched,
             'task_reconstruction_checks': loaded['task_checks']}
 
@@ -591,8 +615,12 @@ def slice_push_outcome(spec, task, loaded):
 OUTCOMES = {'complete_cut': cut_outcome, 'oblique_cut': cut_outcome, 'trim': trim_outcome, 'slice_push': slice_push_outcome}
 
 
-def evaluate_demo_dir(spec, demo_dir):
-    """Read-only evaluation of one demo directory -> summary dict (nothing is written here)."""
+def evaluate_demo_dir(spec, demo_dir, controller_profile='v1'):
+    """Read-only evaluation of one demo directory -> summary dict (nothing is written here).
+
+    ``controller_profile`` is the profile the demo definition expects (the
+    recorded manifest must match it; recordings without the key are v1).
+    """
     demo_dir = Path(demo_dir)
     episode = demo_dir / 'episode_000'
     start = time.perf_counter()
@@ -605,6 +633,9 @@ def evaluate_demo_dir(spec, demo_dir):
     receipt = read_json(demo_dir / 'run_receipt.json')
     config = (manifest or {}).get('config') or {}
     base['cutting_law'] = config.get('cutting_law')
+    base['controller_profile'] = {'expected': controller_profile,
+                                  'recorded': recorded_config(config, 'controller_profile') if manifest else None,
+                                  'parameters': CONTROLLER_PROFILES.get(controller_profile)}
     base['run_receipt'] = receipt
     if not (episode / 'result.json').is_file() or not (episode / 'physics_state.npz').is_file():
         failure = read_json(demo_dir / 'failure.json')
@@ -625,7 +656,7 @@ def evaluate_demo_dir(spec, demo_dir):
               'frame_manifest': read_json(episode / 'frame_manifest.json')}
     task, task_checks = reconstruct_task(task_json, config)
     loaded['task_checks'] = task_checks
-    execution = execution_layer(spec, demo_dir, episode, loaded)
+    execution = execution_layer(spec, demo_dir, episode, loaded, controller_profile)
     if all(task_checks.values()):
         outcome, quality, label = OUTCOMES[spec.kind](spec, task, loaded)
     else:
@@ -639,6 +670,8 @@ def evaluate_demo_dir(spec, demo_dir):
                'NOT_RUN' if outcome['status'] == 'NOT_RUN' and execution['status'] == 'PASS_EXECUTION' else 'FAIL')
     if execution['status'] != 'PASS_EXECUTION':
         label = f"{label} | execution {execution['status']}"
+    if controller_profile != 'v1':
+        label = f"{label} | controller {controller_profile}"
     return {**base, 'verdict': verdict,
             'verdict_rule': 'PASS only when execution is PASS_EXECUTION and the demo outcome is PASS; '
                             'quality (frozen strict oracle, precision, research profile) never gates the verdict',
@@ -681,9 +714,10 @@ def stage_run(options, spec):
     if log.exists() or receipt_path.exists():
         raise StageError(f'refusing to overwrite existing run log {log}')
     argv = run_argv(spec, demo_dir, python=options.native_python, gpu=options.gpu,
-                    cutting_law=options.cutting_law, seed=options.seed)
+                    cutting_law=options.cutting_law, seed=options.seed, controller_profile=options.controller_profile)
     env = {**os.environ, 'TMPDIR': str(options.tmpdir)}
     receipt = {'demo': spec.key, 'command': argv, 'shell': shell_line(argv, options.tmpdir), 'cwd': str(ROOT),
+               'controller_profile': options.controller_profile,
                'tmpdir': str(options.tmpdir), 'log': str(log), 'git': git_info(), 'gpu_before': gpu_snapshot(),
                'started_unix_s': time.time(), 'timeout_s': options.timeout}
     print(f'[{spec.key}] run: {receipt["shell"]}', flush=True)
@@ -721,7 +755,7 @@ def stage_evaluate(options, spec):
     if not demo_dir.is_dir():
         raise StageError(f'no demo directory {demo_dir}; run the physics stage first')
     try:
-        summary = evaluate_demo_dir(spec, demo_dir)
+        summary = evaluate_demo_dir(spec, demo_dir, controller_profile=options.controller_profile)
     except (ValueError, KeyError, TypeError, IndexError) as error:
         raise StageError(f'evaluation failed: {error!r}') from error
     path = next_free(demo_dir / 'demo_summary.json')
@@ -816,6 +850,7 @@ def write_index(options):
                       'execution': deep(summary, 'execution', 'status'), 'outcome': deep(summary, 'outcome', 'status'),
                       'label': None if summary is None else summary['label'],
                       'cutting_law': None if summary is None else summary.get('cutting_law'),
+                      'controller_profile': deep(summary, 'controller_profile', 'recorded'),
                       'runtime_source': deep(summary, 'runtime', 'runtime_source'),
                       'measured_capture_rate_hz': deep(summary, 'measured_capture_rate', 'rate_hz'),
                       'wall_time_s': deep(summary, 'execution', 'wall_time_s'),
@@ -824,6 +859,7 @@ def write_index(options):
                       'publish_receipt': None if publish is None else str(publish)}
     index = {'schema': 'blademaster_demo_index_v1', 'run_id': options.run_id, 'run_root': str(run_root),
              'control_mode': CONTROL_MODE, 'scenario': SCENARIO, 'git': git_info(), 'command': sys.argv,
+             'controller_profile': options.controller_profile,
              'written_unix_s': time.time(), 'demos': demos,
              'demo_definitions': {key: {'task_id': DEMOS[key].task_id, 'steps': DEMOS[key].steps,
                                         'extra_arguments': list(DEMOS[key].extra), 'title': DEMOS[key].title}
@@ -861,7 +897,8 @@ def dry_run(options, demos, stages):
             if demo_dir.exists():
                 print(f'# REFUSED run: {demo_dir} exists (never overwritten)')
             print(shell_line(run_argv(spec, demo_dir, python=options.native_python, gpu=options.gpu,
-                                      cutting_law=options.cutting_law, seed=options.seed), options.tmpdir))
+                                      cutting_law=options.cutting_law, seed=options.seed,
+                                      controller_profile=options.controller_profile), options.tmpdir))
         if 'evaluate' in stages:
             print(f'# evaluate (in-process, read-only): {episode} -> {next_free(demo_dir / "demo_summary.json")}')
         if 'render' in stages:
@@ -889,6 +926,10 @@ def build_parser():
     p.add_argument('--gpu', type=int, default=1)
     p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5), default=5)
     p.add_argument('--seed', type=int, default=42)
+    p.add_argument('--controller-profile', choices=tuple(CONTROLLER_PROFILES), default='v1',
+                   help='Scripted controller profile passed to run_wp10_live (default v1 = the frozen demo '
+                        'definitions; path_v2 = opt-in path tracking + slow approach/settle). The evaluate stage '
+                        'checks the recorded profile against this value')
     p.add_argument('--dry-run', action='store_true', help='Print the exact commands; write nothing')
     p.add_argument('--publish', action='store_true', help='With --stage all: also copy small media to docs/media/demos')
     p.add_argument('--root', type=Path, default=DEFAULT_ROOT)
