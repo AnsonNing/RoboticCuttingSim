@@ -96,7 +96,7 @@ class LiveCuttingMaterial:
             from .tlmpm import TLMPM
             solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm", {}
         else:
-            if self.cutting_law == 4:
+            if self.cutting_law in (4, 5):
                 from .tlmpm_v4 import TLMPM
             elif self.cutting_law == 3:
                 from .tlmpm_v3 import TLMPM
@@ -152,10 +152,13 @@ class LiveCuttingMaterial:
                 'obstacle_reaction_recipients': self.obstacle_reaction_recipients}
         self.bed = TLMPM(self.points, self.masses, self.spacing, self.material_config, c.device,
                          **fixture_kwargs, **solver_kwargs)
-        if self.cutting_law == 4:
+        if self.cutting_law in (4, 5):
             self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
                                       "law4_parameters": dict(self.bed.law4_parameters),
                                       "law4_reference": "docs/adr/0006-swept-band-cutting-law-4.md"}
+        if self.cutting_law == 5:
+            self.parameter_receipt = {**self.parameter_receipt, "law5_parameters": dict(self.bed.law5_parameters),
+                                      "law5_reference": "docs/adr/0008-cutting-law-5-lead-preassignment.md"}
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
         wp.load_module(module=solver_module, device=c.device)

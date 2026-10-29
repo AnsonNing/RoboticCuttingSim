@@ -25,7 +25,7 @@ class KinematicConfig:
     particle_spacing_m: float | None = None   # None = protocol spacing (1 mm)
     material_dt: float = .0001                 # explicit, recorded; coarse probes may raise it
     device: str = "cpu"
-    cutting_law: int | None = None             # None = task default (v1 tasks 1, v2 tasks 2); 3/4 opt-in
+    cutting_law: int | None = None             # None = task default (v1 tasks 1, v2 tasks 2); 3/4/5 opt-in
     max_cuts: int = 1
     slice_efficiency: float = 1.
     scenario: str | None = None
@@ -107,8 +107,8 @@ class KinematicCuttingBackend:
         self.edge = np.asarray(target, float).copy()
         diagnostics = self.material.advance(self.edge, next_time, cutting=cutting, cut_index=cut_index)
         self.time_s = next_time
-        if self.material.cutting_law == 4:
-            # Oracle-only record of when the edge was engaged (never an observation).
+        if self.material.cutting_law in (4, 5):
+            # Oracle-only record (law 5 shares the law-4 stroke state) of when the edge was engaged (never an observation).
             self.stroke_history.append({"time_s": next_time, "cut_index": diagnostics["cut_index"],
                                         **self.material.bed.cutting_state(count_labels=True)})
         self.last_diagnostics = {"material": diagnostics, "commanded_edge_pose": self.edge.copy(),
@@ -135,7 +135,7 @@ class KinematicCuttingBackend:
         return self._extract_surface()[2]
 
     def law4_stroke_arrays(self):
-        """Per-control-step law-4 stroke record as arrays for physics_state.npz ({} otherwise)."""
+        """Per-control-step law-4/5 stroke record as arrays for physics_state.npz ({} otherwise)."""
         rows = self.stroke_history
         if not rows:
             return {}
