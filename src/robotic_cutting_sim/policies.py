@@ -7,7 +7,8 @@ builders express common knife uses — push cut, oblique/yawed cut, slicing/saw
 cut and surface skimming — from the task's nominal geometry (initial workpiece
 pose and dimensions known before the episode, never oracle material state).
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from typing import Callable
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -23,6 +24,8 @@ class Waypoint:
     saw_period_s: float = .4
     speed_m_s: float | None = None  # None = the per-step limit
     cut_index: int = 0
+    hold_s: float = 0.          # after reaching the pose, keep commanding it (with ``cut``) this long
+    label: str = ""             # phase name for recording; never changes the motion
 
 
 def edge_from_observation(observation, task):
@@ -39,10 +42,20 @@ class WaypointPolicy:
     rotation_tolerance_rad: float = float(np.deg2rad(.5))
     index: int = 0
     _start_time: float | None = None
+    # Optional edge-pose source (observation -> WORLD edge XYZ+XYZW), e.g. a
+    # measured tool-edge estimate for a live controller. None keeps the
+    # nominal commanded-frame edge from proprioception (edge_from_observation).
+    edge_estimator: Callable | None = None
+    _hold_start: float | None = None
 
     @property
     def done(self):
         return self.index >= len(self.waypoints)
+
+    @property
+    def phase(self):
+        """Label of the current waypoint ("done" after the last one)."""
+        return "done" if self.done else self.waypoints[self.index].label
 
     def _target(self, waypoint, time_s):
         pose = np.asarray(waypoint.pose, float)
@@ -53,7 +66,10 @@ class WaypointPolicy:
         return pose
 
     def __call__(self, observation):
-        edge = edge_from_observation(observation, self.task)
+        if self.edge_estimator is None:
+            edge = edge_from_observation(observation, self.task)
+        else:
+            edge = np.asarray(self.edge_estimator(observation), float)
         time_s = float(observation["timestamp_s"])
         while not self.done:
             waypoint = self.waypoints[self.index]
@@ -62,8 +78,13 @@ class WaypointPolicy:
             final = np.asarray(waypoint.pose, float)
             position_error = np.linalg.norm(final[:3]-edge[:3])
             rotation_error = (Rotation.from_quat(final[3:])*Rotation.from_quat(edge[3:]).inv()).magnitude()
-            if position_error <= self.position_tolerance_m and rotation_error <= self.rotation_tolerance_rad:
-                self.index, self._start_time = self.index+1, None
+            reached = position_error <= self.position_tolerance_m and rotation_error <= self.rotation_tolerance_rad
+            if reached and waypoint.hold_s > 0:
+                if self._hold_start is None:
+                    self._hold_start = time_s
+                reached = time_s-self._hold_start >= waypoint.hold_s-1e-9
+            if reached:
+                self.index, self._start_time, self._hold_start = self.index+1, None, None
                 continue
             target = self._target(waypoint, time_s)
             step = self.limits.max_translation_m
@@ -104,11 +125,13 @@ def oriented(task, *, tilt_deg=0., yaw_deg=0., roll_deg=0.):
 
 
 def through_cut(task, *, tilt_deg=0., yaw_deg=0., roll_deg=0., saw_amplitude_m=0., saw_period_s=.4,
-                cut_speed_m_s=.01, clearance_m=.008, overtravel_m=.004, cut_index=0):
+                cut_speed_m_s=.01, clearance_m=.008, overtravel_m=.004, cut_index=0, offset_m=0.):
     """Approach above the target plane, cut along the advance line, retract.
 
     The cut line passes through the workpiece center at mid height; it ends
     below the workpiece bottom by ``overtravel_m`` (vertical component).
+    ``offset_m`` shifts the cut line along the workpiece-local target normal
+    (0 keeps the line through the task target exactly).
     """
     rotation = oriented(task, tilt_deg=tilt_deg, yaw_deg=yaw_deg, roll_deg=roll_deg)
     advance = rotation.apply([1., 0., 0.])
@@ -117,6 +140,8 @@ def through_cut(task, *, tilt_deg=0., yaw_deg=0., roll_deg=0., saw_amplitude_m=0
     T = task.T_world_workpiece
     height = task.geometry.base_height_m
     center = T[:3, :3]@np.array(task.target_origin_local_m)+T[:3, 3]+T[:3, 2]*height/2
+    if offset_m:
+        center = center+T[:3, :3]@(offset_m*np.asarray(task.target_normal_local, float))
     top, bottom = center[2]+height/2, center[2]-height/2
     start = center+advance*((top+clearance_m-center[2])/advance[2])
     end = center+advance*((bottom-overtravel_m-center[2])/advance[2])
@@ -157,3 +182,55 @@ def skim(task, *, clearance_m=None, margin_m=.03, speed_m_s=.025, saw_amplitude_
     return [Waypoint(_pose(above, rotation)), Waypoint(_pose(start, rotation)),
             Waypoint(_pose(end, rotation), cut=True, speed_m_s=speed_m_s, saw_amplitude_m=saw_amplitude_m),
             Waypoint(_pose(end+np.array([0., 0., .03]), rotation))]
+
+
+def slice_push(task, *, cut_speed_m_s=.01, clearance_m=.008, overtravel_m=.004, hold_s=.5,
+               kerf_speed_m_s=.02, push_distance_m=None, push_speed_m_s=None, push_height_m=None,
+               release_m=.002, retract_height_m=.03):
+    """Two sequential cuts, then a cut-disabled blade-face push (ADR 0007 section 3).
+
+    For a v3 slice-push task (tasks.DemoTaskSpec): cut 0 on the declared
+    plane 0 (``cut_index`` 0, armed descent to ``overtravel_m`` below the bar
+    bottom), hold, lift inside the kerf and move to plane 1 with cutting
+    disabled, cut 1 (``cut_index`` 1), hold, raise the edge to
+    ``push_height_m`` above the board inside the kerf, push along the declared
+    push direction with cutting disabled, hold, back off and retract. Only
+    nominal task geometry is used, never oracle material state.
+    """
+    planes = getattr(task, "multi_cut_planes_local", ())
+    if len(planes) != 2:
+        raise ValueError("slice_push needs a task that declares two cut planes")
+    normal = np.asarray(task.target_normal_local, float)
+    offsets = []
+    for origin, plane_normal in planes:
+        if not np.allclose(plane_normal, normal, atol=1e-9):
+            raise ValueError("slice_push cut planes must share the task target normal")
+        offsets.append(float((np.asarray(origin, float)-np.asarray(task.target_origin_local_m, float))@normal))
+    distance = task.push_distance_m if push_distance_m is None else push_distance_m
+    speed = task.push_speed_m_s if push_speed_m_s is None else push_speed_m_s
+    height = task.push_edge_height_m if push_height_m is None else push_height_m
+    common = dict(cut_speed_m_s=cut_speed_m_s, clearance_m=clearance_m, overtravel_m=overtravel_m)
+    first = through_cut(task, cut_index=0, offset_m=offsets[0], **common)
+    second = through_cut(task, cut_index=1, offset_m=offsets[1], **common)
+    rotation = first[2].pose[3:]
+    T = task.T_world_workpiece
+    board_top = max(box.center_m[2]+box.half_extents_m[2] for box in task.fixture_boxes_local)
+    pushed = planes[task.pushed_piece_cut_index][0]
+    kerf = T[:3, :3]@np.array([pushed[0], pushed[1], board_top+height])+T[:3, 3]
+    direction = T[:3, :3]@np.asarray(task.push_direction_local, float)
+    pushed_to = kerf+distance*direction
+    released = pushed_to-release_m*direction
+    up = T[:3, 2]
+    return [replace(first[0], label="approach_0"), replace(first[1], label="start_0"),
+            replace(first[2], label="cut_0"),
+            replace(first[3], hold_s=hold_s, label="hold_0"),
+            Waypoint(first[1].pose, speed_m_s=kerf_speed_m_s, label="lift_0"),
+            replace(second[1], label="move_1"),
+            replace(second[2], label="cut_1"),
+            replace(second[3], hold_s=hold_s, label="hold_1"),
+            Waypoint(tuple(np.r_[kerf, rotation]), speed_m_s=speed, label="raise_in_kerf"),
+            Waypoint(tuple(np.r_[pushed_to, rotation]), speed_m_s=speed, label="push"),
+            Waypoint(tuple(np.r_[pushed_to, rotation]), hold_s=hold_s, label="push_hold"),
+            Waypoint(tuple(np.r_[released, rotation]), speed_m_s=speed, label="release"),
+            Waypoint(tuple(np.r_[released+up*(np.asarray(first[1].pose[:3])@up-released@up+retract_height_m), rotation]),
+                     label="retract")]
