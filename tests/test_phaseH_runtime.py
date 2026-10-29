@@ -100,7 +100,9 @@ def test_kernel_groups_cover_the_v5_substep():
     assert kernel_group("_p2g") == "p2g" and kernel_group("_grid_update") == "grid_update"
     assert kernel_group("_claim_slots") == "slot_claim" and kernel_group("_g2p") == "g2p"
     assert kernel_group("_assign_band") == "label_stroke" and kernel_group("fixture_contacts") == "contacts"
-    assert kernel_group("something_else") == "other_kernels"
+    assert kernel_group("something_else") == "other_kernels" and kernel_group("memset") == "memset"
+    from robotic_cutting_sim.profiling import kernel_key
+    assert kernel_key("forward kernel _p2g_1a2b3c4d") == "_p2g" and kernel_key("memset") == "memset"
 
 
 @pytest.mark.cpu_sim

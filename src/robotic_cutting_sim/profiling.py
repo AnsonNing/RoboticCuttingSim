@@ -15,9 +15,11 @@ flag checks, no overhead).
   issued while a device is capturing a graph.
 * ``kernels=True`` (a separate, perturbing mode): the CUDA graph of the material
   is dropped after each material reset so the identical kernel sequence runs
-  eagerly, and every ``warp.launch`` is timed with a device synchronization
-  before and after (CPU launches are synchronous). The totals of this mode are
-  inflated by the synchronizations; use it for the kernel split only, and the
+  eagerly. On CUDA every ``LiveCuttingMaterial.advance`` is bracketed by
+  ``warp.timing_begin/timing_end`` (CUDA activity timing: GPU execution time of
+  each kernel and memset, no extra synchronization); on the CPU every
+  ``warp.launch`` is timed directly (CPU launches are synchronous). Eager launches
+  add host launch overhead, so use this mode for the kernel split only and the
   stage mode for the stage times.
 
 Rows are aggregated per control step (``PolicyReadyEnv.step``): mean / max per
@@ -75,7 +77,18 @@ KERNEL_GROUPS = (("p2g", ("_p2g",)), ("grid_update", ("grid_update",)), ("g2p", 
                  ("slot_claim", ("_claim_slots",)), ("stress", ("_stress",)),
                  ("contacts", ("_rigid_contacts", "_obstacle_contacts", "fixture_contacts", "_particle_contacts")),
                  ("label_stroke", ("_segment", "_update_stroke", "_assign", "_start_cut", "_remember_cut", "_advance",
-                                   "_persist", "_stroke_end", "_commit", "_pending", "_mark_nodes", "_lead_closure")))
+                                   "_persist", "_stroke_end", "_commit", "_pending", "_mark_nodes", "_lead_closure")),
+                 ("memset", ("memset",)))
+
+
+def kernel_key(activity_name):
+    """'forward kernel _p2g_1a2b3c4d' -> '_p2g' (CUDA activity names carry a module hash suffix)."""
+    import re
+    name = str(activity_name)
+    for prefix in ("forward kernel ", "backward kernel "):
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+    return re.sub(r"_[0-9a-f]{8}$", "", name)
 
 
 def kernel_group(key):
@@ -245,19 +258,32 @@ class StageProfiler:
     def _wrap_kernels(self, warp):
         profiler = self
         launch = warp.launch
+        from . import live_material
+        advance = live_material.LiveCuttingMaterial.__dict__["advance"]
+
+        @functools.wraps(advance)
+        def advance_with_activity_timing(material, *args, **kwargs):
+            if not warp.get_device(material.config.device).is_cuda:
+                return advance(material, *args, **kwargs)
+            warp.timing_begin(cuda_filter=warp.TIMING_KERNEL | warp.TIMING_MEMSET)
+            try:
+                return advance(material, *args, **kwargs)
+            finally:
+                for result in warp.timing_end():
+                    key = kernel_key(result.name)
+                    profiler.kernel_times[key] += result.elapsed*1e-3   # ms -> s (GPU execution time)
+                    profiler.kernel_calls[key] += 1
+        self._patches.append((live_material.LiveCuttingMaterial, "advance", advance, True))
+        live_material.LiveCuttingMaterial.advance = advance_with_activity_timing
 
         @functools.wraps(launch)
         def timed_launch(kernel, *args, **kwargs):
             device = kwargs.get("device")
             device = warp.get_device(device) if device is not None else warp.get_device()
-            if device.is_capturing:
+            if device.is_capturing or device.is_cuda:   # CUDA: activity timing above
                 return launch(kernel, *args, **kwargs)
-            if device.is_cuda:
-                warp.synchronize_device(device)
             start = time.perf_counter()
             out = launch(kernel, *args, **kwargs)
-            if device.is_cuda:
-                warp.synchronize_device(device)
             elapsed = time.perf_counter()-start
             key = getattr(kernel, "key", str(kernel))
             profiler.kernel_times[key] += elapsed
