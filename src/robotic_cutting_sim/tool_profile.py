@@ -169,8 +169,16 @@ RULER_KNIFE_V2_Y = EndHeldToolProfile("ruler_knife_v2_y", edge_length_m=.120, bl
                                       bevel="double", bevel_included_angle_deg=25., blade_normal_hand_axis="y")
 RULER_KNIFE_V2_X = EndHeldToolProfile("ruler_knife_v2_x", edge_length_m=.120, blade_depth_m=.040, thickness_m=.0015,
                                       bevel="double", bevel_included_angle_deg=25., blade_normal_hand_axis="x")
+# WP-11 Phase C4 comparison variant (cutting_tasks_v4.json TRIM-02-K2C-*): the same 120 x 40 x 1.5 mm blade
+# and grip as ruler_knife_v2_y with a SINGLE 25 deg (chisel) bevel. The flat reference face is edge z = 0
+# (toward the target when the blade normal is near +z), the bevel is on +z, so at rake >= 0 no blade point
+# lies below the edge (the double bevel's lower face does for rake < 12.5 deg).
+RULER_KNIFE_V2_Y_CHISEL = EndHeldToolProfile("ruler_knife_v2_y_chisel", edge_length_m=.120, blade_depth_m=.040,
+                                             thickness_m=.0015, bevel="single", bevel_included_angle_deg=25.,
+                                             blade_normal_hand_axis="y")
 PROFILES = {RULER_KNIFE_V1.profile_id: RULER_KNIFE_V1, RULER_KNIFE_V2_Y.profile_id: RULER_KNIFE_V2_Y,
-            RULER_KNIFE_V2_X.profile_id: RULER_KNIFE_V2_X}
+            RULER_KNIFE_V2_X.profile_id: RULER_KNIFE_V2_X,
+            RULER_KNIFE_V2_Y_CHISEL.profile_id: RULER_KNIFE_V2_Y_CHISEL}
 
 
 def legacy_profile(task):
