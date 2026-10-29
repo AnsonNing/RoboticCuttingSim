@@ -348,6 +348,25 @@ def determinism_signature(meta):
                       default=str)
 
 
+def _per_process_memory(metas, start):
+    """Memory per recycled process block (diagnostic; the gate with memory.trend_scope='per_process')."""
+    blocks = {}
+    for meta in metas:
+        blocks.setdefault(int(meta["recycle"]["block"]), []).append(meta)
+    rows = []
+    for block, members in sorted(blocks.items()):
+        rss = [m["memory_after"]["host_rss_mib"] for m in members]
+        gpu = [m["memory_after"]["gpu_used_mib_total"] for m in members]
+        rows.append({"block": block, "pids": sorted({m["memory_after"].get("pid") for m in members}, key=str),
+                     "episodes": [m["episode_id"] for m in members], "host_rss_mib_after_episode": rss,
+                     "gpu_used_mib_after_episode": gpu, "host_rss_slope_mib_per_episode": _slope(rss[start:]),
+                     "gpu_slope_mib_per_episode": _slope(gpu[start:]),
+                     "host_rss_max_mib": max((v for v in rss if v is not None), default=None)})
+    return {"every": metas[0]["recycle"].get("every"), "blocks": rows,
+            "host_rss_max_mib": max((r["host_rss_max_mib"] for r in rows if r["host_rss_max_mib"] is not None),
+                                    default=None)}
+
+
 def reliability_report(metas, config, runtime, *, validations=(), execution_failures=(), planned_episodes=None):
     """Per-episode and cross-episode Test F checks against ``phaseG_reliability_v1``; POLICY_READY iff all pass."""
     th, memory_cfg = config["reset"], config["memory"]
@@ -400,6 +419,18 @@ def reliability_report(metas, config, runtime, *, validations=(), execution_fail
     rss = [m["memory_after"]["host_rss_mib"] for m in metas][start:]
     gpu = [m["memory_after"]["gpu_used_mib_total"] for m in metas][start:]
     rss_slope, gpu_slope = _slope(rss), _slope(gpu)
+    per_process = _per_process_memory(metas, start) if any(m.get("recycle") for m in metas) else None
+    if memory_cfg.get("trend_scope", "run") == "per_process":
+        # opt-in (process-recycled runs only): the gated slope is the largest within-process slope, each fitted over
+        # the process's own episodes from its fit_from_episode-th on; the whole-run slope stays reported
+        if per_process is None:
+            raise ValueError("memory.trend_scope='per_process' needs process-recycled episodes (meta 'recycle')")
+        slopes = [b["host_rss_slope_mib_per_episode"] for b in per_process["blocks"]
+                  if b["host_rss_slope_mib_per_episode"] is not None]
+        gpu_slopes = [b["gpu_slope_mib_per_episode"] for b in per_process["blocks"]
+                      if b["gpu_slope_mib_per_episode"] is not None]
+        rss_slope = max(slopes) if slopes else None
+        gpu_slope = max(gpu_slopes) if gpu_slopes else None
     groups = {}
     for meta in metas:
         groups.setdefault(determinism_signature(meta), []).append(meta)
@@ -431,7 +462,9 @@ def reliability_report(metas, config, runtime, *, validations=(), execution_fail
             "memory": {"host_rss_mib_after_episode": [m["memory_after"]["host_rss_mib"] for m in metas],
                        "gpu_used_mib_after_episode": [m["memory_after"]["gpu_used_mib_total"] for m in metas],
                        "host_rss_slope_mib_per_episode": rss_slope, "gpu_slope_mib_per_episode": gpu_slope,
-                       "fit_from_episode": start},
+                       "fit_from_episode": start,
+                       **({} if per_process is None else {"trend_scope": memory_cfg.get("trend_scope", "run"),
+                                                          "per_process": per_process})},
             "determinism": determinism, "execution_failures": list(execution_failures),
             "validations": list(validations), "failing": failing, "POLICY_READY": not failing,
             "scope": "POLICY_READY means the API/lifecycle/storage reliability checks of this run passed; "

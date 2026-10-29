@@ -266,7 +266,12 @@ class PolicyReadyEnv:
         self.recording = dict(recording) if recording else None
         if self.recording is not None and "root" not in self.recording:
             raise ValueError("recording needs a 'root' directory")
-        self._recorder, self._episode_index, self._recorder_finished = None, -1, True
+        # recording["episode_index_start"] (opt-in, default 0): the first episode index of this process, used by the
+        # collector's process recycling so episode ids stay continuous across fresh processes
+        start = int(self.recording.get("episode_index_start", 0)) if self.recording is not None else 0
+        if start < 0:
+            raise ValueError("recording episode_index_start must be >= 0")
+        self._recorder, self._episode_index, self._recorder_finished = None, start-1, True
         self._camera, self._camera_time = {}, None
         self.action_log, self.episode_receipts = [], []
         self._step_index, self._ready = 0, False

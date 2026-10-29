@@ -129,7 +129,7 @@ def make_controller(env, entry):
     return act, (lambda: False), dict(kind=kind, policy=entry['policy']), list(entry.get('privileged_inputs', []))
 
 
-def run_episode(env, entry, index, out, a, clocks):
+def run_episode(env, entry, index, out, a, clocks, extra=None):
     start, memory_before = time.monotonic(), process_memory()
     observation, reset_info = env.reset(seed=entry['seed'], controller=entry['label'])
     act, done, receipt, privileged_inputs = make_controller(env, entry)
@@ -244,6 +244,8 @@ def run_episode(env, entry, index, out, a, clocks):
                                                                                          sort_keys=True).encode()).hexdigest(),
                                      particle_spacing_m=task.particle_spacing_m, grid_dx_m=task.grid_dx_m),
                 export=dict(path=str(exported.relative_to(out)), sha256=export['export_sha256'], keys=export['keys']))
+    if extra:   # e.g. the process-recycling receipt (only with --recycle-every)
+        meta.update(extra)
     write_json(directory/'episode.json', jsonable(meta))
     return meta
 
@@ -283,6 +285,193 @@ def live_preflight(a, entries, out, planner_options):
     write_json(out/'preflight.json', dict(task_id=task.task_id, receipts=receipts, refused=refused))
     print(f'[collect] live preflight: {receipts}', flush=True)
     return refused
+
+
+def open_env(a, compile_seed, out, runtime_dir, runtime_options, planner_options, episode_index_start=None):
+    """The collector's policy env (one process); episode_index_start only with process recycling."""
+    from robotic_cutting_sim.live_env import open_cutting_env
+    recording = dict(root=out, **({} if a.record_every is None else dict(every=a.record_every)))
+    if episode_index_start is not None:
+        recording['episode_index_start'] = int(episode_index_start)
+    return open_cutting_env(runtime=a.runtime, output_dir=runtime_dir, seed=compile_seed,
+                            preset=PRESET_ID, scene=a.scene, goal=a.goal, planner_options=planner_options,
+                            tool_profile=a.tool_profile, particle_spacing_m=a.spacing,
+                            observation_profile=a.observation_profile, recording=recording,
+                            preset_overrides={} if a.camera_every is None else dict(camera_every=a.camera_every),
+                            **runtime_options)
+
+
+def index_row(meta):
+    return dict(episode_id=meta['episode_id'], dir=meta['episode_id'], label=meta['label'],
+                controller=meta['controller'], seed=meta['seed'], status='STORED', verdict=meta['verdict'],
+                expect=meta['expect'], termination_reason=meta['termination_reason'],
+                home_outcome=(meta['home_outcome'] or {}).get('status'), steps=meta['steps_recorded'],
+                export_sha256=meta['export']['sha256'], wall_s=meta['wall_s'],
+                **({} if meta.get('runtime_profile') is None else dict(
+                    runtime_profile=meta['runtime_profile']['profile_id'],
+                    acceptance_valid=meta['acceptance_valid'])))
+
+
+def failure_row(i, entry, error):
+    return dict(episode_id=f'episode_{i:03d}', dir=f'episode_{i:03d}', label=entry['label'],
+                controller=entry['controller'], seed=entry['seed'], status='FAIL_EXECUTION', error=error)
+
+
+def run_entries(env, entries, first_index, out, a, clocks, runtime_options, metas, failures, index, write_index,
+                extra=None):
+    """Run ``entries`` as episodes first_index.. in this process (stops after 2 consecutive execution errors)."""
+    consecutive_errors = 0
+    for j, entry in enumerate(entries):
+        i = first_index + j
+        print(f'[collect] episode {i} {entry["label"]} controller={entry["controller"]} seed={entry["seed"]}',
+              flush=True)
+        try:
+            profiler = None
+            if a.profile:
+                from robotic_cutting_sim.profiling import StageProfiler
+                device = runtime_options.get('device')
+                profiler = StageProfiler(sync_device=device if str(device).startswith('cuda') else None,
+                                         kernels=a.profile == 'kernels').install()
+            try:
+                meta = run_episode(env, entry, i, out, a, clocks,
+                                   extra=None if extra is None else extra(i, j))
+            finally:
+                if profiler is not None:
+                    profiler.uninstall()
+            if profiler is not None:
+                summary = dict(profiler.summary(), episode_id=meta['episode_id'], mode=a.profile,
+                               wall_s=meta['wall_s'], runtime=a.runtime, device=runtime_options.get('device'))
+                write_json(out/meta['episode_id']/'profile.json', jsonable(summary))
+                meta['profile'] = dict(mode=a.profile, path=f"{meta['episode_id']}/profile.json")
+                write_json(out/meta['episode_id']/'episode.json', jsonable(meta))
+            consecutive_errors = 0
+        except Exception as error:
+            consecutive_errors += 1
+            failure = dict(episode_index=i, label=entry['label'], error=repr(error),
+                           traceback=traceback.format_exc())
+            failures.append(failure)
+            write_json(out/f'episode_{i:03d}_failure.json', failure)
+            traceback.print_exc()
+            index['episodes'].append(failure_row(i, entry, repr(error)))
+            write_index()
+            if consecutive_errors >= 2:
+                break
+            continue
+        metas.append(meta)
+        index['episodes'].append(index_row(meta))
+        write_index()
+        print(f'[collect] episode {i} verdict={meta["verdict"]} statuses={meta["action_status_counts"]} '
+              f'wall={meta["wall_s"]:.1f}s rss={meta["memory_after"]["host_rss_mib"]}', flush=True)
+    return consecutive_errors
+
+
+def score(out, a, index, metas, failures, entries, start):
+    """Validate every stored episode and write reliability[_<version>].json; returns the primary report."""
+    validations = [ds.validate_episode(out, row['episode_id']) for row in index['episodes']
+                   if row.get('status') == 'STORED']
+    configs = [Path(c) for c in (a.reliability_config or [RELIABILITY_CONFIG])]
+    report = None
+    for k, path in enumerate(configs):
+        config = json.loads(path.read_text())
+        scored = ds.reliability_report(metas, config, a.runtime, validations=validations,
+                                       execution_failures=failures, planned_episodes=len(entries))
+        scored.update(wall_s=time.monotonic() - start, config_path=str(path), primary=k == 0)
+        write_json(out/f"reliability_{config['version']}.json", jsonable(scored))
+        if k == 0:
+            report = scored
+            write_json(out/'reliability.json', jsonable(report))
+        else:
+            print(f"[collect] also scored {config['version']}: POLICY_READY={scored['POLICY_READY']} "
+                  f"failing={scored['failing']}", flush=True)
+    print(f'[collect] POLICY_READY={report["POLICY_READY"]} failing={report["failing"]}', flush=True)
+    return report
+
+
+def recycle_blocks(entries, every):
+    return [(b, b*every, entries[b*every:(b+1)*every]) for b in range(-(-len(entries)//every))]
+
+
+def recycle_parent(a, entries, out, argv, index, write_index):
+    """--recycle-every N: every block of N episodes in a fresh child process; then score the whole dataset here."""
+    import subprocess
+    start = time.monotonic()
+    metas, failures, receipts, crashed_in_row = [], [], [], 0
+    (out/'recycle').mkdir()
+    for block, first, block_entries in recycle_blocks(entries, a.recycle_every):
+        spec_path = out/'recycle'/f'block_{block:03d}.json'
+        write_json(spec_path, jsonable(dict(block=block, every=a.recycle_every, first_episode=first,
+                                            episodes=len(block_entries), compile_seed=entries[0]['seed'],
+                                            runtime_dir=f'runtime_block_{block:03d}', entries=block_entries)))
+        command = [sys.executable, str(Path(__file__).resolve()), *argv, '--recycle-child', str(spec_path)]
+        print(f'[collect] recycle block {block}: episodes {first}..{first+len(block_entries)-1} in a fresh process',
+              flush=True)
+        launched = time.monotonic()
+        done = subprocess.run(command, cwd=Path.cwd())
+        result_path = out/'recycle'/f'block_{block:03d}_result.json'
+        result = json.loads(result_path.read_text()) if result_path.exists() else None
+        receipts.append(dict(block=block, first_episode=first, episodes=len(block_entries), returncode=done.returncode,
+                             wall_s=time.monotonic() - launched, result=str(result_path.relative_to(out))
+                             if result is not None else None, pid=None if result is None else result.get('pid')))
+        reported = {} if result is None else {row['episode_id']: row for row in result['index_rows']}
+        block_failures = {} if result is None else {f['episode_index']: f for f in result['failures']}
+        for j, entry in enumerate(block_entries):
+            i = first + j
+            row = reported.get(f'episode_{i:03d}')
+            if row is not None and row['status'] == 'STORED':
+                metas.append(json.loads((out/row['dir']/'episode.json').read_text()))
+                index['episodes'].append(row)
+            elif i in block_failures:
+                failures.append(block_failures[i])
+                index['episodes'].append(row or failure_row(i, entry, block_failures[i]['error']))
+            else:   # the child process died (or stopped) before this episode finished
+                error = f'recycle block {block} child exited with code {done.returncode} before episode {i} was stored'
+                failure = dict(episode_index=i, label=entry['label'], error=error, traceback=None)
+                failures.append(failure)
+                write_json(out/f'episode_{i:03d}_failure.json', failure)
+                index['episodes'].append(failure_row(i, entry, error))
+        index['process_recycling'] = dict(every=a.recycle_every, blocks=receipts)
+        write_index()
+        crashed_in_row = crashed_in_row + 1 if (result is None or done.returncode != 0) else 0
+        if crashed_in_row >= 2:
+            print('[collect] two consecutive recycle blocks failed; stopping', flush=True)
+            break
+    report = score(out, a, index, metas, failures, entries, start)
+    write_index()
+    return 0 if report['POLICY_READY'] else 3
+
+
+def recycle_child(a, entries, out, runtime_options, clocks, planner_options):
+    """One recycle block in this (fresh) process; writes recycle/block_###_result.json for the parent."""
+    spec = json.loads(Path(a.recycle_child).read_text())
+    first, block = int(spec['first_episode']), int(spec['block'])
+    block_entries = entries[first:first+int(spec['episodes'])]
+    if jsonable(block_entries) != spec['entries']:
+        raise SystemExit(f'recycle block {block}: the plan/seeds differ from the parent block spec')
+    for i in range(first, first+len(block_entries)):
+        if (out/f'episode_{i:03d}').exists():
+            raise SystemExit(f'recycle block {block}: episode_{i:03d} exists; never overwrite')
+    result_path = out/'recycle'/f'block_{block:03d}_result.json'
+    index = dict(episodes=[])
+    metas, failures = [], []
+    memory_start, start = process_memory(), time.monotonic()
+    receipt = lambda i, j: dict(recycle=dict(block=block, every=int(spec['every']), block_episode=j,
+                                             pid=memory_start['pid'], runtime_dir=spec['runtime_dir']))
+    status = 0
+    try:
+        with open_env(a, int(spec['compile_seed']), out, out/spec['runtime_dir'], runtime_options, planner_options,
+                      episode_index_start=first) as env:
+            run_entries(env, block_entries, first, out, a, clocks, runtime_options, metas, failures, index,
+                        lambda: None, extra=receipt)
+    except BaseException as error:
+        write_json(out/'recycle'/f'block_{block:03d}_failure.json', dict(error=repr(error),
+                                                                       traceback=traceback.format_exc()))
+        traceback.print_exc()
+        status = 1
+    write_json(result_path, jsonable(dict(block=block, pid=memory_start['pid'], first_episode=first,
+                                          index_rows=index['episodes'], failures=failures, memory_start=memory_start,
+                                          memory_end=process_memory(), wall_s=time.monotonic() - start,
+                                          status=status)))
+    return status
 
 
 def main(argv=None):
@@ -329,10 +518,23 @@ def main(argv=None):
     p.add_argument('--reliability-config', action='append',
                    help='Reliability config(s); the first is primary (reliability.json), every one is also written as '
                         'reliability_<version>.json (default: configs/wp11/phaseG_reliability_v1.json)')
+    p.add_argument('--recycle-every', type=int,
+                   help='Opt-in process recycling (WP-11 Phase H mitigation): run every block of N consecutive episodes '
+                        'in a fresh collector process; episode ids, seeds and the index stay continuous and the parent '
+                        'scores the whole dataset. Default: all episodes in this one process (unchanged)')
+    p.add_argument('--recycle-child', type=Path, help=argparse.SUPPRESS)   # internal: one block (written by the parent)
     p.add_argument('--out', type=Path, required=True)
+    argv = list(sys.argv[1:] if argv is None else argv)
     a = p.parse_args(argv)
+    if a.recycle_every is not None and a.recycle_every < 1:
+        raise SystemExit('--recycle-every must be >= 1')
     entries = episode_entries(a)
-    out = new_output(a.out)
+    if a.recycle_child is not None:   # the parent created the dataset directory, manifest and preflight
+        out = Path(a.out)
+        if not (out/'dataset_manifest.json').exists():
+            raise SystemExit(f'{out}: --recycle-child needs the parent dataset directory')
+    else:
+        out = new_output(a.out)
     git = manifest({}, 'probe')
     git = {key: git.get(key) for key in ('git_sha', 'git_dirty', 'packages', 'python')}
     planner_options = json.loads(a.planner_options) if a.planner_options else None
@@ -357,15 +559,17 @@ def main(argv=None):
         runtime_options['device'] = a.device
     else:
         runtime_options.update(gpu=a.gpu, device=f'cuda:{a.gpu}')
-    write_json(out/'dataset_manifest.json', manifest(jsonable(dict(
-        dataset_version=ds.DATASET_VERSION, preset=PRESET_ID, args=vars(a), episodes=entries,
-        runtime_options=runtime_options, privileged_controller_inputs_catalog=PRIVILEGED_CONTROLLER_INPUTS,
-        reliability_config=json.loads(RELIABILITY_CONFIG.read_text()))), 'rcs_policy_dataset_collector'))
-    if a.runtime == 'isaac_sim' and not a.skip_preflight:
-        refused = live_preflight(a, entries, out, planner_options)
-        if refused:
-            return 2
-    from robotic_cutting_sim.live_env import open_cutting_env
+    if a.recycle_child is None:
+        recycle = None if a.recycle_every is None else dict(every=a.recycle_every, blocks=-(-len(entries)//a.recycle_every))
+        write_json(out/'dataset_manifest.json', manifest(jsonable(dict(
+            dataset_version=ds.DATASET_VERSION, preset=PRESET_ID, args=vars(a), episodes=entries,
+            runtime_options=runtime_options, privileged_controller_inputs_catalog=PRIVILEGED_CONTROLLER_INPUTS,
+            reliability_config=json.loads(RELIABILITY_CONFIG.read_text()),
+            **({} if recycle is None else dict(process_recycling=recycle)))), 'rcs_policy_dataset_collector'))
+        if a.runtime == 'isaac_sim' and not a.skip_preflight:
+            refused = live_preflight(a, entries, out, planner_options)
+            if refused:
+                return 2
     index = dict(version=ds.DATASET_VERSION, preset=PRESET_ID, runtime=a.runtime, scene=a.scene, goal=a.goal,
                  created=time.strftime('%Y-%m-%dT%H:%M:%S%z'), episodes=[])
     metas, failures, start = [], [], time.monotonic()
@@ -374,81 +578,15 @@ def main(argv=None):
     def write_index():
         write_json(out/'index.json', jsonable(index))
 
+    if a.recycle_child is not None:
+        return recycle_child(a, entries, out, runtime_options, clocks, planner_options)
+    if a.recycle_every is not None:
+        return recycle_parent(a, entries, out, argv, index, write_index)
     try:
-        with open_cutting_env(runtime=a.runtime, output_dir=out/'runtime', seed=entries[0]['seed'],
-                              preset=PRESET_ID, scene=a.scene, goal=a.goal, planner_options=planner_options,
-                              tool_profile=a.tool_profile, particle_spacing_m=a.spacing,
-                              observation_profile=a.observation_profile,
-                              recording=dict(root=out, **({} if a.record_every is None else dict(every=a.record_every))),
-                              preset_overrides={} if a.camera_every is None else dict(camera_every=a.camera_every),
-                              **runtime_options) as env:
-            consecutive_errors = 0
-            for i, entry in enumerate(entries):
-                print(f'[collect] episode {i} {entry["label"]} controller={entry["controller"]} seed={entry["seed"]}',
-                      flush=True)
-                try:
-                    profiler = None
-                    if a.profile:
-                        from robotic_cutting_sim.profiling import StageProfiler
-                        device = runtime_options.get('device')
-                        profiler = StageProfiler(sync_device=device if str(device).startswith('cuda') else None,
-                                                 kernels=a.profile == 'kernels').install()
-                    try:
-                        meta = run_episode(env, entry, i, out, a, clocks)
-                    finally:
-                        if profiler is not None:
-                            profiler.uninstall()
-                    if profiler is not None:
-                        summary = dict(profiler.summary(), episode_id=meta['episode_id'], mode=a.profile,
-                                       wall_s=meta['wall_s'], runtime=a.runtime, device=runtime_options.get('device'))
-                        write_json(out/meta['episode_id']/'profile.json', jsonable(summary))
-                        meta['profile'] = dict(mode=a.profile, path=f"{meta['episode_id']}/profile.json")
-                        write_json(out/meta['episode_id']/'episode.json', jsonable(meta))
-                    consecutive_errors = 0
-                except Exception as error:
-                    consecutive_errors += 1
-                    failure = dict(episode_index=i, label=entry['label'], error=repr(error),
-                                   traceback=traceback.format_exc())
-                    failures.append(failure)
-                    write_json(out/f'episode_{i:03d}_failure.json', failure)
-                    traceback.print_exc()
-                    index['episodes'].append(dict(episode_id=f'episode_{i:03d}', dir=f'episode_{i:03d}',
-                                                  label=entry['label'], controller=entry['controller'],
-                                                  seed=entry['seed'], status='FAIL_EXECUTION', error=repr(error)))
-                    write_index()
-                    if consecutive_errors >= 2:
-                        break
-                    continue
-                metas.append(meta)
-                index['episodes'].append(dict(
-                    episode_id=meta['episode_id'], dir=meta['episode_id'], label=meta['label'],
-                    controller=meta['controller'], seed=meta['seed'], status='STORED', verdict=meta['verdict'],
-                    expect=meta['expect'], termination_reason=meta['termination_reason'],
-                    home_outcome=(meta['home_outcome'] or {}).get('status'), steps=meta['steps_recorded'],
-                    export_sha256=meta['export']['sha256'], wall_s=meta['wall_s'],
-                    **({} if meta.get('runtime_profile') is None else dict(
-                        runtime_profile=meta['runtime_profile']['profile_id'],
-                        acceptance_valid=meta['acceptance_valid']))))
-                write_index()
-                print(f'[collect] episode {i} verdict={meta["verdict"]} statuses={meta["action_status_counts"]} '
-                      f'wall={meta["wall_s"]:.1f}s rss={meta["memory_after"]["host_rss_mib"]}', flush=True)
-            validations = [ds.validate_episode(out, row['episode_id']) for row in index['episodes']
-                           if row.get('status') == 'STORED']
-            configs = [Path(c) for c in (a.reliability_config or [RELIABILITY_CONFIG])]
-            for k, path in enumerate(configs):
-                config = json.loads(path.read_text())
-                scored = ds.reliability_report(metas, config, a.runtime, validations=validations,
-                                               execution_failures=failures, planned_episodes=len(entries))
-                scored.update(wall_s=time.monotonic() - start, config_path=str(path), primary=k == 0)
-                write_json(out/f"reliability_{config['version']}.json", jsonable(scored))
-                if k == 0:
-                    report = scored
-                    write_json(out/'reliability.json', jsonable(report))
-                else:
-                    print(f"[collect] also scored {config['version']}: POLICY_READY={scored['POLICY_READY']} "
-                          f"failing={scored['failing']}", flush=True)
+        with open_env(a, entries[0]['seed'], out, out/'runtime', runtime_options, planner_options) as env:
+            run_entries(env, entries, 0, out, a, clocks, runtime_options, metas, failures, index, write_index)
+            report = score(out, a, index, metas, failures, entries, start)
             write_index()
-            print(f'[collect] POLICY_READY={report["POLICY_READY"]} failing={report["failing"]}', flush=True)
             status = 0 if report['POLICY_READY'] else 3
     except BaseException as error:
         write_json(out/'failure.json', dict(error=repr(error), traceback=traceback.format_exc()))
