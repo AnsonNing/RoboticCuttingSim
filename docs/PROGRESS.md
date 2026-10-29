@@ -3,9 +3,10 @@
 ## 進行中（unattended session 會更新這一節）
 
 - 計畫：[BladeMaster 三個 Demo](BLADEMASTER_DEMO_PLAN.md)，由 tmux `rcs-demos` 的 Claude Code CLI session 執行（規則：`tools/demo_runner/round_prompt.md`）。
-- 目前階段：Phase 1（1 mm 切割物理修復）。最新結果：law 3 TRIM 25°/35° 仍 0%；Lab CUT 重播分成兩塊但切口位置 4.0 mm 超出門檻。
-- 背景工作：無。
-- 下一步：依 BladeMaster Eq. (4)–(6) 把 side assignment 改為有限刀刃掃掠區（新 law 版本），並修正 `analyze_cut_bridges.py` 改用實際 stencil weights／gradients。
+- 目前階段：Phase 1（1 mm 切割物理修復）。設計已定：[ADR 0006 — cutting law 4](adr/0006-swept-band-cutting-law-4.md)（law 2 的切削功只管阻力；整把刀的切削行程閘控；BladeMaster Eq. (4)/(6) 幾何掃掠帶以 swept surface 分側；不用 law 3 的格點閉合）。
+- 新發現：law 3 Lab 重播的 4.0 mm 切口位置失敗是前緣閉合在接觸前就以 +0.04 mm 標籤 −0.5 mm 粒子層所致（實測刃口 x ≈ −0.51～−0.55 mm）；凍結切口位置門檻等於要求刃口在 ±0.5 mm 內，live demo 需要控制器把量測刃口保持在目標面附近。
+- 背景工作：rcs-impl 實作 `tlmpm_v4.py`（law 4）與 CPU 測試（尚未開始 GPU 矩陣）。
+- 下一步：CPU 測試通過後，跑 ADR 0006 的 1 mm GPU 矩陣 M1–M9，輸出到 `artifacts/wp10_claude/phase1_law4/`，摘要到 `docs/evidence/phase1/`。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
 
