@@ -129,3 +129,31 @@ v4-vs-v3 bitwise equality of laws 1/2/3.
   `scripts/analyze_cut_bridges.py`, now using actual stencil
   weights/gradients. Any closure added afterwards becomes a new, separately
   tested variant.
+
+## Amendment 1 (2026-10-29, after the law-4 matrix, before any law-5 matrix row)
+
+The law-4 matrix showed that two row definitions in the table above cannot
+discriminate the cutting law. Both original verdicts stay recorded as FAIL in
+`docs/evidence/phase1/matrix_law4_001.json`. For law 5 and later laws, the
+amended criteria below are declared before any of their rows run:
+
+- **M2 (oblique cut).** The frozen midpoint statistic is ≤ 2 mm only for
+  planes aligned with the grid. Applying the exact geometric sign of the
+  fitted 20° swept plane to the same particles scores 4.44 mm; the law-4
+  labels scored 4.78 mm. Every label/geometry disagreement lies within
+  1.07 mm of the plane.
+  - **Amended criterion:** two substantial parts (unchanged), and an
+    interface statistic ≤ the ideal-geometric-label statistic plus one
+    particle spacing.
+  - In addition, no particle more than two particle spacings from the swept
+    plane may sit in the component of the opposite side.
+  - The original 2 mm value is still reported.
+- **M8 (two sequential cuts).** M8a cut at x = ∓10 mm inside the 40 mm
+  pedestal gap. After cut 0, the remaining bar hangs as a cantilever and
+  sags 5–8 mm before cut 1 starts. The scripted path, planned for the
+  undeformed bar, ends 4 mm below the undeformed bottom, so it stops above
+  the sagged bottom layer and leaves it connected. That is a test-geometry
+  limitation, not a labelling fault: both digits label correctly wherever the
+  edge passes.
+  - **Acceptance row:** M8b, two cuts with each piece supported (SLICE-PUSH-01
+    on the slotted board). M8a stays a reported diagnostic.
