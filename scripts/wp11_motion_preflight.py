@@ -6,6 +6,9 @@ Modes (request JSON ``{"mode": ..., "payload": <configured_task_payload>, ...}``
 * ``plan``: IK chain from the scene HOME over the compiled reference plan and the
   joint-path clearance check. ``until_phase`` (optional) also checks the prefix
   that will actually execute; the receipt reports both.
+  Scenes with two or more protrusions use the round-1 staged geometry
+  (``generalization.staged_preflight``; receipt key ``preflight_geometry``); scenes
+  with zero or one protrusion keep exactly the declared-geometry check.
 * ``return-home``: plan the physical return-to-home from ``q_start`` (7 rad):
   Cartesian lift, hand-down rotation, joint-space move to q_home, preflighted.
 * ``check-path``: clearance check of measured joints ``q`` (N x 7) with ``modes``.
@@ -44,12 +47,26 @@ def run(request):
         home = task.home
         if home is None:
             return dict(status='FAIL', reason='SCENE_INFEASIBLE', detail='The scene declares no HOME to start the plan from')
-        full = mp.preflight_plan(task, home['joint_positions'], checker=checker)
         until = request.get('until_phase')
-        prefix = None if until is None else mp.preflight_plan(task, home['joint_positions'], until_phase=until, checker=checker)
+        if len(getattr(task, 'protrusion_ids', ())) >= 2:
+            # Two or more protrusions: the round-1 staged geometry (generalization.staged_preflight; each plan chunk
+            # without the protrusions removed by earlier remove operations, same C2 thresholds). One convex hull over
+            # all protrusions bridges their gaps and keeps removed ones (Phase E live_001 Test C SCENE_INFEASIBLE).
+            from robotic_cutting_sim.generalization import staged_preflight
+            full, _ = staged_preflight(task, checker)
+            prefix = None if until is None else staged_preflight(task, checker, until_phase=until)[0]
+            geometry = dict(rule='staged_multi_protrusion_v1', helper='generalization.staged_preflight',
+                            protrusions=len(task.protrusion_ids))
+        else:
+            # Zero or one protrusion: exactly the Phase D/C5 check, unchanged.
+            full = mp.preflight_plan(task, home['joint_positions'], checker=checker)
+            prefix = None if until is None else mp.preflight_plan(task, home['joint_positions'], until_phase=until, checker=checker)
+            geometry = None
         required = prefix if prefix is not None else full
         out = dict(status=required['status'], reason=required.get('reason'), required=('prefix' if prefix else 'full'),
                    full_plan=full, executed_prefix=prefix)
+        if geometry is not None:
+            out['preflight_geometry'] = geometry
     elif mode == 'return-home':
         plan = mp.plan_return_home_for_task(task, np.asarray(request['q_start'], float), checker=checker)
         out = dict(plan, status=plan['status'], q=np.asarray(plan['q']).tolist())

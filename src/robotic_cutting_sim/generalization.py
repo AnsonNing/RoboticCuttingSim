@@ -419,7 +419,7 @@ def _variant_task(task, removed):
     return task if len(keep) == len(task.geometry.bumps) else replace(task, geometry=replace(task.geometry, bumps=keep))
 
 
-def staged_preflight(task, checker=None):
+def staged_preflight(task, checker=None, *, until_phase=None):
     """Stage-1 motion preflight (round file ``stages.stage1_geometry``).
 
     Scenes with at most one protrusion, or plans without remove operations, use
@@ -428,14 +428,18 @@ def staged_preflight(task, checker=None):
     workpiece without the protrusions removed by earlier remove operations of the plan
     (their chips are loose material, which only the physics stage models). Joint
     continuity across chunk boundaries is checked on the whole chain.
+
+    ``until_phase`` (default None: the full plan, as in round 1) checks only the plan prefix
+    through that phase, exactly as ``motion_preflight.preflight_plan(until_phase=...)`` does.
     """
     from . import motion_preflight as mp
     checker = checker or mp.MotionChecker(task)
     q_home = task.home["joint_positions"]
-    poses, labels, armed = mp.plan_samples(task)
+    poses, labels, armed = mp.plan_samples(task, until_phase=until_phase)
     removed = _removed_sets(labels, set(task.protrusion_ids))
     if len(task.protrusion_ids) <= 1 or not any(removed):
-        receipt = mp.preflight_plan(task, q_home, checker=checker)
+        receipt = (mp.preflight_plan(task, q_home, checker=checker) if until_phase is None else
+                   mp.preflight_plan(task, q_home, until_phase=until_phase, checker=checker))
         return {**receipt, "geometry": "declared (motion_preflight.preflight_plan unchanged)"}, {(): checker}
     import time
     start = time.perf_counter()
@@ -453,7 +457,8 @@ def staged_preflight(task, checker=None):
             break
         qs.append(q)
         seed = q
-    receipt = {"samples": int(len(poses)), "ik_worst": ik_worst, "q_home": list(map(float, q_home)),
+    receipt = {"samples": int(len(poses)), **({} if until_phase is None else {"until_phase": until_phase}),
+               "ik_worst": ik_worst, "q_home": list(map(float, q_home)),
                "phases": sorted(set(label.split(":", 1)[0] for label in labels)),
                "geometry": "staged: declared workpiece minus protrusions removed by earlier remove operations"}
     if failure is not None:

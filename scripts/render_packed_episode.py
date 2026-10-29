@@ -10,7 +10,12 @@ packed codes, replaces only ``demo_media.ComponentCache`` with one that calls
 conflict test). Everything else, all arguments and every output, is the unchanged
 renderer. The recording is never modified.
 
-  .venv/bin/python scripts/render_packed_episode.py <run>/episode_000 --out DIR [renderer options]
+  .venv/bin/python scripts/render_packed_episode.py <run>/episode_000 --out DIR [renderer options] [--wide-piece-palette]
+
+``--wide-piece-palette`` (opt-in, presentation only; consumed here, not passed on): the particle
+panel gets five piece hues instead of three and treats components of >= 0.2 % of the particles
+(instead of 1 %) as pieces, so e.g. three small removed chips and the substrate are all
+distinguishable. Without it the renderer's colouring is unchanged.
 """
 import hashlib
 import importlib.util
@@ -41,7 +46,21 @@ class PackedComponentCache(dm.ComponentCache):
         return self.cache[key]
 
 
+WIDE_PIECE_COLORS = dm.COMPONENT_COLORS + ("#e5b53a", "#b46ad8")
+WIDE_MINOR_FRACTION = .002
+
+
+def wide_component_colors(labels, reference_positions, minor_fraction=None):
+    """dm.component_colors with five piece slots and a 0.2 % piece threshold (presentation only)."""
+    slot, sizes = dm.component_order(labels, reference_positions, WIDE_MINOR_FRACTION, slots=len(WIDE_PIECE_COLORS))
+    palette = np.array([dm.hex_rgba(c) for c in WIDE_PIECE_COLORS] + [dm.hex_rgba(dm.MINOR_COLOR)])
+    return palette[slot[np.asarray(labels)]], slot, sizes
+
+
 def main():
+    wide = '--wide-piece-palette' in sys.argv
+    if wide:
+        sys.argv.remove('--wide-piece-palette')
     episode = Path(sys.argv[1])
     material = json.loads((episode/'material.json').read_text())
     spec = importlib.util.spec_from_file_location('render_demo_episode', ROOT/'scripts'/'render_demo_episode.py')
@@ -51,6 +70,10 @@ def main():
         PackedComponentCache.max_cuts = int(material['max_cuts'])
         renderer.dm.ComponentCache = PackedComponentCache
         print(f'packed2 codes, K = {PackedComponentCache.max_cuts}: particle panel uses mechanical_components_packed',
+              flush=True)
+    if wide:
+        renderer.dm.component_colors = wide_component_colors
+        print(f'wide piece palette: {len(WIDE_PIECE_COLORS)} hues, pieces >= {WIDE_MINOR_FRACTION:.1%} of particles',
               flush=True)
     renderer.main()
 

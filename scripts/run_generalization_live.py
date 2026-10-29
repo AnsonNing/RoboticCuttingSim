@@ -406,6 +406,50 @@ def measured_path_clearance(task, task_rows, out):
                     'still treated as present.'}
 
 
+def measured_path_clearance_staged(task, task_rows):
+    """Report-only C2 check of the measured task-phase joint path with the round-1 staged geometry (two or more
+    protrusions): each contiguous chunk of rows is checked against the declared workpiece without the protrusions
+    removed by earlier remove operations (generalization._removed_sets / _variant_task, as staged_preflight);
+    joint continuity over the whole chain. The declared-geometry check (measured_path_clearance) is kept alongside."""
+    from robotic_cutting_sim import motion_preflight as mp
+    qs = np.asarray([np.asarray(r['measured']['q'], float)[0] for r in task_rows])
+    labels = [str(r.get('policy_phase')) for r in task_rows]
+    modes = [mp.phase_mode(label, bool((r.get('submitted') or {}).get('cut_enabled'))) for label, r in zip(labels, task_rows)]
+    removed = G._removed_sets(labels, set(task.protrusion_ids))
+    checkers, chunks, worst, failing, i = {}, [], {}, set(), 0
+    while i < len(qs):
+        j = i
+        while j < len(qs) and removed[j] == removed[i]:
+            j += 1
+        key = removed[i]
+        if key not in checkers:
+            checkers[key] = mp.MotionChecker(G._variant_task(task, set(key)))
+        part = checkers[key].check_joint_path(qs[i:j], modes[i:j], labels[i:j])
+        chunks.append({'removed_protrusions': list(key), 'rows': [i, j], 'status': part['status'], 'failing': part['failing']})
+        for name, row in part['worst'].items():
+            row = {**row, 'sample': row['sample']+i, 'removed_protrusions': list(key)}
+            if name not in worst or row['slack'] < worst[name]['slack']:
+                worst[name] = row
+        failing |= set(part['failing'])
+        i = j
+    if len(qs) > 1:
+        th = next(iter(checkers.values())).thresholds
+        step = np.abs(np.diff(qs, axis=0)).max(1)
+        k = int(np.argmax(step))
+        slack = th['joint_step_rad']-float(step[k])
+        if 'joint_continuity' not in worst or slack < worst['joint_continuity']['slack']:
+            worst['joint_continuity'] = {'slack': slack, 'value': -float(step[k]), 'threshold': -th['joint_step_rad'],
+                                         'sample': k+1, 'label': labels[k+1], 'whole_chain': True}
+        if slack < 0:
+            failing.add('joint_continuity')
+    failing = sorted(failing)
+    return {'status': 'PASS' if not failing else 'FAIL', 'failing': failing,
+            'binding': failing[0] if failing else (min(worst, key=lambda n: worst[n]['slack']) if worst else None),
+            'worst': worst, 'samples': int(len(qs)), 'chunks': chunks,
+            'note': 'Report only. Task phase only; staged geometry (round-1 stage-1 rule): protrusions removed by earlier '
+                    'remove operations are omitted, remaining ones keep the C2 hull; nominal grasp.'}
+
+
 def _op_of(phase):
     phase = str(phase)
     return phase.split(':', 1)[1] if ':' in phase and not phase.startswith('RETURN_HOME') else None
@@ -590,6 +634,11 @@ def cmd_analyze(args):
             analysis['measured_task_path_clearance'] = measured_path_clearance(task, task_rows, out)
         except Exception as error:  # report-only
             analysis['measured_task_path_clearance'] = {'status': 'NOT_RUN', 'reason': repr(error)}
+        if len(getattr(task, 'protrusion_ids', ())) >= 2:
+            try:
+                analysis['measured_task_path_clearance_staged'] = measured_path_clearance_staged(task, task_rows)
+            except Exception as error:  # report-only
+                analysis['measured_task_path_clearance_staged'] = {'status': 'NOT_RUN', 'reason': repr(error)}
     write_new(out/'analysis.json', analysis)
     print(json.dumps(jsonable({k: analysis[k] for k in ('sample_id', 'class', 'class_reason')}
                               | {'verdict': analysis['task_outcome']['verdict'], 'home': analysis['home_outcome']['status']})))
