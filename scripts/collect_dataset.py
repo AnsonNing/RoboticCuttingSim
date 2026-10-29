@@ -319,6 +319,8 @@ def main(argv=None):
     p.add_argument('--stage-reset', choices=('reopen', 'reload_in_place'),
                    help='Isaac Sim: IsaacSimCuttingConfig.stage_reset (WP-11 Phase H1; default: the runtime default '
                         'or the --runtime-profile value)')
+    p.add_argument('--surface-update', choices=('every_step', 'on_capture'),
+                   help='Isaac Sim: IsaacSimCuttingConfig.surface_update (WP-11 Phase H3 opt-in; default every_step)')
     p.add_argument('--profile', choices=('stages', 'kernels'),
                    help='Opt-in per-stage timing (robotic_cutting_sim.profiling); writes episode_###/profile.json. '
                         "'kernels' times every Warp kernel eagerly (perturbing; use for the split only)")
@@ -347,6 +349,10 @@ def main(argv=None):
         if a.runtime != 'isaac_sim':
             raise SystemExit('--stage-reset applies to --runtime isaac_sim only')
         runtime_options['stage_reset'] = a.stage_reset
+    if a.surface_update is not None:
+        if a.runtime != 'isaac_sim':
+            raise SystemExit('--surface-update applies to --runtime isaac_sim only')
+        runtime_options['surface_update'] = a.surface_update
     if a.runtime == 'kinematic':
         runtime_options['device'] = a.device
     else:

@@ -90,6 +90,10 @@ class IsaacSimCuttingConfig:
     # "reload_in_place": keep the open stage, release cameras/physics, clear the session layer and
     # reload the unchanged root layer from disk, then author the reset exactly as after an open.
     stage_reset: str = "reopen"
+    # Opt-in (WP-11 Phase H3): when the visual ContinuousSpecimen surface (no physics API) is
+    # re-extracted. "every_step" (default, unchanged) | "on_capture": only before a camera render
+    # and for evaluation, so every rendered frame still shows the surface of its own time step.
+    surface_update: str = "every_step"
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -144,6 +148,8 @@ class IsaacSimCuttingConfig:
                 raise ValueError('tool_profile_id needs a registered profile, a v2 ProfileTaskSpec task and physical_grasp')
         elif any(self.tool_profile_hand_offset_world_m):
             raise ValueError('A tool hand offset requires an explicit tool_profile_id')
+        if self.surface_update not in ("every_step", "on_capture"):
+            raise ValueError("surface_update must be every_step or on_capture")
         if self.stage_reset not in STAGE_RESET_MODES:
             raise ValueError(f"stage_reset must be one of {STAGE_RESET_MODES}")
         if self.stage_reset == "reload_in_place" and not (self.camera and self.tool_attachment_mode == "physical_grasp"):
@@ -1253,7 +1259,7 @@ class LiveIsaacSimCutting:
         diagnostics.update(minimum_detF=float(determinant.min()),
                            maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
-        if c.camera:
+        if c.camera and c.surface_update == "every_step":
             self._update_surface()
         if c.camera and c.camera_layout == "wrist_d405_global_d455":
             self._update_camera_extrinsics(actual["hand_pose_both_xyzw"])
@@ -1291,6 +1297,8 @@ class LiveIsaacSimCutting:
 
     def capture(self):
         import omni.replicator.core as rep
+        if self.config.surface_update == "on_capture":
+            self.refresh_surface_for_evaluation()   # the surface of this time step, before rendering it
         manager = self.SimulationManager
         before = (manager.get_simulation_time(),manager.get_num_physics_steps())
         robot_before=self.proprioception()

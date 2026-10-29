@@ -242,3 +242,18 @@ def test_renew_stage_layers_equals_a_fresh_open(tmp_path):
     assert receipt["session_layer_empty"] and receipt["dirty_layers_before"] == [stage.GetRootLayer().identifier]
     assert stage.ExportToString() == fresh
     assert not any(layer.dirty for layer in stage.GetUsedLayers() if layer != stage.GetSessionLayer())
+
+
+def test_isaac_surface_update_is_opt_in_and_validated():
+    from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig
+    assert IsaacSimCuttingConfig().surface_update == "every_step"
+    assert IsaacSimCuttingConfig(surface_update="on_capture").surface_update == "on_capture"
+    with pytest.raises(ValueError, match="surface_update"):
+        IsaacSimCuttingConfig(surface_update="never")
+
+
+def test_specimen_surface_mesh_has_no_physics_api():
+    """surface_update='on_capture' is physics-neutral only because the bridged mesh is visual."""
+    text = (ROOT/"src/robotic_cutting_sim/usd_surface_bridge.py").read_text()
+    for api in ("CollisionAPI", "RigidBodyAPI", "MeshCollisionAPI", "PhysxSchema"):
+        assert api not in text
