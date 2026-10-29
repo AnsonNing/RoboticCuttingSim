@@ -66,3 +66,33 @@ A live Demo 3 episode under `path_v2_vision` counts only if both hold:
 The v1 run's FAIL stays recorded. If `path_v2_vision` also fails the
 declared-plane check, Demo 3 is reported as its outcome PASS plus a
 cut-location quality FAIL, with this ADR's measurements attached.
+
+## Amendment 1 (2026-10-29, before any live episode under `path_v2_vision`)
+
+On this rig the wrist D405_0 sits 45 mm in +x of the hand. In the recorded
+v1 episode it sees the bar top over about x = −33…+80 mm at the cut-0 start
+and about +28…+81 mm at the cut-1 start. Two features the decision relies on
+are therefore out of view: the −x end face at calibration, and the cut-0
+kerf at the survey pose. The kerf face is visible only at the end of the
+lift, and there its estimate is biased: the face top is crushed, and cut 0
+severed one particle layer further right than the formula assumes.
+Measured there, Δ̂ ≈ 2.6 mm against a true shift of about 1.19 mm.
+
+The applied method is therefore `end_face_plus_x`. It measures the +x end
+face of the middle+right part in both frames. That face carries the same
+rigid shift as the cut-1 target, so Δ̂ = x_end,+(survey) − x_end,+(calibration),
+a relative measurement in which the rendered-surface offset cancels. The
+original kerf-face estimate is still computed and recorded, as a diagnostic
+only.
+
+Offline validation is in
+[evidence](../evidence/phase3/demo3_wrist_survey_offline_001.json), using
+the v1 live episode; particle state scores the estimate only:
+
+- Δ̂ = 1.177 mm against the shift of the layers at x = +29.5/+30.5 mm
+  (where cut 1 must land): 1.189 mm, error −0.012 mm.
+- All 30 calibration × survey frame pairs: worst error 0.065 mm.
+- With added depth noise of up to 0.2 mm: worst error 0.098 mm.
+
+Inputs are still rendered depth plus kinematics only. The acceptance rule
+above is unchanged.
