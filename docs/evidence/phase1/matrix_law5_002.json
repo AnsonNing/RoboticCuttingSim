@@ -1,0 +1,937 @@
+{
+ "protocol": "phase1_acceptance_matrix_rescore",
+ "criteria_version": "adr0006a1_adr0008",
+ "criteria": {
+  "M2": "ADR 0006 Amendment 1: two substantial parts (>= 40% each, >= 99% together) AND actual swept-plane interface <= ideal-geometric-label interface + one particle spacing AND no particle with |s| > 2 particle spacings in the opposite-side substantial component (scripts/rescore_phase1_oblique.py)",
+  "M4": "ADR 0008 ligament: one component (final 1-digit stencil graph) AND labels unchanged during the armed withdrawal AND the core band |s| <= dx (s: reference signed distance to the fitted digit-0 swept plane, dx = 4 mm) below the stopping depth is 100% code 0; off-core lead labels and the law-4 all-material definition are reported, not scored",
+  "M6": "M4 criterion, with labels unchanged during the armed hold AND the armed withdrawal",
+  "M8a": "Amendment 1 diagnostic: ADR 0006 topology (>= 3 mechanical parts in the final 2-digit stencil graph AND labelled count unchanged through the disarmed lift/move)",
+  "M8b": "Amendment 1 acceptance row: ADR 0006 topology (>= 3 mechanical parts in the final 2-digit stencil graph AND labelled count unchanged through the disarmed lift/move) AND the runner M8b criterion (slice_push_report status PASS_SLICE_PUSH); both reported as separate fields",
+  "other": "Runner verdict carried unchanged"
+ },
+ "aggregation": {
+  "M1": [
+   "M1a",
+   "M1b"
+  ],
+  "M2": [
+   "M2"
+  ],
+  "M3": [
+   "M3a",
+   "M3b",
+   "M3c"
+  ],
+  "M4": [
+   "M4"
+  ],
+  "M5": [
+   "M5a",
+   "M5b",
+   "M5c"
+  ],
+  "M6": [
+   "M6"
+  ],
+  "M7": [
+   "M7"
+  ],
+  "M8": [
+   "M8b"
+  ],
+  "M9": [
+   "M9a",
+   "M9b"
+  ]
+ },
+ "aggregation_note": "M3 = M3a and M3b and M3c (as in matrix_law5_adjudication_001); M8 = M8b, the Amendment 1 acceptance row, with M8a a reported diagnostic; M9c/M9d are report only",
+ "adrs": [
+  "docs/adr/0006-swept-band-cutting-law-4.md (incl. Amendment 1)",
+  "docs/adr/0008-cutting-law-5-lead-preassignment.md"
+ ],
+ "cutting_law": 5,
+ "created": "2026-10-29T18:56:35.892241+09:00",
+ "command": [
+  "scripts/rescore_phase1_matrix.py",
+  "--criteria-version",
+  "adr0006a1_adr0008",
+  "--law",
+  "5",
+  "--rows",
+  "artifacts/wp10_claude/phase1_law5/m1a_law5_ingest_001",
+  "artifacts/wp10_claude/phase1_law5/m1b_law5_002",
+  "artifacts/wp10_claude/phase1_law5/m2_law5_002",
+  "artifacts/wp10_claude/phase1_law5/m3a_law5_ingest_001",
+  "artifacts/wp10_claude/phase1_law5/m3b_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m3c_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m4_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m5a_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m5b_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m5c_law5_002",
+  "artifacts/wp10_claude/phase1_law5/m6_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m7_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m8a_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m8b_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m9a_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m9b_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m9c_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m9d_law5_001",
+  "--out",
+  "docs/evidence/phase1/matrix_law5_002.json",
+  "--adjudication",
+  "docs/evidence/phase1/matrix_law5_adjudication_001.json"
+ ],
+ "git_sha": "4208d5846c2c340c19e8a1970dd4b5ca75292c62",
+ "git_dirty_paths": [
+  "?? scripts/rescore_phase1_matrix.py"
+ ],
+ "script_sha256": "ecd15f1c1f3eed1f07359deef0aa872ae05a19460fc8baa5557354ef542329bc",
+ "read_only": "Row directories are only read; no row result.json is rewritten; no simulation is run",
+ "scope": "Kinematic ideal tracking and material-only replays; no robot, grasp, slip or camera evidence. Law parameters are provisional and uncalibrated.",
+ "computed_verdict_counts": {
+  "PASS": 14,
+  "FAIL": 2,
+  "REPORT_ONLY": 2
+ },
+ "adr_rows": {
+  "M1": {
+   "verdict": "PASS",
+   "members": {
+    "M1a": "PASS",
+    "M1b": "PASS"
+   }
+  },
+  "M2": {
+   "verdict": "PASS",
+   "members": {
+    "M2": "PASS"
+   }
+  },
+  "M3": {
+   "verdict": "PASS",
+   "members": {
+    "M3a": "PASS",
+    "M3b": "PASS",
+    "M3c": "PASS"
+   }
+  },
+  "M4": {
+   "verdict": "PASS",
+   "members": {
+    "M4": "PASS"
+   }
+  },
+  "M5": {
+   "verdict": "PASS",
+   "members": {
+    "M5a": "PASS",
+    "M5b": "PASS",
+    "M5c": "PASS"
+   }
+  },
+  "M6": {
+   "verdict": "PASS",
+   "members": {
+    "M6": "PASS"
+   }
+  },
+  "M7": {
+   "verdict": "PASS",
+   "members": {
+    "M7": "PASS"
+   }
+  },
+  "M8": {
+   "verdict": "FAIL",
+   "members": {
+    "M8b": "FAIL"
+   },
+   "diagnostic_M8a": "FAIL"
+  },
+  "M9": {
+   "verdict": "PASS",
+   "members": {
+    "M9a": "PASS",
+    "M9b": "PASS"
+   },
+   "report_only": {
+    "M9c": "REPORT_ONLY",
+    "M9d": "REPORT_ONLY"
+   }
+  }
+ },
+ "all_acceptance_rows_pass": false,
+ "rows": [
+  {
+   "row": "M1a",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m1a_law5_ingest_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_strict_pass": true
+   },
+   "runner_criterion": "CUT-01-R reference vertical cut: frozen strict oracle PASS (two parts, mass, location <= 2 mm, persistence)",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "5f9549f83b04fac5f68a1f672cce1542e4a4ad95",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "d1856a8500acc179fea1bc781289dff5f56ff65300b8c734537eba694a1613ee"
+   }
+  },
+  {
+   "row": "M1b",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m1b_law5_002",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_strict_pass": true
+   },
+   "runner_criterion": "CUT-02 reference vertical cut: frozen strict oracle PASS",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "354a1bdc86502966d83a99a03046a8632061258b",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "27d12037ba86b5983868e49253d378b65a370ef0331d363dc15543a8b9bd1cba"
+   }
+  },
+  {
+   "row": "M2",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m2_law5_002",
+   "runner_verdict": "FAIL",
+   "runner_checks": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_parts_together_ge_99pct": true,
+    "swept_plane_interface_le_2mm": false
+   },
+   "runner_criterion": "20 deg oblique cut (tilt about the edge line) through CUT-01-R: >= 2 substantial parts (>= 40% each, >= 99% together) and swept-plane interface statistic <= 2 mm; frozen strict reported as is",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "354a1bdc86502966d83a99a03046a8632061258b",
+   "computed_verdict": "PASS",
+   "basis": "computed",
+   "criterion": "ADR 0006 Amendment 1: two substantial parts (>= 40% each, >= 99% together) AND actual swept-plane interface <= ideal-geometric-label interface + one particle spacing AND no particle with |s| > 2 particle spacings in the opposite-side substantial component (scripts/rescore_phase1_oblique.py)",
+   "checks": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_parts_together_ge_99pct": true,
+    "interface_le_ideal_plus_one_spacing": true,
+    "no_far_particle_in_opposite_side_component": true
+   },
+   "metrics": {
+    "final_mechanical_components": 2,
+    "final_component_mass_fractions": [
+     0.5041458333337181,
+     0.4958541666670431
+    ],
+    "actual_interface_m": 0.004912657043225371,
+    "ideal_geometric_label_interface_m": 0.004442810737864569,
+    "allowed_interface_m": 0.005442810737864569,
+    "particle_spacing_m": 0.001,
+    "far_threshold_m": 0.002,
+    "main_component_sides_positive": {
+     "1": 1,
+     "0": 0
+    },
+    "far_particles_in_opposite_side_component": 0,
+    "far_particles_in_opposite_side_component_max_abs_distance_m": null,
+    "far_particles_in_minor_components": 0,
+    "label_geometry_disagreements_max_abs_distance_m": 0.0008965088864339662,
+    "actual_interface": {
+     "cross_component_reference_node_count": 117,
+     "severed_particle_pair_node_incidences": 2899584,
+     "maximum_reference_midpoint_plane_distance_m": 0.004912657043225371,
+     "statistic": "frozen _interface_location midpoint statistic measured to the given plane"
+    },
+    "ideal_interface": {
+     "cross_component_reference_node_count": 126,
+     "severed_particle_pair_node_incidences": 2921200,
+     "maximum_reference_midpoint_plane_distance_m": 0.004442810737864569,
+     "statistic": "frozen _interface_location midpoint statistic measured to the given plane"
+    },
+    "original_2mm": {
+     "verdict": "FAIL",
+     "checks": {
+      "two_substantial_parts_each_ge_40pct": true,
+      "two_parts_together_ge_99pct": true,
+      "swept_plane_interface_le_2mm": false
+     },
+     "limit_m": 0.002
+    },
+    "swept_plane": {
+     "origin": [
+      -0.0008019688647102356,
+      1.5166981210726182e-19,
+      0.007796608653102987
+     ],
+     "normal": [
+      0.9396926207859086,
+      -0.0,
+      -0.342020143325668
+     ],
+     "source": "result.json metrics.swept_planes['0'].fit"
+    }
+   },
+   "inputs_sha256": {
+    "result.json": "603ccf184ede7df90321be2a9ba7e65980114453d3f114b5acf4269bf5d2733a",
+    "physics_state.npz": "c60c211a9b4822ee26fae67576c77f4a87da8f200d274dd08486655be400ba03"
+   }
+  },
+  {
+   "row": "M3a",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m3a_law5_ingest_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_reference_above_plane_material_removed": true,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "runner_criterion": "TRIM-01-R 25 deg reference skim: frozen reference_above_plane_material_removed AND largest component >= 99% of below-plane reference mass; precision reported separately",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "5f9549f83b04fac5f68a1f672cce1542e4a4ad95",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "a27f425847eb582f2737387e86c9bf9709c9627788a6f30952bb46ff342f0de9"
+   }
+  },
+  {
+   "row": "M3b",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m3b_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_reference_above_plane_material_removed": true,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "runner_criterion": "M3a criterion on TRIM-01-R scenario ruler_workcell_v2 (35 deg)",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "5f9549f83b04fac5f68a1f672cce1542e4a4ad95",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "05acb6ae46b50ce9574f660938815a63c054cb0e76342ecd2129ae11d25fc1a5"
+   }
+  },
+  {
+   "row": "M3c",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m3c_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_reference_above_plane_material_removed": true,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "runner_criterion": "M3a criterion on TRIM-01-R scenario blademaster_workcell_v1 (35 deg, cutting board)",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "c948bd79f6fd362cf2c3c84581af3b46452afdcc",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "900fe881542d0d5b96b3a44ab15891ec94d32fa2a820699e8e422476fcc387ac"
+   }
+  },
+  {
+   "row": "M4",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m4_law5_001",
+   "runner_verdict": "FAIL",
+   "runner_checks": {
+    "one_component": true,
+    "labels_unchanged_during_withdrawal": true,
+    "code0_ligament_below_stop": false
+   },
+   "runner_criterion": "Armed vertical cut to half depth (local z = 10 mm), then armed withdrawal: one component, labelled count unchanged during withdrawal, code-0 ligament below the stopping depth",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "c948bd79f6fd362cf2c3c84581af3b46452afdcc",
+   "computed_verdict": "PASS",
+   "basis": "computed",
+   "criterion": "ADR 0008 ligament: one component (final 1-digit stencil graph) AND labels unchanged during the armed withdrawal AND the core band |s| <= dx (s: reference signed distance to the fitted digit-0 swept plane, dx = 4 mm) below the stopping depth is 100% code 0; off-core lead labels and the law-4 all-material definition are reported, not scored",
+   "checks": {
+    "one_component": true,
+    "labels_unchanged_during_withdraw": true,
+    "core_band_below_stop_all_code0": true
+   },
+   "metrics": {
+    "final_mechanical_components_1digit": 1,
+    "stop_local_z_m": 0.01000000000000006,
+    "swept_plane": {
+     "origin": [
+      0.0,
+      4.2053902447922597e-19,
+      0.014300000000000063
+     ],
+     "normal": [
+      1.0,
+      -0.0,
+      -0.0
+     ],
+     "source": "result.json metrics.swept_planes['0'].fit"
+    },
+    "core_half_width_m": 0.004,
+    "core_band_below_stop_particles": 2400,
+    "core_band_below_stop_code0": 2400,
+    "below_stop_particles": 48000,
+    "off_core_lead_labels_below_stop": {
+     "count": 8944,
+     "particle_fraction_of_below_stop": 0.18633333333333332,
+     "mass_fraction_of_below_stop": 0.1863333333333334,
+     "min_abs_s_m": 0.0044999998062849045,
+     "max_abs_s_m": 0.023499999195337296,
+     "deepest_reference_local_z_m": 0.0024999999441206455,
+     "side_counts_code1_code2": [
+      4472,
+      4472
+     ],
+     "scope": "Reported, not scored: ADR 0008 lead pre-assignment labels only |s| > dx by design"
+    },
+    "label_windows": {
+     "withdraw": {
+      "phases": [
+       "withdraw"
+      ],
+      "steps": 90,
+      "time_s": [
+       2.18,
+       3.98
+      ],
+      "labelled_before": 23104,
+      "labelled_after": 23104,
+      "labelled_max": 23104,
+      "labelled_min": 23104,
+      "change": 0,
+      "stroke_active_steps": 0
+     }
+    },
+    "label_windows_code_frames": {
+     "withdraw": {
+      "status": "FIT",
+      "anchor_frame_time_s": 2.2,
+      "frames_inside": 18,
+      "anchor_labelled_count": 23104,
+      "step_record_labelled_before": 23104,
+      "max_particles_changed_vs_anchor": 0,
+      "identical": true
+     }
+    },
+    "law4_definition": {
+     "criterion": "Law-4 runner ligament: no labelled particle anywhere below the stopping depth",
+     "labelled_below_stop": 8944,
+     "verdict": "FAIL",
+     "scope": "Reported, not part of the adr0006a1_adr0008 verdict"
+    },
+    "final_labelled_count": 23104
+   },
+   "inputs_sha256": {
+    "result.json": "94af40cedb298903b2dbf6795246e4d239e665e3d58255bfea8141026f309c8a",
+    "physics_state.npz": "0e3cc2bf9e25fa0e1c11c21fac2c2f9fd6241941fdad5f4955d240818d185345",
+    "actions.jsonl": "a32d6d5ab9080b1e9531a2827359a664572ab57d2027fcd55413f79a37042c4b"
+   }
+  },
+  {
+   "row": "M5a",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m5a_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "contact_force_present": true,
+    "zero_labels": true,
+    "one_component": true
+   },
+   "runner_criterion": "Armed side push (+x 20 mm into the bar end face, edge at z = 10 mm): contact force present (mean |F| > 0.1 N), zero labels, one component",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "c948bd79f6fd362cf2c3c84581af3b46452afdcc",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "6b86b88429c7cd5017e780c860e0e162792e28568bf490950d0746eff65c7e81"
+   }
+  },
+  {
+   "row": "M5b",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m5b_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "contact_force_present": true,
+    "zero_labels": true,
+    "one_component": true
+   },
+   "runner_criterion": "Armed flat press (blade plane horizontal, n = +z, 5 mm into the bar top): force present (mean |F| > 1 N), zero labels, one component",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "0a8bf862cb669e8c34afe0667d46958e069a80a9",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "4ec5ec5839d6fe86fd43e6085d8642e1a8b7d316477250349110657025a3aea2"
+   }
+  },
+  {
+   "row": "M5c",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m5c_law5_002",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "labels_unchanged_during_side_move": true
+   },
+   "runner_criterion": "Armed half-depth cut then armed blade-normal move +x 10 mm: labels unchanged during the sideways move",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "354a1bdc86502966d83a99a03046a8632061258b",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "d468c82b6c0fa7b4e367029ed189ec1d57e67ccf51e571ad9a5fe924d0bc43b2"
+   }
+  },
+  {
+   "row": "M6",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m6_law5_001",
+   "runner_verdict": "FAIL",
+   "runner_checks": {
+    "labels_unchanged_during_hold": true,
+    "labels_unchanged_during_withdrawal": true,
+    "one_component": true,
+    "code0_ligament_below_stop": false
+   },
+   "runner_criterion": "Armed half-depth cut, armed stop 0.5 s, armed withdrawal: labels unchanged during the stop and withdrawal",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "c948bd79f6fd362cf2c3c84581af3b46452afdcc",
+   "computed_verdict": "PASS",
+   "basis": "computed",
+   "criterion": "M4 criterion, with labels unchanged during the armed hold AND the armed withdrawal",
+   "checks": {
+    "one_component": true,
+    "labels_unchanged_during_hold": true,
+    "labels_unchanged_during_withdraw": true,
+    "core_band_below_stop_all_code0": true
+   },
+   "metrics": {
+    "final_mechanical_components_1digit": 1,
+    "stop_local_z_m": 0.01000000000000006,
+    "swept_plane": {
+     "origin": [
+      0.0,
+      4.2053902447922597e-19,
+      0.014300000000000063
+     ],
+     "normal": [
+      1.0,
+      -0.0,
+      -0.0
+     ],
+     "source": "result.json metrics.swept_planes['0'].fit"
+    },
+    "core_half_width_m": 0.004,
+    "core_band_below_stop_particles": 2400,
+    "core_band_below_stop_code0": 2400,
+    "below_stop_particles": 48000,
+    "off_core_lead_labels_below_stop": {
+     "count": 8944,
+     "particle_fraction_of_below_stop": 0.18633333333333332,
+     "mass_fraction_of_below_stop": 0.1863333333333334,
+     "min_abs_s_m": 0.0044999998062849045,
+     "max_abs_s_m": 0.023499999195337296,
+     "deepest_reference_local_z_m": 0.0024999999441206455,
+     "side_counts_code1_code2": [
+      4472,
+      4472
+     ],
+     "scope": "Reported, not scored: ADR 0008 lead pre-assignment labels only |s| > dx by design"
+    },
+    "label_windows": {
+     "hold": {
+      "phases": [
+       "hold"
+      ],
+      "steps": 25,
+      "time_s": [
+       2.18,
+       2.68
+      ],
+      "labelled_before": 23104,
+      "labelled_after": 23104,
+      "labelled_max": 23104,
+      "labelled_min": 23104,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "withdraw": {
+      "phases": [
+       "withdraw"
+      ],
+      "steps": 90,
+      "time_s": [
+       2.68,
+       4.48
+      ],
+      "labelled_before": 23104,
+      "labelled_after": 23104,
+      "labelled_max": 23104,
+      "labelled_min": 23104,
+      "change": 0,
+      "stroke_active_steps": 0
+     }
+    },
+    "label_windows_code_frames": {
+     "hold": {
+      "status": "FIT",
+      "anchor_frame_time_s": 2.2,
+      "frames_inside": 5,
+      "anchor_labelled_count": 23104,
+      "step_record_labelled_before": 23104,
+      "max_particles_changed_vs_anchor": 0,
+      "identical": true
+     },
+     "withdraw": {
+      "status": "FIT",
+      "anchor_frame_time_s": 2.7,
+      "frames_inside": 18,
+      "anchor_labelled_count": 23104,
+      "step_record_labelled_before": 23104,
+      "max_particles_changed_vs_anchor": 0,
+      "identical": true
+     }
+    },
+    "law4_definition": {
+     "criterion": "Law-4 runner ligament: no labelled particle anywhere below the stopping depth",
+     "labelled_below_stop": 8944,
+     "verdict": "FAIL",
+     "scope": "Reported, not part of the adr0006a1_adr0008 verdict"
+    },
+    "final_labelled_count": 23104
+   },
+   "inputs_sha256": {
+    "result.json": "818e5279878434dfbfaa4de021249d1cc17cab6f9ff3cdb5a71ee7211c221149",
+    "physics_state.npz": "f9456ec52dfad04b6b3349f5f2479b75df76485d6fee2eb623c698a5faded40b",
+    "actions.jsonl": "0955ca4a64750faa0cd14952d05241f1845739090f82d19ee5ab5fc8bb917ffd"
+   }
+  },
+  {
+   "row": "M7",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m7_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "M1a_persists": true,
+    "M1a_count_never_drops": true,
+    "M1b_persists": true,
+    "M1b_count_never_drops": true
+   },
+   "runner_criterion": "From M1a/M1b: separated topology persists >= 0.5 s after withdrawal (frozen postcut_disconnected_topology_persists) and the component count never drops after separation",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "8347e3d1c28e5d08610f4f88a4bc219057569714",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "5219fb39ce80b16abe1ccfe9157eff8f1cefb7ce11447a3bc3ab6dbe3f49f11a"
+   }
+  },
+  {
+   "row": "M8a",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m8a_law5_001",
+   "runner_verdict": "FAIL",
+   "runner_checks": {
+    "three_mechanical_parts": false,
+    "three_substantial_parts": false,
+    "lift_move_adds_no_labels": true
+   },
+   "runner_criterion": "Two sequential cuts (cut_index 0 at x = -10 mm, 1 at x = +10 mm) with a disarmed lift/move: >= 3 substantial mechanical parts in the 2-digit graph; lift/move adds no labels",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "0a8bf862cb669e8c34afe0667d46958e069a80a9",
+   "computed_verdict": "FAIL",
+   "basis": "computed",
+   "criterion": "Amendment 1 diagnostic: ADR 0006 topology (>= 3 mechanical parts in the final 2-digit stencil graph AND labelled count unchanged through the disarmed lift/move)",
+   "checks": {
+    "adr0006_topology_three_mechanical_parts_2digit_graph": false,
+    "adr0006_topology_lift_move_labelled_count_unchanged": true
+   },
+   "metrics": {
+    "adr0006_topology": {
+     "criterion": "ADR 0006 topology (>= 3 mechanical parts in the final 2-digit stencil graph AND labelled count unchanged through the disarmed lift/move)",
+     "verdict": "FAIL",
+     "checks": {
+      "three_mechanical_parts_2digit_graph": false,
+      "lift_move_labelled_count_unchanged": true
+     },
+     "final_mechanical_components_2digit": 2,
+     "final_component_mass_fractions": [
+      0.5625000000004431,
+      0.4375000000003181
+     ],
+     "lift_move_window": {
+      "phases": [
+       "end_0",
+       "lift_0",
+       "move_1",
+       "start_1"
+      ],
+      "steps": 56,
+      "time_s": [
+       3.6,
+       4.72
+      ],
+      "labelled_before": 28792,
+      "labelled_after": 28792,
+      "labelled_max": 28792,
+      "labelled_min": 28792,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "lift_move_code_frames": {
+      "status": "FIT",
+      "anchor_frame_time_s": 3.7,
+      "frames_inside": 11,
+      "anchor_labelled_count": 28792,
+      "step_record_labelled_before": 28792,
+      "max_particles_changed_vs_anchor": 0,
+      "identical": true
+     }
+    },
+    "runner_multi_cut_checks_reported": {
+     "three_mechanical_parts": false,
+     "three_substantial_parts": false,
+     "main_parts_retain_mass": true,
+     "both_digits_sever_bonds": true,
+     "declared_cut_planes": false
+    }
+   },
+   "inputs_sha256": {
+    "result.json": "34e3f2a071013181df48bb567604e26666b7f40a554d716c1f2401f2ec231c2a",
+    "physics_state.npz": "f91e366b0de9a87d55426408ae44d451954f87412ac084e2152d2d98b47395b6",
+    "actions.jsonl": "e56f4e8bac593d030b93263d9ad755bfd87afb09a6ad6ce299353b4fe7531a2c"
+   }
+  },
+  {
+   "row": "M8b",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m8b_law5_001",
+   "runner_verdict": "FAIL",
+   "runner_checks": {
+    "slice_push_report_pass": false
+   },
+   "runner_criterion": "Demo-3 kinematic preflight SLICE-PUSH-01 (blademaster_workcell_v1): slice_push_report PASS",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "354a1bdc86502966d83a99a03046a8632061258b",
+   "computed_verdict": "FAIL",
+   "basis": "computed",
+   "criterion": "Amendment 1 acceptance row: ADR 0006 topology (>= 3 mechanical parts in the final 2-digit stencil graph AND labelled count unchanged through the disarmed lift/move) AND the runner M8b criterion (slice_push_report status PASS_SLICE_PUSH); both reported as separate fields",
+   "checks": {
+    "adr0006_topology": true,
+    "runner_m8b_slice_push": false
+   },
+   "metrics": {
+    "adr0006_topology": {
+     "criterion": "ADR 0006 topology (>= 3 mechanical parts in the final 2-digit stencil graph AND labelled count unchanged through the disarmed lift/move)",
+     "verdict": "PASS",
+     "checks": {
+      "three_mechanical_parts_2digit_graph": true,
+      "lift_move_labelled_count_unchanged": true
+     },
+     "final_mechanical_components_2digit": 3,
+     "final_component_mass_fractions": [
+      0.362500000000243,
+      0.3250000000002055,
+      0.312500000000193
+     ],
+     "lift_move_window": {
+      "phases": [
+       "hold_0",
+       "lift_0",
+       "move_1"
+      ],
+      "steps": 134,
+      "time_s": [
+       3.46,
+       6.14
+      ],
+      "labelled_before": 28800,
+      "labelled_after": 28800,
+      "labelled_max": 28800,
+      "labelled_min": 28800,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "lift_move_code_frames": {
+      "status": "FIT",
+      "anchor_frame_time_s": 3.5,
+      "frames_inside": 27,
+      "anchor_labelled_count": 28800,
+      "step_record_labelled_before": 28800,
+      "max_particles_changed_vs_anchor": 0,
+      "identical": true
+     }
+    },
+    "runner_m8b_slice_push": {
+     "criterion": "Runner M8b criterion: slice_push_report status PASS_SLICE_PUSH (from row result.json)",
+     "status": "FAIL_SLICE_PUSH",
+     "verdict": "FAIL",
+     "failed_checks": {
+      "declared_cut_planes": false
+     },
+     "multi_cut_cuts": [
+      {
+       "digit": 0,
+       "severed_bonds": 600,
+       "maximum_reference_plane_error_m": 2.60770322002557e-10,
+       "p95_reference_plane_error_m": 2.60770322002557e-10
+      },
+      {
+       "digit": 1,
+       "severed_bonds": 600,
+       "maximum_reference_plane_error_m": 0.0020000000670552243,
+       "p95_reference_plane_error_m": 0.0020000000670552243
+      }
+     ],
+     "multi_cut_part_mass_fractions": [
+      0.362500000000243,
+      0.3250000000002055,
+      0.312500000000193
+     ]
+    },
+    "verdict_rule": "Under adr0006a1_adr0008 the M8b verdict is adr0006_topology AND runner_m8b_slice_push; a slice-push FAIL is a row FAIL and is not hidden by the topology PASS"
+   },
+   "inputs_sha256": {
+    "result.json": "adc4c017cb560d3cbf3933d1e513028f6d8335f0f54990b8eb8c5c664e747636",
+    "physics_state.npz": "40b3e6678aaa9f15f2682236332e50152911950699b50a879327780ebcce2718",
+    "actions.jsonl": "0db7d573aec64453af4ed7c9424ea56fe3d2a5acf1991b3d19822cfa952bd616"
+   }
+  },
+  {
+   "row": "M9a",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m9a_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_strict_pass": true
+   },
+   "runner_criterion": "Native CUT-01-R measured-trajectory replay with law 4: frozen strict PASS",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "8347e3d1c28e5d08610f4f88a4bc219057569714",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "bb4c1bcbe8b80d1af9a741787b7ada4fe3c89326c0d4b890fa56015dc77ac2c4"
+   }
+  },
+  {
+   "row": "M9b",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m9b_law5_001",
+   "runner_verdict": "PASS",
+   "runner_checks": {
+    "frozen_strict_pass": true
+   },
+   "runner_criterion": "Native CUT-02 measured-trajectory replay with law 4: frozen strict PASS",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "0a8bf862cb669e8c34afe0667d46958e069a80a9",
+   "computed_verdict": "PASS",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "bd52b9dd49cdc4b9b0f0a142a42fb10a54a5535937c9bf4b5f057a5e23b4bd5e"
+   }
+  },
+  {
+   "row": "M9c",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m9c_law5_001",
+   "runner_verdict": "REPORT_ONLY",
+   "runner_checks": {
+    "frozen_strict_pass": false
+   },
+   "runner_criterion": "Lab CUT-01-R measured-trajectory replay with law 4: report only (Lab parity is P1)",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "8347e3d1c28e5d08610f4f88a4bc219057569714",
+   "computed_verdict": "REPORT_ONLY",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "54681d710078e5400dfa87c4c119470d268dd7d2bdb9537d19122702cd8bb097"
+   }
+  },
+  {
+   "row": "M9d",
+   "source_dir": "artifacts/wp10_claude/phase1_law5/m9d_law5_001",
+   "runner_verdict": "REPORT_ONLY",
+   "runner_checks": {
+    "frozen_strict_pass": false
+   },
+   "runner_criterion": "Lab CUT-02 measured-trajectory replay with law 4: report only (Lab parity is P1)",
+   "cutting_law": 5,
+   "formal_resolution": true,
+   "row_git_sha": "c948bd79f6fd362cf2c3c84581af3b46452afdcc",
+   "computed_verdict": "REPORT_ONLY",
+   "basis": "carried_runner_verdict",
+   "criterion": "Runner verdict carried unchanged",
+   "inputs_sha256": {
+    "result.json": "8189372304b3e6f1cfd4bff8601568b262049e9fc1aac8b3bff2bce0a4b887cb"
+   }
+  }
+ ],
+ "comparison_to_adjudication": {
+  "source": "docs/evidence/phase1/matrix_law5_adjudication_001.json",
+  "inputs_sha256": "c383788421d4ab557f01d7f4c9ffb8ab6c019071871bd998667ff4ff0b5fd21e",
+  "rows": {
+   "M1": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M2": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M3": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M4": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M5": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M6": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M7": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   },
+   "M8": {
+    "adjudicated": "PASS_ADR0006_TOPOLOGY_TEXT__FAIL_RUNNER_M8B_CRITERION",
+    "computed": "FAIL",
+    "differs": true
+   },
+   "M9": {
+    "adjudicated": "PASS",
+    "computed": "PASS",
+    "differs": false
+   }
+  },
+  "differing_rows": [
+   "M8"
+  ]
+ }
+}

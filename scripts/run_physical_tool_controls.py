@@ -377,6 +377,10 @@ def worker(args, protocol):
     elif (ROOT/"src/robotic_cutting_sim/pad_contact.py").is_file():
         paths.append(ROOT/"src/robotic_cutting_sim/pad_contact.py")
         if "lab_contact_profile" in protocol:paths.append(ROOT/"configs/lab_grip_contact_v3.json")
+    if args.task_id in ('CUT-01-R', 'TRIM-01-R', 'CUT-02'):
+        paths += [ROOT/'src/robotic_cutting_sim'/name for name in
+                  ('tool_profile.py', 'finger_geometry.py', 'tlmpm_v2.py')]
+        paths.append(ROOT/'configs/cutting_tasks_v2.json')
     hashes={str(path.relative_to(ROOT)):sha256(path) for path in paths}
     for path in paths:(implementation/path.name).write_bytes(path.read_bytes())
     from robotic_cutting_sim.recording import manifest
@@ -553,7 +557,8 @@ def main():
     parser.add_argument("--protocol",type=Path,default=PROTOCOL)
     parser.add_argument("--gpu",type=int,default=0)
     parser.add_argument("--seed",type=int,default=42)
-    parser.add_argument("--task-id",choices=("CUT-01","TRIM-01"),default="CUT-01")
+    from robotic_cutting_sim.tasks import TASK_IDS
+    parser.add_argument("--task-id",choices=TASK_IDS,default="CUT-01")
     parser.add_argument("--cases",nargs="+")
     parser.add_argument("--timeout",type=float,default=900.)
     parser.add_argument("--dry-run",action="store_true")
@@ -562,6 +567,8 @@ def main():
     args=parser.parse_args();args.protocol=args.protocol.resolve()
     if args.gpu < 0 or args.timeout <= 0:parser.error("GPU index must be nonnegative and timeout positive")
     protocol=read_json(args.protocol)
+    if args.task_id not in protocol.get('allowed_task_ids', (args.task_id,)):
+        parser.error('The selected task is outside this frozen control protocol')
     runtimes=("isaac_sim","isaac_lab") if args.runtime=="both" else (args.runtime,)
     if any(runtime not in protocol.get("allowed_runtimes",("isaac_sim","isaac_lab")) for runtime in runtimes):
         parser.error("The selected runtime is outside the frozen protocol's allowed_runtimes")

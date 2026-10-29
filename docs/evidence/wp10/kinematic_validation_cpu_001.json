@@ -1,0 +1,1062 @@
+{
+ "command": "scripts/run_kinematic_validation.py --workers 4 --out /tmp/claude-0/-home-user/3078c62b-8dac-53f9-a45b-1a378a33253e/scratchpad/e2e/kinematic_validation_cpu_001.json",
+ "commit": "2a7d08b00c7fd99761cc3db5f1008d214bb6cf76",
+ "rows": [
+  {
+   "task_id": "CUT-01-R",
+   "controller": "reference",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": null,
+   "max_applied_translation_m": 0.0,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.300000000000065,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 110.59
+  },
+  {
+   "task_id": "CUT-01-R",
+   "controller": "push_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.300000000000129,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 113.87
+  },
+  {
+   "task_id": "CUT-01-R",
+   "controller": "saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.002000000000000002,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.880000000000132,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 115.18
+  },
+  {
+   "task_id": "CUT-01-R",
+   "controller": "oblique20_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.03490658503988659,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.882188311628779,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "cut_at_workpiece_local_target_plane"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.004000000073574483
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 117.39
+  },
+  {
+   "task_id": "CUT-01-R",
+   "controller": "yaw30_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.03490658503988659,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.122857142857262,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "cut_at_workpiece_local_target_plane"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.007999999914318323
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 112.06
+  },
+  {
+   "task_id": "CUT-01-R",
+   "controller": "gym_saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.002000000000000002,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.880000000000132,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 108.15
+  },
+  {
+   "task_id": "CUT-01-R",
+   "controller": "agent_api",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "status": "ERROR",
+   "error": "KeyError: 'agent_api'",
+   "wall_s": 0.01
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "reference",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": null,
+   "max_applied_translation_m": 0.0,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.300000000000068,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 207.99
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "push_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.300000000000113,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 206.47
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000026,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.850000000000117,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 196.38
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "oblique20_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.03490658503988659,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.91716359789636,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "cut_at_workpiece_local_target_plane"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0,
+    "maximum_reference_midpoint_plane_distance_m": 0.004000000073574483
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 197.73
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "yaw30_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.03490658503988659,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.081666666666775,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "cut_at_workpiece_local_target_plane"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0,
+    "maximum_reference_midpoint_plane_distance_m": 0.015999999828636646
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 198.87
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "gym_saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000026,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.850000000000117,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 197.92
+  },
+  {
+   "task_id": "CUT-02",
+   "controller": "agent_api",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "status": "ERROR",
+   "error": "KeyError: 'agent_api'",
+   "wall_s": 0.0
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "reference",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": null,
+   "max_applied_translation_m": 0.0,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.300000000000074,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 1,
+    "max_cuts": 1
+   },
+   "wall_s": 86.71
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "push_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 2.220446049250313e-16,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.30000000000013,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 1,
+    "max_cuts": 1
+   },
+   "wall_s": 86.87
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.002000000000000002,
+   "max_applied_rotation_rad": 2.220446049250313e-16,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.880000000000134,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 1,
+    "max_cuts": 1
+   },
+   "wall_s": 90.65
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "oblique20_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.03490658503988659,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.867902597343061,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "cut_at_workpiece_local_target_plane"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.004000000073574483
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 1,
+    "max_cuts": 1
+   },
+   "wall_s": 89.85
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "yaw30_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.0020000000000000018,
+   "max_applied_rotation_rad": 0.03490658503988659,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 9.078571428571552,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "cut_at_workpiece_local_target_plane"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.007999999914318323
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 1,
+    "max_cuts": 1
+   },
+   "wall_s": 91.32
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "gym_saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": true,
+   "max_applied_translation_m": 0.002000000000000002,
+   "max_applied_rotation_rad": 2.220446049250313e-16,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 8.880000000000134,
+   "status": "PASS_TASK_METRICS",
+   "success": true,
+   "failed_checks": [],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "substantial_parts": 2,
+    "two_main_parts_mass_fraction": 1.0000000000000002,
+    "maximum_reference_midpoint_plane_distance_m": 0.0
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 1,
+    "max_cuts": 1
+   },
+   "wall_s": 89.58
+  },
+  {
+   "task_id": "CUT-01",
+   "controller": "agent_api",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "status": "ERROR",
+   "error": "KeyError: 'agent_api'",
+   "wall_s": 0.0
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "reference",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": null,
+   "max_applied_translation_m": 0.0,
+   "max_applied_rotation_rad": 0.0,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 5.521005747488903,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "maximum_gouge_depth_m",
+    "missing_surface_fraction",
+    "overcut_volume_fraction_of_initial_base",
+    "surface_p95_absolute_plane_error_m",
+    "surface_rms_plane_error_m"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 1.0,
+    "surface": {
+     "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+     "measurement_spacing_xy_m": [
+      0.001,
+      0.001
+     ],
+     "grid_shape_xy": [
+      160,
+      30
+     ],
+     "valid_surface_fraction": 0.9252083333333333,
+     "missing_surface_fraction": 0.0747916666666667,
+     "maximum_substrate_surface_residual_height_m": 0.0,
+     "surface_p95_absolute_plane_error_m": 0.004389654161874234,
+     "surface_rms_plane_error_m": 0.0016575618897265018,
+     "maximum_gouge_depth_m": 0.02,
+     "overcut_volume_m3": 1.2111234729142119e-05,
+     "overcut_volume_fraction_of_initial_base": 0.12615869509523042
+    }
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 102.54
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "push_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": false,
+   "max_applied_translation_m": 0.0020000000000000057,
+   "max_applied_rotation_rad": 1.6653345369377348e-16,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 6.015027530266913,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "maximum_gouge_depth_m",
+    "missing_surface_fraction",
+    "overcut_volume_fraction_of_initial_base",
+    "postcut_disconnected_topology_persists",
+    "surface_p95_absolute_plane_error_m",
+    "surface_rms_plane_error_m"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 1.0,
+    "surface": {
+     "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+     "measurement_spacing_xy_m": [
+      0.001,
+      0.001
+     ],
+     "grid_shape_xy": [
+      160,
+      30
+     ],
+     "valid_surface_fraction": 0.9241666666666667,
+     "missing_surface_fraction": 0.07583333333333331,
+     "maximum_substrate_surface_residual_height_m": 0.0,
+     "surface_p95_absolute_plane_error_m": 0.004394063372542747,
+     "surface_rms_plane_error_m": 0.001663755048390364,
+     "maximum_gouge_depth_m": 0.02,
+     "overcut_volume_m3": 1.2187862966225816e-05,
+     "overcut_volume_fraction_of_initial_base": 0.1269569058981856
+    }
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 106.11
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": false,
+   "max_applied_translation_m": 0.0020000000000000057,
+   "max_applied_rotation_rad": 1.6653345369377348e-16,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 5.932165814484202,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "maximum_gouge_depth_m",
+    "missing_surface_fraction",
+    "overcut_volume_fraction_of_initial_base",
+    "postcut_disconnected_topology_persists",
+    "surface_p95_absolute_plane_error_m",
+    "surface_rms_plane_error_m"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 1.0,
+    "surface": {
+     "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+     "measurement_spacing_xy_m": [
+      0.001,
+      0.001
+     ],
+     "grid_shape_xy": [
+      160,
+      30
+     ],
+     "valid_surface_fraction": 0.9220833333333334,
+     "missing_surface_fraction": 0.07791666666666663,
+     "maximum_substrate_surface_residual_height_m": 0.0,
+     "surface_p95_absolute_plane_error_m": 0.004398214883195692,
+     "surface_rms_plane_error_m": 0.0015996359375337527,
+     "maximum_gouge_depth_m": 0.02,
+     "overcut_volume_m3": 1.228803674548065e-05,
+     "overcut_volume_fraction_of_initial_base": 0.12800038276542344
+    }
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 107.08
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "oblique20_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "status": "NOT_APPLICABLE"
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "yaw30_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "status": "NOT_APPLICABLE"
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "gym_saw_policy",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "steps": 400,
+   "policy_completed_waypoints": false,
+   "max_applied_translation_m": 0.0020000000000000057,
+   "max_applied_rotation_rad": 1.6653345369377348e-16,
+   "max_tracking_error_m": 0.0,
+   "episode_reward": 5.932165814484202,
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "maximum_gouge_depth_m",
+    "missing_surface_fraction",
+    "overcut_volume_fraction_of_initial_base",
+    "postcut_disconnected_topology_persists",
+    "surface_p95_absolute_plane_error_m",
+    "surface_rms_plane_error_m"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 1.0,
+    "surface": {
+     "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+     "measurement_spacing_xy_m": [
+      0.001,
+      0.001
+     ],
+     "grid_shape_xy": [
+      160,
+      30
+     ],
+     "valid_surface_fraction": 0.9220833333333334,
+     "missing_surface_fraction": 0.07791666666666663,
+     "maximum_substrate_surface_residual_height_m": 0.0,
+     "surface_p95_absolute_plane_error_m": 0.004398214883195692,
+     "surface_rms_plane_error_m": 0.0015996359375337527,
+     "maximum_gouge_depth_m": 0.02,
+     "overcut_volume_m3": 1.228803674548065e-05,
+     "overcut_volume_fraction_of_initial_base": 0.12800038276542344
+    }
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 105.74
+  },
+  {
+   "task_id": "TRIM-01-R",
+   "controller": "agent_api",
+   "particle_spacing_m": 0.004,
+   "material_dt_s": 0.0005,
+   "device": "cpu",
+   "runtime_source": "kinematic_ideal_tracking",
+   "agent_calls": [
+    {
+     "call": "describe_task",
+     "result": {
+      "task_id": "TRIM-01-R",
+      "goal": "Remove the material above the target plane (cut off the bump) without cutting below it.",
+      "workpiece_center_world_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "workpiece_size_m": [
+       0.16,
+       0.03,
+       0.02
+      ],
+      "bumps": [
+       {
+        "center_local_m": [
+         0.0,
+         0.0
+        ],
+        "height_m": 0.008,
+        "radius_m": [
+         0.012,
+         0.012
+        ]
+       }
+      ],
+      "target_plane_world": [
+       0.0,
+       0.0,
+       1.0,
+       -0.02
+      ],
+      "edge_frame": "x = cutting (advance) direction, y = along the edge, z = blade normal",
+      "episode_s": 8.0,
+      "control_dt_s": 0.02,
+      "step_limits": {
+       "translation_m": 0.002,
+       "rotation_deg": 2.0
+      },
+      "tool": "ruler_knife_v1"
+     }
+    },
+    {
+     "call": "reset",
+     "result": {
+      "time_s": 0.0,
+      "remaining_s": 8.0,
+      "done": false,
+      "edge_position_m": [
+       -0.045,
+       0.0,
+       0.06
+      ],
+      "edge_rpy_deg": [
+       0.0,
+       25.0,
+       0.0
+      ],
+      "termination_reason": null,
+      "ik_status": null,
+      "consecutive_ik_failures": 0,
+      "runtime_source": "kinematic_ideal_tracking"
+     }
+    },
+    {
+     "call": "move_edge_to",
+     "result": {
+      "steps": 24,
+      "reached": true,
+      "ik_rejected_steps": 0,
+      "reward": -0.064,
+      "time_s": 0.48,
+      "remaining_s": 7.52,
+      "done": false,
+      "edge_position_m": [
+       -0.09199,
+       0.0,
+       0.0502
+      ],
+      "edge_rpy_deg": [
+       0.0,
+       25.0,
+       0.0
+      ],
+      "termination_reason": null,
+      "ik_status": "ok",
+      "consecutive_ik_failures": 0
+     }
+    },
+    {
+     "call": "move_edge_to",
+     "result": {
+      "steps": 15,
+      "reached": true,
+      "ik_rejected_steps": 0,
+      "reward": -0.015,
+      "time_s": 0.78,
+      "remaining_s": 7.22,
+      "done": false,
+      "edge_position_m": [
+       -0.092,
+       0.0,
+       0.0202
+      ],
+      "edge_rpy_deg": [
+       0.0,
+       25.0,
+       0.0
+      ],
+      "termination_reason": null,
+      "ik_status": "ok",
+      "consecutive_ik_failures": 0
+     }
+    },
+    {
+     "call": "cut_along",
+     "result": {
+      "steps": 361,
+      "reached": false,
+      "ik_rejected_steps": 0,
+      "reward": 6.093951,
+      "time_s": 8.0,
+      "remaining_s": 0.0,
+      "done": true,
+      "edge_position_m": [
+       0.0524,
+       0.0,
+       0.0202
+      ],
+      "edge_rpy_deg": [
+       0.0,
+       25.0,
+       0.0
+      ],
+      "termination_reason": null,
+      "ik_status": "ok",
+      "consecutive_ik_failures": 0
+     }
+    },
+    {
+     "call": "move_edge_by",
+     "result": {
+      "steps": 0,
+      "reached": false,
+      "ik_rejected_steps": 0,
+      "reward": 0.0,
+      "time_s": 8.0,
+      "remaining_s": 0.0,
+      "done": true,
+      "edge_position_m": [
+       0.0524,
+       0.0,
+       0.0202
+      ],
+      "edge_rpy_deg": [
+       0.0,
+       25.0,
+       0.0
+      ],
+      "termination_reason": null,
+      "ik_status": "ok",
+      "consecutive_ik_failures": 0
+     }
+    },
+    {
+     "call": "finish_episode",
+     "result": {
+      "steps": 0,
+      "time_s": 8.0,
+      "remaining_s": 0.0,
+      "done": true,
+      "edge_position_m": [
+       0.0524,
+       0.0,
+       0.0202
+      ],
+      "edge_rpy_deg": [
+       0.0,
+       25.0,
+       0.0
+      ],
+      "termination_reason": null,
+      "ik_status": "ok",
+      "consecutive_ik_failures": 0
+     }
+    }
+   ],
+   "status": "FAIL_TASK_METRICS",
+   "success": false,
+   "failed_checks": [
+    "maximum_gouge_depth_m",
+    "missing_surface_fraction",
+    "overcut_volume_fraction_of_initial_base",
+    "postcut_disconnected_topology_persists",
+    "surface_p95_absolute_plane_error_m",
+    "surface_rms_plane_error_m"
+   ],
+   "missing": null,
+   "metrics": {
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 1.0,
+    "surface": {
+     "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+     "measurement_spacing_xy_m": [
+      0.001,
+      0.001
+     ],
+     "grid_shape_xy": [
+      160,
+      30
+     ],
+     "valid_surface_fraction": 0.9241666666666667,
+     "missing_surface_fraction": 0.07583333333333331,
+     "maximum_substrate_surface_residual_height_m": 0.0,
+     "surface_p95_absolute_plane_error_m": 0.004394025763261292,
+     "surface_rms_plane_error_m": 0.0016641135647359354,
+     "maximum_gouge_depth_m": 0.02,
+     "overcut_volume_m3": 1.21881493229632e-05,
+     "overcut_volume_fraction_of_initial_base": 0.1269598887808667
+    }
+   },
+   "material_receipt": {
+    "solver": "tlmpm_v2",
+    "cutting_law": 2,
+    "max_cuts": 1
+   },
+   "wall_s": 105.16
+  }
+ ]
+}

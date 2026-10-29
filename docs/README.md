@@ -10,7 +10,26 @@
 | Measure cutting outcome and geometry independently | [Evaluation v2](EVALUATION_V2.md) |
 | Check both hand-aligned wrist cameras | [Camera rig v5](WRIST_CAMERA_V5.md) |
 | Use the same-instance remote GUI | [Remote interactive viewer](REMOTE_INTERACTIVE_VIEWER.md) |
+| Run or reproduce the three BladeMaster-style demos | [Demo report](reports/BLADEMASTER_DEMOS.md) · [Plan](BLADEMASTER_DEMO_PLAN.md) |
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
+
+## BladeMaster demos (2026-10-29)
+
+- [Demo report](reports/BLADEMASTER_DEMOS.md): live Native Demo 1 (complete
+  and 20° oblique cut), Demo 2 (35° skim) and Demo 3 (two cuts, three parts,
+  blade-face push), with every attempt in
+  [demo evidence](evidence/phase3/demos_live_002.json) and media under
+  [media/demos](media/demos/).
+- Cutting laws: [ADR 0006 law 4](adr/0006-swept-band-cutting-law-4.md) (with
+  Amendment 1) and [ADR 0008 law 5](adr/0008-cutting-law-5-lead-preassignment.md);
+  1 mm matrix [law 5 computed](evidence/phase1/matrix_law5_002.json),
+  [review](evidence/phase1/matrix_law5_adjudication_001.json),
+  [law 4](evidence/phase1/matrix_law4_001.json); handoff diagnosis
+  [WP-10 Claude](reports/WP-10_CLAUDE_DIAGNOSIS_20261029.md).
+- Workcell and tasks: [ADR 0007](adr/0007-blademaster-workcell-and-demo-tasks.md)
+  (`blademaster_workcell_v1`, `SLICE-PUSH-01`, evaluation, runner) and
+  [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) (Demo 3 wrist-depth retarget);
+  [Native smokes](evidence/phase2/native_smokes_001.json).
 
 ## Current scene and validation
 

@@ -1,0 +1,532 @@
+{
+  "schema": "demo3_wrist_survey_offline_v1",
+  "adr": "docs/adr/0009-demo3-wrist-depth-retarget.md",
+  "command": "python scripts/validate_wrist_survey_offline.py artifacts/wp10_claude/demos/live_20261029_b/demo3/episode_000 --out docs/evidence/phase3/demo3_wrist_survey_offline_001.json",
+  "git_head": "4389a2c96f681f20b9666d45036931cf3addb41b",
+  "episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_b/demo3/episode_000",
+  "episode_input_sha256": {
+    "actions.jsonl": "c63a9ec9289649ca6a397b1136a06bd9641619f8bab0f4769c71f4a190d5eecc",
+    "physics_state.npz": "89edd65f409c4cc002955bef35064534998d8f04f556aa7888916a0487c982f1",
+    "task.json": "937df6ce4975a896cfb95324f03a8e78dcae72c3012c38490c98e34736ce1ce9",
+    "frame_manifest.json": "bca53af2c155e37899bc71d33d800d9946804c40c15eb0b6c57e80dc9f46f7c8"
+  },
+  "episode_unchanged": true,
+  "estimator_iterations": [
+    {
+      "version": 1,
+      "feature": "silhouette: midpoint between the last bar-top hit and the next pixel ray at the hit height",
+      "live": "+x end over frames 5.5-6.5 s (bar end static, camera moving) 80.44-81.03 mm; calibration 0.5 s 79.60 mm; shift 0.5 s -> 6.5 s = 1.331 mm (error +0.14 mm vs the cut-1 layers)",
+      "verdict": "rejected: view-dependent on the rendered rounded edge (0.6 mm frame-to-frame)"
+    },
+    {
+      "version": 2,
+      "feature": "top-profile crossing 0.3 mm below the local top height (first crossing walking outward)",
+      "live": "survey frames 6.0-6.6 s 80.36-80.42 mm; calibration frames 0.1-0.5 s 79.16-79.34 mm; shift 1.231 mm (error +0.043 mm)",
+      "synthetic": "1 mm fillet, no noise: max |error| 0.172 mm over 25 shifts in +-3 mm",
+      "verdict": "superseded: pixel-phase error on the synthetic fillet and a noisy-top early exit"
+    },
+    {
+      "version": 3,
+      "feature": "crossing 0.2 mm below the local top, searched from the run end inward (module default)",
+      "live": "see measurements/robustness below",
+      "synthetic": "no noise max |error| 0.113 mm; depth noise 0.1 mm <= 0.09 mm, 0.2 mm <= 0.21 mm (6 seeds)",
+      "verdict": "final"
+    }
+  ],
+  "kinematic_preflight": {
+    "status": "NOT_RUN",
+    "reason": "the kinematic preflight records no depth frames"
+  },
+  "estimator": {
+    "module": "src/robotic_cutting_sim/wrist_depth_survey.py",
+    "method": "end_face_plus_x",
+    "config": {
+      "height_margin_m": 0.003,
+      "y_margin_m": 0.003,
+      "blade_clearance_m": 0.002,
+      "blade_half_thickness_m": 0.00075,
+      "min_material_px": 3,
+      "reference_inner_m": [
+        0.002,
+        0.006
+      ],
+      "level_drop_m": 0.0002,
+      "min_lines": 15,
+      "max_line_spread_m": 0.0006,
+      "max_bracket_m": 0.002,
+      "kerf_band_m": [
+        -0.006,
+        0.006
+      ],
+      "max_abs_shift_m": 0.006
+    },
+    "inputs": "wrist_d405_0 depth_m/valid_mask/K/T_world_camera + measured edge pose (knife exclusion); physics_state.npz read only for the truth below"
+  },
+  "frames": {
+    "calibration": {
+      "time_s": 0.5,
+      "file": "wrist_d405_0_0005.npz",
+      "sha256": "03f17b01d039620d2602ab9abf6c1811f3f530641cf7b7d46b7cac47af6e2263",
+      "rule": "last wrist frame before cut_0 starts",
+      "cut_0_first_input_s": 0.54
+    },
+    "survey": {
+      "time_s": 6.5,
+      "file": "wrist_d405_0_0065.npz",
+      "sha256": "fb84aa683d0c88640573f2093c21a589b3cbc1a1079062f1c1a00f833edc3e88",
+      "rule": "last wrist frame of move_1 (<= first cut_1 input time)",
+      "move_1_first_input_s": 5.9,
+      "cut_1_first_input_s": 6.5
+    }
+  },
+  "measurements": {
+    "calibration": {
+      "end_minus_x": {
+        "x_m": null,
+        "valid": false,
+        "reason": "end_face_-x: 0 bracketed lines < 15",
+        "lines_used": 0,
+        "line_spread_m": null,
+        "bracket_median_m": null
+      },
+      "end_plus_x": {
+        "x_m": 0.0790278474912865,
+        "valid": true,
+        "reason": null,
+        "lines_used": 71,
+        "line_spread_m": 2.2325496486498203e-06,
+        "bracket_median_m": 0.00046206585378880116
+      },
+      "kerf_right": {
+        "x_m": null,
+        "valid": false,
+        "reason": "kerf_right_face: 0 bracketed lines < 15",
+        "lines_used": 0,
+        "line_spread_m": null,
+        "bracket_median_m": null
+      },
+      "physics_timestamp_s": 0.5,
+      "counts": {
+        "valid_px": 402417,
+        "material_px": 35744,
+        "background_px": 338705
+      }
+    },
+    "survey": {
+      "end_minus_x": {
+        "x_m": null,
+        "valid": false,
+        "reason": "end_face_-x: 0 bracketed lines < 15",
+        "lines_used": 0,
+        "line_spread_m": null,
+        "bracket_median_m": null
+      },
+      "end_plus_x": {
+        "x_m": 0.08020473536095536,
+        "valid": true,
+        "reason": null,
+        "lines_used": 71,
+        "line_spread_m": 3.1769395384693893e-06,
+        "bracket_median_m": 0.0003452792814536282
+      },
+      "kerf_right": {
+        "x_m": null,
+        "valid": false,
+        "reason": "kerf_right_face: 0 bracketed lines < 15",
+        "lines_used": 0,
+        "line_spread_m": null,
+        "bracket_median_m": null
+      },
+      "physics_timestamp_s": 6.5,
+      "counts": {
+        "valid_px": 402417,
+        "material_px": 16773,
+        "background_px": 357676
+      }
+    }
+  },
+  "estimate": {
+    "method": "end_face_plus_x",
+    "valid": true,
+    "reasons": [],
+    "shift_m": 0.0011768878696688662,
+    "applied_shift_m": 0.0011768878696688662,
+    "r_s_m": -0.00047215250871350534,
+    "calibration_face": "end_plus_x",
+    "calibration_face_x_m": 0.0790278474912865,
+    "survey_face": "end_plus_x",
+    "survey_face_x_m": 0.08020473536095536,
+    "calibration_timestamp_s": 0.5,
+    "survey_timestamp_s": 6.5,
+    "config": null
+  },
+  "adr_literal_kerf_face": {
+    "at_survey_frame": {
+      "valid": false,
+      "reasons": [
+        "survey: kerf_right_face: 0 bracketed lines < 15"
+      ],
+      "shift_m": null
+    },
+    "calibration_minus_x_end": {
+      "x_m": null,
+      "valid": false,
+      "reason": "end_face_-x: 0 bracketed lines < 15",
+      "lines_used": 0,
+      "line_spread_m": null,
+      "bracket_median_m": null
+    },
+    "at_lift_0_end_frames": [
+      {
+        "survey_s": 5.4,
+        "kerf_right_face_x_m": null,
+        "kerf_lines": 0,
+        "shift_m": null,
+        "valid": false,
+        "reasons": [
+          "survey: kerf_right_face: 0 bracketed lines < 15"
+        ]
+      },
+      {
+        "survey_s": 5.5,
+        "kerf_right_face_x_m": null,
+        "kerf_lines": 0,
+        "shift_m": null,
+        "valid": false,
+        "reasons": [
+          "survey: kerf_right_face: 0 bracketed lines < 15"
+        ]
+      },
+      {
+        "survey_s": 5.6,
+        "kerf_right_face_x_m": -0.026362811774449445,
+        "kerf_lines": 26,
+        "shift_m": 0.0026650357168370477,
+        "valid": true,
+        "reasons": []
+      },
+      {
+        "survey_s": 5.7,
+        "kerf_right_face_x_m": -0.02636854892062525,
+        "kerf_lines": 26,
+        "shift_m": 0.0026592985706612414,
+        "valid": true,
+        "reasons": []
+      },
+      {
+        "survey_s": 5.8,
+        "kerf_right_face_x_m": -0.026372316631869834,
+        "kerf_lines": 25,
+        "shift_m": 0.002655530859416659,
+        "valid": true,
+        "reasons": []
+      },
+      {
+        "survey_s": 5.9,
+        "kerf_right_face_x_m": -0.02642294754570596,
+        "kerf_lines": 36,
+        "shift_m": 0.002604899945580535,
+        "valid": true,
+        "reasons": []
+      }
+    ],
+    "note": "The ADR measures the -x end face at calibration and the cut-0 kerf face at the cut-1 start. In this rig both are outside the usable view: the wrist camera sits +45 mm in x of the hand, so at the cut-0 start the visible bar top spans about x = -33..+80 mm (the -x end at -80 mm is out of view and behind the blade) and at the cut-1 start about x = +28..+81 mm (the kerf at -30 mm is out of view). Where the kerf is in view (end of lift_0) the kerf-face formula is biased by the crushed kerf top and by which 1 mm particle layer cut 0 severed."
+  },
+  "robustness": {
+    "frame_pairs": {
+      "calibration_frames_s": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5
+      ],
+      "survey_frames_s": [
+        6.0,
+        6.1,
+        6.2,
+        6.3,
+        6.4,
+        6.5
+      ],
+      "n": 30,
+      "shift_min_m": 0.0011589174066392316,
+      "shift_max_m": 0.0012535121818846168,
+      "shift_median_m": 0.0011973577091419288,
+      "max_abs_error_vs_cut1_layers_m": 6.489352780984846e-05,
+      "invalid": 0
+    },
+    "depth_noise": {
+      "rows": [
+        {
+          "depth_noise_sigma_m": 5e-05,
+          "seed": 0,
+          "shift_m": 0.001178746297471986,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 5e-05,
+          "seed": 1,
+          "shift_m": 0.0011804748644149154,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 5e-05,
+          "seed": 2,
+          "shift_m": 0.0011800484338913703,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 5e-05,
+          "seed": 3,
+          "shift_m": 0.0011659674967619826,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 5e-05,
+          "seed": 4,
+          "shift_m": 0.0011988058613702918,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0001,
+          "seed": 0,
+          "shift_m": 0.0011936469037364394,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0001,
+          "seed": 1,
+          "shift_m": 0.0011831357545930288,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0001,
+          "seed": 2,
+          "shift_m": 0.0012144586208227975,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0001,
+          "seed": 3,
+          "shift_m": 0.001138552260240927,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0001,
+          "seed": 4,
+          "shift_m": 0.0012137171760775861,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0002,
+          "seed": 0,
+          "shift_m": 0.001244962265704419,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0002,
+          "seed": 1,
+          "shift_m": 0.0011971268881535435,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0002,
+          "seed": 2,
+          "shift_m": 0.0012615825529786462,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0002,
+          "seed": 3,
+          "shift_m": 0.00109922177895308,
+          "valid": true,
+          "reasons": []
+        },
+        {
+          "depth_noise_sigma_m": 0.0002,
+          "seed": 4,
+          "shift_m": 0.0012864874017815137,
+          "valid": true,
+          "reasons": []
+        }
+      ],
+      "n": 15,
+      "invalid": 0,
+      "max_abs_error_vs_cut1_layers_m": 9.786874770674535e-05
+    }
+  },
+  "oracle_truth_validation_only": {
+    "at_survey": {
+      "frame_index": 65,
+      "frame_time_s": 6.5,
+      "mean_dx_m": {
+        "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0006470816563814879,
+        "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.0011519151001616761,
+        "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+        "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+        "middle_ref_x_-28.5_to_+28.5mm": 0.0011595429744745067,
+        "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+        "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+        "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+        "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.0011825383012961782
+      }
+    },
+    "at_calibration": {
+      "frame_index": 5,
+      "frame_time_s": 0.5,
+      "mean_dx_m": {
+        "coordinator_kerf_band_ref_x_-29.5_to_-20mm": -2.2386374572912854e-05,
+        "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": -2.2094274560610452e-05,
+        "ref_x_-29.5mm_layer_only": -2.501527468363444e-05,
+        "left_part_ref_x_-79.5_to_-30.5mm": -4.588258787989616e-05,
+        "middle_ref_x_-28.5_to_+28.5mm": 3.3630998189636003e-09,
+        "cut1_layers_ref_x_+29.5_and_+30.5mm": 2.5107419739166894e-05,
+        "right_part_ref_x_+31.5_to_+79.5mm": 4.6305234613669974e-05,
+        "end_layer_ref_x_+79.5mm": 6.807113687197367e-05,
+        "middle_plus_right_ref_x_-28.5_to_+79.5mm": 2.1278590782914334e-05
+      }
+    },
+    "at_lift_0_end": {
+      "5.40": {
+        "frame_index": 54,
+        "frame_time_s": 5.4,
+        "mean_dx_m": {
+          "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0006532575792322557,
+          "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.0011587772366625291,
+          "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+          "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+          "middle_ref_x_-28.5_to_+28.5mm": 0.0011643382199213977,
+          "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+          "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+          "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+          "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.0011850898997908543
+        }
+      },
+      "5.50": {
+        "frame_index": 55,
+        "frame_time_s": 5.5,
+        "mean_dx_m": {
+          "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0006526278139402469,
+          "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.0011580774974491862,
+          "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+          "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+          "middle_ref_x_-28.5_to_+28.5mm": 0.0011638785259145508,
+          "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+          "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+          "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+          "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.001184845291970697
+        }
+      },
+      "5.60": {
+        "frame_index": 56,
+        "frame_time_s": 5.6000000000000005,
+        "mean_dx_m": {
+          "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0006519373987490932,
+          "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.0011573103694590154,
+          "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+          "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+          "middle_ref_x_-28.5_to_+28.5mm": 0.0011634129442354188,
+          "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+          "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+          "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+          "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.0011845975512607004
+        }
+      },
+      "5.70": {
+        "frame_index": 57,
+        "frame_time_s": 5.7,
+        "mean_dx_m": {
+          "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.000651323494190971,
+          "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.001156628253283324,
+          "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+          "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+          "middle_ref_x_-28.5_to_+28.5mm": 0.0011629600434615237,
+          "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+          "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+          "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+          "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.0011843565581883524
+        }
+      },
+      "5.80": {
+        "frame_index": 58,
+        "frame_time_s": 5.8,
+        "mean_dx_m": {
+          "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0006507705791542927,
+          "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.0011560139032425704,
+          "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+          "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+          "middle_ref_x_-28.5_to_+28.5mm": 0.0011625161675521208,
+          "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+          "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+          "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+          "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.0011841203673374776
+        }
+      },
+      "5.90": {
+        "frame_index": 59,
+        "frame_time_s": 5.9,
+        "mean_dx_m": {
+          "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0006502437104160587,
+          "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 0.0011554284935334214,
+          "ref_x_-29.5mm_layer_only": -0.003896419337640206,
+          "left_part_ref_x_-79.5_to_-30.5mm": -0.0031253171692291895,
+          "middle_ref_x_-28.5_to_+28.5mm": 0.0011620787307238688,
+          "cut1_layers_ref_x_+29.5_and_+30.5mm": 0.0011886186540747683,
+          "right_part_ref_x_+31.5_to_+79.5mm": 0.0012095090819104594,
+          "end_layer_ref_x_+79.5mm": 0.0012314854189753532,
+          "middle_plus_right_ref_x_-28.5_to_+79.5mm": 0.0011838876027866646
+        }
+      }
+    }
+  },
+  "errors_m": {
+    "coordinator_kerf_band_ref_x_-29.5_to_-20mm": 0.0005298062132873783,
+    "kerf_band_without_ref_x_-29.5_layer_-28.5_to_-20mm": 2.4972769507190015e-05,
+    "ref_x_-29.5mm_layer_only": 0.005073307207309072,
+    "left_part_ref_x_-79.5_to_-30.5mm": 0.004302205038898056,
+    "middle_ref_x_-28.5_to_+28.5mm": 1.734489519435948e-05,
+    "cut1_layers_ref_x_+29.5_and_+30.5mm": -1.1730784405902155e-05,
+    "right_part_ref_x_+31.5_to_+79.5mm": -3.262121224159326e-05,
+    "end_layer_ref_x_+79.5mm": -5.4597549306486994e-05,
+    "middle_plus_right_ref_x_-28.5_to_+79.5mm": -5.650431627312073e-06
+  },
+  "verdicts": {
+    "target_abs_error_m": 0.0005,
+    "coordinator_metric": {
+      "truth_m": 0.0006470816563814879,
+      "error_m": 0.0005298062132873783,
+      "status": "FAIL",
+      "caveat": "The band includes the ref x = -29.5 mm layer, which cut 0 left on the LEFT part (it moved about -3 mm with it); its mean is not the shift of the part right of cut 0."
+    },
+    "cut1_plane_metric": {
+      "truth_m": 0.0011886186540747683,
+      "error_m": -1.1730784405902155e-05,
+      "status": "PASS",
+      "rationale": "Cut 1 must separate the reference layers +29.5/+30.5 mm; their current x displacement is the retarget the controller needs."
+    },
+    "kerf_band_without_left_layer": {
+      "truth_m": 0.0011519151001616761,
+      "error_m": 2.4972769507190015e-05,
+      "status": "PASS"
+    }
+  },
+  "calibration_time_displacement_note": {
+    "end_layer_dx_at_calibration_m": 6.807113687197367e-05,
+    "note": "The end-face difference measures the shift between the calibration and survey frames; the bar end had already moved this much from the reference when the calibration frame was taken."
+  },
+  "wall_s": 8.11415107799985
+}

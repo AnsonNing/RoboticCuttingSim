@@ -1,0 +1,83 @@
+{
+ "scope": "Phase 1 acceptance adjudication for cutting law 5 (tlmpm_v4, ADR 0008) against the ADR 0006 matrix incl. Amendment 1; 1 mm particles, 0.1 ms, 4 mm grid, seed 42, kinematic ideal tracking (M9: measured-trajectory material replay). Not robot evidence.",
+ "git_sha": "8347e3d1c28e5d08610f4f88a4bc219057569714",
+ "runner_summary": "docs/evidence/phase1/matrix_law5_001.json (runner verdicts unchanged: 11 PASS / 5 FAIL / 2 REPORT_ONLY)",
+ "interrupted_outputs_kept": [
+  "artifacts/wp10_claude/phase1_law5/m1b_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m2_law5_001",
+  "artifacts/wp10_claude/phase1_law5/m5c_law5_001"
+ ],
+ "rows": {
+  "M1": {
+   "verdict": "PASS",
+   "basis": "M1a and M1b frozen strict oracle PASS"
+  },
+  "M2": {
+   "verdict": "PASS",
+   "basis": "ADR 0006 Amendment 1 (declared before any law-5 row)",
+   "runner_original_2mm_verdict": "FAIL",
+   "rescore": "artifacts/wp10_claude/phase1_law5/m2_law5_002_amended_rescore_001.json",
+   "actual_interface_m": 0.004912657043225371,
+   "ideal_geometric_label_interface_m": 0.004442810737864569,
+   "allowed_m": 0.005442810737864569,
+   "label_geometry_disagreement_max_abs_m": 0.0008965088864339662
+  },
+  "M3": {
+   "verdict": "PASS",
+   "basis": "M3a (25 deg), M3b (ruler_workcell_v2 35 deg) and M3c (blademaster_workcell_v1 35 deg board): frozen reference_above_plane_material_removed and largest component >= 99% of below-plane mass",
+   "precision": "frozen surface precision checks FAIL (reported separately, not part of M3)"
+  },
+  "M4": {
+   "verdict": "PASS",
+   "basis": "one component; labels unchanged during armed withdrawal; ADR 0008 ligament definition: the core band |x| <= dx below the stopping depth is 100% code 0 (2400/2400). Lead pre-assignment labelled 18.6% of the material below the stop, all at |x| >= 4.5 mm, by design",
+   "runner_law4_ligament_check": "FAIL (requires all material below the stop to be code 0, the law-4 definition)",
+   "review_note": "Adjudicated by hand against the runner's law-4 ligament check, using ADR 0008 (978d797) and tests/test_cutting_law_v5.py (ebd7395), both earlier than the row; reviewer confirmed the ligament is mechanically connected (above the stop the bar splits into two 21600-particle halves; below, the core band is 2400/2400 code 0)."
+  },
+  "M5": {
+   "verdict": "PASS",
+   "basis": "M5a side push, M5b flat press, M5c in-kerf blade-normal move: force present, zero new labels, one component"
+  },
+  "M6": {
+   "verdict": "PASS",
+   "basis": "labels unchanged during the armed stop and withdrawal; one component; same ADR 0008 core-band ligament as M4",
+   "runner_law4_ligament_check": "FAIL (law-4 definition)",
+   "review_note": "Adjudicated by hand against the runner's law-4 ligament check, using ADR 0008 (978d797) and tests/test_cutting_law_v5.py (ebd7395), both earlier than the row; reviewer confirmed the ligament is mechanically connected (above the stop the bar splits into two 21600-particle halves; below, the core band is 2400/2400 code 0)."
+  },
+  "M7": {
+   "verdict": "PASS",
+   "basis": "separation persists after withdrawal in M1a/M1b; component count never drops"
+  },
+  "M8": {
+   "verdict": "PASS_ADR0006_TOPOLOGY_TEXT__FAIL_RUNNER_M8B_CRITERION",
+   "basis": "ADR 0006 Amendment 1 acceptance row M8b (SLICE-PUSH-01 on the slotted board): three mechanical parts in the 2-digit graph (three_mechanical_parts and three_substantial_parts true); labelled count unchanged through the disarmed lift/move; push moves the pushed piece 19.6 mm with the others stationary",
+   "slice_push_v3_report": "FAIL_SLICE_PUSH",
+   "slice_push_v3_failed_check": "declared_cut_planes: digit-1 severed-bond midpoint error 2.0000000670 mm vs frozen 2 mm bound. Cause: the double-bevel blade's first cut pushed both remaining parts apart (+/-2.35-2.6 mm with law 5; +/-1.2 mm with law 4) on the friction-0.3 board, so the second cut at world x=+30 mm met material whose reference x was about 27.8 mm. Demo 3 cut-location quality risk; frozen v3 bound unchanged.",
+   "m8a_diagnostic": "FAIL kept: unsupported cantilever sags 5-8 mm before cut 1; path planned for the undeformed bar stops above the sagged bottom layer",
+   "review_correction": "rcs-review 2026-10-29: the runner's M8b criterion (slice_push_report PASS, committed 3086f74 before the law-5 M8b row) was the working M8b criterion when Amendment 1 named M8b the acceptance row; under it law 5 FAILs (digit-1 plane error 2.0000000670 mm vs 2 mm; the real offset roughly doubled vs law 4: cut 0 pushed the remaining bar +2.24 mm vs +1.20 mm). The PASS here follows the looser ADR 0006 topology text and is not 'under predeclared criteria'."
+  },
+  "M9": {
+   "verdict": "PASS",
+   "basis": "Native CUT-01-R (M9a) and CUT-02 (M9b) measured-trajectory replays: frozen strict PASS",
+   "lab_report_only": {
+    "M9c": "strict FAIL",
+    "M9d": "strict FAIL"
+   }
+  }
+ },
+ "phase1_verdict": "ACCEPT WITH CONDITIONS (rcs-review 2026-10-29): M1-M7 and M9 PASS (M2 by Amendment 1, M4/M6 by the ADR 0008 core-band ligament, adjudicated by hand); M8 PASS on the ADR 0006 topology text but FAIL on the runner's M8b slice-push criterion (declared-plane location). Demos 1 and 2 cleared on law 5; Demo 3 requires a predeclared design change (ADR 0009).",
+ "known_limitations": [
+  "Lead pre-assignment uses current positions; wedge opening ahead of the edge partly decouples material just ahead of the crack in deformed material (doubles the post-cut part separation vs law 4).",
+  "2 mm CPU 35 deg skim still fails (strict xfail); formal 1 mm 35 deg rows pass.",
+  "TRIM surface precision (p95 0.5 mm, gouge, overcut) fails at 1 mm; reported as precision, separate from separation."
+ ],
+ "review": {
+  "verdict": "ACCEPT WITH CONDITIONS",
+  "conditions": [
+   "Relabel M8 and note M4/M6 hand adjudication (done here)",
+   "Demos 1/2 on law 5 with measured edge within +/-0.5 mm of the target plane and zero label changes in disarmed phases",
+   "Choose and record the Demo 3 option before counting any live Demo 3 episode (ADR 0009: wrist-depth retarget)",
+   "Follow-ups: runner checks for ADR 0008 ligament and Amendment 1 M2; CPU test with material wider than the edge; live per-step stroke recording; separation-mechanism diagnostic (per-field FLIP/old velocities at nodes shared by a digit and code 0); swept-normal guard before sawing"
+  ],
+  "mechanism_note": "Reviewer: both-digit node counts are identical in law 4/5, so the extra separation comes from changed dynamics (per-field grid velocity/FLIP history at nodes shared by a digit and code 0), not topology; a core-test-only variant may not fix it."
+ }
+}

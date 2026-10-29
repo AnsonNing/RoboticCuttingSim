@@ -1,0 +1,92 @@
+{
+  "protocol_id": "cutting_tasks_v3_20261029",
+  "inherits": {
+    "material_and_common": "cutting_tasks_v1.json",
+    "tool_profile_and_edge_orientation": "cutting_tasks_v2.json (CUT-01-R)"
+  },
+  "freeze_boundary": "Defined before any SLICE-PUSH-01 episode (ADR 0007, 2026-10-29). The v1/v2 protocols, task IDs and thresholds are unchanged; CUT-01-R and TRIM-01-R keep their inherited v2 thresholds for Demo 1/2. No result-based threshold changes under this protocol.",
+  "units": "m, kg, s, rad",
+  "frames": "Particles sampled in WORKPIECE LOCAL; declared cut planes, push direction and edge knots are WORKPIECE LOCAL; recorded evaluator positions/reference_positions are WORLD",
+  "episode": {
+    "duration_s": 16.0,
+    "control_dt_s": 0.02,
+    "active_cut_interval_s": [1.4, 11.1],
+    "active_cut_interval_scope": "Envelope from the start of cut 0 to the end of cut 1 in the reference schedule; the per-cut intervals are cut_intervals_s"
+  },
+  "tasks": {
+    "SLICE-PUSH-01": {
+      "base": "CUT-01",
+      "derived_from": "CUT-01-R",
+      "tool_profile": "ruler_knife_v1",
+      "goal_kind": "sever",
+      "goal_profile": "multi_cut_push_v1",
+      "goal_kind_scope": "goal_kind stays 'sever' so existing sever-only consumers (reward, live material, Evaluation v2 goal) keep working; the task outcome is defined by multi_cut_planes_local, push and thresholds below and is scored by demo_evaluation.slice_push_report",
+      "frozen_two_part_oracle": "NOT_APPLICABLE",
+      "frozen_two_part_oracle_reason": "The frozen v1 sever oracle requires exactly two substantial parts and one cut digit; this task requires three parts from two cut digits plus a post-cut push",
+      "max_cuts": 2,
+      "geometry": {"length_m": 0.16, "width_m": 0.03, "base_height_m": 0.02, "bumps": []},
+      "particle_spacing_m": 0.001,
+      "grid_dx_m": 0.004,
+      "target_origin_local_m": [-0.03, 0.0, 0.0],
+      "target_normal_local": [1.0, 0.0, 0.0],
+      "target_scope": "The task target plane is cut 0; cut 1 is multi_cut_planes_local[1]",
+      "edge_orientation_local_xyzw": [0.0, 0.7071067811865475, 0.0, 0.7071067811865476],
+      "fixture_boxes_local": [
+        {"name": "board_left", "center_m": [-0.062, 0.0, -0.005], "half_extents_m": [0.028, 0.021, 0.005]},
+        {"name": "board_middle", "center_m": [0.0, 0.0, -0.005], "half_extents_m": [0.026, 0.021, 0.005]},
+        {"name": "board_right", "center_m": [0.062, 0.0, -0.005], "half_extents_m": [0.028, 0.021, 0.005]}
+      ],
+      "fixture_scope": "Three 10 mm board segments (top at local z = 0) leave 8 mm relief slots centred on x = -0.030 and x = +0.030; scenario blademaster_workcell_v1 widens them in y and adds risers",
+      "multi_cut_planes_local": [
+        {"cut_index": 0, "origin_m": [-0.03, 0.0, 0.0], "normal": [1.0, 0.0, 0.0]},
+        {"cut_index": 1, "origin_m": [0.03, 0.0, 0.0], "normal": [1.0, 0.0, 0.0]}
+      ],
+      "cut_intervals_s": [[1.4, 4.6], [7.9, 11.1]],
+      "push": {
+        "interval_s": [12.3, 14.3],
+        "direction_local": [1.0, 0.0, 0.0],
+        "distance_m": 0.02,
+        "speed_m_s": 0.01,
+        "edge_height_above_board_m": 0.003,
+        "cut_enabled": false,
+        "pushed_piece": {"cut_index": 1, "side": "positive_normal"},
+        "scope": "Blade-face push with cutting disabled; real contact only, never direct particle velocity or component pose edits"
+      },
+      "edge_position_knots_local_txyz": [
+        [0.0, -0.03, 0.0, 0.058],
+        [1.0, -0.03, 0.0, 0.028],
+        [1.4, -0.03, 0.0, 0.028],
+        [4.6, -0.03, 0.0, -0.004],
+        [5.1, -0.03, 0.0, -0.004],
+        [6.7, -0.03, 0.0, 0.028],
+        [7.5, 0.03, 0.0, 0.028],
+        [7.9, 0.03, 0.0, 0.028],
+        [11.1, 0.03, 0.0, -0.004],
+        [11.6, 0.03, 0.0, -0.004],
+        [12.3, 0.03, 0.0, 0.003],
+        [14.3, 0.05, 0.0, 0.003],
+        [14.8, 0.05, 0.0, 0.003],
+        [15.0, 0.048, 0.0, 0.003],
+        [15.6, 0.048, 0.0, 0.058],
+        [16.0, 0.048, 0.0, 0.058]
+      ],
+      "thresholds": {
+        "multi_cut": {
+          "minimum_part_mass_fraction": 0.25,
+          "minimum_main_parts_mass_fraction": 0.99,
+          "plane_error_bound_m": 0.002
+        },
+        "post_cut_manipulation": {
+          "minimum_components_after_cuts": 3,
+          "maximum_label_changes_during_push": 0,
+          "minimum_pushed_piece_displacement_along_push_m": 0.01,
+          "maximum_other_piece_displacement_m": 0.002,
+          "minimum_piece_mass_fraction": 0.05,
+          "minimum_pushed_selector_mass_share": 0.5,
+          "component_merges_allowed": 0
+        }
+      },
+      "reason": "CUT-01-R bar and provisional material cut twice (cut_index 0 at x = -30 mm, cut_index 1 at x = +30 mm) into about 31/37.5/31% mass, then the +x end piece is pushed 20 mm with the blade face and cutting disabled. multi_cut: each of three parts >= 25% and together >= 99% of the mass; severed-bond midpoints within 2 mm of each declared plane (the frozen CUT-01 location bound). post_cut_manipulation: >= 3 mechanical components after the cuts, no label change while pushing, the pushed piece's centroid moves >= 10 mm along the push, every other piece (>= 5% mass) <= 2 mm, components never merge."
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "protocol_id": "cutting_tasks_v2_20261028",
+  "inherits": "cutting_tasks_v1.json",
+  "freeze_boundary": "Defined before any CUT-01-R, TRIM-01-R or CUT-02 episode. Each task inherits its base task's v1 success thresholds unchanged; only geometry, fixtures, tool and reference path differ. No result-based threshold changes under this protocol.",
+  "units": "m, kg, s, rad",
+  "tool_profiles": "src/robotic_cutting_sim/tool_profile.py (ToolProfile.to_dict is recorded in every task receipt)",
+  "tasks": {
+    "CUT-01-R": {
+      "base": "CUT-01",
+      "tool_profile": "ruler_knife_v1",
+      "edge_orientation_local_xyzw": [
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865476
+      ],
+      "reason": "CUT-01 workpiece, fixtures, path and thresholds with the ruler knife held vertically (edge across the bar)."
+    },
+    "TRIM-01-R": {
+      "base": "TRIM-01",
+      "tool_profile": "ruler_knife_v1",
+      "edge_orientation_local_xyzw": [
+        0.0,
+        0.21643961393810288,
+        0.0,
+        0.9762960071199334
+      ],
+      "reason": "TRIM-01 with the ruler knife at a 25 deg rake about the edge line: the spine-mounted handle and finger pads (about 11-19 mm below the blade plane, 40-80 mm behind the edge) clear the trimmed plane by about 7-8 mm, and the lower bevel rises behind the edge, so the edge is the lowest tool point."
+    },
+    "CUT-02": {
+      "base": "CUT-01",
+      "tool_profile": "ruler_knife_v1",
+      "edge_orientation_local_xyzw": [
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865476
+      ],
+      "geometry": {
+        "length_m": 0.16,
+        "width_m": 0.06,
+        "base_height_m": 0.025,
+        "bumps": []
+      },
+      "fixture_boxes_local": [
+        {
+          "name": "left_pedestal",
+          "center_m": [
+            -0.055,
+            0.0,
+            -0.005
+          ],
+          "half_extents_m": [
+            0.035,
+            0.036,
+            0.005
+          ]
+        },
+        {
+          "name": "right_pedestal",
+          "center_m": [
+            0.055,
+            0.0,
+            -0.005
+          ],
+          "half_extents_m": [
+            0.035,
+            0.036,
+            0.005
+          ]
+        }
+      ],
+      "edge_position_knots_local_txyz": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.06
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.035
+        ],
+        [
+          1.6,
+          0.0,
+          0.0,
+          0.035
+        ],
+        [
+          5.6,
+          0.0,
+          0.0,
+          -0.003
+        ],
+        [
+          6.4,
+          0.0,
+          0.0,
+          0.06
+        ],
+        [
+          8.0,
+          0.0,
+          0.0,
+          0.06
+        ]
+      ],
+      "reason": "Wider and taller bar (60 x 25 mm section) severed by the 120 mm ruler edge; CUT-01 thresholds."
+    }
+  }
+}

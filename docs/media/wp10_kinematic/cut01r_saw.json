@@ -1,0 +1,9 @@
+{
+ "command": "scripts/render_kinematic_episode.py --task CUT-01-R --controller saw_policy --every 8 --out /tmp/claude-0/-home-user/3078c62b-8dac-53f9-a45b-1a378a33253e/scratchpad/videos/cut01r_saw.mp4",
+ "frames": 51,
+ "outcome": {
+  "status": "PASS_TASK_METRICS",
+  "success": true
+ },
+ "runtime_source": "kinematic_ideal_tracking"
+}

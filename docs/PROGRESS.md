@@ -1,5 +1,115 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## 完成：BladeMaster 風格三個 Demo（2026-10-29）
+
+依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)：P0 工作包 A 有條件接受（M8 FAIL，部分後續項目未完成）；B–D 完成。細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
+
+- 最終組合，全部是 live Native、law 5、實體夾持、`blademaster_workcell_v1`，四個都 **PASS**：
+  - **Demo 1a 完整切斷**（`path_v2`）：凍結 strict 也 PASS，切口 1.5 mm。
+  - **Demo 1b 20° 斜切**：依 swept-plane 準則 PASS；凍結 strict 的切口位置與切後持續時間窗口兩項 FAIL（約 5.7 s 才切斷，晚於 5.6 s 窗口）。
+  - **Demo 2 削除凸起**：去除 97.9%，底材完整；精度 5/8 FAIL，另外報告。
+  - **Demo 3 兩刀三塊＋刀身推開**（`path_v2_vision`）：連凍結的 v3 slice-push 報告也 PASS，推開 18.7 mm。
+  - [所有嘗試](evidence/phase3/demos_live_002.json)、[媒體](media/demos/)。
+- Phase 1，law 5、1 mm：
+  - 依計算式準則 `adr0006a1_adr0008`，M1–M7、M9 PASS。
+  - M8 在理想追蹤下 FAIL：第一刀把長條推開約 2.3 mm，第二刀宣告切面誤差 2.0000000670 mm，凍結界限 2 mm。Live Demo 3 以 [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) 的手腕深度量測修正。
+  - 審查結論：rcs-review ACCEPT WITH CONDITIONS（[紀錄](evidence/phase1/matrix_law5_adjudication_001.json)）。
+- 保留的失敗：
+  - law 4 全矩陣（TRIM 0%）；
+  - 第一輪 v1 控制器的 Demo 2（64%）與 Demo 3（第二刀與宣告切面相距 2.0000000670 mm，超過 2 mm 界限）；
+  - 中斷的輸出；
+  - 2 mm CPU 35° 削除（strict xfail）。
+- 限制：
+  - 材料參數暫定、未標定；
+  - law 5 的前緣預指派改變刃口前方的動態，切後兩塊被推開 ±2.4 mm；
+  - 拉切／鋸切時 swept normal 條件不佳；
+  - live runtime 未逐步記錄 stroke；
+  - Lab parity 與 P1／P2 未做。
+- 後續項目（非阻塞，來自兩次 rcs-review；做的時候要用新版本，不改任何已記錄的 verdict）：
+  - Demo 3 評估補上「兩刀之間的抬刀與移位不加標籤」檢查；
+  - Demo 1 outcome 加上切口位置準則；
+  - live runtime 逐步記錄 stroke 狀態；
+  - 診斷 law 5 改變刃口前方動態的機制（per-field FLIP）；
+  - 鋸切前加 swept normal 保護；
+  - stroke 持續改為也考慮轉動；
+  - capture rate 改以非展示相機量測；
+  - 展示相機的影格加上 presentation-only 旗標；
+  - renderer 加回 Global D455。
+- 完整 CPU regression（`.venv/bin/python -m pytest -q`）：689 passed、3 xfailed（strict：law 4 25°/35°、law 5 35° 的 2 mm 削除），0 failed，359 s（log `artifacts/wp10_claude/logs/cpu_full_final_001.log`）。
+- 環境注意：背景子代理執行「寫入 `artifacts/`」的 Bash 指令曾卡在權限等待。後來 `/mnt/data/ningan` 已加入工作目錄；GPU／Isaac 執行改由 coordinator 直接跑。
+
+## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
+
+Paused at the user's request for review; WP-10 is not complete and nothing is
+merged. Root cause of TRIM 0% removal and the Lab CUT single component:
+law-2 labels are written only where a 1 mm edge segment did cutting work in
+that substep, so code-zero particles bridge the cut through the 4 mm reference
+stencil (Lab's measured edge actually went deeper than Native). An opt-in
+experimental law 3 in `tlmpm_v3.py` adds swept-surface sides and grid-scale
+lateral/persistence/lead closures; its 9 CPU tests pass, laws 1/2 remain
+bitwise equal to v2. Earlier law-3 variants still FAIL the 1 mm TRIM probe;
+the current variant's GPU results and every live run are pending. New
+`--cutting-law`, measured-trajectory replay and stencil-bridge tools. No new
+live scene images yet. See
+[the diagnosis](reports/WP-10_CLAUDE_DIAGNOSIS_20261029.md).
+
+## User-requested checkpoint: Claude continuation
+
+Codex work stopped at the user's request. Resume from
+[the WP-10 handoff](HANDOFF_WP10_CLAUDE_20261029.md) on
+`claude/lucid-mendel-vt7n82`. WP-10B is complete; C/D are partial, and E/F/G
+formal validation is NOT_RUN. Final checkpoint checks: 451 quick CPU tests
+PASS, 18 cpu_sim tests deselected; v3 syntax/CPU kernel compilation PASS,
+v3 physical validation NOT_RUN. The latest full CPU run before subsequent
+drafts remains 461 PASS. No learned policy, PPO, actual LLM-agent run or final
+WP-10 robot-video matrix has been produced. No final PR or merge.
+The original owned viewer is restored READY and paused in
+`rcs-wrist-v5-remote-restored` on GPU 0, with fresh output and
+[restoration receipt](evidence/wp10/viewer_restoration_20261029.json).
+
+## Completed validation: WP-10B live policy interface
+
+Both actual runtimes complete 1,200 identical fixed-tool control-fuzz steps,
+with identical IK statuses and bounded deltas, legacy CUT PASS / default TRIM
+FAIL regression, explicit IK rejection/hold, cut-digit checks, and complete Gym
+state/vision episodes. Separate physical-grasp stress succeeds for 1,200 Native
+steps but loses the tool in Lab (209 total steps); this holding limitation is
+preserved. Full CPU regression is 461 PASS / 0 SKIP in 92.45 s.
+[WP-10B](reports/WP-10B.md).
+
+WP-10C is partial: Native CUT-01-R and CUT-02 strict PASS; both Lab cuts strict
+FAIL with a connected component. Initial Native TRIM-01-R has 394 rejected IK
+commands and strict FAIL; Lab TRIM fails pregrasp before the formal episode.
+Both runtimes pass the frozen seven-case ruler rigid-grasp controls and the
+complete 401-pose CUT camera/tool visual-clearance audit. A raised 35-degree
+candidate passes scoped Newton geometry preflight; live execution is NOT_RUN.
+An ideal-tracking 1 mm law-2 TRIM still removes 0%. [WP-10C](reports/WP-10C.md).
+
+WP-10D GPU probes have a 0.037611 slicing/push resistance ratio and a PASS
+three-part/two-digit outcome. Skim separation FAIL and the CUDA graph position
+comparison FAIL (5.375594 µm versus 1 µm tolerance) remain visible. Two provisional
+food profiles have finite-state dt sweeps, without force convergence or
+calibration. Exact armed-withdrawal and full live angle matrices remain NOT_RUN.
+[WP-10D](reports/WP-10D.md), [C/D evidence](evidence/wp10/wp10cd_handoff_v1.json).
+
+## Historical input checkpoint: WP-10 parts A/B, CPU only
+
+Branch `claude/lucid-mendel-vt7n82`, handed off to Codex for the GPU/live work.
+Done and CPU-verified: opt-in policy interface (delta actions, step limits, IK
+rejection, state profile, severed-bond reward, Gym adapter, agent tools with
+PNG views), `ruler_knife_v1`, `tlmpm_v2` with opt-in cutting law 2 (slicing
+work, energy-gated labels, blunt handle) whose law 1 equals frozen v1 bit for
+bit, `cutting_tasks_v2` (CUT-01-R, TRIM-01-R, CUT-02; v1 thresholds), an
+ideal-tracking kinematic backend, scripted knife-motion policies and
+validation/probe/video scripts. Kinematic full episodes: CUT-01-R, CUT-02 and
+CUT-01 PASS the frozen oracle for scripted reference, push, saw and Gym
+controllers; TRIM-01-R removes the bump but fails strict surface metrics at
+4 mm. Every GPU, Isaac Sim and Isaac Lab result is **NOT_RUN**; the ruler
+knife is not yet authored by either live runtime. Report:
+[WP-10A](reports/WP-10A.md); plan: [WP-10 specification](WP10_SPECIFICATION.md);
+usage: [POLICY_CONTROL.md](POLICY_CONTROL.md); decisions:
+[ADR 0003](adr/0003-ruler-knife-and-policy-interface.md).
+
 ## Current: WP-09 Evaluation v2 and hand-aligned wrist-camera v5
 
 Evaluation v2 is implemented and validated as a read-only, shared CUT/TRIM

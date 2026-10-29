@@ -4,10 +4,12 @@ Sampling is LOCAL and initially unlabelled. Recorded evaluator coordinates are
 WORLD. Oracle topology/surface metrics never become policy observations and do
 not establish robot, camera, runtime or calibrated-fracture acceptance.
 """
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 import hashlib
 import json
 from pathlib import Path
+from typing import ClassVar
 
 import numpy as np
 
@@ -18,6 +20,7 @@ from .scene_frames import (WorkpieceTarget, compose_pose, invert_transform, matr
 from .scene_validation import material_task_metrics, mesh_heightfield_metrics
 
 PROTOCOL_PATH = Path(__file__).resolve().parents[2]/"configs/cutting_tasks_v1.json"
+PROTOCOL_V2_PATH = PROTOCOL_PATH.with_name("cutting_tasks_v2.json")
 ACTION_MODES = ("cartesian_edge_pose_world", "joint_position_rad")
 
 
@@ -37,6 +40,37 @@ class FixtureBox:
     def corners_local(self):
         signs = np.stack(np.meshgrid(*[[-1, 1]]*3, indexing="ij"), -1).reshape(-1, 3)
         return np.asarray(self.center_m)+signs*np.asarray(self.half_extents_m)
+
+
+@dataclass(frozen=True)
+class MaterialFixtureBox(FixtureBox):
+    """A FixtureBox with a declared role, display colour and contact material.
+
+    Only scenarios that declare fixture materials (wp10_scenarios_v3) create
+    these; it is still a FixtureBox, so geometry consumers are unchanged. The
+    same friction/restitution is meant for the PhysX collider; TLMPM fixture
+    contacts keep using the task material friction.
+    """
+
+    role: str = "support"
+    support_name: str = ""
+    display_color_rgb: tuple = (.5, .5, .5)
+    static_friction: float = .3
+    dynamic_friction: float = .3
+    restitution: float = 0.
+
+    def __post_init__(self):
+        super().__post_init__()
+        if (self.role not in ("board", "riser", "support") or len(self.display_color_rgb) != 3
+                or not np.isfinite([*self.display_color_rgb, self.static_friction, self.dynamic_friction, self.restitution]).all()
+                or min(self.display_color_rgb) < 0 or max(self.display_color_rgb) > 1
+                or min(self.static_friction, self.dynamic_friction, self.restitution) < 0 or self.restitution > 1):
+            raise ValueError("Fixture material needs a known role, an RGB colour in [0, 1] and nonnegative friction/restitution")
+
+    def material_dict(self):
+        return {"name": self.name, "role": self.role, "support_name": self.support_name,
+                "display_color_rgb": list(self.display_color_rgb), "static_friction": self.static_friction,
+                "dynamic_friction": self.dynamic_friction, "restitution": self.restitution}
 
 
 @dataclass(frozen=True)
@@ -64,9 +98,10 @@ class CuttingTaskSpec:
     edge_orientation_local_xyzw: tuple
     edge_position_knots_local_txyz: tuple
     active_cut_interval_s: tuple = (1.6, 5.6)
+    TASK_IDS: ClassVar[tuple] = ("CUT-01", "TRIM-01")
 
     def __post_init__(self):
-        if self.task_id not in ("CUT-01", "TRIM-01") or self.goal_kind not in ("sever", "flatten"):
+        if self.task_id not in self.TASK_IDS or self.goal_kind not in ("sever", "flatten"):
             raise ValueError("Unsupported task/goal")
         if self.variant not in ("fixed", "randomized"):
             raise ValueError("Task variant must be fixed or randomized")
@@ -90,6 +125,20 @@ class CuttingTaskSpec:
         if (knots.ndim != 2 or knots.shape[1] != 4 or not np.isfinite(knots).all()
                 or np.any(np.diff(knots[:, 0]) <= 0) or knots[0, 0] != 0 or knots[-1, 0] != self.duration_s):
             raise ValueError("Scripted edge knots must span the episode with increasing finite times")
+
+    @property
+    def protocol_path(self):
+        return PROTOCOL_PATH
+
+    def protocol_document(self):
+        """Protocol whose [task_id] entry holds this task's frozen thresholds."""
+        return _protocol()
+
+    @property
+    def tool_profile(self):
+        """The cutting head as a ToolProfile (the retained wedge for v1 tasks)."""
+        from .tool_profile import legacy_profile
+        return legacy_profile(self)
 
     @property
     def control_dt(self):
@@ -160,8 +209,8 @@ class CuttingTaskSpec:
         A 7-vector joint action explicitly leaves the second arm parked; no
         dynamics, IK, observations, forces or hidden cut schedule are added here.
         """
-        if not isinstance(action, dict) or set(action)-{"mode", "target", "cut_enabled"}:
-            raise ValueError("Action is a mapping with mode, target and optional cut_enabled only")
+        if not isinstance(action, dict) or set(action)-{"mode", "target", "cut_enabled", "cut_index"}:
+            raise ValueError("Action is a mapping with mode, target and optional cut_enabled/cut_index only")
         mode = action.get("mode")
         target = np.asarray(action.get("target"), float)
         if mode == ACTION_MODES[0]:
@@ -176,15 +225,23 @@ class CuttingTaskSpec:
         enabled = action.get("cut_enabled", True)
         if not isinstance(enabled, (bool, np.bool_)):
             raise ValueError("cut_enabled must be an explicit Boolean arming flag")
-        return {"mode": mode, "target": target.copy(), "cut_enabled": bool(enabled)}
+        command = {"mode": mode, "target": target.copy(), "cut_enabled": bool(enabled)}
+        if "cut_index" in action:
+            # Which persistent cut digit this action writes (material max_cuts bounds it).
+            index = action["cut_index"]
+            if not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_)) or not 0 <= index <= 1:
+                raise ValueError("cut_index must be the integer 0 or 1")
+            command["cut_index"] = int(index)
+        return command
 
     def to_dict(self):
-        result = {**asdict(self), "protocol_id": _protocol()["protocol_id"],
-                "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
+        protocol = self.protocol_document()
+        result = {**asdict(self), "protocol_id": protocol["protocol_id"],
+                "protocol_sha256": hashlib.sha256(self.protocol_path.read_bytes()).hexdigest(),
                 "sample_coordinate_frame": "workpiece_local", "evaluator_coordinate_frame": "world",
                 "action_modes": ACTION_MODES, "runtime_validated": False,
-                "numerical_overrides": {"particle_spacing_m": {"protocol": _protocol()[self.task_id]["particle_spacing_m"],
-                    "actual": self.particle_spacing_m}} if self.particle_spacing_m != _protocol()[self.task_id]["particle_spacing_m"] else {}}
+                "numerical_overrides": {"particle_spacing_m": {"protocol": protocol[self.task_id]["particle_spacing_m"],
+                    "actual": self.particle_spacing_m}} if self.particle_spacing_m != protocol[self.task_id]["particle_spacing_m"] else {}}
         if self.variant == "randomized":
             from .task_randomization import randomization_receipt
             result["randomization"] = randomization_receipt(self)
@@ -206,6 +263,226 @@ def _protocol():
     return json.loads(PROTOCOL_PATH.read_text())
 
 
+def _protocol_v2():
+    return json.loads(PROTOCOL_V2_PATH.read_text())
+
+
+def _v2_task_config(task_id):
+    """Base v1 task entry with the v2 overrides applied (thresholds inherited)."""
+    entry = _protocol_v2()["tasks"][task_id]
+    config = deepcopy(_protocol()[entry["base"]])
+    config.update({key: deepcopy(value) for key, value in entry.items() if key not in ("base", "tool_profile")})
+    return entry["base"], entry["tool_profile"], config
+
+
+@dataclass(frozen=True)
+class ProfileTaskSpec(CuttingTaskSpec):
+    """A v2 task: a v1 base task's thresholds with a parametric tool profile.
+
+    Blade dimensions and the nominal hand-to-edge mount come from the profile,
+    so runtimes, TLMPM and IK cannot disagree about the cutting head.
+    """
+
+    tool_profile_id: str = ""
+    base_task_id: str = ""
+    TASK_IDS: ClassVar[tuple] = ("CUT-01-R", "TRIM-01-R", "CUT-02")
+
+    def __post_init__(self):
+        super().__post_init__()
+        profile = self.tool_profile
+        if self.base_task_id not in CuttingTaskSpec.TASK_IDS:
+            raise ValueError("A v2 task needs a v1 base task")
+        if not np.allclose([self.blade_length_m, self.blade_height_m, self.blade_half_width_m],
+                           [profile.blade_depth_m, profile.thickness_m, profile.half_width_m], atol=1e-12, rtol=0):
+            raise ValueError("Task blade dimensions must equal the tool profile")
+        if not np.allclose(pose_matrix(self.hand_from_edge_xyz_xyzw), pose_matrix(profile.hand_from_edge()),
+                           atol=1e-12, rtol=0):
+            raise ValueError("Task hand-to-edge mount must equal the tool profile mount")
+
+    @property
+    def protocol_path(self):
+        return PROTOCOL_V2_PATH
+
+    def protocol_document(self):
+        v2 = _protocol_v2()
+        return {"protocol_id": v2["protocol_id"], "common": _protocol()["common"],
+                self.task_id: _v2_task_config(self.task_id)[2]}
+
+    @property
+    def tool_profile(self):
+        from .tool_profile import PROFILES
+        return PROFILES[self.tool_profile_id]
+
+    def to_dict(self):
+        return {**super().to_dict(), "tool_profile": self.tool_profile.to_dict(),
+                "inherited_protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest()}
+
+
+PROTOCOL_V3_PATH = PROTOCOL_PATH.with_name("cutting_tasks_v3.json")
+
+
+def _protocol_v3():
+    return json.loads(PROTOCOL_V3_PATH.read_text())
+
+
+def _unit(vector, what):
+    vector = np.asarray(vector, float)
+    if vector.shape != (3,) or not np.isfinite(vector).all() or not np.isclose(np.linalg.norm(vector), 1., atol=1e-9, rtol=0):
+        raise ValueError(f"{what} must be a finite unit 3-vector")
+    return vector
+
+
+@dataclass(frozen=True)
+class DemoTaskSpec(ProfileTaskSpec):
+    """A v3 BladeMaster demo task (cutting_tasks_v3.json), opt-in and versioned.
+
+    goal_kind stays "sever" for existing consumers, but the frozen two-part
+    oracle is NOT_APPLICABLE: the outcome is two declared cut planes (two cut
+    digits) plus a blade-face push, scored by demo_evaluation.slice_push_report.
+    """
+
+    max_cuts: int = 2
+    multi_cut_planes_local: tuple = ()  # ((origin xyz), (unit normal xyz)) per cut index
+    cut_intervals_s: tuple = ()         # reference schedule per cut index
+    push_interval_s: tuple = ()
+    push_direction_local: tuple = (1., 0., 0.)
+    push_distance_m: float = .02
+    push_speed_m_s: float = .01
+    push_edge_height_m: float = .003
+    pushed_piece_cut_index: int = 1     # the pushed piece lies on the +normal side of this cut
+    goal_profile: str = "multi_cut_push_v1"
+    TASK_IDS: ClassVar[tuple] = ("SLICE-PUSH-01",)
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.max_cuts != 2 or len(self.multi_cut_planes_local) != 2 or len(self.cut_intervals_s) != 2:
+            raise ValueError("A slice-push task declares two cut planes and two cut intervals")
+        for origin, normal in self.multi_cut_planes_local:
+            if np.asarray(origin).shape != (3,) or not np.isfinite(origin).all():
+                raise ValueError("Cut planes need finite local origins")
+            _unit(normal, "Cut plane normal")
+        _unit(self.push_direction_local, "Push direction")
+        times = np.asarray([*self.cut_intervals_s, self.push_interval_s], float)
+        if (times.shape != (3, 2) or not np.isfinite(times).all() or np.any(times[:, 1] <= times[:, 0])
+                or np.any(times.ravel()[1:] < times.ravel()[:-1]) or times[0, 0] < 0 or times[-1, 1] > self.duration_s):
+            raise ValueError("Cut and push intervals must be ordered, disjoint and inside the episode")
+        if not 0 <= self.pushed_piece_cut_index < self.max_cuts or min(self.push_distance_m, self.push_speed_m_s) <= 0:
+            raise ValueError("Push needs a declared cut side and positive distance/speed")
+
+    @property
+    def protocol_path(self):
+        return PROTOCOL_V3_PATH
+
+    def protocol_document(self):
+        v3 = _protocol_v3()
+        return {"protocol_id": v3["protocol_id"], "common": _protocol()["common"], "episode": v3["episode"],
+                self.task_id: _v3_task_config(self.task_id)}
+
+    @property
+    def thresholds(self):
+        return deepcopy(_v3_task_config(self.task_id)["thresholds"])
+
+    def active_cut_index(self, time_s):
+        if not np.isfinite(time_s):
+            raise ValueError("Time must be finite")
+        for index, (start, stop) in enumerate(self.cut_intervals_s):
+            if start-1e-9 <= time_s < stop-1e-9:
+                return index
+        return -1
+
+    def reference_action(self, time_s):
+        index = self.active_cut_index(time_s)
+        return {"mode": "cartesian_edge_pose_world", "target": self.reference_edge_pose_world(time_s),
+                "cut_enabled": index >= 0, **({"cut_index": index} if index >= 0 else {})}
+
+    def cut_planes_world(self):
+        """[(origin_world, unit_normal_world)] per cut index."""
+        R = self.T_world_workpiece[:3, :3]
+        return [(self.points_to_world(np.asarray(origin, float)), R@np.asarray(normal, float))
+                for origin, normal in self.multi_cut_planes_local]
+
+    def push_direction_world(self):
+        return self.T_world_workpiece[:3, :3]@np.asarray(self.push_direction_local, float)
+
+    def multi_cut_goal(self):
+        """The declared WORLD cut planes as a MultiCutGoal (v3 thresholds)."""
+        from .multi_cut_evaluation import MultiCutGoal
+        limits = self.thresholds["multi_cut"]
+        return MultiCutGoal(tuple((tuple(map(float, o)), tuple(map(float, n))) for o, n in self.cut_planes_world()),
+                            minimum_part_mass_fraction=limits["minimum_part_mass_fraction"],
+                            minimum_main_parts_mass_fraction=limits["minimum_main_parts_mass_fraction"],
+                            plane_error_bound_m=limits["plane_error_bound_m"])
+
+    def pushed_piece_mask(self, reference_positions_world):
+        """Reference particles on the declared pushed side (+normal of the pushed cut)."""
+        origin, normal = self.cut_planes_world()[self.pushed_piece_cut_index]
+        return (np.asarray(reference_positions_world, float)-origin)@normal > 0
+
+    def evaluate_oracle(self, recording):
+        """The frozen two-part v1 oracle does not apply to a three-part slice-push task."""
+        return {"task_id": self.task_id, "status": "NOT_APPLICABLE", "checks": {}, "metrics": {}, "missing_evidence": [],
+                "protocol_id": self.protocol_document()["protocol_id"],
+                "protocol_sha256": hashlib.sha256(self.protocol_path.read_bytes()).hexdigest(),
+                "reason": _v3_task_config(self.task_id)["frozen_two_part_oracle_reason"],
+                "use_instead": "robotic_cutting_sim.demo_evaluation.slice_push_report(task, recording)",
+                "full_simulation_acceptance": False, "policy_observation": False}
+
+    def evaluate_demo(self, recording):
+        from .demo_evaluation import slice_push_report
+        return slice_push_report(self, recording)
+
+    def to_dict(self):
+        return {**super().to_dict(), "inherited_v2_protocol_sha256": hashlib.sha256(PROTOCOL_V2_PATH.read_bytes()).hexdigest(),
+                "frozen_two_part_oracle": "NOT_APPLICABLE", "derived_from": _v3_task_config(self.task_id)["derived_from"]}
+
+
+def _v3_task_config(task_id):
+    """v3 task entry merged over its v1 base (the v1 two-part thresholds are dropped)."""
+    entry = _protocol_v3()["tasks"][task_id]
+    base = _protocol()[entry["base"]]
+    dropped = ("blade_length_m", "blade_height_m", "blade_half_width_m", "hand_from_edge_xyz_xyzw")  # from the tool profile
+    config = {key: deepcopy(value) for key, value in base.items()
+              if not key.startswith(("minimum_", "maximum_", "required_")) and key not in dropped}
+    config.update({key: deepcopy(value) for key, value in entry.items() if key not in ("base", "tool_profile")})
+    return config
+
+
+def _make_demo_task(task_id, seed, variant, world_from_workpiece_xyzw, particle_spacing_m, workpiece_kind):
+    if variant != "fixed" or workpiece_kind != "rectangle":
+        raise NotImplementedError("v3 demo tasks are defined only as fixed rectangular workpieces")
+    from .tool_profile import PROFILES
+    v1, v3 = _protocol(), _protocol_v3()
+    entry = v3["tasks"][task_id]
+    config, profile = _v3_task_config(task_id), PROFILES[entry["tool_profile"]]
+    geometry, episode, push = config["geometry"], v3["episode"], config["push"]
+    planes = sorted(config["multi_cut_planes_local"], key=lambda row: row["cut_index"])
+    if [row["cut_index"] for row in planes] != [0, 1] or push["cut_enabled"] or push["pushed_piece"]["side"] != "positive_normal":
+        raise ValueError("v3 slice-push config needs cut indices 0/1 and a cut-disabled positive-side push")
+    return DemoTaskSpec(task_id, int(seed), variant,
+        HeightFieldSpec(geometry["length_m"], geometry["width_m"], geometry["base_height_m"],
+            tuple(Bump(**row) for row in geometry["bumps"])),
+        config["particle_spacing_m"] if particle_spacing_m is None else float(particle_spacing_m), config["grid_dx_m"],
+        tuple(FixtureBox(row["name"], tuple(row["center_m"]), tuple(row["half_extents_m"])) for row in config["fixture_boxes_local"]),
+        tuple(world_from_workpiece_xyzw), v1["common"]["table_top_world_z_m"], tuple(profile.hand_from_edge()),
+        episode["duration_s"], episode["control_dt_s"], MaterialParameters(**v1["material"]),
+        config["goal_kind"], tuple(config["target_origin_local_m"]), tuple(config["target_normal_local"]),
+        config.get("edge_clearance_m", 0.), profile.blade_depth_m, profile.thickness_m, profile.half_width_m,
+        tuple(config["edge_orientation_local_xyzw"]), tuple(tuple(row) for row in config["edge_position_knots_local_txyz"]),
+        tuple(episode["active_cut_interval_s"]), tool_profile_id=profile.profile_id, base_task_id=entry["base"],
+        max_cuts=config["max_cuts"],
+        multi_cut_planes_local=tuple((tuple(row["origin_m"]), tuple(row["normal"])) for row in planes),
+        cut_intervals_s=tuple(tuple(row) for row in config["cut_intervals_s"]), push_interval_s=tuple(push["interval_s"]),
+        push_direction_local=tuple(push["direction_local"]), push_distance_m=push["distance_m"],
+        push_speed_m_s=push["speed_m_s"], push_edge_height_m=push["edge_height_above_board_m"],
+        pushed_piece_cut_index=push["pushed_piece"]["cut_index"], goal_profile=config["goal_profile"])
+
+
+TASK_IDS = CuttingTaskSpec.TASK_IDS+ProfileTaskSpec.TASK_IDS+DemoTaskSpec.TASK_IDS
+# Opt-in profile-tool task IDs (v2 ProfileTaskSpec and its v3 DemoTaskSpec subclass);
+# runtimes use this for the physical-grasp/scenario/two-digit guards.
+PROFILE_TASK_IDS = ProfileTaskSpec.TASK_IDS+DemoTaskSpec.TASK_IDS
+
+
 def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1),
               particle_spacing_m=None, workpiece_kind="rectangle"):
     if workpiece_kind not in ("rectangle", "capsule"):
@@ -213,11 +490,25 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
     if variant == "randomized" and (not isinstance(seed, (int, np.integer)) or isinstance(seed, (bool, np.bool_)) or seed < 0):
         raise ValueError("Randomized task seed must be a nonnegative integer")
     protocol = _protocol()
-    if task_id not in ("CUT-01", "TRIM-01"):
-        raise ValueError("task_id must be CUT-01 or TRIM-01; legacy D0 is unchanged")
-    config = protocol[task_id]
+    if task_id not in TASK_IDS:
+        raise ValueError(f"task_id must be one of {TASK_IDS}; legacy D0 is unchanged")
+    if task_id in DemoTaskSpec.TASK_IDS:
+        return _make_demo_task(task_id, seed, variant, world_from_workpiece_xyzw, particle_spacing_m, workpiece_kind)
+    extra, cls = {}, CuttingTaskSpec
+    if task_id in ProfileTaskSpec.TASK_IDS:
+        if variant == "randomized":
+            raise NotImplementedError("Randomized variants are defined only for the v1 tasks")
+        from .tool_profile import PROFILES
+        base, profile_id, config = _v2_task_config(task_id)
+        profile = PROFILES[profile_id]
+        config.update({"blade_length_m": profile.blade_depth_m, "blade_height_m": profile.thickness_m,
+                       "blade_half_width_m": profile.half_width_m,
+                       "hand_from_edge_xyz_xyzw": list(profile.hand_from_edge())})
+        extra, cls = {"tool_profile_id": profile_id, "base_task_id": base}, ProfileTaskSpec
+    else:
+        config = protocol[task_id]
     geometry = config["geometry"]
-    task = CuttingTaskSpec(task_id, int(seed), "fixed" if variant == "randomized" else variant,
+    task = cls(task_id, int(seed), "fixed" if variant == "randomized" else variant,
         HeightFieldSpec(geometry["length_m"], geometry["width_m"], geometry["base_height_m"],
             tuple(Bump(**row) for row in geometry["bumps"])),
         config["particle_spacing_m"] if particle_spacing_m is None else float(particle_spacing_m), config["grid_dx_m"],
@@ -227,7 +518,7 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
         config["goal_kind"], tuple(config["target_origin_local_m"]), tuple(config["target_normal_local"]),
         config.get("edge_clearance_m", 0.), config["blade_length_m"], config["blade_height_m"], config["blade_half_width_m"],
         tuple(config["edge_orientation_local_xyzw"]), tuple(tuple(row) for row in config["edge_position_knots_local_txyz"]),
-        tuple(protocol["episode"]["active_cut_interval_s"]))
+        tuple(protocol["episode"]["active_cut_interval_s"]), **extra)
     if variant == "randomized":
         from .task_randomization import randomize_task
         task = randomize_task(task)
@@ -279,7 +570,8 @@ def evaluate_task_oracle(task, data):
                 "reference_stencil_nodes", "reference_stencil_weights", "reference_stencil_gradients")
     missing = [name for name in required if name not in data]
     base = {"task_id": task.task_id, "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
-            "protocol_id": _protocol()["protocol_id"], "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
+            "protocol_id": task.protocol_document()["protocol_id"],
+            "protocol_sha256": hashlib.sha256(task.protocol_path.read_bytes()).hexdigest(),
             "full_simulation_acceptance": False, "policy_observation": False}
     if task.workpiece_kind != "rectangle":
         base.update(workpiece_kind=task.workpiece_kind,
@@ -295,7 +587,7 @@ def evaluate_task_oracle(task, data):
             or nodes.dtype.kind not in "iu" or np.any(masses <= 0)
             or not all(np.isfinite(value).all() for value in (time, positions, reference, masses, weights, gradients))):
         raise ValueError("Oracle recording shapes, one-cut history, mass or numeric state are invalid")
-    protocol = _protocol()
+    protocol = task.protocol_document()
     common, limits = protocol["common"], protocol[task.task_id]
     initial_count, _ = mechanical_components(nodes, weights, codes[0], 1, gradients=gradients)
     final_count, labels = mechanical_components(nodes, weights, codes[-1], 1, gradients=gradients)

@@ -1,0 +1,57 @@
+{
+ "scope": "Native Isaac Sim 60-step execution smokes of scenario blademaster_workcell_v1 with law 5, physical grasp, scripted controller, presentation overview camera. Not demos; task outcome is NOT_RUN/FAIL by construction (60 steps end before any cut).",
+ "git_sha": "c948bd79f6fd362cf2c3c84581af3b46452afdcc",
+ "rows": [
+  {
+   "output": "artifacts/wp10_claude/phase2/s2_cut01r_law5_overview_60_001",
+   "task": "CUT-01-R",
+   "command": "scripts/run_wp10_live.py --runtime isaac_sim --scenario blademaster_workcell_v1 --preset policy --tool-attachment-mode physical_grasp --controller scripted --cutting-law 5 --record-cameras --overview-camera --record-every 5 --steps 60 --gpu 0 --task CUT-01-R --out artifacts/wp10_claude/phase2/s2_cut01r_law5_overview_60_001",
+   "execution": "PASS_EXECUTION",
+   "task_status": "NOT_RUN",
+   "steps": 60,
+   "ik_not_ok": 0,
+   "grasp": "HOLDING",
+   "slip_m": 4.835765301042028e-07,
+   "camera_streams": [
+    "global_d455",
+    "overview_rgb",
+    "wrist_d405_0",
+    "wrist_d405_1"
+   ]
+  },
+  {
+   "output": "artifacts/wp10_claude/phase2/s1_slice_push_law5_overview_60_001",
+   "task": "SLICE-PUSH-01",
+   "command": "scripts/run_wp10_live.py --runtime isaac_sim --scenario blademaster_workcell_v1 --preset policy --tool-attachment-mode physical_grasp --controller scripted --cutting-law 5 --record-cameras --overview-camera --record-every 5 --steps 60 --gpu 0 --task SLICE-PUSH-01 --max-cuts 2 --edge-feedback measured --out artifacts/wp10_claude/phase2/s1_slice_push_law5_overview_60_001",
+   "execution": "PASS_EXECUTION",
+   "task_status": "FAIL_SLICE_PUSH",
+   "steps": 60,
+   "ik_not_ok": 0,
+   "grasp": "HOLDING",
+   "slip_m": 1.6673761193157312e-07,
+   "camera_streams": [
+    "global_d455",
+    "overview_rgb",
+    "wrist_d405_0",
+    "wrist_d405_1"
+   ]
+  },
+  {
+   "output": "artifacts/wp10_claude/phase2/s3_trim01r_law5_overview_60_001",
+   "task": "TRIM-01-R",
+   "command": "scripts/run_wp10_live.py --runtime isaac_sim --scenario blademaster_workcell_v1 --preset policy --tool-attachment-mode physical_grasp --controller scripted --cutting-law 5 --record-cameras --overview-camera --record-every 5 --steps 60 --gpu 0 --task TRIM-01-R --out artifacts/wp10_claude/phase2/s3_trim01r_law5_overview_60_001",
+   "execution": "PASS_EXECUTION",
+   "task_status": "NOT_RUN",
+   "steps": 60,
+   "ik_not_ok": 0,
+   "grasp": "HOLDING",
+   "slip_m": 2.1658900984720065e-07,
+   "camera_streams": [
+    "global_d455",
+    "overview_rgb",
+    "wrist_d405_0",
+    "wrist_d405_1"
+   ]
+  }
+ ]
+}

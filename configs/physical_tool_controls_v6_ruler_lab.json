@@ -1,0 +1,247 @@
+{
+  "schema_version": "wp10_ruler_physical_controls_v1",
+  "scope": "Actual Isaac Lab finite-pad rigid-tool controls; no material advance, cutting success, camera acceptance or full physics promotion",
+  "default_task_id": "CUT-01",
+  "default_seed": 42,
+  "tool_attachment_mode": "physical_grasp",
+  "tool_init_mode": "pregrasped",
+  "rigid_dt_s": 0.002,
+  "control_dt_s": 0.02,
+  "normal_grip": {
+    "friction": 0.6,
+    "max_finger_force_n": 20.0,
+    "initial_finger_position_m": 0.0112
+  },
+  "transfer": {
+    "world_edge_position_m": [
+      -0.2,
+      -0.15,
+      0.18
+    ],
+    "orientation": "Preserve measured initial edge orientation; nominal mount used only for IK",
+    "waypoints": "Lift at initial XY to at least target Z, then translate to target XY",
+    "joint_profile": "Quintic smoothstep, using measured starting joints and bounded actuator targets only",
+    "minimum_waypoint_duration_s": 2.0,
+    "maximum_joint_speed_rad_s": 0.25,
+    "maximum_joint_increment_rad": 0.005,
+    "maximum_ik_position_error_m": 0.001,
+    "maximum_ik_rotation_error_rad": 0.01,
+    "post_transfer_stabilization_s": 0.5,
+    "maximum_actual_edge_position_error_m": 0.01,
+    "maximum_actual_edge_rotation_error_rad": 0.05235987755982988
+  },
+  "measurement": {
+    "pose_time_step_s": 0.02,
+    "required_contact_time_step_s": 0.002,
+    "minimum_loaded_finger_force_n": 0.05,
+    "load_ramp_s": 0.1,
+    "stable_window_s": 0.5,
+    "maximum_relative_translation_m": 0.002,
+    "maximum_relative_rotation_rad": 0.05235987755982988,
+    "maximum_relative_linear_speed_m_s": 0.02,
+    "maximum_relative_angular_speed_rad_s": 0.2,
+    "minimum_bilateral_loaded_handle_fraction": 0.95,
+    "maximum_contact_penetration_m": 0.001,
+    "maximum_matched_start_tool_translation_m": 0.002,
+    "maximum_matched_start_tool_rotation_rad": 0.05235987755982988,
+    "maximum_matched_start_arm_joint_error_rad": 0.01,
+    "minimum_weak_response_translation_increase_m": 0.005,
+    "minimum_weak_response_rotation_increase_rad": 0.08726646259971647,
+    "minimum_detectable_arm_response_rad": 1e-05,
+    "minimum_detectable_contact_force_change_n": 0.05,
+    "release_minimum_relative_translation_m": 0.02,
+    "release_deadline_s": 0.5,
+    "freeflight_minimum_duration_s": 0.03,
+    "freeflight_gravity_relative_error_max": 0.2,
+    "finite_state_and_force_required": true
+  },
+  "cases": {
+    "baseline_hold": {
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "edge_wrench_world": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expectation": "Stable loaded bilateral handle support"
+    },
+    "nominal_load": {
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "edge_wrench_world": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      "expectation": "Stable finite grasp; actual contact and arm response compared with baseline"
+    },
+    "edge_torque": {
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "edge_wrench_world": [
+        0,
+        0,
+        0,
+        0,
+        0.02,
+        0
+      ],
+      "expectation": "Finite measured response to a known edge torque"
+    },
+    "stress_load": {
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "edge_wrench_world": [
+        0,
+        0,
+        -10,
+        0,
+        0,
+        0
+      ],
+      "expectation": "Finite measured response; holding or slipping is reported, dropping is not required"
+    },
+    "weak_grip": {
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 0.5,
+      "friction": 0.6,
+      "edge_wrench_world": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      "comparison": "nominal_load",
+      "expectation": "Larger physical slip/rotation response than the matched strong grip"
+    },
+    "low_friction": {
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "edge_wrench_world": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      "comparison": "nominal_load",
+      "expectation": "Larger physical slip/rotation response than the matched normal-friction grip"
+    },
+    "release": {
+      "duration_s": 0.5,
+      "gripper": "release",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "edge_wrench_world": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expectation": "Independent downward tool motion and an actual unsupported gravity interval"
+    }
+  },
+  "historical_reaction_scale": {
+    "quantity": "Maximum norm of actual next_material_wrench_world[:3]; old fixed-tool runs only, not a physical-grasp outcome",
+    "nominal_load_selection": "1 N exceeds the measured 0.28-0.71 N examples while remaining near their engineering load scale",
+    "records": [
+      {
+        "name": "Native CUT",
+        "path": "artifacts/isaacsim_wrist_cut01_002/oracle_debug/diagnostics.json",
+        "sha256": "9733a1f0c39411fc379b20d3e0f1e0d03ca293015d4c783102ffee197b7d87c3",
+        "maximum_force_n": 0.2803822843838588
+      },
+      {
+        "name": "Native TRIM",
+        "path": "artifacts/isaacsim_wrist_trim01_001/oracle_debug/diagnostics.json",
+        "sha256": "c684d983d0f2d6d992a519e67e06827065d86973ebb1d5b78709a083e25be733",
+        "maximum_force_n": 0.6714701283314296
+      },
+      {
+        "name": "Lab CUT",
+        "path": "artifacts/isaac_lab_wrist_cut01_002/diagnostics.json",
+        "sha256": "d302e363b972eb0375994b9c75148ae37c3c95f2dc80e7f1ab9fa79a5926aef9",
+        "maximum_force_n": 0.2854869957404097
+      },
+      {
+        "name": "Lab TRIM",
+        "path": "artifacts/isaac_lab_wrist_trim01_001/diagnostics.json",
+        "sha256": "a22c24af787bd755513b33da07b2d378f61368ba6bc997998a5e750cb55326ba",
+        "maximum_force_n": 0.7067878704034957
+      }
+    ]
+  },
+  "evidence_boundaries": [
+    "Each case uses a fresh normal pregrasp and the same finite transfer controller before its perturbation",
+    "Only actuator targets and actual body wrenches are written; no tool pose correction or hidden attachment",
+    "Tool and contact traces are privileged debug and never policy observations",
+    "Failure to initialize or transfer is preserved as failure, never replaced by a welded tool",
+    "Material feedback ON/OFF must be established by separate actual material episodes; external load is not relabelled material coupling",
+    "Held versus dropped stress behavior is measured without changing these criteria after results"
+  ],
+  "status_at_freeze": "NOT_RUN",
+  "parent_protocol": {
+    "path": "configs/physical_tool_controls_v3_lab.json",
+    "sha256": "dad600220df07b348a5b4935d915881e2e6aa4c4fdb94fb8a47622ce8d1d4303"
+  },
+  "candidate_initialization": {
+    "path": "configs/physical_grasp_initialization_v2.json",
+    "sha256": "b2cfc163ed65b74ffc742ab2524f50ba5fb20ea7fcfffe63fd436f520e8bd2b3",
+    "commit": "6ec2303"
+  },
+  "native_contact_geometry_profile": "PRE_STEP_MEASURED_TOOL_POSE",
+  "native_handle_region_margin_m": 1e-06,
+  "changes_from_v1": [
+    "Initialize fingers at 11.2 mm according to the separately frozen physical_grasp_initialization_v2 candidate; no dynamic tool pose correction",
+    "Use explicitly recorded actual PRE-step Native contact geometry, with unchanged 1 micrometre handle-region tolerance, and require exact agreement with the before-step pose and 2 ms timing",
+    "All task, stability, penetration, matched-start and response thresholds are inherited unchanged; original v1 results remain preserved"
+  ],
+  "allowed_runtimes": [
+    "isaac_lab"
+  ],
+  "lab_contact_profile": "finite_pad_patch_v3",
+  "lab_contact_model_protocol": {
+    "path": "configs/lab_grip_contact_v3.json",
+    "sha256": "da24a36c6d9c58b867b669610879a82776cbac2ac36d340d8925aebaa0c9e1a6",
+    "source_commit": "1e3224a"
+  },
+  "changes_from_v2": [
+    "Use the explicitly selected finite_pad_patch_v3 Lab contact model: soft pads have condim4 and a finite torsional coefficient derived from the actual nominal overlap rectangle",
+    "Sliding friction changes update both tool and pad torsional coefficients using the same friction-scaled patch radius; no rolling friction or attachment",
+    "All measurement, case, transfer, matched-start and normal-grip values are inherited unchanged; preserve both previous Lab matrix failures"
+  ],
+  "allowed_task_ids": [
+    "CUT-01-R",
+    "TRIM-01-R",
+    "CUT-02"
+  ],
+  "tool_profile": "ruler_knife_v1",
+  "frozen_at_utc": "2026-10-28T19:58:48.223848+00:00",
+  "changes_from_parent": [
+    "Ruler profile with true pad-derived blunt material obstacles and finger-body reaction routing",
+    "All control, matched-start, load, release and classification thresholds inherited unchanged"
+  ]
+}

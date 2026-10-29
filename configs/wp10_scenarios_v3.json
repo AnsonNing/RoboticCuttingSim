@@ -1,0 +1,51 @@
+{
+  "version": "wp10_scenarios_v3",
+  "scenarios": {
+    "blademaster_workcell_v1": {
+      "inherits": "ruler_workcell_v2",
+      "decision": "docs/adr/0007-blademaster-workcell-and-demo-tasks.md section 1",
+      "world_translation_m": [0.0, 0.0, 0.05],
+      "extend_fixture_bases_to_table": true,
+      "fixture_mode": "cutting_board_v1",
+      "allowed_tasks": ["CUT-01-R", "CUT-02", "TRIM-01-R", "SLICE-PUSH-01"],
+      "trim_rake_deg": 35.0,
+      "cutting_board": {
+        "thickness_m": 0.01,
+        "half_width_y_m": 0.05,
+        "particle_y_margin_m": 0.005,
+        "display_color_rgb": [0.72, 0.53, 0.34],
+        "friction": "task_material",
+        "restitution": 0.0,
+        "scope": "Each task support box becomes a board with the same top surface: local z in [top - thickness, top], same x extent, y widened to half_width_y_m. CUT boards keep the frozen pedestal gap as a relief channel; SLICE-PUSH-01 keeps its 8 mm relief slots."
+      },
+      "riser": {
+        "display_color_rgb": [0.55, 0.55, 0.57],
+        "footprint": "original_support",
+        "friction": "task_material",
+        "restitution": 0.0,
+        "scope": "Grey riser from the table top to the board bottom with the original support x/y footprint, so board plus riser contain the ruler_workcell_v2 extended support box exactly."
+      },
+      "table": {
+        "friction": "task_material",
+        "restitution": 0.0
+      },
+      "friction_scope": "'task_material' resolves to task.material.friction (0.3 for the provisional material) when the scenario is applied; PhysX static and dynamic friction both use it. TLMPM fixture contacts already use the task material friction.",
+      "reason": "BladeMaster-style workcell: a visible wood cutting board whose PhysX collider equals its visual box, on a grey riser. Inherits the ruler_workcell_v2 +50 mm placement, 35 deg TRIM rake and measured TRIM IK seed. The y widening lies beyond every material particle (|y| <= 15 mm for CUT-01-R/TRIM-01-R/SLICE-PUSH-01, 30 mm for CUT-02), so material support contacts are unchanged. Local material geometry and all scoring thresholds remain inherited; v1/v2 scenarios remain available.",
+      "initial_joint_positions": {
+        "TRIM-01-R": [
+          0.5095252990722656,
+          -0.2797490358352661,
+          -0.9728004932403564,
+          -2.854095935821533,
+          2.643202781677246,
+          2.681626558303833,
+          2.3575243949890137
+        ]
+      },
+      "seed_source": {
+        "path": "artifacts/wp10/c_workcell_v2_preflight_001/result.json",
+        "scope": "Copied from ruler_workcell_v2 (primary-arm Newton geometry preflight). Live execution of blademaster_workcell_v1 NOT_RUN; no SLICE-PUSH-01 IK seed yet."
+      }
+    }
+  }
+}

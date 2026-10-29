@@ -1,0 +1,3224 @@
+{
+  "version": "wp10cd_handoff_v1",
+  "date": "2026-10-29",
+  "branch": "claude/lucid-mendel-vt7n82",
+  "scope": "Partial work preserved at user-requested handoff. Command success is distinct from task success. v3 physics NOT_RUN.",
+  "live": [
+    {
+      "path": "artifacts/wp10/c_native_cut01r_reference_001/result.json",
+      "sha256": "08fc3235ccad0ea7c2de3f6281f82a42b5c8997dcb2f7bf3d8c067921509c724",
+      "execution_status": "PASS_EXECUTION",
+      "wall_s": 365.05510073085316,
+      "receipt": {
+        "path": "artifacts/wp10/c_native_batch_001/cut01r/command.json",
+        "sha256": "ccc835e43def92773d34c142f840a5b075fc747481a3785a5302ea18a4ee7f5f",
+        "command": [
+          ".deps/isaacsim-venv/bin/python",
+          "scripts/run_wp10_live.py",
+          "--runtime",
+          "isaac_sim",
+          "--task",
+          "CUT-01-R",
+          "--preset",
+          "policy",
+          "--controller",
+          "reference",
+          "--observation",
+          "state",
+          "--record-cameras",
+          "--gpu",
+          "0",
+          "--out",
+          "artifacts/wp10/c_native_cut01r_reference_001"
+        ],
+        "commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 366.18565718084574,
+        "started_at": "2026-10-28T19:55:33.787736+00:00",
+        "finished_at": "2026-10-28T20:01:39.973747+00:00",
+        "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5",
+        "source_snapshot_path": "artifacts/wp10/c_native_batch_001/cut01r/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "1fee5d691bb5aa8a74d6372e970531faf0de1a7e4bdd1e7d8ea7bebbe8ff40a3",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "episodes": [
+        {
+          "runtime": "isaac_sim",
+          "task_id": "CUT-01-R",
+          "seed": 42,
+          "task_status": "PASS_TASK_METRICS",
+          "steps": 400,
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "runtime_source": "live_isaac_sim",
+          "tracking_error_m": {
+            "p50": 0.00015763388574921216,
+            "p95": 0.0001578562733915874,
+            "max": 0.00015801719969211567
+          },
+          "rotation_error_rad": {
+            "p50": 6.858320817119941e-05,
+            "p95": 7.192115963024157e-05,
+            "max": 7.510088635490226e-05
+          },
+          "strict_checks": {
+            "complete_episode": true,
+            "initial_continuous_graph": true,
+            "initial_codes_zero": true,
+            "reference_matches_single_continuous_task_sampler": true,
+            "reference_mass_budget_and_unchanged_count": true,
+            "persistent_history_no_digit_rewrites": true,
+            "postcut_disconnected_topology_persists": true,
+            "two_substantial_physical_parts": true,
+            "two_main_parts_retain_mass": true,
+            "cut_at_workpiece_local_target_plane": true
+          },
+          "strict_metrics": {
+            "initial_components": 1,
+            "final_components": 2,
+            "component_masses_kg": [
+              0.07199999999999998,
+              0.07199999999999998
+            ],
+            "recorded_mass_kg": 0.14399999999999996,
+            "expected_task_sampler_mass_kg": 0.14399999999999996,
+            "reference_mass_absolute_error_kg": 0.0,
+            "particle_count_all_frames": 96000,
+            "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+            "nonzero_digit_rewrites": 0,
+            "postcut_graph_count_minimum": 2,
+            "postcut_persistence_time_s": 2.3999999999999995,
+            "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+            "cross_component_reference_node_count": 54,
+            "severed_particle_pair_node_incidences": 2009088,
+            "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+            "substantial_parts": 2,
+            "two_main_parts_mass_fraction": 1.0,
+            "minor_parts_mass_fraction": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "path": "artifacts/wp10/c_native_trim01r_reference_001/result.json",
+      "sha256": "d91bf8a047d24e813e18979b6b85dbd94cb1bbcee3c43734a119f5493286cf4f",
+      "execution_status": "PASS_EXECUTION",
+      "wall_s": 247.92427670303732,
+      "receipt": {
+        "path": "artifacts/wp10/c_native_batch_001/trim01r/command.json",
+        "sha256": "d20093e523079ef7c5b5024011c1669fe8a906bc519a566e5a2e2af000e6290d",
+        "command": [
+          ".deps/isaacsim-venv/bin/python",
+          "scripts/run_wp10_live.py",
+          "--runtime",
+          "isaac_sim",
+          "--task",
+          "TRIM-01-R",
+          "--preset",
+          "policy",
+          "--controller",
+          "reference",
+          "--observation",
+          "state",
+          "--record-cameras",
+          "--gpu",
+          "0",
+          "--out",
+          "artifacts/wp10/c_native_trim01r_reference_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 249.06426247186027,
+        "started_at": "2026-10-28T20:01:40.013129+00:00",
+        "finished_at": "2026-10-28T20:05:49.077698+00:00",
+        "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_snapshot_path": "artifacts/wp10/c_native_batch_001/trim01r/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "1fee5d691bb5aa8a74d6372e970531faf0de1a7e4bdd1e7d8ea7bebbe8ff40a3",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "episodes": [
+        {
+          "runtime": "isaac_sim",
+          "task_id": "TRIM-01-R",
+          "seed": 42,
+          "task_status": "FAIL_TASK_METRICS",
+          "steps": 400,
+          "events": {
+            "rejected": 394,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "runtime_source": "live_isaac_sim",
+          "tracking_error_m": {
+            "p50": 0.00011827549554517972,
+            "p95": 0.00011844737561690776,
+            "max": 0.00011857462524283496
+          },
+          "rotation_error_rad": {
+            "p50": 0.00012255132652776857,
+            "p95": 0.0001252869475276941,
+            "max": 0.0001267104125074327
+          },
+          "strict_checks": {
+            "complete_episode": true,
+            "initial_continuous_graph": true,
+            "initial_codes_zero": true,
+            "reference_matches_single_continuous_task_sampler": true,
+            "reference_mass_budget_and_unchanged_count": true,
+            "persistent_history_no_digit_rewrites": true,
+            "postcut_disconnected_topology_persists": false,
+            "reference_above_plane_material_removed": false,
+            "surface_has_explicit_mechanical_provenance": true,
+            "surface_timestamp_matches_final_physics": true,
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": false,
+            "overcut_volume_fraction_of_initial_base": true,
+            "missing_surface_fraction": true
+          },
+          "strict_metrics": {
+            "initial_components": 1,
+            "final_components": 1,
+            "component_masses_kg": [
+              0.145566
+            ],
+            "recorded_mass_kg": 0.145566,
+            "expected_task_sampler_mass_kg": 0.145566,
+            "reference_mass_absolute_error_kg": 0.0,
+            "particle_count_all_frames": 97044,
+            "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+            "nonzero_digit_rewrites": 0,
+            "postcut_graph_count_minimum": 1,
+            "postcut_persistence_time_s": 2.3999999999999995,
+            "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+            "removed_reference_above_plane_mass_fraction": 0.0,
+            "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+            "surface": {
+              "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+              "measurement_spacing_xy_m": [
+                0.001,
+                0.001
+              ],
+              "grid_shape_xy": [
+                160,
+                30
+              ],
+              "valid_surface_fraction": 1.0,
+              "missing_surface_fraction": 0.0,
+              "maximum_substrate_surface_residual_height_m": 0.007731401849065164,
+              "surface_p95_absolute_plane_error_m": 0.001222321837492148,
+              "surface_rms_plane_error_m": 0.0009740990957373576,
+              "maximum_gouge_depth_m": 0.001199849608859653,
+              "overcut_volume_m3": 7.493226318622925e-07,
+              "overcut_volume_fraction_of_initial_base": 0.007805444081898881
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "artifacts/wp10/c_native_cut02_reference_001/result.json",
+      "sha256": "3185920c7aa34de1fe4a8120913e0c2de434faacac45b9b14df4063a65b3cd14",
+      "execution_status": "PASS_EXECUTION",
+      "wall_s": 834.0781980410684,
+      "receipt": {
+        "path": "artifacts/wp10/c_native_batch_001/cut02/command.json",
+        "sha256": "44658d49e70323fb1126d7eeb6ac95b908d952c82b0441cd75ce6311d14c45c2",
+        "command": [
+          ".deps/isaacsim-venv/bin/python",
+          "scripts/run_wp10_live.py",
+          "--runtime",
+          "isaac_sim",
+          "--task",
+          "CUT-02",
+          "--preset",
+          "policy",
+          "--controller",
+          "reference",
+          "--observation",
+          "state",
+          "--record-cameras",
+          "--gpu",
+          "0",
+          "--out",
+          "artifacts/wp10/c_native_cut02_reference_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 835.8754684180021,
+        "started_at": "2026-10-28T20:05:49.116025+00:00",
+        "finished_at": "2026-10-28T20:19:44.991988+00:00",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_native_batch_001/cut02/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "episodes": [
+        {
+          "runtime": "isaac_sim",
+          "task_id": "CUT-02",
+          "seed": 42,
+          "task_status": "PASS_TASK_METRICS",
+          "steps": 400,
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "runtime_source": "live_isaac_sim",
+          "tracking_error_m": {
+            "p50": 0.00015792413774728573,
+            "p95": 0.00015813836598961798,
+            "max": 0.00015845298324965645
+          },
+          "rotation_error_rad": {
+            "p50": 6.967150227769664e-05,
+            "p95": 7.076100770135607e-05,
+            "max": 7.414329065840714e-05
+          },
+          "strict_checks": {
+            "complete_episode": true,
+            "initial_continuous_graph": true,
+            "initial_codes_zero": true,
+            "reference_matches_single_continuous_task_sampler": true,
+            "reference_mass_budget_and_unchanged_count": true,
+            "persistent_history_no_digit_rewrites": true,
+            "postcut_disconnected_topology_persists": true,
+            "two_substantial_physical_parts": true,
+            "two_main_parts_retain_mass": true,
+            "cut_at_workpiece_local_target_plane": true
+          },
+          "strict_metrics": {
+            "initial_components": 1,
+            "final_components": 2,
+            "component_masses_kg": [
+              0.17999999999999997,
+              0.17999999999999997
+            ],
+            "recorded_mass_kg": 0.35999999999999993,
+            "expected_task_sampler_mass_kg": 0.35999999999999993,
+            "reference_mass_absolute_error_kg": 0.0,
+            "particle_count_all_frames": 240000,
+            "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+            "nonzero_digit_rewrites": 0,
+            "postcut_graph_count_minimum": 2,
+            "postcut_persistence_time_s": 2.3999999999999995,
+            "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+            "cross_component_reference_node_count": 136,
+            "severed_particle_pair_node_incidences": 5282304,
+            "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+            "substantial_parts": 2,
+            "two_main_parts_mass_fraction": 1.0,
+            "minor_parts_mass_fraction": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "path": "artifacts/wp10/c_lab_cut01r_reference_001/result.json",
+      "sha256": "64e251cc6eb24aa48dc9bff5f6d6fc84a97fbed28954324fe67fe01312f754b3",
+      "execution_status": "PASS_EXECUTION",
+      "wall_s": 599.4335879548453,
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_batch_001/cut01r/command.json",
+        "sha256": "1c532fe4f2f2e1984676ec8b386a23072fc638f2130e3e8ce3cfda814aa4ddbe",
+        "command": [
+          ".deps/isaaclab-venv/bin/python",
+          "scripts/run_wp10_live.py",
+          "--runtime",
+          "isaac_lab",
+          "--task",
+          "CUT-01-R",
+          "--preset",
+          "policy",
+          "--controller",
+          "reference",
+          "--observation",
+          "state",
+          "--record-cameras",
+          "--gpu",
+          "1",
+          "--out",
+          "artifacts/wp10/c_lab_cut01r_reference_001"
+        ],
+        "commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 602.4590329749044,
+        "started_at": "2026-10-28T19:55:33.791660+00:00",
+        "finished_at": "2026-10-28T20:05:36.251122+00:00",
+        "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5",
+        "source_snapshot_path": "artifacts/wp10/c_lab_batch_001/cut01r/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "1fee5d691bb5aa8a74d6372e970531faf0de1a7e4bdd1e7d8ea7bebbe8ff40a3",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "episodes": [
+        {
+          "runtime": "isaac_lab",
+          "task_id": "CUT-01-R",
+          "seed": 42,
+          "task_status": "FAIL_TASK_METRICS",
+          "steps": 400,
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "runtime_source": "live_isaac_lab",
+          "tracking_error_m": {
+            "p50": 0.0005974649010544805,
+            "p95": 0.003555048926718122,
+            "max": 0.003588670066808853
+          },
+          "rotation_error_rad": {
+            "p50": 0.00032979367521300345,
+            "p95": 0.0013624515327661047,
+            "max": 0.009510257717948747
+          },
+          "strict_checks": {
+            "complete_episode": true,
+            "initial_continuous_graph": true,
+            "initial_codes_zero": true,
+            "reference_matches_single_continuous_task_sampler": true,
+            "reference_mass_budget_and_unchanged_count": true,
+            "persistent_history_no_digit_rewrites": true,
+            "postcut_disconnected_topology_persists": false,
+            "two_substantial_physical_parts": false,
+            "two_main_parts_retain_mass": true,
+            "cut_at_workpiece_local_target_plane": false
+          },
+          "strict_metrics": {
+            "initial_components": 1,
+            "final_components": 1,
+            "component_masses_kg": [
+              0.14399999999999996
+            ],
+            "recorded_mass_kg": 0.14399999999999996,
+            "expected_task_sampler_mass_kg": 0.14399999999999996,
+            "reference_mass_absolute_error_kg": 0.0,
+            "particle_count_all_frames": 96000,
+            "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+            "nonzero_digit_rewrites": 0,
+            "postcut_graph_count_minimum": 1,
+            "postcut_persistence_time_s": 2.3999999999999995,
+            "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+            "cross_component_reference_node_count": 0,
+            "severed_particle_pair_node_incidences": 0,
+            "maximum_reference_midpoint_plane_distance_m": null,
+            "substantial_parts": 1,
+            "two_main_parts_mass_fraction": 1.0,
+            "minor_parts_mass_fraction": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "path": "artifacts/wp10/c_lab_trim01r_reference_001/result.json",
+      "sha256": "84a6db7df0a196616b3896156bce8b956275dd5cb889668c7dc1bd171c839754",
+      "execution_status": "FAIL_EXECUTION",
+      "wall_s": 18.280749646946788,
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_batch_001/trim01r/command.json",
+        "sha256": "b98a7d0295e82f1928aeea318801678e02c07cbeb97d73725b1b5f407191c897",
+        "command": [
+          ".deps/isaaclab-venv/bin/python",
+          "scripts/run_wp10_live.py",
+          "--runtime",
+          "isaac_lab",
+          "--task",
+          "TRIM-01-R",
+          "--preset",
+          "policy",
+          "--controller",
+          "reference",
+          "--observation",
+          "state",
+          "--record-cameras",
+          "--gpu",
+          "1",
+          "--out",
+          "artifacts/wp10/c_lab_trim01r_reference_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "status": "FAIL",
+        "returncode": 1,
+        "wall_s": 21.071855618152767,
+        "started_at": "2026-10-28T20:05:36.291187+00:00",
+        "finished_at": "2026-10-28T20:05:57.363481+00:00",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_lab_batch_001/trim01r/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "episodes": [],
+      "failure": {
+        "path": "artifacts/wp10/c_lab_trim01r_reference_001/failure.json",
+        "sha256": "8612623b339d394d5e2d2905456ca11f93dd5eebb384692ba69abb1148df575e",
+        "error": "RuntimeError(\"Physical pregrasp failed: {'status': 'FAIL_PHYSICAL_PREGRASP', 'checks': {'actual_free_body': True, 'no_hidden_attachment': True, 'nonempty_stability_window': True, 'bilateral_load_bearing_contacts': np.True_, 'translation_stable': True, 'rotation_stable': True, 'linear_speed_stable': np.True_, 'angular_speed_stable': np.False_, 'penetration_bounded': True, 'no_unintended_support': True}, 'rigid_settle_s': 2.0, 'material_advanced_s': 0.0, 'formal_episode_time_s': 0.0, 'window_s': 0.5, 'min_bilateral_fraction': 0.95, 'hidden_attachment': False}\")"
+      }
+    },
+    {
+      "path": "artifacts/wp10/c_lab_cut02_reference_001/result.json",
+      "sha256": "4b6d957936f394de996f204e82066c8b8224dad0567a7b84d4a071ce23d8d16c",
+      "execution_status": "PASS_EXECUTION",
+      "wall_s": 959.837180927163,
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_batch_001/cut02/command.json",
+        "sha256": "8823d38fd86ef029a284077e3d55e5290fb140199a26c9a4cc9a73fe8205cdda",
+        "command": [
+          ".deps/isaaclab-venv/bin/python",
+          "scripts/run_wp10_live.py",
+          "--runtime",
+          "isaac_lab",
+          "--task",
+          "CUT-02",
+          "--preset",
+          "policy",
+          "--controller",
+          "reference",
+          "--observation",
+          "state",
+          "--record-cameras",
+          "--gpu",
+          "1",
+          "--out",
+          "artifacts/wp10/c_lab_cut02_reference_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 962.965912115993,
+        "started_at": "2026-10-28T20:05:57.399812+00:00",
+        "finished_at": "2026-10-28T20:22:00.366109+00:00",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_lab_batch_001/cut02/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "episodes": [
+        {
+          "runtime": "isaac_lab",
+          "task_id": "CUT-02",
+          "seed": 42,
+          "task_status": "FAIL_TASK_METRICS",
+          "steps": 400,
+          "events": {
+            "rejected": 0,
+            "clamped": 0,
+            "cutting_steps": 400
+          },
+          "runtime_source": "live_isaac_lab",
+          "tracking_error_m": {
+            "p50": 0.0005962735217141114,
+            "p95": 0.003992803738639227,
+            "max": 0.004027287908068819
+          },
+          "rotation_error_rad": {
+            "p50": 0.0006789147148927817,
+            "p95": 0.0009033805199564556,
+            "max": 0.011020672233429922
+          },
+          "strict_checks": {
+            "complete_episode": true,
+            "initial_continuous_graph": true,
+            "initial_codes_zero": true,
+            "reference_matches_single_continuous_task_sampler": true,
+            "reference_mass_budget_and_unchanged_count": true,
+            "persistent_history_no_digit_rewrites": true,
+            "postcut_disconnected_topology_persists": false,
+            "two_substantial_physical_parts": false,
+            "two_main_parts_retain_mass": true,
+            "cut_at_workpiece_local_target_plane": false
+          },
+          "strict_metrics": {
+            "initial_components": 1,
+            "final_components": 1,
+            "component_masses_kg": [
+              0.35999999999999993
+            ],
+            "recorded_mass_kg": 0.35999999999999993,
+            "expected_task_sampler_mass_kg": 0.35999999999999993,
+            "reference_mass_absolute_error_kg": 0.0,
+            "particle_count_all_frames": 240000,
+            "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+            "nonzero_digit_rewrites": 0,
+            "postcut_graph_count_minimum": 1,
+            "postcut_persistence_time_s": 2.3999999999999995,
+            "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+            "cross_component_reference_node_count": 0,
+            "severed_particle_pair_node_incidences": 0,
+            "maximum_reference_midpoint_plane_distance_m": null,
+            "substantial_parts": 1,
+            "two_main_parts_mass_fraction": 1.0,
+            "minor_parts_mass_fraction": 0.0
+          }
+        }
+      ]
+    }
+  ],
+  "gpu_probes": {
+    "d_graph_check_gpu_001": {
+      "path": "artifacts/wp10/d_graph_check_gpu_001/result.json",
+      "sha256": "0f739c93fcfe04675f0ecadbb5a5bc92a2372daa098523a2ec6c57e26524e212",
+      "result": {
+        "status": "FAIL",
+        "checks": {
+          "actual_cut_observed": true,
+          "equal_cut_history": true,
+          "position_max_error_below_1um": false
+        },
+        "position_max_error_m": 5.375593900680542e-06,
+        "labelled_particles": 6816,
+        "scope": "Actual CUDA partial cut with and without graph execution; no robot"
+      },
+      "receipt": {
+        "path": "artifacts/wp10/d_physics_batch_001/graph_check/command.json",
+        "sha256": "8321d4998343b66c785e2d5a5194fa2a5aabbc3f6fde3b8e7dd2bfad04997c0f",
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_wp10_physics.py",
+          "--device",
+          "cuda:0",
+          "--mode",
+          "graph_check",
+          "--out",
+          "artifacts/wp10/d_graph_check_gpu_001"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 3.136743975104764,
+        "started_at": "2026-10-28T20:23:55.340633+00:00",
+        "finished_at": "2026-10-28T20:23:58.477831+00:00",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/d_physics_batch_001/graph_check/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      },
+      "cases": []
+    },
+    "d_law_gpu_001": {
+      "path": "artifacts/wp10/d_law_gpu_001/result.json",
+      "sha256": "2e959b372a4dcc8670467d9952d361489adc8bb6d0b843789837ab14c64a0381",
+      "result": {
+        "status": "PASS",
+        "checks": {
+          "aligned_push": true,
+          "side_no_bonds": true,
+          "flat_no_bonds": true,
+          "slicing_less_than_quarter": true,
+          "withdraw_adds_no_bonds": true,
+          "blunt_handle_no_bonds": true,
+          "two_digits_three_actual_parts": true
+        },
+        "slicing_to_push_resistance_ratio": 0.0376110093758114,
+        "scope": "GPU kinematic probes; actual articulated motion is a separate matrix"
+      },
+      "receipt": {
+        "path": "artifacts/wp10/d_physics_batch_001/law/command.json",
+        "sha256": "426eb26e8c935104bd4f7972ca289692394c98e0bf7e4628654827c7a3957133",
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_wp10_physics.py",
+          "--device",
+          "cuda:0",
+          "--mode",
+          "law",
+          "--out",
+          "artifacts/wp10/d_law_gpu_001"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 43.55035778484307,
+        "started_at": "2026-10-28T20:23:58.514077+00:00",
+        "finished_at": "2026-10-28T20:24:42.064930+00:00",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/d_physics_batch_001/law/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      },
+      "cases": [
+        {
+          "name": "push",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                0.002123800804838538,
+                1.6616341724784434e-07,
+                0.03579861670732498
+              ],
+              "peak_abs_N": [
+                0.02131839282810688,
+                0.0001147458897321485,
+                0.13233208656311035
+              ]
+            }
+          ],
+          "minimum_detF": 0.94730544090271,
+          "maximum_speed_m_s": 0.0036623221822082996,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 2.4513177359476686,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "slow_push",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 72,
+          "forces": [
+            {
+              "mean_N": [
+                -0.000799408764578402,
+                -6.187347967312462e-09,
+                0.02160024456679821
+              ],
+              "peak_abs_N": [
+                0.013691369444131851,
+                4.419491688167909e-06,
+                0.09141887724399567
+              ]
+            }
+          ],
+          "minimum_detF": 0.9811897873878479,
+          "maximum_speed_m_s": 0.0077463602647185326,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.749745095150582e-11,
+            "p95": 4.749745095150582e-11
+          },
+          "wall_s": 1.7966290889307857,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.01
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "slicing",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 72,
+          "forces": [
+            {
+              "mean_N": [
+                0.0007131394813768566,
+                -0.0010350653901696205,
+                0.0008124070009216666
+              ],
+              "peak_abs_N": [
+                0.002927476540207863,
+                0.014635748229920864,
+                0.011218670755624771
+              ]
+            }
+          ],
+          "minimum_detF": 0.9760788679122925,
+          "maximum_speed_m_s": 0.06143975257873535,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.749745095150582e-11,
+            "p95": 4.749745095150582e-11
+          },
+          "wall_s": 1.814642237033695,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.2,
+                -0.01
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "slicing_disabled",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 72,
+          "forces": [
+            {
+              "mean_N": [
+                -0.0005555305979214609,
+                -0.02493314817547798,
+                0.019233452156186104
+              ],
+              "peak_abs_N": [
+                0.011030938476324081,
+                0.09821750968694687,
+                0.07530689239501953
+              ]
+            }
+          ],
+          "minimum_detF": 0.9833465218544006,
+          "maximum_speed_m_s": 0.07531972229480743,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.749745095150582e-11,
+            "p95": 4.749745095150582e-11
+          },
+          "wall_s": 1.8030415249522775,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.2,
+                -0.01
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "side_push",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 0,
+          "forces": [
+            {
+              "mean_N": [
+                -0.06483590602874756,
+                -1.0588201426742216e-08,
+                0.0035555127542465925
+              ],
+              "peak_abs_N": [
+                0.17850655317306519,
+                2.798467164666363e-07,
+                0.02503994107246399
+              ]
+            }
+          ],
+          "minimum_detF": 0.9965814352035522,
+          "maximum_speed_m_s": 0.08588249981403351,
+          "cut_plane_reference_midpoint_error_m": null,
+          "wall_s": 1.50931337592192,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.05,
+                0.0,
+                0.0
+              ],
+              "duration_s": 0.3,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "flat_press",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 0,
+          "forces": [
+            {
+              "mean_N": [
+                -0.032982323318719864,
+                2.1059504433651455e-06,
+                1.0267544984817505
+              ],
+              "peak_abs_N": [
+                0.0902337059378624,
+                1.369556957797613e-05,
+                1.687436580657959
+              ]
+            }
+          ],
+          "minimum_detF": 0.9377758502960205,
+          "maximum_speed_m_s": 0.028182990849018097,
+          "cut_plane_reference_midpoint_error_m": null,
+          "wall_s": 1.521952531998977,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.02
+              ],
+              "duration_s": 0.3,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "half_then_withdraw",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 136,
+          "forces": [
+            {
+              "mean_N": [
+                0.0010148462606593966,
+                -8.779230142863526e-07,
+                0.02534184791147709
+              ],
+              "peak_abs_N": [
+                0.016399353742599487,
+                0.0006083220359869301,
+                0.09521356225013733
+              ]
+            },
+            {
+              "mean_N": [
+                -0.0007901330245658755,
+                -1.4771923815715127e-05,
+                -0.00920032523572445
+              ],
+              "peak_abs_N": [
+                0.012858472764492035,
+                0.00027222634525969625,
+                0.061134446412324905
+              ]
+            }
+          ],
+          "minimum_detF": 0.9846043586730957,
+          "maximum_speed_m_s": 0.004806758835911751,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 1.9428662199061364,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                0.05
+              ],
+              "duration_s": 0.2,
+              "cut": -1
+            }
+          ]
+        },
+        {
+          "name": "handle_only",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 0,
+          "forces": [
+            {
+              "mean_N": [
+                -1.739368713060685e-06,
+                -2.0204904558340786e-06,
+                0.2715059220790863
+              ],
+              "peak_abs_N": [
+                5.502376370714046e-05,
+                0.009134272113442421,
+                0.5872358083724976
+              ]
+            }
+          ],
+          "minimum_detF": 0.8527288436889648,
+          "maximum_speed_m_s": 0.06083625555038452,
+          "cut_plane_reference_midpoint_error_m": null,
+          "wall_s": 1.2162273989524692,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "two_digits",
+          "status": "PASS_EXECUTION",
+          "components": 3,
+          "severed_bonds": 576,
+          "forces": [
+            {
+              "mean_N": [
+                -0.016368689015507698,
+                -3.5557366118155187e-07,
+                0.041367560625076294
+              ],
+              "peak_abs_N": [
+                0.05878759175539017,
+                6.839986599516124e-05,
+                0.1394769847393036
+              ]
+            },
+            {
+              "mean_N": [
+                -0.0015769631136208773,
+                -1.5522026330927474e-08,
+                -0.0003957202716264874
+              ],
+              "peak_abs_N": [
+                0.016432777047157288,
+                3.8279179648270656e-07,
+                0.004929819144308567
+              ]
+            },
+            {
+              "mean_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "peak_abs_N": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "mean_N": [
+                -0.000421317556174472,
+                -1.4033606987595704e-07,
+                0.03862154111266136
+              ],
+              "peak_abs_N": [
+                0.03729228675365448,
+                8.60291620483622e-05,
+                0.14113999903202057
+              ]
+            }
+          ],
+          "minimum_detF": 0.9626823663711548,
+          "maximum_speed_m_s": 0.008063243702054024,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.022999999940395355,
+            "p95": 0.022999999940395355
+          },
+          "wall_s": 3.3931510790716857,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.1
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                0.1
+              ],
+              "duration_s": 0.2,
+              "cut": -1
+            },
+            {
+              "velocity_m_s": [
+                0.24,
+                0.0,
+                0.0
+              ],
+              "duration_s": 0.1,
+              "cut": -1
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.1
+              ],
+              "duration_s": 0.2,
+              "cut": 1
+            }
+          ],
+          "multi_cut_evaluation": {
+            "protocol": "multi_cut_outcome_v1",
+            "status": "PASS_MULTI_CUT_OUTCOME",
+            "checks": {
+              "three_mechanical_parts": true,
+              "three_substantial_parts": true,
+              "main_parts_retain_mass": true,
+              "both_digits_sever_bonds": true,
+              "declared_cut_planes": true
+            },
+            "metrics": {
+              "mechanical_components": 3,
+              "part_mass_fractions": [
+                0.38333332042075513,
+                0.31666665599975424,
+                0.299999989894504
+              ],
+              "cuts": [
+                {
+                  "digit": 0,
+                  "severed_bonds": 288,
+                  "maximum_reference_plane_error_m": 1.0430812810713341e-10,
+                  "p95_reference_plane_error_m": 1.0430812810713341e-10
+                },
+                {
+                  "digit": 1,
+                  "severed_bonds": 288,
+                  "maximum_reference_plane_error_m": 0.001000000059604645,
+                  "p95_reference_plane_error_m": 0.001000000059604645
+                }
+              ]
+            },
+            "scope": "Actual positive-weight/stress-gradient transfer graph with two ternary cut digits; not the v1 task oracle"
+          }
+        },
+        {
+          "name": "oblique_-40",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 506,
+          "forces": [
+            {
+              "mean_N": [
+                0.005192354787141085,
+                -1.6747297593155963e-07,
+                0.055678922683000565
+              ],
+              "peak_abs_N": [
+                0.10112500190734863,
+                0.00010126637789653614,
+                0.17710590362548828
+              ]
+            }
+          ],
+          "minimum_detF": 0.9388845562934875,
+          "maximum_speed_m_s": 0.0032445082906633615,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0005944107603108632,
+            "p95": 0.0005327822586626323
+          },
+          "wall_s": 2.4049949960317463,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.03213938048432698,
+                0.0,
+                -0.0383022221559489
+              ],
+              "duration_s": 0.5743792073062025,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "oblique_-20",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 388,
+          "forces": [
+            {
+              "mean_N": [
+                0.012143733911216259,
+                -4.4776376739719126e-07,
+                0.040318459272384644
+              ],
+              "peak_abs_N": [
+                0.11630485951900482,
+                7.89084515417926e-05,
+                0.1661273092031479
+              ]
+            }
+          ],
+          "minimum_detF": 0.9394991397857666,
+          "maximum_speed_m_s": 0.0016691068885847926,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0009379672607211083,
+            "p95": 0.0006823148249572762
+          },
+          "wall_s": 2.073601347859949,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.017101007166283443,
+                0.0,
+                -0.046984631039295434
+              ],
+              "duration_s": 0.4682382198894012,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "oblique_+20",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 384,
+          "forces": [
+            {
+              "mean_N": [
+                -0.010874480940401554,
+                -5.76027652243738e-08,
+                0.04054969921708107
+              ],
+              "peak_abs_N": [
+                0.10492458939552307,
+                0.00014059165550861508,
+                0.17581236362457275
+              ]
+            }
+          ],
+          "minimum_detF": 0.9546214938163757,
+          "maximum_speed_m_s": 0.0016971711302176118,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0006823148450858863,
+            "p95": 0.0006823148450858863
+          },
+          "wall_s": 2.0738476698752493,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                -0.017101007166283426,
+                0.0,
+                -0.04698463103929542
+              ],
+              "duration_s": 0.4682382198894013,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "oblique_+40",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 512,
+          "forces": [
+            {
+              "mean_N": [
+                -0.0068723359145224094,
+                2.2347622063989547e-07,
+                0.046921439468860626
+              ],
+              "peak_abs_N": [
+                0.1059747040271759,
+                6.868848868180066e-05,
+                0.18312157690525055
+              ]
+            }
+          ],
+          "minimum_detF": 0.9492150545120239,
+          "maximum_speed_m_s": 0.0030671050772070885,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0004711540455585015,
+            "p95": 0.00032139386038499253
+          },
+          "wall_s": 2.4110383591614664,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                -0.03213938048432696,
+                0.0,
+                -0.03830222215594892
+              ],
+              "duration_s": 0.5743792073062023,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "yaw_30",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 455,
+          "forces": [
+            {
+              "mean_N": [
+                0.001642055343836546,
+                0.0010047925170511007,
+                0.02458198182284832
+              ],
+              "peak_abs_N": [
+                0.010780328884720802,
+                0.00711693475022912,
+                0.07263579219579697
+              ]
+            }
+          ],
+          "minimum_detF": 0.9689780473709106,
+          "maximum_speed_m_s": 0.005812996067106724,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0009198731490357956,
+            "p95": 0.0004461524786576541
+          },
+          "wall_s": 1.8377004240173846,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "yaw_60",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 780,
+          "forces": [
+            {
+              "mean_N": [
+                0.00043209033901803195,
+                0.0006460904842242599,
+                0.03544929251074791
+              ],
+              "peak_abs_N": [
+                0.008015613071620464,
+                0.013197476044297218,
+                0.1114712581038475
+              ]
+            }
+          ],
+          "minimum_detF": 0.9678354263305664,
+          "maximum_speed_m_s": 0.018363026902079582,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.001459291782898604,
+            "p95": 0.0006782025777098524
+          },
+          "wall_s": 1.8403805829584599,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "edge_roll_-15",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 364,
+          "forces": [
+            {
+              "mean_N": [
+                6.711544119752944e-05,
+                1.4607127241106355e-06,
+                0.01814241334795952
+              ],
+              "peak_abs_N": [
+                0.0059595368802547455,
+                0.001570574939250946,
+                0.06478085368871689
+              ]
+            }
+          ],
+          "minimum_detF": 0.9694275259971619,
+          "maximum_speed_m_s": 0.003320657182484865,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0007857482591711647,
+            "p95": 0.0004575789140613847
+          },
+          "wall_s": 2.130797815974802,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.5,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "edge_roll_+15",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 364,
+          "forces": [
+            {
+              "mean_N": [
+                7.073888991726562e-05,
+                -2.21175696424325e-06,
+                0.018139228224754333
+              ],
+              "peak_abs_N": [
+                0.005967461038380861,
+                0.001562048215419054,
+                0.06477798521518707
+              ]
+            }
+          ],
+          "minimum_detF": 0.9694727063179016,
+          "maximum_speed_m_s": 0.0033140210434794426,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.0007857482591711647,
+            "p95": 0.0004575789140613847
+          },
+          "wall_s": 2.1455561809707433,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.5,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "saw_through",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                -2.1811642000102438e-05,
+                -0.00024485494941473007,
+                0.00021995478891767561
+              ],
+              "peak_abs_N": [
+                0.0011486368020996451,
+                0.010428163222968578,
+                0.009264161810278893
+              ]
+            },
+            {
+              "mean_N": [
+                0.003883359022438526,
+                0.028715798631310463,
+                0.01190588716417551
+              ],
+              "peak_abs_N": [
+                0.009736379608511925,
+                0.07631009072065353,
+                0.02774614468216896
+              ]
+            },
+            {
+              "mean_N": [
+                3.994194412371144e-05,
+                -0.02245955727994442,
+                0.004257031250745058
+              ],
+              "peak_abs_N": [
+                0.00572626106441021,
+                0.053372111171483994,
+                0.015259959734976292
+              ]
+            },
+            {
+              "mean_N": [
+                -0.0003848489432130009,
+                0.012332713231444359,
+                0.0038609534967690706
+              ],
+              "peak_abs_N": [
+                0.008096480742096901,
+                0.05611155927181244,
+                0.02080780453979969
+              ]
+            }
+          ],
+          "minimum_detF": 0.9425143599510193,
+          "maximum_speed_m_s": 0.001494956319220364,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 2.1730679229367524,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.3,
+                -0.05
+              ],
+              "duration_s": 0.1,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                -0.3,
+                -0.05
+              ],
+              "duration_s": 0.1,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                0.3,
+                -0.05
+              ],
+              "duration_s": 0.1,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                -0.3,
+                -0.05
+              ],
+              "duration_s": 0.1,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "slice_through",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                -2.235393549199216e-05,
+                -0.0002410159504506737,
+                0.00020312103151809424
+              ],
+              "peak_abs_N": [
+                0.001038607326336205,
+                0.010095668956637383,
+                0.008484596386551857
+              ]
+            },
+            {
+              "mean_N": [
+                0.0031783480662852526,
+                0.021017424762248993,
+                0.007527392357587814
+              ],
+              "peak_abs_N": [
+                0.009924419224262238,
+                0.07315605878829956,
+                0.022590355947613716
+              ]
+            },
+            {
+              "mean_N": [
+                0.00020474375924095511,
+                -0.02590172365307808,
+                0.0035632166545838118
+              ],
+              "peak_abs_N": [
+                0.00483191991224885,
+                0.043124355375766754,
+                0.011481423862278461
+              ]
+            },
+            {
+              "mean_N": [
+                0.0023084755521267653,
+                0.01332212146371603,
+                0.0032897067721933126
+              ],
+              "peak_abs_N": [
+                0.005285119172185659,
+                0.04943256452679634,
+                0.014932057820260525
+              ]
+            }
+          ],
+          "minimum_detF": 0.9523324370384216,
+          "maximum_speed_m_s": 0.0016396243590861559,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 3.4168083029799163,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.2,
+                -0.025
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                -0.2,
+                -0.025
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                0.2,
+                -0.025
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            },
+            {
+              "velocity_m_s": [
+                0.0,
+                -0.2,
+                -0.025
+              ],
+              "duration_s": 0.2,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "skim",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 1006,
+          "forces": [
+            {
+              "mean_N": [
+                -0.07738611102104187,
+                3.0662801009384566e-07,
+                -0.0883512794971466
+              ],
+              "peak_abs_N": [
+                0.2275160700082779,
+                0.00016085828247014433,
+                0.25305503606796265
+              ]
+            }
+          ],
+          "minimum_detF": 0.9169951677322388,
+          "maximum_speed_m_s": 0.10429196804761887,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 0.018684370362840846,
+            "p95": 0.017839133700814386
+          },
+          "wall_s": 3.1061090431176126,
+          "material_dt_s": 0.0001,
+          "config_overrides": {},
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.1,
+                0.0,
+                0.0
+              ],
+              "duration_s": 0.8,
+              "cut": 0
+            }
+          ]
+        }
+      ]
+    },
+    "d_materials_gpu_001": {
+      "path": "artifacts/wp10/d_materials_gpu_001/result.json",
+      "sha256": "2e16e0f5261ea1287f28e7d91986717f8516e35735625e19f8cf44946b19e5bf",
+      "result": {
+        "status": "PASS",
+        "calibration": "NOT_VALIDATED",
+        "scope": "Force and stability orders only, no measured food calibration"
+      },
+      "receipt": {
+        "path": "artifacts/wp10/d_physics_batch_001/materials/command.json",
+        "sha256": "008e1f5209b722dd15e1c1453af4cba81ce36e7c22e95689fa61b6303f9eb392",
+        "command": [
+          ".venv/bin/python",
+          "scripts/validate_wp10_physics.py",
+          "--device",
+          "cuda:0",
+          "--mode",
+          "materials",
+          "--out",
+          "artifacts/wp10/d_materials_gpu_001"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 50.1252851029858,
+        "started_at": "2026-10-28T20:24:42.105986+00:00",
+        "finished_at": "2026-10-28T20:25:32.231576+00:00",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/d_physics_batch_001/materials/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      },
+      "cases": [
+        {
+          "name": "cream_cheese_provisional_v1_dt0.0001",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                0.0011613357346504927,
+                -2.2336279492662925e-09,
+                0.029951900243759155
+              ],
+              "peak_abs_N": [
+                0.011623668484389782,
+                1.3841210602549836e-05,
+                0.09909354150295258
+              ]
+            }
+          ],
+          "minimum_detF": 0.9110181331634521,
+          "maximum_speed_m_s": 0.002431123750284314,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 2.4656238418538123,
+          "material_dt_s": 0.0001,
+          "config_overrides": {
+            "dt": 0.0001,
+            "density": 1100.0,
+            "young": 26000.0,
+            "poisson": 0.3,
+            "yield_stress": 2500.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cream_cheese_provisional_v1_dt5e-05",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                -0.001145929447375238,
+                2.1863273413913475e-09,
+                0.04732093960046768
+              ],
+              "peak_abs_N": [
+                0.017330212518572807,
+                1.579119043526589e-06,
+                0.19681088626384735
+              ]
+            }
+          ],
+          "minimum_detF": 0.9667569398880005,
+          "maximum_speed_m_s": 0.0025054491125047207,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 3.0435173159930855,
+          "material_dt_s": 5e-05,
+          "config_overrides": {
+            "dt": 5e-05,
+            "density": 1100.0,
+            "young": 26000.0,
+            "poisson": 0.3,
+            "yield_stress": 2500.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cream_cheese_provisional_v1_dt2e-05",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                -0.0020852943416684866,
+                -7.735732943103812e-09,
+                0.06295919418334961
+              ],
+              "peak_abs_N": [
+                0.04666098207235336,
+                4.8971262003760785e-05,
+                0.32163912057876587
+              ]
+            }
+          ],
+          "minimum_detF": 0.9733891487121582,
+          "maximum_speed_m_s": 0.0008933703065849841,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 6.748920269776136,
+          "material_dt_s": 2e-05,
+          "config_overrides": {
+            "dt": 2e-05,
+            "density": 1100.0,
+            "young": 26000.0,
+            "poisson": 0.3,
+            "yield_stress": 2500.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cream_cheese_provisional_v1_dt1e-05",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                0.0023617856204509735,
+                3.138194983876019e-07,
+                0.07397902756929398
+              ],
+              "peak_abs_N": [
+                0.11039657145738602,
+                0.0001205941298394464,
+                0.5284019708633423
+              ]
+            }
+          ],
+          "minimum_detF": 0.9760435223579407,
+          "maximum_speed_m_s": 0.0012361417757347226,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 12.937637677881867,
+          "material_dt_s": 1e-05,
+          "config_overrides": {
+            "dt": 1e-05,
+            "density": 1100.0,
+            "young": 26000.0,
+            "poisson": 0.3,
+            "yield_stress": 2500.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cheddar_provisional_v1_dt0.0001",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 0,
+          "forces": [
+            {
+              "mean_N": [
+                -0.00019690711633302271,
+                3.0352413915579746e-09,
+                0.2237183004617691
+              ],
+              "peak_abs_N": [
+                0.007188062183558941,
+                7.171229663072154e-05,
+                0.4732828736305237
+              ]
+            }
+          ],
+          "minimum_detF": 0.9980294704437256,
+          "maximum_speed_m_s": 0.0002997835399582982,
+          "cut_plane_reference_midpoint_error_m": null,
+          "wall_s": 1.8003069499973208,
+          "material_dt_s": 0.0001,
+          "config_overrides": {
+            "dt": 0.0001,
+            "density": 1100.0,
+            "young": 480000.0,
+            "poisson": 0.3,
+            "yield_stress": 30000.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cheddar_provisional_v1_dt5e-05",
+          "status": "PASS_EXECUTION",
+          "components": 1,
+          "severed_bonds": 286,
+          "forces": [
+            {
+              "mean_N": [
+                -0.0010552754392847419,
+                -1.173902546725003e-06,
+                0.1944829374551773
+              ],
+              "peak_abs_N": [
+                1.1151962280273438,
+                0.00010492598812561482,
+                0.7926465272903442
+              ]
+            }
+          ],
+          "minimum_detF": 0.9012098908424377,
+          "maximum_speed_m_s": 0.007272327784448862,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 3.0838803958613425,
+          "material_dt_s": 5e-05,
+          "config_overrides": {
+            "dt": 5e-05,
+            "density": 1100.0,
+            "young": 480000.0,
+            "poisson": 0.3,
+            "yield_stress": 30000.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cheddar_provisional_v1_dt2e-05",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                -0.001845207647420466,
+                -0.000878176128026098,
+                0.1671338528394699
+              ],
+              "peak_abs_N": [
+                0.19019144773483276,
+                0.04252343252301216,
+                1.0628688335418701
+              ]
+            }
+          ],
+          "minimum_detF": 0.8958385586738586,
+          "maximum_speed_m_s": 0.0015818537212908268,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 6.732502687955275,
+          "material_dt_s": 2e-05,
+          "config_overrides": {
+            "dt": 2e-05,
+            "density": 1100.0,
+            "young": 480000.0,
+            "poisson": 0.3,
+            "yield_stress": 30000.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        },
+        {
+          "name": "cheddar_provisional_v1_dt1e-05",
+          "status": "PASS_EXECUTION",
+          "components": 2,
+          "severed_bonds": 288,
+          "forces": [
+            {
+              "mean_N": [
+                -0.003241294762119651,
+                1.1914328297280008e-06,
+                0.3190673589706421
+              ],
+              "peak_abs_N": [
+                0.29565566778182983,
+                0.0012659338535740972,
+                1.5061675310134888
+              ]
+            }
+          ],
+          "minimum_detF": 0.8981235027313232,
+          "maximum_speed_m_s": 0.024202944710850716,
+          "cut_plane_reference_midpoint_error_m": {
+            "max": 4.7497450285372005e-11,
+            "p95": 4.7497450285372005e-11
+          },
+          "wall_s": 12.835060023935512,
+          "material_dt_s": 1e-05,
+          "config_overrides": {
+            "dt": 1e-05,
+            "density": 1100.0,
+            "young": 480000.0,
+            "poisson": 0.3,
+            "yield_stress": 30000.0,
+            "contact_friction": 0.3
+          },
+          "phases": [
+            {
+              "velocity_m_s": [
+                0.0,
+                0.0,
+                -0.05
+              ],
+              "duration_s": 0.4,
+              "cut": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "checks": {
+    "c_workcell_v2_preflight_001": {
+      "path": "artifacts/wp10/c_workcell_v2_preflight_001/result.json",
+      "sha256": "7c38a9487ba0f5dd896a2de453b6e02539b4af43624c8108283cf1d130583492",
+      "result": {
+        "status": "PASS_GEOMETRY_PREFLIGHT",
+        "checks": {
+          "all_ik_converged": true,
+          "table_and_self_collision_clear": true,
+          "pads_handle_camera_clear_target_plane": true
+        },
+        "scenario": "ruler_workcell_v2",
+        "initial_joint_positions": [
+          0.5095252990722656,
+          -0.2797490358352661,
+          -0.9728004932403564,
+          -2.854095935821533,
+          2.643202781677246,
+          2.681626558303833,
+          2.3575243949890137
+        ],
+        "minimum_plane_clearance_m": {
+          "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger/left_finger_pad": 0.03904090419186733,
+          "/panda/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger/right_finger_pad": 0.008273540188188641,
+          "handle": 0.014132568411858892,
+          "camera0_Housing": 0.10236882713946396,
+          "camera0_Bracket": 0.08542331097109321
+        },
+        "minimum_joint_margin_rad": 0.0914618968963623,
+        "max_joint_step_rad": 0.005667384713888168,
+        "contacts": [],
+        "scope": "Actual Newton/MuJoCo robot/table and actual composed USD pad corners; no dynamics. Blade is wedge proxy; fixtures and camera/robot intersection remain separate live audits."
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_workcell_v2_preflight_record_001/command.json",
+        "sha256": "d22de52d3e79f7e75846bb8eb7adc054ab0d813616aa33d6b2bc92b3b772feae",
+        "command": [
+          ".venv/bin/python",
+          "scripts/prepare_wp10_ruler_scene.py",
+          "--out",
+          "artifacts/wp10/c_workcell_v2_preflight_001"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 12.404741847887635,
+        "started_at": "2026-10-28T21:01:59.212081+00:00",
+        "finished_at": "2026-10-28T21:02:11.617162+00:00",
+        "source_patch_sha256": "b6b5924125456d3c6fe305d14384e0813a16d7a2408aad03d93b66960317f387",
+        "source_snapshot_path": "artifacts/wp10/c_workcell_v2_preflight_record_001/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "52ebe4f276d86107a6c9e7eb0461dc146cec54a783ece02e72fef9a205b70458",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "acb049a947e2bafed34d5deaae392593ec418320693215e7b2170ed913d1c6fb",
+          "src/robotic_cutting_sim/live_material.py": "c92f31bce2fce740fd28d320fb3086618b6ae94db75fe774a10e32aecc4a30b5",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/prepare_wp10_ruler_scene.py": "be6db367a58c19b3e1099a1115b5a7c16dfed262e0f34f2cacf38f504c6632a1",
+          "scripts/probe_wp10_task_policy.py": "87ddaafb5ca0969f8582de9f97784d1b4ab93092335f6c54e0df12f42beb97e9",
+          "scripts/run_wp10_live.py": "986055f38ff1fa3638509b5bbb7bc7eca3e85b0b3d29c0e6334a5ec81eb6ef86",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      }
+    },
+    "c_trim_kinematic_formal_001": {
+      "path": "artifacts/wp10/c_trim_kinematic_formal_001/result.json",
+      "sha256": "b24b47be543a0bace762d6cfdb58a2f0f0250c7135d8c585e9d6bfbf1576d4a4",
+      "result": {
+        "status": "PASS_EXECUTION",
+        "runtime_source": "kinematic_ideal_tracking",
+        "task_status": "FAIL_TASK_METRICS",
+        "strict": {
+          "task_id": "TRIM-01-R",
+          "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+          "protocol_id": "cutting_tasks_v2_20261028",
+          "protocol_sha256": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+          "full_simulation_acceptance": false,
+          "policy_observation": false,
+          "status": "FAIL_TASK_METRICS",
+          "checks": {
+            "complete_episode": true,
+            "initial_continuous_graph": true,
+            "initial_codes_zero": true,
+            "reference_matches_single_continuous_task_sampler": true,
+            "reference_mass_budget_and_unchanged_count": true,
+            "persistent_history_no_digit_rewrites": true,
+            "postcut_disconnected_topology_persists": false,
+            "reference_above_plane_material_removed": false,
+            "surface_has_explicit_mechanical_provenance": true,
+            "surface_timestamp_matches_final_physics": true,
+            "maximum_substrate_surface_residual_height_m": false,
+            "surface_p95_absolute_plane_error_m": false,
+            "surface_rms_plane_error_m": false,
+            "maximum_gouge_depth_m": false,
+            "overcut_volume_fraction_of_initial_base": false,
+            "missing_surface_fraction": true
+          },
+          "metrics": {
+            "initial_components": 1,
+            "final_components": 1,
+            "component_masses_kg": [
+              0.145566
+            ],
+            "recorded_mass_kg": 0.145566,
+            "expected_task_sampler_mass_kg": 0.145566,
+            "reference_mass_absolute_error_kg": 0.0,
+            "particle_count_all_frames": 97044,
+            "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+            "nonzero_digit_rewrites": 0,
+            "postcut_graph_count_minimum": 1,
+            "postcut_persistence_time_s": 2.4000000000000004,
+            "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+            "removed_reference_above_plane_mass_fraction": 0.0,
+            "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+            "surface": {
+              "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+              "measurement_spacing_xy_m": [
+                0.001,
+                0.001
+              ],
+              "grid_shape_xy": [
+                160,
+                30
+              ],
+              "valid_surface_fraction": 0.99375,
+              "missing_surface_fraction": 0.006249999999999978,
+              "maximum_substrate_surface_residual_height_m": 0.0390527721827328,
+              "surface_p95_absolute_plane_error_m": 0.0008518786226614054,
+              "surface_rms_plane_error_m": 0.005430446807485251,
+              "maximum_gouge_depth_m": 0.02,
+              "overcut_volume_m3": 1.668269492952191e-06,
+              "overcut_volume_fraction_of_initial_base": 0.01737780721825199
+            }
+          },
+          "missing_evidence": [],
+          "success": false,
+          "episode_complete": true,
+          "runtime_source": "kinematic_ideal_tracking"
+        },
+        "research": {
+          "protocol_id": "cutting_evaluation_v2_20261029",
+          "protocol_sha256": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe",
+          "profile": "research",
+          "goal": {
+            "goal_type": "trim_surface",
+            "target": {
+              "kind": "plane",
+              "source": "cutting_tasks_v2.json/TRIM-01-R",
+              "version": "analytic_task_v1",
+              "frame_id": "workpiece_local",
+              "parameters": {
+                "origin_m": [
+                  0.0,
+                  0.0,
+                  0.02
+                ],
+                "normal": [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              }
+            },
+            "bounds_xy_m": [
+              [
+                -0.08,
+                -0.015
+              ],
+              [
+                0.08,
+                0.015
+              ]
+            ],
+            "regions": [
+              {
+                "name": "boundary",
+                "kind": "boundary",
+                "parameters": {
+                  "bounds_xy_m": [
+                    [
+                      -0.08,
+                      -0.015
+                    ],
+                    [
+                      0.08,
+                      0.015
+                    ]
+                  ],
+                  "width_m": 0.003
+                },
+                "source": "task_geometry_before_evaluation"
+              },
+              {
+                "name": "interior",
+                "kind": "box",
+                "parameters": {
+                  "bounds_xy_m": [
+                    [
+                      -0.077,
+                      -0.012
+                    ],
+                    [
+                      0.077,
+                      0.012
+                    ]
+                  ]
+                },
+                "source": "task_geometry_before_evaluation"
+              },
+              {
+                "name": "bump_0",
+                "kind": "ellipse",
+                "parameters": {
+                  "center_xy_m": [
+                    0.0,
+                    0.0
+                  ],
+                  "radii_xy_m": [
+                    0.012,
+                    0.012
+                  ]
+                },
+                "source": "task_initial_bump_0"
+              }
+            ],
+            "thresholds": {},
+            "applicable_metrics": [
+              "detached_reference_mass",
+              "per_bump_removal",
+              "surface",
+              "protected_material_deficit"
+            ],
+            "frame_id": "workpiece_local",
+            "world_from_goal_xyzw": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1
+            ],
+            "version": "goal_v2",
+            "source": "cutting_tasks_v2.json/TRIM-01-R",
+            "spacing_m": 0.001,
+            "duration_s": null,
+            "domain": {
+              "name": "object_footprint",
+              "kind": "box",
+              "parameters": {
+                "bounds_xy_m": [
+                  [
+                    -0.08,
+                    -0.015
+                  ],
+                  [
+                    0.08,
+                    0.015
+                  ]
+                ]
+              },
+              "source": "initial_task_footprint"
+            }
+          },
+          "units": {
+            "distance": "m",
+            "area": "m2",
+            "volume": "m3",
+            "mass": "kg",
+            "time": "s",
+            "fraction": "1"
+          },
+          "episode_completed": true,
+          "physical_integrity": {
+            "status": "NOT_MEASURABLE_INCOMPLETE_PROVENANCE",
+            "checks": {
+              "finite_particle_state": true,
+              "positive_reference_masses": true,
+              "increasing_time": true,
+              "valid_stencil_node_indices": true,
+              "valid_cut_history": true,
+              "finite_velocities": true,
+              "persistent_history_no_rewrites": true,
+              "recorded_source_bytes_verified": false,
+              "physics_recording_provenance": true,
+              "contact_deformation_history_traceable": false
+            },
+            "metrics": {
+              "initial_components": 1,
+              "final_components": 1,
+              "component_masses_kg": [
+                0.145566
+              ],
+              "reference_mass_kg": 0.145566,
+              "mass_error_kg": null,
+              "mass_measurement_scope": "REFERENCE_MASS_AND_COUNT_ONLY",
+              "particle_count_all_frames": 97044,
+              "nonzero_history_rewrites": 0,
+              "sampled_separation_persistence_s": 0.0,
+              "component_counts_by_sample": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              "separation_scope": "Current actual MPM support graph independently recomputed at each saved code state, including stress gradients; no future component labels"
+            },
+            "episode_completed": true,
+            "full_physics_acceptance": false,
+            "limitations": [
+              "No calibrated material or converged coupling-energy claim",
+              "Constant reference masses and particle counts are not independently sampled dynamic masses"
+            ]
+          },
+          "cutting_outcome": {
+            "status": "MEASURED",
+            "goal_type": "trim_surface",
+            "metrics": {
+              "initial_components": 1,
+              "final_components": 1,
+              "component_masses_kg": [
+                0.145566
+              ],
+              "reference_mass_kg": 0.145566,
+              "mass_error_kg": null,
+              "mass_measurement_scope": "REFERENCE_MASS_AND_COUNT_ONLY",
+              "particle_count_all_frames": 97044,
+              "nonzero_history_rewrites": 0,
+              "sampled_separation_persistence_s": 0.0,
+              "component_counts_by_sample": [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+              ],
+              "separation_scope": "Current actual MPM support graph independently recomputed at each saved code state, including stress gradients; no future component labels"
+            },
+            "removal": {
+              "status": "MEASURED",
+              "initial_target_mass_kg": 0.0015659999999999997,
+              "detached_target_mass_kg": 0.0,
+              "removed_reference_above_target_mass_fraction": 0.0,
+              "remaining_target_mass_kg": 0.0015659999999999997,
+              "protected_reference_material_detached_mass_kg": 0.0,
+              "protected_reference_material_detached_volume_m3": 0.0,
+              "protected_deficit_scope": "Actual detached reference mass below target, distinct from mesh deficit and plastic deformation; volume uses provisional reference density",
+              "remaining_particle_center_positive_residual_m": 0.05840250432491302,
+              "per_bump": [
+                {
+                  "bump_index": 0,
+                  "initial_target_mass_kg": 0.0015659999999999997,
+                  "detached_target_mass_kg": 0.0,
+                  "detached_target_mass_fraction": 0.0,
+                  "ownership": "Initial analytic height argmax, ties by initial bump index"
+                }
+              ],
+              "unknown_target_particles": 0,
+              "target_region_particles": 97044,
+              "reference_region_scope": "Initial particle centres, no fractional-cell correction or renderer inference"
+            }
+          },
+          "surface_quality": {
+            "status": "MEASURED_WITH_GAPS",
+            "target_kind": "plane",
+            "target_source": "cutting_tasks_v2.json/TRIM-01-R",
+            "target_version": "analytic_task_v1",
+            "target_frame_id": "workpiece_local",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              30
+            ],
+            "analytic_target": {
+              "entire_region": {
+                "status": "MEASURED_WITH_GAPS",
+                "columns": 4800,
+                "area_m2": 0.0048,
+                "paired_columns": 4770,
+                "paired_coverage_fraction": 0.99375,
+                "missing_actual_columns": 30,
+                "unknown_target_columns": 0,
+                "missing_actual_fraction": 0.00625,
+                "unknown_target_fraction": 0.0,
+                "measured_maximum_surface_deficit_m": 0.0022414720317729536,
+                "measured_maximum_positive_residual_m": 0.0390527721827328,
+                "paired_p95_absolute_error_m": 0.0008518786226614054,
+                "paired_rms_error_m": 0.005430446807485251,
+                "measured_deficit_volume_m3": 1.068269492952191e-06,
+                "unknown_missing_column_volume_budget_m3": 6.000000000000001e-07,
+                "whole_region_deficit_volume_m3": null,
+                "true_material_gouge": "NOT_MEASURABLE_FROM_RECONSTRUCTED_SURFACE_ALONE",
+                "error_scope": "Conditional on paired intersections; no missing ray was filled, trimmed or counted as zero error"
+              },
+              "boundary": {
+                "status": "MEASURED_WITH_GAPS",
+                "columns": 1104,
+                "area_m2": 0.001104,
+                "paired_columns": 1074,
+                "paired_coverage_fraction": 0.9728260869565217,
+                "missing_actual_columns": 30,
+                "unknown_target_columns": 0,
+                "missing_actual_fraction": 0.02717391304347826,
+                "unknown_target_fraction": 0.0,
+                "measured_maximum_surface_deficit_m": 0.002101040665037898,
+                "measured_maximum_positive_residual_m": 0.0003100052131462666,
+                "paired_p95_absolute_error_m": 0.0007233867371263885,
+                "paired_rms_error_m": 0.000438539215261365,
+                "measured_deficit_volume_m3": 3.5035804381002985e-07,
+                "unknown_missing_column_volume_budget_m3": 6.000000000000001e-07,
+                "whole_region_deficit_volume_m3": null,
+                "true_material_gouge": "NOT_MEASURABLE_FROM_RECONSTRUCTED_SURFACE_ALONE",
+                "error_scope": "Conditional on paired intersections; no missing ray was filled, trimmed or counted as zero error"
+              },
+              "interior": {
+                "status": "MEASURED",
+                "columns": 3696,
+                "area_m2": 0.0036959999999999996,
+                "paired_columns": 3696,
+                "paired_coverage_fraction": 1.0,
+                "missing_actual_columns": 0,
+                "unknown_target_columns": 0,
+                "missing_actual_fraction": 0.0,
+                "unknown_target_fraction": 0.0,
+                "measured_maximum_surface_deficit_m": 0.0022414720317729536,
+                "measured_maximum_positive_residual_m": 0.0390527721827328,
+                "paired_p95_absolute_error_m": 0.0008942506370476899,
+                "paired_rms_error_m": 0.006164667940276028,
+                "measured_deficit_volume_m3": 7.179114491421612e-07,
+                "unknown_missing_column_volume_budget_m3": 0.0,
+                "whole_region_deficit_volume_m3": 7.179114491421612e-07,
+                "true_material_gouge": "NOT_MEASURABLE_FROM_RECONSTRUCTED_SURFACE_ALONE",
+                "error_scope": "Conditional on paired intersections; no missing ray was filled, trimmed or counted as zero error"
+              },
+              "bump_0": {
+                "status": "MEASURED",
+                "columns": 448,
+                "area_m2": 0.000448,
+                "paired_columns": 448,
+                "paired_coverage_fraction": 1.0,
+                "missing_actual_columns": 0,
+                "unknown_target_columns": 0,
+                "missing_actual_fraction": 0.0,
+                "unknown_target_fraction": 0.0,
+                "measured_maximum_surface_deficit_m": 0.0022414720317729536,
+                "measured_maximum_positive_residual_m": 0.0005383578170177414,
+                "paired_p95_absolute_error_m": 0.0010712172711876977,
+                "paired_rms_error_m": 0.0006072810131924782,
+                "measured_deficit_volume_m3": 2.199982909758415e-07,
+                "unknown_missing_column_volume_budget_m3": 0.0,
+                "whole_region_deficit_volume_m3": 2.199982909758415e-07,
+                "true_material_gouge": "NOT_MEASURABLE_FROM_RECONSTRUCTED_SURFACE_ALONE",
+                "error_scope": "Conditional on paired intersections; no missing ray was filled, trimmed or counted as zero error"
+              }
+            },
+            "represented_target": {
+              "status": "NOT_RUN_NO_INDEPENDENT_TARGET"
+            },
+            "missing_classification": {
+              "boundary_missing_columns": 30,
+              "interior_unknown_columns": 0,
+              "outside_predeclared_object_domain_columns": 0,
+              "outside_domain_measured_surface_columns": 0,
+              "reason": "No vertical mesh intersection. Boundary location is predeclared; cause is not inferred as physical gouging."
+            },
+            "unresolved_error_sources": [
+              "particle quadrature",
+              "surface reconstruction",
+              "physical deformation"
+            ],
+            "no_registration_fitted": true
+          },
+          "legacy_precision_benchmark": {
+            "task_id": "TRIM-01-R",
+            "scope": "Offline oracle task metrics; no runtime, robot, camera or calibrated-fracture acceptance",
+            "protocol_id": "cutting_tasks_v2_20261028",
+            "protocol_sha256": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+            "full_simulation_acceptance": false,
+            "policy_observation": false,
+            "status": "FAIL_TASK_METRICS",
+            "checks": {
+              "complete_episode": true,
+              "initial_continuous_graph": true,
+              "initial_codes_zero": true,
+              "reference_matches_single_continuous_task_sampler": true,
+              "reference_mass_budget_and_unchanged_count": true,
+              "persistent_history_no_digit_rewrites": true,
+              "postcut_disconnected_topology_persists": false,
+              "reference_above_plane_material_removed": false,
+              "surface_has_explicit_mechanical_provenance": true,
+              "surface_timestamp_matches_final_physics": true,
+              "maximum_substrate_surface_residual_height_m": false,
+              "surface_p95_absolute_plane_error_m": false,
+              "surface_rms_plane_error_m": false,
+              "maximum_gouge_depth_m": false,
+              "overcut_volume_fraction_of_initial_base": false,
+              "missing_surface_fraction": true
+            },
+            "metrics": {
+              "initial_components": 1,
+              "final_components": 1,
+              "component_masses_kg": [
+                0.145566
+              ],
+              "recorded_mass_kg": 0.145566,
+              "expected_task_sampler_mass_kg": 0.145566,
+              "reference_mass_absolute_error_kg": 0.0,
+              "particle_count_all_frames": 97044,
+              "mass_scope": "Recorded immutable reference-mass vector and aligned particle counts, not framewise mass measurements",
+              "nonzero_digit_rewrites": 0,
+              "postcut_graph_count_minimum": 1,
+              "postcut_persistence_time_s": 2.4000000000000004,
+              "component_provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+              "removed_reference_above_plane_mass_fraction": 0.0,
+              "reference_above_plane_region": "Particle centres initially above target; no fractional-cell or analytic-volume correction",
+              "surface": {
+                "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+                "measurement_spacing_xy_m": [
+                  0.001,
+                  0.001
+                ],
+                "grid_shape_xy": [
+                  160,
+                  30
+                ],
+                "valid_surface_fraction": 0.99375,
+                "missing_surface_fraction": 0.006249999999999978,
+                "maximum_substrate_surface_residual_height_m": 0.0390527721827328,
+                "surface_p95_absolute_plane_error_m": 0.0008518786226614054,
+                "surface_rms_plane_error_m": 0.005430446807485251,
+                "maximum_gouge_depth_m": 0.02,
+                "overcut_volume_m3": 1.668269492952191e-06,
+                "overcut_volume_fraction_of_initial_base": 0.01737780721825199
+              }
+            },
+            "missing_evidence": []
+          },
+          "evaluation_never_controls_execution": true,
+          "full_physics_acceptance": false,
+          "success": false,
+          "profile_assessment": {
+            "goal_status": "FAIL",
+            "inherited_outcome_checks": {
+              "complete_episode": true,
+              "initial_continuous_graph": true,
+              "initial_codes_zero": true,
+              "reference_matches_single_continuous_task_sampler": true,
+              "reference_mass_budget_and_unchanged_count": true,
+              "persistent_history_no_digit_rewrites": true,
+              "postcut_disconnected_topology_persists": false,
+              "reference_above_plane_material_removed": false
+            },
+            "surface_quality_status": "MEASURED_SEPARATELY_NO_UNIVERSAL_PRECISION_GATE",
+            "thresholds": {
+              "status": "NOT_CONFIGURED",
+              "checks": {},
+              "thresholds": {}
+            }
+          },
+          "coordinate_registration": {
+            "status": "DECLARED_FRAME_MATCH",
+            "actual_frame_id": "workpiece_local",
+            "goal_frame_id": "workpiece_local",
+            "fitted_registration": false
+          },
+          "status": "EVALUATED",
+          "runtime_source": "kinematic_ideal_tracking"
+        },
+        "wall_s": 136.53146286401898
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_trim_kinematic_formal_record_001/command.json",
+        "sha256": "47c8f939d3b8cff81d8d19803cb69114fb0879bfdaf1f32796a5a22f35f5302a",
+        "command": [
+          ".venv/bin/python",
+          "scripts/probe_wp10_task_policy.py",
+          "--task",
+          "TRIM-01-R",
+          "--device",
+          "cuda:1",
+          "--out",
+          "artifacts/wp10/c_trim_kinematic_formal_001"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 137.68611447699368,
+        "started_at": "2026-10-28T20:55:42.518985+00:00",
+        "finished_at": "2026-10-28T20:58:00.205616+00:00",
+        "source_patch_sha256": "1ac24be71c7fd8d088c0a51afa9b4f98bdab765e53e64c7f9d94d4e3a9f76fd9",
+        "source_snapshot_path": "artifacts/wp10/c_trim_kinematic_formal_record_001/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "8416294630db0a0b239b359af287cd5b8a4e8fed3d6f56a4fa4512b865184c02",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "52ebe4f276d86107a6c9e7eb0461dc146cec54a783ece02e72fef9a205b70458",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "acb049a947e2bafed34d5deaae392593ec418320693215e7b2170ed913d1c6fb",
+          "src/robotic_cutting_sim/live_material.py": "c92f31bce2fce740fd28d320fb3086618b6ae94db75fe774a10e32aecc4a30b5",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/probe_wp10_task_policy.py": "87ddaafb5ca0969f8582de9f97784d1b4ab93092335f6c54e0df12f42beb97e9",
+          "scripts/run_wp10_live.py": "6842d574dc5623f84a36a2367e3c915870b3d928ea53ea534595c5b111ef5f04",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      }
+    },
+    "handoff_cpu_quick_001": {
+      "receipt": {
+        "path": "artifacts/wp10/handoff_cpu_quick_001/command.json",
+        "sha256": "cc3c1752501b7a4117b3e6daca2609b0ef44f092a95f55f5d00ab763669f221f",
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "-q",
+          "-m",
+          "not cpu_sim"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 5.024740858003497,
+        "started_at": "2026-10-28T21:16:08.143317+00:00",
+        "finished_at": "2026-10-28T21:16:13.168344+00:00",
+        "source_patch_sha256": "208861992c84fdaf4973566057cd20d81bf35fe543d3d00a881ec057aaa478b9",
+        "source_snapshot_path": "artifacts/wp10/handoff_cpu_quick_001/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "700db35b97a2f383265b109686ea426ba17802867a926f882591eb4f1f985fa2",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "52ebe4f276d86107a6c9e7eb0461dc146cec54a783ece02e72fef9a205b70458",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "acb049a947e2bafed34d5deaae392593ec418320693215e7b2170ed913d1c6fb",
+          "src/robotic_cutting_sim/live_material.py": "7863fe07109967ada3e2c02941f98af3706ab589147fae37ed24ae93dc2e29e5",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "src/robotic_cutting_sim/tlmpm_v3.py": "69bc6ff570ac24435686472a2f3121c4fe80dc663385cc058e671438bd08b673",
+          "scripts/prepare_wp10_ruler_scene.py": "be6db367a58c19b3e1099a1115b5a7c16dfed262e0f34f2cacf38f504c6632a1",
+          "scripts/probe_wp10_task_policy.py": "87ddaafb5ca0969f8582de9f97784d1b4ab93092335f6c54e0df12f42beb97e9",
+          "scripts/run_wp10_live.py": "986055f38ff1fa3638509b5bbb7bc7eca3e85b0b3d29c0e6334a5ec81eb6ef86",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      },
+      "log": {
+        "path": "artifacts/wp10/handoff_cpu_quick_001/output.log",
+        "sha256": "e613ca39c88686adf73bf1e7027093e80bdf6083436a042abbc7bf13f027ec4e"
+      }
+    },
+    "handoff_v3_compile_001": {
+      "receipt": {
+        "path": "artifacts/wp10/handoff_v3_compile_001/command.json",
+        "sha256": "0ff776f584fb44fa0bb21189ce971652111364451aa37db621f01a78edb199be",
+        "command": [
+          ".venv/bin/python",
+          "-c",
+          "import ast; from pathlib import Path; import warp as wp; import robotic_cutting_sim.tlmpm_v3 as m; [ast.parse(p.read_text(), filename=str(p)) for root in (Path(\"src\"), Path(\"scripts\")) for p in root.rglob(\"*.py\")]; wp.init(); wp.load_module(module=m.__name__, device=\"cpu\"); print(\"PASS syntax and CPU kernel compilation; v3 physics NOT_RUN\")"
+        ],
+        "commit": "02ceca61f04dfb4cd1426effe31f077b202e1f08",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 3.495199155062437,
+        "started_at": "2026-10-28T21:16:19.845779+00:00",
+        "finished_at": "2026-10-28T21:16:23.341429+00:00",
+        "source_patch_sha256": "208861992c84fdaf4973566057cd20d81bf35fe543d3d00a881ec057aaa478b9",
+        "source_snapshot_path": "artifacts/wp10/handoff_v3_compile_001/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "700db35b97a2f383265b109686ea426ba17802867a926f882591eb4f1f985fa2",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "52ebe4f276d86107a6c9e7eb0461dc146cec54a783ece02e72fef9a205b70458",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "acb049a947e2bafed34d5deaae392593ec418320693215e7b2170ed913d1c6fb",
+          "src/robotic_cutting_sim/live_material.py": "7863fe07109967ada3e2c02941f98af3706ab589147fae37ed24ae93dc2e29e5",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "src/robotic_cutting_sim/tlmpm_v3.py": "69bc6ff570ac24435686472a2f3121c4fe80dc663385cc058e671438bd08b673",
+          "scripts/prepare_wp10_ruler_scene.py": "be6db367a58c19b3e1099a1115b5a7c16dfed262e0f34f2cacf38f504c6632a1",
+          "scripts/probe_wp10_task_policy.py": "87ddaafb5ca0969f8582de9f97784d1b4ab93092335f6c54e0df12f42beb97e9",
+          "scripts/run_wp10_live.py": "986055f38ff1fa3638509b5bbb7bc7eca3e85b0b3d29c0e6334a5ec81eb6ef86",
+          "scripts/validate_wp10_physics.py": "1d5c3a790132a291ecf57b01029c030ebd55c411062f81a1eb663efcf16f1be9"
+        }
+      },
+      "log": {
+        "path": "artifacts/wp10/handoff_v3_compile_001/output.log",
+        "sha256": "6e198f6617393f09847cabc1ea5bc8ca3a853e921063fb546ac93b5ef3ca5a9f"
+      }
+    },
+    "cpu_full_002": {
+      "receipt": {
+        "path": "artifacts/wp10/cpu_full_002/command.json",
+        "sha256": "5394fbc8e861dd722f3c2bd02f4799e2fda17eef94c5e58e5cbe09ec27a47113",
+        "command": [
+          ".venv/bin/python",
+          "-m",
+          "pytest",
+          "-q"
+        ],
+        "commit": "b25ecb52054b4594bd13362b554417cfed7ef008",
+        "seed": 42,
+        "status": "PASS",
+        "returncode": 0,
+        "wall_s": 92.90697844396345,
+        "started_at": "2026-10-28T19:55:08.184459+00:00",
+        "finished_at": "2026-10-28T19:56:41.091745+00:00",
+        "source_patch_sha256": "1f7fb756a248bf98ca132da2c62789a7a6c9fafad74052ec6e95d340870ca1e5",
+        "source_snapshot_path": "artifacts/wp10/cpu_full_002/source",
+        "selected_source_sha256": {
+          "src/robotic_cutting_sim/blade_probe.py": "1fee5d691bb5aa8a74d6372e970531faf0de1a7e4bdd1e7d8ea7bebbe8ff40a3",
+          "src/robotic_cutting_sim/isaac_lab_env.py": "144bd7c3ab4d3ef767608c8e95923bb605340584b4a871b07b1ff3ab682c4b33",
+          "src/robotic_cutting_sim/isaac_sim_runner.py": "e30100bb2a669a14b7aa1ce27d336569278f79a97dea50ac50cdeb90719fd647",
+          "src/robotic_cutting_sim/live_material.py": "5e448b409bd53a367a982f9c5fb37b24ddff8ca9e5c1d135a468b14ecf45d7d6",
+          "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+          "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+          "scripts/run_wp10_live.py": "c808a0ac57881d1197e25226f42d750d0a6037f53259dde58ac072091afc390a"
+        }
+      },
+      "log": {
+        "path": "artifacts/wp10/cpu_full_002/output.log",
+        "sha256": "2b42c44201dad4fe863c2cc93c9faca92b280f0c7a91bf907af6bc73e8edfa30"
+      }
+    },
+    "c_native_grasp_controls_001": {
+      "path": "artifacts/wp10/c_native_grasp_controls_001/result.json",
+      "sha256": "31f815bded2260e3bd390e5185198673a786a4b1cc6d534d34a54edec4568374",
+      "status": "PASS_FROZEN_RIGID_CONTROLS",
+      "checks": null,
+      "comparisons": {
+        "isaac_sim/weak_grip": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.24586974362719363,
+          "rotation_increase_rad": 1.578223350796378,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_sim/low_friction": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.24598003838372293,
+          "rotation_increase_rad": 1.5763514013260134,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_sim/nominal_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.00043845176696777344,
+          "steady_contact_force_change_n": 0.9999979901730515,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_sim/edge_torque": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 4.649162292480469e-05,
+          "steady_contact_force_change_n": 1.9987151365871467e-05,
+          "contact_force_change_detected": false,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_sim/stress_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.004097938537597656,
+          "steady_contact_force_change_n": 9.96627673751524,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_native_grasp_controls_record_001/command.json",
+        "sha256": "0aa7edc3912cf2e505fab57443f744df53c0351750a139a07a07e8fd3520d99b",
+        "command": [
+          ".venv/bin/python",
+          "scripts/run_physical_tool_controls.py",
+          "--runtime",
+          "isaac_sim",
+          "--gpu",
+          "0",
+          "--task-id",
+          "CUT-01-R",
+          "--protocol",
+          "configs/physical_tool_controls_v5_ruler_native.json",
+          "--output-dir",
+          "artifacts/wp10/c_native_grasp_controls_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 293.9324815068394,
+        "status": "PASS",
+        "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_snapshot_path": "artifacts/wp10/c_native_grasp_controls_record_001/source"
+      }
+    },
+    "c_lab_grasp_controls_001": {
+      "path": "artifacts/wp10/c_lab_grasp_controls_001/result.json",
+      "sha256": "ecca8d2698b83b9b10bb805d9f60a901eba601f536f35491366a10738db2100f",
+      "status": "PASS_FROZEN_RIGID_CONTROLS",
+      "checks": null,
+      "comparisons": {
+        "isaac_lab/weak_grip": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.2501819395681645,
+          "rotation_increase_rad": 1.617589714141692,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_lab/low_friction": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.25046250647798934,
+          "rotation_increase_rad": 1.6122601553633038,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_lab/nominal_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.0004038810729980469,
+          "steady_contact_force_change_n": 1.00000003668894,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_lab/edge_torque": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 2.7894973754882812e-05,
+          "steady_contact_force_change_n": 1.362046087421107e-05,
+          "contact_force_change_detected": false,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_lab/stress_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.004016399383544922,
+          "steady_contact_force_change_n": 9.99999734046951,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_grasp_controls_record_001/command.json",
+        "sha256": "f5c864d41adc9ca98a4a01624c374352701cfe6fc1b3a72bfe34dfcbf58f9181",
+        "command": [
+          ".venv/bin/python",
+          "scripts/run_physical_tool_controls.py",
+          "--runtime",
+          "isaac_lab",
+          "--gpu",
+          "1",
+          "--task-id",
+          "CUT-01-R",
+          "--protocol",
+          "configs/physical_tool_controls_v6_ruler_lab.json",
+          "--output-dir",
+          "artifacts/wp10/c_lab_grasp_controls_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 451.1467665019445,
+        "status": "PASS",
+        "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "source_snapshot_path": "artifacts/wp10/c_lab_grasp_controls_record_001/source"
+      }
+    },
+    "c_native_cut01r_clearance_001": {
+      "path": "artifacts/wp10/c_native_cut01r_clearance_001/result.json",
+      "sha256": "6ead071a0388219487beece4318e0a4e6bcd50ddd0112a455002d4382d5b3a48",
+      "comparisons": null,
+      "cases": {
+        "episode_000": {
+          "status": "PASS_SAMPLED_VISUAL_SURFACES",
+          "checks": {
+            "all_sampled_unexcepted_visual_surface_pairs_clear": true,
+            "final_export_matches_actual_recorded_bodies": true,
+            "every_robot_time_has_a_pose_sample": true,
+            "samples_match_robot_timestamps": true,
+            "at_least_401_samples_for_8s": true
+          },
+          "samples": 401,
+          "maximum_unexcepted_triangle_surface_intersections_per_sample": 0,
+          "protocol_sha256": "99a624e18b355dbfa63a88b31e33ccd2f7ed4008800d806e30de8dbd5e881ee1"
+        }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_native_clearance_record_001/command.json",
+        "sha256": "6164f17b357be48e68b53c3fcdc54fbb54776a9c2a503ea5e4fbccc563b7f141",
+        "command": [
+          ".venv/bin/python",
+          "scripts/audit_wrist_camera_clearance.py",
+          "--episode",
+          "artifacts/wp10/c_native_cut01r_reference_001/episode_000",
+          "--output-dir",
+          "artifacts/wp10/c_native_cut01r_clearance_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 40.232932086801156,
+        "status": "PASS",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_native_clearance_record_001/source"
+      }
+    },
+    "c_lab_cut01r_clearance_001": {
+      "path": "artifacts/wp10/c_lab_cut01r_clearance_001/result.json",
+      "sha256": "15fb88fb080aff4aadde0531f9eec35edd9c710f3b97d37756b9bb13b93cf512",
+      "comparisons": null,
+      "cases": {
+        "episode_000": {
+          "status": "PASS_SAMPLED_VISUAL_SURFACES",
+          "checks": {
+            "all_sampled_unexcepted_visual_surface_pairs_clear": true,
+            "final_export_matches_actual_recorded_bodies": true,
+            "every_robot_time_has_a_pose_sample": true,
+            "samples_match_robot_timestamps": true,
+            "at_least_401_samples_for_8s": true
+          },
+          "samples": 401,
+          "maximum_unexcepted_triangle_surface_intersections_per_sample": 0,
+          "protocol_sha256": "99a624e18b355dbfa63a88b31e33ccd2f7ed4008800d806e30de8dbd5e881ee1"
+        }
+      },
+      "receipt": {
+        "path": "artifacts/wp10/c_lab_clearance_record_001/command.json",
+        "sha256": "d247d9ee98d033cf650d4dcafa3008278b55ef795c80b0501e34db0aad83c934",
+        "command": [
+          ".venv/bin/python",
+          "scripts/audit_wrist_camera_clearance.py",
+          "--episode",
+          "artifacts/wp10/c_lab_cut01r_reference_001/episode_000",
+          "--output-dir",
+          "artifacts/wp10/c_lab_cut01r_clearance_001"
+        ],
+        "commit": "db22597ce44052f4a3ce17e230158db7deefa2a4",
+        "seed": 42,
+        "wall_s": 38.74982695886865,
+        "status": "PASS",
+        "source_patch_sha256": "5ef01088e61f33d06802f47f8b5871a59d30e1225ac08eee490647f471756790",
+        "source_snapshot_path": "artifacts/wp10/c_lab_clearance_record_001/source"
+      }
+    }
+  },
+  "frozen_files": {
+    "src/robotic_cutting_sim/tlmpm.py": {
+      "sha256": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+      "equal_starting_commit": true
+    },
+    "configs/cutting_tasks_v1.json": {
+      "sha256": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "equal_starting_commit": true
+    },
+    "src/robotic_cutting_sim/scene_validation.py": {
+      "sha256": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+      "equal_starting_commit": true
+    }
+  }
+}

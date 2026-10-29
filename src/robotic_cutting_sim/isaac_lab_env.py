@@ -31,7 +31,8 @@ from .recording import ROOT
 from .robot import compose_tool_pose, wedge_mesh
 from .scene_frames import WorkpieceTarget, compose_pose, invert_transform, matrix_pose, pose_matrix
 from .workcell import ASSETS, PARK_JOINTS, SECONDARY_PARK_JOINTS
-from .physical_tool import ToolGraspConfig, make_tool_spec
+from .physical_tool import ToolGraspConfig
+from .tool_profile import tool_spec_for_task
 from .pad_contact import POINT_PROFILE, PATCH_PROFILE, patch_receipt
 
 
@@ -46,6 +47,20 @@ def _edge_wrench(body_q: wp.array(dtype=wp.transform), body_com: wp.array(dtype=
     force = wp.vec3(w[0], w[1], w[2])
     torque = wp.vec3(w[3], w[4], w[5])+wp.cross(edge-center, force)
     body_f[hand] = body_f[hand]+wp.spatial_vector(force, torque)
+
+
+@wp.kernel
+def _pad_wrenches(body_q: wp.array(dtype=wp.transform), body_com: wp.array(dtype=wp.vec3),
+                  wrenches: wp.array(dtype=wp.spatial_vector), bodies: wp.array(dtype=int),
+                  tool: int, tool_edge: wp.vec3, body_f: wp.array(dtype=wp.spatial_vector)):
+    i = wp.tid()
+    body = bodies[i]
+    edge = wp.transform_point(body_q[tool], tool_edge)
+    center = wp.transform_point(body_q[body], body_com[body])
+    wrench = wrenches[i]
+    force = wp.vec3(wrench[0], wrench[1], wrench[2])
+    torque = wp.vec3(wrench[3], wrench[4], wrench[5]) + wp.cross(edge - center, force)
+    body_f[body] = body_f[body] + wp.spatial_vector(force, torque)
 
 
 @wp.kernel
@@ -132,6 +147,16 @@ class LabCuttingConfig:
     grasp: ToolGraspConfig = field(default_factory=ToolGraspConfig)
     grip_contact_profile: str = POINT_PROFILE
     static_scene: str = str(ROOT/"artifacts/research_handoff_001/workcell/workcell.usda")
+    # None keeps the historical position-only Lab IK gate; policy use sets
+    # the Native rotation gate (0.01 rad) so orientation errors are not silent.
+    ik_rotation_tolerance_rad: float | None = None
+    scenario: str | None = None
+    material_profile_id: str | None = None
+    material_dt: float = .0001
+    max_cuts: int = 1
+    ik_iterations: int = 48
+    initial_joint_positions: tuple | None = None
+    cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3/4/5 are opt-in tlmpm_v3/tlmpm_v4
 
     def __post_init__(self):
         if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
@@ -148,8 +173,20 @@ class LabCuttingConfig:
             raise ValueError("Legacy fixed tools cannot be initialized free")
         if self.camera_layout not in ("legacy_fixed_d455", "wrist_d405_global_d455"):
             raise ValueError("Unsupported camera layout")
-        if self.task_id not in (None, "CUT-01", "TRIM-01"):
+        from .tasks import PROFILE_TASK_IDS, TASK_IDS, DemoTaskSpec
+        if self.task_id not in (None, *TASK_IDS):
             raise ValueError("Unsupported live cutting task")
+        if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
+            raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
+        if self.max_cuts not in (1, 2) or self.material_dt <= 0 or self.ik_iterations < 1:
+            raise ValueError('Require one/two cut digits, positive material dt and IK iterations')
+        if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
+            raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
+        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
+                or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
+            raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
+        if self.cutting_law not in (None, 1, 2, 3, 4, 5):
+            raise ValueError('cutting_law is None, 1, 2, 3, 4 or 5')
         if self.particle_spacing_m is not None and self.task_id is None:
             raise ValueError("Particle-spacing overrides require a CUT/TRIM task; legacy recipes remain fixed")
         if self.action_mode not in ("cartesian_edge_pose_world", "joint_position_rad"):
@@ -168,8 +205,11 @@ def make_lab_cfg(options):
     from .tasks import make_task
     task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
                      particle_spacing_m=options.particle_spacing_m, workpiece_kind=options.workpiece_kind) if options.task_id else None
+    if task is not None:
+        from .task_scenarios import configure_task
+        task = configure_task(task, scenario=options.scenario, material_profile_id=options.material_profile_id)
     physical = options.tool_attachment_mode == "physical_grasp"
-    tool_spec = make_tool_spec(task) if physical else None
+    tool_spec = tool_spec_for_task(task) if physical else None
 
     def robot(index):
         q = dict(zip([f"panda_joint{i}" for i in range(1, 8)], PARK_JOINTS))
@@ -272,14 +312,18 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         from .tasks import make_task
         self.task = make_task(options.task_id, seed=options.seed, variant=options.task_variant,
             particle_spacing_m=options.particle_spacing_m, workpiece_kind=options.workpiece_kind) if options.task_id else None
+        if self.task is not None:
+            from .task_scenarios import configure_task
+            self.task = configure_task(self.task, scenario=options.scenario, material_profile_id=options.material_profile_id)
         self.mount = np.array(self.task.hand_from_edge_xyz_xyzw if self.task else (0, 0, .18, 1, 0, 0, 0), float)
-        self.tool_spec = make_tool_spec(self.task) if self.physical_tool else None
+        self.tool_spec = tool_spec_for_task(self.task) if self.physical_tool else None
         self.gripper_mode = "hold" if options.tool_init_mode == "pregrasped" else "release"
         self.gripper_target_m = options.grasp.closed_target_m
         self.external_tool_wrench_world = np.zeros(6)
         self.grasp_settling_trace = []
         self.material = LiveCuttingMaterial(CouplingConfig(dx=options.dx,
-            device=options.material_device, feedback=options.feedback, variant=options.variant), self.target, task=self.task)
+            device=options.material_device, material_dt=options.material_dt, feedback=options.feedback, variant=options.variant),
+            self.target, task=self.task, max_cuts=options.max_cuts, cutting_law=options.cutting_law)
         self._bound = False
         self._capture_time = None
         self.time_s = 0.
@@ -305,6 +349,14 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self._bind_ik()
         self._force_buffer = wp.zeros(1, dtype=wp.spatial_vector, device=self.model.device)
         self._contact_audit = wp.zeros(4, dtype=float, device=self.model.device)
+        self.pad_geometry = []
+        if getattr(self.task, 'tool_profile_id', None):
+            from .finger_geometry import discover_pads
+            self.pad_geometry = discover_pads(self.sim.stage, self.model.body_label[self.hand])
+            indices = [self.model.body_label.index(pad['body_path']) for pad in self.pad_geometry]
+            self.pad_indices = np.asarray(indices, int)
+            self._pad_bodies = wp.array(self.pad_indices, dtype=int, device=self.model.device)
+            self._pad_force_buffer = wp.zeros(2, dtype=wp.spatial_vector, device=self.model.device)
         # Read-only debug access to the pinned native solver's signed contact
         # distances; stepping still belongs entirely to Lab's PhysicsManager.
         self._bind_visuals()
@@ -342,6 +394,10 @@ class IsaacLabCuttingEnv(DirectRLEnv):
                     self.physics_dt, state.body_f, self.dynamic_tool.applied_impulse,
                     self.dynamic_tool.current_applied_com, self.dynamic_tool.current_applied_pose,
                     self.hand, self.dynamic_tool.current_pre_hand_wrench], device=self.model.device)
+                if self.pad_geometry:
+                    wp.launch(_pad_wrenches, dim=2, inputs=[state.body_q, self.model.body_com,
+                        self._pad_force_buffer, self._pad_bodies, self.dynamic_tool.body,
+                        wp.vec3(*self.tool_spec.tool_from_edge_xyz_xyzw[:3]), state.body_f], device=self.model.device)
             else:
                 self._sample_native_contacts()
                 wp.launch(_edge_wrench, dim=1, inputs=[state.body_q, self.model.body_com,
@@ -393,7 +449,7 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self._ik_q.assign(state.joint_q.numpy().reshape(1, -1))
         self._position.set_target_position(0, wp.vec3(*desired[:3]))
         self._rotation.set_target_rotation(0, wp.vec4(*desired[3:]))
-        self._ik.step(self._ik_q, self._ik_q, iterations=48)
+        self._ik.step(self._ik_q, self._ik_q, iterations=self.options.ik_iterations)
         q = self._ik_q.numpy()[0]
         # A free tool adds seven coordinates but six DOFs. Clip only actual
         # robot scalar joints, never quaternion/free-body coordinates.
@@ -404,8 +460,13 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         newton.eval_fk(self.model, self._ik_state.joint_q, self.model.joint_qd, self._ik_state)
         edge = compose_tool_pose(self._ik_state.body_q.numpy()[self.hand], self.mount[:3], self.mount[3:])
         error = float(np.linalg.norm(edge[:3]-desired[:3]))
-        if error > .001:
-            raise RuntimeError(f"Active Lab model IK position error {error}m")
+        rotation_error = float((Rotation.from_quat(edge[3:]).inv()*Rotation.from_quat(desired[3:])).magnitude())
+        self._ik_rotation_error = rotation_error
+        tolerance = self.options.ik_rotation_tolerance_rad
+        if error > .001 or (tolerance is not None and rotation_error > tolerance):
+            from .control import IKFailure
+            raise IKFailure(f"Active Lab model IK error {error}m, {rotation_error}rad",
+                            {"position_error_m": error, "rotation_error_rad": rotation_error, "converged": False})
         return q, error
 
     def measured(self):
@@ -437,6 +498,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         self.time_s = 0.
         self._runtime_time_origin = self.sim.physics_manager.get_simulation_time()
         self._force_buffer.zero_()
+        if self.pad_geometry:
+            self._pad_force_buffer.zero_()
         self._contact_audit.zero_()
         self.gripper_mode = "hold" if self.options.tool_init_mode == "pregrasped" else "release"
         self.external_tool_wrench_world = np.zeros(6)
@@ -446,7 +509,12 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         # Lab initializes reset defaults, but a DirectRLEnv subclass must write
         # them. Seed IK from the nonsingular Panda park configuration.
         for arm, robot in enumerate(self.robots):
-            values = self._park_q[self._joint_coords[arm]]
+            values = self._park_q[self._joint_coords[arm]].copy()
+            if arm == 0:
+                from .task_scenarios import initial_joints
+                seed = self.options.initial_joint_positions or initial_joints(self.options.scenario, self.options.task_id)
+                if seed is not None:
+                    values[:7] = seed
             tensor = torch.tensor(values[None], device=self.device, dtype=torch.float32)
             robot.write_joint_position_to_sim_index(position=tensor)
             robot.write_joint_velocity_to_sim_index(velocity=torch.zeros_like(tensor))
@@ -496,7 +564,15 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             from .grasp_monitor import GraspMonitor
             settled = self.measured()
             self.grasp_monitor = GraspMonitor(settled["hand_pose"], settled["tool_body_pose_xyzw"], self.tool_spec)
+        if self.pad_geometry:
+            self.material.configure_pad_obstacles(self._pad_boxes(self.measured()),
+                [None] + [pad['body_path'] for pad in self.pad_geometry])
+            self._pad_force_buffer.zero_()
         self.setup_receipt = self.material.reset(self.measured()["tool_pose"], self.cfg.seed)
+        if self.pad_geometry:
+            self.setup_receipt['finger_geometry'] = dict(pads=self.pad_geometry,
+                boxes_edge=self._pad_boxes(self.measured()).tolist(),
+                scope='Actual USD pads; conservative edge-aligned bounds; separate actual finger-body reactions')
         self.setup_receipt["native_contact_reset_refresh"] = "native coordinate sync + fwd_position; zero integration"
         self._last_joint_targets = [q[self._joint_coords[0]].copy(), self._park_q[self._joint_coords[1]].copy()]
         self.setup_receipt["velocity_feedforward"] = self.options.velocity_feedforward
@@ -687,6 +763,10 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             applied = np.asarray(applied)+self.external_tool_wrench_world
             self.dynamic_tool.begin_interval()
         self._force_buffer.assign(np.asarray(applied, np.float32).reshape(1, 6))
+        if self.pad_geometry:
+            forces = [self.material.pending_obstacle_wrenches.get(pad['body_path'], np.zeros(6))
+                      if self.options.feedback else np.zeros(6) for pad in self.pad_geometry]
+            self._pad_force_buffer.assign(np.asarray(forces, np.float32))
         self._contact_audit.zero_()
 
     def _apply_action(self):
@@ -695,6 +775,8 @@ class IsaacLabCuttingEnv(DirectRLEnv):
     def _get_rewards(self):
         self.time_s = float(self.episode_length_buf[0])*self.step_dt
         measured = self.measured()
+        if self.pad_geometry:
+            self.material.update_pad_obstacles(self._pad_boxes(measured))
         diagnostics = self.material.advance(measured["tool_pose"], self.time_s,
             cutting=self.options.experiment == "cut" and self._step_cut_enabled, cut_index=self._step_cut_index)
         tool_debug = None
@@ -765,6 +847,21 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             near_m=.52 if name != "global" else .01,
             far_m=6. if name != "global" else 20.) for name, path in paths.items()}
 
+    def _pad_boxes(self, measured):
+        from .finger_geometry import pad_boxes_edge
+        from .tool_profile import handle_box_edge
+        poses = {pad['body_path']: measured['body_pose'][index]
+                 for pad, index in zip(self.pad_geometry, self.pad_indices)}
+        return np.asarray([handle_box_edge(self.task.tool_profile),
+                           *pad_boxes_edge(self.pad_geometry, poses, measured['tool_pose'])], np.float32)
+
+    def refresh_surface_for_evaluation(self):
+        if self._capture_time != self.time_s:
+            vertices, faces, self.surface_metadata = self._surface.extract(self.material.bed)
+            if self.task:
+                vertices = self.task.points_to_world(vertices).astype(np.float32)
+            self.surface = (vertices, faces)
+
     def _get_observations(self):
         from pxr import Gf
         from .usd_surface_bridge import stage_triangles
@@ -772,6 +869,9 @@ class IsaacLabCuttingEnv(DirectRLEnv):
         measured = self.measured()
         keys = ("q", "qdot", "finger_q", "finger_qdot", "hand_pose") if self.physical_tool else ("q", "qdot", "tool_pose")
         policy = {key: torch.as_tensor(measured[key][None], device=self.device) for key in keys}
+        if not self.options.camera:
+            self.frames = {}
+            return {'policy': policy}
         if self._capture_time != self.time_s:
             vertices, faces, self.surface_metadata = self._surface.extract(self.material.bed)
             if self.task:
@@ -858,11 +958,13 @@ class IsaacLabCuttingEnv(DirectRLEnv):
             self._step_action_mode = "cartesian_edge_pose_world"
             action = self.reference_action()
         elif isinstance(action, dict):
+            from .control import validate_cut_index
+            validate_cut_index(action, self.material)
             if not self.task:
                 raise ValueError("Task action mappings require a CUT/TRIM task")
             command = self.task.validate_action(action)
             self._step_action_mode = command["mode"]
-            self._step_cut_enabled, self._step_cut_index = command["cut_enabled"], 0
+            self._step_cut_enabled, self._step_cut_index = command["cut_enabled"], command.get("cut_index", 0)
             values = command["target"]
             if values.shape == (2, 7):
                 parked = self._park_q[self._joint_coords[1]][:7]

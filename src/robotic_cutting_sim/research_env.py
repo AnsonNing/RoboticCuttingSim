@@ -43,6 +43,18 @@ class ResearchEnvConfig:
             raise ValueError("control_dt must be an integer multiple of material_dt")
 
 
+def proprio_observation(proprio, timestamp_s):
+    """Deployable measured robot signals only; shared by vision and state profiles."""
+    if proprio is None or abs(float(proprio["timestamp_s"])-timestamp_s) > 1e-8:
+        raise ValueError("Measured robot and camera timestamps must match")
+    if proprio.get("tool_attachment_mode") == "physical_grasp":
+        # A freely held tool's exact simulator pose is privileged truth.
+        # Hand FK and actual finger encoders remain deployable signals.
+        names = ("q", "qdot", "hand_pose", "finger_q", "finger_qdot")
+        return {key:np.asarray(proprio[key]).copy() for key in names if key in proprio}
+    return {key: np.asarray(proprio[key]).copy() for key in ("q", "qdot", "tool_pose")}
+
+
 def vision_observation(frames, calibration, timestamp_s, profile, proprio=None, *,
                        include_global_camera=False):
     """Allowlist named RGB-D sensors; global inclusion is an explicit option."""
@@ -65,15 +77,7 @@ def vision_observation(frames, calibration, timestamp_s, profile, proprio=None, 
     observation["calibration"] = {name: calibration[name] for name in names}
     observation["timestamp_s"] = float(timestamp_s)
     if profile == "vision_proprio":
-        if proprio is None or abs(float(proprio["timestamp_s"])-timestamp_s) > 1e-8:
-            raise ValueError("Measured robot and camera timestamps must match")
-        if proprio.get("tool_attachment_mode") == "physical_grasp":
-            # A freely held tool's exact simulator pose is privileged truth.
-            # Hand FK and actual finger encoders remain deployable signals.
-            names = ("q", "qdot", "hand_pose", "finger_q", "finger_qdot")
-            observation["proprio"] = {key:np.asarray(proprio[key]).copy() for key in names if key in proprio}
-        else:
-            observation["proprio"] = {key: np.asarray(proprio[key]).copy() for key in ("q", "qdot", "tool_pose")}
+        observation["proprio"] = proprio_observation(proprio, timestamp_s)
     elif profile != "vision_only":
         raise ValueError("Unknown observation profile")
     return observation

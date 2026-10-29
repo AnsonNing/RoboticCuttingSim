@@ -1,0 +1,41 @@
+{
+  "demo": "1b",
+  "title": "Demo 1 \u2014 Complete Cutting, 20\u00b0 oblique variant (CUT-01-R)",
+  "run_id": "live_20261029_pathv2_d",
+  "verdict": "PASS",
+  "label": "outcome PASS (2 components 50/50%, separated after withdrawal, grasp held, swept-plane ok) | frozen strict FAIL_TASK_METRICS | controller path_v2",
+  "control_mode": "scripted waypoint controller, Native PhysX/Kit/RTX, physical two-finger grasp",
+  "cutting_law": 5,
+  "runtime_source": "live_isaac_sim",
+  "episode_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1b/episode_000",
+  "summary": "/home/ningan/RoboticCuttingSim/artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1b/demo_summary.json",
+  "render_dir": "/home/ningan/RoboticCuttingSim/artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1b/render",
+  "published": {
+    "demo.gif": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.gif",
+      "bytes": 1337818,
+      "sha256": "afd010c4489fa89cd62edd2955e5ee6be70cedde73dd4d863694c70d5a696be3"
+    },
+    "poster.png": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b_poster.png",
+      "bytes": 618956,
+      "sha256": "8fa2594f2a9b70b0da7bdbdaf83b112c8eec0393145b7878093594979e8638ac"
+    },
+    "demo.mp4": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4",
+      "bytes": 917250,
+      "sha256": "5e37fe6fd3e82ea7b8240ac987e9901582e1bd8b1e613f935729f98201f2aae6"
+    }
+  },
+  "skipped": {},
+  "episode_sha256": {
+    "result.json": "d16229015248d783243a256653c11662e315aa692388814d14eddfd514f44218",
+    "physics_state.npz": "25c4a764145ee6b064b45096b807b6253f380619dbab530c1dc5255a2910f372",
+    "actions.jsonl": "1e6b2b87799798a4dfad908fe23b874abb86d85f027310ef226f97bfce80a968",
+    "frame_manifest.json": "2ef07d02b6f11a75392e838f31c033176af608247e4e74ca8bf47f92b6db612d",
+    "task.json": "43051e1c39bcbc247a8fed5069f6797589a246ad710aef3a0f13e2e4487258b9",
+    "manifest.json": "6372b0928cdd73d79346aa976c6cc499872ca412dcce75195c14d39651280632",
+    "robot_state.json": "752946b595c746b537913d7d3eb508484c597135a6459e2af63c1e52d337fe95",
+    "robot_state.npz": "8c6d8415422cda3308cfa328d7998e7c74c40647ad6b4215edc6e8f420745f90"
+  }
+}

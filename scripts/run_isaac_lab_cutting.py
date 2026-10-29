@@ -28,7 +28,8 @@ def main():
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--material-device", default="cuda:0")
     parser.add_argument("--variant", choices=("D0", "D1"), default="D0")
-    parser.add_argument("--task-id", choices=("CUT-01", "TRIM-01"))
+    from robotic_cutting_sim.tasks import TASK_IDS
+    parser.add_argument("--task-id", choices=TASK_IDS)
     parser.add_argument("--task-variant", default="fixed")
     parser.add_argument("--workpiece-kind", choices=("rectangle", "capsule"), default="rectangle")
     parser.add_argument("--particle-spacing", type=float, help="Explicit task-only initial quadrature override in metres")
