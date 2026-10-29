@@ -76,3 +76,10 @@ def test_class_precedence(declared):
     assert L.classify_live(live, crash, None, [], {'error': "SlotOverflowError('x')"}, True, ok_grasp, ok_ik)[0] == 'CUTTING_FAILURE'
     assert L.classify_live(live, crash, None, [], {'error': 'RuntimeError()'}, True, ok_grasp, ok_ik)[0] == 'NOT_RUN'
     assert L.classify_live(live, None, None, [], None, True, ok_grasp, ok_ik)[0] == 'NOT_RUN'
+
+
+def test_task_phase_keeps_the_planner_return_home_and_hold():
+    rows = [{'policy_phase': p} for p in ('HOME', 'SKIM:p0', 'RETURN_HOME', 'HOLD_AFTER_STOP', 'RETURN_HOME:RETRACTING',
+                                          'RETURN_HOME:MOVE_HOME')]
+    assert [L.is_lifecycle_home(r) for r in rows] == [False, False, False, False, True, True]
+    assert L._op_of('SKIM:p0') == 'p0' and L._op_of('RETURN_HOME:RETRACTING') is None and L._op_of('RETURN_HOME') is None

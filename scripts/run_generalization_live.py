@@ -345,6 +345,31 @@ def _stats(values):
             'p95': float(np.percentile(values, 95)), 'max_abs': float(np.abs(values).max()), 'samples': int(len(values))}
 
 
+def is_lifecycle_home(row):
+    """Rows of the Phase D physical return-to-home (labelled RETURN_HOME:<stage> by the runner).
+
+    The planner's own RETURN_HOME waypoint phase (label exactly 'RETURN_HOME') and the hold that
+    follows it belong to the task phase (the episode before TASK_COMPLETE)."""
+    return str(row.get('policy_phase', '')).startswith('RETURN_HOME:')
+
+
+def measured_path_clearance(task, task_rows, out):
+    """C2 geometric check of the measured task-phase joint path (report-only; as analyze_phase_c5_live,
+    over every task-phase row including the planner RETURN_HOME and the hold)."""
+    from robotic_cutting_sim.motion_preflight import phase_mode, run_cli
+    from robotic_cutting_sim.scene_config import configured_task_payload
+    qs = [np.asarray(r['measured']['q'], float)[0] for r in task_rows]
+    modes = [phase_mode(str(r.get('policy_phase')), bool((r.get('submitted') or {}).get('cut_enabled'))) for r in task_rows]
+    receipt = run_cli('check-path', configured_task_payload(task), q=np.asarray(qs).tolist(), modes=modes,
+                      log_dir=Path(out)/'measured_path')
+    return {'status': receipt.get('status'), 'failing': receipt.get('failing'), 'binding': receipt.get('binding'),
+            'worst': receipt.get('worst'), 'samples': receipt.get('samples'),
+            'blade_workpiece_modes': receipt.get('blade_workpiece_modes'), 'scope': receipt.get('scope'),
+            'note': 'Task phase only (episode before TASK_COMPLETE); the physical return-home path has its own check in '
+                    'home_outcome. Declared uncut workpiece, nominal grasp: material removed earlier in the episode is '
+                    'still treated as present.'}
+
+
 def _op_of(phase):
     phase = str(phase)
     return phase.split(':', 1)[1] if ':' in phase and not phase.startswith('RETURN_HOME') else None
@@ -459,7 +484,7 @@ def cmd_analyze(args):
         rows = [json.loads(line) for line in (run/'episode_000'/'actions.jsonl').open() if line.strip()]
     task = compile_task(str(sample_dir/'inputs'/'scene.json'), str(sample_dir/'inputs'/'goal.json'),
                         planner_options=live['controller']['planner_overrides'], seed=live['runtime']['seed'])
-    task_rows = [r for r in rows if not str(r.get('policy_phase', '')).startswith('RETURN_HOME')]
+    task_rows = [r for r in rows if not is_lifecycle_home(r)]
     ik = {'task_steps_ik_not_ok': int(sum((r.get('info') or {}).get('ik_status') not in (None, 'ok') for r in task_rows)),
           'task_steps_workspace_clamped': int(sum(bool(((r.get('info') or {}).get('action_report') or {}).get('workspace_clamped'))
                                                   for r in task_rows)),
@@ -485,6 +510,9 @@ def cmd_analyze(args):
     except Exception as error:  # report-only
         metrics = {'error': repr(error)}
     controller_rows = [r for r in task_rows if r.get('policy_phase') != 'HOLD_AFTER_STOP']
+    analysis_note = ('analysis_001 of the first sample (E1_TRIM_s1203, run_generalization_live.py at 1ecfe5e) treated '
+                     'the planner RETURN_HOME phase as return-home rows; fixed: only the physical RETURN_HOME:<stage> '
+                     'rows are excluded from the task phase')
     done_time = (float(controller_rows[-1]['time_s']) if episode and controller_rows
                  and episode.get('task_end_reason') == 'CONTROLLER_DONE' else None)
     analysis = {
@@ -519,10 +547,11 @@ def cmd_analyze(args):
                    'process': (attempt or {}).get('wall_s')},
         'run_dir_bytes': (attempt or {}).get('run_dir_bytes'),
         'failure': None if failure is None else {'error': failure.get('error')},
-        'scope': 'Read-only analysis of a live Native episode; oracle material state is evaluation-only'}
+        'scope': 'Read-only analysis of a live Native episode; oracle material state is evaluation-only',
+        'analysis_tool': {**git_state(), 'note': analysis_note}}
     if rows and not args.skip_path_check:
         try:
-            analysis['measured_task_path_clearance'] = c5.measured_path_clearance(task, rows, out)
+            analysis['measured_task_path_clearance'] = measured_path_clearance(task, task_rows, out)
         except Exception as error:  # report-only
             analysis['measured_task_path_clearance'] = {'status': 'NOT_RUN', 'reason': repr(error)}
     write_new(out/'analysis.json', analysis)
