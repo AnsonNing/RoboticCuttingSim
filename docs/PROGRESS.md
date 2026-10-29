@@ -7,7 +7,9 @@
   - [ADR 0006 law 4](adr/0006-swept-band-cutting-law-4.md) 已實作（`tlmpm_v4.py`，`3c1f4b4`）：1 mm CUT-01-R strict PASS（72/72 g，切口 1.5 mm）；TRIM-01-R 仍 0%（2 顆被前傾刃推到前方的 chip 粒子維持 code 0，經 34 顆被壓到切面下的凸起底層粒子橋接）。[證據](evidence/phase1/law4_smokes_001.json)
   - [ADR 0008 law 5](adr/0008-cutting-law-5-lead-preassignment.md) 已實作（`ebd7395`）：1 mm TRIM-01-R 25° 去除 97.4%、`ruler_workcell_v2` 35° 去除 96.9%（分離成功，底材為主體；strict 只剩表面精度項 FAIL，精度另計）；CUT-01-R strict PASS。2 mm CPU 35° 削除仍 FAIL（核心帶被推到刃口前方），保留為 strict xfail。[證據](evidence/phase1/law5_smokes_001.json)
   - Phase 2A 已完成（`15e09b9`）：`blademaster_workcell_v1` 切割板、`SLICE-PUSH-01`、`slice_push`、`demo_evaluation.py`。Renderer 已完成（`73970a3`）。
-- 背景工作：rcs-impl 跑 law 5 的 M1–M9 全矩陣（`scripts/run_phase1_matrix.py --cutting-law 5`，輸出 `artifacts/wp10_claude/phase1_law5/`）；rcs-impl 做 Phase 2B runtime wiring 與 Native smoke（`artifacts/wp10_claude/phase2/`）。
+- law 4 矩陣完成（[證據](evidence/phase1/matrix_law4_001.json)，`3086f74`）：11 PASS／5 FAIL／2 report-only。負對照 M4–M6 全過；M2 斜切 FAIL 是門檻本身不適用於非格點對齊平面（理想幾何標籤也有 4.44 mm），M8a FAIL 是無支撐懸臂下垂；兩者已在 ADR 0006 Amendment 1 預先修正準則（law 4 的 FAIL 保留）。
+- 背景工作：law 5 全矩陣（coordinator 直接執行 `scripts/run_phase1_matrix.py --cutting-law 5`，三個佇列，輸出 `artifacts/wp10_claude/phase1_law5/`，log `artifacts/wp10_claude/logs/phase1_*_law5_001.log`）；rcs-impl 收尾 Phase 2B（只動程式與 CPU 測試；Native smoke 由 coordinator 執行）。
+- 注意：背景子代理執行「寫入 `artifacts/`」的 Bash 指令（mkdir/tee）會卡住等待權限；GPU/Isaac 執行改由 coordinator 直接跑。
 - 下一步：law 5 矩陣全部 PASS → rcs-review 審查 Phase 1 → Phase 3 Native 三個 Demo（scripted、physical grasp、law 5、`blademaster_workcell_v1`）。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
