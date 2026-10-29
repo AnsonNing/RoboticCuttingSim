@@ -7,8 +7,11 @@ stop, armed half-depth withdrawal keeps its ligament), makes three pieces with
 two digits, detaches the bump of a raked skim at 25 degrees by the actual MPM
 stencil graph, and pre-assigns ahead of the edge only particles more than one
 reference cell off the swept surface. The 35-degree skim does not detach (strict
-xfail, ADR 0008 acceptance failure preserved as evidence).
+xfail, ADR 0008 acceptance failure preserved as evidence). A 20 mm edge on a
+40 mm-wide block (laws 4 and 5) labels only within the finite edge length
+|l| <= L and leaves the partial-width cut one stencil component.
 """
+from dataclasses import replace
 import hashlib
 import importlib.util
 import json
@@ -25,7 +28,7 @@ pytestmark = pytest.mark.cpu_sim
 from scipy.spatial.transform import Rotation
 
 import robotic_cutting_sim.tlmpm_v4 as tlmpm_v4
-from robotic_cutting_sim.blade_probe import FLAT_SKIM, VERTICAL_CUT, Phase, drive_blade
+from robotic_cutting_sim.blade_probe import FLAT_SKIM, VERTICAL_CUT, Phase, block, drive_blade
 from robotic_cutting_sim.cut_topology import mechanical_components
 from robotic_cutting_sim.material_config import TLMPMConfig
 from robotic_cutting_sim.tool_profile import RULER_KNIFE_V1
@@ -316,3 +319,54 @@ def test_law5_raked_skim_detaches_the_bump_by_stencil_graph(rake_deg, raked_skim
           f"above_code0={skim['above_code0']} below_side2={skim['below_side2']:.4f}")
     assert skim["count"] >= 2
     assert skim["off_base"] >= .9 and skim["in_base"] >= .99
+
+
+# Finite edge on material WIDER than the edge, so the Eq. (4) bound |l| <= L binds.
+EDGE_20MM = replace(RULER_KNIFE_V1, profile_id="ruler_knife_v1_edge20mm_test", edge_length_m=.020)
+
+
+@pytest.mark.parametrize("edge_centre_y", [0., -.012], ids=["centred", "offset"])
+@pytest.mark.parametrize("law", [4, 5])
+def test_finite_edge_on_wider_block_labels_only_within_edge_length(law, edge_centre_y, monkeypatch):
+    """60 x 40 x 12 mm block (2 mm particles) cut full depth by a 20 mm-long edge (L = 10 mm).
+
+    Labels may only appear where |l| <= L at assignment (band and lead alike) and
+    never beyond the edge ends; the cut severs bonds inside the edge length, but
+    the uncut material beside it bridges the two sides, so the stencil graph
+    stays one component for this partial-width cut.
+    """
+    half = EDGE_20MM.half_width_m
+    assert half == pytest.approx(.010)
+    points, masses = block(size_m=(.06, .04, .012), spacing=.002)
+    recorder = _Recorder(monkeypatch)
+    result = drive_blade(EDGE_20MM, VERTICAL_CUT, [0., edge_centre_y, TOP+.004], [Phase((0, 0, -.05), .4)],
+                         points=points, masses=masses, spacing=.002, cutting_law=law, record_history=True)
+    codes = result["state"]["codes"]
+    labelled = codes != 0
+    along = points[:, 1]-edge_centre_y  # reference l (the edge runs along world y, no rotation about z)
+    # The edge reached the floor, and both sides were assigned inside the edge length.
+    assert result["edge_position_m"][2] < 0
+    assert np.count_nonzero(codes == 1) > 0 and np.count_nonzero(codes == 2) > 0
+    assert result["severed_bonds"] > 0
+    # Every new label had |l| <= L at assignment (asserted inside lead_assignments), lead labels
+    # (law 5 only) lie within b_lead ahead and outside the core band.
+    f, s, digit = recorder.lead_assignments(half)
+    assert len(recorder.records) > 0
+    if law == 4:
+        assert len(f) == 0
+    else:
+        assert len(f) > 0 and f.max() <= 2*DX+1e-6 and np.abs(s).min() > DX*(1-1e-4)
+        assert np.all(digit == np.where(s < 0, 1, 2))
+    # Nothing beyond the edge ends in reference coordinates either, although that material
+    # lies inside the band |s| <= h and the swept depth (so the bound actually binds).
+    assert np.all(np.abs(along[labelled]) <= half)
+    beyond = np.abs(along) > half
+    in_band = np.abs(points[:, 0]) <= 6*DX
+    assert np.count_nonzero(beyond & in_band) > 0 and not np.any(labelled[beyond])
+    assert np.any(labelled & (np.abs(along) > half-.002))  # labels reach the edge ends
+    # Partial-width cut: the uncut side region keeps both sides mechanically connected.
+    count, labels = stencil_components(result)
+    print(f"law{law} edge_y={edge_centre_y}: labelled={int(labelled.sum())} side1={int(np.sum(codes == 1))} "
+          f"side2={int(np.sum(codes == 2))} beyond_in_band={int(np.sum(beyond & in_band))} "
+          f"severed={result['severed_bonds']} lead={len(f)} components={count}")
+    assert count == 1
