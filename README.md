@@ -1,9 +1,125 @@
 # RoboticCuttingSim
 
-A robotic cutting research environment for **Isaac Sim 6.2 / Isaac Lab 3.0**:
-dual Franka Panda, a physically grasped knife, continuous soft material and
-permanent TLMPM separation. Two wrist-mounted D405 RGB-D prototypes and a close
-Global D455 provide vision observations. No policy is trained.
+A robotic cutting research environment for **Isaac Sim 6.2 / Isaac Lab 3.0**.
+It has two Franka Pandas. One holds a ruler knife in a physical two-finger
+grasp; the other stays parked. The workpiece is a continuous soft material
+that the knife separates permanently, using total-Lagrangian MPM (TLMPM) with
+persistent side labels in the style of
+[BladeMaster](https://arxiv.org/abs/2609.27342). Wrist D405 and Global D455
+RGB-D cameras provide the observations. No policy is trained.
+
+## Three BladeMaster-style demos (live Native Isaac Sim)
+
+All four episodes below are **live Native Isaac Sim** (PhysX/Kit/RTX) runs in
+the same workcell, `blademaster_workcell_v1`:
+
+- Franka 0 holds `ruler_knife_v1` in a physical two-finger grasp.
+- The cutting board has real colliders and friction.
+- Cameras: wrist D405 rig v5 and the Global D455.
+- Material: cutting law 5 at 1 mm particles, 0.1 ms and a 4 mm grid; seed 42.
+- Control: scripted waypoint controllers.
+
+Videos are rendered from the recorded episode: presentation overview and
+close-up, wrist D405 RGB-D, a particle view coloured by mechanical component
+(an oracle debug view, not an observation) and force/height/label
+diagnostics. Images are captured at 10 Hz; actions and robot state are
+recorded at 50 Hz.
+[Full report](docs/reports/BLADEMASTER_DEMOS.md) ·
+[all attempts, including failures](docs/evidence/phase3/demos_live_001.json).
+
+### Demo 1 — complete cutting
+
+![Demo 1: live Native complete cut of CUT-01-R](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.gif)
+
+**PASS.** The knife cuts the 160×30×20 mm bar into two 50/50% parts, which
+stay separated after the knife is withdrawn. The frozen strict task score also
+passes (cut location 1.5 mm, limit 2 mm).
+Episode `live_20261029_pathv2_d/demo1a`, controller `path_v2` ·
+[MP4](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.mp4) ·
+[provenance](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.json).
+
+The 20° oblique variant also **passes**. Separation is scored against the
+actual swept plane: 4.91 mm, against an allowed ideal 4.44 + 1 mm. The frozen
+vertical-plane location check does not apply to a tilted cut and is reported
+as FAIL.
+[GIF](docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.gif) ·
+[MP4](docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4).
+
+### Demo 2 — surface trimming
+
+![Demo 2: live Native 35° skim removing the TRIM-01-R bump](docs/media/demos/demo2/live_20261029_pathv2_c_demo2.gif)
+
+**PASS (separation).** A 35° rake skim detaches 97.9% of the bump as a chip.
+The substrate remains one intact body, and the measured edge stays within
+0.026 mm of the target height. The separately reported precision score is
+5/8 (**FAIL**): p95 surface error 0.58 mm against 0.5 mm, overcut 1.66%, and
+the conservative gouge rule.
+Episode `live_20261029_pathv2_c/demo2` ·
+[MP4](docs/media/demos/demo2/live_20261029_pathv2_c_demo2.mp4) ·
+[provenance](docs/media/demos/demo2/live_20261029_pathv2_c_demo2.json).
+
+### Demo 3 — sequential slicing and manipulation
+
+![Demo 3: two cuts make three parts, then the blade face pushes one away](docs/media/demos/demo3/live_20261029_vision_e_demo3.gif)
+
+**PASS**, including the frozen SLICE-PUSH-01 report. Two cuts (`cut_index` 0
+and 1) produce three independent parts (37.5/31.25/31.25%), each within one
+particle layer of its declared plane. The blunt blade face, with cutting
+disabled, then pushes one part 18.7 mm by real contact. The other parts do not
+move, no labels are added and nothing reconnects. Between the cuts the
+controller measures the bar's 2.17 mm shift from wrist D405 depth alone
+([ADR 0009](docs/adr/0009-demo3-wrist-depth-retarget.md)).
+Episode `live_20261029_vision_e/demo3`, controller `path_v2_vision` ·
+[MP4](docs/media/demos/demo3/live_20261029_vision_e_demo3.mp4) ·
+[provenance](docs/media/demos/demo3/live_20261029_vision_e_demo3.json).
+
+### The new workcell
+
+| Demo 1 (CUT-01-R) close-up | Demo 3 (SLICE-PUSH-01) board | Demo 2 (TRIM-01-R) 35° rake |
+| --- | --- | --- |
+| ![CUT-01-R close-up](docs/media/demos/phase2/cut-01-r_closeup_smoke.png) | ![SLICE-PUSH-01 overview](docs/media/demos/phase2/slice-push-01_overview_smoke.png) | ![TRIM-01-R overview](docs/media/demos/phase2/trim-01-r_overview_smoke.png) |
+
+These are actual Native frames from the Phase 2 smokes
+([evidence](docs/evidence/phase2/native_smokes_001.json)). The wooden boards,
+risers and relief slots are the same boxes used as PhysX colliders (friction
+0.3) and as TLMPM fixtures.
+
+### Cutting physics
+
+Cutting law 5 ([ADR 0006](docs/adr/0006-swept-band-cutting-law-4.md),
+[ADR 0008](docs/adr/0008-cutting-law-5-lead-preassignment.md)) follows
+BladeMaster Section III-C:
+
+- **Cutting progress** only resists the knife.
+- **Persistent side codes** are assigned only within the finite swept band of
+  a blade stroke that is actually cutting.
+- **Side pushes, flat presses, stopping, withdrawal, uncontacted edges and the
+  blunt handle** never cut.
+
+The 1 mm acceptance matrix passes M1–M7 and M9 with computed criteria. M8
+fails under ideal tracking (second-cut location), and live Demo 3 fixes this
+with the wrist-depth retarget
+([matrix](docs/evidence/phase1/matrix_law5_002.json),
+[review](docs/evidence/phase1/matrix_law5_adjudication_001.json)). Material
+parameters are provisional and uncalibrated.
+
+### Reproduce the demos
+
+```bash
+.venv/bin/python scripts/run_blademaster_demos.py --demo 1a --demo 1b --demo 2 \
+  --gpu 1 --cutting-law 5 --controller-profile path_v2 --run-id NEW_ID
+.venv/bin/python scripts/run_blademaster_demos.py --demo 3 \
+  --gpu 1 --cutting-law 5 --controller-profile path_v2_vision --run-id NEW_ID
+```
+
+Each run writes the episode, `demo_summary.json` (execution, outcome and
+quality kept separate) and rendered media under `artifacts/wp10_claude/demos/`.
+It never overwrites an earlier run. Add `--publish` to copy the media into
+`docs/media/demos/`. The first-round v1-controller failures (Demo 2 removed
+64%; Demo 3 missed the declared plane by 6.7e-11 m) are preserved and
+documented.
+
+## Earlier work
 
 Both wrist cameras use fixed mounts parallel to their hands; Franka 1 stays
 in its normal park posture. Each scene below shows actual synchronized RGB
@@ -22,7 +138,7 @@ controller/robot-video matrix remain unfinished. See [handoff](docs/HANDOFF_WP10
 [control interface](docs/POLICY_CONTROL.md), [WP-10B](docs/reports/WP-10B.md),
 [WP-10C](docs/reports/WP-10C.md) and [WP-10D](docs/reports/WP-10D.md).
 
-### CUT-01 — bar cutting
+#### CUT-01 — bar cutting (camera rig v5, frozen v1 task)
 
 ![CUT-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_current_v5.png)
 
@@ -30,7 +146,7 @@ Actual Native CUT-01 at **t = 4 s**.
 [Image provenance](docs/media/scene_current_v5.json) ·
 [Watch the episode](docs/media/wrist_v5_cut01/synchronized_multiview.mp4).
 
-### TRIM-01 — surface trimming
+#### TRIM-01 — surface trimming (camera rig v5, frozen v1 task)
 
 ![TRIM-01 with camera rig v5: Global D455 and both hand-mounted wrist D405s](docs/media/scene_trim01_v5.png)
 
@@ -39,7 +155,7 @@ its strict surface-quality score remains **FAIL**.
 [Image provenance](docs/media/scene_trim01_v5.json) ·
 [Watch the episode](docs/media/wrist_v5_trim01/synchronized_multiview.mp4).
 
-## Tasks
+#### Frozen v1 tasks
 
 | Task | Goal | Current fixed-task result | Actual RGB-D video |
 | --- | --- | --- | --- |

@@ -1,20 +1,31 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## 進行中（unattended session 會更新這一節）
+## 完成：BladeMaster 風格三個 Demo（2026-10-29）
 
-- 計畫：[BladeMaster 三個 Demo](BLADEMASTER_DEMO_PLAN.md)，由 tmux `rcs-demos` 的 Claude Code CLI session 執行（規則：`tools/demo_runner/round_prompt.md`）。
-- 目前階段：Phase 3（Native 三個 Demo）。
-  - Phase 1 完成：law 5（[ADR 0008](adr/0008-cutting-law-5-lead-preassignment.md)）1 mm 矩陣 M1–M9 依預先宣告的準則全部 PASS（[裁定](evidence/phase1/matrix_law5_adjudication_001.json)、[runner 原始結果](evidence/phase1/matrix_law5_001.json)；law 4 的矩陣與失敗也保留在 [matrix_law4_001](evidence/phase1/matrix_law4_001.json)）。M2 依 ADR 0006 Amendment 1、M4/M6 依 ADR 0008 核心帶韌帶定義、M8 依 M8b 支撐兩刀列；runner 的原始 FAIL 都保留。已知限制：law 5 讓切後兩塊被楔形推開 ±2.4 mm（law 4 ±1.2 mm），Demo 3 第二刀位置可能超過 v3 的 2 mm 界限（M8b 超過 6.7e-11 m）。
-  - Phase 2 完成：`blademaster_workcell_v1`（木紋切割板＋riser，PhysX 摩擦 0.3＝TLMPM），`SLICE-PUSH-01`，overview＋close-up 展示相機（不是觀測），Native smoke 三個場景都 PASS_EXECUTION（[證據](evidence/phase2/native_smokes_001.json)）。Renderer（`scripts/render_demo_episode.py`）與 demo runner（`scripts/run_blademaster_demos.py`）已完成。
-- 第一輪 Native live demo（law 5、v1 腳本控制器、量測刃口回饋；`artifacts/wp10_claude/demos/live_20261029_{a,b}/`）：
-  - Demo 1a 完整下切：**PASS**（兩塊 50/50%、撤刀後持續分離、夾持未失、凍結 strict PASS，切口 1.5 mm）。
-  - Demo 1b 20° 斜切：**PASS**（swept-plane 準則；凍結切口位置對斜面不適用，照實 FAIL）。
-  - Demo 2 削除凸起：v1 控制器 **FAIL**（去除 64.2%；start 點過衝後在上升中被判定到達、削切直線朝 84 mm 外終點，刃口高約 1.2 mm）。**path_v2 控制器重跑 PASS**（`live_20261029_pathv2_c`：去除 97.9%、底材 100%、削切中實測刃口 z 70.18–70.23 mm；精度 5/8 另計）。
-  - Demo 3 兩刀三塊＋推開：三塊、推開 19.3 mm、其他塊不動、推動時無新標籤＝計畫 §4 條件成立；v3 宣告切面位置 FAIL（2.0000000670 mm 對 2 mm，第一刀把長條推開 ±2.4 mm 造成；量化在 1 mm 粒子層）。
-- Phase 1 審查（rcs-review）：ACCEPT WITH CONDITIONS；M8 改標為「ADR 0006 拓撲文字 PASS、runner M8b 準則 FAIL」。Demo 3 依 [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) 改用 `path_v2_vision`（第一刀後以手腕 D405 深度量測長條位移，修正第二刀位置；不用 oracle）。
-- path_v2 第二輪（最終展示用）：Demo 1a **PASS**（凍結 strict PASS，刃口 x 誤差 ≤ 0.046 mm）、Demo 1b **PASS**（swept-plane）、Demo 2 **PASS**（刃口 z 誤差 ≤ 0.026 mm）；三者解除切削階段的標籤變化皆為 0（審查條件 2）。輸出 `artifacts/wp10_claude/demos/live_20261029_pathv2_{c,d}/`。
-- 背景工作：rcs-impl 實作 `path_v2_vision`（Demo 3）；rcs-impl 做 Phase 1 計算式準則重評（`matrix_law{4,5}_002.json`）與「材料寬於刀刃」CPU 測試。
-- 下一步：檢查四個 demo 的 summary 與影片 → 失敗就診斷、保留、修正後重跑 → rcs-review 審查 demo → README／報告整理 → 合併 main → DONE。
+依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)，P0 工作包 A–D 完成；細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
+
+- 最終組合，全部是 live Native、law 5、實體夾持、`blademaster_workcell_v1`，四個都 **PASS**：
+  - **Demo 1a 完整切斷**（`path_v2`）：凍結 strict 也 PASS，切口 1.5 mm。
+  - **Demo 1b 20° 斜切**：依 swept-plane 準則 PASS。
+  - **Demo 2 削除凸起**：去除 97.9%，底材完整；精度 5/8 FAIL，另外報告。
+  - **Demo 3 兩刀三塊＋刀身推開**（`path_v2_vision`）：連凍結的 v3 slice-push 報告也 PASS，推開 18.7 mm。
+  - [所有嘗試](evidence/phase3/demos_live_001.json)、[媒體](media/demos/)。
+- Phase 1，law 5、1 mm：
+  - 依計算式準則 `adr0006a1_adr0008`，M1–M7、M9 PASS。
+  - M8 在理想追蹤下 FAIL：第一刀把長條推開約 2.3 mm，第二刀宣告切面誤差 2.0000000670 mm，凍結界限 2 mm。Live Demo 3 以 [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) 的手腕深度量測修正。
+  - 審查結論：rcs-review ACCEPT WITH CONDITIONS（[紀錄](evidence/phase1/matrix_law5_adjudication_001.json)）。
+- 保留的失敗：
+  - law 4 全矩陣（TRIM 0%）；
+  - 第一輪 v1 控制器的 Demo 2（64%）與 Demo 3（宣告切面差 6.7e-11 m）；
+  - 中斷的輸出；
+  - 2 mm CPU 35° 削除（strict xfail）。
+- 限制：
+  - 材料參數暫定、未標定；
+  - law 5 的前緣預指派改變刃口前方的動態，切後兩塊被推開 ±2.4 mm；
+  - 拉切／鋸切時 swept normal 條件不佳；
+  - live runtime 未逐步記錄 stroke；
+  - Lab parity 與 P1／P2 未做。
+- 環境注意：背景子代理執行「寫入 `artifacts/`」的 Bash 指令曾卡在權限等待。後來 `/mnt/data/ningan` 已加入工作目錄；GPU／Isaac 執行改由 coordinator 直接跑。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
 
