@@ -56,9 +56,17 @@
   - SLICE-PUSH 五個都只差第二刀位置：第一刀後長條滑 1.2 mm，第二刀短 1.00 mm，凍結統計 4.0 mm > 2 mm。live Demo 3 用手腕深度重新定位（ADR 0009）處理這個問題，kinematic 階段沒有相機。
   - Test A s2（−20° 斜切）位置超界 0.02 mm。Test D s1701 是 `tlmpm_v5` slot 溢位（S = 8 不夠）；s1702／s1704 是目標設計錯誤（sever 之後「底材單一塊」不可能成立），依預先宣告規則仍記為 CUTTING_FAILURE。
   - 預檢沒有遇到不可行樣本，範圍要放寬才量得到可行性邊界（第二輪）。這輪是 kinematic 理想追蹤，不是 live；GRASP_FAILURE 只在 live 才可能出現。
+- **Phase G policy-ready API 完成**（`a2ee588`…`184b3b7`，[API 文件](POLICY_READY_API.md)，[證據](evidence/wp11/phaseG_policy_ready_001.json)）。
+  - `open_cutting_env(..., preset="cutting_research_v1")` → `PolicyReadyEnv`：實體夾持、預夾、HOME reset；動作逐步回報 ACCEPTED／CLAMPED／REJECTED_<原因>，被拒絕的動作不會執行；`cut_index` 可到 `max_cuts`（最多 15）。
+  - 一般觀測（腕部 D405×2、D455 RGB-D、關節、末端位姿、夾爪、目標）與 `privileged_state`（粒子、cut code、接觸力、真實刀具位姿）分開。
+  - 資料收集器 `scripts/collect_dataset.py`／`read_dataset.py`（成功與失敗 episode 都存）。
+  - **Test E PASS**：kinematic 1 mm 的 TRIM 與 sever、Native TRIM，scripted planner 與只由場景數字產生的手寫動作程式都成功（Native 手寫版 98.47%，不用 privileged 輸入）。
+  - **Test F**：kinematic **POLICY_READY**（7 episode，replay 完全重現）；**Native NOT POLICY_READY**：只有記憶體不合格（每次 reset host RSS +82 MiB，不收斂；GPU 記憶體持平）。Phase H 處理。
+  - 可靠性規則 v1a 是在 smoke 之後、正式 Native run 之前加的（夾住的刀 reset 後 PhysX 速度雜訊 3.6 mm/s），v1 不改，兩者都計分。
+  - 注意：Native run 的 manifest 是 git_dirty（當時工作樹有 C5b 未 commit 的修改），Phase H 會從乾淨 worktree 重跑。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C5b：`path_v3` 控制器＋`trim_bump_rho10_clear` 目標（削除後把 chip 推離），跑 live attempt 2（`artifacts/wp11/phaseC5/`）；
-  - G：policy-ready API、資料收集器、多 episode 可靠性、Tests E/F（`artifacts/wp11/phaseG/`）；
+  - H：Native reset 記憶體洩漏、profiling、Research Fast／Full Physics 設定檔，並從乾淨 worktree 重跑 Native 可靠性（`artifacts/wp11/phaseH/`）；
   - E live：第一輪推薦 seed 的 live Native 階段（先宣告再跑，`artifacts/wp11/phaseE/round1_live_001/`），含 Test A／B／C 影片；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
