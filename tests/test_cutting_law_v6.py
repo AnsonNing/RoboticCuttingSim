@@ -147,7 +147,7 @@ def test_law6_rejected_by_older_solver_versions_and_records_parameters():
         with pytest.raises(ValueError):
             run(VERTICAL_CUT, [.001, 0, TOP+.004], [Phase((0, 0, -.05), .001)], cutting_law=6, solver_version=version)
     with pytest.raises(ValueError):
-        tlmpm_v4.TLMPM(*_bump_block(), .002, TLMPMConfig(), "cpu", cutting_law=8)
+        tlmpm_v4.TLMPM(*_bump_block(), .002, TLMPMConfig(), "cpu", cutting_law=9)
     points, masses = _bump_block()
     bed = tlmpm_v4.TLMPM(points, masses, .002, TLMPMConfig(), "cpu", cutting_law=6)
     assert bed.law6_parameters == {"lead_b_lead_m": 2*DX, "core_s_core_m": DX, "lead_commit": "stroke_end"}

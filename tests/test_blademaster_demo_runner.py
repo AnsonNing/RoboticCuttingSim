@@ -701,6 +701,29 @@ def test_final_v3_is_final_v1_with_cutting_law_7(runner, tmp_path, capsys):
     assert error.value.code == 2 and "pins --cutting-law 7" in capsys.readouterr().err
 
 
+def test_final_v4_is_final_v1_with_cutting_law_8(runner, tmp_path, capsys):
+    v1, v4 = runner.DEMO_SETS["final_v1"], runner.DEMO_SETS["final_v4"]
+    assert v4.demos == v1.demos and v4.profiles == v1.profiles and v4.seed == v1.seed == 42
+    assert v1.cutting_law == 5 and v4.cutting_law == 8 and v4.reference_runs == ()
+    assert [runner.DEMO_SETS[n].cutting_law for n in ("final_v2", "final_v3")] == [6, 7]
+    commands = {}
+    for name in ("final_v1", "final_v4"):
+        assert runner.main(["--demo-set", name, "--dry-run", "--run-id", "R1", "--root", str(tmp_path/"demos")]) == 0
+        commands[name] = _dry_run_commands(capsys.readouterr().out)
+    assert set(commands["final_v4"]) == set(FINAL_V1_PROFILES)
+    for key, argv in commands["final_v4"].items():
+        old = commands["final_v1"][key]
+        law = argv.index("--cutting-law")
+        assert argv[law+1] == "8" and old[law+1] == "5"
+        assert argv[:law+1] == old[:law+1] and argv[law+2:] == old[law+2:]
+        out = _parse_live(argv[2:])
+        assert out["status"] == 1 and out["config"]["cutting_law"] == 8
+    with pytest.raises(SystemExit) as error:
+        runner.main(["--demo-set", "final_v4", "--dry-run", "--run-id", "R1", "--root", str(tmp_path),
+                     "--cutting-law", "5"])
+    assert error.value.code == 2 and "pins --cutting-law 8" in capsys.readouterr().err
+
+
 @pytest.mark.parametrize("extra,message", [
     (["--demo", "all"], "mutually exclusive with --demo"),
     (["--demo", "3"], "mutually exclusive with --demo"),

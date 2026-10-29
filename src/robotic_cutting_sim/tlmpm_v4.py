@@ -1,4 +1,4 @@
-"""Versioned cutting laws 4, 5, 6 and 7 (work-gated stroke, geometric swept band), keeping laws 1/2/3.
+"""Versioned cutting laws 4-8 (work-gated stroke, geometric swept band), keeping laws 1/2/3.
 
 Derived from tlmpm_v3 without changing the frozen tlmpm/tlmpm_v2/tlmpm_v3
 source; laws 1/2/3 here run the same kernels in the same launch order and equal
@@ -46,9 +46,17 @@ grid-update kernel, _grid_update_eq8, used for both grid-update launches (P2G an
 MUSL): following BladeMaster Eq. (8) it also couples p^n between compatible
 fields, so the FLIP reference is coupled p^n / m instead of the uncoupled
 p_c / m_c. Laws 1-6 keep _grid_update and launch nothing new.
+Law 8 (docs/adr/0012-cutting-law-8-plow-gated-lead.md) is law 4 plus law 5's lead
+rule applied only on plowing segments (laws 1-7 launch nothing new): a law-8-only
+kernel, _segment_plow, marks segment k when it has M_k (seg_ok) and its motion
+leaves the blade plane by at least theta_plow = 15 degrees,
+(v.n)^2 >= tan^2(theta_plow) [(v.d)^2 + (v.e)^2]; _assign_lead then runs with that
+mask in place of seg_ok (same condition and parameters as law 5). Contact,
+progress, engagement, stroke, band and grid update are law 4's.
 This is an uncalibrated process-zone approximation with provisional
 parameters (h, b_back, b_persist, theta_max; law 5 adds b_lead, s_core; law 6 only
-defers the law-5 commit; law 7 only couples the FLIP reference), not a
+defers the law-5 commit; law 7 only couples the FLIP reference; law 8 adds
+theta_plow), not a
 converged fracture-energy or real-food model. Labels change only P2G/MUSL compatibility and contact
 selection from the next substep on; no particle is deleted, moved or duplicated.
 """
@@ -707,6 +715,32 @@ def _segment_motion(poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=
 
 
 @wp.kernel
+def _segment_plow(poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=wp.spatial_vector),
+                  index: wp.array(dtype=int), edge_width: float, segments: int, tan2_plow: float,
+                  seg_ok: wp.array(dtype=int), seg_plow: wp.array(dtype=int)):
+    """Law 8 (ADR 0012) plowing mask: segment k has M_k (seg_ok, from _segment_motion
+    this substep) and its motion leaves the blade plane by at least theta_plow,
+    (v.n)^2 >= tan^2(theta_plow) [(v.d)^2 + (v.e)^2]. Same segment motion as _segment_motion."""
+    k = wp.tid()
+    i = index[0]
+    pose = poses[i]
+    twist = twists[i]
+    y = (float(k)+0.5)/float(segments)*2.0*edge_width-edge_width
+    advance = wp.transform_vector(pose, wp.vec3(1.0, 0.0, 0.0))
+    along = wp.transform_vector(pose, wp.vec3(0.0, 1.0, 0.0))
+    normal = wp.transform_vector(pose, wp.vec3(0.0, 0.0, 1.0))
+    motion = wp.vec3(twist[0], twist[1], twist[2]) + wp.cross(wp.vec3(twist[3], twist[4], twist[5]), along*y)
+    advancing = wp.dot(motion, advance)
+    drawing = wp.dot(motion, along)
+    off_plane = wp.dot(motion, normal)
+    plowing = off_plane*off_plane >= tan2_plow*(advancing*advancing+drawing*drawing)
+    ok = int(0)
+    if seg_ok[k] != 0 and plowing:
+        ok = 1
+    seg_plow[k] = ok
+
+
+@wp.kernel
 def _update_stroke(twists: wp.array(dtype=wp.spatial_vector), cuts: wp.array(dtype=int),
                    index: wp.array(dtype=int), engaged: wp.array(dtype=int), any_motion: wp.array(dtype=int),
                    stroke: wp.array(dtype=int), travel: wp.array(dtype=float), dt: float, persist: float):
@@ -894,8 +928,8 @@ class TLMPM:
         if (profile.ndim != 2 or profile.shape[1] != 2 or len(profile) < 3 or not np.isfinite(profile).all()
                 or np.any(edges[:, 0]*np.roll(edges, -1, 0)[:, 1]-edges[:, 1]*np.roll(edges, -1, 0)[:, 0] <= 0)):
             raise ValueError("Blade profile must be a finite counter-clockwise strictly convex polygon")
-        if cutting_law not in (1, 2, 3, 4, 5, 6, 7) or not np.isfinite(slice_efficiency) or slice_efficiency < 0:
-            raise ValueError('cutting_law must be 1, 2, 3, 4, 5, 6 or 7 with finite nonnegative slice efficiency')
+        if cutting_law not in (1, 2, 3, 4, 5, 6, 7, 8) or not np.isfinite(slice_efficiency) or slice_efficiency < 0:
+            raise ValueError('cutting_law must be 1, 2, 3, 4, 5, 6, 7 or 8 with finite nonnegative slice efficiency')
         obstacles = np.asarray([] if obstacle_boxes_edge is None else obstacle_boxes_edge, np.float32).reshape(-1, 2, 3)
         if edge_segments is None:
             edge_segments = int(np.clip(np.ceil(2*config.blade_half_width/spacing), 1, 4096))
@@ -918,6 +952,8 @@ class TLMPM:
         self.law6_parameters = {**self.law5_parameters, "lead_commit": "stroke_end"}
         # ADR 0011 law 7: law 5's parameters, FLIP reference from the Eq. (8)-coupled p^n.
         self.law7_parameters = {**self.law5_parameters, "flip_reference": "eq8_coupled_pn"}
+        # ADR 0012 law 8: law 5's lead parameters, lead rule only on segments plowing >= theta_plow.
+        self.law8_parameters = {**self.law5_parameters, "theta_plow_deg": 15.}
         self.n = len(points)
         self.volume = spacing**3
         self.radius = config.contact_radius_scale*spacing*.5
@@ -962,6 +998,7 @@ class TLMPM:
             # Law-4 device state; reset only here (the live material captures
             # step() in a CUDA graph and the stroke persists across control steps).
             self.segment_ok = wp.zeros(self.edge_segments, dtype=int)
+            self.segment_plow = wp.zeros(self.edge_segments, dtype=int)  # law 8 only (ADR 0012)
             self.stroke_engaged = wp.zeros(1, dtype=int)
             self.stroke_any_motion = wp.zeros(1, dtype=int)
             self.stroke = wp.zeros(1, dtype=int)
@@ -1032,19 +1069,24 @@ class TLMPM:
             wp.launch(_remember_cut, 1, [self.cuts, self.index, self.previous_cut])
             wp.launch(_stress, n, [self.F, self.Fpi, self.stress, self.plastic, lam, mu, c.yield_stress])
             self.edge_flags.zero_()
-            if self.cutting_law in (4, 5, 6, 7):
+            if self.cutting_law in (4, 5, 6, 7, 8):
                 self.stroke_engaged.zero_(); self.stroke_any_motion.zero_()
                 wp.launch(_segment_motion, self.edge_segments, [self.poses, self.twists, self.cuts, self.index,
                     c.blade_half_width, self.edge_segments, self.law4_parameters["min_speed_m_s"],
                     float(np.tan(np.deg2rad(self.law4_parameters["theta_max_deg"]))**2),
                     self.segment_ok, self.stroke_any_motion])
+                if self.cutting_law == 8:
+                    wp.launch(_segment_plow, self.edge_segments, [self.poses, self.twists, self.index,
+                        c.blade_half_width, self.edge_segments,
+                        float(np.tan(np.deg2rad(self.law8_parameters["theta_plow_deg"]))**2),
+                        self.segment_ok, self.segment_plow])
             wp.launch(_rigid_contacts, n, [self.x, self.v, self.mass, self.impulse, self.progress,
                 self.contact_work, self.poses, self.twists, self.cuts, self.index,
                 self.reaction, self.stats, self.radius, self.volume, c.dt, c.contact_stiffness,
                 c.contact_friction, c.cutting_energy, c.sharpness, self.profile,
                 len(self.blade_profile_xz), c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool),
-                # Laws 5, 6 and 7 use the law-4 contact/engagement path unchanged.
-                4 if self.cutting_law in (5, 6, 7) else self.cutting_law, self.slice_efficiency, float(self.spacing),
+                # Laws 5, 6, 7 and 8 use the law-4 contact/engagement path unchanged.
+                4 if self.cutting_law in (5, 6, 7, 8) else self.cutting_law, self.slice_efficiency, float(self.spacing),
                 2*c.dx, self.edge_flags,
                 self.edge_segments, self.segment_ok, self.stroke_engaged])
             if c.tool:
@@ -1081,7 +1123,7 @@ class TLMPM:
             if self.cutting_law == 3:
                 wp.launch(_persist_segments, self.edge_segments, [self.edge_flags, self.segment_persist, self.poses,
                     self.twists, self.cuts, self.index, c.blade_half_width, self.edge_segments])
-            if self.cutting_law in (4, 5, 6, 7):
+            if self.cutting_law in (4, 5, 6, 7, 8):
                 law4 = self.law4_parameters
                 wp.launch(_update_stroke, 1, [self.twists, self.cuts, self.index, self.stroke_engaged,
                     self.stroke_any_motion, self.stroke, self.stroke_travel, c.dt, law4["persist_b_persist_m"]])
@@ -1098,6 +1140,12 @@ class TLMPM:
                     wp.launch(_assign_lead, n, [self.x, self.code, self.poses, self.twists, self.cuts, self.index,
                         law4["band_h_m"], c.blade_half_width, law5["lead_b_lead_m"], law5["core_s_core_m"],
                         self.stroke, self.segment_ok, self.edge_segments])
+                if self.cutting_law == 8:
+                    # Law 5's lead rule restricted to cutting AND plowing segments.
+                    law5 = self.law5_parameters
+                    wp.launch(_assign_lead, n, [self.x, self.code, self.poses, self.twists, self.cuts, self.index,
+                        law4["band_h_m"], c.blade_half_width, law5["lead_b_lead_m"], law5["core_s_core_m"],
+                        self.stroke, self.segment_plow, self.edge_segments])
                 if self.cutting_law == 6:
                     law5 = self.law5_parameters
                     wp.launch(_pending_lead, n, [self.x, self.code, self.poses, self.twists, self.cuts, self.index,
@@ -1118,7 +1166,7 @@ class TLMPM:
                 wp.launch(_advance, 1, [self.index])
 
     def cutting_state(self, count_labels=False):
-        """Law-4/5/6/7 stroke state after the last substep (host copy of a few scalars).
+        """Law-4/5/6/7/8 stroke state after the last substep (host copy of a few scalars).
 
         ``stroke`` is 0 or armed digit + 1; ``travel_m`` is edge-centre travel
         since the last engaged substep; ``engaged``/``any_motion`` are the last
@@ -1130,7 +1178,7 @@ class TLMPM:
         Oracle diagnostics only, never observations.
         """
         state = {"cutting_law": self.cutting_law}
-        if self.cutting_law in (4, 5, 6, 7):
+        if self.cutting_law in (4, 5, 6, 7, 8):
             state.update(stroke=int(self.stroke.numpy()[0]), travel_m=float(self.stroke_travel.numpy()[0]),
                          engaged=int(self.stroke_engaged.numpy()[0]), any_motion=int(self.stroke_any_motion.numpy()[0]))
         if self.cutting_law == 6:

@@ -1,0 +1,290 @@
+{
+ "scope": "Law-8 quick GPU check requested by the coordinator (M8b, M3b, TRIM-01-R and CUT-01-R probes) before the full ADR 0012 matrix; kinematic ideal tracking, Warp CUDA. M3a/M1a ingest rows and the rest of the matrix are left to the coordinator.",
+ "law": 8,
+ "adr": "docs/adr/0012-cutting-law-8-plow-gated-lead.md",
+ "quick_check_rows": [
+  {
+   "output": "artifacts/wp10_claude/phase1_law8/m8b_law8_001",
+   "row": "M8b",
+   "command": ".venv/bin/python scripts/run_phase1_matrix.py --row M8b --device cuda:1 --cutting-law 8 --out artifacts/wp10_claude/phase1_law8/m8b_law8_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/law8_m8b_law8_001.log",
+   "exit_code": 0,
+   "wall_s_process": 276.0946912,
+   "wall_s_script": 275.4491633619982,
+   "seed": 42,
+   "device": "cuda:1",
+   "git_sha": "b529929ed4824ed281e5bae3096d505da24d66f3",
+   "git_dirty": true,
+   "verdict": "PASS",
+   "checks": {
+    "slice_push_report_pass": true
+   },
+   "failing_checks": [],
+   "final_components": 3,
+   "final_component_mass_fractions": [
+    0.36875000000024927,
+    0.31875000000019926,
+    0.312500000000193
+   ],
+   "slice_push_status": "PASS_SLICE_PUSH",
+   "multi_cut_status": "PASS_MULTI_CUT_OUTCOME",
+   "multi_cut_checks": {
+    "three_mechanical_parts": true,
+    "three_substantial_parts": true,
+    "main_parts_retain_mass": true,
+    "both_digits_sever_bonds": true,
+    "declared_cut_planes": true
+   },
+   "post_cut_manipulation_status": "PASS_POST_CUT_MANIPULATION",
+   "declared_plane_errors": [
+    {
+     "digit": 0,
+     "severed_bonds": 600,
+     "maximum_reference_plane_error_m": 2.60770322002557e-10
+    },
+    {
+     "digit": 1,
+     "severed_bonds": 600,
+     "maximum_reference_plane_error_m": 0.0009999999031424511
+    }
+   ],
+   "part_mass_fractions": [
+    0.36875000000024927,
+    0.31875000000019926,
+    0.312500000000193
+   ],
+   "bar_shift_after_cut0": {
+    "definition": "mean task-local x displacement of particles with reference x in [-29, 29] mm, nearest history frame (stride 0.1 s)",
+    "law8": {
+     "stroke0_end": {
+      "control_time_s": 3.48,
+      "history_frame_time_s": 3.5,
+      "mean_x_displacement_mm": 1.1464
+     },
+     "before_cut1_end_of_move_1": {
+      "control_time_s": 6.14,
+      "history_frame_time_s": 6.1,
+      "mean_x_displacement_mm": 1.1918
+     }
+    },
+    "law4_m8b_law4_001": {
+     "stroke0_end": {
+      "control_time_s": 3.48,
+      "history_frame_time_s": 3.5,
+      "mean_x_displacement_mm": 1.1464
+     },
+     "before_cut1_end_of_move_1": {
+      "control_time_s": 6.14,
+      "history_frame_time_s": 6.1,
+      "mean_x_displacement_mm": 1.1922
+     }
+    },
+    "law5_m8b_law5_001": {
+     "stroke0_end": {
+      "control_time_s": 3.48,
+      "history_frame_time_s": 3.5,
+      "mean_x_displacement_mm": 2.0771
+     },
+     "before_cut1_end_of_move_1": {
+      "control_time_s": 6.14,
+      "history_frame_time_s": 6.1,
+      "mean_x_displacement_mm": 2.23
+     }
+    }
+   },
+   "law_comparison_digit1_error_mm": {
+    "law4": 0.9999999,
+    "law5": 2.0000001,
+    "law7": 3.0000002,
+    "law8": 0.9999999
+   }
+  },
+  {
+   "output": "artifacts/wp10_claude/phase1_law8/m3b_law8_001",
+   "row": "M3b",
+   "command": ".venv/bin/python scripts/run_phase1_matrix.py --row M3b --device cuda:0 --cutting-law 8 --out artifacts/wp10_claude/phase1_law8/m3b_law8_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/law8_m3b_law8_001.log",
+   "exit_code": 0,
+   "wall_s_process": 142.07191647,
+   "wall_s_script": 141.0414368849997,
+   "seed": 42,
+   "device": "cuda:0",
+   "git_sha": "b529929ed4824ed281e5bae3096d505da24d66f3",
+   "git_dirty": true,
+   "verdict": "PASS",
+   "checks": {
+    "frozen_reference_above_plane_material_removed": true,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "failing_checks": [],
+   "final_components": 2,
+   "final_component_mass_fractions": [
+    0.9895717406533847,
+    0.010428259346275818
+   ],
+   "strict_status": "FAIL_TASK_METRICS",
+   "strict_failed_checks": [
+    "surface_p95_absolute_plane_error_m",
+    "maximum_gouge_depth_m",
+    "overcut_volume_fraction_of_initial_base"
+   ],
+   "removed_reference_above_plane_mass_fraction": 0.9693486590038315,
+   "scenario": "ruler_workcell_v2 (35 deg)"
+  }
+ ],
+ "probes": [
+  {
+   "output": "artifacts/wp10_claude/phase1_law8/k_trim01r_law8_001",
+   "task": "TRIM-01-R",
+   "command": ".venv/bin/python scripts/probe_wp10_task_policy.py --task TRIM-01-R --device cuda:1 --cutting-law 8 --out artifacts/wp10_claude/phase1_law8/k_trim01r_law8_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/law8_k_trim01r_law8_001.log",
+   "exit_code": 0,
+   "wall_s_process": 139.013356944,
+   "wall_s_script": 137.98920891399757,
+   "seed": 42,
+   "git_sha": "b529929ed4824ed281e5bae3096d505da24d66f3",
+   "git_dirty": true,
+   "execution_status": "PASS_EXECUTION",
+   "strict_status": "FAIL_TASK_METRICS",
+   "failed_checks": [
+    "surface_p95_absolute_plane_error_m",
+    "maximum_gouge_depth_m",
+    "overcut_volume_fraction_of_initial_base"
+   ],
+   "final_components": 2,
+   "component_masses_kg": [
+    0.0015209999999999998,
+    0.14404499999999998
+   ],
+   "removed_reference_above_plane_mass_fraction": 0.9693486590038315,
+   "max_reference_midpoint_plane_distance_m": null,
+   "surface": {
+    "scope": "vertical intersections of provided mechanical-substrate mesh in workpiece coordinates",
+    "measurement_spacing_xy_m": [
+     0.001,
+     0.001
+    ],
+    "grid_shape_xy": [
+     160,
+     30
+    ],
+    "valid_surface_fraction": 0.9995833333333334,
+    "missing_surface_fraction": 0.0004166666666666208,
+    "maximum_substrate_surface_residual_height_m": 0.0003862633690505518,
+    "surface_p95_absolute_plane_error_m": 0.0005355950367016998,
+    "surface_rms_plane_error_m": 0.00025519094381794044,
+    "maximum_gouge_depth_m": 0.02,
+    "overcut_volume_m3": 9.861832773275652e-07,
+    "overcut_volume_fraction_of_initial_base": 0.010272742472162139
+   },
+   "law8_parameters": {
+    "lead_b_lead_m": 0.008,
+    "core_s_core_m": 0.004,
+    "theta_plow_deg": 15.0
+   },
+   "law4_parameters": {
+    "band_h_m": 0.024,
+    "rear_b_back_m": 0.008,
+    "persist_b_persist_m": 0.008,
+    "theta_max_deg": 45.0,
+    "min_speed_m_s": 1e-05
+   },
+   "bridge_command": "scripts/analyze_cut_bridges.py artifacts/wp10_claude/phase1_law8/k_trim01r_law8_001/physics_state.npz --task TRIM-01-R",
+   "bridge_analysis": {
+    "components": 2,
+    "final_component_mass_fractions": [
+     0.989551,
+     0.010449
+    ],
+    "code_counts": {
+     "0": 55530,
+     "1": 40500,
+     "2": 1014
+    },
+    "nodes_with_codes_0_1": 261,
+    "nodes_with_codes_0_2": 0,
+    "nodes_with_codes_1_2": 71,
+    "direct_code_zero_bridges": 0,
+    "bridge_local_xyz_mm": [],
+    "above_plane_code_counts": {
+     "1": 32,
+     "2": 1012
+    },
+    "above_plane_code_zero_local_xyz_mm": []
+   }
+  },
+  {
+   "output": "artifacts/wp10_claude/phase1_law8/k_cut01r_law8_001",
+   "task": "CUT-01-R",
+   "command": ".venv/bin/python scripts/probe_wp10_task_policy.py --task CUT-01-R --device cuda:0 --cutting-law 8 --out artifacts/wp10_claude/phase1_law8/k_cut01r_law8_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/law8_k_cut01r_law8_001.log",
+   "exit_code": 0,
+   "wall_s_process": 126.172276563,
+   "wall_s_script": 125.28482758800237,
+   "seed": 42,
+   "git_sha": "b529929ed4824ed281e5bae3096d505da24d66f3",
+   "git_dirty": true,
+   "execution_status": "PASS_EXECUTION",
+   "strict_status": "PASS_TASK_METRICS",
+   "failed_checks": [],
+   "final_components": 2,
+   "component_masses_kg": [
+    0.07199999999999998,
+    0.07199999999999998
+   ],
+   "removed_reference_above_plane_mass_fraction": null,
+   "max_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+   "surface": null,
+   "law8_parameters": {
+    "lead_b_lead_m": 0.008,
+    "core_s_core_m": 0.004,
+    "theta_plow_deg": 15.0
+   },
+   "law4_parameters": {
+    "band_h_m": 0.024,
+    "rear_b_back_m": 0.008,
+    "persist_b_persist_m": 0.008,
+    "theta_max_deg": 45.0,
+    "min_speed_m_s": 1e-05
+   }
+  }
+ ],
+ "law_comparison_references": {
+  "law4": "artifacts/wp10_claude/phase1_law4/m8b_law4_001",
+  "law5": "artifacts/wp10_claude/phase1_law5/m8b_law5_001",
+  "law7": "docs/evidence/phase1/law7_quickcheck_001.json"
+ },
+ "cpu_tests": {
+  "law_tests": {
+   "command": ".venv/bin/python -m pytest -q tests/test_cutting_law_v5.py tests/test_cutting_law_v6.py tests/test_cutting_law_v7.py tests/test_cutting_law_v8.py -p no:cacheprovider",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "exit_code": 0,
+   "result": "87 passed, 3 xfailed in 592.21s",
+   "xfails": "35-degree raked skim (strict xfail) under laws 5, 6 and 7",
+   "law8_findings": {
+    "in_plane_through_cut_and_push_withdraw": "bitwise equal to law 4",
+    "constant_rake_skims_25_35": "bitwise equal to law 5 (25 deg: 2 components; 35 deg: 1 component, 44 above-plane code 0, as law 5)",
+    "plow_mask": "0/10/14 deg not plowing, 16/25/35/44 deg plowing; no mask without M_k or when disarmed"
+   }
+  },
+  "quick_suite": {
+   "command": ".venv/bin/python -m pytest -q -m \"not cpu_sim\" -p no:cacheprovider",
+   "exit_code": 0,
+   "result": "655 passed, 130 deselected, 3 warnings in 12.02s"
+  },
+  "warp": "1.17.0 CPU"
+ },
+ "tlmpm_v4_sha256": "cb8985ebbfe530be741025f009400622f6b72cdceacf239f952612c91c2eaea9",
+ "working_tree_note": "GPU runs on b529929 with a dirty tree containing exactly this commit's law-8 source edits (tlmpm_v4.py sha256 cb8985ebbfe530be741025f009400622f6b72cdceacf239f952612c91c2eaea9); each manifest.json records per-file local_code_sha256.",
+ "summary": {
+  "M8b": "PASS (runner slice_push PASS_SLICE_PUSH): 3 components 36.9/31.9/31.3% (= law 4); digit-0 error 2.6e-10 m, digit-1 0.9999999 mm (law 4 0.9999999, law 5 2.0000001, law 7 3.0000002); post-cut manipulation PASS; bar shift +1.15 mm at stroke-0 end, +1.19 mm before cut 1 (law 4 +1.15/+1.19, law 5 +2.08/+2.23)",
+  "M3b": "PASS under the runner criteria (TRIM-01-R ruler_workcell_v2, 35 deg): 2 components 98.96/1.04%, 96.93% removed (= law 5 m3b); frozen strict FAIL_TASK_METRICS on surface p95 / gouge / overcut only (as law 5)",
+  "TRIM-01-R probe (M3a source)": "strict FAIL_TASK_METRICS on surface p95 / gouge / overcut only (as laws 5/6); 2 components 1.521 g / 144.045 g; 96.93% removed; 0 direct code-0 bridges. M3a ingest row not run here (coordinator)",
+  "CUT-01-R probe (M1a source)": "strict PASS_TASK_METRICS: 2 components 72/72 g",
+  "decision": "Quick check passes at the row level; the ADR 0012 gate still needs the full matrix scored by rescore_phase1_matrix (adr0006a1_adr0008). No law-8 live episode counts yet. Nothing tuned."
+ }
+}
