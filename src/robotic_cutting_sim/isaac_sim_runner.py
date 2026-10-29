@@ -72,7 +72,7 @@ class IsaacSimCuttingConfig:
     max_cuts: int = 1
     ik_iterations: int = 48
     initial_joint_positions: tuple | None = None
-    cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3/4/5/6 are opt-in tlmpm_v3/tlmpm_v4
+    cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3/4/5/6/7 are opt-in tlmpm_v3/tlmpm_v4
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -116,8 +116,8 @@ class IsaacSimCuttingConfig:
         if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
                 or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
             raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
-        if self.cutting_law not in (None, 1, 2, 3, 4, 5, 6):
-            raise ValueError('cutting_law is None, 1, 2, 3, 4, 5 or 6')
+        if self.cutting_law not in (None, 1, 2, 3, 4, 5, 6, 7):
+            raise ValueError('cutting_law is None, 1, 2, 3, 4, 5, 6 or 7')
         if self.action_mode not in ("cartesian", "joint"):
             raise ValueError("action_mode must be cartesian or joint")
         if self.velocity_feedforward is None:

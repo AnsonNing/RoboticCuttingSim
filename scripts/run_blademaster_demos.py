@@ -38,6 +38,9 @@ per demo in the run receipt, the demo summary and the index.
 ``--demo-set final_v2`` is final_v1 with cutting law 6 (ADR 0010) instead of
 law 5 (same demos, profiles and seed). It has no recorded reference runs, and
 law-6 live episodes count only after the ADR 0010 matrix gate passes.
+``--demo-set final_v3`` is final_v1 with cutting law 7 (ADR 0011) instead of
+law 5 (same demos, profiles and seed). It has no recorded reference runs, and
+law-7 live episodes count only after the ADR 0011 matrix gate passes.
 ``--demo-set``
 is mutually exclusive with ``--demo`` and ``--controller-profile``; pass it to
 every stage of the run (evaluate checks each demo against its set profile).
@@ -174,6 +177,12 @@ DEMO_SETS = {
                         'final_v1 with cutting law 6 (ADR 0010, deferred lead commit): path_v2 for demos 1a/1b/2, '
                         'path_v2_vision (ADR 0009) for demo 3, seed 42; no recorded reference runs; law-6 live '
                         'episodes count only after the ADR 0010 matrix gate passes'),
+    # final_v1 with cutting law 7 (ADR 0011); same demos/profiles/seed, no recorded reference runs yet.
+    'final_v3': DemoSet('final_v3', (('1a', 'path_v2'), ('1b', 'path_v2'), ('2', 'path_v2'), ('3', 'path_v2_vision')),
+                        7, 42, (),
+                        'final_v1 with cutting law 7 (ADR 0011, Eq. (8)-coupled FLIP reference): path_v2 for demos '
+                        '1a/1b/2, path_v2_vision (ADR 0009) for demo 3, seed 42; no recorded reference runs; law-7 '
+                        'live episodes count only after the ADR 0011 matrix gate passes'),
 }
 V1_ALL_NOTICE = ('NOTICE: --demo all with --controller-profile v1 (the default): this reproduces the first-round v1 '
                  'configuration; use --demo-set final_v1 for the final set')
@@ -1057,14 +1066,14 @@ def build_parser():
     p.add_argument('--demo-set', choices=tuple(DEMO_SETS), default=None,
                    help='Versioned demo set with per-demo controller profiles (recommended: final_v1 = 1a/1b/2 '
                         'path_v2 + 3 path_v2_vision, cutting law 5, seed 42; final_v2 = final_v1 with cutting '
-                        'law 6). Mutually exclusive with --demo and '
+                        'law 6; final_v3 = final_v1 with cutting law 7). Mutually exclusive with --demo and '
                         '--controller-profile')
     p.add_argument('--demo', action='append', choices=(*ORDER, 'all'), help='Repeatable; default all')
     p.add_argument('--stage', action='append', choices=(*STAGES, 'all'),
                    help='Repeatable; default all = run, evaluate, render (+ publish with --publish)')
     p.add_argument('--run-id', default=None, help='Run directory name (default: local timestamp)')
     p.add_argument('--gpu', type=int, default=1)
-    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6), default=5,
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=5,
                    action=_ExplicitStore)
     p.add_argument('--seed', type=int, default=42, action=_ExplicitStore)
     p.add_argument('--controller-profile', choices=tuple(CONTROLLER_PROFILES), default='v1', action=_ExplicitStore,

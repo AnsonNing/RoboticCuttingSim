@@ -1,4 +1,4 @@
-"""Versioned cutting laws 4, 5 and 6 (work-gated stroke, geometric swept band), keeping laws 1/2/3.
+"""Versioned cutting laws 4, 5, 6 and 7 (work-gated stroke, geometric swept band), keeping laws 1/2/3.
 
 Derived from tlmpm_v3 without changing the frozen tlmpm/tlmpm_v2/tlmpm_v3
 source; laws 1/2/3 here run the same kernels in the same launch order and equal
@@ -40,9 +40,15 @@ the updated stroke, records the ended digit, sets stroke_prev) -> _commit_pendin
 means a digit change in one substep cannot overwrite an uncommitted decision for
 the old digit, so pending decisions always belong to the active stroke's digit
 (or are cleared). Committed labels, like every label, act from the next substep.
+Law 7 (docs/adr/0011-cutting-law-7-eq8-coupled-flip.md) is law 5's labelling
+(law-4 contact/engagement, stroke and band plus _assign_lead) with a separate
+grid-update kernel, _grid_update_eq8, used for both grid-update launches (P2G and
+MUSL): following BladeMaster Eq. (8) it also couples p^n between compatible
+fields, so the FLIP reference is coupled p^n / m instead of the uncoupled
+p_c / m_c. Laws 1-6 keep _grid_update and launch nothing new.
 This is an uncalibrated process-zone approximation with provisional
 parameters (h, b_back, b_persist, theta_max; law 5 adds b_lead, s_core; law 6 only
-defers the law-5 commit), not a
+defers the law-5 commit; law 7 only couples the FLIP reference), not a
 converged fracture-energy or real-food model. Labels change only P2G/MUSL compatibility and contact
 selection from the next substep on; no particle is deleted, moved or duplicated.
 """
@@ -439,6 +445,41 @@ def _grid_update(gm: wp.array(dtype=float), gp: wp.array(dtype=wp.vec3), gj: wp.
                 j = other*node_count+node
                 coupled += (m*(gp[j]+gj[j])-gm[j]*raw)/total_mass
         old[i] = gp[i]/m
+        new_v[i] = coupled/m
+
+
+@wp.kernel
+def _grid_update_eq8(gm: wp.array(dtype=float), gp: wp.array(dtype=wp.vec3), gj: wp.array(dtype=wp.vec3),
+                     old: wp.array(dtype=wp.vec3), new_v: wp.array(dtype=wp.vec3),
+                     compatible: wp.array2d(dtype=int), node_count: int, code_count: int):
+    """Law 7 (ADR 0011) grid update: BladeMaster Eq. (8) couples the whole state.
+
+    Same pairwise antisymmetric exchange over compatible fields as _grid_update,
+    applied to p^n + dp (new_v, unchanged) and also to p^n alone, so the FLIP
+    reference old = coupled p^n / m. Two mutually compatible fields at a node
+    then equal one merged field for both the PIC and FLIP parts; incompatible
+    pairs stay decoupled; the exchange conserves momentum. In the MUSL launch gj
+    is zero, so new_v is the coupled remapped momentum, as in _grid_update.
+    """
+    c, node = wp.tid()
+    i = c*node_count+node
+    m = gm[i]
+    old[i] = wp.vec3(0.0)
+    new_v[i] = wp.vec3(0.0)
+    if m > 1.0e-15:
+        total_mass = float(0.0)
+        for other in range(code_count):
+            total_mass += gm[other*node_count+node]
+        raw = gp[i]+gj[i]
+        coupled = raw
+        momentum = gp[i]
+        coupled_momentum = momentum
+        for other in range(code_count):
+            if other != c and compatible[c, other] != 0:
+                j = other*node_count+node
+                coupled += (m*(gp[j]+gj[j])-gm[j]*raw)/total_mass
+                coupled_momentum += (m*gp[j]-gm[j]*momentum)/total_mass
+        old[i] = coupled_momentum/m
         new_v[i] = coupled/m
 
 
@@ -853,8 +894,8 @@ class TLMPM:
         if (profile.ndim != 2 or profile.shape[1] != 2 or len(profile) < 3 or not np.isfinite(profile).all()
                 or np.any(edges[:, 0]*np.roll(edges, -1, 0)[:, 1]-edges[:, 1]*np.roll(edges, -1, 0)[:, 0] <= 0)):
             raise ValueError("Blade profile must be a finite counter-clockwise strictly convex polygon")
-        if cutting_law not in (1, 2, 3, 4, 5, 6) or not np.isfinite(slice_efficiency) or slice_efficiency < 0:
-            raise ValueError('cutting_law must be 1, 2, 3, 4, 5 or 6 with finite nonnegative slice efficiency')
+        if cutting_law not in (1, 2, 3, 4, 5, 6, 7) or not np.isfinite(slice_efficiency) or slice_efficiency < 0:
+            raise ValueError('cutting_law must be 1, 2, 3, 4, 5, 6 or 7 with finite nonnegative slice efficiency')
         obstacles = np.asarray([] if obstacle_boxes_edge is None else obstacle_boxes_edge, np.float32).reshape(-1, 2, 3)
         if edge_segments is None:
             edge_segments = int(np.clip(np.ceil(2*config.blade_half_width/spacing), 1, 4096))
@@ -875,6 +916,8 @@ class TLMPM:
         self.law5_parameters = {"lead_b_lead_m": 2*config.dx, "core_s_core_m": config.dx}
         # ADR 0010 law 6: law 5's parameters, lead decisions committed only at stroke end.
         self.law6_parameters = {**self.law5_parameters, "lead_commit": "stroke_end"}
+        # ADR 0011 law 7: law 5's parameters, FLIP reference from the Eq. (8)-coupled p^n.
+        self.law7_parameters = {**self.law5_parameters, "flip_reference": "eq8_coupled_pn"}
         self.n = len(points)
         self.volume = spacing**3
         self.radius = config.contact_radius_scale*spacing*.5
@@ -989,7 +1032,7 @@ class TLMPM:
             wp.launch(_remember_cut, 1, [self.cuts, self.index, self.previous_cut])
             wp.launch(_stress, n, [self.F, self.Fpi, self.stress, self.plastic, lam, mu, c.yield_stress])
             self.edge_flags.zero_()
-            if self.cutting_law in (4, 5, 6):
+            if self.cutting_law in (4, 5, 6, 7):
                 self.stroke_engaged.zero_(); self.stroke_any_motion.zero_()
                 wp.launch(_segment_motion, self.edge_segments, [self.poses, self.twists, self.cuts, self.index,
                     c.blade_half_width, self.edge_segments, self.law4_parameters["min_speed_m_s"],
@@ -1000,8 +1043,8 @@ class TLMPM:
                 self.reaction, self.stats, self.radius, self.volume, c.dt, c.contact_stiffness,
                 c.contact_friction, c.cutting_energy, c.sharpness, self.profile,
                 len(self.blade_profile_xz), c.blade_half_width, int(c.floor), int(c.fixture_walls), int(c.tool),
-                # Laws 5 and 6 use the law-4 contact/engagement path unchanged.
-                4 if self.cutting_law in (5, 6) else self.cutting_law, self.slice_efficiency, float(self.spacing),
+                # Laws 5, 6 and 7 use the law-4 contact/engagement path unchanged.
+                4 if self.cutting_law in (5, 6, 7) else self.cutting_law, self.slice_efficiency, float(self.spacing),
                 2*c.dx, self.edge_flags,
                 self.edge_segments, self.segment_ok, self.stroke_engaged])
             if c.tool:
@@ -1018,25 +1061,27 @@ class TLMPM:
                 wp.launch(_particle_contacts, n, [self.hash.id, self.x, self.reference,
                     self.v, self.mass, self.code, self.impulse, self.stats, self.radius,
                     3*c.dx, c.dt, c.particle_contact_stiffness, c.contact_friction])
+            # Law 7 (ADR 0011) replaces both grid-update launches; laws 1-6 keep _grid_update.
+            grid_update = _grid_update_eq8 if self.cutting_law == 7 else _grid_update
             self.gm.zero_(); self.gp.zero_(); self.gj.zero_()
             wp.launch(_p2g, (n, 8), [self.v, self.mass, self.code, self.stress, self.impulse,
                 self.nodes, self.weights, self.gradients, self.gm, self.gp, self.gj,
                 self.node_count, self.volume, c.dt, wp.vec3(*c.gravity)])
-            wp.launch(_grid_update, (self.code_count, self.node_count), [self.gm, self.gp, self.gj,
+            wp.launch(grid_update, (self.code_count, self.node_count), [self.gm, self.gp, self.gj,
                 self.old, self.new_v, self.compatible, self.node_count, self.code_count])
             wp.launch(_g2p, n, [self.x, self.v, self.code, self.nodes, self.weights,
                 self.old, self.new_v, self.node_count, c.dt, c.pic])
             self.gp.zero_(); self.gj.zero_()
             wp.launch(_musl, (n, 8), [self.v, self.mass, self.code, self.nodes,
                 self.weights, self.gp, self.node_count])
-            wp.launch(_grid_update, (self.code_count, self.node_count), [self.gm, self.gp, self.gj,
+            wp.launch(grid_update, (self.code_count, self.node_count), [self.gm, self.gp, self.gj,
                 self.old, self.new_v, self.compatible, self.node_count, self.code_count])
             wp.launch(_deformation, n, [self.F, self.code, self.nodes, self.gradients,
                 self.new_v, self.node_count, c.dt])
             if self.cutting_law == 3:
                 wp.launch(_persist_segments, self.edge_segments, [self.edge_flags, self.segment_persist, self.poses,
                     self.twists, self.cuts, self.index, c.blade_half_width, self.edge_segments])
-            if self.cutting_law in (4, 5, 6):
+            if self.cutting_law in (4, 5, 6, 7):
                 law4 = self.law4_parameters
                 wp.launch(_update_stroke, 1, [self.twists, self.cuts, self.index, self.stroke_engaged,
                     self.stroke_any_motion, self.stroke, self.stroke_travel, c.dt, law4["persist_b_persist_m"]])
@@ -1048,7 +1093,7 @@ class TLMPM:
                 wp.launch(_assign_band, n, [self.x, self.v, self.code, self.poses, self.twists, self.cuts,
                     self.index, law4["band_h_m"], c.blade_half_width, law4["rear_b_back_m"], c.dt,
                     self.stroke, self.segment_ok, self.edge_segments])
-                if self.cutting_law == 5:
+                if self.cutting_law in (5, 7):
                     law5 = self.law5_parameters
                     wp.launch(_assign_lead, n, [self.x, self.code, self.poses, self.twists, self.cuts, self.index,
                         law4["band_h_m"], c.blade_half_width, law5["lead_b_lead_m"], law5["core_s_core_m"],
@@ -1073,7 +1118,7 @@ class TLMPM:
                 wp.launch(_advance, 1, [self.index])
 
     def cutting_state(self, count_labels=False):
-        """Law-4/5/6 stroke state after the last substep (host copy of a few scalars).
+        """Law-4/5/6/7 stroke state after the last substep (host copy of a few scalars).
 
         ``stroke`` is 0 or armed digit + 1; ``travel_m`` is edge-centre travel
         since the last engaged substep; ``engaged``/``any_motion`` are the last
@@ -1085,7 +1130,7 @@ class TLMPM:
         Oracle diagnostics only, never observations.
         """
         state = {"cutting_law": self.cutting_law}
-        if self.cutting_law in (4, 5, 6):
+        if self.cutting_law in (4, 5, 6, 7):
             state.update(stroke=int(self.stroke.numpy()[0]), travel_m=float(self.stroke_travel.numpy()[0]),
                          engaged=int(self.stroke_engaged.numpy()[0]), any_motion=int(self.stroke_any_motion.numpy()[0]))
         if self.cutting_law == 6:

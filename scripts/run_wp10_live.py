@@ -417,7 +417,7 @@ def main(argv=None):
     p.add_argument('--material-profile')
     p.add_argument('--material-dt', type=float, default=.0001)
     p.add_argument('--max-cuts', type=int, default=1)
-    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6), help='None keeps the task default (v2 tasks: law 2)')
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6, 7), help='None keeps the task default (v2 tasks: law 2)')
     p.add_argument('--ik-iterations', type=int, default=48)
     p.add_argument('--oracle-stride', type=int, default=1)
     p.add_argument('--motion', choices=('push', 'saw', 'oblique', 'yaw', 'roll'), default='push')

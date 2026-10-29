@@ -36,7 +36,7 @@ def main():
     p.add_argument('--episode', type=Path, required=True)
     p.add_argument('--task', required=True)
     p.add_argument('--scenario')
-    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6))
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6, 7))
     p.add_argument('--device', default='cuda:1')
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args()
