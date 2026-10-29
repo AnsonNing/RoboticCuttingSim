@@ -1,0 +1,29 @@
+{
+  "schema": "rcs_generalization_live_stage_v1",
+  "inherits": {"file": "configs/wp11/generalization_round1_live.json", "sha256": "b7fb9702ee3bc1ccc0f749dc85edc774634558ecf53fbd89299bafe48eb97ce8"},
+  "stage_id": "wp11_phaseE_round1_live_002",
+  "status": "PREDECLARED",
+  "log_prefix": "phaseE_live002",
+  "declared": "2026-10-30, after live_001 recorded E1_TEST_C_s1602 as SCENE_INFEASIBLE and before any live_002 run. Supplementary stage for E1_TEST_C_s1602 only. Every rule of generalization_round1_live.json (task, controller, schedule, runtime, device policy, success criteria, classes, home_outcome, failure policy) is inherited unchanged except the launch preflight geometry below. The live_001 result of this sample stays SCENE_INFEASIBLE and is reported as such; live_002 is a separate, labelled result.",
+  "reason": "live_001 used the runner's default C2 plan preflight, which models all protrusions as one convex hull ('static_workpiece_bump') for the whole plan. For the three-protrusion Test C scene that hull bridges the gaps between protrusions and keeps the protrusions already removed, so it refused the plan with blade vs bump -8.4 mm at PRE_CUT:p2 (contact_free; artifacts/wp11/phaseE/round1_live_001/E1_TEST_C_s1602/run_001/plan_preflight.json). The round file already declares the geometry for scenes with two or more protrusions (configs/wp11/generalization_round1.json stages.stage1_geometry: generalization.staged_preflight); the live_001 declaration did not carry that rule over. That was a declaration omission, not a property of the scene: the same staged check PASSes on the live task (binding blade_collision slack +0.05 mm, the same thresholds).",
+  "preflight": {
+    "mode": "round1_staged",
+    "text": "Before launch, generalization.staged_preflight (round file stages.stage1_geometry: the same dense IK chain from q_home over the full live plan HOME -> ... -> RETURN_HOME, checked in contiguous chunks against the declared workpiece without the protrusions removed by earlier remove operations; remaining protrusions keep the C2 hull; same C2 thresholds; joint continuity over the whole chain) on the compiled live task must PASS; its receipt is written to inputs/staged_preflight.json. The Native runner is then launched with --skip-plan-preflight (its default single-hull preflight is replaced, not added). A FAIL is SCENE_INFEASIBLE / IK_FAILURE by generalization.classify_preflight and nothing is launched."
+  },
+  "samples": [
+    {"priority": 1, "sample_id": "E1_TEST_C_s1602", "family": "TEST_C", "seed": 1602, "record_every": 5, "media": true, "estimated_disk_gb": 1.7,
+     "purpose": "Test C: three protrusions removed one at a time, tlmpm_v5 (kinematic all >= 0.946); live_002 with the round-1 staged preflight",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TEST_C_s1602-E1_TEST_C_s1602_remove3-5d2b4b78", "live_plan_end_s": 17.48, "duration_s": 20.5, "steps": 1025, "history_stride": 26}}
+  ],
+  "outputs": {
+    "root": "artifacts/wp11/phaseE/round1_live_002/<sample_id>/ (same layout as live_001)",
+    "logs": "artifacts/wp11/logs/phaseE_live002_*.log, queue log artifacts/wp11/logs/phaseE_live002_queue_001.log",
+    "evidence": "docs/evidence/wp11/phaseE_round1_live_001.json (live_002 rows labelled separately)",
+    "report": "docs/reports/WP11_PHASE_E_ROUND1.md, section 'Live stage'",
+    "media": "docs/media/wp11/test_c_s1602/ from the live_002 episode"
+  },
+  "commands": {
+    "queue": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_002.json queue --root artifacts/wp11/phaseE/round1_live_002 --queue-log artifacts/wp11/logs/phaseE_live002_queue_001.log",
+    "analyze": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_002.json analyze --sample-dir artifacts/wp11/phaseE/round1_live_002/E1_TEST_C_s1602 --run run_001 --out artifacts/wp11/phaseE/round1_live_002/E1_TEST_C_s1602/analysis_001"
+  }
+}

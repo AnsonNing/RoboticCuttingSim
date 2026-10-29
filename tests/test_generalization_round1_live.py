@@ -83,3 +83,15 @@ def test_task_phase_keeps_the_planner_return_home_and_hold():
                                           'RETURN_HOME:MOVE_HOME')]
     assert [L.is_lifecycle_home(r) for r in rows] == [False, False, False, False, True, True]
     assert L._op_of('SKIM:p0') == 'p0' and L._op_of('RETURN_HOME:RETRACTING') is None and L._op_of('RETURN_HOME') is None
+
+
+def test_live_002_inherits_everything_but_the_preflight():
+    parent, _ = L.load_live()
+    child, _ = L.load_live(ROOT/'configs/wp11/generalization_round1_live_002.json')
+    assert child['preflight']['mode'] == 'round1_staged'
+    assert [s['sample_id'] for s in child['samples']] == ['E1_TEST_C_s1602']
+    for key in ('task', 'controller', 'schedule', 'runtime', 'success_criteria', 'outcome_classes', 'home_outcome',
+                'failure_policy', 'round_file', 'round_file_sha256'):
+        assert child[key] == parent[key]
+    spec = L.sample_spec(child, 'E1_TEST_C_s1602')
+    assert spec['declared_live_task'] == L.sample_spec(parent, 'E1_TEST_C_s1602')['declared_live_task']

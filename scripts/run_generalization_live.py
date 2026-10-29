@@ -80,6 +80,13 @@ def git_state():
 
 def load_live(path=LIVE_CONFIG):
     live = json.loads(Path(path).read_text())
+    if 'inherits' in live:
+        # A supplementary stage file: the parent stage's rules, with only the keys it declares replaced.
+        parent, _ = load_live(ROOT/live['inherits']['file'])
+        digest = hashlib.sha256((ROOT/live['inherits']['file']).read_bytes()).hexdigest()
+        if digest != live['inherits']['sha256']:
+            raise ValueError(f'{live["inherits"]["file"]} sha256 {digest} != declared {live["inherits"]["sha256"]}')
+        live = {**parent, **{k: v for k, v in live.items() if k != 'inherits'}, 'inherits': live['inherits']}
     round_path = ROOT/live['round_file']
     digest = hashlib.sha256(round_path.read_bytes()).hexdigest()
     if digest != live['round_file_sha256']:
@@ -212,6 +219,25 @@ def du_bytes(path):
     return int(out[0]) if out else None
 
 
+def staged_gate(live, inputs, attempt):
+    """Round-1 stage-1 geometry (generalization.staged_preflight) over the full live plan; receipt in inputs/."""
+    from robotic_cutting_sim import motion_preflight as mp
+    from robotic_cutting_sim.scene_config import compile_task
+    path = Path(inputs)/'staged_preflight.json'
+    if attempt > 1 and path.exists():
+        return read_json(path)
+    start = time.perf_counter()
+    task = compile_task(str(Path(inputs)/'scene.json'), str(Path(inputs)/'goal.json'),
+                        planner_options=live['controller']['planner_overrides'], seed=live['runtime']['seed'])
+    receipt, _ = G.staged_preflight(task, mp.MotionChecker(task))
+    cls, reason = G.classify_preflight(receipt)
+    gate = {'status': 'PASS' if cls is None else 'FAIL', 'class': cls, 'reason': reason or 'staged preflight PASS',
+            'task_id': task.task_id, 'rule': live['preflight']['text'], 'receipt': receipt,
+            'wall_s': time.perf_counter()-start, **git_state()}
+    write_new(path, gate)
+    return gate
+
+
 def recorded_steps(run_dir):
     path = Path(run_dir)/'episode_000'/'actions.jsonl'
     if not path.exists():
@@ -309,9 +335,19 @@ def cmd_queue(args):
                     prep = read_json(inputs/'prepare.json')
                 run_dir = sample_dir/f'run_{attempt:03d}'
                 command = runner_command(live, spec, prep, inputs, run_dir, gpu)
-                log_path = logs/f'phaseE_live_{sample_id}_{attempt:03d}.log'
+                if live.get('preflight', {}).get('mode') == 'round1_staged':
+                    gate = staged_gate(live, inputs, attempt)
+                    if gate['status'] != 'PASS':
+                        run_dir.mkdir(parents=True, exist_ok=False)
+                        write_new(run_dir/'result.json', {'status': gate['class'] or 'SCENE_INFEASIBLE',
+                                                          'refused_before_launch': True, 'preflight': 'round1_staged',
+                                                          'reason': gate['reason'], 'task_id': prep['live_task_id']})
+                        note(f'REFUSED {sample_id}: staged preflight {gate["status"]} ({gate["reason"]})')
+                        continue
+                    command.append('--skip-plan-preflight')
+                log_path = logs/f'{live.get("log_prefix", "phaseE_live")}_{sample_id}_{attempt:03d}.log'
                 if log_path.exists():
-                    log_path = logs/f'phaseE_live_{sample_id}_{attempt:03d}_{time.strftime("%Y%m%d_%H%M%S")}.log'
+                    log_path = logs/f'{live.get("log_prefix", "phaseE_live")}_{sample_id}_{attempt:03d}_{time.strftime("%Y%m%d_%H%M%S")}.log'
                 env = {**os.environ, 'OMNI_KIT_ACCEPT_EULA': 'YES', 'PYTHONUNBUFFERED': '1',
                        'TMPDIR': live['runtime']['tmpdir']}
                 proc = subprocess.Popen(command, cwd=str(ROOT), stdout=open(log_path, 'w'), stderr=subprocess.STDOUT, env=env)
