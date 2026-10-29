@@ -50,7 +50,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                 solver_version=None):
     """Drive the edge frame (rotation: edge->world Rotation) through phases.
 
-    ``solver_version`` None uses tlmpm_v4 for laws 4/5, tlmpm_v3 for law 3 and
+    ``solver_version`` None uses tlmpm_v4 for laws 4/5/6, tlmpm_v3 for law 3 and
     tlmpm_v2 otherwise; 3 or 4 forces that module (for equivalence checks of
     the older laws against tlmpm_v2/tlmpm_v3).
 
@@ -58,10 +58,10 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
     reaction force (world, N) per phase, and the solver snapshot.
     """
     import warp as wp
-    if (solver_version not in (None, 2, 3, 4) or (solver_version == 2 and cutting_law in (3, 4, 5))
-            or (solver_version == 3 and cutting_law in (4, 5))):
-        raise ValueError('solver_version is 2, 3 or 4; law 3 needs tlmpm_v3/v4 and laws 4/5 tlmpm_v4')
-    if cutting_law in (4, 5) or solver_version == 4:
+    if (solver_version not in (None, 2, 3, 4) or (solver_version == 2 and cutting_law in (3, 4, 5, 6))
+            or (solver_version == 3 and cutting_law in (4, 5, 6))):
+        raise ValueError('solver_version is 2, 3 or 4; law 3 needs tlmpm_v3/v4 and laws 4/5/6 tlmpm_v4')
+    if cutting_law in (4, 5, 6) or solver_version == 4:
         from .tlmpm_v4 import TLMPM
     elif cutting_law == 3 or solver_version == 3:
         from .tlmpm_v3 import TLMPM
@@ -120,7 +120,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
             position = position+velocity*config.dt*count
         wp.synchronize_device(device)
         labels.append(int(np.count_nonzero(bed.code.numpy())))
-        if cutting_law in (4, 5):
+        if cutting_law in (4, 5, 6):
             strokes.append(bed.cutting_state())
         reaction = np.asarray(reaction)
         if record_history:
@@ -137,7 +137,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
             "mass_fractions": fractions.tolist(), "forces": forces,
             "edge_position_m": position.tolist(), "state": state, "points": points,
             "component": component,
-            **({"cutting_state_after_phase": strokes} if cutting_law in (4, 5) else {}),
+            **({"cutting_state_after_phase": strokes} if cutting_law in (4, 5, 6) else {}),
             **({'force_history_N': histories, 'severed_bonds_after_phase': bonds_after_phase,
                 'reference_stencil_nodes': bed.nodes.numpy(), 'reference_stencil_weights': bed.weights.numpy(),
                 'reference_stencil_gradients': bed.gradients.numpy()} if record_history else {})}

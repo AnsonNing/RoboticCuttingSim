@@ -571,8 +571,9 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--row', required=True, choices=sorted([*ROW_CONFIG, *NATIVE, 'M7']))
     p.add_argument('--device', default='cuda:1')
-    p.add_argument('--cutting-law', type=int, default=DEFAULT_LAW,
-                   help='Opt-in cutting law (default 4, ADR 0006); recorded in result.json and the output name check')
+    p.add_argument('--cutting-law', type=int, default=DEFAULT_LAW, choices=(4, 5, 6),
+                   help='Opt-in stroke-based cutting law (default 4, ADR 0006; 5 ADR 0008; 6 ADR 0010); recorded in '
+                        'result.json and the output name check')
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--spacing', type=float, default=.001, help='Particle spacing (formal: 1 mm)')
     p.add_argument('--material-dt', type=float, default=1e-4, help='Material dt (formal: 1e-4 s)')

@@ -34,7 +34,11 @@ with controller profile ``path_v2`` and demo 3 with ``path_v2_vision``, all
 with cutting law 5 and seed 42 -- the configurations of the recorded final
 runs ``live_20261029_pathv2_d`` (1a, 1b), ``live_20261029_pathv2_c`` (2) and
 ``live_20261029_vision_e`` (3). The profile is chosen per demo and recorded
-per demo in the run receipt, the demo summary and the index. ``--demo-set``
+per demo in the run receipt, the demo summary and the index.
+``--demo-set final_v2`` is final_v1 with cutting law 6 (ADR 0010) instead of
+law 5 (same demos, profiles and seed). It has no recorded reference runs, and
+law-6 live episodes count only after the ADR 0010 matrix gate passes.
+``--demo-set``
 is mutually exclusive with ``--demo`` and ``--controller-profile``; pass it to
 every stage of the run (evaluate checks each demo against its set profile).
 
@@ -164,6 +168,12 @@ DEMO_SETS = {
                                 ('2', 'live_20261029_pathv2_c'), ('3', 'live_20261029_vision_e')),
                         'Final BladeMaster demo set: path_v2 for demos 1a/1b/2, path_v2_vision (ADR 0009) for '
                         'demo 3, cutting law 5, seed 42'),
+    # final_v1 with cutting law 6 (ADR 0010); same demos/profiles/seed, no recorded reference runs yet.
+    'final_v2': DemoSet('final_v2', (('1a', 'path_v2'), ('1b', 'path_v2'), ('2', 'path_v2'), ('3', 'path_v2_vision')),
+                        6, 42, (),
+                        'final_v1 with cutting law 6 (ADR 0010, deferred lead commit): path_v2 for demos 1a/1b/2, '
+                        'path_v2_vision (ADR 0009) for demo 3, seed 42; no recorded reference runs; law-6 live '
+                        'episodes count only after the ADR 0010 matrix gate passes'),
 }
 V1_ALL_NOTICE = ('NOTICE: --demo all with --controller-profile v1 (the default): this reproduces the first-round v1 '
                  'configuration; use --demo-set final_v1 for the final set')
@@ -1046,14 +1056,15 @@ def build_parser():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--demo-set', choices=tuple(DEMO_SETS), default=None,
                    help='Versioned demo set with per-demo controller profiles (recommended: final_v1 = 1a/1b/2 '
-                        'path_v2 + 3 path_v2_vision, cutting law 5, seed 42). Mutually exclusive with --demo and '
+                        'path_v2 + 3 path_v2_vision, cutting law 5, seed 42; final_v2 = final_v1 with cutting '
+                        'law 6). Mutually exclusive with --demo and '
                         '--controller-profile')
     p.add_argument('--demo', action='append', choices=(*ORDER, 'all'), help='Repeatable; default all')
     p.add_argument('--stage', action='append', choices=(*STAGES, 'all'),
                    help='Repeatable; default all = run, evaluate, render (+ publish with --publish)')
     p.add_argument('--run-id', default=None, help='Run directory name (default: local timestamp)')
     p.add_argument('--gpu', type=int, default=1)
-    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5), default=5,
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5, 6), default=5,
                    action=_ExplicitStore)
     p.add_argument('--seed', type=int, default=42, action=_ExplicitStore)
     p.add_argument('--controller-profile', choices=tuple(CONTROLLER_PROFILES), default='v1', action=_ExplicitStore,

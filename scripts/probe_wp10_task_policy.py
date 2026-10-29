@@ -20,7 +20,7 @@ def main():
     p.add_argument('--spacing',type=float,default=.001)
     p.add_argument('--saw',type=float,default=0.)
     p.add_argument('--scenario')
-    p.add_argument('--cutting-law',type=int,choices=(1,2,3,4,5),help='None keeps the task default (v2 tasks: law 2)')
+    p.add_argument('--cutting-law',type=int,choices=(1,2,3,4,5,6),help='None keeps the task default (v2 tasks: law 2)')
     p.add_argument('--steps',type=int,default=400)
     p.add_argument('--out',type=Path,required=True)
     a=p.parse_args();out=new_output(a.out);start=time.monotonic()
