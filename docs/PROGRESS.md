@@ -64,10 +64,17 @@
   - **Test F**：kinematic **POLICY_READY**（7 episode，replay 完全重現）；**Native NOT POLICY_READY**：只有記憶體不合格（每次 reset host RSS +82 MiB，不收斂；GPU 記憶體持平）。Phase H 處理。
   - 可靠性規則 v1a 是在 smoke 之後、正式 Native run 之前加的（夾住的刀 reset 後 PhysX 速度雜訊 3.6 mm/s），v1 不改，兩者都計分。
   - 注意：Native run 的 manifest 是 git_dirty（當時工作樹有 C5b 未 commit 的修改），Phase H 會從乾淨 worktree 重跑。
+- **Phase E 第一輪 live 階段**（`1ecfe5e` 先宣告，`fef0e1e`／`fc8c972` 證據與報告，[證據](evidence/wp11/phaseE_round1_live_001.json)，Native，實體夾持 v2 刀）：9 個推薦 seed 中 **6 個 live TASK_SUCCESS**，2 個 CUTTING_FAILURE，1 個 SCENE_INFEASIBLE；GRASP_FAILURE、IK_FAILURE 都是 0。
+  - 成功：TRIM s1203（0.994）、s1201（0.962）、CUT s1101、20° 斜切 s1102、Test A s6（−x 方向削切 0.967）、**Test B s1502（四刀五塊）**。全部 Return-to-Home PASS，最大滑移 1.3 µm。
+  - 失敗與 kinematic 一致：SLICE-PUSH s1301 第二刀位置 4.0 mm（長條滑 1.16 mm）；Test A s2 斜切位置 1.023 mm（> 1.00 mm）。手腕深度重新定位目前綁在 SLICE-PUSH-01，configured task 還不能用。
+  - Test C s1602：live_001 預檢用單一凸包包住三個凸起，誤判碰撞而拒跑（SCENE_INFEASIBLE）；補充的 live_002 在第三次削切時因顯示用網格（`ParticleSurface`）遇到 11 顆粒子的碎片而中止（NOT_RUN）。兩筆紀錄都保留，修好後另立 live_003。
+  - 只報告的路徑檢查：三次 10° 削切在削切前穩定時刀身低於未切頂面 0.19–0.24 mm（切削關閉），與 C5 相同的未解問題。
+  - 影片：[Test A s6](media/wp11/test_a_s6/demo.mp4)、[Test B s1502](media/wp11/test_b_s1502/demo.mp4)。
+- 磁碟：/mnt/data 剩 17 GB，已把 10 個 WP-11 之前的舊 artifact（約 11 GB）搬到根磁碟 `/home/ningan/RoboticCuttingSim_artifacts_rootdisk/`（rsync 後比對檔名與大小，再改 symlink；紀錄在該目錄的 `MOVE_LOG.txt`），現在 /mnt/data 剩 27 GB。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C5b：`path_v3` 控制器＋`trim_bump_rho10_clear` 目標（削除後把 chip 推離），跑 live attempt 2（`artifacts/wp11/phaseC5/`）；
   - H：Native reset 記憶體洩漏、profiling、Research Fast／Full Physics 設定檔，並從乾淨 worktree 重跑 Native 可靠性（`artifacts/wp11/phaseH/`）；
-  - E live：第一輪推薦 seed 的 live Native 階段（先宣告再跑，`artifacts/wp11/phaseE/round1_live_001/`），含 Test A／B／C 影片；
+  - E live_003：修好顯示網格的小碎片處理與多凸起預檢後，重跑 Test C s1602 live（先宣告）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。
