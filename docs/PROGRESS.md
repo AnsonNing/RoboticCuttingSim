@@ -39,12 +39,16 @@
 - **C5 live 近水平 TRIM PASS**（`5aa0bee`，[證據](evidence/wp11/phaseC5_live_trim_001.json)，[影片](media/wp11/trim_rho10/demo.mp4)）。
   - Native、`ruler_knife_v2_y`、ρ = 10°：凸起去除 97.9%，底材 0.99996，chip 持續獨立，夾持滑移 0.75 µm，Return-to-Home PASS。
   - 待改進：PRE-CUT 量測回饋振盪 ±0.2 mm，刀身最低點一度進入未切頂面 0.16 mm，間隙稽核 FAIL；chip 留在長條頂面，畫面不夠清楚。由 C5b 處理（`path_v3` 控制器＋把 chip 推離）。
+- **F1 夾持壓力測試完成，suite verdict FAIL**（`0c39b23`、`9a4cb5f`、`78e20ab`，[報告](reports/WP11_PHASE_F1_GRASP.md)，[證據](evidence/wp11/phaseF1_grasp_001.json)，Native，seed 42）。
+  - 31 項中：30 s HOME／TRIM 保持、2× REORIENT、0.1–0.5 N 外力、0.01–0.05 N·m 力矩、C4 切削反力重播（含 10×）、兩項釋放全部 PASS（滑移 ≤ 4.8 µm、≤ 0.14 mrad）。
+  - 唯一 FAIL：負對照 `low_friction_trim_advance_0p1n`。0.1 N −advance 的力矩（−0.009 N·m）幾乎抵銷重力在 ρ = 10° 的 +0.0083 N·m，是對照設計錯誤；門檻不改，v8 紀錄保留為 FAIL。修正版對照另立 protocol v9（先宣告再跑）。
+  - 弱方向是繞手指閉合軸（= 刀身法向）的力矩：0.05 N·m 保持，0.18 N·m 轉 12.5°，0.45 N·m 掉刀。切削反力在此軸只有約 0.0002 N·m。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - F2/F3：law 8 邊界驗證與解析度研究（kinematic 1 mm，GPU 0，[預先宣告的 protocol](../configs/wp11/phaseF_protocol_v1.json)，輸出 `artifacts/wp11/phaseF/`）；
   - C5b：`path_v3` 控制器＋`trim_bump_rho10_clear` 目標（削除後把 chip 推離），跑 live attempt 2（`artifacts/wp11/phaseC5/`）；
   - G：policy-ready API、資料收集器、多 episode 可靠性、Tests E/F（`artifacts/wp11/phaseG/`）；
-  - F1：v2 長時間夾持壓力測試（Native，GPU 0，`artifacts/wp11/phaseF1/`）；
-  - E：泛化第一輪，先做預檢與 kinematic（`artifacts/wp11/phaseE/`）；
+  - F1 v9：修正版負對照（`artifacts/wp11/phaseF1/f1_negctrl_v9_001`）；
+  - E：泛化第一輪；預檢完成，41 個可行樣本進入 kinematic 佇列（GPU 0，GPU 1 空出後可並用；`artifacts/wp11/phaseE/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。
