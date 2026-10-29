@@ -156,7 +156,7 @@ class LabCuttingConfig:
     max_cuts: int = 1
     ik_iterations: int = 48
     initial_joint_positions: tuple | None = None
-    cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3 is opt-in tlmpm_v3
+    cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3/4 are opt-in tlmpm_v3/tlmpm_v4
 
     def __post_init__(self):
         if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
@@ -183,8 +183,8 @@ class LabCuttingConfig:
         if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
                 or self.cutting_law is not None) and self.task_id not in ProfileTaskSpec.TASK_IDS:
             raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
-        if self.cutting_law not in (None, 1, 2, 3):
-            raise ValueError('cutting_law is None, 1, 2 or 3')
+        if self.cutting_law not in (None, 1, 2, 3, 4):
+            raise ValueError('cutting_law is None, 1, 2, 3 or 4')
         if self.particle_spacing_m is not None and self.task_id is None:
             raise ValueError("Particle-spacing overrides require a CUT/TRIM task; legacy recipes remain fixed")
         if self.action_mode not in ("cartesian_edge_pose_world", "joint_position_rad"):

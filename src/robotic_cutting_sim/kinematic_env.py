@@ -25,7 +25,7 @@ class KinematicConfig:
     particle_spacing_m: float | None = None   # None = protocol spacing (1 mm)
     material_dt: float = .0001                 # explicit, recorded; coarse probes may raise it
     device: str = "cpu"
-    cutting_law: int | None = None             # None = task default (v1 tasks 1, v2 tasks 2)
+    cutting_law: int | None = None             # None = task default (v1 tasks 1, v2 tasks 2); 3/4 opt-in
     max_cuts: int = 1
     slice_efficiency: float = 1.
     scenario: str | None = None
@@ -50,6 +50,7 @@ class KinematicCuttingBackend:
         self.material, self.edge, self.time_s = None, None, 0.
         self.frames, self.calibration = {}, {}
         self.last_diagnostics = {}
+        self.stroke_history = []  # law 4 only: per-control-step stroke state (oracle)
         self._surface, self._surface_time = None, None
 
     @property
@@ -76,6 +77,7 @@ class KinematicCuttingBackend:
         self.time_s = 0.
         receipt = self.material.reset(self.edge, seed=int(seed))
         self.last_diagnostics = {"material_reset": receipt}
+        self.stroke_history = []
         self._surface = None
         return receipt
 
@@ -105,6 +107,10 @@ class KinematicCuttingBackend:
         self.edge = np.asarray(target, float).copy()
         diagnostics = self.material.advance(self.edge, next_time, cutting=cutting, cut_index=cut_index)
         self.time_s = next_time
+        if self.material.cutting_law == 4:
+            # Oracle-only record of when the edge was engaged (never an observation).
+            self.stroke_history.append({"time_s": next_time, "cut_index": diagnostics["cut_index"],
+                                        **self.material.bed.cutting_state(count_labels=True)})
         self.last_diagnostics = {"material": diagnostics, "commanded_edge_pose": self.edge.copy(),
                                  "measured_edge_pose": self.edge.copy(), "tracking_error_m": 0.}
         return self.measured(), self.last_diagnostics
@@ -127,6 +133,19 @@ class KinematicCuttingBackend:
     @property
     def surface_metadata(self):
         return self._extract_surface()[2]
+
+    def law4_stroke_arrays(self):
+        """Per-control-step law-4 stroke record as arrays for physics_state.npz ({} otherwise)."""
+        rows = self.stroke_history
+        if not rows:
+            return {}
+        return {"law4_time_s": np.asarray([r["time_s"] for r in rows], float),
+                "law4_stroke": np.asarray([r["stroke"] for r in rows], np.int32),
+                "law4_travel_m": np.asarray([r["travel_m"] for r in rows], float),
+                "law4_engaged": np.asarray([r["engaged"] for r in rows], np.int32),
+                "law4_any_motion": np.asarray([r["any_motion"] for r in rows], np.int32),
+                "law4_cut_index": np.asarray([r["cut_index"] for r in rows], np.int32),
+                "law4_labelled_count": np.asarray([r["labelled_count"] for r in rows], np.int64)}
 
     def close(self):
         self.material = None

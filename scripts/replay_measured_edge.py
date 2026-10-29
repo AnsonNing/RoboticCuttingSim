@@ -36,7 +36,7 @@ def main():
     p.add_argument('--episode', type=Path, required=True)
     p.add_argument('--task', required=True)
     p.add_argument('--scenario')
-    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3))
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4))
     p.add_argument('--device', default='cuda:1')
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args()
@@ -58,7 +58,9 @@ def main():
     np.savez_compressed(out / 'physics_state.npz', time_s=[s['time_s'] for s in env._history],
         **{key: np.asarray([s[key] for s in env._history]) for key in ('positions', 'velocities', 'codes')},
         mass_kg=env.backend.material.masses, reference_positions=env.backend.material.world_points,
-        reference_stencil_nodes=env.backend.material.bed.nodes.numpy())
+        reference_stencil_nodes=env.backend.material.bed.nodes.numpy(),
+        reference_stencil_weights=env.backend.material.bed.weights.numpy(),
+        reference_stencil_gradients=env.backend.material.bed.gradients.numpy(), **env.backend.law4_stroke_arrays())
     write_json(out / 'result.json', dict(status='PASS_EXECUTION', runtime_source='measured_trajectory_material_replay',
         source_episode=str(a.episode), steps=steps, cutting_law=env.backend.material.cutting_law,
         task_status=strict['status'], strict=strict, research=research, wall_s=time.monotonic() - start))

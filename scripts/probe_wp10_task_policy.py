@@ -20,7 +20,7 @@ def main():
     p.add_argument('--spacing',type=float,default=.001)
     p.add_argument('--saw',type=float,default=0.)
     p.add_argument('--scenario')
-    p.add_argument('--cutting-law',type=int,choices=(1,2,3),help='None keeps the task default (v2 tasks: law 2)')
+    p.add_argument('--cutting-law',type=int,choices=(1,2,3,4),help='None keeps the task default (v2 tasks: law 2)')
     p.add_argument('--steps',type=int,default=400)
     p.add_argument('--out',type=Path,required=True)
     a=p.parse_args();out=new_output(a.out);start=time.monotonic()
@@ -40,8 +40,11 @@ def main():
     strict=env.evaluate();research=env.evaluate(profile='research')
     np.savez_compressed(out/'physics_state.npz',time_s=[s['time_s'] for s in env._history],
         **{key:np.asarray([s[key] for s in env._history]) for key in ('positions','velocities','codes')},
-        mass_kg=env.backend.material.masses,reference_positions=env.backend.material.world_points)
+        mass_kg=env.backend.material.masses,reference_positions=env.backend.material.world_points,
+        reference_stencil_nodes=env.backend.material.bed.nodes.numpy(),reference_stencil_weights=env.backend.material.bed.weights.numpy(),
+        reference_stencil_gradients=env.backend.material.bed.gradients.numpy(),**env.backend.law4_stroke_arrays())
     write_json(out/'result.json',dict(status='PASS_EXECUTION',runtime_source=env.runtime_source,
+        cutting_law=env.backend.material.cutting_law,material_receipt=env.backend.material.parameter_receipt,
         task_status=strict['status'],strict=strict,research=research,wall_s=time.monotonic()-start))
     print(strict['status'],strict.get('metrics',{}).get('removed_reference_above_plane_mass_fraction'),flush=True)
 

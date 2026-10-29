@@ -50,16 +50,20 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                 solver_version=None):
     """Drive the edge frame (rotation: edge->world Rotation) through phases.
 
-    ``solver_version`` None uses tlmpm_v3 for law 3 and tlmpm_v2 otherwise; 3
-    forces tlmpm_v3 (for laws 1/2 equivalence checks against tlmpm_v2).
+    ``solver_version`` None uses tlmpm_v4 for law 4, tlmpm_v3 for law 3 and
+    tlmpm_v2 otherwise; 3 or 4 forces that module (for equivalence checks of
+    the older laws against tlmpm_v2/tlmpm_v3).
 
     Returns per-phase label counts, final components, mean and peak tool
     reaction force (world, N) per phase, and the solver snapshot.
     """
     import warp as wp
-    if solver_version not in (None, 2, 3) or (solver_version == 2 and cutting_law == 3):
-        raise ValueError('solver_version is 2 or 3; law 3 exists only in tlmpm_v3')
-    if cutting_law == 3 or solver_version == 3:
+    if (solver_version not in (None, 2, 3, 4) or (solver_version == 2 and cutting_law in (3, 4))
+            or (solver_version == 3 and cutting_law == 4)):
+        raise ValueError('solver_version is 2, 3 or 4; law 3 needs tlmpm_v3/v4 and law 4 tlmpm_v4')
+    if cutting_law == 4 or solver_version == 4:
+        from .tlmpm_v4 import TLMPM
+    elif cutting_law == 3 or solver_version == 3:
         from .tlmpm_v3 import TLMPM
     else:
         from .tlmpm_v2 import TLMPM
@@ -80,7 +84,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
         wp.load_module(module='robotic_cutting_sim.probe_kernels', device=device)
     quaternion = rotation.as_quat()
     position = np.asarray(start_m, float)
-    labels, forces, histories, bonds_after_phase = [], [], [], []
+    labels, forces, histories, bonds_after_phase, strokes = [], [], [], [], []
     for phase in phases:
         velocity = np.asarray(phase.velocity_m_s, float)
         steps = int(round(phase.duration_s/config.dt))
@@ -116,6 +120,8 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
             position = position+velocity*config.dt*count
         wp.synchronize_device(device)
         labels.append(int(np.count_nonzero(bed.code.numpy())))
+        if cutting_law == 4:
+            strokes.append(bed.cutting_state())
         reaction = np.asarray(reaction)
         if record_history:
             histories.append(reaction.copy())
@@ -131,6 +137,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
             "mass_fractions": fractions.tolist(), "forces": forces,
             "edge_position_m": position.tolist(), "state": state, "points": points,
             "component": component,
+            **({"cutting_state_after_phase": strokes} if cutting_law == 4 else {}),
             **({'force_history_N': histories, 'severed_bonds_after_phase': bonds_after_phase,
                 'reference_stencil_nodes': bed.nodes.numpy(), 'reference_stencil_weights': bed.weights.numpy(),
                 'reference_stencil_gradients': bed.gradients.numpy()} if record_history else {})}

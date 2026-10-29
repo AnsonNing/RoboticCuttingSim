@@ -96,7 +96,9 @@ class LiveCuttingMaterial:
             from .tlmpm import TLMPM
             solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm", {}
         else:
-            if self.cutting_law == 3:
+            if self.cutting_law == 4:
+                from .tlmpm_v4 import TLMPM
+            elif self.cutting_law == 3:
                 from .tlmpm_v3 import TLMPM
             else:
                 from .tlmpm_v2 import TLMPM
@@ -150,6 +152,10 @@ class LiveCuttingMaterial:
                 'obstacle_reaction_recipients': self.obstacle_reaction_recipients}
         self.bed = TLMPM(self.points, self.masses, self.spacing, self.material_config, c.device,
                          **fixture_kwargs, **solver_kwargs)
+        if self.cutting_law == 4:
+            self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
+                                      "law4_parameters": dict(self.bed.law4_parameters),
+                                      "law4_reference": "docs/adr/0006-swept-band-cutting-law-4.md"}
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
         wp.load_module(module=solver_module, device=c.device)
@@ -236,6 +242,10 @@ class LiveCuttingMaterial:
             "feedback_enabled": c.feedback, "feedback_delay_s": c.control_dt,
             "material_wall_s": time.perf_counter()-start, "active_cut": cut >= 0, "cut_index": cut}
         return self.last_diagnostics.copy()
+
+    def cutting_state(self):
+        """Law-4 stroke state after the last substep (oracle only, never observed)."""
+        return self.bed.cutting_state() if hasattr(self.bed, 'cutting_state') else {'cutting_law': self.cutting_law}
 
     def debug_state(self):
         """Solver-LOCAL oracle diagnostics; never include in observations."""
