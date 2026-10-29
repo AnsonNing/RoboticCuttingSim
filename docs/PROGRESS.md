@@ -71,8 +71,14 @@
   - 只報告的路徑檢查：三次 10° 削切在削切前穩定時刀身低於未切頂面 0.19–0.24 mm（切削關閉），與 C5 相同的未解問題。
   - 影片：[Test A s6](media/wp11/test_a_s6/demo.mp4)、[Test B s1502](media/wp11/test_b_s1502/demo.mp4)。
 - 磁碟：/mnt/data 剩 17 GB，已把 10 個 WP-11 之前的舊 artifact（約 11 GB）搬到根磁碟 `/home/ningan/RoboticCuttingSim_artifacts_rootdisk/`（rsync 後比對檔名與大小，再改 symlink；紀錄在該目錄的 `MOVE_LOG.txt`），現在 /mnt/data 剩 27 GB。
+- **C5b 完成：近水平 TRIM＋把 chip 推離，live PASS**（`03dfd1d` 程式，`0b2d55b` 證據與影片，[證據](evidence/wp11/phaseC5b_live_trim_clear_001.json)，[影片](media/wp11/trim_rho10_clear/demo.mp4)）。
+  - 振盪原因：path_v2 每步把（目標 − 量測）加到上一個指令，等於在有延遲的系統上做單位增益積分器；擬合出的 z 軸極點 0.92、y 軸 1.07（不穩定）。
+  - `path_v3`（opt-in）：指令 = 規劃參考 + 緩慢調整的 bias（增益 0.1、20 µm 死區），參考軌跡不讀量測值；停止前幾何減速，切入點上方 1 mm 先停 0.5 s。
+  - 新目標 `trim_bump_rho10_clear`：削除後用刀身在頂面上方 2 mm 近水平掃過，把 chip 推離長條（disarmed）。
+  - Live attempt 002 PASS：凸起去除 97.89%、底材 0.99996、chip 被推 109 mm 掉到桌上、之後一直是 2 個 component；PRE-CUT 刀身最低點 +0.076 mm（C5 是 −0.167 mm），間隙稽核與路徑檢查都 PASS；夾持滑移 0.78 µm；Return-to-Home PASS。
+  - Attempt 001 因另一個使用者的 24 GB 訓練工作佔滿 GPU 1 而 CUDA OOM（切削前），保留為 FAIL_EXECUTION。
+  - 未解：SKIM 開始與結束時側向 y 偏差 −0.27／+0.14 mm（切到凸起期間 ≤ 0.024 mm）；SKIM 時刀身離頂面只有 0.013 mm。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
-  - C5b：`path_v3` 控制器＋`trim_bump_rho10_clear` 目標（削除後把 chip 推離），跑 live attempt 2（`artifacts/wp11/phaseC5/`）；
   - H：Native reset 記憶體洩漏、profiling、Research Fast／Full Physics 設定檔，並從乾淨 worktree 重跑 Native 可靠性（`artifacts/wp11/phaseH/`）；
   - E live_003：修好顯示網格的小碎片處理與多凸起預檢後，重跑 Test C s1602 live（先宣告）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
