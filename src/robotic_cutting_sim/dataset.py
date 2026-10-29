@@ -146,7 +146,11 @@ def export_episode(episode_dir):
         value = row.get("input_timestamp_s") if value is None else value
         return np.nan if value is None else float(value)
     arrays["action_timestamp_s"] = np.asarray([stamp(row, info) for row, info in zip(actions, infos)], float)
-    arrays["action_status"] = np.asarray([info.get("action_status", "LEGACY_UNVALIDATED") for info in infos], str)
+    # Steps not issued through PolicyReadyEnv.step: the preflighted physical return-home joint plan
+    # (RETURN_HOME_PLAN). Datasets written before this label used LEGACY_UNVALIDATED for the same rows.
+    arrays["action_status"] = np.asarray([info.get("action_status", "RETURN_HOME_PLAN" if str(row.get("policy_phase", ""))
+                                                   .startswith("RETURN_HOME") else "NOT_VALIDATED_BY_POLICY_ENV")
+                                          for info, row in zip(infos, actions)], str)
     arrays["executed_kind"] = np.asarray([(info.get("action_executed") or {}).get("kind", "RETURN_HOME"
                                           if str(row.get("policy_phase", "")).startswith("RETURN_HOME") else "UNKNOWN")
                                           for info, row in zip(infos, actions)], str)
@@ -240,7 +244,7 @@ def validate_episode(root, episode):
     checks["monotonic_time"] = bool(np.all(np.diff(times) > 0)) if len(times) > 1 else True
     statuses = set(arrays["action_status"].tolist())
     from .policy_env import ACTION_STATUSES
-    checks["action_statuses_known"] = statuses <= set(ACTION_STATUSES) | {"LEGACY_UNVALIDATED"}
+    checks["action_statuses_known"] = statuses <= set(ACTION_STATUSES) | {"RETURN_HOME_PLAN", "LEGACY_UNVALIDATED"}
     checks["no_privileged_keys_in_export"] = not [key for key in arrays
                                                   if any(part in PRIVILEGED_KEYS for part in key.split("__"))]
     frame_times = set(np.round(arrays["frame_time_s"], 9).tolist())

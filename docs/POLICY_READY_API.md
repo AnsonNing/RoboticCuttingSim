@@ -234,7 +234,7 @@ Layout:
 `episode_export.npz` keys: `step_time_s`, `action_timestamp_s`,
 `action_status`, `executed_kind`, `executed_mode`,
 `executed_edge_target_world_xyzw`, `executed_joint_target_rad`, `cut_enabled`,
-`cut_index`, `requested_action_json`, `policy_phase`, `termination_reason`,
+`cut_index`, `requested_action_json`, `policy_phase`, `termination_reason` (return-home rows have `action_status` `RETURN_HOME_PLAN`; datasets written before 2026-10-30 06:50 KST label them `LEGACY_UNVALIDATED`),
 `reward`, `proprio__<q|qdot|hand_pose|finger_q|finger_qdot|tool_pose>`,
 `frame_time_s`, and per camera `camera__<name>__<rgb|depth_m|valid_mask|time_s|K|T_world_camera>`.
 h5py is not installed in either runtime, so the export is NumPy `.npz`.
