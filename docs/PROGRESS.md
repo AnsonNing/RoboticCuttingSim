@@ -23,8 +23,13 @@
   - 成本與 K 無關：K=1–8 都是 1.30–1.34 ms/substep、38 MB。
   - 夾住的長條：3／5 刀得 4／6 塊。三凸起逐刀移除 0.98／0.97／0.98。
   - 待處理：自由長條每刀滑約 1 mm，宣告切面超界（與 M8 同現象）；兩次削切重疊處約 49 顆底材頂層粒子連起 chip 1、2；`validate_action` 只收 `cut_index` 0/1（Phase G 要改）；reward／v1 oracle 仍是 ternary；S=8 已用到 7 個；v5 的 M3–M6、M9 未重跑。
+- Phase A（`97d56d3`、`cce395e`、`ee2a285`，[報告](reports/WP11_PHASE_A_CI.md)）。
+  - Hash 不一致的根因是 OpenBLAS 依 CPU 選 kernel（SkylakeX 與 Haswell），只差 1 ulp，不是行為改變。
+  - 改用參考軌跡＋推導出的容差 N·16·eps；matplotlib 改為 NumPy 判斷；CI 改完整 checkout（原本 26 個 skip 是歷史 law 測試沒跑）。
+  - CI 剩 `test_tool_profile_v2.py:33` 的主軸 hash 也差 1 ulp，修正中。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
-  - A：等 GitHub Actions 結果；
+  - A'：修 v2 pin 的容差並看 CI 結果；
+  - D：`wp11_workcell_v1`（+100 mm）、Isaac 接受 compiled task、HOME reset、planner 控制器、實體 Return-to-Home 與狀態機，加上 Native smoke（`artifacts/wp11/phaseD/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：依 C2／C4 結果選定排列、ρ、刃型與擺放 → Phase S（場景／目標設定）→ C3 控制器與 C5 live → D → E/F → G → H → I。
