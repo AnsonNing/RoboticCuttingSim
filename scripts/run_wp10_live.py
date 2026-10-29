@@ -99,6 +99,14 @@ class EpisodeRecorder:
                 raise ValueError('Only current overview frames may be recorded')
             np.savez_compressed(self.output / 'observations' / f'overview_rgb_{index:04d}.npz',
                                 rgb=overview['rgb'], physics_timestamp_s=timestamp)
+        closeup = getattr(backend, 'closeup_frame', None) if frames else None
+        if closeup is not None:
+            # Presentation-only close-up RGB (never an observation); same measured-time rule.
+            timestamp = float(closeup['physics_timestamp_s'])
+            if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
+                raise ValueError('Only current close-up frames may be recorded')
+            np.savez_compressed(self.output / 'observations' / f'closeup_rgb_{index:04d}.npz',
+                                rgb=closeup['rgb'], physics_timestamp_s=timestamp)
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
                               cut_enabled=getattr(self, 'last_cut', False)))
@@ -332,7 +340,8 @@ def main(argv=None):
     p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
     p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2', 'blademaster_workcell_v1'))
     p.add_argument('--overview-camera', action='store_true',
-                   help='Native only: author and record the presentation-only overview RGB camera (never an observation)')
+                   help='Native only: author and record the presentation-only overview and close-up RGB cameras '
+                        '(never observations)')
     p.add_argument('--edge-feedback', choices=('nominal', 'measured'), default='nominal',
                    help='Scripted controller edge source: nominal hand-mount edge (default) or the measured '
                         'simulator tool-edge pose (measured_tool_edge_feedback; not material oracle state)')

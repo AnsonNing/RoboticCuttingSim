@@ -66,7 +66,7 @@ class IsaacSimCuttingConfig:
     tool_spec: object | None = None
     workpiece_kind: str = "rectangle"
     camera: bool = True
-    overview_camera: bool = False  # presentation-only RGB /World/PresentationCamera/Overview; never an observation
+    overview_camera: bool = False  # presentation-only RGB /World/PresentationCamera/{Overview,Closeup}; never an observation
     scenario: str | None = None
     material_profile_id: str | None = None
     max_cuts: int = 1
@@ -480,6 +480,7 @@ class LiveIsaacSimCutting:
         self.bridge = DynamicSurfaceBridge(stage)
         self._update_surface()
         self.overview_spec,self.overview_sensor,self.overview_frame=None,None,None
+        self.closeup_spec,self.closeup_sensor,self.closeup_frame=None,None,None
         if c.camera:
             self._create_cameras()
         else:
@@ -515,6 +516,8 @@ class LiveIsaacSimCutting:
             setup["task_fixture_materials"]=authored_material_receipt(stage,self.fixture_plan)
         if self.overview_spec is not None:
             setup["presentation_overview_camera"]=self.overview_spec
+        if self.closeup_spec is not None:
+            setup["presentation_closeup_camera"]=self.closeup_spec
         write_json(self.output/("setup.json" if self.reset_index==0 else f"reset_setup_{self.reset_index:02d}.json"), setup)
         return initial
 
@@ -887,18 +890,21 @@ class LiveIsaacSimCutting:
         if c.overview_camera:
             # Presentation-only RGB: kept out of self.cameras/calibration, so it is
             # never an observation, calibration or camera-contract stream.
-            from .presentation_camera import PRIM_PATH, author_overview_camera, overview_camera_spec
+            # The close-up is authored with the overview (same flag, same rules).
+            from .presentation_camera import author_overview_camera, closeup_camera_spec, overview_camera_spec
             from .native_camera_geometry import transform_error
-            spec=overview_camera_spec(self.task)
-            author_overview_camera(self.stage,spec)
-            self.overview_sensor=CameraSensor(RtxCamera(PRIM_PATH,tick_rate=0.),
-                resolution=(spec["height"],spec["width"]),annotators=["rgb"])
-            authored=usd_camera_calibration(self.stage,PRIM_PATH,spec["width"],spec["height"])
-            spec["authored_usd_readback"]={"T_world_camera":authored["T_world_camera"],"K":authored["K"],
-                "pose_error_vs_spec":transform_error(authored["T_world_camera"],spec["T_world_camera"]),
-                "render_product":str(self.overview_sensor.render_product.GetPath())}
-            self.overview_spec=spec
-            write_json(self.output/"presentation_overview_camera.json",spec)
+            for kind,make_spec in (("overview",overview_camera_spec),("closeup",closeup_camera_spec)):
+                spec=make_spec(self.task)
+                author_overview_camera(self.stage,spec)
+                sensor=CameraSensor(RtxCamera(spec["prim_path"],tick_rate=0.),
+                    resolution=(spec["height"],spec["width"]),annotators=["rgb"])
+                authored=usd_camera_calibration(self.stage,spec["prim_path"],spec["width"],spec["height"])
+                spec["authored_usd_readback"]={"T_world_camera":authored["T_world_camera"],"K":authored["K"],
+                    "pose_error_vs_spec":transform_error(authored["T_world_camera"],spec["T_world_camera"]),
+                    "render_product":str(sensor.render_product.GetPath())}
+                setattr(self,f"{kind}_sensor",sensor)
+                setattr(self,f"{kind}_spec",spec)
+                write_json(self.output/f"presentation_{kind}_camera.json",spec)
 
     def _update_camera_extrinsics(self, measured_hand_poses):
         """Refresh optical extrinsics after every actual20ms articulation step."""
@@ -1067,6 +1073,8 @@ class LiveIsaacSimCutting:
             return sensor.get_data(annotator)
         overview=getattr(self,"overview_sensor",None)
         overview_rgb=None
+        closeup=getattr(self,"closeup_sensor",None)
+        closeup_rgb=None
         for _ in range(self.config.render_warmup+30):
             rep.orchestrator.step(rt_subframes=1,delta_time=0.)
             latest = {name:{a:data(name,sensor,a) for a in
@@ -1075,8 +1083,10 @@ class LiveIsaacSimCutting:
                       for name,sensor in self.cameras.items()}
             if overview is not None:
                 overview_rgb=overview.get_data("rgb")[0]
+            if closeup is not None:
+                closeup_rgb=closeup.get_data("rgb")[0]
             if (_ >= self.config.render_warmup-1 and all(value[0] is not None for data in latest.values() for value in data.values())
-                    and (overview is None or overview_rgb is not None)):
+                    and (overview is None or overview_rgb is not None) and (closeup is None or closeup_rgb is not None)):
                 break
         else:
             raise TimeoutError("Live native RTX cameras did not produce arrays")
@@ -1176,6 +1186,14 @@ class LiveIsaacSimCutting:
             self.overview_frame={"rgb":rgb[:,:,:3].astype(np.uint8,copy=False),"physics_timestamp_s":self.time_s,
                                  "native_physics_timestamp_s":before[0],"camera_id":"overview_rgb",
                                  "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
+        if closeup is not None:
+            rgb=numpy_data(closeup_rgb)
+            if rgb.shape[:2] != (self.closeup_spec["height"],self.closeup_spec["width"]):
+                raise ValueError("Malformed presentation close-up RGB array")
+            # Not returned in frames: presentation-only, recorded separately.
+            self.closeup_frame={"rgb":rgb[:,:,:3].astype(np.uint8,copy=False),"physics_timestamp_s":self.time_s,
+                                "native_physics_timestamp_s":before[0],"camera_id":"closeup_rgb",
+                                "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
         return frames,{name:{a:str(value[1]) for a,value in payload.items()} for name,payload in latest.items()}
 
     def close(self):

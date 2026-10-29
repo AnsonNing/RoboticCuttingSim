@@ -261,7 +261,7 @@ def render(args, episode, out, start):
     image_panel("wrist_depth", px(880, y0, cw, ph),
                 f"Wrist D405_0 depth [m] ({dmin:.3f}-{dmax:.3f}, invalid = grey)")
     sec = panels["secondary"]
-    image_panel("secondary", px(1400, y0 + main_h // 2 + 4, cw, ph), names.get(sec, sec or "secondary RGB"))
+    image_panel("secondary", px(1400, y0 + main_h // 2 + 4, cw, ph), dm.panel_title(sec, names))
 
     # Particle panel.
     pax = fig.add_axes(px(1400, y0, cw, ph))
@@ -432,10 +432,11 @@ def render(args, episode, out, start):
                for p in (mp4, gif, out / "poster.png")}
     panel_record = dict(
         assignment=panels, overview_present=panels["overview"] is not None,
+        **({"closeup_present": True, "secondary_title": dm.CLOSEUP_TITLE} if panels.get("closeup") else {}),
         streams={k: len(v) for k, v in streams.items()},
         missing_frames={k: sorted(v) for k, v in missing.items()},
         particle_debug=True, diagnostics_strip=series is not None,
-        layout="large=overview or Global D455; secondary=Global D455 when an overview exists, else Wrist D405_1",
+        layout=dm.panel_layout(panels),
         poster_frame=poster_index, edge_half_length_m=half)
     receipt = dm.render_receipt(
         episode=episode, out=out, inputs=inputs, frames=n_frames, rate=rate, video_fps=fps, gif=gif_record,

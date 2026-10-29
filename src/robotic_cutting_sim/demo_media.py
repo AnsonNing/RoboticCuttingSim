@@ -62,16 +62,40 @@ def discover_streams(observation_names):
     return {name: sorted(indices) for name, indices in sorted(streams.items())}
 
 
+CLOSEUP_TITLE = "Close-up (presentation camera, not an observation)"
+LAYOUT_DEFAULT = "large=overview or Global D455; secondary=Global D455 when an overview exists, else Wrist D405_1"
+LAYOUT_CLOSEUP = "large=overview or Global D455; secondary=presentation close-up (closeup_*)"
+
+
 def choose_panels(streams):
     """Panel -> stream assignment. The large panel is an overview camera when one
-    was recorded, else the Global D455; the secondary RGB slot then shows the
-    other wrist camera so no stream is duplicated."""
+    was recorded, else the Global D455. The secondary RGB slot shows a recorded
+    presentation close-up (``closeup_*``) when one exists; otherwise the Global
+    D455 when it is not already the large panel, else the other wrist camera, so
+    no stream is duplicated. The ``closeup`` key is present only when a close-up
+    stream was recorded, so older episodes keep their exact assignment."""
     overview = next((name for name in streams if name.startswith("overview")), None)
+    closeup = next((name for name in streams if name.startswith("closeup")), None)
     large = overview or ("global_d455" if "global_d455" in streams else None)
     secondary = "global_d455" if overview and "global_d455" in streams else (
         "wrist_d405_1" if "wrist_d405_1" in streams else None)
     wrist = "wrist_d405_0" if "wrist_d405_0" in streams else None
-    return dict(large=large, secondary=secondary, wrist_rgb=wrist, wrist_depth=wrist, overview=overview)
+    panels = dict(large=large, secondary=closeup or secondary, wrist_rgb=wrist, wrist_depth=wrist, overview=overview)
+    if closeup:
+        panels["closeup"] = closeup
+    return panels
+
+
+def panel_layout(panels):
+    """Receipt description of the layout rule that produced ``panels``."""
+    return LAYOUT_CLOSEUP if panels.get("closeup") else LAYOUT_DEFAULT
+
+
+def panel_title(stream, names):
+    """Panel title for a secondary stream; a close-up is always marked presentation-only."""
+    if stream and stream.startswith("closeup"):
+        return CLOSEUP_TITLE
+    return names.get(stream, stream or "secondary RGB")
 
 
 def cut_count(codes):
