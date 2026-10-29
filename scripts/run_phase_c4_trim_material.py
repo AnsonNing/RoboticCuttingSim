@@ -217,6 +217,8 @@ def run_episode(args, out):
                              history_stride=args.history_stride)
     observation, _ = env.reset(seed=SEED)
     builder, tolerance = PLANS[args.control]
+    if args.position_tolerance is not None:  # opt-in override (supplementary runs); default keeps the plan's
+        tolerance = args.position_tolerance
     plan = builder(env.task)
     policy = WaypointPolicy(env.task, plan, env.action_limits,
                             **({} if tolerance is None else {'position_tolerance_m': tolerance}))
@@ -521,6 +523,9 @@ def main():
     p.add_argument('--material-dt', type=float, default=1e-4, help='Material dt (formal: 1e-4 s)')
     p.add_argument('--history-stride', type=int, default=5)
     p.add_argument('--steps', type=int, help='Validation only: cap control steps (not formal)')
+    p.add_argument('--position-tolerance', type=float,
+                   help='Override the waypoint position tolerance (default: the plan default; the skim keeps the '
+                        'WaypointPolicy 0.5 mm, so the armed edge starts up to 0.5 mm above target + clearance)')
     a = p.parse_args()
     if f'law{a.cutting_law}' not in a.out.name:
         p.error(f'--out name must contain law{a.cutting_law} so runs of different laws never mix')
@@ -532,7 +537,8 @@ def main():
     base = {'task_id': a.task, 'control': a.control, 'criterion': CONTROL_CRITERIA[a.control], 'command': sys.argv,
             **git_state(), 'seed': SEED, 'cutting_law': a.cutting_law, 'particle_spacing_m': a.spacing,
             'material_dt_s': a.material_dt, 'grid_dx_m': .004, 'history_stride': a.history_stride, 'device': a.device,
-            'formal_resolution': formal, 'runtime_source': 'kinematic_ideal_tracking'}
+            'formal_resolution': formal, 'runtime_source': 'kinematic_ideal_tracking',
+            'position_tolerance_override_m': a.position_tolerance}
     try:
         steps, data, strict, context = run_episode(a, out)
         task = context.pop('task')
