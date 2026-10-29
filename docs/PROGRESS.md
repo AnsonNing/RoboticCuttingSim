@@ -34,10 +34,11 @@
   - **定案：v2_y 雙斜面、ρ = 10°**，已記入 ADR 0013。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A'：修 v2 pin 的容差並看 CI 結果；
+  - F2/F3：law 8 邊界驗證與解析度研究（kinematic 1 mm，GPU 0，[預先宣告的 protocol](../configs/wp11/phaseF_protocol_v1.json)，輸出 `artifacts/wp11/phaseF/`）；
   - D：`wp11_workcell_v1`（+100 mm）、Isaac 接受 compiled task、HOME reset、planner 控制器、實體 Return-to-Home 與狀態機，加上 Native smoke（`artifacts/wp11/phaseD/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
-- 下一步：依 C2／C4 結果選定排列、ρ、刃型與擺放 → Phase S（場景／目標設定）→ C3 控制器與 C5 live → D → E/F → G → H → I。
+- 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。
 
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
