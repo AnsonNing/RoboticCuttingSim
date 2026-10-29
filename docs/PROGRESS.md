@@ -10,6 +10,11 @@
   - Native 7 項夾持控制兩種排列都 PASS_FROZEN_RIGID_CONTROLS（門檻同 v5；hold 時兩指各 18 N，滑移 ≤ 0.001 mm；穿透 ≤ 12 µm）。
   - −10 N stress 下 v2 比 v1 鬆（A 268 mrad、B 35 mrad，v1 33 mrad；此項只報告）。
   - [證據](evidence/wp11/phaseB_knife_v2_001.json)、[圖](media/wp11/knife_v2_y.png)。與參考圖相比，握柄偏大、刀身不是亮金屬色；待 C2 結果後一併定案。
+- Phase S 完成（`4aef698`，另有部分修改被併入 `98d5c3f`）：`scene_config.py`（`rcs_scene_v1`、`compile_task` → `ConfiguredTaskSpec`）、`goals.py`（sever／divide／remove_protrusions／trim_plane／move_piece／sequence，三層評估）、`goal_planner.py`（只讀設定，τ/ψ/ρ/μ）。
+  - 設定可完全重現 CUT-01-R／TRIM-01-R。
+  - 4 mm kinematic 下三凸起逐一移除（tlmpm_v5，K=3）全部 1.0。
+  - 限制：Isaac runtime 尚不接受 compiled task；`apply_scenario` 仍只接受 identity 方向。
+  - 流程注意：平行代理共用 git index，修改曾被併進別人的 commit，以及一次誤清空後已還原。之後一律用 `git commit -- <paths>`。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A：等 GitHub Actions 結果；
   - M：`tlmpm_v5`（`artifacts/wp11/phaseM/`）；
