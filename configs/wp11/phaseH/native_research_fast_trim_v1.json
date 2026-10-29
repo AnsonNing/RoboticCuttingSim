@@ -1,0 +1,8 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseH_native_research_fast_trim_v1",
+  "description": "WP-11 Phase H4 Native speed comparison: the first Test F episode (scripted, measured-edge feedback, stop after WITHDRAW, hold until the time limit, physical return home, seed 42) once, run under research_fast_v1 for the wall-time ratio against the full_physics_v1 Test F episode 0. No expectation is declared (research_fast_v1 TRIM removal is not resolution-converged).",
+  "episodes": [
+    {"label": "scripted_measured_seed42", "controller": "scripted", "seed": 42, "edge_feedback": "measured", "stop_after_phase": "WITHDRAW", "hold_until_time_limit": true, "return_home": true}
+  ]
+}

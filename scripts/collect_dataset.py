@@ -254,7 +254,11 @@ def live_preflight(a, entries, out, planner_options):
     from robotic_cutting_sim.motion_preflight import run_cli
     from robotic_cutting_sim.policy_env import compile_policy_task
     from robotic_cutting_sim.scene_config import configured_task_payload
-    task = compile_policy_task(a.scene, a.goal, tool_profile=a.tool_profile, planner_options=planner_options,
+    scene = a.scene
+    if a.runtime_profile is not None:   # the same profiled scene the env compiles (solver override recorded)
+        from robotic_cutting_sim.runtime_profiles import profile_scene, runtime_profile
+        scene = profile_scene(a.scene, runtime_profile(a.runtime_profile))
+    task = compile_policy_task(scene, a.goal, tool_profile=a.tool_profile, planner_options=planner_options,
                                particle_spacing_m=a.spacing, seed=entries[0]['seed'])
     receipts, refused = [], False
     for until in sorted({e.get('stop_after_phase') or '' for e in entries if e['controller'] == 'scripted'}):
