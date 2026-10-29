@@ -101,3 +101,19 @@ Expected (to be verified, not assumed):
   probes started at f7ab36e. M3b/M8b recorded 9f89575, a docs-only commit
   made while they ran. The code is identical to e19c2b6, and every rerun was
   clean.
+
+## WP-11 Phase F validation record (2026-10-30)
+
+Phase F2/F3 ran under protocol `configs/wp11/phaseF_protocol_v1.json`, frozen before any
+run. All rows used kinematic ideal tracking at `f2168b6` on `cuda:0`, seed 42. Report:
+[WP11_PHASE_F_LAW8.md](../reports/WP11_PHASE_F_LAW8.md). Evidence:
+[phaseF_material_001.json](../evidence/wp11/phaseF_material_001.json).
+
+- **θ_plow is now measured at the boundary.** ρ = 14° and 15° never plow, and ρ = 16°
+  plows on 100% of steps and segments. All three separate.
+- **F2:** 15 of 16 boundary rows PASS. F2.9_blunt_handle FAILS: the grip mean force was
+  0.077 N against the declared > 0.1 N, because the unrestrained bar yawed away.
+- **F3:** the formal CUT and TRIM rows reproduce their PASS. The declared medium row is
+  ERROR / NOT_RUN, because the dt is not an integer substep.
+- **Not validated:** the chisel (ADR 0013 C4), live or Lab tracking, the sawing swept
+  normal under noise, and rotation-only stroke persistence.
