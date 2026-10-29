@@ -5,7 +5,7 @@
 - 計畫：[BladeMaster 三個 Demo](BLADEMASTER_DEMO_PLAN.md)，由 tmux `rcs-demos` 的 Claude Code CLI session 執行（規則：`tools/demo_runner/round_prompt.md`）。
 - 目前階段：Phase 1（1 mm 切割物理修復）。設計已定：[ADR 0006 — cutting law 4](adr/0006-swept-band-cutting-law-4.md)（law 2 的切削功只管阻力；整把刀的切削行程閘控；BladeMaster Eq. (4)/(6) 幾何掃掠帶以 swept surface 分側；不用 law 3 的格點閉合）。
 - 新發現：law 3 Lab 重播的 4.0 mm 切口位置失敗是前緣閉合在接觸前就以 +0.04 mm 標籤 −0.5 mm 粒子層所致（實測刃口 x ≈ −0.51～−0.55 mm）；凍結切口位置門檻等於要求刃口在 ±0.5 mm 內，live demo 需要控制器把量測刃口保持在目標面附近。
-- 背景工作：rcs-impl 實作 `tlmpm_v4.py`（law 4）與 CPU 測試（尚未開始 GPU 矩陣）。
+- 背景工作（3 個 rcs-impl 並行，檔案不重疊）：(1) `tlmpm_v4.py` law 4、runtime wiring、CPU 測試與兩個 1 mm GPU smoke（`artifacts/wp10_claude/phase1_law4/`）；(2) Phase 2A：`wp10_scenarios_v3.json`（`blademaster_workcell_v1` 切割板）、`cutting_tasks_v3.json`（`SLICE-PUSH-01`）、`policies.slice_push`、`demo_evaluation.py`（[ADR 0007](adr/0007-blademaster-workcell-and-demo-tasks.md)）；(3) `scripts/render_demo_episode.py`（live episode → MP4/GIF，測試輸出 `artifacts/wp10_claude/render_test/`）。
 - 下一步：CPU 測試通過後，跑 ADR 0006 的 1 mm GPU 矩陣 M1–M9，輸出到 `artifacts/wp10_claude/phase1_law4/`，摘要到 `docs/evidence/phase1/`。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
