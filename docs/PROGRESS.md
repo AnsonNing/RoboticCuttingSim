@@ -3,8 +3,9 @@
 ## 進行中：Phase 1 閘門重做（law 6，2026-10-29 晚）
 
 - 計畫 §2 要求矩陣（含負對照）**全部** PASS 才能進 live。law 5 的 M8 FAIL，live demo 卻在審查的「有條件接受」下就跑了，所以閘門其實沒有滿足。那批 live 結果保留為 law 5 的證據，不算通過閘門的驗收 run；DONE 標記已移除。
-- 對策：[ADR 0010 law 6](adr/0010-cutting-law-6-deferred-lead-commit.md)。前緣分側先記為 pending，等 stroke 結束才寫入，所以切削中的力學與 law 4 相同（law 4 的 M8b 是 PASS）。
-- 下一步：rcs-impl 實作 law 6 與 CPU 測試 → law 6 全矩陣（計算式準則）全部 PASS → 重跑 live 最終組合（law 6） → 更新文件 → 合併 main → DONE。
+- Law 6（[ADR 0010](adr/0010-cutting-law-6-deferred-lead-commit.md)，`9f57e41`）：CUT-01-R PASS、TRIM 25° 分離（96.7%），但 **TRIM 35°（`ruler_workcell_v2`）FAIL**：1 個 component、去除 0%，被帶到前方的粒子壓到切面下形成橋接（[證據](evidence/phase1/law6_smokes_001.json)）。Law 6 不用於 live。
+- 對策：[ADR 0011 law 7](adr/0011-cutting-law-7-eq8-coupled-flip.md)。標籤規則同 law 5，grid update 依 BladeMaster Eq. (8) 一併耦合 pⁿ 作為 FLIP 舊速度（相容欄位等同合併欄位）。先跑 M8b、M3b、M3a 快速檢查，再跑全矩陣。
+- 下一步：rcs-impl 實作 law 7 → 快速檢查 → 全矩陣全部 PASS → 重跑 live 最終組合 → 更新文件 → 合併 main → DONE。
 
 ## 先前結果：BladeMaster 風格三個 Demo，law 5（2026-10-29）
 
