@@ -30,10 +30,15 @@ class KinematicConfig:
     slice_efficiency: float = 1.
     scenario: str | None = None
     material_profile_id: str | None = None
+    solver: str | None = None                  # None = v1-v4 by law; 'tlmpm_v5' opt-in (ADR 0014)
+    slots_per_node: int | None = None          # tlmpm_v5 only (None = 8)
 
     def __post_init__(self):
-        if self.max_cuts not in (1, 2) or self.material_dt <= 0 or not np.isfinite(self.material_dt):
-            raise ValueError("max_cuts is 1 or 2 and material_dt must be positive")
+        if self.solver not in (None, "tlmpm_v5"):
+            raise ValueError("solver is None or 'tlmpm_v5'")
+        allowed = range(1, 16) if self.solver == "tlmpm_v5" else (1, 2)
+        if self.max_cuts not in allowed or self.material_dt <= 0 or not np.isfinite(self.material_dt):
+            raise ValueError("max_cuts is 1 or 2 (1..15 with solver='tlmpm_v5') and material_dt must be positive")
 
 
 class KinematicCuttingBackend:
@@ -65,8 +70,10 @@ class KinematicCuttingBackend:
         coupling = CouplingConfig(control_dt=self.task.control_dt_s, material_dt=c.material_dt,
                                   dx=self.task.grid_dx_m, device=c.device)
         kwargs = {"cutting_law": c.cutting_law, "max_cuts": c.max_cuts, "slice_efficiency": c.slice_efficiency}
+        if c.solver is not None:
+            kwargs.update(solver=c.solver, slots_per_node=c.slots_per_node)
         if not isinstance(self.task, ProfileTaskSpec):
-            if c.max_cuts == 1 and c.cutting_law in (None, 1) and c.device != "cpu":
+            if c.max_cuts == 1 and c.cutting_law in (None, 1) and c.device != "cpu" and c.solver is None:
                 kwargs = {}  # v1 tasks keep the frozen v1 solver by default
             else:
                 # The retained wedge on tlmpm_v2; with law 1 this equals frozen v1
@@ -164,12 +171,16 @@ class KinematicCuttingBackend:
 
 def make_kinematic_env(task_id="CUT-01-R", *, seed=42, particle_spacing_m=None, material_dt=.0001,
                        device="cpu", cutting_law=None, max_cuts=1, slice_efficiency=1.,
-                       observation_profile="state", scenario=None, material_profile_id=None, **wrapper_options):
-    """CuttingTaskEnv over the kinematic backend (state observations only)."""
+                       observation_profile="state", scenario=None, material_profile_id=None, solver=None,
+                       slots_per_node=None, **wrapper_options):
+    """CuttingTaskEnv over the kinematic backend (state observations only).
+
+    solver='tlmpm_v5' (opt-in, ADR 0014) passes through to LiveCuttingMaterial."""
     from .live_env import CuttingTaskEnv
     if observation_profile != "state":
         raise ValueError("The kinematic backend renders no cameras; use observation_profile='state'")
     backend = KinematicCuttingBackend(KinematicConfig(task_id, seed, particle_spacing_m, material_dt, device,
-                                                      cutting_law, max_cuts, slice_efficiency, scenario, material_profile_id))
+                                                      cutting_law, max_cuts, slice_efficiency, scenario, material_profile_id,
+                                                      solver, slots_per_node))
     env = CuttingTaskEnv(backend, seed=seed, observation_profile="state", **wrapper_options)
     return env

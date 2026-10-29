@@ -279,6 +279,26 @@ class CuttingTaskEnv:
             "surface_triangle_component_ids": face_components,
             "surface_component_provenance": metadata["partition_rule"], "surface_timestamp_s": self.time_s}
         from .tasks import DemoTaskSpec
+        packed_cuts = (int(material.max_cuts) if getattr(material, 'code_encoding', 'ternary') == 'packed2'
+                       and getattr(material, 'max_cuts', 1) > 1 else None)
+        if packed_cuts is not None:
+            # tlmpm_v5 packed history (ADR 0014; K=1 packed equals ternary). Multi-cut goals use the
+            # packed evaluator; the ternary demo/oracle evaluators get the exact ternary re-encoding
+            # only while it has at most two digits.
+            from .multi_cut_evaluation import MultiCutGoal, MultiCutGoalK, evaluate_multi_cut_packed
+            if isinstance(goal, (MultiCutGoal, MultiCutGoalK)):
+                data.update(reference_indices=material.lattice, code_encoding='packed2', max_cuts=packed_cuts)
+                if isinstance(goal, MultiCutGoal):
+                    goal = MultiCutGoalK(goal.planes, 3, goal.minimum_part_mass_fraction,
+                                         goal.minimum_main_parts_mass_fraction, goal.plane_error_bound_m)
+                return {**evaluate_multi_cut_packed(data, goal), 'runtime_source': self.runtime_source}
+            if packed_cuts > 2:
+                return {'status': 'NOT_RUN_EXPLICIT_MULTICUT_GOAL_REQUIRED', 'success': False,
+                        'runtime_source': self.runtime_source,
+                        'reason': 'Declare MultiCutGoalK to score more than two packed cut digits'}
+            from .cut_topology import packed_to_ternary
+            data['codes'] = packed_to_ternary(data['codes'], packed_cuts).astype(data['codes'].dtype)
+            data['code_encoding_scored'] = 'ternary_from_packed2'
         if isinstance(self.task, DemoTaskSpec) and profile is None and goal is None:
             data['reference_indices'] = material.lattice
             if push_interval_s is not None:

@@ -19,13 +19,20 @@ from .scene_frames import (WorkpieceTarget, pose_matrix, invert_transform, trans
 
 class LiveCuttingMaterial:
     def __init__(self, config=None, target=None, *, task=None, tool_profile=None, cutting_law=None,
-                 slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1):
+                 slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1, solver=None, slots_per_node=None):
         """``tool_profile`` (tool_profile.ToolProfile) selects the tlmpm_v2 solver
         with that blade polygon; None keeps the frozen v1 solver and task wedge.
 
         v2 tasks (tasks.ProfileTaskSpec) default to their profile, cutting law 2
         and the handle as a blunt obstacle. ``max_cuts`` (1 or 2) sets how many
         cut digits the material keeps; it requires tlmpm_v2 above 1.
+
+        ``solver='tlmpm_v5'`` (ADR 0014, opt-in) selects packed cut codes with
+        sparse per-node slots (``slots_per_node``, default 8): it needs a tool
+        profile and cutting law 4, 5 or 8 and allows ``max_cuts`` 1..15. Codes
+        in every state/history output are then packed (``code_encoding``
+        'packed2'; cut_topology.decode_digits). Slot overflow raises after the
+        control step. None keeps the v1-v4 selection and limits unchanged.
         """
         from .tasks import ProfileTaskSpec
         from .tool_profile import handle_box_edge
@@ -35,8 +42,24 @@ class LiveCuttingMaterial:
             cutting_law = 2 if cutting_law is None else cutting_law
             if obstacle_boxes_edge is None:
                 obstacle_boxes_edge = [handle_box_edge(tool_profile)]
-        if max_cuts not in (1, 2) or (max_cuts == 2 and tool_profile is None):
+        if solver not in (None, 'tlmpm_v5'):
+            raise ValueError("solver is None (v1-v4 by law) or 'tlmpm_v5'")
+        if solver == 'tlmpm_v5':
+            from .cut_topology import PACKED_MAX_CUTS
+            if tool_profile is None or cutting_law not in (4, 5, 8):
+                raise ValueError("tlmpm_v5 needs a tool profile and cutting law 4, 5 or 8")
+            if not isinstance(max_cuts, (int, np.integer)) or not 1 <= max_cuts <= PACKED_MAX_CUTS:
+                raise ValueError(f"tlmpm_v5 keeps 1..{PACKED_MAX_CUTS} cut digits")
+            if slots_per_node is not None and (not isinstance(slots_per_node, (int, np.integer))
+                                               or not 1 <= slots_per_node <= 64):
+                raise ValueError("slots_per_node must be an integer in 1..64")
+        elif slots_per_node is not None:
+            raise ValueError("slots_per_node applies to solver='tlmpm_v5' only")
+        elif max_cuts not in (1, 2) or (max_cuts == 2 and tool_profile is None):
             raise ValueError("max_cuts is 1 or 2; two cut digits require a tool profile (tlmpm_v2)")
+        self.solver = solver
+        self.slots_per_node = None if solver is None else int(slots_per_node or 8)
+        self.code_encoding = 'packed2' if solver == 'tlmpm_v5' else 'ternary'
         if tool_profile is None and (cutting_law not in (None, 1) or obstacle_boxes_edge is not None):
             raise ValueError("Cutting law 2 and tool obstacles require a tool profile (tlmpm_v2)")
         self.tool_profile = tool_profile
@@ -96,7 +119,9 @@ class LiveCuttingMaterial:
             from .tlmpm import TLMPM
             solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm", {}
         else:
-            if self.cutting_law in (4, 5, 6, 7, 8):
+            if self.solver == 'tlmpm_v5':
+                from .tlmpm_v5 import TLMPM
+            elif self.cutting_law in (4, 5, 6, 7, 8):
                 from .tlmpm_v4 import TLMPM
             elif self.cutting_law == 3:
                 from .tlmpm_v3 import TLMPM
@@ -106,6 +131,8 @@ class LiveCuttingMaterial:
             solver_module, solver_kwargs = TLMPM.__module__, {"blade_profile_xz": polygon,
                 "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency,
                 "obstacle_boxes_edge": self.obstacle_boxes_edge}
+            if self.solver == 'tlmpm_v5':
+                solver_kwargs["slots_per_node"] = self.slots_per_node
 
         start = time.perf_counter()
         c = self.config
@@ -168,6 +195,12 @@ class LiveCuttingMaterial:
         if self.cutting_law == 8:
             self.parameter_receipt = {**self.parameter_receipt, "law8_parameters": dict(self.bed.law8_parameters),
                                       "law8_reference": "docs/adr/0012-cutting-law-8-plow-gated-lead.md"}
+        if self.solver == 'tlmpm_v5':
+            self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
+                                      "code_encoding": self.code_encoding, "max_cuts": self.max_cuts,
+                                      "slots_per_node": self.slots_per_node,
+                                      "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
+                                      "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md"}
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
         wp.load_module(module=solver_module, device=c.device)
@@ -225,6 +258,8 @@ class LiveCuttingMaterial:
         else:
             wp.capture_launch(self.graph)
         wp.synchronize_device(c.device)
+        if self.solver == 'tlmpm_v5':
+            self.bed.check_slots()  # overflow is an error, never a silent merge (ADR 0014)
         impulse = self.bed.reaction.numpy()[0].astype(float)
         if self.task:
             impulse = rotate_wrench_at_same_point(self.T_world_local, impulse)

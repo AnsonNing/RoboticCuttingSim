@@ -8,12 +8,12 @@ import hashlib
 
 import numpy as np
 
-from .cut_topology import mechanical_components
+from .cut_topology import mechanical_components, mechanical_components_packed, validate_packed
 from .usd_surface_bridge import validate_surface
 
 
 class CurrentMechanicalPartition:
-    def __init__(self, nodes, weights, gradients, cuts):
+    def __init__(self, nodes, weights, gradients, cuts, *, encoding="ternary"):
         self.nodes = np.asarray(nodes)
         self.weights = np.asarray(weights)
         self.gradients = np.asarray(gradients)
@@ -23,7 +23,9 @@ class CurrentMechanicalPartition:
             raise ValueError("Reference stress gradients must accompany the stencil")
         if not np.isfinite(self.weights).all() or not np.isfinite(self.gradients).all():
             raise ValueError("Reference stencil must be finite")
-        self.cuts = cuts
+        if encoding not in ("ternary", "packed2"):
+            raise ValueError("Cut-code encoding is 'ternary' (v1-v4) or 'packed2' (tlmpm_v5)")
+        self.cuts, self.encoding = cuts, encoding
         self.cache = {}
         self.stencil_sha256 = hashlib.sha256(self.nodes.tobytes() + self.weights.tobytes()
                                              + self.gradients.tobytes()).hexdigest()
@@ -32,12 +34,15 @@ class CurrentMechanicalPartition:
         codes = np.asarray(current_codes)
         if codes.shape != (len(self.nodes),) or not np.issubdtype(codes.dtype, np.integer):
             raise ValueError("Need exactly one current integer cut-history code per particle")
-        if np.any(codes < 0) or np.any(codes >= 3 ** self.cuts):
+        if self.encoding == "packed2":
+            if not validate_packed(codes, self.cuts):
+                raise ValueError("Cut-history code is not a packed code of the solver's cuts")
+        elif np.any(codes < 0) or np.any(codes >= 3 ** self.cuts):
             raise ValueError("Cut-history code exceeds the solver field count")
         key = hashlib.sha256(codes.tobytes()).hexdigest()
         if key not in self.cache:
-            count, labels = mechanical_components(self.nodes, self.weights, codes, self.cuts,
-                                                   gradients=self.gradients)
+            components = mechanical_components_packed if self.encoding == "packed2" else mechanical_components
+            count, labels = components(self.nodes, self.weights, codes, self.cuts, gradients=self.gradients)
             self.cache[key] = count, labels.copy()
         count, labels = self.cache[key]
         return count, labels.copy(), {"codes_sha256": key, "stencil_sha256": self.stencil_sha256,
@@ -126,7 +131,8 @@ class ComponentSurface:
     def extract(self, bed):
         if self.surface is None or self.bed_identity != id(bed):
             partition = CurrentMechanicalPartition(bed.nodes.numpy(), bed.weights.numpy(),
-                                                    bed.gradients.numpy(), bed.config.cuts)
+                                                    bed.gradients.numpy(), bed.config.cuts,
+                                                    encoding=getattr(bed, "code_encoding", "ternary"))
             self.surface = CuttingSurface(partition, self.spacing, self.voxel_size, self.device, profile=self.profile)
             self.bed_identity = id(bed)
         return self.surface.extract(bed.x.numpy(), bed.code.numpy(),
