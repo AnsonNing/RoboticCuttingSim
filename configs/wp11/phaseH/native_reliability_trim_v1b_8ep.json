@@ -1,0 +1,82 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseH_native_reliability_trim_v1b_8ep",
+  "description": "WP-11 Phase H reliability amendment v1b (configs/wp11/phaseG_reliability_v1b.json), declared before any run: the Phase G/H Native Test F plan (configs/wp11/phaseG/native_reliability_trim_v1.json, task CFG-trim01_wp11_workcell-trim_bump_rho10-570db2f5) cycled twice = 8 consecutive full episodes in one process: (0,4) scripted goal planner with measured-edge feedback, expected PASS; (1,5) the hand-written open-loop action program, no expectation; (2,6) deliberate failure (stop after PRE_CUT, hold to the time limit), expected FAIL; (3,7) exact repeat of episode 0 (same seed and controller). Every episode: Reset (HOME pregrasp) -> episode -> Evaluate -> physical Return Home. Seed policy as Phase G/H: fixed seed 42 on every episode. Cycle-1 labels carry the suffix _cycle1; entries are otherwise identical to the Phase G plan.",
+  "source_plan": "configs/wp11/phaseG/native_reliability_trim_v1.json",
+  "episodes": [
+    {
+      "label": "scripted_measured_seed42",
+      "controller": "scripted",
+      "seed": 42,
+      "edge_feedback": "measured",
+      "stop_after_phase": "WITHDRAW",
+      "hold_until_time_limit": true,
+      "return_home": true,
+      "expect": "PASS"
+    },
+    {
+      "label": "action_program_seed42",
+      "controller": "action_file",
+      "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json",
+      "seed": 42,
+      "return_home": true
+    },
+    {
+      "label": "deliberate_fail_stop_after_pre_cut",
+      "controller": "scripted",
+      "seed": 42,
+      "edge_feedback": "measured",
+      "stop_after_phase": "PRE_CUT",
+      "hold_until_time_limit": true,
+      "return_home": true,
+      "expect": "FAIL"
+    },
+    {
+      "label": "scripted_measured_seed42_repeat",
+      "controller": "scripted",
+      "seed": 42,
+      "edge_feedback": "measured",
+      "stop_after_phase": "WITHDRAW",
+      "hold_until_time_limit": true,
+      "return_home": true,
+      "expect": "PASS"
+    },
+    {
+      "label": "scripted_measured_seed42_cycle1",
+      "controller": "scripted",
+      "seed": 42,
+      "edge_feedback": "measured",
+      "stop_after_phase": "WITHDRAW",
+      "hold_until_time_limit": true,
+      "return_home": true,
+      "expect": "PASS"
+    },
+    {
+      "label": "action_program_seed42_cycle1",
+      "controller": "action_file",
+      "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json",
+      "seed": 42,
+      "return_home": true
+    },
+    {
+      "label": "deliberate_fail_stop_after_pre_cut_cycle1",
+      "controller": "scripted",
+      "seed": 42,
+      "edge_feedback": "measured",
+      "stop_after_phase": "PRE_CUT",
+      "hold_until_time_limit": true,
+      "return_home": true,
+      "expect": "FAIL"
+    },
+    {
+      "label": "scripted_measured_seed42_repeat_cycle1",
+      "controller": "scripted",
+      "seed": 42,
+      "edge_feedback": "measured",
+      "stop_after_phase": "WITHDRAW",
+      "hold_until_time_limit": true,
+      "return_home": true,
+      "expect": "PASS"
+    }
+  ]
+}

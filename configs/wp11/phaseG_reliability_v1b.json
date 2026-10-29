@@ -1,0 +1,70 @@
+{
+  "schema": "rcs_reliability_v1",
+  "version": "phaseG_reliability_v1b",
+  "declared": "2026-10-30, WP-11 Phase H follow-up, before any v1b run (no Native run of the 8-episode plan exists at declaration)",
+  "description": "Multi-episode reliability checks of the cutting_research_v1 policy-ready env (supplement Test F). POLICY_READY is set only if every check of every episode passes and every stored episode validates with the dataset reader.",
+  "minimum_consecutive_episodes": {
+    "kinematic": 5,
+    "isaac_sim": 3
+  },
+  "reset": {
+    "material_at_reference_max_m": 1e-06,
+    "material_velocity_max_m_s": 1e-06,
+    "tool_pose_repeat_translation_max_m": 0.0001,
+    "tool_pose_repeat_rotation_max_rad": 0.001,
+    "tool_linear_speed_max_m_s": 0.001,
+    "tool_angular_speed_max_rad_s": 0.01,
+    "grasp_reset_status_live": "PASS_STABLE_GRASP",
+    "tool_velocity_rule": "repeat_episode_0",
+    "tool_linear_speed_repeat_max_m_s": 0.001,
+    "tool_angular_speed_repeat_max_rad_s": 0.01
+  },
+  "clock": {
+    "tolerance_s": 1e-09,
+    "control_rate_hz": 50
+  },
+  "camera": {
+    "latest_frame_max_age_steps": "camera_every - 1 (live only)"
+  },
+  "memory": {
+    "fit_from_episode": 1,
+    "host_rss_slope_max_mib_per_episode": 64,
+    "gpu_slope_max_mib_per_episode": 32,
+    "note": "Least-squares slope of the post-episode host RSS / process GPU memory over episodes >= fit_from_episode (episode 0 includes one-time kernel compilation and caches)."
+  },
+  "determinism": {
+    "same_seed_same_controller_cpu": "final cut codes identical (sha256)",
+    "same_seed_same_controller_gpu_or_live": "verdict identical; reported metrics compared, not gated"
+  },
+  "episodes": {
+    "expected_failures_must_fail": true,
+    "failed_episodes_must_validate": true
+  },
+  "amends": "phaseG_reliability_v1a",
+  "amendment": "No gate or threshold changes: every key used by dataset.reliability_report (minimum_consecutive_episodes, reset, clock, camera, memory, determinism, episodes) is copied unchanged from phaseG_reliability_v1a, so the v1a and v1b verdicts of the same run must be identical (a difference is a scoring bug, not a result). v1b adds (a) a declared longer Native run (run, below) so the memory trends are fitted on 7 points instead of the 3 of the Phase H rerun, and (b) an exact statement of the memory trend estimator for N episodes, which v1a already fixes (fit_from_episode 1, ordinary least squares) but does not spell out.",
+  "memory_estimator": {
+    "status": "declared before the run; gating; identical to the v1a / dataset.reliability_report implementation (src/robotic_cutting_sim/dataset.py _slope)",
+    "samples": "one sample per stored episode, taken by scripts/collect_dataset.py after the episode is evaluated, returned home, recorded and exported (episode.json memory_after)",
+    "host_value": "memory_after.host_rss_mib = VmRSS of the collector process from /proc/<pid>/status, MiB",
+    "gpu_value": "memory_after.gpu_used_mib_total = sum over GPUs of nvidia-smi --query-compute-apps used_memory for the collector pid, MiB (this process only; other jobs on the GPU are not counted)",
+    "fit_episodes": "episodes fit_from_episode .. N-1 = 1..7 for the declared 8-episode run (episode 0 is excluded as v1/v1a already allow: one-time kernel compilation, caches and the only Kit open_stage); 7 points",
+    "abscissa": "x = 0, 1, ..., M-1 in episode order over the fitted episodes (unit spacing = one episode); samples that are None are dropped before the fit (as _slope does)",
+    "slope": "numpy.polyfit(x, y, 1)[0]: unweighted ordinary least squares, MiB per episode; no outlier rejection, no smoothing, no alternative estimator gates",
+    "gates": "host slope <= memory.host_rss_slope_max_mib_per_episode (64); GPU slope <= memory.gpu_slope_max_mib_per_episode (32)",
+    "diagnostics_not_gating": "reported alongside, never used for a verdict: Theil-Sen median slope over the same points, the OLS slope over episodes 1..3 only (comparable to the Phase H 4-episode rerun), last-minus-first of the fitted points, and the per-episode deltas"
+  },
+  "run": {
+    "plan": "configs/wp11/phaseH/native_reliability_trim_v1b_8ep.json (8 episodes = the Phase G/H Native Test F plan cycled twice; fixed seed 42)",
+    "runtime": "isaac_sim (Native), one process for all 8 episodes (no process recycling)",
+    "runtime_profile": "full_physics_v1 (formal 1 mm / 4 mm / 0.1 ms / 20 ms; native.stage_reset = reload_in_place)",
+    "collector_flags": "--camera-every 5 --record-every 10 --profile stages (as the Phase H rerun native_reliability_trim_full_physics_001)",
+    "scene_goal": "--scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}'",
+    "scoring": "--reliability-config configs/wp11/phaseG_reliability_v1b.json (primary) --reliability-config configs/wp11/phaseG_reliability_v1a.json --reliability-config configs/wp11/phaseG_reliability_v1.json; all three reported",
+    "output": "artifacts/wp11/phaseH/native_reliability_v1b_001 (never overwritten)",
+    "source": "a fresh git worktree pinned at the commit that adds this file (git_dirty = false)",
+    "gpu_rule": "launch only on a GPU with <= 2 other active compute jobs and >= 12 GB free; at most one Isaac job of this agent; the chosen GPU is recorded",
+    "disk_rule": ">= 15 GB free on /mnt/data; completed runtime grasp-trace JSONL files may be gzip-compressed losslessly while the run proceeds (sha256 of each original recorded); dataset files read by read_dataset.py are not touched",
+    "failure_policy": "failed episodes are kept, scored and reported; no rerun with changed settings; a single relaunch (to native_reliability_v1b_002) only for an infrastructure crash before the first episode's physics",
+    "verdict": "the Native POLICY_READY verdict is the v1b POLICY_READY of this run; v1a must agree; v1 is reported for continuity (its tool_at_rest_after_reset rule is expected to fail from the known PhysX clamp jitter)"
+  }
+}
