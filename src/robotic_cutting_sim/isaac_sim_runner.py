@@ -73,6 +73,10 @@ class IsaacSimCuttingConfig:
     ik_iterations: int = 48
     initial_joint_positions: tuple | None = None
     cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3-8 are opt-in tlmpm_v3/tlmpm_v4
+    # Opt-in (WP-11B): carry another registered profile tool on the task's hand
+    # trajectory, translated by a world offset (tool_profile.retarget_task_tool).
+    tool_profile_id: str | None = None
+    tool_profile_hand_offset_world_m: tuple = (0., 0., 0.)
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -116,6 +120,14 @@ class IsaacSimCuttingConfig:
         if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
                 or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
             raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
+        if self.tool_profile_id is not None:
+            from .tasks import ProfileTaskSpec
+            from .tool_profile import PROFILES
+            if (self.tool_profile_id not in PROFILES or self.task_id not in ProfileTaskSpec.TASK_IDS
+                    or self.tool_attachment_mode != 'physical_grasp'):
+                raise ValueError('tool_profile_id needs a registered profile, a v2 ProfileTaskSpec task and physical_grasp')
+        elif any(self.tool_profile_hand_offset_world_m):
+            raise ValueError('A tool hand offset requires an explicit tool_profile_id')
         if self.cutting_law not in (None, 1, 2, 3, 4, 5, 6, 7, 8):
             raise ValueError('cutting_law is None or 1-8')
         if self.action_mode not in ("cartesian", "joint"):
@@ -249,6 +261,9 @@ class LiveIsaacSimCutting:
                                 workpiece_kind=c.workpiece_kind)
             from .task_scenarios import configure_task
             self.task = configure_task(self.task, scenario=c.scenario, material_profile_id=c.material_profile_id)
+            if c.tool_profile_id is not None:
+                from .tool_profile import retarget_task_tool
+                self.task = retarget_task_tool(self.task, c.tool_profile_id, c.tool_profile_hand_offset_world_m)
             if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
                 raise ValueError("Native Kit control_dt/dx must match the shared task specification")
             self.reference_pose=self.task.reference_edge_pose_world

@@ -181,3 +181,18 @@ def test_retarget_task_keeps_hand_trajectory(profile):
     assert np.allclose(np.abs(np.dot(same.edge_orientation_local_xyzw, base.edge_orientation_local_xyzw)), 1., atol=1e-12)
     with pytest.raises(NotImplementedError):
         retarget_task_tool(make_task("CUT-01"), profile.profile_id)
+
+
+def test_native_config_tool_override_is_opt_in_and_guarded():
+    from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig
+    assert IsaacSimCuttingConfig().tool_profile_id is None
+    assert IsaacSimCuttingConfig().tool_profile_hand_offset_world_m == (0., 0., 0.)
+    common = dict(tool_attachment_mode="physical_grasp", camera_layout="wrist_d405_global_d455",
+                  camera_mode="native_single_view")
+    IsaacSimCuttingConfig(task_id="CUT-01-R", tool_profile_id="ruler_knife_v2_y",
+                          tool_profile_hand_offset_world_m=(0., 0., .12), **common)
+    for bad in (dict(task_id="CUT-01", tool_profile_id="ruler_knife_v2_y"),
+                dict(task_id="CUT-01-R", tool_profile_id="unknown", **common),
+                dict(task_id="CUT-01-R", tool_profile_hand_offset_world_m=(0., 0., .1), **common)):
+        with pytest.raises(ValueError):
+            IsaacSimCuttingConfig(**bad)

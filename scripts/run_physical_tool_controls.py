@@ -309,6 +309,12 @@ def open_backend(args, output, protocol):
     from robotic_cutting_sim.physical_tool import ToolGraspConfig
     grip=replace(ToolGraspConfig(), **protocol["normal_grip"])
     spacing=.002 if args.task_id == "TRIM-01" else .001
+    tool_override={}
+    if getattr(args,"tool_profile",None):
+        # Opt-in (protocol v7+): a declared profile tool on the declared lifted hand trajectory.
+        if args.runtime != "isaac_sim":raise NotImplementedError("--tool-profile is implemented for isaac_sim only")
+        tool_override=dict(tool_profile_id=args.tool_profile,
+            tool_profile_hand_offset_world_m=tuple(protocol["tool_profile_retarget"]["hand_offset_world_m"]))
     if args.runtime == "isaac_sim":
         # Same process-local acknowledgement as the installed native launcher;
         # the existing runtime was explicitly installed with accepted terms.
@@ -317,7 +323,7 @@ def open_backend(args, output, protocol):
         config=IsaacSimCuttingConfig(task_id=args.task_id, seed=args.seed, task_variant="fixed", gpu=args.gpu,
             device=f"cuda:{args.gpu}", particle_spacing_m=spacing, camera=False,
             camera_layout="wrist_d405_global_d455", camera_mode="native_single_view", native_noise="off",
-            tool_attachment_mode="physical_grasp", tool_init_mode="pregrasped", grasp=grip)
+            tool_attachment_mode="physical_grasp", tool_init_mode="pregrasped", grasp=grip, **tool_override)
         write_json(output/"runtime_config.json",asdict(config))
         app=launch_app(config,output)
         env=LiveIsaacSimCutting(app,config,output)
@@ -384,11 +390,11 @@ def worker(args, protocol):
     hashes={str(path.relative_to(ROOT)):sha256(path) for path in paths}
     for path in paths:(implementation/path.name).write_bytes(path.read_bytes())
     from robotic_cutting_sim.recording import manifest
-    record=manifest({"case":args.case,"task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,
+    record=manifest({"case":args.case,"task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"tool_profile":args.tool_profile,
         "protocol_sha256":sha256(args.protocol),"case_config":protocol["cases"][args.case]},"wp08_rigid_control_"+args.runtime)
     record["implementation_sha256"]=hashes
     write_json(output/"manifest.json",record)
-    result={"status":"RUNNING","case":args.case,"runtime":args.runtime,"source_sha256":hashes,
+    result={"status":"RUNNING","case":args.case,"runtime":args.runtime,"source_sha256":hashes,"tool_profile":args.tool_profile,
         "case_config":protocol["cases"][args.case],"full_physics_acceptance":False,
         "camera_scope":"NOT_RUN; control cameras explicitly disabled","material_feedback_scope":"NOT_RUN; rigid external-load control only"}
     write_json(output/"result.json",result)
@@ -560,6 +566,9 @@ def main():
     from robotic_cutting_sim.tasks import TASK_IDS
     parser.add_argument("--task-id",choices=TASK_IDS,default="CUT-01")
     parser.add_argument("--cases",nargs="+")
+    from robotic_cutting_sim.tool_profile import PROFILES
+    parser.add_argument("--tool-profile",choices=sorted(PROFILES),default=None,
+        help="Opt-in profile tool override; only for protocols declaring allowed_tool_profiles (default: the task's own tool)")
     parser.add_argument("--timeout",type=float,default=900.)
     parser.add_argument("--dry-run",action="store_true")
     parser.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
@@ -569,6 +578,9 @@ def main():
     protocol=read_json(args.protocol)
     if args.task_id not in protocol.get('allowed_task_ids', (args.task_id,)):
         parser.error('The selected task is outside this frozen control protocol')
+    if (args.tool_profile is not None or "allowed_tool_profiles" in protocol) and \
+            args.tool_profile not in protocol.get("allowed_tool_profiles", ()):
+        parser.error("--tool-profile must be one of the protocol's allowed_tool_profiles (and is required by such protocols)")
     runtimes=("isaac_sim","isaac_lab") if args.runtime=="both" else (args.runtime,)
     if any(runtime not in protocol.get("allowed_runtimes",("isaac_sim","isaac_lab")) for runtime in runtimes):
         parser.error("The selected runtime is outside the frozen protocol's allowed_runtimes")
@@ -580,7 +592,7 @@ def main():
     output=args.output_dir.resolve();output.mkdir(parents=True,exist_ok=False)
     (output/"protocol.json").write_bytes(args.protocol.read_bytes())
     index={"schema_version":"wp08_physical_controls_index_v1","protocol":{"path":"protocol.json","sha256":sha256(args.protocol)},
-        "task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"cases":{},"status":"PLAN_ONLY_NOT_RUN" if args.dry_run else "RUNNING",
+        "task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"tool_profile":args.tool_profile,"cases":{},"status":"PLAN_ONLY_NOT_RUN" if args.dry_run else "RUNNING",
         "scope":"Independent fresh-process physical pregrasp/rigid controls; no material advance or task completion"}
     for runtime in runtimes:
         executable=ROOT/(".deps/isaacsim-venv/bin/python" if runtime=="isaac_sim" else ".deps/isaaclab-venv/bin/python")
@@ -588,6 +600,7 @@ def main():
             directory=Path(runtime)/name;key=runtime+"/"+name
             command=[str(executable),str(Path(__file__).resolve()),"--worker","--runtime",runtime,"--case",name,
                 "--protocol",str(output/"protocol.json"),"--task-id",args.task_id,"--seed",str(args.seed),"--gpu",str(args.gpu),"--output-dir",str(output/directory)]
+            if args.tool_profile is not None:command+=["--tool-profile",args.tool_profile]
             index["cases"][key]={"directory":str(directory),"runtime":runtime,"config":protocol["cases"][name],"command":command,
                 "control_trace":"control_trace.jsonl","raw_trace":"physical_grasp_trace_00.jsonl" if runtime=="isaac_sim" else "tool_substeps.npz", "status":"NOT_RUN"}
     write_json(output/"index.json",index)
