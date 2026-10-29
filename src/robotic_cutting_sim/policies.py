@@ -14,6 +14,11 @@ straight segment from the previous waypoint's planned pose with cross-track
 feedback (``WaypointPolicy(path_tracking=True)``), and the plan builders slow
 the final approach to the cut start and settle there
 (``approach_speed_m_s``/``approach_slow_distance_m``/``settle_s``).
+``path_v2_vision`` (ADR 0009, SLICE-PUSH-01 only) is path_v2 plus a wrist-D405
+depth survey: ``VisionRetargetPolicy`` takes a calibration frame at the end of
+the cut-0 start settle and a survey frame at the end of the cut-1 start settle
+(``slice_push_vision``), estimates the +x shift of the part right of cut 0
+(``wrist_depth_survey``) and shifts cut 1 and every later waypoint by it.
 """
 from dataclasses import dataclass, field, replace
 from typing import Callable
@@ -43,6 +48,14 @@ CONTROLLER_PROFILES = {
     "v1": dict(name="v1", path_tracking=False),
     "path_v2": dict(name="path_v2", path_tracking=True, cross_track_gain=.5, approach_speed_m_s=.02,
                     approach_slow_distance_m=.01, settle_s=.3, position_tolerance_m=.0003),
+    # ADR 0009: path_v2 plus a wrist-D405 depth survey that retargets cut 1 of
+    # SLICE-PUSH-01 by the measured shift of the part right of cut 0.
+    "path_v2_vision": dict(name="path_v2_vision", path_tracking=True, cross_track_gain=.5, approach_speed_m_s=.02,
+                           approach_slow_distance_m=.01, settle_s=.3, position_tolerance_m=.0003,
+                           vision_survey=dict(adr="docs/adr/0009-demo3-wrist-depth-retarget.md",
+                                              task_ids=("SLICE-PUSH-01",), camera_id="wrist_d405_0",
+                                              method="end_face_plus_x", diagnostic_methods=("kerf_face",),
+                                              retarget_settle_s=.3, lift_speed_m_s=.04, raise_speed_m_s=.02)),
 }
 
 
@@ -54,6 +67,13 @@ def controller_profile(name):
     policy = {key: profile[key] for key in ("path_tracking", "cross_track_gain", "position_tolerance_m") if key in profile}
     plan = {key: profile[key] for key in ("approach_speed_m_s", "approach_slow_distance_m", "settle_s") if key in profile}
     return policy, plan
+
+
+def vision_survey_options(name):
+    """Depth-survey options of a named controller profile (None for profiles without a survey)."""
+    controller_profile(name)
+    survey = CONTROLLER_PROFILES[name].get("vision_survey")
+    return None if survey is None else dict(survey)
 
 
 def edge_from_observation(observation, task):
@@ -383,3 +403,178 @@ def slice_push(task, *, cut_speed_m_s=.01, clearance_m=.008, overtravel_m=.004, 
                      label="retract")]
     return shape_approaches(plan, approach_speed_m_s=approach_speed_m_s,
                             approach_slow_distance_m=approach_slow_distance_m, settle_s=settle_s)
+
+
+# ------------------------------------------------------------------ path_v2_vision (ADR 0009)
+
+def slice_push_vision(task, *, retarget_settle_s=.3, lift_speed_m_s=.04, raise_speed_m_s=.02,
+                      approach_speed_m_s=.02, approach_slow_distance_m=.01, settle_s=.3, **slice_push_options):
+    """The path_v2 slice_push plan with ADR 0009 survey points; returns (plan, indices).
+
+    Relative to ``slice_push(task, approach..., settle...)``: the cut-0 start
+    settle hold is labelled ``calibrate_0`` (calibration frame at its end), the
+    cut-1 start settle hold ``survey_1`` (survey frame at its end), a
+    ``retarget_1`` waypoint (the cut-1 start, shifted at runtime by the
+    estimate, approached at ``approach_speed_m_s`` and held ``retarget_settle_s``)
+    is inserted before ``cut_1``, the disarmed lift in the kerf runs at
+    ``lift_speed_m_s`` and the disarmed raise in the kerf at ``raise_speed_m_s``.
+    ``indices``: calibration / survey waypoint and the first waypoint the shift applies to.
+    """
+    plan = slice_push(task, kerf_speed_m_s=lift_speed_m_s, approach_speed_m_s=approach_speed_m_s,
+                      approach_slow_distance_m=approach_slow_distance_m, settle_s=settle_s, **slice_push_options)
+    labels = [w.label for w in plan]
+    if not settle_s > 0 or labels.count("start_0") != 2 or labels.count("move_1") != 2:
+        raise ValueError("slice_push_vision needs the path_v2 settle holds at both cut starts")
+    calibration = len(labels)-1-labels[::-1].index("start_0")
+    survey = len(labels)-1-labels[::-1].index("move_1")
+    plan[calibration] = replace(plan[calibration], label="calibrate_0")
+    plan[survey] = replace(plan[survey], label="survey_1")
+    raise_index = labels.index("raise_in_kerf")
+    plan[raise_index] = replace(plan[raise_index], speed_m_s=raise_speed_m_s)
+    retarget = Waypoint(plan[survey].pose, speed_m_s=approach_speed_m_s, hold_s=retarget_settle_s, label="retarget_1")
+    plan.insert(survey+1, retarget)
+    assert plan[survey+2].label == "cut_1"
+    return plan, dict(calibration=calibration, survey=survey, shift_from=survey+1)
+
+
+def ideal_plan_end_s(task, plan, *, max_s=None, **policy_options):
+    """Input time at which ``WaypointPolicy`` finishes ``plan`` on an ideal integrator (None if not within max_s)."""
+    policy = WaypointPolicy(task, list(plan), **policy_options)
+    edge = np.asarray(plan[0].pose, float)
+    steps = int(round((task.duration_s if max_s is None else max_s)/task.control_dt_s))
+    for step in range(steps+1):
+        action = policy({"proprio": {"tool_pose": edge.copy()}, "timestamp_s": step*task.control_dt_s})
+        if policy.done:
+            return step*task.control_dt_s
+        delta = action["target"]
+        edge = np.r_[edge[:3]+delta[:3], (Rotation.from_rotvec(delta[3:])*Rotation.from_quat(edge[3:])).as_quat()]
+    return None
+
+
+@dataclass
+class VisionRetargetPolicy(WaypointPolicy):
+    """path_v2 WaypointPolicy plus the ADR 0009 wrist-depth survey and cut-1 retarget.
+
+    ``depth_source(camera_id)`` returns the latest rendered observation of that
+    camera (``depth_m``, ``valid_mask``, ``K``, ``T_world_camera``,
+    ``physics_timestamp_s``); it must be current at the observation time. When
+    the ``calibration`` / ``survey`` waypoint (``indices``) completes, the
+    frame is surveyed (``wrist_depth_survey.survey_frame``); after the survey
+    the shift estimate (``estimate_shift``, ``survey_method``) moves waypoint
+    ``indices["shift_from"]`` and every later one by the estimate along the
+    workpiece +x axis (= world +x for SLICE-PUSH-01). An invalid estimate
+    applies no shift. Only depth, camera calibration and the measured edge pose
+    (to exclude the knife) are read; never material state.
+    """
+    depth_source: Callable | None = None
+    camera_id: str = "wrist_d405_0"
+    survey_method: str = "end_face_plus_x"
+    diagnostic_methods: tuple = ()
+    indices: dict = field(default_factory=dict)
+    survey_config: object = None
+    vision: dict = field(default_factory=dict)
+    last_vision: dict | None = None
+
+    def __post_init__(self):
+        super().__post_init__()
+        from .wrist_depth_survey import METHODS, SurveyConfig
+        if self.survey_method not in METHODS or any(m not in METHODS for m in self.diagnostic_methods):
+            raise ValueError(f"survey methods are {METHODS}")
+        if set(self.indices) != {"calibration", "survey", "shift_from"} or not (
+                0 <= self.indices["calibration"] < self.indices["survey"] < self.indices["shift_from"] < len(self.waypoints)):
+            raise ValueError("indices needs ordered calibration < survey < shift_from waypoints")
+        if self.survey_config is None:
+            self.survey_config = SurveyConfig()
+        self.waypoints = list(self.waypoints)
+        self.vision = dict(adr="docs/adr/0009-demo3-wrist-depth-retarget.md", camera_id=self.camera_id,
+                           method=self.survey_method, indices=dict(self.indices),
+                           calibration=None, survey=None, estimate=None, diagnostics={},
+                           applied_shift_m=0., applied_shift_world_m=[0., 0., 0.], shifted_labels=[],
+                           inputs="rendered wrist depth + K + T_world_camera (robot kinematics) + measured edge pose; "
+                                  "no particle/label/component/oracle state")
+
+    def _edge(self, observation):
+        if self.edge_estimator is None:
+            return edge_from_observation(observation, self.task)
+        return np.asarray(self.edge_estimator(observation), float)
+
+    def _measure(self, observation, kind):
+        from .wrist_depth_survey import BarGeometry, survey_frame
+        stamp = float(observation["timestamp_s"])
+        record = dict(kind=kind, waypoint=self.indices[kind], label=self.waypoints[self.indices[kind]].label,
+                      observation_timestamp_s=stamp, frame_timestamp_s=None, valid=False, reason=None)
+        if self.depth_source is None:
+            return dict(record, reason="no depth source")
+        try:
+            frame = self.depth_source(self.camera_id)
+        except Exception as error:  # an unavailable camera invalidates the survey; never the episode
+            return dict(record, reason=f"depth source failed: {error!r}")
+        record["frame_timestamp_s"] = float(frame["physics_timestamp_s"])
+        if not abs(record["frame_timestamp_s"]-stamp) <= 1e-9:
+            return dict(record, reason="stale depth frame (timestamp differs from the observation)")
+        measurement = survey_frame(frame, BarGeometry.from_task(self.task), self.survey_config,
+                                   edge_pose_world=self._edge(observation))
+        return dict(record, valid=True, measurement=measurement)
+
+    def _estimate(self):
+        from .wrist_depth_survey import estimate_shift
+        calibration, survey = self.vision["calibration"], self.vision["survey"]
+        reasons = [f"{name}: {'not measured' if record is None else record['reason']}"
+                   for name, record in (("calibration", calibration), ("survey", survey))
+                   if record is None or not record["valid"]]
+        if reasons:
+            return None, dict(method=self.survey_method, valid=False, reasons=reasons, shift_m=None, applied_shift_m=0.)
+        shift, estimate = estimate_shift(calibration["measurement"], survey["measurement"], method=self.survey_method,
+                                         config=self.survey_config)
+        for method in self.diagnostic_methods:
+            self.vision["diagnostics"][method] = estimate_shift(
+                calibration["measurement"], survey["measurement"], method=method, config=self.survey_config)[1]
+        return shift, estimate
+
+    def _apply(self, shift):
+        vector = self.task.T_world_workpiece[:3, :3]@np.array([shift, 0., 0.])
+        for k in range(self.indices["shift_from"], len(self.waypoints)):
+            w = self.waypoints[k]
+            self.waypoints[k] = replace(w, pose=tuple(np.r_[np.asarray(w.pose[:3], float)+vector, w.pose[3:]]))
+        self.vision.update(applied_shift_m=float(shift), applied_shift_world_m=vector.tolist(),
+                           shifted_labels=[w.label for w in self.waypoints[self.indices["shift_from"]:]])
+
+    def __call__(self, observation):
+        self.last_vision = None
+        before = self.index
+        action = super().__call__(observation)
+        for kind in ("calibration", "survey"):
+            k = self.indices[kind]
+            if not before <= k < self.index or self.vision[kind] is not None:
+                continue
+            self.vision[kind] = self._measure(observation, kind)
+            event = dict(kind=kind, record=self.vision[kind])
+            if kind == "survey":
+                shift, estimate = self._estimate()
+                self.vision["estimate"] = estimate
+                if shift is not None:
+                    self._apply(shift)
+                event.update(estimate=estimate, applied_shift_m=self.vision["applied_shift_m"],
+                             applied_shift_world_m=self.vision["applied_shift_world_m"])
+                # Restart from the waypoint after the survey with the (possibly shifted) targets.
+                self.index, self._start_time, self._hold_start = k+1, None, None
+                action = super().__call__(observation)
+            self.last_vision = event
+        return action
+
+
+def vision_policy(task, name="path_v2_vision", *, depth_source=None, limits=None, cut_speed_m_s=.01,
+                  **policy_overrides):
+    """VisionRetargetPolicy of a profile with a ``vision_survey`` (path_v2_vision) for its declared tasks."""
+    survey = vision_survey_options(name)
+    if survey is None:
+        raise ValueError(f"Controller profile {name!r} has no vision survey")
+    if task.task_id not in survey["task_ids"]:
+        raise ValueError(f"Controller profile {name!r} is declared for {survey['task_ids']} only, not {task.task_id}")
+    policy_options, plan_options = controller_profile(name)
+    plan, indices = slice_push_vision(task, cut_speed_m_s=cut_speed_m_s, retarget_settle_s=survey["retarget_settle_s"],
+                                      lift_speed_m_s=survey["lift_speed_m_s"], raise_speed_m_s=survey["raise_speed_m_s"],
+                                      **plan_options)
+    return VisionRetargetPolicy(task, plan, limits or ActionLimits(), **{**policy_options, **policy_overrides},
+                                depth_source=depth_source, camera_id=survey["camera_id"], survey_method=survey["method"],
+                                diagnostic_methods=tuple(survey["diagnostic_methods"]), indices=indices)

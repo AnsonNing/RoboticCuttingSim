@@ -32,8 +32,10 @@ Usage::
 
 ``--controller-profile`` (default ``v1``, the frozen demo definitions) selects
 the scripted controller profile of run_wp10_live; ``path_v2`` is the opt-in
-path-tracking controller. Pass the same value to every stage of a run: the
-evaluate stage checks the recorded profile against it.
+path-tracking controller; ``path_v2_vision`` (Demo 3 only, ADR 0009) adds the
+wrist-depth survey that retargets cut 1 (its measurements and applied shift
+are summarised under ``execution.policy_vision``). Pass the same value to
+every stage of a run: the evaluate stage checks the recorded profile against it.
 
 ``--stage all`` (the default) is run -> evaluate -> render, plus publish with
 ``--publish``. Evaluation never modifies the episode (its files are hashed
@@ -59,7 +61,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
-from robotic_cutting_sim.policies import CONTROLLER_PROFILES  # noqa: E402
+from robotic_cutting_sim.policies import CONTROLLER_PROFILES, vision_survey_options  # noqa: E402
 
 SCRIPTS = ROOT / 'scripts'
 DEFAULT_ROOT = ROOT / 'artifacts' / 'wp10_claude' / 'demos'
@@ -375,8 +377,28 @@ def execution_layer(spec, demo_dir, episode, loaded, controller_profile='v1'):
             'controller_profile': {'expected': controller_profile, 'recorded': recorded['controller_profile'],
                                    'receipt': row.get('controller_profile'),
                                    'position_tolerance_m': row.get('policy_position_tolerance_m')},
+            'policy_vision': vision_summary(row),
             'manifest_mismatches': mismatched,
             'task_reconstruction_checks': loaded['task_checks']}
+
+
+def vision_summary(row):
+    """ADR 0009 survey receipt of a path_v2_vision episode (None for profiles without a survey)."""
+    vision = row.get('policy_vision')
+    if not vision:
+        return None
+    estimate = vision.get('estimate') or {}
+    stamps = {kind: {key: (vision.get(kind) or {}).get(key) for key in ('observation_timestamp_s', 'frame_timestamp_s',
+                                                                      'valid', 'reason')}
+              for kind in ('calibration', 'survey')}
+    return {'method': vision.get('method'), 'camera_id': vision.get('camera_id'), 'valid': estimate.get('valid'),
+            'reasons': estimate.get('reasons'), 'shift_estimate_m': estimate.get('shift_m'),
+            'applied_shift_m': vision.get('applied_shift_m'), 'applied_shift_world_m': vision.get('applied_shift_world_m'),
+            'shifted_labels': vision.get('shifted_labels'), 'calibration_face_x_m': estimate.get('calibration_face_x_m'),
+            'survey_face_x_m': estimate.get('survey_face_x_m'), 'frames': stamps,
+            'diagnostics': {name: {key: record.get(key) for key in ('valid', 'reasons', 'shift_m')}
+                            for name, record in (vision.get('diagnostics') or {}).items()},
+            'plan_ideal_end_s': row.get('policy_plan_ideal_end_s'), 'adr': vision.get('adr')}
 
 
 class Components:
@@ -851,6 +873,7 @@ def write_index(options):
                       'label': None if summary is None else summary['label'],
                       'cutting_law': None if summary is None else summary.get('cutting_law'),
                       'controller_profile': deep(summary, 'controller_profile', 'recorded'),
+                      'vision_applied_shift_m': deep(summary, 'execution', 'policy_vision', 'applied_shift_m'),
                       'runtime_source': deep(summary, 'runtime', 'runtime_source'),
                       'measured_capture_rate_hz': deep(summary, 'measured_capture_rate', 'rate_hz'),
                       'wall_time_s': deep(summary, 'execution', 'wall_time_s'),
@@ -928,7 +951,8 @@ def build_parser():
     p.add_argument('--seed', type=int, default=42)
     p.add_argument('--controller-profile', choices=tuple(CONTROLLER_PROFILES), default='v1',
                    help='Scripted controller profile passed to run_wp10_live (default v1 = the frozen demo '
-                        'definitions; path_v2 = opt-in path tracking + slow approach/settle). The evaluate stage '
+                        'definitions; path_v2 = opt-in path tracking + slow approach/settle; path_v2_vision = '
+                        'path_v2 + ADR 0009 wrist-depth cut-1 retarget, Demo 3 only). The evaluate stage '
                         'checks the recorded profile against this value')
     p.add_argument('--dry-run', action='store_true', help='Print the exact commands; write nothing')
     p.add_argument('--publish', action='store_true', help='With --stage all: also copy small media to docs/media/demos')
@@ -949,6 +973,10 @@ def main(argv=None):
     if not options.run_id or '/' in options.run_id or options.run_id in ('.', '..'):
         parser.error('--run-id must be a plain directory name')
     demos, stages = selected_demos(options.demo), selected_stages(options.stage, options.publish)
+    survey = vision_survey_options(options.controller_profile)
+    if survey is not None and any(DEMOS[key].task_id not in survey['task_ids'] for key in demos):
+        parser.error(f'--controller-profile {options.controller_profile} is declared for '
+                     f'{list(survey["task_ids"])} only (Demo 3); select --demo 3')
     if options.dry_run:
         dry_run(options, demos, stages)
         return 0

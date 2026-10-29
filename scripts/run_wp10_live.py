@@ -116,7 +116,7 @@ class EpisodeRecorder:
         write_json(self.output / 'frame_manifest.json', self.rows)
 
     def step(self, action, result, before_observation=None, step_wall_s=None, policy_phase=None,
-             controller_profile=None, policy_tracking=None):
+             controller_profile=None, policy_tracking=None, policy_vision=None):
         self.steps += 1
         if policy_phase is not None:
             self.phases.append(((before_observation or {}).get('timestamp_s', self.env.time_s - self.env.task.control_dt_s),
@@ -158,6 +158,8 @@ class EpisodeRecorder:
             row['controller_profile'] = controller_profile
         if policy_tracking is not None:
             row['policy_tracking'] = policy_tracking
+        if policy_vision is not None:
+            row['policy_vision'] = policy_vision
         self.stream.write(json.dumps(jsonable(row), allow_nan=False) + '\n')
         self.stream.flush()
         if self.steps % self.every == 0 or terminated or truncated:
@@ -262,6 +264,11 @@ def validate_arguments(p, a):
         p.error('--edge-feedback/--position-tolerance apply to the scripted controller only')
     if a.controller_profile != 'v1' and a.controller != 'scripted':
         p.error('--controller-profile applies to the scripted controller only')
+    from robotic_cutting_sim.policies import vision_survey_options
+    survey = vision_survey_options(a.controller_profile)
+    if survey is not None and (a.task not in survey['task_ids'] or not (a.record_cameras or a.observation != 'state')):
+        p.error(f'--controller-profile {a.controller_profile} (ADR 0009 wrist-depth survey) is declared for '
+                f'{list(survey["task_ids"])} only and needs rendered cameras (--record-cameras or a vision observation)')
     if a.position_tolerance is not None and not 0 < a.position_tolerance < .01:
         p.error('--position-tolerance must be in (0, 0.01) m')
     from robotic_cutting_sim.tasks import DemoTaskSpec, make_task
@@ -277,7 +284,9 @@ def is_demo_task(task):
     return isinstance(task, DemoTaskSpec)
 
 
-def policy_plan_name(task):
+def policy_plan_name(task, policy=None):
+    if getattr(policy, 'vision', None):
+        return 'slice_push_vision'
     return 'slice_push' if is_demo_task(task) else 'skim' if task.goal_kind == 'flatten' else 'through_cut'
 
 
@@ -302,6 +311,32 @@ def measured_edge_estimator(env):
     return estimate
 
 
+def wrist_depth_source(env):
+    """Latest rendered depth observation of one camera at the current physics time (ADR 0009 survey input).
+
+    Only depth, its valid mask, K and T_world_camera (robot kinematics) are returned; with a state
+    observation profile the frame is rendered on demand (rendering holds physics). The timestamp
+    is the frame's own measured physics time, checked by the policy against its observation.
+    """
+    backend = env.backend
+
+    def latest(camera_id):
+        frames = env._frames
+        if camera_id not in frames:
+            frames = backend.frames if hasattr(backend, 'measured') else backend.capture()[0]
+        frame = frames[camera_id]
+        calibration = backend.calibration[camera_id]
+        timestamp = float(frame.get('physics_timestamp_s', frame.get('timestamp_s', float('nan'))))
+        if abs(timestamp - env.time_s) > 1e-9:
+            raise ValueError(f'{camera_id} frame at {timestamp} s is not current ({env.time_s} s)')
+        return dict(camera_id=camera_id, depth_m=np.asarray(frame['depth_m']).copy(),
+                    valid_mask=np.asarray(frame['valid_mask']).copy(),
+                    K=np.asarray(frame.get('K', calibration['K']), float).copy(),
+                    T_world_camera=np.asarray(frame.get('T_world_camera', calibration['T_world_camera']), float).copy(),
+                    physics_timestamp_s=timestamp)
+    return latest
+
+
 def controller_profile_receipt(a):
     """Scripted controller profile name and parameters (v1 = the frozen point-to-point controller)."""
     from robotic_cutting_sim.policies import CONTROLLER_PROFILES
@@ -312,8 +347,17 @@ def controller_profile_receipt(a):
 
 
 def scripted_policy(env, a):
-    from robotic_cutting_sim.policies import WaypointPolicy, controller_profile, skim, slice_push, through_cut
+    from robotic_cutting_sim.policies import (WaypointPolicy, controller_profile, skim, slice_push, through_cut,
+                                              vision_policy, vision_survey_options)
     profile_policy, profile_plan = controller_profile(getattr(a, 'controller_profile', 'v1'))
+    if vision_survey_options(getattr(a, 'controller_profile', 'v1')) is not None:
+        options = {}
+        if a.edge_feedback == 'measured':
+            options['edge_estimator'] = measured_edge_estimator(env)
+        if a.position_tolerance is not None:
+            options['position_tolerance_m'] = a.position_tolerance
+        return vision_policy(env.task, a.controller_profile, depth_source=wrist_depth_source(env),
+                             limits=env.action_limits or ActionLimits(), cut_speed_m_s=a.speed, **options)
     saw = .006 if a.motion == 'saw' else 0.
     if is_demo_task(env.task):
         plan = slice_push(env.task, cut_speed_m_s=a.speed, **profile_plan)
@@ -364,10 +408,12 @@ def main(argv=None):
                         'simulator tool-edge pose (measured_tool_edge_feedback; not material oracle state)')
     p.add_argument('--position-tolerance', type=float,
                    help='Scripted waypoint position tolerance in m (default: the controller profile; v1 0.5 mm)')
-    p.add_argument('--controller-profile', choices=('v1', 'path_v2'), default='v1',
-                   help='Scripted controller profile: v1 (default, frozen point-to-point waypoints) or path_v2 '
+    p.add_argument('--controller-profile', choices=('v1', 'path_v2', 'path_v2_vision'), default='v1',
+                   help='Scripted controller profile: v1 (default, frozen point-to-point waypoints), path_v2 '
                         '(opt-in: cut segments tracked from the planned start with cross-track feedback 0.5, '
-                        'final 10 mm approach at 0.02 m/s, 0.3 s settle, 0.3 mm position tolerance)')
+                        'final 10 mm approach at 0.02 m/s, 0.3 s settle, 0.3 mm position tolerance) or '
+                        'path_v2_vision (SLICE-PUSH-01 only, needs cameras: path_v2 plus the ADR 0009 wrist D405 '
+                        'depth survey that shifts cut 1 and later waypoints by the measured part shift)')
     p.add_argument('--material-profile')
     p.add_argument('--material-dt', type=float, default=.0001)
     p.add_argument('--max-cuts', type=int, default=1)
@@ -470,7 +516,8 @@ def main(argv=None):
                     recorder.step(action, result, before_observation, time.monotonic()-step_start,
                                   policy_phase=policy.phase if policy is not None else None,
                                   controller_profile=profile_receipt,
-                                  policy_tracking=policy.last_tracking if policy is not None else None)
+                                  policy_tracking=policy.last_tracking if policy is not None else None,
+                                  policy_vision=getattr(policy, 'last_vision', None))
                     if (step + 1) % 25 == 0:
                         print(f'{a.runtime} {a.task} {a.controller} episode={episode} step={step+1} t={env.time_s:.2f}', flush=True)
                     if result[2] or result[3]:
@@ -484,7 +531,12 @@ def main(argv=None):
                 if demo is not None:
                     row.update(demo=demo, push_phase=push)
                 if policy is not None:
-                    row.update(policy_plan=policy_plan_name(env.task), edge_feedback=edge_feedback_receipt(a),
+                    if getattr(policy, 'vision', None):
+                        from robotic_cutting_sim.policies import ideal_plan_end_s
+                        row.update(policy_vision=policy.vision, policy_plan_ideal_end_s=ideal_plan_end_s(
+                            env.task, list(policy.waypoints), path_tracking=policy.path_tracking,
+                            cross_track_gain=policy.cross_track_gain, position_tolerance_m=policy.position_tolerance_m))
+                    row.update(policy_plan=policy_plan_name(env.task, policy), edge_feedback=edge_feedback_receipt(a),
                                policy_position_tolerance_m=policy.position_tolerance_m,
                                policy_final_phase=policy.phase, controller_profile=profile_receipt,
                                policy_motion=dict(motion=a.motion, angle_deg=a.angle, offset_m=a.offset, speed_m_s=a.speed))
