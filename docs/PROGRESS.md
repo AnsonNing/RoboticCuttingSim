@@ -12,7 +12,8 @@
   - Demo 2 削除凸起：v1 控制器 **FAIL**（去除 64.2%；start 點過衝後在上升中被判定到達、削切直線朝 84 mm 外終點，刃口高約 1.2 mm）。**path_v2 控制器重跑 PASS**（`live_20261029_pathv2_c`：去除 97.9%、底材 100%、削切中實測刃口 z 70.18–70.23 mm；精度 5/8 另計）。
   - Demo 3 兩刀三塊＋推開：三塊、推開 19.3 mm、其他塊不動、推動時無新標籤＝計畫 §4 條件成立；v3 宣告切面位置 FAIL（2.0000000670 mm 對 2 mm，第一刀把長條推開 ±2.4 mm 造成；量化在 1 mm 粒子層）。
 - Phase 1 審查（rcs-review）：ACCEPT WITH CONDITIONS；M8 改標為「ADR 0006 拓撲文字 PASS、runner M8b 準則 FAIL」。Demo 3 依 [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) 改用 `path_v2_vision`（第一刀後以手腕 D405 深度量測長條位移，修正第二刀位置；不用 oracle）。
-- 背景工作：rcs-impl 實作 `path_v2_vision`；Demo 1a/1b 以 path_v2 重跑（`live_20261029_pathv2_d`，GPU 1）。
+- path_v2 第二輪（最終展示用）：Demo 1a **PASS**（凍結 strict PASS，刃口 x 誤差 ≤ 0.046 mm）、Demo 1b **PASS**（swept-plane）、Demo 2 **PASS**（刃口 z 誤差 ≤ 0.026 mm）；三者解除切削階段的標籤變化皆為 0（審查條件 2）。輸出 `artifacts/wp10_claude/demos/live_20261029_pathv2_{c,d}/`。
+- 背景工作：rcs-impl 實作 `path_v2_vision`（Demo 3）；rcs-impl 做 Phase 1 計算式準則重評（`matrix_law{4,5}_002.json`）與「材料寬於刀刃」CPU 測試。
 - 下一步：檢查四個 demo 的 summary 與影片 → 失敗就診斷、保留、修正後重跑 → rcs-review 審查 demo → README／報告整理 → 合併 main → DONE。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
