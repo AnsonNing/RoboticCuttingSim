@@ -1,0 +1,257 @@
+{
+  "schema_version": "wp11_ruler_v2_physical_controls_v3_negctrl",
+  "scope": "WP-11 Phase F1 follow-up: corrected low-friction negative controls only (and their matched normal-friction references). Replaces nothing: the v8 record, including its FAIL of low_friction_trim_advance_0p1n (a control-design flaw: the -advance load torque cancelled the gravity torque about the finger axis), stays unchanged and is reported as FAIL.",
+  "start_profile": "wp11_home_v1",
+  "configured_task": {
+    "scene": "configs/wp11/scenes/trim01_wp11_workcell.json",
+    "scene_sha256": "c73981032158fe11b9f925999cfef6c76856d449c59ed185fbd667a3455a3f2c",
+    "goal": "configs/wp11/goals/trim_bump_rho10.json",
+    "goal_sha256": "f26cedae612e58aa54858805d1a58f601ea26b5eb1e94b72fc4fa7493ccec431",
+    "seed": 42,
+    "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-a33f6613",
+    "config_sha256": "a33f6613126f16665b974ece868051e799a64ed65204a05231de28c14c0f263e",
+    "scenario": "configs/wp11_scenarios_v1.json:wp11_workcell_v1",
+    "scenario_sha256": "41ee52129b66c959caf77764803032dad8308f0e3b14943d131ca65ce846fa94",
+    "note": "Same compiled task as the Phase D Native smoke (docs/evidence/wp11/phaseD_home_001.json); HOME = declared q_home, Franka 1 at the shared park"
+  },
+  "tool_attachment_mode": "physical_grasp",
+  "tool_init_mode": "pregrasped",
+  "rigid_dt_s": 0.002,
+  "control_dt_s": 0.02,
+  "normal_grip": {
+    "friction": 0.6,
+    "max_finger_force_n": 20.0,
+    "initial_finger_position_m": 0.0112
+  },
+  "transfer": {
+    "world_edge_position_m": [
+      -0.2,
+      -0.15,
+      0.18
+    ],
+    "orientation": "Preserve measured initial edge orientation; nominal mount used only for IK",
+    "waypoints": "Lift at initial XY to at least target Z, then translate to target XY",
+    "joint_profile": "Quintic smoothstep, using measured starting joints and bounded actuator targets only",
+    "minimum_waypoint_duration_s": 2.0,
+    "maximum_joint_speed_rad_s": 0.25,
+    "maximum_joint_increment_rad": 0.005,
+    "maximum_ik_position_error_m": 0.001,
+    "maximum_ik_rotation_error_rad": 0.01,
+    "post_transfer_stabilization_s": 0.5,
+    "maximum_actual_edge_position_error_m": 0.01,
+    "maximum_actual_edge_rotation_error_rad": 0.05235987755982988
+  },
+  "measurement": {
+    "pose_time_step_s": 0.02,
+    "required_contact_time_step_s": 0.002,
+    "minimum_loaded_finger_force_n": 0.05,
+    "load_ramp_s": 0.1,
+    "stable_window_s": 0.5,
+    "maximum_relative_translation_m": 0.002,
+    "maximum_relative_rotation_rad": 0.05235987755982988,
+    "maximum_relative_linear_speed_m_s": 0.02,
+    "maximum_relative_angular_speed_rad_s": 0.2,
+    "minimum_bilateral_loaded_handle_fraction": 0.95,
+    "maximum_contact_penetration_m": 0.001,
+    "maximum_matched_start_tool_translation_m": 0.002,
+    "maximum_matched_start_tool_rotation_rad": 0.05235987755982988,
+    "maximum_matched_start_arm_joint_error_rad": 0.01,
+    "minimum_weak_response_translation_increase_m": 0.005,
+    "minimum_weak_response_rotation_increase_rad": 0.08726646259971647,
+    "minimum_detectable_arm_response_rad": 1e-05,
+    "minimum_detectable_contact_force_change_n": 0.05,
+    "release_minimum_relative_translation_m": 0.02,
+    "release_deadline_s": 0.5,
+    "freeflight_minimum_duration_s": 0.03,
+    "freeflight_gravity_relative_error_max": 0.2,
+    "finite_state_and_force_required": true
+  },
+  "native_contact_geometry_profile": "PRE_STEP_MEASURED_TOOL_POSE",
+  "native_handle_region_margin_m": 1e-06,
+  "wp11_motion": {
+    "reorient_source": "compile_task ideal schedule of the configured plan, knots labelled REORIENT:* (goal_planner path_v2, ActionLimits 2 mm and 2 deg per 20 ms control step); the TRIM pose is its last knot (free space, 30 mm safe height above the workpiece top, rho = 10 deg)",
+    "approach_rate_multiplier": 1,
+    "rate_multiplier_definition": "k x rate = every k-th knot of the planner schedule (last knot kept), one IK target per 20 ms control step",
+    "return_path": "round_trip cases return along the same knots in reverse, ending at the schedule start (HOME edge pose)",
+    "ik": "env.solve_edge_ik (Newton IK, 48 iterations, seeded from measured PhysX joints), as the live step",
+    "maximum_ik_position_error_m": 0.001,
+    "maximum_ik_rotation_error_rad": 0.01,
+    "maximum_joint_increment_rad": 0.15,
+    "maximum_joint_increment_reason": "Safety bound only (rejects an IK branch change). The planner rate needs larger joint steps than the v7 0.005 rad transfer bound, which is kept unchanged for the inherited transfer and not used here",
+    "home_stabilization_s": 0.5,
+    "post_motion_stabilization_s": 0.5,
+    "maximum_actual_edge_position_error_m": 0.01,
+    "maximum_actual_edge_rotation_error_rad": 0.05235987755982988,
+    "velocity_targets": "rigid_probe_step issues zero joint-velocity targets (the live runner adds velocity feedforward); the measured peak hand angular speed is reported per case",
+    "grasp_monitor": "GraspMonitor with GraspLossConfig defaults, updated every control step: one referenced at the reset pregrasp (episode) and one at the case start (case)"
+  },
+  "edge_frame_axes": "Edge frame columns: x = advance, y = edge line, z = blade normal (goal_planner.edge_rotation). For ruler_knife_v2_y the blade normal is the hand y finger closing axis and the edge line is hand +z. Constant WORLD wrenches are set from the measured edge frame at the case start and applied at the measured edge centre each 2 ms substep (ramp: inherited load_ramp_s quintic).",
+  "gate_groups": {
+    "hold": "Integrity (finite, complete raw sampling, valid contact samples, complete arm samples, material unchanged, grip limit <= 20 N) and the inherited holding gates: relative translation <= 2 mm, relative rotation <= pi/60 rad, last-0.5 s relative speeds <= 0.02 m/s and 0.2 rad/s, bilateral loaded handle fraction >= 0.95, penetration <= 1 mm, no unintended support, and grasp monitor never LOST",
+    "reported": "Integrity only; holding gates evaluated and reported, not gated",
+    "negative_control": "Integrity, plus a matched comparison: same start/load, start within 2 mm / pi/60 rad / 0.01 rad joints, and a response increase >= 5 mm or >= 5 deg (inherited v7 thresholds); grip-loss events reported",
+    "diagnostic": "Integrity only; matched comparison reported, not gated",
+    "release": "Integrity, plus the inherited release checks: relative translation > 20 mm, downward displacement > 20 mm, unsupported interval with |a_z + g|/g <= 0.2"
+  },
+  "suite_verdict": "PASS_F1_GATED_CASES iff every case ran and every hold/release case passes its gates and every negative_control comparison shows the larger response",
+  "cutting_load_replay_sources": {
+    "c4_k2_r10_skim_law8_001": {
+      "path": "artifacts/wp11/phaseC4/k2_r10_skim_law8_001/actions.jsonl",
+      "sha256": "75103982a09a56a87e0527fdd5b86e3ed8aad1a96cc00677d0d0d129eee01640",
+      "steps": 400,
+      "control_dt_s": 0.02,
+      "force_field": "blade_force_world_N",
+      "edge_pose_field": "edge_pose_world",
+      "meaning": "material reaction force on the blade (live_material current_material_reaction_impulse_world / dt, i.e. the wrench the live runner applies to the tool), recorded each 20 ms step of the C4 kinematic TRIM-02-K2-R10 run (ruler_knife_v2_y double bevel, rho = 10 deg, law 8, 1 mm; PASS in docs/evidence/wp11/phaseC4_trim_material_001.json)",
+      "mapping": "f_edge = R_C4_edge(k)^T f_world(k); applied f = R_F1_edge(start) f_edge at the edge centre; torque not recorded by C4 and not replayed (covered by the torque cases)",
+      "why_not_c5": "No Phase C5 live episode with a recorded reaction exists at freeze (no artifacts/wp11/phaseC5); the prompt specifies C4 then"
+    }
+  },
+  "cases": {
+    "ref_trim_plus_advance_0p1n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.1,
+        0.0,
+        0.0
+      ],
+      "expectation": "Matched normal-friction reference for the corrected control: +0.1 N along +advance in the TRIM pose at mu = 0.6 within the inherited holding gates"
+    },
+    "negctrl_lowfric_trim_plus_advance_0p1n": {
+      "start": "trim",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "force_edge_n": [
+        0.1,
+        0.0,
+        0.0
+      ],
+      "comparison": "ref_trim_plus_advance_0p1n",
+      "predeclared_finger_axis_torque_n_m": {
+        "gravity": 0.0083,
+        "load": 0.009,
+        "total": 0.0173,
+        "axis": "hand y (finger closing axis), about the grip centre"
+      },
+      "expected_outcome": "Rotation about the finger axis above the pi/60 rad hold gate (relative_rotation breach) and a rotation increase >= 87 mrad over the reference; LOST possible",
+      "reasoning": "The +advance load at the 90 mm edge lever ADDS +0.0090 N m to the +0.0083 N m gravity torque (total 0.0173 N m), about 3x the upper mu = 0.02 capacity estimate. v8 low_friction_trim with gravity alone (0.0083 N m) already rotated 450 mrad. Torsional slip onset about the finger axis measured in v8 at mu = 0.6: between 0.05 N m (held) and 0.18 N m (slipped 218 mrad). Coulomb torsional capacity is proportional to mu at the same ~18 N grip, so at mu = 0.02 it is expected between 0.0017 and 0.0060 N m.",
+      "expectation": "Larger response than the matched mu = 0.6 reference (inherited negative_control gate: increase >= 5 mm or >= 5 deg) and a holding-gate breach"
+    },
+    "ref_trim_minus_normal_0p1n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.0,
+        -0.1
+      ],
+      "expectation": "Matched normal-friction reference for the corrected control: -0.1 N along -blade normal in the TRIM pose (same load as v8 force_normal_0p1n) at mu = 0.6 within the inherited holding gates"
+    },
+    "negctrl_lowfric_trim_minus_normal_0p1n": {
+      "start": "trim",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "force_edge_n": [
+        0.0,
+        0.0,
+        -0.1
+      ],
+      "comparison": "ref_trim_minus_normal_0p1n",
+      "predeclared_finger_axis_torque_n_m": {
+        "gravity": 0.0083,
+        "load": 0.0,
+        "total": 0.0083,
+        "axis": "hand y (finger closing axis), about the grip centre",
+        "other_axes_total_n_m": {
+          "hand_x": -0.0558,
+          "hand_z": 0.0065
+        }
+      },
+      "expected_outcome": "Rotation about the finger axis above the pi/60 rad hold gate and a rotation increase >= 87 mrad over the reference, as in v8 low_friction_trim (450 mrad)",
+      "reasoning": "The -normal load acts along the closing axis (into one pad) and adds no torque about the finger axis; the gravity torque 0.0083 N m remains, above the mu = 0.02 capacity estimate. The load adds -0.009 N m about hand x and +0.0028 N m about hand z, resisted by pad normal pressure, not by friction. Torsional slip onset about the finger axis measured in v8 at mu = 0.6: between 0.05 N m (held) and 0.18 N m (slipped 218 mrad). Coulomb torsional capacity is proportional to mu at the same ~18 N grip, so at mu = 0.02 it is expected between 0.0017 and 0.0060 N m.",
+      "expectation": "Larger response than the matched mu = 0.6 reference (inherited negative_control gate: increase >= 5 mm or >= 5 deg) and a holding-gate breach"
+    },
+    "ref_home_minus_advance_0p1n": {
+      "start": "home",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        -0.1,
+        0.0,
+        0.0
+      ],
+      "expectation": "Matched normal-friction reference for the corrected control: -0.1 N along -advance at HOME at mu = 0.6 within the inherited holding gates"
+    },
+    "negctrl_lowfric_home_minus_advance_0p1n": {
+      "start": "home",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "force_edge_n": [
+        -0.1,
+        0.0,
+        0.0
+      ],
+      "comparison": "ref_home_minus_advance_0p1n",
+      "predeclared_finger_axis_torque_n_m": {
+        "gravity": -0.0037,
+        "load": -0.009,
+        "total": -0.0127,
+        "axis": "hand y (finger closing axis), about the grip centre"
+      },
+      "expected_outcome": "LOST (tool slides out of the fingers) with translation and rotation far above the hold gates, as in v8 low_friction_home (LOST at 0.16 s, 300 mm)",
+      "reasoning": "At HOME the 0.869 N weight acts along hand z, in the pad plane, so it is carried by friction only: mu = 0.02 x ~36 N total normal force gives ~0.72 N < 0.869 N. The -advance load adds -0.009 N m about the finger axis to the gravity -0.0037 N m (total -0.0127 N m, same sign).",
+      "expectation": "Larger response than the matched mu = 0.6 reference (inherited negative_control gate: increase >= 5 mm or >= 5 deg) and a holding-gate breach"
+    }
+  },
+  "torque_source": "docs/evidence/wp11/phaseF1_grasp_001.json (run artifacts/wp11/phaseF1/f1_grasp_003): wp11_grip_frame_loads on the measured case-start states of trim_hold_30s / home_hold_30s",
+  "torque_convention": "Torque about the grip centre (TOOL origin) in HAND axes; gravity from the measured tool mass/COM; the load term is the edge-centre force x the measured edge offset (0.028, 0, 0.090) m in the hand frame",
+  "matched_references": "compare_wp11 needs a matched normal-friction case with the same start and load, run with the same source bytes; each control therefore has its own reference row in this suite (gate hold).",
+  "export_final_control_scene": false,
+  "export_reason": "disk (the root disk and /mnt/data are >= 97% full); the raw traces, control traces and monitor traces are kept",
+  "evidence_boundaries": [
+    "Each case uses a fresh normal pregrasp and the same finite transfer controller before its perturbation",
+    "Only actuator targets and actual body wrenches are written; no tool pose correction or hidden attachment",
+    "Tool and contact traces are privileged debug and never policy observations",
+    "Failure to initialize or transfer is preserved as failure, never replaced by a welded tool",
+    "Material feedback ON/OFF must be established by separate actual material episodes; external load is not relabelled material coupling",
+    "Held versus dropped stress behavior is measured without changing these criteria after results",
+    "Material is never advanced: the workpiece particles are not a PhysX collider in these rigid probes",
+    "Velocity feedforward is not used by rigid_probe_step; the rotation rate is the planner knot rate, the actual hand rate is measured"
+  ],
+  "status_at_freeze": "NOT_RUN",
+  "parent_protocol": {
+    "path": "configs/physical_tool_controls_v8_ruler_v2_wp11.json",
+    "sha256": "4ead219ac607d770f2aff8c4c099cd3d994a51f81b95def68da32b7236d645d4"
+  },
+  "changes_from_parent": [
+    "Only the six cases above; normal_grip, transfer, measurement, wp11_motion and gate_groups copied unchanged from v8 (asserted); no runner change (same start_profile)"
+  ],
+  "allowed_runtimes": [
+    "isaac_sim"
+  ],
+  "allowed_tool_profiles": [
+    "ruler_knife_v2_y"
+  ],
+  "frozen_at_utc": "2026-10-29T20:01:56.328137+00:00"
+}
