@@ -4,8 +4,9 @@
 
 - 計畫：[WP-11](WP11_PLAN.md)。刀具：[ADR 0013 `ruler_knife_v2`](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)。v2 改成像參考圖那樣夾住刀身一端的細握柄，刀身沿用 v1 的 120×40×1.5 mm。另外定義了削切姿態指標 τ／ψ／ρ／μ。
 - Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
-- 背景工作：見下一次更新。
-- 下一步：Phase A（CI）、Phase B（v2 profile）、C2 姿態預檢、C4 材料層近水平削切，並行。
+- 背景工作：rcs-impl Phase A（CI；乾淨 venv 在 `/mnt/data/ningan/tmp/ci_repro_venv`）；rcs-impl Phase B（`ruler_knife_v2_y`／`_x` profile、CPU 測試、Native 自由空間夾持測試，輸出 `artifacts/wp11/phaseB/`）。
+- 已知風險（C4）：25° 雙斜面在前傾角 ρ < 12.5° 時，下斜面會低於刃口，刮進底材。C4 會同時測單斜面、平面朝下的變體，以及 law 8 在 15° 閘門以下（等同 law 4）的分離能力。
+- 下一步：B 的 profile commit 之後，開始 C2 姿態預檢（Newton IK＋碰撞，ρ = 0/5/10/15/25/35°），以及 C4 的 v4 任務與 1 mm kinematic 近水平削切材料測試。
 
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
