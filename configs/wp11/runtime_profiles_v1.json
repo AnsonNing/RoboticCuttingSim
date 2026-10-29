@@ -1,0 +1,41 @@
+{
+  "schema": "rcs_runtime_profiles_v1",
+  "version": "runtime_profiles_v1",
+  "declared": "2026-10-30, WP-11 Phase H4, before any profile run",
+  "description": "Opt-in runtime profiles of the cutting_research_v1 policy env (open_cutting_env(..., preset='cutting_research_v1', runtime_profile=...), scripts/collect_dataset.py --runtime-profile). Without runtime_profile nothing changes. Only full_physics_v1 can produce acceptance-valid episodes; every research_fast_v1 episode is labelled acceptance_valid=false.",
+  "profiles": {
+    "full_physics_v1": {
+      "acceptance_valid": true,
+      "purpose": "Formal resolution for acceptance: the scene-declared solver at 1 mm particles and a 4 mm grid, 0.1 ms material dt, 20 ms control; cameras and recording as declared by the preset and the caller.",
+      "require": {"particle_spacing_m": 0.001, "grid_dx_m": 0.004, "material_dt_s": 0.0001, "control_dt_s": 0.02},
+      "solver_override": null,
+      "material_dt_s": 0.0001,
+      "native": {"stage_reset": "reload_in_place"},
+      "preset_overrides": {},
+      "recording": {"every": 10},
+      "history_stride": 1,
+      "forbid_caller_overrides": ["particle_spacing_m", "material_dt", "dx", "history_stride"],
+      "note": "native.stage_reset=reload_in_place is the WP-11 Phase H1 reset (no Kit open_stage after the first reset); its reset repeatability is in docs/reports/WP11_PHASE_H_PROFILING.md. Camera rate, global camera and recording rate are not reduced by this profile."
+    },
+    "research_fast_v1": {
+      "acceptance_valid": false,
+      "purpose": "Cheaper settings for policy iteration only: the WP-11 F3 'coarse' numerics (2 mm particles, 8 mm grid, 0.2 ms material dt), wrist cameras only at 10 Hz and reduced recording.",
+      "require": {"control_dt_s": 0.02},
+      "solver_override": {"particle_spacing_m": 0.002, "grid_dx_m": 0.008},
+      "material_dt_s": 0.0002,
+      "native": {"stage_reset": "reload_in_place"},
+      "preset_overrides": {"camera_every": 5, "include_global_camera": false},
+      "recording": {"every": 25},
+      "history_stride": 1,
+      "forbid_caller_overrides": ["particle_spacing_m", "material_dt", "dx"],
+      "fidelity_limits": {
+        "source": "docs/reports/WP11_PHASE_F_LAW8.md, F3 resolution study (coarse = 2 mm, 8 mm, 0.2 ms; formal = 1 mm, 4 mm, 0.1 ms)",
+        "trim_removal": "TRIM-02-K2-R10 removal 0.816 (coarse) vs 0.956 (formal); the removal >= 0.9 criterion FAILS at this resolution",
+        "cut_location": "CUT-03-K2 interface location 3.0 mm (coarse; its ideal-partition floor is 3.0 mm) vs 1.5 mm formal; the frozen 2 mm location bound cannot pass at this resolution",
+        "contact_forces": "Contact forces are not resolution- or dt-converged (F3: halving dt raises the CUT mean force 2.6x; coarse CUT mean force 0.001 N vs 0.012 N formal); do not use research_fast forces quantitatively",
+        "cameras": "global D455 omitted and policy frames refreshed every 5 control steps (10 Hz); recorded frames every 25 steps (2 Hz)",
+        "scope": "Policy iteration and pipeline debugging only; never an acceptance, benchmark or calibration result"
+      }
+    }
+  }
+}

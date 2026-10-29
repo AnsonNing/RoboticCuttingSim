@@ -203,7 +203,7 @@ def run_episode(env, entry, index, out, a, clocks):
     recorder_closed = bool(recorder.stream.closed and (directory/'result.json').exists())
     exported, export = ds.export_episode(directory)
     memory_after = process_memory()
-    every = int(a.record_every)
+    every = int(env.recording.get('every', 10)) if env.recording else int(a.record_every or 10)
     frequencies = dict(control_rate_hz=1./dt, control_dt_s=dt, recorded_camera_every_steps=every if env.cameras_available else None,
                        recorded_camera_rate_hz=(1./(every*dt)) if env.cameras_available else None,
                        policy_camera_every_steps=env.preset.camera_every if env.cameras_available else None,
@@ -235,6 +235,9 @@ def run_episode(env, entry, index, out, a, clocks):
                 observation_privileged_leaks=leaks, clock_errors=clock_errors, camera_age_max_s=camera_age_max,
                 recorder_closed=recorder_closed, final_codes_sha256=hashlib.sha256(np.ascontiguousarray(codes).tobytes()).hexdigest(),
                 privileged_controller_inputs=privileged_inputs, memory_before=memory_before, memory_after=memory_after,
+                runtime_profile=getattr(env, 'runtime_profile', None),
+                acceptance_valid=(None if getattr(env, 'runtime_profile', None) is None
+                                  else bool(env.runtime_profile['acceptance_valid'])),
                 wall_s=time.monotonic() - start, git=clocks['git'],
                 physics_version=dict(solver=task.solver_module, cutting_law=task.cutting_law, max_cuts=task.max_cuts,
                                      material_receipt_sha256=hashlib.sha256(json.dumps(jsonable(material.parameter_receipt),
@@ -286,7 +289,7 @@ def main(argv=None):
     p.add_argument('--planner-options', help='JSON goal-planner option overrides (recorded in the task id)')
     p.add_argument('--tool-profile', help='Override the scene tool profile id (recorded in the task id)')
     p.add_argument('--spacing', type=float, help='Particle spacing override (coarse runs; recorded)')
-    p.add_argument('--material-dt', type=float, default=.0001)
+    p.add_argument('--material-dt', type=float, help='Material dt (default 0.0001; a --runtime-profile fixes it)')
     p.add_argument('--device', default='cpu', help='Kinematic material device')
     p.add_argument('--gpu', type=int, default=1, help='Isaac Sim GPU')
     p.add_argument('--episodes', type=int, default=5)
@@ -301,10 +304,20 @@ def main(argv=None):
     p.add_argument('--stop-after-phase')
     p.add_argument('--hold-until-time-limit', action='store_true')
     p.add_argument('--edge-feedback', choices=('nominal', 'measured'), default='nominal')
-    p.add_argument('--record-every', type=int, default=10)
-    p.add_argument('--camera-every', type=int, default=1, help='Live: control steps between policy camera refreshes')
+    p.add_argument('--record-every', type=int, help='Recorded frame interval in control steps (default 10, or the '
+                                                     '--runtime-profile recording rate)')
+    p.add_argument('--camera-every', type=int, help='Live: control steps between policy camera refreshes (default 1, or '
+                                                     'the --runtime-profile value)')
     p.add_argument('--observation-profile', choices=('deployable', 'privileged_state'), default='deployable')
-    p.add_argument('--history-stride', type=int, default=1)
+    p.add_argument('--history-stride', type=int, help='Oracle history stride (default 1)')
+    p.add_argument('--runtime-profile', help='WP-11 Phase H4 runtime profile id (configs/wp11/runtime_profiles_v1.json: '
+                                             'full_physics_v1 | research_fast_v1); default: none (unchanged behaviour)')
+    p.add_argument('--stage-reset', choices=('reopen', 'reload_in_place'),
+                   help='Isaac Sim: IsaacSimCuttingConfig.stage_reset (WP-11 Phase H1; default: the runtime default '
+                        'or the --runtime-profile value)')
+    p.add_argument('--profile', choices=('stages', 'kernels'),
+                   help='Opt-in per-stage timing (robotic_cutting_sim.profiling); writes episode_###/profile.json. '
+                        "'kernels' times every Warp kernel eagerly (perturbing; use for the split only)")
     p.add_argument('--skip-preflight', action='store_true', help='Isaac Sim: skip the C2 preflight (recorded; default: '
                                                                     'run it and refuse to launch unless every check passes)')
     p.add_argument('--reliability-config', action='append',
@@ -317,7 +330,19 @@ def main(argv=None):
     git = manifest({}, 'probe')
     git = {key: git.get(key) for key in ('git_sha', 'git_dirty', 'packages', 'python')}
     planner_options = json.loads(a.planner_options) if a.planner_options else None
-    runtime_options = dict(material_dt=a.material_dt, history_stride=a.history_stride)
+    if a.runtime_profile is None:   # unchanged defaults without a profile
+        a.material_dt = .0001 if a.material_dt is None else a.material_dt
+        a.history_stride = 1 if a.history_stride is None else a.history_stride
+        a.record_every = 10 if a.record_every is None else a.record_every
+        a.camera_every = 1 if a.camera_every is None else a.camera_every
+    runtime_options = {key: value for key, value in dict(material_dt=a.material_dt, history_stride=a.history_stride).items()
+                       if value is not None}
+    if a.runtime_profile is not None:
+        runtime_options['runtime_profile'] = a.runtime_profile
+    if a.stage_reset is not None:
+        if a.runtime != 'isaac_sim':
+            raise SystemExit('--stage-reset applies to --runtime isaac_sim only')
+        runtime_options['stage_reset'] = a.stage_reset
     if a.runtime == 'kinematic':
         runtime_options['device'] = a.device
     else:
@@ -344,14 +369,31 @@ def main(argv=None):
                               preset=PRESET_ID, scene=a.scene, goal=a.goal, planner_options=planner_options,
                               tool_profile=a.tool_profile, particle_spacing_m=a.spacing,
                               observation_profile=a.observation_profile,
-                              recording=dict(root=out, every=a.record_every),
-                              preset_overrides=dict(camera_every=a.camera_every), **runtime_options) as env:
+                              recording=dict(root=out, **({} if a.record_every is None else dict(every=a.record_every))),
+                              preset_overrides={} if a.camera_every is None else dict(camera_every=a.camera_every),
+                              **runtime_options) as env:
             consecutive_errors = 0
             for i, entry in enumerate(entries):
                 print(f'[collect] episode {i} {entry["label"]} controller={entry["controller"]} seed={entry["seed"]}',
                       flush=True)
                 try:
-                    meta = run_episode(env, entry, i, out, a, clocks)
+                    profiler = None
+                    if a.profile:
+                        from robotic_cutting_sim.profiling import StageProfiler
+                        device = runtime_options.get('device')
+                        profiler = StageProfiler(sync_device=device if str(device).startswith('cuda') else None,
+                                                 kernels=a.profile == 'kernels').install()
+                    try:
+                        meta = run_episode(env, entry, i, out, a, clocks)
+                    finally:
+                        if profiler is not None:
+                            profiler.uninstall()
+                    if profiler is not None:
+                        summary = dict(profiler.summary(), episode_id=meta['episode_id'], mode=a.profile,
+                                       wall_s=meta['wall_s'], runtime=a.runtime, device=runtime_options.get('device'))
+                        write_json(out/meta['episode_id']/'profile.json', jsonable(summary))
+                        meta['profile'] = dict(mode=a.profile, path=f"{meta['episode_id']}/profile.json")
+                        write_json(out/meta['episode_id']/'episode.json', jsonable(meta))
                     consecutive_errors = 0
                 except Exception as error:
                     consecutive_errors += 1
@@ -373,7 +415,10 @@ def main(argv=None):
                     controller=meta['controller'], seed=meta['seed'], status='STORED', verdict=meta['verdict'],
                     expect=meta['expect'], termination_reason=meta['termination_reason'],
                     home_outcome=(meta['home_outcome'] or {}).get('status'), steps=meta['steps_recorded'],
-                    export_sha256=meta['export']['sha256'], wall_s=meta['wall_s']))
+                    export_sha256=meta['export']['sha256'], wall_s=meta['wall_s'],
+                    **({} if meta.get('runtime_profile') is None else dict(
+                        runtime_profile=meta['runtime_profile']['profile_id'],
+                        acceptance_valid=meta['acceptance_valid']))))
                 write_index()
                 print(f'[collect] episode {i} verdict={meta["verdict"]} statuses={meta["action_status_counts"]} '
                       f'wall={meta["wall_s"]:.1f}s rss={meta["memory_after"]["host_rss_mib"]}', flush=True)

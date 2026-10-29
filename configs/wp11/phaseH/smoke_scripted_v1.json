@@ -1,0 +1,8 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseH_smoke_scripted_v1",
+  "description": "WP-11 Phase H smoke: one short scripted episode (60 control steps) to exercise the profiler and runtime profiles; no verdict expected.",
+  "episodes": [
+    {"label": "scripted_smoke_seed42", "controller": "scripted", "seed": 42, "max_steps": 60}
+  ]
+}

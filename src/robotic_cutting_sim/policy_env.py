@@ -256,7 +256,7 @@ class PolicyReadyEnv:
     ``action_report``, ``collision_check``, ``action_timestamp_s`` and the episode state.
     """
 
-    def __init__(self, inner, preset=None, *, observation_profile="deployable", recording=None):
+    def __init__(self, inner, preset=None, *, observation_profile="deployable", recording=None, runtime_profile=None):
         preset = preset or ResearchPreset()
         if observation_profile not in OBSERVATION_PROFILES:
             raise ValueError(f"observation_profile must be one of {OBSERVATION_PROFILES}")
@@ -273,6 +273,7 @@ class PolicyReadyEnv:
         self._points_edge = None
         self._recorder_class = None
         self.reset_info = None
+        self.runtime_profile = runtime_profile   # WP-11 Phase H4 receipt (None: no profile requested)
 
     # -- delegated views
     @property
@@ -341,6 +342,9 @@ class PolicyReadyEnv:
                            "home_reset": getattr(self.backend, "home", None) is not None,
                            "reset_wall_s": time.perf_counter()-start, "max_cuts": self.max_cuts,
                            "cameras_available": self.cameras_available}
+        if self.runtime_profile is not None:
+            self.reset_info.update(runtime_profile=copy.deepcopy(self.runtime_profile),
+                                   acceptance_valid=bool(self.runtime_profile["acceptance_valid"]))
         if self.recording is not None:
             self._open_recorder(controller or self.recording.get("controller", "external"))
         return self.observe(), copy.deepcopy(self.reset_info)
@@ -396,9 +400,13 @@ class PolicyReadyEnv:
     def task_spec(self):
         """Full a-priori task description: scene config, goal config and action interface (JSON-serializable)."""
         task = self.task
-        return jsonable({**self._task_info, "scene": getattr(task, "scene", None), "action_types": list(ACTION_TYPES),
-                         "action_limits": self.action_limits.to_dict(), "preset": self.preset.to_dict(),
-                         "world_from_workpiece_xyzw": list(task.world_from_workpiece_xyzw)})
+        spec = {**self._task_info, "scene": getattr(task, "scene", None), "action_types": list(ACTION_TYPES),
+                "action_limits": self.action_limits.to_dict(), "preset": self.preset.to_dict(),
+                "world_from_workpiece_xyzw": list(task.world_from_workpiece_xyzw)}
+        if self.runtime_profile is not None:
+            spec.update(runtime_profile=self.runtime_profile["profile_id"],
+                        acceptance_valid=bool(self.runtime_profile["acceptance_valid"]))
+        return jsonable(spec)
 
     # -- observations
     def _refresh_cameras(self, force=False):
@@ -664,8 +672,14 @@ class PolicyReadyEnv:
         return self.inner.end_task(reason)
 
     def evaluate(self, **options):
-        """The task's own goal/oracle evaluator (read-only); never an observation."""
-        return self.inner.evaluate(**options)
+        """The task's own goal/oracle evaluator (read-only); never an observation.
+
+        With a runtime profile the result also carries ``runtime_profile`` and ``acceptance_valid``."""
+        result = self.inner.evaluate(**options)
+        if self.runtime_profile is not None and isinstance(result, dict):
+            result = {**result, "runtime_profile": self.runtime_profile["profile_id"],
+                      "acceptance_valid": bool(self.runtime_profile["acceptance_valid"])}
+        return result
 
     def return_home(self, **options):
         """Optional physical return-to-home (demonstrations); recorded steps when recording is on."""
@@ -737,8 +751,14 @@ def compile_policy_task(scene, goal, *, tool_profile=None, planner_options=None,
 @contextmanager
 def open_policy_env(task_id=None, *, runtime, output_dir, seed=42, preset=PRESET_ID, task=None, scene=None, goal=None,
                     tool_profile=None, planner_options=None, particle_spacing_m=None, recording=None,
-                    observation_profile="deployable", preset_overrides=None, **backend_options):
-    """The ``open_cutting_env(..., preset=...)`` path: compile, open the inner env, wrap it, close everything."""
+                    observation_profile="deployable", preset_overrides=None, runtime_profile=None, **backend_options):
+    """The ``open_cutting_env(..., preset=...)`` path: compile, open the inner env, wrap it, close everything.
+
+    ``runtime_profile`` (WP-11 Phase H4, opt-in): a declared profile id of
+    ``configs/wp11/runtime_profiles_v1.json`` (``full_physics_v1`` | ``research_fast_v1``).
+    It sets the solver resolution, material dt, Native stage reset, camera and recording
+    defaults, refuses caller overrides of the numerics it fixes, and labels every reset
+    info / evaluation with ``runtime_profile`` and ``acceptance_valid``. None changes nothing."""
     from .live_env import open_cutting_env
     if preset not in PRESETS:
         raise ValueError(f"Unknown preset {preset!r}; choose one of {PRESETS}")
@@ -747,6 +767,24 @@ def open_policy_env(task_id=None, *, runtime, output_dir, seed=42, preset=PRESET
                                   "(Isaac Lab: NOT_RUN)")
     if (scene is None) != (goal is None):
         raise ValueError("scene and goal go together")
+    profile = None
+    if runtime_profile is not None:
+        from . import runtime_profiles as rp
+        profile = rp.runtime_profile(runtime_profile)
+        rp.check_caller_overrides(profile, particle_spacing_m=particle_spacing_m, backend_options=backend_options)
+        if scene is not None:
+            scene = rp.profile_scene(scene, profile)
+        elif profile.get("solver_override"):
+            raise ValueError(f"runtime_profile {runtime_profile!r} overrides the scene solver; pass scene= and goal=")
+        backend_options["material_dt"] = float(profile["material_dt_s"])
+        if profile.get("history_stride") is not None:
+            backend_options.setdefault("history_stride", int(profile["history_stride"]))
+        if runtime == "isaac_sim":
+            for key, value in (profile.get("native") or {}).items():
+                backend_options.setdefault(key, value)
+        preset_overrides = {**(profile.get("preset_overrides") or {}), **(preset_overrides or {})}
+        if recording is not None:
+            recording = {**(profile.get("recording") or {}), **dict(recording)}
     if scene is not None:
         if task is not None:
             raise ValueError("Pass a compiled task or scene+goal, not both")
@@ -762,10 +800,17 @@ def open_policy_env(task_id=None, *, runtime, output_dir, seed=42, preset=PRESET
     if runtime == "isaac_sim":
         options.update(tool_attachment_mode=settings.tool_attachment_mode, tool_init_mode=settings.tool_init_mode,
                        camera=backend_options.pop("camera", True))
+    receipt = None
+    if profile is not None:
+        from . import runtime_profiles as rp
+        receipt = rp.profile_receipt(profile, rp.check_task(profile, task, backend_options["material_dt"]))
+        if runtime == "isaac_sim":
+            backend_options.setdefault("dx", float(task.grid_dx_m))   # Native material grid = the task grid
     options.update(backend_options)
     with open_cutting_env(task_id or "CUT-01", runtime=runtime, output_dir=output_dir, seed=seed, task=task,
                           observation_profile="state", **options) as inner:
-        env = PolicyReadyEnv(inner, settings, observation_profile=observation_profile, recording=recording)
+        env = PolicyReadyEnv(inner, settings, observation_profile=observation_profile, recording=recording,
+                             runtime_profile=receipt)
         try:
             yield env
         finally:

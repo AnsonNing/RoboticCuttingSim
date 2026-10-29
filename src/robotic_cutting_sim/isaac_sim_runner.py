@@ -33,6 +33,9 @@ def wait_for_workcell_stage(app, context, receipt_path, timeout_s=300.):
         time.sleep(.01)
 
 
+STAGE_RESET_MODES = ("reopen", "reload_in_place")
+
+
 @dataclass(frozen=True)
 class IsaacSimCuttingConfig:
     seed: int = 42
@@ -81,6 +84,12 @@ class IsaacSimCuttingConfig:
     # configured_task_payload JSON; reset() recompiles it and requires the same id.
     # task_id must then be that CFG-... id; solver/law/K come from the scene.
     configured_task: str | None = None
+    # Opt-in (WP-11 Phase H1): how reset() renews the USD stage after the first reset.
+    # "reopen" (default, unchanged): export/open the workcell again; Kit retains ~55-65 MiB host
+    # memory per open_stage of this workcell (docs/reports/WP11_PHASE_H_PROFILING.md).
+    # "reload_in_place": keep the open stage, release cameras/physics, clear the session layer and
+    # reload the unchanged root layer from disk, then author the reset exactly as after an open.
+    stage_reset: str = "reopen"
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -135,6 +144,8 @@ class IsaacSimCuttingConfig:
                 raise ValueError('tool_profile_id needs a registered profile, a v2 ProfileTaskSpec task and physical_grasp')
         elif any(self.tool_profile_hand_offset_world_m):
             raise ValueError('A tool hand offset requires an explicit tool_profile_id')
+        if self.stage_reset not in STAGE_RESET_MODES:
+            raise ValueError(f"stage_reset must be one of {STAGE_RESET_MODES}")
         if self.cutting_law not in (None, 1, 2, 3, 4, 5, 6, 7, 8):
             raise ValueError('cutting_law is None or 1-8')
         if self.action_mode not in ("cartesian", "joint"):
@@ -176,6 +187,26 @@ def _validate_configured_config(config):
     if config.max_cuts != solver.get('max_cuts') or not 1 <= config.max_cuts <= limit or config.ik_iterations < 1:
         raise ValueError(f"max_cuts must equal the scene solver max_cuts {solver.get('max_cuts')} (limit {limit}) "
                          "and IK iterations must be positive")
+
+
+def renew_stage_layers(stage):
+    """Return an open USD stage to its on-disk composition (stage_reset='reload_in_place', WP-11 Phase H1).
+
+    Clears the session layer (every reset edit is authored there) and reloads the root layer and any
+    other dirty file layer from disk. Raises if any non-session layer stays edited. Pure USD; no Kit."""
+    session = stage.GetSessionLayer()
+    dirty_before = sorted(layer.identifier for layer in stage.GetUsedLayers() if layer.dirty and layer != session)
+    session.Clear()
+    stage.GetRootLayer().Reload(force=True)
+    reloaded = [stage.GetRootLayer().identifier]
+    for layer in stage.GetUsedLayers():
+        if layer != session and layer.dirty and not layer.anonymous:
+            layer.Reload(force=True)
+            reloaded.append(layer.identifier)
+    still_dirty = sorted(layer.identifier for layer in stage.GetUsedLayers() if layer != session and layer.dirty)
+    if still_dirty or not session.empty:
+        raise RuntimeError(f"reload_in_place left edited layers: {still_dirty}")
+    return {"dirty_layers_before": dirty_before, "reloaded_layers": reloaded, "session_layer_empty": bool(session.empty)}
 
 
 def runtime_versions():
@@ -319,15 +350,27 @@ class LiveIsaacSimCutting:
         self.wp = wp
         omni.timeline.get_timeline_interface().stop()
         context = omni.usd.get_context()
-        if c.scene:
-            source = Path(c.scene).resolve()
+        stage_key = (str(Path(c.scene).resolve()) if c.scene else None, int(c.seed), float(c.dx))
+        previous_stage = getattr(self, "_stage_source", None)
+        if (c.stage_reset == "reload_in_place" and previous_stage is not None
+                and previous_stage["key"] == stage_key and context.get_stage() is not None):
+            # Same workcell file (same export arguments): renew the open stage in place instead of
+            # open_stage (whose Kit-side host memory is not returned). The composed stage equals a
+            # fresh open of the same file: empty session layer, root layer re-read from disk.
+            source = previous_stage["source"]
+            self.stage_reset_receipt = self._reload_stage_in_place(context, source)
         else:
-            scene_dir = self.output/f"initial_workcell_{self.reset_index:02d}"
-            scene_dir.mkdir()
-            export(Namespace(variant="D0", family="dome", seed=c.seed, spacing=c.dx/2, asset_root=None), scene_dir)
-            source = scene_dir/"workcell.usda"
-        if not context.open_stage(str(source)):
-            raise RuntimeError("Isaac could not open the initial workcell")
+            if c.scene:
+                source = Path(c.scene).resolve()
+            else:
+                scene_dir = self.output/f"initial_workcell_{self.reset_index:02d}"
+                scene_dir.mkdir()
+                export(Namespace(variant="D0", family="dome", seed=c.seed, spacing=c.dx/2, asset_root=None), scene_dir)
+                source = scene_dir/"workcell.usda"
+            if not context.open_stage(str(source)):
+                raise RuntimeError("Isaac could not open the initial workcell")
+            self._stage_source = {"key": stage_key, "source": source}
+            self.stage_reset_receipt = {"mode": "open_stage", "source": str(source), "reset_index": self.reset_index}
         wait_for_workcell_stage(self.app, context, self.output/f"stage_load_{self.reset_index:02d}.json")
         stage = self.stage = context.get_stage()
         stage.SetEditTarget(stage.GetSessionLayer())
@@ -585,7 +628,8 @@ class LiveIsaacSimCutting:
             "camera_layout":c.camera_layout,"camera_rig":getattr(self,"camera_rig_receipt",None),
             "observation_motion_probe":c.observation_motion_probe,
             "dof_names":self.arms.dof_names,
-            "feedback_delay_s":c.control_dt, "proprioception_source":"actual PhysX tensors"}
+            "feedback_delay_s":c.control_dt, "proprioception_source":"actual PhysX tensors",
+            "stage_reset":self.stage_reset_receipt}
         if self.task is not None and (getattr(self,"fixture_plan",None) or {}).get("any_material_declared"):
             from .native_fixture import authored_material_receipt
             setup["task_fixture_materials"]=authored_material_receipt(stage,self.fixture_plan)
@@ -602,6 +646,54 @@ class LiveIsaacSimCutting:
             setup["presentation_closeup_camera"]=self.closeup_spec
         write_json(self.output/("setup.json" if self.reset_index==0 else f"reset_setup_{self.reset_index:02d}.json"), setup)
         return initial
+
+    def _release_cameras(self):
+        """Detach every replicator annotator and destroy the render products of the previous reset."""
+        released = []
+        for group in ("camera_params", "native_rgb", "native_xyz"):
+            for name, annotator in (getattr(self, group, None) or {}).items():
+                annotator.detach()
+                released.append(f"{group}:{name}")
+        sensors = dict(getattr(self, "cameras", None) or {})
+        for kind in ("overview", "closeup"):
+            if getattr(self, f"{kind}_sensor", None) is not None:
+                sensors[kind] = getattr(self, f"{kind}_sensor")
+        for name, sensor in sensors.items():
+            # Same teardown the sensor runs when it is garbage collected (pinned Isaac Sim 6.2 API).
+            sensor._invalidate_sensor()
+            released.append(f"sensor:{name}")
+        self.cameras, self.camera_params, self.native_rgb, self.native_xyz = {}, {}, {}, {}
+        self.overview_sensor = self.closeup_sensor = None
+        return released
+
+    def _reload_stage_in_place(self, context, source):
+        """stage_reset='reload_in_place': renew the already open stage without open_stage (WP-11 Phase H1).
+
+        Releases the previous reset's cameras, contact sensor, tensor views and PhysX objects, clears the
+        session layer (every reset edit is authored there), reloads the root layer and any other dirty
+        file layer from disk, and replays the SimulationManager stage-opened reset. reset() then authors
+        the episode exactly as after open_stage."""
+        import omni.physx
+        from isaacsim.core.simulation_manager import SimulationManager
+        stage = context.get_stage()
+        if Path(stage.GetRootLayer().realPath).resolve() != Path(source).resolve():
+            raise RuntimeError("reload_in_place: the open stage is not the reset workcell")
+        released = self._release_cameras()
+        for name in ("arms", "hand", "hands", "tool_body", "rigid_links", "pad_bodies",
+                     "bridge", "surface", "material", "grasp_monitor"):   # tool_contacts: closed at the top of reset
+            if getattr(self, name, None) is not None:
+                setattr(self, name, None)
+        SimulationManager.invalidate_physics()
+        omni.physx.get_physx_interface().release_physics_objects()
+        layers = renew_stage_layers(stage)
+        SimulationManager._on_stage_opened(None)  # the same simulation-manager reset an OPENED event runs
+        import omni.kit.undo
+        omni.kit.undo.clear_stack()   # open_stage starts a new undo history; so does this reset
+        omni.kit.undo.clear_history()
+        return {"mode": "reload_in_place", "source": str(source), "reset_index": self.reset_index,
+                "released": released, **layers,
+                "note": "The Kit simulation clock is not reset (no API); native_time_origin_s grows per reset and "
+                        "time-difference diagnostics (grasp settle speeds) differ from reset 0 at ~1e-16 relative"}
 
     def plan_return_home(self, q_start):
         """Preflighted return-to-home joint plan from measured joints (separate .venv process; nothing moves)."""
