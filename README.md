@@ -160,7 +160,7 @@ passed the 1,200-step interface fuzz, legacy regression and Gym checks, with
 physical-grasp holding limits reported separately. Its learned-controller and
 agent work (E–G) is deferred to P2 by the
 [BladeMaster plan](docs/BLADEMASTER_DEMO_PLAN.md). The current full CPU
-regression is **689 passed, 3 strict xfail** (documented raked-skim limits).
+regression is **780 passed, 5 strict xfail** (documented 2 mm raked-skim limits of laws 4–7).
 See [handoff](docs/HANDOFF_WP10_CLAUDE_20261029.md),
 [the WP-10 plan](docs/WP10_SPECIFICATION.md),
 [control interface](docs/POLICY_CONTROL.md), [WP-10B](docs/reports/WP-10B.md),
