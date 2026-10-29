@@ -1,6 +1,20 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## 完成：BladeMaster 風格三個 Demo（2026-10-29）
+## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
+
+- **Phase 1 閘門**（計畫 §2 的整個矩陣含負對照）已由 [law 8](adr/0012-cutting-law-8-plow-gated-lead.md) 滿足：依計算式準則 M1–M9 全部 PASS（[matrix_law8_001](evidence/phase1/matrix_law8_001.json) 20:54；乾淨工作樹確認重跑 [matrix_law8_002](evidence/phase1/matrix_law8_002.json) 21:19，在 live 進行期間完成，verdict 相同）。rcs-review 判定 PASS（附條件，已處理）。
+  - Law 4–7 各有一列以上 FAIL，全部保留（[0010](adr/0010-cutting-law-6-deferred-lead-commit.md)、[0011](adr/0011-cutting-law-7-eq8-coupled-flip.md) 及其證據）。
+  - M8a 是預先宣告的診斷列，FAIL；M9c/d（Lab）只報告。
+- **閘門通過後的 live 最終組合**（`--demo-set final_v4`，`live_20261029_law8_final`，乾淨 commit；在 matrix_law8_001 之後 13 s 開始）：
+  - Demo 1a **PASS**（凍結 strict 也 PASS）；
+  - Demo 1b **PASS**（swept-plane；凍結 strict 的位置與窗口兩項 FAIL）；
+  - Demo 2 **PASS**（98.0%；精度 5/8 FAIL）；
+  - Demo 3 **PASS**（含凍結 v3 slice-push；推開 19.7 mm；手腕深度量得位移 1.20 mm）。
+  - 所有嘗試與實際時間順序見 [demos_live_004](evidence/phase3/demos_live_004.json)，[報告](reports/BLADEMASTER_DEMOS.md)。
+- 完整 CPU regression（law 8 之後）：780 passed、5 xfailed（strict）、0 failed，815 s（`artifacts/wp10_claude/logs/cpu_full_final_002.log`，HEAD `b34a71d`／`cc881f7`，之後只有文件與 runner 說明文字的變更）。
+- **Law 5 的 live 組合**：在閘門滿足前跑的，保留為先前證據（下節），不算驗收 run。
+
+## 先前結果：law 5 組合（閘門滿足前，2026-10-29）
 
 依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)：P0 工作包 A 有條件接受（M8 FAIL，部分後續項目未完成）；B–D 完成。細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
 
@@ -35,7 +49,7 @@
   - capture rate 改以非展示相機量測；
   - 展示相機的影格加上 presentation-only 旗標；
   - renderer 加回 Global D455。
-- 完整 CPU regression（`.venv/bin/python -m pytest -q`）：689 passed、3 xfailed（strict：law 4 25°/35°、law 5 35° 的 2 mm 削除），0 failed，359 s（log `artifacts/wp10_claude/logs/cpu_full_final_001.log`）。
+- 完整 CPU regression（`.venv/bin/python -m pytest -q`，law 8 之後）：780 passed、5 xfailed（strict：law 4 25°/35°、law 5–7 35° 的 2 mm 削除），0 failed，815 s（`artifacts/wp10_claude/logs/cpu_full_final_002.log`）。較早一次：689 passed、3 xfailed（strict：law 4 25°/35°、law 5 35° 的 2 mm 削除），0 failed，359 s（log `artifacts/wp10_claude/logs/cpu_full_final_001.log`）。
 - 環境注意：背景子代理執行「寫入 `artifacts/`」的 Bash 指令曾卡在權限等待。後來 `/mnt/data/ningan` 已加入工作目錄；GPU／Isaac 執行改由 coordinator 直接跑。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation

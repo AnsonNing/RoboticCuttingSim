@@ -655,6 +655,75 @@ def test_final_v1_commands_pass_the_real_run_wp10_live_parser(runner, key, tmp_p
         assert out["config"][name] == value, name
 
 
+def test_final_v2_is_final_v1_with_cutting_law_6(runner, tmp_path, capsys):
+    v1, v2 = runner.DEMO_SETS["final_v1"], runner.DEMO_SETS["final_v2"]
+    assert v2.demos == v1.demos and v2.profiles == v1.profiles and v2.seed == v1.seed == 42
+    assert v1.cutting_law == 5 and v2.cutting_law == 6 and v2.reference_runs == ()
+    commands = {}
+    for name in ("final_v1", "final_v2"):
+        assert runner.main(["--demo-set", name, "--dry-run", "--run-id", "R1", "--root", str(tmp_path/"demos")]) == 0
+        commands[name] = _dry_run_commands(capsys.readouterr().out)
+    assert set(commands["final_v2"]) == set(FINAL_V1_PROFILES)
+    for key, argv in commands["final_v2"].items():
+        old = commands["final_v1"][key]
+        law = argv.index("--cutting-law")
+        assert argv[law+1] == "6" and old[law+1] == "5"
+        assert argv[:law+1] == old[:law+1] and argv[law+2:] == old[law+2:]
+        assert argv[1].endswith("run_wp10_live.py")
+        out = _parse_live(argv[2:])
+        assert out["status"] == 1 and out["config"]["cutting_law"] == 6
+    with pytest.raises(SystemExit) as error:
+        runner.main(["--demo-set", "final_v2", "--dry-run", "--run-id", "R1", "--root", str(tmp_path),
+                     "--cutting-law", "5"])
+    assert error.value.code == 2 and "pins --cutting-law 6" in capsys.readouterr().err
+
+
+def test_final_v3_is_final_v1_with_cutting_law_7(runner, tmp_path, capsys):
+    v1, v2, v3 = (runner.DEMO_SETS[name] for name in ("final_v1", "final_v2", "final_v3"))
+    assert v3.demos == v1.demos and v3.profiles == v1.profiles and v3.seed == v1.seed == 42
+    assert v1.cutting_law == 5 and v2.cutting_law == 6 and v3.cutting_law == 7 and v3.reference_runs == ()
+    commands = {}
+    for name in ("final_v1", "final_v3"):
+        assert runner.main(["--demo-set", name, "--dry-run", "--run-id", "R1", "--root", str(tmp_path/"demos")]) == 0
+        commands[name] = _dry_run_commands(capsys.readouterr().out)
+    assert set(commands["final_v3"]) == set(FINAL_V1_PROFILES)
+    for key, argv in commands["final_v3"].items():
+        old = commands["final_v1"][key]
+        law = argv.index("--cutting-law")
+        assert argv[law+1] == "7" and old[law+1] == "5"
+        assert argv[:law+1] == old[:law+1] and argv[law+2:] == old[law+2:]
+        assert argv[1].endswith("run_wp10_live.py")
+        out = _parse_live(argv[2:])
+        assert out["status"] == 1 and out["config"]["cutting_law"] == 7
+    with pytest.raises(SystemExit) as error:
+        runner.main(["--demo-set", "final_v3", "--dry-run", "--run-id", "R1", "--root", str(tmp_path),
+                     "--cutting-law", "5"])
+    assert error.value.code == 2 and "pins --cutting-law 7" in capsys.readouterr().err
+
+
+def test_final_v4_is_final_v1_with_cutting_law_8(runner, tmp_path, capsys):
+    v1, v4 = runner.DEMO_SETS["final_v1"], runner.DEMO_SETS["final_v4"]
+    assert v4.demos == v1.demos and v4.profiles == v1.profiles and v4.seed == v1.seed == 42
+    assert v1.cutting_law == 5 and v4.cutting_law == 8 and v4.reference_runs == ()
+    assert [runner.DEMO_SETS[n].cutting_law for n in ("final_v2", "final_v3")] == [6, 7]
+    commands = {}
+    for name in ("final_v1", "final_v4"):
+        assert runner.main(["--demo-set", name, "--dry-run", "--run-id", "R1", "--root", str(tmp_path/"demos")]) == 0
+        commands[name] = _dry_run_commands(capsys.readouterr().out)
+    assert set(commands["final_v4"]) == set(FINAL_V1_PROFILES)
+    for key, argv in commands["final_v4"].items():
+        old = commands["final_v1"][key]
+        law = argv.index("--cutting-law")
+        assert argv[law+1] == "8" and old[law+1] == "5"
+        assert argv[:law+1] == old[:law+1] and argv[law+2:] == old[law+2:]
+        out = _parse_live(argv[2:])
+        assert out["status"] == 1 and out["config"]["cutting_law"] == 8
+    with pytest.raises(SystemExit) as error:
+        runner.main(["--demo-set", "final_v4", "--dry-run", "--run-id", "R1", "--root", str(tmp_path),
+                     "--cutting-law", "5"])
+    assert error.value.code == 2 and "pins --cutting-law 8" in capsys.readouterr().err
+
+
 @pytest.mark.parametrize("extra,message", [
     (["--demo", "all"], "mutually exclusive with --demo"),
     (["--demo", "3"], "mutually exclusive with --demo"),
@@ -677,7 +746,7 @@ def test_demo_set_accepts_its_own_pinned_values(runner, tmp_path, capsys):
 def test_v1_demo_all_prints_the_first_round_notice(runner, tmp_path, capsys):
     assert runner.main(["--demo", "all", "--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0
     out = capsys.readouterr()
-    assert "this reproduces the first-round v1 configuration; use --demo-set final_v1 for the final set" in out.err
+    assert "this reproduces the first-round v1 configuration; use --demo-set final_v4 for the final set" in out.err
     assert "--controller-profile" not in out.out and out.out.count("run_wp10_live.py") == 4
     assert runner.main(["--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0       # no --demo = all
     assert "first-round" in capsys.readouterr().err

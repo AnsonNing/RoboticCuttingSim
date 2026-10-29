@@ -1,0 +1,363 @@
+{
+ "scope": "Phase 1 law-6 GPU smokes, kinematic ideal tracking, 1 mm particles, 0.1 ms, 4 mm grid, seed 42; cuda:1 (TRIM-01-R then CUT-01-R, sequential) and cuda:0 (TRIM-01-R ruler_workcell_v2, concurrently); both GPUs otherwise idle apart from two pre-existing 766 MiB processes on cuda:0 (not started by this run); not robot evidence, not the ADR 0010 acceptance matrix",
+ "law": "cutting_law 6 (docs/adr/0010-cutting-law-6-deferred-lead-commit.md): law 4 mechanics during the stroke; law-5 lead decisions (b_lead = 2 dx = 8 mm, s_core = dx = 4 mm) held as pending and committed when the stroke ends",
+ "rows": [
+  {
+   "output": "artifacts/wp10_claude/phase1_law6/k_trim01r_law6_001",
+   "task": "TRIM-01-R",
+   "scenario": null,
+   "seed": 42,
+   "device": "cuda:1",
+   "command": ".venv/bin/python scripts/probe_wp10_task_policy.py --task TRIM-01-R --device cuda:1 --cutting-law 6 --out artifacts/wp10_claude/phase1_law6/k_trim01r_law6_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/k_trim01r_law6_001.log",
+   "tlmpm_v4_sha256": "ce57b1c36745ef75047474629215b0773af13738c5532ecb890ed2254779185b",
+   "exit_code": 0,
+   "wall_s_process": 144.90832772,
+   "wall_s_script": 143.77496068300024,
+   "execution_status": "PASS_EXECUTION",
+   "strict_status": "FAIL_TASK_METRICS",
+   "failed_checks": [
+    "surface_p95_absolute_plane_error_m",
+    "maximum_gouge_depth_m",
+    "overcut_volume_fraction_of_initial_base"
+   ],
+   "final_components": 2,
+   "component_masses_kg": [
+    0.0015149999999999999,
+    0.14405099999999996
+   ],
+   "max_reference_midpoint_plane_distance_m": null,
+   "removed_reference_above_plane_mass_fraction": 0.9674329501915709,
+   "law6_parameters": {
+    "lead_b_lead_m": 0.008,
+    "core_s_core_m": 0.004,
+    "lead_commit": "stroke_end"
+   },
+   "law4_parameters": {
+    "band_h_m": 0.024,
+    "rear_b_back_m": 0.008,
+    "persist_b_persist_m": 0.008,
+    "theta_max_deg": 45.0,
+    "min_speed_m_s": 1e-05
+   },
+   "law6_final": {
+    "law6_pending_count": 0,
+    "law6_pending_unassigned_count": 0,
+    "law6_committed_count": 4262
+   },
+   "law6_max_pending_count": 29320,
+   "law6_commit_times_s": [
+    3.78
+   ],
+   "final_stroke": 0,
+   "bridge_analysis": {
+    "source": "artifacts/wp10_claude/phase1_law6/k_trim01r_law6_001/physics_state.npz",
+    "task_id": "TRIM-01-R",
+    "scenario": null,
+    "frame": -1,
+    "components": 2,
+    "final_components": 2,
+    "final_component_mass_fractions": [
+     0.989592,
+     0.010408
+    ],
+    "cuts_in_graph": 1,
+    "stencil_support": {
+     "source": "recorded_nodes_weights_gradients",
+     "valid_entry_rule": "weight>0 or |gradient|>0",
+     "valid_entries": 776352,
+     "total_entries": 776352
+    },
+    "code_counts": {
+     "0": 55530,
+     "1": 40504,
+     "2": 1010
+    },
+    "nodes_with_codes_0_2": 0,
+    "nodes_with_codes_0_1": 261,
+    "nodes_with_codes_1_2": 65,
+    "direct_code_zero_bridges": 0,
+    "bridge_local_xyz_mm": [],
+    "above_plane_code_counts": {
+     "1": 34,
+     "2": 1010
+    },
+    "above_plane_code_zero_local_xyz_mm": []
+   },
+   "surface": {
+    "missing_surface_fraction": 0.0004166666666666208,
+    "maximum_substrate_surface_residual_height_m": 0.00033602616120697107,
+    "surface_p95_absolute_plane_error_m": 0.0005561401004363422,
+    "surface_rms_plane_error_m": 0.0002660858789091159,
+    "maximum_gouge_depth_m": 0.02,
+    "overcut_volume_m3": 1.0128000718944458e-06,
+    "overcut_volume_fraction_of_initial_base": 0.010550000748900478
+   },
+   "git_sha": "51c7e7b553ad4d9c1ee4534c6ff8fb45ed920586",
+   "git_dirty": true,
+   "bridge_command": ".venv/bin/python scripts/analyze_cut_bridges.py artifacts/wp10_claude/phase1_law6/k_trim01r_law6_001/physics_state.npz --task TRIM-01-R",
+   "law5_comparison": {
+    "output": "artifacts/wp10_claude/phase1_law5/k_trim01r_law5_001",
+    "strict_status": "FAIL_TASK_METRICS",
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 0.9741379310344827,
+    "max_reference_midpoint_plane_distance_m": null
+   }
+  },
+  {
+   "output": "artifacts/wp10_claude/phase1_law6/k_trim01r_v2_law6_001",
+   "task": "TRIM-01-R",
+   "scenario": "ruler_workcell_v2",
+   "seed": 42,
+   "device": "cuda:0",
+   "command": ".venv/bin/python scripts/probe_wp10_task_policy.py --task TRIM-01-R --device cuda:0 --cutting-law 6 --scenario ruler_workcell_v2 --out artifacts/wp10_claude/phase1_law6/k_trim01r_v2_law6_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/k_trim01r_v2_law6_001.log",
+   "tlmpm_v4_sha256": "ce57b1c36745ef75047474629215b0773af13738c5532ecb890ed2254779185b",
+   "exit_code": 0,
+   "wall_s_process": 144.62667656,
+   "wall_s_script": 143.52661447900027,
+   "execution_status": "PASS_EXECUTION",
+   "strict_status": "FAIL_TASK_METRICS",
+   "failed_checks": [
+    "postcut_disconnected_topology_persists",
+    "reference_above_plane_material_removed",
+    "maximum_substrate_surface_residual_height_m",
+    "surface_p95_absolute_plane_error_m",
+    "surface_rms_plane_error_m",
+    "maximum_gouge_depth_m",
+    "overcut_volume_fraction_of_initial_base"
+   ],
+   "final_components": 1,
+   "component_masses_kg": [
+    0.145566
+   ],
+   "max_reference_midpoint_plane_distance_m": null,
+   "removed_reference_above_plane_mass_fraction": 0.0,
+   "law6_parameters": {
+    "lead_b_lead_m": 0.008,
+    "core_s_core_m": 0.004,
+    "lead_commit": "stroke_end"
+   },
+   "law4_parameters": {
+    "band_h_m": 0.024,
+    "rear_b_back_m": 0.008,
+    "persist_b_persist_m": 0.008,
+    "theta_max_deg": 45.0,
+    "min_speed_m_s": 1e-05
+   },
+   "law6_final": {
+    "law6_pending_count": 0,
+    "law6_pending_unassigned_count": 0,
+    "law6_committed_count": 4682
+   },
+   "law6_max_pending_count": 29564,
+   "law6_commit_times_s": [
+    3.78
+   ],
+   "final_stroke": 0,
+   "bridge_analysis": {
+    "source": "artifacts/wp10_claude/phase1_law6/k_trim01r_v2_law6_001/physics_state.npz",
+    "task_id": "TRIM-01-R",
+    "scenario": "ruler_workcell_v2",
+    "frame": -1,
+    "components": 1,
+    "final_components": 1,
+    "final_component_mass_fractions": [
+     1.0
+    ],
+    "cuts_in_graph": 1,
+    "stencil_support": {
+     "source": "recorded_nodes_weights_gradients",
+     "valid_entry_rule": "weight>0 or |gradient|>0",
+     "valid_entries": 776352,
+     "total_entries": 776352
+    },
+    "code_counts": {
+     "0": 54631,
+     "1": 41403,
+     "2": 1010
+    },
+    "nodes_with_codes_0_2": 8,
+    "nodes_with_codes_0_1": 314,
+    "nodes_with_codes_1_2": 65,
+    "direct_code_zero_bridges": 1,
+    "bridge_local_xyz_mm": [
+     [
+      8.5,
+      0.5,
+      21.5
+     ]
+    ],
+    "above_plane_code_counts": {
+     "0": 1,
+     "1": 33,
+     "2": 1010
+    },
+    "above_plane_code_zero_local_xyz_mm": [
+     [
+      8.5,
+      0.5,
+      21.5
+     ]
+    ]
+   },
+   "surface": {
+    "missing_surface_fraction": 0.006249999999999978,
+    "maximum_substrate_surface_residual_height_m": 0.01048975381145224,
+    "surface_p95_absolute_plane_error_m": 0.0006764988094311689,
+    "surface_rms_plane_error_m": 0.0012005621212442046,
+    "maximum_gouge_depth_m": 0.02,
+    "overcut_volume_m3": 1.5168316115107709e-06,
+    "overcut_volume_fraction_of_initial_base": 0.015800329286570533
+   },
+   "git_sha": "51c7e7b553ad4d9c1ee4534c6ff8fb45ed920586",
+   "git_dirty": true,
+   "bridge_command": ".venv/bin/python scripts/analyze_cut_bridges.py artifacts/wp10_claude/phase1_law6/k_trim01r_v2_law6_001/physics_state.npz --task TRIM-01-R --scenario ruler_workcell_v2",
+   "law5_comparison": {
+    "output": "artifacts/wp10_claude/phase1_law5/k_trim01r_v2_law5_001",
+    "strict_status": "FAIL_TASK_METRICS",
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": 0.9693486590038315,
+    "max_reference_midpoint_plane_distance_m": null
+   }
+  },
+  {
+   "output": "artifacts/wp10_claude/phase1_law6/k_cut01r_law6_001",
+   "task": "CUT-01-R",
+   "scenario": null,
+   "seed": 42,
+   "device": "cuda:1",
+   "command": ".venv/bin/python scripts/probe_wp10_task_policy.py --task CUT-01-R --device cuda:1 --cutting-law 6 --out artifacts/wp10_claude/phase1_law6/k_cut01r_law6_001",
+   "env": "TMPDIR=/mnt/data/ningan/tmp",
+   "log": "artifacts/wp10_claude/logs/k_cut01r_law6_001.log",
+   "tlmpm_v4_sha256": "ce57b1c36745ef75047474629215b0773af13738c5532ecb890ed2254779185b",
+   "exit_code": 0,
+   "wall_s_process": 128.10752477,
+   "wall_s_script": 127.0855589290004,
+   "execution_status": "PASS_EXECUTION",
+   "strict_status": "PASS_TASK_METRICS",
+   "failed_checks": [],
+   "final_components": 2,
+   "component_masses_kg": [
+    0.07199999999999998,
+    0.07199999999999998
+   ],
+   "max_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+   "removed_reference_above_plane_mass_fraction": null,
+   "law6_parameters": {
+    "lead_b_lead_m": 0.008,
+    "core_s_core_m": 0.004,
+    "lead_commit": "stroke_end"
+   },
+   "law4_parameters": {
+    "band_h_m": 0.024,
+    "rear_b_back_m": 0.008,
+    "persist_b_persist_m": 0.008,
+    "theta_max_deg": 45.0,
+    "min_speed_m_s": 1e-05
+   },
+   "law6_final": {
+    "law6_pending_count": 0,
+    "law6_pending_unassigned_count": 0,
+    "law6_committed_count": 272
+   },
+   "law6_max_pending_count": 23040,
+   "law6_commit_times_s": [
+    3.56
+   ],
+   "final_stroke": 0,
+   "bridge_analysis": {
+    "source": "artifacts/wp10_claude/phase1_law6/k_cut01r_law6_001/physics_state.npz",
+    "task_id": "CUT-01-R",
+    "scenario": null,
+    "frame": -1,
+    "components": 2,
+    "final_components": 2,
+    "final_component_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "cuts_in_graph": 1,
+    "stencil_support": {
+     "source": "recorded_nodes_weights_gradients",
+     "valid_entry_rule": "weight>0 or |gradient|>0",
+     "valid_entries": 768000,
+     "total_entries": 768000
+    },
+    "code_counts": {
+     "0": 67200,
+     "1": 14400,
+     "2": 14400
+    },
+    "nodes_with_codes_0_2": 54,
+    "nodes_with_codes_0_1": 54,
+    "nodes_with_codes_1_2": 54,
+    "direct_code_zero_bridges": 0,
+    "bridge_local_xyz_mm": []
+   },
+   "surface": null,
+   "git_sha": "51c7e7b553ad4d9c1ee4534c6ff8fb45ed920586",
+   "git_dirty": true,
+   "bridge_command": ".venv/bin/python scripts/analyze_cut_bridges.py artifacts/wp10_claude/phase1_law6/k_cut01r_law6_001/physics_state.npz --task CUT-01-R",
+   "law5_comparison": {
+    "output": "artifacts/wp10_claude/phase1_law5/k_cut01r_law5_001",
+    "strict_status": "PASS_TASK_METRICS",
+    "final_components": 2,
+    "removed_reference_above_plane_mass_fraction": null,
+    "max_reference_midpoint_plane_distance_m": 0.0015000000421423465
+   }
+  }
+ ],
+ "summary": {
+  "k_trim01r_law6_001": "strict FAIL_TASK_METRICS (surface p95 / gouge / overcut, the same three checks as law 5); 2 components; 96.74% of reference above-plane mass removed (law 5: 97.41%); 0 direct code-0 bridges; one stroke, ended at t = 3.78 s, committed 4262 pending labels (peak 29320 pending)",
+  "k_trim01r_v2_law6_001": "strict FAIL_TASK_METRICS incl. postcut_disconnected_topology_persists and reference_above_plane_material_removed: 1 component, 0% removed (law 5: 2 components, 96.9%). One code-0 above-plane particle (local reference 8.5, 0.5, 21.5 mm, 1.5 mm above the 20 mm plane) is a direct code-0 bridge (touches nodes of both sides; 8 nodes hold codes 0 and 2). Commit at t = 3.78 s labelled 4682 pending particles",
+  "k_cut01r_law6_001": "strict PASS_TASK_METRICS: 2 components 72/72 g, location statistic 1.5 mm (as laws 4/5), 0 direct code-0 bridges; commit at t = 3.56 s labelled 272 pending particles"
+ },
+ "trim_v2_diagnosis": "Traced from physics_state.npz frames of both laws (indices matched via the task sampler): the bridging particle (index 54153) follows law 5 until t = 2.6 s. Under law 5 it is pre-assigned side 2 by t = 2.8 s at z = 26.7 mm and leaves with the chip. Under law 6 the cut-time mechanics are law 4's: the edge drags it forward and down (z 21.4 -> 17.0 mm, i.e. below the 20 mm plane, x 8.5 -> 41.4 mm by t = 3.8 s), carried ahead of the edge. It never meets law 5's lead condition (inferred: inside the core band |s| <= dx or more than 2 dx ahead) and is never behind the edge, so the stroke-end commit has no pending decision for it. This is the law-4 carried-ahead mechanism (ADR 0008 Context) that law 6's deferral reintroduces for this particle. Not tuned; preserved as evidence.",
+ "strict_thresholds_failed_reference": {
+  "source": "configs/cutting_tasks_v1.json flatten limits used by the strict evaluator",
+  "surface_p95_absolute_plane_error_m": 0.0005,
+  "maximum_gouge_depth_m": 0.001,
+  "maximum_overcut_volume_fraction_of_initial_base": 0.01
+ },
+ "cpu_tests": {
+  "commands": [
+   ".venv/bin/python -m pytest -q tests/test_cutting_law_v4.py tests/test_cutting_law_v5.py tests/test_cutting_law_v6.py -p no:cacheprovider",
+   ".venv/bin/python -m pytest -q -m \"not cpu_sim\" -p no:cacheprovider"
+  ],
+  "results": [
+   "exit 0: 44 passed, 4 xfailed in 316.01 s (strict xfails: law-4 raked skims 25/35 deg, law-5 and law-6 raked skim 35 deg)",
+   "exit 0: 653 passed, 76 deselected in 12.42 s"
+  ],
+  "laws_4_5_bitwise": "law-4 and law-5 aligned-push and 25 deg raked-skim probes equal the committed pre-law-6 tlmpm_v4 (ebd7395, loaded from git) bit for bit; law-5 probes match SHA-256 digests recorded before the edit; law-4 still matches its pre-law-5 digests and module; laws 1-3 still equal tlmpm_v3 (Warp 1.17.0 CPU)",
+  "law6_cpu": {
+   "never_ahead_while_active": "per-substep instrumentation: 0 band labels with f > 0 in every law-6 test; pending writes satisfy law 5's lead condition (min |s| 4.0 mm > dx)",
+   "through_cut": "nothing still pending at stroke end (0 labels committed): the whole 7100-substep run equals law 4 bit for bit (positions and codes every substep, final state, forces)",
+   "half_depth_withdrawal": "commit at withdrawal (substep 2000) labels 120 of 180 pending; core band below the stop stays code 0; one stencil component",
+   "armed_stop": "commit at the stop labels only pending particles; one component; final pending 0",
+   "digit_change_and_disarm": "stroke 1 -> 2 directly (engaged digit change) commits digit 0 (120 labels) in that substep; disarm 2 -> 0 commits digit 1 (116); no pending decision survives its stroke",
+   "two_digits": "three pieces (>= 3 components, third piece > 25%)",
+   "raked_skim_25deg": {
+    "components": 2,
+    "above_off_base": 0.9375,
+    "below_in_base": 1.0,
+    "above_side1_fraction": 0.0625,
+    "above_code0": 0,
+    "committed": 216,
+    "status": "PASS (law 5: 0.9583)",
+    "note": "the stroke is still active at the end of the 1 s skim (edge still engaged); the test adds a 10 ms stop that ends it"
+   },
+   "raked_skim_35deg": {
+    "components": 1,
+    "above_off_base": 0.0,
+    "below_in_base": 1.0,
+    "above_code0": 32,
+    "committed": 296,
+    "status": "FAIL (strict xfail), as law 5 (44 code-0) and law 4 (76)"
+   }
+  }
+ },
+ "working_tree_note": "Smokes ran on 51c7e7b with a dirty tree containing exactly this commit's law-6 source edits (tlmpm_v4.py sha256 ce57b1c3..., identical to this commit); each manifest.json records per-file local_code_sha256."
+}

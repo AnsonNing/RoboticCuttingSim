@@ -384,7 +384,10 @@ def main(argv=None):
         'aggregation_note': ('M3 = M3a and M3b and M3c (as in matrix_law5_adjudication_001); M8 = M8b, the Amendment 1 '
                              'acceptance row, with M8a a reported diagnostic; M9c/M9d are report only'),
         'adrs': ['docs/adr/0006-swept-band-cutting-law-4.md (incl. Amendment 1)',
-                 'docs/adr/0008-cutting-law-5-lead-preassignment.md'],
+                 'docs/adr/0008-cutting-law-5-lead-preassignment.md',
+                 *(['docs/adr/0010-cutting-law-6-deferred-lead-commit.md'] if a.law == 6 else []),
+                 *(['docs/adr/0011-cutting-law-7-eq8-coupled-flip.md'] if a.law == 7 else []),
+                 *(['docs/adr/0012-cutting-law-8-plow-gated-lead.md'] if a.law == 8 else [])],
         'cutting_law': a.law, 'created': datetime.now(ZoneInfo('Asia/Seoul')).isoformat(),
         'command': [sys.argv[0], *(sys.argv[1:] if argv is None else argv)], 'git_sha': sha,
         'git_dirty_paths': status, 'script_sha256': sha256(__file__),

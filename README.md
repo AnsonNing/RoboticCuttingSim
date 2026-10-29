@@ -16,7 +16,12 @@ the same workcell, `blademaster_workcell_v1`:
 - Franka 0 holds `ruler_knife_v1` in a physical two-finger grasp.
 - The cutting board has real colliders and friction.
 - Cameras: wrist D405 rig v5 and the Global D455.
-- Material: cutting law 5 at 1 mm particles, 0.1 ms and a 4 mm grid; seed 42.
+- Material: cutting law 8 at 1 mm particles, 0.1 ms and a 4 mm grid; seed 42.
+  The 1 mm acceptance matrix passed every row before these runs, negative
+  controls included, under criteria declared in advance. M8a, a diagnostic
+  row, fails. M2 passes only under ADR 0006 Amendment 1 (it fails the
+  original 2 mm limit). The Lab replays M9c/d are report-only. A clean-tree
+  confirmation of four rows finished while the live set was running.
 - Control: scripted waypoint controllers.
 
 Videos are rendered from the recorded episode: presentation overview and
@@ -26,58 +31,58 @@ diagnostics. Images are captured at 10 Hz; actions and robot state are
 recorded at 50 Hz. The GIFs play at 2× speed; the MP4s play in real time at
 the capture rate.
 [Full report](docs/reports/BLADEMASTER_DEMOS.md) ·
-[all attempts, including failures](docs/evidence/phase3/demos_live_002.json).
+[all attempts, including failures](docs/evidence/phase3/demos_live_004.json).
 
 ### Demo 1 — complete cutting
 
-![Demo 1: live Native complete cut of CUT-01-R](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.gif)
+![Demo 1: live Native complete cut of CUT-01-R](docs/media/demos/demo1a/live_20261029_law8_final_demo1a.gif)
 
 **PASS.** The knife cuts the 160×30×20 mm bar into two 50/50% parts, which
 stay separated after the knife is withdrawn. The frozen strict task score also
 passes (cut location 1.5 mm, limit 2 mm).
-Episode `live_20261029_pathv2_d/demo1a`, controller `path_v2` ·
-[MP4](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.mp4) ·
-[provenance](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.json).
+Episode `live_20261029_law8_final/demo1a`, controller `path_v2` ·
+[MP4](docs/media/demos/demo1a/live_20261029_law8_final_demo1a.mp4) ·
+[provenance](docs/media/demos/demo1a/live_20261029_law8_final_demo1a.json).
 
 The 20° oblique variant also **passes**. Separation is scored against the
-actual swept plane: 4.91 mm, against an allowed ideal 4.44 + 1 mm. Its frozen
+actual swept plane: 4.78 mm, against an allowed ideal 4.44 + 1 mm. Its frozen
 strict score fails two checks:
 - **Location:** the vertical-plane check does not apply to a tilted cut.
 - **Post-cut persistence window:** with the slower `path_v2` approach the cut
   completes at about 5.7 s, after the frozen v1 window ends at 5.6 s. Nothing
   reconnects, and separation lasts 1.8 s after withdrawal.
-[GIF](docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.gif) ·
-[MP4](docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4).
+[GIF](docs/media/demos/demo1b/live_20261029_law8_final_demo1b.gif) ·
+[MP4](docs/media/demos/demo1b/live_20261029_law8_final_demo1b.mp4).
 
 ### Demo 2 — surface trimming
 
-![Demo 2: live Native 35° skim removing the TRIM-01-R bump](docs/media/demos/demo2/live_20261029_pathv2_c_demo2.gif)
+![Demo 2: live Native 35° skim removing the TRIM-01-R bump](docs/media/demos/demo2/live_20261029_law8_final_demo2.gif)
 
-**PASS (separation).** A 35° rake skim detaches 97.9% of the bump as a chip.
+**PASS (separation).** A 35° rake skim detaches 98.0% of the bump as a chip.
 The substrate remains one intact body, and the measured edge stays within
 0.026 mm of the target height. The separately reported precision score is
 5/8 (**FAIL**): p95 surface error 0.58 mm against 0.5 mm, overcut 1.66%, and
 the conservative gouge rule.
-Episode `live_20261029_pathv2_c/demo2` ·
-[MP4](docs/media/demos/demo2/live_20261029_pathv2_c_demo2.mp4) ·
-[provenance](docs/media/demos/demo2/live_20261029_pathv2_c_demo2.json).
+Episode `live_20261029_law8_final/demo2` ·
+[MP4](docs/media/demos/demo2/live_20261029_law8_final_demo2.mp4) ·
+[provenance](docs/media/demos/demo2/live_20261029_law8_final_demo2.json).
 
 ### Demo 3 — sequential slicing and manipulation
 
-![Demo 3: two cuts make three parts, then the blade face pushes one away](docs/media/demos/demo3/live_20261029_vision_e_demo3.gif)
+![Demo 3: two cuts make three parts, then the blade face pushes one away](docs/media/demos/demo3/live_20261029_law8_final_demo3.gif)
 
 **PASS**, including the frozen SLICE-PUSH-01 report. Two cuts (`cut_index` 0
 and 1) produce three independent parts (37.5/31.25/31.25%), each within one
 particle layer of its declared plane. The blunt blade face, with cutting
-disabled, then pushes one part 18.7 mm by real contact. The other parts do not
+disabled, then pushes one part 19.7 mm by real contact. The other parts do not
 move, no labels are added and nothing reconnects. Between the cuts the
-controller measures the bar's 2.17 mm shift from rendered wrist D405 depth,
+controller measures the bar's 1.20 mm shift from rendered wrist D405 depth,
 robot kinematics and the simulator knife pose
 ([ADR 0009](docs/adr/0009-demo3-wrist-depth-retarget.md)). The rendered surface
 is rebuilt per mechanical part; this does not affect the measured +x end face.
-Episode `live_20261029_vision_e/demo3`, controller `path_v2_vision` ·
-[MP4](docs/media/demos/demo3/live_20261029_vision_e_demo3.mp4) ·
-[provenance](docs/media/demos/demo3/live_20261029_vision_e_demo3.json).
+Episode `live_20261029_law8_final/demo3`, controller `path_v2_vision` ·
+[MP4](docs/media/demos/demo3/live_20261029_law8_final_demo3.mp4) ·
+[provenance](docs/media/demos/demo3/live_20261029_law8_final_demo3.json).
 
 ### The new workcell
 
@@ -93,40 +98,60 @@ risers and relief slots are the same boxes used as PhysX colliders (friction
 
 ### Cutting physics
 
-Cutting law 5 ([ADR 0006](docs/adr/0006-swept-band-cutting-law-4.md),
-[ADR 0008](docs/adr/0008-cutting-law-5-lead-preassignment.md)) follows
-BladeMaster Section III-C:
+Cutting law 8 builds on law 4 and law 5. It follows BladeMaster Section
+III-C:
 
 - **Cutting progress** only resists the knife.
 - **Persistent side codes** are assigned only during a blade stroke that is
-  actually cutting. They cover the finite band behind the moving edge, plus
-  material up to 8 mm ahead of it that lies more than one grid cell off the
-  swept surface. The one-cell core around the surface is labelled only after
-  the edge passes.
+  actually cutting, within the finite band swept behind the moving edge.
+- **Plowing strokes** are the exception: a raked edge moving at least 15° out
+  of its plane, as in the TRIM skim. There, material up to 8 mm ahead of the
+  edge and more than one grid cell off the swept surface is labelled early,
+  so a carried chip cannot stay attached.
 - **Side pushes, flat presses, stopping, withdrawal, uncontacted edges and the
   blunt handle** never cut.
 
-The 1 mm acceptance matrix passes M1–M7 and M9 with computed criteria. M8
-fails under ideal tracking (second-cut location), and live Demo 3 fixes this
-with the wrist-depth retarget
-([matrix](docs/evidence/phase1/matrix_law5_002.json),
-[review](docs/evidence/phase1/matrix_law5_adjudication_001.json)). Material
-parameters are provisional and uncalibrated.
+The 1 mm acceptance matrix (vertical and 20° cuts, TRIM at 25°/35° and on the
+board, partial cut, side push, flat press, stop and withdrawal, persistence,
+two sequential cuts, Native measured-trajectory replays) passes **M1–M9**
+under computed criteria. Those criteria were declared before the law-8 runs
+([matrix](docs/evidence/phase1/matrix_law8_002.json)). Three caveats:
+
+- The M8a diagnostic fails.
+- M2 passes only under Amendment 1; it fails the original 2 mm limit.
+- The Lab replays M9c/d are report-only (Lab cut location 4 mm, FAIL).
+
+Earlier laws and their failures are preserved:
+
+| Law | ADR | Failure |
+| --- | --- | --- |
+| 4 | [0006](docs/adr/0006-swept-band-cutting-law-4.md) | TRIM 0% removed |
+| 5 | [0008](docs/adr/0008-cutting-law-5-lead-preassignment.md) | Second-cut location in the two-cut row |
+| 6 | [0010](docs/adr/0010-cutting-law-6-deferred-lead-commit.md) | TRIM at 35° |
+| 7 | [0011](docs/adr/0011-cutting-law-7-eq8-coupled-flip.md) | Several rows |
+
+Law 8 is validated only for in-plane cuts and 25°/35° constant-rake skims.
+Material parameters are provisional and uncalibrated.
 
 ### Reproduce the demos
 
 ```bash
-# Final set: Demo 1a/1b/2 with path_v2 and Demo 3 with path_v2_vision, law 5, seed 42
-.venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --gpu 1 --run-id NEW_ID
+# Final set: Demo 1a/1b/2 with path_v2 and Demo 3 with path_v2_vision, law 8, seed 42
+.venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --gpu 1 --run-id NEW_ID
 ```
 
 Each run writes the episode, `demo_summary.json` (execution, outcome and
 quality kept separate) and rendered media under `artifacts/wp10_claude/demos/`.
 It never overwrites an earlier run. Add `--publish` to copy the media into
-`docs/media/demos/`. The first-round v1-controller failures are preserved and documented.
-Demo 2 removed only 64%. Demo 3's second cut landed 2.0000000670 mm from its
-declared plane, over the 2 mm bound, because the first cut had shifted the
-bar.
+`docs/media/demos/`.
+
+Earlier runs are preserved and documented:
+
+- **Law 5 runs.** They were made before the matrix gate was met. All four
+  pass, and their media remain under `docs/media/demos/`.
+- **First-round v1-controller failures.** Demo 2 removed only 64%. Demo 3's
+  second cut landed 2.0000000670 mm from its declared plane, over the 2 mm
+  bound.
 
 ## Earlier work
 
@@ -142,7 +167,7 @@ passed the 1,200-step interface fuzz, legacy regression and Gym checks, with
 physical-grasp holding limits reported separately. Its learned-controller and
 agent work (E–G) is deferred to P2 by the
 [BladeMaster plan](docs/BLADEMASTER_DEMO_PLAN.md). The current full CPU
-regression is **689 passed, 3 strict xfail** (documented raked-skim limits).
+regression is **780 passed, 5 strict xfail** (documented 2 mm raked-skim limits of laws 4–7).
 See [handoff](docs/HANDOFF_WP10_CLAUDE_20261029.md),
 [the WP-10 plan](docs/WP10_SPECIFICATION.md),
 [control interface](docs/POLICY_CONTROL.md), [WP-10B](docs/reports/WP-10B.md),
