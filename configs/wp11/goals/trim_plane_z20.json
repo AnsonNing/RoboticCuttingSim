@@ -1,0 +1,9 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "trim_plane_z20",
+  "type": "trim_plane",
+  "description": "Trim the workpiece to the local plane z = 20 mm (the TRIM-01 target) over the whole top: separation (>= 90% of the above-plane mass detached, substrate intact) sets the verdict; surface precision is reported.",
+  "episode": {"duration_s": 12.0, "control_dt_s": 0.02},
+  "plane": {"origin_local_m": [0.0, 0.0, 0.02], "normal_local": [0.0, 0.0, 1.0]},
+  "edge_clearance_m": 0.0002
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "slice_then_push",
+  "type": "sequence",
+  "description": "SLICE-PUSH-01 as configuration: two through-cuts at local x = -30 / +30 mm (three pieces, >= 25% each), then a cut-disabled blade-face push of the +x piece by 20 mm (>= 10 mm displacement, every other piece <= 2 mm, no label change while disarmed).",
+  "episode": {"duration_s": 22.0, "control_dt_s": 0.02},
+  "steps": [
+    {"type": "sever", "goal_id": "slice_two",
+     "planes": [{"origin_local_m": [-0.03, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0]},
+                {"origin_local_m": [0.03, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0]}],
+     "expected_pieces": 3, "minimum_part_mass_fraction": 0.25, "minimum_main_parts_mass_fraction": 0.99,
+     "plane_error_bound_m": 0.002},
+    {"type": "move_piece", "goal_id": "push_right",
+     "selector": {"side_of_plane": {"origin_local_m": [0.03, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0], "side": "positive"}},
+     "direction_local": [1.0, 0.0, 0.0], "distance_m": 0.02, "minimum_displacement_m": 0.01,
+     "maximum_other_displacement_m": 0.002, "minimum_piece_mass_fraction": 0.05, "minimum_selector_share": 0.5,
+     "push_edge_height_m": 0.003, "push_speed_m_s": 0.01}
+  ]
+}
