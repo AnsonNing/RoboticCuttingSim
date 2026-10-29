@@ -127,14 +127,15 @@ captures from Global D455 and both wrist D405s with camera rig v5.
 [Camera v5 validation](docs/WRIST_CAMERA_V5.md). Previous images and recordings
 remain preserved.
 
-WP-10 adds opt-in ruler-knife tasks and bounded control for policies, Gym/RL
-and agents. The last full CPU regression passes **461 tests**; both real Isaac
-runtimes pass the 1,200-step interface fuzz, legacy regression and Gym checks,
-with physical-grasp holding limits reported separately. Native ruler CUT-01-R
-and CUT-02 pass strict task metrics; Lab ruler cuts and TRIM retain failures.
-Work is checkpointed for Claude: C/D are partial, E–G and the required learned
-controller/robot-video matrix remain unfinished. See [handoff](docs/HANDOFF_WP10_CLAUDE_20261029.md),
-[the plan](docs/WP10_SPECIFICATION.md),
+WP-10, before the BladeMaster plan, added opt-in ruler-knife tasks and
+bounded control for policies, Gym/RL and agents. Both real Isaac runtimes
+passed the 1,200-step interface fuzz, legacy regression and Gym checks, with
+physical-grasp holding limits reported separately. Its learned-controller and
+agent work (E–G) is deferred to P2 by the
+[BladeMaster plan](docs/BLADEMASTER_DEMO_PLAN.md). The current full CPU
+regression is **689 passed, 3 strict xfail** (documented raked-skim limits).
+See [handoff](docs/HANDOFF_WP10_CLAUDE_20261029.md),
+[the WP-10 plan](docs/WP10_SPECIFICATION.md),
 [control interface](docs/POLICY_CONTROL.md), [WP-10B](docs/reports/WP-10B.md),
 [WP-10C](docs/reports/WP-10C.md) and [WP-10D](docs/reports/WP-10D.md).
 

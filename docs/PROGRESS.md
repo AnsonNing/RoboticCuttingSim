@@ -25,6 +25,7 @@
   - 拉切／鋸切時 swept normal 條件不佳；
   - live runtime 未逐步記錄 stroke；
   - Lab parity 與 P1／P2 未做。
+- 完整 CPU regression（`.venv/bin/python -m pytest -q`）：689 passed、3 xfailed（strict：law 4 25°/35°、law 5 35° 的 2 mm 削除），0 failed，359 s（log `artifacts/wp10_claude/logs/cpu_full_final_001.log`）。
 - 環境注意：背景子代理執行「寫入 `artifacts/`」的 Bash 指令曾卡在權限等待。後來 `/mnt/data/ningan` 已加入工作目錄；GPU／Isaac 執行改由 coordinator 直接跑。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
