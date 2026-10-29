@@ -18,9 +18,13 @@
 - C2 預檢完成（`98d5c3f`，[證據](evidence/wp11/phaseC2_preflight_001.json)）。
   - ρ < 12.5° 時雙斜面最低點低於刃口，0°／5° 會刮進底材 0.55／0.25 mm；10° 剛好過。
   - 全任務共用配置：`v2_y`、刀尖 +y、工件抬高 +100 mm、TRIM ρ = 10°。決定已記入 ADR 0013。
+- Phase M 完成（`be1d859`、`b2c1d09`，[證據](evidence/wp11/phaseM_tlmpm_v5_001.json)）。
+  - `tlmpm_v5` 與 v4 law 8 等價：CPU 逐位相同，GPU M1a／M8b 在非確定性範圍內。
+  - 成本與 K 無關：K=1–8 都是 1.30–1.34 ms/substep、38 MB。
+  - 夾住的長條：3／5 刀得 4／6 塊。三凸起逐刀移除 0.98／0.97／0.98。
+  - 待處理：自由長條每刀滑約 1 mm，宣告切面超界（與 M8 同現象）；兩次削切重疊處約 49 顆底材頂層粒子連起 chip 1、2；`validate_action` 只收 `cut_index` 0/1（Phase G 要改）；reward／v1 oracle 仍是 ternary；S=8 已用到 7 個；v5 的 M3–M6、M9 未重跑。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A：等 GitHub Actions 結果；
-  - M：`tlmpm_v5`（`artifacts/wp11/phaseM/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：依 C2／C4 結果選定排列、ρ、刃型與擺放 → Phase S（場景／目標設定）→ C3 控制器與 C5 live → D → E/F → G → H → I。
