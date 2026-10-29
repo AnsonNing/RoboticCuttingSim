@@ -95,3 +95,67 @@ thresholds keep their exact behaviour.
   sequence through the public API, with no hidden task-specific changes.
 - Tests B, C and D are expressed as scene + goal configs (multi-slice,
   three protrusions, seeded randomization with feasibility classes).
+
+## Amendment 1 (2026-10-30): `goal_eval_v2`, step-scoped sequence evaluation (WP-11 Phase E round 2)
+
+**Context.** Round 1 (`docs/reports/WP11_PHASE_E_ROUND1.md`) found that a `sequence` of sever then
+remove_protrusions cannot pass under the v1 evaluator, even when the cut and the removals worked (Test D
+s1702, s1704):
+
+- v1 scores every step on the final components of *all* cut digits.
+- `remove_protrusions` (and `trim_plane`) require a single substrate component holding ≥ 99% of the
+  below-plane mass. After a sever there are always two.
+- The sever's location statistic assigns every cross-component reference node to the nearest declared plane,
+  so the chip/substrate interfaces of later skims (tens of mm away) count against the sever plane (77 mm and
+  48 mm).
+
+**Decision.** A versioned, opt-in evaluator, `goal_eval_v2`, selected by the top-level goal field
+`"evaluator_version": "goal_eval_v2"`. Rules:
+
+1. **v1 is the default and is unchanged.** A goal without the field validates to the same normalized form, so
+   compiled task ids, plans and v1 evaluations stay byte-identical. This is pinned by
+   `tests/test_goal_eval_v2.py`: v1 evaluation digests computed with the pre-v2 `goals.py` of `c29f02a`,
+   the C5b compiled ids, and round-1 stage-1 task ids. A declared version is part of the goal, so it gives
+   new ids. Steps never carry their own version.
+2. **Digit allocation.** Cut digits are allocated to steps by the declared convention, which is the
+   goal-planner numbering:
+   - steps are taken in order, and digits are numbered across the episode;
+   - `sever`: one digit per plane;
+   - `divide`: pieces − 1;
+   - `remove_protrusions`: one per selected protrusion;
+   - `trim_plane`: one;
+   - `move_piece`: none.
+
+   When a compiled task is given, the allocation is cross-checked against the planner's plan report
+   (`MATCH` / `MISMATCH` / `NOT_AVAILABLE`). A mismatch, or a recording that keeps fewer digits than needed,
+   makes the sequence `NOT_RUN`. It is never scored.
+3. **Scoped components.** For a set of digits *D*, the scoped components are the mechanical components
+   (the same eight-node compatibility graph, packed or ternary) of the final codes with every digit outside
+   *D* set to 0. This is exactly the history those digits alone would have written.
+4. **`sever` / `divide` step.** Every sever check (expected substantial pieces, main-piece mass, plane
+   location, far-particle rule) is computed on the components of the step's **own** digits. Location
+   therefore comes only from the separation interfaces of its own cut digits.
+5. **`remove_protrusions` / `trim_plane` step.**
+   - *Prior pieces* are the anchored (bottom-layer) components of the digits of the **earlier sever/divide
+     steps** of the sequence.
+   - *After* is the components of those digits plus the step's own.
+   - Substrate integrity is judged **per prior piece**: within each one, the largest after-component holds
+     ≥ `minimum_substrate_share` of its below-plane mass, ≤ `maximum_detached_below_fraction` of it is
+     detached from the substrate, and exactly one substrate component remains. So a step may not split
+     material below its plane.
+   - Removal, unselected retention, residual height and surface quality use the after-substrate.
+   - Digits of earlier remove/trim steps are not in scope: their chips are those steps' results.
+   - `trim_plane` steps are scoped only for horizontal planes; otherwise the step is `NOT_RUN`.
+6. **Unscoped steps and goals.** `move_piece` steps, which read the state of their own move window, and
+   non-sequence goals are scored exactly as in v1.
+7. **Thresholds are unchanged.** Every threshold is the v1 threshold. Sequence success still requires every
+   step to hold at the end of the episode. The integrity layer is unchanged.
+
+**Consequences.**
+
+- A remove step that really splits a sever piece below its plane still fails. A sever that is misplaced
+  still fails its location check. Both are covered by negative tests.
+- v2 assumes the declared digit convention. An external controller that numbers its digits differently
+  must be scored with v1, or the convention must be declared.
+- Round-1 verdicts and evidence are not changed. Their v2 rescoring is a read-only `POST_HOC_DIAGNOSTIC`
+  (round-2 report).
