@@ -482,10 +482,11 @@ def test_yaw_rotated_scene_compiles_to_rotated_particles_fixtures_and_plan():
         apply_scenario(b, "blademaster_workcell_v1")  # identity-only scenario path stays an explicit error
 
 
-def test_open_cutting_env_rejects_configured_tasks_on_isaac_runtimes(tmp_path, bumps_task):
+def test_open_cutting_env_rejects_configured_tasks_on_isaac_lab(tmp_path, bumps_task):
+    # WP-11 Phase D: Isaac Sim accepts compiled tasks (tests/test_wp11_phase_d.py); Isaac Lab still raises.
     from robotic_cutting_sim.live_env import open_cutting_env
     with pytest.raises(NotImplementedError, match="registered task ids"):
-        with open_cutting_env(runtime="isaac_sim", output_dir=tmp_path/"out", task=bumps_task):
+        with open_cutting_env(runtime="isaac_lab", output_dir=tmp_path/"out", task=bumps_task):
             pass
     assert not (tmp_path/"out").exists()
 

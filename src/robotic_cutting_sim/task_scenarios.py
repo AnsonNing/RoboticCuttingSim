@@ -8,11 +8,12 @@ from .tasks import ProfileTaskSpec, FixtureBox, MaterialFixtureBox
 PATH = ROOT / 'configs/wp10_scenarios_v1.json'
 PATH_V2 = ROOT / 'configs/wp10_scenarios_v2.json'
 PATH_V3 = ROOT / 'configs/wp10_scenarios_v3.json'
+PATH_WP11 = ROOT / 'configs/wp11_scenarios_v1.json'  # WP-11 Phase D (additive; wp11_workcell_v1)
 
 
 def scenarios():
     return {**json.loads(PATH.read_text())['scenarios'], **json.loads(PATH_V2.read_text())['scenarios'],
-            **json.loads(PATH_V3.read_text())['scenarios']}
+            **json.loads(PATH_V3.read_text())['scenarios'], **json.loads(PATH_WP11.read_text())['scenarios']}
 
 
 def configure_task(task, *, scenario=None, material_profile_id=None):
@@ -30,9 +31,45 @@ def initial_joints(scenario, task_id):
     return scenarios()[scenario].get('initial_joint_positions', {}).get(task_id)
 
 
+def scenario_home(name):
+    """Declared HOME of a scenario (WP-11 Phase D) or None.
+
+    {'joint_positions': 7 rad, 'finger_position_m', 'hand_pose_world_xyzw', 'source'}:
+    Franka 0 resets there with the knife in the hand; scenarios without
+    ``home_joint_positions`` (v1-v3) return None and keep their reset.
+    """
+    if name is None:
+        return None
+    config = scenarios()[name]
+    if 'home_joint_positions' not in config:
+        return None
+    joints = np.asarray(config['home_joint_positions'], float)
+    hand = np.asarray(config['home_hand_pose_world_xyzw'], float)
+    if joints.shape != (7,) or hand.shape != (7,) or not np.isfinite(np.r_[joints, hand]).all():
+        raise ValueError(f'Scenario {name} declares a malformed HOME')
+    return dict(scenario=name, joint_positions=tuple(map(float, joints)),
+                finger_position_m=float(config.get('home_finger_position_m', float('nan'))),
+                hand_pose_world_xyzw=tuple(map(float, hand)), source=config.get('home_source'))
+
+
+def action_workspace(name):
+    """(min, max) local edge-centre workspace declared by a scenario, or None (ActionLimits default)."""
+    if name is None or 'action_workspace_local_m' not in scenarios()[name]:
+        return None
+    box = scenarios()[name]['action_workspace_local_m']
+    return tuple(map(float, box['min'])), tuple(map(float, box['max']))
+
+
+def _scenario_allows(task, config):
+    if task.task_id in config['allowed_tasks']:
+        return True
+    from .tasks import ProfileTaskSpecV4
+    return 'cutting_tasks_v4' in config.get('allowed_task_protocols', ()) and isinstance(task, ProfileTaskSpecV4)
+
+
 def apply_scenario(task, name):
     config = scenarios()[name]
-    if not isinstance(task, ProfileTaskSpec) or task.task_id not in config['allowed_tasks']:
+    if not isinstance(task, ProfileTaskSpec) or not _scenario_allows(task, config):
         raise ValueError('This execution scenario is explicitly restricted to the declared v2 tasks')
     pose = np.array(task.world_from_workpiece_xyzw, float)
     if not np.allclose(pose[3:], [0., 0., 0., 1.], atol=1e-12):

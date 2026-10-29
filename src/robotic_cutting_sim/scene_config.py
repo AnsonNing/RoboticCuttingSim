@@ -61,6 +61,13 @@ still assume identity orientation raise explicitly: ``task_scenarios.apply_scena
 (any configured task is rejected there) and the Isaac Sim / Isaac Lab runtimes,
 which build tasks from registered ids only (``open_cutting_env(task=...)`` raises
 NotImplementedError for them).
+
+WP-11 Phase D: Isaac Sim accepts a compiled task (``open_cutting_env(runtime=
+"isaac_sim", task=compiled)``); the runner recompiles it from its recorded
+scene/goal/planner config and requires the same id. Isaac Lab still raises.
+A workcell ``from_scenario`` that declares ``home_joint_positions``
+(``wp11_workcell_v1``) also sets the planner HOME (FK(q_home) composed with the
+tool's hand_from_edge) and the action workspace; scenes without one are unchanged.
 """
 from copy import deepcopy
 from dataclasses import asdict, dataclass, replace
@@ -445,6 +452,28 @@ def workcell_config(scene):
     return {"extend_fixture_bases_to_table": True, "fixture_mode": "cutting_board_v1", **config}
 
 
+def workcell_scenario(scene):
+    """Name of the scenario a scene's workcell comes from (``supports.workcell.from_scenario``), else None."""
+    workcell = scene["supports"]["workcell"]
+    return workcell.get("from_scenario") if isinstance(workcell, dict) else None
+
+
+def workcell_home(scene):
+    """HOME declared by the scene's workcell scenario (``task_scenarios.scenario_home``), else None.
+
+    Only ``from_scenario`` workcells can declare a HOME (wp11_scenarios_v1); an
+    inline workcell and every v1-v3 scenario keep the planner default home.
+    """
+    from .task_scenarios import scenario_home
+    return scenario_home(workcell_scenario(scene))
+
+
+def workcell_action_workspace(scene):
+    """(min, max) local edge workspace declared by the scene's workcell scenario, else None."""
+    from .task_scenarios import action_workspace
+    return action_workspace(workcell_scenario(scene))
+
+
 def scene_material(scene):
     material = MaterialParameters(**_protocol()["material"])
     name = scene["workpiece"]["material_profile"]
@@ -609,6 +638,17 @@ class ConfiguredTaskSpec(ProfileTaskSpec):
                                                                  "actual": self.particle_spacing_m}}
                                         if self.particle_spacing_m != self.scene["solver"]["particle_spacing_m"] else {})}
 
+    # -- runtime support (WP-11 Phase D)
+    @property
+    def home(self):
+        """HOME declared by the scene workcell (joints, hand pose, source), or None."""
+        return workcell_home(self.scene)
+
+    def action_limits(self):
+        """The ActionLimits the reference schedule was compiled with (planner step limits, workcell workspace)."""
+        from . import goal_planner
+        return goal_planner.action_limits(self.controller["planner"], self.scene)
+
     def evaluate_oracle(self, recording):
         return {"task_id": self.task_id, "status": "NOT_APPLICABLE", "checks": {}, "metrics": {}, "missing_evidence": [],
                 "protocol_id": CONFIGURED_TASK_PROTOCOL, "protocol_sha256": self.config_sha256,
@@ -694,7 +734,7 @@ def compile_task(scene, goal, *, particle_spacing_m=None, planner_options=None, 
         from .task_scenarios import _cutting_board_boxes
         boxes = _cutting_board_boxes(provisional, workcell_config(scene), world[2])
         provisional = replace(provisional, fixture_boxes_local=tuple(boxes))
-    limits = goal_planner.action_limits(options)
+    limits = goal_planner.action_limits(options, scene)
     schedule = ideal_schedule(provisional, waypoints, limits, goal_planner.policy_options(options))
     if schedule is None:
         raise SceneConfigError(f"The planned motion does not finish within the goal duration {duration} s; "
@@ -710,6 +750,36 @@ def compile_task(scene, goal, *, particle_spacing_m=None, planner_options=None, 
                    reference_orientations_local_xyzw=tuple(tuple(map(float, p[3:])) for p in local),
                    reference_cut_indices=tuple(int(c) for c in cuts), reference_phase_labels=tuple(labels),
                    active_cut_interval_s=interval)
+
+
+def configured_task_payload(task):
+    """Canonical JSON that recompiles ``task`` exactly (runtime configs carry this, not the object).
+
+    Recompiling is deterministic: ``task_from_payload`` re-runs ``compile_task`` on
+    the recorded scene, goal, planner options, spacing and seed and requires the
+    same id and config sha256, so a runtime can never silently build another task.
+    """
+    if not isinstance(task, ConfiguredTaskSpec):
+        raise TypeError("Expected a ConfiguredTaskSpec from compile_task")
+    spacing = None if task.particle_spacing_m == task.scene["solver"]["particle_spacing_m"] else float(task.particle_spacing_m)
+    return canonical_json({"protocol_id": CONFIGURED_TASK_PROTOCOL, "task_id": task.task_id, "seed": int(task.seed),
+                           "config_sha256": task.config_sha256, "scene": task.scene, "goal": task.goal,
+                           "planner_options": task.controller["planner"], "particle_spacing_m": spacing})
+
+
+def task_from_payload(payload):
+    """The ConfiguredTaskSpec of a ``configured_task_payload`` string (verified id and sha256)."""
+    data = json.loads(payload) if isinstance(payload, str) else deepcopy(payload)
+    _keys(data, "configured task payload", ("protocol_id", "task_id", "seed", "config_sha256", "scene", "goal",
+                                            "planner_options", "particle_spacing_m"))
+    if data["protocol_id"] != CONFIGURED_TASK_PROTOCOL:
+        raise SceneConfigError(f"Configured task payload must be {CONFIGURED_TASK_PROTOCOL}")
+    task = compile_task(data["scene"], data["goal"], particle_spacing_m=data["particle_spacing_m"],
+                        planner_options=data["planner_options"], seed=data["seed"])
+    if task.task_id != data["task_id"] or task.config_sha256 != data["config_sha256"]:
+        raise SceneConfigError(f"Recompiled task {task.task_id} ({task.config_sha256[:12]}) differs from the payload "
+                               f"{data['task_id']} ({data['config_sha256'][:12]})")
+    return task
 
 
 def ideal_schedule(task, waypoints, limits, policy_options):

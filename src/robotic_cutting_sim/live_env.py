@@ -15,7 +15,8 @@ from .tasks import ACTION_MODES, make_task
 
 OBSERVATION_PROFILES = ("vision_proprio", "vision_only", "state")
 IK_FAILURE_MODES = ("raise", "reject")
-WRAPPER_OPTIONS = ("action_limits", "delta_frame", "ik_failure", "max_consecutive_ik_failures", "reward", "history_stride")
+WRAPPER_OPTIONS = ("action_limits", "delta_frame", "ik_failure", "max_consecutive_ik_failures", "reward", "history_stride",
+                   "expose_episode_state")
 
 
 class CuttingTaskEnv:
@@ -36,12 +37,20 @@ class CuttingTaskEnv:
     holds the last accepted target and ``info["ik_status"]`` says so. The
     ``state`` profile returns measured proprioception without images. ``reward``
     is an optional privileged callable ``reward(env, info) -> float``.
+
+    Episode lifecycle (WP-11 Phase D, ``episode_lifecycle``): every info carries
+    ``episode_state`` (state, termination reason, home outcome; never material or
+    force data); ``expose_episode_state=True`` (opt-in) also puts it in the
+    observation under ``"episode"``. ``end_task(reason)`` ends the task phase;
+    ``return_home()`` is the separate physical return-to-home motion with its own
+    ``home_outcome``. ``reset()`` stays the simulator state reset.
     """
 
     def __init__(self, backend, task_id=None, *, seed=42, action_mode=ACTION_MODES[0],
                  observation_profile="vision_proprio", include_global_camera=False,
                  action_limits=None, delta_frame="edge", ik_failure="raise",
-                 max_consecutive_ik_failures=None, reward=None, history_stride=1):
+                 max_consecutive_ik_failures=None, reward=None, history_stride=1, task=None,
+                 expose_episode_state=False):
         if (action_mode not in ACTION_MODES+(DELTA_MODE,) or observation_profile not in OBSERVATION_PROFILES
                 or delta_frame not in DELTA_FRAMES or ik_failure not in IK_FAILURE_MODES):
             raise ValueError("Unsupported action mode, observation profile, delta frame or IK failure mode")
@@ -50,8 +59,13 @@ class CuttingTaskEnv:
         if not isinstance(history_stride, (int, np.integer)) or history_stride < 1:
             raise ValueError('History stride must be a positive integer')
         self.history_stride, self._control_steps_count = int(history_stride), 0
-        task = getattr(backend, "task", None)
-        self.task = task or make_task(task_id, seed=seed)
+        # ``task``: an explicit task object (e.g. a compiled ConfiguredTaskSpec) for runtimes
+        # that build their task at reset; otherwise the backend's task or the registered id.
+        self.task = task or getattr(backend, "task", None) or make_task(task_id, seed=seed)
+        from .episode_lifecycle import EpisodeStateMachine
+        self.lifecycle = EpisodeStateMachine()
+        self.expose_episode_state = bool(expose_episode_state)
+        self.last_return_home = None
         self.backend, self.action_mode, self.observation_profile = backend, action_mode, observation_profile
         self.include_global_camera = bool(include_global_camera)
         self.action_limits = action_limits
@@ -66,17 +80,23 @@ class CuttingTaskEnv:
             raise RuntimeError("Environment is closed")
         if seed is None:
             seed = getattr(self.task, "seed", 42)
+        self.lifecycle.transition("RESETTING", time_s=getattr(self.backend, "time_s", None), reason="reset")
+        self._ready = False
         self.backend.reset(seed=int(seed))
         self.task = self.backend.task
         self._history, self._ready = [], True
         self._terminated = False
         self._ik_failures = 0
         self._control_steps_count = 0
+        self.last_return_home = None
         self._refresh()
+        self._reset_proprio = copy.deepcopy(self._proprio)
         self._commanded = self._nominal_edge()
         self._record_oracle()
+        self.lifecycle.transition("READY", time_s=self.time_s, reason="reset_complete")
         return self.observe(), {"task_id": self.task.task_id, "seed": int(seed),
-            "runtime_source": self.runtime_source, "task_protocol_sha256": self.task.to_dict()["protocol_sha256"]}
+            "runtime_source": self.runtime_source, "task_protocol_sha256": self.task.to_dict()["protocol_sha256"],
+            "episode_state": self.lifecycle.snapshot()}
 
     @property
     def runtime_source(self):
@@ -152,6 +172,7 @@ class CuttingTaskEnv:
             raise RuntimeError("Episode ended; call reset")
         if self._terminated:
             raise RuntimeError("Grasp lost or sensor invalid; call reset")
+        self.lifecycle.require(("READY", "RUNNING"), "step")
         report = None
         requested_reference = None
         if action is None:
@@ -203,6 +224,8 @@ class CuttingTaskEnv:
             self._ik_failures = 0
             if action is not None and action["mode"] == ACTION_MODES[0]:
                 self._commanded = np.asarray(action["target"], float).copy()
+        if self.lifecycle.state == "READY":  # only once a control step was actually executed
+            self.lifecycle.transition("RUNNING", time_s=self.time_s, reason="first_step")
         self._refresh()
         if action is None or action["mode"] != ACTION_MODES[0]:
             self._commanded = self._nominal_edge()
@@ -217,10 +240,14 @@ class CuttingTaskEnv:
                 and self._ik_failures >= self.max_consecutive_ik_failures):
             self._terminated, reason = True, "IK_FAILURES"
         self._record_oracle(force=self._terminated or self.time_s >= self.task.duration_s-1e-9)
+        if self._terminated:
+            self.lifecycle.transition("TASK_FAILED", time_s=self.time_s, reason=reason)
+        elif self.time_s >= self.task.duration_s-1e-9:
+            self.lifecycle.transition("TASK_COMPLETE", time_s=self.time_s, reason="TIME_LIMIT")
         info = {"task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source,
                 "grasp_status": grasp_status, "termination_reason": reason,
                 "ik_status": ik_status, "ik_info": ik_info, "action_report": report,
-                "consecutive_ik_failures": self._ik_failures}
+                "consecutive_ik_failures": self._ik_failures, "episode_state": self.lifecycle.snapshot()}
         if requested_reference is not None:
             info['requested_reference_target_world_xyz_xyzw'] = np.asarray(requested_reference).tolist()
         reward = 0. if self.reward is None else float(self.reward(self, info))
@@ -228,7 +255,158 @@ class CuttingTaskEnv:
 
     def observe(self):
         self._require_ready()
-        return copy.deepcopy(self._observation)
+        observation = copy.deepcopy(self._observation)
+        if self.expose_episode_state:
+            observation["episode"] = self.lifecycle.snapshot()
+        return observation
+
+    @property
+    def episode_state(self):
+        return self.lifecycle.state
+
+    def end_task(self, reason="CONTROLLER_DONE"):
+        """End the task phase normally (TASK_COMPLETE) before the time limit; the task is not scored here."""
+        self._require_ready()
+        self.lifecycle.require(("RUNNING",), "end_task")
+        if not self._history or self._history[-1]["time_s"] != self.time_s:  # never a duplicate timestamp
+            self._record_oracle(force=True)
+        self.lifecycle.transition("TASK_COMPLETE", time_s=self.time_s, reason=str(reason))
+        return self.lifecycle.snapshot()
+
+    def return_home(self, *, planner=None, path_checker=None, on_step=None, config=None):
+        """Physical return-to-home after the task phase (episode_lifecycle); never a teleport.
+
+        WITHDRAW/lift -> hand-down -> q_home as preflighted joint targets executed by the
+        runtime with cutting disabled and the grasp monitored. Returns
+        ``{"home_outcome": {status, reason, checks}, "measurement": ..., "plan": ...}``;
+        the task outcome (``evaluate()``) is unaffected. ``planner(q_start)`` and
+        ``path_checker(qs, modes)`` default to the backend's ``plan_return_home`` /
+        ``check_measured_path``. ``on_step(action, result, before_observation, label)``
+        is called after every executed control step (e.g. a recorder).
+        """
+        from .episode_lifecycle import TASK_ENDED, evaluate_home_outcome, load_return_home_config
+        self._require_ready()
+        config = config or load_return_home_config()
+        machine = self.lifecycle
+        if machine.state == "RUNNING":
+            self.end_task("RETURN_HOME_REQUESTED")
+        machine.require(TASK_ENDED, "return_home")
+        home = getattr(self.backend, "home", None)
+        planner = planner or getattr(self.backend, "plan_return_home", None)
+        path_checker = path_checker or getattr(self.backend, "check_measured_path", None)
+        if home is None or planner is None:
+            outcome = {"status": "NOT_APPLICABLE", "reason": "NO_DECLARED_HOME" if home is None else "RUNTIME_CANNOT_PLAN",
+                       "checks": {}, "scope": "No physical return-to-home exists for this runtime/scene"}
+            machine.home_outcome = outcome["status"]
+            machine.transition("FINISHED", time_s=self.time_s, reason=f"home_{outcome['reason']}")
+            self.last_return_home = {"home_outcome": outcome, "measurement": None, "plan": None}
+            return self.last_return_home
+        machine.transition("RETRACTING", time_s=self.time_s, reason="return_home")
+        try:
+            result = self._execute_return_home(home, planner, path_checker, on_step, config)
+        except BaseException as error:
+            outcome = {"status": "FAIL", "reason": f"EXCEPTION:{type(error).__name__}", "checks": {}, "error": repr(error)}
+            machine.home_outcome = outcome["status"]
+            if machine.state in ("RETRACTING", "RETURNING_HOME"):
+                machine.transition("FINISHED", time_s=self.time_s, reason=outcome["reason"])
+            self.last_return_home = {"home_outcome": outcome, "measurement": None, "plan": None}
+            raise
+        outcome = evaluate_home_outcome(result["measurement"], config)
+        result["home_outcome"] = outcome
+        machine.home_outcome = outcome["status"]
+        machine.transition("FINISHED", time_s=self.time_s,
+                           reason="home_PASS" if outcome["status"] == "PASS" else f"home_FAIL:{outcome['reason']}")
+        self.last_return_home = result
+        return result
+
+    def _execute_return_home(self, home, planner, path_checker, on_step, config):
+        from .episode_lifecycle import pose_error
+        machine = self.lifecycle
+        q_home = np.asarray(home["joint_positions"], float)
+        start_time = self.time_s
+        q_start = np.asarray(self._proprio["q"], float)[0]
+        plan = planner(q_start)
+        targets = np.asarray(plan.get("q", []), float).reshape(-1, 7)
+        labels = list(plan.get("labels", []))
+        summary = {key: plan.get(key) for key in ("status", "reason", "variant", "attempts", "retract", "preflight",
+                                                  "home_edge_pose_world_xyzw", "start_edge_pose_world_xyzw", "limits")}
+        measurement = {"plan_status": plan.get("status"), "plan_reason": plan.get("reason"), "executed": False,
+                       "aborted_reason": None, "grasp_lost": bool(self._terminated), "steps": 0,
+                       "start_time_s": start_time, "q_start": q_start.tolist(), "q_home": q_home.tolist()}
+        if plan.get("status") != "PLANNED" or not len(targets):
+            return {"measurement": measurement, "plan": summary}
+        codes_before = np.asarray(self.backend.material.history_state()["codes"]).copy()
+        measured_q, slip, rotation, contacts, penetration, reaction = [q_start], [], [], [], [], []
+        aborted = None
+        substeps = int(getattr(getattr(self.backend, "config", None), "robot_substeps", 1) or 1)
+        for target, label in zip(targets, labels):
+            if label != "RETRACTING" and machine.state == "RETRACTING":
+                machine.transition("RETURNING_HOME", time_s=self.time_s, reason=label)
+            action = self.task.validate_action({"mode": ACTION_MODES[1], "target": target, "cut_enabled": False})
+            before = self.observe() if on_step is not None else None
+            self.backend.step(action)
+            self._refresh()
+            self._commanded = self._nominal_edge()
+            measurement["steps"] += 1
+            diagnostics = getattr(self.backend, "last_diagnostics", {}) or {}
+            grasp = diagnostics.get("grasp_status", {})
+            status = grasp.get("status") if isinstance(grasp, dict) else grasp
+            if isinstance(grasp, dict):
+                slip.append(float(grasp.get("slip_since_settling_m", 0.)))
+                rotation.append(float(grasp.get("rotation_since_settling_rad", 0.)))
+            for row in (getattr(self.backend, "grasp_trace", None) or [])[-substeps:]:
+                contact = row.get("contacts", {})
+                contacts.append(int(contact.get("unintended_contact_count", 0)))
+                for record in (contact.get("tensor_forces") or {}).get("records", []):
+                    if record.get("separation_m") is not None:
+                        penetration.append(max(0., -float(record["separation_m"])))
+            wrench = diagnostics.get("next_material_wrench_world")
+            if wrench is not None:
+                reaction.append(float(np.linalg.norm(np.asarray(wrench, float)[:3])))
+            measured_q.append(np.asarray(self._proprio["q"], float)[0])
+            lost = bool(diagnostics.get("grasp_lost", False) or status == "INVALID_CONTACT_DATA")
+            info = {"task_id": self.task.task_id, "timestamp_s": self.time_s, "runtime_source": self.runtime_source,
+                    "grasp_status": status, "termination_reason": "GRASP_LOST" if lost else None,
+                    "ik_status": "not_used_joint_space_target", "ik_info": None, "action_report": None,
+                    "consecutive_ik_failures": 0, "return_home_phase": label, "episode_state": machine.snapshot()}
+            if on_step is not None:
+                on_step(action, (self.observe(), 0., lost, False, info), before, label)
+            if lost:
+                aborted = "GRASP_LOST"
+                break
+        if machine.state == "RETRACTING":
+            machine.transition("RETURNING_HOME", time_s=self.time_s, reason="aborted" if aborted else "no_joint_segment")
+        codes_after = np.asarray(self.backend.material.history_state()["codes"])
+        final = self._proprio
+        reset_tool = np.asarray(self._reset_proprio.get("tool_body_pose_xyzw", self._reset_proprio["tool_pose"]), float)
+        tool_now = np.asarray(final.get("tool_body_pose_xyzw", final["tool_pose"]), float)
+        tool_t, tool_r = pose_error(reset_tool, tool_now)
+        edge_t, edge_r = pose_error(np.asarray(self._reset_proprio["tool_pose"], float), np.asarray(final["tool_pose"], float))
+        measured_q = np.asarray(measured_q)
+        clearance = {"status": "NOT_RUN"}
+        if path_checker is not None:
+            modes = ["contact_free" if label == "RETRACTING" else "free"
+                     for label in ["RETRACTING"]+labels[:len(measured_q)-1]]
+            clearance = path_checker(measured_q, modes)
+        measurement.update(
+            executed=aborted is None and measurement["steps"] == len(targets), aborted_reason=aborted,
+            grasp_lost=bool(aborted == "GRASP_LOST" or self._terminated), end_time_s=self.time_s,
+            duration_s=self.time_s-start_time, planned_steps=int(len(targets)),
+            home_joint_error_max_rad=float(np.abs(measured_q[-1]-q_home).max()),
+            home_joint_error_rad=(measured_q[-1]-q_home).tolist(),
+            tool_translation_error_m=tool_t, tool_rotation_error_rad=tool_r,
+            edge_translation_error_m=edge_t, edge_rotation_error_rad=edge_r,
+            tool_pose_reference="tool body pose measured right after the reset pregrasp settle",
+            grasp_slip_max_m=max(slip, default=None), grasp_rotation_max_rad=max(rotation, default=None),
+            grasp_slip_final_m=slip[-1] if slip else None, grasp_rotation_final_rad=rotation[-1] if rotation else None,
+            unintended_tool_contacts_max=max(contacts, default=0 if not hasattr(self.backend, "grasp_trace") else None),
+            max_tool_contact_penetration_m=max(penetration, default=0.),
+            max_material_reaction_force_n=max(reaction, default=None),
+            label_changes=int(np.count_nonzero(codes_after != codes_before)),
+            measured_path_clearance_status=clearance.get("status"), measured_path_clearance=clearance,
+            measured_q_final=measured_q[-1].tolist(),
+            secondary_arm_q_final=np.asarray(final["q"], float)[1].tolist() if np.asarray(final["q"]).shape[0] > 1 else None)
+        return {"measurement": measurement, "plan": summary, "measured_q": measured_q, "labels": labels}
 
     def render(self, camera="global", mode="rgb_array"):
         self._require_ready()
@@ -384,26 +562,37 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
 
     ``runtime="kinematic"`` (opt-in) opens the ideal-tracking CPU/GPU backend
     with the same API and ``observation_profile="state"``. ``task`` is a compiled
-    ``scene_config.ConfiguredTaskSpec`` (ADR 0015); it currently runs on the
-    kinematic runtime only (the Isaac runtimes build tasks from registered ids
-    and raise NotImplementedError rather than silently using another task).
+    ``scene_config.ConfiguredTaskSpec`` (ADR 0015). It runs on the kinematic
+    runtime and (WP-11 Phase D) on Isaac Sim, whose runner recompiles it from its
+    recorded scene/goal config and requires the same id; solver, law and K come
+    from the scene. Isaac Lab still builds tasks from registered ids and raises
+    NotImplementedError rather than silently using another task.
     """
-    if task is not None and runtime != "kinematic":
-        raise NotImplementedError("Isaac Sim/Lab build tasks from registered task ids; a compiled ConfiguredTaskSpec "
-                                  "runs on runtime='kinematic' until a live passthrough is implemented")
+    if task is not None and runtime == "isaac_lab":
+        raise NotImplementedError("Isaac Lab builds tasks from registered task ids; a compiled ConfiguredTaskSpec "
+                                  "runs on runtime='kinematic' or 'isaac_sim'")
     if runtime == "kinematic":
         yield from _kinematic_session(task, task_id, output_dir, seed, action_mode, observation_profile, backend_options)
         return
     from .recording import manifest, new_output, write_json
     if runtime not in ("isaac_sim", "isaac_lab") or action_mode not in ACTION_MODES+(DELTA_MODE,):
         raise ValueError("Choose a supported live runtime and action mode")
-    make_task(task_id, seed=seed)
+    if task is None:
+        make_task(task_id, seed=seed)
     wrapper_options = {key: backend_options.pop(key) for key in WRAPPER_OPTIONS if key in backend_options}
     output = new_output(output_dir)
     wrapper = None
     if runtime == "isaac_sim":
         from .isaac_sim_runner import IsaacSimCuttingConfig, LiveIsaacSimCutting, launch_app
         mode = "joint" if action_mode == ACTION_MODES[1] else "cartesian"
+        if task is not None:
+            # Compiled configured task: the config carries its recompilable payload (not the object).
+            from .scene_config import ConfiguredTaskSpec, configured_task_payload
+            if not isinstance(task, ConfiguredTaskSpec):
+                raise TypeError("open_cutting_env(task=...) expects a compiled scene_config.ConfiguredTaskSpec")
+            task_id = task.task_id
+            backend_options = {"tool_attachment_mode": "physical_grasp", "max_cuts": task.max_cuts, **backend_options,
+                               "configured_task": configured_task_payload(task)}
         config = IsaacSimCuttingConfig(task_id=task_id, seed=seed, action_mode=mode,
             **{"camera_mode": "native_single_view", "camera_layout": camera_layout, **backend_options})
         write_json(output/"manifest.json", manifest({**asdict(config),
@@ -412,7 +601,7 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
         try:
             wrapper = CuttingTaskEnv(LiveIsaacSimCutting(app, config, output), task_id, seed=seed,
                 action_mode=action_mode, observation_profile=observation_profile,
-                include_global_camera=include_global_camera, **wrapper_options)
+                include_global_camera=include_global_camera, task=task, **wrapper_options)
             yield wrapper
         finally:
             if wrapper:

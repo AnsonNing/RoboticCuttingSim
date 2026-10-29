@@ -42,6 +42,9 @@ def fixture_authoring_plan(task, scenario=None):
                                                               else LEGACY_FIXTURE_COLOR)],
                      "material_declared": declared, "physics_material": physics})
     table = table_material(task, scenario)
+    if table is None and scenario is None and getattr(task, "table_contact_material", None) is not None:
+        # Configured scene (scene_config.ConfiguredTaskSpec): its workcell declares the table material.
+        table = task.table_contact_material
     table_row = None if table is None else {"prim_path": TABLE_PATH, "physics_material": {
         "prim_path": f"{MATERIAL_ROOT}/Table", **{key: float(value) for key, value in table.items()}}}
     return {"boxes": rows, "table": table_row, "scenario": scenario,

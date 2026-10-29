@@ -77,6 +77,10 @@ class IsaacSimCuttingConfig:
     # trajectory, translated by a world offset (tool_profile.retarget_task_tool).
     tool_profile_id: str | None = None
     tool_profile_hand_offset_world_m: tuple = (0., 0., 0.)
+    # Opt-in (WP-11 Phase D): a compiled scene_config.ConfiguredTaskSpec as its
+    # configured_task_payload JSON; reset() recompiles it and requires the same id.
+    # task_id must then be that CFG-... id; solver/law/K come from the scene.
+    configured_task: str | None = None
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -109,17 +113,20 @@ class IsaacSimCuttingConfig:
         if self.overview_camera and (self.task_id is None or not (self.camera and self.camera_layout == "wrist_d405_global_d455")):
             raise ValueError("The presentation overview camera requires a task, live cameras and the wrist D405 / global D455 layout")
         from .tasks import PROFILE_TASK_IDS, TASK_IDS, DemoTaskSpec
-        if self.task_id not in (None, *TASK_IDS):
-            raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
-        if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
-            raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
-        if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
-            raise ValueError('One or two cut digits and positive IK iterations are required')
-        if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
-            raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
-        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
-                or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
-            raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
+        if self.configured_task is not None:
+            _validate_configured_config(self)
+        else:
+            if self.task_id not in (None, *TASK_IDS):
+                raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
+            if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
+                raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
+            if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
+                raise ValueError('One or two cut digits and positive IK iterations are required')
+            if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
+                raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
+            if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
+                    or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
+                raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
         if self.tool_profile_id is not None:
             from .tasks import ProfileTaskSpec
             from .tool_profile import PROFILES
@@ -147,6 +154,28 @@ class IsaacSimCuttingConfig:
                 raise ValueError("Explicit particle spacing requires CUT/TRIM task_id; legacy D0 is unchanged")
             if not np.isfinite(self.particle_spacing_m) or self.particle_spacing_m<=0:
                 raise ValueError("Explicit task particle spacing must be finite and positive")
+
+
+def _validate_configured_config(config):
+    """Config rules for a compiled configured task (WP-11 Phase D); registered tasks never get here."""
+    import json
+    from .scene_config import SOLVERS
+    payload = json.loads(config.configured_task)
+    scene = payload.get('scene') or {}
+    solver = scene.get('solver') or {}
+    if config.task_id != payload.get('task_id') or not str(config.task_id).startswith('CFG-'):
+        raise ValueError('A configured task needs task_id equal to its compiled CFG-... id')
+    if config.tool_attachment_mode != 'physical_grasp':
+        raise ValueError('Configured ruler-tool tasks require physical_grasp; no fixed-tool substitute is implemented')
+    if any(value is not None for value in (config.scenario, config.material_profile_id, config.tool_profile_id,
+                                          config.particle_spacing_m, config.initial_joint_positions)):
+        raise ValueError('The scene declares workcell, material, tool, spacing and HOME; no runtime override is accepted')
+    if config.cutting_law not in (None, solver.get('cutting_law')):
+        raise ValueError('cutting_law must be None or the scene solver law')
+    limit = SOLVERS.get(solver.get('module'), {}).get('max_cuts', 0)
+    if config.max_cuts != solver.get('max_cuts') or not 1 <= config.max_cuts <= limit or config.ik_iterations < 1:
+        raise ValueError(f"max_cuts must equal the scene solver max_cuts {solver.get('max_cuts')} (limit {limit}) "
+                         "and IK iterations must be positive")
 
 
 def runtime_versions():
@@ -221,6 +250,7 @@ class LiveIsaacSimCutting:
         self.step_index = 0
         self.reset_index = -1
         self._closed = False
+        self.home = None  # declared HOME (WP-11 Phase D), set at reset
 
     def reset(self,seed=None):
         from argparse import Namespace
@@ -255,7 +285,16 @@ class LiveIsaacSimCutting:
         self.reference_pose = reference_pose
         self.task=None
         self.mount=np.array([0.,0.,.18,1.,0.,0.,0.])
-        if c.task_id:
+        if c.configured_task is not None:
+            # WP-11 Phase D: the compiled scene/goal task, rebuilt from its recorded config
+            # (same id and sha256 required); fixtures, tool, material and HOME follow the scene.
+            from .scene_config import task_from_payload
+            self.task = task_from_payload(c.configured_task)
+            if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
+                raise ValueError("Native Kit control_dt/dx must match the shared task specification")
+            self.reference_pose=self.task.reference_edge_pose_world
+            self.mount=np.asarray(self.task.hand_from_edge_xyz_xyzw,float)
+        elif c.task_id:
             from .tasks import make_task
             self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant,particle_spacing_m=c.particle_spacing_m,
                                 workpiece_kind=c.workpiece_kind)
@@ -268,6 +307,15 @@ class LiveIsaacSimCutting:
                 raise ValueError("Native Kit control_dt/dx must match the shared task specification")
             self.reference_pose=self.task.reference_edge_pose_world
             self.mount=np.asarray(self.task.hand_from_edge_xyz_xyzw,float)
+        self.home = self._declared_home()
+        self.home_edge_pose = None
+        if self.home is not None:
+            if c.initial_joint_positions is not None or not self.physical_grasp:
+                raise ValueError("A declared HOME needs physical_grasp and no separate initial_joint_positions")
+            self.initial_joints = tuple(self.home["joint_positions"])
+            home_fk = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+                tool_offset_m=tuple(self.mount[:3]), tool_rotation_xyzw=tuple(self.mount[3:])))
+            self.home_edge_pose = np.asarray(home_fk.forward_kinematics(self.initial_joints), float)
         self.wp = wp
         omni.timeline.get_timeline_interface().stop()
         context = omni.usd.get_context()
@@ -334,8 +382,10 @@ class LiveIsaacSimCutting:
             self.finger_paths = [next(str(p.GetPath()) for p in Usd.PrimRange(stage.GetPrimAtPath(hand_paths[0]))
                                      if p.GetName() == name)
                                  for name in ("panda_leftfinger", "panda_rightfinger")]
+            # HOME reset (WP-11 Phase D): the knife at FK(q_home)*hand_from_tool, blade below the fingers.
+            authored_edge = self.reference_pose(0.) if self.home_edge_pose is None else self.home_edge_pose
             self.tool_path = author_tool(stage, self.tool_spec,
-                nominal_tool_pose(self.reference_pose(0.), self.tool_spec), self.grasp, self.finger_paths)
+                nominal_tool_pose(authored_edge, self.tool_spec), self.grasp, self.finger_paths)
             knife_path = self.knife_path = self.tool_path+"/CuttingEdge"
             half = np.asarray(self.tool_spec.handle_half_extents_m)
             self.tool_contacts = NativeToolContacts(stage, self.tool_path, self.finger_paths,
@@ -384,7 +434,8 @@ class LiveIsaacSimCutting:
             if self.initial_joints is not None:
                 reset_q[0, :7] = self.ik._validate_joints(self.initial_joints)
                 self.ik.state.joint_q.assign(reset_q.ravel())
-            reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
+            if self.home_edge_pose is None:
+                reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
             self.ik.state.joint_q.assign(reset_q.ravel())
             self.ik.newton.eval_fk(self.ik.model,self.ik.state.joint_q,self.ik.state.joint_qd,self.ik.state)
             body_q=self.ik.state.body_q.numpy()
@@ -442,7 +493,11 @@ class LiveIsaacSimCutting:
             seed_q = self.ik.initial_q.copy()
             seed_q[:7] = self.ik._validate_joints(self.initial_joints)
             self.ik.state.joint_q.assign(seed_q)
-        joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
+        if self.home_edge_pose is not None:
+            joints = self.ik._validate_joints(self.initial_joints)
+            ik_info = self._home_receipt()
+        else:
+            joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
         if not ik_info["converged"]:
             raise RuntimeError(f"Initial IK failed: {ik_info}")
         q = self.park_q.copy()
@@ -480,7 +535,12 @@ class LiveIsaacSimCutting:
         attachment=self._check_attachment(initial["tool_pose"])
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
-        self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
+        if c.configured_task is not None:
+            # Solver, law and K from the scene (tlmpm_v5 packed history allowed up to its limit).
+            self.material = LiveCuttingMaterial(material_config, task=self.task, max_cuts=self.task.max_cuts,
+                cutting_law=self.task.cutting_law, solver="tlmpm_v5" if self.task.solver_module == "tlmpm_v5" else None)
+        else:
+            self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
         if self.pad_geometry:
             self.material.configure_pad_obstacles(self._pad_boxes(initial['tool_pose']),
                 [None] + [pad['body_path'] for pad in self.pad_geometry])
@@ -529,12 +589,63 @@ class LiveIsaacSimCutting:
         if self.task is not None and (getattr(self,"fixture_plan",None) or {}).get("any_material_declared"):
             from .native_fixture import authored_material_receipt
             setup["task_fixture_materials"]=authored_material_receipt(stage,self.fixture_plan)
+        if self.home is not None:
+            setup["home_reset"]={**ik_info, "measured_after_pregrasp":{"q":initial["q"][0].tolist(),
+                "hand_pose_xyzw":np.asarray(initial["hand_pose"]).tolist(),
+                "tool_body_pose_xyzw":np.asarray(initial["tool_body_pose_xyzw"]).tolist(),
+                "tool_edge_pose_xyzw":np.asarray(initial["tool_pose"]).tolist(),
+                "joint_error_vs_home_max_rad":float(np.abs(initial["q"][0]-np.asarray(self.initial_joints)).max())},
+                "secondary_arm_q":initial["q"][1].tolist(), "secondary_arm_park_q":self.park_q[1,:7].tolist()}
         if self.overview_spec is not None:
             setup["presentation_overview_camera"]=self.overview_spec
         if self.closeup_spec is not None:
             setup["presentation_closeup_camera"]=self.closeup_spec
         write_json(self.output/("setup.json" if self.reset_index==0 else f"reset_setup_{self.reset_index:02d}.json"), setup)
         return initial
+
+    def plan_return_home(self, q_start):
+        """Preflighted return-to-home joint plan from measured joints (separate .venv process; nothing moves)."""
+        if self.home is None:
+            raise ValueError("No HOME is declared for this scene/scenario")
+        if self.config.configured_task is None:
+            raise NotImplementedError("Return-to-home planning is implemented for configured scene tasks only")
+        from .motion_preflight import run_cli
+        receipt = run_cli("return-home", self.config.configured_task, q_start=np.asarray(q_start, float).tolist(),
+                          log_dir=self.output/"motion_preflight")
+        if receipt.get("status") == "ERROR":
+            return {**receipt, "status": "REFUSED", "reason": receipt["reason"], "q": [], "labels": []}
+        return receipt
+
+    def check_measured_path(self, qs, modes):
+        """C2 geometric clearance of an executed joint path (separate .venv process)."""
+        if self.config.configured_task is None:
+            return {"status": "NOT_RUN", "reason": "configured scene tasks only"}
+        from .motion_preflight import run_cli
+        return run_cli("check-path", self.config.configured_task, q=np.asarray(qs, float).tolist(), modes=list(modes),
+                       log_dir=self.output/"motion_preflight")
+
+    def _declared_home(self):
+        """HOME from the configured scene workcell or the scenario (wp11_scenarios_v1), else None."""
+        c=self.config
+        if c.configured_task is not None:
+            return self.task.home
+        if c.scenario is None:
+            return None
+        from .task_scenarios import scenario_home
+        return scenario_home(c.scenario)
+
+    def _home_receipt(self):
+        """Reset-at-HOME receipt: joints are set directly (no IK); FK vs the task's t = 0 reference."""
+        from .scene_frames import pose_errors
+        reference=np.asarray(self.reference_pose(0.),float)
+        translation,rotation=pose_errors(reference[None],self.home_edge_pose[None])
+        return {"used":False,"converged":True,"reason":"declared home_joint_positions (no initial IK)",
+                "home_scenario":self.home["scenario"],"home_joint_positions":list(self.home["joint_positions"]),
+                "home_source":self.home.get("source"),"home_edge_pose_fk_world_xyzw":self.home_edge_pose.tolist(),
+                "home_declared_hand_pose_world_xyzw":list(self.home["hand_pose_world_xyzw"]),
+                "reference_edge_pose_t0_world_xyzw":reference.tolist(),
+                "fk_vs_reference_t0_translation_m":float(translation[0]),"fk_vs_reference_t0_rotation_rad":float(rotation[0]),
+                "secondary_arm":"shared normal safe park (unchanged)"}
 
     def _author_task_fixture(self):
         from pxr import Gf, UsdGeom, UsdPhysics
@@ -956,7 +1067,9 @@ class LiveIsaacSimCutting:
             action=command["target"]
             cutting=bool(cutting and command["cut_enabled"])
             self._command_cut_index=command.get("cut_index",0)
-        desired = self.reference_pose(self.time_s+c.control_dt)
+        # The scripted reference is needed only without an explicit action (an explicit
+        # action may run past the task episode, e.g. the physical return-to-home).
+        desired = self.reference_pose(self.time_s+c.control_dt) if action is None else None
         # Seed IK from current PHYSX joints, without advancing Newton dynamics.
         q = numpy_data(self.arms.get_dof_positions())
         self.ik.state.joint_q.assign(q.ravel().astype(np.float32))

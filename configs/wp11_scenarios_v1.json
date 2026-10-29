@@ -1,0 +1,68 @@
+{
+  "version": "wp11_scenarios_v1",
+  "freeze_boundary": "Defined before any wp11_workcell_v1 live episode (WP-11 Phase D, 2026-10-30). wp10_scenarios_v1-v3 and every v1-v4 task, threshold and record are unchanged; a change here is a new scenario version.",
+  "scenarios": {
+    "wp11_workcell_v1": {
+      "inherits": "blademaster_workcell_v1",
+      "decision": "docs/adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md (decision record, C2 preflight)",
+      "world_translation_m": [0.0, 0.0, 0.10],
+      "extend_fixture_bases_to_table": true,
+      "fixture_mode": "cutting_board_v1",
+      "allowed_tasks": [],
+      "allowed_task_protocols": ["cutting_tasks_v4"],
+      "cutting_board": {
+        "thickness_m": 0.01,
+        "half_width_y_m": 0.05,
+        "particle_y_margin_m": 0.005,
+        "display_color_rgb": [0.72, 0.53, 0.34],
+        "friction": "task_material",
+        "restitution": 0.0,
+        "scope": "As blademaster_workcell_v1: each task support box becomes a board with the same top surface (local z in [top - thickness, top], same x extent, y widened to half_width_y_m); the PhysX collider equals the visual box and the TLMPM fixture box."
+      },
+      "riser": {
+        "display_color_rgb": [0.55, 0.55, 0.57],
+        "footprint": "original_support",
+        "friction": "task_material",
+        "restitution": 0.0,
+        "scope": "Grey riser from the table top to the board bottom with the original support x/y footprint (100 mm taller than in blademaster_workcell_v1)."
+      },
+      "table": {
+        "friction": "task_material",
+        "restitution": 0.0
+      },
+      "friction_scope": "'task_material' resolves to task.material.friction when the scenario is applied: 0.3 for the provisional cutting_tasks_v1 material, for PhysX static and dynamic friction of board, riser and table. TLMPM fixture contacts already use the task material friction, so PhysX and TLMPM agree.",
+      "home_joint_positions": [
+        -0.0874749943614006,
+        -0.3457081913948059,
+        -0.1642773449420929,
+        -2.275455951690674,
+        -0.05930738523602486,
+        1.9334616661071777,
+        0.5642676949501038
+      ],
+      "home_finger_position_m": 0.0112,
+      "home_hand_pose_world_xyzw": [
+        -0.027998257428407655,
+        -7.678660835716887e-07,
+        0.48165094852447504,
+        0.9999999999998914,
+        8.940694584679925e-08,
+        -3.986569838565774e-07,
+        -2.241705236994095e-07
+      ],
+      "home_source": {
+        "evidence": "docs/evidence/wp11/phaseC2_preflight_001.json (all_task_recommendation, cid TRIM_v2y_py_rho10.0_p100, run artifacts/wp11/phaseC2/c2_preflight_003)",
+        "joints": "q_home at full float precision from the evidence (ADR 0013 quotes it rounded to 4 decimals)",
+        "hand_pose": "Newton forward kinematics of q_home (DualFrankaController, official Franka USD) = panda_hand world pose; the HOME knife edge is this pose composed with the tool profile's hand_from_edge (ruler_knife_v2_y: edge (0, 0, 0.288) m world, hand pointing straight down, blade hanging below the fingers as in /home/ningan/a.png). tests/test_wp11_phase_d.py re-derives it when the Franka asset is present.",
+        "finger_position": "0.0112 m per finger is the C2 collision-check opening on the 22 mm handle; the live reset still starts from ToolGraspConfig.initial_finger_position_m and runs the unchanged physical pregrasp settle."
+      },
+      "action_workspace_local_m": {
+        "min": [-0.14, -0.12, -0.012],
+        "max": [0.14, 0.12, 0.22],
+        "scope": "Edge-centre safety envelope (control.ActionLimits workspace box) for tasks in this scenario: the ActionLimits default with local z max raised from 0.16 to 0.22 m so the HOME edge (local z 0.188 m) is inside it. Not collision checking; the C2-style motion preflight is."
+      },
+      "reason": "WP-11 all-task workcell (C2 decision): blademaster_workcell_v1 board/riser semantics with the workpiece and supports raised to +100 mm, ruler_knife_v2_y with the tip toward world +y, TRIM at rho = 10 deg. TRIM, vertical CUT, the 20 deg oblique cut and SLICE-PUSH all passed the geometric preflight from the one declared q_home. Episodes reset Franka 0 at q_home with the knife authored in the hand (HOME), Franka 1 at the shared park. Local material geometry and all scoring thresholds are inherited from each task.",
+      "scope": "Allowed for the cutting_tasks_v4 tasks (apply_scenario) and for configured rcs_scene_v1 scenes via supports.workcell.from_scenario. Live acceptance of v4 task ids is a separate phase; this file only declares the workcell."
+    }
+  }
+}

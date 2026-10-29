@@ -26,6 +26,9 @@ Operations:
 * sequence -> the steps in order; cut digits are numbered across the episode.
 
 Every plan starts at HOME and ends with RETURN_HOME (the declared home edge pose).
+A scene whose workcell scenario declares ``home_joint_positions`` (wp11_workcell_v1)
+gets HOME = FK(q_home) composed with the tool's hand_from_edge (blade hanging below
+the fingers) unless the planner options declare a home explicitly.
 
 Orientation metrics (ADR 0013): ``orientation_metrics`` returns edge tilt tau,
 edge skew psi, blade rake rho and motion elevation mu; ``skim_rotation``
@@ -83,9 +86,26 @@ def planner_options(goal, overrides=None):
     return merged
 
 
-def action_limits(options):
+def action_limits(options, scene=None):
+    """Step limits from the planner options; the workspace box from the scene workcell when it declares one."""
+    extra = {}
+    if scene is not None:
+        from .scene_config import workcell_action_workspace
+        box = workcell_action_workspace(scene)
+        if box is not None:
+            extra = dict(workspace_min_local_m=box[0], workspace_max_local_m=box[1])
     return ActionLimits(max_translation_m=float(options["max_translation_m"]),
-                        max_rotation_rad=float(np.deg2rad(options["max_rotation_deg"])))
+                        max_rotation_rad=float(np.deg2rad(options["max_rotation_deg"])), **extra)
+
+
+def workcell_home_edge_pose(scene, tool_profile):
+    """WORLD edge pose of the workcell HOME (hand FK(q_home) composed with hand_from_edge), or None."""
+    from .scene_config import workcell_home
+    home = workcell_home(scene)
+    if home is None:
+        return None
+    from .scene_frames import matrix_pose, pose_matrix
+    return np.asarray(matrix_pose(pose_matrix(home["hand_pose_world_xyzw"])@pose_matrix(tool_profile.hand_from_edge())), float)
 
 
 def policy_options(options):
@@ -212,8 +232,18 @@ def _relief_end(scene, start, a, e, t_end, profile):
     return (top-start[2])/a[2], True
 
 
-def _home(scene, options):
+def _home(scene, options, tool_profile=None):
     from .scene_config import scene_top_m
+    edge = None if tool_profile is None else workcell_home_edge_pose(scene, tool_profile)
+    if edge is not None:
+        # Workcell HOME (WP-11 Phase D): the knife edge at FK(q_home), expressed in local
+        # coordinates; an explicitly declared home position/orientation still wins.
+        frame = _Frame(scene)
+        position = (frame.R.inv().apply(edge[:3]-frame.t) if options["home_position_local_m"] is None
+                    else np.asarray(options["home_position_local_m"], float))
+        rotation = (frame.R.inv()*Rotation.from_quat(edge[3:]) if options["home_orientation_local_xyzw"] is None
+                    else Rotation.from_quat(options["home_orientation_local_xyzw"]))
+        return position, rotation
     position = options["home_position_local_m"]
     position = np.array([0., 0., scene_top_m(scene)+options["home_height_m"]]) if position is None else np.asarray(position, float)
     rotation = (through_cut_rotation([1., 0., 0.]) if options["home_orientation_local_xyzw"] is None
@@ -417,7 +447,7 @@ def plan_with_report(scene, goal, tool_profile, options=None):
     scene, goal = resolve_scene(scene), validate_goal(goal)
     options = planner_options(goal, options) if options is None or set(options) != set(DEFAULT_OPTIONS) else dict(options)
     frame = _Frame(scene)
-    home_position, home_rotation = _home(scene, options)
+    home_position, home_rotation = _home(scene, options, tool_profile)
     home = Waypoint(frame.pose(home_position, home_rotation), label="HOME")
     body, reports, digits = _operations(scene, goal, tool_profile, options, frame)
     plan = [home, *body, Waypoint(home.pose, label="RETURN_HOME")]
@@ -428,6 +458,15 @@ def plan_with_report(scene, goal, tool_profile, options=None):
               "digits_used": digits, "phases": [w.label for w in plan],
               "inputs": "scene config (declared geometry, pose, protrusions, supports), goal config, tool profile, "
                         "planner options; no particle, label, component or oracle state"}
+    from .scene_config import workcell_home
+    workcell = workcell_home(scene)
+    if workcell is not None:  # only scenes whose workcell declares a HOME (reports of other scenes are unchanged)
+        report["home"] = {"source": "workcell", "scenario": workcell["scenario"],
+                          "joint_positions": list(workcell["joint_positions"]),
+                          "hand_pose_world_xyzw": list(workcell["hand_pose_world_xyzw"]),
+                          "edge_pose_world_xyzw": list(map(float, home.pose)),
+                          "explicit_option_override": [key for key in ("home_position_local_m", "home_orientation_local_xyzw")
+                                                       if options[key] is not None]}
     return plan, report
 
 

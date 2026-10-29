@@ -251,7 +251,50 @@ def episode_step_limit(task_id):
     return int(round(task.duration_s / task.control_dt_s))
 
 
+def compile_configured(a):
+    """The compiled ConfiguredTaskSpec of --scene/--goal (WP-11 Phase D), or None."""
+    if not (a.scene or a.goal):
+        return None
+    from robotic_cutting_sim.scene_config import compile_task
+    overrides = json.loads(a.planner_options) if a.planner_options else None
+    return compile_task(a.scene, a.goal, planner_options=overrides, seed=a.seed)
+
+
+def validate_configured(p, a):
+    """Rules for --scene/--goal runs; registered-task runs never get here."""
+    if not (a.scene and a.goal):
+        p.error('--scene and --goal go together')
+    if a.task != 'CUT-01' or a.scenario or a.material_profile or a.cutting_law is not None or a.max_cuts != 1 \
+            or a.spacing is not None:
+        p.error('--scene/--goal declare task, workcell, material, solver, law, K and spacing; drop --task/--scenario/'
+                '--material-profile/--cutting-law/--max-cuts/--spacing')
+    if a.runtime != 'isaac_sim' or a.controller not in ('scripted', 'reference') or a.gym:
+        p.error('Configured tasks run on --runtime isaac_sim with --controller scripted or reference (no Gym adapter here)')
+    if a.controller_profile != 'v1' or a.offset or a.motion != 'push' or a.angle:
+        p.error('The configured scripted controller is the goal planner; its profile/rake/speeds are goal planner options '
+                '(use --planner-options), not --controller-profile/--motion/--angle/--offset')
+    try:
+        task = compile_configured(a)
+    except Exception as error:
+        p.error(f'Configured task does not compile: {error}')
+    limit = int(round(task.duration_s / task.control_dt_s))
+    if not 1 <= a.steps <= limit or a.episodes < 1:
+        p.error(f'A {task.task_id} episode has 1..{limit} steps')
+    if a.stop_after_phase is not None and a.stop_after_phase not in {label.split(':', 1)[0] for label in task.reference_phase_labels}:
+        p.error(f'--stop-after-phase {a.stop_after_phase!r} is not a phase of the plan')
+    if a.return_home and task.home is None:
+        p.error('--return-home needs a scene workcell that declares a HOME (wp11_workcell_v1)')
+    if a.overview_camera and not (a.record_cameras or a.observation != 'state'):
+        p.error('--overview-camera is Native-only and needs recorded cameras (--record-cameras or a vision observation)')
+    if a.position_tolerance is not None and not 0 < a.position_tolerance < .01:
+        p.error('--position-tolerance must be in (0, 0.01) m')
+
+
 def validate_arguments(p, a):
+    if a.scene or a.goal:
+        return validate_configured(p, a)
+    if a.stop_after_phase is not None or a.return_home or a.planner_options or a.hold_after_stop_s:
+        p.error('--stop-after-phase/--hold-after-stop-s/--return-home/--planner-options apply to --scene/--goal runs')
     try:
         limit = episode_step_limit(a.task)
     except (ValueError, KeyError) as error:
@@ -279,12 +322,38 @@ def validate_arguments(p, a):
         p.error(f'{a.task} uses the slice_push plan; --motion/--angle variants are not implemented for it')
 
 
+def is_configured_task(task):
+    from robotic_cutting_sim.scene_config import ConfiguredTaskSpec
+    return isinstance(task, ConfiguredTaskSpec)
+
+
+def configured_policy(env, a):
+    """WaypointPolicy over goal_planner.plan(scene, goal, tool, options): the planner's profile, the task's limits."""
+    from robotic_cutting_sim import goal_planner
+    from robotic_cutting_sim.policies import WaypointPolicy
+    task = env.task
+    options = task.controller['planner']
+    waypoints = goal_planner.plan(task.scene, task.goal, task.tool_profile, options)
+    policy_options = dict(goal_planner.policy_options(options))
+    if a.edge_feedback == 'measured':
+        policy_options['edge_estimator'] = measured_edge_estimator(env)
+    if a.position_tolerance is not None:
+        policy_options['position_tolerance_m'] = a.position_tolerance
+    receipt = dict(goal_planner.CONTROLLER_PROFILES[options['controller_profile']], planner=goal_planner.PLANNER_VERSION,
+                   planner_options=options, phases=[w.label for w in waypoints], action_limits=task.action_limits().to_dict())
+    if a.position_tolerance is not None:
+        receipt['position_tolerance_m'] = a.position_tolerance
+    return WaypointPolicy(task, waypoints, task.action_limits(), **policy_options), receipt
+
+
 def is_demo_task(task):
     from robotic_cutting_sim.tasks import DemoTaskSpec
     return isinstance(task, DemoTaskSpec)
 
 
 def policy_plan_name(task, policy=None):
+    if is_configured_task(task):
+        return 'goal_planner'
     if getattr(policy, 'vision', None):
         return 'slice_push_vision'
     return 'slice_push' if is_demo_task(task) else 'skim' if task.goal_kind == 'flatten' else 'through_cut'
@@ -379,7 +448,11 @@ def scripted_policy(env, a):
 
 
 def evaluate_episode(env, push=None):
-    """(strict, research, demo). Demo tasks: frozen oracle NOT_APPLICABLE, multi-cut research, demo report."""
+    """(strict, research, demo). Demo tasks: frozen oracle NOT_APPLICABLE, multi-cut research, demo report.
+
+    Configured tasks: (goal evaluator, None, None)."""
+    if is_configured_task(env.task):
+        return env.evaluate(), None, None
     if not is_demo_task(env.task):
         return env.evaluate(), env.evaluate(profile='research'), None
     strict = {**env.task.evaluate_oracle({}), 'success': False, 'runtime_source': env.runtime_source}
@@ -436,10 +509,24 @@ def main(argv=None):
     p.add_argument('--spacing', type=float)
     p.add_argument('--record-every', type=int, default=10)
     p.add_argument('--out', type=Path, required=True)
+    p.add_argument('--scene', help='WP-11 Phase D: rcs_scene_v1 config (with --goal): run the compiled configured task')
+    p.add_argument('--goal', help='rcs_goal_v1 config (with --scene)')
+    p.add_argument('--planner-options', help='JSON goal-planner option overrides for --scene/--goal (recorded in the task id)')
+    p.add_argument('--stop-after-phase', help='Configured scripted runs: end the task phase once the plan leaves this '
+                                              'phase (e.g. REORIENT); everything after it is not executed')
+    p.add_argument('--hold-after-stop-s', type=float, default=0.,
+                   help='Hold the reached pose (cutting disabled) this long after --stop-after-phase')
+    p.add_argument('--return-home', action='store_true',
+                   help='After the task phase: the physical, preflighted return-to-home (separate home_outcome)')
+    p.add_argument('--skip-plan-preflight', action='store_true',
+                   help='Do not run the C2 plan preflight before a configured run (recorded; default: run and require PASS)')
     a = p.parse_args(argv)
     validate_arguments(p, a)
     out = new_output(a.out)
     write_json(out / 'manifest.json', manifest(jsonable(vars(a)), 'wp10_actual_live_validation'))
+    configured = compile_configured(a)
+    if configured is not None:
+        return run_configured(a, out, configured)
     results, start = [], time.monotonic()
     options = policy_preset(a.runtime) if a.preset == 'policy' else {}
     if a.tool_attachment_mode is not None:
@@ -551,6 +638,132 @@ def main(argv=None):
         write_json(out / 'failure.json', dict(error=repr(error), traceback=traceback.format_exc()))
         traceback.print_exc()
     write_json(out / 'result.json', dict(status=status, rows=results, wall_s=time.monotonic() - start))
+    return 0 if status == 'PASS_EXECUTION' else 1
+
+
+def plan_preflight(a, out, task):
+    """C2 plan preflight in the CPU .venv before any Isaac launch; None when skipped."""
+    from robotic_cutting_sim.motion_preflight import run_cli
+    from robotic_cutting_sim.scene_config import configured_task_payload
+    if a.skip_plan_preflight:
+        return None
+    receipt = run_cli('plan', configured_task_payload(task), until_phase=a.stop_after_phase, log_dir=out / 'preflight')
+    write_json(out / 'plan_preflight.json', jsonable(receipt))
+    return receipt
+
+
+def run_configured(a, out, task):
+    """WP-11 Phase D: a compiled scene/goal task on Isaac Sim with the goal planner, then optional return home."""
+    start = time.monotonic()
+    preflight = plan_preflight(a, out, task)
+    if preflight is not None and preflight.get('status') != 'PASS':
+        detail = (preflight.get('executed_prefix') or preflight.get('full_plan') or {})
+        reason = (preflight.get('reason') or detail.get('reason')
+                  or ('PREFLIGHT_PROCESS_FAILED' if preflight.get('status') == 'ERROR' else 'SCENE_INFEASIBLE'))
+        write_json(out / 'result.json', dict(status=reason, refused_before_launch=True, task_id=task.task_id,
+                                             preflight_status=preflight.get('status'), wall_s=time.monotonic() - start))
+        print(f'Refusing to run {task.task_id}: plan preflight {preflight.get("status")} ({reason})', flush=True)
+        return 2
+    options = dict(camera=a.observation != 'state' or a.record_cameras, ik_iterations=a.ik_iterations,
+                   material_dt=a.material_dt, history_stride=a.oracle_stride, gpu=a.gpu, device=f'cuda:{a.gpu}',
+                   action_limits=task.action_limits())
+    if a.overview_camera:
+        options['overview_camera'] = True
+    grip_overrides = {key: value for key, value in dict(max_finger_force_n=a.grip_force,
+        settle_s=a.settle_seconds, friction=a.grip_friction).items() if value is not None}
+    if grip_overrides:
+        from robotic_cutting_sim.physical_tool import ToolGraspConfig
+        options['grasp'] = replace(ToolGraspConfig(), **grip_overrides)
+    results, status = [], 'FAIL_EXECUTION'
+    try:
+        with open_cutting_env(task=task, runtime='isaac_sim', output_dir=out / 'runtime', seed=a.seed,
+                              observation_profile=a.observation, **options) as env, failure_receipt(out, env):
+            if a.reward:
+                from robotic_cutting_sim.reward import CuttingReward
+                env.reward = CuttingReward(env.task)
+            for episode in range(a.episodes):
+                seed, episode_start = a.seed + episode, time.monotonic()
+                observation, reset_info = env.reset(seed=seed)
+                recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every)
+                policy, profile_receipt = None, None
+                if a.controller == 'scripted':
+                    policy, profile_receipt = configured_policy(env, a)
+                seen_stop, stop_reason, hold_steps = False, None, int(round(a.hold_after_stop_s / env.task.control_dt_s))
+                for step in range(a.steps):
+                    action = policy(observation) if policy else None
+                    phase = policy.phase if policy is not None else None
+                    base = None if phase is None else phase.split(':', 1)[0]
+                    if a.stop_after_phase is not None and policy is not None:
+                        seen_stop |= base == a.stop_after_phase
+                        if seen_stop and base != a.stop_after_phase:
+                            stop_reason = f'STOP_AFTER_PHASE:{a.stop_after_phase}'
+                            break
+                    if policy is not None and policy.done:
+                        stop_reason = 'CONTROLLER_DONE'
+                        break
+                    before_observation = env.observe()
+                    step_start = time.monotonic()
+                    result = env.step(action)
+                    observation = result[0]
+                    recorder.step(action, result, before_observation, time.monotonic() - step_start, policy_phase=phase,
+                                  controller_profile=profile_receipt,
+                                  policy_tracking=policy.last_tracking if policy is not None else None)
+                    if (step + 1) % 25 == 0:
+                        print(f'isaac_sim {env.task.task_id} {a.controller} episode={episode} step={step+1} '
+                              f't={env.time_s:.2f} phase={phase}', flush=True)
+                    if result[2] or result[3]:
+                        break
+                hold = dict(mode=DELTA_MODE, target=np.zeros(6), frame='world', cut_enabled=False)
+                for _ in range(hold_steps if stop_reason and env.episode_state == 'RUNNING' else 0):
+                    if env.time_s >= env.task.duration_s - env.task.control_dt_s - 1e-9:
+                        break
+                    before_observation = env.observe()
+                    step_start = time.monotonic()
+                    result = env.step(hold)
+                    recorder.step(hold, result, before_observation, time.monotonic() - step_start,
+                                  policy_phase='HOLD_AFTER_STOP', controller_profile=profile_receipt)
+                    if result[2]:
+                        break
+                if env.episode_state == 'RUNNING':
+                    env.end_task(stop_reason or 'STEP_BUDGET')
+                task_end = env.lifecycle.snapshot()
+                strict, _, _ = evaluate_episode(env)
+                row = dict(runtime='isaac_sim', task_id=env.task.task_id, controller=a.controller, seed=seed,
+                           status='PASS_EXECUTION', task_status=strict.get('verdict', strict.get('status')), task_outcome=strict,
+                           task_phase_end=task_end, runtime_source=env.runtime_source, observation_profile=a.observation,
+                           configured_task=dict(scene=a.scene, goal=a.goal, config_sha256=env.task.config_sha256,
+                                                planner_options=env.task.controller['planner']),
+                           plan_preflight=None if preflight is None else dict(
+                               status=preflight.get('status'), required=preflight.get('required'),
+                               receipt=str(out / 'plan_preflight.json')),
+                           reset_info=reset_info, stop_after_phase=a.stop_after_phase, task_end_reason=stop_reason)
+                if policy is not None:
+                    row.update(policy_plan=policy_plan_name(env.task, policy), edge_feedback=edge_feedback_receipt(a),
+                               policy_position_tolerance_m=policy.position_tolerance_m,
+                               policy_final_phase=policy.phase, controller_profile=profile_receipt)
+                if a.return_home:
+                    def on_step(action, result, before, label):
+                        recorder.step(action, result, before, None, policy_phase=f'RETURN_HOME:{label}')
+                    home = env.return_home(on_step=on_step)
+                    plan = env.last_return_home.get('plan') or {}
+                    np.savez_compressed(recorder.output / 'return_home.npz',
+                                        measured_q=np.asarray(home.get('measured_q', np.zeros((0, 7)))),
+                                        labels=np.asarray(home.get('labels', []), str))
+                    row.update(home_outcome=home['home_outcome'], home_measurement=home['measurement'],
+                               home_plan={key: value for key, value in plan.items() if key != 'q'})
+                row.update(episode_state_final=env.lifecycle.snapshot(), episode_transitions=env.lifecycle.history,
+                           wall_s=time.monotonic() - episode_start)
+                row.update(recorder.finish(jsonable(row)))
+                results.append(row)
+                write_json(out / 'results.json', jsonable(results))
+            status = 'PASS_EXECUTION'
+            # Native Kit may exit Python inside app.close(): write the run result before leaving the context.
+            write_json(out / 'result.json', jsonable(dict(status=status, rows=results, wall_s=time.monotonic() - start)))
+    except BaseException as error:
+        status = 'FAIL_EXECUTION'
+        write_json(out / 'failure.json', dict(error=repr(error), traceback=traceback.format_exc()))
+        traceback.print_exc()
+    write_json(out / 'result.json', jsonable(dict(status=status, rows=results, wall_s=time.monotonic() - start)))
     return 0 if status == 'PASS_EXECUTION' else 1
 
 
