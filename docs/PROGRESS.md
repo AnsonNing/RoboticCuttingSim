@@ -1,6 +1,12 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## 完成：BladeMaster 風格三個 Demo（2026-10-29）
+## 進行中：Phase 1 閘門重做（law 6，2026-10-29 晚）
+
+- 計畫 §2 要求矩陣（含負對照）**全部** PASS 才能進 live。law 5 的 M8 FAIL，live demo 卻在審查的「有條件接受」下就跑了，所以閘門其實沒有滿足。那批 live 結果保留為 law 5 的證據，不算通過閘門的驗收 run；DONE 標記已移除。
+- 對策：[ADR 0010 law 6](adr/0010-cutting-law-6-deferred-lead-commit.md)。前緣分側先記為 pending，等 stroke 結束才寫入，所以切削中的力學與 law 4 相同（law 4 的 M8b 是 PASS）。
+- 下一步：rcs-impl 實作 law 6 與 CPU 測試 → law 6 全矩陣（計算式準則）全部 PASS → 重跑 live 最終組合（law 6） → 更新文件 → 合併 main → DONE。
+
+## 先前結果：BladeMaster 風格三個 Demo，law 5（2026-10-29）
 
 依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)：P0 工作包 A 有條件接受（M8 FAIL，部分後續項目未完成）；B–D 完成。細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
 
