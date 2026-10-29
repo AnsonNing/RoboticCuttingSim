@@ -103,3 +103,38 @@ non-horizontally (\(\mu \ne 0\)). Every TRIM receipt reports all four metrics.
   clearance. Whatever is needed is recorded.
 - Cutting-law compatibility at 0–10° (law 8's 15° plowing gate) is evaluated
   separately at the material level (WP-11 Phase C4) before any live run.
+
+## Decision record — C2 preflight (2026-10-30, `c2_preflight_003`, [evidence](../evidence/wp11/phaseC2_preflight_001.json))
+
+The preflight used Newton IK with the runtime's `DualFrankaController`, and
+MuJoCo distances on the official Franka colliders plus finger hulls, the v2
+handle and blade, the v5 wrist D405s, the D455, board, riser, table,
+workpiece and the parked Franka 1. It covered 84 TRIM candidates and 30
+follow-ups (CUT, 20° oblique, SLICE-PUSH).
+
+- **Below 12.5° the bevel blocks the skim.** At ρ < 12.5° the double bevel
+  puts the blade's lowest point below the edge. With the edge at target +
+  0.2 mm, that point sits 0.55 mm (0°) or 0.25 mm (5°) inside the kept
+  substrate; at 10° it clears by 0.05 mm. Every robot, tool and workcell
+  check passes at 0° and 5° wherever it passes at 10°, so the binding
+  constraint is the blade geometry, not the robot.
+- **Workcell choice for all tasks:** `ruler_knife_v2_y` with the tip toward
+  world +y, the workpiece raised **+100 mm**, and TRIM at **ρ = 10°**. TRIM,
+  vertical CUT, the 20° oblique cut and SLICE-PUSH all pass from one q_home,
+  `[−0.0875, −0.3457, −0.1643, −2.2755, −0.0593, 1.9335, 0.5643]` rad, with
+  fingers at 0.0112 m each.
+  - Tightest margins: the blade passes 3.0 mm above the board during the
+    push, as designed; the handle clears by 15.5 mm; the worst joint margin
+    is 0.77 rad.
+  - HOME has the hand pointing straight down with the blade hanging below
+    the fingers, as in `a.png`.
+- **The +50 mm placement (`blademaster_workcell_v1`) cannot serve all
+  tasks.** There only `v2_x` with the tip toward −y passes TRIM at 10°, and
+  that same choice fails CUT, oblique and SLICE-PUSH: the hand collider
+  sits 15.3 mm into the table.
+- **Chosen:** the all-task workcell becomes the versioned scenario
+  `wp11_workcell_v1` (+100 mm). The near-horizontal TRIM target is
+  ρ = 10°. A 0–5° skim with a flat-face-down chisel variant stays possible
+  only if Phase C4 shows separation at the material level and a chisel
+  preflight passes. Otherwise ρ < 10° is reported as blocked by the bevel
+  geometry.

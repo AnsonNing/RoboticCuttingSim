@@ -15,10 +15,12 @@
   - 4 mm kinematic 下三凸起逐一移除（tlmpm_v5，K=3）全部 1.0。
   - 限制：Isaac runtime 尚不接受 compiled task；`apply_scenario` 仍只接受 identity 方向。
   - 流程注意：平行代理共用 git index，修改曾被併進別人的 commit，以及一次誤清空後已還原。之後一律用 `git commit -- <paths>`。
+- C2 預檢完成（`98d5c3f`，[證據](evidence/wp11/phaseC2_preflight_001.json)）。
+  - ρ < 12.5° 時雙斜面最低點低於刃口，0°／5° 會刮進底材 0.55／0.25 mm；10° 剛好過。
+  - 全任務共用配置：`v2_y`、刀尖 +y、工件抬高 +100 mm、TRIM ρ = 10°。決定已記入 ADR 0013。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A：等 GitHub Actions 結果；
   - M：`tlmpm_v5`（`artifacts/wp11/phaseM/`）；
-  - C2：v2 姿態／碰撞預檢（`artifacts/wp11/phaseC2/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：依 C2／C4 結果選定排列、ρ、刃型與擺放 → Phase S（場景／目標設定）→ C3 控制器與 C5 live → D → E/F → G → H → I。
