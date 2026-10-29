@@ -15,7 +15,8 @@ renderer. The recording is never modified.
 ``--wide-piece-palette`` (opt-in, presentation only; consumed here, not passed on): the particle
 panel gets five piece hues instead of three and treats components of >= 0.2 % of the particles
 (instead of 1 %) as pieces, so e.g. three small removed chips and the substrate are all
-distinguishable. Without it the renderer's colouring is unchanged.
+distinguishable; the largest component keeps the first hue throughout. Without it the renderer's
+colouring is unchanged.
 """
 import hashlib
 import importlib.util
@@ -51,8 +52,18 @@ WIDE_MINOR_FRACTION = .002
 
 
 def wide_component_colors(labels, reference_positions, minor_fraction=None):
-    """dm.component_colors with five piece slots and a 0.2 % piece threshold (presentation only)."""
+    """dm.component_colors with five piece slots and a 0.2 % piece threshold (presentation only).
+
+    The largest component (the substrate) always takes the first hue, so it keeps its colour while
+    pieces split off; the other pieces follow dm.component_order (reference centroid along the
+    longest axis), so pieces removed in that order also keep theirs."""
     slot, sizes = dm.component_order(labels, reference_positions, WIDE_MINOR_FRACTION, slots=len(WIDE_PIECE_COLORS))
+    if len(sizes) and slot[int(np.argmax(sizes))] >= 0:
+        largest = int(np.argmax(sizes))
+        others = [c for c in np.argsort(slot) if slot[c] >= 0 and c != largest]
+        slot = np.full_like(slot, -1)
+        slot[largest] = 0
+        slot[others] = np.arange(1, len(others)+1)
     palette = np.array([dm.hex_rgba(c) for c in WIDE_PIECE_COLORS] + [dm.hex_rgba(dm.MINOR_COLOR)])
     return palette[slot[np.asarray(labels)]], slot, sizes
 
