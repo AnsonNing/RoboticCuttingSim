@@ -50,6 +50,11 @@ and the `final_v4` demos stay unchanged and reproducible.
   the handle's far face along hand +z and extends a further 120 mm along
   hand +z, so the **edge line is parallel to the approach axis**. The blade
   and handle meet at that face with disjoint interiors.
+  *Implementation amendment (Phase B, 2026-10-30):* a 70 mm grip centred at
+  the pads reaches the actual Native `panda_hand` palm collider. The palm face
+  is measured at hand z = 0.0700 m (`artifacts/wp11/phaseB/view_v2_y_001`,
+  pregrasp rejected for palm contact). A centred grip can be at most 67.3 mm,
+  so the registered profiles use **60 mm**, which leaves 3.65 mm of clearance.
 - **Arrangement parameter `blade_normal_hand_axis`** (the C2 preflight
   selects one):
   - `"y"` (A): the blade normal is the finger closing axis, as in v1. The

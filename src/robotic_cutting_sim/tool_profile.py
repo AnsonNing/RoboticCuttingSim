@@ -120,7 +120,10 @@ class EndHeldToolProfile(ToolProfile):
     ("y") or hand +y ("x"); z = x × y, i.e. -hand y ("y") or +hand x ("x").
     """
 
-    handle_half_extents_hand_m: tuple = (.012, .011, .035)
+    # 60 mm grip: ADR 0013's 70 mm default, centred at the pads, reaches the
+    # actual Native panda_hand palm collider face (hand z = 0.0700 m, measured in
+    # artifacts/wp11/phaseB/view_v2_y_001); 60 mm leaves 3.65 mm of clearance.
+    handle_half_extents_hand_m: tuple = (.012, .011, .030)
     blade_normal_hand_axis: str = "y"
 
     def __post_init__(self):

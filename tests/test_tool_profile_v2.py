@@ -52,7 +52,7 @@ def test_v2_blade_is_v1_blade(profile):
     record = profile.to_dict()
     assert record["version"] == "tool_profile_v2" and record["cross_section_xz_m"] == RULER_KNIFE_V1.to_dict()["cross_section_xz_m"]
     assert record["arrangement"] == ("A_blade_normal_hand_y" if profile.blade_normal_hand_axis == "y" else "B_blade_normal_hand_x")
-    assert record["handle_half_extents_hand_m"] == (.012, .011, .035)
+    assert record["handle_half_extents_hand_m"] == (.012, .011, .030)
 
 
 @pytest.mark.parametrize("profile", V2, ids=lambda p: p.profile_id)
@@ -117,7 +117,7 @@ def test_v2_mass_properties(profile):
     assert np.isclose(handle.mass_properties[1], 8*hx*hy*hz*profile.handle_density_kg_m3, rtol=1e-12)
     blade_mass = profile.edge_length_m*profile.thickness_m*(profile.blade_depth_m-profile.bevel_length_m/2)*profile.blade_density_kg_m3
     assert np.isclose(blade.mass_properties[1], blade_mass, rtol=1e-9)
-    assert .09 < spec.mass_kg < .10  # about 41 g polymer grip + 54 g steel blade
+    assert .085 < spec.mass_kg < .095  # about 35 g polymer grip + 54 g steel blade
     inertia = spec.inertia_com_tool_kg_m2
     assert np.allclose(inertia, inertia.T) and np.linalg.eigvalsh(inertia).min() > 0
     moments = np.sort(spec.principal_moments_kg_m2)
@@ -146,6 +146,10 @@ def test_v2_finger_pads_contact_the_handle_y_faces(profile):
         assert plane[:, 2].min() <= -pad_half_z and plane[:, 2].max() >= pad_half_z
     # Nothing of the blade lies in the pad region (|z| <= pad half length) beyond the handle faces.
     assert blade.vertices_tool_m[:, 2].min() > pad_half_z
+    # The grip stays clear of the actual Native palm collider face (hand z = 0.0700 m,
+    # measured contact points in artifacts/wp11/phaseB/view_v2_y_001 with the 70 mm draft grip).
+    handle_top_hand_z = HAND_FROM_TOOL[2]-profile.handle_half_extents_hand_m[2]
+    assert handle_top_hand_z-.0700 >= .003
     # Pad closing direction squeezes the handle, never the blade.
     assert np.abs(handle.vertices_tool_m[:, 1]).max() == pytest.approx(half_y)
 
