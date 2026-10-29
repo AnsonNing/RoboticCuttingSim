@@ -293,8 +293,10 @@ def validate_configured(p, a):
 def validate_arguments(p, a):
     if a.scene or a.goal:
         return validate_configured(p, a)
-    if a.stop_after_phase is not None or a.return_home or a.planner_options or a.hold_after_stop_s:
-        p.error('--stop-after-phase/--hold-after-stop-s/--return-home/--planner-options apply to --scene/--goal runs')
+    if a.stop_after_phase is not None or a.return_home or a.planner_options or a.hold_after_stop_s \
+            or a.hold_until_time_limit:
+        p.error('--stop-after-phase/--hold-after-stop-s/--hold-until-time-limit/--return-home/--planner-options apply '
+                'to --scene/--goal runs')
     try:
         limit = episode_step_limit(a.task)
     except (ValueError, KeyError) as error:
@@ -516,6 +518,10 @@ def main(argv=None):
                                               'phase (e.g. REORIENT); everything after it is not executed')
     p.add_argument('--hold-after-stop-s', type=float, default=0.,
                    help='Hold the reached pose (cutting disabled) this long after --stop-after-phase')
+    p.add_argument('--hold-until-time-limit', action='store_true',
+                   help='Configured runs (WP-11 C5): after the task phase stops (--stop-after-phase or the controller is '
+                        'done) hold the reached pose with cutting disabled until the goal episode time limit, so the '
+                        'goal evaluator sees a complete episode; overrides --hold-after-stop-s')
     p.add_argument('--return-home', action='store_true',
                    help='After the task phase: the physical, preflighted return-to-home (separate home_outcome)')
     p.add_argument('--skip-plan-preflight', action='store_true',
@@ -689,6 +695,10 @@ def run_configured(a, out, task):
                 if a.controller == 'scripted':
                     policy, profile_receipt = configured_policy(env, a)
                 seen_stop, stop_reason, hold_steps = False, None, int(round(a.hold_after_stop_s / env.task.control_dt_s))
+                # --hold-until-time-limit: hold through the TIME_LIMIT step (TASK_COMPLETE by the env itself).
+                hold_margin = 0. if a.hold_until_time_limit else env.task.control_dt_s
+                if a.hold_until_time_limit:
+                    hold_steps = int(round(env.task.duration_s / env.task.control_dt_s))
                 for step in range(a.steps):
                     action = policy(observation) if policy else None
                     phase = policy.phase if policy is not None else None
@@ -715,7 +725,7 @@ def run_configured(a, out, task):
                         break
                 hold = dict(mode=DELTA_MODE, target=np.zeros(6), frame='world', cut_enabled=False)
                 for _ in range(hold_steps if stop_reason and env.episode_state == 'RUNNING' else 0):
-                    if env.time_s >= env.task.duration_s - env.task.control_dt_s - 1e-9:
+                    if env.time_s >= env.task.duration_s - hold_margin - 1e-9:
                         break
                     before_observation = env.observe()
                     step_start = time.monotonic()
