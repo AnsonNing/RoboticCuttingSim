@@ -1,0 +1,1594 @@
+{
+  "schema_version": "wp11_phaseB_knife_v2_evidence_v1",
+  "date": "2026-10-30",
+  "branch": "claude/wp11-cutting-refinement",
+  "commits": {
+    "profile_v2": "a8e4d25",
+    "native_override_protocol_capture": "c6eea75",
+    "grip_60mm_fix": "2d13d30",
+    "head_at_runs": "2d13d30",
+    "evidence_commit": "this file's commit"
+  },
+  "adr": "docs/adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md",
+  "status": {
+    "profile_code_and_cpu_tests": "PASS",
+    "native_free_space_grasp_v2_y": "PASS_FROZEN_RIGID_CONTROLS",
+    "native_free_space_grasp_v2_x": "PASS_FROZEN_RIGID_CONTROLS",
+    "images": "CAPTURED",
+    "lab_parity": "NOT_RUN",
+    "horizontal_skim_preflight": "NOT_RUN (Phase C2)",
+    "full_physics_acceptance": false
+  },
+  "geometry": {
+    "ruler_knife_v2_y": {
+      "profile": {
+        "profile_id": "ruler_knife_v2_y",
+        "edge_length_m": 0.12,
+        "blade_depth_m": 0.04,
+        "thickness_m": 0.0015,
+        "bevel": "double",
+        "bevel_included_angle_deg": 25.0,
+        "handle_half_extents_hand_m": [
+          0.012,
+          0.011,
+          0.03
+        ],
+        "blade_density_kg_m3": 7800.0,
+        "handle_density_kg_m3": 1100.0,
+        "blade_normal_hand_axis": "y",
+        "version": "tool_profile_v2",
+        "half_width_m": 0.06,
+        "bevel_length_m": 0.003383031377746543,
+        "cross_section_xz_m": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            -0.003383031377746543,
+            0.00075
+          ],
+          [
+            -0.04,
+            0.00075
+          ],
+          [
+            -0.04,
+            -0.00075
+          ],
+          [
+            -0.003383031377746543,
+            -0.00075
+          ]
+        ],
+        "status": "ENGINEERING_GEOMETRY_UNCALIBRATED",
+        "arrangement": "A_blade_normal_hand_y",
+        "grip": "end_held",
+        "edge_line_hand_axis": "+z",
+        "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"
+      },
+      "hand_from_edge_xyz_xyzw": [
+        0.028,
+        0.0,
+        0.19365,
+        0.7071067811865475,
+        0.0,
+        0.0,
+        0.7071067811865475
+      ],
+      "hand_from_edge_rotation_columns_edge_xyz_in_hand": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          0.0,
+          -1.0,
+          0.0
+        ]
+      ],
+      "handle_hand_bounds_m": [
+        [
+          -0.012,
+          -0.011,
+          0.07365000000000001
+        ],
+        [
+          0.012,
+          0.011,
+          0.13365
+        ]
+      ],
+      "blade_hand_bounds_m": [
+        [
+          -0.012000000000000007,
+          -0.0007500000000000002,
+          0.13365
+        ],
+        [
+          0.028,
+          0.0007500000000000002,
+          0.25365
+        ]
+      ],
+      "blade_tip_hand_z_m": 0.25365,
+      "handle_top_to_palm_face_clearance_m": 0.0036500000000000005,
+      "palm_face_hand_z_m": 0.07,
+      "palm_face_source": "artifacts/wp11/phaseB/view_v2_y_001 (Native panda_hand contact points)",
+      "handle_box_edge_center_m": [
+        -0.028,
+        -0.09,
+        -2.949029909160572e-17
+      ],
+      "handle_box_edge_half_extents_m": [
+        0.012,
+        0.030000000000000013,
+        0.011000000000000012
+      ],
+      "mass_kg": 0.08863311197282195,
+      "handle_mass_kg": 0.034848,
+      "blade_mass_kg": 0.05378511197282196,
+      "com_tool_m": [
+        0.00434895304434385,
+        9.099320550614355e-21,
+        0.054614578793513356
+      ],
+      "com_hand_m": [
+        0.00434895304434385,
+        9.099320550614355e-21,
+        0.15826457879351336
+      ],
+      "inertia_com_tool_kg_m2": [
+        [
+          0.0002477007281918003,
+          3.523591273444009e-24,
+          -1.36397084120365e-05
+        ],
+        [
+          3.523591273444009e-24,
+          0.0002556474530000781,
+          3.9135332835191773e-23
+        ],
+        [
+          -1.36397084120365e-05,
+          3.9135332835191773e-23,
+          1.0777520933762602e-05
+        ]
+      ],
+      "principal_moments_kg_m2": [
+        9.994866084965631e-06,
+        0.0002484833830405973,
+        0.0002556474530000781
+      ],
+      "tlmpm_polygon_xz_m": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -0.0033830313477665186,
+          0.000750000006519258
+        ],
+        [
+          -0.03999999910593033,
+          0.000750000006519258
+        ],
+        [
+          -0.03999999910593033,
+          -0.000750000006519258
+        ],
+        [
+          -0.0033830313477665186,
+          -0.000750000006519258
+        ]
+      ],
+      "tlmpm_half_width_m": 0.05999999865889549
+    },
+    "ruler_knife_v2_x": {
+      "profile": {
+        "profile_id": "ruler_knife_v2_x",
+        "edge_length_m": 0.12,
+        "blade_depth_m": 0.04,
+        "thickness_m": 0.0015,
+        "bevel": "double",
+        "bevel_included_angle_deg": 25.0,
+        "handle_half_extents_hand_m": [
+          0.012,
+          0.011,
+          0.03
+        ],
+        "blade_density_kg_m3": 7800.0,
+        "handle_density_kg_m3": 1100.0,
+        "blade_normal_hand_axis": "x",
+        "version": "tool_profile_v2",
+        "half_width_m": 0.06,
+        "bevel_length_m": 0.003383031377746543,
+        "cross_section_xz_m": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            -0.003383031377746543,
+            0.00075
+          ],
+          [
+            -0.04,
+            0.00075
+          ],
+          [
+            -0.04,
+            -0.00075
+          ],
+          [
+            -0.003383031377746543,
+            -0.00075
+          ]
+        ],
+        "status": "ENGINEERING_GEOMETRY_UNCALIBRATED",
+        "arrangement": "B_blade_normal_hand_x",
+        "grip": "end_held",
+        "edge_line_hand_axis": "+z",
+        "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"
+      },
+      "hand_from_edge_xyz_xyzw": [
+        0.0,
+        0.029,
+        0.19365,
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "hand_from_edge_rotation_columns_edge_xyz_in_hand": [
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "handle_hand_bounds_m": [
+        [
+          -0.012,
+          -0.011,
+          0.07365000000000001
+        ],
+        [
+          0.012,
+          0.011,
+          0.13365
+        ]
+      ],
+      "blade_hand_bounds_m": [
+        [
+          -0.00075,
+          -0.011,
+          0.13365
+        ],
+        [
+          0.00075,
+          0.029,
+          0.25365
+        ]
+      ],
+      "blade_tip_hand_z_m": 0.25365,
+      "handle_top_to_palm_face_clearance_m": 0.0036500000000000005,
+      "palm_face_hand_z_m": 0.07,
+      "palm_face_source": "artifacts/wp11/phaseB/view_v2_y_001 (Native panda_hand contact points)",
+      "handle_box_edge_center_m": [
+        -0.029,
+        -0.08999999999999998,
+        0.0
+      ],
+      "handle_box_edge_half_extents_m": [
+        0.011,
+        0.03,
+        0.012
+      ],
+      "mass_kg": 0.0886331119728219,
+      "handle_mass_kg": 0.034848,
+      "blade_mass_kg": 0.05378511197282191,
+      "com_tool_m": [
+        9.099320550614358e-21,
+        0.004955781697605109,
+        0.054614578793513315
+      ],
+      "com_hand_m": [
+        9.099320550614358e-21,
+        0.004955781697605109,
+        0.15826457879351333
+      ],
+      "inertia_com_tool_kg_m2": [
+        [
+          0.00025570453639636563,
+          5.9032361947897815e-24,
+          8.437177258418542e-23
+        ],
+        [
+          5.9032361947897815e-24,
+          0.0002479678961918004,
+          -1.5542917253832857e-05
+        ],
+        [
+          8.437177258418542e-23,
+          -1.5542917253832857e-05,
+          1.1101772330050089e-05
+        ]
+      ],
+      "principal_moments_kg_m2": [
+        1.0086215871753351e-05,
+        0.000248983452650097,
+        0.00025570453639636563
+      ],
+      "tlmpm_polygon_xz_m": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -0.0033830313477665186,
+          0.000750000006519258
+        ],
+        [
+          -0.03999999910593033,
+          0.000750000006519258
+        ],
+        [
+          -0.03999999910593033,
+          -0.000750000006519258
+        ],
+        [
+          -0.0033830313477665186,
+          -0.000750000006519258
+        ]
+      ],
+      "tlmpm_half_width_m": 0.05999999865889549
+    }
+  },
+  "geometry_vs_v1": {
+    "blade_identical": true,
+    "tlmpm_polygon_identical": true,
+    "v1_pinned": "tests/test_tool_profile_v2.py::test_v1_profile_outputs_are_pinned_bitwise (digests recorded at 9bd8a29)",
+    "v1_mass_kg": 0.15058511197282196,
+    "v1_handle_half_extents_hand_m": [
+      0.05,
+      0.011,
+      0.02
+    ]
+  },
+  "amendment_70mm_to_60mm": {
+    "reason": "A 70 mm grip centred at the pads touches the Native panda_hand palm collider (face at hand z = 0.0700 m); the unchanged no_unintended_support pregrasp gate rejects it",
+    "failed_run": "artifacts/wp11/phaseB/view_v2_y_001",
+    "failed_status": "FAIL_GRASP_STABILIZATION",
+    "failed_checks": {
+      "sampled_final_window": true,
+      "both_fingers_contact_handle": true,
+      "relative_translation": true,
+      "relative_rotation": true,
+      "relative_linear_speed": true,
+      "relative_angular_speed": true,
+      "recorded_native_contact_separations": true,
+      "rigid_contact_penetration": true,
+      "no_unintended_support": false
+    },
+    "failed_bilateral_fraction": 1.0,
+    "observation": "2 panda_hand contact points at hand z 0.0700 (0 N reported); tool displaced 1.45 mm toward the fingertips; bilateral finger contact was stable",
+    "max_centered_grip_length_m": 0.0673,
+    "chosen_grip_length_m": 0.06
+  },
+  "protocol": {
+    "path": "configs/physical_tool_controls_v7_ruler_v2_native.json",
+    "sha256": "2f5f4860a00d0ec97478853dae49854192e87c7d7abdae1a6b730195c92197dd",
+    "parent": {
+      "path": "configs/physical_tool_controls_v5_ruler_native.json",
+      "sha256": "932d4975fe9a8a9c0f3025036bfcdd29e9b491e03c6603e3aa327025fc265c4b"
+    },
+    "thresholds": "normal_grip, transfer, measurement and all 7 cases copied unchanged from v5 (asserted when written)",
+    "tool_profile_retarget": {
+      "function": "tool_profile.retarget_task_tool",
+      "reference_task_id": "CUT-01-R",
+      "hand_offset_world_m": [
+        0.0,
+        0.0,
+        0.12
+      ],
+      "reason": "CUT-01-R's hand-down start pose lifted 120 mm so the 95 mm longer end-held blade hangs in free space above the specimen (tip about 75 mm above the world origin)"
+    }
+  },
+  "start_pose": {
+    "reference_task": "CUT-01-R",
+    "seed": 42,
+    "hand_offset_world_m": [
+      0,
+      0,
+      0.12
+    ],
+    "hand_down": "hand +z = world -z; blade hangs below the fingers; transfer target edge position [-0.2,-0.15,0.18] with preserved orientation"
+  },
+  "native_controls": {
+    "ruler_knife_v2_y": {
+      "directory": "artifacts/wp11/phaseB/controls_v2_y_001",
+      "index_sha256": "19870e414de75210344335fc1f0b21b22389d66025e5cbcaafff20e3b9bd2ed0",
+      "summary_sha256": "c7deb1f3a666659c1ee7d2f824bcfd74fca80af810660205344379c9f0e70ba9",
+      "status": "PASS_FROZEN_RIGID_CONTROLS",
+      "comparisons": {
+        "isaac_sim/weak_grip": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.29488169844352347,
+          "rotation_increase_rad": 2.023010266463869,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_sim/low_friction": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.2809457505758941,
+          "rotation_increase_rad": 2.0368805328478325,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_sim/nominal_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.00045013427734375,
+          "steady_contact_force_change_n": 0.9999609162940301,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_sim/edge_torque": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 3.790855407714844e-05,
+          "steady_contact_force_change_n": 4.885784274997586e-05,
+          "contact_force_change_detected": false,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_sim/stress_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.004204988479614258,
+          "steady_contact_force_change_n": 9.998758713683657,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        }
+      },
+      "cases": {
+        "baseline_hold": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true,
+            "relative_translation": true,
+            "relative_rotation": true,
+            "relative_linear_speed": true,
+            "relative_angular_speed": true,
+            "loaded_handle_contacts": true,
+            "bounded_penetration": true,
+            "no_unintended_support": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 40.43837883300148,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.035803124904028,
+            "right_mean": 18.03417826081452,
+            "left_min": 18.00330655127348,
+            "right_min": 17.98460812491486,
+            "left_mean_last_window": 18.035804561405538,
+            "right_mean_last_window": 18.03418211112864,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 5.721168085788773e-07,
+          "max_relative_rotation_rad": 1.2824468568805489e-05,
+          "max_relative_linear_speed_last_window_m_s": 4.998001406050278e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0005893976090552625,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 7.059425115585327e-06,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.00019252300262451172,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/baseline_hold/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "6b3b16c1958ee3b394ba2286f16d148a1855edd35aa87d08553a8e8328cdd6c5",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/baseline_hold/result.json",
+          "result_sha256": "8995c5e2ca5297ba1c90dffff99f7d4a6eb2f656c57ad6534d8f9e29695562c3"
+        },
+        "nominal_load": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true,
+            "relative_translation": true,
+            "relative_rotation": true,
+            "relative_linear_speed": true,
+            "relative_angular_speed": true,
+            "loaded_handle_contacts": true,
+            "bounded_penetration": true,
+            "no_unintended_support": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 38.89655154399952,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.037554881213378,
+            "right_mean": 18.03264048969637,
+            "left_min": 17.977986468600985,
+            "right_min": 18.008963879429114,
+            "left_mean_last_window": 18.037624667024158,
+            "right_mean_last_window": 18.03263312061938,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 5.430509649746008e-07,
+          "max_relative_rotation_rad": 6.78111727435483e-05,
+          "max_relative_linear_speed_last_window_m_s": 7.487740830425959e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0016454782246329337,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 7.08363950252533e-06,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.0004987120628356934,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/nominal_load/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "578f5661150e476af26e284e78d448040b99899bc5de84e0ac4acb2a024fa3f4",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/nominal_load/result.json",
+          "result_sha256": "dc70cf944fc196ba524f7312ad1bcb4e46fb18941264dea18242e6aeb47ff84e"
+        },
+        "edge_torque": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 38.68585274700308,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            0,
+            0,
+            0.02,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.03573684169064,
+            "right_mean": 18.034042914278988,
+            "left_min": 17.96452078856324,
+            "right_min": 17.993974126495907,
+            "left_mean_last_window": 18.035744425558537,
+            "right_mean_last_window": 18.034016381978095,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 5.88985201244199e-07,
+          "max_relative_rotation_rad": 2.55299450765069e-05,
+          "max_relative_linear_speed_last_window_m_s": 6.322027276628877e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0007458861545648976,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 7.178634405136108e-06,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.00020688772201538086,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/edge_torque/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "dc371059ffeb1f97795230e484c22a26fd49a2bb69fd1c02c9d9f3b6fe59518f",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/edge_torque/result.json",
+          "result_sha256": "57534823e7d17fa0c202bbb724bf42c45954621939666500b3319add90d6f70d"
+        },
+        "stress_load": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 38.33815953799785,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -10,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.07935316474961,
+            "right_mean": 17.988303042633916,
+            "left_min": 16.456730692671414,
+            "right_min": 16.469439439987607,
+            "left_mean_last_window": 18.081646853914705,
+            "right_mean_last_window": 17.985877018158757,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.027324690706348843,
+          "max_relative_rotation_rad": 0.26770974637435485,
+          "max_relative_linear_speed_last_window_m_s": 0.0966981176018127,
+          "max_relative_angular_speed_last_window_rad_s": 0.46130030359231383,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 1.2077391147613525e-05,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.030291542410850525,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/stress_load/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "d165c97a71aaf93e00f68768032a3273ec398cd91a47e1fb6c2421df961f0403",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/stress_load/result.json",
+          "result_sha256": "15cb363383f3f79842cd83cf764ffab9f4026a69fdd5a56a176239bd84eb02ee"
+        },
+        "weak_grip": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 36.98072233900166,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 0.5,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 0.025634064157124676,
+            "right_mean": 0.025410402950566784,
+            "left_min": 0.0,
+            "right_min": 0.0,
+            "left_mean_last_window": 0.0,
+            "right_mean_last_window": 0.0,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.29488224149448844,
+          "max_relative_rotation_rad": 2.0230780776366126,
+          "max_relative_linear_speed_last_window_m_s": 5.280702169009116e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0003740981604175593,
+          "bilateral_loaded_handle_fraction": 0.051,
+          "grip_loss": true,
+          "maximum_contact_penetration_m": 6.990507245063782e-06,
+          "unintended_loaded_contact_steps": 921,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": -21.092463148552646,
+          "maximum_downward_tool_displacement_m": 0.2657294231466949,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/weak_grip/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "52e7cc557372042bf19701e55f45c31e82b3b03cfe42bc0d06716fd049c35ec5",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/weak_grip/result.json",
+          "result_sha256": "2e0b448d0f64bfbc1c98d068ce7d3917194bdac76baf0f7a5605986501cd82de"
+        },
+        "low_friction": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 37.76724309400015,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.02,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 0.9740580071022569,
+            "right_mean": 0.9737468292815017,
+            "left_min": 0.0,
+            "right_min": 0.0,
+            "left_mean_last_window": 0.0,
+            "right_mean_last_window": 0.0,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.2809462936268591,
+          "max_relative_rotation_rad": 2.0369483440205762,
+          "max_relative_linear_speed_last_window_m_s": 6.0087562832468195e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0003750623913971989,
+          "bilateral_loaded_handle_fraction": 0.054,
+          "grip_loss": true,
+          "maximum_contact_penetration_m": 1.1595897376537323e-05,
+          "unintended_loaded_contact_steps": 915,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": -21.092417056161178,
+          "maximum_downward_tool_displacement_m": 0.2655714792199433,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/low_friction/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "6ca144fced30f93e3a83b065afbb615c1121e56c2c324525fad677e520f7141b",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/low_friction/result.json",
+          "result_sha256": "bd422d1d77487a079199ba5bd513a3a13f3dabe37cb0bbfa1b0288fb946a9d26"
+        },
+        "release": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true,
+            "independent_relative_motion": true,
+            "actual_downward_motion": true,
+            "unsupported_gravity_interval": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 7.463896147463989e-08,
+          "returncode": 0,
+          "wall_s": 33.37904461299331,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "release",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 0.0,
+            "right_mean": 0.0,
+            "left_min": 0.0,
+            "right_min": 0.0,
+            "left_mean_last_window": 0.0,
+            "right_mean_last_window": 0.0,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.1301990076119067,
+          "max_relative_rotation_rad": 0.05663356877358193,
+          "max_relative_linear_speed_last_window_m_s": 1.588516237333793,
+          "max_relative_angular_speed_last_window_rad_s": 0.3872235838058018,
+          "bilateral_loaded_handle_fraction": 0.0,
+          "grip_loss": true,
+          "maximum_contact_penetration_m": 6.990507245063782e-06,
+          "unintended_loaded_contact_steps": 169,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": -9.809987640258178,
+          "maximum_downward_tool_displacement_m": 0.13019897043704987,
+          "actual_clearance_error": {
+            "position_m": 0.0006790038728066585,
+            "rotation_rad": 0.0010490249879709413
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/release/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "339ea653975104c525f71c974a2da3ec6d5bc2fb75eefe89adc1c39c32f2a55d",
+          "result": "artifacts/wp11/phaseB/controls_v2_y_001/isaac_sim/release/result.json",
+          "result_sha256": "d32c085c5da8d4fdb2c697a506371c7681c7dac836e7a96f943a743e820c2151"
+        }
+      },
+      "worker_source_sha256": {
+        "scripts/run_physical_tool_controls.py": "a43fbcdd3c84afe6a6f53910aa8c7387623723a95c20ca005519a611df7a737c",
+        "src/robotic_cutting_sim/physical_tool.py": "1110fb1f000ef4778a40adf220f6af733c7cd97258c8cc6aca45e7398ab79dc4",
+        "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "src/robotic_cutting_sim/robot.py": "03e7078727f3ce111c927163547ee0462458b83f9cc568df2f0f714fa8c9a4b2",
+        "src/robotic_cutting_sim/live_material.py": "7c720b29f8a5c941f39e0790e605bb93e8c5486f1547952855cdc523e8cc26bc",
+        "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+        "src/robotic_cutting_sim/tasks.py": "d07cf52dff4b1ed3474cec445be6609b0ffdb59cccabc1b1673e38475fa5ec25",
+        "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "src/robotic_cutting_sim/isaac_sim_runner.py": "ee0f27f677f371fb7e8e5ee91595f865f8eb99080898c522c3d999d0fadff562",
+        "src/robotic_cutting_sim/native_tool.py": "4a17cb5eebbdab9cc27b5e49ff042071dddadba1a20e1ae3fb4ea2f3e87a6e93",
+        "src/robotic_cutting_sim/physical_contacts.py": "1b0a471c0c8c65e3b6f6e2114d429593eaa15e8d143cd10e59103f352cfbed85",
+        "configs/isaac_sim_cutting.kit": "1d3fd180908617e07ae2a343e016027b80c245fbcf48b0a186ad72ec969542e3",
+        "src/robotic_cutting_sim/tool_profile.py": "a89da68404fe3202a7dc407a27c8b9e9fae89e34f81afb0203ae2aee1726c993",
+        "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+        "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+        "configs/cutting_tasks_v2.json": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+      }
+    },
+    "ruler_knife_v2_x": {
+      "directory": "artifacts/wp11/phaseB/controls_v2_x_001",
+      "index_sha256": "1d5421b4e82bac5232c4db2fa4dbc90be5b25dbbed13e333a859defba19aade8",
+      "summary_sha256": "3e606f77b09eb81a1186cf01dbc03c5de8df6def0d85fb0029ff2770c211156d",
+      "status": "PASS_FROZEN_RIGID_CONTROLS",
+      "comparisons": {
+        "isaac_sim/weak_grip": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.3049925337838655,
+          "rotation_increase_rad": 2.041036857691286,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_sim/low_friction": {
+          "matched_start_checks": {
+            "same_runtime": true,
+            "same_source_bytes": true,
+            "same_external_edge_load": true,
+            "initial_tool_translation": true,
+            "initial_tool_rotation": true,
+            "initial_arm_joints": true
+          },
+          "matched": true,
+          "translation_increase_m": 0.3121885428355018,
+          "rotation_increase_rad": 3.1406538059067706,
+          "larger_weak_response": true,
+          "strong_stable": true,
+          "status": "PASS_MATCHED_WEAK_RESPONSE"
+        },
+        "isaac_sim/nominal_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.0004436969757080078,
+          "steady_contact_force_change_n": 0.9997486037168312,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_sim/edge_torque": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 6.914138793945312e-05,
+          "steady_contact_force_change_n": 0.00011048226730614878,
+          "contact_force_change_detected": false,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        },
+        "isaac_sim/stress_load": {
+          "status": "PASS_MEASURED_ARM_RESPONSE",
+          "final_arm_deflection_difference_rad": 0.004324674606323242,
+          "steady_contact_force_change_n": 10.053847625684394,
+          "contact_force_change_detected": true,
+          "scope": "Controlled external wrench; not material-feedback ON/OFF"
+        }
+      },
+      "cases": {
+        "baseline_hold": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true,
+            "relative_translation": true,
+            "relative_rotation": true,
+            "relative_linear_speed": true,
+            "relative_angular_speed": true,
+            "loaded_handle_contacts": true,
+            "bounded_penetration": true,
+            "no_unintended_support": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 43.093028638999385,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.0352586180644,
+            "right_mean": 18.033412397376882,
+            "left_min": 18.014614237047642,
+            "right_min": 18.009684590170966,
+            "left_mean_last_window": 18.035262622121525,
+            "right_mean_last_window": 18.03341130095335,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 5.649033335877162e-07,
+          "max_relative_rotation_rad": 1.9751754188500434e-05,
+          "max_relative_linear_speed_last_window_m_s": 5.104910001805552e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0015935148261502752,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 6.106682121753693e-06,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.00019180774688720703,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/baseline_hold/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "8d2946548376fa7a2d597cb014daee00dd5d38eee7c3e5fabf6939b7d6daa9de",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/baseline_hold/result.json",
+          "result_sha256": "14e6945f946890a2b94ced8cb8bbabee1fb0ce909493b3937d1104d93a846c26"
+        },
+        "nominal_load": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true,
+            "relative_translation": true,
+            "relative_rotation": true,
+            "relative_linear_speed": true,
+            "relative_angular_speed": true,
+            "loaded_handle_contacts": true,
+            "bounded_penetration": true,
+            "no_unintended_support": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 42.100956237998616,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.037465374583984,
+            "right_mean": 18.031917779507932,
+            "left_min": 18.008591089376495,
+            "right_min": 17.998510418499094,
+            "left_mean_last_window": 18.03744258585213,
+            "right_mean_last_window": 18.03195352049216,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 5.839472898430824e-07,
+          "max_relative_rotation_rad": 3.153006996402539e-05,
+          "max_relative_linear_speed_last_window_m_s": 0.0001221615469849559,
+          "max_relative_angular_speed_last_window_rad_s": 0.002095635484225515,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 6.029382348060608e-06,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.0005040168762207031,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/nominal_load/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "e19615a79200e0765162d30f2e4d7c82e7ef5930b4a3ed6ca15ff1bd654649f3",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/nominal_load/result.json",
+          "result_sha256": "f6f0cd408cd7ca5560f91e13b50cc91fbaa06cdc0e06433d7971b832c9b98f9a"
+        },
+        "edge_torque": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 41.64197175699519,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            0,
+            0,
+            0.02,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.03552255133935,
+            "right_mean": 18.033464555944096,
+            "left_min": 18.013884518475173,
+            "right_min": 18.010391375012016,
+            "left_mean_last_window": 18.035490002516138,
+            "right_mean_last_window": 18.03351624068772,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 5.311602795403251e-07,
+          "max_relative_rotation_rad": 3.271599339051876e-05,
+          "max_relative_linear_speed_last_window_m_s": 7.028863677406092e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.001165819689110214,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 6.018206477165222e-06,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.0002086162567138672,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/edge_torque/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "f1934a66a44330368b859ae5aaa63c82d62de005686807866afa20f707a234e0",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/edge_torque/result.json",
+          "result_sha256": "d4a1040c1f1b0c25abff44492e03b4d2d91695fb517e900373b3e7884ef88d03"
+        },
+        "stress_load": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 42.393637929999386,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -10,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 18.202043242396886,
+            "right_mean": 18.049275885758405,
+            "left_min": 16.600379827848002,
+            "right_min": 17.145734854596476,
+            "left_mean_last_window": 18.273238239035567,
+            "right_mean_last_window": 18.100572283860107,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.028160098869432555,
+          "max_relative_rotation_rad": 0.035495851841858966,
+          "max_relative_linear_speed_last_window_m_s": 0.08056204316203863,
+          "max_relative_angular_speed_last_window_rad_s": 0.610265367841024,
+          "bilateral_loaded_handle_fraction": 1.0,
+          "grip_loss": false,
+          "maximum_contact_penetration_m": 1.0889023542404175e-05,
+          "unintended_loaded_contact_steps": 0,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": null,
+          "maximum_downward_tool_displacement_m": 0.031254470348358154,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/stress_load/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "be568f2f22ca86eb4bb1aefab1157f394435021d113230a67a2eff582bed9261",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/stress_load/result.json",
+          "result_sha256": "ab7be52fac8be2ac14894f46c7d3af7544ff2e8d6dedfaf8449aca3dbd7c402b"
+        },
+        "weak_grip": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 40.34732378300396,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 0.5,
+          "friction": 0.6,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 0.026489094849406328,
+            "right_mean": 0.02169805836447816,
+            "left_min": 0.0,
+            "right_min": 0.0,
+            "left_mean_last_window": 0.0,
+            "right_mean_last_window": 0.0,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.30499311773115534,
+          "max_relative_rotation_rad": 2.04106838776125,
+          "max_relative_linear_speed_last_window_m_s": 6.0113607784366386e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0006582920642637271,
+          "bilateral_loaded_handle_fraction": 0.048,
+          "grip_loss": true,
+          "maximum_contact_penetration_m": 5.935318768024445e-06,
+          "unintended_loaded_contact_steps": 922,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": -21.09235476041202,
+          "maximum_downward_tool_displacement_m": 0.26437663985416293,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/weak_grip/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "d2abde101302a175c6870d127591c0822423370f5d351583b98b3f00178df767",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/weak_grip/result.json",
+          "result_sha256": "66b5d0e6c1d17dfa82d881110cab75030982997def5cd76958c2c29c9c13a3b0"
+        },
+        "low_friction": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 40.80992409600003,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.02,
+          "gripper": "hold",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 0.9741249813180161,
+            "right_mean": 0.9734313972715822,
+            "left_min": 0.0,
+            "right_min": 0.0,
+            "left_mean_last_window": 0.0,
+            "right_mean_last_window": 0.0,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.31218912678279165,
+          "max_relative_rotation_rad": 3.1406853359767344,
+          "max_relative_linear_speed_last_window_m_s": 6.420724522543384e-05,
+          "max_relative_angular_speed_last_window_rad_s": 0.0016088846391642125,
+          "bilateral_loaded_handle_fraction": 0.054,
+          "grip_loss": true,
+          "maximum_contact_penetration_m": 8.895061910152435e-06,
+          "unintended_loaded_contact_steps": 916,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": -21.092428883820016,
+          "maximum_downward_tool_displacement_m": 0.2646470796316862,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/low_friction/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "1d892eaadcbcca4d02a9504dc0f86b3753b19911c3bf1c412ce96f945fde1f57",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/low_friction/result.json",
+          "result_sha256": "eb7a5847196f52ab38f603669112f09b769af455706a9dc2cb7bf8b20c3e1c24"
+        },
+        "release": {
+          "classification": "PASS_CASE_ENGINEERING_SCREENS",
+          "checks": {
+            "finite": true,
+            "raw_sampling_complete": true,
+            "all_contact_samples_valid": true,
+            "arm_samples_complete": true,
+            "independent_relative_motion": true,
+            "actual_downward_motion": true,
+            "unsupported_gravity_interval": true
+          },
+          "pregrasp_status": "PASS_STABLE_GRASP",
+          "pregrasp_max_relative_translation_m": 1.0348082197408685e-08,
+          "returncode": 0,
+          "wall_s": 35.441228780997335,
+          "native_contact_view_invalidations": 0,
+          "edge_wrench_world": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "force_limit_n": 20.0,
+          "friction": 0.6,
+          "gripper": "release",
+          "finger_contact_normal_plus_friction_magnitude_n": {
+            "left_mean": 0.0,
+            "right_mean": 0.0,
+            "left_min": 0.0,
+            "right_min": 0.0,
+            "left_mean_last_window": 0.0,
+            "right_mean_last_window": 0.0,
+            "scope": "Sum of |raw native impulse|/dt over loaded finger-handle contact points (rc.native_samples)"
+          },
+          "max_relative_translation_m": 0.30857994935211763,
+          "max_relative_rotation_rad": 1.5171762876312467,
+          "max_relative_linear_speed_last_window_m_s": 1.6390298922172046,
+          "max_relative_angular_speed_last_window_rad_s": 10.612092275676762,
+          "bilateral_loaded_handle_fraction": 0.0,
+          "grip_loss": true,
+          "maximum_contact_penetration_m": 5.935318768024445e-06,
+          "unintended_loaded_contact_steps": 169,
+          "loaded_finger_outside_handle_steps": 0,
+          "freeflight_vertical_acceleration_m_s2": -9.80999203546429,
+          "maximum_downward_tool_displacement_m": 0.26000518910586834,
+          "actual_clearance_error": {
+            "position_m": 0.0007581623236900062,
+            "rotation_rad": 0.0011909838774013706
+          },
+          "material_unchanged": true,
+          "source_bytes_unchanged": true,
+          "raw_trace": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/release/physical_grasp_trace_00.jsonl",
+          "raw_trace_sha256": "9550b68c683e64f08fbd99bda4e3922ae6741eb55f3c191ca976eefff62edffc",
+          "result": "artifacts/wp11/phaseB/controls_v2_x_001/isaac_sim/release/result.json",
+          "result_sha256": "902fe601a522758c73f155ecb6e0018db940b7f626dc1a00466216e35eac4923"
+        }
+      },
+      "worker_source_sha256": {
+        "scripts/run_physical_tool_controls.py": "a43fbcdd3c84afe6a6f53910aa8c7387623723a95c20ca005519a611df7a737c",
+        "src/robotic_cutting_sim/physical_tool.py": "1110fb1f000ef4778a40adf220f6af733c7cd97258c8cc6aca45e7398ab79dc4",
+        "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+        "src/robotic_cutting_sim/robot.py": "03e7078727f3ce111c927163547ee0462458b83f9cc568df2f0f714fa8c9a4b2",
+        "src/robotic_cutting_sim/live_material.py": "7c720b29f8a5c941f39e0790e605bb93e8c5486f1547952855cdc523e8cc26bc",
+        "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+        "src/robotic_cutting_sim/tasks.py": "d07cf52dff4b1ed3474cec445be6609b0ffdb59cccabc1b1673e38475fa5ec25",
+        "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "src/robotic_cutting_sim/isaac_sim_runner.py": "ee0f27f677f371fb7e8e5ee91595f865f8eb99080898c522c3d999d0fadff562",
+        "src/robotic_cutting_sim/native_tool.py": "4a17cb5eebbdab9cc27b5e49ff042071dddadba1a20e1ae3fb4ea2f3e87a6e93",
+        "src/robotic_cutting_sim/physical_contacts.py": "1b0a471c0c8c65e3b6f6e2114d429593eaa15e8d143cd10e59103f352cfbed85",
+        "configs/isaac_sim_cutting.kit": "1d3fd180908617e07ae2a343e016027b80c245fbcf48b0a186ad72ec969542e3",
+        "src/robotic_cutting_sim/tool_profile.py": "a89da68404fe3202a7dc407a27c8b9e9fae89e34f81afb0203ae2aee1726c993",
+        "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+        "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+        "configs/cutting_tasks_v2.json": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+      }
+    }
+  },
+  "v1_reference_same_suite": {
+    "path": "artifacts/wp10/c_native_grasp_controls_001",
+    "protocol": "configs/physical_tool_controls_v5_ruler_native.json",
+    "cases": {
+      "baseline_hold": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 4.683969323244407e-07,
+        "max_relative_rotation_rad": 4.169583425666018e-06,
+        "bilateral_loaded_handle_fraction": 1.0
+      },
+      "nominal_load": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 8.171513806197335e-07,
+        "max_relative_rotation_rad": 5.5322612874821526e-06,
+        "bilateral_loaded_handle_fraction": 1.0
+      },
+      "edge_torque": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 4.578830143671131e-07,
+        "max_relative_rotation_rad": 3.816805793037966e-06,
+        "bilateral_loaded_handle_fraction": 1.0
+      },
+      "stress_load": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 0.01089718942607976,
+        "max_relative_rotation_rad": 0.032850899760828216,
+        "bilateral_loaded_handle_fraction": 1.0
+      },
+      "weak_grip": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 0.24587056077857425,
+        "max_relative_rotation_rad": 1.5782288830576656,
+        "bilateral_loaded_handle_fraction": 0.042
+      },
+      "low_friction": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 0.24598085553510354,
+        "max_relative_rotation_rad": 1.576356933587301,
+        "bilateral_loaded_handle_fraction": 0.044
+      },
+      "release": {
+        "classification": "PASS_CASE_ENGINEERING_SCREENS",
+        "max_relative_translation_m": 0.19673061593490254,
+        "max_relative_rotation_rad": 0.4546621137509118,
+        "bilateral_loaded_handle_fraction": 0.0
+      }
+    }
+  },
+  "views": {
+    "ruler_knife_v2_y": {
+      "status": "CAPTURED",
+      "pregrasp_status": "PASS_STABLE_GRASP",
+      "hold": {
+        "duration_s": 1.0,
+        "max_relative_translation_m": 3.9037948734073094e-07,
+        "max_relative_rotation_rad": 8.388945879183609e-06,
+        "final_finger_q_m": [
+          [
+            0.011017655953764915,
+            0.011017655953764915
+          ],
+          [
+            0.03999999910593033,
+            0.03999999910593033
+          ]
+        ],
+        "contacts_last": {
+          "bilateral_loaded_handle_contact": true,
+          "raw_contact_count": 8
+        }
+      },
+      "camera": {
+        "eye_world_m": [
+          0.2753768164766178,
+          -0.34282746164720507,
+          0.3947913218801621
+        ],
+        "look_at_target_world_m": [
+          -0.00031327243777923286,
+          0.008050833334754762,
+          0.1692267036774736
+        ],
+        "hfov_deg": 34.0,
+        "width": 960,
+        "height": 720,
+        "role": "presentation_only",
+        "observation": false
+      },
+      "rendering_physics_unchanged": true,
+      "wall_s": 17.325886772006925,
+      "full_image": "artifacts/wp11/phaseB/view_v2_y_002/knife_view.png",
+      "full_image_sha256": "b3d10203359e0ce32f91744cc6f82ab32330a80c63ac598fda493eeeb16c492b",
+      "docs_image": "docs/media/wp11/knife_v2_y.png",
+      "docs_image_sha256": "d99324e58dbf94cecffcecc06e486665ca86aeda0b0b48bbc2d5a7d2106bb7ef",
+      "docs_image_bytes": 185003,
+      "docs_image_size_px": [
+        720,
+        540
+      ],
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/capture_tool_profile_view.py",
+        "--tool-profile",
+        "ruler_knife_v2_y",
+        "--gpu",
+        "1",
+        "--output-dir",
+        "artifacts/wp11/phaseB/view_v2_y_002"
+      ]
+    },
+    "ruler_knife_v2_x": {
+      "status": "CAPTURED",
+      "pregrasp_status": "PASS_STABLE_GRASP",
+      "hold": {
+        "duration_s": 1.0,
+        "max_relative_translation_m": 3.712547006238876e-07,
+        "max_relative_rotation_rad": 8.788974243156819e-06,
+        "final_finger_q_m": [
+          [
+            0.01101700309664011,
+            0.011017004027962685
+          ],
+          [
+            0.03999999910593033,
+            0.03999999910593033
+          ]
+        ],
+        "contacts_last": {
+          "bilateral_loaded_handle_contact": true,
+          "raw_contact_count": 8
+        }
+      },
+      "camera": {
+        "eye_world_m": [
+          0.284229973299733,
+          -0.3508247574453727,
+          0.39474991655740016
+        ],
+        "look_at_target_world_m": [
+          0.008539884385335934,
+          5.3537536587100476e-05,
+          0.16918529835471166
+        ],
+        "hfov_deg": 34.0,
+        "width": 960,
+        "height": 720,
+        "role": "presentation_only",
+        "observation": false
+      },
+      "rendering_physics_unchanged": true,
+      "wall_s": 17.099204419995658,
+      "full_image": "artifacts/wp11/phaseB/view_v2_x_001/knife_view.png",
+      "full_image_sha256": "0b618031ee1ca7c86d51ca4c6f328793bfb6792b454af658ada22b0d459c7386",
+      "docs_image": "docs/media/wp11/knife_v2_x.png",
+      "docs_image_sha256": "bc2aec6ae2ec6760415a44986ad6e1e78493ba2c192f67097caea2b15489a1f2",
+      "docs_image_bytes": 187025,
+      "docs_image_size_px": [
+        720,
+        540
+      ],
+      "command": [
+        ".deps/isaacsim-venv/bin/python",
+        "scripts/capture_tool_profile_view.py",
+        "--tool-profile",
+        "ruler_knife_v2_x",
+        "--gpu",
+        "1",
+        "--output-dir",
+        "artifacts/wp11/phaseB/view_v2_x_001"
+      ]
+    }
+  },
+  "commands": {
+    "controls_v2_y": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_physical_tool_controls.py --runtime isaac_sim --protocol configs/physical_tool_controls_v7_ruler_v2_native.json --task-id CUT-01-R --seed 42 --gpu 1 --tool-profile ruler_knife_v2_y --output-dir artifacts/wp11/phaseB/controls_v2_y_001",
+    "controls_v2_x": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_physical_tool_controls.py --runtime isaac_sim --protocol configs/physical_tool_controls_v7_ruler_v2_native.json --task-id CUT-01-R --seed 42 --gpu 1 --tool-profile ruler_knife_v2_x --output-dir artifacts/wp11/phaseB/controls_v2_x_001",
+    "cpu_tests": ".venv/bin/python -m pytest -q tests/test_tool_profile_v2.py tests/test_tool_profile.py tests/test_tasks_v2.py"
+  },
+  "wall_s": {
+    "controls_v2_y_total": 264.8,
+    "controls_v2_x_total": 286.1,
+    "note": "both suites ran concurrently on GPU 1 (PhysX on CPU)"
+  },
+  "cpu_tests": {
+    "tests/test_tool_profile_v2.py": "15 passed",
+    "tests/test_tool_profile.py + test_tool_profile_v2.py": "22 passed",
+    "related_batch": "278 passed, 5 xfailed, 1 failed (test_tool_profile.py::test_profile_sdf_matches_ruler_polygon_geometry, Warp module load error during a concurrent batch; passes on rerun, v1 code untouched)",
+    "isaac_sim_runner + physical_tool_controls": "25 passed"
+  },
+  "runtime": {
+    "isaacsim": "6.2.0.0",
+    "physx": "CPU articulation, 2 ms rigid step",
+    "gpu": "RTX 5090 index 1 (rendering/Warp)"
+  },
+  "limits": [
+    "Material parameters and tool densities provisional/uncalibrated",
+    "Free-space rigid controls only; no material advance or cutting",
+    "Native only; Isaac Lab parity NOT_RUN",
+    "Images are presentation-only RGB, never observations",
+    "stress_load (-10 N at the edge) slips ~27-28 mm in both arrangements (v1: 10.9 mm); the protocol reports, not gates, this case"
+  ],
+  "source_matches_commit_2d13d30": true,
+  "grip_loss_definition": "bilateral_loaded_handle_fraction < 0.95 over the evaluation interval; expected True for weak_grip, low_friction (negative controls) and release"
+}
