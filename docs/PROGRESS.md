@@ -36,9 +36,13 @@
 - Phase D 完成（`5cf946f`，[證據](evidence/wp11/phaseD_home_001.json)）。
   - 新增 `wp11_workcell_v1`（+100 mm）；Isaac 可接受 compiled task；HOME reset；planner 控制器；實體 Return-to-Home 與狀態機（`episode_lifecycle.py`）。
   - Native smoke PASS：HOME 預夾、REORIENT 到 ρ = 9.99°、return home 關節誤差 0.39 mrad、刀具位姿 0.031 mm、標籤變化 0；`home_outcome` 與任務結果分開。
+- **C5 live 近水平 TRIM PASS**（`5aa0bee`，[證據](evidence/wp11/phaseC5_live_trim_001.json)，[影片](media/wp11/trim_rho10/demo.mp4)）。
+  - Native、`ruler_knife_v2_y`、ρ = 10°：凸起去除 97.9%，底材 0.99996，chip 持續獨立，夾持滑移 0.75 µm，Return-to-Home PASS。
+  - 待改進：PRE-CUT 量測回饋振盪 ±0.2 mm，刀身最低點一度進入未切頂面 0.16 mm，間隙稽核 FAIL；chip 留在長條頂面，畫面不夠清楚。由 C5b 處理（`path_v3` 控制器＋把 chip 推離）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - F2/F3：law 8 邊界驗證與解析度研究（kinematic 1 mm，GPU 0，[預先宣告的 protocol](../configs/wp11/phaseF_protocol_v1.json)，輸出 `artifacts/wp11/phaseF/`）；
-  - C5：live Native 近水平 TRIM（ρ = 10°），先做 kinematic 預檢（`artifacts/wp11/phaseC5/`，GPU 1）；
+  - C5b：`path_v3` 控制器＋`trim_bump_rho10_clear` 目標（削除後把 chip 推離），跑 live attempt 2（`artifacts/wp11/phaseC5/`）；
+  - G：policy-ready API、資料收集器、多 episode 可靠性、Tests E/F（`artifacts/wp11/phaseG/`）；
   - F1：v2 長時間夾持壓力測試（Native，GPU 0，`artifacts/wp11/phaseF1/`）；
   - E：泛化第一輪，先做預檢與 kinematic（`artifacts/wp11/phaseE/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
