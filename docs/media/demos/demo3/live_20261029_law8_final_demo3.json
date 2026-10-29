@@ -1,0 +1,41 @@
+{
+  "demo": "3",
+  "title": "Demo 3 \u2014 Sequential Slicing & Blade-Face Push (SLICE-PUSH-01)",
+  "run_id": "live_20261029_law8_final",
+  "verdict": "PASS",
+  "label": "outcome PASS (PASS_SLICE_PUSH, components 3, pushed 19.7 mm, push completed) | controller path_v2_vision",
+  "control_mode": "scripted waypoint controller, Native PhysX/Kit/RTX, physical two-finger grasp",
+  "cutting_law": 8,
+  "runtime_source": "live_isaac_sim",
+  "episode_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/episode_000",
+  "summary": "/home/ningan/RoboticCuttingSim/artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/demo_summary.json",
+  "render_dir": "/home/ningan/RoboticCuttingSim/artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/render",
+  "published": {
+    "demo.gif": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo3/live_20261029_law8_final_demo3.gif",
+      "bytes": 2297782,
+      "sha256": "12fbcb8ad124b6076239841fd776f59f47a6f1849d126ea90204e5c71b02317f"
+    },
+    "poster.png": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo3/live_20261029_law8_final_demo3_poster.png",
+      "bytes": 612501,
+      "sha256": "b1a9c9ddb7858cdd31a3f034127dd8e1b95b812c4399aaae43dcffc19dd3131e"
+    },
+    "demo.mp4": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo3/live_20261029_law8_final_demo3.mp4",
+      "bytes": 1473570,
+      "sha256": "39a8707bfc63813c1336da4875062bd13325c881d58c3b306de8baef3accb2c7"
+    }
+  },
+  "skipped": {},
+  "episode_sha256": {
+    "result.json": "56e67bfd8808be6f96d797350089712ac50ad1161b852fd1a111a250f2f67314",
+    "physics_state.npz": "e7b6eedcb83ec3fef14a90f56305771eb2f81de833836d766a4a89827b698d5b",
+    "actions.jsonl": "58ab9e8f2a5519b422dcaa3a6f1b0d46f381aa83039a034cd25f08c0c6c34bfd",
+    "frame_manifest.json": "1128785ad6371b8b52ffd15b63e92a59f439bfd53b67837de7aa4f776644351d",
+    "task.json": "937df6ce4975a896cfb95324f03a8e78dcae72c3012c38490c98e34736ce1ce9",
+    "manifest.json": "ab87a6301f7956e22eb1124e1cda78d2804323dfbec087b9c8f2010b65ca4b3d",
+    "robot_state.json": "29a7211e809cfc0c19df3b0aed2c3debc9847324c322286660d1ddaffebe23b3",
+    "robot_state.npz": "f1d9e71e6a52da5404e14881a3741a122d7636de5c3627464c3c54a84848f0af"
+  }
+}

@@ -1,17 +1,47 @@
 # BladeMaster 風格三個 Demo：完成報告（2026-10-29）
 
-依使用者 2026-10-29 的 [計畫](../BLADEMASTER_DEMO_PLAN.md) 執行 P0 工作包：
+依使用者 2026-10-29 的 [計畫](../BLADEMASTER_DEMO_PLAN.md) 完成 P0 工作包 A–D：1 mm 切割法則、統一 workcell、Live Isaac Sim（Native）三個 Demo，以及錄影、評估與可重跑的 demo runner。分支 `claude/lucid-mendel-vt7n82`。
 
-- **A（1 mm 切割法則）**：審查判定「有條件接受」。M8 在理想追蹤下 FAIL，部分後續項目仍待完成。
-- **B（統一 workcell）、C（Live Isaac Sim Native 三個 Demo）、D（錄影、評估與可重跑的 demo runner）**：完成。分支 `claude/lucid-mendel-vt7n82`。
+## 閘門重做與最終組合（law 8）
 
-## 最終展示組合
+計畫 §2 要求 1 mm 矩陣（含負對照）**全部** PASS 才能進入 live。
+
+- **Law 5 沒有滿足閘門**：依計算式準則 M8 FAIL，卻仍在審查的「有條件接受」下先跑了 live。那批結果保留在下方，作為先前證據，不算通過閘門的驗收 run。
+- **為了通過閘門，依序宣告並測試了 law 6、7、8**：
+
+  | Law | ADR | 結果 |
+  | --- | --- | --- |
+  | 6 | [0010](../adr/0010-cutting-law-6-deferred-lead-commit.md)，延後寫入 | TRIM 35° FAIL |
+  | 7 | [0011](../adr/0011-cutting-law-7-eq8-coupled-flip.md)，Eq. (8) 耦合 pⁿ | M8b、M3 FAIL |
+  | 8 | [0012](../adr/0012-cutting-law-8-plow-gated-lead.md)，只在偏離刃面 ≥ 15° 的犁切刃段使用 law 5 的前緣規則 | M1–M9 全部 PASS |
+
+  - law 4、6、7 的失敗都保留。
+  - Law 8 的結果見 [matrix_law8_002](../evidence/phase1/matrix_law8_002.json)。其中 M1a、M3a、M3b、M8b、M7 依審查條件，在乾淨的工作樹上重跑。
+  - M8a 是預先宣告的診斷列，FAIL 照報；M9c/d 是 Lab，只報告。
+  - rcs-review 結論為 PASS（附條件，已處理）。
+- **閘門通過後才跑 live 最終組合**：`--demo-set final_v4`（law 8），run `live_20261029_law8_final`，每次執行都在乾淨的 commit 上。結果如下：
+
+| Demo | 結果 | 主要數據 | 影片 |
+| --- | --- | --- | --- |
+| 1a 完整切斷（`path_v2`） | **PASS**，凍結 strict 也 PASS | 兩塊 50/50%；切口位置 1.5 mm；撤刀後持續分離 3.0 s；刃口 x 誤差 ≤ 0.046 mm | [GIF](../media/demos/demo1a/live_20261029_law8_final_demo1a.gif)、[MP4](../media/demos/demo1a/live_20261029_law8_final_demo1a.mp4) |
+| 1b 20° 斜切（`path_v2`） | **PASS**（swept-plane） | 50.5/49.5%；界面統計 4.78 mm，允許值 ≤ 4.44 + 1 mm；凍結 strict 的切口位置與持續時間窗口兩項 FAIL（理由同下） | [GIF](../media/demos/demo1b/live_20261029_law8_final_demo1b.gif)、[MP4](../media/demos/demo1b/live_20261029_law8_final_demo1b.mp4) |
+| 2 削除凸起（`path_v2`） | **PASS**（分離） | 去除 98.0%；底材 99.99%；底材脫落 0.008%；刃口 z 誤差 ≤ 0.026 mm；精度 5/8 FAIL（p95 0.58 mm、overcut 1.66%、保守 gouge 規則） | [GIF](../media/demos/demo2/live_20261029_law8_final_demo2.gif)、[MP4](../media/demos/demo2/live_20261029_law8_final_demo2.mp4) |
+| 3 兩刀三塊＋推開（`path_v2_vision`） | **PASS**（含凍結 v3 slice-push） | 三塊 37.5/31.25/31.25%；兩刀宣告切面誤差 0 層；推開 19.7 mm；手腕 D405 量得長條位移 1.20 mm | [GIF](../media/demos/demo3/live_20261029_law8_final_demo3.gif)、[MP4](../media/demos/demo3/live_20261029_law8_final_demo3.mp4) |
+
+這組的共同條件：
+
+- **執行**：四個 episode 全部 400／800 步完整執行，IK 拒絕 0 次，夾持全程 HOLDING。
+- **切削**：未啟用切削的階段標籤變化為 0。
+- **時間**：physics wall time 分別為 350、440、352、528 s。
+- **證據**：所有嘗試見 [demos_live_003.json](../evidence/phase3/demos_live_003.json)。
+
+## 先前組合：law 5（閘門滿足前，保留作證據）
 
 所有 episode 的共同條件：
 
 - **執行環境**：Live Native Isaac Sim（PhysX/Kit/RTX），Franka 0 以兩指實體夾持 `ruler_knife_v1`，Franka 1 在一般停放姿勢。
 - **相機與場景**：手腕 D405 rig v5，scenario `blademaster_workcell_v1`。
-- **切割與材料**：cutting law 5（`tlmpm_v4`），1 mm 粒子，0.1 ms，4 mm grid，seed 42。
+- **切割與材料**：cutting law 5（`tlmpm_v4`），1 mm 粒子，0.1 ms，4 mm grid，seed 42。（最終組合改用 law 8，見上節。）
 - **紀錄**：動作與機器人狀態 50 Hz；影像實際錄製 10 Hz（RGB-D 每 5 步一張）。
 
 | Demo | 任務 | 控制器 | 結果 | 主要數據 | 影片／證據 |
@@ -94,8 +124,9 @@
 - **重跑方式**：
 
   ```bash
-  # 最終組合（1a/1b/2 用 path_v2，3 用 path_v2_vision；law 5、seed 42）
-  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --gpu 1 --run-id <new_id>
+  # 最終組合（1a/1b/2 用 path_v2，3 用 path_v2_vision；law 8、seed 42）
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --gpu 1 --run-id <new_id>
+  # law 5 的先前組合：--demo-set final_v1
   # 加 --publish 把媒體複製到 docs/media/demos/<demo>/（不覆寫）
   ```
 

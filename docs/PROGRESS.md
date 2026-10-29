@@ -1,15 +1,19 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## 進行中：Phase 1 閘門重做（law 6，2026-10-29 晚）
+## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
-- 計畫 §2 要求矩陣（含負對照）**全部** PASS 才能進 live。law 5 的 M8 FAIL，live demo 卻在審查的「有條件接受」下就跑了，所以閘門其實沒有滿足。那批 live 結果保留為 law 5 的證據，不算通過閘門的驗收 run；DONE 標記已移除。
-- Law 6（[ADR 0010](adr/0010-cutting-law-6-deferred-lead-commit.md)，`9f57e41`）：CUT-01-R PASS、TRIM 25° 分離（96.7%），但 **TRIM 35°（`ruler_workcell_v2`）FAIL**：1 個 component、去除 0%，被帶到前方的粒子壓到切面下形成橋接（[證據](evidence/phase1/law6_smokes_001.json)）。Law 6 不用於 live。
-- Law 7（[ADR 0011](adr/0011-cutting-law-7-eq8-coupled-flip.md)，Eq. (8) 耦合 pⁿ）快速檢查 FAIL：M8b 誤差 3 mm、M3a 89.8%、M3b 0%。不用於 live。
-- [ADR 0012 law 8](adr/0012-cutting-law-8-plow-gated-lead.md)（`e19c2b6`）：law 4 加上 law 5 的前緣規則，只用在偏離刃面 ≥ 15° 的犁切刃段。**1 mm 全矩陣依計算式準則 M1–M9 全部 PASS**（[matrix_law8_001](evidence/phase1/matrix_law8_001.json)，`3e5055c`）：M8b 第二刀誤差 1.0 mm，TRIM 去除 96.9%（25°／35°／切割板）。M8a（無支撐懸臂）依 Amendment 1 是診斷列，FAIL 照報；M9c/d 是 Lab，只報告。**第 2 節閘門已滿足。**
-- 背景工作：live 最終組合 `--demo-set final_v4`（law 8，`artifacts/wp10_claude/demos/live_20261029_law8_final/`，GPU 1）；rcs-review 審查 law 8 與閘門。
-- 下一步：四個 live demo 的 summary → 更新 README／報告（改用 law 8 的最終組合；law 5 的結果保留為先前證據）→ 合併 main → DONE。
+- **Phase 1 閘門**（計畫 §2 的整個矩陣含負對照）已由 [law 8](adr/0012-cutting-law-8-plow-gated-lead.md) 滿足：依計算式準則 M1–M9 全部 PASS（[matrix_law8_002](evidence/phase1/matrix_law8_002.json)；M1a/M3a/M3b/M8b/M7 在乾淨工作樹重跑；rcs-review PASS）。
+  - Law 4–7 各有一列以上 FAIL，全部保留（[0010](adr/0010-cutting-law-6-deferred-lead-commit.md)、[0011](adr/0011-cutting-law-7-eq8-coupled-flip.md) 及其證據）。
+  - M8a 是預先宣告的診斷列，FAIL；M9c/d（Lab）只報告。
+- **閘門通過後的 live 最終組合**（`--demo-set final_v4`，`live_20261029_law8_final`，乾淨 commit）：
+  - Demo 1a **PASS**（凍結 strict 也 PASS）；
+  - Demo 1b **PASS**（swept-plane；凍結 strict 的位置與窗口兩項 FAIL）；
+  - Demo 2 **PASS**（98.0%；精度 5/8 FAIL）；
+  - Demo 3 **PASS**（含凍結 v3 slice-push；推開 19.7 mm；手腕深度量得位移 1.20 mm）。
+  - 所有嘗試見 [demos_live_003](evidence/phase3/demos_live_003.json)，[報告](reports/BLADEMASTER_DEMOS.md)。
+- **Law 5 的 live 組合**：在閘門滿足前跑的，保留為先前證據（下節），不算驗收 run。
 
-## 先前結果：BladeMaster 風格三個 Demo，law 5（2026-10-29）
+## 先前結果：law 5 組合（閘門滿足前，2026-10-29）
 
 依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)：P0 工作包 A 有條件接受（M8 FAIL，部分後續項目未完成）；B–D 完成。細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
 
