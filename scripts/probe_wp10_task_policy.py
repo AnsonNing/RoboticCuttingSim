@@ -20,16 +20,18 @@ def main():
     p.add_argument('--spacing',type=float,default=.001)
     p.add_argument('--saw',type=float,default=0.)
     p.add_argument('--scenario')
+    p.add_argument('--cutting-law',type=int,choices=(1,2,3),help='None keeps the task default (v2 tasks: law 2)')
+    p.add_argument('--steps',type=int,default=400)
     p.add_argument('--out',type=Path,required=True)
     a=p.parse_args();out=new_output(a.out);start=time.monotonic()
     write_json(out/'manifest.json',manifest({**vars(a),'out':str(a.out),'seed':42},'kinematic_ideal_tracking'))
-    env=make_kinematic_env(a.task,device=a.device,particle_spacing_m=a.spacing,scenario=a.scenario,
+    env=make_kinematic_env(a.task,device=a.device,particle_spacing_m=a.spacing,scenario=a.scenario,cutting_law=a.cutting_law,
         action_limits=ActionLimits(),ik_failure='reject',delta_frame='world',history_stride=10)
     observation,_=env.reset()
     plan=skim(env.task,saw_amplitude_m=a.saw) if env.task.goal_kind=='flatten' else through_cut(env.task,saw_amplitude_m=a.saw)
     policy=WaypointPolicy(env.task,plan,env.action_limits)
     with (out/'actions.jsonl').open('w') as stream:
-        for step in range(400):
+        for step in range(a.steps):
             action=policy(observation);observation,reward,terminated,truncated,info=env.step(action)
             write=dict(step=step+1,time_s=env.time_s,action={**action,'target':np.asarray(action['target']).tolist()},info=info)
             import json

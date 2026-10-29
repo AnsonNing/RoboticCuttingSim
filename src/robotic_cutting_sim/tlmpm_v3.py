@@ -3,12 +3,23 @@
 Derived from tlmpm_v2 without changing the frozen v1/v2 source. Cutting work,
 contact impulses, transfer and material parameters are unchanged. For law 3,
 cut-side classification follows the surface swept by the moving edge, rather
-than the tilted blade face. Negative-side labels may close unassigned logical
-MPM support fields within two reference-grid cells around an energized segment;
-positive-side labels still require the original narrow energized segment.
-One-sided support closure severs no bonds on its own. Actual contact work is
-required, pure blade-normal pushes/presses and straight withdrawal do not arm
-new cutting segments. This remains an uncalibrated process-zone approximation,
+than the tilted blade face. Three grid-scale closures prevent code-zero
+fields from bridging an actual cut through the 8-node stencil:
+- lateral: labels on both sides may close unassigned fields within two
+  reference-grid cells (along the edge) of a segment energized this substep;
+- persistence: a segment that did cutting work keeps cutting while its edge
+  keeps advancing/drawing with the same armed digit (an edge leaving the
+  bottom free surface still separates what it just passed);
+- lead: code-zero material at most two cells ahead of an energized edge joins
+  the side already labelled in its own stencil (a chip plowed ahead).
+The crack front is therefore regularized at the grid scale, at most two cells
+beyond actual edge work. Without energized cutting work nothing is labelled:
+pure blade-normal pushes/presses, stopping and straight withdrawal never arm or
+keep a segment. Laws 1/2 launch none of these kernels and equal tlmpm_v2 bit
+for bit. The 2026-10-29 handoff draft (sha256 69bc6ff5...) closed only the
+negative side; its 1 mm TRIM probe kept code-zero bridges (see
+docs/reports/WP-10_CLAUDE_DIAGNOSIS_20261029.md).
+This remains an uncalibrated process-zone approximation,
 not a converged fracture-energy or real-food model. No particles are deleted.
 """
 import numpy as np
@@ -481,9 +492,9 @@ def _assign(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), code: wp.arr
                         # neighbor so small lateral drift cannot open gaps.
                         k = _edge_segment(local[1], edge_width, segments)
                         allowed = wp.max(flags[k], wp.max(flags[wp.max(k-1, 0)], flags[wp.min(k+1, segments-1)]))
-                        if law == 3 and signed_side < 0.0:
-                            # Close code-zero transfer bridges on one side only;
-                            # this cannot create a crack in an unenergized neighbor.
+                        if law == 3:
+                            # Close code-zero transfer bridges within the grid
+                            # support of an energized segment, on both sides.
                             for neighbor in range(wp.max(k-support_segments, 0), wp.min(k+support_segments, segments-1)+1):
                                 allowed = wp.max(allowed, flags[neighbor])
                     if allowed != 0:
@@ -491,6 +502,110 @@ def _assign(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), code: wp.arr
                         if signed_side < 0.0:
                             digit = 1
                         code[p] = code[p]+factor*digit
+
+
+@wp.func
+def _swept_side(xp: wp.vec3, pose: wp.transform, twist: wp.spatial_vector, local: wp.vec3):
+    """Signed distance to the surface swept by the moving edge (law 3)."""
+    along = wp.transform_vector(pose, wp.vec3(0.0, 1.0, 0.0))
+    normal = wp.transform_vector(pose, wp.vec3(0.0, 0.0, 1.0))
+    tool_v = wp.vec3(twist[0], twist[1], twist[2])
+    angular = wp.vec3(twist[3], twist[4], twist[5])
+    segment_motion = tool_v + wp.cross(angular, along * local[1])
+    swept_normal = wp.cross(segment_motion, along)
+    side = local[2]
+    if wp.length_sq(swept_normal) > 1.0e-20:
+        swept_normal = wp.normalize(swept_normal)
+        if wp.dot(swept_normal, normal) < 0.0:
+            swept_normal = -swept_normal
+        side = wp.dot(xp - wp.transform_get_translation(pose), swept_normal)
+    return side
+
+
+@wp.kernel
+def _persist_segments(flags: wp.array(dtype=int), persist: wp.array(dtype=int),
+                      poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=wp.spatial_vector),
+                      cuts: wp.array(dtype=int), index: wp.array(dtype=int), edge_width: float, segments: int):
+    """Law 3: a segment that did cutting work keeps cutting while its edge keeps
+    advancing or drawing with the same armed digit; stopping, withdrawing,
+    a blade-normal motion or disarming clears it. Separation behind an edge that
+    just left the material's free surface therefore matches the swept path."""
+    k = wp.tid()
+    i = index[0]
+    cut = cuts[i]
+    pose = poses[i]
+    twist = twists[i]
+    y = (float(k)+0.5)/float(segments)*2.0*edge_width-edge_width
+    along = wp.transform_vector(pose, wp.vec3(0.0, 1.0, 0.0))
+    advance = wp.transform_vector(pose, wp.vec3(1.0, 0.0, 0.0))
+    motion = wp.vec3(twist[0], twist[1], twist[2]) + wp.cross(wp.vec3(twist[3], twist[4], twist[5]), along*y)
+    advancing = wp.dot(motion, advance)
+    drawing = wp.dot(motion, along)
+    moving = advancing > 1.0e-5 or (wp.abs(drawing) > 1.0e-5 and advancing >= -1.0e-5)
+    if cut >= 0 and moving:
+        if flags[k] != 0:
+            persist[k] = cut+1
+        if persist[k] == cut+1:
+            flags[k] = 1
+    else:
+        persist[k] = 0
+
+
+@wp.kernel
+def _mark_nodes(code: wp.array(dtype=int), nodes: wp.array2d(dtype=int), cuts: wp.array(dtype=int),
+                index: wp.array(dtype=int), negative: wp.array(dtype=int), positive: wp.array(dtype=int)):
+    p, corner = wp.tid()
+    cut = cuts[index[0]]
+    if cut >= 0:
+        factor = 1
+        if cut == 1:
+            factor = 3
+        digit = (code[p]//factor) % 3
+        if digit == 1:
+            negative[nodes[p, corner]] = 1
+        elif digit == 2:
+            positive[nodes[p, corner]] = 1
+
+
+@wp.kernel
+def _lead_closure(x: wp.array(dtype=wp.vec3), code: wp.array(dtype=int), nodes: wp.array2d(dtype=int),
+                  poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=wp.spatial_vector),
+                  cuts: wp.array(dtype=int), index: wp.array(dtype=int), band: float, edge_width: float,
+                  lead: float, flags: wp.array(dtype=int), segments: int, support_segments: int,
+                  negative: wp.array(dtype=int), positive: wp.array(dtype=int)):
+    """Law 3: code-zero material just ahead of an energized edge (at most ``lead``,
+    two reference cells) joins the side already labelled in its own stencil, so
+    material carried ahead of the edge (a plowed chip) cannot bridge the cut."""
+    p = wp.tid()
+    i = index[0]
+    cut = cuts[i]
+    if cut >= 0:
+        factor = 1
+        if cut == 1:
+            factor = 3
+        if (code[p]//factor) % 3 == 0:
+            pose = poses[i]
+            local = wp.transform_point(wp.transform_inverse(pose), x[p])
+            if local[0] > 0.0 and local[0] <= lead and wp.abs(local[1]) <= edge_width:
+                side = _swept_side(x[p], pose, twists[i], local)
+                if wp.abs(side) <= band:
+                    k = _edge_segment(local[1], edge_width, segments)
+                    allowed = int(0)
+                    for neighbor in range(wp.max(k-support_segments, 0), wp.min(k+support_segments, segments-1)+1):
+                        allowed = wp.max(allowed, flags[neighbor])
+                    if allowed != 0:
+                        same = int(0)
+                        for corner in range(8):
+                            node = nodes[p, corner]
+                            if side < 0.0:
+                                same = wp.max(same, negative[node])
+                            else:
+                                same = wp.max(same, positive[node])
+                        if same != 0:
+                            digit = 2
+                            if side < 0.0:
+                                digit = 1
+                            code[p] = code[p]+factor*digit
 
 
 @wp.kernel
@@ -583,6 +698,9 @@ class TLMPM:
         with wp.ScopedDevice(device):
             self.profile = wp.array(profile, dtype=wp.vec2)
             self.edge_flags = wp.zeros(self.edge_segments, dtype=int)
+            self.segment_persist = wp.zeros(self.edge_segments, dtype=int)
+            self.node_negative = wp.zeros(self.node_count, dtype=int)
+            self.node_positive = wp.zeros(self.node_count, dtype=int)
             padded = obstacles if len(obstacles) else np.ones((1, 2, 3), np.float32)
             self.box_centers = wp.array(padded[:, 0].copy(), dtype=wp.vec3)
             self.box_halves = wp.array(padded[:, 1].copy(), dtype=wp.vec3)
@@ -674,9 +792,19 @@ class TLMPM:
                 self.old, self.new_v, self.compatible, self.node_count, self.code_count])
             wp.launch(_deformation, n, [self.F, self.code, self.nodes, self.gradients,
                 self.new_v, self.node_count, c.dt])
+            if self.cutting_law == 3:
+                wp.launch(_persist_segments, self.edge_segments, [self.edge_flags, self.segment_persist, self.poses,
+                    self.twists, self.cuts, self.index, c.blade_half_width, self.edge_segments])
             wp.launch(_assign, n, [self.x, self.v, self.code, self.poses, self.twists,
                 self.cuts, self.index, 6*c.dx, c.blade_half_width, 2*c.dx, c.dt,
                 self.cutting_law, self.edge_flags, self.edge_segments, self.support_segments])
+            if self.cutting_law == 3:
+                self.node_negative.zero_(); self.node_positive.zero_()
+                wp.launch(_mark_nodes, (n, 8), [self.code, self.nodes, self.cuts, self.index,
+                    self.node_negative, self.node_positive])
+                wp.launch(_lead_closure, n, [self.x, self.code, self.nodes, self.poses, self.twists, self.cuts,
+                    self.index, 6*c.dx, c.blade_half_width, 2*c.dx, self.edge_flags, self.edge_segments,
+                    self.support_segments, self.node_negative, self.node_positive])
             if advance:
                 wp.launch(_advance, 1, [self.index])
 

@@ -71,6 +71,7 @@ class IsaacSimCuttingConfig:
     max_cuts: int = 1
     ik_iterations: int = 48
     initial_joint_positions: tuple | None = None
+    cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3 is opt-in tlmpm_v3
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -107,8 +108,11 @@ class IsaacSimCuttingConfig:
             raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
         if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
             raise ValueError('One or two cut digits and positive IK iterations are required')
-        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2) and self.task_id not in ProfileTaskSpec.TASK_IDS:
-            raise ValueError('Scenarios, food profiles and two-cut history require opt-in v2 tasks')
+        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
+                or self.cutting_law is not None) and self.task_id not in ProfileTaskSpec.TASK_IDS:
+            raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
+        if self.cutting_law not in (None, 1, 2, 3):
+            raise ValueError('cutting_law is None, 1, 2 or 3')
         if self.action_mode not in ("cartesian", "joint"):
             raise ValueError("action_mode must be cartesian or joint")
         if self.velocity_feedforward is None:
@@ -456,7 +460,7 @@ class LiveIsaacSimCutting:
         attachment=self._check_attachment(initial["tool_pose"])
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
-        self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts) if self.task else LiveCuttingMaterial(material_config))
+        self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
         if self.pad_geometry:
             self.material.configure_pad_obstacles(self._pad_boxes(initial['tool_pose']),
                 [None] + [pad['body_path'] for pad in self.pad_geometry])

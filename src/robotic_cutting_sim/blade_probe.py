@@ -46,14 +46,20 @@ class Phase:
 
 def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None, spacing=.004,
                 cutting_law=2, cutting_energy=5., slice_efficiency=1., cuts=1, obstacle_boxes_edge=None,
-                device="cpu", chunk=200, config_overrides=None, gpu_graph=False, record_history=False):
+                device="cpu", chunk=200, config_overrides=None, gpu_graph=False, record_history=False,
+                solver_version=None):
     """Drive the edge frame (rotation: edge->world Rotation) through phases.
+
+    ``solver_version`` None uses tlmpm_v3 for law 3 and tlmpm_v2 otherwise; 3
+    forces tlmpm_v3 (for laws 1/2 equivalence checks against tlmpm_v2).
 
     Returns per-phase label counts, final components, mean and peak tool
     reaction force (world, N) per phase, and the solver snapshot.
     """
     import warp as wp
-    if cutting_law == 3:
+    if solver_version not in (None, 2, 3) or (solver_version == 2 and cutting_law == 3):
+        raise ValueError('solver_version is 2 or 3; law 3 exists only in tlmpm_v3')
+    if cutting_law == 3 or solver_version == 3:
         from .tlmpm_v3 import TLMPM
     else:
         from .tlmpm_v2 import TLMPM

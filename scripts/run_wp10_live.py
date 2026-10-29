@@ -209,6 +209,7 @@ def main():
     p.add_argument('--material-profile')
     p.add_argument('--material-dt', type=float, default=.0001)
     p.add_argument('--max-cuts', type=int, default=1)
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3), help='None keeps the task default (v2 tasks: law 2)')
     p.add_argument('--ik-iterations', type=int, default=48)
     p.add_argument('--oracle-stride', type=int, default=1)
     p.add_argument('--motion', choices=('push', 'saw', 'oblique', 'yaw', 'roll'), default='push')
@@ -238,7 +239,8 @@ def main():
             options.pop('grip_contact_profile', None)
     options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state' or a.record_cameras)
     options.update(scenario=a.scenario, material_profile_id=a.material_profile, material_dt=a.material_dt,
-                   max_cuts=a.max_cuts, ik_iterations=a.ik_iterations, history_stride=a.oracle_stride)
+                   max_cuts=a.max_cuts, ik_iterations=a.ik_iterations, history_stride=a.oracle_stride,
+                   cutting_law=a.cutting_law)
     grip_overrides = {key: value for key, value in dict(max_finger_force_n=a.grip_force,
         settle_s=a.settle_seconds, friction=a.grip_friction).items() if value is not None}
     if grip_overrides:

@@ -1,5 +1,20 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
+
+Paused at the user's request for review; WP-10 is not complete and nothing is
+merged. Root cause of TRIM 0% removal and the Lab CUT single component:
+law-2 labels are written only where a 1 mm edge segment did cutting work in
+that substep, so code-zero particles bridge the cut through the 4 mm reference
+stencil (Lab's measured edge actually went deeper than Native). An opt-in
+experimental law 3 in `tlmpm_v3.py` adds swept-surface sides and grid-scale
+lateral/persistence/lead closures; its 9 CPU tests pass, laws 1/2 remain
+bitwise equal to v2. Earlier law-3 variants still FAIL the 1 mm TRIM probe;
+the current variant's GPU results and every live run are pending. New
+`--cutting-law`, measured-trajectory replay and stencil-bridge tools. No new
+live scene images yet. See
+[the diagnosis](reports/WP-10_CLAUDE_DIAGNOSIS_20261029.md).
+
 ## User-requested checkpoint: Claude continuation
 
 Codex work stopped at the user's request. Resume from
