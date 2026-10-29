@@ -308,3 +308,19 @@ def test_reliability_report_gates_policy_ready():
     no_failure = good[:5]
     assert "failed_episode_stored_and_usable" in ds.reliability_report(no_failure, config, "kinematic",
                                                                        validations=validations)["failing"]
+
+
+def test_reliability_v1a_tool_velocity_rule_requires_repeat_not_absolute_rest():
+    v1a = json.loads((ROOT/"configs/wp11/phaseG_reliability_v1a.json").read_text())
+    assert v1a["amends"] == "phaseG_reliability_v1" and v1a["reset"]["tool_velocity_rule"] == "repeat_episode_0"
+    metas = [_meta(i) for i in range(5)]+[_meta(5, verdict="FAIL", controller="policy")]
+    for meta in metas:   # the Native smoke's clamped-body solver jitter, identical every reset
+        meta["reset_checks"].update(tool_linear_speed_m_s=.0036, tool_angular_speed_rad_s=.148)
+    validations = [{"episode_id": m["episode_id"], "status": "PASS"} for m in metas]
+    v1 = json.loads((ROOT/"configs/wp11/phaseG_reliability_v1.json").read_text())
+    assert "episode_000:tool_at_rest_after_reset" in ds.reliability_report(metas, v1, "kinematic",
+                                                                           validations=validations)["failing"]
+    assert ds.reliability_report(metas, v1a, "kinematic", validations=validations)["POLICY_READY"] is True
+    metas[3]["reset_checks"]["tool_angular_speed_rad_s"] = .2
+    assert "episode_003:tool_velocity_repeats_episode_0" in ds.reliability_report(
+        metas, v1a, "kinematic", validations=validations)["failing"]

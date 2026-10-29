@@ -307,6 +307,9 @@ def main(argv=None):
     p.add_argument('--history-stride', type=int, default=1)
     p.add_argument('--skip-preflight', action='store_true', help='Isaac Sim: skip the C2 preflight (recorded; default: '
                                                                     'run it and refuse to launch unless every check passes)')
+    p.add_argument('--reliability-config', action='append',
+                   help='Reliability config(s); the first is primary (reliability.json), every one is also written as '
+                        'reliability_<version>.json (default: configs/wp11/phaseG_reliability_v1.json)')
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args(argv)
     entries = episode_entries(a)
@@ -376,11 +379,19 @@ def main(argv=None):
                       f'wall={meta["wall_s"]:.1f}s rss={meta["memory_after"]["host_rss_mib"]}', flush=True)
             validations = [ds.validate_episode(out, row['episode_id']) for row in index['episodes']
                            if row.get('status') == 'STORED']
-            report = ds.reliability_report(metas, json.loads(RELIABILITY_CONFIG.read_text()), a.runtime,
-                                           validations=validations, execution_failures=failures,
-                                           planned_episodes=len(entries))
-            report['wall_s'] = time.monotonic() - start
-            write_json(out/'reliability.json', jsonable(report))
+            configs = [Path(c) for c in (a.reliability_config or [RELIABILITY_CONFIG])]
+            for k, path in enumerate(configs):
+                config = json.loads(path.read_text())
+                scored = ds.reliability_report(metas, config, a.runtime, validations=validations,
+                                               execution_failures=failures, planned_episodes=len(entries))
+                scored.update(wall_s=time.monotonic() - start, config_path=str(path), primary=k == 0)
+                write_json(out/f"reliability_{config['version']}.json", jsonable(scored))
+                if k == 0:
+                    report = scored
+                    write_json(out/'reliability.json', jsonable(report))
+                else:
+                    print(f"[collect] also scored {config['version']}: POLICY_READY={scored['POLICY_READY']} "
+                          f"failing={scored['failing']}", flush=True)
             write_index()
             print(f'[collect] POLICY_READY={report["POLICY_READY"]} failing={report["failing"]}', flush=True)
             status = 0 if report['POLICY_READY'] else 3

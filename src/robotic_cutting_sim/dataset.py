@@ -365,8 +365,13 @@ def reliability_report(metas, config, runtime, *, validations=(), execution_fail
             "action_log_reset": rc["action_log_empty"], "observation_clock_at_reset": rc["observation_timestamp_matches"],
             "tool_pose_repeats_episode_0": (translation <= th["tool_pose_repeat_translation_max_m"]
                                             and rotation <= th["tool_pose_repeat_rotation_max_rad"]),
-            "tool_at_rest_after_reset": (rc["tool_linear_speed_m_s"] <= th["tool_linear_speed_max_m_s"]
-                                         and rc["tool_angular_speed_rad_s"] <= th["tool_angular_speed_max_rad_s"]),
+            **({"tool_velocity_repeats_episode_0": (
+                    abs(rc["tool_linear_speed_m_s"]-reference["tool_linear_speed_m_s"]) <= th["tool_linear_speed_repeat_max_m_s"]
+                    and abs(rc["tool_angular_speed_rad_s"]-reference["tool_angular_speed_rad_s"])
+                    <= th["tool_angular_speed_repeat_max_rad_s"])}
+               if th.get("tool_velocity_rule") == "repeat_episode_0" else
+               {"tool_at_rest_after_reset": (rc["tool_linear_speed_m_s"] <= th["tool_linear_speed_max_m_s"]
+                                             and rc["tool_angular_speed_rad_s"] <= th["tool_angular_speed_max_rad_s"])}),
             "action_observation_clocks_consistent": meta["clock_errors"] == 0,
             "no_privileged_keys_in_observations": meta["observation_privileged_leaks"] == 0,
             "recorder_closed": bool(meta["recorder_closed"]),
