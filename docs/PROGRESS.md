@@ -6,9 +6,12 @@
 - Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
 - 補充需求（Project Goal & Generalization）已整合進 [WP-11 計畫](WP11_PLAN.md)：Phase S（場景／目標分離）、Phase M（[ADR 0014](adr/0014-scalable-cut-history-sparse-logical-fields.md)：`tlmpm_v5` 打包 digit 與稀疏 slot）、Tests A–F。
 - 已 commit：Phase A 第一版（`97d56d3`：rollout pin 改為與環境無關，測試移除 matplotlib 依賴；CI 結果待確認）；Phase B 的 v2 profile（`a8e4d25`：`ruler_knife_v2_y`／`_x`，v1 pinned）與 Native grasp 工具（`c6eea75`）。
+- Phase B 完成（`2d13d30`、`712e106`）：`ruler_knife_v2_y`／`_x`，握柄縮為 60 mm（實測手掌 collider 在手 z = 0.070 m，70 mm 會頂到）。
+  - Native 7 項夾持控制兩種排列都 PASS_FROZEN_RIGID_CONTROLS（門檻同 v5；hold 時兩指各 18 N，滑移 ≤ 0.001 mm；穿透 ≤ 12 µm）。
+  - −10 N stress 下 v2 比 v1 鬆（A 268 mrad、B 35 mrad，v1 33 mrad；此項只報告）。
+  - [證據](evidence/wp11/phaseB_knife_v2_001.json)、[圖](media/wp11/knife_v2_y.png)。與參考圖相比，握柄偏大、刀身不是亮金屬色；待 C2 結果後一併定案。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A：等 GitHub Actions 結果；
-  - B：Native 自由空間夾持測試與 v2 截圖（`artifacts/wp11/phaseB/`）；
   - M：`tlmpm_v5`（`artifacts/wp11/phaseM/`）；
   - C2：v2 姿態／碰撞預檢（`artifacts/wp11/phaseC2/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
