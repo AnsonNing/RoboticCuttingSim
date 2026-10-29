@@ -22,7 +22,23 @@ new ``_rNNN`` revision next to the earlier one)::
   <root>/<run_id>/<demo>/demo_summary.json    execution / outcome / quality layers
   <root>/<run_id>/<demo>/render/              render_demo_episode output
 
-Usage::
+Usage (recommended: reproduce the final demo set with one command)::
+
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --dry-run
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --gpu 1 --run-id <id>
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --run-id <id> --stage evaluate --stage render
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --run-id <id> --stage publish
+
+``--demo-set final_v1`` is the final BladeMaster demo set: demos 1a, 1b and 2
+with controller profile ``path_v2`` and demo 3 with ``path_v2_vision``, all
+with cutting law 5 and seed 42 -- the configurations of the recorded final
+runs ``live_20261029_pathv2_d`` (1a, 1b), ``live_20261029_pathv2_c`` (2) and
+``live_20261029_vision_e`` (3). The profile is chosen per demo and recorded
+per demo in the run receipt, the demo summary and the index. ``--demo-set``
+is mutually exclusive with ``--demo`` and ``--controller-profile``; pass it to
+every stage of the run (evaluate checks each demo against its set profile).
+
+First-round / single-demo usage (``--demo``, frozen v1 definitions by default)::
 
   .venv/bin/python scripts/run_blademaster_demos.py --demo all --dry-run
   .venv/bin/python scripts/run_blademaster_demos.py --demo all --gpu 1 --run-id <id>
@@ -30,12 +46,15 @@ Usage::
   .venv/bin/python scripts/run_blademaster_demos.py --demo all --run-id <id> --stage publish
   .venv/bin/python scripts/run_blademaster_demos.py --demo 2 --gpu 1 --run-id <id> --controller-profile path_v2
 
-``--controller-profile`` (default ``v1``, the frozen demo definitions) selects
-the scripted controller profile of run_wp10_live; ``path_v2`` is the opt-in
-path-tracking controller; ``path_v2_vision`` (Demo 3 only, ADR 0009) adds the
-wrist-depth survey that retargets cut 1 (its measurements and applied shift
-are summarised under ``execution.policy_vision``). Pass the same value to
-every stage of a run: the evaluate stage checks the recorded profile against it.
+``--demo all`` with the default ``--controller-profile v1`` reproduces the
+first-round v1 configuration (kept for backward compatibility), not the final
+set. ``--controller-profile`` (default ``v1``, the frozen demo definitions)
+selects one scripted controller profile of run_wp10_live for every selected
+demo; ``path_v2`` is the opt-in path-tracking controller; ``path_v2_vision``
+(Demo 3 only, ADR 0009) adds the wrist-depth survey that retargets cut 1 (its
+measurements and applied shift are summarised under
+``execution.policy_vision``). Pass the same value to every stage of a run: the
+evaluate stage checks the recorded profile against it.
 
 ``--stage all`` (the default) is run -> evaluate -> render, plus publish with
 ``--publish``. Evaluation never modifies the episode (its files are hashed
@@ -114,6 +133,40 @@ DEMOS = {
 }
 ORDER = ('1a', '1b', '2', '3')
 STAGES = ('run', 'evaluate', 'render', 'publish')
+
+
+@dataclass(frozen=True)
+class DemoSet:
+    """A versioned, fixed demo set: per-demo controller profiles plus the pinned cutting law and seed."""
+    name: str
+    profiles: tuple    # ((demo key, controller profile), ...) in ORDER
+    cutting_law: int
+    seed: int
+    reference_runs: tuple  # ((demo key, recorded run id), ...) this set reproduces
+    description: str
+
+    @property
+    def demos(self):
+        return tuple(key for key, _ in self.profiles)
+
+    def profile(self, key):
+        return dict(self.profiles)[key]
+
+    def as_dict(self):
+        return {'name': self.name, 'demos': list(self.demos), 'controller_profiles': dict(self.profiles),
+                'cutting_law': self.cutting_law, 'seed': self.seed, 'reference_runs': dict(self.reference_runs),
+                'description': self.description}
+
+
+DEMO_SETS = {
+    'final_v1': DemoSet('final_v1', (('1a', 'path_v2'), ('1b', 'path_v2'), ('2', 'path_v2'), ('3', 'path_v2_vision')),
+                        5, 42, (('1a', 'live_20261029_pathv2_d'), ('1b', 'live_20261029_pathv2_d'),
+                                ('2', 'live_20261029_pathv2_c'), ('3', 'live_20261029_vision_e')),
+                        'Final BladeMaster demo set: path_v2 for demos 1a/1b/2, path_v2_vision (ADR 0009) for '
+                        'demo 3, cutting law 5, seed 42'),
+}
+V1_ALL_NOTICE = ('NOTICE: --demo all with --controller-profile v1 (the default): this reproduces the first-round v1 '
+                 'configuration; use --demo-set final_v1 for the final set')
 
 
 class StageError(RuntimeError):
@@ -236,8 +289,33 @@ def render_argv(spec, episode_dir, out, label, *, python=DEFAULT_RENDER_PYTHON):
             '--title', spec.title, '--label', label]
 
 
-def expected_config(spec, controller_profile='v1'):
-    return {**COMMON_CONFIG, **dict(spec.config), 'controller_profile': controller_profile}
+def expected_config(spec, controller_profile='v1', cutting_law=None):
+    """Manifest config a demo must carry; ``cutting_law`` is only checked when a demo set pins it."""
+    config = {**COMMON_CONFIG, **dict(spec.config), 'controller_profile': controller_profile}
+    if cutting_law is not None:
+        config['cutting_law'] = cutting_law
+    return config
+
+
+def demo_set_of(options):
+    name = getattr(options, 'demo_set', None)
+    return None if name is None else DEMO_SETS[name]
+
+
+def profile_of(options, key):
+    """Controller profile of one demo: the demo set's per-demo profile, else the single --controller-profile."""
+    demo_set = demo_set_of(options)
+    return options.controller_profile if demo_set is None else demo_set.profile(key)
+
+
+def cutting_law_of(options):
+    demo_set = demo_set_of(options)
+    return options.cutting_law if demo_set is None else demo_set.cutting_law
+
+
+def seed_of(options):
+    demo_set = demo_set_of(options)
+    return options.seed if demo_set is None else demo_set.seed
 
 
 def recorded_config(config, key):
@@ -337,10 +415,10 @@ def grasp_summary(rows):
 
 # ----------------------------------------------------------------------------- layers
 
-def execution_layer(spec, demo_dir, episode, loaded, controller_profile='v1'):
+def execution_layer(spec, demo_dir, episode, loaded, controller_profile='v1', demo_set=None):
     manifest, top, row, receipt = loaded['manifest'], loaded['top_result'], loaded['row'], loaded['run_receipt']
     config = (manifest or {}).get('config') or {}
-    expected = expected_config(spec, controller_profile)
+    expected = expected_config(spec, controller_profile, None if demo_set is None else demo_set.cutting_law)
     recorded = {key: recorded_config(config, key) for key in expected}
     mismatched = {key: {'expected': value, 'recorded': recorded[key]} for key, value in expected.items()
                   if not (recorded[key] == value or (isinstance(value, float)
@@ -637,12 +715,19 @@ def slice_push_outcome(spec, task, loaded):
 OUTCOMES = {'complete_cut': cut_outcome, 'oblique_cut': cut_outcome, 'trim': trim_outcome, 'slice_push': slice_push_outcome}
 
 
-def evaluate_demo_dir(spec, demo_dir, controller_profile='v1'):
+def evaluate_demo_dir(spec, demo_dir, controller_profile='v1', demo_set=None):
     """Read-only evaluation of one demo directory -> summary dict (nothing is written here).
 
     ``controller_profile`` is the profile the demo definition expects (the
     recorded manifest must match it; recordings without the key are v1).
+    ``demo_set`` (a DemoSet or its name) additionally requires the set's
+    per-demo profile and pinned cutting law.
     """
+    if isinstance(demo_set, str):
+        demo_set = DEMO_SETS[demo_set]
+    if demo_set is not None and demo_set.profile(spec.key) != controller_profile:
+        raise ValueError(f'demo set {demo_set.name} declares {demo_set.profile(spec.key)!r} for demo {spec.key}, '
+                         f'not {controller_profile!r}')
     demo_dir = Path(demo_dir)
     episode = demo_dir / 'episode_000'
     start = time.perf_counter()
@@ -658,6 +743,7 @@ def evaluate_demo_dir(spec, demo_dir, controller_profile='v1'):
     base['controller_profile'] = {'expected': controller_profile,
                                   'recorded': recorded_config(config, 'controller_profile') if manifest else None,
                                   'parameters': CONTROLLER_PROFILES.get(controller_profile)}
+    base['demo_set'] = None if demo_set is None else demo_set.as_dict()
     base['run_receipt'] = receipt
     if not (episode / 'result.json').is_file() or not (episode / 'physics_state.npz').is_file():
         failure = read_json(demo_dir / 'failure.json')
@@ -678,7 +764,7 @@ def evaluate_demo_dir(spec, demo_dir, controller_profile='v1'):
               'frame_manifest': read_json(episode / 'frame_manifest.json')}
     task, task_checks = reconstruct_task(task_json, config)
     loaded['task_checks'] = task_checks
-    execution = execution_layer(spec, demo_dir, episode, loaded, controller_profile)
+    execution = execution_layer(spec, demo_dir, episode, loaded, controller_profile, demo_set)
     if all(task_checks.values()):
         outcome, quality, label = OUTCOMES[spec.kind](spec, task, loaded)
     else:
@@ -735,11 +821,12 @@ def stage_run(options, spec):
     log, receipt_path = logs / f'{spec.dirname}_run.log', logs / f'{spec.dirname}_run.json'
     if log.exists() or receipt_path.exists():
         raise StageError(f'refusing to overwrite existing run log {log}')
+    profile = profile_of(options, spec.key)
     argv = run_argv(spec, demo_dir, python=options.native_python, gpu=options.gpu,
-                    cutting_law=options.cutting_law, seed=options.seed, controller_profile=options.controller_profile)
+                    cutting_law=cutting_law_of(options), seed=seed_of(options), controller_profile=profile)
     env = {**os.environ, 'TMPDIR': str(options.tmpdir)}
     receipt = {'demo': spec.key, 'command': argv, 'shell': shell_line(argv, options.tmpdir), 'cwd': str(ROOT),
-               'controller_profile': options.controller_profile,
+               'controller_profile': profile, 'demo_set': getattr(options, 'demo_set', None),
                'tmpdir': str(options.tmpdir), 'log': str(log), 'git': git_info(), 'gpu_before': gpu_snapshot(),
                'started_unix_s': time.time(), 'timeout_s': options.timeout}
     print(f'[{spec.key}] run: {receipt["shell"]}', flush=True)
@@ -777,7 +864,8 @@ def stage_evaluate(options, spec):
     if not demo_dir.is_dir():
         raise StageError(f'no demo directory {demo_dir}; run the physics stage first')
     try:
-        summary = evaluate_demo_dir(spec, demo_dir, controller_profile=options.controller_profile)
+        summary = evaluate_demo_dir(spec, demo_dir, controller_profile=profile_of(options, spec.key),
+                                    demo_set=demo_set_of(options))
     except (ValueError, KeyError, TypeError, IndexError) as error:
         raise StageError(f'evaluation failed: {error!r}') from error
     path = next_free(demo_dir / 'demo_summary.json')
@@ -873,6 +961,7 @@ def write_index(options):
                       'label': None if summary is None else summary['label'],
                       'cutting_law': None if summary is None else summary.get('cutting_law'),
                       'controller_profile': deep(summary, 'controller_profile', 'recorded'),
+                      'expected_controller_profile': profile_of(options, key),
                       'vision_applied_shift_m': deep(summary, 'execution', 'policy_vision', 'applied_shift_m'),
                       'runtime_source': deep(summary, 'runtime', 'runtime_source'),
                       'measured_capture_rate_hz': deep(summary, 'measured_capture_rate', 'rate_hz'),
@@ -882,7 +971,9 @@ def write_index(options):
                       'publish_receipt': None if publish is None else str(publish)}
     index = {'schema': 'blademaster_demo_index_v1', 'run_id': options.run_id, 'run_root': str(run_root),
              'control_mode': CONTROL_MODE, 'scenario': SCENARIO, 'git': git_info(), 'command': sys.argv,
-             'controller_profile': options.controller_profile,
+             'controller_profile': options.controller_profile if demo_set_of(options) is None else 'per_demo',
+             'controller_profiles': {key: profile_of(options, key) for key in demos},
+             'demo_set': None if demo_set_of(options) is None else demo_set_of(options).as_dict(),
              'written_unix_s': time.time(), 'demos': demos,
              'demo_definitions': {key: {'task_id': DEMOS[key].task_id, 'steps': DEMOS[key].steps,
                                         'extra_arguments': list(DEMOS[key].extra), 'title': DEMOS[key].title}
@@ -911,17 +1002,20 @@ def selected_stages(values, publish):
 
 
 def dry_run(options, demos, stages):
+    demo_set = demo_set_of(options)
+    if demo_set is not None:
+        print(f'# demo set {demo_set.name}: {demo_set.description}')
     for key in demos:
         spec = DEMOS[key]
         demo_dir = demo_dir_of(options, spec)
         episode = demo_dir / 'episode_000'
-        print(f'# demo {key}: {spec.title}')
+        print(f'# demo {key}: {spec.title}' + ('' if demo_set is None else f' [controller {profile_of(options, key)}]'))
         if 'run' in stages:
             if demo_dir.exists():
                 print(f'# REFUSED run: {demo_dir} exists (never overwritten)')
             print(shell_line(run_argv(spec, demo_dir, python=options.native_python, gpu=options.gpu,
-                                      cutting_law=options.cutting_law, seed=options.seed,
-                                      controller_profile=options.controller_profile), options.tmpdir))
+                                      cutting_law=cutting_law_of(options), seed=seed_of(options),
+                                      controller_profile=profile_of(options, key)), options.tmpdir))
         if 'evaluate' in stages:
             print(f'# evaluate (in-process, read-only): {episode} -> {next_free(demo_dir / "demo_summary.json")}')
         if 'render' in stages:
@@ -940,16 +1034,29 @@ def dry_run(options, demos, stages):
     print(f'# index: {next_free(Path(options.root) / options.run_id / "index.json")}')
 
 
+class _ExplicitStore(argparse.Action):
+    """``store`` that also records that the option was given explicitly (for --demo-set exclusion)."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        setattr(namespace, f'{self.dest}_explicit', True)
+
+
 def build_parser():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--demo-set', choices=tuple(DEMO_SETS), default=None,
+                   help='Versioned demo set with per-demo controller profiles (recommended: final_v1 = 1a/1b/2 '
+                        'path_v2 + 3 path_v2_vision, cutting law 5, seed 42). Mutually exclusive with --demo and '
+                        '--controller-profile')
     p.add_argument('--demo', action='append', choices=(*ORDER, 'all'), help='Repeatable; default all')
     p.add_argument('--stage', action='append', choices=(*STAGES, 'all'),
                    help='Repeatable; default all = run, evaluate, render (+ publish with --publish)')
     p.add_argument('--run-id', default=None, help='Run directory name (default: local timestamp)')
     p.add_argument('--gpu', type=int, default=1)
-    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5), default=5)
-    p.add_argument('--seed', type=int, default=42)
-    p.add_argument('--controller-profile', choices=tuple(CONTROLLER_PROFILES), default='v1',
+    p.add_argument('--cutting-law', type=int, choices=(1, 2, 3, 4, 5), default=5,
+                   action=_ExplicitStore)
+    p.add_argument('--seed', type=int, default=42, action=_ExplicitStore)
+    p.add_argument('--controller-profile', choices=tuple(CONTROLLER_PROFILES), default='v1', action=_ExplicitStore,
                    help='Scripted controller profile passed to run_wp10_live (default v1 = the frozen demo '
                         'definitions; path_v2 = opt-in path tracking + slow approach/settle; path_v2_vision = '
                         'path_v2 + ADR 0009 wrist-depth cut-1 retarget, Demo 3 only). The evaluate stage '
@@ -963,6 +1070,7 @@ def build_parser():
     p.add_argument('--tmpdir', default=DEFAULT_TMPDIR)
     p.add_argument('--timeout', type=float, default=None, help='Seconds per physics run (default: none)')
     p.add_argument('--publish-max-mb', type=float, default=10.)
+    p.set_defaults(controller_profile_explicit=False, cutting_law_explicit=False, seed_explicit=False)
     return p
 
 
@@ -972,11 +1080,28 @@ def main(argv=None):
     options.run_id = options.run_id or time.strftime('%Y%m%d_%H%M%S')
     if not options.run_id or '/' in options.run_id or options.run_id in ('.', '..'):
         parser.error('--run-id must be a plain directory name')
-    demos, stages = selected_demos(options.demo), selected_stages(options.stage, options.publish)
-    survey = vision_survey_options(options.controller_profile)
-    if survey is not None and any(DEMOS[key].task_id not in survey['task_ids'] for key in demos):
-        parser.error(f'--controller-profile {options.controller_profile} is declared for '
-                     f'{list(survey["task_ids"])} only (Demo 3); select --demo 3')
+    demo_set = demo_set_of(options)
+    if demo_set is not None:
+        if options.demo is not None:
+            parser.error('--demo-set is mutually exclusive with --demo (the set fixes its demos)')
+        if options.controller_profile_explicit:
+            parser.error('--demo-set is mutually exclusive with --controller-profile (the set fixes a profile '
+                         'per demo)')
+        for name, pinned in (('cutting_law', demo_set.cutting_law), ('seed', demo_set.seed)):
+            if getattr(options, f'{name}_explicit') and getattr(options, name) != pinned:
+                parser.error(f'--demo-set {demo_set.name} pins --{name.replace("_", "-")} {pinned}')
+        demos = list(demo_set.demos)
+    else:
+        demos = selected_demos(options.demo)
+        if options.controller_profile == 'v1' and (options.demo is None or 'all' in options.demo):
+            print(V1_ALL_NOTICE, file=sys.stderr, flush=True)
+    stages = selected_stages(options.stage, options.publish)
+    for key in demos:
+        profile = profile_of(options, key)
+        survey = vision_survey_options(profile)
+        if survey is not None and DEMOS[key].task_id not in survey['task_ids']:
+            parser.error(f'--controller-profile {profile} is declared for '
+                         f'{list(survey["task_ids"])} only (Demo 3); select --demo 3')
     if options.dry_run:
         dry_run(options, demos, stages)
         return 0

@@ -582,3 +582,220 @@ def test_evaluation_checks_the_recorded_controller_profile(runner, tmp_path):
     assert summary["verdict"] == "PASS" and summary["label"].endswith("| controller path_v2")
     assert summary["controller_profile"]["parameters"] == runner.CONTROLLER_PROFILES["path_v2"]
     assert runner.evaluate_demo_dir(spec, demo_dir)["verdict"] == "FAIL"   # v1 definition, path_v2 recording
+
+
+# ------------------------------------------------------------------------------------------------ demo set final_v1
+
+DEMO_ROOT = ROOT/"artifacts"/"wp10_claude"/"demos"
+FINAL_V1_RUNS = {"1a": "live_20261029_pathv2_d", "1b": "live_20261029_pathv2_d", "2": "live_20261029_pathv2_c",
+                 "3": "live_20261029_vision_e"}
+FINAL_V1_PROFILES = {"1a": "path_v2", "1b": "path_v2", "2": "path_v2", "3": "path_v2_vision"}
+
+
+def _normalise(argv):
+    """Command without the values of --out and --gpu (the only parts allowed to differ)."""
+    argv = list(argv)
+    for flag in ("--out", "--gpu"):
+        index = argv.index(flag)
+        argv[index+1] = "<" + flag[2:] + ">"
+    return argv
+
+
+def _dry_run_commands(text):
+    """run_wp10_live argv per demo key parsed from dry-run output (``cd ROOT && TMPDIR=... argv``)."""
+    import shlex
+    commands = {}
+    for line in text.splitlines():
+        if "run_wp10_live.py" not in line:
+            continue
+        argv = shlex.split(line.split(" && ", 1)[1])
+        assert argv[0].startswith("TMPDIR=")
+        argv = argv[1:]
+        commands[{"demo1a": "1a", "demo1b": "1b", "demo2": "2", "demo3": "3"}[Path(argv[argv.index("--out")+1]).name]] = argv
+    return commands
+
+
+def test_final_v1_definition(runner):
+    demo_set = runner.DEMO_SETS["final_v1"]
+    assert demo_set.demos == ("1a", "1b", "2", "3") and dict(demo_set.profiles) == FINAL_V1_PROFILES
+    assert demo_set.cutting_law == 5 and demo_set.seed == 42 and dict(demo_set.reference_runs) == FINAL_V1_RUNS
+    assert set(FINAL_V1_PROFILES.values()) <= set(runner.CONTROLLER_PROFILES)
+
+
+def test_final_v1_dry_run_matches_the_recorded_final_runs(runner, tmp_path, capsys):
+    receipts = {key: DEMO_ROOT/run/runner.DEMOS[key].dirname/"run_receipt.json" for key, run in FINAL_V1_RUNS.items()}
+    missing = [str(p) for p in receipts.values() if not p.is_file()]
+    if missing:
+        pytest.skip(f"recorded final runs absent: {missing}")
+    root = tmp_path/"demos"
+    assert runner.main(["--demo-set", "final_v1", "--dry-run", "--run-id", "R1", "--root", str(root), "--gpu", "0"]) == 0
+    out = capsys.readouterr()
+    assert not root.exists() and "first-round" not in out.err
+    commands = _dry_run_commands(out.out)
+    assert set(commands) == set(FINAL_V1_RUNS)
+    for key, path in receipts.items():
+        recorded = json.loads(path.read_text())
+        assert recorded["exit_code"] == 0 and recorded["controller_profile"] == FINAL_V1_PROFILES[key]
+        assert _normalise(commands[key]) == _normalise(recorded["command"]), key
+        assert commands[key][commands[key].index("--gpu")+1] == "0"
+        assert commands[key][commands[key].index("--out")+1] == str(root/"R1"/runner.DEMOS[key].dirname)
+        manifest = json.loads((path.parent/"manifest.json").read_text())["config"]
+        assert manifest["controller_profile"] == FINAL_V1_PROFILES[key] and manifest["cutting_law"] == 5
+
+
+@pytest.mark.parametrize("key", ["1a", "1b", "2", "3"])
+def test_final_v1_commands_pass_the_real_run_wp10_live_parser(runner, key, tmp_path):
+    spec, profile = runner.DEMOS[key], FINAL_V1_PROFILES[key]
+    argv = runner.run_argv(spec, tmp_path/spec.dirname, python="PY", controller_profile=profile)
+    assert argv == [*runner.run_argv(spec, tmp_path/spec.dirname, python="PY")[:-8], "--controller-profile", profile,
+                    *argv[-8:]]
+    out = _parse_live(argv[2:])
+    assert out["status"] == 1
+    for name, value in runner.expected_config(spec, profile, 5).items():
+        assert out["config"][name] == value, name
+
+
+@pytest.mark.parametrize("extra,message", [
+    (["--demo", "all"], "mutually exclusive with --demo"),
+    (["--demo", "3"], "mutually exclusive with --demo"),
+    (["--controller-profile", "path_v2"], "mutually exclusive with --controller-profile"),
+    (["--controller-profile", "v1"], "mutually exclusive with --controller-profile"),
+    (["--cutting-law", "4"], "pins --cutting-law 5"),
+    (["--seed", "7"], "pins --seed 42")])
+def test_demo_set_exclusions(runner, tmp_path, capsys, extra, message):
+    with pytest.raises(SystemExit) as error:
+        runner.main(["--demo-set", "final_v1", "--dry-run", "--run-id", "R1", "--root", str(tmp_path), *extra])
+    assert error.value.code == 2 and message in capsys.readouterr().err
+
+
+def test_demo_set_accepts_its_own_pinned_values(runner, tmp_path, capsys):
+    assert runner.main(["--demo-set", "final_v1", "--dry-run", "--run-id", "R1", "--root", str(tmp_path),
+                        "--cutting-law", "5", "--seed", "42"]) == 0
+    assert capsys.readouterr().out.count("run_wp10_live.py") == 4
+
+
+def test_v1_demo_all_prints_the_first_round_notice(runner, tmp_path, capsys):
+    assert runner.main(["--demo", "all", "--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0
+    out = capsys.readouterr()
+    assert "this reproduces the first-round v1 configuration; use --demo-set final_v1 for the final set" in out.err
+    assert "--controller-profile" not in out.out and out.out.count("run_wp10_live.py") == 4
+    assert runner.main(["--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0       # no --demo = all
+    assert "first-round" in capsys.readouterr().err
+    assert runner.main(["--demo", "2", "--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0
+    assert "first-round" not in capsys.readouterr().err                                   # a single demo: no notice
+
+
+def test_v1_demo_all_with_path_v2_is_unchanged(runner, tmp_path, capsys):
+    """--demo all --controller-profile path_v2 was valid before (path_v2 has no survey) and stays valid."""
+    assert runner.main(["--demo", "all", "--controller-profile", "path_v2", "--dry-run", "--run-id", "R1",
+                        "--root", str(tmp_path)]) == 0
+    out = capsys.readouterr()
+    assert out.out.count("--controller-profile path_v2 ") == 4 and "first-round" not in out.err
+    with pytest.raises(SystemExit):
+        runner.main(["--demo", "all", "--controller-profile", "path_v2_vision", "--dry-run", "--run-id", "R1",
+                     "--root", str(tmp_path)])
+
+
+def test_final_v1_run_stage_records_per_demo_profiles(runner, tmp_path, monkeypatch, capsys):
+    root = tmp_path/"demos"
+    calls = []
+
+    class Process:
+        pid = 1
+
+        def __init__(self, argv, **kwargs):
+            calls.append(argv)
+            Path(argv[argv.index("--out")+1]).mkdir(parents=True)
+
+        def wait(self, timeout=None):
+            return 0
+
+    monkeypatch.setattr(runner.subprocess, "Popen", Process)
+    monkeypatch.setattr(runner, "gpu_snapshot", lambda: {"stub": True})
+    monkeypatch.setattr(runner, "git_info", lambda: {"stub": True})
+    assert runner.main(["--demo-set", "final_v1", "--stage", "run", "--run-id", "R1", "--root", str(root),
+                        "--native-python", "PY"]) == 0
+    capsys.readouterr()
+    assert len(calls) == 4
+    for key, profile in FINAL_V1_PROFILES.items():
+        dirname = runner.DEMOS[key].dirname
+        receipt = json.loads((root/"R1"/dirname/"run_receipt.json").read_text())
+        assert receipt["controller_profile"] == profile and receipt["demo_set"] == "final_v1"
+        assert receipt["command"][receipt["command"].index("--controller-profile")+1] == profile
+        assert receipt["command"][receipt["command"].index("--cutting-law")+1] == "5"
+        assert json.loads((root/"R1"/"logs"/f"{dirname}_run.json").read_text()) == receipt
+    index = json.loads((root/"R1"/"index.json").read_text())
+    assert index["controller_profile"] == "per_demo" and index["controller_profiles"] == FINAL_V1_PROFILES
+    assert index["demo_set"]["name"] == "final_v1"
+    assert {k: v["expected_controller_profile"] for k, v in index["demos"].items()} == FINAL_V1_PROFILES
+
+
+def _final_v1_run(runner, root):
+    """A fake recorded final_v1 run R1 with one passing episode per demo and its per-demo profile."""
+    run = root/"R1"
+    for key in ("1a", "1b"):
+        _cut_episode(runner, run, key)
+    _trim_episode(runner, run)
+    _slice_episode(runner, run)
+    for key, profile in FINAL_V1_PROFILES.items():
+        _set_manifest(run/runner.DEMOS[key].dirname, controller_profile=profile)
+    return run
+
+
+def test_final_v1_stage_rerun_evaluate_render_publish(runner, tmp_path, monkeypatch, capsys):
+    root, media = tmp_path/"demos", tmp_path/"media"
+    run = _final_v1_run(runner, root)
+    base = ["--demo-set", "final_v1", "--run-id", "R1", "--root", str(root), "--media-root", str(media),
+            "--render-python", "PY"]
+    assert runner.main([*base, "--stage", "evaluate"]) == 0
+    for key, profile in FINAL_V1_PROFILES.items():
+        summary = json.loads((run/runner.DEMOS[key].dirname/"demo_summary.json").read_text())
+        assert summary["verdict"] == "PASS", (key, summary["execution"]["checks"], summary["outcome"].get("checks"))
+        assert summary["controller_profile"]["expected"] == profile == summary["controller_profile"]["recorded"]
+        assert summary["execution"]["controller_profile"]["expected"] == profile
+        assert summary["demo_set"]["name"] == "final_v1" and summary["label"].endswith(f"| controller {profile}")
+        assert summary["execution"]["checks"]["command_matches_demo_definition"]
+    index = json.loads((run/"index.json").read_text())
+    assert {k: v["controller_profile"] for k, v in index["demos"].items()} == FINAL_V1_PROFILES
+    assert {k: v["verdict"] for k, v in index["demos"].items()} == {k: "PASS" for k in FINAL_V1_PROFILES}
+
+    calls = []
+    monkeypatch.setattr(runner, "git_info", lambda: {"stub": True})
+    monkeypatch.setattr(runner.subprocess, "run", lambda argv, **k: calls.append(argv) or
+                        type("R", (), {"returncode": 0})())
+    assert runner.main([*base, "--stage", "render"]) == 0
+    assert len(calls) == 4 and calls[3][calls[3].index("--label")+1].endswith("| controller path_v2_vision")
+    for key in FINAL_V1_PROFILES:
+        _fake_render(runner, run/runner.DEMOS[key].dirname)
+    assert runner.main([*base, "--stage", "publish", "--publish-max-mb", "1"]) == 0
+    for key in FINAL_V1_PROFILES:
+        dirname = runner.DEMOS[key].dirname
+        assert (media/dirname/f"R1_{dirname}.gif").is_file()
+        assert json.loads((media/dirname/f"R1_{dirname}.json").read_text())["verdict"] == "PASS"
+    index = json.loads(runner.latest_existing(run/"index.json").read_text())
+    assert all(v["publish_receipt"] for v in index["demos"].values()) and index["controller_profiles"] == FINAL_V1_PROFILES
+    capsys.readouterr()
+
+
+def test_final_v1_evaluate_checks_each_demo_profile_and_cutting_law(runner, tmp_path, capsys):
+    root = tmp_path/"demos"
+    run = _final_v1_run(runner, root)
+    _set_manifest(run/"demo3", controller_profile="path_v2")          # demo 3 recorded without the vision survey
+    _set_manifest(run/"demo2", cutting_law=4)                         # demo 2 recorded with another cutting law
+    assert runner.main(["--demo-set", "final_v1", "--run-id", "R1", "--root", str(root), "--stage", "evaluate"]) == 0
+    capsys.readouterr()
+    verdicts = {}
+    for key in FINAL_V1_PROFILES:
+        verdicts[key] = json.loads((run/runner.DEMOS[key].dirname/"demo_summary.json").read_text())
+    assert verdicts["1a"]["verdict"] == verdicts["1b"]["verdict"] == "PASS"
+    assert verdicts["3"]["verdict"] == "FAIL" and verdicts["3"]["execution"]["manifest_mismatches"] == {
+        "controller_profile": {"expected": "path_v2_vision", "recorded": "path_v2"}}
+    assert verdicts["2"]["verdict"] == "FAIL" and verdicts["2"]["execution"]["manifest_mismatches"] == {
+        "cutting_law": {"expected": 5, "recorded": 4}}
+    # The same run evaluated with the v1 single-profile definitions fails on the profile, as before.
+    assert runner.main(["--demo", "1a", "--run-id", "R1", "--root", str(root), "--stage", "evaluate"]) == 0
+    capsys.readouterr()
+    v1 = json.loads((run/"demo1a"/"demo_summary_r002.json").read_text())
+    assert v1["verdict"] == "FAIL" and v1["demo_set"] is None
+    with pytest.raises(ValueError):
+        runner.evaluate_demo_dir(runner.DEMOS["3"], run/"demo3", controller_profile="path_v2", demo_set="final_v1")
