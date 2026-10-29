@@ -59,6 +59,7 @@ class EpisodeRecorder:
         self.body_states = [self.body_poses()]
         self.events = dict(rejected=0, clamped=0, cutting_steps=0)
         self.steps = 0
+        self.phases = []  # (input time_s, scripted policy phase label) per control step
         self.stream = (self.output / 'actions.jsonl').open('w')
         config = getattr(env.backend, 'options', getattr(env.backend, 'config', None))
         write_json(self.output / 'manifest.json', manifest(jsonable(dict(
@@ -90,6 +91,14 @@ class EpisodeRecorder:
                 raise ValueError('Only current, measured camera frames may be recorded')
             public['physics_timestamp_s'] = timestamp
             np.savez_compressed(self.output / 'observations' / f'{name}_{index:04d}.npz', **public)
+        overview = getattr(backend, 'overview_frame', None) if frames else None
+        if overview is not None:
+            # Presentation-only RGB (never an observation); same measured-time rule.
+            timestamp = float(overview['physics_timestamp_s'])
+            if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
+                raise ValueError('Only current overview frames may be recorded')
+            np.savez_compressed(self.output / 'observations' / f'overview_rgb_{index:04d}.npz',
+                                rgb=overview['rgb'], physics_timestamp_s=timestamp)
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
                               cut_enabled=getattr(self, 'last_cut', False)))
@@ -98,8 +107,11 @@ class EpisodeRecorder:
         self.states.append(jsonable(self.measured()))
         write_json(self.output / 'frame_manifest.json', self.rows)
 
-    def step(self, action, result, before_observation=None, step_wall_s=None):
+    def step(self, action, result, before_observation=None, step_wall_s=None, policy_phase=None):
         self.steps += 1
+        if policy_phase is not None:
+            self.phases.append(((before_observation or {}).get('timestamp_s', self.env.time_s - self.env.task.control_dt_s),
+                                policy_phase))
         self.body_states.append(self.body_poses())
         observation, reward, terminated, truncated, info = result
         report = info.get('action_report') or {}
@@ -131,10 +143,33 @@ class EpisodeRecorder:
                    grasp_status=diagnostics.get('grasp_status'),
                    resolved_target_world_xyz_xyzw=target,
                    accepted_target_world_xyz_xyzw=self.env._commanded)
+        if policy_phase is not None:
+            row['policy_phase'] = policy_phase
         self.stream.write(json.dumps(jsonable(row), allow_nan=False) + '\n')
         self.stream.flush()
         if self.steps % self.every == 0 or terminated or truncated:
             self.capture()
+
+    def push_interval(self, label='push'):
+        """Actual [start, end] time of the scripted ``label`` phase, its completion and source."""
+        times = [time for time, phase in self.phases if phase == label]
+        if not times:
+            return None
+        start = times[0]
+        later = [time for time, phase in self.phases if time > start and phase != label]
+        end = later[0] if later else float(self.env.time_s)
+        return dict(interval_s=[float(start), float(end)], completed=bool(later),
+                    source='scripted policy phase labels (input time of the first push action to the first later non-push step)')
+
+    def phase_arrays(self):
+        if not self.phases:
+            return {}
+        arrays = dict(policy_phase_time_s=np.asarray([time for time, _ in self.phases], float),
+                      policy_phases=np.asarray([phase for _, phase in self.phases], str))
+        push = self.push_interval()
+        if push is not None:
+            arrays.update(push_interval_s=np.asarray(push['interval_s'], float), push_completed=push['completed'])
+        return arrays
 
     def finish(self, result):
         self.stream.close()
@@ -149,7 +184,7 @@ class EpisodeRecorder:
             reference_positions_local=material.points, reference_indices=material.lattice,
             reference_stencil_nodes=material.bed.nodes.numpy(),
             reference_stencil_weights=material.bed.weights.numpy(),
-            reference_stencil_gradients=material.bed.gradients.numpy())
+            reference_stencil_gradients=material.bed.gradients.numpy(), **self.phase_arrays())
         write_json(self.output / 'robot_state.json', self.states)
         backend = env.backend
         body_paths = getattr(backend, 'rigid_link_paths', None)
@@ -194,7 +229,97 @@ def fuzz_action(step, rng, pattern='balanced'):
     return dict(mode=DELTA_MODE, target=delta, frame='world', cut_enabled=False, cut_index=0)
 
 
-def main():
+def episode_step_limit(task_id):
+    """Control steps in one task episode (v1/v2: 8 s -> 400; SLICE-PUSH-01: 16 s -> 800)."""
+    from robotic_cutting_sim.tasks import make_task
+    task = make_task(task_id)
+    return int(round(task.duration_s / task.control_dt_s))
+
+
+def validate_arguments(p, a):
+    try:
+        limit = episode_step_limit(a.task)
+    except (ValueError, KeyError) as error:
+        p.error(f'Unknown task {a.task!r}: {error}')
+    if not 1 <= a.steps <= limit or a.episodes < 1:
+        p.error(f'A {a.task} episode has 1..{limit} steps')
+    if a.overview_camera and (a.runtime != 'isaac_sim' or not (a.record_cameras or a.observation != 'state')):
+        p.error('--overview-camera is Native-only and needs recorded cameras (--record-cameras or a vision observation)')
+    if (a.edge_feedback != 'nominal' or a.position_tolerance is not None) and a.controller != 'scripted':
+        p.error('--edge-feedback/--position-tolerance apply to the scripted controller only')
+    if a.position_tolerance is not None and not 0 < a.position_tolerance < .01:
+        p.error('--position-tolerance must be in (0, 0.01) m')
+    from robotic_cutting_sim.tasks import DemoTaskSpec, make_task
+    if a.offset and (a.controller != 'scripted' or a.task in DemoTaskSpec.TASK_IDS
+                     or make_task(a.task).goal_kind == 'flatten' or not abs(a.offset) <= .05):
+        p.error('--offset (|offset| <= 0.05 m) shifts the scripted through_cut line; not for slice_push or skim')
+    if a.task in DemoTaskSpec.TASK_IDS and a.controller == 'scripted' and (a.motion != 'push' or a.angle):
+        p.error(f'{a.task} uses the slice_push plan; --motion/--angle variants are not implemented for it')
+
+
+def is_demo_task(task):
+    from robotic_cutting_sim.tasks import DemoTaskSpec
+    return isinstance(task, DemoTaskSpec)
+
+
+def policy_plan_name(task):
+    return 'slice_push' if is_demo_task(task) else 'skim' if task.goal_kind == 'flatten' else 'through_cut'
+
+
+def edge_feedback_receipt(a):
+    if a.edge_feedback == 'nominal':
+        return dict(mode='nominal', source='nominal_hand_mount_edge_from_proprioception')
+    return dict(mode='measured', source='measured_tool_edge_feedback',
+                scope='Simulator tool-edge pose of the physically held knife (privileged tool proprioception); '
+                      'not material oracle state and not part of the policy observation')
+
+
+def measured_edge_estimator(env):
+    """WORLD edge XYZ+XYZW of the actually held tool at the observation time."""
+    backend = env.backend
+
+    def estimate(observation):
+        measured = backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
+        stamp = float(measured.get('timestamp_s', env.time_s))
+        if abs(stamp - float(observation['timestamp_s'])) > 1e-9:
+            raise ValueError('Measured tool-edge feedback must match the observation time')
+        return np.asarray(measured['tool_pose'], float).copy()
+    return estimate
+
+
+def scripted_policy(env, a):
+    from robotic_cutting_sim.policies import WaypointPolicy, skim, slice_push, through_cut
+    saw = .006 if a.motion == 'saw' else 0.
+    if is_demo_task(env.task):
+        plan = slice_push(env.task, cut_speed_m_s=a.speed)
+    elif env.task.goal_kind == 'flatten':
+        plan = skim(env.task, saw_amplitude_m=saw)
+    else:
+        motion_args = {'saw_amplitude_m': saw, 'cut_speed_m_s': a.speed}
+        if getattr(a, 'offset', 0.):
+            motion_args['offset_m'] = a.offset
+        if a.motion in ('oblique', 'yaw', 'roll'):
+            motion_args[{'oblique':'tilt_deg','yaw':'yaw_deg','roll':'roll_deg'}[a.motion]] = a.angle
+        plan = through_cut(env.task, **motion_args)
+    options = {}
+    if a.edge_feedback == 'measured':
+        options['edge_estimator'] = measured_edge_estimator(env)
+    if a.position_tolerance is not None:
+        options['position_tolerance_m'] = a.position_tolerance
+    return WaypointPolicy(env.task, plan, env.action_limits or ActionLimits(), **options)
+
+
+def evaluate_episode(env, push=None):
+    """(strict, research, demo). Demo tasks: frozen oracle NOT_APPLICABLE, multi-cut research, demo report."""
+    if not is_demo_task(env.task):
+        return env.evaluate(), env.evaluate(profile='research'), None
+    strict = {**env.task.evaluate_oracle({}), 'success': False, 'runtime_source': env.runtime_source}
+    research = env.evaluate(profile='research', goal=env.task.multi_cut_goal())
+    demo = env.evaluate(push_interval_s=None if push is None else push['interval_s'])
+    return strict, research, demo
+
+
+def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--runtime', choices=('isaac_sim', 'isaac_lab'), required=True)
     p.add_argument('--task', default='CUT-01')
@@ -205,7 +330,14 @@ def main():
     p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
     p.add_argument('--gym', action='store_true')
     p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
-    p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2'))
+    p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2', 'blademaster_workcell_v1'))
+    p.add_argument('--overview-camera', action='store_true',
+                   help='Native only: author and record the presentation-only overview RGB camera (never an observation)')
+    p.add_argument('--edge-feedback', choices=('nominal', 'measured'), default='nominal',
+                   help='Scripted controller edge source: nominal hand-mount edge (default) or the measured '
+                        'simulator tool-edge pose (measured_tool_edge_feedback; not material oracle state)')
+    p.add_argument('--position-tolerance', type=float,
+                   help='Scripted waypoint position tolerance in m (default: WaypointPolicy default 0.5 mm)')
     p.add_argument('--material-profile')
     p.add_argument('--material-dt', type=float, default=.0001)
     p.add_argument('--max-cuts', type=int, default=1)
@@ -215,6 +347,8 @@ def main():
     p.add_argument('--motion', choices=('push', 'saw', 'oblique', 'yaw', 'roll'), default='push')
     p.add_argument('--angle', type=float, default=0.)
     p.add_argument('--speed', type=float, default=.01)
+    p.add_argument('--offset', type=float, default=0.,
+                   help='Scripted through_cut only: shift the cut line along the local target normal (m; default 0)')
     p.add_argument('--reward', action='store_true')
     p.add_argument('--grip-force', type=float)
     p.add_argument('--settle-seconds', type=float)
@@ -226,9 +360,8 @@ def main():
     p.add_argument('--spacing', type=float)
     p.add_argument('--record-every', type=int, default=10)
     p.add_argument('--out', type=Path, required=True)
-    a = p.parse_args()
-    if not 1 <= a.steps <= 400 or a.episodes < 1:
-        p.error('A task episode has 1..400 steps')
+    a = p.parse_args(argv)
+    validate_arguments(p, a)
     out = new_output(a.out)
     write_json(out / 'manifest.json', manifest(jsonable(vars(a)), 'wp10_actual_live_validation'))
     results, start = [], time.monotonic()
@@ -238,6 +371,8 @@ def main():
         if a.runtime == 'isaac_lab' and a.tool_attachment_mode == 'legacy_fixed_tool':
             options.pop('grip_contact_profile', None)
     options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state' or a.record_cameras)
+    if a.overview_camera:
+        options['overview_camera'] = True
     options.update(scenario=a.scenario, material_profile_id=a.material_profile, material_dt=a.material_dt,
                    max_cuts=a.max_cuts, ik_iterations=a.ik_iterations, history_stride=a.oracle_stride,
                    cutting_law=a.cutting_law)
@@ -275,13 +410,7 @@ def main():
                     cut_index_check = dict(status='FAIL', reason='Unavailable digit was accepted')
                 policy = None
                 if a.controller == 'scripted':
-                    from robotic_cutting_sim.policies import WaypointPolicy, through_cut, skim
-                    saw = .006 if a.motion == 'saw' else 0.
-                    motion_args = {'saw_amplitude_m': saw, 'cut_speed_m_s': a.speed}
-                    if a.motion in ('oblique', 'yaw', 'roll'):
-                        motion_args[{'oblique':'tilt_deg','yaw':'yaw_deg','roll':'roll_deg'}[a.motion]] = a.angle
-                    plan = skim(env.task, saw_amplitude_m=saw) if env.task.goal_kind == 'flatten' else through_cut(env.task, **motion_args)
-                    policy = WaypointPolicy(env.task, plan, env.action_limits or ActionLimits())
+                    policy = scripted_policy(env, a)
                 rng = np.random.default_rng(seed)
                 for step in range(a.steps):
                     action = (fuzz_action(step, rng, a.fuzz_pattern) if a.controller == 'fuzz' else
@@ -307,17 +436,25 @@ def main():
                         result = env.step(action)
                         observation = result[0]
                     env.action_limits = saved_limits
-                    recorder.step(action, result, before_observation, time.monotonic()-step_start)
+                    recorder.step(action, result, before_observation, time.monotonic()-step_start,
+                                  policy_phase=policy.phase if policy is not None else None)
                     if (step + 1) % 25 == 0:
                         print(f'{a.runtime} {a.task} {a.controller} episode={episode} step={step+1} t={env.time_s:.2f}', flush=True)
                     if result[2] or result[3]:
                         break
-                strict = env.evaluate()
-                research = env.evaluate(profile='research')
+                push = recorder.push_interval()
+                strict, research, demo = evaluate_episode(env, push)
                 row = dict(runtime=a.runtime, task_id=a.task, controller=a.controller, seed=seed,
-                           status='PASS_EXECUTION', task_status=strict.get('status'), strict=strict, research=research,
+                           status='PASS_EXECUTION', task_status=(demo or strict).get('status'), strict=strict, research=research,
                            cut_index_check=cut_index_check, runtime_source=env.runtime_source,
                            observation_profile=a.observation, wall_s=time.monotonic() - episode_start)
+                if demo is not None:
+                    row.update(demo=demo, push_phase=push)
+                if policy is not None:
+                    row.update(policy_plan=policy_plan_name(env.task), edge_feedback=edge_feedback_receipt(a),
+                               policy_position_tolerance_m=policy.position_tolerance_m,
+                               policy_final_phase=policy.phase,
+                               policy_motion=dict(motion=a.motion, angle_deg=a.angle, offset_m=a.offset, speed_m_s=a.speed))
                 row.update(recorder.finish(row))
                 results.append(row)
                 write_json(out / 'results.json', results)

@@ -478,6 +478,9 @@ def _make_demo_task(task_id, seed, variant, world_from_workpiece_xyzw, particle_
 
 
 TASK_IDS = CuttingTaskSpec.TASK_IDS+ProfileTaskSpec.TASK_IDS+DemoTaskSpec.TASK_IDS
+# Opt-in profile-tool task IDs (v2 ProfileTaskSpec and its v3 DemoTaskSpec subclass);
+# runtimes use this for the physical-grasp/scenario/two-digit guards.
+PROFILE_TASK_IDS = ProfileTaskSpec.TASK_IDS+DemoTaskSpec.TASK_IDS
 
 
 def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiece_xyzw=(0, 0, 0, 0, 0, 0, 1),

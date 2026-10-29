@@ -173,15 +173,17 @@ class LabCuttingConfig:
             raise ValueError("Legacy fixed tools cannot be initialized free")
         if self.camera_layout not in ("legacy_fixed_d455", "wrist_d405_global_d455"):
             raise ValueError("Unsupported camera layout")
-        from .tasks import TASK_IDS, ProfileTaskSpec
+        from .tasks import PROFILE_TASK_IDS, TASK_IDS, DemoTaskSpec
         if self.task_id not in (None, *TASK_IDS):
             raise ValueError("Unsupported live cutting task")
-        if self.task_id in ProfileTaskSpec.TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
+        if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
             raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
         if self.max_cuts not in (1, 2) or self.material_dt <= 0 or self.ik_iterations < 1:
             raise ValueError('Require one/two cut digits, positive material dt and IK iterations')
+        if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
+            raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
         if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
-                or self.cutting_law is not None) and self.task_id not in ProfileTaskSpec.TASK_IDS:
+                or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
             raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
         if self.cutting_law not in (None, 1, 2, 3, 4, 5):
             raise ValueError('cutting_law is None, 1, 2, 3, 4 or 5')

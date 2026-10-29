@@ -238,8 +238,15 @@ class CuttingTaskEnv:
             raise ValueError("Choose an available camera and rgb_array/depth_array")
         return self._frames[camera]["rgb" if mode == "rgb_array" else "depth_m"].copy()
 
-    def evaluate(self, profile=None, *, goal=None, represented_target=None):
-        """Independent oracle score; a completed episode alone never means success."""
+    def evaluate(self, profile=None, *, goal=None, represented_target=None, push_interval_s=None):
+        """Independent oracle score; a completed episode alone never means success.
+
+        A v3 demo task (tasks.DemoTaskSpec) with neither ``profile`` nor
+        ``goal`` returns its demo report (``task.evaluate_demo``); the frozen
+        two-part oracle is NOT_APPLICABLE there. ``push_interval_s`` is the
+        recorded actual push phase (else the task reference schedule is used,
+        and the report says so).
+        """
         self._require_ready()
         if len(self._history) < 2:
             return {"task_id": self.task.task_id, "status": "NOT_RUN", "success": False,
@@ -271,6 +278,12 @@ class CuttingTaskEnv:
             "surface_vertices_world": vertices, "surface_triangles": triangles,
             "surface_triangle_component_ids": face_components,
             "surface_component_provenance": metadata["partition_rule"], "surface_timestamp_s": self.time_s}
+        from .tasks import DemoTaskSpec
+        if isinstance(self.task, DemoTaskSpec) and profile is None and goal is None:
+            data['reference_indices'] = material.lattice
+            if push_interval_s is not None:
+                data['push_interval_s'] = tuple(float(value) for value in push_interval_s)
+            return {**self.task.evaluate_demo(data), 'runtime_source': self.runtime_source}
         if getattr(material, 'max_cuts', 1) > 1:
             from .multi_cut_evaluation import MultiCutGoal, evaluate_multi_cut
             if not isinstance(goal, MultiCutGoal):

@@ -66,6 +66,7 @@ class IsaacSimCuttingConfig:
     tool_spec: object | None = None
     workpiece_kind: str = "rectangle"
     camera: bool = True
+    overview_camera: bool = False  # presentation-only RGB /World/PresentationCamera/Overview; never an observation
     scenario: str | None = None
     material_profile_id: str | None = None
     max_cuts: int = 1
@@ -101,15 +102,19 @@ class IsaacSimCuttingConfig:
             raise ValueError("The validated native global D455 profile requires640x480")
         if self.observation_motion_probe and self.camera_layout != "wrist_d405_global_d455":
             raise ValueError("The observation motion probe requires the wrist-camera layout")
-        from .tasks import TASK_IDS, ProfileTaskSpec
+        if self.overview_camera and (self.task_id is None or not (self.camera and self.camera_layout == "wrist_d405_global_d455")):
+            raise ValueError("The presentation overview camera requires a task, live cameras and the wrist D405 / global D455 layout")
+        from .tasks import PROFILE_TASK_IDS, TASK_IDS, DemoTaskSpec
         if self.task_id not in (None, *TASK_IDS):
             raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
-        if self.task_id in ProfileTaskSpec.TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
+        if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
             raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
         if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
             raise ValueError('One or two cut digits and positive IK iterations are required')
+        if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
+            raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
         if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
-                or self.cutting_law is not None) and self.task_id not in ProfileTaskSpec.TASK_IDS:
+                or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
             raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
         if self.cutting_law not in (None, 1, 2, 3, 4, 5):
             raise ValueError('cutting_law is None, 1, 2, 3, 4 or 5')
@@ -474,6 +479,7 @@ class LiveIsaacSimCutting:
         self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
         self.bridge = DynamicSurfaceBridge(stage)
         self._update_surface()
+        self.overview_spec,self.overview_sensor,self.overview_frame=None,None,None
         if c.camera:
             self._create_cameras()
         else:
@@ -504,6 +510,11 @@ class LiveIsaacSimCutting:
             "observation_motion_probe":c.observation_motion_probe,
             "dof_names":self.arms.dof_names,
             "feedback_delay_s":c.control_dt, "proprioception_source":"actual PhysX tensors"}
+        if self.task is not None and (getattr(self,"fixture_plan",None) or {}).get("any_material_declared"):
+            from .native_fixture import authored_material_receipt
+            setup["task_fixture_materials"]=authored_material_receipt(stage,self.fixture_plan)
+        if self.overview_spec is not None:
+            setup["presentation_overview_camera"]=self.overview_spec
         write_json(self.output/("setup.json" if self.reset_index==0 else f"reset_setup_{self.reset_index:02d}.json"), setup)
         return initial
 
@@ -517,14 +528,23 @@ class LiveIsaacSimCutting:
         pose=np.asarray(task.world_from_workpiece_xyzw,float)
         root.AddTranslateOp().Set(Gf.Vec3d(*pose[:3]))
         root.AddOrientOp(UsdGeom.XformOp.PrecisionDouble).Set(Gf.Quatd(float(pose[6]),Gf.Vec3d(*pose[3:6])))
-        for index,box in enumerate(task.fixture_boxes_local):
+        # Declared (v3) fixture materials: display colour + PhysX material; undeclared
+        # boxes keep the historical colour and no physics material binding.
+        from .native_fixture import bind_physics_material, fixture_authoring_plan
+        self.fixture_plan=plan=fixture_authoring_plan(task,getattr(self.config,"scenario",None))
+        for index,(box,row) in enumerate(zip(task.fixture_boxes_local,plan["boxes"])):
             cube=UsdGeom.Cube.Define(stage,f"/World/TaskFixture/Box_{index}")
             cube.CreateSizeAttr(2.)
             cube.GetPrim().SetCustomDataByKey("research:fixture_name",box.name)
             cube.AddTranslateOp().Set(Gf.Vec3d(*box.center_m))
             cube.AddScaleOp().Set(Gf.Vec3f(*box.half_extents_m))
-            cube.CreateDisplayColorAttr([Gf.Vec3f(.22,.27,.31)])
+            cube.CreateDisplayColorAttr([Gf.Vec3f(*row["display_color_rgb"])])
             UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+            if row["material_declared"]:
+                cube.GetPrim().SetCustomDataByKey("research:fixture_role",row["role"])
+                bind_physics_material(stage,cube.GetPrim(),row["physics_material"])
+        if plan["table"] is not None:
+            bind_physics_material(stage,stage.GetPrimAtPath("/World/Table"),plan["table"]["physics_material"])
         table=UsdGeom.Xformable(stage.GetPrimAtPath("/World/Table"))
         for op in table.GetOrderedXformOps():
             if op.GetOpType()==UsdGeom.XformOp.TypeTranslate:
@@ -864,6 +884,21 @@ class LiveIsaacSimCutting:
             "pixel_aspect_ratio":float(sensor.render_product.GetPixelAspectRatioAttr().Get()),
             "resolution":[int(x) for x in sensor.render_product.GetResolutionAttr().Get()]}
             for name,sensor in self.cameras.items()})
+        if c.overview_camera:
+            # Presentation-only RGB: kept out of self.cameras/calibration, so it is
+            # never an observation, calibration or camera-contract stream.
+            from .presentation_camera import PRIM_PATH, author_overview_camera, overview_camera_spec
+            from .native_camera_geometry import transform_error
+            spec=overview_camera_spec(self.task)
+            author_overview_camera(self.stage,spec)
+            self.overview_sensor=CameraSensor(RtxCamera(PRIM_PATH,tick_rate=0.),
+                resolution=(spec["height"],spec["width"]),annotators=["rgb"])
+            authored=usd_camera_calibration(self.stage,PRIM_PATH,spec["width"],spec["height"])
+            spec["authored_usd_readback"]={"T_world_camera":authored["T_world_camera"],"K":authored["K"],
+                "pose_error_vs_spec":transform_error(authored["T_world_camera"],spec["T_world_camera"]),
+                "render_product":str(self.overview_sensor.render_product.GetPath())}
+            self.overview_spec=spec
+            write_json(self.output/"presentation_overview_camera.json",spec)
 
     def _update_camera_extrinsics(self, measured_hand_poses):
         """Refresh optical extrinsics after every actual20ms articulation step."""
@@ -1030,13 +1065,18 @@ class LiveIsaacSimCutting:
                 value=source.get_data()
                 return (value.get("data"),value.get("info",{})) if isinstance(value,dict) else (value,{})
             return sensor.get_data(annotator)
+        overview=getattr(self,"overview_sensor",None)
+        overview_rgb=None
         for _ in range(self.config.render_warmup+30):
             rep.orchestrator.step(rt_subframes=1,delta_time=0.)
             latest = {name:{a:data(name,sensor,a) for a in
                        (["rgb","distance_to_image_plane","depth_sensor_distance","depth_sensor_point_cloud_position"]
                        if name in self.native_parameters else ["rgb","distance_to_image_plane"])}
                       for name,sensor in self.cameras.items()}
-            if _ >= self.config.render_warmup-1 and all(value[0] is not None for data in latest.values() for value in data.values()):
+            if overview is not None:
+                overview_rgb=overview.get_data("rgb")[0]
+            if (_ >= self.config.render_warmup-1 and all(value[0] is not None for data in latest.values() for value in data.values())
+                    and (overview is None or overview_rgb is not None)):
                 break
         else:
             raise TimeoutError("Live native RTX cameras did not produce arrays")
@@ -1128,6 +1168,14 @@ class LiveIsaacSimCutting:
             frames[name] = frame
         write_json(self.output/"calibration_runtime.json",self.calibration)
         write_json(self.output/"native_registration_latest.json",self.native_registration)
+        if overview is not None:
+            rgb=numpy_data(overview_rgb)
+            if rgb.shape[:2] != (self.overview_spec["height"],self.overview_spec["width"]):
+                raise ValueError("Malformed presentation overview RGB array")
+            # Not returned in frames: presentation-only, recorded separately.
+            self.overview_frame={"rgb":rgb[:,:,:3].astype(np.uint8,copy=False),"physics_timestamp_s":self.time_s,
+                                 "native_physics_timestamp_s":before[0],"camera_id":"overview_rgb",
+                                 "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
         return frames,{name:{a:str(value[1]) for a,value in payload.items()} for name,payload in latest.items()}
 
     def close(self):
