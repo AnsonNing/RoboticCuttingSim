@@ -265,3 +265,214 @@ SLICE-PUSH diagnosis (`artifacts/wp11/phaseE/round1_diagnostics_slice_push_001.t
 - `tests/test_generalization_round1.py`: 24 passed.
 - Full CPU suite at `4b2fe08`: 969 passed, 1 skipped, 5 xfailed in 1277 s
   (`artifacts/wp11/logs/phaseE_cpu_full_4b2fe08_001.log`).
+
+## Live stage (Native, 2026-10-30)
+
+Declaration: [`configs/wp11/generalization_round1_live.json`](../../configs/wp11/generalization_round1_live.json)
+(`1ecfe5e`, committed and pushed before any live run). The round file declares no live criteria, so this file does;
+the round file, the kinematic evidence and every threshold are unchanged. Supplementary declaration for Test C only:
+[`configs/wp11/generalization_round1_live_002.json`](../../configs/wp11/generalization_round1_live_002.json)
+(`4b2eab6`, before its run). Evidence:
+[`docs/evidence/wp11/phaseE_round1_live_001.json`](../evidence/wp11/phaseE_round1_live_001.json).
+
+**Scope.** These are live Native results (`runtime_source = live_isaac_sim`). They come from Isaac Sim 6.2 with Kit/PhysX
+driving the Franka, the physically grasped `ruler_knife_v2_y` (`physical_grasp`, pregrasped at HOME, never fixed to the
+hand), the retained TLMPM material (law 8, 1 mm particles, 4 mm grid, 0.1 ms) and RTX cameras. There is one seed per
+sample, so there are no repeat statistics. The material is provisional and uncalibrated, and there is no Lab parity.
+
+**What is the same as the kinematic stage.** The scene, goal and solver come from `build_sample` and `compile_sample`,
+unchanged; the kinematic task id is recompiled and checked against stage 1. The goal evaluator is `goals.evaluate_goal`
+with the same goal JSON, checked to differ only in `episode.duration_s`. The planner is the same: `goal_planner_v1`,
+`path_v2`, `plane_section`, the per-sample rake/skew/direction, and no oracle input. The schedule is the same: the full
+plan, HOME → operations → planner RETURN_HOME.
+
+**What is live-specific (declared).**
+- The C5 live controller limits are 1° and 1 mm per 20 ms step. Phase D measured 11 mm of REORIENT lag at 2°/step;
+  cutting speeds are unchanged.
+- Edge feedback is measured (the privileged tool-edge pose, as in C5).
+- Duration = ceil((1.1 × live plan end + 1 s) / 0.5 s) × 0.5 s.
+- History stride follows the round rule.
+- After the controller's DONE, the knife holds with cutting disabled until the time limit. Then the Phase D physical
+  return-to-home runs and is scored as `home_outcome`, separately.
+- Live task ids therefore differ from the kinematic ids.
+- Classes: SCENE_INFEASIBLE / IK_FAILURE (live preflight) > NOT_RUN > IK_FAILURE (any task-phase step with
+  `ik_status ≠ ok` or a workspace clamp) > GRASP_FAILURE (monitor LOST, or slip > 2 mm / rotation > π/60 rad) >
+  CUTTING_FAILURE > TASK_SUCCESS.
+
+### Result
+
+| Sample | Purpose | Kinematic (round 1 stage 2) | **Live class** | Live goal verdict | Live `home_outcome` |
+| --- | --- | --- | --- | --- | --- |
+| TRIM s1203 | ellipsoid cap, ρ 10° | TASK_SUCCESS (0.993) | **TASK_SUCCESS** | PASS | PASS |
+| CUT s1101 | vertical sever, yaw +13° | TASK_SUCCESS | **TASK_SUCCESS** | PASS | PASS |
+| Test A s6 | skim along −x, ρ 10° | TASK_SUCCESS (0.967) | **TASK_SUCCESS** | PASS | PASS |
+| Test C s1602 (live_001) | three protrusions, tlmpm_v5 K = 3 | TASK_SUCCESS | **SCENE_INFEASIBLE** (refused before launch) | — | — |
+| Test C s1602 (live_002) | same, round-1 staged preflight | — | **NOT_RUN** (runtime error in SKIM:p2) | — | — |
+| Test B s1502 | four slices, tlmpm_v5 K = 4 | TASK_SUCCESS | **TASK_SUCCESS** | PASS | PASS |
+| CUT s1102 | 20° oblique sever | TASK_SUCCESS | **TASK_SUCCESS** | PASS | PASS |
+| TRIM s1201 | dome, ρ 10°, lowest margin | TASK_SUCCESS (0.936) | **TASK_SUCCESS** | PASS | PASS |
+| SLICE-PUSH s1301 | cut-1 shift, plain planner | CUTTING_FAILURE | **CUTTING_FAILURE** | FAIL (`cut_at_declared_planes`) | PASS |
+| Test A s2 | −20° oblique, marginal | CUTTING_FAILURE | **CUTTING_FAILURE** | FAIL (`cut_at_declared_planes`) | PASS |
+
+**live_001 totals (9 declared samples):** TASK_SUCCESS 6, CUTTING_FAILURE 2, SCENE_INFEASIBLE 1; GRASP_FAILURE 0,
+IK_FAILURE 0, NOT_RUN 0. **live_002 (Test C only):** NOT_RUN 1. The commit message of `fef0e1e` says "7 TASK_SUCCESS";
+that is a typo. The evidence file says 6, and so does this table.
+
+Every live verdict that could be scored matches its kinematic class. Both kinematic failures recur live, from the same
+cause and with nearly the same numbers. Test D s1701/s1702/s1704 are held (slot overflow; unsatisfiable sequence goal).
+The other round-1 seeds were not nominated and not run.
+
+### Goal metrics (live)
+
+| Sample | Pieces / removal | Substrate share | Location (goal statistic) | Other |
+| --- | --- | --- | --- | --- |
+| TRIM s1203 | p0 0.994 | 1.00000 | — (residual height quality only) | 2 components |
+| CUT s1101 | 2 / 2 | — | 1.50 mm (frozen 2 mm statistic, node plane) | edge within ±0.09 mm of the plane on 147 armed steps |
+| Test A s6 | p0 0.967 | 0.99998 | — | detached below-plane 2.1e-5 |
+| Test B s1502 | 5 / 5 | — | 4.9 mm (divide: quality only, as kinematic 5.4 mm) | packed K = 4, 5 components |
+| CUT s1102 | 2 / 2 | — | 0.342 mm (swept-plane actual − ideal, limit 1 mm) | — |
+| TRIM s1201 | p0 0.962 (kinematic 0.936) | 0.99992 | — | detached 7.6e-5 |
+| SLICE-PUSH s1301 | 3 / 3, push 19.9 mm (others ≤ 0.04 mm) | — | cut 0 1.5 mm, **cut 1 4.0 mm > 2 mm** | live bar shift before cut 1 +1.16 mm, cut-1 label boundary +23.00 vs +24 mm (kinematic: +1.16 mm, +23.00) |
+| Test A s2 | 2 / 2 | — | **1.023 mm > 1.00 mm** (kinematic 1.02) | — |
+
+SLICE-PUSH diagnostic: `artifacts/wp11/phaseE/round1_live_001/diagnostics_slice_push_live_001.{py,txt}`. The measured
+edge stayed within ±0.09 mm of each declared plane during both cuts. The error is the bar sliding after cut 0, not
+tracking.
+
+### Grasp, IK, contacts, skim orientation
+
+- **Grasp** (task phase, GraspMonitor): HOLDING on every step of every run. Max slip 0.64–1.29 µm, max rotation
+  0.059–0.113 mrad, against gates of 2 mm / 52.4 mrad.
+- **IK:** `ik_status = ok` on every task step (575–1950 per run), with 0 workspace clamps. The declared per-step rate
+  limits clamped 20–53 translation steps and 178–344 rotation steps per run; these are reported, not failures.
+- **Penetration:** 0 unintended native tool contacts in every run. Finger-pad tensor penetration was at most 6.8–7.3 µm.
+- **Measured-path C2 audit** (report only; declared uncut workpiece, nominal grasp):
+  - PASS for every sever, divide and push run.
+  - The three ρ 10° skims FAIL `blade_collision` in the contact-free PRE_CUT settle: −0.20 mm (TRIM s1203), −0.19 mm
+    (Test A s6) and −0.24 mm (TRIM s1201). This is the C5 open issue: measured-edge ringing under the integrating
+    delta command, with zero material reaction and no labels while disarmed. C5b's `path_v3` targets it; it was not
+    used here.
+  - Fingers, handle, D405s, table, board and Franka 1 PASS in every run.
+- **τ/ψ/ρ/μ of the measured edge on armed skim steps** (mean / max |·|, degrees):
+
+| Sample | τ | ψ | ρ (declared 10) | μ per step | μ chord | Edge z − (target + 0.2 mm) | Lowest blade point − bar top |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TRIM s1203 | 0.001 / 0.005 | 0.002 / 0.017 | 10.000 / 10.017 | −0.14 / 18.5 | −0.13 | −0.18 … +0.12 mm | ≥ −0.13 mm |
+| Test A s6 (−x) | 0.001 / 0.005 | 0.002 / 0.010 | 10.000 / 10.016 | −0.12 / 11.1 | −0.20 | −0.14 … +0.15 mm | ≥ −0.10 mm |
+| TRIM s1201 | 0.006 / 0.035 | 0.007 / 0.036 | 10.000 / 10.014 | −0.65 / 20.2 | −0.56 | −0.29 … +0.39 mm | ≥ −0.24 mm |
+
+  Per-step μ is dominated by ±0.2 mm vertical ringing over 0.5 mm steps, as in C5. The chord gives the motion
+  elevation.
+- **Plan lag** (live controller DONE minus the ideal live plan end): +0.06 to +0.44 s. Every plan reached DONE inside
+  the episode.
+- **home_outcome:** PASS on all 8 run episodes. Home joint error 0.39–0.50 mrad, tool pose versus reset ≤ 0.09 mm /
+  0.17 mrad, 0 label changes. The planner's RETURN_HOME already brings the edge back to the HOME pose, so the physical
+  return-to-home starts near HOME. It lasts 0.7–1.3 s and corrects the arm's null-space joint drift. Unlike C5, it does
+  not return from the workpiece.
+
+### Test C s1602
+
+1. **live_001: SCENE_INFEASIBLE, before any physics.** The runner's default C2 plan preflight models all three
+   protrusions as one convex hull for the whole plan. It refused with blade vs bump −8.4 mm at PRE_CUT:p2
+   (contact_free). The round file's own geometry rule for scenes with two or more protrusions
+   (`stages.stage1_geometry`, `generalization.staged_preflight`) was not carried into the live_001 declaration. That
+   was an omission in my declaration, not a property of the scene. The class is kept.
+2. **live_002 (declared separately): NOT_RUN.**
+   - The staged preflight on the live task passed (`inputs/staged_preflight.json`; blade slack +0.05 mm, same
+     thresholds).
+   - The Native episode then ran 691 control steps (13.8 s of 20.5 s). It finished SKIM:p0, WITHDRAW:p0 and
+     SKIM:p1, and was in the middle of SKIM:p2 with cutting armed.
+   - Grasp was HOLDING (slip 0.77 µm) and IK was ok on every step.
+   - It then aborted in the live visual-surface update: `isaac_sim_runner._update_surface` →
+     `cutting_surface.extract` raised `RuntimeError('ParticleSurface returned no mesh for 11 physical particles')`.
+     This is the presentation mesh for an 11-particle fragment, not the material solver or a goal check.
+   - No `physics_state.npz` or episode result was written, so the goal cannot be scored.
+   - Physics had started, so under the failure policy it was not relaunched.
+   - **Test C live is open.** It needs a runtime fix in which a component too small to mesh is skipped or merged in
+     the visual surface instead of aborting the episode. That is a change to shared `cutting_surface.py` /
+     `isaac_sim_runner.py`, and it is not made here.
+
+### SLICE-PUSH and the ADR 0009 hook
+
+The ADR 0009 wrist-depth relocation could not be applied to a configured plan without substantial new code:
+- `policies.vision_policy` refuses any task id other than SLICE-PUSH-01.
+- `goal_planner.planner_options` rejects `path_v2_vision`.
+- `run_wp10_live.py` refuses `--controller-profile` for `--scene/--goal`.
+- The survey was validated only in `blademaster_workcell_v1` with `ruler_knife_v1`.
+
+So s1301 ran with the plain planner, as declared, and failed exactly as predicted in the declaration. What is missing:
+1. A goal-planner perception hook that marks the cut-0 / cut-1 settle holds as calibration / survey points and inserts
+   the retarget waypoint.
+2. Runner wiring of the depth source for configured tasks.
+3. A new validation of the `end_face_plus_x` survey in `wp11_workcell_v1` with `ruler_knife_v2_y` and a yawed bar.
+
+The kinematic stage cannot provide that validation, because it has no cameras.
+
+### Runs, commands, timing, disk
+
+All runs used seed 42 and `TMPDIR=/mnt/data/ningan/tmp`, from clean detached worktrees:
+- live_001: `/mnt/data/ningan/RoboticCuttingSim-wp11-Elive-1ecfe5e`;
+- live_002: `…-Elive2-4b2eab6`;
+- analysis and rendering: `…-Eanalysis-*` at `40bef78` → `fc65b59` → `0421050`, each clean.
+
+    .venv/bin/python scripts/run_generalization_live.py queue --root artifacts/wp11/phaseE/round1_live_001 \
+        --queue-log artifacts/wp11/logs/phaseE_live_queue_001.log                 # 06:55–07:48 KST
+    .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_002.json \
+        queue --root artifacts/wp11/phaseE/round1_live_002 --queue-log artifacts/wp11/logs/phaseE_live002_queue_001.log
+    # per sample (exact argv in <sample>/attempt_001.json):
+    OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 .deps/isaacsim-venv/bin/python scripts/run_wp10_live.py --runtime isaac_sim \
+        --scene <sample>/inputs/scene.json --goal <sample>/inputs/goal.json \
+        --planner-options '{"max_rotation_deg": 1.0, "max_translation_m": 0.001}' --controller scripted \
+        --edge-feedback measured --hold-until-time-limit --return-home --record-cameras --overview-camera \
+        --record-every {5|10} --oracle-stride <stride> --steps <steps> --gpu <g> --seed 42 --out <sample>/run_001
+    .venv/bin/python scripts/run_generalization_live.py analyze --sample-dir <sample> --run run_001 --out <sample>/analysis_00N
+    .venv/bin/python scripts/run_generalization_live.py summarize --root artifacts/wp11/phaseE/round1_live_001 \
+        --out docs/evidence/wp11/phaseE_round1_live_001.json \
+        --supplementary configs/wp11/generalization_round1_live_002.json:artifacts/wp11/phaseE/round1_live_002
+
+| Sample | Device | Live steps (task + home) | Episode wall s | Process wall s | Run dir |
+| --- | --- | --- | --- | --- | --- |
+| TRIM s1203 | cuda:0 | 575 + 66 | 443 | 481 | 0.59 GB |
+| CUT s1101 | cuda:0 | 725 + 43 | 529 | 575 | 0.65 GB |
+| Test A s6 | cuda:0 | 650 + 57 | 518 | 582 | 0.80 GB |
+| Test C s1602 live_001 | cuda:0 | 0 (refused) | — | 30 | 0.04 MB |
+| Test B s1502 | cuda:1 | 1950 + 56 | 1506 | 1577 | 1.55 GB |
+| CUT s1102 | cuda:0 | 725 + 42 | 442 | 480 | 0.65 GB |
+| TRIM s1201 | cuda:0 | 575 + 62 | 345 | 390 | 0.54 GB |
+| SLICE-PUSH s1301 | cuda:0 | 1450 + 38 | 838 | 906 | 1.08 GB |
+| Test A s2 | cuda:0 | 800 + 36 | 686 | 750 | 0.60 GB |
+| Test C s1602 live_002 | cuda:0 | 691 (aborted) | — | 660 | 0.42 GB |
+
+- **Device policy:** at most 2 of these runs at once. A GPU was used only with ≤ 2 other active jobs and ≥ 12 GiB free.
+  GPU 1 qualified once, for Test B. Non-RCS processes were never touched.
+- **Disk:** 6.5 GB in total under `artifacts/wp11/phaseE/round1_live_00{1,2}`. `/mnt/data` went from 22–26 GB free to
+  17 GB (other agents also write), so the 15 GB floor was never reached.
+- **Analyzer correction:** `analysis_001` of TRIM s1203 (tool at `1ecfe5e`) wrongly counted the planner RETURN_HOME
+  phase as return-home rows. It is kept; `analysis_002` (`40bef78`) is the one used. Its class is unchanged.
+
+### Media
+
+Rendered with `scripts/render_demo_episode.py`, the C5 renderer. For packed K > 2 episodes I used
+`scripts/render_packed_episode.py`, which swaps only the particle-panel component cache for
+`mechanical_components_packed`; the stock renderer fails on K = 4.
+
+| Name | Files | Source |
+| --- | --- | --- |
+| Test A s6 (−x skim) | [demo.gif](../media/wp11/test_a_s6/demo.gif) (2.4 MB), [demo.mp4](../media/wp11/test_a_s6/demo.mp4), [poster.png](../media/wp11/test_a_s6/poster.png) | `round1_live_001/E1_TEST_A_s6/run_001`, render `render_E1_TEST_A_s6_001` |
+| Test B s1502 (four slices) | [demo.gif](../media/wp11/test_b_s1502/demo.gif) (3.3 MB), [demo.mp4](../media/wp11/test_b_s1502/demo.mp4), [poster.png](../media/wp11/test_b_s1502/poster.png) | `round1_live_001/E1_TEST_B_s1502/run_001`, render `render_E1_TEST_B_s1502_004` |
+
+- In the Test B particle panel, three pieces are coloured and two are drawn grey. The renderer has three colour slots;
+  this is presentation only, and the goal counts 5 substantial pieces.
+- Test C has no media, because no live episode finished.
+- SLICE-PUSH has no media, because it did not reach TASK_SUCCESS (as declared).
+- Earlier renders `render_E1_TEST_B_s1502_001/002` (stock renderer IndexError, no output) and `_003` (title
+  truncated) are kept.
+
+### Open items
+
+1. Fix the visual-surface abort on tiny fragments (`cutting_surface.extract`), then run Test C live under a new
+   declaration.
+2. Carry the staged multi-protrusion geometry into the runner's default plan preflight.
+3. Build the configured-plan ADR 0009 perception hook (SLICE-PUSH).
+4. Rerun the skims with `path_v3` against the PRE_CUT blade-dip audit.
+5. Add repeated seeds, needed for any live success rate.
