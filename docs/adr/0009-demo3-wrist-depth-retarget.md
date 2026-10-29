@@ -96,3 +96,22 @@ the v1 live episode; particle state scores the estimate only:
 
 Inputs are still rendered depth plus kinematics only. The acceptance rule
 above is unchanged.
+
+## Amendment 2 (2026-10-29, disclosure only, after review; no verdict changes)
+
+The rcs-review found two things the text above does not state.
+
+- **The controller also differs from path_v2.** The decision says that
+  "everything else stays unchanged", but `path_v2_vision` changes three
+  disarmed motions. All three were in the committed code (88636b1) before the
+  counted run.
+  - Lift in the kerf runs at 0.04 m/s (path_v2: 0.02 m/s).
+  - The raise in the kerf runs at 0.02 m/s (path_v2: 0.01 m/s).
+  - A `retarget_1` waypoint holds 0.3 s at the shifted cut-1 start.
+- **The controller has two more inputs than depth.**
+  - It also uses the simulator's measured knife pose, for edge feedback and
+    to exclude the blade from the depth points.
+  - The rendered material surface is rebuilt per mechanical component, so
+    wrist depth is not fully independent of the cut topology. The measured
+    +x end face is far from any cut and is unaffected. The recorded
+    kerf-face diagnostic is affected.

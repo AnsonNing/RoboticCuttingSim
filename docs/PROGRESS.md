@@ -2,21 +2,21 @@
 
 ## 完成：BladeMaster 風格三個 Demo（2026-10-29）
 
-依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)，P0 工作包 A–D 完成；細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
+依使用者 2026-10-29 的 [計畫](BLADEMASTER_DEMO_PLAN.md)：P0 工作包 A 有條件接受（M8 FAIL，部分後續項目未完成）；B–D 完成。細節見 [完成報告](reports/BLADEMASTER_DEMOS.md)。
 
 - 最終組合，全部是 live Native、law 5、實體夾持、`blademaster_workcell_v1`，四個都 **PASS**：
   - **Demo 1a 完整切斷**（`path_v2`）：凍結 strict 也 PASS，切口 1.5 mm。
-  - **Demo 1b 20° 斜切**：依 swept-plane 準則 PASS。
+  - **Demo 1b 20° 斜切**：依 swept-plane 準則 PASS；凍結 strict 的切口位置與切後持續時間窗口兩項 FAIL（約 5.7 s 才切斷，晚於 5.6 s 窗口）。
   - **Demo 2 削除凸起**：去除 97.9%，底材完整；精度 5/8 FAIL，另外報告。
   - **Demo 3 兩刀三塊＋刀身推開**（`path_v2_vision`）：連凍結的 v3 slice-push 報告也 PASS，推開 18.7 mm。
-  - [所有嘗試](evidence/phase3/demos_live_001.json)、[媒體](media/demos/)。
+  - [所有嘗試](evidence/phase3/demos_live_002.json)、[媒體](media/demos/)。
 - Phase 1，law 5、1 mm：
   - 依計算式準則 `adr0006a1_adr0008`，M1–M7、M9 PASS。
   - M8 在理想追蹤下 FAIL：第一刀把長條推開約 2.3 mm，第二刀宣告切面誤差 2.0000000670 mm，凍結界限 2 mm。Live Demo 3 以 [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) 的手腕深度量測修正。
   - 審查結論：rcs-review ACCEPT WITH CONDITIONS（[紀錄](evidence/phase1/matrix_law5_adjudication_001.json)）。
 - 保留的失敗：
   - law 4 全矩陣（TRIM 0%）；
-  - 第一輪 v1 控制器的 Demo 2（64%）與 Demo 3（宣告切面差 6.7e-11 m）；
+  - 第一輪 v1 控制器的 Demo 2（64%）與 Demo 3（第二刀與宣告切面相距 2.0000000670 mm，超過 2 mm 界限）；
   - 中斷的輸出；
   - 2 mm CPU 35° 削除（strict xfail）。
 - 限制：

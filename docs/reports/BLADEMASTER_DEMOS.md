@@ -1,6 +1,9 @@
 # BladeMaster 風格三個 Demo：完成報告（2026-10-29）
 
-依使用者 2026-10-29 的 [計畫](../BLADEMASTER_DEMO_PLAN.md) 完成 P0 工作包 A–D：1 mm 切割法則、統一 workcell、Live Isaac Sim（Native）三個 Demo，以及錄影、評估與可重跑的 demo runner。分支 `claude/lucid-mendel-vt7n82`。
+依使用者 2026-10-29 的 [計畫](../BLADEMASTER_DEMO_PLAN.md) 執行 P0 工作包：
+
+- **A（1 mm 切割法則）**：審查判定「有條件接受」。M8 在理想追蹤下 FAIL，部分後續項目仍待完成。
+- **B（統一 workcell）、C（Live Isaac Sim Native 三個 Demo）、D（錄影、評估與可重跑的 demo runner）**：完成。分支 `claude/lucid-mendel-vt7n82`。
 
 ## 最終展示組合
 
@@ -13,12 +16,12 @@
 
 | Demo | 任務 | 控制器 | 結果 | 主要數據 | 影片／證據 |
 | --- | --- | --- | --- | --- | --- |
-| 1a 完整切斷 | CUT-01-R | scripted `path_v2` | **PASS**（凍結 strict 也 PASS） | 兩塊 50/50%；撤刀後 4 s 持續分離；切口位置 1.5 mm（門檻 2 mm）；量測刃口 x 誤差 ≤ 0.046 mm | [GIF](../media/demos/demo1a/live_20261029_pathv2_d_demo1a.gif)、[MP4](../media/demos/demo1a/live_20261029_pathv2_d_demo1a.mp4)、[摘要](../media/demos/demo1a/live_20261029_pathv2_d_demo1a.json) |
-| 1b 20° 斜切 | CUT-01-R `--motion oblique --angle 20` | scripted `path_v2` | **PASS**（swept-plane 準則） | 兩塊 50.5/49.5%；界面統計 4.91 mm，允許值 ≤ 理想 4.44 + 1 mm；標籤與幾何不一致 ≤ 1.07 mm。凍結切口位置對斜面不適用，照實 FAIL | [GIF](../media/demos/demo1b/live_20261029_pathv2_d_demo1b.gif)、[MP4](../media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4) |
+| 1a 完整切斷 | CUT-01-R | scripted `path_v2` | **PASS**（凍結 strict 也 PASS） | 兩塊 50/50%；撤刀後持續分離 3.0 s；切口位置 1.5 mm（門檻 2 mm）；量測刃口 x 誤差 ≤ 0.046 mm | [GIF](../media/demos/demo1a/live_20261029_pathv2_d_demo1a.gif)、[MP4](../media/demos/demo1a/live_20261029_pathv2_d_demo1a.mp4)、[摘要](../media/demos/demo1a/live_20261029_pathv2_d_demo1a.json) |
+| 1b 20° 斜切 | CUT-01-R `--motion oblique --angle 20` | scripted `path_v2` | **PASS**（swept-plane 準則） | 兩塊 50.5/49.5%；界面統計 4.91 mm，允許值 ≤ 理想 4.44 + 1 mm；標籤與幾何不一致 ≤ 1.07 mm。凍結 strict 有兩項 FAIL：切口位置（垂直面檢查不適用於斜切），以及切後持續時間窗口（path_v2 較慢，約 5.7 s 才切斷，晚於凍結 v1 主動切削窗口的結束時間 5.6 s；撤刀後持續分離 1.82 s，未重新連通） | [GIF](../media/demos/demo1b/live_20261029_pathv2_d_demo1b.gif)、[MP4](../media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4) |
 | 2 削除凸起 | TRIM-01-R，35° 前傾 | scripted `path_v2` | **PASS**（分離） | 凸起去除 97.9%，底材 100% 為主體，底材脫落 0%；削切中刃口 z 誤差 ≤ 0.026 mm。精度另計 5/8（FAIL） | [GIF](../media/demos/demo2/live_20261029_pathv2_c_demo2.gif)、[MP4](../media/demos/demo2/live_20261029_pathv2_c_demo2.mp4) |
 | 3 兩刀三塊＋推開 | SLICE-PUSH-01（v3） | scripted `path_v2_vision` | **PASS**（含凍結 v3 slice-push 報告） | 三塊 37.5/31.25/31.25%；兩刀宣告切面誤差 0 層；刀身鈍面（切削關閉）推開右塊 18.7 mm，其餘不動，推動中無新標籤、未合併；手腕 D405 量得長條位移 2.17 mm 並據此修正第二刀 | [GIF](../media/demos/demo3/live_20261029_vision_e_demo3.gif)、[MP4](../media/demos/demo3/live_20261029_vision_e_demo3.mp4) |
 
-所有嘗試（含失敗）見 [demos_live_001.json](../evidence/phase3/demos_live_001.json)；原始 episode 在 `artifacts/wp10_claude/demos/<run_id>/`（不進 Git）。四個最終 episode 都是 400／800 步完整執行，IK 拒絕 0 次，夾持全程 HOLDING，最大滑移 < 1 µm。Physics wall time：1a 355 s、1b 401 s、2 348 s、3 552 s。
+所有嘗試（含失敗）見 [demos_live_002.json](../evidence/phase3/demos_live_002.json)，新增執行當時的 git 狀態；001 保留未改。GIF 為 2 倍速，MP4 以實際錄製頻率即時播放；原始 episode 在 `artifacts/wp10_claude/demos/<run_id>/`（不進 Git）。四個最終 episode 都是 400／800 步完整執行，IK 拒絕 0 次，夾持全程 HOLDING，最大滑移 < 1 µm。Physics wall time：1a 355 s、1b 401 s、2 348 s、3 552 s。
 
 ## Phase 1：切割法則（工作包 A）
 
@@ -64,7 +67,7 @@
   - 機械臂以 100 mm/s 下降，在 start 點過衝，回彈上升途中就被判定「到達」。
   - 削切階段朝 84 mm 外的終點直線前進，每步 z 修正只有約 0.01 mm。
   - 結果刃口整段偏高約 1.2 mm。
-- **Demo 3**：三塊與推開都成立，但第二刀宣告切面差 6.7e-11 m 而 FAIL。原因與 M8 相同：第一刀推動了長條。
+- **Demo 3**：三塊與推開都成立，但第二刀與宣告切面相距 2.0000000670 mm，超過 2 mm 界限，因此 FAIL。原因與 M8 相同：第一刀推動了長條。
 
 修正後：
 
@@ -76,7 +79,9 @@
 - **`path_v2_vision`**（[ADR 0009](../adr/0009-demo3-wrist-depth-retarget.md) 與 Amendment 1，都在計入任何 run 之前宣告）：
   - 第一刀前與第二刀前各取一張手腕 D405 深度影像，量測中段＋右段的 +x 端面。
   - 用兩次量測的差估計長條位移，再平移第二刀與之後的所有路點。
-  - 只用 rendered depth、K 與由機器人運動學得到的相機外參，不使用粒子、標籤或 component 狀態。
+  - 只用 rendered depth、K、由機器人運動學得到的相機外參，以及模擬器量到的刀具 pose，不使用粒子、標籤或 component 狀態。
+  - 注意：rendered 表面是依每個機械 component 重建的，所以深度影像並非完全獨立於切割拓撲；被量測的 +x 端面離切口很遠，不受影響。
+  - 這個 profile 另外調整了幾個不切削的動作：切縫內抬刀 0.04 m/s、升刀 0.02 m/s，並在 retarget 後停留。
   - 離線驗證（v1 episode）誤差 −0.012 mm；live 量得 2.17 mm，Demo 3 PASS。
 
 審查條件 2 已檢查（最終組合）：量測刃口在目標面 ±0.5 mm 內（1a ≤ 0.046 mm、2 ≤ 0.026 mm），且切削關閉階段的標籤變化為 0。
@@ -96,7 +101,8 @@
   # 加 --publish 把媒體複製到 docs/media/demos/<demo>/（不覆寫）
   ```
 
-  Runner 的 `--controller-profile` 預設是 v1，也就是第一輪的設定。最終組合必須照上面的指令分別指定 profile。
+  Runner 的 `--controller-profile` 預設是 v1，也就是第一輪的設定。最終組合要照上面的指令分別指定 profile，或改用單一指令 `--demo-set final_v1`。
+  Demo 1b 的最終 run 是在未 commit 的 `policies.py`（path_v2 開發中）下執行。審查把紀錄的輸入重新餵給已 commit 的控制器，所有動作都完全重現。
 
 ## 限制與未完成（照實列出）
 

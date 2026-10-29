@@ -23,9 +23,10 @@ Videos are rendered from the recorded episode: presentation overview and
 close-up, wrist D405 RGB-D, a particle view coloured by mechanical component
 (an oracle debug view, not an observation) and force/height/label
 diagnostics. Images are captured at 10 Hz; actions and robot state are
-recorded at 50 Hz.
+recorded at 50 Hz. The GIFs play at 2× speed; the MP4s play in real time at
+the capture rate.
 [Full report](docs/reports/BLADEMASTER_DEMOS.md) ·
-[all attempts, including failures](docs/evidence/phase3/demos_live_001.json).
+[all attempts, including failures](docs/evidence/phase3/demos_live_002.json).
 
 ### Demo 1 — complete cutting
 
@@ -39,9 +40,12 @@ Episode `live_20261029_pathv2_d/demo1a`, controller `path_v2` ·
 [provenance](docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.json).
 
 The 20° oblique variant also **passes**. Separation is scored against the
-actual swept plane: 4.91 mm, against an allowed ideal 4.44 + 1 mm. The frozen
-vertical-plane location check does not apply to a tilted cut and is reported
-as FAIL.
+actual swept plane: 4.91 mm, against an allowed ideal 4.44 + 1 mm. Its frozen
+strict score fails two checks:
+- **Location:** the vertical-plane check does not apply to a tilted cut.
+- **Post-cut persistence window:** with the slower `path_v2` approach the cut
+  completes at about 5.7 s, after the frozen v1 window ends at 5.6 s. Nothing
+  reconnects, and separation lasts 1.8 s after withdrawal.
 [GIF](docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.gif) ·
 [MP4](docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4).
 
@@ -67,8 +71,10 @@ and 1) produce three independent parts (37.5/31.25/31.25%), each within one
 particle layer of its declared plane. The blunt blade face, with cutting
 disabled, then pushes one part 18.7 mm by real contact. The other parts do not
 move, no labels are added and nothing reconnects. Between the cuts the
-controller measures the bar's 2.17 mm shift from wrist D405 depth alone
-([ADR 0009](docs/adr/0009-demo3-wrist-depth-retarget.md)).
+controller measures the bar's 2.17 mm shift from rendered wrist D405 depth,
+robot kinematics and the simulator knife pose
+([ADR 0009](docs/adr/0009-demo3-wrist-depth-retarget.md)). The rendered surface
+is rebuilt per mechanical part; this does not affect the measured +x end face.
 Episode `live_20261029_vision_e/demo3`, controller `path_v2_vision` ·
 [MP4](docs/media/demos/demo3/live_20261029_vision_e_demo3.mp4) ·
 [provenance](docs/media/demos/demo3/live_20261029_vision_e_demo3.json).
@@ -80,7 +86,8 @@ Episode `live_20261029_vision_e/demo3`, controller `path_v2_vision` ·
 | ![CUT-01-R close-up](docs/media/demos/phase2/cut-01-r_closeup_smoke.png) | ![SLICE-PUSH-01 overview](docs/media/demos/phase2/slice-push-01_overview_smoke.png) | ![TRIM-01-R overview](docs/media/demos/phase2/trim-01-r_overview_smoke.png) |
 
 These are actual Native frames from the Phase 2 smokes
-([evidence](docs/evidence/phase2/native_smokes_001.json)). The wooden boards,
+([evidence](docs/evidence/phase2/native_smokes_001.json)). The close-up is
+from the 30-step smoke `artifacts/wp10_claude/phase2/s4_closeup_cut01r_30_001`. The wooden boards,
 risers and relief slots are the same boxes used as PhysX colliders (friction
 0.3) and as TLMPM fixtures.
 
@@ -91,8 +98,11 @@ Cutting law 5 ([ADR 0006](docs/adr/0006-swept-band-cutting-law-4.md),
 BladeMaster Section III-C:
 
 - **Cutting progress** only resists the knife.
-- **Persistent side codes** are assigned only within the finite swept band of
-  a blade stroke that is actually cutting.
+- **Persistent side codes** are assigned only during a blade stroke that is
+  actually cutting. They cover the finite band behind the moving edge, plus
+  material up to 8 mm ahead of it that lies more than one grid cell off the
+  swept surface. The one-cell core around the surface is labelled only after
+  the edge passes.
 - **Side pushes, flat presses, stopping, withdrawal, uncontacted edges and the
   blunt handle** never cut.
 
@@ -115,9 +125,10 @@ parameters are provisional and uncalibrated.
 Each run writes the episode, `demo_summary.json` (execution, outcome and
 quality kept separate) and rendered media under `artifacts/wp10_claude/demos/`.
 It never overwrites an earlier run. Add `--publish` to copy the media into
-`docs/media/demos/`. The first-round v1-controller failures (Demo 2 removed
-64%; Demo 3 missed the declared plane by 6.7e-11 m) are preserved and
-documented.
+`docs/media/demos/`. The first-round v1-controller failures are preserved and documented.
+Demo 2 removed only 64%. Demo 3's second cut landed 2.0000000670 mm from its
+declared plane, over the 2 mm bound, because the first cut had shifted the
+bar.
 
 ## Earlier work
 
