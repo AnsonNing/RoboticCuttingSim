@@ -289,6 +289,25 @@ least one failed episode stored and usable. `POLICY_READY` is set only if every
 check passes. It is an API/lifecycle/storage reliability statement, not a claim
 about task success or policy quality.
 
+## Phase G results (2026-10-30)
+
+Full receipts: [phaseG_policy_ready_001](evidence/wp11/phaseG_policy_ready_001.json).
+
+| Run | Episodes | Result |
+| --- | --- | --- |
+| Kinematic Test F, 4 mm, CPU (`kin_reliability_trim_4mm_001`) | 7 in one process: scripted (fixed and random seed), action program, deliberate failure, random policy with invalid actions, two exact repeats | **POLICY_READY** (v1 and v1a); 7/7 validate; 7/7 kinematic replays reproduce the final codes exactly; repeats bitwise identical; RSS slope 1.9 MiB/episode |
+| Kinematic Test E, 1 mm, `trim_bump_rho10` | scripted vs hand-written program | both PASS: dome 97.89% vs 97.51%, substrate 0.99996 |
+| Kinematic Test E, 1 mm, `sever_mid` | scripted vs hand-written program | both PASS: two 50/50 pieces |
+| Native Tests E/F, 1 mm, GPU 0 (`native_reliability_trim_001`) | 4 in one process, each with physical return home | scripted (measured-edge feedback) PASS 97.89%; hand-written open-loop program PASS 98.47% (no privileged input); deliberate failure FAIL as declared (dome 0%), stored and valid; repeat PASS 97.70%. Reset bitwise repeatable, grasp re-stabilized every reset. **Not POLICY_READY**: host RSS grows 140 MiB/episode (gate 64) |
+| Native memory diagnostic (`native_memory_probe_001`) | 8 x 20 steps | host RSS +82 MiB per reset with no plateau, GPU memory flat: the growth is in the Native runtime reset, not the wrapper |
+
+`phaseG_reliability_v1a` amends only the post-reset tool-velocity rule
+(declared after the Native smoke, before the formal run): PhysX reports an
+instantaneous velocity of 3.6 mm/s and 0.148 rad/s for the clamped tool while
+the arm is at rest and the pose-derived settle-window speeds are 6e-5 m/s; v1a
+requires that velocity to repeat episode 0. Under v1, Native also fails
+`tool_at_rest_after_reset` on every episode; both are reported.
+
 ## Scope and limits
 
 - Runtimes: kinematic and Isaac Sim Native. Isaac Lab with the preset raises

@@ -1,0 +1,771 @@
+{
+  "evidence": "WP-11 Phase G: policy-ready environment (preset cutting_research_v1), validated actions, deployable vs privileged observations, rcs_dataset_v1 collector/reader, multi-episode reliability (supplement Test F) and scripted-vs-independent action sequence (supplement Test E)",
+  "date": "2026-10-30",
+  "commits": {
+    "implementation": "7d9a057",
+    "collector_max_steps": "dce3cdd",
+    "reliability_v1a_amendment": "a2ee588",
+    "summarizer_rescore": "f68cbcc",
+    "memory_probe_plan": "9183b3f",
+    "return_home_export_label": "f447d09"
+  },
+  "git_note": "Every run manifest has git_dirty=true: the shared working tree held another agent's uncommitted C5b changes (goal_planner.py, goals.py, policies.py, scene_config.py ideal_schedule). The compiled task ids equal the C5 id (570db2f5) for every 1 mm and Native TRIM run, so the configured task was unchanged.",
+  "verdicts": {
+    "G1_standard_interface": "PASS (kinematic + Isaac Sim Native; Isaac Lab with the preset: NOT_RUN, raises NotImplementedError)",
+    "G2_actions_validation_and_status": "PASS (CPU tests: every rejection reason reachable on the kinematic backend, rejected actions never executed, explicit HOLD / no_step, clamp report; Native formal run: 2,800 task control steps all ACCEPTED or CLAMPED through the validated path)",
+    "G2_validate_action_cut_index": "PASS (legacy tasks still 0/1; explicit max_cuts up to 15; tlmpm_v5 K=5 kinematic registered task accepts digit 4, rejects 5)",
+    "G3_observation_privileged_separation": "PASS (0 privileged keys in every observation of every episode, kinematic and Native; privileged dict only with observation_profile='privileged_state')",
+    "G4_dataset_collector_and_reader": "PASS (all 25 stored episodes across 6 datasets validate; all 7 kinematic CPU episodes replay with exact final codes)",
+    "G5_test_F_kinematic": "POLICY_READY (phaseG_reliability_v1 and v1a): 7 consecutive episodes, 4 mm coarse, CPU",
+    "G5_test_F_native": "NOT POLICY_READY (v1a: only host_memory_no_leak FAILS, host RSS slope 140 MiB/episode > 64; v1: additionally tool_at_rest_after_reset FAILS on every episode, see amendment)",
+    "test_E_kinematic_1mm": "PASS: scripted and hand-written action program both PASS on trim_bump_rho10 and on sever_mid",
+    "test_E_native": "PASS: scripted (measured-edge feedback) and hand-written open-loop program both PASS on trim_bump_rho10",
+    "overall_POLICY_READY": "kinematic: YES; Isaac Sim Native: NO (per-reset host memory growth in the Native runtime)"
+  },
+  "api": {
+    "doc": "docs/POLICY_READY_API.md",
+    "module": "src/robotic_cutting_sim/policy_env.py",
+    "entry": "open_cutting_env(..., preset='cutting_research_v1', scene=, goal=, tool_profile=, planner_options=, particle_spacing_m=, recording=, observation_profile=)",
+    "preset": {
+      "tool_attachment_mode": "physical_grasp",
+      "tool_init_mode": "pregrasped",
+      "gripper_control_mode": "hold",
+      "home_reset": "when_declared",
+      "delta_frame": "world",
+      "rejection_policy": "hold",
+      "collision_check": true,
+      "include_global_camera": true,
+      "default_cut_enabled": false
+    },
+    "action_types": [
+      "edge_pose",
+      "edge_delta",
+      "joint_position",
+      "gripper hold/release",
+      "cut_enabled",
+      "cut_index < max_cuts (<= 15)"
+    ],
+    "statuses": [
+      "ACCEPTED",
+      "CLAMPED",
+      "REJECTED_INVALID_SCHEMA",
+      "REJECTED_INVALID_TARGET",
+      "REJECTED_CUT_INDEX_OUT_OF_RANGE",
+      "REJECTED_JOINT_LIMIT",
+      "REJECTED_GRIPPER_LOCKED",
+      "REJECTED_GRIPPER_UNSUPPORTED",
+      "REJECTED_UNSUPPORTED_BY_RUNTIME",
+      "REJECTED_COLLISION_FIXTURE",
+      "REJECTED_COLLISION_TABLE",
+      "REJECTED_IK_UNREACHABLE"
+    ],
+    "privileged_controller_inputs": "scripted edge_feedback=measured reads the simulator tool-edge pose (tool truth); the hand-written action program reads no observation at all"
+  },
+  "tests": {
+    "new_file": "tests/test_policy_ready_env.py (14 tests)",
+    "targeted": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_policy_ready_env.py -> 14 passed (116 s) at f447d09",
+    "full_cpu": {
+      "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -q -p no:cacheprovider",
+      "result": "1006 passed, 5 xfailed, 0 failed",
+      "wall_s": 1476.4,
+      "log": "artifacts/wp11/logs/phaseG_cpu_full_001.log",
+      "tree": "dce3cdd + uncommitted v1a test edits + other agents' uncommitted files"
+    }
+  },
+  "reliability_configs": {
+    "v1": "configs/wp11/phaseG_reliability_v1.json (declared before any run)",
+    "v1a": "configs/wp11/phaseG_reliability_v1a.json (declared after native_smoke_001, before the formal Native run): the tool-velocity rule becomes 'instantaneous post-reset tool velocity repeats episode 0' because PhysX reports 3.6 mm/s / 0.148 rad/s instantaneous velocity for the clamped tool while the arm is at rest (|qdot| <= 8e-4 rad/s) and the pose-derived settle-window speeds are 6.1e-5 m/s / 8.5e-4 rad/s (grasp receipt PASS_STABLE_GRASP); v1 is still scored and reported"
+  },
+  "runs": {
+    "kinematic_test_F": {
+      "dir": "artifacts/wp11/phaseG/kin_reliability_trim_4mm_001",
+      "log": "artifacts/wp11/logs/phaseG_kin_reliability_trim_4mm_001.log",
+      "command": "PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/collect_dataset.py --runtime kinematic --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}' --episode-plan configs/wp11/phaseG/kinematic_reliability_trim_v1.json --spacing 0.004 --material-dt 0.0005 --device cpu --record-every 10 --out artifacts/wp11/phaseG/kin_reliability_trim_4mm_001",
+      "git_sha": "dce3cdd",
+      "resolution": "4 mm particles (coarse, allowed for the loop), material dt 0.5 ms, CPU",
+      "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-06806cb5",
+      "POLICY_READY": {
+        "v1": true,
+        "v1a": true
+      },
+      "cross_episode": {
+        "consecutive_episodes_in_one_process": true,
+        "host_memory_no_leak": true,
+        "gpu_memory_no_leak": true,
+        "same_seed_same_controller_repeatable": true,
+        "failed_episode_stored_and_usable": true
+      },
+      "memory": {
+        "host_rss_mib_after_episode": [
+          464.17578125,
+          463.83203125,
+          465.28515625,
+          467.421875,
+          470.08984375,
+          470.86328125,
+          473.08203125
+        ],
+        "gpu_used_mib_after_episode": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "host_rss_slope_mib_per_episode": 1.8757812499999666,
+        "gpu_slope_mib_per_episode": 0.0,
+        "fit_from_episode": 1
+      },
+      "determinism": [
+        {
+          "episodes": [
+            "episode_000",
+            "episode_005"
+          ],
+          "controller": "scripted",
+          "seed": 42,
+          "final_codes_identical": true,
+          "verdict_identical": true,
+          "rule": "exact codes (CPU)",
+          "pass": true
+        },
+        {
+          "episodes": [
+            "episode_001",
+            "episode_006"
+          ],
+          "controller": "action_file",
+          "seed": 42,
+          "final_codes_identical": true,
+          "verdict_identical": true,
+          "rule": "exact codes (CPU)",
+          "pass": true
+        }
+      ],
+      "episodes": [
+        {
+          "episode_id": "episode_000",
+          "label": "scripted_seed42",
+          "controller": "scripted",
+          "seed": 42,
+          "seed_source": "fixed",
+          "expect": "PASS",
+          "home_outcome": "NOT_APPLICABLE",
+          "action_status_counts": {
+            "CLAMPED": 186,
+            "ACCEPTED": 514
+          },
+          "wall_s": 66.66451600800065,
+          "verdict": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 1.0,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "episode_id": "episode_001",
+          "label": "action_program_seed42",
+          "controller": "action_file",
+          "seed": 42,
+          "seed_source": "fixed",
+          "expect": null,
+          "home_outcome": null,
+          "action_status_counts": {
+            "ACCEPTED": 700
+          },
+          "wall_s": 64.18155955799739,
+          "verdict": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 1.0,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "episode_id": "episode_002",
+          "label": "scripted_random_seed",
+          "controller": "scripted",
+          "seed": 191664963,
+          "seed_source": "random(np.random.default_rng(42))",
+          "expect": "PASS",
+          "home_outcome": null,
+          "action_status_counts": {
+            "CLAMPED": 186,
+            "ACCEPTED": 514
+          },
+          "wall_s": 65.73388042699662,
+          "verdict": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 1.0,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "episode_id": "episode_003",
+          "label": "deliberate_fail_stop_after_pre_cut",
+          "controller": "scripted",
+          "seed": 42,
+          "seed_source": "fixed",
+          "expect": "FAIL",
+          "home_outcome": "NOT_APPLICABLE",
+          "action_status_counts": {
+            "CLAMPED": 92,
+            "ACCEPTED": 608
+          },
+          "wall_s": 63.841112554000574,
+          "verdict": "FAIL",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.0,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "episode_id": "episode_004",
+          "label": "random_policy",
+          "controller": "policy",
+          "seed": 1662057957,
+          "seed_source": "random(np.random.default_rng(42))",
+          "expect": "FAIL",
+          "home_outcome": null,
+          "action_status_counts": {
+            "CLAMPED": 563,
+            "ACCEPTED": 119,
+            "REJECTED_CUT_INDEX_OUT_OF_RANGE": 6,
+            "REJECTED_INVALID_SCHEMA": 6,
+            "REJECTED_INVALID_TARGET": 6
+          },
+          "wall_s": 65.63407701800315,
+          "verdict": "FAIL",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.0,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "episode_id": "episode_005",
+          "label": "scripted_seed42_repeat",
+          "controller": "scripted",
+          "seed": 42,
+          "seed_source": "fixed",
+          "expect": "PASS",
+          "home_outcome": "NOT_APPLICABLE",
+          "action_status_counts": {
+            "CLAMPED": 186,
+            "ACCEPTED": 514
+          },
+          "wall_s": 66.12943937700038,
+          "verdict": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 1.0,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "episode_id": "episode_006",
+          "label": "action_program_seed42_repeat",
+          "controller": "action_file",
+          "seed": 42,
+          "seed_source": "fixed",
+          "expect": null,
+          "home_outcome": null,
+          "action_status_counts": {
+            "ACCEPTED": 700
+          },
+          "wall_s": 64.1227336449956,
+          "verdict": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 1.0,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "reader": {
+        "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/read_dataset.py artifacts/wp11/phaseG/kin_reliability_trim_4mm_001 --replay-kinematic --out artifacts/wp11/phaseG/kin_reliability_trim_4mm_001_reader.json",
+        "result": "READ_DATASET PASS: 7/7 validate, 7/7 open-loop kinematic replays reproduce the final cut codes exactly"
+      },
+      "notes": "Kinematic return_home is NOT_APPLICABLE (no robot); the random policy's 18 deliberately invalid actions were REJECTED and replaced by explicit HOLDs."
+    },
+    "kin_formal_trim_test_e": {
+      "dir": "artifacts/wp11/phaseG/kin_formal_trim_test_e_001",
+      "log": "artifacts/wp11/logs/phaseG_kin_formal_trim_test_e_001.log",
+      "command": "PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/collect_dataset.py --runtime kinematic --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}' --episode-plan configs/wp11/phaseG/kinematic_formal_trim_test_e_v1.json --material-dt 0.0001 --device cuda:1 --record-every 10 --out artifacts/wp11/phaseG/kin_formal_trim_test_e_001",
+      "git_sha": "dce3cdd",
+      "resolution": "formal: 1 mm particles, 4 mm grid, law 8, material dt 0.1 ms, cuda:1 (shared with other agents' jobs)",
+      "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-570db2f5",
+      "episodes": [
+        {
+          "label": "scripted_seed42",
+          "controller": "scripted",
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.978927203065134,
+              "pass": true
+            }
+          ],
+          "substrate_share": 0.9999583333329937,
+          "detached_below_plane_fraction": 4.166666666666668e-05,
+          "piece_mass_fractions": null,
+          "components": 2,
+          "action_status_counts": {
+            "CLAMPED": 186,
+            "ACCEPTED": 514
+          },
+          "wall_s": 1051.5209475679949
+        },
+        {
+          "label": "action_program_seed42",
+          "controller": "action_file",
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.975095785440613,
+              "pass": true
+            }
+          ],
+          "substrate_share": 0.9999583333329937,
+          "detached_below_plane_fraction": 4.166666666666668e-05,
+          "piece_mass_fractions": null,
+          "components": 2,
+          "action_status_counts": {
+            "ACCEPTED": 700
+          },
+          "wall_s": 668.270500958999
+        }
+      ],
+      "reader": "READ_DATASET PASS (validation only; no replay: GPU is nondeterministic and a 1 mm CPU replay is not run)",
+      "reliability_note": "Two-episode Test E runs: their reliability.json reports POLICY_READY false only because they are not reliability runs (2 < 5 episodes, no failed episode, no memory fit)"
+    },
+    "kin_formal_sever_test_e": {
+      "dir": "artifacts/wp11/phaseG/kin_formal_sever_test_e_001",
+      "log": "artifacts/wp11/logs/phaseG_kin_formal_sever_test_e_001.log",
+      "command": "PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/collect_dataset.py --runtime kinematic --scene bar_160x30x20 --goal sever_mid --episode-plan configs/wp11/phaseG/kinematic_formal_sever_test_e_v1.json --material-dt 0.0001 --device cuda:1 --record-every 10 --out artifacts/wp11/phaseG/kin_formal_sever_test_e_001",
+      "git_sha": "dce3cdd",
+      "resolution": "formal: 1 mm particles, 4 mm grid, law 8, material dt 0.1 ms, cuda:1 (shared with other agents' jobs)",
+      "task_id": "CFG-bar_160x30x20-sever_mid-4e2c6f46",
+      "episodes": [
+        {
+          "label": "scripted_seed42",
+          "controller": "scripted",
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": null,
+          "substrate_share": null,
+          "detached_below_plane_fraction": null,
+          "piece_mass_fractions": [
+            0.5000000000003806,
+            0.5000000000003806
+          ],
+          "components": 2,
+          "action_status_counts": {
+            "ACCEPTED": 400
+          },
+          "wall_s": 606.5022804379987
+        },
+        {
+          "label": "action_program_seed42",
+          "controller": "action_file",
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": null,
+          "substrate_share": null,
+          "detached_below_plane_fraction": null,
+          "piece_mass_fractions": [
+            0.5000000000003806,
+            0.5000000000003806
+          ],
+          "components": 2,
+          "action_status_counts": {
+            "CLAMPED": 15,
+            "ACCEPTED": 385
+          },
+          "wall_s": 571.9290970799993
+        }
+      ],
+      "reader": "READ_DATASET PASS (validation only; no replay: GPU is nondeterministic and a 1 mm CPU replay is not run)",
+      "reliability_note": "Two-episode Test E runs: their reliability.json reports POLICY_READY false only because they are not reliability runs (2 < 5 episodes, no failed episode, no memory fit)"
+    },
+    "native_test_F_and_E": {
+      "dir": "artifacts/wp11/phaseG/native_reliability_trim_001",
+      "log": "artifacts/wp11/logs/phaseG_native_reliability_trim_001.log",
+      "command": "OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/python scripts/collect_dataset.py --runtime isaac_sim --gpu 0 --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}' --episode-plan configs/wp11/phaseG/native_reliability_trim_v1.json --camera-every 5 --record-every 10 --reliability-config configs/wp11/phaseG_reliability_v1a.json --reliability-config configs/wp11/phaseG_reliability_v1.json --out artifacts/wp11/phaseG/native_reliability_trim_001",
+      "git_sha": "a2ee588",
+      "gpu": 0,
+      "runtime": "Isaac Sim 6.2 Native (Kit/PhysX articulation, physical grasp ruler_knife_v2_y, RTX wrist D405 x2 + global D455) + TLMPM tlmpm_v5 law 8 K=1, 1 mm, material dt 0.1 ms",
+      "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-570db2f5",
+      "start_kst": "2026-10-30 05:22",
+      "total_wall_s": 4811.7,
+      "preflight": "C2 preflight PASS before launch: scripted plan until PRE_CUT and until WITHDRAW, and the hand-written action program (artifacts/wp11/phaseG/native_reliability_trim_001/preflight.json)",
+      "frequencies": {
+        "control_hz": 50,
+        "policy_camera_hz": 10,
+        "recorded_camera_hz": 5,
+        "measured": {
+          "global_d455": {
+            "frames": 105,
+            "median_interval_s": 0.19999999999999996,
+            "recorded_rate_hz": 5.000000000000001
+          },
+          "wrist_d405_0": {
+            "frames": 105,
+            "median_interval_s": 0.19999999999999996,
+            "recorded_rate_hz": 5.000000000000001
+          },
+          "wrist_d405_1": {
+            "frames": 105,
+            "median_interval_s": 0.19999999999999996,
+            "recorded_rate_hz": 5.000000000000001
+          }
+        }
+      },
+      "POLICY_READY": {
+        "v1a_primary": false,
+        "v1": false
+      },
+      "failing": {
+        "v1a": [
+          "host_memory_no_leak"
+        ],
+        "v1": [
+          "tool_at_rest_after_reset (all 4 episodes)",
+          "host_memory_no_leak"
+        ]
+      },
+      "cross_episode_v1a": {
+        "consecutive_episodes_in_one_process": true,
+        "host_memory_no_leak": false,
+        "gpu_memory_no_leak": true,
+        "same_seed_same_controller_repeatable": true,
+        "failed_episode_stored_and_usable": true
+      },
+      "memory": {
+        "host_rss_mib_after_episode": [
+          10973.91796875,
+          11292.44140625,
+          11406.78515625,
+          11573.10546875
+        ],
+        "gpu_used_mib_after_episode": [
+          6205.0,
+          6336.0,
+          6274.0,
+          6308.0
+        ],
+        "host_rss_slope_mib_per_episode": 140.33203125000173,
+        "gpu_slope_mib_per_episode": -13.999999999999526,
+        "fit_from_episode": 1
+      },
+      "determinism": [
+        {
+          "episodes": [
+            "episode_000",
+            "episode_003"
+          ],
+          "controller": "scripted",
+          "seed": 42,
+          "final_codes_identical": false,
+          "verdict_identical": true,
+          "rule": "verdict",
+          "pass": true
+        }
+      ],
+      "episodes": [
+        {
+          "label": "scripted_measured_seed42",
+          "controller": "scripted",
+          "expect": "PASS",
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.978927203065134,
+              "pass": true
+            }
+          ],
+          "substrate_share": 0.9999583333329937,
+          "detached_below_plane_fraction": 4.166666666666668e-05,
+          "components": 2,
+          "home_outcome": "PASS",
+          "home_reason": null,
+          "termination_reason": "TIME_LIMIT",
+          "task_end_reason": "STOP_AFTER_PHASE:WITHDRAW",
+          "action_status_counts": {
+            "ACCEPTED": 595,
+            "CLAMPED": 105
+          },
+          "tracking_error_m": {
+            "p50": 0.0007780408974233056,
+            "p95": 0.0010492163379037468,
+            "max": 0.006109623573749954
+          },
+          "privileged_controller_inputs": [
+            "measured tool-edge pose (simulator tool truth) as waypoint feedback"
+          ],
+          "grasp_reset": "PASS_STABLE_GRASP",
+          "tool_pose_repeat_vs_episode_0": {
+            "translation_m": 0.0,
+            "rotation_rad": 0.0
+          },
+          "reliability_v1a_failing": [],
+          "host_rss_mib_after": 10973.91796875,
+          "gpu_mib_after": 6205.0,
+          "wall_s": 1483.9973574569958
+        },
+        {
+          "label": "action_program_seed42",
+          "controller": "action_file",
+          "expect": null,
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.9846743295019156,
+              "pass": true
+            }
+          ],
+          "substrate_share": 0.9998124999996615,
+          "detached_below_plane_fraction": 0.00018750000000000003,
+          "components": 2,
+          "home_outcome": "PASS",
+          "home_reason": null,
+          "termination_reason": "TIME_LIMIT",
+          "task_end_reason": null,
+          "action_status_counts": {
+            "ACCEPTED": 700
+          },
+          "tracking_error_m": {
+            "p50": 0.0007775332167368605,
+            "p95": 0.001194772835996679,
+            "max": 0.003859672199576723
+          },
+          "privileged_controller_inputs": [],
+          "grasp_reset": "PASS_STABLE_GRASP",
+          "tool_pose_repeat_vs_episode_0": {
+            "translation_m": 0.0,
+            "rotation_rad": 0.0
+          },
+          "reliability_v1a_failing": [],
+          "host_rss_mib_after": 11292.44140625,
+          "gpu_mib_after": 6336.0,
+          "wall_s": 1413.4486382809991
+        },
+        {
+          "label": "deliberate_fail_stop_after_pre_cut",
+          "controller": "scripted",
+          "expect": "FAIL",
+          "verdict": "FAIL",
+          "integrity": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.0,
+              "pass": false
+            }
+          ],
+          "substrate_share": 0.9999999999996599,
+          "detached_below_plane_fraction": 0.0,
+          "components": 1,
+          "home_outcome": "FAIL",
+          "home_reason": "MEASURED_PATH_CLEARANCE",
+          "termination_reason": "TIME_LIMIT",
+          "task_end_reason": "STOP_AFTER_PHASE:PRE_CUT",
+          "action_status_counts": {
+            "ACCEPTED": 600,
+            "CLAMPED": 100
+          },
+          "tracking_error_m": {
+            "p50": 0.000763874845822681,
+            "p95": 0.00104622853906003,
+            "max": 0.006109623573749954
+          },
+          "privileged_controller_inputs": [
+            "measured tool-edge pose (simulator tool truth) as waypoint feedback"
+          ],
+          "grasp_reset": "PASS_STABLE_GRASP",
+          "tool_pose_repeat_vs_episode_0": {
+            "translation_m": 0.0,
+            "rotation_rad": 0.0
+          },
+          "reliability_v1a_failing": [],
+          "host_rss_mib_after": 11406.78515625,
+          "gpu_mib_after": 6274.0,
+          "wall_s": 1320.0784891000003
+        },
+        {
+          "label": "scripted_measured_seed42_repeat",
+          "controller": "scripted",
+          "expect": "PASS",
+          "verdict": "PASS",
+          "integrity": "PASS",
+          "items": [
+            {
+              "id": "dome",
+              "removed_mass_fraction": 0.9770114942528736,
+              "pass": true
+            }
+          ],
+          "substrate_share": 0.9999791666663268,
+          "detached_below_plane_fraction": 2.083333333333334e-05,
+          "components": 2,
+          "home_outcome": "PASS",
+          "home_reason": null,
+          "termination_reason": "TIME_LIMIT",
+          "task_end_reason": "STOP_AFTER_PHASE:WITHDRAW",
+          "action_status_counts": {
+            "ACCEPTED": 599,
+            "CLAMPED": 101
+          },
+          "tracking_error_m": {
+            "p50": 0.0007782077538017108,
+            "p95": 0.0010492163379037468,
+            "max": 0.006109623573749954
+          },
+          "privileged_controller_inputs": [
+            "measured tool-edge pose (simulator tool truth) as waypoint feedback"
+          ],
+          "grasp_reset": "PASS_STABLE_GRASP",
+          "tool_pose_repeat_vs_episode_0": {
+            "translation_m": 0.0,
+            "rotation_rad": 0.0
+          },
+          "reliability_v1a_failing": [],
+          "host_rss_mib_after": 11573.10546875,
+          "gpu_mib_after": 6308.0,
+          "wall_s": 594.1765524920047
+        }
+      ],
+      "reader": {
+        "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/read_dataset.py artifacts/wp11/phaseG/native_reliability_trim_001 --replay-kinematic --out artifacts/wp11/phaseG/native_reliability_trim_001_reader.json",
+        "result": "READ_DATASET PASS: 4/4 validate (incl. the failed episode); replay NOT_APPLICABLE on Native. Return-home rows carry action_status LEGACY_UNVALIDATED in this dataset (renamed RETURN_HOME_PLAN in f447d09 for later datasets)"
+      },
+      "notes": [
+        "Episode 2 home_outcome FAIL is the geometric measured-path audit only: blade 47.5 um inside the declared uncut workpiece base box (contact_free mode) at the start of the lift from the PRE_CUT hold (the known C5 PRE_CUT clearance issue); 0 label changes, 0 unintended contacts, joint error 0.39 mrad, tool 0.03 mm. Not a reliability gate.",
+        "Episodes 0 and 3 (same seed and controller): final codes differ (GPU/PhysX nondeterminism), verdict identical (PASS, 97.89% vs 97.70%).",
+        "Reset is bitwise repeatable: tool pose difference vs episode 0 is 0.0 m / 0.0 rad for all episodes; grasp PASS_STABLE_GRASP every reset; start codes identical.",
+        "Wall time per 14 s episode 594-1484 s; GPU 0 was shared with four other agents' kinematic jobs."
+      ]
+    },
+    "native_memory_diagnostic": {
+      "dir": "artifacts/wp11/phaseG/native_memory_probe_001",
+      "log": "artifacts/wp11/logs/phaseG_native_memory_probe_001.log",
+      "command": "OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/python scripts/collect_dataset.py --runtime isaac_sim --gpu 0 --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}' --episode-plan configs/wp11/phaseG/native_memory_probe_v1.json --camera-every 5 --record-every 10 --reliability-config configs/wp11/phaseG_reliability_v1a.json --out artifacts/wp11/phaseG/native_memory_probe_001",
+      "git_sha": "9183b3f",
+      "purpose": "Diagnostic only: 8 consecutive 20-step episodes (hold policy) to separate per-reset from per-step memory growth",
+      "memory": {
+        "host_rss_mib_after_episode": [
+          5950.76171875,
+          6098.37890625,
+          6168.1640625,
+          6218.453125,
+          6329.73046875,
+          6363.53515625,
+          6502.82421875,
+          6592.53515625
+        ],
+        "gpu_used_mib_after_episode": [
+          6021.0,
+          6431.0,
+          6398.0,
+          6400.0,
+          6437.0,
+          6420.0,
+          6190.0,
+          6137.0
+        ],
+        "host_rss_slope_mib_per_episode": 82.0311104910715,
+        "gpu_slope_mib_per_episode": -45.64285714285657,
+        "fit_from_episode": 1
+      },
+      "finding": "Host RSS grows about 82 MiB per Native reset with no plateau over 8 resets while process GPU memory stays flat; the growth is per reset of the Native runtime (isaac_sim_runner reset rebuilds the stage, cameras and material), not per control step and not in the wrapper (kinematic: 1.9 MiB/episode). Not fixed here (isaac_sim_runner is outside this task's scope)."
+    },
+    "native_smoke": {
+      "dir": "artifacts/wp11/phaseG/native_smoke_001",
+      "log": "artifacts/wp11/logs/phaseG_native_smoke_001.log",
+      "git_sha": "dce3cdd",
+      "purpose": "2 x 20-step episodes before the formal run; found the PhysX clamped-tool velocity jitter that motivated v1a",
+      "memory": {
+        "host_rss_mib_after_episode": [
+          6123.921875,
+          6267.84765625
+        ],
+        "gpu_used_mib_after_episode": [
+          6045.0,
+          6176.0
+        ],
+        "host_rss_slope_mib_per_episode": null,
+        "gpu_slope_mib_per_episode": null,
+        "fit_from_episode": 1
+      }
+    },
+    "action_program_preflight": {
+      "file": "artifacts/wp11/phaseG/preflight_trim_program_001.json",
+      "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/preflight_action_program.py --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}' --program configs/wp11/action_programs/trim_rho10_handwritten_v1.json --out artifacts/wp11/phaseG/preflight_trim_program_001.json",
+      "result": "PASS (520 path samples; binding blade-workpiece clearance 0.05 mm in PRE_CUT, contact_free mode)"
+    }
+  },
+  "test_E": {
+    "programs": {
+      "trim": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json",
+      "sever": "configs/wp11/action_programs/sever_mid_handwritten_v1.json",
+      "generator": "scripts/make_phaseG_action_programs.py (scene/tool/goal numbers only; no goal_planner/policies import; test asserts it)",
+      "differences_from_planner": "trim: synchronized REORIENT at 40 mm/s, skim 20 mm/s from x=-26 to +26 mm (planner 25 mm/s, +/-22 mm, closed loop); sever: 8 mm/s cut (planner 10 mm/s), clamped approach; both open loop (no observation read)"
+    },
+    "comparison": [
+      {
+        "runtime": "kinematic 1 mm",
+        "goal": "trim_bump_rho10",
+        "scripted": "PASS, dome 0.9789, substrate 0.99996, 2 components",
+        "program": "PASS, dome 0.9751, substrate 0.99996, 2 components"
+      },
+      {
+        "runtime": "kinematic 1 mm",
+        "goal": "sever_mid",
+        "scripted": "PASS, pieces 0.50/0.50",
+        "program": "PASS, pieces 0.50/0.50"
+      },
+      {
+        "runtime": "Isaac Sim Native 1 mm",
+        "goal": "trim_bump_rho10",
+        "scripted": "PASS, dome 0.9789, substrate 0.99996 (episode 3 repeat: 0.9770)",
+        "program": "PASS, dome 0.9847, substrate 0.99981, home PASS, no privileged controller input"
+      }
+    ],
+    "hidden_changes": "None: both controllers run through the same open_cutting_env(preset=...) step() in the same process; the action program uses only the public action API"
+  },
+  "open_issues": [
+    "Native host RSS grows ~82 MiB per reset (140 MiB per full formal episode): Native is not POLICY_READY under the predeclared gate; investigate isaac_sim_runner reset resource release or recycle the process every N episodes.",
+    "The per-step collision check covers blade/handle vs declared fixtures and table only; robot links/cameras are covered by the C2 preflight for planned paths and action programs, not for arbitrary online actions.",
+    "Native PRE_CUT measured-path clearance (47.5 um in the deliberately stopped episode) is the known C5 issue (C5b path_v3).",
+    "Isaac Lab with the preset: NOT_RUN; Native REJECTED_IK_UNREACHABLE / joint actions: covered by code path and CPU tests with the kinematic backend only (no Native episode triggered them).",
+    "One compiled task per Native process; changing goals needs a new process.",
+    "Material parameters are provisional and uncalibrated."
+  ]
+}
