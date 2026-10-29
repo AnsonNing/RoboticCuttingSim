@@ -27,6 +27,11 @@
   - Hash 不一致的根因是 OpenBLAS 依 CPU 選 kernel（SkylakeX 與 Haswell），只差 1 ulp，不是行為改變。
   - 改用參考軌跡＋推導出的容差 N·16·eps；matplotlib 改為 NumPy 判斷；CI 改完整 checkout（原本 26 個 skip 是歷史 law 測試沒跑）。
   - CI 剩 `test_tool_profile_v2.py:33` 的主軸 hash 也差 1 ulp，修正中。
+- C4 完成（`aa0dfdc`、`20101c1`、`78c0641`，[證據](evidence/wp11/phaseC4_trim_material_001.json)）。
+  - 雙斜面 ρ = 5–35° 都分離（93–98%，0 橋接）；0° FAIL（下斜面壓陷）。
+  - 單斜面只有 0° 過，因為 law 8 閘門量刀身平面而不是推 chip 的面角，這是 Phase F 的發現。
+  - 負對照：平壓與鈍握柄兩項的平均力窗口含空氣段，依原門檻 FAIL，但都 0 標籤、1 component；Phase F 會先宣告接觸窗口再重跑。
+  - **定案：v2_y 雙斜面、ρ = 10°**，已記入 ADR 0013。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A'：修 v2 pin 的容差並看 CI 結果；
   - D：`wp11_workcell_v1`（+100 mm）、Isaac 接受 compiled task、HOME reset、planner 控制器、實體 Return-to-Home 與狀態機，加上 Native smoke（`artifacts/wp11/phaseD/`）；

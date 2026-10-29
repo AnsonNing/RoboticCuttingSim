@@ -138,3 +138,30 @@ follow-ups (CUT, 20° oblique, SLICE-PUSH).
   only if Phase C4 shows separation at the material level and a chisel
   preflight passes. Otherwise ρ < 10° is reported as blocked by the bevel
   geometry.
+
+## Decision record — C4 material level (2026-10-30, [evidence](../evidence/wp11/phaseC4_trim_material_001.json))
+
+Settings: law 8, 1 mm particles, 0.1 ms, kinematic, seed 42, edge at
+target + 0.2 mm.
+
+**Double bevel (`ruler_knife_v2_y`)**
+- ρ = 5°, 10°, 12.5°, 15°, 25° and 35° all separate the dome: 93–98%
+  removed, substrate share ≥ 0.99996, zero code-0 bridges.
+- ρ = 0° fails: 70% removed, or 87% with exact clearance. The lower bevel
+  face sits 0.55 mm below the target plane and depresses the dome base, so
+  its bottom layer is labelled with the substrate.
+
+**Chisel (`ruler_knife_v2_y_chisel`, flat face down)**
+- Passes at 0°, is marginal at 5°, and fails at 10°.
+- The cause is law 8's plowing gate. It measures motion against the blade
+  plane (5–10°), but the chisel's top face pushes the chip at ρ + 25°.
+  Ejected chip particles therefore stay code 0 and bridge.
+- This is a law-8 boundary finding for Phase F. It is not addressed with a
+  new law version.
+
+**Final TRIM configuration:** `ruler_knife_v2_y`, double bevel, ρ = 10°,
+edge at target + 0.2 mm, in `wp11_workcell_v1`. This meets the 0–10°
+near-horizontal target and is consistent with the C2 preflight. A true 0° is
+reported as blocked for the double bevel by its bevel geometry. The chisel
+0° option stays a documented material-level PASS that is not pursued live,
+because it would need its own CUT, oblique and SLICE validation.
