@@ -1,0 +1,4902 @@
+{
+ "schema": "rcs_generalization_round_evidence_v1",
+ "round_id": "wp11_phaseE_round1",
+ "config": "/home/ningan/RoboticCuttingSim/configs/wp11/generalization_round1.json",
+ "generated": "2026-10-30T06:37:12.569554+09:00",
+ "command": [
+  "scripts/run_generalization.py",
+  "summarize",
+  "--stage1",
+  "artifacts/wp11/phaseE/round1_stage1_001",
+  "--material-root",
+  "artifacts/wp11/phaseE/round1_kinematic_001",
+  "--out",
+  "docs/evidence/wp11/phaseE_round1_001.json"
+ ],
+ "stage1_dir": "artifacts/wp11/phaseE/round1_stage1_001",
+ "material_root": "artifacts/wp11/phaseE/round1_kinematic_001",
+ "label": "Stage-2 classes are KINEMATIC ideal-tracking results, never live results; GRASP_FAILURE is not exercised in the kinematic stage.",
+ "tables": {
+  "CUT": {
+   "samples": 6,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 0,
+    "TASK_SUCCESS": 6,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 6,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 1.0,
+   "overall_kinematic_success": 1.0,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TRIM": {
+   "samples": 6,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 0,
+    "TASK_SUCCESS": 6,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 6,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 1.0,
+   "overall_kinematic_success": 1.0,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "SLICE_PUSH": {
+   "samples": 5,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 5,
+    "TASK_SUCCESS": 0,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 5,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 0.0,
+   "overall_kinematic_success": 0.0,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TEST_A": {
+   "samples": 8,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 1,
+    "TASK_SUCCESS": 7,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 8,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 0.875,
+   "overall_kinematic_success": 0.875,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TEST_B": {
+   "samples": 5,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 0,
+    "TASK_SUCCESS": 5,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 5,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 1.0,
+   "overall_kinematic_success": 1.0,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TEST_C": {
+   "samples": 5,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 0,
+    "TASK_SUCCESS": 5,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 5,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 1.0,
+   "overall_kinematic_success": 1.0,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TEST_D": {
+   "samples": 6,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 3,
+    "TASK_SUCCESS": 3,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 6,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 0.5,
+   "overall_kinematic_success": 0.5,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  }
+ },
+ "samples": [
+  {
+   "family": "CUT",
+   "seed": 1101,
+   "sample_id": "E1_CUT_s1101",
+   "goal_id": "E1_CUT_s1101_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 20.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.14423021382717527,
+    "width_m": 0.033443795097741515,
+    "height_m": 0.017768100428113033,
+    "x_m": 0.01219331633272799,
+    "y_m": 0.01712492394828274,
+    "yaw_deg": 13.149836971987973,
+    "cut_fraction": 0.15009613352145962
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.144,
+     0.034,
+     0.018
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.02,
+    "nominal_piece_fractions": [
+     0.638888888888889,
+     0.36111111111111105
+    ]
+   },
+   "task_id": "CFG-E1_CUT_s1101-E1_CUT_s1101_sever-8a56eadc",
+   "particles": 88128,
+   "duration_s": 10.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 13.190677840000717,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6233016967773437,
+     "gripper_pad_clearance": 0.030222145009089697,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115595257206139,
+     "knife_handle_clearance": 0.011124252215169259,
+     "blade_collision": 0.008000246199682934,
+     "wrist_camera_clearance": 0.04990519489008463,
+     "franka_self_collision": 0.01962747055643351,
+     "joint_continuity": 0.04610246181488037
+    },
+    "ik_worst": {
+     "position_error_m": 2.309110433200946e-06,
+     "rotation_error_rad": 1.0244882775622777e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 345
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.001499999798834327,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 0.9007670139981201,
+     "episode": 211.7367758190012,
+     "evaluation": 2.574740796997503,
+     "per_simulated_second": 21.17367758190012
+    },
+    "simulated_s": 10.0,
+    "particles": 88128,
+    "history_frames": 40,
+    "physics_state_mb": 71.988584,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9441018845931631,
+     "max_speed_m_s_sampled": 0.02634541317820549,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_CUT_s1101",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "CUT",
+   "seed": 1102,
+   "sample_id": "E1_CUT_s1102",
+   "goal_id": "E1_CUT_s1102_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 4.45 mm (mid-height), cut angle 20.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16465480292610826,
+    "width_m": 0.03131644751917244,
+    "height_m": 0.01666011889907516,
+    "x_m": 0.00966656140254707,
+    "y_m": 0.009147487326560386,
+    "yaw_deg": -9.93263287758988,
+    "cut_fraction": 0.02710787216205307
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.164,
+     0.032,
+     0.017
+    ],
+    "cut_angle_deg": 20.0,
+    "cut_x_local_m": 0.004445691034576703,
+    "nominal_piece_fractions": [
+     0.5271078721620531,
+     0.47289212783794693
+    ]
+   },
+   "task_id": "CFG-E1_CUT_s1102-E1_CUT_s1102_sever-6e8f0ac0",
+   "particles": 89216,
+   "duration_s": 10.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.392408599000191,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7463440418243408,
+     "gripper_pad_clearance": 0.027190319974693147,
+     "franka1_collision": 0.11090260226522725,
+     "franka_workcell_collision": 0.06703244712859818,
+     "knife_handle_clearance": 0.007508680897106099,
+     "blade_collision": 0.007517654343160876,
+     "wrist_camera_clearance": 0.05130394834706262,
+     "franka_self_collision": 0.01973055835554427,
+     "joint_continuity": 0.045747933387756345
+    },
+    "ik_worst": {
+     "position_error_m": 3.0152296392111933e-06,
+     "rotation_error_rad": 1.2360947121933958e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 347
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.00034202011975436805,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1445643790066242,
+     "episode": 223.7192647319971,
+     "evaluation": 2.5472450710003613,
+     "per_simulated_second": 22.37192647319971
+    },
+    "simulated_s": 10.0,
+    "particles": 89216,
+    "history_frames": 40,
+    "physics_state_mb": 72.377176,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.930043562875465,
+     "max_speed_m_s_sampled": 0.0750170350074768,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_CUT_s1102",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "CUT",
+   "seed": 1103,
+   "sample_id": "E1_CUT_s1103",
+   "goal_id": "E1_CUT_s1103_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -8.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.15087389666147139,
+    "width_m": 0.032781266613014025,
+    "height_m": 0.020258329102685557,
+    "x_m": 0.00788135997875735,
+    "y_m": 0.01827308444178691,
+    "yaw_deg": -11.21579404515122,
+    "cut_fraction": -0.052335397784479154
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.15,
+     0.032,
+     0.02
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": -0.008,
+    "nominal_piece_fractions": [
+     0.4466666666666667,
+     0.5533333333333333
+    ]
+   },
+   "task_id": "CFG-E1_CUT_s1103-E1_CUT_s1103_sever-1a8a38b3",
+   "particles": 96000,
+   "duration_s": 10.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.296345702998224,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7386326313018798,
+     "gripper_pad_clearance": 0.030222159006590126,
+     "franka1_collision": 0.14311791289682146,
+     "franka_workcell_collision": 0.07115573177467903,
+     "knife_handle_clearance": 0.011124415428928024,
+     "blade_collision": 0.008000306716752245,
+     "wrist_camera_clearance": 0.051656879650699206,
+     "franka_self_collision": 0.01990747848707483,
+     "joint_continuity": 0.04932564258575439
+    },
+    "ik_worst": {
+     "position_error_m": 2.962656369948215e-06,
+     "rotation_error_rad": 1.0938831646449387e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 336
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0014999999273568416,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 0.7798913229999016,
+     "episode": 235.69862978700257,
+     "evaluation": 2.7685382130002836,
+     "per_simulated_second": 22.447488551143103
+    },
+    "simulated_s": 10.5,
+    "particles": 96000,
+    "history_frames": 39,
+    "physics_state_mb": 76.574171,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9440656837607093,
+     "max_speed_m_s_sampled": 0.03092092275619507,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_CUT_s1103",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "CUT",
+   "seed": 1104,
+   "sample_id": "E1_CUT_s1104",
+   "goal_id": "E1_CUT_s1104_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -12.07 mm (mid-height), cut angle 20.0 deg about local y.",
+   "draws": {
+    "length_m": 0.13849341441919094,
+    "width_m": 0.029072221650810616,
+    "height_m": 0.016002844484097164,
+    "x_m": -0.000465213122482825,
+    "y_m": 0.004423586299872974,
+    "yaw_deg": -16.559412283416357,
+    "cut_fraction": -0.08746913879301213
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.138,
+     0.03,
+     0.016
+    ],
+    "cut_angle_deg": 20.0,
+    "cut_x_local_m": -0.012070741153435675,
+    "nominal_piece_fractions": [
+     0.41253086120698784,
+     0.5874691387930121
+    ]
+   },
+   "task_id": "CFG-E1_CUT_s1104-E1_CUT_s1104_sever-5a62234b",
+   "particles": 66240,
+   "duration_s": 10.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.194313401996624,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7463411808013916,
+     "gripper_pad_clearance": 0.02719048475525578,
+     "franka1_collision": 0.13042716744942084,
+     "franka_workcell_collision": 0.06703230570218063,
+     "knife_handle_clearance": 0.007508748291338998,
+     "blade_collision": 0.007517852540895797,
+     "wrist_camera_clearance": 0.051656917068596354,
+     "franka_self_collision": 0.019783108486532593,
+     "joint_continuity": 0.04640954494476318
+    },
+    "ik_worst": {
+     "position_error_m": 2.9687312901232016e-06,
+     "rotation_error_rad": 1.316661042339228e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 343
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.00017101002006079946,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8180429879939766,
+     "episode": 197.26125812600367,
+     "evaluation": 2.238195949998044,
+     "per_simulated_second": 19.726125812600365
+    },
+    "simulated_s": 10.0,
+    "particles": 66240,
+    "history_frames": 40,
+    "physics_state_mb": 54.286205,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9272903822192428,
+     "max_speed_m_s_sampled": 0.06390227377414703,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_CUT_s1104",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "CUT",
+   "seed": 1105,
+   "sample_id": "E1_CUT_s1105",
+   "goal_id": "E1_CUT_s1105_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -24.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16780829192529106,
+    "width_m": 0.029175837732631552,
+    "height_m": 0.02260352461734215,
+    "x_m": 0.0050490669588443456,
+    "y_m": 0.0016629242001529806,
+    "yaw_deg": 5.733401740451821,
+    "cut_fraction": -0.13132256504805775
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.168,
+     0.03,
+     0.023
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": -0.024,
+    "nominal_piece_fractions": [
+     0.35714285714285715,
+     0.6428571428571429
+    ]
+   },
+   "task_id": "CFG-E1_CUT_s1105-E1_CUT_s1105_sever-8f83aefd",
+   "particles": 115920,
+   "duration_s": 10.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.212305865003145,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7201747417449951,
+     "gripper_pad_clearance": 0.03022112866650083,
+     "franka1_collision": 0.11969737217628307,
+     "franka_workcell_collision": 0.07115463649189821,
+     "knife_handle_clearance": 0.01112365267041689,
+     "blade_collision": 0.008000204665324057,
+     "wrist_camera_clearance": 0.05165686923256916,
+     "franka_self_collision": 0.01962747249838357,
+     "joint_continuity": 0.04716616630554199
+    },
+    "ik_worst": {
+     "position_error_m": 3.181769442444076e-06,
+     "rotation_error_rad": 1.2880731243555265e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 331
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000000372529,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 0.9627151809982024,
+     "episode": 349.0033407039955,
+     "evaluation": 3.345846005999192,
+     "per_simulated_second": 33.23841340038052
+    },
+    "simulated_s": 10.5,
+    "particles": 115920,
+    "history_frames": 39,
+    "physics_state_mb": 92.952823,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9468025827385731,
+     "max_speed_m_s_sampled": 0.03887694701552391,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_CUT_s1105",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "CUT",
+   "seed": 1106,
+   "sample_id": "E1_CUT_s1106",
+   "goal_id": "E1_CUT_s1106_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -24.02 mm (mid-height), cut angle 20.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16746597066773783,
+    "width_m": 0.029787475448432667,
+    "height_m": 0.01823012495079588,
+    "x_m": -0.010578482747980504,
+    "y_m": -0.009331278854181849,
+    "yaw_deg": 10.245415569821475,
+    "cut_fraction": -0.14295633167903318
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.168,
+     0.03,
+     0.018
+    ],
+    "cut_angle_deg": 20.0,
+    "cut_x_local_m": -0.024016663722077575,
+    "nominal_piece_fractions": [
+     0.35704366832096684,
+     0.6429563316790332
+    ]
+   },
+   "task_id": "CFG-E1_CUT_s1106-E1_CUT_s1106_sever-d6585a77",
+   "particles": 90720,
+   "duration_s": 10.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.426709621002374,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7069233179092407,
+     "gripper_pad_clearance": 0.027190415903503,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.0670319435319186,
+     "knife_handle_clearance": 0.007508537339156474,
+     "blade_collision": 0.007517811884830113,
+     "wrist_camera_clearance": 0.04766634663251147,
+     "franka_self_collision": 0.019904417750692148,
+     "joint_continuity": 0.046330747604370115
+    },
+    "ik_worst": {
+     "position_error_m": 3.0889488786521296e-06,
+     "rotation_error_rad": 8.677237929002955e-07
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 346
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0004817121568995112,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0160835509959725,
+     "episode": 309.748981525001,
+     "evaluation": 2.6898248579964275,
+     "per_simulated_second": 30.9748981525001
+    },
+    "simulated_s": 10.0,
+    "particles": 90720,
+    "history_frames": 40,
+    "physics_state_mb": 74.20232,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9136937963037777,
+     "max_speed_m_s_sampled": 0.03739552944898605,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_CUT_s1106",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TRIM",
+   "seed": 1201,
+   "sample_id": "E1_TRIM_s1201",
+   "goal_id": "E1_TRIM_s1201_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome protrusion p0 with one surface_trim pass at rake 10.0 deg.",
+   "draws": {
+    "length_m": 0.16420148180919067,
+    "width_m": 0.030698822183545294,
+    "height_m": 0.016457098813786868,
+    "x_m": 0.01468552905188936,
+    "y_m": -0.019257921000954928,
+    "yaw_deg": 18.571899891082424,
+    "bump_x_fraction": 0.030680458822313295,
+    "bump_y_m": -0.00027814796699461705,
+    "bump_radius_x_m": 0.01079162671442262,
+    "bump_radius_y_m": 0.009207885241405043,
+    "bump_height_m": 0.006602798370940657
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.164,
+     0.03,
+     0.016
+    ],
+    "protrusion_family": "dome",
+    "rake_deg": 10.0,
+    "bump_x_local_m": 0.005031595246859381
+   },
+   "task_id": "CFG-E1_TRIM_s1201-E1_TRIM_s1201_trim-cf34a057",
+   "particles": 79329,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.017752589999873,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.48152120113372804,
+     "gripper_pad_clearance": 0.02662552746924506,
+     "franka1_collision": 0.1516592677862792,
+     "franka_workcell_collision": 0.0244842533425014,
+     "knife_handle_clearance": 0.008112756044560496,
+     "blade_collision": 4.966273200597336e-05,
+     "wrist_camera_clearance": 0.05166613548135855,
+     "franka_self_collision": 0.01970133798519351,
+     "joint_continuity": 0.03884726524353027
+    },
+    "ik_worst": {
+     "position_error_m": 3.1067184917531865e-06,
+     "rotation_error_rad": 1.0465219920231356e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 365
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9359605911330049,
+     "per_protrusion_removed": {
+      "p0": 0.9359605911330049
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.004780729129910469,
+     "overcut_detached_below_plane_fraction": 0.00010162601626016262,
+     "substrate_share": 0.999898373984594,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8205137519980781,
+     "episode": 137.8496512089987,
+     "evaluation": 3.4532697800023016,
+     "per_simulated_second": 19.69280731557124
+    },
+    "simulated_s": 7.0,
+    "particles": 79329,
+    "history_frames": 40,
+    "physics_state_mb": 62.863645,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8596596153762028,
+     "max_speed_m_s_sampled": 0.22000828385353088,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TRIM_s1201",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TRIM",
+   "seed": 1202,
+   "sample_id": "E1_TRIM_s1202",
+   "goal_id": "E1_TRIM_s1202_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the gaussian protrusion p0 with one surface_trim pass at rake 10.0 deg.",
+   "draws": {
+    "length_m": 0.16110670348609685,
+    "width_m": 0.028940735354573803,
+    "height_m": 0.020044744284386216,
+    "x_m": 0.019315893885858564,
+    "y_m": -0.012012312268147238,
+    "yaw_deg": -7.310637959298457,
+    "bump_x_fraction": -0.11769737088940241,
+    "bump_y_m": -0.0011366227090710132,
+    "bump_radius_x_m": 0.009409260484332767,
+    "bump_radius_y_m": 0.010567357063467665,
+    "bump_height_m": 0.007189735750012501
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.162,
+     0.028,
+     0.02
+    ],
+    "protrusion_family": "gaussian",
+    "rake_deg": 10.0,
+    "bump_x_local_m": -0.019066974084083192
+   },
+   "task_id": "CFG-E1_TRIM_s1202-E1_TRIM_s1202_trim-eeb4602b",
+   "particles": 91221,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.592229030000453,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6870078563690185,
+     "gripper_pad_clearance": 0.027538320064373605,
+     "franka1_collision": 0.1652049987073052,
+     "franka_workcell_collision": 0.028484411020912582,
+     "knife_handle_clearance": 0.01147831103782418,
+     "blade_collision": 4.9047204768231586e-05,
+     "wrist_camera_clearance": 0.05166798370706157,
+     "franka_self_collision": 0.019729396405149653,
+     "joint_continuity": 0.042449010014533994
+    },
+    "ik_worst": {
+     "position_error_m": 3.1946196033452883e-06,
+     "rotation_error_rad": 1.1782441178163668e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 340
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9481037924151695,
+     "per_protrusion_removed": {
+      "p0": 0.9481037924151695
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.003983443155884742,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 1.0000000000001203,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.9462890669965418,
+     "episode": 150.9146282399961,
+     "evaluation": 3.759672000000137,
+     "per_simulated_second": 21.559232605713728
+    },
+    "simulated_s": 7.0,
+    "particles": 91221,
+    "history_frames": 40,
+    "physics_state_mb": 72.345262,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9318347328286751,
+     "max_speed_m_s_sampled": 0.13625790178775787,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TRIM_s1202",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TRIM",
+   "seed": 1203,
+   "sample_id": "E1_TRIM_s1203",
+   "goal_id": "E1_TRIM_s1203_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the ellipsoid_cap protrusion p0 with one surface_trim pass at rake 10.0 deg.",
+   "draws": {
+    "length_m": 0.1596117880221023,
+    "width_m": 0.033022732309120485,
+    "height_m": 0.01750481119847522,
+    "x_m": 0.018418302038666946,
+    "y_m": 2.947485903945224e-05,
+    "yaw_deg": -15.811844287563805,
+    "bump_x_fraction": 0.24305537407496458,
+    "bump_y_m": 0.0012533950830473685,
+    "bump_radius_x_m": 0.009096962623993145,
+    "bump_radius_y_m": 0.010735868579209471,
+    "bump_height_m": 0.006830437304945686
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.16,
+     0.034,
+     0.018
+    ],
+    "protrusion_family": "ellipsoid_cap",
+    "rake_deg": 10.0,
+    "bump_x_local_m": 0.038888859851994334
+   },
+   "task_id": "CFG-E1_TRIM_s1203-E1_TRIM_s1203_trim-fb22ed4f",
+   "particles": 99323,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.081392940002843,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7355532169342041,
+     "gripper_pad_clearance": 0.025120967853649027,
+     "franka1_collision": 0.14215866668378063,
+     "franka_workcell_collision": 0.026484405099075337,
+     "knife_handle_clearance": 0.008395248667356445,
+     "blade_collision": 4.922628761705135e-05,
+     "wrist_camera_clearance": 0.05165759135154675,
+     "franka_self_collision": 0.019671041726229806,
+     "joint_continuity": 0.040307474732398985
+    },
+    "ik_worst": {
+     "position_error_m": 3.0737677685008363e-06,
+     "rotation_error_rad": 1.1410832227229336e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 371
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9928724162508911,
+     "per_protrusion_removed": {
+      "p0": 0.9928724162508911
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.00020185780525207656,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999995047,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8465988700045273,
+     "episode": 174.73930203099735,
+     "evaluation": 3.956905642997299,
+     "per_simulated_second": 24.96275743299962
+    },
+    "simulated_s": 7.0,
+    "particles": 99323,
+    "history_frames": 40,
+    "physics_state_mb": 79.990795,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8715069489913729,
+     "max_speed_m_s_sampled": 0.10632488131523132,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TRIM_s1203",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TRIM",
+   "seed": 1204,
+   "sample_id": "E1_TRIM_s1204",
+   "goal_id": "E1_TRIM_s1204_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome protrusion p0 with one surface_trim pass at rake 25.0 deg.",
+   "draws": {
+    "length_m": 0.14206913097250015,
+    "width_m": 0.02973040950171752,
+    "height_m": 0.022996620451578458,
+    "x_m": -0.010218908961910503,
+    "y_m": 0.017677505999055366,
+    "yaw_deg": 19.637830437580355,
+    "bump_x_fraction": 0.20424332102142495,
+    "bump_y_m": 0.0006930111166976913,
+    "bump_radius_x_m": 0.010052551757674897,
+    "bump_radius_y_m": 0.011104311862838086,
+    "bump_height_m": 0.005582340607081066
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.142,
+     0.03,
+     0.023
+    ],
+    "protrusion_family": "dome",
+    "rake_deg": 25.0,
+    "bump_x_local_m": 0.02900255158504234
+   },
+   "task_id": "CFG-E1_TRIM_s1204-E1_TRIM_s1204_trim-6d33de9e",
+   "particles": 98548,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 7.7572916469944175,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.62719566822052,
+     "gripper_pad_clearance": 0.026932028624742897,
+     "franka1_collision": 0.13037722739501922,
+     "franka_workcell_collision": 0.0422898977536059,
+     "knife_handle_clearance": 0.017052552737673112,
+     "blade_collision": 0.00020036564421631442,
+     "wrist_camera_clearance": 0.051658794773864106,
+     "franka_self_collision": 0.019725624267316964,
+     "joint_continuity": 0.043550429344177244
+    },
+    "ik_worst": {
+     "position_error_m": 3.1594532594149965e-06,
+     "rotation_error_rad": 1.1195000861361927e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 347
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9771126760563379,
+     "per_protrusion_removed": {
+      "p0": 0.9771126760563379
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 5.287867784500161e-05,
+     "overcut_detached_below_plane_fraction": 4.082465809348847e-05,
+     "substrate_share": 0.9999591753414068,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8458472729980713,
+     "episode": 164.38052531400172,
+     "evaluation": 3.7907733469983214,
+     "per_simulated_second": 23.482932187714532
+    },
+    "simulated_s": 7.0,
+    "particles": 98548,
+    "history_frames": 40,
+    "physics_state_mb": 79.314203,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.873771239098336,
+     "max_speed_m_s_sampled": 0.42625749111175537,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TRIM_s1204",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TRIM",
+   "seed": 1205,
+   "sample_id": "E1_TRIM_s1205",
+   "goal_id": "E1_TRIM_s1205_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the gaussian protrusion p0 with one surface_trim pass at rake 25.0 deg.",
+   "draws": {
+    "length_m": 0.15460310157227786,
+    "width_m": 0.029265426379363215,
+    "height_m": 0.023810760818620793,
+    "x_m": 0.000598956052242635,
+    "y_m": -0.005748091133225807,
+    "yaw_deg": -12.576176541305962,
+    "bump_x_fraction": 0.23198150106663756,
+    "bump_y_m": -5.430970348030938e-06,
+    "bump_radius_x_m": 0.011104334562565862,
+    "bump_radius_y_m": 0.010141459766289936,
+    "bump_height_m": 0.006885529930488141
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.154,
+     0.03,
+     0.024
+    ],
+    "protrusion_family": "gaussian",
+    "rake_deg": 25.0,
+    "bump_x_local_m": 0.035725151164262184
+   },
+   "task_id": "CFG-E1_TRIM_s1205-E1_TRIM_s1205_trim-7476ad27",
+   "particles": 111424,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 7.910094891994959,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7226454734802246,
+     "gripper_pad_clearance": 0.027854124605410053,
+     "franka1_collision": 0.15358322376736022,
+     "franka_workcell_collision": 0.04329000295351667,
+     "knife_handle_clearance": 0.018255005793396357,
+     "blade_collision": 0.00020011900869471255,
+     "wrist_camera_clearance": 0.05166460117124579,
+     "franka_self_collision": 0.019698562019581936,
+     "joint_continuity": 0.042525497674942014
+    },
+    "ik_worst": {
+     "position_error_m": 3.0095301577263335e-06,
+     "rotation_error_rad": 1.1361615776924116e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 354
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9338235294117646,
+     "per_protrusion_removed": {
+      "p0": 0.9338235294117646
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.00680226294696331,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999985982,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8350048870051978,
+     "episode": 198.98300593500608,
+     "evaluation": 4.137719500999083,
+     "per_simulated_second": 28.426143705000868
+    },
+    "simulated_s": 7.0,
+    "particles": 111424,
+    "history_frames": 40,
+    "physics_state_mb": 89.939377,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8549882066298975,
+     "max_speed_m_s_sampled": 0.21186986565589905,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TRIM_s1205",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TRIM",
+   "seed": 1206,
+   "sample_id": "E1_TRIM_s1206",
+   "goal_id": "E1_TRIM_s1206_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the ellipsoid_cap protrusion p0 with one surface_trim pass at rake 25.0 deg.",
+   "draws": {
+    "length_m": 0.1392390689864581,
+    "width_m": 0.03110233694132203,
+    "height_m": 0.016112173889360735,
+    "x_m": -0.01585014052326864,
+    "y_m": -0.0012659617258691663,
+    "yaw_deg": 13.496457407890297,
+    "bump_x_fraction": -0.10951915346953012,
+    "bump_y_m": 0.0005664086269655312,
+    "bump_radius_x_m": 0.009140383534411564,
+    "bump_radius_y_m": 0.01093953509256982,
+    "bump_height_m": 0.007120126006784928
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.14,
+     0.032,
+     0.016
+    ],
+    "protrusion_family": "ellipsoid_cap",
+    "rake_deg": 25.0,
+    "bump_x_local_m": -0.015332681485734218
+   },
+   "task_id": "CFG-E1_TRIM_s1206-E1_TRIM_s1206_trim-b53613cc",
+   "particles": 73171,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.461159512997256,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6496829509735107,
+     "gripper_pad_clearance": 0.025982599884157333,
+     "franka1_collision": 0.17021799168260654,
+     "franka_workcell_collision": 0.035290242685046956,
+     "knife_handle_clearance": 0.01105542073835171,
+     "blade_collision": 0.00020040012729725622,
+     "wrist_camera_clearance": 0.051677677333205975,
+     "franka_self_collision": 0.01972103845373193,
+     "joint_continuity": 0.04406243324279785
+    },
+    "ik_worst": {
+     "position_error_m": 3.126130292690051e-06,
+     "rotation_error_rad": 1.189700381984951e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 343
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9966465459423207,
+     "per_protrusion_removed": {
+      "p0": 0.9966465459423207
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.0006897978633642193,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 1.0000000000008398,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0376414269994712,
+     "episode": 142.06768035000277,
+     "evaluation": 3.168593611997494,
+     "per_simulated_second": 20.295382907143253
+    },
+    "simulated_s": 7.0,
+    "particles": 73171,
+    "history_frames": 40,
+    "physics_state_mb": 59.220893,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8569075296519069,
+     "max_speed_m_s_sampled": 0.13331158459186554,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TRIM_s1206",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "SLICE_PUSH",
+   "seed": 1301,
+   "sample_id": "E1_SLICE_PUSH_s1301",
+   "goal_id": "E1_SLICE_PUSH_s1301_slice_push",
+   "goal_type": "sequence",
+   "goal_description": "Two through-cuts at local x = -28.00 / 24.00 mm, then a cut-disabled blade-face push of the +x piece by 20 mm.",
+   "draws": {
+    "length_m": 0.15689684069099558,
+    "width_m": 0.0280320505460448,
+    "height_m": 0.01689784031030867,
+    "x_m": 0.013860395343699369,
+    "y_m": 0.00897867726466334,
+    "yaw_deg": -6.295578785475563,
+    "slice_left_offset_m": 0.029542073047965682,
+    "slice_right_offset_m": 0.025860265585525937
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.156,
+     0.028,
+     0.017
+    ],
+    "cut_x_local_m": [
+     -0.028,
+     0.024
+    ],
+    "nominal_piece_fractions": [
+     0.32051282051282054,
+     0.33333333333333337,
+     0.34615384615384615
+    ],
+    "wrist_depth_relocation": "NOT_EXERCISED (ADR 0009 survey is a live-only feature)"
+   },
+   "task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-db93fecd",
+   "particles": 74256,
+   "duration_s": 21.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 21.80819796499418,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7223433971405029,
+     "gripper_pad_clearance": 0.030221750282629137,
+     "franka1_collision": 0.11128286713074143,
+     "franka_workcell_collision": 0.07115528888878024,
+     "knife_handle_clearance": 0.010620540843201937,
+     "blade_collision": 0.001999809211557755,
+     "wrist_camera_clearance": 0.05165686418510001,
+     "franka_self_collision": 0.019734521381498893,
+     "joint_continuity": 0.04795932182110846
+    },
+    "ik_worst": {
+     "position_error_m": 3.0051844574575895e-06,
+     "rotation_error_rad": 1.161595972343482e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "RETRACT",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 371
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:slice_two:cut_at_declared_planes"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.00400000044703484,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019902379615071544,
+       "other_piece_displacement_max_m": 2.005846844012891e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.00400000044703484
+    },
+    "wall_s": {
+     "setup": 0.7408558040042408,
+     "episode": 499.5826955260054,
+     "evaluation": 2.7990875950054033,
+     "per_simulated_second": 23.23640444307002
+    },
+    "simulated_s": 21.5,
+    "particles": 74256,
+    "history_frames": 41,
+    "physics_state_mb": 61.967559,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9447901727965864,
+     "max_speed_m_s_sampled": 0.04156944900751114,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1301",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "SLICE_PUSH",
+   "seed": 1302,
+   "sample_id": "E1_SLICE_PUSH_s1302",
+   "goal_id": "E1_SLICE_PUSH_s1302_slice_push",
+   "goal_type": "sequence",
+   "goal_description": "Two through-cuts at local x = -24.00 / 28.00 mm, then a cut-disabled blade-face push of the +x piece by 20 mm.",
+   "draws": {
+    "length_m": 0.15092983485698902,
+    "width_m": 0.031950725450586304,
+    "height_m": 0.020837802720452554,
+    "x_m": -0.008248639885065133,
+    "y_m": -0.003931143885641131,
+    "yaw_deg": 18.12198561322969,
+    "slice_left_offset_m": 0.0245046778601564,
+    "slice_right_offset_m": 0.029382046619352703
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.15,
+     0.032,
+     0.021
+    ],
+    "cut_x_local_m": [
+     -0.024,
+     0.028
+    ],
+    "nominal_piece_fractions": [
+     0.33999999999999997,
+     0.34666666666666673,
+     0.31333333333333335
+    ],
+    "wrist_depth_relocation": "NOT_EXERCISED (ADR 0009 survey is a live-only feature)"
+   },
+   "task_id": "CFG-E1_SLICE_PUSH_s1302-E1_SLICE_PUSH_s1302_slice_push-80a5ecfd",
+   "particles": 100800,
+   "duration_s": 23.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 23.360517024993896,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5172330856323242,
+     "gripper_pad_clearance": 0.030221562743784843,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115530062564979,
+     "knife_handle_clearance": 0.01062004170198953,
+     "blade_collision": 0.001999825994349091,
+     "wrist_camera_clearance": 0.048730894102660384,
+     "franka_self_collision": 0.019640998479433076,
+     "joint_continuity": 0.04499143123626709
+    },
+    "ik_worst": {
+     "position_error_m": 3.273838323398965e-06,
+     "rotation_error_rad": 1.166939793202468e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "RETRACT",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 361
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:slice_two:cut_at_declared_planes"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.003999999791383749,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.01992941599699242,
+       "other_piece_displacement_max_m": 2.5915607147821383e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.003999999791383749
+    },
+    "wall_s": {
+     "setup": 0.9117746970005101,
+     "episode": 1455.5884168549965,
+     "evaluation": 3.054644023999572,
+     "per_simulated_second": 63.28645290673898
+    },
+    "simulated_s": 23.0,
+    "particles": 100800,
+    "history_frames": 41,
+    "physics_state_mb": 84.628122,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9426941124675838,
+     "max_speed_m_s_sampled": 0.05028112977743149,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1302",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "SLICE_PUSH",
+   "seed": 1303,
+   "sample_id": "E1_SLICE_PUSH_s1303",
+   "goal_id": "E1_SLICE_PUSH_s1303_slice_push",
+   "goal_type": "sequence",
+   "goal_description": "Two through-cuts at local x = -28.00 / 36.00 mm, then a cut-disabled blade-face push of the +x piece by 20 mm.",
+   "draws": {
+    "length_m": 0.168776700069504,
+    "width_m": 0.029410138075154742,
+    "height_m": 0.017628779025130756,
+    "x_m": 0.01673494600545541,
+    "y_m": 0.012468094134860285,
+    "yaw_deg": -14.200533989350115,
+    "slice_left_offset_m": 0.026362329101177202,
+    "slice_right_offset_m": 0.03433895744107866
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.168,
+     0.03,
+     0.018
+    ],
+    "cut_x_local_m": [
+     -0.028,
+     0.036
+    ],
+    "nominal_piece_fractions": [
+     0.33333333333333337,
+     0.38095238095238093,
+     0.28571428571428575
+    ],
+    "wrist_depth_relocation": "NOT_EXERCISED (ADR 0009 survey is a live-only feature)"
+   },
+   "task_id": "CFG-E1_SLICE_PUSH_s1303-E1_SLICE_PUSH_s1303_slice_push-0bf8b097",
+   "particles": 90720,
+   "duration_s": 22.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 22.820688667001377,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7316245555877685,
+     "gripper_pad_clearance": 0.030222026735438733,
+     "franka1_collision": 0.1194559306941973,
+     "franka_workcell_collision": 0.0711556369106135,
+     "knife_handle_clearance": 0.010620666625757006,
+     "blade_collision": 0.0019997445845216905,
+     "wrist_camera_clearance": 0.05165686402264815,
+     "franka_self_collision": 0.019744142580666646,
+     "joint_continuity": 0.04859535530209541
+    },
+    "ik_worst": {
+     "position_error_m": 3.144405146502142e-06,
+     "rotation_error_rad": 1.2153206310992757e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "RETRACT",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 380
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:slice_two:cut_at_declared_planes"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.003999999411404127,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019917691845185406,
+       "other_piece_displacement_max_m": 2.070145703963844e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.003999999411404127
+    },
+    "wall_s": {
+     "setup": 0.8193927880056435,
+     "episode": 1383.4936682519983,
+     "evaluation": 3.0424724240001524,
+     "per_simulated_second": 62.88607582963629
+    },
+    "simulated_s": 22.0,
+    "particles": 90720,
+    "history_frames": 41,
+    "physics_state_mb": 75.600119,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9437453315476805,
+     "max_speed_m_s_sampled": 0.030226511880755424,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1303",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "SLICE_PUSH",
+   "seed": 1304,
+   "sample_id": "E1_SLICE_PUSH_s1304",
+   "goal_id": "E1_SLICE_PUSH_s1304_slice_push",
+   "goal_type": "sequence",
+   "goal_description": "Two through-cuts at local x = -28.00 / 32.00 mm, then a cut-disabled blade-face push of the +x piece by 20 mm.",
+   "draws": {
+    "length_m": 0.16981319223936833,
+    "width_m": 0.03278400997123707,
+    "height_m": 0.019162334332393997,
+    "x_m": -0.01308130313900676,
+    "y_m": -0.006437549269508031,
+    "yaw_deg": -6.671259549076339,
+    "slice_left_offset_m": 0.028592541131583486,
+    "slice_right_offset_m": 0.03167321447154398
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.17,
+     0.032,
+     0.019
+    ],
+    "cut_x_local_m": [
+     -0.028,
+     0.032
+    ],
+    "nominal_piece_fractions": [
+     0.33529411764705885,
+     0.3529411764705882,
+     0.31176470588235294
+    ],
+    "wrist_depth_relocation": "NOT_EXERCISED (ADR 0009 survey is a live-only feature)"
+   },
+   "task_id": "CFG-E1_SLICE_PUSH_s1304-E1_SLICE_PUSH_s1304_slice_push-e888da72",
+   "particles": 103360,
+   "duration_s": 22.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 22.128089643003477,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7221753120422363,
+     "gripper_pad_clearance": 0.03022163693649876,
+     "franka1_collision": 0.12281056456651324,
+     "franka_workcell_collision": 0.07115517292645938,
+     "knife_handle_clearance": 0.010620445938938083,
+     "blade_collision": 0.0019998387791471026,
+     "wrist_camera_clearance": 0.05165686789187028,
+     "franka_self_collision": 0.019663368665799257,
+     "joint_continuity": 0.04806770239025354
+    },
+    "ik_worst": {
+     "position_error_m": 3.0141903850081565e-06,
+     "rotation_error_rad": 1.3246995943125486e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "RETRACT",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 362
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:slice_two:cut_at_declared_planes"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.004000000067055224,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019940500509014004,
+       "other_piece_displacement_max_m": 2.380176929795569e-06,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.004000000067055224
+    },
+    "wall_s": {
+     "setup": 0.826502450996486,
+     "episode": 736.1487797919981,
+     "evaluation": 3.154094254998199,
+     "per_simulated_second": 32.71772354631103
+    },
+    "simulated_s": 22.5,
+    "particles": 103360,
+    "history_frames": 40,
+    "physics_state_mb": 84.60841,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9433350317249432,
+     "max_speed_m_s_sampled": 0.05080949515104294,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1304",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "SLICE_PUSH",
+   "seed": 1305,
+   "sample_id": "E1_SLICE_PUSH_s1305",
+   "goal_id": "E1_SLICE_PUSH_s1305_slice_push",
+   "goal_type": "sequence",
+   "goal_description": "Two through-cuts at local x = -32.00 / 28.00 mm, then a cut-disabled blade-face push of the +x piece by 20 mm.",
+   "draws": {
+    "length_m": 0.1567399386241378,
+    "width_m": 0.03300308001596008,
+    "height_m": 0.020367275785455125,
+    "x_m": 0.0016647899661897322,
+    "y_m": 0.014495452232418996,
+    "yaw_deg": -11.955317670882417,
+    "slice_left_offset_m": 0.030587706089131653,
+    "slice_right_offset_m": 0.02748497509942772
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.156,
+     0.034,
+     0.02
+    ],
+    "cut_x_local_m": [
+     -0.032,
+     0.028
+    ],
+    "nominal_piece_fractions": [
+     0.2948717948717949,
+     0.3846153846153846,
+     0.32051282051282054
+    ],
+    "wrist_depth_relocation": "NOT_EXERCISED (ADR 0009 survey is a live-only feature)"
+   },
+   "task_id": "CFG-E1_SLICE_PUSH_s1305-E1_SLICE_PUSH_s1305_slice_push-f38d70ef",
+   "particles": 106080,
+   "duration_s": 23.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 22.80451628699666,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7272941589355468,
+     "gripper_pad_clearance": 0.030221985351708277,
+     "franka1_collision": 0.12706510522238723,
+     "franka_workcell_collision": 0.07115555564136454,
+     "knife_handle_clearance": 0.010620693725417858,
+     "blade_collision": 0.00199992641004067,
+     "wrist_camera_clearance": 0.051656864293221416,
+     "franka_self_collision": 0.019713547196551995,
+     "joint_continuity": 0.048768983632326124
+    },
+    "ik_worst": {
+     "position_error_m": 3.125704864026234e-06,
+     "rotation_error_rad": 1.2226177328146518e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "RETRACT",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 367
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:slice_two:cut_at_declared_planes"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.003999999791383744,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019943742940915398,
+       "other_piece_displacement_max_m": 7.497194246617239e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.003999999791383744
+    },
+    "wall_s": {
+     "setup": 1.2481897399993613,
+     "episode": 968.1200097769979,
+     "evaluation": 3.1543734930019127,
+     "per_simulated_second": 42.09217433813034
+    },
+    "simulated_s": 23.0,
+    "particles": 106080,
+    "history_frames": 41,
+    "physics_state_mb": 88.851263,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9454573160927118,
+     "max_speed_m_s_sampled": 0.05976419895887375,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1305",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 0,
+   "sample_id": "E1_TEST_A_s0",
+   "goal_id": "E1_TEST_A_s0_sever",
+   "goal_type": "sever",
+   "goal_description": "Vertical through-cut at local x = -32 mm (advance -z, edge line +y).",
+   "draws": {},
+   "derived": {
+    "seed_index": 0,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 0.0,
+     "text": "Vertical through-cut at local x = -32 mm (advance -z, edge line +y)."
+    },
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E1_TEST_A_s0-E1_TEST_A_s0_sever-ae821f89",
+   "particles": 97044,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.09330226900056,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7295345783233642,
+     "gripper_pad_clearance": 0.03022176149768056,
+     "franka1_collision": 0.1370936826429307,
+     "franka_workcell_collision": 0.07115531987324213,
+     "knife_handle_clearance": 0.012116661317118894,
+     "blade_collision": 0.01600063300343233,
+     "wrist_camera_clearance": 0.05165686397949503,
+     "franka_self_collision": 0.01965079573512627,
+     "joint_continuity": 0.047798690795898435
+    },
+    "ik_worst": {
+     "position_error_m": 3.0122398776580856e-06,
+     "rotation_error_rad": 1.1846184262261332e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 327
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000008344650262,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.3300714370052447,
+     "episode": 532.7485440259989,
+     "evaluation": 2.8525545349984895,
+     "per_simulated_second": 46.32596035008686
+    },
+    "simulated_s": 11.5,
+    "particles": 97044,
+    "history_frames": 40,
+    "physics_state_mb": 77.820289,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9375625772937375,
+     "max_speed_m_s_sampled": 0.025508057326078415,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s0",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 1,
+   "sample_id": "E1_TEST_A_s1",
+   "goal_id": "E1_TEST_A_s1_sever",
+   "goal_type": "sever",
+   "goal_description": "20 deg oblique through-cut at x = -32 mm (normal turned +20 deg about local y).",
+   "draws": {},
+   "derived": {
+    "seed_index": 1,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 20.0,
+     "text": "20 deg oblique through-cut at x = -32 mm (normal turned +20 deg about local y)."
+    },
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E1_TEST_A_s1-E1_TEST_A_s1_sever-5c575518",
+   "particles": 97044,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.731651828005852,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7463440418243408,
+     "gripper_pad_clearance": 0.0271905829599883,
+     "franka1_collision": 0.10708475144296337,
+     "franka_workcell_collision": 0.0670321170306577,
+     "knife_handle_clearance": 0.009432467711451203,
+     "blade_collision": 0.011991925673187118,
+     "wrist_camera_clearance": 0.049906742478652205,
+     "franka_self_collision": 0.0199069039423719,
+     "joint_continuity": 0.0447797155380249
+    },
+    "ik_worst": {
+     "position_error_m": 2.8338637633801908e-06,
+     "rotation_error_rad": 9.345766026098812e-07
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 331
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.00034202004012159806,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.237226847995771,
+     "episode": 379.38307484899997,
+     "evaluation": 2.862549717996444,
+     "per_simulated_second": 32.98983259556521
+    },
+    "simulated_s": 11.5,
+    "particles": 97044,
+    "history_frames": 40,
+    "physics_state_mb": 77.835014,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9178902532291339,
+     "max_speed_m_s_sampled": 0.04582121968269348,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s1",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 2,
+   "sample_id": "E1_TEST_A_s2",
+   "goal_id": "E1_TEST_A_s2_sever",
+   "goal_type": "sever",
+   "goal_description": "20 deg oblique through-cut at x = -32 mm, opposite inclination (normal turned -20 deg about local y).",
+   "draws": {},
+   "derived": {
+    "seed_index": 2,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": -20.0,
+     "text": "20 deg oblique through-cut at x = -32 mm, opposite inclination (normal turned -20 deg about local y)."
+    },
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E1_TEST_A_s2-E1_TEST_A_s2_sever-5bf5bf84",
+   "particles": 97044,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.988948016005452,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.6910414218902587,
+     "gripper_pad_clearance": 0.02719053011621166,
+     "franka1_collision": 0.16009158756422837,
+     "franka_workcell_collision": 0.06703165522392537,
+     "knife_handle_clearance": 0.009431881634321907,
+     "blade_collision": 0.011992652057353517,
+     "wrist_camera_clearance": 0.0516568641908454,
+     "franka_self_collision": 0.019707162959952847,
+     "joint_continuity": 0.04871922492980957
+    },
+    "ik_worst": {
+     "position_error_m": 3.2535934380293914e-06,
+     "rotation_error_rad": 1.1819538968807778e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 329
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: cut_at_declared_planes",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "cut_at_declared_planes"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.001022608792539007,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0808929949998856,
+     "episode": 384.01102455000364,
+     "evaluation": 2.8433063389966264,
+     "per_simulated_second": 33.392263004348145
+    },
+    "simulated_s": 11.5,
+    "particles": 97044,
+    "history_frames": 40,
+    "physics_state_mb": 77.866006,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9195215630084929,
+     "max_speed_m_s_sampled": 0.0691920816898346,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s2",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 3,
+   "sample_id": "E1_TEST_A_s3",
+   "goal_id": "E1_TEST_A_s3_sever",
+   "goal_type": "sever",
+   "goal_description": "Vertical plane at x = -32 mm cut with the advance tilted 15 deg toward -y inside the plane (edge line tilted 15 deg, slanted chop).",
+   "draws": {},
+   "derived": {
+    "seed_index": 3,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 0.0,
+     "approach_local": [
+      0.0,
+      -0.25881904510252074,
+      -0.9659258262890683
+     ],
+     "text": "Vertical plane at x = -32 mm cut with the advance tilted 15 deg toward -y inside the plane (edge line tilted 15 deg, slanted chop)."
+    },
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E1_TEST_A_s3-E1_TEST_A_s3_sever-4690794c",
+   "particles": 97044,
+   "duration_s": 12.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 13.444412958000612,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7125150680541992,
+     "gripper_pad_clearance": 0.03847290087599231,
+     "franka1_collision": 0.14443944732499236,
+     "franka_workcell_collision": 0.07748634671021691,
+     "knife_handle_clearance": 0.021395488020950232,
+     "blade_collision": 0.015728134822926503,
+     "wrist_camera_clearance": 0.05165688052558866,
+     "franka_self_collision": 0.019895347748469884,
+     "joint_continuity": 0.04925864696502685
+    },
+    "ik_worst": {
+     "position_error_m": 3.1345688599888223e-06,
+     "rotation_error_rad": 1.2965277982280298e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 314
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000008344650262,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0901469690070371,
+     "episode": 436.8942568620041,
+     "evaluation": 3.327837910997914,
+     "per_simulated_second": 34.95154054896033
+    },
+    "simulated_s": 12.5,
+    "particles": 97044,
+    "history_frames": 41,
+    "physics_state_mb": 80.583268,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.953035675802164,
+     "max_speed_m_s_sampled": 0.046702075749635696,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s3",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 4,
+   "sample_id": "E1_TEST_A_s4",
+   "goal_id": "E1_TEST_A_s4_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 10 deg.",
+   "draws": {},
+   "derived": {
+    "seed_index": 4,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 10.0,
+     "text": "Remove the dome with a skim along +x at rake 10 deg."
+    }
+   },
+   "task_id": "CFG-E1_TEST_A_s4-E1_TEST_A_s4_trim-e1423cae",
+   "particles": 97044,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.229669642001681,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7247731208801269,
+     "gripper_pad_clearance": 0.026400788180013218,
+     "franka1_collision": 0.143992993506308,
+     "franka_workcell_collision": 0.028484438984938677,
+     "knife_handle_clearance": 0.010732085684122927,
+     "blade_collision": 4.9089304549411294e-05,
+     "wrist_camera_clearance": 0.05166043056017296,
+     "franka_self_collision": 0.019705775051269102,
+     "joint_continuity": 0.041060989201068876
+    },
+    "ik_worst": {
+     "position_error_m": 3.043007380726745e-06,
+     "rotation_error_rad": 1.354300143428868e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 354
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9693486590038315,
+     "per_protrusion_removed": {
+      "p0": 0.9693486590038315
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.002445481270551681,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999996599,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.4090255359988078,
+     "episode": 243.69686511700274,
+     "evaluation": 3.8994472949998453,
+     "per_simulated_second": 34.81383787385754
+    },
+    "simulated_s": 7.0,
+    "particles": 97044,
+    "history_frames": 40,
+    "physics_state_mb": 77.749563,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9165560904606185,
+     "max_speed_m_s_sampled": 0.16489560902118683,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s4",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 5,
+   "sample_id": "E1_TEST_A_s5",
+   "goal_id": "E1_TEST_A_s5_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 25 deg.",
+   "draws": {},
+   "derived": {
+    "seed_index": 5,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 25.0,
+     "text": "Remove the dome with a skim along +x at rake 25 deg."
+    }
+   },
+   "task_id": "CFG-E1_TEST_A_s5-E1_TEST_A_s5_trim-9e26d267",
+   "particles": 97044,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.102692439002567,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7251035690307617,
+     "gripper_pad_clearance": 0.027055719811715704,
+     "franka1_collision": 0.14012849806503852,
+     "franka_workcell_collision": 0.03929009925678031,
+     "knife_handle_clearance": 0.014716407635056626,
+     "blade_collision": 0.00020019038411302895,
+     "wrist_camera_clearance": 0.05166269599268968,
+     "franka_self_collision": 0.019706916685670685,
+     "joint_continuity": 0.041989793479442594
+    },
+    "ik_worst": {
+     "position_error_m": 2.9029162503871445e-06,
+     "rotation_error_rad": 1.1857507059139127e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 354
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9731800766283525,
+     "per_protrusion_removed": {
+      "p0": 0.9731800766283525
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.006346141472458839,
+     "overcut_detached_below_plane_fraction": 0.00010416666666666669,
+     "substrate_share": 0.9998958333329941,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.2405518239975208,
+     "episode": 242.38545132100262,
+     "evaluation": 3.840928336001525,
+     "per_simulated_second": 34.626493045857515
+    },
+    "simulated_s": 7.0,
+    "particles": 97044,
+    "history_frames": 40,
+    "physics_state_mb": 78.321788,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8710549545315304,
+     "max_speed_m_s_sampled": 0.214602991938591,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s5",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 6,
+   "sample_id": "E1_TEST_A_s6",
+   "goal_id": "E1_TEST_A_s6_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along -x at rake 10 deg (edge line -y).",
+   "draws": {},
+   "derived": {
+    "seed_index": 6,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 10.0,
+     "skim_direction_local": [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     "text": "Remove the dome with a skim along -x at rake 10 deg (edge line -y)."
+    }
+   },
+   "task_id": "CFG-E1_TEST_A_s6-E1_TEST_A_s6_trim-61c9d4ed",
+   "particles": 97044,
+   "duration_s": 8.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 9.85584694499994,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7463440418243408,
+     "gripper_pad_clearance": 0.026402471287004608,
+     "franka1_collision": 0.04492928959899419,
+     "franka_workcell_collision": 0.028483799500713388,
+     "knife_handle_clearance": 0.010732499204419974,
+     "blade_collision": 4.897128016587095e-05,
+     "wrist_camera_clearance": 0.05167941622199184,
+     "franka_self_collision": 0.019656957478460912,
+     "joint_continuity": 0.04561298847198486
+    },
+    "ik_worst": {
+     "position_error_m": 2.956572802618327e-06,
+     "rotation_error_rad": 1.0438778369561923e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 395
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9674329501915709,
+     "per_protrusion_removed": {
+      "p0": 0.9674329501915709
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.003909009993076324,
+     "overcut_detached_below_plane_fraction": 2.083333333333334e-05,
+     "substrate_share": 0.9999791666663268,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0147167009999976,
+     "episode": 277.0145763929977,
+     "evaluation": 4.061470211003325,
+     "per_simulated_second": 34.62682204912471
+    },
+    "simulated_s": 8.0,
+    "particles": 97044,
+    "history_frames": 41,
+    "physics_state_mb": 79.866043,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.905123543207331,
+     "max_speed_m_s_sampled": 0.18894962966442108,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s6",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_A",
+   "seed": 7,
+   "sample_id": "E1_TEST_A_s7",
+   "goal_id": "E1_TEST_A_s7_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 10 deg and edge skew 20 deg.",
+   "draws": {},
+   "derived": {
+    "seed_index": 7,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 10.0,
+     "skew_deg": 20.0,
+     "text": "Remove the dome with a skim along +x at rake 10 deg and edge skew 20 deg."
+    }
+   },
+   "task_id": "CFG-E1_TEST_A_s7-E1_TEST_A_s7_trim-c0621fe9",
+   "particles": 97044,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 7.999904580996372,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.36943228244781495,
+     "gripper_pad_clearance": 0.029658850868768693,
+     "franka1_collision": 0.13252143041982367,
+     "franka_workcell_collision": 0.02848421443115601,
+     "knife_handle_clearance": 0.012373587269393586,
+     "blade_collision": 4.908207479443634e-05,
+     "wrist_camera_clearance": 0.05166275267818672,
+     "franka_self_collision": 0.019699949285828112,
+     "joint_continuity": 0.03134304046630859
+    },
+    "ik_worst": {
+     "position_error_m": 3.196381151354139e-06,
+     "rotation_error_rad": 1.2942223522591694e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 365
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.971264367816092,
+     "per_protrusion_removed": {
+      "p0": 0.971264367816092
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.003250600323081016,
+     "overcut_detached_below_plane_fraction": 3.125000000000001e-05,
+     "substrate_share": 0.9999687499996602,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.2836691799966502,
+     "episode": 232.69341796999652,
+     "evaluation": 4.327194330995553,
+     "per_simulated_second": 33.24191685285665
+    },
+    "simulated_s": 7.0,
+    "particles": 97044,
+    "history_frames": 40,
+    "physics_state_mb": 78.290642,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9196457426033863,
+     "max_speed_m_s_sampled": 0.1752133071422577,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_A_s7",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_B",
+   "seed": 1501,
+   "sample_id": "E1_TEST_B_s1501",
+   "goal_id": "E1_TEST_B_s1501_divide4",
+   "goal_type": "divide",
+   "goal_description": "Divide into 4 pieces with 3 through-cuts at local x = -37.97, -1.69, 35.62 mm (one digit each).",
+   "draws": {
+    "length_m": 0.1511838157028802,
+    "width_m": 0.03137331107968018,
+    "height_m": 0.0203097035806762,
+    "x_m": 0.016900937336025473,
+    "y_m": -0.005447037896791889,
+    "yaw_deg": 2.06954863983713,
+    "position_jitter_0_m": 3.459200928672586e-05,
+    "position_jitter_1_m": -0.0016944938096249368,
+    "position_jitter_2_m": -0.002377547198584139,
+    "position_jitter_3_m": 0.0019337966153664841
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.152,
+     0.032,
+     0.02
+    ],
+    "slices": 3,
+    "cut_x_local_m": [
+     -0.037965407990713275,
+     -0.0016944938096249368,
+     0.035622452801415856
+    ]
+   },
+   "task_id": "CFG-E1_TEST_B_s1501-E1_TEST_B_s1501_divide4-1b9d835d",
+   "particles": 97280,
+   "duration_s": 24.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 24.154148479996365,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6643687009811401,
+     "gripper_pad_clearance": 0.03022129846696944,
+     "franka1_collision": 0.09627135547763271,
+     "franka_workcell_collision": 0.07115482269607676,
+     "knife_handle_clearance": 0.010620196207254691,
+     "blade_collision": 0.00224774293579896,
+     "wrist_camera_clearance": 0.050609466067675725,
+     "franka_self_collision": 0.019629035821534364,
+     "joint_continuity": 0.04681032657623291
+    },
+    "ik_worst": {
+     "position_error_m": 3.278024534219445e-06,
+     "rotation_error_rad": 1.2730243654746037e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 353
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 4,
+     "expected_pieces": 4,
+     "cut_position_error_m": 0.004622452376732764,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.215584442994441,
+     "episode": 882.0293787310002,
+     "evaluation": 1.9401510300012887,
+     "per_simulated_second": 36.75122411379167
+    },
+    "simulated_s": 24.0,
+    "particles": 97280,
+    "history_frames": 41,
+    "physics_state_mb": 81.994627,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.942629920740284,
+     "max_speed_m_s_sampled": 0.10468325018882751,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1501",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_B",
+   "seed": 1502,
+   "sample_id": "E1_TEST_B_s1502",
+   "goal_id": "E1_TEST_B_s1502_divide5",
+   "goal_type": "divide",
+   "goal_description": "Divide into 5 pieces with 4 through-cuts at local x = -48.40, -18.89, 16.73, 51.93 mm (one digit each).",
+   "draws": {
+    "length_m": 0.16342374106120786,
+    "width_m": 0.028556098484049462,
+    "height_m": 0.019395732628868907,
+    "x_m": -0.008020950973263665,
+    "y_m": 0.012531139661839347,
+    "yaw_deg": -11.87948329915094,
+    "position_jitter_0_m": 0.0007975596543098387,
+    "position_jitter_1_m": -0.0024924680023868558,
+    "position_jitter_2_m": 0.0003312509691518364,
+    "position_jitter_3_m": 0.002725939398595949
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.164,
+     0.028,
+     0.019
+    ],
+    "slices": 4,
+    "cut_x_local_m": [
+     -0.04840244034569016,
+     -0.018892468002386854,
+     0.016731250969151835,
+     0.05192593939859596
+    ]
+   },
+   "task_id": "CFG-E1_TEST_B_s1502-E1_TEST_B_s1502_divide5-2f8b9754",
+   "particles": 87248,
+   "duration_s": 30.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 4,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 30.033278567003435,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7352373123168945,
+     "gripper_pad_clearance": 0.030221913873431188,
+     "franka1_collision": 0.13029640697199435,
+     "franka_workcell_collision": 0.0711555029665317,
+     "knife_handle_clearance": 0.010620604126521133,
+     "blade_collision": 0.002247952332429101,
+     "wrist_camera_clearance": 0.05165686821290035,
+     "franka_self_collision": 0.019730587668446466,
+     "joint_continuity": 0.048752052187919614
+    },
+    "ik_worst": {
+     "position_error_m": 3.1632018007251265e-06,
+     "rotation_error_rad": 1.2360747511211764e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 357
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 5,
+     "expected_pieces": 5,
+     "cut_position_error_m": 0.005425938295910031,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8528253130061785,
+     "episode": 966.6292258309986,
+     "evaluation": 2.0747483800005284,
+     "per_simulated_second": 32.22097419436662
+    },
+    "simulated_s": 30.0,
+    "particles": 87248,
+    "history_frames": 41,
+    "physics_state_mb": 73.582378,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 4,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9400005956486985,
+     "max_speed_m_s_sampled": 0.07790196686983109,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1502",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_B",
+   "seed": 1503,
+   "sample_id": "E1_TEST_B_s1503",
+   "goal_id": "E1_TEST_B_s1503_divide4",
+   "goal_type": "divide",
+   "goal_description": "Divide into 4 pieces with 3 through-cuts at local x = -39.48, 1.08, 36.44 mm (one digit each).",
+   "draws": {
+    "length_m": 0.15499243400306068,
+    "width_m": 0.032644566319554154,
+    "height_m": 0.019535191284555897,
+    "x_m": 0.007705127411503494,
+    "y_m": 0.011060797460887221,
+    "yaw_deg": 9.806530355043833,
+    "position_jitter_0_m": -0.0009786712868169044,
+    "position_jitter_1_m": 0.001077453412012386,
+    "position_jitter_2_m": -0.002059836513898846,
+    "position_jitter_3_m": 0.0019149344727923288
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.154,
+     0.032,
+     0.02
+    ],
+    "slices": 3,
+    "cut_x_local_m": [
+     -0.0394786712868169,
+     0.001077453412012386,
+     0.03644016348610114
+    ]
+   },
+   "task_id": "CFG-E1_TEST_B_s1503-E1_TEST_B_s1503_divide4-20649678",
+   "particles": 98560,
+   "duration_s": 24.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 24.365850073998445,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6260705709457397,
+     "gripper_pad_clearance": 0.030220961727503864,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115445993774945,
+     "knife_handle_clearance": 0.01061994362099419,
+     "blade_collision": 0.0022481930468291095,
+     "wrist_camera_clearance": 0.05006796604862924,
+     "franka_self_collision": 0.019625802757030117,
+     "joint_continuity": 0.04622453212738037
+    },
+    "ik_worst": {
+     "position_error_m": 3.3199717014620282e-06,
+     "rotation_error_rad": 1.3132645088134866e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 345
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 4,
+     "expected_pieces": 4,
+     "cut_position_error_m": 0.0054401630614180525,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1242838300022413,
+     "episode": 903.8638470490041,
+     "evaluation": 2.007808668000507,
+     "per_simulated_second": 37.66099362704184
+    },
+    "simulated_s": 24.0,
+    "particles": 98560,
+    "history_frames": 41,
+    "physics_state_mb": 82.999081,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9407640355679119,
+     "max_speed_m_s_sampled": 0.048850011080503464,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1503",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_B",
+   "seed": 1504,
+   "sample_id": "E1_TEST_B_s1504",
+   "goal_id": "E1_TEST_B_s1504_divide5",
+   "goal_type": "divide",
+   "goal_description": "Divide into 5 pieces with 4 through-cuts at local x = -42.83, -15.92, 14.77, 47.64 mm (one digit each).",
+   "draws": {
+    "length_m": 0.15117565758060011,
+    "width_m": 0.02918865160816304,
+    "height_m": 0.018528557573314716,
+    "x_m": -0.01806961498108835,
+    "y_m": -2.6216375048314366e-05,
+    "yaw_deg": 14.913775671106052,
+    "position_jitter_0_m": 0.00276908383886673,
+    "position_jitter_1_m": -0.000715533212320573,
+    "position_jitter_2_m": -0.0004265732162473533,
+    "position_jitter_3_m": 0.0020415491119136243
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.152,
+     0.03,
+     0.019
+    ],
+    "slices": 4,
+    "cut_x_local_m": [
+     -0.04283091616113327,
+     -0.01591553321232057,
+     0.014773426783752638,
+     0.04764154911191362
+    ]
+   },
+   "task_id": "CFG-E1_TEST_B_s1504-E1_TEST_B_s1504_divide5-81d93fe5",
+   "particles": 86640,
+   "duration_s": 30.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 4,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 29.86901562199637,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5827478885650634,
+     "gripper_pad_clearance": 0.030220666111617337,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115414757778651,
+     "knife_handle_clearance": 0.01061972947704369,
+     "blade_collision": 0.0022483511105011677,
+     "wrist_camera_clearance": 0.04988040112952579,
+     "franka_self_collision": 0.019629227738246283,
+     "joint_continuity": 0.04575210571289062
+    },
+    "ik_worst": {
+     "position_error_m": 3.251656334260575e-06,
+     "rotation_error_rad": 1.2653011933521562e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 348
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 5,
+     "expected_pieces": 5,
+     "cut_position_error_m": 0.005141548664878787,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.4001866999969934,
+     "episode": 986.223736052998,
+     "evaluation": 1.842957230997854,
+     "per_simulated_second": 32.87412453509993
+    },
+    "simulated_s": 30.0,
+    "particles": 86640,
+    "history_frames": 41,
+    "physics_state_mb": 73.553041,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 4,
+     "slots_per_node": 8,
+     "max_occupied_slots": 5,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.937706302230637,
+     "max_speed_m_s_sampled": 0.04418231174349785,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1504",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_B",
+   "seed": 1505,
+   "sample_id": "E1_TEST_B_s1505",
+   "goal_id": "E1_TEST_B_s1505_divide4",
+   "goal_type": "divide",
+   "goal_description": "Divide into 4 pieces with 3 through-cuts at local x = -42.74, 2.42, 41.86 mm (one digit each).",
+   "draws": {
+    "length_m": 0.16639325975569969,
+    "width_m": 0.029089424114407975,
+    "height_m": 0.017615392013762544,
+    "x_m": 0.01986180260587057,
+    "y_m": -0.016497456748473267,
+    "yaw_deg": -2.4901064699971087,
+    "position_jitter_0_m": -0.0012426807210194097,
+    "position_jitter_1_m": 0.0024158105970888367,
+    "position_jitter_2_m": 0.0003601262156385683,
+    "position_jitter_3_m": 0.0016325502941085751
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.166,
+     0.03,
+     0.018
+    ],
+    "slices": 3,
+    "cut_x_local_m": [
+     -0.04274268072101941,
+     0.0024158105970888367,
+     0.04186012621563856
+    ]
+   },
+   "task_id": "CFG-E1_TEST_B_s1505-E1_TEST_B_s1505_divide4-912a0613",
+   "particles": 89640,
+   "duration_s": 23.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 23.074630199997046,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6758499860763549,
+     "gripper_pad_clearance": 0.030221454043317126,
+     "franka1_collision": 0.10268179967071256,
+     "franka_workcell_collision": 0.07115498353617612,
+     "knife_handle_clearance": 0.010620319235298555,
+     "blade_collision": 0.0022477337087002977,
+     "wrist_camera_clearance": 0.05102357921292887,
+     "franka_self_collision": 0.019626358765883173,
+     "joint_continuity": 0.04698608577251434
+    },
+    "ik_worst": {
+     "position_error_m": 3.2241170193026053e-06,
+     "rotation_error_rad": 1.2905292041316211e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 363
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 4,
+     "expected_pieces": 4,
+     "cut_position_error_m": 0.005860125902714182,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.3216667660017265,
+     "episode": 769.6863854990006,
+     "evaluation": 1.9393794420029735,
+     "per_simulated_second": 33.46462545647829
+    },
+    "simulated_s": 23.0,
+    "particles": 89640,
+    "history_frames": 41,
+    "physics_state_mb": 74.366164,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9404172937328406,
+     "max_speed_m_s_sampled": 0.057219505310058594,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1505",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_C",
+   "seed": 1601,
+   "sample_id": "E1_TEST_C_s1601",
+   "goal_id": "E1_TEST_C_s1601_remove3",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove protrusions p0, p1, p2 one at a time (one surface_trim pass and digit each, rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.16784648516788273,
+    "width_m": 0.031680255195457675,
+    "height_m": 0.01639892999999357,
+    "x_m": -0.01599954498329878,
+    "y_m": 0.016313049922616462,
+    "yaw_deg": -10.926218653042842,
+    "p0_x_jitter_m": -0.0038623725697148237,
+    "p0_y_m": -0.0012489750214897608,
+    "p0_radius_x_m": 0.01154269245057724,
+    "p0_radius_y_m": 0.009105381708194296,
+    "p0_height_m": 0.007377291851005715,
+    "p1_x_jitter_m": -0.0012511361518280284,
+    "p1_y_m": 0.001041293340866297,
+    "p1_radius_x_m": 0.00936981910690737,
+    "p1_radius_y_m": 0.009662109690570254,
+    "p1_height_m": 0.007076986623232095,
+    "p2_x_jitter_m": 0.0018658647329661713,
+    "p2_y_m": -0.001725627540042935,
+    "p2_radius_x_m": 0.009858451622045631,
+    "p2_radius_y_m": 0.011124257112067784,
+    "p2_height_m": 0.008675988484034995
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.168,
+     0.032,
+     0.016
+    ],
+    "protrusion_families": [
+     "dome",
+     "gaussian",
+     "ellipsoid_cap"
+    ]
+   },
+   "task_id": "CFG-E1_TEST_C_s1601-E1_TEST_C_s1601_remove3-e232a0ff",
+   "particles": 89172,
+   "duration_s": 14.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 14.591686268002377,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7115671157836914,
+     "gripper_pad_clearance": 0.025308407416001162,
+     "franka1_collision": 0.14954009265018792,
+     "franka_workcell_collision": 0.02448429968092217,
+     "knife_handle_clearance": 0.007108121819941191,
+     "blade_collision": 4.889980420549058e-05,
+     "wrist_camera_clearance": 0.05165701005651916,
+     "franka_self_collision": 0.0197313821747715,
+     "joint_continuity": 0.04070830106735229
+    },
+    "ik_worst": {
+     "position_error_m": 3.0541515643802792e-06,
+     "rotation_error_rad": 1.194083142443703e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 361
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9094922737306843,
+     "per_protrusion_removed": {
+      "p0": 0.9719887955182072,
+      "p1": 0.9094922737306843,
+      "p2": 0.9979889391654096
+     },
+     "separation": true,
+     "mechanical_components": 4,
+     "cut_position_error_m": 0.00739746244251728,
+     "overcut_detached_below_plane_fraction": 0.0001162574404761905,
+     "substrate_share": 0.999883742560103,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8948763299995335,
+     "episode": 485.3726282139978,
+     "evaluation": 2.9769497939996654,
+     "per_simulated_second": 34.66947344385699
+    },
+    "simulated_s": 14.0,
+    "particles": 89172,
+    "history_frames": 40,
+    "physics_state_mb": 72.485285,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 6,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8527663140957229,
+     "max_speed_m_s_sampled": 0.5850347280502319,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1601",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_C",
+   "seed": 1602,
+   "sample_id": "E1_TEST_C_s1602",
+   "goal_id": "E1_TEST_C_s1602_remove3",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove protrusions p0, p1, p2 one at a time (one surface_trim pass and digit each, rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.15162055332335683,
+    "width_m": 0.032626290684888884,
+    "height_m": 0.021579357387545184,
+    "x_m": 0.017493834197416413,
+    "y_m": 0.009112837836394876,
+    "yaw_deg": 5.502383054904453,
+    "p0_x_jitter_m": -0.0003859416052203208,
+    "p0_y_m": 0.000214515909276737,
+    "p0_radius_x_m": 0.010923727249083394,
+    "p0_radius_y_m": 0.010028805695369885,
+    "p0_height_m": 0.006142683895900213,
+    "p1_x_jitter_m": 3.7067148936034515e-05,
+    "p1_y_m": -3.099327327782701e-05,
+    "p1_radius_x_m": 0.011914471583969771,
+    "p1_radius_y_m": 0.009412810121818174,
+    "p1_height_m": 0.008766633271672758,
+    "p2_x_jitter_m": -0.0021037009148114454,
+    "p2_y_m": -6.16337753591848e-05,
+    "p2_radius_x_m": 0.009724440585015965,
+    "p2_radius_y_m": 0.01023686783292916,
+    "p2_height_m": 0.008218885855044173
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.152,
+     0.032,
+     0.022
+    ],
+    "protrusion_families": [
+     "gaussian",
+     "ellipsoid_cap",
+     "dome"
+    ]
+   },
+   "task_id": "CFG-E1_TEST_C_s1602-E1_TEST_C_s1602_remove3-0090491e",
+   "particles": 110286,
+   "duration_s": 14.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 14.141934336003033,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6546363353729248,
+     "gripper_pad_clearance": 0.026221415452410045,
+     "franka1_collision": 0.13115717951402023,
+     "franka_workcell_collision": 0.03048421264204464,
+     "knife_handle_clearance": 0.01220004915042244,
+     "blade_collision": 4.893512653855646e-05,
+     "wrist_camera_clearance": 0.05165719872044249,
+     "franka_self_collision": 0.019710258585029748,
+     "joint_continuity": 0.04052180663216859
+    },
+    "ik_worst": {
+     "position_error_m": 3.142865149538227e-06,
+     "rotation_error_rad": 1.5304498738580873e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 353
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9459102902374671,
+     "per_protrusion_removed": {
+      "p0": 0.9598308668076112,
+      "p1": 0.9965803615046409,
+      "p2": 0.9459102902374671
+     },
+     "separation": true,
+     "mechanical_components": 4,
+     "cut_position_error_m": 0.00013525027036666998,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999988459,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0313980069986428,
+     "episode": 545.547010798,
+     "evaluation": 3.1540128519991413,
+     "per_simulated_second": 38.96764362842857
+    },
+    "simulated_s": 14.0,
+    "particles": 110286,
+    "history_frames": 40,
+    "physics_state_mb": 90.128953,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8186468074040919,
+     "max_speed_m_s_sampled": 0.7736244201660156,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1602",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_C",
+   "seed": 1603,
+   "sample_id": "E1_TEST_C_s1603",
+   "goal_id": "E1_TEST_C_s1603_remove3",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove protrusions p0, p1, p2 one at a time (one surface_trim pass and digit each, rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.15126506743342527,
+    "width_m": 0.032075971567295254,
+    "height_m": 0.01871743747536979,
+    "x_m": 0.007940265624120792,
+    "y_m": 0.0060550685053488845,
+    "yaw_deg": 9.113543727312528,
+    "p0_x_jitter_m": -0.001107046177791328,
+    "p0_y_m": -0.0011046436909341786,
+    "p0_radius_x_m": 0.00932658647957998,
+    "p0_radius_y_m": 0.009683816583176838,
+    "p0_height_m": 0.005939481968456934,
+    "p1_x_jitter_m": 0.0038770679140157117,
+    "p1_y_m": 0.00014448350817321178,
+    "p1_radius_x_m": 0.009469243020039264,
+    "p1_radius_y_m": 0.01008489080197561,
+    "p1_height_m": 0.008638646678996506,
+    "p2_x_jitter_m": 0.0005301624939727566,
+    "p2_y_m": -0.0011673301761385036,
+    "p2_radius_x_m": 0.009984103655740182,
+    "p2_radius_y_m": 0.01074202784583626,
+    "p2_height_m": 0.00814486562078549
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.152,
+     0.032,
+     0.019
+    ],
+    "protrusion_families": [
+     "ellipsoid_cap",
+     "dome",
+     "gaussian"
+    ]
+   },
+   "task_id": "CFG-E1_TEST_C_s1603-E1_TEST_C_s1603_remove3-00132bad",
+   "particles": 94927,
+   "duration_s": 13.5,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 13.413988451000478,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6126360416412353,
+     "gripper_pad_clearance": 0.02624188431193371,
+     "franka1_collision": 0.13285564365649505,
+     "franka_workcell_collision": 0.02748424279768998,
+     "knife_handle_clearance": 0.009877098581255142,
+     "blade_collision": 4.9003020712764815e-05,
+     "wrist_camera_clearance": 0.05165758382613085,
+     "franka_self_collision": 0.019707482114554774,
+     "joint_continuity": 0.040810228502377865
+    },
+    "ik_worst": {
+     "position_error_m": 3.179387588150089e-06,
+     "rotation_error_rad": 1.3303742327060042e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 352
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9683377308707124,
+     "per_protrusion_removed": {
+      "p0": 1.0,
+      "p1": 0.9683377308707124,
+      "p2": 0.9822866344605475
+     },
+     "separation": true,
+     "mechanical_components": 7,
+     "cut_position_error_m": 9.292116761207628e-05,
+     "overcut_detached_below_plane_fraction": 0.0001298476454293629,
+     "substrate_share": 0.9998701523545385,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.3044602049994865,
+     "episode": 456.9901562699961,
+     "evaluation": 1.6814044850034406,
+     "per_simulated_second": 33.85112268666638
+    },
+    "simulated_s": 13.5,
+    "particles": 94927,
+    "history_frames": 41,
+    "physics_state_mb": 79.913755,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 8,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.6793671739162038,
+     "max_speed_m_s_sampled": 0.5306736826896667,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1603",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_C",
+   "seed": 1604,
+   "sample_id": "E1_TEST_C_s1604",
+   "goal_id": "E1_TEST_C_s1604_remove3",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove protrusions p0, p1, p2 one at a time (one surface_trim pass and digit each, rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.1512859045446888,
+    "width_m": 0.02908379757964375,
+    "height_m": 0.016973965775090364,
+    "x_m": 0.0013593832526430198,
+    "y_m": -0.010273673695164192,
+    "yaw_deg": 2.2081729498797067,
+    "p0_x_jitter_m": -0.00043035882630603536,
+    "p0_y_m": -0.001383628873296947,
+    "p0_radius_x_m": 0.01148033589705531,
+    "p0_radius_y_m": 0.010227733030271002,
+    "p0_height_m": 0.007810902129524269,
+    "p1_x_jitter_m": 0.0009993048487521002,
+    "p1_y_m": 0.0017598139905533375,
+    "p1_radius_x_m": 0.010277020370502737,
+    "p1_radius_y_m": 0.010536118241461048,
+    "p1_height_m": 0.007823278039060204,
+    "p2_x_jitter_m": 0.002818463236728349,
+    "p2_y_m": -0.0004847915555376426,
+    "p2_radius_x_m": 0.010962036295267215,
+    "p2_radius_y_m": 0.010793522796645461,
+    "p2_height_m": 0.00788501147797871
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.152,
+     0.03,
+     0.017
+    ],
+    "protrusion_families": [
+     "dome",
+     "gaussian",
+     "ellipsoid_cap"
+    ]
+   },
+   "task_id": "CFG-E1_TEST_C_s1604-E1_TEST_C_s1604_remove3-74eabffe",
+   "particles": 80924,
+   "duration_s": 14.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 13.642254259000765,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6611265659332275,
+     "gripper_pad_clearance": 0.024599892421528397,
+     "franka1_collision": 0.14044495803232582,
+     "franka_workcell_collision": 0.025484204537647548,
+     "knife_handle_clearance": 0.007309717571876769,
+     "blade_collision": 4.9167148243938215e-05,
+     "wrist_camera_clearance": 0.05165702225730336,
+     "franka_self_collision": 0.01971092478145406,
+     "joint_continuity": 0.040366595089435575
+    },
+    "ik_worst": {
+     "position_error_m": 3.077336689619042e-06,
+     "rotation_error_rad": 1.2400970219031998e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 360
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.964765100671141,
+     "per_protrusion_removed": {
+      "p0": 0.9660421545667448,
+      "p1": 0.964765100671141,
+      "p2": 0.9974411463664279
+     },
+     "separation": true,
+     "mechanical_components": 9,
+     "cut_position_error_m": 0.0006762267947196948,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 1.000000000000852,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1082995090037002,
+     "episode": 394.4176153850058,
+     "evaluation": 1.6192645499977516,
+     "per_simulated_second": 28.1726868132147
+    },
+    "simulated_s": 14.0,
+    "particles": 80924,
+    "history_frames": 40,
+    "physics_state_mb": 66.199378,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 5,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8818589261935873,
+     "max_speed_m_s_sampled": 1.2771110534667969,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1604",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_C",
+   "seed": 1605,
+   "sample_id": "E1_TEST_C_s1605",
+   "goal_id": "E1_TEST_C_s1605_remove3",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove protrusions p0, p1, p2 one at a time (one surface_trim pass and digit each, rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.16552192479444133,
+    "width_m": 0.03083857870532549,
+    "height_m": 0.016507857750247254,
+    "x_m": -0.013647363372295631,
+    "y_m": -0.009289047677938088,
+    "yaw_deg": 19.98840261705184,
+    "p0_x_jitter_m": 0.0010062046267611058,
+    "p0_y_m": 0.0008129769748109268,
+    "p0_radius_x_m": 0.00930705114821928,
+    "p0_radius_y_m": 0.009489355933868904,
+    "p0_height_m": 0.006326243228615706,
+    "p1_x_jitter_m": -0.0013153675780471926,
+    "p1_y_m": -0.001850535901519043,
+    "p1_radius_x_m": 0.011659239616158952,
+    "p1_radius_y_m": 0.010203221134851274,
+    "p1_height_m": 0.005773821975219246,
+    "p2_x_jitter_m": 0.0016406991429184139,
+    "p2_y_m": 0.0005560639773677118,
+    "p2_radius_x_m": 0.011210864683003283,
+    "p2_radius_y_m": 0.009778543182005849,
+    "p2_height_m": 0.005286230074506336
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.166,
+     0.03,
+     0.017
+    ],
+    "protrusion_families": [
+     "gaussian",
+     "ellipsoid_cap",
+     "dome"
+    ]
+   },
+   "task_id": "CFG-E1_TEST_C_s1605-E1_TEST_C_s1605_remove3-6decea43",
+   "particles": 87018,
+   "duration_s": 14.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 13.650316053004644,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.4797091007232666,
+     "gripper_pad_clearance": 0.025545272569793387,
+     "franka1_collision": 0.13512684347809428,
+     "franka_workcell_collision": 0.025484227941839892,
+     "knife_handle_clearance": 0.00796170186086892,
+     "blade_collision": 4.917582351565149e-05,
+     "wrist_camera_clearance": 0.051659327781139484,
+     "franka_self_collision": 0.019701894744793877,
+     "joint_continuity": 0.038921175003051756
+    },
+    "ik_worst": {
+     "position_error_m": 3.182141249019345e-06,
+     "rotation_error_rad": 1.0566002918149756e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 365
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9443378119001921,
+     "per_protrusion_removed": {
+      "p0": 0.9565217391304347,
+      "p1": 0.9944674965421854,
+      "p2": 0.9443378119001921
+     },
+     "separation": true,
+     "mechanical_components": 7,
+     "cut_position_error_m": 0.0007352186292409885,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 1.0000000000007194,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1340075569896726,
+     "episode": 463.26644581400615,
+     "evaluation": 1.6855750940012513,
+     "per_simulated_second": 33.09046041528615
+    },
+    "simulated_s": 14.0,
+    "particles": 87018,
+    "history_frames": 40,
+    "physics_state_mb": 70.812751,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9247760301948402,
+     "max_speed_m_s_sampled": 1.0367040634155273,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1605",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_D",
+   "seed": 1701,
+   "sample_id": "E1_TEST_D_s1701",
+   "goal_id": "E1_TEST_D_s1701_sever_remove",
+   "goal_type": "sequence",
+   "goal_description": "Sever at local x = -33.36 mm (angle 20.0 deg), then remove all 2 protrusions (rake 25.0 deg).",
+   "draws": {
+    "length_m": 0.14223322595410068,
+    "width_m": 0.028523891801599074,
+    "height_m": 0.01754994349567334,
+    "x_m": 0.005301991751851108,
+    "y_m": 0.0005380915200355781,
+    "yaw_deg": 0.2775417261012514,
+    "cut_fraction": -0.23490629768652882,
+    "p0_x_fraction": 0.09804546789818262,
+    "p0_y_m": 0.0016002433660869133,
+    "p0_radius_m": 0.010082316649496261,
+    "p0_height_m": 0.007412389150804389,
+    "p1_x_fraction": 0.2930347285051373,
+    "p1_y_m": 0.0016143103285632264,
+    "p1_radius_m": 0.010343441949603668,
+    "p1_height_m": 0.0074282279426347644
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.142,
+     0.028,
+     0.018
+    ],
+    "goal_kind": "sever_then_remove_all",
+    "protrusions": 2,
+    "protrusion_families": [
+     "ellipsoid_cap",
+     "ellipsoid_cap"
+    ],
+    "cut_angle_deg": 20.0,
+    "rake_deg": 25.0,
+    "selected_index": 0,
+    "discrete_rng": "rng.integers after the uniform draws, in the order goal kind, protrusion count, families, cut angle, rake, selected protrusion",
+    "cut_x_local_m": -0.03335669427148709,
+    "nominal_piece_fractions": [
+     0.2650937023134712,
+     0.7349062976865288
+    ]
+   },
+   "task_id": "CFG-E1_TEST_D_s1701-E1_TEST_D_s1701_sever_remove-e211b0b6",
+   "particles": 74799,
+   "duration_s": 18.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 18.296923265996156,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7221521854400634,
+     "gripper_pad_clearance": 0.025196865931208342,
+     "franka1_collision": 0.10639813629909173,
+     "franka_workcell_collision": 0.03729007876044748,
+     "knife_handle_clearance": 0.007508598635054246,
+     "blade_collision": 0.0002003429517190365,
+     "wrist_camera_clearance": 0.04988027387736557,
+     "franka_self_collision": 0.01977833453470968,
+     "joint_continuity": 0.042001781463623045
+    },
+    "ik_worst": {
+     "position_error_m": 3.0057314990626566e-06,
+     "rotation_error_rad": 1.3057733371060138e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 352
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "solver state invalid: slot overflow (run aborted at step 678, phase SKIM:p1): 318 (particle, corner) entries found all 8 slots of their node held other codes; the affected substeps are invalid (fields are never merged). Rerun with a larger slots_per_node.",
+   "stage2": {
+    "device": "cuda:0",
+    "log": "/home/ningan/RoboticCuttingSim/artifacts/wp11/logs/phaseE_E1_TEST_D_s1701_001.log",
+    "error": "robotic_cutting_sim.tlmpm_v5.SlotOverflowError: 318 (particle, corner) entries found all 8 slots of their node held other codes; the affected substeps are invalid (fields are never merged). Rerun with a larger slots_per_node.",
+    "last_step": {
+     "step": 678,
+     "time_s": 13.56,
+     "phase": "SKIM:p1",
+     "cut_enabled": true,
+     "cut_index": 2,
+     "edge_pose_world": [
+      0.034929955632626804,
+      0.002295940269518905,
+      0.1182,
+      -0.0005242180648286786,
+      0.21643897910749704,
+      0.002364594882795988,
+      0.9762931435841212
+     ],
+     "blade_force_world_N": [
+      0.010818230470355376,
+      -0.0002561460281131715,
+      0.03883361350744963
+     ],
+     "labelled_count": 43979,
+     "engaged": 1,
+     "workspace_clamped": false
+    },
+    "steps_planned": 900,
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_D_s1701"
+   }
+  },
+  {
+   "family": "TEST_D",
+   "seed": 1702,
+   "sample_id": "E1_TEST_D_s1702",
+   "goal_id": "E1_TEST_D_s1702_sever_remove",
+   "goal_type": "sequence",
+   "goal_description": "Sever at local x = -28.00 mm (angle 0.0 deg), then remove all 2 protrusions (rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.14092296049257594,
+    "width_m": 0.02955547778179832,
+    "height_m": 0.01931146714357452,
+    "x_m": 0.004037368192819156,
+    "y_m": 0.01682783387098487,
+    "yaw_deg": 13.300385061304745,
+    "cut_fraction": -0.18591801118924045,
+    "p0_x_fraction": 0.04700623330541869,
+    "p0_y_m": -3.0673888766766504e-05,
+    "p0_radius_m": 0.008607069629153835,
+    "p0_height_m": 0.007724064256255638,
+    "p1_x_fraction": 0.27870460853659995,
+    "p1_y_m": 0.0008602561532580714,
+    "p1_radius_m": 0.009949584473044459,
+    "p1_height_m": 0.0058248845368271225
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.14,
+     0.03,
+     0.019
+    ],
+    "goal_kind": "sever_then_remove_all",
+    "protrusions": 2,
+    "protrusion_families": [
+     "gaussian",
+     "gaussian"
+    ],
+    "cut_angle_deg": 0.0,
+    "rake_deg": 10.0,
+    "selected_index": 1,
+    "discrete_rng": "rng.integers after the uniform draws, in the order goal kind, protrusion count, families, cut angle, rake, selected protrusion",
+    "cut_x_local_m": -0.028,
+    "nominal_piece_fractions": [
+     0.30000000000000004,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E1_TEST_D_s1702-E1_TEST_D_s1702_sever_remove-c164102a",
+   "particles": 80600,
+   "duration_s": 18.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 18.06699634800316,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.640233826637268,
+     "gripper_pad_clearance": 0.025526044888983156,
+     "franka1_collision": 0.10332288503044684,
+     "franka_workcell_collision": 0.027484265026507058,
+     "knife_handle_clearance": 0.009412954921655475,
+     "blade_collision": 4.896790547521499e-05,
+     "wrist_camera_clearance": 0.05165689147326991,
+     "franka_self_collision": 0.019623944382657098,
+     "joint_continuity": 0.04222571611404419
+    },
+    "ik_worst": {
+     "position_error_m": 3.2797001912756885e-06,
+     "rotation_error_rad": 1.3112192082061475e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 346
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:sever:cut_at_declared_planes, step1:remove_all:substrate_holds_below_plane_mass, step1:remove_all:single_substrate_component",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:sever:cut_at_declared_planes",
+     "step1:remove_all:substrate_holds_below_plane_mass",
+     "step1:remove_all:single_substrate_component"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 5,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0770000005811453,
+       "overcut_debris_mass_fraction": 0.009578163771712106,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.9598997493734337,
+       "per_protrusion_removed": {
+        "p0": 0.9700748129675812,
+        "p1": 0.9598997493734337
+       },
+       "separation": false,
+       "mechanical_components": 5,
+       "cut_position_error_m": 0.0006755137294530873,
+       "overcut_detached_below_plane_fraction": 0.0,
+       "substrate_share": 0.7000000000005562,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      }
+     ],
+     "cut_completion": 0.9598997493734337,
+     "separation": false,
+     "cut_position_error_m": 0.0770000005811453
+    },
+    "wall_s": {
+     "setup": 1.3561497460032115,
+     "episode": 510.08937416000117,
+     "evaluation": 1.725343657002668,
+     "per_simulated_second": 28.33829856444451
+    },
+    "simulated_s": 18.0,
+    "particles": 80600,
+    "history_frames": 41,
+    "physics_state_mb": 67.814355,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 8,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8908599465504746,
+     "max_speed_m_s_sampled": 1.1474294662475586,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_D_s1702",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_D",
+   "seed": 1703,
+   "sample_id": "E1_TEST_D_s1703",
+   "goal_id": "E1_TEST_D_s1703_remove_all",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove all 1 protrusions (rake 25.0 deg).",
+   "draws": {
+    "length_m": 0.1646400431427947,
+    "width_m": 0.02887818675648624,
+    "height_m": 0.020062597824840267,
+    "x_m": 0.017718484874606633,
+    "y_m": 0.002971884535769062,
+    "yaw_deg": 11.862724692099103,
+    "cut_fraction": -0.29058590940821677,
+    "p0_x_fraction": 0.052317192248731575,
+    "p0_y_m": 0.0005505586018607132,
+    "p0_radius_m": 0.008238502407811626,
+    "p0_height_m": 0.006035319585447254,
+    "p1_x_fraction": 0.2931843037580759,
+    "p1_y_m": 0.0012696417230173116,
+    "p1_radius_m": 0.008968779994271132,
+    "p1_height_m": 0.007714940771854039
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.164,
+     0.028,
+     0.02
+    ],
+    "goal_kind": "remove_all",
+    "protrusions": 1,
+    "protrusion_families": [
+     "ellipsoid_cap"
+    ],
+    "cut_angle_deg": 20.0,
+    "rake_deg": 25.0,
+    "selected_index": 0,
+    "discrete_rng": "rng.integers after the uniform draws, in the order goal kind, protrusion count, families, cut angle, rake, selected protrusion",
+    "cut_x_local_m": -0.047656089142947555,
+    "nominal_piece_fractions": [
+     0.2094140905917832,
+     0.7905859094082168
+    ]
+   },
+   "task_id": "CFG-E1_TEST_D_s1703-E1_TEST_D_s1703_remove_all-acbf5663",
+   "particles": 92706,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 7.557043335000344,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6511924982070922,
+     "gripper_pad_clearance": 0.026509636277478116,
+     "franka1_collision": 0.14274999096877583,
+     "franka_workcell_collision": 0.03928981559726364,
+     "knife_handle_clearance": 0.014442656146694065,
+     "blade_collision": 0.00020050503838378036,
+     "wrist_camera_clearance": 0.051666729267575706,
+     "franka_self_collision": 0.019715281628314506,
+     "joint_continuity": 0.043026005327701566
+    },
+    "ik_worst": {
+     "position_error_m": 3.217051321870522e-06,
+     "rotation_error_rad": 1.1754191095721004e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 350
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.9919168591224018,
+     "per_protrusion_removed": {
+      "p0": 0.9919168591224018
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.004926066398620605,
+     "overcut_detached_below_plane_fraction": 0.0001415505226480836,
+     "substrate_share": 0.9998584494773712,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.056775752993417,
+     "episode": 236.23148024300463,
+     "evaluation": 3.790534262006986,
+     "per_simulated_second": 33.74735432042923
+    },
+    "simulated_s": 7.0,
+    "particles": 92706,
+    "history_frames": 40,
+    "physics_state_mb": 75.726439,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8591913515890991,
+     "max_speed_m_s_sampled": 0.27857857942581177,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_D_s1703",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_D",
+   "seed": 1704,
+   "sample_id": "E1_TEST_D_s1704",
+   "goal_id": "E1_TEST_D_s1704_sever_remove",
+   "goal_type": "sequence",
+   "goal_description": "Sever at local x = -32.00 mm (angle 0.0 deg), then remove all 1 protrusions (rake 10.0 deg).",
+   "draws": {
+    "length_m": 0.1437546253083955,
+    "width_m": 0.030571008341169374,
+    "height_m": 0.021643192453856427,
+    "x_m": 0.008349046618288586,
+    "y_m": 0.014576309443204944,
+    "yaw_deg": -5.873729101963692,
+    "cut_fraction": -0.2125621091896009,
+    "p0_x_fraction": 0.03627799768448438,
+    "p0_y_m": -0.0018125441593346335,
+    "p0_radius_m": 0.009886143216369981,
+    "p0_height_m": 0.007613033795189112,
+    "p1_x_fraction": 0.26143936911141663,
+    "p1_y_m": 0.0014535139629519634,
+    "p1_radius_m": 0.009044484618359435,
+    "p1_height_m": 0.008067196808381787
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.144,
+     0.03,
+     0.022
+    ],
+    "goal_kind": "sever_then_remove_all",
+    "protrusions": 1,
+    "protrusion_families": [
+     "dome"
+    ],
+    "cut_angle_deg": 0.0,
+    "rake_deg": 10.0,
+    "selected_index": 0,
+    "discrete_rng": "rng.integers after the uniform draws, in the order goal kind, protrusion count, families, cut angle, rake, selected protrusion",
+    "cut_x_local_m": -0.032,
+    "nominal_piece_fractions": [
+     0.27777777777777773,
+     0.7222222222222222
+    ]
+   },
+   "task_id": "CFG-E1_TEST_D_s1704-E1_TEST_D_s1704_sever_remove-f6c29e24",
+   "particles": 95726,
+   "duration_s": 15.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 16.126436676000594,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6940147399902343,
+     "gripper_pad_clearance": 0.02824775518372422,
+     "franka1_collision": 0.14259499638237227,
+     "franka_workcell_collision": 0.03048436522489,
+     "knife_handle_clearance": 0.011124224463185582,
+     "blade_collision": 4.915634975741923e-05,
+     "wrist_camera_clearance": 0.051656892719562475,
+     "franka_self_collision": 0.019711995566648537,
+     "joint_continuity": 0.04189246654510498
+    },
+    "ik_worst": {
+     "position_error_m": 3.123463306563265e-06,
+     "rotation_error_rad": 1.2950524309792903e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 336
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:sever:cut_at_declared_planes, step1:remove_all:substrate_holds_below_plane_mass, step1:remove_all:single_substrate_component",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:sever:cut_at_declared_planes",
+     "step1:remove_all:substrate_holds_below_plane_mass",
+     "step1:remove_all:single_substrate_component"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.04800000029429794,
+       "overcut_debris_mass_fraction": 0.007051375801767489,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.9839650145772595,
+       "per_protrusion_removed": {
+        "p0": 0.9839650145772595
+       },
+       "separation": false,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.00010586145520210394,
+       "overcut_detached_below_plane_fraction": 0.0,
+       "substrate_share": 0.7222222222228238,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      }
+     ],
+     "cut_completion": 0.9839650145772595,
+     "separation": false,
+     "cut_position_error_m": 0.04800000029429794
+    },
+    "wall_s": {
+     "setup": 0.9879608390037902,
+     "episode": 367.47778229101095,
+     "evaluation": 4.112742791985511,
+     "per_simulated_second": 23.7082440187749
+    },
+    "simulated_s": 15.5,
+    "particles": 95726,
+    "history_frames": 40,
+    "physics_state_mb": 78.629801,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8964251310919757,
+     "max_speed_m_s_sampled": 0.21475422382354736,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_D_s1704",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_D",
+   "seed": 1705,
+   "sample_id": "E1_TEST_D_s1705",
+   "goal_id": "E1_TEST_D_s1705_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -36.00 mm, angle 0.0 deg.",
+   "draws": {
+    "length_m": 0.15851366738255485,
+    "width_m": 0.03118261118114063,
+    "height_m": 0.016748466476825125,
+    "x_m": -0.005971908768511844,
+    "y_m": 0.006333403560159628,
+    "yaw_deg": -6.933883268780633,
+    "cut_fraction": -0.22133937377054413,
+    "p0_x_fraction": 0.03085304503092428,
+    "p0_y_m": -0.0009962157453844002,
+    "p0_radius_m": 0.00875973944888056,
+    "p0_height_m": 0.0057231396181222135,
+    "p1_x_fraction": 0.28833975848026216,
+    "p1_y_m": 0.0016024229121602354,
+    "p1_radius_m": 0.010523435607970593,
+    "p1_height_m": 0.006430428305443319
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.158,
+     0.032,
+     0.017
+    ],
+    "goal_kind": "sever",
+    "protrusions": 2,
+    "protrusion_families": [
+     "gaussian",
+     "gaussian"
+    ],
+    "cut_angle_deg": 0.0,
+    "rake_deg": 10.0,
+    "selected_index": 1,
+    "discrete_rng": "rng.integers after the uniform draws, in the order goal kind, protrusion count, families, cut angle, rake, selected protrusion",
+    "cut_x_local_m": -0.036,
+    "nominal_piece_fractions": [
+     0.2721518987341772,
+     0.7278481012658227
+    ]
+   },
+   "task_id": "CFG-E1_TEST_D_s1705-E1_TEST_D_s1705_sever-102191aa",
+   "particles": 86768,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.553240525005094,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7184776782989502,
+     "gripper_pad_clearance": 0.030221830438408547,
+     "franka1_collision": 0.14897874552920348,
+     "franka_workcell_collision": 0.07115535803140485,
+     "knife_handle_clearance": 0.011124246607193567,
+     "blade_collision": 0.013248366865166214,
+     "wrist_camera_clearance": 0.05165686449957404,
+     "franka_self_collision": 0.01975748782672805,
+     "joint_continuity": 0.048604426383972166
+    },
+    "ik_worst": {
+     "position_error_m": 3.046575735870919e-06,
+     "rotation_error_rad": 1.1808027263290748e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 340
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.001500001490116136,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.3065736949938582,
+     "episode": 317.1591811889957,
+     "evaluation": 2.587265401991317,
+     "per_simulated_second": 28.83265283536325
+    },
+    "simulated_s": 11.0,
+    "particles": 86768,
+    "history_frames": 41,
+    "physics_state_mb": 72.956529,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9479382376595965,
+     "max_speed_m_s_sampled": 0.02965105138719082,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_D_s1705",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  },
+  {
+   "family": "TEST_D",
+   "seed": 1706,
+   "sample_id": "E1_TEST_D_s1706",
+   "goal_id": "E1_TEST_D_s1706_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -28.00 mm, angle 0.0 deg.",
+   "draws": {
+    "length_m": 0.150468268933911,
+    "width_m": 0.031247341643455877,
+    "height_m": 0.017906897670164755,
+    "x_m": -0.014553589158298937,
+    "y_m": -0.01226179951340289,
+    "yaw_deg": -14.060450945026378,
+    "cut_fraction": -0.18796031878911873,
+    "p0_x_fraction": 0.03515184713610171,
+    "p0_y_m": -0.0012244111349395165,
+    "p0_radius_m": 0.008011840301318164,
+    "p0_height_m": 0.006128121326281673,
+    "p1_x_fraction": 0.2544462395389056,
+    "p1_y_m": -0.000680098902296884,
+    "p1_radius_m": 0.010225566168603309,
+    "p1_height_m": 0.008773994969778546
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.15,
+     0.032,
+     0.018
+    ],
+    "goal_kind": "sever",
+    "protrusions": 1,
+    "protrusion_families": [
+     "gaussian"
+    ],
+    "cut_angle_deg": 0.0,
+    "rake_deg": 10.0,
+    "selected_index": 0,
+    "discrete_rng": "rng.integers after the uniform draws, in the order goal kind, protrusion count, families, cut angle, rake, selected protrusion",
+    "cut_x_local_m": -0.028,
+    "nominal_piece_fractions": [
+     0.31333333333333335,
+     0.6866666666666666
+    ]
+   },
+   "task_id": "CFG-E1_TEST_D_s1706-E1_TEST_D_s1706_sever-fb930007",
+   "particles": 86679,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.804183792999538,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7375616550445556,
+     "gripper_pad_clearance": 0.030222268960616163,
+     "franka1_collision": 0.15922037261118394,
+     "franka_workcell_collision": 0.07115594684704767,
+     "knife_handle_clearance": 0.011124497910517905,
+     "blade_collision": 0.013248472915540516,
+     "wrist_camera_clearance": 0.051656882440882713,
+     "franka_self_collision": 0.019795269936597887,
+     "joint_continuity": 0.04951649665832519
+    },
+    "ik_worst": {
+     "position_error_m": 3.0495259245366845e-06,
+     "rotation_error_rad": 1.231738126393204e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 341
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000003129243822,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1765476409927942,
+     "episode": 310.05840217000514,
+     "evaluation": 2.639664766000351,
+     "per_simulated_second": 28.187127470000465
+    },
+    "simulated_s": 11.0,
+    "particles": 86679,
+    "history_frames": 41,
+    "physics_state_mb": 72.835948,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9445975075012617,
+     "max_speed_m_s_sampled": 0.0219953004270792,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_D_s1706",
+    "git": {
+     "git_sha": "2a93b99b05243d8e3eb7da3f5fa9a0096bd854fb",
+     "git_dirty": false
+    }
+   }
+  }
+ ]
+}

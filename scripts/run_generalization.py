@@ -377,6 +377,27 @@ def cmd_queue(args):
 
 # ----------------------------------------------------------------------------- summary
 
+def crashed_run(out, log_dir, sample_id):
+    """Stage-2 run that ended without result.json, read from its preserved directory and log (never modified).
+
+    A tlmpm_v5 SlotOverflowError is the round file's 'solver state invalid (slot overflow)' ->
+    CUTTING_FAILURE; any other ending without a result stays NOT_RUN with the log tail as reason.
+    """
+    logs = sorted(log_dir.glob(f'phaseE_{sample_id}_*.log'), key=lambda p: p.stat().st_mtime)
+    text = logs[-1].read_text(errors='replace') if logs else ''
+    steps = [json.loads(line) for line in (out/'actions.jsonl').read_text().splitlines() if line.strip()] \
+        if (out/'actions.jsonl').exists() else []
+    config = json.loads((out/'manifest.json').read_text())['config'] if (out/'manifest.json').exists() else {}
+    error = next((line for line in reversed(text.splitlines()) if 'Error' in line or 'Exception' in line), None)
+    base = {'status': 'ABORTED', 'device': config.get('device'), 'log': str(logs[-1]) if logs else None, 'error': error,
+            'last_step': steps[-1] if steps else None, 'steps_planned': config.get('control_steps'), 'artifact': str(out),
+            'task_id': config.get('task_id')}
+    if error and 'SlotOverflowError' in error:
+        return {**base, 'solver_invalid': f'slot overflow (run aborted at step {steps[-1]["step"] if steps else "?"}, '
+                                          f'phase {steps[-1]["phase"] if steps else "?"}): {error.split(": ", 1)[-1]}'}
+    return {**base, 'status': 'NOT_RUN', 'reason': f'stage-2 run ended without result.json: {error or "no error in log"}'}
+
+
 def cmd_summarize(args):
     config = G.load_round(args.config)
     stage1_dir, material_root = Path(args.stage1), Path(args.material_root)
@@ -402,10 +423,13 @@ def cmd_summarize(args):
             result = json.loads(path.read_text()) if path.exists() else None
             if result is not None and result.get('task_id') != row['task_id']:
                 result = {'status': 'NOT_RUN', 'reason': f"stage-2 task id {result.get('task_id')} != stage-1 {row['task_id']}"}
+            if result is None and (material_root/sample_id).exists():
+                result = crashed_run(material_root/sample_id, Path(args.log_dir), sample_id)
             if result is None:
-                result = {'status': 'NOT_RUN', 'reason': ('stage-2 output exists without result.json (crashed or running)'
-                                                          if (material_root/sample_id).exists() else 'stage 2 not run')}
+                result = {'status': 'NOT_RUN', 'reason': 'stage 2 not run'}
             row['class'], row['reason'] = G.classify_material(result)
+            if result.get('status') == 'ABORTED':
+                row['stage2'] = {k: result[k] for k in ('device', 'log', 'error', 'last_step', 'steps_planned', 'artifact')}
             if result.get('status') == 'COMPLETE':
                 ev = result['evaluation']
                 row['stage2'] = {'device': result.get('device'), 'verdict': ev.get('verdict'), 'failed_checks': G.failed_checks(ev),
@@ -461,6 +485,7 @@ def main(argv=None):
     d.add_argument('--stage1', required=True)
     d.add_argument('--material-root', required=True)
     d.add_argument('--out', required=True)
+    d.add_argument('--log-dir', default=str(ROOT/'artifacts/wp11/logs'))
     args = p.parse_args(argv)
     for key in ('config',):
         setattr(args, key, Path(getattr(args, key)).resolve())
