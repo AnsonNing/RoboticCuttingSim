@@ -1,0 +1,60 @@
+{
+ "protocol_id": "wp11_phaseF_v2",
+ "supersedes": "nothing: wp11_phaseF_v1 and every v1 record stay as recorded. F2.9_blunt_handle (v1) stays FAIL (artifacts/wp11/phaseF/f2_9_blunt_handle_law8_001, grip contact-window mean 0.077 N).",
+ "freeze_boundary": "Declared 2026-10-30 before any v2 row ran. One row, one formal attempt. Criteria are fixed; a failure is preserved and diagnosed, not re-scored.",
+ "reason": "v1 F2.9_blunt_handle control-design flaw (docs/reports/WP11_PHASE_F_LAW8.md, F2.9_blunt_handle FAIL diagnosis): the grip met only a 20 x 10 mm corner patch beyond the bar end and the friction-only bar yawed about 1.4 deg instead of being compressed (end displacements -3.09 / -3.00 mm).",
+ "common": {
+  "resolution": "formal: 1 mm particles, 4 mm grid, 0.1 ms material dt, 20 ms control dt, seed 42, kinematic ideal tracking (no robot)",
+  "law": "cutting law 8 (tlmpm_v4)",
+  "knife": "ruler_knife_v2_y",
+  "material": "provisional, uncalibrated task material: E = 50 kPa, nu = 0.3, von Mises yield 1 kPa, no hardening, contact friction 0.3",
+  "always_report": ["final mechanical components (stencil graph)", "component masses and recorded total mass vs sampler mass", "labelled count history", "grip contact-window force", "wall time"],
+  "mass_conservation": "recorded mass equals the task sampler mass within the frozen v1 tolerance (pass condition)",
+  "runner": "scripts/run_phase_f_v2_material.py (reuses scripts/run_phase_f_material.py read-only; no phaseF_v1 row changes)"
+ },
+ "rows": {
+  "F2.9_blunt_handle_v2": {
+   "setup": "CUT-03-K2 geometry (bar 160 x 30 x 20 mm on two friction-only pedestals, right pedestal x = 20..90 mm), armed, law 8, ruler_knife_v2_y. The v2 grip (the blunt handle box from the same ToolProfile: tool_profile.handle_box_edge, the obstacle box the runner already uses) presses -z onto the bar TOP with its far end face (edge-frame -y face, 24 x 22 mm), centred at local (x, y) = (55, 0) mm over the right pedestal centre, so the footprint x = 43..67 mm lies inside the pedestal span (20..90 mm) and the bar (x <= 80 mm), y = -11..11 mm inside the bar width (+/-15 mm). Orientation: edge-frame +x (advance) = local +x, edge line +y = local +z, blade normal +z = local -y, so the whole blade extends UPWARD from the grip (blade lowest point 60 mm above the grip face).",
+   "parameters": {
+    "edge_axes_local": {"advance_x": [1.0, 0.0, 0.0], "edge_line_y": [0.0, 0.0, 1.0], "normal_z": [0.0, -1.0, 0.0]},
+    "grip_footprint_center_local_xy_m": [0.055, 0.0],
+    "travel_grip_gap_m": 0.015,
+    "start_grip_gap_m": 0.003,
+    "press_depth_m": 0.002,
+    "press_speed_m_s": 0.01,
+    "hold_s": 0.3,
+    "position_tolerance_m": 1e-05,
+    "history_stride": 5
+   },
+   "plan": "lift (disarmed, start orientation) to edge z = bar top + 15 mm grip gap + 120 mm; reorient + move over the footprint (disarmed, same height); lower_outside to a 3 mm grip gap (disarmed); handle_press: armed -z at 10 mm/s by 5 mm, ending 2 mm into the bar top; handle_hold: armed 0.3 s; retract (disarmed) to the travel height.",
+   "force_estimate": {
+    "contact_area_m2": 0.000528,
+    "contact_area_note": "handle far face 24 mm (edge x) x 22 mm (edge z), fully on the bar top",
+    "bar_height_m": 0.02,
+    "press_depth_m": 0.002,
+    "nominal_strain": 0.1,
+    "elastic_unconfined_N": 2.64,
+    "elastic_formula": "E * (d / H) * A = 50e3 * 0.1 * 5.28e-4",
+    "yield_onset_depth_m": 0.0004,
+    "yield_onset_formula": "H * sigma_y / E = 0.02 * 1e3 / 50e3",
+    "yield_uniaxial_N": 0.528,
+    "yield_uniaxial_formula": "sigma_y * A = 1e3 * 5.28e-4",
+    "yield_confined_punch_N": 1.57,
+    "yield_confined_punch_formula": "(2 + pi) / sqrt(3) * sigma_y * A (Prandtl punch, rigid-perfectly-plastic upper estimate)",
+    "bar_weight_N": 1.413,
+    "support_note": "the right pedestal reacts the press directly below the footprint; the press (< bar weight) cannot lift or yaw the bar"
+   },
+   "prediction": {
+    "grip_force_after_yield_onset_N": [0.5, 1.6],
+    "grip_contact_window_mean_N": [0.35, 1.6],
+    "statement": "Once the grip is more than ~0.4 mm into the top the load is yield-limited at about 0.5-1.6 N and stays there through the hold; the contact-window mean (ramp steps included) is 0.35-1.6 N, i.e. at least 3.5x the 0.1 N criterion. Rigid motion of the bar during press/hold: |COM displacement| < 0.2 mm and yaw < 0.1 deg; compression under the grip (bottom minus top layer z displacement) 1-2 mm, at least 5x the rigid displacement. Zero labels (only the blunt box touches material). Prediction is report-only; it is not a pass criterion."
+   },
+   "blade_clearance_check": {
+    "statement": "The blade edge and faces must not touch the material. Static check before the run (CPU test on the ideal-integrated plan): minimum distance from the sampled blade prism (tool_profile.blade_mesh_edge) to the reference bar box > 5 mm on every step, >= 50 mm during handle_press / handle_hold; the grip box does not touch the bar before handle_press. Formal run: blade contact steps (contact_statistics[1] > 0) must be 0 on every control step of the episode.",
+    "rule": "control validity: a run with blade contact steps > 0 is INVALID_CONTROL and not PASS, whatever the criteria"
+   },
+   "pass": "zero new labels (labelled count 0 on every step); one component (stencil graph, final); mean |grip obstacle force| over handle_press / handle_hold steps with grip contact > 0.1 N (contact window, unchanged from v1); mass conserved",
+   "report_only": ["workpiece rigid displacement vs compression (mass-weighted rigid fit of all particles: COM displacement, rotation and yaw, residual; z-displacement of the top and bottom particle layers under the footprint; compression and strain), baseline = last history frame before handle_press and the reference configuration", "blade contact steps (episode, armed, press/hold)", "blade and grip minimum clearance to the reference bar box along the recorded edge poses", "measured vs predicted force"]
+  }
+ }
+}
