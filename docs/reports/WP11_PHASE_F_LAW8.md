@@ -262,3 +262,112 @@ evidence. The evidence's `integrity` block confirms the following:
 
 The summarizer CPU test is
 `.venv/bin/python -m pytest -q tests/test_summarize_phase_f.py`: 2 passed, exit 0.
+
+## Phase F v2 follow-up
+
+**v1 stays FAIL. v2 F2.9_blunt_handle_v2 is PASS.** The v1 row F2.9_blunt_handle
+(`f2_9_blunt_handle_law8_001`, contact-window mean 0.077 N) has not been rerun or
+re-scored. Its protocol, runner and record are unchanged. A CPU test checks that the
+v1 protocol sha256 is `0efcf885…` and the v1 runner sha256 is `5aea75d7…`. The v2
+row is a separate control. It was declared before it ran and was run once.
+
+| Item | Value |
+| --- | --- |
+| Protocol | [`configs/wp11/phaseF_protocol_v2.json`](../../configs/wp11/phaseF_protocol_v2.json) (`wp11_phaseF_v2`, one row), sha256 `e347607f…`. Committed and pushed in `dc64f49` before the run. |
+| Runner | `scripts/run_phase_f_v2_material.py`, sha256 `1222a9fa…`. It loads the v1 runner read-only, as a private module instance. Its CPU tests are in `tests/test_phase_f_v2.py`. |
+| Run | `artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001`. The log is `artifacts/wp11/logs/phaseF_f2_9_blunt_handle_v2_law8_001.log`. |
+| Evidence | [`docs/evidence/wp11/phaseF_material_v2_001.json`](../evidence/wp11/phaseF_material_v2_001.json), written by `scripts/summarize_phase_f_v2.py` (read-only). |
+| Execution | Clean worktree `/mnt/data/ningan/RoboticCuttingSim-wp11-Fv2-dc64f49` at `dc64f49`, `git_dirty = false`. Device `cuda:0`, which had 3 RCS jobs against 5 on `cuda:1`. Seed 42, kinematic ideal tracking, formal resolution (1 mm, 4 mm, 0.1 ms). Ran 2026-10-30T05:30:34 to 05:37:49+09:00. Wall time 434 s (`/usr/bin/time` 7:15), exit 0. The worktree was removed afterwards. |
+
+**Setup.**
+
+- **Geometry and tool:** CUT-03-K2 with `ruler_knife_v2_y`, armed, law 8.
+- **Grip:** the handle box from `tool_profile.handle_box_edge`, the same obstacle box the
+  v1 runner used. Its far face (24 × 22 mm, A = 5.28e-4 m²) presses −z onto the bar top.
+- **Footprint:** x = 43–67 mm and y = ±11 mm. That lies inside the right pedestal span
+  (x = 20–90 mm, y = ±21 mm) and inside the bar top.
+- **Orientation:** the edge line points to +z and the blade normal to −y. The whole blade
+  therefore extends upward from the grip.
+- **Motion:** lower at a 3 mm gap, then an armed press at 10 mm/s ending 2 mm into the
+  top, then an armed hold for 0.3 s.
+
+**Declared estimate and prediction** (from the config, with E = 50 kPa, σy = 1 kPa and
+H = 20 mm):
+
+- Elastic, unconfined: E·(d/H)·A = 2.64 N.
+- Yield sets in at d = 0.4 mm. The yield-limited force is σy·A = 0.53 N.
+- A confined (Prandtl) punch gives (2+π)/√3·σy·A = 1.57 N.
+- **Prediction:** after yield the force is 0.5–1.6 N, and the contact-window mean is
+  0.35–1.6 N. The bar's COM moves less than 0.2 mm and it yaws less than 0.1°. The
+  compression under the grip is 1–2 mm, at least 5× the rigid displacement.
+
+**Result.** The predicted values are report-only.
+
+| Quantity | v1 (FAIL, unchanged) | v2 measured | Declared / predicted |
+| --- | --- | --- | --- |
+| Verdict | FAIL | **PASS** (4/4 checks, 3/3 control-validity checks) | – |
+| Labels (final / max on any step) | 0 / 0 | 0 / 0 | 0 (pass) |
+| Mechanical components | 1 | 1 (mass fraction 1.0) | 1 (pass) |
+| Grip contact-window mean \|F\| | 0.077 N (30 steps) | **0.855 N** (25 contact steps out of 40) | > 0.1 N (pass); predicted 0.35–1.6 N, within range |
+| Grip \|F\| max / hold mean / end of hold | 0.131 N / – / 0.018 N (decaying) | 1.015 N at the 2 mm stop / 0.951 N / 0.946 N (steady) | 0.5–1.6 N after yield, within range |
+| Mass check | pass | pass (Δ 5.1e-9 kg, bound 1.44e-7 kg; 96000 particles) | pass |
+| Blade contact steps (episode / armed / press-hold) | 0 (press-hold) | **0 / 0 / 0** | must be 0 (validity) |
+| Blade minimum clearance to the bar (recorded poses) | ≥ 8 mm | 58 mm in press/hold; 32 mm overall (lift, start pose) | > 5 mm overall, ≥ 50 mm in press/hold |
+| Rigid fit, hold end vs pre-press | about 3 mm rigid shift, yaw 1.29–1.50° | COM 0.18 mm, yaw −4e-5°, rotation 0.24°, residual RMS 0.47 mm | COM < 0.2 mm, yaw < 0.1° |
+| Compression under the grip (bottom − top layer Δz) | ≤ 0.13 mm (across the width) | **1.65 mm** (strain 0.087; top −1.71 mm, bottom −0.05 mm); 9.4× the COM displacement | 1–2 mm, ≥ 5× rigid |
+| Final frame (8 s) vs pre-press | yaw 1.41° kept | compression 1.22 mm (plastic set), COM 0.18 mm | – |
+| Stability | min det F 0.975 | min det F 0.947, finite, 0 inversions | – |
+
+**Force history.** Grip contact starts at t = 2.70 s, when the face reaches the top
+within the contact radius. The force then rises over the press:
+
+- 0.19 N at 2.72 s,
+- 0.47 N at 2.74 s,
+- 0.73 N at 2.76 s,
+- 0.92 N at 2.80 s,
+- 1.015 N at the stop (2.88 s).
+
+During the hold it settles at 0.947 N, which is between σy·A and the confined-punch
+estimate. The pedestal reacts the load, and the bar neither yaws nor slides: the
+left-half particles move at most 0.25 mm.
+
+The stroke was never active (0 engaged steps). The 120 edge segments counted as moving
+during the press are the edge moving through air, about 58 mm above the bar. No label
+was assigned.
+
+**Caveats.**
+
+- **Force field name.** `blade_contact_steps.episode_blade_force_max_N` (1.015 N) comes
+  from `current_material_reaction_impulse_world`. That accumulates the obstacle-box
+  reaction as well, so it is the grip force, not a blade force. The blade contact count
+  (`contact_statistics[1]`) is 0 on every step.
+- **Retract.** One disarmed `retract` step has a 0.126 N grip reaction while the grip
+  lifts off. That step is outside the contact window.
+- **Rotation.** The 0.24° rigid-fit rotation is the best-fit rotation of a locally
+  indented bar, not a rigid tilt. The yaw is about zero, and the left half barely moves.
+- **Smoke run.** A 10-step plumbing smoke ran before the commit, from the main checkout
+  on `cuda:0`: `artifacts/wp11/phaseF/smoke/f2_9_blunt_handle_v2_smoke10_law8_001`,
+  `FAIL_NONFORMAL`, no contact reached. It is not a protocol attempt.
+
+**What this validates.** It covers kinematic ideal tracking only, seed 42, at formal
+resolution, with provisional uncalibrated material. An armed law-8 tool whose blunt
+handle presses a supported workpiece at about 0.95 N assigns zero labels and keeps one
+component. Blunt contact at > 0.1 N is now validated for this −z-onto-support
+configuration.
+
+Side contact against an unrestrained bar (the v1 geometry) is still unvalidated. It
+would need a fixture to react the load.
+
+**Commands.**
+
+```
+# from the clean worktree at dc64f49
+TMPDIR=/mnt/data/ningan/tmp /usr/bin/time -v /home/ningan/RoboticCuttingSim/.venv/bin/python \
+    scripts/run_phase_f_v2_material.py --device cuda:0 \
+    --out /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001
+# evidence (main checkout)
+.venv/bin/python scripts/summarize_phase_f_v2.py --run artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001 \
+    --log artifacts/wp11/logs/phaseF_f2_9_blunt_handle_v2_law8_001.log --out docs/evidence/wp11/phaseF_material_v2_001.json
+# CPU tests
+.venv/bin/python -m pytest -q tests/test_phase_f_v2.py tests/test_law8_validation.py tests/test_summarize_phase_f.py
+```
