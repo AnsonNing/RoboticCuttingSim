@@ -108,6 +108,13 @@ class KinematicCuttingBackend:
     def set_gripper(self, command):
         raise ValueError("The kinematic backend has no gripper; use a live runtime for grasp tests")
 
+    # Recorder compatibility (WP-11 Phase G): the only moving "body" is the ideal knife edge.
+    rigid_link_paths = ("/kinematic/knife_edge",)
+
+    def body_poses(self):
+        """(1, 7) WORLD pose of the ideal knife edge (the recorder's rigid-body track); no robot links exist."""
+        return np.asarray(self.edge, float).reshape(1, 7).copy()
+
     def step(self, action=None):
         if self.material is None:
             raise RuntimeError("Reset the kinematic backend first")
@@ -117,7 +124,8 @@ class KinematicCuttingBackend:
         if action is None:
             target, cutting, cut_index = self.task.reference_edge_pose_world(next_time), True, None
         else:
-            command = self.task.validate_action(action)
+            # cut_index is bounded by the retained material history (up to 15 digits with tlmpm_v5).
+            command = self.task.validate_action(action, max_cuts=int(self.material.max_cuts))
             if command["mode"] != ACTION_MODES[0]:
                 raise ValueError("The kinematic backend accepts Cartesian edge actions only (no arm joints)")
             target, cutting = command["target"], command["cut_enabled"]

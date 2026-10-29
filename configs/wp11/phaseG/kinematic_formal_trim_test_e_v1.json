@@ -1,0 +1,9 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseG_kinematic_formal_trim_test_e_v1",
+  "description": "WP-11 Phase G formal-resolution (1 mm) kinematic episodes of the C5 TRIM task in one process: (a) the scripted goal planner and (b) the hand-written open-loop action program through the same public API (Test E).",
+  "episodes": [
+    {"label": "scripted_seed42", "controller": "scripted", "seed": 42, "hold_until_time_limit": true, "expect": "PASS"},
+    {"label": "action_program_seed42", "controller": "action_file", "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json", "seed": 42}
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "schema": "rcs_action_program_v1",
+  "program_id": "sever_mid_handwritten_v1",
+  "task": {
+    "scene": "bar_160x30x20",
+    "goal": "sever_mid"
+  },
+  "description": "Hand-authored open-loop through-cut (Test E): clamped approach to 10 mm above the bar top, armed vertical cut at 8 mm/s to 4 mm below the bar bottom (planner: 10 mm/s), 0.3 s hold, withdraw, hold to the time limit. Scene numbers only; no planner code.",
+  "derivation": {
+    "bar_top_world_z_m": 0.02,
+    "cut_end_world_z_m": -0.004
+  },
+  "segments": [
+    {
+      "label": "APPROACH",
+      "kind": "edge_pose",
+      "target": [
+        0.0,
+        0.0,
+        0.03,
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865475
+      ],
+      "steps": 40,
+      "cut_enabled": false
+    },
+    {
+      "label": "CUT",
+      "kind": "edge_line",
+      "from": [
+        0.0,
+        0.0,
+        0.03,
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865475
+      ],
+      "to": [
+        0.0,
+        0.0,
+        -0.004,
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865475
+      ],
+      "speed_m_s": 0.008,
+      "cut_enabled": true,
+      "cut_index": 0
+    },
+    {
+      "label": "HOLD",
+      "kind": "edge_pose",
+      "target": [
+        0.0,
+        0.0,
+        -0.004,
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865475
+      ],
+      "steps": 15,
+      "cut_enabled": false
+    },
+    {
+      "label": "WITHDRAW",
+      "kind": "edge_line",
+      "from": [
+        0.0,
+        0.0,
+        -0.004,
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865475
+      ],
+      "to": [
+        0.0,
+        0.0,
+        0.03,
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865475
+      ],
+      "speed_m_s": 0.02,
+      "cut_enabled": false
+    },
+    {
+      "label": "HOLD",
+      "kind": "hold_until_time_limit"
+    }
+  ]
+}

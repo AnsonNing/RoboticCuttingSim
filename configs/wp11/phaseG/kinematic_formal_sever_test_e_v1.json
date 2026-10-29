@@ -1,0 +1,9 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseG_kinematic_formal_sever_test_e_v1",
+  "description": "WP-11 Phase G Test E on a second goal (sever_mid on bar_160x30x20, 1 mm, kinematic): (a) scripted goal planner, (b) hand-written open-loop through-cut program, same public API, one process.",
+  "episodes": [
+    {"label": "scripted_seed42", "controller": "scripted", "seed": 42, "hold_until_time_limit": true, "expect": "PASS"},
+    {"label": "action_program_seed42", "controller": "action_file", "action_file": "configs/wp11/action_programs/sever_mid_handwritten_v1.json", "seed": 42}
+  ]
+}

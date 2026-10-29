@@ -614,13 +614,16 @@ class ConfiguredTaskSpec(ProfileTaskSpec):
                 intervals[label] = [start, end]
         return intervals
 
-    def validate_action(self, action):
-        """As CuttingTaskSpec, but ``cut_index`` may address any digit below the scene max_cuts."""
+    def validate_action(self, action, *, max_cuts=None):
+        """As CuttingTaskSpec, but ``cut_index`` may address any digit below the scene max_cuts.
+
+        An explicit ``max_cuts`` (the runtime material history) can only narrow that range."""
         index = action.get("cut_index") if isinstance(action, dict) else None
         if index is None:
             return super().validate_action(action)
-        if isinstance(index, (bool, np.bool_)) or not isinstance(index, (int, np.integer)) or not 0 <= index < self.max_cuts:
-            raise ValueError(f"cut_index must be an integer in [0, {self.max_cuts})")
+        limit = self.max_cuts if max_cuts is None else min(int(self.max_cuts), int(max_cuts))
+        if isinstance(index, (bool, np.bool_)) or not isinstance(index, (int, np.integer)) or not 0 <= index < limit:
+            raise ValueError(f"cut_index must be an integer in [0, {limit})")
         command = super().validate_action({key: value for key, value in action.items() if key != "cut_index"})
         command["cut_index"] = int(index)
         return command

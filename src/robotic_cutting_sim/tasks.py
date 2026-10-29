@@ -203,11 +203,15 @@ class CuttingTaskSpec:
         return {"mode": "cartesian_edge_pose_world", "target": self.reference_edge_pose_world(time_s),
                 "cut_enabled": self.active_cut_index(time_s) >= 0}
 
-    def validate_action(self, action):
+    def validate_action(self, action, *, max_cuts=None):
         """Validate edge XYZ+XYZW or active-arm7/both-arm2x7 joint positions.
 
         A 7-vector joint action explicitly leaves the second arm parked; no
         dynamics, IK, observations, forces or hidden cut schedule are added here.
+
+        ``cut_index`` accepts the legacy digits 0/1 unless ``max_cuts`` (the
+        retained material history, at most ``PACKED_MAX_CUTS`` = 15 with
+        ``tlmpm_v5``) is passed explicitly: then any integer in [0, max_cuts).
         """
         if not isinstance(action, dict) or set(action)-{"mode", "target", "cut_enabled", "cut_index"}:
             raise ValueError("Action is a mapping with mode, target and optional cut_enabled/cut_index only")
@@ -229,8 +233,17 @@ class CuttingTaskSpec:
         if "cut_index" in action:
             # Which persistent cut digit this action writes (material max_cuts bounds it).
             index = action["cut_index"]
-            if not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_)) or not 0 <= index <= 1:
-                raise ValueError("cut_index must be the integer 0 or 1")
+            if max_cuts is None:
+                if not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_)) or not 0 <= index <= 1:
+                    raise ValueError("cut_index must be the integer 0 or 1")
+            else:
+                from .cut_topology import PACKED_MAX_CUTS
+                if (isinstance(max_cuts, (bool, np.bool_)) or not isinstance(max_cuts, (int, np.integer))
+                        or not 1 <= max_cuts <= PACKED_MAX_CUTS):
+                    raise ValueError(f"max_cuts must be an integer in [1, {PACKED_MAX_CUTS}]")
+                if (not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_))
+                        or not 0 <= index < max_cuts):
+                    raise ValueError(f"cut_index must be an integer in [0, {int(max_cuts)})")
             command["cut_index"] = int(index)
         return command
 

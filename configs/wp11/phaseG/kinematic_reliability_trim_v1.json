@@ -1,0 +1,14 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseG_kinematic_reliability_trim_v1",
+  "description": "WP-11 Phase G Test F on the kinematic backend (coarse spacing allowed): 7 consecutive episodes of the C5 TRIM task in one process: scripted demonstrations (fixed and random seed), the hand-written open-loop action program (Test E), a deliberately failing scripted episode (plan stopped after PRE_CUT), an external random-delta policy rollout with deliberately invalid actions, and exact repeats of episodes 0 and 1 (same seed, same controller) for the cross-episode isolation check. return_home on the kinematic backend is NOT_APPLICABLE (no robot) and is exercised to show it.",
+  "episodes": [
+    {"label": "scripted_seed42", "controller": "scripted", "seed": 42, "hold_until_time_limit": true, "return_home": true, "expect": "PASS"},
+    {"label": "action_program_seed42", "controller": "action_file", "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json", "seed": 42},
+    {"label": "scripted_random_seed", "controller": "scripted", "seed": "random", "hold_until_time_limit": true, "expect": "PASS"},
+    {"label": "deliberate_fail_stop_after_pre_cut", "controller": "scripted", "seed": 42, "stop_after_phase": "PRE_CUT", "hold_until_time_limit": true, "return_home": true, "expect": "FAIL"},
+    {"label": "random_policy", "controller": "policy", "policy": "robotic_cutting_sim.policy_examples:random_delta_policy", "seed": "random", "expect": "FAIL"},
+    {"label": "scripted_seed42_repeat", "controller": "scripted", "seed": 42, "hold_until_time_limit": true, "return_home": true, "expect": "PASS"},
+    {"label": "action_program_seed42_repeat", "controller": "action_file", "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json", "seed": 42}
+  ]
+}

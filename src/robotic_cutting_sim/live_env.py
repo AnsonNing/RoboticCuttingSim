@@ -158,6 +158,13 @@ class CuttingTaskEnv:
             action = {**action, "target": target}
         return action, report
 
+    def _validate(self, action):
+        """task.validate_action; with K > 2 retained digits (tlmpm_v5) the material bounds cut_index."""
+        cuts = int(getattr(getattr(self.backend, "material", None), "max_cuts", 1) or 1)
+        if cuts > 2:
+            return self.task.validate_action(action, max_cuts=cuts)
+        return self.task.validate_action(action)
+
     def _record_oracle(self, force=False):
         if self._history and not force and self._control_steps_count % self.history_stride:
             return
@@ -200,7 +207,7 @@ class CuttingTaskEnv:
                 action, report = self._resolve(action)
                 if report is not None:
                     report['resolved_target_world_xyz_xyzw'] = np.asarray(action['target']).tolist()
-            action = self.task.validate_action(action)
+            action = self._validate(action)
             if gripper is not None:
                 self.backend.set_gripper(gripper)
         ik_status, ik_info = "ok", None
@@ -216,10 +223,10 @@ class CuttingTaskEnv:
                     "cut_enabled": bool(action["cut_enabled"]) if action else True,
                     **({"cut_index": action["cut_index"]} if action and "cut_index" in action else {})}
             try:
-                self.backend.step(self.task.validate_action(hold))
+                self.backend.step(self._validate(hold))
             except IKFailure:
                 hold = {**hold, "mode": ACTION_MODES[1], "target": np.asarray(self._proprio["q"])[0]}
-                self.backend.step(self.task.validate_action(hold))
+                self.backend.step(self._validate(hold))
         else:
             self._ik_failures = 0
             if action is not None and action["mode"] == ACTION_MODES[0]:
@@ -553,7 +560,8 @@ class CuttingTaskEnv:
 @contextmanager
 def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=42,
                      action_mode=ACTION_MODES[0], observation_profile="vision_proprio",
-                     include_global_camera=False, camera_layout="wrist_d405_global_d455", task=None, **backend_options):
+                     include_global_camera=False, camera_layout="wrist_d405_global_d455", task=None, preset=None,
+                     **backend_options):
     """Start a pinned live runtime in its dedicated venv, then close it on exit.
 
     Use a fresh output directory. Isaac Sim defaults to real native SingleView
@@ -567,7 +575,25 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
     recorded scene/goal config and requires the same id; solver, law and K come
     from the scene. Isaac Lab still builds tasks from registered ids and raises
     NotImplementedError rather than silently using another task.
+
+    ``preset="cutting_research_v1"`` (WP-11 Phase G, opt-in) yields a
+    ``policy_env.PolicyReadyEnv`` instead: physical grasp, pregrasped tool, held
+    gripper, HOME reset when the scene declares it, validated actions with an
+    explicit status, deployable observations separate from privileged state, and
+    optional ``scene=``/``goal=``/``tool_profile=``/``planner_options=``/
+    ``particle_spacing_m=``/``recording=``/``observation_profile=`` arguments
+    (see docs/POLICY_READY_API.md). Without ``preset`` nothing changes.
     """
+    if preset is not None:
+        from .policy_env import open_policy_env
+        if observation_profile != "vision_proprio" and "observation_profile" not in backend_options:
+            backend_options["observation_profile"] = observation_profile
+        if include_global_camera:
+            raise ValueError("The research preset includes the global camera itself (preset_overrides)")
+        with open_policy_env(task_id, runtime=runtime, output_dir=output_dir, seed=seed, preset=preset, task=task,
+                             **backend_options) as env:
+            yield env
+        return
     if task is not None and runtime == "isaac_lab":
         raise NotImplementedError("Isaac Lab builds tasks from registered task ids; a compiled ConfiguredTaskSpec "
                                   "runs on runtime='kinematic' or 'isaac_sim'")

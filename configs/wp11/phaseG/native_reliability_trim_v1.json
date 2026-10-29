@@ -1,0 +1,11 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseG_native_reliability_trim_v1",
+  "description": "WP-11 Phase G Tests E/F on Isaac Sim Native (C5 TRIM task CFG-trim01_wp11_workcell-trim_bump_rho10-570db2f5, 1 mm, law 8, physical grasp): 4 consecutive episodes in one process, each Reset (HOME pregrasp) -> episode -> Evaluate -> physical Return Home -> Reset: (0) the scripted goal planner with measured-edge feedback (the C5 configuration, expected PASS); (1) the hand-written open-loop action program (Test E, no expectation declared); (2) a deliberately failing episode: the same scripted plan stopped after PRE_CUT and held to the time limit (the dome is never skimmed; expected FAIL) to show failed episodes are stored and usable; (3) an exact repeat of episode 0 (same seed and controller) for cross-episode isolation.",
+  "episodes": [
+    {"label": "scripted_measured_seed42", "controller": "scripted", "seed": 42, "edge_feedback": "measured", "stop_after_phase": "WITHDRAW", "hold_until_time_limit": true, "return_home": true, "expect": "PASS"},
+    {"label": "action_program_seed42", "controller": "action_file", "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json", "seed": 42, "return_home": true},
+    {"label": "deliberate_fail_stop_after_pre_cut", "controller": "scripted", "seed": 42, "edge_feedback": "measured", "stop_after_phase": "PRE_CUT", "hold_until_time_limit": true, "return_home": true, "expect": "FAIL"},
+    {"label": "scripted_measured_seed42_repeat", "controller": "scripted", "seed": 42, "edge_feedback": "measured", "stop_after_phase": "WITHDRAW", "hold_until_time_limit": true, "return_home": true, "expect": "PASS"}
+  ]
+}
