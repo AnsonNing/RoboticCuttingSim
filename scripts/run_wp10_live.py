@@ -288,6 +288,10 @@ def validate_configured(p, a):
         p.error('--overview-camera is Native-only and needs recorded cameras (--record-cameras or a vision observation)')
     if a.position_tolerance is not None and not 0 < a.position_tolerance < .01:
         p.error('--position-tolerance must be in (0, 0.01) m')
+    if task.controller['planner'].get('perception') is not None and (
+            a.controller != 'scripted' or not (a.record_cameras or a.observation != 'state')):
+        p.error(f'planner perception {task.controller["planner"]["perception"]} (ADR 0016 wrist-depth survey) needs '
+                '--controller scripted and rendered cameras (--record-cameras or a vision observation)')
 
 
 def validate_arguments(p, a):
@@ -335,7 +339,7 @@ def configured_policy(env, a):
     from robotic_cutting_sim.policies import WaypointPolicy
     task = env.task
     options = task.controller['planner']
-    waypoints = goal_planner.plan(task.scene, task.goal, task.tool_profile, options)
+    waypoints, report = goal_planner.plan_with_report(task.scene, task.goal, task.tool_profile, options)
     policy_options = dict(goal_planner.policy_options(options))
     if a.edge_feedback == 'measured':
         policy_options['edge_estimator'] = measured_edge_estimator(env)
@@ -345,6 +349,12 @@ def configured_policy(env, a):
                    planner_options=options, phases=[w.label for w in waypoints], action_limits=task.action_limits().to_dict())
     if a.position_tolerance is not None:
         receipt['position_tolerance_m'] = a.position_tolerance
+    if options.get('perception') is not None:
+        # ADR 0016: wrist-depth survey + relocation; the depth source is the rendered wrist frame at the step time.
+        from robotic_cutting_sim.perception_relocate import relocate_policy
+        receipt['perception'] = report['perception']
+        return relocate_policy(task, waypoints, report['perception'], depth_source=wrist_depth_source(env),
+                               limits=task.action_limits(), **policy_options), receipt
     return WaypointPolicy(task, waypoints, task.action_limits(), **policy_options), receipt
 
 
@@ -717,7 +727,8 @@ def run_configured(a, out, task):
                     observation = result[0]
                     recorder.step(action, result, before_observation, time.monotonic() - step_start, policy_phase=phase,
                                   controller_profile=profile_receipt,
-                                  policy_tracking=policy.last_tracking if policy is not None else None)
+                                  policy_tracking=policy.last_tracking if policy is not None else None,
+                                  policy_vision=getattr(policy, 'last_vision', None))
                     if (step + 1) % 25 == 0:
                         print(f'isaac_sim {env.task.task_id} {a.controller} episode={episode} step={step+1} '
                               f't={env.time_s:.2f} phase={phase}', flush=True)
@@ -751,6 +762,8 @@ def run_configured(a, out, task):
                     row.update(policy_plan=policy_plan_name(env.task, policy), edge_feedback=edge_feedback_receipt(a),
                                policy_position_tolerance_m=policy.position_tolerance_m,
                                policy_final_phase=policy.phase, controller_profile=profile_receipt)
+                    if getattr(policy, 'vision', None):
+                        row.update(policy_vision=policy.vision)
                 if a.return_home:
                     def on_step(action, result, before, label):
                         recorder.step(action, result, before, None, policy_phase=f'RETURN_HOME:{label}')

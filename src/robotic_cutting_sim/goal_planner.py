@@ -73,6 +73,9 @@ OPT_IN_OPTIONS = {
     # the advance. "plane_section": it spans only the cut plane's section of that box, so an inclined
     # advance (oblique plane) ends overtravel_m past the section instead of past the far box corner.
     "cut_extent": ("bbox", "plane_section"),
+    # ADR 0016: wrist-depth survey + relocation of the later cuts of a >= 2-plane sever goal
+    # (perception_relocate). Absent: no survey waypoints, plans and reports unchanged.
+    "perception": ("wrist_depth_relocate_v1",),
 }
 
 
@@ -95,6 +98,9 @@ def planner_options(goal, overrides=None):
         if key in merged and merged[key] not in allowed:
             from .scene_config import SceneConfigError
             raise SceneConfigError(f"planner {key} must be one of {allowed}")
+    if merged.get("perception") is not None:
+        from .perception_relocate import check_options
+        check_options(merged)
     return merged
 
 
@@ -510,7 +516,23 @@ def _operations(scene, goal, profile, options, frame, digit=0, step_index=0):
     if kind in ("sever", "divide"):
         plan, reports = [], []
         approaches = [row.get("approach_local") for row in goal["planes"]] if kind == "sever" else None
-        for k, (origin, normal) in enumerate(goal_planes(goal, scene)):
+        planes = goal_planes(goal, scene)
+        survey = None
+        if options.get("perception") is not None and kind == "sever" and len(planes) >= 2:
+            from . import perception_relocate as hook
+            side, normal = hook.eligible_side(goal, planes)
+            survey = (hook, side, through_cut_rotation(normal))
+            steps, op = hook.survey_waypoints(scene, side, survey[2], 0, options, frame)
+            plan += steps
+            reports.append({"op": op, "kind": "perception_survey", "role": "calibration", "digit": None, "side": side,
+                            "survey_pose_local_m": hook.survey_position_local(scene, side, options).tolist()})
+        for k, (origin, normal) in enumerate(planes):
+            if survey is not None and k > 0:
+                steps, op = survey[0].survey_waypoints(scene, survey[1], survey[2], k, options, frame)
+                plan += steps
+                reports.append({"op": op, "kind": "perception_survey", "role": "survey", "digit": None,
+                                "side": survey[1], "next_cut_op": f"cut{digit}",
+                                "survey_pose_local_m": survey[0].survey_position_local(scene, survey[1], options).tolist()})
             steps, report = _through_cut(scene, origin, normal, None if approaches is None else approaches[k],
                                          digit, profile, options, frame)
             plan += steps
@@ -550,6 +572,9 @@ def plan_with_report(scene, goal, tool_profile, options=None):
               "digits_used": digits, "phases": [w.label for w in plan],
               "inputs": "scene config (declared geometry, pose, protrusions, supports), goal config, tool profile, "
                         "planner options; no particle, label, component or oracle state"}
+    if options.get("perception") is not None:  # ADR 0016 (absent otherwise: reports of other plans are unchanged)
+        from .perception_relocate import perception_block
+        report["perception"] = perception_block(reports, options)
     from .scene_config import workcell_home
     workcell = workcell_home(scene)
     if workcell is not None:  # only scenes whose workcell declares a HOME (reports of other scenes are unchanged)
