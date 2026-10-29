@@ -94,14 +94,12 @@
 - **重跑方式**：
 
   ```bash
-  .venv/bin/python scripts/run_blademaster_demos.py --demo 1a --demo 1b --demo 2 --gpu 1 --cutting-law 5 \
-    --controller-profile path_v2 --run-id <new_id>
-  .venv/bin/python scripts/run_blademaster_demos.py --demo 3 --gpu 1 --cutting-law 5 \
-    --controller-profile path_v2_vision --run-id <new_id>
+  # 最終組合（1a/1b/2 用 path_v2，3 用 path_v2_vision；law 5、seed 42）
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --gpu 1 --run-id <new_id>
   # 加 --publish 把媒體複製到 docs/media/demos/<demo>/（不覆寫）
   ```
 
-  Runner 的 `--controller-profile` 預設是 v1，也就是第一輪的設定。最終組合要照上面的指令分別指定 profile，或改用單一指令 `--demo-set final_v1`。
+  Runner 的 `--controller-profile` 預設是 v1，也就是第一輪的設定。最終組合請用 `--demo-set final_v1`；它產生的指令與紀錄中的最終 run 一致（`60b8945`，只差 `--out`／`--gpu`），但這組設定本身還沒有以單一指令重新 live 跑過。
   Demo 1b 的最終 run 是在未 commit 的 `policies.py`（path_v2 開發中）下執行。審查把紀錄的輸入重新餵給已 commit 的控制器，所有動作都完全重現。
 
 ## 限制與未完成（照實列出）

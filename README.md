@@ -116,10 +116,8 @@ parameters are provisional and uncalibrated.
 ### Reproduce the demos
 
 ```bash
-.venv/bin/python scripts/run_blademaster_demos.py --demo 1a --demo 1b --demo 2 \
-  --gpu 1 --cutting-law 5 --controller-profile path_v2 --run-id NEW_ID
-.venv/bin/python scripts/run_blademaster_demos.py --demo 3 \
-  --gpu 1 --cutting-law 5 --controller-profile path_v2_vision --run-id NEW_ID
+# Final set: Demo 1a/1b/2 with path_v2 and Demo 3 with path_v2_vision, law 5, seed 42
+.venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --gpu 1 --run-id NEW_ID
 ```
 
 Each run writes the episode, `demo_summary.json` (execution, outcome and
