@@ -1,6 +1,15 @@
 # WP-11 Phase F1: long-duration physical grasp of `ruler_knife_v2_y`
 
-**Verdict:** `FAIL_OR_INCOMPLETE_F1_GATED_CASES`. All 31 predeclared cases ran,
+**Verdicts at a glance**
+
+- **v8 suite: FAIL.** One flawed negative control, `low_friction_trim_advance_0p1n`.
+  The coordinator accepted the diagnosis as a control-design flaw. The record is
+  unchanged and is still reported as FAIL.
+- **v9 corrected negative controls: PASS on all three rows.** These ran under a new
+  protocol version, frozen before the run; see
+  [the v9 section](#v9-corrected-negative-controls).
+
+**v8 verdict:** `FAIL_OR_INCOMPLETE_F1_GATED_CASES`. All 31 predeclared cases ran,
 and 30 of 31 met their predeclared expectation. The one gated failure is a
 negative control, `low_friction_trim_advance_0p1n`. Every hold, rotation,
 cutting-load and torque case passed the inherited holding gates, as did both
@@ -146,8 +155,45 @@ by 450 mrad (the low_friction_trim case).
 - The load sign was fixed before running, from the C4 reaction direction.
 - This is a design miss in the negative control. It is not evidence that friction is
   ineffective. The gravity-only low-friction case did slip.
-- A sign-reversed or larger-load variant would be a new protocol version. It was not
-  run.
+- The corrected controls ran as a new protocol version, v9; see the next section.
+
+## v9 corrected negative controls
+
+**Sources**
+
+- **Protocol:** [`configs/physical_tool_controls_v9_ruler_v2_wp11_negctrl.json`](../../configs/physical_tool_controls_v9_ruler_v2_wp11_negctrl.json),
+  frozen and committed (`136b0af`) before the run. Its gates, grip, motion and
+  measurement settings are copied unchanged from v8 (asserted).
+- **Run:** `artifacts/wp11/phaseF1/f1_negctrl_v9_001`, on cuda:1. GPU 1 was idle at
+  launch. Seed 42.
+- **Worktree:** a fresh git worktree pinned at `136b0af`. Its runner is byte-identical
+  to `9a4cb5f`.
+- **Evidence:** [`docs/evidence/wp11/phaseF1_negctrl_v9_001.json`](../evidence/wp11/phaseF1_negctrl_v9_001.json).
+
+**Setup**
+
+- Each control has its own matched μ = 0.6 reference row in the same run, with the
+  same start and load. All three references passed the holding gates, with slip of at
+  most 0.4 µm and 0.036 mrad.
+- The finger-axis torques, expected outcomes and reasoning were written into the
+  config before the run.
+- The expected bound on the μ = 0.02 torsional capacity is 0.0017 to 0.006 N·m. This
+  is the v8 slip-onset bracket at μ = 0.6 (0.05 to 0.18 N·m), scaled by μ.
+
+| Control (μ = 0.02) | Finger-axis torque: predeclared / measured at start (N·m) | Expected | Result | Response vs matched reference | Monitor |
+| --- | --- | --- | --- | --- | --- |
+| TRIM + 0.1 N along +advance | +0.0083 + 0.0090 = 0.0173 / 0.0173 | breach of the rotation hold gate; LOST possible | **PASS** | +13.1 mm / +1727 mrad; hold gates breached (translation, rotation, monitor LOST) | LOST at 0.28 s |
+| TRIM + 0.1 N along −normal | 0.0083 (load adds 0) / 0.0083 | breach of the rotation hold gate | **PASS** | +3.5 mm / +447 mrad; hold gates breached (translation, rotation) | SLIPPING from 0.2 s, never LOST |
+| HOME + 0.1 N along −advance | −0.0037 − 0.0090 = −0.0127 / −0.0127 | LOST: the weight lies in the pad plane, and 0.02 × ~36 N ≈ 0.72 N < 0.87 N | **PASS** | +448 mm / +2517 mrad; tool slid out | LOST at 0.16 s |
+
+Every row met its prediction. The controls now show what v8 was meant to show: with
+μ = 0.02, the end-held grip cannot resist torque about the finger axis of about
+0.008 N·m or more, and it cannot carry the weight in the pad plane.
+
+**Runtime and exit code.** The run took 164 s (20:02:16Z to 20:05:00Z). The runner
+exited with code 1 although the verdict is `PASS_F1_GATED_CASES`. The cause:
+`main()` returned 0 only for the older `PASS_FROZEN_RIGID_CONTROLS` literal. This is
+fixed after the run, and `result.json` holds the status in both cases.
 
 **`low_friction_trim` (diagnostic).** Before the run I predicted it might hold,
 because the weight acts mostly along the closing axis. Translation did stay small

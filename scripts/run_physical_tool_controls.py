@@ -1089,7 +1089,7 @@ def main():
     summary=(summarize_wp11 if protocol.get("start_profile")==WP11_START_PROFILE else summarize_matrix)(index,output,protocol)
     index["status"]=summary["status"];write_json(output/"index.json",index);write_json(output/"result.json",summary)
     print(summary["status"],output/"index.json",flush=True)
-    return 0 if summary["status"]=="PASS_FROZEN_RIGID_CONTROLS" else 1
+    return 0 if summary["status"] in ("PASS_FROZEN_RIGID_CONTROLS","PASS_F1_GATED_CASES") else 1
 
 
 if __name__=="__main__":
