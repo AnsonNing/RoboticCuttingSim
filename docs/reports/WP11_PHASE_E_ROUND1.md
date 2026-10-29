@@ -308,6 +308,7 @@ plan, HOME → operations → planner RETURN_HOME.
 | Test A s6 | skim along −x, ρ 10° | TASK_SUCCESS (0.967) | **TASK_SUCCESS** | PASS | PASS |
 | Test C s1602 (live_001) | three protrusions, tlmpm_v5 K = 3 | TASK_SUCCESS | **SCENE_INFEASIBLE** (refused before launch) | — | — |
 | Test C s1602 (live_002) | same, round-1 staged preflight | — | **NOT_RUN** (runtime error in SKIM:p2) | — | — |
+| Test C s1602 (live_003) | same, after the surface fix; staged runner default preflight | — | **TASK_SUCCESS** (see [live_003](#test-c-s1602-live_003-supplementary-after-the-surface-fix)) | PASS | PASS |
 | Test B s1502 | four slices, tlmpm_v5 K = 4 | TASK_SUCCESS | **TASK_SUCCESS** | PASS | PASS |
 | CUT s1102 | 20° oblique sever | TASK_SUCCESS | **TASK_SUCCESS** | PASS | PASS |
 | TRIM s1201 | dome, ρ 10°, lowest margin | TASK_SUCCESS (0.936) | **TASK_SUCCESS** | PASS | PASS |
@@ -476,3 +477,128 @@ Rendered with `scripts/render_demo_episode.py`, the C5 renderer. For packed K > 
 3. Build the configured-plan ADR 0009 perception hook (SLICE-PUSH).
 4. Rerun the skims with `path_v3` against the PRE_CUT blade-dip audit.
 5. Add repeated seeds, needed for any live success rate.
+
+### Test C s1602 live_003 (supplementary, after the surface fix)
+
+Declaration: [`configs/wp11/generalization_round1_live_003.json`](../../configs/wp11/generalization_round1_live_003.json)
+(`002c95e`, committed and pushed before the run). Evidence:
+[`docs/evidence/wp11/phaseE_round1_live_003.json`](../evidence/wp11/phaseE_round1_live_003.json). The declaration
+inherits `generalization_round1_live.json` with its sha256 pinned: same scene, same goal JSON, same duration rule,
+controller, evaluator, classes and failure policy. Only the code commit and the preflight wording differ. The stated
+reason is that both earlier failures were infrastructure: live_001 failed on the preflight geometry and live_002 on
+the presentation mesh. **live_001 stays SCENE_INFEASIBLE and live_002 stays NOT_RUN; both records are unchanged.**
+live_003 is a separate, labelled result. No threshold was changed and nothing was rescored.
+
+**Code changes (before the declaration).**
+- `d3f94e9`, `cutting_surface.CuttingSurface.extract`: a current mechanical component for which ParticleSurface
+  returns no triangles is left out of the presentation mesh only. It is recorded in the returned diagnostics as
+  `unmeshable_skipped` (fragments, particles, component rows), a key that appears only when something was skipped.
+  - The extractor raises only if no component meshes at all.
+  - Physics, cut labels, goal evaluation and recording are unchanged. The physical component count is still
+    reported.
+  - CPU tests in `tests/test_cutting_surface.py` (`current_volume_v1`, the live profile): an 11-particle sparse
+    fragment plus a single loose particle are skipped and recorded, and the meshable components are unchanged. For
+    all-meshable input, the output (vertices, faces and the diagnostics dict) is byte-identical to the pre-fix
+    sha256 for both profiles.
+- `2b4f0a7`, runner default plan preflight (`scripts/wp11_motion_preflight.py plan`, which `run_wp10_live.py` calls
+  before any Isaac launch):
+  - Scenes with two or more protrusions use `generalization.staged_preflight`, the round-1 helper, with an additive
+    `until_phase`. The receipt gains `preflight_geometry = staged_multi_protrusion_v1`.
+  - Scenes with zero or one protrusion keep exactly the previous calls and receipt keys.
+    `tests/test_wp11_default_preflight_staged.py` covers this, plus a real CLI run on the Test C live task.
+  - The analyzer also gained a report-only staged measured-path check.
+  - `isaac_sim_runner.py`, `policies.py` and `goal_planner.py` were not touched.
+- `74aafb0` (after the run, presentation only): `render_packed_episode.py --wide-piece-palette`.
+
+**Run.** The run used the runner's own default preflight (not `--skip-plan-preflight`). It returned PASS, staged,
+with binding `blade_collision` slack +0.049 mm at PRE_CUT:p1, the same as the live_002 queue-side gate. Then one
+Native episode ran on cuda:0. Of 1025 task steps plus 63 home steps (1088 recorded), the plan reached DONE at 18.22 s
+against an ideal 17.48 s (+0.74 s lag). The episode then held to the 20.5 s limit and returned home. It passed step
+691, where live_002 had aborted, with no runtime error. Wall times: episode 947 s, process 1020 s. The run directory
+is 1.63 GB, and `/mnt/data` went from 26.0 to 22.8 GB free.
+
+| Quantity | live_003 (live Native) | Kinematic stage 2 (same seed) |
+| --- | --- | --- |
+| Class / goal verdict | **TASK_SUCCESS** / PASS (integrity 7/7, outcome 6/6) | TASK_SUCCESS |
+| Removed mass p0 / p1 / p2 (≥ 0.9) | 0.962 / 0.997 / 0.972 | 0.960 / 0.997 / 0.946 |
+| Substrate share (≥ 0.99) | 0.9999999999988 (single substrate component) | 0.9999999999988 |
+| Detached below-plane mass (≤ 0.01) | 0.0 | 0.0 |
+| Mechanical components (final) | 4: 107054 / 2040 / 737 / 455 particles | 4 |
+| Residual substrate height p0 / p1 / p2 (quality) | 0.094 / 0.180 / 0.187 mm | 0.078 / 0.068 / 0.135 mm |
+| Grasp (task phase) | HOLDING on 1025/1025 steps; max slip 0.83 µm, max rotation 0.095 mrad | — |
+| IK | `ok` on 1025/1025; 0 workspace clamps; 35 translation / 178 rotation rate-limit clamps | — |
+| Native tool contacts | 0 unintended; finger-pad tensor penetration ≤ 7.2 µm | — |
+| `home_outcome` | PASS: 1.26 s, joint error ≤ 0.50 mrad, tool 0.088 mm / 0.16 mrad, 0 label changes, home path C2 PASS | — |
+
+**Chip independence.** This was measured with a read-only oracle diagnostic,
+`round1_live_003/E1_TEST_C_s1602/diagnostics_001/chip_independence.{py,json}`. It maps each protrusion's goal-owned
+mass to the current packed mechanical components at all 219 history frames. Its final removed fractions equal the
+evaluator's to all digits.
+- All three chips are independent at the end. Each removed chip is a single component holding 100 % of that
+  protrusion's removed mass, with 0 below-plane particles, distinct from the substrate and from the other chips.
+- They separated one at a time, each during its own skim: p0 at 5.60 s (SKIM:p0), p1 at 10.40 s (SKIM:p1) and p2
+  at 14.30 s (SKIM:p2).
+- By 21.76 s all three chips had left the bar, ending 85–122 mm below its top beyond the +x end.
+- No recorded frame has a component under 100 particles (`diagnostics_001/component_sizes.json`). The runner does
+  not persist `surface_info`, so whether the extractor skipped a transient fragment between recorded frames is
+  **not measured**. At the final, evaluated frame nothing was skipped.
+
+**Skim orientation of the measured edge on armed steps** (mean / max |·|, degrees; ρ declared 10):
+
+| Skim | Armed steps | τ | ψ | ρ | μ per step | μ chord | Edge z − (target + 0.2 mm) | Lowest blade point − bar top |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| p0 | 83 (4.26–5.90 s) | 0.001 / 0.011 | 0.003 / 0.025 | 10.000 / 10.015 | −0.26 / 18.9 | −0.17 | −0.16 … +0.12 mm | ≥ −0.11 mm |
+| p1 | 87 (8.78–10.50 s) | 0.002 / 0.012 | 0.003 / 0.023 | 10.000 / 10.017 | −0.30 / 22.9 | −0.16 | −0.23 … +0.17 mm | ≥ −0.18 mm |
+| p2 | 78 (12.86–14.40 s) | 0.003 / 0.013 | 0.004 / 0.020 | 10.001 / 10.016 | −0.38 / 21.6 | −0.20 | −0.26 … +0.19 mm | ≥ −0.21 mm |
+
+As in live_001, per-step μ is dominated by about ±0.2 mm of vertical ringing over 0.5 mm steps; the chord gives the
+motion elevation. The peak material reaction on the blade was 0.04, 0.10 and 0.15 N.
+
+**Measured-path C2 clearance (report only; nominal grasp).**
+- Declared uncut geometry (the live_001 check): FAIL `blade_collision` −8.67 mm against `static_workpiece_bump`. This
+  is the single-hull artefact: the convex hull over all three protrusions stays present after they are removed.
+- Staged geometry (round-1 rule, chunks without the protrusions already removed): FAIL `blade_collision` −0.23 mm at
+  PRE_CUT:p2 against `static_workpiece_base`.
+  - Chunks with removed sets {}, {p0} and {p0, p1} FAIL `blade_collision`. The final chunk, {p0, p1, p2} (planner
+    RETURN_HOME and hold), PASSes.
+  - This is the same contact-free PRE_CUT dip as the three live_001 ρ 10° skims (−0.19 to −0.24 mm; C5 open issue,
+    `path_v3` not used).
+- Fingers, handle, D405s, table, board and Franka 1 PASS.
+
+**Surface quality (reported, not scored).** 0.66 % of the substrate heightfield cells have no surface, and
+`maximum_gouge_depth_m` reads 0.022 (the full bar height, so those cells have no substrate surface). The close-up RGB
+shows a round patch on the bar top near p1's footprint. The three live_001 skims had 0 % missing and ≤ 1.9 mm. This
+does not come from the unmeshable skip: at the final frame there are 4 components and none was skipped. It is not
+investigated here.
+
+**Media** (rendered with `render_packed_episode.py --wide-piece-palette` at `74aafb0`, clean worktree):
+[demo.gif](../media/wp11/test_c_s1602/demo.gif) (3.6 MB), [demo.mp4](../media/wp11/test_c_s1602/demo.mp4) and
+[poster.png](../media/wp11/test_c_s1602/poster.png), from `render_E1_TEST_C_s1602_002`.
+- The stock palette has three hues and treats components under 1 % of the particles as grey. Here p0 (0.4 %) and p2
+  (0.7 %) would both be grey.
+- The opt-in wide palette uses five hues and a 0.2 % piece threshold, with the largest component (substrate) pinned
+  to the first hue. The substrate stays blue, and each chip keeps its own hue as it splits off (major 4, minor 0).
+- The earlier render `render_E1_TEST_C_s1602_001`, at `002c95e` and without the pinning (the substrate changed hue as
+  chips split off), is kept.
+
+**Commands** (seed 42, `TMPDIR=/mnt/data/ningan/tmp`; queue, analyze and summarize in the run worktree
+`/mnt/data/ningan/RoboticCuttingSim-wp11-Elive3-002c95e`, render in `…-Eanalysis3-74aafb0`, both clean; the two
+oracle diagnostics with the main-repo `.venv`, read-only):
+
+    .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_003.json \
+        queue --root artifacts/wp11/phaseE/round1_live_003 --queue-log artifacts/wp11/logs/phaseE_live003_queue_001.log
+    # exact runner argv in round1_live_003/E1_TEST_C_s1602/attempt_001.json (as live_001, --record-every 5 --oracle-stride 26 --steps 1025 --gpu 0)
+    .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_003.json \
+        analyze --sample-dir artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602 --run run_001 \
+        --out artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602/analysis_001          # 14 s, at 002c95e
+    .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_003.json \
+        summarize --root artifacts/wp11/phaseE/round1_live_003 --out docs/evidence/wp11/phaseE_round1_live_003.json
+    .venv/bin/python scripts/render_packed_episode.py artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602/run_001/episode_000 \
+        --out artifacts/wp11/phaseE/round1_live_003/render_E1_TEST_C_s1602_002 --title … --label … --wide-piece-palette   # 91 s
+
+**live_003 totals (Test C only):** TASK_SUCCESS 1. Open items 1 (surface abort) and 2 (staged default preflight) from
+the list above are addressed by `d3f94e9` and `2b4f0a7`. Remaining:
+- the PRE_CUT blade dip (item 4);
+- the Test C missing-surface quality anomaly;
+- persisting `surface_info` skip counts in the recording;
+- repeated seeds.
