@@ -5,10 +5,10 @@
 - 計畫：[BladeMaster 三個 Demo](BLADEMASTER_DEMO_PLAN.md)，由 tmux `rcs-demos` 的 Claude Code CLI session 執行（規則：`tools/demo_runner/round_prompt.md`）。
 - 目前階段：Phase 1（1 mm 切割物理）。
   - [ADR 0006 law 4](adr/0006-swept-band-cutting-law-4.md) 已實作（`tlmpm_v4.py`，`3c1f4b4`）：1 mm CUT-01-R strict PASS（72/72 g，切口 1.5 mm）；TRIM-01-R 仍 0%（2 顆被前傾刃推到前方的 chip 粒子維持 code 0，經 34 顆被壓到切面下的凸起底層粒子橋接）。[證據](evidence/phase1/law4_smokes_001.json)
-  - 下一個版本：[ADR 0008 law 5](adr/0008-cutting-law-5-lead-preassignment.md)（前緣 2Δx 內、離 swept surface 超過一格的材料提前依側指派；核心帶仍只在刃口通過後標籤）。
+  - [ADR 0008 law 5](adr/0008-cutting-law-5-lead-preassignment.md) 已實作（`ebd7395`）：1 mm TRIM-01-R 25° 去除 97.4%、`ruler_workcell_v2` 35° 去除 96.9%（分離成功，底材為主體；strict 只剩表面精度項 FAIL，精度另計）；CUT-01-R strict PASS。2 mm CPU 35° 削除仍 FAIL（核心帶被推到刃口前方），保留為 strict xfail。[證據](evidence/phase1/law5_smokes_001.json)
   - Phase 2A 已完成（`15e09b9`）：`blademaster_workcell_v1` 切割板、`SLICE-PUSH-01`、`slice_push`、`demo_evaluation.py`。Renderer 已完成（`73970a3`）。
-- 背景工作：rcs-impl 跑 law 4 的 M1–M9 矩陣（`scripts/run_phase1_matrix.py`，輸出 `artifacts/wp10_claude/phase1_law4/`）；rcs-impl 實作 law 5。
-- 下一步：law 5 CPU 測試＋1 mm TRIM/CUT smoke → law 5 全矩陣 → Phase 2B runtime wiring（切割板物理材質、overview 相機、800 步、multi-cut 評估）→ Native smoke。
+- 背景工作：rcs-impl 跑 law 5 的 M1–M9 全矩陣（`scripts/run_phase1_matrix.py --cutting-law 5`，輸出 `artifacts/wp10_claude/phase1_law5/`）；rcs-impl 做 Phase 2B runtime wiring 與 Native smoke（`artifacts/wp10_claude/phase2/`）。
+- 下一步：law 5 矩陣全部 PASS → rcs-review 審查 Phase 1 → Phase 3 Native 三個 Demo（scripted、physical grasp、law 5、`blademaster_workcell_v1`）。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
 
