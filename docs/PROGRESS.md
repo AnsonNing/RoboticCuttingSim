@@ -51,10 +51,15 @@
   - 修正版 `phaseF_v2`（`dc64f49` 先宣告預測，`4c7aa6e` 證據，[證據](evidence/wp11/phaseF_material_v2_001.json)）**PASS**：握柄壓在右支座正上方的頂面，接觸平均力 0.855 N（預測 0.35–1.6 N），0 標籤、1 塊，刀身接觸 0 步，壓縮 1.65 mm 是剛體位移的 9.4 倍。側推未受約束長條的情形仍未驗證。
   - F3 解析度：正式解析度重現 PASS；2 mm 與 1.5 mm 下 TRIM 去除率掉到 0.82／0.58（底層粒子與刃口太近），接觸力在 dt 減半時約變 2.6 倍。**去除率與接觸力對解析度未收斂**，列為已知限制。宣告的 medium（0.15 ms）因不能整除 20 ms 控制步而 ERROR；另跑的 0.02/133 s 標為非 protocol 補充。
   - F2.11 只報告的 goal 檢查：第 2、3 刀離宣告切面 4.0／4.5 mm（> 2 mm），與先前「長條每刀滑動」現象相同。
+- **Phase E 泛化第一輪（kinematic）完成**（`4b2fe08` 先宣告，`f83181d` 報告，[報告](reports/WP11_PHASE_E_ROUND1.md)，[證據](evidence/wp11/phaseE_round1_001.json)）：41 個 seed 全部預檢可行，**32／41 kinematic TASK_SUCCESS（78%）**，9 個 CUTTING_FAILURE 全部列出，沒有排除。
+  - CUT 6/6、TRIM 6/6、Test A 7/8、Test B 5/5（3／4 刀得 4／5 塊）、Test C 5/5（每個凸起 0.909–1.000）、Test D 3/6、SLICE-PUSH 0/5。
+  - SLICE-PUSH 五個都只差第二刀位置：第一刀後長條滑 1.2 mm，第二刀短 1.00 mm，凍結統計 4.0 mm > 2 mm。live Demo 3 用手腕深度重新定位（ADR 0009）處理這個問題，kinematic 階段沒有相機。
+  - Test A s2（−20° 斜切）位置超界 0.02 mm。Test D s1701 是 `tlmpm_v5` slot 溢位（S = 8 不夠）；s1702／s1704 是目標設計錯誤（sever 之後「底材單一塊」不可能成立），依預先宣告規則仍記為 CUTTING_FAILURE。
+  - 預檢沒有遇到不可行樣本，範圍要放寬才量得到可行性邊界（第二輪）。這輪是 kinematic 理想追蹤，不是 live；GRASP_FAILURE 只在 live 才可能出現。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C5b：`path_v3` 控制器＋`trim_bump_rho10_clear` 目標（削除後把 chip 推離），跑 live attempt 2（`artifacts/wp11/phaseC5/`）；
   - G：policy-ready API、資料收集器、多 episode 可靠性、Tests E/F（`artifacts/wp11/phaseG/`）；
-  - E：泛化第一輪；預檢完成，41 個可行樣本進入 kinematic 佇列（GPU 0，GPU 1 空出後可並用；`artifacts/wp11/phaseE/`）；
+  - E live：第一輪推薦 seed 的 live Native 階段（先宣告再跑，`artifacts/wp11/phaseE/round1_live_001/`），含 Test A／B／C 影片；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。
