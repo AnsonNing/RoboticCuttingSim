@@ -1,0 +1,41 @@
+{
+  "demo": "2",
+  "title": "Demo 2 \u2014 Surface Trimming (TRIM-01-R, 35\u00b0 rake skim)",
+  "run_id": "live_20261029_pathv2_c",
+  "verdict": "PASS",
+  "label": "outcome PASS (above-plane removed 97.9%, substrate 100.0%) | precision 5/8 (FAIL_PRECISION) | controller path_v2",
+  "control_mode": "scripted waypoint controller, Native PhysX/Kit/RTX, physical two-finger grasp",
+  "cutting_law": 5,
+  "runtime_source": "live_isaac_sim",
+  "episode_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_c/demo2/episode_000",
+  "summary": "/home/ningan/RoboticCuttingSim/artifacts/wp10_claude/demos/live_20261029_pathv2_c/demo2/demo_summary.json",
+  "render_dir": "/home/ningan/RoboticCuttingSim/artifacts/wp10_claude/demos/live_20261029_pathv2_c/demo2/render",
+  "published": {
+    "demo.gif": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo2/live_20261029_pathv2_c_demo2.gif",
+      "bytes": 1462849,
+      "sha256": "67eaec290c8387fc43074485bca2218cddf291b02222b15792bcfb8e5ef8107f"
+    },
+    "poster.png": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo2/live_20261029_pathv2_c_demo2_poster.png",
+      "bytes": 620955,
+      "sha256": "47d930942bb7ad186a8c024b68a14e7cd79cc74667ca745b2c82091a5500b225"
+    },
+    "demo.mp4": {
+      "path": "/home/ningan/RoboticCuttingSim/docs/media/demos/demo2/live_20261029_pathv2_c_demo2.mp4",
+      "bytes": 798103,
+      "sha256": "7ea0431ea5d540d32c7260863fbe6141fa6c416bd9378533b9770784cc24e20f"
+    }
+  },
+  "skipped": {},
+  "episode_sha256": {
+    "result.json": "99df42f7c4ee30533e1fe85a24aea7e8c6878d8909eabe5c96cd6aa313c6e3f9",
+    "physics_state.npz": "a77eb1845a5268740f61cd94a9fe65577a901bf8cd8a3e3fcb1a50332bb8f728",
+    "actions.jsonl": "e926ab1a32930dbc1064f023f6bdc552978871816a95808ebce9c5462cbd8203",
+    "frame_manifest.json": "1e2b39b99c4ec825083eaf8c5fba18e2b5b429799b1202345ea67e1b664928e7",
+    "task.json": "9120a3a395b2eda356ad1288f4d719c50cdc11bb4e063d5657c7f0aba306d1d4",
+    "manifest.json": "fb2597969d50d572eae56f4627ac13b62bb81c0e5333802d35eef2062a3a533c",
+    "robot_state.json": "f84da4fd9fca097490640c26d7e187ebf8b8aff49155e05b6452ddf573404a8e",
+    "robot_state.npz": "31b8e602f4ec8384ebb752354a9870013b4adc4d0b8416431c690a9c735b327f"
+  }
+}
