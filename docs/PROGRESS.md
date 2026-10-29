@@ -9,10 +9,10 @@
 - 第一輪 Native live demo（law 5、v1 腳本控制器、量測刃口回饋；`artifacts/wp10_claude/demos/live_20261029_{a,b}/`）：
   - Demo 1a 完整下切：**PASS**（兩塊 50/50%、撤刀後持續分離、夾持未失、凍結 strict PASS，切口 1.5 mm）。
   - Demo 1b 20° 斜切：**PASS**（swept-plane 準則；凍結切口位置對斜面不適用，照實 FAIL）。
-  - Demo 2 削除凸起：**FAIL**（去除 64.2%；原因是 v1 控制器：start 點過衝後在上升中被判定到達，削切直線朝 84 mm 外終點，刃口高約 1.2 mm）。改用 path_v2 控制器重跑。
+  - Demo 2 削除凸起：v1 控制器 **FAIL**（去除 64.2%；start 點過衝後在上升中被判定到達、削切直線朝 84 mm 外終點，刃口高約 1.2 mm）。**path_v2 控制器重跑 PASS**（`live_20261029_pathv2_c`：去除 97.9%、底材 100%、削切中實測刃口 z 70.18–70.23 mm；精度 5/8 另計）。
   - Demo 3 兩刀三塊＋推開：三塊、推開 19.3 mm、其他塊不動、推動時無新標籤＝計畫 §4 條件成立；v3 宣告切面位置 FAIL（2.0000000670 mm 對 2 mm，第一刀把長條推開 ±2.4 mm 造成；量化在 1 mm 粒子層）。
-- 背景工作：rcs-impl 實作 path_v2 腳本控制器（cross-track 路徑追蹤＋切前慢速接近與停留）；rcs-review 審查 Phase 1。
-- 待決定（自行判斷中）：是否以 law 6（前緣預指派不得在參考節點上造成兩側欄位）修正 law 5 在變形材料中的前方部分解耦。
+- Phase 1 審查（rcs-review）：ACCEPT WITH CONDITIONS；M8 改標為「ADR 0006 拓撲文字 PASS、runner M8b 準則 FAIL」。Demo 3 依 [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) 改用 `path_v2_vision`（第一刀後以手腕 D405 深度量測長條位移，修正第二刀位置；不用 oracle）。
+- 背景工作：rcs-impl 實作 `path_v2_vision`；Demo 1a/1b 以 path_v2 重跑（`live_20261029_pathv2_d`，GPU 1）。
 - 下一步：檢查四個 demo 的 summary 與影片 → 失敗就診斷、保留、修正後重跑 → rcs-review 審查 demo → README／報告整理 → 合併 main → DONE。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
