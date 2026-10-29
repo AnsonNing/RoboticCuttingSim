@@ -205,9 +205,13 @@ def test_isaac_stage_reset_is_opt_in_and_validated():
     from robotic_cutting_sim.isaac_sim_runner import STAGE_RESET_MODES, IsaacSimCuttingConfig
     assert IsaacSimCuttingConfig().stage_reset == "reopen"
     assert STAGE_RESET_MODES == ("reopen", "reload_in_place")
-    assert IsaacSimCuttingConfig(stage_reset="reload_in_place").stage_reset == "reload_in_place"
+    assert IsaacSimCuttingConfig(stage_reset="reload_in_place",
+                                 tool_attachment_mode="physical_grasp").stage_reset == "reload_in_place"
     with pytest.raises(ValueError, match="stage_reset"):
         IsaacSimCuttingConfig(stage_reset="recycle")
+    for bad in (dict(camera=False, tool_attachment_mode="physical_grasp"), dict()):   # validated with cameras + grasp only
+        with pytest.raises(ValueError, match="requires camera=True"):
+            IsaacSimCuttingConfig(stage_reset="reload_in_place", **bad)
 
 
 def test_renew_stage_layers_equals_a_fresh_open(tmp_path):

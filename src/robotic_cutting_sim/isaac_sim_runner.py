@@ -146,6 +146,10 @@ class IsaacSimCuttingConfig:
             raise ValueError('A tool hand offset requires an explicit tool_profile_id')
         if self.stage_reset not in STAGE_RESET_MODES:
             raise ValueError(f"stage_reset must be one of {STAGE_RESET_MODES}")
+        if self.stage_reset == "reload_in_place" and not (self.camera and self.tool_attachment_mode == "physical_grasp"):
+            # Validated only with live cameras and the physical grasp (WP-11 Phase H1): with camera=False the
+            # second reset segfaults inside PhysX start_simulation in Isaac Sim 6.2 (3 of 3 probes).
+            raise ValueError("stage_reset='reload_in_place' requires camera=True and physical_grasp")
         if self.cutting_law not in (None, 1, 2, 3, 4, 5, 6, 7, 8):
             raise ValueError('cutting_law is None or 1-8')
         if self.action_mode not in ("cartesian", "joint"):
@@ -673,7 +677,6 @@ class LiveIsaacSimCutting:
         session layer (every reset edit is authored there), reloads the root layer and any other dirty
         file layer from disk, and replays the SimulationManager stage-opened reset. reset() then authors
         the episode exactly as after open_stage."""
-        import omni.physx
         from isaacsim.core.simulation_manager import SimulationManager
         stage = context.get_stage()
         if Path(stage.GetRootLayer().realPath).resolve() != Path(source).resolve():
@@ -683,17 +686,24 @@ class LiveIsaacSimCutting:
                      "bridge", "surface", "material", "grasp_monitor"):   # tool_contacts: closed at the top of reset
             if getattr(self, name, None) is not None:
                 setattr(self, name, None)
+        import gc
+        gc.collect()   # finalize the old tensor views / prim wrappers while their physics objects still exist
         SimulationManager.invalidate_physics()
-        omni.physx.get_physx_interface().release_physics_objects()
+        # The interface SimulationManager started the simulation with (force_load + start_simulation):
+        # reset (releases every physics object), then detach/attach as a stage close/open does.
+        stage_update = SimulationManager._physics_stage_update_interface
+        stage_update.reset_simulation()
+        stage_update.on_detach()
         layers = renew_stage_layers(stage)
+        stage_update.on_attach(context.get_stage_id())
         SimulationManager._on_stage_opened(None)  # the same simulation-manager reset an OPENED event runs
         import omni.kit.undo
         omni.kit.undo.clear_stack()   # open_stage starts a new undo history; so does this reset
         omni.kit.undo.clear_history()
         return {"mode": "reload_in_place", "source": str(source), "reset_index": self.reset_index,
                 "released": released, **layers,
-                "note": "The Kit simulation clock is not reset (no API); native_time_origin_s grows per reset and "
-                        "time-difference diagnostics (grasp settle speeds) differ from reset 0 at ~1e-16 relative"}
+                "note": "PhysX reset/detach/attach restarts the simulation clock (native_time_origin_s repeats); "
+                        "the native physics step counter keeps counting (native_step_origin grows)"}
 
     def plan_return_home(self, q_start):
         """Preflighted return-to-home joint plan from measured joints (separate .venv process; nothing moves)."""
