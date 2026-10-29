@@ -1,0 +1,220 @@
+{
+  "schema": "rcs_generalization_round_v1",
+  "round_id": "wp11_phaseE_round1",
+  "status": "PREDECLARED",
+  "declared": "2026-10-30, WP-11 Phase E round 1. Committed before any sample of this round was built, preflighted or run. Families, seeds, ranges, index rules, goals, duration/solver/history rules, outcome-class definitions and reporting rules are frozen for this round; any change is a new round file. Physics, cutting laws, evaluators and v1-v4 thresholds are not touched.",
+  "scope": "Seeded generalization over the WP-11 all-task workcell (wp11_workcell_v1, ruler_knife_v2_y, ADR 0013/0015). Stage 1 is a geometric motion preflight for every sample; stage 2 is kinematic ideal-tracking material physics for every preflight-feasible sample. Stage-2 verdicts are KINEMATIC (runtime_source = kinematic_ideal_tracking): they say nothing about grasp, slip, robot dynamics, controller tracking or cameras and are never live results. Live runs of nominated seeds are a later, separate step.",
+  "common": {
+    "workcell": {"from_scenario": "wp11_workcell_v1"},
+    "world_z_m": 0.10,
+    "tool": {"profile_id": "ruler_knife_v2_y", "grasp_preset": "default"},
+    "material_profile": "cutting_tasks_v1",
+    "solver": {
+      "cutting_law": 8,
+      "particle_spacing_m": 0.001,
+      "grid_dx_m": 0.004,
+      "module_rule": "tlmpm_v4 with max_cuts = max(1, digits) when the planned goal uses <= 2 cut digits; tlmpm_v5 with max_cuts = digits otherwise (ADR 0014). digits = goal_planner digits_used."
+    },
+    "material_dt_s": 0.0001,
+    "control_dt_s": 0.02,
+    "material_seed": 42,
+    "device": "cuda:0",
+    "planner": {"controller_profile": "path_v2", "cut_extent": "plane_section"},
+    "planner_scope": "goal_planner_v1 defaults plus controller_profile path_v2, the opt-in cut_extent = plane_section (a through-cut spans the cut plane's section of the workpiece bounding box along its advance and ends overtravel_m = 4 mm past it; the v1 rule spans the whole box, which for a 20 deg oblique advance on a 130-170 mm bar ends 20-30 mm below the bar, outside the wp11 action workspace z >= -12 mm; identical for vertical advances) and the per-sample rake/skew/skim direction stated below; HOME = FK(q_home of wp11_workcell_v1) composed with the v2_y hand_from_edge; every plan is HOME -> operations -> RETURN_HOME.",
+    "duration_rule": {
+      "probe_duration_s": 120.0,
+      "settle_after_plan_s": 1.0,
+      "round_up_to_s": 0.5,
+      "text": "Compile once with a 120 s probe episode; the plan end is the first DONE knot of the ideal-integrator reference schedule; the episode duration is ceil((plan end + 1.0 s) / 0.5 s) * 0.5 s; compile again with that duration."
+    },
+    "dimension_rule": {
+      "length_step_m": 0.002,
+      "width_step_m": 0.002,
+      "height_step_m": 0.001,
+      "text": "Drawn base dimensions are rounded to the nearest even millimetre (length, width) and whole millimetre (height); the raw draw and the applied value are both recorded. Even-millimetre lengths keep the 1 mm particle lattice symmetric about every solver node plane (particle centres at half millimetres), and a whole-millimetre height puts the trim plane between particle layers (centres at H -/+ 0.5 mm), so the edge at H + 0.2 mm passes above the last base layer and below the first protrusion layer."
+    },
+    "cut_plane_rule": {
+      "text": "Vertical (grid-aligned) sever planes are snapped to the nearest solver node plane, i.e. local x a multiple of grid_dx_m = 4 mm (tlmpm_v4/v5 grid origin = floor(min/dx) dx - 2 dx, so nodes lie at multiples of dx in the workpiece frame); oblique planes are not snapped. Reason (measured before this round on non-declared development cases, synthetic ideal plane labels on the real 4 mm solver stencil, no physics): the frozen 2 mm midpoint statistic that goals.py applies to grid-aligned planes scores an IDEAL geometric cut 1.5 mm on a node plane of a symmetric lattice, 1.6-1.9 mm on a node plane of an asymmetric lattice, and 2.0-3.5 mm between node planes, so off-node planes would fail the frozen location bound by discretization alone. The bound itself is unchanged. Test B divide planes are not snapped (location is quality only for divide)."
+    },
+    "support_rule": {
+      "thickness_m": 0.01,
+      "x_margin_m": 0.01,
+      "y_margin_m": 0.006,
+      "slot_centre_depth_m": 0.006,
+      "text": "Board (wp11_workcell_v1 cutting_board_v1 semantics: board + riser to the table) with x range [-(L/2 + 10 mm), L/2 + 10 mm] and support half width W/2 + 6 mm, 10 mm thick. A through-cut gets a relief slot centred where its plane meets local z = -6 mm (vertical planes: at the plane x), of the family's declared width. Without cuts the board is solid."
+    },
+    "sever_rule": {
+      "minimum_part_fraction_of_smallest_nominal": 0.5,
+      "minimum_main_parts_mass_fraction": 0.99,
+      "plane_error_bound_m": 0.002,
+      "text": "sever goals: expected pieces = planes + 1; minimum_part_mass_fraction = 0.5 x the smallest nominal piece length fraction (plane x positions, mid-height for oblique planes), so off-centre cuts still require every expected piece; main pieces >= 99% of the mass; location by the goals.py rules (frozen 2 mm statistic for grid-aligned planes, ADR 0006 Amendment 1 swept-plane rule otherwise). divide goals keep the goals.py default 0.5/N."
+    },
+    "remove_rule": {
+      "edge_clearance_m": 0.0002,
+      "minimum_removed_fraction": 0.9,
+      "minimum_substrate_share": 0.99,
+      "maximum_detached_below_fraction": 0.01,
+      "text": "remove_protrusions goals use the ADR 0015 defaults; minimum_unselected_retained_fraction keeps its goals.py default 0.9."
+    },
+    "history": {
+      "target_frames": 40,
+      "minimum_stride": 5,
+      "stored_dtype": "positions and velocities stored as float32 in physics_state.npz (evaluation runs in-process on the float64 history); codes int32; the last control step is always recorded",
+      "text": "history_stride = max(5, ceil(control steps / 40)); aim <= 150 MB per run"
+    },
+    "rng": "numpy.random.default_rng([salt, seed]).uniform(low, high) for each declared draw in order (all draws are always made)"
+  },
+  "families": {
+    "CUT": {
+      "kind": "core",
+      "description": "single through-cut, randomized bar and pose, cut location, vertical or 20 deg oblique",
+      "builder": "cut",
+      "salt": 1,
+      "seeds": [1101, 1102, 1103, 1104, 1105, 1106],
+      "draws": [
+        ["length_m", 0.13, 0.17], ["width_m", 0.026, 0.034], ["height_m", 0.016, 0.024],
+        ["x_m", -0.02, 0.02], ["y_m", -0.02, 0.02], ["yaw_deg", -20.0, 20.0],
+        ["cut_fraction", -0.2, 0.2]
+      ],
+      "index_rules": {"cut_angle_deg": [0.0, 20.0]},
+      "rules_text": "cut x = cut_fraction * L (local; vertical planes snapped by cut_plane_rule); cut angle by seed index (even 0 deg, odd 20 deg, normal +x turned about local +y, C2 OBLIQUE frame, edge line +y); oblique plane through (x, 0, H/2); relief slot 30 mm wide.",
+      "slot_width_m": 0.03,
+      "goal": "sever (sever_rule)"
+    },
+    "TRIM": {
+      "kind": "core",
+      "description": "one protrusion of a randomized family/size/position, near-horizontal surface_trim at 10 or 25 deg rake",
+      "builder": "trim",
+      "salt": 2,
+      "seeds": [1201, 1202, 1203, 1204, 1205, 1206],
+      "draws": [
+        ["length_m", 0.13, 0.17], ["width_m", 0.028, 0.034], ["height_m", 0.016, 0.024],
+        ["x_m", -0.02, 0.02], ["y_m", -0.02, 0.02], ["yaw_deg", -20.0, 20.0],
+        ["bump_x_fraction", -0.25, 0.25], ["bump_y_m", -0.002, 0.002],
+        ["bump_radius_x_m", 0.009, 0.013], ["bump_radius_y_m", 0.009, 0.0115], ["bump_height_m", 0.005, 0.009]
+      ],
+      "index_rules": {"protrusion_family": ["dome", "gaussian", "ellipsoid_cap"], "rake_deg": [10.0, 25.0]},
+      "rules_text": "protrusion p0 at (bump_x_fraction * L, bump_y), part of the one continuous heightfield; family = families[index % 3]; rake = rakes[(index // 3) % 2] (every family at both rakes); skim along local +x; solid board.",
+      "goal": "remove_protrusions select all (remove_rule)"
+    },
+    "SLICE_PUSH": {
+      "kind": "core",
+      "description": "two through-cuts at randomized locations, then a cut-disabled blade-face push of the +x piece",
+      "builder": "slice_push",
+      "salt": 3,
+      "seeds": [1301, 1302, 1303, 1304, 1305],
+      "draws": [
+        ["length_m", 0.15, 0.17], ["width_m", 0.026, 0.034], ["height_m", 0.016, 0.022],
+        ["x_m", -0.02, 0.02], ["y_m", -0.02, 0.02], ["yaw_deg", -20.0, 20.0],
+        ["slice_left_offset_m", 0.024, 0.036], ["slice_right_offset_m", 0.024, 0.036]
+      ],
+      "rules_text": "cuts at local x = -slice_left_offset and +slice_right_offset (vertical, snapped by cut_plane_rule), 8 mm relief slots under both (SLICE-PUSH-01 board semantics); then move_piece of the +x piece along +x. The ADR 0009 wrist-depth relocation (path_v2_vision) is a live-only feature and is NOT exercised in this kinematic round.",
+      "slot_width_m": 0.008,
+      "push": {"distance_m": 0.02, "minimum_displacement_m": 0.01, "maximum_other_displacement_m": 0.002,
+               "minimum_piece_mass_fraction": 0.05, "minimum_selector_share": 0.5, "push_edge_height_m": 0.003,
+               "push_speed_m_s": 0.01},
+      "goal": "sequence: sever (two planes, sever_rule) then move_piece (goals.py defaults, as slice_then_push)"
+    },
+    "TEST_A": {
+      "kind": "supplement",
+      "description": "one fixed workpiece, several knife orientations and cutting directions",
+      "builder": "fixed_workpiece",
+      "salt": 11,
+      "seeds": [0, 1, 2, 3, 4, 5, 6, 7],
+      "seed_semantics": "Test A seeds index the predeclared orientation/direction set below (no RNG); the workpiece and pose are fixed.",
+      "workpiece": {
+        "length_m": 0.16, "width_m": 0.03, "height_m": 0.02,
+        "protrusions": [{"id": "p0", "family": "dome", "x_m": 0.045, "y_m": 0.0, "radius_x_m": 0.012, "radius_y_m": 0.012, "height_m": 0.008}],
+        "cut_x_m": -0.032,
+        "relief_slot": {"x_m": -0.032, "width_m": 0.036}
+      },
+      "variants": [
+        {"op": "sever", "cut_angle_deg": 0.0, "text": "Vertical through-cut at local x = -32 mm (advance -z, edge line +y)."},
+        {"op": "sever", "cut_angle_deg": 20.0, "text": "20 deg oblique through-cut at x = -32 mm (normal turned +20 deg about local y)."},
+        {"op": "sever", "cut_angle_deg": -20.0, "text": "20 deg oblique through-cut at x = -32 mm, opposite inclination (normal turned -20 deg about local y)."},
+        {"op": "sever", "cut_angle_deg": 0.0, "approach_local": [0.0, -0.25881904510252074, -0.9659258262890683], "text": "Vertical plane at x = -32 mm cut with the advance tilted 15 deg toward -y inside the plane (edge line tilted 15 deg, slanted chop)."},
+        {"op": "trim", "rake_deg": 10.0, "text": "Remove the dome with a skim along +x at rake 10 deg."},
+        {"op": "trim", "rake_deg": 25.0, "text": "Remove the dome with a skim along +x at rake 25 deg."},
+        {"op": "trim", "rake_deg": 10.0, "skim_direction_local": [-1.0, 0.0, 0.0], "text": "Remove the dome with a skim along -x at rake 10 deg (edge line -y)."},
+        {"op": "trim", "rake_deg": 10.0, "skew_deg": 20.0, "text": "Remove the dome with a skim along +x at rake 10 deg and edge skew 20 deg."}
+      ],
+      "goal": "sever (sever_rule) or remove_protrusions select all (remove_rule)"
+    },
+    "TEST_B": {
+      "kind": "supplement",
+      "description": "three or four sequential slices in one episode on tlmpm_v5",
+      "builder": "multi_slice",
+      "salt": 12,
+      "seeds": [1501, 1502, 1503, 1504, 1505],
+      "draws": [
+        ["length_m", 0.15, 0.17], ["width_m", 0.026, 0.034], ["height_m", 0.016, 0.022],
+        ["x_m", -0.02, 0.02], ["y_m", -0.02, 0.02], ["yaw_deg", -20.0, 20.0],
+        ["position_jitter_0_m", -0.003, 0.003], ["position_jitter_1_m", -0.003, 0.003],
+        ["position_jitter_2_m", -0.003, 0.003], ["position_jitter_3_m", -0.003, 0.003]
+      ],
+      "index_rules": {"slices": [3, 4]},
+      "rules_text": "K slices by seed index (3, 4, 3, 4, 3); cut i at -L/2 + L (i + 1)/(K + 1) + jitter_i; 8 mm relief slot under each cut; divide goal with K + 1 pieces (goals.py default minimum part 0.5/N); one digit per cut, tlmpm_v5 (K >= 3).",
+      "slot_width_m": 0.008,
+      "goal": "divide (K + 1 pieces at the declared positions)"
+    },
+    "TEST_C": {
+      "kind": "supplement",
+      "description": "three protrusions at different positions removed one at a time on tlmpm_v5",
+      "builder": "three_protrusions",
+      "salt": 13,
+      "seeds": [1601, 1602, 1603, 1604, 1605],
+      "draws": [
+        ["length_m", 0.15, 0.17], ["width_m", 0.028, 0.034], ["height_m", 0.016, 0.022],
+        ["x_m", -0.02, 0.02], ["y_m", -0.02, 0.02], ["yaw_deg", -20.0, 20.0],
+        ["p0_x_jitter_m", -0.004, 0.004], ["p0_y_m", -0.002, 0.002], ["p0_radius_x_m", 0.009, 0.012], ["p0_radius_y_m", 0.009, 0.0115], ["p0_height_m", 0.005, 0.009],
+        ["p1_x_jitter_m", -0.004, 0.004], ["p1_y_m", -0.002, 0.002], ["p1_radius_x_m", 0.009, 0.012], ["p1_radius_y_m", 0.009, 0.0115], ["p1_height_m", 0.005, 0.009],
+        ["p2_x_jitter_m", -0.004, 0.004], ["p2_y_m", -0.002, 0.002], ["p2_radius_x_m", 0.009, 0.012], ["p2_radius_y_m", 0.009, 0.0115], ["p2_height_m", 0.005, 0.009]
+      ],
+      "protrusion_x_fractions": [-0.3125, 0.0, 0.3125],
+      "index_rules": {"protrusion_family_cycle": ["dome", "gaussian", "ellipsoid_cap"]},
+      "rake_deg": 10.0,
+      "rules_text": "p_i at (fraction_i * L + jitter_i, y_i); family of p_i = cycle[(index + i) % 3]; one surface_trim pass and one digit per protrusion in +x order at rake 10 deg (ADR 0013 decision); solid board; scored per protrusion with substrate integrity.",
+      "goal": "remove_protrusions select all (remove_rule)"
+    },
+    "TEST_D": {
+      "kind": "supplement",
+      "description": "seeded random scenes (pose, dimensions, protrusion layout) with randomly drawn goals",
+      "builder": "random_mixed",
+      "salt": 14,
+      "seeds": [1701, 1702, 1703, 1704, 1705, 1706],
+      "draws": [
+        ["length_m", 0.14, 0.17], ["width_m", 0.028, 0.034], ["height_m", 0.016, 0.022],
+        ["x_m", -0.02, 0.02], ["y_m", -0.02, 0.02], ["yaw_deg", -20.0, 20.0],
+        ["cut_fraction", -0.3, -0.15],
+        ["p0_x_fraction", 0.02, 0.12], ["p0_y_m", -0.002, 0.002], ["p0_radius_m", 0.008, 0.011], ["p0_height_m", 0.005, 0.009],
+        ["p1_x_fraction", 0.25, 0.32], ["p1_y_m", -0.002, 0.002], ["p1_radius_m", 0.008, 0.011], ["p1_height_m", 0.005, 0.009]
+      ],
+      "goal_kinds": ["sever", "remove_all", "remove_selected", "sever_then_remove_all"],
+      "max_protrusions": 2,
+      "protrusion_families": ["dome", "gaussian", "ellipsoid_cap"],
+      "cut_angles_deg": [0.0, 20.0],
+      "rakes_deg": [10.0, 25.0],
+      "rules_text": "After the uniform draws, rng.integers draws (in order) the goal kind, the protrusion count (1 or 2), each protrusion family, the cut angle, the rake and the selected protrusion. Protrusion i (round, radius_x = radius_y) at (p_i_x_fraction * L, p_i_y); a relief slot (30 mm) under the cut plane at cut_fraction * L (vertical planes snapped by cut_plane_rule) is always present, whatever the goal; remove_selected keeps the other protrusion (>= 90% retained).",
+      "slot_width_m": 0.03,
+      "goal": "drawn: sever | remove_protrusions all | remove_protrusions one selected | sequence sever then remove all"
+    }
+  },
+  "outcome_classes": {
+    "SCENE_INFEASIBLE": "Stage 1. The scene or plan cannot exist in the workcell: rcs_scene_v1 validation fails (SceneInfeasible / SceneConfigError, e.g. protrusion outside the base), the goal planner or compile_task fails (no plan, digits beyond the solver limit, plan longer than the 120 s probe), or the motion preflight's IK reaches every sample but a C2 collision/clearance check fails (robot links, fingers, handle, wrist D405s, D455, blade vs board/riser/table, blade vs workpiece outside contact-allowed phases, Franka 1, self-collision).",
+    "IK_FAILURE": "Stage 1. Newton IK from the wp11 q_home, chained along the dense plan (<= 2 mm, <= 1 deg per sample), misses a sample beyond the C2 tolerance (1 mm / 0.01 rad free, 0.2 mm / 0.002 rad armed), or the joint path fails only joint_limit_margin (< 0.05 rad) and/or joint_continuity (> 0.06 rad per sample, branch jump). When collision checks also fail the sample is SCENE_INFEASIBLE.",
+    "GRASP_FAILURE": "Live only: the physical two-finger grasp is lost or slips beyond the grasp-monitor gates. The kinematic stage has no gripper (ideal edge tracking), so this class is NOT EXERCISED in round 1 and is never assigned; it is reported as 0 with that scope.",
+    "CUTTING_FAILURE": "Stage 2, preflight-feasible sample: the kinematic episode ran and the goal evaluator verdict is FAIL or FAIL_INTEGRITY, or the solver state became invalid (non-finite state, tlmpm_v5 slot overflow), or the scripted plan did not finish in the episode.",
+    "TASK_SUCCESS": "Stage 2, preflight-feasible sample: the goal evaluator verdict is PASS on the kinematic ideal-tracking episode. Always reported as kinematic task success, never as live success.",
+    "NOT_RUN": "A preflight-feasible sample whose stage-2 episode did not produce a result (process error, timeout, resource wait not resolved). Kept in every denominator as a non-success, with its reason."
+  },
+  "stages": {
+    "stage1": "For every sample: build scene + goal by the rules, compile (solver + duration rules), motion_preflight.preflight_plan over the full compiled schedule from q_home (HOME -> ... -> RETURN_HOME) with the held ruler_knife_v2_y, classify. Informational only (never changes the class): the Phase D physical return-to-home plan (episode_lifecycle via motion_preflight.plan_return_home_for_task) from the joint state at the end of the last task phase.",
+    "stage1_geometry": "Blade/robot vs workpiece in stage 1 uses the declared (uncut) workpiece (motion_preflight.preflight_plan unchanged) when the scene has at most one protrusion. For scenes with two or more protrusions, generalization.staged_preflight checks the same dense IK chain in contiguous chunks, each against the declared workpiece without the protrusions already removed by earlier remove operations of the plan (their detached chips are loose material that only the physics stage models; the C2 model's single convex hull over all protrusions would otherwise bridge the gaps between them); remaining protrusions keep the C2 hull; joint continuity is checked over the whole chain.",
+    "stage2": "For every stage-1 feasible sample: make_configured_kinematic_env on cuda:0 (formal 1 mm particles, 4 mm grid, 0.1 ms material dt, law 8, material seed 42), the goal planner's WaypointPolicy with the compile action limits, env.evaluate() = goals.evaluate_goal; classify. At most 2 concurrent stage-2 jobs, launched only when at most 2 other active jobs run on GPU 0 (active = a compute process on GPU 0 not started by this round that belongs to a RoboticCuttingSim runtime or shows nonzero SM utilization in a 3-sample nvidia-smi pmon window). Run from a clean detached worktree of the committed HEAD (git_dirty = False). Outputs artifacts/wp11/phaseE/, logs artifacts/wp11/logs/phaseE_*."
+  },
+  "reporting": {
+    "per_family": ["samples", "class counts", "preflight-feasible fraction", "kinematic task success among feasible", "overall kinematic success", "NOT_RUN count"],
+    "metrics": ["cut completion", "separation", "cut position error", "overcut (debris / detached below-plane mass)", "runtime per episode (wall s)"],
+    "rules": "Every sample of every family is reported, with its class and reason; nothing is excluded or re-drawn; failures are preserved. Representative success and failure seeds are nominated for a later live stage; no live run is part of round 1."
+  }
+}

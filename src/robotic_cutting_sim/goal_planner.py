@@ -66,13 +66,21 @@ DEFAULT_OPTIONS = {
     "max_translation_m": .002,      # ActionLimits used for the reference schedule
     "max_rotation_deg": 2.,
 }
+# Opt-in options (WP-11 Phase E): accepted when declared, absent otherwise, so plans, controller
+# configs and compiled ids of goals that do not declare them are unchanged.
+OPT_IN_OPTIONS = {
+    # "bbox" (the v1 rule, used when absent): a through-cut spans the whole workpiece bounding box along
+    # the advance. "plane_section": it spans only the cut plane's section of that box, so an inclined
+    # advance (oblique plane) ends overtravel_m past the section instead of past the far box corner.
+    "cut_extent": ("bbox", "plane_section"),
+}
 
 
 def planner_options(goal, overrides=None):
     """Defaults <- goal["planner"] <- overrides, validated (unknown keys are errors)."""
     merged = dict(DEFAULT_OPTIONS)
     for source in (goal.get("planner") or {}, overrides or {}):
-        unknown = set(source)-set(DEFAULT_OPTIONS)
+        unknown = set(source)-set(DEFAULT_OPTIONS)-set(OPT_IN_OPTIONS)
         if unknown:
             from .scene_config import SceneConfigError
             raise SceneConfigError(f"Unknown planner options {sorted(unknown)}")
@@ -83,6 +91,10 @@ def planner_options(goal, overrides=None):
     if merged["protrusion_order"] not in ("along_skim", "goal"):
         from .scene_config import SceneConfigError
         raise SceneConfigError("planner protrusion_order must be along_skim or goal")
+    for key, allowed in OPT_IN_OPTIONS.items():
+        if key in merged and merged[key] not in allowed:
+            from .scene_config import SceneConfigError
+            raise SceneConfigError(f"planner {key} must be one of {allowed}")
     return merged
 
 
@@ -251,6 +263,25 @@ def _home(scene, options, tool_profile=None):
     return position, rotation
 
 
+def _plane_section(corners, q, n):
+    """Points where the plane (q, n) crosses the 12 edges of the box given by its 8 corners (None if it misses)."""
+    signed = (corners-q)@n
+    points = []
+    for i in range(8):
+        for bit in (1, 2, 4):
+            j = i | bit
+            if j == i:
+                continue
+            a, b = signed[i], signed[j]
+            if a == b:
+                if a == 0:
+                    points += [corners[i], corners[j]]
+                continue
+            if min(a, b) <= 0 <= max(a, b):
+                points.append(corners[i]+(corners[j]-corners[i])*a/(a-b))
+    return np.asarray(points) if points else None
+
+
 def _through_cut(scene, origin, normal, approach, digit, profile, options, frame):
     rotation = through_cut_rotation(normal, approach)
     R = rotation.as_matrix()
@@ -258,7 +289,9 @@ def _through_cut(scene, origin, normal, approach, digit, profile, options, frame
     base = scene["workpiece"]["base_box_m"]
     centre = np.array([0., 0., base["height_m"]/2])
     q = centre-((centre-origin)@n)*n
-    t = (_bbox_corners(scene)-q)@a
+    corners = _bbox_corners(scene)
+    section = _plane_section(corners, q, n) if options.get("cut_extent", "bbox") == "plane_section" else None
+    t = ((corners if section is None else section)-q)@a
     start = q+a*(t.min()-options["cut_clearance_m"])
     t_end, on_support = _relief_end(scene, start, a, e, (t.max()-t.min())+options["cut_clearance_m"]+options["overtravel_m"], profile)
     end = start+a*t_end
@@ -274,6 +307,8 @@ def _through_cut(scene, origin, normal, approach, digit, profile, options, frame
     report = {"op": op, "kind": "through_cut", "digit": digit, "plane_origin_local_m": list(map(float, origin)),
               "plane_normal_local": list(map(float, n)), "advance_local": a.tolist(), "edge_line_local": e.tolist(),
               "start_local_m": start.tolist(), "end_local_m": end.tolist(), "end_on_support": bool(on_support)}
+    if "cut_extent" in options:
+        report["cut_extent"] = options["cut_extent"] if section is not None or options["cut_extent"] == "bbox" else "bbox_fallback"
     return plan, report
 
 
