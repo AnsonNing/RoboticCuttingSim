@@ -78,8 +78,13 @@
   - Live attempt 002 PASS：凸起去除 97.89%、底材 0.99996、chip 被推 109 mm 掉到桌上、之後一直是 2 個 component；PRE-CUT 刀身最低點 +0.076 mm（C5 是 −0.167 mm），間隙稽核與路徑檢查都 PASS；夾持滑移 0.78 µm；Return-to-Home PASS。
   - Attempt 001 因另一個使用者的 24 GB 訓練工作佔滿 GPU 1 而 CUDA OOM（切削前），保留為 FAIL_EXECUTION。
   - 未解：SKIM 開始與結束時側向 y 偏差 −0.27／+0.14 mm（切到凸起期間 ≤ 0.024 mm）；SKIM 時刀身離頂面只有 0.013 mm。
+- **Phase H 完成**（`a5b05b8`…`9e84133`，[報告](reports/WP11_PHASE_H_PROFILING.md)，[證據](evidence/wp11/phaseH_profiling_001.json)）。
+  - 記憶體：每次 reset 的 host RSS 增長幾乎都來自 Kit 的 `open_stage`（Python heap 只 +0.04 MiB）。新增 opt-in `stage_reset="reload_in_place"`（保留 stage，重載 root layer），reset 結果與原本逐位相同；4 episode Test F 的 host 增長 140 → 56.5 MiB/episode（門檻 64，PASS）。
+  - Native 仍 **NOT POLICY_READY**：乾淨 worktree 重跑時 GPU 記憶體 52 MiB/episode（門檻 32），只有 3 個點且先降後升，可能是 allocator 雜訊；門檻不改，需要 ≥ 8 episode 的宣告 run 才能定論。`reload_in_place` 在相機關閉時第二次 reset 會 segfault，因此要求相機開啟。
+  - Profiling：kinematic 1 mm 每步 0.49–0.64 s，TLMPM 佔 99%；其中接觸 kernel 佔 GPU 時間 80%。Native TRIM 每步 0.67 s：TLMPM 58%、相機 12.6%、表面網格 11.8%。
+  - 最佳化：opt-in `surface_update="on_capture"`（顯示網格只在拍照與評估前重建），表面時間 49 → 8.8 ms/步，物理逐位相同。
+  - 設定檔 `runtime_profiles_v1`：`full_physics_v1`（唯一可用於驗收）與 `research_fast_v1`（每個 episode 標 `acceptance_valid: false`；kinematic TRIM 快 8×、SEVER 快 9.6× 但切面位置 FAIL；Native 快 2.3×）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
-  - H：Native reset 記憶體洩漏、profiling、Research Fast／Full Physics 設定檔，並從乾淨 worktree 重跑 Native 可靠性（`artifacts/wp11/phaseH/`）；
   - E live_003：修好顯示網格的小碎片處理與多凸起預檢後，重跑 Test C s1602 live（先宣告）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
