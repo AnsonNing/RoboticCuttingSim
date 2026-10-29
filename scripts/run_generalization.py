@@ -13,9 +13,10 @@ Subcommands (every output directory/file is new; nothing is ever overwritten):
   by the solver rule) with the goal planner's WaypointPolicy, scored by the goal
   evaluator. Writes manifest.json, actions.jsonl, physics_state.npz, result.json.
   Results are KINEMATIC (runtime_source = kinematic_ideal_tracking), never live.
-* ``queue --stage1 DIR --out-root DIR``: runs ``material`` for every stage-1 feasible
-  sample in declared order, at most 2 at a time, and only while at most 2 other
-  active jobs use GPU 0 (see the round file, stages.stage2).
+* ``queue --stage1 DIR --out-root DIR [--devices cuda:0 cuda:1]``: runs ``material`` once for
+  every stage-1 feasible sample in declared order, at most 2 at a time per device, and only
+  while at most 2 other active jobs use that GPU (round file, stages.stage2; cuda:1 added on
+  the coordinator's instruction once GPU 1 was idle). The device is recorded per sample.
 * ``summarize --stage1 DIR --material-root DIR --out FILE``: per-sample classes and
   per-family tables (no exclusion), metrics, runtimes.
 
@@ -179,7 +180,7 @@ def cmd_material(args):
                   'planner_options': options, 'draws': sample['draws'], 'derived': sample['derived']}
     (out/'manifest.json').write_text(json.dumps(jsonable(manifest(run_config, 'kinematic_ideal_tracking')), indent=1))
     run_config['declared_sample'] = sample['declared']
-    result = {'status': 'RUNNING', 'declared_sample': sample['declared'], **{k: run_config[k] for k in ('round_id', 'family', 'seed', 'sample_id', 'task_id',
+    result = {'status': 'RUNNING', 'declared_sample': sample['declared'], 'device': args.device, **{k: run_config[k] for k in ('round_id', 'family', 'seed', 'sample_id', 'task_id',
                                                                     'config_sha256', 'solver_module', 'max_cuts',
                                                                     'history_stride', 'control_steps', 'runtime_source')}}
     start = time.monotonic()
@@ -271,20 +272,20 @@ def cmd_material(args):
 
 # ----------------------------------------------------------------------------- queue
 
-def gpu0_other_jobs(mine):
-    """PIDs of active jobs on GPU 0 not started by this queue (see the round file, stages.stage2)."""
+def gpu_other_jobs(index, mine):
+    """PIDs of active jobs on GPU ``index`` not started by this queue (see the round file, stages.stage2)."""
     query = lambda *a: subprocess.run(['nvidia-smi', *a], capture_output=True, text=True).stdout
-    uuid0 = next((line.split(',')[1].strip() for line in query('--query-gpu=index,uuid', '--format=csv,noheader').splitlines()
-                  if line.split(',')[0].strip() == '0'), None)
+    uuid = next((line.split(',')[1].strip() for line in query('--query-gpu=index,uuid', '--format=csv,noheader').splitlines()
+                 if line.split(',')[0].strip() == str(index)), None)
     pids = [int(line.split(',')[0]) for line in query('--query-compute-apps=pid,gpu_uuid', '--format=csv,noheader').splitlines()
-            if line.strip() and line.split(',')[1].strip() == uuid0]
+            if line.strip() and line.split(',')[1].strip() == uuid]
     active = set()
     for line in query('pmon', '-c', '3', '-s', 'u').splitlines():
         parts = line.split()
-        if len(parts) > 3 and parts[0] == '0' and parts[1].isdigit() and parts[3].isdigit() and int(parts[3]) > 0:
+        if len(parts) > 3 and parts[0] == str(index) and parts[1].isdigit() and parts[3].isdigit() and int(parts[3]) > 0:
             active.add(int(parts[1]))
     others = []
-    for pid in pids:
+    for pid in sorted(set(pids)):
         if pid in mine:
             continue
         try:
@@ -296,7 +297,14 @@ def gpu0_other_jobs(mine):
     return others
 
 
+def gpu0_other_jobs(mine):
+    return gpu_other_jobs(0, mine)
+
+
 def cmd_queue(args):
+    """Each feasible sample runs exactly once, on the first device with a free slot: at most
+    ``--max-concurrent`` of this queue's jobs per device, launched only while at most ``--max-other``
+    other active jobs use that GPU. The device is recorded per sample (queue log, manifest, result)."""
     config = G.load_round(args.config)
     stage1 = json.loads((Path(args.stage1)/'stage1_summary.json').read_text())
     root = Path(args.out_root)
@@ -307,43 +315,54 @@ def cmd_queue(args):
     if args.only:
         keep = set(selected(config, args.only))
         pending = [row for row in pending if (row['family'], row['seed']) in keep]
+    devices = list(args.devices)
     running = {}
     log = open(args.queue_log, 'a')
 
     def note(text):
         log.write(f'{datetime.now().astimezone().isoformat()} {text}\n')
         log.flush()
-    note(f'QUEUE start {len(pending)} feasible samples; max {args.max_concurrent} concurrent; '
-         f'launch when <= {args.max_other} other active GPU-0 jobs; {git_state()}')
+    note(f'QUEUE start {len(pending)} feasible samples; devices {devices}; max {args.max_concurrent} concurrent per device; '
+         f'launch when <= {args.max_other} other active jobs on that GPU; {git_state()}')
     last_wait = None
     while pending or running:
-        for pid, (proc, row, began) in list(running.items()):
+        for pid, (proc, row, began, device) in list(running.items()):
             if proc.poll() is not None:
-                note(f"END {row['sample_id']} rc={proc.returncode} wall={time.monotonic()-began:.0f}s")
+                note(f"END {row['sample_id']} device={device} rc={proc.returncode} wall={time.monotonic()-began:.0f}s")
                 del running[pid]
-        if pending and len(running) < args.max_concurrent:
-            others = gpu0_other_jobs(set(running))
-            if len(others) <= args.max_other:
-                row = pending.pop(0)
-                out = root/row['sample_id']
-                if out.exists():
-                    note(f"SKIP {row['sample_id']} (output exists; preserved, not rerun)")
-                    continue
-                log_path = logs/f"phaseE_{row['sample_id']}_001.log"
-                command = [sys.executable, str(Path(__file__).resolve()), 'material', '--config', str(args.config),
-                           '--family', row['family'], '--seed', str(row['seed']), '--device', args.device,
-                           '--expect-task-id', row['task_id'], '--out', str(out)]
-                proc = subprocess.Popen(command, cwd=str(ROOT), stdout=open(log_path, 'w'), stderr=subprocess.STDOUT,
-                                        env={**os.environ, 'TMPDIR': os.environ.get('TMPDIR', '/mnt/data/ningan/tmp')})
-                running[proc.pid] = (proc, row, time.monotonic())
-                note(f"START {row['sample_id']} pid={proc.pid} others={others} log={log_path}")
-                last_wait = None
-                time.sleep(20)
+        launched, waits = False, {}
+        for device in devices:
+            if not pending:
+                break
+            mine = [pid for pid, entry in running.items() if entry[3] == device]
+            if len(mine) >= args.max_concurrent:
                 continue
-            if last_wait is None or time.monotonic()-last_wait > 600:
-                note(f'WAIT {len(others)} other active GPU-0 jobs {others}; {len(running)} mine running; '
-                     f'{len(pending)} pending')
-                last_wait = time.monotonic()
+            others = gpu_other_jobs(int(device.split(':')[1]), set(running))
+            if len(others) > args.max_other:
+                waits[device] = others
+                continue
+            row = pending.pop(0)
+            out = root/row['sample_id']
+            if out.exists():
+                note(f"SKIP {row['sample_id']} (output exists; preserved, not rerun)")
+                continue
+            log_path = logs/f"phaseE_{row['sample_id']}_001.log"
+            if log_path.exists():
+                log_path = logs/f"phaseE_{row['sample_id']}_{time.strftime('%Y%m%d_%H%M%S')}.log"
+            command = [sys.executable, str(Path(__file__).resolve()), 'material', '--config', str(args.config),
+                       '--family', row['family'], '--seed', str(row['seed']), '--device', device,
+                       '--expect-task-id', row['task_id'], '--out', str(out)]
+            proc = subprocess.Popen(command, cwd=str(ROOT), stdout=open(log_path, 'w'), stderr=subprocess.STDOUT,
+                                    env={**os.environ, 'TMPDIR': os.environ.get('TMPDIR', '/mnt/data/ningan/tmp')})
+            running[proc.pid] = (proc, row, time.monotonic(), device)
+            note(f"START {row['sample_id']} device={device} pid={proc.pid} others={others} log={log_path}")
+            launched, last_wait = True, None
+        if launched:
+            time.sleep(20)
+            continue
+        if waits and (last_wait is None or time.monotonic()-last_wait > 600):
+            note(f'WAIT other active jobs {waits}; {len(running)} mine running; {len(pending)} pending')
+            last_wait = time.monotonic()
         time.sleep(args.poll_s)
     note('QUEUE done')
     return 0
@@ -382,7 +401,7 @@ def cmd_summarize(args):
             row['class'], row['reason'] = G.classify_material(result)
             if result.get('status') == 'COMPLETE':
                 ev = result['evaluation']
-                row['stage2'] = {'verdict': ev.get('verdict'), 'failed_checks': G.failed_checks(ev),
+                row['stage2'] = {'device': result.get('device'), 'verdict': ev.get('verdict'), 'failed_checks': G.failed_checks(ev),
                                  'integrity': ev.get('integrity', {}).get('status'),
                                  'metrics': result['metrics'], 'wall_s': result['wall_s'],
                                  'simulated_s': result['simulated_s'], 'particles': result['particles'],
@@ -426,8 +445,8 @@ def main(argv=None):
     c.add_argument('--out-root', required=True)
     c.add_argument('--log-dir', required=True)
     c.add_argument('--queue-log', required=True)
-    c.add_argument('--device', default='cuda:0')
-    c.add_argument('--max-concurrent', type=int, default=2)
+    c.add_argument('--devices', nargs='+', default=['cuda:0'])
+    c.add_argument('--max-concurrent', type=int, default=2, help='Per device')
     c.add_argument('--max-other', type=int, default=2)
     c.add_argument('--poll-s', type=float, default=60.)
     c.add_argument('--only', nargs='*')
