@@ -324,12 +324,19 @@ def cmd_queue(args):
         log.flush()
     note(f'QUEUE start {len(pending)} feasible samples; devices {devices}; max {args.max_concurrent} concurrent per device; '
          f'launch when <= {args.max_other} other active jobs on that GPU; {git_state()}')
-    last_wait = None
+    last_wait, fast_failures = None, 0
     while pending or running:
         for pid, (proc, row, began, device) in list(running.items()):
             if proc.poll() is not None:
-                note(f"END {row['sample_id']} device={device} rc={proc.returncode} wall={time.monotonic()-began:.0f}s")
+                wall = time.monotonic()-began
+                note(f"END {row['sample_id']} device={device} rc={proc.returncode} wall={wall:.0f}s")
                 del running[pid]
+                fast = proc.returncode != 0 and wall < 60 and not (root/row['sample_id']).exists()
+                fast_failures = fast_failures+1 if fast else 0
+                if fast_failures >= 2:
+                    note(f'ABORT two consecutive launches failed in < 60 s without output; {len(pending)} pending left '
+                         f'unlaunched; {len(running)} still running are left to finish')
+                    pending = []
         launched, waits = False, {}
         for device in devices:
             if not pending:
@@ -349,7 +356,7 @@ def cmd_queue(args):
             log_path = logs/f"phaseE_{row['sample_id']}_001.log"
             if log_path.exists():
                 log_path = logs/f"phaseE_{row['sample_id']}_{time.strftime('%Y%m%d_%H%M%S')}.log"
-            command = [sys.executable, str(Path(__file__).resolve()), 'material', '--config', str(args.config),
+            command = [sys.executable, str(Path(__file__).resolve()), '--config', str(args.config), 'material',
                        '--family', row['family'], '--seed', str(row['seed']), '--device', device,
                        '--expect-task-id', row['task_id'], '--out', str(out)]
             proc = subprocess.Popen(command, cwd=str(ROOT), stdout=open(log_path, 'w'), stderr=subprocess.STDOUT,
