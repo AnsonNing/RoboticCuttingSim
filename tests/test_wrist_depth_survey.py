@@ -24,6 +24,8 @@ from robotic_cutting_sim.task_scenarios import configure_task
 from robotic_cutting_sim.tasks import make_task
 from robotic_cutting_sim.wrist_depth_survey import (BACKGROUND, EXCLUDED, MATERIAL, BarGeometry, SurveyConfig,
                                                     back_project, estimate_shift, select_bar_top, survey_frame)
+from rollout_reference import (check_behaviour, compare_to_reference, ideal_rollout, load_reference, make_case,
+                               rollout_tolerance)
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIO = "blademaster_workcell_v1"
@@ -211,18 +213,14 @@ def test_invalid_measurements_apply_no_shift(calibration):
 # ------------------------------------------------------------------------------------------- profile + plan
 
 PINNED = {  # computed at 9b6df5f (before path_v2_vision) on the blademaster_workcell_v1 tasks
+    # The ".../rollout" digests pinned here before WP-11 Phase A now pin the stored reference trajectory:
+    # tests/rollout_reference.py HISTORIC_ROLLOUT_SHA256["v1|path_v2/<task>"].
     "v1/SLICE-PUSH-01/plan": "277be06fa090a5f2dc2f0f0541215b36f5451de48415988e43b1ba97c17082e6",
-    "v1/SLICE-PUSH-01/rollout": "75b56407f7f1a3911f5ace4c61aa3e5cff82917068b1018ed8abd9195ce4ea2f",
     "v1/TRIM-01-R/plan": "e2c8b79acf519b86f721910a0ec085f7861be3068731d0bc42a0e4c287d3f813",
-    "v1/TRIM-01-R/rollout": "ccefd5e6575e294a141007aaf90579954e9c17a549adc5d80134931619212ecc",
     "v1/CUT-01-R/plan": "8caf708576416a8027f2e6f46b5edc9915223ae0b9b67b546078ba18bc47cfe1",
-    "v1/CUT-01-R/rollout": "7533ec98ba3cbead484af145161ff549b185014eaeb2b482bbdd34cc5c8fc556",
     "path_v2/SLICE-PUSH-01/plan": "d83c42e3724504fed6590af01b56fa8c3778351774db89ab344ec1d3424c72b4",
-    "path_v2/SLICE-PUSH-01/rollout": "6553b64edf19f69af09b62c11ff7fb2dcd6680c1d2baf3840adbf044c17912e9",
     "path_v2/TRIM-01-R/plan": "2b330ca36e0a6e0176b278e811f54624404b66d5925decce6bdb0b7af410f36f",
-    "path_v2/TRIM-01-R/rollout": "bc52ced3464d687c601ece0616f24ede6486b302bb62df53e17039ab58bdf46f",
     "path_v2/CUT-01-R/plan": "a3d47471bd64a34d8b41956ab6e933e005ef25b0e48ceb2ff030151fb90578a2",
-    "path_v2/CUT-01-R/rollout": "937346d624fe116e4eb59549c868666982afb49a57f3a6a92a474596fbf7d34b",
 }
 FIELDS = ("pose", "cut", "saw_amplitude_m", "saw_period_s", "speed_m_s", "cut_index", "hold_s", "label", "track_path")
 
@@ -231,24 +229,32 @@ def _plan_sha(plan):
     return hashlib.sha256(json.dumps([[np.asarray(getattr(w, f)).tolist() for f in FIELDS] for w in plan]).encode()).hexdigest()
 
 
-def _rollout_sha(policy, task, steps=800):
-    edge, actions = np.asarray(policy.waypoints[0].pose, float), []
-    for k in range(steps):
-        action = policy({"proprio": {"tool_pose": edge.copy()}, "timestamp_s": k*task.control_dt_s})
-        actions.append(np.r_[action["target"], float(action["cut_enabled"]), action.get("cut_index", 0)])
-        edge = np.r_[edge[:3]+action["target"][:3],
-                     (Rotation.from_rotvec(action["target"][3:])*Rotation.from_quat(edge[3:])).as_quat()]
-    return hashlib.sha256(np.asarray(actions).tobytes()).hexdigest()
-
-
 @pytest.mark.parametrize("name", ["v1", "path_v2"])
 @pytest.mark.parametrize("task_id,builder", [("SLICE-PUSH-01", slice_push), ("TRIM-01-R", skim), ("CUT-01-R", through_cut)])
 def test_v1_and_path_v2_plans_and_rollouts_are_pinned(name, task_id, builder):
+    """Adding path_v2_vision changed neither the v1/path_v2 plans nor their scripted rollouts.
+
+    Plans stay pinned by hash: they are identical across the BLAS kernels tested (OpenBLAS Prescott,
+    Nehalem, Sandybridge, Haswell, Zen, SkylakeX, Cooperlake) and on the GitHub runner. Rollouts were
+    pinned by the SHA-256 of their raw action bytes until WP-11 Phase A; that digest depends on the BLAS
+    kernel (one-ulp differences in 3-vector dot products, max 8.7e-19 m per action), so it failed on the
+    GitHub runner with identical Python/NumPy/SciPy. The rollout guarantee is now: the stored reference
+    hashes to the original digest, the live rollout matches it (exact cut flags and waypoint sequence,
+    continuous actions within steps*16*eps), and its behaviour (bounds, progress, reach, trajectory error,
+    termination) is checked directly. See tests/rollout_reference.py and docs/reports/WP11_PHASE_A_CI.md.
+    """
     policy_options, plan_options = controller_profile(name)
     task = configure_task(make_task(task_id), scenario=SCENARIO)
     plan = builder(task, **plan_options)
     assert _plan_sha(plan) == PINNED[f"{name}/{task_id}/plan"]
-    assert _rollout_sha(WaypointPolicy(task, plan, **policy_options), task) == PINNED[f"{name}/{task_id}/rollout"]
+    case = f"{name}/{task_id}"
+    reference = load_reference()[case]
+    policy, case_task, start, steps = make_case(case)
+    assert _plan_sha(policy.waypoints) == PINNED[f"{name}/{task_id}/plan"] and np.array_equal(start, plan[0].pose)
+    tol = rollout_tolerance(steps)
+    live = ideal_rollout(policy, case_task, start, steps)
+    compare_to_reference(live, reference, tol)
+    assert check_behaviour(live, policy, case_task, tol) == reference["done_step"]
 
 
 def test_path_v2_vision_profile_extends_path_v2_only():
