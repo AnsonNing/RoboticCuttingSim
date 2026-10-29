@@ -44,7 +44,12 @@ Types and fields (defaults in brackets):
   (planner), ``minimum_displacement_m`` [0.01], ``maximum_other_displacement_m`` [0.002],
   ``minimum_piece_mass_fraction`` [0.05], ``minimum_selector_share`` [0.5],
   ``push_edge_height_m`` [0.003], ``push_speed_m_s`` [0.01]. No label change while
-  disarmed during the move window.
+  disarmed during the move window. Opt-in planner fields (absent unless declared, so
+  goals without them are unchanged): ``push_mode`` "kerf_face" (the default
+  vertical blade-face push in a kerf) | "surface_sweep" (WP-11 C5b: a disarmed,
+  near-horizontal sweep of the base top along ``direction_local`` at
+  ``sweep_height_m`` [0.002] above it, from behind the selector box to
+  ``sweep_overtravel_m`` [0.005] past the base end; ``distance_m`` is not used).
 * ``sequence``: ``steps`` [inline step goals without schema/episode, or {"ref": "file.json"}];
   every step must hold at the end; per-step results are reported.
 
@@ -84,6 +89,10 @@ _TYPE_FIELDS = {
                    "minimum_selector_share": .5, "push_edge_height_m": .003, "push_speed_m_s": .01},
     "sequence": {"steps": None},
 }
+# Opt-in fields: validated and kept only when declared (no defaults are filled in), so the normalized
+# form and compiled task ids of goals that do not declare them are unchanged.
+_OPT_IN_FIELDS = {"move_piece": ("push_mode", "sweep_height_m", "sweep_overtravel_m")}
+PUSH_MODES = ("kerf_face", "surface_sweep")
 _REQUIRED = {"sever": ("planes",), "divide": ("pieces",), "trim_plane": ("plane",),
              "move_piece": ("selector", "direction_local"), "sequence": ("steps",)}
 
@@ -191,6 +200,15 @@ def _validate_fields(goal, kind, where, directory):
         out["direction_local"] = _unit(out["direction_local"], f"{where}.direction_local")
         for key in ("distance_m", "minimum_displacement_m", "maximum_other_displacement_m", "push_edge_height_m", "push_speed_m_s"):
             out[key] = _number(out[key], f"{where}.{key}", positive=True)
+        if "push_mode" in goal:
+            if goal["push_mode"] not in PUSH_MODES:
+                raise _error(f"{where}.push_mode must be one of {PUSH_MODES}")
+            out["push_mode"] = goal["push_mode"]
+        for key in ("sweep_height_m", "sweep_overtravel_m"):
+            if key in goal:
+                if goal.get("push_mode") != "surface_sweep":
+                    raise _error(f"{where}.{key} applies to push_mode surface_sweep only")
+                out[key] = _number(goal[key], f"{where}.{key}", positive=True)
     else:  # sequence
         if not isinstance(out["steps"], list) or not out["steps"]:
             raise _error(f"{where}.steps must be a nonempty list")
@@ -228,7 +246,7 @@ def _validate_step(step, where, directory):
     if not isinstance(step, dict) or step.get("type") not in _STEP_TYPES:
         raise _error(f"{where}.type must be one of {_STEP_TYPES} (sequences do not nest)")
     kind = step["type"]
-    _keys(step, where, ("type",), ("goal_id", "description", *_TYPE_FIELDS[kind]))
+    _keys(step, where, ("type",), ("goal_id", "description", *_TYPE_FIELDS[kind], *_OPT_IN_FIELDS.get(kind, ())))
     out = {"type": kind, "goal_id": _identifier(step.get("goal_id", f"step_{kind}"), f"{where}.goal_id"),
            "description": str(step.get("description", ""))}
     out.update(_validate_fields(step, kind, where, directory))
@@ -245,7 +263,8 @@ def validate_goal(source, directory=None):
     if not isinstance(goal, dict) or goal.get("type") not in GOAL_TYPES:
         raise _error(f"goal.type must be one of {GOAL_TYPES}")
     kind = goal["type"]
-    _keys(goal, "goal", ("schema", "goal_id", "type", "episode"), ("description", "planner", *_TYPE_FIELDS[kind]))
+    _keys(goal, "goal", ("schema", "goal_id", "type", "episode"),
+          ("description", "planner", *_TYPE_FIELDS[kind], *_OPT_IN_FIELDS.get(kind, ())))
     if goal["schema"] != GOAL_SCHEMA:
         raise _error(f"goal.schema must be {GOAL_SCHEMA!r}")
     episode = goal["episode"]

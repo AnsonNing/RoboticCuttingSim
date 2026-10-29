@@ -802,8 +802,12 @@ def ideal_schedule(task, waypoints, limits, policy_options):
             return None
         labels.append(policy.phase)
         cuts.append(int(action.get("cut_index", 0)) if action["cut_enabled"] else -1)
-        edge, _ = resolve_delta(edge, action["target"], limits, frame=action.get("frame", "world"),
-                                T_world_workpiece=task.T_world_workpiece)
+        if action["mode"] == "cartesian_edge_pose_world":  # absolute targets (controller profile path_v3)
+            from .control import bound_target
+            edge, _ = bound_target(edge, action["target"], limits, task.T_world_workpiece)
+        else:
+            edge, _ = resolve_delta(edge, action["target"], limits, frame=action.get("frame", "world"),
+                                    T_world_workpiece=task.T_world_workpiece)
         poses.append(edge.copy())
     while len(poses) < steps+1:
         labels.append("DONE")

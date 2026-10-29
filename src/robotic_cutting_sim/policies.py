@@ -19,6 +19,12 @@ depth survey: ``VisionRetargetPolicy`` takes a calibration frame at the end of
 the cut-0 start settle and a survey frame at the end of the cut-1 start settle
 (``slice_push_vision``), estimates the +x shift of the part right of cut 0
 (``wrist_depth_survey``) and shifts cut 1 and every later waypoint by it.
+``path_v3`` (WP-11 Phase C5b, opt-in) replaces the integrating delta law by
+absolute edge targets: an internal planned reference moves along the plan
+(path_v2 slow approach/settle, plus a proportional stop before holds and cut
+ends) and the command is ``cartesian_edge_pose_world`` = reference + a slowly
+adapting bias estimate (``WaypointPolicy(command_mode="bias_pose")``); see
+``_bias_pose_call`` for the law and its stability argument.
 """
 from dataclasses import dataclass, field, replace
 from typing import Callable
@@ -56,7 +62,18 @@ CONTROLLER_PROFILES = {
                                               task_ids=("SLICE-PUSH-01",), camera_id="wrist_d405_0",
                                               method="end_face_plus_x", diagnostic_methods=("kerf_face",),
                                               retarget_settle_s=.3, lift_speed_m_s=.04, raise_speed_m_s=.02)),
+    # WP-11 Phase C5b: absolute edge targets = planned reference + slowly adapting bias (no integrating
+    # delta on the measured edge, which limit-cycled at ~6 Hz in C5). path_v2's slow approach and settle.
+    "path_v3": dict(name="path_v3", path_tracking=True, approach_speed_m_s=.02, approach_slow_distance_m=.01,
+                    settle_s=.3, position_tolerance_m=.0003, command_mode="bias_pose", bias_gain=.1,
+                    error_filter=.5, bias_deadband_m=2e-5, bias_deadband_rad=2e-4, stop_gain=.15,
+                    stop_min_step_m=5e-6, presettle_m=.001, presettle_s=.5),
 }
+# Policy options a profile may carry (absent keys keep the WaypointPolicy defaults, so v1/path_v2 are unchanged).
+_POLICY_KEYS = ("path_tracking", "cross_track_gain", "position_tolerance_m", "command_mode", "bias_gain",
+                "error_filter", "bias_deadband_m", "bias_deadband_rad", "stop_gain", "stop_min_step_m")
+COMMAND_MODES = ("delta", "bias_pose")
+ABSOLUTE_MODE = "cartesian_edge_pose_world"
 
 
 def controller_profile(name):
@@ -64,8 +81,9 @@ def controller_profile(name):
     if name not in CONTROLLER_PROFILES:
         raise ValueError(f"Unknown controller profile {name!r}; known: {sorted(CONTROLLER_PROFILES)}")
     profile = CONTROLLER_PROFILES[name]
-    policy = {key: profile[key] for key in ("path_tracking", "cross_track_gain", "position_tolerance_m") if key in profile}
-    plan = {key: profile[key] for key in ("approach_speed_m_s", "approach_slow_distance_m", "settle_s") if key in profile}
+    policy = {key: profile[key] for key in _POLICY_KEYS if key in profile}
+    plan = {key: profile[key] for key in ("approach_speed_m_s", "approach_slow_distance_m", "settle_s", "presettle_m",
+                                          "presettle_s") if key in profile}
     return policy, plan
 
 
@@ -103,10 +121,27 @@ class WaypointPolicy:
     path_tracking: bool = False
     cross_track_gain: float = .5
     last_tracking: dict | None = None   # diagnostics of the latest tracked step (None otherwise)
+    # Opt-in absolute-target law (controller profile path_v3, ``_bias_pose_call``). "delta" (default)
+    # keeps every behaviour above bit for bit; the fields below are read only in "bias_pose".
+    command_mode: str = "delta"
+    bias_gain: float = .1             # per-step gain of the bias estimate
+    error_filter: float = .5          # first-order low-pass coefficient on the bias error
+    bias_deadband_m: float = 2e-5     # soft deadband on the filtered position error
+    bias_deadband_rad: float = 2e-4   # soft deadband on the filtered rotation error
+    stop_gain: float = .15            # reference step <= stop_gain * remaining before holds, cut ends and turns
+    stop_min_step_m: float = 5e-6     # ... but never below this (the stop ends in finite time)
+    _bias_state: dict | None = None
 
     def __post_init__(self):
         if not 0 < self.cross_track_gain <= 1:
             raise ValueError("cross_track_gain must be in (0, 1]")
+        if self.command_mode not in COMMAND_MODES:
+            raise ValueError(f"command_mode must be one of {COMMAND_MODES}")
+        if self.command_mode == "bias_pose" and not (
+                0 < self.bias_gain <= .25 and 0 < self.error_filter <= 1 and self.bias_deadband_m >= 0
+                and self.bias_deadband_rad >= 0 and 0 < self.stop_gain <= 1 and self.stop_min_step_m > 0):
+            raise ValueError("bias_pose needs bias_gain in (0, 0.25], error_filter and stop_gain in (0, 1] "
+                             "and non-negative deadbands")
 
     @property
     def done(self):
@@ -163,6 +198,8 @@ class WaypointPolicy:
                 "cut_enabled": bool(waypoint.cut), **({"cut_index": waypoint.cut_index} if waypoint.cut_index else {})}
 
     def __call__(self, observation):
+        if self.command_mode == "bias_pose":
+            return self._bias_pose_call(observation)
         if self.edge_estimator is None:
             edge = edge_from_observation(observation, self.task)
         else:
@@ -210,6 +247,151 @@ class WaypointPolicy:
                     "cut_enabled": bool(waypoint.cut), **({"cut_index": waypoint.cut_index} if waypoint.cut_index else {})}
         return {"mode": DELTA_MODE, "frame": "world", "target": np.zeros(6), "cut_enabled": False}
 
+    # ---------------------------------------------------------------- path_v3 (WP-11 Phase C5b)
+
+    def _decelerates(self, index):
+        """Stop the reference geometrically at waypoint ``index``: a hold follows, a cut ends, or the path turns > 30 deg."""
+        waypoint = self.waypoints[index]
+        if waypoint.hold_s > 0 or waypoint.cut:
+            return True
+        if index == 0 or index+1 >= len(self.waypoints):
+            return index+1 >= len(self.waypoints)
+        here = np.asarray(waypoint.pose[:3], float)
+        incoming = here-np.asarray(self.waypoints[index-1].pose[:3], float)
+        outgoing = np.asarray(self.waypoints[index+1].pose[:3], float)-here
+        if np.linalg.norm(incoming) < 1e-9 or np.linalg.norm(outgoing) < 1e-9:
+            return False
+        cosine = incoming@outgoing/(np.linalg.norm(incoming)*np.linalg.norm(outgoing))
+        return bool(cosine < np.cos(np.deg2rad(30.)))
+
+    def _bias_pose_call(self, observation):
+        """path_v3: absolute edge target = planned reference + slowly adapting bias (WP-11 Phase C5b).
+
+        Per control step k (WORLD frame; the observation carries the edge m_{k-1}
+        measured after command c_{k-1}):
+
+        * reference r_k: moves from r_{k-1} straight toward the current waypoint
+          at min(step limit, waypoint speed * dt); before a hold, at a cut end or
+          at a > 30 deg turn the step is also <= ``stop_gain`` * remaining
+          distance, but >= ``stop_min_step_m`` (a geometric stop instead of a
+          velocity step: on the fitted plant an abrupt stop undershoots by ~1.2
+          steps, a stop with gain 0.15 not measurably); rotation at the rotation
+          step limit. It never reads the measured edge.
+        * bias error e_k = r_{k-1} - m_{k-1} with its component along the
+          reference velocity (r_{k-1} - r_{k-2}) removed, so tracking lag along
+          the path is not learned as a bias; low-pass
+          f_k = f_{k-1} + ``error_filter`` * (e_k - f_{k-1}); soft deadband
+          (``bias_deadband_m``/``_rad``) so noise is not chased.
+        * bias b_k = b_{k-1} + ``bias_gain`` * deadband(f_k) (rotation: rotation
+          vector, applied on the left); b_0 = nominal hand-FK edge - measured edge,
+          so c_0 equals the env's commanded pose.
+        * command c_k = r_k + b_k, bounded to the action step limits from c_{k-1}.
+
+        A waypoint completes when r reached it and the measured edge is within
+        ``position_tolerance_m``/``rotation_tolerance_rad`` of it (then its hold
+        runs). Stability: the measured edge enters only through the bias, so for
+        a plant m = G(c) + offset (G stable, unit DC gain) the feedback loop is
+        (1 - z^-1) + bias_gain * F(z) z^-1 G(z) = 0 with F the error filter;
+        the reference is open loop. For a one-step-delay plant G = z^-1, F = 1
+        this is z^2 - z + k = 0, real roots for k <= 1/4 (k = 0.1: 0.89, 0.11).
+        The path_v2 delta law integrates the full measured error with unit gain
+        (k = 1: z^2 - z + 1 = 0, |z| = 1 at pi/3 rad/step), the C5 ringing; on
+        the plant fitted to the C5 trace path_v2 has |z| = 0.92 (z axis) and
+        1.07 (y) at ~8.4 steps per period (~6 Hz), path_v3 a real dominant pole
+        ~0.90 (tests/test_wp11_phase_c5b.py). Sawing is not implemented here.
+        """
+        from .control import bound_target
+        nominal = edge_from_observation(observation, self.task)
+        measured = nominal if self.edge_estimator is None else np.asarray(self.edge_estimator(observation), float)
+        time_s = float(observation["timestamp_s"])
+        state = self._bias_state
+        if state is None:
+            state = self._bias_state = dict(
+                reference=measured.copy(), velocity=np.zeros(3), angular=np.zeros(3),
+                bias_position=nominal[:3]-measured[:3],
+                bias_rotation=(Rotation.from_quat(nominal[3:])*Rotation.from_quat(measured[3:]).inv()).as_rotvec(),
+                error_position=np.zeros(3), error_rotation=np.zeros(3), command=nominal.copy())
+            error = rotation_error_vector = np.zeros(3)
+        else:
+            reference = state["reference"]
+            error = _without_along(reference[:3]-measured[:3], state["velocity"])
+            rotation_error_vector = _without_along(
+                (Rotation.from_quat(reference[3:])*Rotation.from_quat(measured[3:]).inv()).as_rotvec(), state["angular"])
+            a = self.error_filter
+            state["error_position"] = state["error_position"]+a*(error-state["error_position"])
+            state["error_rotation"] = state["error_rotation"]+a*(rotation_error_vector-state["error_rotation"])
+            state["bias_position"] = state["bias_position"]+self.bias_gain*_soft_deadband(
+                state["error_position"], self.bias_deadband_m)
+            state["bias_rotation"] = (Rotation.from_rotvec(self.bias_gain*_soft_deadband(
+                state["error_rotation"], self.bias_deadband_rad))*Rotation.from_rotvec(state["bias_rotation"])).as_rotvec()
+        reference = state["reference"]
+        self.last_tracking = None
+        while not self.done:
+            waypoint = self.waypoints[self.index]
+            if waypoint.saw_amplitude_m > 0:
+                raise ValueError("Controller profile path_v3 (bias_pose) does not implement sawing")
+            if self._start_time is None:
+                self._start_time = time_s
+            final = np.asarray(waypoint.pose, float)
+            at_reference = (np.linalg.norm(final[:3]-reference[:3]) <= 1e-9
+                            and (Rotation.from_quat(final[3:])*Rotation.from_quat(reference[3:]).inv()).magnitude() <= 1e-9)
+            reached = (at_reference and np.linalg.norm(final[:3]-measured[:3]) <= self.position_tolerance_m
+                       and (Rotation.from_quat(final[3:])*Rotation.from_quat(measured[3:]).inv()).magnitude()
+                       <= self.rotation_tolerance_rad)
+            if reached and waypoint.hold_s > 0:
+                if self._hold_start is None:
+                    self._hold_start = time_s
+                reached = time_s-self._hold_start >= waypoint.hold_s-1e-9
+            if not reached:
+                break
+            self.index, self._start_time, self._hold_start = self.index+1, None, None
+        if self.done:
+            return {"mode": DELTA_MODE, "frame": "world", "target": np.zeros(6), "cut_enabled": False}
+        step = self.limits.max_translation_m
+        if waypoint.speed_m_s is not None:
+            step = min(step, waypoint.speed_m_s*self.task.control_dt_s)
+        offset = final[:3]-reference[:3]
+        remaining = float(np.linalg.norm(offset))
+        if self._decelerates(self.index):
+            step = min(step, max(self.stop_gain*remaining, self.stop_min_step_m))
+        position = final[:3].copy() if remaining <= max(step, 1e-6) else reference[:3]+offset*(step/remaining)
+        r_reference, r_final = Rotation.from_quat(reference[3:]), Rotation.from_quat(final[3:])
+        relative = (r_final*r_reference.inv()).as_rotvec()
+        angle = float(np.linalg.norm(relative))
+        limit = self.limits.max_rotation_rad
+        rotation = r_final if angle <= max(limit, 1e-9) else Rotation.from_rotvec(relative*(limit/angle))*r_reference
+        state["velocity"] = position-reference[:3]
+        state["angular"] = (rotation*r_reference.inv()).as_rotvec()
+        state["reference"] = np.r_[position, rotation.as_quat()]
+        desired = np.r_[position+state["bias_position"], (Rotation.from_rotvec(state["bias_rotation"])*rotation).as_quat()]
+        command, _ = bound_target(state["command"], desired, self.limits, getattr(self.task, "T_world_workpiece", None))
+        state["command"] = command
+        self.last_tracking = dict(command_mode="bias_pose", reference_world_m=position.tolist(),
+                                  measured_minus_previous_reference_m=(measured[:3]-reference[:3]).tolist(),
+                                  cross_track_error_m=float(np.linalg.norm(error)),
+                                  bias_position_m=state["bias_position"].tolist(),
+                                  bias_rotation_rad=float(np.linalg.norm(state["bias_rotation"])),
+                                  filtered_error_m=state["error_position"].tolist())
+        return {"mode": ABSOLUTE_MODE, "target": command, "cut_enabled": bool(waypoint.cut),
+                **({"cut_index": waypoint.cut_index} if waypoint.cut_index else {})}
+
+
+def _without_along(vector, direction):
+    """``vector`` minus its component along ``direction`` (unchanged when the direction is ~zero)."""
+    norm = float(np.linalg.norm(direction))
+    if norm < 1e-12:
+        return np.asarray(vector, float)
+    unit = np.asarray(direction, float)/norm
+    return vector-(vector@unit)*unit
+
+
+def _soft_deadband(vector, width):
+    """Shrink a vector by ``width`` (zero inside the deadband): no discontinuity at the band edge."""
+    norm = float(np.linalg.norm(vector))
+    if norm <= width:
+        return np.zeros_like(vector)
+    return vector*(1.-width/norm)
+
 
 def _cap_with_priority(priority, rest, limit):
     """``priority + k*rest`` with the largest k in [0, 1] whose norm stays <= limit (priority alone capped first)."""
@@ -228,7 +410,8 @@ def _pose(position, rotation):
     return tuple(np.r_[position, rotation.as_quat()])
 
 
-def shape_approaches(plan, *, approach_speed_m_s=None, approach_slow_distance_m=.01, settle_s=0.):
+def shape_approaches(plan, *, approach_speed_m_s=None, approach_slow_distance_m=.01, settle_s=0., presettle_m=None,
+                     presettle_s=0.):
     """Slow the final approach to every cut start and settle there before cutting (path_v2).
 
     For each cut waypoint whose predecessor (the cut start) is not cutting: the
@@ -238,6 +421,11 @@ def shape_approaches(plan, *, approach_speed_m_s=None, approach_slow_distance_m=
     and the start is held for ``settle_s``. ``approach_speed_m_s=None`` and
     ``settle_s=0`` return the plan unchanged. A start that is the first
     waypoint has no planned predecessor segment and only gets the settle hold.
+    ``presettle_m`` (opt-in, path_v3; None = off): a further waypoint
+    ``presettle_m`` before the start on the same approach line is held
+    ``presettle_s`` (the bias estimate converges there, at rest), then the last
+    ``presettle_m`` are driven at the approach speed; it must be shorter than
+    the slow distance.
     """
     if approach_speed_m_s is None and not settle_s:
         return list(plan)
@@ -245,6 +433,10 @@ def shape_approaches(plan, *, approach_speed_m_s=None, approach_slow_distance_m=
         raise ValueError("approach_speed_m_s must be positive (or None)")
     if not approach_slow_distance_m > 0 or settle_s < 0:
         raise ValueError("approach_slow_distance_m must be positive and settle_s non-negative")
+    if presettle_m is not None and not (0 < presettle_m < approach_slow_distance_m and presettle_s >= 0
+                                        and approach_speed_m_s is not None):
+        raise ValueError("presettle_m needs an approach speed, 0 < presettle_m < approach_slow_distance_m "
+                         "and presettle_s >= 0")
     starts = {i-1 for i, w in enumerate(plan) if w.cut and i > 0 and not plan[i-1].cut}
     shaped = []
     for i, waypoint in enumerate(plan):
@@ -260,6 +452,9 @@ def shape_approaches(plan, *, approach_speed_m_s=None, approach_slow_distance_m=
                 slow_from = here+back*(approach_slow_distance_m/distance)
                 shaped.append(replace(waypoint, pose=tuple(np.r_[slow_from, waypoint.pose[3:]]), hold_s=0.))
             speed = approach_speed_m_s if waypoint.speed_m_s is None else min(waypoint.speed_m_s, approach_speed_m_s)
+            if presettle_m is not None and distance > presettle_m+1e-9:
+                shaped.append(replace(waypoint, pose=tuple(np.r_[here+back*(presettle_m/distance), waypoint.pose[3:]]),
+                                      hold_s=presettle_s, speed_m_s=speed))
             changes["speed_m_s"] = speed
         shaped.append(replace(waypoint, **changes))
     return shaped
@@ -446,6 +641,9 @@ def ideal_plan_end_s(task, plan, *, max_s=None, **policy_options):
         action = policy({"proprio": {"tool_pose": edge.copy()}, "timestamp_s": step*task.control_dt_s})
         if policy.done:
             return step*task.control_dt_s
+        if action["mode"] == ABSOLUTE_MODE:  # path_v3: the ideal integrator reaches the bounded absolute target
+            edge = np.asarray(action["target"], float).copy()
+            continue
         delta = action["target"]
         edge = np.r_[edge[:3]+delta[:3], (Rotation.from_rotvec(delta[3:])*Rotation.from_quat(edge[3:])).as_quat()]
     return None

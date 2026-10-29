@@ -87,7 +87,7 @@ def planner_options(goal, overrides=None):
         merged.update(source)
     if merged["controller_profile"] not in CONTROLLER_PROFILES or merged["controller_profile"] == "path_v2_vision":
         from .scene_config import SceneConfigError
-        raise SceneConfigError("planner controller_profile must be v1 or path_v2")
+        raise SceneConfigError("planner controller_profile must be v1, path_v2 or path_v3")
     if merged["protrusion_order"] not in ("along_skim", "goal"):
         from .scene_config import SceneConfigError
         raise SceneConfigError("planner protrusion_order must be along_skim or goal")
@@ -408,8 +408,65 @@ def _trim_plane_pass(scene, goal, digit, profile, options, frame):
     return steps, [report], digit+1
 
 
+def _surface_sweep(scene, goal, step_index, profile, options, frame):
+    """move_piece push_mode surface_sweep (WP-11 C5b): a disarmed near-horizontal sweep of the base top.
+
+    From SCENE CONFIG ONLY (never where the piece actually is): the edge, in the
+    skim frame (declared rake/skew, edge leading along ``direction_local``),
+    descends ``skim_margin_m`` behind the selector box at ``sweep_height_m``
+    above the base top and sweeps to ``sweep_overtravel_m`` past the base end,
+    so every position the piece can have on the base top ahead of the box is
+    swept. APPROACH_PUSH -> LOWER -> PUSH -> PUSH_HOLD -> RELEASE -> RETRACT.
+    """
+    from .scene_config import scene_top_m
+    d = _normalize(goal["direction_local"], "push direction")
+    if abs(d[2]) > 1e-9:
+        raise ValueError("surface_sweep pushes along the base top: direction_local must be horizontal")
+    if "box_local_m" not in goal["selector"]:
+        raise ValueError("surface_sweep needs a box_local_m selector (where the piece starts)")
+    box = goal["selector"]["box_local_m"]
+    low, high = np.asarray(box["min"], float), np.asarray(box["max"], float)
+    corners = np.array([[x, y, 0.] for x in (low[0], high[0]) for y in (low[1], high[1])])
+    base = scene["workpiece"]["base_box_m"]
+    base_corners = np.array([[x, y, 0.] for x in (-base["length_m"]/2, base["length_m"]/2)
+                             for y in (-base["width_m"]/2, base["width_m"]/2)])
+    centre = np.r_[(low[:2]+high[:2])/2, 0.]
+    lateral = centre-(centre@d)*d
+    start_along = float((corners@d).min())-options["skim_margin_m"]
+    end_along = float((base_corners@d).max())+goal.get("sweep_overtravel_m", .005)
+    z = base["height_m"]+goal.get("sweep_height_m", .002)
+    start, end = lateral+d*start_along, lateral+d*end_along
+    start[2] = end[2] = z
+    rotation = skim_rotation(d, rake_deg=options["rake_deg"], skew_deg=options["skew_deg"])
+    safe = scene_top_m(scene)+options["safe_height_m"]
+    released = end-options["push_release_m"]*d
+    op = f"move{step_index}"
+    speed = goal["push_speed_m_s"]
+    plan = [Waypoint(frame.pose(np.r_[start[:2], safe], rotation), label=f"APPROACH_PUSH:{op}"),
+            Waypoint(frame.pose(start, rotation), speed_m_s=options["kerf_speed_m_s"], label=f"LOWER:{op}"),
+            Waypoint(frame.pose(end, rotation), speed_m_s=speed, label=f"PUSH:{op}"),
+            Waypoint(frame.pose(end, rotation), hold_s=options["hold_s"], label=f"PUSH_HOLD:{op}"),
+            Waypoint(frame.pose(released, rotation), speed_m_s=speed, label=f"RELEASE:{op}"),
+            Waypoint(frame.pose(np.r_[released[:2], safe], rotation), label=f"RETRACT:{op}")]
+    reach = profile.half_width_m
+    warnings = [f"protrusion {row['id']} lies in the sweep corridor" for row in scene["workpiece"]["protrusions"]
+                if not (low[0] <= row["x_m"] <= high[0] and low[1] <= row["y_m"] <= high[1])
+                and start_along-_support_along(row, d) <= np.array([row["x_m"], row["y_m"], 0.])@d
+                <= end_along+_support_along(row, d)
+                and abs((np.array([row["x_m"], row["y_m"], 0.])-lateral)@np.cross([0., 0., 1.], d)) <= reach]
+    report = {"op": op, "kind": "surface_sweep_push", "digit": None, "push_mode": "surface_sweep",
+              "start_local_m": start.tolist(), "end_local_m": end.tolist(), "direction_local": d.tolist(),
+              "sweep_height_above_base_top_m": float(z-base["height_m"]), "edge_half_length_m": float(reach),
+              "orientation_metrics": orientation_metrics(rotation.as_quat(), end-start), "cut_enabled": False,
+              "base_length_m": base["length_m"], "distance_m_used": False, "warnings": warnings,
+              "inputs": "selector box, base box, protrusions and tool profile from the configs; not the piece's state"}
+    return plan, [report]
+
+
 def _push(scene, goal, step_index, profile, options, frame):
     from .scene_config import scene_top_m
+    if goal.get("push_mode") == "surface_sweep":
+        return _surface_sweep(scene, goal, step_index, profile, options, frame)
     d = _normalize(goal["direction_local"], "push direction")
     rotation = through_cut_rotation(d)
     base = scene["workpiece"]["base_box_m"]
