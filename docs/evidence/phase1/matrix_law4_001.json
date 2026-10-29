@@ -1,0 +1,1258 @@
+{
+ "protocol": "phase1_acceptance_matrix",
+ "adr": "docs/adr/0006-swept-band-cutting-law-4.md",
+ "cutting_law": 4,
+ "created": "2026-10-29T17:36:54.815603+09:00",
+ "common_settings": {
+  "runtime_source": "kinematic_ideal_tracking (M9: measured_trajectory_material_replay)",
+  "seed": 42,
+  "particle_spacing_m": 0.001,
+  "material_dt_s": 0.0001,
+  "grid_dx_m": 0.004,
+  "tool_profile": "ruler_knife_v1",
+  "component_graph": "mechanical_components with recorded stencil weights and gradients"
+ },
+ "verdict_counts": {
+  "PASS": 11,
+  "FAIL": 5,
+  "REPORT_ONLY": 2
+ },
+ "rows_not_run": [],
+ "scope": "Kinematic ideal tracking and material-only replays; no robot, grasp, slip or camera evidence. Law-4 parameters are provisional and uncalibrated. M8b is a kinematic preflight, not a demo.",
+ "rows": [
+  {
+   "row": "M1a",
+   "verdict": "PASS",
+   "criterion": "CUT-01-R reference vertical cut: frozen strict oracle PASS (two parts, mass, location <= 2 mm, persistence)",
+   "checks": {
+    "frozen_strict_pass": true
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "final_labelled": 28529,
+    "frozen_strict_status": "PASS_TASK_METRICS",
+    "frozen_location_m": 0.0015000000421423465,
+    "swept_plane_fit_rms_m": 8.86896276324538e-34,
+    "swept_plane_fit_max_m": 2.251335067790896e-33,
+    "swept_plane_normal": [
+     1.0,
+     -0.0,
+     2.220446049250308e-16
+    ],
+    "swept_interface_m": 0.0015000000421423487,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.011500000022351744,
+     0.023499999195337296,
+     0.0234999991953373
+    ],
+    "label_side_agreement": 1.0
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.0015000000421423487
+   },
+   "error": null,
+   "wall_s": 8.291744520000066,
+   "ingested_from": "artifacts/wp10_claude/phase1_law4/k_cut01r_law4_001",
+   "ingested_wall_s": 244.4620081690009,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m1a_law4_ingest_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M1a",
+    "--ingest",
+    "artifacts/wp10_claude/phase1_law4/k_cut01r_law4_001",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m1a_law4_ingest_001"
+   ],
+   "git_sha": "3c1f4b49444ff233672e70478414d45a4177737a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 10,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M1b",
+   "verdict": "PASS",
+   "criterion": "CUT-02 reference vertical cut: frozen strict oracle PASS",
+   "checks": {
+    "frozen_strict_pass": true
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "final_labelled": 71040,
+    "frozen_strict_status": "PASS_TASK_METRICS",
+    "frozen_location_m": 0.0015000000421423465,
+    "swept_plane_fit_rms_m": 3.0269237733673644e-33,
+    "swept_plane_fit_max_m": 6.2021107185091e-33,
+    "swept_plane_normal": [
+     1.0,
+     -0.0,
+     2.2204460492503109e-16
+    ],
+    "swept_interface_m": 0.001500000042142349,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.011500000022351744,
+     0.023499999195337296,
+     0.0234999991953373
+    ],
+    "label_side_agreement": 1.0
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.001500000042142349
+   },
+   "error": null,
+   "wall_s": 586.1602549239979,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m1b_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M1b",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m1b_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M2",
+   "verdict": "FAIL",
+   "criterion": "20 deg oblique cut (tilt about the edge line) through CUT-01-R: >= 2 substantial parts (>= 40% each, >= 99% together) and swept-plane interface statistic <= 2 mm; frozen strict reported as is",
+   "checks": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_parts_together_ge_99pct": true,
+    "swept_plane_interface_le_2mm": false
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5045,
+     0.4955
+    ],
+    "final_labelled": 29104,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": 0.005499999970197678,
+    "swept_plane_fit_rms_m": 1.5699211940575994e-18,
+    "swept_plane_fit_max_m": 3.3712618912460155e-18,
+    "swept_plane_normal": [
+     0.9396926207859086,
+     -0.0,
+     -0.342020143325668
+    ],
+    "swept_interface_m": 0.004784830777986167,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.011488780088261265,
+     0.02370823590825861,
+     0.024392276307032883
+    ],
+    "label_side_agreement": 0.9852253985706432
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.004442810737864569
+   },
+   "error": null,
+   "wall_s": 257.5266811690017,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m2_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M2",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m2_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M3a",
+   "verdict": "FAIL",
+   "criterion": "TRIM-01-R 25 deg reference skim: frozen reference_above_plane_material_removed AND largest component >= 99% of below-plane reference mass; precision reported separately",
+   "checks": {
+    "frozen_reference_above_plane_material_removed": false,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 37252,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 5.282022663473021e-18,
+    "swept_plane_fit_max_m": 6.179328602832293e-18,
+    "swept_plane_normal": [
+     0.0028343445806384994,
+     -2.5419164071963993e-19,
+     0.999995983237332
+    ],
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.00983742689150367,
+     0.01986289565869553,
+     0.019896907793958838
+    ],
+    "label_side_agreement": 0.9990872973263181,
+    "removed": 0.0,
+    "substrate_share": 0.9999999999996599,
+    "detached_below": 0.0,
+    "precision_checks": {
+     "complete_episode": true,
+     "initial_continuous_graph": true,
+     "initial_codes_zero": true,
+     "reference_matches_single_continuous_task_sampler": true,
+     "reference_mass_budget_and_unchanged_count": true,
+     "persistent_history_no_digit_rewrites": true,
+     "postcut_disconnected_topology_persists": false,
+     "surface_has_explicit_mechanical_provenance": true,
+     "surface_timestamp_matches_final_physics": true,
+     "maximum_substrate_surface_residual_height_m": false,
+     "surface_p95_absolute_plane_error_m": false,
+     "surface_rms_plane_error_m": false,
+     "maximum_gouge_depth_m": false,
+     "overcut_volume_fraction_of_initial_base": false,
+     "missing_surface_fraction": true
+    },
+    "bridges": 2,
+    "above_plane_codes": {
+     "0": 2,
+     "1": 34,
+     "2": 1008
+    }
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.0018544647119387385
+   },
+   "error": null,
+   "wall_s": 9.969103575996996,
+   "ingested_from": "artifacts/wp10_claude/phase1_law4/k_trim01r_law4_001",
+   "ingested_wall_s": 257.6820326140005,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m3a_law4_ingest_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M3a",
+    "--ingest",
+    "artifacts/wp10_claude/phase1_law4/k_trim01r_law4_001",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m3a_law4_ingest_001"
+   ],
+   "git_sha": "3c1f4b49444ff233672e70478414d45a4177737a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 10,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M3b",
+   "verdict": "FAIL",
+   "criterion": "M3a criterion on TRIM-01-R scenario ruler_workcell_v2 (35 deg)",
+   "checks": {
+    "frozen_reference_above_plane_material_removed": false,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 37731,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 7.75284043840315e-18,
+    "swept_plane_fit_max_m": 1.0477083362276964e-17,
+    "swept_plane_normal": [
+     0.002834344580635036,
+     -2.5419164071963993e-19,
+     0.999995983237332
+    ],
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": 0.0018544647119385456,
+    "label_distance_p50_p99_max_m": [
+     0.009848764269044689,
+     0.01987990172896665,
+     0.019913913864229915
+    ],
+    "label_side_agreement": 0.9991253876123082,
+    "removed": 0.0,
+    "substrate_share": 0.9999999999996599,
+    "detached_below": 0.0,
+    "precision_checks": {
+     "complete_episode": true,
+     "initial_continuous_graph": true,
+     "initial_codes_zero": true,
+     "reference_matches_single_continuous_task_sampler": true,
+     "reference_mass_budget_and_unchanged_count": true,
+     "persistent_history_no_digit_rewrites": true,
+     "postcut_disconnected_topology_persists": false,
+     "surface_has_explicit_mechanical_provenance": true,
+     "surface_timestamp_matches_final_physics": true,
+     "maximum_substrate_surface_residual_height_m": false,
+     "surface_p95_absolute_plane_error_m": false,
+     "surface_rms_plane_error_m": false,
+     "maximum_gouge_depth_m": false,
+     "overcut_volume_fraction_of_initial_base": false,
+     "missing_surface_fraction": true
+    },
+    "bridges": 3,
+    "above_plane_codes": {
+     "0": 3,
+     "1": 33,
+     "2": 1008
+    }
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 233.15841093600102,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m3b_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M3b",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m3b_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M3c",
+   "verdict": "FAIL",
+   "criterion": "M3a criterion on TRIM-01-R scenario blademaster_workcell_v1 (35 deg, cutting board)",
+   "checks": {
+    "frozen_reference_above_plane_material_removed": false,
+    "largest_component_holds_ge_99pct_below_plane_mass": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 37731,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 7.75284043840315e-18,
+    "swept_plane_fit_max_m": 1.0477083362276964e-17,
+    "swept_plane_normal": [
+     0.002834344580635036,
+     -2.5419164071963993e-19,
+     0.999995983237332
+    ],
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.009848764269044689,
+     0.01987990172896665,
+     0.019913913864229915
+    ],
+    "label_side_agreement": 0.9991253876123082,
+    "removed": 0.0,
+    "substrate_share": 0.9999999999996599,
+    "detached_below": 0.0,
+    "precision_checks": {
+     "complete_episode": true,
+     "initial_continuous_graph": true,
+     "initial_codes_zero": true,
+     "reference_matches_single_continuous_task_sampler": true,
+     "reference_mass_budget_and_unchanged_count": true,
+     "persistent_history_no_digit_rewrites": true,
+     "postcut_disconnected_topology_persists": false,
+     "surface_has_explicit_mechanical_provenance": true,
+     "surface_timestamp_matches_final_physics": true,
+     "maximum_substrate_surface_residual_height_m": false,
+     "surface_p95_absolute_plane_error_m": false,
+     "surface_rms_plane_error_m": false,
+     "maximum_gouge_depth_m": false,
+     "overcut_volume_fraction_of_initial_base": false,
+     "missing_surface_fraction": true
+    },
+    "bridges": 3,
+    "above_plane_codes": {
+     "0": 3,
+     "1": 33,
+     "2": 1008
+    }
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.0018544647119385456
+   },
+   "error": null,
+   "wall_s": 246.4422742780007,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m3c_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M3c",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m3c_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M4",
+   "verdict": "PASS",
+   "criterion": "Armed vertical cut to half depth (local z = 10 mm), then armed withdrawal: one component, labelled count unchanged during withdrawal, code-0 ligament below the stopping depth",
+   "checks": {
+    "one_component": true,
+    "labels_unchanged_during_withdrawal": true,
+    "code0_ligament_below_stop": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 13496,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 0.0,
+    "swept_plane_fit_max_m": 0.0,
+    "swept_plane_normal": [
+     1.0000000000000002,
+     -0.0,
+     -0.0
+    ],
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.012500000186264515,
+     0.023499999195337296,
+     0.023499999195337296
+    ],
+    "label_side_agreement": 1.0,
+    "ligament": {
+     "stop_local_z_m": 0.01000000000000006,
+     "labelled_below_stop": 0,
+     "code0_fraction_near_plane_below_stop": 1.0,
+     "near_plane_below_stop_particles": 4800,
+     "deepest_labelled_reference_local_z_m": 0.010499999858438969,
+     "labelled_total": 13496
+    },
+    "withdraw_label_change": {
+     "steps": 90,
+     "change": 0,
+     "stroke_active_steps": 0
+    }
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.0015000000421423465
+   },
+   "error": null,
+   "wall_s": 131.181786207002,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m4_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M4",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m4_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:0"
+  },
+  {
+   "row": "M5a",
+   "verdict": "PASS",
+   "criterion": "Armed side push (+x 20 mm into the bar end face, edge at z = 10 mm): contact force present (mean |F| > 0.1 N), zero labels, one component",
+   "checks": {
+    "contact_force_present": true,
+    "zero_labels": true,
+    "one_component": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 0,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": null,
+    "swept_plane_fit_max_m": null,
+    "swept_plane_normal": null,
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": null,
+    "label_side_agreement": null,
+    "phase_label_change": {
+     "steps": 100,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "force": {
+     "total_force_mean_N": 0.20357007799983287,
+     "total_force_max_N": 0.35943601899813393,
+     "blade_force_mean_N": 0.20357007799983287,
+     "blade_force_max_N": 0.35943601899813393,
+     "steps_with_blade_contacts": 64
+    }
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 210.40860793499814,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m5a_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M5a",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m5a_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M5b",
+   "verdict": "PASS",
+   "criterion": "Armed flat press (blade plane horizontal, n = +z, 5 mm into the bar top): force present (mean |F| > 1 N), zero labels, one component",
+   "checks": {
+    "contact_force_present": true,
+    "zero_labels": true,
+    "one_component": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 0,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": null,
+    "swept_plane_fit_max_m": null,
+    "swept_plane_normal": null,
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": null,
+    "label_side_agreement": null,
+    "phase_label_change": {
+     "steps": 40,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "force": {
+     "total_force_mean_N": 1.7594042069921378,
+     "total_force_max_N": 3.516397646498335,
+     "blade_force_mean_N": 1.7594042069921378,
+     "blade_force_max_N": 3.516397646498335,
+     "steps_with_blade_contacts": 25
+    }
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 152.6779810449989,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m5b_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M5b",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m5b_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M5c",
+   "verdict": "PASS",
+   "criterion": "Armed half-depth cut then armed blade-normal move +x 10 mm: labels unchanged during the sideways move",
+   "checks": {
+    "labels_unchanged_during_side_move": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 13496,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 0.0,
+    "swept_plane_fit_max_m": 0.0,
+    "swept_plane_normal": [
+     1.0000000000000002,
+     -0.0,
+     -0.0
+    ],
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": 0.0015000000421423465,
+    "label_distance_p50_p99_max_m": [
+     0.012500000186264515,
+     0.023499999195337296,
+     0.023499999195337296
+    ],
+    "label_side_agreement": 1.0,
+    "side_move_label_change": {
+     "steps": 50,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "force": {
+     "total_force_mean_N": 0.3449697527355303,
+     "total_force_max_N": 0.3853149904146261,
+     "blade_force_mean_N": 0.3449697527355303,
+     "blade_force_max_N": 0.3853149904146261,
+     "steps_with_blade_contacts": 50
+    }
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 247.34228612199877,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m5c_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M5c",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m5c_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M6",
+   "verdict": "PASS",
+   "criterion": "Armed half-depth cut, armed stop 0.5 s, armed withdrawal: labels unchanged during the stop and withdrawal",
+   "checks": {
+    "labels_unchanged_during_hold": true,
+    "labels_unchanged_during_withdrawal": true,
+    "one_component": true,
+    "code0_ligament_below_stop": true
+   },
+   "key_numbers": {
+    "final_components": 1,
+    "final_mass_fractions": [
+     1.0
+    ],
+    "final_labelled": 13496,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 0.0,
+    "swept_plane_fit_max_m": 0.0,
+    "swept_plane_normal": [
+     1.0000000000000002,
+     -0.0,
+     -0.0
+    ],
+    "swept_interface_m": null,
+    "ideal_partition_interface_floor_m": 0.0015000000421423465,
+    "label_distance_p50_p99_max_m": [
+     0.012500000186264515,
+     0.023499999195337296,
+     0.023499999195337296
+    ],
+    "label_side_agreement": 1.0,
+    "ligament": {
+     "stop_local_z_m": 0.01000000000000006,
+     "labelled_below_stop": 0,
+     "code0_fraction_near_plane_below_stop": 1.0,
+     "near_plane_below_stop_particles": 4800,
+     "deepest_labelled_reference_local_z_m": 0.010499999858438969,
+     "labelled_total": 13496
+    },
+    "withdraw_label_change": {
+     "steps": 90,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "hold_label_change": {
+     "steps": 25,
+     "change": 0,
+     "stroke_active_steps": 0
+    }
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 205.9069850119995,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m6_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M6",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m6_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M7",
+   "verdict": "PASS",
+   "criterion": "From M1a/M1b: separated topology persists >= 0.5 s after withdrawal (frozen postcut_disconnected_topology_persists) and the component count never drops after separation",
+   "checks": {
+    "M1a_persists": true,
+    "M1a_count_never_drops": true,
+    "M1b_persists": true,
+    "M1b_count_never_drops": true
+   },
+   "key_numbers": {
+    "M1a": {
+     "frozen_postcut_disconnected_topology_persists": true,
+     "postcut_persistence_time_s": 2.4000000000000004,
+     "first_separated_frame_time_s": 3.4,
+     "count_drop_times_s": []
+    },
+    "M1b": {
+     "frozen_postcut_disconnected_topology_persists": true,
+     "postcut_persistence_time_s": 2.4000000000000004,
+     "first_separated_frame_time_s": 3.8,
+     "count_drop_times_s": []
+    }
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 0.10705544899974484,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m7_law4_003",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M7",
+    "--sources",
+    "artifacts/wp10_claude/phase1_law4/m1a_law4_ingest_001",
+    "artifacts/wp10_claude/phase1_law4/m1b_law4_001",
+    "--device",
+    "cpu",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m7_law4_003"
+   ],
+   "git_sha": "5f9549f83b04fac5f68a1f672cce1542e4a4ad95",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cpu"
+  },
+  {
+   "row": "M8a",
+   "verdict": "FAIL",
+   "criterion": "Two sequential cuts (cut_index 0 at x = -10 mm, 1 at x = +10 mm) with a disarmed lift/move: >= 3 substantial mechanical parts in the 2-digit graph; lift/move adds no labels",
+   "checks": {
+    "three_mechanical_parts": false,
+    "three_substantial_parts": false,
+    "lift_move_adds_no_labels": true
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5625,
+     0.4375
+    ],
+    "final_labelled": 41076,
+    "frozen_strict_status": null,
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 8.833638097707022e-17,
+    "swept_plane_fit_max_m": 8.882947330479507e-17,
+    "swept_plane_normal": [
+     1.0,
+     -1.6032223849748855e-31,
+     3.4813206793971906e-17
+    ],
+    "swept_interface_m": 0.0025000001676379786,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.011500000730156983,
+     0.02350000083446511,
+     0.02350000083446511
+    ],
+    "label_side_agreement": 1.0,
+    "lift_move_label_change": {
+     "steps": 56,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "multi_cut": {
+     "status": "FAIL_MULTI_CUT_OUTCOME",
+     "checks": {
+      "three_mechanical_parts": false,
+      "three_substantial_parts": false,
+      "main_parts_retain_mass": true,
+      "both_digits_sever_bonds": true,
+      "declared_cut_planes": false
+     },
+     "parts": [
+      0.5625,
+      0.4375
+     ],
+     "cuts": [
+      {
+       "digit": 0,
+       "severed_bonds": 600,
+       "maximum_reference_plane_error_m": 2.2351741811588166e-10,
+       "p95_reference_plane_error_m": 2.2351741811588166e-10
+      },
+      {
+       "digit": 1,
+       "severed_bonds": 837,
+       "maximum_reference_plane_error_m": 0.004999999664723873,
+       "p95_reference_plane_error_m": 0.004499999582767486
+      }
+     ]
+    },
+    "digit1_swept_interface_m": null
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.0025000001676379786,
+    "ideal_partition_interface_floor_m_digit1": 0.002500000167638003
+   },
+   "error": null,
+   "wall_s": 151.51932513000065,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m8a_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M8a",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m8a_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:0"
+  },
+  {
+   "row": "M8b",
+   "verdict": "PASS",
+   "criterion": "Demo-3 kinematic preflight SLICE-PUSH-01 (blademaster_workcell_v1): slice_push_report PASS",
+   "checks": {
+    "slice_push_report_pass": true
+   },
+   "key_numbers": {
+    "final_components": 3,
+    "final_mass_fractions": [
+     0.3688,
+     0.3188,
+     0.3125
+    ],
+    "final_labelled": 57030,
+    "frozen_strict_status": null,
+    "frozen_location_m": null,
+    "swept_plane_fit_rms_m": 8.667696134848533e-17,
+    "swept_plane_fit_max_m": 8.69063198795348e-17,
+    "swept_plane_normal": [
+     1.0,
+     -5.0050775004255526e-33,
+     1.5467825517676557e-17
+    ],
+    "swept_interface_m": 0.002500000670552338,
+    "ideal_partition_interface_floor_m": null,
+    "label_distance_p50_p99_max_m": [
+     0.011499999761581337,
+     0.023500000387430275,
+     0.023500000387430275
+    ],
+    "label_side_agreement": 1.0,
+    "disabled_phase_label_change": {
+     "steps": 484,
+     "change": 28500,
+     "stroke_active_steps": 117
+    },
+    "slice_push": {
+     "status": "PASS_SLICE_PUSH",
+     "multi_cut": {
+      "three_mechanical_parts": true,
+      "three_substantial_parts": true,
+      "main_parts_retain_mass": true,
+      "both_digits_sever_bonds": true,
+      "declared_cut_planes": true
+     },
+     "post_cut_manipulation": {
+      "components_after_cuts": true,
+      "no_label_changes_during_push": true,
+      "pushed_piece_identified": true,
+      "pushed_piece_displaced": true,
+      "other_pieces_stationary": true,
+      "components_never_merge": true
+     },
+     "pushed_displacement_m": 0.01984472494102428,
+     "other_displacement_m": [
+      5.7231475452099926e-05,
+      5.748237603220031e-05
+     ],
+     "parts": [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ]
+    }
+   },
+   "supplement": {
+    "ideal_partition_interface_floor_m_digit0": 0.002500000670552338,
+    "ideal_partition_interface_floor_m_digit1": 0.002500979802699178,
+    "lift_move_label_change": {
+     "phases": [
+      "hold_0",
+      "lift_0",
+      "move_1"
+     ],
+     "steps": 134,
+     "time_s": [
+      3.46,
+      6.14
+     ],
+     "labelled_before": 28530,
+     "labelled_after": 28530,
+     "labelled_max": 28530,
+     "labelled_min": 28530,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "disabled_post_cut_label_change": {
+     "phases": [
+      "raise_in_kerf",
+      "push",
+      "push_hold",
+      "release",
+      "retract",
+      "done"
+     ],
+     "steps": 310,
+     "time_s": [
+      9.8,
+      16.0
+     ],
+     "labelled_before": 57030,
+     "labelled_after": 57030,
+     "labelled_max": 57030,
+     "labelled_min": 57030,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "note": "Recomputed from actions.jsonl: the row result.json metric disabled_phase_label_change spanned cut_1 (runner bug, report-only, fixed) and is superseded by these windows"
+   },
+   "error": null,
+   "wall_s": 270.1469199659987,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": null,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m8b_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M8b",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m8b_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 5,
+   "device": "cuda:0"
+  },
+  {
+   "row": "M9a",
+   "verdict": "PASS",
+   "criterion": "Native CUT-01-R measured-trajectory replay with law 4: frozen strict PASS",
+   "checks": {
+    "frozen_strict_pass": true
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "final_labelled": 28559,
+    "frozen_strict_status": "PASS_TASK_METRICS",
+    "frozen_location_m": 0.0015000000421423465,
+    "swept_plane_fit_rms_m": 2.443664752109865e-05,
+    "swept_plane_fit_max_m": 6.025238536521873e-05,
+    "swept_plane_normal": [
+     0.9999705101327103,
+     -3.464734297667357e-05,
+     -0.00767969169231048
+    ],
+    "swept_interface_m": 0.0020456148755699966,
+    "ideal_partition_interface_floor_m": 0.00351666520660337,
+    "label_distance_p50_p99_max_m": [
+     0.011983882420203451,
+     0.023952234497222585,
+     0.02410053670726925
+    ],
+    "label_side_agreement": 0.9936972583073637
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 153.5691622819977,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": 142.88731421600096,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m9a_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M9a",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m9a_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 10,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M9b",
+   "verdict": "PASS",
+   "criterion": "Native CUT-02 measured-trajectory replay with law 4: frozen strict PASS",
+   "checks": {
+    "frozen_strict_pass": true
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "final_labelled": 71111,
+    "frozen_strict_status": "PASS_TASK_METRICS",
+    "frozen_location_m": 0.0015000000421423465,
+    "swept_plane_fit_rms_m": 3.184124633624004e-05,
+    "swept_plane_fit_max_m": 6.14717749290141e-05,
+    "swept_plane_normal": [
+     0.9999895077972532,
+     -2.9618972295060284e-05,
+     -0.004580766106674465
+    ],
+    "swept_interface_m": 0.0020272937883672746,
+    "ideal_partition_interface_floor_m": 0.0035110421228191527,
+    "label_distance_p50_p99_max_m": [
+     0.011982757745082067,
+     0.023943094792695498,
+     0.024084118718652278
+    ],
+    "label_side_agreement": 0.9949374920898314
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 525.4690545520025,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": 498.64097694999873,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m9b_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M9b",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m9b_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 10,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M9c",
+   "verdict": "REPORT_ONLY",
+   "criterion": "Lab CUT-01-R measured-trajectory replay with law 4: report only (Lab parity is P1)",
+   "checks": {
+    "frozen_strict_pass": false
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5063,
+     0.4938
+    ],
+    "final_labelled": 28560,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": 0.003999999928055331,
+    "swept_plane_fit_rms_m": 9.377377520476989e-06,
+    "swept_plane_fit_max_m": 3.478073567418778e-05,
+    "swept_plane_normal": [
+     0.9999999797959362,
+     3.710715410362597e-05,
+     0.00019756311979164665
+    ],
+    "swept_interface_m": 0.0034628866495376646,
+    "ideal_partition_interface_floor_m": 0.0034628866495376646,
+    "label_distance_p50_p99_max_m": [
+     0.011961657211387165,
+     0.023959970749492767,
+     0.024041941725032104
+    ],
+    "label_side_agreement": 1.0
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 136.74889056499887,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": 126.14160385899959,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m9c_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M9c",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m9c_law4_001"
+   ],
+   "git_sha": "8998db54c14a018927919eb5cc3faef9f59e6e42",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 10,
+   "device": "cuda:1"
+  },
+  {
+   "row": "M9d",
+   "verdict": "REPORT_ONLY",
+   "criterion": "Lab CUT-02 measured-trajectory replay with law 4: report only (Lab parity is P1)",
+   "checks": {
+    "frozen_strict_pass": false
+   },
+   "key_numbers": {
+    "final_components": 2,
+    "final_mass_fractions": [
+     0.5062,
+     0.4937
+    ],
+    "final_labelled": 71166,
+    "frozen_strict_status": "FAIL_TASK_METRICS",
+    "frozen_location_m": 0.003999999928055331,
+    "swept_plane_fit_rms_m": 1.9293697527981484e-05,
+    "swept_plane_fit_max_m": 6.184469610246052e-05,
+    "swept_plane_normal": [
+     0.9999999859199437,
+     3.641418653551788e-05,
+     0.00016381123226927622
+    ],
+    "swept_interface_m": 0.003442044891215707,
+    "ideal_partition_interface_floor_m": 0.003442044891215707,
+    "label_distance_p50_p99_max_m": [
+     0.011939915115485013,
+     0.023938136888697458,
+     0.024064033751459605
+    ],
+    "label_side_agreement": 1.0
+   },
+   "supplement": {},
+   "error": null,
+   "wall_s": 329.61418208899704,
+   "ingested_from": null,
+   "ingested_wall_s": null,
+   "replay_wall_s": 302.2021298639993,
+   "artifact": "artifacts/wp10_claude/phase1_law4/m9d_law4_001",
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M9d",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp10_claude/phase1_law4/m9d_law4_001"
+   ],
+   "git_sha": "978d797ca09964da918d5dfa1b40b8000efb055a",
+   "git_dirty": true,
+   "formal_resolution": true,
+   "history_stride": 10,
+   "device": "cuda:0"
+  }
+ ]
+}
