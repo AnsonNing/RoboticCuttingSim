@@ -90,6 +90,16 @@ def test_staged_helper_default_is_unchanged_full_plan(monkeypatch):
     assert seen == [None, {'checker': seen[1]['checker']}] and receipt['status'] == 'PASS'
 
 
+def _real_checker_available():
+    """The real C2 checker needs Newton (FK/IK), MuJoCo and the official Franka asset cache; CI has none."""
+    if importlib.util.find_spec('newton') is None or importlib.util.find_spec('mujoco') is None:
+        return False
+    from robotic_cutting_sim.workcell import ASSETS
+    return (ROOT/'artifacts'/'workcell_asset_cache'/ASSETS['franka']).is_file()
+
+
+@pytest.mark.skipif(not _real_checker_available(),
+                    reason="NOT_RUN: real motion preflight needs newton, mujoco and the Franka asset cache")
 def test_test_c_live_task_passes_the_default_preflight_with_staged_geometry():
     """The live_001 Test C task (refused by the single-hull default) passes the new default check."""
     from robotic_cutting_sim.scene_config import configured_task_payload
