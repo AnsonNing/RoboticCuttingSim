@@ -26,7 +26,8 @@
 - Phase A（`97d56d3`、`cce395e`、`ee2a285`，[報告](reports/WP11_PHASE_A_CI.md)）。
   - Hash 不一致的根因是 OpenBLAS 依 CPU 選 kernel（SkylakeX 與 Haswell），只差 1 ulp，不是行為改變。
   - 改用參考軌跡＋推導出的容差 N·16·eps；matplotlib 改為 NumPy 判斷；CI 改完整 checkout（原本 26 個 skip 是歷史 law 測試沒跑）。
-  - CI 剩 `test_tool_profile_v2.py:33` 的主軸 hash 也差 1 ulp，修正中。
+  - `test_tool_profile_v2.py` 的主軸改用推導出的 ulp 容差（`f7dfef5`）。
+  - **GitHub Actions run 40934578313 PASS**：888 passed、1 skipped（需要 git-ignore 掉的 live 收據）、5 xfailed、0 failed，在 Haswell runner 上。
 - C4 完成（`aa0dfdc`、`20101c1`、`78c0641`，[證據](evidence/wp11/phaseC4_trim_material_001.json)）。
   - 雙斜面 ρ = 5–35° 都分離（93–98%，0 橋接）；0° FAIL（下斜面壓陷）。
   - 單斜面只有 0° 過，因為 law 8 閘門量刀身平面而不是推 chip 的面角，這是 Phase F 的發現。
@@ -36,7 +37,6 @@
   - 新增 `wp11_workcell_v1`（+100 mm）；Isaac 可接受 compiled task；HOME reset；planner 控制器；實體 Return-to-Home 與狀態機（`episode_lifecycle.py`）。
   - Native smoke PASS：HOME 預夾、REORIENT 到 ρ = 9.99°、return home 關節誤差 0.39 mrad、刀具位姿 0.031 mm、標籤變化 0；`home_outcome` 與任務結果分開。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
-  - A'：修 v2 pin 的容差並看 CI 結果；
   - F2/F3：law 8 邊界驗證與解析度研究（kinematic 1 mm，GPU 0，[預先宣告的 protocol](../configs/wp11/phaseF_protocol_v1.json)，輸出 `artifacts/wp11/phaseF/`）；
   - C5：live Native 近水平 TRIM（ρ = 10°），先做 kinematic 預檢（`artifacts/wp11/phaseC5/`，GPU 1）；
   - F1：v2 長時間夾持壓力測試（Native，GPU 0，`artifacts/wp11/phaseF1/`）；
