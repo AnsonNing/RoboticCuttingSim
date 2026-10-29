@@ -289,6 +289,57 @@ least one failed episode stored and usable. `POLICY_READY` is set only if every
 check passes. It is an API/lifecycle/storage reliability statement, not a claim
 about task success or policy quality.
 
+## Runtime profiles (WP-11 Phase H4, opt-in)
+
+`open_cutting_env(..., preset="cutting_research_v1", runtime_profile=<id>)` and
+`scripts/collect_dataset.py --runtime-profile <id>` select a declared profile of
+[`configs/wp11/runtime_profiles_v1.json`](../configs/wp11/runtime_profiles_v1.json)
+(`runtime_profiles.py`). Without `runtime_profile` nothing changes: legacy calls and
+the plain `cutting_research_v1` preset keep their defaults (Native `stage_reset="reopen"`).
+
+| Profile | `acceptance_valid` | Material numerics | Native | Cameras / recording |
+| --- | --- | --- | --- | --- |
+| `full_physics_v1` | **true** (the only acceptance profile) | scene solver at the formal resolution, **required**: 1 mm particles, 4 mm grid, 0.1 ms material dt, 20 ms control | `stage_reset="reload_in_place"` | as declared by the preset and caller (not reduced); recording every 10 steps; oracle history every step |
+| `research_fast_v1` | **false** on every episode | scene solver override 2 mm particles, 8 mm grid (recorded in the task id), 0.2 ms material dt | `stage_reset="reload_in_place"` | wrist D405s only (`include_global_camera=False`), policy frames every 5 steps (10 Hz), recording every 25 steps (2 Hz) |
+
+- A profile fixes its numerics: passing `particle_spacing_m`, `material_dt`, `dx`
+  (and for `full_physics_v1` `history_stride`) as well raises `ValueError`;
+  `full_physics_v1` also refuses a scene whose solver is not 1 mm / 4 mm.
+- Every reset info, `task_spec()`, `evaluate()` result, `episode.json` and
+  `index.json` row carries `runtime_profile` and `acceptance_valid`.
+- **`research_fast_v1` fidelity limits** (F3 resolution study,
+  [WP11_PHASE_F_LAW8.md](reports/WP11_PHASE_F_LAW8.md)): TRIM removal 0.816
+  (coarse) vs 0.956 (formal) on TRIM-02-K2-R10, so the >= 0.9 criterion can fail;
+  CUT interface location 3.0 mm (its ideal-partition floor) vs 1.5 mm, so the frozen
+  2 mm location bound cannot pass; contact forces are neither dt- nor
+  resolution-converged. Use it for policy iteration and pipeline debugging only,
+  never for acceptance, benchmarks or calibration.
+- Measured speedups and per-stage timings: [WP11_PHASE_H_PROFILING.md](reports/WP11_PHASE_H_PROFILING.md).
+
+### Native stage reset (`IsaacSimCuttingConfig.stage_reset`, WP-11 Phase H1)
+
+`"reopen"` (default) exports and opens the workcell at every reset; Kit retains
+about 55-66 MiB of host memory per `open_stage` of this workcell (not returned by
+`malloc_trim`, no Python objects or USD layers retained), which made Native fail the
+memory gate. `"reload_in_place"` keeps the open stage after the first reset: it
+releases the previous cameras (annotators and render products), tensor views and
+PhysX objects (`reset_simulation`, detach, attach on the SimulationManager stage-update
+interface), clears the session layer, reloads the root layer from disk
+(`renew_stage_layers`, unit-tested against a fresh open) and then authors the reset
+exactly as after an open. It requires `camera=True` and `physical_grasp` (with
+`camera=False` the second reset segfaults inside PhysX `start_simulation` in
+Isaac Sim 6.2). Every post-reset state is bitwise identical to reset 0 and to a
+Phase G reopen reset. The residual growth is not zero (see the report).
+
+### Profiling (`robotic_cutting_sim.profiling`, opt-in)
+
+`scripts/collect_dataset.py --profile stages` writes `episode_###/profile.json`
+(per-stage mean / max per control step, share of the control-step time, episode-level
+stages). `--profile kernels` additionally times every Warp kernel eagerly (graph
+disabled, a device sync around each launch; perturbing, use for the split only).
+Nothing in the simulator imports the profiler; with no profiler installed the code
+paths are unchanged (tested bitwise on CPU).
+
 ## Phase G results (2026-10-30)
 
 Full receipts: [phaseG_policy_ready_001](evidence/wp11/phaseG_policy_ready_001.json).
@@ -308,6 +359,19 @@ the arm is at rest and the pose-derived settle-window speeds are 6e-5 m/s; v1a
 requires that velocity to repeat episode 0. Under v1, Native also fails
 `tool_at_rest_after_reset` on every episode; both are reported.
 
+## Phase H Native status (2026-10-30)
+
+Full receipts: [phaseH_profiling_001](evidence/wp11/phaseH_profiling_001.json), report
+[WP11_PHASE_H_PROFILING.md](reports/WP11_PHASE_H_PROFILING.md).
+
+| Run | Result |
+| --- | --- |
+| Native Test F rerun, clean worktree `ecc77de`, `full_physics_v1` (`native_reliability_trim_full_physics_001`) | same 4-episode plan: PASS / PASS / FAIL (as declared) / PASS (repeat with identical final codes), home PASS x4, every reset bitwise equal to episode 0. Host RSS slope **56.5 MiB/episode** (PASS, gate 64; Phase G 140). **Not POLICY_READY**: GPU slope 52 MiB/episode over 3 non-monotonic points (gate 32). v1 additionally fails the known `tool_at_rest_after_reset`. |
+| Native memory diagnostic with `reload_in_place` (`native_memory_probe_inplace_001`, 8 x 20 steps) | host 24.2 MiB/episode (Phase G 82.0), GPU 9.3; reset checks bitwise equal to episode 0 and to a Phase G reopen reset |
+
+Native therefore stays **NOT POLICY_READY** under the predeclared gates; the kinematic backend
+remains POLICY_READY. Host growth is reduced, not eliminated.
+
 ## Scope and limits
 
 - Runtimes: kinematic and Isaac Sim Native. Isaac Lab with the preset raises
@@ -318,4 +382,5 @@ requires that velocity to repeat episode 0. Under v1, Native also fails
   physics).
 - One compiled task per process on Native (the runtime config carries the
   configured task); different goals need separate processes.
+- `stage_reset="reload_in_place"` requires live cameras (camera-off in-place resets crash PhysX).
 - Material parameters are provisional and uncalibrated.
