@@ -95,3 +95,31 @@ def test_live_002_inherits_everything_but_the_preflight():
         assert child[key] == parent[key]
     spec = L.sample_spec(child, 'E1_TEST_C_s1602')
     assert spec['declared_live_task'] == L.sample_spec(parent, 'E1_TEST_C_s1602')['declared_live_task']
+
+
+def test_live_004_adds_only_the_perception_hook():
+    parent, config = L.load_live()
+    child, _ = L.load_live(ROOT/'configs/wp11/generalization_round1_live_004.json')
+    assert child['stage_kind'] == 'supplementary controller variant' and 'preflight' not in child
+    assert [s['sample_id'] for s in child['samples']] == [f'E1_SLICE_PUSH_s{seed}' for seed in (1301, 1302, 1303)]
+    for key in ('task', 'schedule', 'success_criteria', 'outcome_classes', 'precedence', 'home_outcome', 'failure_policy',
+                'round_file', 'round_file_sha256', 'kinematic'):
+        assert child[key] == parent[key], key
+    overrides = dict(child['controller']['planner_overrides'])
+    assert overrides.pop('perception') == 'wrist_depth_relocate_v1'
+    assert overrides == parent['controller']['planner_overrides']
+    for key in ('edge_feedback', 'position_tolerance', 'grasp'):
+        assert child['controller'][key] == parent['controller'][key], key
+    runtime = {**child['runtime'], 'device_policy': {k: v for k, v in child['runtime']['device_policy'].items()
+                                                     if k not in ('max_mine', 'text')}}
+    assert runtime == {**parent['runtime'], 'device_policy': {k: v for k, v in parent['runtime']['device_policy'].items()
+                                                             if k not in ('max_mine', 'text')}}
+    assert child['runtime']['device_policy']['max_mine'] == 1
+    for spec in child['samples']:
+        built = L.compile_live(child, config, spec['family'], spec['seed'])
+        declared = spec['declared_live_task']
+        assert built['task'].task_id == declared['live_task_id_at_declaration_cpu']
+        assert (built['duration_s'], built['steps'], built['history_stride']) == \
+            (declared['duration_s'], declared['steps'], declared['history_stride'])
+        assert built['goal_diff_vs_kinematic'] == ['episode.duration_s']
+        assert built['task'].controller['planner']['perception'] == 'wrist_depth_relocate_v1'

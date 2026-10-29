@@ -1,0 +1,153 @@
+{
+ "schema": "rcs_generalization_live_stage_v1",
+ "inherits": {
+  "file": "configs/wp11/generalization_round1_live.json",
+  "sha256": "b7fb9702ee3bc1ccc0f749dc85edc774634558ecf53fbd89299bafe48eb97ce8"
+ },
+ "stage_id": "wp11_phaseE_round1_live_004",
+ "status": "PREDECLARED",
+ "stage_kind": "supplementary controller variant",
+ "log_prefix": "phaseE_live004",
+ "declared": "2026-10-30, before any live_004 run. Supplementary CONTROLLER VARIANT stage for SLICE-PUSH s1301, s1302 and s1303. Inherited unchanged from generalization_round1_live.json: the task builder (generalization.build_sample / compile_sample with the round file), the live recompile and duration rule (ceil((1.1 x live plan end + 1 s) / 0.5 s) x 0.5 s), the goal JSON (it may differ from the kinematic goal only in episode.duration_s), the goal evaluator goals.evaluate_goal and every threshold (sever: 3 pieces, minimum part fraction, main parts >= 0.99, frozen 2 mm location statistic for these grid-aligned planes; move_piece: >= 10 mm, others <= 2 mm), success criteria, outcome classes and precedence, home_outcome, schedule (full plan, hold to the time limit, physical return home), runtime (Native Isaac Sim 6.2, physical grasp, seed 42, cameras, overview camera), measured edge feedback, position tolerance, runner default C2 plan preflight (zero-protrusion scenes: the plain check) and failure policy. The ONLY new element is the ADR 0016 perception hook (controller.planner_overrides.perception) and, through the duration rule, the longer plan it gives. The round-1 kinematic CUTTING_FAILUREs of all five SLICE-PUSH seeds and the live_001 s1301 CUTTING_FAILURE stay as recorded and are never replaced by live_004 results; live_004 is a separate, labelled controller-variant result. Nothing is rescored.",
+ "reason": "Round 1 kinematic (5/5) and live_001 s1301 fail cut_at_declared_planes on cut 1. After cut 0 the +x part slides +1.16 to +1.25 mm, cut 1 lands 1.00 mm short in the reference frame, and the frozen statistic reads 4.0 mm against 2 mm. The edge stays within +-0.09 mm of the commanded world plane, so the error is the slide, not tracking. ADR 0016 measures the slide with the wrist D405_0 and relocates cut 1.",
+ "adr": "docs/adr/0016-configured-perception-relocation.md",
+ "controller": {
+  "all_families": "goal_planner_v1 plan (scene + goal + tool profile + options only; no particle, label, component or oracle input) driven by perception_relocate.RelocatePolicy, a WaypointPolicy subclass with the path_v2 delta law, controller_profile path_v2 and cut_extent plane_section from the round goal (unchanged), plus planner_options.perception = wrist_depth_relocate_v1 (ADR 0016).",
+  "planner_overrides": {
+   "max_rotation_deg": 1.0,
+   "max_translation_m": 0.001,
+   "perception": "wrist_depth_relocate_v1"
+  },
+  "planner_overrides_reason": "live_001 overrides unchanged (C5 live limits 1 deg / 1 mm per 20 ms step) plus the ADR 0016 perception hook, the only new controller element of this stage. The hook enters the compiled config hash, so the live task ids differ from live_001.",
+  "edge_feedback": "measured",
+  "edge_feedback_text": "Simulator tool-edge pose of the physically held knife (privileged tool proprioception, as C5); not material oracle state, not a policy observation.",
+  "position_tolerance": "path_v2 profile default 0.3 mm",
+  "per_family": {
+   "SLICE_PUSH": "survey0 (calibration) after HOME -> cut 0 -> survey1 -> cut 1 -> cut-disabled blade-face push -> RETURN_HOME. The SURVEY poses are planned from the scene config: the edge in the cut orientation at local (L/2 + 10 mm, 0, top + 8 mm), 30 mm safe approach, last 10 mm at 0.02 m/s, 0.3 s settle. At the end of each settle the wrist D405_0 depth frame of that step is measured: +x end face, wrist_depth_survey.end_face_x unchanged. The shift x_face(survey1) - x_face(survey0) is applied along local x to every non-SURVEY waypoint from APPROACH:cut1 up to RETURN_HOME (exclusive), which covers cut 1 and the push. An invalid estimate (missing or invalid face, stale frame, |shift| > 6 mm) applies no shift and is recorded."
+  },
+  "slice_push_vision_hook": {
+   "decision": "APPLIED as the configured-plan hook of ADR 0016 (not the registered-task path_v2_vision of ADR 0009, which stays unchanged and tied to SLICE-PUSH-01).",
+   "why_not_the_adr_0009_poses": "On the recorded live_001 s1301 episode, the wp11 wrist D405_0 (v5 rig: about 113 mm above, 174 mm -y and 45 mm -x of the edge, optical axis local +y) cannot see the +x end face from the cut-0 or cut-1 start settle: it projects to image row -14 at the cut-1 settle, and the blade hides x > edge x on the near lines. The -x end face is visible but belongs to the left piece, which moved -1.23 mm. The kerf face measures the blade-deformed layer: +1.66 mm against +1.14 mm for the rigid part, an error of +0.53 mm. A dedicated planned pose beyond the +x end is therefore used, as ADR 0016 Decision 2 declares.",
+   "inputs": {
+    "deployable": [
+     "wrist_d405_0 depth/valid/K",
+     "T_world_camera (robot kinematics + fixed mount)",
+     "nominal edge from joint-state proprioception (blade exclusion only)",
+     "scene/goal config"
+    ],
+    "privileged": [
+     "measured tool-edge pose: WaypointPolicy tracking feedback only (as live_001); never read by the hook"
+    ],
+    "never": [
+     "particles",
+     "labels",
+     "components",
+     "oracle positions"
+    ]
+   },
+   "cpu_preflight_at_declaration": "The C2 plan preflight of the full hooked live plan (motion_preflight.run_cli plan) PASSed for s1301, s1302 and s1303 on CPU before this declaration. The runner repeats it before launch."
+  },
+  "grasp": "ruler_knife_v2_y, physical_grasp, pregrasped at HOME (wp11_workcell_v1 q_home), ToolGraspConfig defaults; the knife is never fixed to the hand"
+ },
+ "code": {
+  "text": "A fresh detached git worktree at the commit that adds this file (git_dirty = False), runtime directories linked as in live_001-003 (.venv, .deps/*, artifacts/workcell_asset_cache, artifacts/wp11). Analysis and rendering may use a later clean worktree; the runs use this commit."
+ },
+ "runtime": {
+  "backend": "Native Isaac Sim 6.2 (scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal)",
+  "python": ".deps/isaacsim-venv/bin/python",
+  "seed": 42,
+  "tmpdir": "/mnt/data/ningan/tmp",
+  "worktree": "a fresh detached git worktree at the commit that adds this file (git_dirty = False); runtime directories linked as in earlier phases (.venv, .deps/*, artifacts/workcell_asset_cache, artifacts/wp11)",
+  "cameras": "--record-cameras --overview-camera (wrist D405 x2, global D455, presentation overview + close-up RGB); record_every per sample (5 for the short media samples, else 10)",
+  "device_policy": {
+   "devices": [
+    0,
+    1
+   ],
+   "max_mine": 1,
+   "max_other_active": 2,
+   "min_free_gib": 12,
+   "settle_after_launch_s": 180,
+   "disk_floor_gb": 15,
+   "text": "Launch on a GPU only when it has <= 2 other active jobs (a compute process not started by this queue that belongs to a RoboticCuttingSim runtime or shows nonzero SM utilization in a 3-sample nvidia-smi pmon window, as round 1) and >= 12 GiB free memory; at most ONE run of this stage at a time (max_mine = 1; other agents' Phase H and Test C live jobs run concurrently); at least 180 s after this queue's previous launch on that GPU. No launch when free space on /mnt/data minus the remaining estimate of running jobs minus the next sample's estimate is below 15 GB. Non-RCS processes are never stopped. The device is recorded per sample."
+  }
+ },
+ "failure_policy_note": "Inherited: a failed episode is kept and classified, and the same seed is never retried with changed settings. Only a crash before the first recorded control step (infrastructure, not a preflight refusal) is relaunched once into run_002.",
+ "samples": [
+  {
+   "priority": 1,
+   "sample_id": "E1_SLICE_PUSH_s1301",
+   "family": "SLICE_PUSH",
+   "seed": 1301,
+   "record_every": 10,
+   "media": "only if TASK_SUCCESS",
+   "estimated_disk_gb": 1.6,
+   "purpose": "live_001 failure seed (cut 1 1 mm short after a 1.16 mm slide), with the ADR 0016 relocation",
+   "declared_live_task": {
+    "live_task_id_at_declaration_cpu": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-a17dd6c4",
+    "live_plan_end_s": 34.44,
+    "duration_s": 39.0,
+    "steps": 1950,
+    "history_stride": 49
+   }
+  },
+  {
+   "priority": 2,
+   "sample_id": "E1_SLICE_PUSH_s1302",
+   "family": "SLICE_PUSH",
+   "seed": 1302,
+   "record_every": 10,
+   "media": "only if TASK_SUCCESS",
+   "estimated_disk_gb": 1.6,
+   "purpose": "kinematic failure seed (yaw +18.1 deg, 1.24 mm slide), first live run, with the ADR 0016 relocation",
+   "declared_live_task": {
+    "live_task_id_at_declaration_cpu": "CFG-E1_SLICE_PUSH_s1302-E1_SLICE_PUSH_s1302_slice_push-3e93034d",
+    "live_plan_end_s": 34.96,
+    "duration_s": 39.5,
+    "steps": 1975,
+    "history_stride": 50
+   }
+  },
+  {
+   "priority": 3,
+   "sample_id": "E1_SLICE_PUSH_s1303",
+   "family": "SLICE_PUSH",
+   "seed": 1303,
+   "record_every": 10,
+   "media": "only if TASK_SUCCESS",
+   "estimated_disk_gb": 1.6,
+   "purpose": "kinematic failure seed (168 mm bar, yaw -14.2 deg, 1.19 mm slide), first live run, with the ADR 0016 relocation",
+   "declared_live_task": {
+    "live_task_id_at_declaration_cpu": "CFG-E1_SLICE_PUSH_s1303-E1_SLICE_PUSH_s1303_slice_push-fb5a6125",
+    "live_plan_end_s": 35.1,
+    "duration_s": 40.0,
+    "steps": 2000,
+    "history_stride": 50
+   }
+  }
+ ],
+ "held": {
+  "E1_SLICE_PUSH_s1304": "not nominated for this stage; not run",
+  "E1_SLICE_PUSH_s1305": "not nominated for this stage; not run",
+  "other_round1_seeds": "not part of this stage"
+ },
+ "reporting_additions": [
+  "measured shift (survey estimate) against the oracle displacement of the cut-1 layers and of the +x end layer between the two survey frames (oracle report-only, after the episode, never a controller input)",
+  "calibration / survey frame timestamps, end-face lines used and line spread, applied world shift and shifted labels",
+  "cut-0 and cut-1 locations (frozen statistic, label boundaries), pieces, push distance and others' displacement",
+  "grasp slip and rotation, IK, home_outcome, class, wall time, device, git sha, disk use"
+ ],
+ "outputs": {
+  "root": "artifacts/wp11/phaseE/round1_live_004/<sample_id>/ (same layout as live_001)",
+  "logs": "artifacts/wp11/logs/phaseE_live004_*.log, queue log artifacts/wp11/logs/phaseE_live004_queue_001.log",
+  "evidence": "docs/evidence/wp11/phaseE_round1_live_004.json (live_001-003 evidence unchanged)",
+  "report": "docs/reports/WP11_PHASE_E_ROUND1.md, section 'Live stage' (appended)",
+  "media": "only for a seed that reaches TASK_SUCCESS: scripts/render_demo_episode.py (K = 2) into docs/media/wp11/slice_push_relocate/ (demo.gif of a few MB, demo.mp4, poster.png)"
+ },
+ "commands": {
+  "plan": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json plan",
+  "queue": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json queue --root artifacts/wp11/phaseE/round1_live_004 --queue-log artifacts/wp11/logs/phaseE_live004_queue_001.log",
+  "analyze": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json analyze --sample-dir artifacts/wp11/phaseE/round1_live_004/<sample_id> --run run_001 --out artifacts/wp11/phaseE/round1_live_004/<sample_id>/analysis_001",
+  "summarize": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json summarize --root artifacts/wp11/phaseE/round1_live_004 --out docs/evidence/wp11/phaseE_round1_live_004.json"
+ }
+}
