@@ -4,6 +4,7 @@ import json
 
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation
 
 from robotic_cutting_sim.physical_tool import ToolGraspConfig
 from robotic_cutting_sim.scene_frames import invert_transform, pose_matrix, transform_points
@@ -20,6 +21,52 @@ def _sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+# Values encoded in the 9bd8a29 spec-record digest, computed with OpenBLAS's SkylakeX kernel.
+V1_SPEC_RECORD_SHA256 = "85e7241b7cdb99c3ba79b19fb204d827ce5ffb677d3ca163228f79fd137e80f3"
+V1_PRINCIPAL_MOMENTS_KG_M2 = [7.646233096203564e-05, 0.00014912292976346195, 0.00021775700326667958]
+V1_PRINCIPAL_AXES_XYZW = [0.7071067811865471, 0.0, 0.0, 0.7071067811865479]
+EIGEN_ULP_FACTOR = 64
+
+
+def _assert_v1_spec_record_pinned(spec):
+    """Pin the v1 ToolSpec record bit for bit, except its two LAPACK eigen outputs.
+
+    `principal_moments_kg_m2` and `principal_axes_xyzw` come from `np.linalg.eigh`. NumPy's
+    bundled OpenBLAS picks its kernel from the CPU at run time, so GitHub runners differ.
+    SkylakeX/Cooperlake and Haswell/Zen/Sandybridge/Nehalem/Prescott return axes quaternions
+    1 ulp apart (0.7071067811865471/...479 against ...472/...478). This was reproduced locally
+    with OPENBLAS_CORETYPE. Every other field, including the inertia tensor itself, is
+    bit-identical under all seven kernels.
+
+    1. The stored eigen values are put back into the live record, and the record must hash to
+       the historic digest. This pins every environment-independent field exactly. It also
+       proves the stored values are the ones that digest encoded.
+    2. The live eigen outputs must match the stored values within a few ulp:
+       - Moments: |d lambda| <= 64*eps*|lambda|. A backward-stable symmetric eigensolver gives
+         |d lambda| <= c*eps*||I||, and ||I|| / lambda_min is about 2.8 here.
+       - Axes: compared as rotation-matrix columns up to the sign of each eigenvector (this
+         includes q versus -q). The tolerance is 64*eps absolute on unit vectors. Davis-Kahan
+         gives |d v| <= ||dI|| / gap, with gap = min eigenvalue separation, and
+         ||I|| / gap is about 3.2 here, so 64*eps leaves room for c*3.2*eps with c ~ 10.
+         The moments are checked to be well separated, so sign is the only freedom in the
+         eigenvectors.
+    The observed cross-kernel difference is 0.5*eps.
+    """
+    record = spec.to_dict()
+    eps = np.finfo(float).eps
+    reference = {**record, "principal_moments_kg_m2": V1_PRINCIPAL_MOMENTS_KG_M2,
+                 "principal_axes_xyzw": V1_PRINCIPAL_AXES_XYZW}
+    assert _sha(json.dumps(reference, sort_keys=True).encode()) == V1_SPEC_RECORD_SHA256
+    moments, ref_moments = np.array(record["principal_moments_kg_m2"]), np.array(V1_PRINCIPAL_MOMENTS_KG_M2)
+    assert np.all(np.abs(moments-ref_moments) <= EIGEN_ULP_FACTOR*eps*np.abs(ref_moments))
+    assert np.diff(ref_moments).min() > .25*ref_moments.max()  # nondegenerate: axes unique up to sign
+    axes = Rotation.from_quat(record["principal_axes_xyzw"]).as_matrix()
+    ref_axes = Rotation.from_quat(V1_PRINCIPAL_AXES_XYZW).as_matrix()
+    assert abs(np.linalg.norm(record["principal_axes_xyzw"])-1.) <= EIGEN_ULP_FACTOR*eps
+    for j in range(3):
+        assert min(np.abs(axes[:, j]-sign*ref_axes[:, j]).max() for sign in (1., -1.)) <= EIGEN_ULP_FACTOR*eps
+
+
 def test_v1_profile_outputs_are_pinned_bitwise():
     # Digests recorded at 9bd8a29, before tool_profile_v2 was added.
     p = RULER_KNIFE_V1
@@ -30,8 +77,7 @@ def test_v1_profile_outputs_are_pinned_bitwise():
     arrays = b"".join(np.ascontiguousarray(a).tobytes() for shape in spec.shapes
                       for a in (shape.vertices_tool_m, shape.triangles))
     assert _sha(arrays) == "808967427095beeced71278b05298f024ba9304540ac7800952e9648cf09c213"
-    assert _sha(json.dumps(spec.to_dict(), sort_keys=True).encode()) == \
-        "85e7241b7cdb99c3ba79b19fb204d827ce5ffb677d3ca163228f79fd137e80f3"
+    _assert_v1_spec_record_pinned(spec)
     assert p.hand_from_edge() == (0.0, 0.0, 0.16365000000000002, .5, .5, .5, -.5)
     polygon, half_width = p.tlmpm_profile()
     assert _sha(polygon.tobytes()+half_width.tobytes()) == \
