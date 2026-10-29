@@ -1,5 +1,12 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## 進行中：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
+
+- 計畫：[WP-11](WP11_PLAN.md)。刀具：[ADR 0013 `ruler_knife_v2`](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)。v2 改成像參考圖那樣夾住刀身一端的細握柄，刀身沿用 v1 的 120×40×1.5 mm。另外定義了削切姿態指標 τ／ψ／ρ／μ。
+- Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
+- 背景工作：見下一次更新。
+- 下一步：Phase A（CI）、Phase B（v2 profile）、C2 姿態預檢、C4 材料層近水平削切，並行。
+
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
 - **Phase 1 閘門**（計畫 §2 的整個矩陣含負對照）已由 [law 8](adr/0012-cutting-law-8-plow-gated-lead.md) 滿足：依計算式準則 M1–M9 全部 PASS（[matrix_law8_001](evidence/phase1/matrix_law8_001.json) 20:54；乾淨工作樹確認重跑 [matrix_law8_002](evidence/phase1/matrix_law8_002.json) 21:19，在 live 進行期間完成，verdict 相同）。rcs-review 判定 PASS（附條件，已處理）。
