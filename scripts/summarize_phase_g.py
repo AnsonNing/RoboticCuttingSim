@@ -75,14 +75,36 @@ def summarize(name, path):
     return row
 
 
+def rescore(path, config_path):
+    """Re-apply a reliability config to a stored dataset (episode.json files + fresh reader validation)."""
+    from robotic_cutting_sim import dataset as ds
+    path = Path(path)
+    index = json.loads((path/'index.json').read_text())
+    stored = [row for row in index['episodes'] if row.get('status') == 'STORED']
+    metas = [json.loads((path/row['dir']/'episode.json').read_text()) for row in stored]
+    validations = [ds.validate_episode(path, row['episode_id']) for row in stored]
+    failures = [row for row in index['episodes'] if row.get('status') != 'STORED']
+    config = json.loads(Path(config_path).read_text())
+    plan = json.loads((path/'dataset_manifest.json').read_text())['config']['episodes']
+    report = ds.reliability_report(metas, config, index['runtime'], validations=validations,
+                                   execution_failures=failures, planned_episodes=len(plan))
+    return {'config': str(config_path), 'version': config['version'], 'POLICY_READY': report['POLICY_READY'],
+            'failing': report['failing'], 'cross_episode': report['cross_episode'],
+            'scope': 'post-hoc rescoring of the stored episodes (read-only)'}
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--run', action='append', required=True, help='NAME=DIR')
+    p.add_argument('--rescore', action='append', help='Also re-apply this reliability config to every run (read-only)')
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args(argv)
     if a.out.exists():
         raise SystemExit(f'{a.out} exists; never overwrite')
     rows = [summarize(*item.split('=', 1)) for item in a.run]
+    for row in rows:
+        if a.rescore and (Path(row['dir'])/'index.json').exists():
+            row['rescored'] = [rescore(row['dir'], config) for config in a.rescore]
     a.out.write_text(json.dumps(jsonable(dict(runs=rows)), indent=2) + '\n')
     for row in rows:
         print(row['name'], row.get('POLICY_READY'), row.get('failing'))
