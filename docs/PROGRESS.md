@@ -6,9 +6,13 @@
 - 目前階段：Phase 3（Native 三個 Demo）。
   - Phase 1 完成：law 5（[ADR 0008](adr/0008-cutting-law-5-lead-preassignment.md)）1 mm 矩陣 M1–M9 依預先宣告的準則全部 PASS（[裁定](evidence/phase1/matrix_law5_adjudication_001.json)、[runner 原始結果](evidence/phase1/matrix_law5_001.json)；law 4 的矩陣與失敗也保留在 [matrix_law4_001](evidence/phase1/matrix_law4_001.json)）。M2 依 ADR 0006 Amendment 1、M4/M6 依 ADR 0008 核心帶韌帶定義、M8 依 M8b 支撐兩刀列；runner 的原始 FAIL 都保留。已知限制：law 5 讓切後兩塊被楔形推開 ±2.4 mm（law 4 ±1.2 mm），Demo 3 第二刀位置可能超過 v3 的 2 mm 界限（M8b 超過 6.7e-11 m）。
   - Phase 2 完成：`blademaster_workcell_v1`（木紋切割板＋riser，PhysX 摩擦 0.3＝TLMPM），`SLICE-PUSH-01`，overview＋close-up 展示相機（不是觀測），Native smoke 三個場景都 PASS_EXECUTION（[證據](evidence/phase2/native_smokes_001.json)）。Renderer（`scripts/render_demo_episode.py`）與 demo runner（`scripts/run_blademaster_demos.py`）已完成。
-- 背景工作：
-  - Native live demo：`run_blademaster_demos.py --run-id live_20261029_a`（Demo 1a、1b，GPU 1）與 `live_20261029_b`（Demo 2、3，GPU 0），輸出 `artifacts/wp10_claude/demos/<run_id>/`，log `artifacts/wp10_claude/logs/demos_<run_id>.log`。
-  - rcs-review 審查 Phase 1（xhigh）。
+- 第一輪 Native live demo（law 5、v1 腳本控制器、量測刃口回饋；`artifacts/wp10_claude/demos/live_20261029_{a,b}/`）：
+  - Demo 1a 完整下切：**PASS**（兩塊 50/50%、撤刀後持續分離、夾持未失、凍結 strict PASS，切口 1.5 mm）。
+  - Demo 1b 20° 斜切：**PASS**（swept-plane 準則；凍結切口位置對斜面不適用，照實 FAIL）。
+  - Demo 2 削除凸起：**FAIL**（去除 64.2%；原因是 v1 控制器：start 點過衝後在上升中被判定到達，削切直線朝 84 mm 外終點，刃口高約 1.2 mm）。改用 path_v2 控制器重跑。
+  - Demo 3 兩刀三塊＋推開：三塊、推開 19.3 mm、其他塊不動、推動時無新標籤＝計畫 §4 條件成立；v3 宣告切面位置 FAIL（2.0000000670 mm 對 2 mm，第一刀把長條推開 ±2.4 mm 造成；量化在 1 mm 粒子層）。
+- 背景工作：rcs-impl 實作 path_v2 腳本控制器（cross-track 路徑追蹤＋切前慢速接近與停留）；rcs-review 審查 Phase 1。
+- 待決定（自行判斷中）：是否以 law 6（前緣預指派不得在參考節點上造成兩側欄位）修正 law 5 在變形材料中的前方部分解耦。
 - 下一步：檢查四個 demo 的 summary 與影片 → 失敗就診斷、保留、修正後重跑 → rcs-review 審查 demo → README／報告整理 → 合併 main → DONE。
 
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
