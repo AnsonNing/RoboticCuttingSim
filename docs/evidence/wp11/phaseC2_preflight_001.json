@@ -1,0 +1,1631 @@
+{
+  "evidence": "WP-11 Phase C2 geometric feasibility preflight",
+  "result_dir": "artifacts/wp11/phaseC2/c2_preflight_003",
+  "result_json": "artifacts/wp11/phaseC2/c2_preflight_003/result.json",
+  "command": "scripts/preflight_wp11_orientations.py --out artifacts/wp11/phaseC2/c2_preflight_003 --workers 16 --render-dir docs/media/wp11 --evidence docs/evidence/wp11/phaseC2_preflight_003.json",
+  "git_commit": "20101c14a68dc1b1ff85e1251e68154465da68ab",
+  "git_dirty_tracked": [
+    " M scripts/analyze_cut_bridges.py",
+    " M scripts/run_phase1_matrix.py",
+    " M src/robotic_cutting_sim/blade_probe.py",
+    " M src/robotic_cutting_sim/cut_topology.py",
+    " M src/robotic_cutting_sim/cutting_surface.py",
+    " M src/robotic_cutting_sim/kinematic_env.py",
+    " M src/robotic_cutting_sim/live_env.py",
+    " M src/robotic_cutting_sim/live_material.py",
+    " M src/robotic_cutting_sim/multi_cut_evaluation.py"
+  ],
+  "seed": 42,
+  "thresholds": {
+    "ik_position_m": 0.001,
+    "ik_rotation_rad": 0.01,
+    "ik_active_position_m": 0.0002,
+    "ik_active_rotation_rad": 0.002,
+    "joint_margin_rad": 0.05,
+    "joint_step_rad": 0.06,
+    "env_clearance_m": 0.005,
+    "blade_fixture_clearance_m": 0.001,
+    "blade_free_workpiece_clearance_m": 0.002,
+    "self_clearance_m": 0.002,
+    "distmax_m": 0.1,
+    "max_sample_translation_m": 0.002,
+    "max_sample_rotation_deg": 1.0
+  },
+  "source_sha256": {
+    "scripts/preflight_wp11_orientations.py": "ef0d8d43c27bbee4c4069aa18ec61b09998608bbe9ba6a517eb58e7ff8c6078a",
+    "src/robotic_cutting_sim/tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7",
+    "src/robotic_cutting_sim/robot.py": "03e7078727f3ce111c927163547ee0462458b83f9cc568df2f0f714fa8c9a4b2",
+    "src/robotic_cutting_sim/camera_rig.py": "c7a00d3576bd8e6cee0336db331331c67aae8735ff74b58a242aed6818c50c7b",
+    "src/robotic_cutting_sim/task_scenarios.py": "bccafa338dd7deedc3311b63fc3a8ed4ece857ba611043f47cb55ccac3704053",
+    "configs/wp10_scenarios_v3.json": "79c1cce066350406e5908944b314847edb78bb86e9322c93e913860237ea66bb",
+    "configs/cutting_tasks_v2.json": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+    "configs/cutting_tasks_v3.json": "a737204ce5807bc05ebcfcdbe0f66f106edd731193b0dd18a0b501b2eedabf90"
+  },
+  "scope": "Geometry-only Newton IK + MuJoCo signed distances on Newton-converted official Franka colliders, finger visual hulls, v2 ToolSpec hulls, v5 wrist D405 boxes and workcell boxes. No dynamics, no material, no grasp holding, no sensor rendering. Raised +100/+150 mm placements are compute-only.",
+  "recommendation": {
+    "rule": "smallest rho in 0-10 deg passing every check (incl. trim_substrate_clearance); ties -> lowest placement, then largest smallest-normalized slack over the other checks",
+    "cid": "TRIM_v2x_my_rho10.0_p050",
+    "arrangement": "ruler_knife_v2_x",
+    "edge_line_world": "-y",
+    "rake_deg": 10.0,
+    "placement": "p050",
+    "placement_world_z_m": 0.05,
+    "q_home": [
+      -0.03155658766627312,
+      -0.3172582983970642,
+      -0.22465012967586517,
+      -2.3759117126464844,
+      -0.07901458442211151,
+      2.064814329147339,
+      -0.9932140111923218
+    ],
+    "home_edge_pose_world": [
+      0.0,
+      0.0,
+      0.238,
+      0.7071067811865476,
+      0.0,
+      0.0,
+      -0.7071067811865475
+    ],
+    "home_check": {
+      "hand_approach_axis_world": [
+        6.23659584831198e-07,
+        -4.845322661566869e-07,
+        -0.9999999999996881
+      ],
+      "hand_down": true,
+      "blade_top_below_pad_bottom_m": 0.021749965457606713,
+      "blade_tip_height_above_workpiece_top_m": 0.10799935467487298
+    },
+    "finger_q_m": 0.0112,
+    "binding": "trim_substrate_clearance",
+    "binding_detail": {
+      "slack": 0.09799963891196639,
+      "value": 4.8999819455983196e-05,
+      "threshold": 0.0,
+      "note": "lowest blade vertex above the TRIM target plane during SKIM (edge at plane + edge_clearance); negative = the lower bevel/face runs below the plane into the kept substrate",
+      "status": "PASS"
+    },
+    "trim_metrics": {
+      "fk_consistency_max_m": 1.1188630228279524e-16,
+      "samples": 425,
+      "tau_max_deg": 3.8316014740746943e-05,
+      "psi_max_deg": 4.926799196215033e-05,
+      "rho_min_deg": 9.999970947481074,
+      "rho_max_deg": 10.000030802661614,
+      "mu_max_abs_deg": 0.011721241525464108,
+      "edge_height_error_max_m": 9.455064287124408e-07,
+      "blade_lowest_above_target_plane_m": 4.8999819455983196e-05,
+      "lowest_non_blade_part_above_target_plane": {
+        "height_m": -0.05152118969731182,
+        "part": "arm0_hand_capsule",
+        "along_edge_from_edge_centre_m": 0.12364990885062184
+      }
+    },
+    "other_tasks": {
+      "CUT": "FAIL",
+      "OBLIQUE": "FAIL",
+      "SLICE_PUSH": "FAIL"
+    },
+    "other_task_cids": {
+      "CUT": "CUT_v2x_my_tilt00.0_p050",
+      "OBLIQUE": "OBLIQUE_v2x_my_tilt20.0_p050",
+      "SLICE_PUSH": "SLICE_PUSH_v2x_my_tilt00.0_p050"
+    }
+  },
+  "all_task_recommendation": {
+    "rule": "as above, restricted to candidates whose CUT, 20 deg OBLIQUE and SLICE-PUSH paths from the same q_home also pass; ties -> largest smallest slack over TRIM + the three paths",
+    "cid": "TRIM_v2y_py_rho10.0_p100",
+    "arrangement": "ruler_knife_v2_y",
+    "edge_line_world": "+y",
+    "rake_deg": 10.0,
+    "placement": "p100",
+    "placement_world_z_m": 0.1,
+    "q_home": [
+      -0.0874749943614006,
+      -0.3457081913948059,
+      -0.1642773449420929,
+      -2.275455951690674,
+      -0.05930738523602486,
+      1.9334616661071777,
+      0.5642676949501038
+    ],
+    "home_edge_pose_world": [
+      0.0,
+      0.0,
+      0.28800000000000003,
+      -0.7071067811865475,
+      0.0,
+      0.0,
+      0.7071067811865476
+    ],
+    "home_check": {
+      "hand_approach_axis_world": [
+        -7.97314007797872e-07,
+        4.483409762459303e-07,
+        -0.9999999999995817
+      ],
+      "hand_down": true,
+      "blade_top_below_pad_bottom_m": 0.021749974086152257,
+      "blade_tip_height_above_workpiece_top_m": 0.10800089538834166
+    },
+    "finger_q_m": 0.0112,
+    "binding": "trim_substrate_clearance",
+    "binding_detail": {
+      "slack": 0.09776496077490426,
+      "value": 4.888248038745213e-05,
+      "threshold": 0.0,
+      "note": "lowest blade vertex above the TRIM target plane during SKIM (edge at plane + edge_clearance); negative = the lower bevel/face runs below the plane into the kept substrate",
+      "status": "PASS"
+    },
+    "trim_metrics": {
+      "fk_consistency_max_m": 1.1188630228279524e-16,
+      "samples": 426,
+      "tau_max_deg": 4.5722003310150284e-05,
+      "psi_max_deg": 5.652987405544243e-05,
+      "rho_min_deg": 9.999969097966662,
+      "rho_max_deg": 10.000020819372116,
+      "mu_max_abs_deg": 0.025584449356069114,
+      "edge_height_error_max_m": 1.07533182137093e-06,
+      "blade_lowest_above_target_plane_m": 4.888248038745213e-05,
+      "lowest_non_blade_part_above_target_plane": {
+        "height_m": -0.10036449726203406,
+        "part": "arm0_hand_capsule",
+        "along_edge_from_edge_centre_m": 0.1236502065493419
+      }
+    },
+    "other_tasks": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "other_task_cids": {
+      "CUT": "CUT_v2y_py_tilt00.0_p100",
+      "OBLIQUE": "OBLIQUE_v2y_py_tilt20.0_p100",
+      "SLICE_PUSH": "SLICE_PUSH_v2y_py_tilt00.0_p100"
+    }
+  },
+  "geometry_only_smallest_rake": {
+    "cid": "TRIM_v2x_my_rho00.0_p050",
+    "rake_deg": 0.0,
+    "failing": [
+      "trim_substrate_clearance"
+    ],
+    "blade_lowest_above_target_plane_m": -0.0005496936294668853,
+    "edge_raise_to_keep_lowest_blade_point_at_plane_plus_clearance_m": 0.00075,
+    "note": "robot/tool/workcell geometry passes; only the blade-heel-below-target-plane condition fails at the frozen 0.2 mm edge clearance. Raising the edge by the listed amount (a controller parameter) removes it."
+  },
+  "smallest_passing_rake_deg_any": 10.0,
+  "trim_blade_heel_drop_below_edge_m": {
+    "0": 0.00075,
+    "5": 0.0004522954111026759,
+    "10": 0.00015114858102342418,
+    "12.5": 0.0,
+    "15": 0.0,
+    "25": 0.0,
+    "35": 0.0
+  },
+  "follow_up_support": {
+    "ruler_knife_v2_y|-y|p100": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_x|-y|p100": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_x|-y|p150": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_x|-y|p050": {
+      "CUT": "FAIL",
+      "OBLIQUE": "FAIL",
+      "SLICE_PUSH": "FAIL"
+    },
+    "ruler_knife_v2_y|+y|p150": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_y|+y|p100": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_y|-y|p150": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_x|+y|p100": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_x|+y|p150": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    },
+    "ruler_knife_v2_y|-y|p050": {
+      "CUT": "PASS",
+      "OBLIQUE": "PASS",
+      "SLICE_PUSH": "PASS"
+    }
+  },
+  "table": [
+    {
+      "cid": "TRIM_v2x_my_rho00.0_p050",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005496936294668853,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.4451639652252197,
+      "max_joint_step_rad": 0.03302690852433443
+    },
+    {
+      "cid": "TRIM_v2x_my_rho00.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005493584196690215,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.18295693397521973,
+      "max_joint_step_rad": 0.03175973892211914
+    },
+    {
+      "cid": "TRIM_v2x_my_rho00.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005494713520137195,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.39747095108032227,
+      "max_joint_step_rad": 0.017483443021774292
+    },
+    {
+      "cid": "TRIM_v2x_my_rho05.0_p050",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0002521867953587803,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.4386935234069824,
+      "max_joint_step_rad": 0.03966596629470587
+    },
+    {
+      "cid": "TRIM_v2x_my_rho05.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0002517431038782103,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.4368631839752197,
+      "max_joint_step_rad": 0.01725754141807556
+    },
+    {
+      "cid": "TRIM_v2x_my_rho05.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.00025179821633883326,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.3960750102996826,
+      "max_joint_step_rad": 0.01665988564491272
+    },
+    {
+      "cid": "TRIM_v2x_my_rho10.0_p050",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.8999819455983196e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.49214816093444824,
+      "max_joint_step_rad": 0.017556458711624146
+    },
+    {
+      "cid": "TRIM_v2x_my_rho10.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.961897964890494e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.44359278678894043,
+      "max_joint_step_rad": 0.0206223726272583
+    },
+    {
+      "cid": "TRIM_v2x_my_rho10.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.935416407270132e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.3953285217285156,
+      "max_joint_step_rad": 0.01600557565689087
+    },
+    {
+      "cid": "TRIM_v2x_my_rho12.5_p050",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020063079076987345,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.23787736892700195,
+      "max_joint_step_rad": 0.018791556358337402
+    },
+    {
+      "cid": "TRIM_v2x_my_rho12.5_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020044203231781021,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.43403172492980957,
+      "max_joint_step_rad": 0.016426563262939453
+    },
+    {
+      "cid": "TRIM_v2x_my_rho12.5_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002005587663403141,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.3951988220214844,
+      "max_joint_step_rad": 0.015669316053390503
+    },
+    {
+      "cid": "TRIM_v2x_my_rho15.0_p050",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002004498479911826,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.4776957035064697,
+      "max_joint_step_rad": 0.016938090324401855
+    },
+    {
+      "cid": "TRIM_v2x_my_rho15.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020059761242402496,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.23970413208007812,
+      "max_joint_step_rad": 0.025043845176696777
+    },
+    {
+      "cid": "TRIM_v2x_my_rho15.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020045336610710618,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.3952312469482422,
+      "max_joint_step_rad": 0.015328586101531982
+    },
+    {
+      "cid": "TRIM_v2x_my_rho25.0_p050",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020062282357388717,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.4591646194458008,
+      "max_joint_step_rad": 0.017047226428985596
+    },
+    {
+      "cid": "TRIM_v2x_my_rho25.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020051187125094683,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.43260717391967773,
+      "max_joint_step_rad": 0.014957010746002197
+    },
+    {
+      "cid": "TRIM_v2x_my_rho25.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002005045294226071,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.39698004722595215,
+      "max_joint_step_rad": 0.014396876096725464
+    },
+    {
+      "cid": "TRIM_v2x_my_rho35.0_p050",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020054978971603687,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.19230949878692627,
+      "max_joint_step_rad": 0.010897040367126465
+    },
+    {
+      "cid": "TRIM_v2x_my_rho35.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002004875289882968,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.4343602657318115,
+      "max_joint_step_rad": 0.01419152319431305
+    },
+    {
+      "cid": "TRIM_v2x_my_rho35.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020044049675441156,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.4012184143066406,
+      "max_joint_step_rad": 0.013721466064453125
+    },
+    {
+      "cid": "TRIM_v2x_py_rho00.0_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.016800644584430438,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance",
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.6898424625396729,
+      "max_joint_step_rad": 0.016088366508483887
+    },
+    {
+      "cid": "TRIM_v2x_py_rho00.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005499932809153452,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.30733394622802734,
+      "max_joint_step_rad": 0.018251925706863403
+    },
+    {
+      "cid": "TRIM_v2x_py_rho00.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005499958109579373,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.39650654792785645,
+      "max_joint_step_rad": 0.02128821611404419
+    },
+    {
+      "cid": "TRIM_v2x_py_rho05.0_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.019656305073610793,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance",
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.09190118312835693,
+      "max_joint_step_rad": 0.011677980422973633
+    },
+    {
+      "cid": "TRIM_v2x_py_rho05.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.00025226318393459235,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.39106690883636475,
+      "max_joint_step_rad": 0.0188024640083313
+    },
+    {
+      "cid": "TRIM_v2x_py_rho05.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.00025230357139763293,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.49340224266052246,
+      "max_joint_step_rad": 0.021626174449920654
+    },
+    {
+      "cid": "TRIM_v2x_py_rho10.0_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.02175186802933348,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance"
+      ],
+      "min_joint_margin_rad": 0.6974048614501953,
+      "max_joint_step_rad": 0.015424847602844238
+    },
+    {
+      "cid": "TRIM_v2x_py_rho10.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.885098417602152e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.43591010570526123,
+      "max_joint_step_rad": 0.019505023956298828
+    },
+    {
+      "cid": "TRIM_v2x_py_rho10.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.8842476266103274e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7387514114379883,
+      "max_joint_step_rad": 0.022560954093933105
+    },
+    {
+      "cid": "TRIM_v2x_py_rho12.5_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.02250981388784197,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance"
+      ],
+      "min_joint_margin_rad": 0.3499351739883423,
+      "max_joint_step_rad": 0.018386125564575195
+    },
+    {
+      "cid": "TRIM_v2x_py_rho12.5_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020006163263167065,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7233788967132568,
+      "max_joint_step_rad": 0.02701440453529358
+    },
+    {
+      "cid": "TRIM_v2x_py_rho12.5_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020005580104615062,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.5665756035596132,
+      "max_joint_step_rad": 0.02203381061553955
+    },
+    {
+      "cid": "TRIM_v2x_py_rho15.0_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.0230717367987951,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance"
+      ],
+      "min_joint_margin_rad": 0.07167840003967285,
+      "max_joint_step_rad": 0.010636687278747559
+    },
+    {
+      "cid": "TRIM_v2x_py_rho15.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020004470199386226,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7430437803268433,
+      "max_joint_step_rad": 0.023361623287200928
+    },
+    {
+      "cid": "TRIM_v2x_py_rho15.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00019998904026982678,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.5645426083356142,
+      "max_joint_step_rad": 0.021993041038513184
+    },
+    {
+      "cid": "TRIM_v2x_py_rho25.0_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.023349313699809575,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance"
+      ],
+      "min_joint_margin_rad": 0.6953310966491699,
+      "max_joint_step_rad": 0.015338046476244926
+    },
+    {
+      "cid": "TRIM_v2x_py_rho25.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020003080321219502,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.5080697536468506,
+      "max_joint_step_rad": 0.019755542278289795
+    },
+    {
+      "cid": "TRIM_v2x_py_rho25.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002000089073295741,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.9096734523773193,
+      "max_joint_step_rad": 0.011083126068115234
+    },
+    {
+      "cid": "TRIM_v2x_py_rho35.0_p050",
+      "status": "FAIL",
+      "binding": "wrist_camera_clearance",
+      "binding_value": -0.020480581864180072,
+      "binding_pair": [
+        "arm0_d405_Housing",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance"
+      ],
+      "min_joint_margin_rad": 0.6979093551635742,
+      "max_joint_step_rad": 0.012464404106140137
+    },
+    {
+      "cid": "TRIM_v2x_py_rho35.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020004794534163317,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7946648597717285,
+      "max_joint_step_rad": 0.015654072165489197
+    },
+    {
+      "cid": "TRIM_v2x_py_rho35.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00019980201849739698,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.48126220703125,
+      "max_joint_step_rad": 0.022832632064819336
+    },
+    {
+      "cid": "TRIM_v2y_my_rho00.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.023790053518543294,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision",
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.19937849044799805,
+      "max_joint_step_rad": 0.0228118896484375
+    },
+    {
+      "cid": "TRIM_v2y_my_rho00.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005493533511880533,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.42270374298095703,
+      "max_joint_step_rad": 0.02024751901626587
+    },
+    {
+      "cid": "TRIM_v2y_my_rho00.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005494801664214788,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.40102529525756836,
+      "max_joint_step_rad": 0.019087672233581543
+    },
+    {
+      "cid": "TRIM_v2y_my_rho05.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.02095061125493773,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision",
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.4658222198486328,
+      "max_joint_step_rad": 0.01950359344482422
+    },
+    {
+      "cid": "TRIM_v2y_my_rho05.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.00025151437535661514,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.42159605026245117,
+      "max_joint_step_rad": 0.01938319206237793
+    },
+    {
+      "cid": "TRIM_v2y_my_rho05.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0002516332705340407,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.3998386859893799,
+      "max_joint_step_rad": 0.019176483154296875
+    },
+    {
+      "cid": "TRIM_v2y_my_rho10.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.017341224219636533,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.4648106098175049,
+      "max_joint_step_rad": 0.01895749568939209
+    },
+    {
+      "cid": "TRIM_v2y_my_rho10.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 5.0045173187268643e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.39853334426879883,
+      "max_joint_step_rad": 0.04984981846064329
+    },
+    {
+      "cid": "TRIM_v2y_my_rho10.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.8880880319013276e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.39774036407470703,
+      "max_joint_step_rad": 0.01572844386100769
+    },
+    {
+      "cid": "TRIM_v2y_my_rho12.5_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.015256133775790867,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.5212662220001221,
+      "max_joint_step_rad": 0.035013437271118164
+    },
+    {
+      "cid": "TRIM_v2y_my_rho12.5_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002008069981412064,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.42093610763549805,
+      "max_joint_step_rad": 0.018360674381256104
+    },
+    {
+      "cid": "TRIM_v2y_my_rho12.5_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020007959409426568,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.22605443000793457,
+      "max_joint_step_rad": 0.02037215232849121
+    },
+    {
+      "cid": "TRIM_v2y_my_rho15.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.012989416158132747,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.4643278121948242,
+      "max_joint_step_rad": 0.018382132053375244
+    },
+    {
+      "cid": "TRIM_v2y_my_rho15.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020076301856612744,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.4209868907928467,
+      "max_joint_step_rad": 0.018007546663284302
+    },
+    {
+      "cid": "TRIM_v2y_my_rho15.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00019987330698634231,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.3961780071258545,
+      "max_joint_step_rad": 0.017189443111419678
+    },
+    {
+      "cid": "TRIM_v2y_my_rho25.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.0047483951706808886,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.48430681228637695,
+      "max_joint_step_rad": 0.015620186924934387
+    },
+    {
+      "cid": "TRIM_v2y_my_rho25.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020096260969826307,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.40810465812683105,
+      "max_joint_step_rad": 0.025352772907353938
+    },
+    {
+      "cid": "TRIM_v2y_my_rho25.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020004149821217787,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.3988609313964844,
+      "max_joint_step_rad": 0.015179157257080078
+    },
+    {
+      "cid": "TRIM_v2y_my_rho35.0_p050",
+      "status": "PASS",
+      "binding": "franka_workcell_collision",
+      "binding_value": 0.005757193581468174,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.4678025245666504,
+      "max_joint_step_rad": 0.014997124671936035
+    },
+    {
+      "cid": "TRIM_v2y_my_rho35.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020011750350339141,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.4262819290161133,
+      "max_joint_step_rad": 0.01421511173248291
+    },
+    {
+      "cid": "TRIM_v2y_my_rho35.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002000739179131572,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.40359926223754883,
+      "max_joint_step_rad": 0.015749216079711914
+    },
+    {
+      "cid": "TRIM_v2y_py_rho00.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.02008580253604736,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision",
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.6981053352355957,
+      "max_joint_step_rad": 0.01608353853225708
+    },
+    {
+      "cid": "TRIM_v2y_py_rho00.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005499456763200655,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.768106997013092,
+      "max_joint_step_rad": 0.018233776092529297
+    },
+    {
+      "cid": "TRIM_v2y_py_rho00.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0005499554693175479,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.9028678108006716,
+      "max_joint_step_rad": 0.014933645725250244
+    },
+    {
+      "cid": "TRIM_v2y_py_rho05.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.01867740065764481,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision",
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.6981215476989746,
+      "max_joint_step_rad": 0.01537930965423584
+    },
+    {
+      "cid": "TRIM_v2y_py_rho05.0_p100",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.0002522738553487336,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.7961037158966064,
+      "max_joint_step_rad": 0.01513700932264328
+    },
+    {
+      "cid": "TRIM_v2y_py_rho05.0_p150",
+      "status": "FAIL",
+      "binding": "trim_substrate_clearance",
+      "binding_value": -0.00025228669262050696,
+      "binding_pair": null,
+      "failing": [
+        "trim_substrate_clearance"
+      ],
+      "min_joint_margin_rad": 0.9112248420715332,
+      "max_joint_step_rad": 0.013519305735826492
+    },
+    {
+      "cid": "TRIM_v2y_py_rho10.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.01651573204260323,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.22107291221618652,
+      "max_joint_step_rad": 0.016148090362548828
+    },
+    {
+      "cid": "TRIM_v2y_py_rho10.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.888248038745213e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7962172031402588,
+      "max_joint_step_rad": 0.015245053917169571
+    },
+    {
+      "cid": "TRIM_v2y_py_rho10.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 4.891163384349029e-05,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.23987972736358643,
+      "max_joint_step_rad": 0.014163970947265625
+    },
+    {
+      "cid": "TRIM_v2y_py_rho12.5_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.015158546615858332,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.6915532350540161,
+      "max_joint_step_rad": 0.01780030131340027
+    },
+    {
+      "cid": "TRIM_v2y_py_rho12.5_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020003180327431147,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7962870597839355,
+      "max_joint_step_rad": 0.015311993658542633
+    },
+    {
+      "cid": "TRIM_v2y_py_rho12.5_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0001999881356811728,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.8750342894345522,
+      "max_joint_step_rad": 0.015147954225540161
+    },
+    {
+      "cid": "TRIM_v2y_py_rho15.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.013619369966587455,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.6911478042602539,
+      "max_joint_step_rad": 0.017947733402252197
+    },
+    {
+      "cid": "TRIM_v2y_py_rho15.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00019997948511987773,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7963638305664062,
+      "max_joint_step_rad": 0.015383392572402954
+    },
+    {
+      "cid": "TRIM_v2y_py_rho15.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0002000309036961634,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.21847760677337646,
+      "max_joint_step_rad": 0.013631463050842285
+    },
+    {
+      "cid": "TRIM_v2y_py_rho25.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.005710714049972268,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.6990330219268799,
+      "max_joint_step_rad": 0.01689702272415161
+    },
+    {
+      "cid": "TRIM_v2y_py_rho25.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020004927705494224,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7960996627807617,
+      "max_joint_step_rad": 0.014359105378389359
+    },
+    {
+      "cid": "TRIM_v2y_py_rho25.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020003823601671966,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.9027207661420107,
+      "max_joint_step_rad": 0.014024630188941956
+    },
+    {
+      "cid": "TRIM_v2y_py_rho35.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": 0.00480873496151528,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.1370093822479248,
+      "max_joint_step_rad": 0.013338685035705566
+    },
+    {
+      "cid": "TRIM_v2y_py_rho35.0_p100",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.00020002092557530604,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.6346700955182314,
+      "max_joint_step_rad": 0.025739014148712158
+    },
+    {
+      "cid": "TRIM_v2y_py_rho35.0_p150",
+      "status": "PASS",
+      "binding": "trim_substrate_clearance",
+      "binding_value": 0.0001999953038449298,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.9112725257873535,
+      "max_joint_step_rad": 0.012860937044024467
+    },
+    {
+      "cid": "CUT_v2y_my_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.0155104398727417,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.221649169921875,
+      "max_joint_step_rad": 0.0155104398727417
+    },
+    {
+      "cid": "OBLIQUE_v2y_my_tilt20.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.014687538146972656,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.24718618392944336,
+      "max_joint_step_rad": 0.014687538146972656
+    },
+    {
+      "cid": "SLICE_PUSH_v2y_my_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.0029987545378066817,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.17330384254455566,
+      "max_joint_step_rad": 0.01640784740447998
+    },
+    {
+      "cid": "CUT_v2x_my_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.01203182339668274,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7932403087615967,
+      "max_joint_step_rad": 0.01203182339668274
+    },
+    {
+      "cid": "OBLIQUE_v2x_my_tilt20.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.010588914155960083,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7932403087615967,
+      "max_joint_step_rad": 0.010588914155960083
+    },
+    {
+      "cid": "SLICE_PUSH_v2x_my_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.002999121223250545,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.7500717639923096,
+      "max_joint_step_rad": 0.012032337486743927
+    },
+    {
+      "cid": "CUT_v2x_my_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.00983738899230957,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.8071684837341309,
+      "max_joint_step_rad": 0.00983738899230957
+    },
+    {
+      "cid": "OBLIQUE_v2x_my_tilt20.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.009365677833557129,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.837512731552124,
+      "max_joint_step_rad": 0.009365677833557129
+    },
+    {
+      "cid": "SLICE_PUSH_v2x_my_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.0029993977235509527,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.7182431221008301,
+      "max_joint_step_rad": 0.00983726978302002
+    },
+    {
+      "cid": "CUT_v2x_my_tilt00.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.015284389807398475,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.6958820819854736,
+      "max_joint_step_rad": 0.010215051472187042
+    },
+    {
+      "cid": "OBLIQUE_v2x_my_tilt20.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.016486915759856165,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "wrist_camera_clearance",
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.6958882808685303,
+      "max_joint_step_rad": 0.009523391723632812
+    },
+    {
+      "cid": "SLICE_PUSH_v2x_my_tilt00.0_p050",
+      "status": "FAIL",
+      "binding": "franka_workcell_collision",
+      "binding_value": -0.01528445567146204,
+      "binding_pair": [
+        "arm0_hand_c",
+        "static_table"
+      ],
+      "failing": [
+        "franka_workcell_collision"
+      ],
+      "min_joint_margin_rad": 0.6958827972412109,
+      "max_joint_step_rad": 0.010215476155281067
+    },
+    {
+      "cid": "CUT_v2y_py_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.016645073890686035,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.2378300428390503,
+      "max_joint_step_rad": 0.016645073890686035
+    },
+    {
+      "cid": "OBLIQUE_v2y_py_tilt20.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.018966972827911377,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.23560786247253418,
+      "max_joint_step_rad": 0.018966972827911377
+    },
+    {
+      "cid": "SLICE_PUSH_v2y_py_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.002999866849342507,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.20225410349667072,
+      "max_joint_step_rad": 0.016656875610351562
+    },
+    {
+      "cid": "CUT_v2y_py_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.012479305267333984,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7963440418243408,
+      "max_joint_step_rad": 0.012479305267333984
+    },
+    {
+      "cid": "OBLIQUE_v2y_py_tilt20.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.013162612915039062,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7963440418243408,
+      "max_joint_step_rad": 0.013162612915039062
+    },
+    {
+      "cid": "SLICE_PUSH_v2y_py_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.002999930747780175,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.7711803317070007,
+      "max_joint_step_rad": 0.012524962425231934
+    },
+    {
+      "cid": "CUT_v2y_my_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.009556233882904053,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.8063926696777344,
+      "max_joint_step_rad": 0.009556233882904053
+    },
+    {
+      "cid": "OBLIQUE_v2y_my_tilt20.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.009378790855407715,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.8356084823608398,
+      "max_joint_step_rad": 0.009378790855407715
+    },
+    {
+      "cid": "SLICE_PUSH_v2y_my_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.0029994754110908364,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.717639684677124,
+      "max_joint_step_rad": 0.009556055068969727
+    },
+    {
+      "cid": "CUT_v2x_py_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.01410675048828125,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.41995696909725666,
+      "max_joint_step_rad": 0.01410675048828125
+    },
+    {
+      "cid": "OBLIQUE_v2x_py_tilt20.0_p100",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.01619952917098999,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.39888906478881836,
+      "max_joint_step_rad": 0.01619952917098999
+    },
+    {
+      "cid": "SLICE_PUSH_v2x_py_tilt00.0_p100",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.0029998536241609666,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.39428498037159443,
+      "max_joint_step_rad": 0.014112353324890137
+    },
+    {
+      "cid": "CUT_v2x_py_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.014813360758125782,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7420792151242495,
+      "max_joint_step_rad": 0.014813360758125782
+    },
+    {
+      "cid": "OBLIQUE_v2x_py_tilt20.0_p150",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.0147550655528903,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7312030363827944,
+      "max_joint_step_rad": 0.0147550655528903
+    },
+    {
+      "cid": "SLICE_PUSH_v2x_py_tilt00.0_p150",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.0030000949579096835,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.7419730592519045,
+      "max_joint_step_rad": 0.014816288836300373
+    },
+    {
+      "cid": "CUT_v2y_my_tilt00.0_p050",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.011860236525535583,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7160840034484863,
+      "max_joint_step_rad": 0.011860236525535583
+    },
+    {
+      "cid": "OBLIQUE_v2y_my_tilt20.0_p050",
+      "status": "PASS",
+      "binding": "joint_continuity",
+      "binding_value": 0.013636082410812378,
+      "binding_pair": null,
+      "failing": [],
+      "min_joint_margin_rad": 0.7160229682922363,
+      "max_joint_step_rad": 0.013636082410812378
+    },
+    {
+      "cid": "SLICE_PUSH_v2y_my_tilt00.0_p050",
+      "status": "PASS",
+      "binding": "blade_collision",
+      "binding_value": 0.0029987680206286873,
+      "binding_pair": [
+        "tool_blade",
+        "static_board_right_board"
+      ],
+      "failing": [],
+      "min_joint_margin_rad": 0.7160229682922363,
+      "max_joint_step_rad": 0.011911347508430481
+    }
+  ],
+  "images": [
+    {
+      "path": "docs/media/wp11/c2_home.png",
+      "bytes": 37678
+    },
+    {
+      "path": "docs/media/wp11/c2_trim_skim.png",
+      "bytes": 41928
+    },
+    {
+      "path": "docs/media/wp11/c2_cut.png",
+      "bytes": 41364
+    }
+  ],
+  "wall_s": {
+    "trim": 181.0163485910016,
+    "follow_ups": 76.87517357499746,
+    "total": 262.0099740779988
+  },
+  "run_history": [
+    {
+      "run": "artifacts/wp11/phaseC2/c2_preflight_001",
+      "status": "SUPERSEDED",
+      "wall_s": 249.2,
+      "note": "no trim_substrate_clearance check; branch choice ignored HOME closure (follow-up closures up to 1.80 rad). Docs outputs preserved in its docs_copies/."
+    },
+    {
+      "run": "artifacts/wp11/phaseC2/c2_preflight_002",
+      "status": "SUPERSEDED",
+      "wall_s": 262.8,
+      "note": "same checks as 003; tie-break used the near-identical substrate margin (picked v2_y -y p100 for all-task). Per-candidate statuses identical to 003. Docs outputs preserved in its docs_copies/."
+    },
+    {
+      "run": "artifacts/wp11/phaseC2/c2_preflight_003",
+      "status": "FINAL",
+      "wall_s": 264.0,
+      "note": "this evidence"
+    }
+  ],
+  "evidence_file_note": "Compact evidence for run c2_preflight_003 (file named phaseC2_preflight_001 as the first committed C2 evidence)."
+}

@@ -46,12 +46,12 @@ class KinematicCuttingBackend:
 
     runtime_source = "kinematic_ideal_tracking"
 
-    def __init__(self, config=KinematicConfig()):
+    def __init__(self, config=KinematicConfig(), *, task=None):
         self.config = config
         self.options = config  # CuttingTaskEnv reads tool_attachment_mode from here
-        self.task = make_task(config.task_id, seed=config.seed, particle_spacing_m=config.particle_spacing_m)
-        from .task_scenarios import configure_task
-        self.task = configure_task(self.task, scenario=config.scenario, material_profile_id=config.material_profile_id)
+        # Optional compiled scene_config.ConfiguredTaskSpec (ADR 0015); None keeps the registered task ids.
+        self.configured_task = task
+        self.task = self._task(config.seed)
         self.material, self.edge, self.time_s = None, None, 0.
         self.frames, self.calibration = {}, {}
         self.last_diagnostics = {}
@@ -62,11 +62,22 @@ class KinematicCuttingBackend:
     def tool_attachment_mode(self):
         return "kinematic_ideal_tracking"
 
+    def _task(self, seed):
+        c = self.config
+        from .task_scenarios import configure_task
+        if self.configured_task is not None:
+            if c.scenario is not None or (c.particle_spacing_m is not None
+                                          and c.particle_spacing_m != self.configured_task.particle_spacing_m):
+                raise ValueError("A configured task declares its supports and spacing in the scene/compile_task; "
+                                 "do not also pass a scenario or another particle spacing")
+            from dataclasses import replace
+            return configure_task(replace(self.configured_task, seed=int(seed)), material_profile_id=c.material_profile_id)
+        task = make_task(c.task_id, seed=int(seed), particle_spacing_m=c.particle_spacing_m)
+        return configure_task(task, scenario=c.scenario, material_profile_id=c.material_profile_id)
+
     def reset(self, seed=42):
         c = self.config
-        self.task = make_task(c.task_id, seed=int(seed), particle_spacing_m=c.particle_spacing_m)
-        from .task_scenarios import configure_task
-        self.task = configure_task(self.task, scenario=c.scenario, material_profile_id=c.material_profile_id)
+        self.task = self._task(seed)
         coupling = CouplingConfig(control_dt=self.task.control_dt_s, material_dt=c.material_dt,
                                   dx=self.task.grid_dx_m, device=c.device)
         kwargs = {"cutting_law": c.cutting_law, "max_cuts": c.max_cuts, "slice_efficiency": c.slice_efficiency}
@@ -179,8 +190,11 @@ def make_kinematic_env(task_id="CUT-01-R", *, seed=42, particle_spacing_m=None, 
     from .live_env import CuttingTaskEnv
     if observation_profile != "state":
         raise ValueError("The kinematic backend renders no cameras; use observation_profile='state'")
+    task = wrapper_options.pop("task", None)  # optional compiled ConfiguredTaskSpec (ADR 0015)
+    if task is not None:
+        task_id = task.task_id
     backend = KinematicCuttingBackend(KinematicConfig(task_id, seed, particle_spacing_m, material_dt, device,
                                                       cutting_law, max_cuts, slice_efficiency, scenario, material_profile_id,
-                                                      solver, slots_per_node))
+                                                      solver, slots_per_node), task=task)
     env = CuttingTaskEnv(backend, seed=seed, observation_profile="state", **wrapper_options)
     return env

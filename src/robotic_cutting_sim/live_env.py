@@ -254,6 +254,8 @@ class CuttingTaskEnv:
                     "runtime_source": self.runtime_source}
         material = self.backend.material
         bed = material.bed
+        if getattr(self.task, "evaluate_goal", None) is not None and profile is None and goal is None:
+            return self._evaluate_configured_goal(material, bed)
         refresh_surface = getattr(self.backend, 'refresh_surface_for_evaluation', None)
         if refresh_surface is not None:
             refresh_surface()
@@ -330,6 +332,38 @@ class CuttingTaskEnv:
         return {**result, "success": result["status"] == "PASS_TASK_METRICS",
                 "episode_complete": self.time_s >= self.task.duration_s-1e-9, "runtime_source": self.runtime_source}
 
+    def _evaluate_configured_goal(self, material, bed):
+        # Configured task (scene_config.ConfiguredTaskSpec, ADR 0015): its declared goal's evaluator.
+        # The extracted surface is optional quality evidence here; a failed
+        # extraction is recorded and never blocks the outcome.
+        data = {"time_s": [s["time_s"] for s in self._history],
+                **{name: np.asarray([s[name] for s in self._history]) for name in ("positions", "velocities", "codes")},
+                "mass_kg": material.masses, "reference_positions": material.world_points,
+                "reference_indices": material.lattice, "reference_stencil_nodes": bed.nodes.numpy(),
+                "reference_stencil_weights": bed.weights.numpy(), "reference_stencil_gradients": bed.gradients.numpy(),
+                "max_cuts": int(getattr(material, "max_cuts", 1)),
+                "code_encoding": getattr(material, "code_encoding", "ternary"),
+                "particle_spacing_m": float(self.task.particle_spacing_m)}
+        surface_status = "MEASURED"
+        try:
+            refresh_surface = getattr(self.backend, "refresh_surface_for_evaluation", None)
+            if refresh_surface is not None:
+                refresh_surface()
+            if hasattr(self.backend, "surface_arrays"):
+                (vertices, triangles), metadata = self.backend.surface_arrays, self.backend.surface_info
+            else:
+                (vertices, triangles), metadata = self.backend.surface, self.backend.surface_metadata
+            face_components = np.full(len(triangles), -1, np.int32)
+            for row in metadata["component_ranges"]:
+                face_components[row["first_triangle"]:row["first_triangle"]+row["triangles"]] = row["mechanical_component"]
+            data.update(surface_vertices_world=vertices, surface_triangles=triangles,
+                        surface_triangle_component_ids=face_components)
+        except Exception as error:  # quality evidence only; the outcome never depends on it
+            surface_status = f"NOT_RUN: surface extraction failed ({error!r})"
+        result = self.task.evaluate_goal(data)
+        return {**result, "surface_extraction": surface_status, "runtime_source": self.runtime_source,
+                "episode_complete": self.time_s >= self.task.duration_s-1e-9}
+
     def close(self):
         if not self._closed:
             self.backend.close()
@@ -341,13 +375,25 @@ class CuttingTaskEnv:
 @contextmanager
 def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=42,
                      action_mode=ACTION_MODES[0], observation_profile="vision_proprio",
-                     include_global_camera=False, camera_layout="wrist_d405_global_d455", **backend_options):
+                     include_global_camera=False, camera_layout="wrist_d405_global_d455", task=None, **backend_options):
     """Start a pinned live runtime in its dedicated venv, then close it on exit.
 
     Use a fresh output directory. Isaac Sim defaults to real native SingleView
     RGB-D; the separate Lab kit-less route explicitly uses ideal Warp RGB-D.
     A process should own only one Isaac runtime at a time.
+
+    ``runtime="kinematic"`` (opt-in) opens the ideal-tracking CPU/GPU backend
+    with the same API and ``observation_profile="state"``. ``task`` is a compiled
+    ``scene_config.ConfiguredTaskSpec`` (ADR 0015); it currently runs on the
+    kinematic runtime only (the Isaac runtimes build tasks from registered ids
+    and raise NotImplementedError rather than silently using another task).
     """
+    if task is not None and runtime != "kinematic":
+        raise NotImplementedError("Isaac Sim/Lab build tasks from registered task ids; a compiled ConfiguredTaskSpec "
+                                  "runs on runtime='kinematic' until a live passthrough is implemented")
+    if runtime == "kinematic":
+        yield from _kinematic_session(task, task_id, output_dir, seed, action_mode, observation_profile, backend_options)
+        return
     from .recording import manifest, new_output, write_json
     if runtime not in ("isaac_sim", "isaac_lab") or action_mode not in ACTION_MODES+(DELTA_MODE,):
         raise ValueError("Choose a supported live runtime and action mode")
@@ -398,3 +444,25 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
                 wrapper.close()
     else:
         raise ValueError("runtime must be isaac_sim or isaac_lab")
+
+
+def _kinematic_session(task, task_id, output_dir, seed, action_mode, observation_profile, options):
+    """open_cutting_env(runtime="kinematic"): the ideal-tracking backend behind the same API."""
+    from .recording import manifest, new_output, write_json
+    if observation_profile != "state":
+        raise ValueError("The kinematic runtime renders no cameras; use observation_profile='state'")
+    output = new_output(output_dir)
+    options = dict(options, seed=seed, action_mode=action_mode)
+    if task is not None:
+        from .scene_config import make_configured_kinematic_env
+        env = make_configured_kinematic_env(task, **options)
+    else:
+        from .kinematic_env import make_kinematic_env
+        env = make_kinematic_env(task_id, **options)
+    write_json(output/"manifest.json", manifest({"runtime": "kinematic", "task_id": env.task.task_id, "seed": seed,
+        "configured_task_sha256": getattr(env.task, "config_sha256", None), "action_mode": action_mode,
+        "formal_observation": {"profile": observation_profile}}, "kinematic_shared_api"))
+    try:
+        yield env
+    finally:
+        env.close()
