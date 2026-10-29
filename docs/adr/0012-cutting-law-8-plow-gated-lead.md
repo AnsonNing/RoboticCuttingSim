@@ -75,3 +75,24 @@ Expected (to be verified, not assumed):
    - Law 8 equals law 4 bitwise on an in-plane through cut.
    - Law 8 equals law 5 bitwise on a constant-rake skim (rake ≥ 15°).
    - All negative controls hold.
+
+## Review note (2026-10-29, rcs-review PASS with conditions; no verdict changes)
+
+- **Equivalence wording.** On CPU, law 8 is bitwise equal to law 4 for
+  in-plane cuts and to law 5 for constant-rake skims
+  (`tests/test_cutting_law_v8.py`). On GPU the rows match only within GPU
+  nondeterminism, not bitwise. Repeated GPU runs differ from about 0.1 s
+  onward, with equal final codes and |dx| ≤ 0.06 mm. In-plane rows match the
+  law-4 rows to 0–8 final codes and 0.03–0.47 mm in position; TRIM rows match
+  the law-5 rows to 5–16 codes, with identical or near-identical removal.
+- **Validation scope.** Law 8 is validated only for in-plane cuts (0°, plus
+  live noise below 9° in contact) and for 25°/35° constant-rake skims. The
+  matrix has no motion in the 15–25° range, so θ_plow itself is untested:
+  any threshold between about 0° and 25° would give the same verdicts. The
+  law switches discontinuously at 15°.
+- **Reported failures and limits.**
+  - Still reported: M2's original 2 mm FAIL, the M8a diagnostic FAIL, the
+    M9c/d Lab report-only rows, and the failures of laws 4–7.
+  - Provenance: the M1a/M3a/M3b/M8b inputs were first simulated on an
+    uncommitted tree before e19c2b6. They are rerun cleanly as `_002` and
+    rescored in `docs/evidence/phase1/matrix_law8_002.json`.
