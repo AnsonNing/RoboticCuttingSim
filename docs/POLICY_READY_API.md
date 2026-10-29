@@ -340,6 +340,28 @@ disabled, a device sync around each launch; perturbing, use for the split only).
 Nothing in the simulator imports the profiler; with no profiler installed the code
 paths are unchanged (tested bitwise on CPU).
 
+### Process recycling (`collect_dataset.py --recycle-every N`, opt-in mitigation)
+
+Without the flag every episode runs in the collector's one process (unchanged). With
+`--recycle-every N` the collector process becomes a parent: it creates the dataset
+directory, writes the manifest (`config.process_recycling = {every, blocks}`), runs the
+Native C2 preflight once, then runs every block of N consecutive plan episodes in a
+fresh child process (`recycle/block_###.json` spec, `runtime_block_###/` runtime
+receipts, `recycle/block_###_result.json`). Episode ids, seeds (fixed and the
+`--seed-base` random stream, drawn once over the whole plan) and the index stay
+continuous; each child opens the env with `recording["episode_index_start"]` (opt-in
+`PolicyReadyEnv` field, default 0) so the env's own episode index matches. Each
+`episode.json` carries `recycle = {block, every, block_episode, pid, runtime_dir}`. A child
+that dies leaves its unfinished episodes as `FAIL_EXECUTION` rows; the parent stops after
+two consecutive failed blocks. The parent validates and scores the whole dataset; the
+reliability report then also contains `memory.per_process` (per-block series, slopes and
+peak RSS). A reliability config may opt in to `memory.trend_scope = "per_process"` (gate
+on the largest within-process slope); every existing config keeps the whole-run fit.
+Recycling bounds per-process growth by restarting the process; it is a mitigation, not
+evidence that the runtime does not leak. Tested on the kinematic CPU backend
+(`tests/test_collector_recycling.py`: 5 episodes in 3 processes are bitwise equal to the
+one-process collection, `read_dataset.py` PASS).
+
 ## Phase G results (2026-10-30)
 
 Full receipts: [phaseG_policy_ready_001](evidence/wp11/phaseG_policy_ready_001.json).
