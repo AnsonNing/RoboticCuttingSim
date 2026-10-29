@@ -69,7 +69,7 @@
   - 失敗與 kinematic 一致：SLICE-PUSH s1301 第二刀位置 4.0 mm（長條滑 1.16 mm）；Test A s2 斜切位置 1.023 mm（> 1.00 mm）。手腕深度重新定位目前綁在 SLICE-PUSH-01，configured task 還不能用。
   - Test C s1602：live_001 預檢用單一凸包包住三個凸起，誤判碰撞而拒跑（SCENE_INFEASIBLE）；補充的 live_002 在第三次削切時因顯示用網格（`ParticleSurface`）遇到 11 顆粒子的碎片而中止（NOT_RUN）。兩筆紀錄都保留，修好後另立 live_003。
   - 只報告的路徑檢查：三次 10° 削切在削切前穩定時刀身低於未切頂面 0.19–0.24 mm（切削關閉），與 C5 相同的未解問題。
-  - 影片：[Test A s6](media/wp11/test_a_s6/demo.mp4)、[Test B s1502](media/wp11/test_b_s1502/demo.mp4)。
+  - 影片：[Test A s6](media/wp11/test_a_s6/demo.gif)、[Test B s1502](media/wp11/test_b_s1502/demo.gif)。
 - 磁碟：/mnt/data 剩 17 GB，已把 10 個 WP-11 之前的舊 artifact（約 11 GB）搬到根磁碟 `/home/ningan/RoboticCuttingSim_artifacts_rootdisk/`（rsync 後比對檔名與大小，再改 symlink；紀錄在該目錄的 `MOVE_LOG.txt`），現在 /mnt/data 剩 27 GB。
 - **C5b 完成：近水平 TRIM＋把 chip 推離，live PASS**（`03dfd1d` 程式，`0b2d55b` 證據與影片，[證據](evidence/wp11/phaseC5b_live_trim_clear_001.json)，[影片](media/wp11/trim_rho10_clear/demo.mp4)）。
   - 振盪原因：path_v2 每步把（目標 − 量測）加到上一個指令，等於在有延遲的系統上做單位增益積分器；擬合出的 z 軸極點 0.92、y 軸 1.07（不穩定）。
@@ -84,8 +84,11 @@
   - Profiling：kinematic 1 mm 每步 0.49–0.64 s，TLMPM 佔 99%；其中接觸 kernel 佔 GPU 時間 80%。Native TRIM 每步 0.67 s：TLMPM 58%、相機 12.6%、表面網格 11.8%。
   - 最佳化：opt-in `surface_update="on_capture"`（顯示網格只在拍照與評估前重建），表面時間 49 → 8.8 ms/步，物理逐位相同。
   - 設定檔 `runtime_profiles_v1`：`full_physics_v1`（唯一可用於驗收）與 `research_fast_v1`（每個 episode 標 `acceptance_valid: false`；kinematic TRIM 快 8×、SEVER 快 9.6× 但切面位置 FAIL；Native 快 2.3×）。
+- **Test C live PASS**（live_003，`002c95e` 先宣告，`d3f94e9`／`2b4f0a7` 修正，`ac4a3e1` 證據，[證據](evidence/wp11/phaseE_round1_live_003.json)，[影片](media/wp11/test_c_s1602/demo.gif)）：三個凸起逐一削除 0.962／0.997／0.972，底材單一 component，三個 chip 各自在自己的削切中分離並離開長條；夾持滑移 ≤ 0.83 µm；Return-to-Home PASS。
+  - 修正：顯示用網格遇到無法成網格的小碎片時跳過並記錄（物理、標籤、評估不變；可成網格時輸出逐位相同）；runner 預設預檢在 ≥ 2 個凸起時改用分段幾何（0／1 個凸起不變）。
+  - live_001（SCENE_INFEASIBLE）與 live_002（NOT_RUN）紀錄不變。
+  - 未解：PRE-CUT 時刀身低於頂面 0.23 mm（這次仍用 C5 控制器，`path_v3` 可解）；表面品質指標顯示頂面缺 0.66%、最大凹陷 22 mm（未計分，未調查）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
-  - E live_003：修好顯示網格的小碎片處理與多凸起預檢後，重跑 Test C s1602 live（先宣告）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。

@@ -572,12 +572,14 @@ does not come from the unmeshable skip: at the final frame there are 4 component
 investigated here.
 
 **Media** (rendered with `render_packed_episode.py --wide-piece-palette` at `74aafb0`, clean worktree):
-[demo.gif](../media/wp11/test_c_s1602/demo.gif) (3.6 MB), [demo.mp4](../media/wp11/test_c_s1602/demo.mp4) and
+[demo.gif](../media/wp11/test_c_s1602/demo.gif) (3.6 MB), demo.mp4 (local only; `*.mp4` is gitignored) and
 [poster.png](../media/wp11/test_c_s1602/poster.png), from `render_E1_TEST_C_s1602_002`.
 - The stock palette has three hues and treats components under 1 % of the particles as grey. Here p0 (0.4 %) and p2
   (0.7 %) would both be grey.
 - The opt-in wide palette uses five hues and a 0.2 % piece threshold, with the largest component (substrate) pinned
-  to the first hue. The substrate stays blue, and each chip keeps its own hue as it splits off (major 4, minor 0).
+  to the first hue. The substrate stays blue (major 4, minor 0). Only the substrate hue is pinned; chips are ordered
+  by position along the bar, so a chip keeps its hue only while chips are removed left to right. That order held in
+  this run, but it was not checked frame by frame.
 - The earlier render `render_E1_TEST_C_s1602_001`, at `002c95e` and without the pinning (the substrate changed hue as
   chips split off), is kept.
 
