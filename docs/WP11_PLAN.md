@@ -1,7 +1,17 @@
 # WP-11 — Cutting environment refinement, horizontal trimming, robustness and policy readiness
 
-**Source:** the user's WP-11 specification (2026-10-30) plus the reference
-image `/home/ningan/a.png` ("我的刀具要像是 a.png 這樣").
+**Source:** the user's WP-11 specification (2026-10-30), the reference image
+`/home/ningan/a.png` ("我的刀具要像是 a.png 這樣"), and the user's
+supplementary "Project Goal & Generalization Requirements" (2026-10-30).
+
+**Guiding goal (supplement).** Build a reusable, physically interactive
+cutting environment, not a fixed set of demos. That means:
+
+- the same robot, tool, material solver and evaluation pipeline serve any
+  scene configured by the user;
+- the task goal is defined separately from the scene;
+- any controller can run the task: scripted, a learned policy or an agent;
+- a single episode can contain multiple cuts and operations.
 **Branch:** `claude/wp11-cutting-refinement`, cut from main `3e26d6b`.
 **Baseline:** the BladeMaster demos with `--demo-set final_v4` and cutting
 law 8 (see the [demo report](reports/BLADEMASTER_DEMOS.md)). That baseline
@@ -64,10 +74,30 @@ about 0.46 GB.
 | F | P0/P1 | Grasp stability and law 8 validation | Grasp stress suite on v2. Law 8 boundary cases (15° gate, near-horizontal, rotation, sawing, finite edge). Resolution/dt study. |
 | G | P0 | Policy-ready API and dataset collector | Research preset; validated actions with explicit rejection; observations separate from privileged data; collector; multi-episode reliability (`POLICY_READY`). |
 | H | P1 | Profiling and safe optimization | Per-stage timing; low-risk overheads reduced; Research Fast and Full Physics profiles. |
-| I | P0 | Final validation and delivery | `final_v4` regression, horizontal TRIM video, generalization, policy-ready validation, CI, docs. Merge after review. |
+| S | P0 | Scene / task-goal / controller / evaluation separation (supplement §2, §4) | A config-only path from scene (workpiece geometry, pose, protrusions, supports) plus goal (sever at planes, divide into N pieces, remove selected protrusions or all in a region, trim to a plane or shape, sequential cuts, move a piece) to an evaluator. The same scene works with different goals, and the same goal with different controllers. Success criteria follow the goal. |
+| M | P0 | Scalable multi-cut history, [ADR 0014](adr/0014-scalable-cut-history-sparse-logical-fields.md) | `tlmpm_v5`: packed 2-bit digits (K ≤ 15) and sparse per-node logical-field slots. Equal to v4 law 8 for K ≤ 2. Scaling measured. Test B (≥ 3 slices) and Test C (3 protrusions removed one by one) at 1 mm. All negative controls pass. |
+| I | P0 | Final validation and delivery | `final_v4` regression, horizontal TRIM video, generalization, policy-ready validation, the supplement's Tests A–F, CI, docs. Merge after review. |
 
-Execution order is A ∥ (B → C2 preflight ∥ C4 material) → C3/C5 live → D →
-E/F → G → H → I. Every phase records its baseline, hypothesis, minimal
+### Generalization acceptance (supplement §8)
+
+| Test | Requirement |
+| --- | --- |
+| A | One workpiece, several feasible knife orientations and cutting directions. Real cutting, reachability, grasp stability and persistent separation are all checked. |
+| B | Three or more configurable slices in one episode, giving the correct number of independently moving pieces with persistent cut history. |
+| C | A workpiece with three protrusions at different positions, removed one at a time by successive operations. Removal is scored per protrusion, together with substrate integrity and physical chip separation. |
+| D | Predeclared random seeds varying pose, dimensions, protrusion layout and goal. Feasibility, execution, task success and failure reasons are reported separately. |
+| E | The same task run by the scripted controller and by an independently supplied action sequence through the public API, with no hidden task-specific simulator changes. |
+| F | Consecutive episodes with reset, state isolation, recording, termination and evaluation. Failed episodes remain usable. |
+
+Environment reset (a direct physics-state reset, suitable for RL) stays
+separate from the optional physical return-to-home used for demonstrations.
+RL episodes are not forced to return home physically.
+
+Execution order is:
+
+1. A ∥ B ∥ M, then C2 preflight ∥ C4 material ∥ S.
+2. C3/C5 live.
+3. D, then E/F (with Tests A–D), then G (Tests E/F), then H, then I. Every phase records its baseline, hypothesis, minimal
 change, tests, preserved failures, review, and a commit/push.
 
 ## Status
