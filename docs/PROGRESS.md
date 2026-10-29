@@ -4,8 +4,9 @@
 
 - 計畫 §2 要求矩陣（含負對照）**全部** PASS 才能進 live。law 5 的 M8 FAIL，live demo 卻在審查的「有條件接受」下就跑了，所以閘門其實沒有滿足。那批 live 結果保留為 law 5 的證據，不算通過閘門的驗收 run；DONE 標記已移除。
 - Law 6（[ADR 0010](adr/0010-cutting-law-6-deferred-lead-commit.md)，`9f57e41`）：CUT-01-R PASS、TRIM 25° 分離（96.7%），但 **TRIM 35°（`ruler_workcell_v2`）FAIL**：1 個 component、去除 0%，被帶到前方的粒子壓到切面下形成橋接（[證據](evidence/phase1/law6_smokes_001.json)）。Law 6 不用於 live。
-- 對策：[ADR 0011 law 7](adr/0011-cutting-law-7-eq8-coupled-flip.md)。標籤規則同 law 5，grid update 依 BladeMaster Eq. (8) 一併耦合 pⁿ 作為 FLIP 舊速度（相容欄位等同合併欄位）。先跑 M8b、M3b、M3a 快速檢查，再跑全矩陣。
-- 下一步：rcs-impl 實作 law 7 → 快速檢查 → 全矩陣全部 PASS → 重跑 live 最終組合 → 更新文件 → 合併 main → DONE。
+- Law 7（[ADR 0011](adr/0011-cutting-law-7-eq8-coupled-flip.md)，Eq. (8) 耦合 pⁿ）快速檢查 FAIL：M8b 誤差 3 mm、M3a 89.8%、M3b 0%。不用於 live。
+- 對策：[ADR 0012 law 8](adr/0012-cutting-law-8-plow-gated-lead.md)。law 4 加上 law 5 的前緣規則，但只用在偏離刃面 ≥ 15° 的犁切刃段：刃面內的切削與 law 4 相同（law 4 通過 M1–M2、M4–M9），前傾削切與 law 5 相同（law 5 通過 M3）。
+- 下一步：rcs-impl 實作 law 8 與快速檢查 → coordinator 跑 law 8 全矩陣並以計算式準則重評 → 全部 PASS 才重跑 live 最終組合 → 更新文件 → 合併 main → DONE。
 
 ## 先前結果：BladeMaster 風格三個 Demo，law 5（2026-10-29）
 
