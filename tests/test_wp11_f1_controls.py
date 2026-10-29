@@ -116,3 +116,17 @@ def test_negative_comparison_needs_matched_start_and_larger_response(protocol):
     assert not controls.compare_wp11(reference, moved, protocol)["larger_response"]
     same = {**weak, "metrics": _metrics(max_relative_translation_m=.004)}
     assert not controls.compare_wp11(reference, same, protocol)["larger_response"]
+
+
+def test_extra_metrics_handles_slip_and_loss_reports(protocol):
+    """Regression (run f1_grasp_001): monitor reports have no time key; SLIPPING/LOST must not raise."""
+    pose = [0., 0., 0., 0., 0., 0., 1.]
+    samples = [{"time_s": .002*(i+1), "left_load_n": 18., "right_load_n": 17., "contact_force": [0., 0., .9],
+                "tool": pose, "hand": pose} for i in range(400)]
+    monitor = [{"status": status, "grasp_lost": status == "LOST", "slip_since_settling_m": .001*i, "rotation_since_settling_rad": .01*i}
+               for i, status in enumerate(["HOLDING", "SLIPPING", "SLIPPING", "LOST"])]
+    extra = controls.wp11_extra_metrics(samples, {"hand_pose": pose, "tool_body_pose_xyzw": pose}, monitor, protocol)
+    events = extra["grasp_monitor"]
+    assert events["first_slipping_time_s"] == pytest.approx(.04) and events["first_lost_time_s"] == pytest.approx(.08)
+    assert events["ever_lost"] and events["final_status"] == "LOST"
+    json.dumps(extra, allow_nan=False)

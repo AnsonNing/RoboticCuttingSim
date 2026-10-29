@@ -667,7 +667,9 @@ def wp11_extra_metrics(samples, initial_state, monitor_rows, protocol):
         return {"mean": float(values.mean()), "min": float(values.min()), "max": float(values.max()),
                 "mean_last_window": float(values[window].mean()), "final": float(values[-1])}
     statuses = [r["status"] for r in monitor_rows]
-    first = lambda name: next((r["time_s"] for r in monitor_rows if r["status"] == name), None)
+    # Monitor reports carry no clock: row i is the (i+1)-th control step of the case.
+    control_dt = protocol["control_dt_s"]
+    first = lambda name: next(((i+1)*control_dt for i, r in enumerate(monitor_rows) if r["status"] == name), None)
     return {"evidence_available": True,
         "left_finger_force_n": stats(left), "right_finger_force_n": stats(right),
         "finger_force_source": "sum of actual Native contact-impulse norms on the handle per finger / dt (normal + friction)",
@@ -950,6 +952,11 @@ def worker_wp11(args, protocol):
                 result["classification"] = classify_wp11(cfg, result["metrics"], result["extra_metrics"], protocol,
                                                          result["material_unchanged"], grip_limit_ok)
                 result["status"] = "EXECUTED_RIGID_CONTROL"
+            except BaseException as error:
+                # Kit may exit Python inside env.close(); record the failure before leaving the context.
+                result.update(status="FAIL_RIGID_CONTROL", error=repr(error))
+                (output/"failure.txt").write_text(traceback.format_exc())
+                raise
             finally:
                 if protocol.get("export_final_control_scene", True) and getattr(env, "stage", None):
                     env.stage.Export(str(output/"final_control_scene.usda"))
@@ -960,8 +967,9 @@ def worker_wp11(args, protocol):
                 result["raw_trace_sha256"] = sha256(raw_path) if raw_path.exists() else None
                 write_json(output/"result.json", result)
     except BaseException as error:
-        result.update(status="FAIL_RIGID_CONTROL", error=str(error), wall_s=time.monotonic()-start_wall)
-        (output/"failure.txt").write_text(traceback.format_exc()); write_json(output/"result.json", result)
+        result.update(status="FAIL_RIGID_CONTROL", error=result.get("error") or repr(error), wall_s=time.monotonic()-start_wall)
+        if not (output/"failure.txt").exists(): (output/"failure.txt").write_text(traceback.format_exc())
+        write_json(output/"result.json", result)
     print(result["status"], output/"result.json", flush=True)
     return 0 if result["status"] == "EXECUTED_RIGID_CONTROL" and result.get("material_unchanged") else 1
 
