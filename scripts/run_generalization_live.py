@@ -598,10 +598,7 @@ def cmd_analyze(args):
 
 # ----------------------------------------------------------------------------- summary
 
-def cmd_summarize(args):
-    live, config = load_live(args.live_config)
-    root = Path(args.root)
-    kinematic = {s['sample_id']: s for s in read_json(ROOT/live['kinematic']['evidence'])['samples']}
+def stage_rows(live, root, kinematic):
     rows = []
     for spec in sorted(live['samples'], key=lambda s: s['priority']):
         sample_id = spec['sample_id']
@@ -620,17 +617,37 @@ def cmd_summarize(args):
             row['class'], row['reason'] = row['live']['class'], row['live']['class_reason']
         else:
             row['class'], row['reason'] = 'NOT_RUN', 'no live analysis (not launched or not finished)'
+        row['stage_id'] = live['stage_id']
         rows.append(row)
+    return rows
+
+
+def cmd_summarize(args):
+    live, config = load_live(args.live_config)
+    root = Path(args.root)
+    kinematic = {s['sample_id']: s for s in read_json(ROOT/live['kinematic']['evidence'])['samples']}
+    rows = stage_rows(live, root, kinematic)
     classes = list(live['outcome_classes'])
     table = {name: {c: sum(r['class'] == c for r in rows if r['family'] == name) for c in classes}
              for name in dict.fromkeys(r['family'] for r in rows)}
+    supplementary = []
+    for token in args.supplementary or []:
+        config_path, _, sub_root = token.partition(':')
+        sub_live, _ = load_live(ROOT/config_path)
+        supplementary.append({'stage_id': sub_live['stage_id'], 'live_config': config_path, 'root': sub_root,
+                              'declared': sub_live['declared'], 'reason': sub_live.get('reason'),
+                              'preflight': sub_live.get('preflight'),
+                              'samples': stage_rows(sub_live, Path(sub_root), kinematic)})
     out = {'schema': 'rcs_generalization_live_evidence_v1', 'round_id': live['round_id'], 'stage_id': live['stage_id'],
            'live_config': str(args.live_config), 'generated': datetime.now().astimezone().isoformat(), 'command': sys.argv,
            'root': str(root), 'label': live['scope'], 'counts': table,
-           'totals': {c: sum(r['class'] == c for r in rows) for c in classes}, 'held': live['held'], 'samples': rows}
+           'totals': {c: sum(r['class'] == c for r in rows) for c in classes}, 'held': live['held'], 'samples': rows,
+           'supplementary_stages': supplementary,
+           'supplementary_rule': 'Supplementary stages are separately declared, labelled results; they never change the '
+                                 'class of a sample in this stage.', **git_state()}
     write_new(args.out, out)
-    for r in rows:
-        print(r['sample_id'], r['kinematic']['class'], '->', r['class'], '|', r['reason'][:140])
+    for r in rows+[x for stage in supplementary for x in stage['samples']]:
+        print(r['stage_id'], r['sample_id'], r['kinematic']['class'], '->', r['class'], '|', r['reason'][:140])
     return 0
 
 
@@ -657,6 +674,7 @@ def main(argv=None):
     d = sub.add_parser('summarize')
     d.add_argument('--root', required=True)
     d.add_argument('--out', required=True)
+    d.add_argument('--supplementary', nargs='*', help='STAGE_CONFIG:ROOT of separately declared supplementary stages')
     args = p.parse_args(argv)
     args.live_config = Path(args.live_config).resolve()
     return {'prepare': cmd_prepare, 'plan': cmd_plan, 'queue': cmd_queue, 'analyze': cmd_analyze,
