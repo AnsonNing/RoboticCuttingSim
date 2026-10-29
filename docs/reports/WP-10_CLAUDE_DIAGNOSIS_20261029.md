@@ -1,6 +1,6 @@
 # WP-10 Claude 接手診斷與進度（2026-10-29，暫停點）
 
-狀態：**未完成，依使用者要求暫停**。分支 `claude/lucid-mendel-vt7n82`，未合併 main。
+狀態：**未完成，依使用者要求暫停**；之後依使用者 2026-10-29 的 BladeMaster 三 Demo 規劃在 tmux `rcs-demos` 由無人值守 session 接續（[計畫](../BLADEMASTER_DEMO_PLAN.md)）。分支 `claude/lucid-mendel-vt7n82`，未合併 main。
 這份文件記錄 Claude 從 [Codex 交接](../HANDOFF_WP10_CLAUDE_20261029.md) 之後的診斷、修改與實跑結果，供使用者綜合查看後決定下一步。
 新的原始輸出放在 `artifacts/wp10_claude/`（symlink 到 `/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude`，因為根磁碟只剩約 10 GB；不進 Git）。
 
@@ -40,7 +40,9 @@
 | `k_trim_law3sym_25deg_001`、`k_trim_law3sym_v2_001` | 兩側橫向閉合版 | 仍 FAIL 0%；同兩個粒子 (4.5, ±2.5, 24.5) mm 在刃口前方被推著走，從未進入窗口 |
 | `r_lab_cut01r_law2_001` | Lab CUT-01-R 量測軌跡重播，法則 2 | FAIL，1 component（重現 live 失敗，證明重播可用） |
 | `r_lab_cut01r_law3_001` | 同上，兩側橫向閉合版法則 3 | FAIL，1 component（底層橋接仍在） |
-| `k_trim_law3b_25deg_001`、`k_trim_law3b_v2_001`、`r_lab_cut01r_law3b_001`、`r_lab_cut02_law3b_001` | 目前版法則 3（加持續與前緣閉合） | 暫停時見下方「暫停時仍在跑」 |
+| `k_trim_law3b_25deg_001`、`k_trim_law3b_v2_001` | 目前版法則 3（橫向＋持續＋前緣閉合），25° 與 35° | 仍 FAIL，去除 0%（TRIM 橋接未解） |
+| `r_lab_cut01r_law3b_001` | Lab CUT-01-R 量測軌跡重播，目前版法則 3 | 分成 2 塊（71.55 g／72.45 g），唯一失敗項 `cut_at_workpiece_local_target_plane`：界面距切面 4.0 mm（閉合使切口寬約一格） |
+| `r_lab_cut02_law3b_001` | Lab CUT-02 重播，目前版法則 3 | 分成 2 塊（179.1 g／180.9 g），同樣只失敗切口位置 4.0 mm |
 
 所有失敗輸出保留，未覆寫任何舊實驗。`tlmpm.py`、`tlmpm_v2.py`、`cutting_tasks_v1/v2.json` 未修改。
 

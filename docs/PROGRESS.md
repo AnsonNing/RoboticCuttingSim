@@ -1,5 +1,12 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## 進行中（unattended session 會更新這一節）
+
+- 計畫：[BladeMaster 三個 Demo](BLADEMASTER_DEMO_PLAN.md)，由 tmux `rcs-demos` 的 Claude Code CLI session 執行（規則：`tools/demo_runner/round_prompt.md`）。
+- 目前階段：Phase 1（1 mm 切割物理修復）。最新結果：law 3 TRIM 25°/35° 仍 0%；Lab CUT 重播分成兩塊但切口位置 4.0 mm 超出門檻。
+- 背景工作：無。
+- 下一步：依 BladeMaster Eq. (4)–(6) 把 side assignment 改為有限刀刃掃掠區（新 law 版本），並修正 `analyze_cut_bridges.py` 改用實際 stencil weights／gradients。
+
 ## Paused checkpoint: Claude diagnosis of CUT/TRIM separation
 
 Paused at the user's request for review; WP-10 is not complete and nothing is
