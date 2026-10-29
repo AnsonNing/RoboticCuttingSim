@@ -4,9 +4,16 @@
 
 - 計畫：[WP-11](WP11_PLAN.md)。刀具：[ADR 0013 `ruler_knife_v2`](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)。v2 改成像參考圖那樣夾住刀身一端的細握柄，刀身沿用 v1 的 120×40×1.5 mm。另外定義了削切姿態指標 τ／ψ／ρ／μ。
 - Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
-- 背景工作：rcs-impl Phase A（CI；乾淨 venv 在 `/mnt/data/ningan/tmp/ci_repro_venv`）；rcs-impl Phase B（`ruler_knife_v2_y`／`_x` profile、CPU 測試、Native 自由空間夾持測試，輸出 `artifacts/wp11/phaseB/`）。
-- 已知風險（C4）：25° 雙斜面在前傾角 ρ < 12.5° 時，下斜面會低於刃口，刮進底材。C4 會同時測單斜面、平面朝下的變體，以及 law 8 在 15° 閘門以下（等同 law 4）的分離能力。
-- 下一步：B 的 profile commit 之後，開始 C2 姿態預檢（Newton IK＋碰撞，ρ = 0/5/10/15/25/35°），以及 C4 的 v4 任務與 1 mm kinematic 近水平削切材料測試。
+- 補充需求（Project Goal & Generalization）已整合進 [WP-11 計畫](WP11_PLAN.md)：Phase S（場景／目標分離）、Phase M（[ADR 0014](adr/0014-scalable-cut-history-sparse-logical-fields.md)：`tlmpm_v5` 打包 digit 與稀疏 slot）、Tests A–F。
+- 已 commit：Phase A 第一版（`97d56d3`：rollout pin 改為與環境無關，測試移除 matplotlib 依賴；CI 結果待確認）；Phase B 的 v2 profile（`a8e4d25`：`ruler_knife_v2_y`／`_x`，v1 pinned）與 Native grasp 工具（`c6eea75`）。
+- 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
+  - A：等 GitHub Actions 結果；
+  - B：Native 自由空間夾持測試與 v2 截圖（`artifacts/wp11/phaseB/`）；
+  - M：`tlmpm_v5`（`artifacts/wp11/phaseM/`）；
+  - C2：v2 姿態／碰撞預檢（`artifacts/wp11/phaseC2/`）；
+  - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
+- 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
+- 下一步：依 C2／C4 結果選定排列、ρ、刃型與擺放 → Phase S（場景／目標設定）→ C3 控制器與 C5 live → D → E/F → G → H → I。
 
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
