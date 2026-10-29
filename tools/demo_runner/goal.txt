@@ -1,1 +1,18 @@
-完成 RoboticCuttingSim 的 BladeMaster 風格三個 Demo 與整個切割物體模擬場景，照 docs/BLADEMASTER_DEMO_PLAN.md（使用者 2026-10-29 的規劃）：Phase 1 先在 1 mm 正式解析度修好切割物理（參考 BladeMaster Section III-C、Eq. (4)–(6)：cutting progress 只管阻力，persistent side code 由有限刀刃實際掃掠區指派，並和普通工具碰撞分開；第 2 節的測試矩陣含負對照全部通過才進 live）→ Phase 2 統一 workcell（有實際 collider 的切割板、尺狀刀物理夾持、相機 rig v5）→ Phase 3 在 Live Isaac Sim（Native）完成 Demo 1 完整切斷、Demo 2 削除凸起、Demo 3 兩刀三塊再用刀身推開一塊 → Phase 4/5 錄影、評估、可重跑的 demo runner。先讀 tools/demo_runner/round_prompt.md 並照它的規則做；若是中途恢復，先看 git status、docs/PROGRESS.md 最上方與 docs/BLADEMASTER_DEMO_PLAN.md，確認背景工作，從停下的地方接著做，不重做已完成的部分。規劃、決策、審查用 xhigh（你自己或 rcs-review 子代理）；寫程式與實作交給 rcs-impl 子代理（high）。每完成一個小步驟就 commit 並 push 到 claude/lucid-mendel-vt7n82，然後直接接下一步，不要停下來等人。全部完成並審查後：整理 GitHub（README、PROGRESS、報告），把三個 Demo 的影片與新場景影像放進 README，合併到 main 並 push，最後才建立 /mnt/data/ningan/lab_records/rcs_demo_runner/DONE。
+完成 RoboticCuttingSim 的 WP-11（使用者 2026-10-30 的規格與補充「Project Goal & Generalization Requirements」）：照 docs/WP11_PLAN.md 的 Phase A–M 與 I，把它做成可重用、可物理互動的切割環境，而不是固定的 Demo。內容包括：
+- ruler_knife_v2 像 /home/ningan/a.png（ADR 0013）；
+- 近水平 TRIM 的 live 流程 HOME → REORIENT → PRE-CUT → SKIM → WITHDRAW → RETURN_HOME；
+- return-to-home 與 episode 狀態機；
+- 場景隨機化與泛化統計；
+- 夾持壓力測試與 law 8 邊界驗證；
+- policy-ready API 與資料收集器；
+- 場景／目標／控制器／評估分離；
+- tlmpm_v5 可擴充多刀歷史（ADR 0014）；
+- 補充 §8 的 Tests A–F。
+執行順序照計畫第 4 節。BladeMaster baseline（final_v4、law 8）與所有凍結門檻不動，新功能一律版本化且 opt-in。先讀 tools/demo_runner/round_prompt.md 並照它的規則做。若是中途恢復，先看：
+- git status；
+- docs/PROGRESS.md 最上方「進行中」；
+- docs/WP11_PLAN.md。
+然後確認背景工作，從停下的地方接著做，不重做已完成的部分。規劃、決策、審查用 xhigh（你自己或 rcs-review）；寫程式與實作交給 rcs-impl（high）。每完成一個小步驟就 commit 並 push 到 claude/wp11-cutting-refinement，然後直接接下一步，不要停下來等人。全部 Phase（含 I：final_v4 regression、水平 TRIM 影片、泛化、policy-ready、Tests A–F、CI、文件）完成並經 rcs-review 審查後，依序：
+1. 更新 README（含新影片／場景影像）；
+2. 合併到 main 並 push；
+3. 最後才建立 /mnt/data/ningan/lab_records/rcs_demo_runner/DONE。
