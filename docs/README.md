@@ -18,10 +18,13 @@
 - [Demo report](reports/BLADEMASTER_DEMOS.md): live Native Demo 1 (complete
   and 20° oblique cut), Demo 2 (35° skim) and Demo 3 (two cuts, three parts,
   blade-face push), with every attempt in
-  [demo evidence](evidence/phase3/demos_live_003.json) and media under
+  [demo evidence](evidence/phase3/demos_live_004.json) and media under
   [media/demos](media/demos/).
 - Cutting laws: final [ADR 0012 law 8](adr/0012-cutting-law-8-plow-gated-lead.md)
-  (gate matrix [law 8](evidence/phase1/matrix_law8_002.json): M1–M9 PASS);
+  (gate matrices [law 8 001](evidence/phase1/matrix_law8_001.json) and
+  [clean-tree 002](evidence/phase1/matrix_law8_002.json): M1–M9 PASS; smokes and quick checks
+  [law 6](evidence/phase1/law6_smokes_001.json), [law 7](evidence/phase1/law7_quickcheck_001.json),
+  [law 8](evidence/phase1/law8_quickcheck_001.json));
   history [ADR 0006 law 4](adr/0006-swept-band-cutting-law-4.md) (with Amendment 1),
   [ADR 0008 law 5](adr/0008-cutting-law-5-lead-preassignment.md),
   [ADR 0010 law 6](adr/0010-cutting-law-6-deferred-lead-commit.md),

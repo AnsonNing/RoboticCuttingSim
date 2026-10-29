@@ -24,26 +24,33 @@ new ``_rNNN`` revision next to the earlier one)::
 
 Usage (recommended: reproduce the final demo set with one command)::
 
-  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --dry-run
-  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --gpu 1 --run-id <id>
-  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --run-id <id> --stage evaluate --stage render
-  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v1 --run-id <id> --stage publish
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --dry-run
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --gpu 1 --run-id <id>
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --run-id <id> --stage evaluate --stage render
+  .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --run-id <id> --stage publish
 
-``--demo-set final_v1`` is the final BladeMaster demo set: demos 1a, 1b and 2
-with controller profile ``path_v2`` and demo 3 with ``path_v2_vision``, all
-with cutting law 5 and seed 42 -- the configurations of the recorded final
-runs ``live_20261029_pathv2_d`` (1a, 1b), ``live_20261029_pathv2_c`` (2) and
-``live_20261029_vision_e`` (3). The profile is chosen per demo and recorded
-per demo in the run receipt, the demo summary and the index.
-``--demo-set final_v2`` is final_v1 with cutting law 6 (ADR 0010) instead of
-law 5 (same demos, profiles and seed). It has no recorded reference runs, and
-law-6 live episodes count only after the ADR 0010 matrix gate passes.
-``--demo-set final_v3`` is final_v1 with cutting law 7 (ADR 0011) instead of
-law 5 (same demos, profiles and seed). It has no recorded reference runs, and
-law-7 live episodes count only after the ADR 0011 matrix gate passes.
-``--demo-set final_v4`` is final_v1 with cutting law 8 (ADR 0012) instead of
-law 5 (same demos, profiles and seed). It has no recorded reference runs, and
-law-8 live episodes count only after the ADR 0012 matrix gate passes.
+``--demo-set final_v4`` is the final BladeMaster demo set. Demos 1a, 1b and 2
+use controller profile ``path_v2`` and demo 3 uses ``path_v2_vision``, all
+with cutting law 8 (ADR 0012) and seed 42. Its recorded runs are
+``live_20261029_law8_final`` (all four demos), made after the law-8 Phase 1
+gate.
+
+The other sets are earlier configurations, kept for reproduction:
+
+``--demo-set final_v1``
+  The same demos and profiles with cutting law 5. Its recorded runs are
+  ``live_20261029_pathv2_d`` (1a, 1b), ``live_20261029_pathv2_c`` (2) and
+  ``live_20261029_vision_e`` (3), all made before the Phase 1 gate was met.
+``--demo-set final_v2``
+  final_v1 with law 6 (ADR 0010). It has no recorded runs, because law 6 did
+  not pass the gate.
+``--demo-set final_v3``
+  final_v1 with law 7 (ADR 0011). It has no recorded runs, because law 7 did
+  not pass the gate.
+
+The profile is chosen per demo and recorded per demo in the run receipt, the
+demo summary and the index. (The ``DemoSet`` description strings below are
+recorded in summaries and are kept as they were when the set was declared.)
 ``--demo-set``
 is mutually exclusive with ``--demo`` and ``--controller-profile``; pass it to
 every stage of the run (evaluate checks each demo against its set profile).
@@ -186,7 +193,8 @@ DEMO_SETS = {
                         'final_v1 with cutting law 7 (ADR 0011, Eq. (8)-coupled FLIP reference): path_v2 for demos '
                         '1a/1b/2, path_v2_vision (ADR 0009) for demo 3, seed 42; no recorded reference runs; law-7 '
                         'live episodes count only after the ADR 0011 matrix gate passes'),
-    # final_v1 with cutting law 8 (ADR 0012); same demos/profiles/seed, no recorded reference runs yet.
+    # final_v1 with cutting law 8 (ADR 0012): the final set; recorded runs live_20261029_law8_final (after the
+    # law-8 gate). The description string is kept as declared because summaries record it.
     'final_v4': DemoSet('final_v4', (('1a', 'path_v2'), ('1b', 'path_v2'), ('2', 'path_v2'), ('3', 'path_v2_vision')),
                         8, 42, (),
                         'final_v1 with cutting law 8 (ADR 0012, lead rule only on plowing segments): path_v2 for '
@@ -194,7 +202,7 @@ DEMO_SETS = {
                         'law-8 live episodes count only after the ADR 0012 matrix gate passes'),
 }
 V1_ALL_NOTICE = ('NOTICE: --demo all with --controller-profile v1 (the default): this reproduces the first-round v1 '
-                 'configuration; use --demo-set final_v1 for the final set')
+                 'configuration; use --demo-set final_v4 for the final set')
 
 
 class StageError(RuntimeError):
@@ -1073,9 +1081,9 @@ class _ExplicitStore(argparse.Action):
 def build_parser():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--demo-set', choices=tuple(DEMO_SETS), default=None,
-                   help='Versioned demo set with per-demo controller profiles (recommended: final_v1 = 1a/1b/2 '
-                        'path_v2 + 3 path_v2_vision, cutting law 5, seed 42; final_v2 = final_v1 with cutting '
-                        'law 6; final_v3 = final_v1 with cutting law 7; final_v4 = final_v1 with cutting law 8). Mutually exclusive with --demo and '
+                   help='Versioned demo set with per-demo controller profiles (recommended: final_v4 = 1a/1b/2 '
+                        'path_v2 + 3 path_v2_vision, cutting law 8, seed 42, the final set; earlier: final_v1 = the '
+                        'same with law 5, final_v2 = law 6, final_v3 = law 7). Mutually exclusive with --demo and '
                         '--controller-profile')
     p.add_argument('--demo', action='append', choices=(*ORDER, 'all'), help='Repeatable; default all')
     p.add_argument('--stage', action='append', choices=(*STAGES, 'all'),

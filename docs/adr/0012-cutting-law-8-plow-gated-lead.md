@@ -1,7 +1,8 @@
 # ADR 0012 — Cutting law 8: law-5 lead pre-assignment only for plowing (out-of-plane) strokes
 
-Date: 2026-10-29. Status: accepted for implementation. Declared before any
-law-8 row or episode.
+Date: 2026-10-29. Status: accepted. The gate is met: computed M1–M9 PASS in
+`matrix_law8_001` / `matrix_law8_002`, and the final live set ran afterwards.
+Declared before any law-8 row or episode.
 
 ## Context
 
@@ -96,3 +97,7 @@ Expected (to be verified, not assumed):
   - Provenance: the M1a/M3a/M3b/M8b inputs were first simulated on an
     uncommitted tree before e19c2b6. They are rerun cleanly as `_002` and
     rescored in `docs/evidence/phase1/matrix_law8_002.json`.
+- Commit 38e92a9 says the reruns were "from f7ab36e". Precisely, the two
+  probes started at f7ab36e. M3b/M8b recorded 9f89575, a docs-only commit
+  made while they ran. The code is identical to e19c2b6, and every rerun was
+  clean.

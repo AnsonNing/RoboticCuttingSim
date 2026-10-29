@@ -746,7 +746,7 @@ def test_demo_set_accepts_its_own_pinned_values(runner, tmp_path, capsys):
 def test_v1_demo_all_prints_the_first_round_notice(runner, tmp_path, capsys):
     assert runner.main(["--demo", "all", "--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0
     out = capsys.readouterr()
-    assert "this reproduces the first-round v1 configuration; use --demo-set final_v1 for the final set" in out.err
+    assert "this reproduces the first-round v1 configuration; use --demo-set final_v4 for the final set" in out.err
     assert "--controller-profile" not in out.out and out.out.count("run_wp10_live.py") == 4
     assert runner.main(["--dry-run", "--run-id", "R1", "--root", str(tmp_path)]) == 0       # no --demo = all
     assert "first-round" in capsys.readouterr().err

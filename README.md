@@ -17,8 +17,11 @@ the same workcell, `blademaster_workcell_v1`:
 - The cutting board has real colliders and friction.
 - Cameras: wrist D405 rig v5 and the Global D455.
 - Material: cutting law 8 at 1 mm particles, 0.1 ms and a 4 mm grid; seed 42.
-  The 1 mm acceptance matrix, negative controls included, passed in full
-  before these runs.
+  The 1 mm acceptance matrix passed every row before these runs, negative
+  controls included, under criteria declared in advance. M8a, a diagnostic
+  row, fails. M2 passes only under ADR 0006 Amendment 1 (it fails the
+  original 2 mm limit). The Lab replays M9c/d are report-only. A clean-tree
+  confirmation of four rows finished while the live set was running.
 - Control: scripted waypoint controllers.
 
 Videos are rendered from the recorded episode: presentation overview and
@@ -28,7 +31,7 @@ diagnostics. Images are captured at 10 Hz; actions and robot state are
 recorded at 50 Hz. The GIFs play at 2× speed; the MP4s play in real time at
 the capture rate.
 [Full report](docs/reports/BLADEMASTER_DEMOS.md) ·
-[all attempts, including failures](docs/evidence/phase3/demos_live_003.json).
+[all attempts, including failures](docs/evidence/phase3/demos_live_004.json).
 
 ### Demo 1 — complete cutting
 
@@ -112,7 +115,11 @@ The 1 mm acceptance matrix (vertical and 20° cuts, TRIM at 25°/35° and on the
 board, partial cut, side push, flat press, stop and withdrawal, persistence,
 two sequential cuts, Native measured-trajectory replays) passes **M1–M9**
 under computed criteria. Those criteria were declared before the law-8 runs
-([matrix](docs/evidence/phase1/matrix_law8_002.json)).
+([matrix](docs/evidence/phase1/matrix_law8_002.json)). Three caveats:
+
+- The M8a diagnostic fails.
+- M2 passes only under Amendment 1; it fails the original 2 mm limit.
+- The Lab replays M9c/d are report-only (Lab cut location 4 mm, FAIL).
 
 Earlier laws and their failures are preserved:
 

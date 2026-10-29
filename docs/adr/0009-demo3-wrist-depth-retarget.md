@@ -115,3 +115,12 @@ The rcs-review found two things the text above does not state.
     wrist depth is not fully independent of the cut topology. The measured
     +x end face is far from any cut and is unaffected. The recorded
     kerf-face diagnostic is affected.
+
+## Amendment 3 (2026-10-29, disclosure only)
+
+The decision above declares the profile with cutting law 5. Its use with
+cutting law 8 for the final Demo 3 was declared separately, before any law-8
+run: in ADR 0012 Acceptance step 3, and in `--demo-set final_v4` (e19c2b6).
+The profile itself is unchanged. Under law 8 the live survey measured a
+1.20 mm bar shift; under law 5 it measured 2.17 mm. Both runs pass, including
+the frozen v3 slice-push report.

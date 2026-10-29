@@ -3,7 +3,7 @@
 使用者決定（2026-10-29）：目標場景、刀具與展示方式參考 BladeMaster
 （專案頁 <https://jango6324.github.io/blademaster/>，論文 Section III-C、Eq. (4)–(6)、Fig. 1/5/8）。
 不再擴張新的 Agent 或訓練框架；先完成一個真正可操作的 Robotic Cutting Workcell 與三個 Demo。
-> **狀態（2026-10-29 晚）**：P0 工作包 A–D 完成。A：law 8 的 1 mm 矩陣依計算式準則 M1–M9 全部 PASS（[matrix_law8_002](evidence/phase1/matrix_law8_002.json)）。閘門通過後，Native live 最終組合（law 8）四個 Demo 全部 PASS。完整結果、失敗紀錄（law 4–7、law 5 的先前 live 組合、第一輪 v1 控制器）與限制見 [完成報告](reports/BLADEMASTER_DEMOS.md)。第 1 節是開工前的暫停點，保留作歷史紀錄。P1／P2（E–H）未開始。
+> **狀態（2026-10-29 晚）**：P0 工作包 A–D 完成。A：law 8 的 1 mm 矩陣依計算式準則 M1–M9 全部 PASS（M8a 是診斷列，FAIL；M2 依 Amendment 1；M9c/d 只報告）。matrix_law8_001（20:54）通過後才開始 Native live 最終組合（law 8），四個 Demo 全部 PASS；乾淨工作樹的確認重跑（[matrix_law8_002](evidence/phase1/matrix_law8_002.json)）在 live 進行期間完成，沒有改變任何 verdict。完整結果、失敗紀錄（law 4–7、law 5 的先前 live 組合、第一輪 v1 控制器）與限制見 [完成報告](reports/BLADEMASTER_DEMOS.md)。第 1 節是開工前的暫停點，保留作歷史紀錄。P1／P2（E–H）未開始。
 
 本文件取代 [WP-10 規格](WP10_SPECIFICATION.md) 第 3 節的執行順序；WP-10 的 E/F/G 降為後續（見第 6 節）。
 工作分支：`claude/lucid-mendel-vt7n82`。交接診斷：[WP-10 Claude 診斷](reports/WP-10_CLAUDE_DIAGNOSIS_20261029.md)。
