@@ -25,6 +25,16 @@
   - 拉切／鋸切時 swept normal 條件不佳；
   - live runtime 未逐步記錄 stroke；
   - Lab parity 與 P1／P2 未做。
+- 後續項目（非阻塞，來自兩次 rcs-review；做的時候要用新版本，不改任何已記錄的 verdict）：
+  - Demo 3 評估補上「兩刀之間的抬刀與移位不加標籤」檢查；
+  - Demo 1 outcome 加上切口位置準則；
+  - live runtime 逐步記錄 stroke 狀態；
+  - 診斷 law 5 改變刃口前方動態的機制（per-field FLIP）；
+  - 鋸切前加 swept normal 保護；
+  - stroke 持續改為也考慮轉動；
+  - capture rate 改以非展示相機量測；
+  - 展示相機的影格加上 presentation-only 旗標；
+  - renderer 加回 Global D455。
 - 完整 CPU regression（`.venv/bin/python -m pytest -q`）：689 passed、3 xfailed（strict：law 4 25°/35°、law 5 35° 的 2 mm 削除），0 failed，359 s（log `artifacts/wp10_claude/logs/cpu_full_final_001.log`）。
 - 環境注意：背景子代理執行「寫入 `artifacts/`」的 Bash 指令曾卡在權限等待。後來 `/mnt/data/ningan` 已加入工作目錄；GPU／Isaac 執行改由 coordinator 直接跑。
 
