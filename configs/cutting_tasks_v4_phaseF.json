@@ -1,0 +1,74 @@
+{
+  "protocol_id": "cutting_tasks_v4_phaseF_20261030",
+  "inherits": {
+    "material_common_episode_and_thresholds": "cutting_tasks_v1.json (each task's base entry, unchanged)",
+    "loader_semantics": "cutting_tasks_v4.json / tasks._v4_task_config (base entry plus overrides; blade_rake_deg -> R_y(rho) edge orientation, tau = psi = 0)",
+    "tool_profiles": "src/robotic_cutting_sim/tool_profile.py"
+  },
+  "freeze_boundary": "Defined 2026-10-30 before any Phase F row ran (configs/wp11/phaseF_protocol_v1.json). Versioned variants needed by Phase F rows only: two TRIM-02-K2 rakes that cutting_tasks_v4 does not define (14 and 16 deg for the F2.1 theta_plow gate rows), the CUT-02 wide-bar geometry with the end-held v2 knife (F2.8), and the F2.11 supported slotted bar as a scene override plus a sequence goal. Each task inherits its v1 base task's thresholds unchanged; the v1-v4 protocols, task IDs and thresholds are unchanged. Loaded only by robotic_cutting_sim.law8_validation (opt-in); live runtimes never see these ids.",
+  "units": "m, kg, s, deg, xyzw quaternions",
+  "tasks": {
+    "TRIM-02-K2-R14": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 14.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "Phase F2.1 gate row: TRIM-02-K2 family (TRIM-01 workpiece, fixture, path, edge clearance and thresholds; ruler_knife_v2_y double bevel) at rho = 14 deg, 1 deg below law 8's theta_plow = 15 deg."
+    },
+    "TRIM-02-K2-R16": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 16.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "Phase F2.1 gate row: TRIM-02-K2 family at rho = 16 deg, 1 deg above theta_plow = 15 deg."
+    },
+    "CUT-04-K2-W60": {
+      "base": "CUT-01",
+      "derived_from": "CUT-02",
+      "tool_profile": "ruler_knife_v2_y",
+      "edge_orientation_local_xyzw": [0.0, 0.7071067811865475, 0.0, 0.7071067811865476],
+      "geometry": {"length_m": 0.16, "width_m": 0.06, "base_height_m": 0.025, "bumps": []},
+      "fixture_boxes_local": [
+        {"name": "left_pedestal", "center_m": [-0.055, 0.0, -0.005], "half_extents_m": [0.035, 0.036, 0.005]},
+        {"name": "right_pedestal", "center_m": [0.055, 0.0, -0.005], "half_extents_m": [0.035, 0.036, 0.005]}
+      ],
+      "edge_position_knots_local_txyz": [[0.0, 0.0, 0.0, 0.06], [1.0, 0.0, 0.0, 0.035], [1.6, 0.0, 0.0, 0.035],
+                                         [5.6, 0.0, 0.0, -0.003], [6.4, 0.0, 0.0, 0.06], [8.0, 0.0, 0.0, 0.06]],
+      "reason": "Phase F2.8 finite-edge row: the CUT-02 (cutting_tasks_v2) 160 x 60 x 25 mm bar, its wider pedestals and reference knots, with the end-held ruler_knife_v2_y held as in CUT-03-K2 (edge across the bar along +y, vertical in-plane cut, grip beyond the edge's -y end). CUT-01 thresholds (inherited, unused by the F2.8 criterion)."
+    }
+  },
+  "configured_tasks": {
+    "F2.11_slotted_bar_three_cuts_push": {
+      "scene_base": "bar_slotted_board_4slots.json",
+      "scene_overrides": {
+        "scene_id": "bar_slotted_board_4slots_v2y_phaseF",
+        "tool": {"profile_id": "ruler_knife_v2_y", "grasp_preset": "default"},
+        "solver": {"module": "tlmpm_v5", "cutting_law": 8, "max_cuts": 3, "particle_spacing_m": 0.001, "grid_dx_m": 0.004}
+      },
+      "goal": {
+        "schema": "rcs_goal_v1",
+        "goal_id": "phaseF_slice3_then_push",
+        "type": "sequence",
+        "description": "Phase F2.11: three sequential through-cuts at local x = -48 / -16 / +16 mm over the board's relief slots (cut digits 0, 1, 2; four pieces), then a cut-disabled blade-face push of the +x piece by 10 mm from inside the x = +16 mm kerf. The goal evaluation is report-only; the F2.11 verdict is the Phase F protocol criterion.",
+        "episode": {"duration_s": 30.0, "control_dt_s": 0.02},
+        "steps": [
+          {"type": "sever", "goal_id": "slice_three",
+           "planes": [{"origin_local_m": [-0.048, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0]},
+                      {"origin_local_m": [-0.016, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0]},
+                      {"origin_local_m": [0.016, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0]}],
+           "expected_pieces": 4, "minimum_part_mass_fraction": 0.15, "minimum_main_parts_mass_fraction": 0.99,
+           "plane_error_bound_m": 0.002},
+          {"type": "move_piece", "goal_id": "push_right",
+           "selector": {"side_of_plane": {"origin_local_m": [0.016, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0], "side": "positive"}},
+           "direction_local": [1.0, 0.0, 0.0], "distance_m": 0.01, "minimum_displacement_m": 0.005,
+           "maximum_other_displacement_m": 0.002, "minimum_piece_mass_fraction": 0.05, "minimum_selector_share": 0.5,
+           "push_edge_height_m": 0.003, "push_speed_m_s": 0.01}
+        ]
+      }
+    }
+  }
+}
