@@ -1,0 +1,9 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseG_native_smoke_v1",
+  "description": "Short Native smoke of the cutting_research_v1 live path before the reliability run: two consecutive 20-step episodes (hold policy with return home; the hand-written action program's first 20 steps) to exercise reset, cameras, recorder, export and validation. Episodes end on STEP_BUDGET; the goal evaluator is expected to report an incomplete episode.",
+  "episodes": [
+    {"label": "smoke_hold", "controller": "policy", "policy": "robotic_cutting_sim.policy_examples:hold_policy", "seed": 42, "max_steps": 20, "return_home": true},
+    {"label": "smoke_program", "controller": "action_file", "action_file": "configs/wp11/action_programs/trim_rho10_handwritten_v1.json", "seed": 42, "max_steps": 20}
+  ]
+}

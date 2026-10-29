@@ -141,6 +141,8 @@ def run_episode(env, entry, index, out, a, clocks):
     seen_stop, stop_reason, statuses = False, None, {}
     leaks, clock_errors, camera_age_max = 0, 0, 0.
     steps = int(round(duration/dt))
+    if entry.get('max_steps') is not None:   # smoke/debug budget: the episode then ends with STEP_BUDGET
+        steps = min(steps, int(entry['max_steps']))
 
     def note(observation, info):
         nonlocal leaks, clock_errors, camera_age_max
