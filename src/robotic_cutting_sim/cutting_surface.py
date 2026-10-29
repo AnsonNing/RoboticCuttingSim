@@ -97,7 +97,7 @@ class CuttingSurface:
             provenance["current_volume_jacobian_min_max"] = [float(np.linalg.det(deformation).min()),
                                                              float(np.linalg.det(deformation).max())]
             provenance["profile_validation_scope"] = "Independent closed affine boxes; J=.8/1.2, shear=.25, held-out rigid rotations; not calibrated fracture surfaces"
-        chunks = []
+        chunks, skipped = [], []
         with wp.ScopedDevice(self.device):
             for label in range(count):
                 selected = np.flatnonzero(labels == label)
@@ -112,12 +112,25 @@ class CuttingSurface:
                     if self.profile == "current_volume_v1" else
                     wp.full(len(selected), self.spacing_m / 2, dtype=float, device=self.device))
                 vertices, indices, _ = self.surfaces[key].extract(points, radii)
-                if vertices is None or indices is None:
-                    raise RuntimeError(f"ParticleSurface returned no mesh for {len(selected)} physical particles")
+                if vertices is None or indices is None or not len(indices):
+                    # A fragment too sparse/small for the isosurface (e.g. a few loose particles): it stays in the
+                    # physics, labels and evaluation unchanged; only the presentation mesh omits it (recorded below).
+                    skipped.append({"mechanical_component": int(label), "particles": int(len(selected))})
+                    continue
                 chunks.append((label, vertices.numpy().copy(), indices.numpy().reshape(-1, 3).copy(), len(selected)))
+        if not chunks:
+            raise RuntimeError(f"ParticleSurface returned no mesh for any of {count} current mechanical components")
         vertices, faces, ranges = combine_component_meshes(chunks)
-        return vertices, faces, {**provenance, "mechanical_components": count, "component_ranges": ranges,
-                                 "renderer_partition_changes_physics": False, "surface_profile": self.profile}
+        info = {**provenance, "mechanical_components": count, "component_ranges": ranges,
+                "renderer_partition_changes_physics": False, "surface_profile": self.profile}
+        if skipped:
+            # Present only when something was skipped, so all-meshable outputs stay byte-identical.
+            info["unmeshable_skipped"] = {
+                "fragments": len(skipped), "particles": int(sum(row["particles"] for row in skipped)),
+                "components": skipped,
+                "rule": "current mechanical components for which ParticleSurface yields no triangles are omitted from "
+                        "the presentation mesh only; physics, cut labels, evaluation and recording are unchanged"}
+        return vertices, faces, info
 
 
 class ComponentSurface:
