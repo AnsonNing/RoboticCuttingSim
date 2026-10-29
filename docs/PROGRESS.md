@@ -32,10 +32,15 @@
   - 單斜面只有 0° 過，因為 law 8 閘門量刀身平面而不是推 chip 的面角，這是 Phase F 的發現。
   - 負對照：平壓與鈍握柄兩項的平均力窗口含空氣段，依原門檻 FAIL，但都 0 標籤、1 component；Phase F 會先宣告接觸窗口再重跑。
   - **定案：v2_y 雙斜面、ρ = 10°**，已記入 ADR 0013。
+- Phase D 完成（`5cf946f`，[證據](evidence/wp11/phaseD_home_001.json)）。
+  - 新增 `wp11_workcell_v1`（+100 mm）；Isaac 可接受 compiled task；HOME reset；planner 控制器；實體 Return-to-Home 與狀態機（`episode_lifecycle.py`）。
+  - Native smoke PASS：HOME 預夾、REORIENT 到 ρ = 9.99°、return home 關節誤差 0.39 mrad、刀具位姿 0.031 mm、標籤變化 0；`home_outcome` 與任務結果分開。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - A'：修 v2 pin 的容差並看 CI 結果；
   - F2/F3：law 8 邊界驗證與解析度研究（kinematic 1 mm，GPU 0，[預先宣告的 protocol](../configs/wp11/phaseF_protocol_v1.json)，輸出 `artifacts/wp11/phaseF/`）；
-  - D：`wp11_workcell_v1`（+100 mm）、Isaac 接受 compiled task、HOME reset、planner 控制器、實體 Return-to-Home 與狀態機，加上 Native smoke（`artifacts/wp11/phaseD/`）；
+  - C5：live Native 近水平 TRIM（ρ = 10°），先做 kinematic 預檢（`artifacts/wp11/phaseC5/`，GPU 1）；
+  - F1：v2 長時間夾持壓力測試（Native，GPU 0，`artifacts/wp11/phaseF1/`）；
+  - E：泛化第一輪，先做預檢與 kinematic（`artifacts/wp11/phaseE/`）；
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
 - 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。
