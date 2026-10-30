@@ -60,6 +60,16 @@ diffstat). None of these changes altered a verdict or the identity. The followin
 `tlmpm_v4.py`, `tlmpm_v3.py`, `run_blademaster_demos.py`, `render_demo_episode.py`,
 `demo_evaluation.py`, `evaluation.py` and `cutting_tasks_v2/v3.json`.
 
+## Scope: commits after the pin
+
+The result covers `d57d0f2` only. While this run was in progress, eight commits landed on the branch
+(`ce8c810`..`2e790ff`, review R1-R3). Four of them touch final_v4-path files: `cutting_surface.py` (d009053:
+versioned unmeshable-surface policy, default `raise` as on main), `isaac_sim_runner.py`, `live_env.py` and
+`policies.py` (3a75b83: new opt-in profile `path_v3a`; `path_v2` and `path_v2_vision` are described as
+unchanged). This run recorded no unmeshable-surface skips in any demo, and d009053 states that all-meshable
+outputs are byte-identical. That makes an effect on final_v4 unlikely, but it is **NOT_RUN** at `2e790ff`;
+a rerun at the new tip would be needed to cover those commits.
+
 ## Status
 
 - final_v4 regression, all four demos: **PASS**.
