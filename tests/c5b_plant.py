@@ -13,7 +13,8 @@ measured edge, an upper bound: the residual also holds model error). The b's are
 (+0.062, -0.697, +0.332) mm. Rotation: first-order lag (coefficient 0.6 per step) with a constant
 0.8 mrad offset; the nominal (hand FK) edge differs from the measured edge by the grasp offset.
 Variants: an extra transport delay (steps) and a pose-dependent sag (offset z changes linearly with
-the commanded height) probe robustness beyond the fitted model.
+the commanded height) probe robustness beyond the fitted model; ``floor_z`` (WP-11 review finding 8)
+blocks the measured edge below a WORLD height (a blade stopped by an obstacle).
 """
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -35,10 +36,11 @@ class LaggyEdgePlant:
     from, the previous command), then the fitted plant produces the measured edge."""
 
     def __init__(self, start_pose, limits, T_world_workpiece, *, seed=0, extra_delay_steps=0, sag_per_m=0.,
-                 noise_scale=1.):
+                 noise_scale=1., floor_z=None):
         self.limits, self.T = limits, T_world_workpiece
         self.rng = np.random.default_rng(seed)
         self.delay, self.sag_per_m, self.noise_scale = int(extra_delay_steps), float(sag_per_m), float(noise_scale)
+        self.floor_z = None if floor_z is None else float(floor_z)
         start = np.asarray(start_pose, float)
         self.commanded = start.copy()
         self.z0 = float(start[2])
@@ -76,6 +78,8 @@ class LaggyEdgePlant:
             b = np.asarray(b)*(1-a1-a2)/sum(b)  # unit DC gain
             shifted = [ui[axis]-self._offset(ui)[axis] for ui in u]
             y[axis] = a1*self.outputs[-1][axis]+a2*self.outputs[-2][axis]+b@shifted
+        if self.floor_z is not None:
+            y[2] = max(y[2], self.floor_z)
         self.outputs.append(y)
         self.noise = self.noise_scale*np.array([ARX[a][2] for a in range(3)])*self.rng.standard_normal(3)
         relative = (Rotation.from_quat(target[3:])*self.rotation.inv()).as_rotvec()
@@ -100,5 +104,6 @@ def rollout(task, plan, policy_options, *, max_s=10., stop_after=None, **plant_o
             break
         observation = plant.step(action)
         rows.append(dict(time_s=plant.time_s, phase=phase, command=plant.commanded.copy(), measured=plant.measured.copy(),
-                         cut=bool(action["cut_enabled"])))
+                         cut=bool(action["cut_enabled"]),
+                         tracking=None if policy.last_tracking is None else dict(policy.last_tracking)))
     return rows, policy
