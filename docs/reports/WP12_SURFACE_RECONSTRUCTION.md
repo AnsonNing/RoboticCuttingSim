@@ -978,3 +978,199 @@ Extraction wall time per final frame, from `reports[*].extract_wall_s`:
     - `phase3v2_saved_{S4_partial,S7_chip,S1_G3b_oblique,S6_slices}_A_B1_B2.png`;
     - `phase3v2_H1_S4_partial_A_B1_B2.png`;
     - `phase3v2_H2_{S4_partial_yaw10,S7_chip,S1_G3b_yaw35,S5_cross75}_A_B1_B2.png`.
+
+## Addendum 2 (2026-10-31, xhigh decision)
+
+**Scope.** This addendum records the Phase 3 decision taken at xhigh effort
+([`WP12_PHASE3_XHIGH_DECISION.md`](WP12_PHASE3_XHIGH_DECISION.md), commit `a94bd9f`). It also records the reproduction
+of that decision's read-only checks from the repository. **Every v1 and v2 number and verdict above (§1–§12, Addendum
+A.1–A.4, R.1–R.8) stays as recorded.** Nothing in `phase3_surface_001` or in the run directories of
+`phase3_surface_002` was rewritten. No surface method, metric, protocol, threshold or physics code changed.
+
+### B.1 Decision
+
+- **Phase 3 is CLOSED. No v3 runs now.**
+- The comparison gate is **FAIL under the frozen `surface_protocol_v1` and `surface_protocol_v2`**. Both FAILs are
+  kept.
+- **Shipped profile:** `cut_aware_surface_v1` (B v1), opt-in.
+- `particle_surface_v1` stays the default everywhere (env, Native, Demos 1–7, frozen records).
+- `cut_aware_surface_v2` stays a labelled opt-in experiment and is never used in demos.
+- Neither M2 nor any M-subset (including the no-M4 ablation) is promoted to a method.
+- **Why.** The remaining failures share one upstream cause: a solver-state inconsistency at the cut face (F3/F7). That
+  belongs to Phase 4. The v2 gate also has a defect (D1) that fails any method by construction. A v3 would cost 1–2
+  days and is predicted to FAIL on every set.
+- **Reopen only if** Phase 4 shows, under a supported solver configuration that passed the full law-8 acceptance,
+  that the first-layer inconsistency (P50 and P99 of |dx − F̄dX| at ≤ 1 s) falls by at least 2×. The user may also
+  reopen it.
+- The deferred v3 plan, with H3 seeds 3301–3309 / 3401–3409 and CUT-01-R seeds 45 and 46, is in decision §3.3.
+
+### B.2 Evidence: `scripts/diagnose_wp12_phase3_v2.py`
+
+The four ad-hoc reviewer checks are now one read-only repository script with no dependency on the scratchpad:
+M4 location and codes, fragmentation, fold/F3 correlation and the counterfactual ablation gate. It also adds the
+stored-evaluation reads that the decision cites.
+
+- **Coverage:** the final frame of all 54 states (9 cases × saved / H1 / H2 × r0 / r1), CPU only
+  (`CUDA_VISIBLE_DEVICES=""`).
+- **Wall time:** 188.5 s on 12 processes. HEAD at run time was `bdcd257`, with unrelated Phase 4–6 work uncommitted in
+  the tree.
+
+```
+CUDA_VISIBLE_DEVICES="" TMPDIR=/mnt/data/ningan/tmp OMP_NUM_THREADS=2 \
+    .venv/bin/python scripts/diagnose_wp12_phase3_v2.py --jobs 12
+```
+
+- **Outputs** (new files; the script refuses to overwrite):
+  - `artifacts/wp12/phase3_surface_002/diagnostics_001.json` (sha256 `060a438c…3ea48074`);
+  - compact evidence: [`phase3_closure_001.json`](../evidence/wp12/phase3_closure_001.json).
+- **The flag rule is imported, not copied.** It uses `SEPARATION_LENGTH_S` and `SEPARATION_INCONSISTENCY_S` from
+  `cut_aware_surface_v2.py`. The per-state flagged-link count equals B v2's own recorded M4 count in **54 / 54**
+  states.
+- **r1 meshes are faithful.** The B v1 r1 meshes, which have no package, are re-extracted through the v2 runner's own
+  `make_b` / `b_extract`. On the 27 r0 states this re-extraction equals the stored package exactly: faces 27 / 27,
+  state 27 / 27, vertex difference at most 3.7e-9 m.
+- **Reproduction:** 73 decision numbers checked at their printed precision. **65 reproduce. 3 reproduce only with
+  mixed repeats. 5 do not reproduce.**
+  - Link-layer and fold numbers are compared on r0, as the decision's scripts were.
+  - For numbers read from stored evaluations, the decision names no repeat. The check therefore accepts r0, r1 or the
+    repeat mean, and records which one matched.
+
+| Decision number (section) | Decision | Measured | Status |
+|---|---|---|---|
+| First-layer \|dx − F̄dX\| P50, m4_where states (§1 F3) | 0.07–0.71 s | 0.073–0.708 | reproduced |
+| First-layer P99 excluding S7 (§1 F3) | 1.3–2.5 s | **0.92**–2.545 | **not reproduced**: H2 S4 (0 flagged links) is 0.92. The states with flagged links give 1.30–2.55 |
+| First-layer P99, S7 (H2 / saved) | 7.5–11.4 s | 7.53 / 11.41 | reproduced |
+| P50 beyond 6 s | 0.001–0.026 s | 0.0009–0.0263 | reproduced |
+| det F at flagged endpoints (P5 min, P95 max) | 0.95–1.07 | 0.946–1.074 | reproduced |
+| P4 CONSISTENT only for G3a and S4, every set | yes | yes (saved, H1, H2; r0 and r1) | reproduced |
+| saved G3a / G3b / S6: flagged, ≤ 1 s, in plane, same code, pieces | 140/27/2; all; 140/26/2; all; 0 | identical; reference distance 0.501–0.708 s | reproduced |
+| saved S4: 48 flagged, all ≤ 1 s, in plane, 0-vs-digit, z = 6 mm, 0 pieces | as stated | identical | reproduced |
+| saved S3 / S5: 29 / 97 flagged, 22 / 67 ≤ 1 s, S5 61 same / 36 mixed, 2 single particles each | as stated | identical | reproduced |
+| H2 S5: 621, 232 ≤ 1 s, 238 at 3–6 s, 271 along N, 393 / 228, 0 pieces | as stated | identical | reproduced |
+| H2 S6: 595, 8, 581 at 3–6 s, 593 along N, 301 exterior, 444 / 151, 0 pieces | as stated | identical | reproduced |
+| S7 saved / H2: 134 / 167 flagged, 106 / 92 ≤ 1 s, 48 / 35 pieces, 80 / 88 particles | as stated | identical | reproduced |
+| S7 endpoint codes | "all code 2" | every flagged link joins equal codes, but **1-1: 54 / 38**, 2-2: 80 / 129 | **not reproduced**: read "identical code (main body 1-1 and chip 2-2)" |
+| "Splits off nothing in any through-cut" | 0 | at most **4 particles** | **not reproduced**: 1–4 particles in 12 of 48 through-cut states (saved S3 / S5 2, H1 S3 3, H1 / H2 G3b 1, H2 S3 4), against 80–88 in S7. The decision's own table already lists saved S3 / S5 |
+| S2 and S8 flag 0, every set | 0 | 0 (both repeats) | reproduced |
+| S7 flagged length P50 (H2 / saved) | 2.9–4.8 s | 2.94 / 4.84 | reproduced |
+| B v2 M4 cells, H2 S5 / S6 | 1,107 / 1,140 | r0 1,107 / 1,142; r1 1,109 / 1,140 | mixed repeats (S5 r0 with S6 r1) |
+| Folds: pair triangles with inconsistency > 0.5 s (§2) | G3b 83/83, S3 22/22, S5 19/19, S4 145/163 | identical | reproduced |
+| Folds: share of all triangles | 16 / 29 / 43 / 5 % | 16.0 / 29.2 / 42.7 / 4.9 % | reproduced |
+| Folds: median inconsistency at folds | 2.0–3.1 s | **1.67**–3.09 | **not reproduced**: S4 is 1.67 s; G3b / S3 / S5 are 2.02–3.09 |
+| Folds: overall median | 0.006–0.35 s | 0.0061–0.348 | reproduced |
+| F1 S6 current P95, B v1 / A: saved, H1, H2 | 0.381/0.424; 0.38/0.45; 0.356/0.55 | saved r0 0.381/0.423, mean 0.382/0.424; H1 r0 0.380/0.450; H2 r0 0.356/0.559, r1 0.357/0.549 | H1 reproduced; saved and H2 only with mixed repeats |
+| F2: S4 current P95, B v1 → ablation (saved, H1); A | 0.96 → 0.44, 0.88 → 0.45; A 0.77 / 0.69 | 0.964 → 0.441, 0.884 → 0.446; 0.767 / 0.686 | reproduced |
+| F2: M2 regions moved (saved S4); H2 S4 matched normal B v1 → ablation | 25 / 25; 9.9° → 15.7° | 25 / 25; 9.87° → 15.66° | reproduced |
+| F2/D5: ablation G4 hold | NOT_RUN | NOT_RUN on every set and repeat | reproduced |
+| F4: saved matched-normal P95, B v1 vs A (7 cases) | G3a 30 / 49 … S8 5.9 / 6.3 | all 7 match (G3b 8.4 from r1; r0 8.47) | reproduced |
+| §3.1 counterfactual parts and verdicts | listed below | identical | reproduced |
+| §3.1 S7 P7, B v1 → B v2 (saved) | 4.71 → 0.24 | 4.708 → 0.239 | reproduced |
+| D1 floors and A / B v1, saved G3b, S2, S8 | 0.654 0.441/0.487; 0.878 0.58/0.54; 0.578 0.36/0.39 | identical | reproduced |
+| D1: both A and B v1 below the floor in 7 of 9 cases on every set (all but G3a and S4) | every set | saved r0, H1 r0 / r1: yes. **H2: no**, S7 is also an exception (A 0.884 / 0.885 s above floor 0.660 / 0.661) | **not reproduced on H2**. G3a is borderline everywhere (A 0.692–0.699 against floor 0.694–0.695) |
+| D6: S7 P7 B v1 verdict | INCONCLUSIVE on every set | INCONCLUSIVE_REFERENCE, every set and repeat | reproduced |
+
+**Effect on the decision.** None of the eight deviations changes it:
+- the M4 attribution and the solver-state reading hold;
+- through-cuts split off at most 4 single particles, against 80–88 in the chip, so only topology separates a tear;
+- D1 still applies on H2, because B v1 is below the floor in S7 there (0.615 / 0.622 s against 0.66).
+
+The corrected readings above replace the decision's wording where they differ.
+
+**Beyond the decision's case list.** The diagnostic covers all 54 states (`extension_all_states`):
+- **First layer, excluding S7:** P50 0.073–0.499 s, P99 0.92–2.55 s. **S7:** P99 7.53–11.41 s. **Beyond 6 s:**
+  P50 0.0009–0.027 s.
+- **Folds:** in every one of the 42 states that has intersecting B v1 pairs, the pair triangles are more often next to
+  a > 0.5 s inconsistent link than triangles overall. The lowest pair share is 0.89 (saved S4). The fold-triangle
+  median ranges from 0.75 s (H2 S4) to 11.0 s (S7).
+
+### B.3 Corrections to R.5 (a): where M4 fires
+
+The attribution in R.5 (a) is **right**: M4 causes the B v2 regression, and the no-M4 ablation reproduces B v1
+everywhere except at the S4 tip (M2) and in some extra M3 folds. Its *location* is corrected as follows (final frames,
+r0, reproduced above):
+
+- **"Every through-cut" is overstated.** S2 and S8 flag 0 links on every set and repeat; saved S6 flags 2.
+- **S4 (saved, H1).** All 48 flagged links lie on the hinge row (z = 6 mm) along the crack front, between code 0 and a
+  side digit. M4 therefore removes exactly the hinge links that M2 needs: the two fixes conflict by construction.
+- **H2 S5 and S6** (1,107 and 1,140–1,142 cells; the largest regressions) come mostly from links 3–6 s *inside* the
+  slices, oriented along N:
+  - H2 S6: 581 of 595 at 3–6 s and 593 along N;
+  - H2 S5: 238 at 3–6 s and 271 along N.
+  They do not come from the face layer.
+- **The common property** is position/F inconsistency *without* topological separation. No per-link (length,
+  inconsistency) pair separates it from a tear, because the S7 chip links sit in the same low mode (flagged length
+  P50 2.94–4.84 s). Only topology separates them:
+  - removing the flagged links splits the S7 chip into 35–48 pieces (80–88 particles);
+  - it splits at most 4 single particles off any through-cut.
+
+### B.4 Fold/F3 correlation and the hand-off to Phase 4
+
+- **B v1 folds sit in the F3 layer.** Every triangle of a B v1 self-intersecting pair has, among its 8 nearest
+  particles, one whose incident uncut link is > 0.5 s inconsistent with F:
+  - G3b 83 / 83, S3 22 / 22 and S5 19 / 19;
+  - S4 145 / 163;
+  - against 16 %, 29 %, 43 % and 5 % of all triangles.
+  The median inconsistency is 1.67–3.09 s at the folds and 0.006–0.35 s overall. The dominant remaining B v1 gate
+  failure therefore lies in the solver's near-face layer, not in the embedding rule.
+- **F3/F7 are solver state, not a metric artefact.** The per-link reading uses no region rule, locus, plane fit or
+  mesh. It agrees with P4's cell V/J and is about 0 in the far field. Contact uses the particle positions and stress
+  uses F, so where the two disagree no render can be honest to both.
+- **Mechanism (hypothesis, untested):** 95 % FLIP positions against an F updated from the gradient of the 4 mm grid
+  velocity.
+- **Handed to Phase 4 as solver-state items, not law items** (decision §2 and §6 step 4; all report-only):
+  - (a) a near-face consistency diagnostic over the saved `resolution_002` states, declared before the summarizer
+    reads them;
+  - (b) a labelled counterfactual with pic ∈ {0.5, 1.0} on CUT-01-R, G3b and the S7 dome;
+  - (c) a spec §4.2 classification of F7.
+  These are not a law-8 failure region and are no reason for a law 9. Any solver change would be a new versioned
+  opt-in profile, with the full law-8 acceptance and the negative controls.
+- **Completion criterion 4 stays OPEN** until Phase 4 resolves or bounds F7.
+
+### B.5 Counterfactual no-M4 ablation (`COUNTERFACTUAL_NOT_A_GATE`)
+
+`gate_v2` of the v2 runner was applied, read-only, to the labelled ablation `cut_aware_surface_v2_ablation_no_M4`
+(M1 + M2 + M3) from the stored evaluations. **This is never a gate verdict and never a method result.**
+
+| Set | Not worse on any metric | Better current P95 in every case | Better coverage (S4, S7) | Better topology | Would read |
+|---|---|---|---|---|---|
+| saved | False | False | True | True | FAIL |
+| H1 | False | False | True | True | FAIL |
+| H2 | False | False | True | False | FAIL |
+
+- The B v1 protocol-v2 gate, recomputed beside it, reads FAIL on all three sets, as recorded in `summary_002.json`.
+- The ablation's worse rows are the unexplained intersections (G3b, S3–S7), faces nearer another component (S5–S8),
+  thickness bias and the S7 maxima.
+- A v3 that adds a fragment-only tear rule would leave all of these rows unchanged except S7. "Better P95 in every
+  case" fails by construction (D1).
+
+### B.6 Open metric and protocol defects (none to be fixed by loosening)
+
+| # | Defect | Blocks a v3? |
+|---|---|---|
+| D1 | Gate part "better current P95 in every case": in most cases both A and B v1 lie below the locus's own leave-one-out floor (saved G3b floor 0.654 / A 0.441 / B 0.487; S2 0.878 / 0.58 / 0.54; S8 0.578 / 0.36 / 0.39). That is 7 of 9 cases on saved and H1; on H2, S7 (A above the floor) and G3a are also exceptions | Yes: FAIL by construction |
+| D2 | The current-space reference (side locus) is built from the F3 layer it judges; P4 is INCONCLUSIVE in 7 of 9 cases | Yes, until Phase 4 |
+| D3 | "Better topology in ≥ 1 case" depends on A failing somewhere. On H2 A drops no fragment, so the part FAILs while B is never worse | No (fix in v3) |
+| D4 | M4 thresholds frozen in code, not in the protocol | No (process) |
+| D5 | M2 (ablation) never run on the G4 hold: NOT_RUN on every set and repeat | Yes, for shipping M2 |
+| D6 | S7 chip row INCONCLUSIVE_REFERENCE on every set and repeat (P7 with the P4 precondition) | Yes, for any tear rule |
+
+### B.7 What may be claimed, and what stays
+
+- **README / acceptance wording:** decision §4, verbatim.
+  - Surface: **PARTIAL**.
+  - Deformation: **PASS (scoped)**.
+  - Completion criterion 4: **OPEN**.
+- **README must not say** "physically accurate", "clean/smooth cut" or "Phase 3 passed". It must not cite the
+  ablation or M2 numbers as a method result, show B v2 as an improvement, or hide TRIM.
+- **Phase 7:**
+  - run the Demos 1–7 regression with the default profile;
+  - pair each demo with a `cut_aware_surface_v1` Native run on the same inputs, with TRIM and its spikes included;
+  - never use B v2.
+- **Not done, by decision:**
+  - no v3 or protocol v3;
+  - no hybrid;
+  - no default changed;
+  - `phase3_surface_00{1,2}` run data, law 8, `final_v4` and the WP-11 evidence untouched.
+- **Stays exactly as recorded:** every number in §1–§12, Addendum A.1–A.4 and R.1–R.8, including R.5's
+  "621 / 1,107" and "595 / 1,140" cells, which lie within the ± 2 repeat band that R.5 states (r0 / r1: H2 S5
+  1,107 / 1,109, H2 S6 1,142 / 1,140).
