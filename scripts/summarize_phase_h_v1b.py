@@ -114,6 +114,35 @@ def run_summary(directory, fit_from):
     return summary
 
 
+def on_disk_validation(directory):
+    """Diagnostic only: dataset.validate_episode on every episode directory that has an episode.json, whatever its
+    index status; the index-sha check is replaced by export sha256 == episode.json export.sha256."""
+    sys.path.insert(0, str(ROOT/'src'))
+    from robotic_cutting_sim import dataset as ds
+    index = load(directory/'index.json')
+    rows = []
+    for row in index['episodes']:
+        meta_path = directory/row['dir']/'episode.json'
+        if not meta_path.exists():
+            rows.append({'episode_id': row['episode_id'], 'status': 'NO_EPISODE_JSON'})
+            continue
+        meta = load(meta_path)
+        export = ds.sha256_file(directory/row['dir']/ds.EXPORT_NAME)
+        patched = dict(index, episodes=[dict(r, export_sha256=export) if r is row else r for r in index['episodes']])
+        original = ds.load_index
+        ds.load_index = lambda root, _p=patched: _p   # read-only: the index file on disk is not changed
+        try:
+            result = ds.validate_episode(directory, row['episode_id'])
+        finally:
+            ds.load_index = original
+        rows.append({'episode_id': row['episode_id'], 'index_status': row['status'],
+                     'export_sha256_matches_episode_json': export == meta['export']['sha256'],
+                     'validation_with_export_sha_from_episode_json': result['status'], 'failing': result['failing'],
+                     'verdict': meta.get('verdict'), 'home': (meta.get('home_outcome') or {}).get('status'),
+                     'recycle': meta.get('recycle')})
+    return {'scope': 'diagnostic only; the declared criteria use the index as written', 'episodes': rows}
+
+
 def mitigation_criteria(directory, summary):
     """The four declared criteria of configs/wp11/phaseH/native_recycle_mitigation_v1.json."""
     declaration = load(ROOT/'configs/wp11/phaseH/native_recycle_mitigation_v1.json')
@@ -163,6 +192,7 @@ def main(argv=None):
     if (MITIGATION/'index.json').exists():
         mitigation['run'] = run_summary(MITIGATION, fit_from)
         mitigation['criteria'] = mitigation_criteria(MITIGATION, mitigation['run'])
+        mitigation['diagnostic_on_disk_validation'] = on_disk_validation(MITIGATION)
     else:
         mitigation['status'] = 'NOT_RUN'
     evidence['recycle_mitigation'] = mitigation
