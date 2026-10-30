@@ -50,6 +50,17 @@ SCHEMA = "rcs_wp12_benchmark_v1"
 ENVELOPE_SCHEMA = "rcs_wp12_supported_envelope_v1"
 DRAFT = ROOT/"configs/wp12/benchmark_v1_DRAFT.json"
 ENVELOPE = ROOT/"configs/wp12/supported_envelope_v1.json"
+# The frozen benchmark (docs/reports/WP12_PHASE5_FREEZE_DECISION.md, committed unedited in 722468c) and its envelope.
+# A run whose file hash differs is not a benchmark v1 result (benchmark_v1.json freeze.rule); the runner refuses it.
+BENCHMARK_V1 = ROOT/"configs/wp12/benchmark_v1.json"
+ENVELOPE_V2 = ROOT/"configs/wp12/supported_envelope_v2.json"
+FROZEN_SHA256 = {
+    "configs/wp12/benchmark_v1.json": "915a2a8f44af80b5b5115598bd5561ec82f77a214233d30cef35549962809c37",
+    "configs/wp12/supported_envelope_v2.json": "040e7b96fa8c9e266f9e255a77f37c3fefe1540d836c3c6daa827d3ec18aa83f",
+    "configs/wp12/supported_envelope_v1.json": "6a2fa3d06acaf84255d9e7270d7295b1ffdc71669969a02d2b00f7cebc1f48fa",
+}
+# Demo 7 (benchmark_v1.json phase7_demos.demo_7): permutation seed of the held-out ID_validated valid_feasible pool.
+DEMO7_RNG_SEED = (1205, 7)
 GROUPS = ("scene", "cutting", "physics")
 KINDS = ("uniform", "choice", "integer")
 SPEC_KEYS = ("uniform", "choice", "integer", "fixed", "uniform_outside", "integer_outside")
@@ -1156,7 +1167,13 @@ def history_stride(config, steps):
 # ----------------------------------------------------------------------------- execution classes
 
 def classify_execution(result):
-    """(class, failure_kind, reason) of an executed episode result (kinematic or Native)."""
+    """(class, failure_kind, reason) of an executed episode result (kinematic or Native).
+
+    A Native result carries ``native_classification`` (``map_live_class`` of the Phase 2b ``classify_live`` class,
+    the declared ``native.success_definition``); that class is final and returned as is."""
+    native = (result or {}).get("native_classification")
+    if native is not None:
+        return native["class"], native["failure_kind"], native["reason"]
     if result is None or result.get("status") in (None, "NOT_RUN"):
         return "not_run", None, (result or {}).get("reason", "not executed")
     if result.get("status") == "ABORTED" and not result.get("solver_invalid"):
@@ -1176,6 +1193,39 @@ def classify_execution(result):
     if result.get("partial"):
         return "not_run", None, f"partial (smoke) run: {reason}"
     return "execution_failure", kind, reason
+
+
+LIVE_CLASSES = ("TASK_SUCCESS", "GRASP_FAILURE", "IK_FAILURE", "SCENE_INFEASIBLE", "CUTTING_FAILURE", "NOT_RUN")
+
+
+def map_live_class(live_class, live_reason, launched=True):
+    """(class, failure_kind, reason) of a Native attempt from its Phase 2b live class (``classify_live`` with the
+    grasp warning gates and the IK / workspace-clamp counts), by the declared ``native.success_definition.mapping``
+    of ``configs/wp12/benchmark_v1.json``:
+
+    TASK_SUCCESS -> task_success; GRASP_FAILURE -> execution_failure grasp; IK_FAILURE (IK not ok, workspace clamp or a
+    Native plan-preflight IK refusal) and a SCENE_INFEASIBLE refusal -> execution_failure other; CUTTING_FAILURE
+    'solver state invalid' -> solver_invalid, 'the scripted plan did not finish' -> plan_not_finished, 'integrity' ->
+    integrity, 'outcome' -> outcome; a LAUNCHED attempt with classify_live NOT_RUN (no episode result, or no verdict)
+    -> execution_failure crash. Only an attempt never launched (``launched=False``) is not_run."""
+    reason = str(live_reason)
+    if not launched:
+        return "not_run", None, f"Native attempt never launched: {reason}"
+    if live_class not in LIVE_CLASSES:
+        raise ValueError(f"Unknown live class {live_class!r}")
+    if live_class == "TASK_SUCCESS":
+        return "task_success", None, reason
+    if live_class == "GRASP_FAILURE":
+        return "execution_failure", "grasp", reason
+    if live_class in ("IK_FAILURE", "SCENE_INFEASIBLE"):
+        return "execution_failure", "other", f"{live_class}: {reason}"
+    if live_class == "NOT_RUN":
+        return "execution_failure", "crash", f"launched attempt without an episode result: {reason}"
+    for prefix, kind in (("solver state invalid", "solver_invalid"), ("the scripted plan did not finish", "plan_not_finished"),
+                         ("integrity", "integrity"), ("outcome", "outcome")):
+        if reason.startswith(prefix):
+            return "execution_failure", kind, reason
+    return "execution_failure", "other", reason
 
 
 def final_row(feasibility, execution=None):
@@ -1323,6 +1373,55 @@ def native_selection(config, feasibility_rows, split="benchmark"):
                               f"only {len(selected)} valid_feasible samples in the stratum",
                               "not_selected": reasons}
     return out
+
+
+# ----------------------------------------------------------------------------- Phase 7 Demo 7 selector
+
+def demo7_selection(config, feasibility_rows):
+    """Demo 7 by ``config['phase7_demos']['demo_7']`` (pre-execution: feasibility classes only, never outcomes).
+
+    Pool: the held_out split, range set ID, population ID_validated (``target_scope``), feasibility class
+    valid_feasible, in declared order (strata order, then seed). Permutation
+    ``numpy.random.default_rng([1205, 7]).permutation(len(pool))``; Demo 7 is the first sample of the permuted pool.
+    Every held-out ID sample must have a feasibility row (an incomplete classification raises: the draw waits for the
+    whole held-out feasibility stage); ID samples outside the pool are listed with their reason."""
+    if "phase7_demos" not in config or "demo_7" not in config["phase7_demos"]:
+        raise BenchmarkConfigError("The benchmark file declares no phase7_demos.demo_7 rule")
+    rule = config["phase7_demos"]["demo_7"]
+    if "default_rng([%d, %d])" % DEMO7_RNG_SEED not in rule["order"]:
+        raise BenchmarkConfigError(f"demo_7.order does not declare default_rng({list(DEMO7_RNG_SEED)}): {rule['order']}")
+    split = "held_out"
+    by_id = {r["sample_id"]: r for r in feasibility_rows}
+    pool, excluded, missing = [], {}, []
+    for family, range_set, seed, index in sample_ids(config, split):
+        if range_set != "ID":
+            continue
+        sid = make_sample_id(config, family, range_set, split, seed)
+        variant = variant_of(config, family, index)
+        population = id_population(config, family, variant)
+        row = by_id.get(sid)
+        if row is None:
+            missing.append(sid)
+            continue
+        if row.get("variant") not in (None, variant):
+            raise AssertionError(f"{sid}: feasibility row variant {row.get('variant')} != declared {variant}")
+        cls = row.get("feasibility_class")
+        if population != "ID_validated":
+            excluded[sid] = f"population {population}"
+        elif cls != "valid_feasible":
+            excluded[sid] = f"not valid_feasible ({cls}: {str(row.get('reason'))[:200]})"
+        else:
+            pool.append({"sample_id": sid, "family": family, "variant": variant, "seed": int(seed)})
+    if missing:
+        raise ValueError(f"held-out feasibility incomplete: {len(missing)} ID samples without a row ({missing[:3]} ...)")
+    if not pool:
+        raise ValueError("the Demo 7 pool is empty (no held-out ID_validated valid_feasible sample)")
+    permutation = [int(j) for j in np.random.default_rng(list(DEMO7_RNG_SEED)).permutation(len(pool))]
+    chosen = pool[permutation[0]]
+    return {"rule": rule, "rng_seed": list(DEMO7_RNG_SEED), "pool_size": len(pool), "pool": pool,
+            "excluded_id_samples": excluded, "permutation": permutation,
+            "permuted_pool": [pool[j]["sample_id"] for j in permutation], "demo_7_sample_id": chosen["sample_id"],
+            "demo_7": chosen}
 
 
 # ----------------------------------------------------------------------------- freeze readiness

@@ -1,0 +1,33 @@
+{
+ "schema": "rcs_goal_v1",
+ "goal_id": "E2_SLOT_p20_sever_tilt_slotted",
+ "type": "sever",
+ "description": "Sever at local x = 3.64 mm: tilt 20.00 deg about local y, plane yaw 0.00 deg, advance tilt 0.00 deg.",
+ "episode": {
+  "duration_s": 10.5,
+  "control_dt_s": 0.02
+ },
+ "planner": {
+  "controller_profile": "path_v2",
+  "cut_extent": "plane_section",
+  "cut_speed_m_s": 0.01,
+  "cut_clearance_m": 0.008
+ },
+ "evaluator_version": "goal_eval_v2a",
+ "planes": [
+  {
+   "origin_local_m": [
+    0.0036397023426620236,
+    0.0,
+    0.01
+   ],
+   "normal_local": [
+    0.9396926207859084,
+    0.0,
+    -0.3420201433256687
+   ]
+  }
+ ],
+ "expected_pieces": 2,
+ "minimum_part_mass_fraction": 0.238626
+}

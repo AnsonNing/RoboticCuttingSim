@@ -299,6 +299,42 @@ def camera_motion_trace(run, rows):
     return out
 
 
+def live_classification(run):
+    """Phase 2b class (``GL.classify_live`` with ``GRASP_GATES`` and the task-phase IK / workspace-clamp counts) of one
+    ``scripts/run_wp10_live.py`` output directory, computed exactly as ``main`` does but without compiling the task
+    (the class needs no task geometry). Read-only. Used by ``run_wp12_phase5.native_execution`` (the declared Phase 5
+    Native success definition); ``tests/test_wp12_phase5_native_success.py`` checks it reproduces the stored
+    ``analysis.json`` class of every Phase 2b record ``workcell_live_001-007``."""
+    run = Path(run)
+    top, failure = read_json(run/'result.json'), read_json(run/'failure.json')
+    episode = read_json(run/'episode_000'/'result.json')
+    rows = []
+    if (run/'episode_000'/'actions.jsonl').exists():
+        rows = [json.loads(line) for line in (run/'episode_000'/'actions.jsonl').open() if line.strip()]
+    task_rows = [r for r in rows if not GL.is_lifecycle_home(r)]
+    ik = {'task_steps_ik_not_ok': int(sum((r.get('info') or {}).get('ik_status') not in (None, 'ok') for r in task_rows)),
+          **{f'task_steps_{k}': int(sum(bool(((r.get('info') or {}).get('action_report') or {}).get(k)) for r in task_rows))
+             for k in ('workspace_clamped', 'translation_clamped', 'rotation_clamped')}}
+    grasp_task = C5.grasp_audit(task_rows)
+    finite, physics = True, run/'episode_000'/'physics_state.npz'
+    if physics.exists():
+        with np.load(physics) as data:
+            finite = bool(np.isfinite(data['positions']).all() and np.isfinite(data['velocities']).all())
+    live = {'outcome_classes': {'GRASP_FAILURE': {'gates': GRASP_GATES}}}
+    cls, reason = GL.classify_live(live, top, episode, rows, failure, finite, grasp_task, ik)
+    evaluation = (episode or {}).get('task_outcome') or {}
+    return {'class': cls, 'reason': reason, 'ik': ik, 'grasp_gates': GRASP_GATES,
+            'grasp_task_phase': {k: grasp_task.get(k) for k in ('grasp_lost', 'max_slip_m', 'max_rotation_rad')},
+            'finite_recorded_state': finite, 'physics_state_present': physics.exists(),
+            'result_present': top is not None, 'refused_before_launch': bool((top or {}).get('refused_before_launch')),
+            'run_status': (top or {}).get('status'), 'episode_result_present': episode is not None,
+            'failure_error': ((failure or {}).get('error') or '')[:500] or None,
+            'task_end_reason': (episode or {}).get('task_end_reason'),
+            'policy_final_phase': (episode or {}).get('policy_final_phase'), 'verdict': evaluation.get('verdict'),
+            'task_id': (episode or {}).get('task_id'), 'runtime_source': (episode or {}).get('runtime_source'),
+            'home_outcome': ((episode or {}).get('home_outcome') or {}).get('status'), 'control_rows': len(rows)}
+
+
 def partial_rule(evaluation, d, task, finished, grasp_ok, ik_ok):
     from robotic_cutting_sim.cut_topology import decode_digits
     digits = decode_digits(d['codes'][-1], task.max_cuts)[:, 0]

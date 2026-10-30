@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
-"""WP-12 Phase 5 generalization benchmark runner (config: configs/wp12/benchmark_v1_DRAFT.json until frozen).
+"""WP-12 Phase 5 generalization benchmark runner (config: the FROZEN configs/wp12/benchmark_v1.json).
 
 Every output path is new; nothing is ever overwritten (a resumed stage skips and preserves existing outputs).
+
+Provenance (decision WP12_PHASE5_FREEZE_DECISION.md finding 3): ``--config`` defaults to the FROZEN
+``configs/wp12/benchmark_v1.json``; for a FROZEN config ``--envelope`` defaults to the config's declared ``envelope`` and
+any other envelope is refused, and both files must match their pinned sha256 (``generalization_wp12.FROZEN_SHA256``).
+A DRAFT config (or a FROZEN file whose hash differs) is refused unless ``--dev`` (every output then labelled DEV).
+The queue forwards ``--config``, ``--envelope`` and ``--dev`` to every child.
+
 Subcommands:
 
 * ``samples --split S --out FILE``: the declared samples of a split (scene, goal, draws, envelope parameters). CPU.
@@ -13,15 +20,22 @@ Subcommands:
   are KINEMATIC (runtime_source = kinematic_ideal_tracking), never live. ``--steps`` marks a partial smoke.
 * ``queue --feasibility DIR --out-root DIR --log-dir DIR --queue-log FILE``: ``kinematic`` once for every
   valid_feasible sample in declared order (resumable; <= N concurrent per device; waits while other jobs use a GPU).
+* ``repeat --feasibility DIR --kinematic-root DIR --out-root DIR``: the declared reproducibility repeats (metrics
+  .reliability.reproducibility: the first valid_feasible ID benchmark sample of each family, rerun once on the other
+  device than its recorded run; verdict and component count are compared in the report).
+* ``demo7-select --feasibility DIR --out FILE``: the Phase 7 Demo 7 draw (benchmark phase7_demos.demo_7) from the
+  held-out feasibility, refused once any held-out kinematic output exists or a selection file exists (never redrawn).
 * ``native-select --feasibility DIR --out FILE``: the declared Native stratified sub-sample (>= 3 per stratum).
 * ``native-prepare --sample-id ID --out DIR`` / ``native-launch --sample-id ID --out DIR``: one Native Isaac Sim
   episode through scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal (WP-12 Phase 2b pattern).
 * ``summarize --feasibility DIR [--kinematic-root DIR] [--native-root DIR] --out FILE``: feasibility rate, success
   among feasible, overall success, class distribution, Wilson 95 % intervals and denominators per stratum / family /
-  range set; every declared sample counted once.
+  range set / ID population; every declared sample counted once. Native classes follow the declared
+  ``native.success_definition`` (``native_execution``: the Phase 2b ``classify_live`` gates).
 
-  TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase5.py feasibility --split dev \\
-      --out artifacts/wp12/phase5_dev_001/feasibility
+  TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase5.py --config configs/wp12/benchmark_v1.json \\
+      --envelope configs/wp12/supported_envelope_v2.json feasibility --split benchmark \\
+      --out artifacts/wp12/phase5_001/feasibility_benchmark
 """
 import argparse
 from copy import deepcopy
@@ -85,7 +99,53 @@ def meta(args, config):
             'benchmark_id': config['benchmark_id'],
             'benchmark_status': config['status'], 'envelope': str(args.envelope), 'started': datetime.now().astimezone().isoformat(),
             'tmpdir': os.environ.get('TMPDIR'), 'python': sys.executable, **git_state(),
-            'label': 'DEV' if args.cmd in ('feasibility', 'kinematic') and getattr(args, 'split', 'dev') == 'dev' else None}
+            'provenance': getattr(args, 'provenance', None),
+            'label': 'DEV' if getattr(args, 'dev', False) or (args.cmd in ('feasibility', 'kinematic')
+                                                               and getattr(args, 'split', 'dev') == 'dev') else None}
+
+
+def _rel(path):
+    path = Path(path).resolve()
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def resolve_provenance(config_path, envelope_path, dev=False):
+    """(config path, envelope path, provenance record) or SystemExit (decision finding 3).
+
+    FROZEN config: the envelope defaults to the config's declared ``envelope``; another envelope is refused; both files
+    must match ``W.FROZEN_SHA256`` (a FROZEN file at an unpinned path or with another hash is refused unless ``dev``).
+    DRAFT config: refused unless ``dev`` (the envelope then defaults to envelope v1, as the DRAFT was written for)."""
+    config_path = Path(config_path).resolve()
+    doc = json.loads(config_path.read_text())
+    status = doc.get('status')
+    problems = []
+    if status == 'FROZEN':
+        declared = (ROOT/doc['envelope']).resolve()
+        envelope_path = declared if envelope_path is None else Path(envelope_path).resolve()
+        if envelope_path != declared:
+            raise SystemExit(f'Refused: {_rel(config_path)} is FROZEN with envelope {doc["envelope"]}; '
+                             f'--envelope {_rel(envelope_path)} does not match')
+        for path in (config_path, envelope_path):
+            pinned = W.FROZEN_SHA256.get(_rel(path))
+            if pinned is None:
+                problems.append(f'{_rel(path)} has no pinned sha256 (not a committed frozen file)')
+            elif _sha(path) != pinned:
+                problems.append(f'{_rel(path)} sha256 {_sha(path)[:12]} != pinned {pinned[:12]} (edited after the freeze)')
+    elif status == 'DRAFT':
+        envelope_path = W.ENVELOPE if envelope_path is None else Path(envelope_path).resolve()
+        problems.append(f'{_rel(config_path)} is a DRAFT (not the frozen benchmark)')
+    else:
+        raise SystemExit(f'Refused: {_rel(config_path)} has status {status!r}')
+    if problems and not dev:
+        raise SystemExit('Refused: ' + '; '.join(problems) + '. Pass --dev for a DEV-labelled run.')
+    record = {'config': _rel(config_path), 'config_status': status, 'config_sha256': _sha(config_path),
+              'envelope': _rel(envelope_path), 'envelope_sha256': _sha(envelope_path),
+              'frozen_hashes_verified': status == 'FROZEN' and not problems, 'dev': bool(dev),
+              'dev_reasons': problems}
+    return config_path, Path(envelope_path).resolve(), record
 
 
 # ----------------------------------------------------------------------------- samples / feasibility
@@ -162,7 +222,37 @@ def _gpu_memory():
 
 def cmd_kinematic(args):
     config = W.load_benchmark(args.config)
-    return kinematic_episode(config, W.sample_by_id(config, args.sample_id), args)
+    extra = {'provenance': {**args.provenance, 'runner_sha256': _sha(__file__), 'module_sha256': _sha(W.__file__)}}
+    if args.dev:
+        extra['label'] = 'DEV'
+    args.reconnection_check = True
+    return kinematic_episode(config, W.sample_by_id(config, args.sample_id), args, extra)
+
+
+def reconnection_check(env, task, material):
+    """Spec 5.8 'no accidental reconnection' (report-only, never a verdict input): the global mechanical component
+    count (goals._Recording.components: the evaluator's own component rule on the recorded codes and reference
+    stencils) at every recorded history frame must never decrease, so the final count is >= the count after every
+    step. Read from the episode's recorded oracle history (evaluation only)."""
+    from robotic_cutting_sim.goals import _Recording
+    start = time.monotonic()
+    bed, history = material.bed, env._history
+    data = {'time_s': np.asarray([s['time_s'] for s in history], float),
+            'positions': np.asarray([s['positions'] for s in history], float),
+            'codes': np.asarray([s['codes'] for s in history]), 'mass_kg': material.masses,
+            'reference_positions': material.world_points, 'reference_stencil_nodes': bed.nodes.numpy(),
+            'reference_stencil_weights': bed.weights.numpy(), 'reference_stencil_gradients': bed.gradients.numpy(),
+            'code_encoding': getattr(material, 'code_encoding', 'ternary'), 'max_cuts': int(getattr(material, 'max_cuts', 1))}
+    rec = _Recording(data, task)
+    if rec.missing:
+        return {'status': 'NOT_RUN', 'reason': f'recording lacks {rec.missing}'}
+    counts = [int(rec.components(i)[0]) for i in range(len(rec.time))]
+    drops = [{'frame': i, 'time_s': float(rec.time[i]), 'from': counts[i-1], 'to': counts[i]}
+             for i in range(1, len(counts)) if counts[i] < counts[i-1]]
+    return {'status': 'PASS' if not drops else 'FAIL', 'component_counts_per_frame': counts,
+            'times_s': rec.time.tolist(), 'final_components': counts[-1], 'max_components': max(counts),
+            'decreases': drops, 'wall_s': time.monotonic()-start,
+            'rule': 'global mechanical components (evaluator rule) non-decreasing over every recorded history frame'}
 
 
 def kinematic_episode(config, sample, args, extra=None):
@@ -276,6 +366,12 @@ def kinematic_episode(config, sample, args, extra=None):
     physical = W.physical_quality(task, material, evaluation, metrics, stability, actions)
     geometry = W.geometry_quality(env, task, args.geometry_level or common['geometry_quality_level']) \
         if not args.no_geometry else {'status': 'NOT_RUN', 'reason': '--no-geometry'}
+    reconnection = {'status': 'NOT_RUN', 'reason': 'not requested by the caller (Phase 5 kinematic only)'}
+    if getattr(args, 'reconnection_check', False):   # opt-in: other callers (E2, gridpos) keep their behaviour
+        try:
+            reconnection = reconnection_check(env, task, material)
+        except Exception as error:   # report-only: never breaks the episode
+            reconnection = {'status': 'ERROR', 'reason': f'{type(error).__name__}: {error}'}
     history = env._history
     np.savez_compressed(out/'physics_state.npz', time_s=np.asarray([s['time_s'] for s in history], float),
                         positions=np.asarray([s['positions'] for s in history], np.float32),
@@ -287,6 +383,7 @@ def kinematic_episode(config, sample, args, extra=None):
     result.update(status='COMPLETE', policy_done=bool(policy.done), steps_run=len(actions), partial=limit < steps_total,
                   evaluation=evaluation, metrics=metrics, solver_invalid=solver_invalid, slots=slots, stability=stability,
                   physical_quality=physical, geometry_quality=geometry,
+                  **({'reconnection_check': reconnection} if getattr(args, 'reconnection_check', False) else {}),
                   runtime={'reset_overhead_s': setup_wall, 'episode_wall_s': episode_wall, 'evaluation_wall_s': evaluation_wall,
                            'simulated_s': env.time_s, 'simulation_throughput_sim_s_per_wall_s': env.time_s/max(episode_wall, 1e-9),
                            'surface_reconstruction_s': geometry.get('extract_wall_s'), 'gpu_process_memory_mib': gpu},
@@ -314,6 +411,12 @@ def kinematic_episode(config, sample, args, extra=None):
 
 # ----------------------------------------------------------------------------- queue
 
+def child_prefix(args):
+    """Interpreter, runner and the provenance flags every child gets (decision finding 3: --envelope forwarded)."""
+    return [sys.executable, str(Path(__file__).resolve()), '--config', str(args.config), '--envelope', str(args.envelope),
+            *(['--dev'] if args.dev else [])]
+
+
 def cmd_queue(args):
     config = W.load_benchmark(args.config)
     feas = Path(args.feasibility)
@@ -322,48 +425,108 @@ def cmd_queue(args):
     pending = [rows[sid] for sid in order if sid in rows and rows[sid].get('feasibility_class') == 'valid_feasible']
     if args.only:
         pending = [r for r in pending if r['sample_id'] in set(selected_ids(config, r['split'], args.only))]
-    root, logs = Path(args.out_root), Path(args.log_dir)
-    root.mkdir(parents=True, exist_ok=True)
+    return run_jobs(args, [{**r, '_out': str(Path(args.out_root)/r['sample_id'])} for r in pending], 'QUEUE')
+
+
+def repeat_selection(config, feasibility_rows):
+    """Declared reproducibility repeats (metrics.reliability.reproducibility): per family with an ID stratum, the first
+    valid_feasible ID benchmark sample in declared seed order (feasibility only, never outcomes)."""
+    by_id = {r['sample_id']: r for r in feasibility_rows}
+    out = {}
+    for stratum in W.strata(config):
+        if stratum['range_set'] != 'ID':
+            continue
+        ids = [W.make_sample_id(config, stratum['family'], 'ID', 'benchmark', seed)
+               for seed in W.seed_list(config, stratum['family'], 'benchmark', 'ID')]
+        out[stratum['family']] = next((i for i in ids if by_id.get(i, {}).get('feasibility_class') == 'valid_feasible'), None)
+    return out
+
+
+def cmd_repeat(args):
+    """One rerun of each declared repeat sample on the OTHER device than its recorded benchmark run."""
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    rows = [json.loads(p.read_text()) for p in feas.glob(f"{config['sample_prefix']}_*_benchmark_*.json")]
+    by_id = {r['sample_id']: r for r in rows}
+    jobs, skipped = [], {}
+    for family, sid in repeat_selection(config, rows).items():
+        original = Path(args.kinematic_root)/str(sid)/'result.json'
+        if sid is None or not original.exists():
+            skipped[family] = 'no valid_feasible ID sample' if sid is None else f'{original} missing (original not finished)'
+            continue
+        first = json.loads(original.read_text()).get('device')
+        other = [d for d in args.devices if d != first]
+        if not other:
+            skipped[family] = f'no device other than {first} in {args.devices}'
+            continue
+        jobs.append({**by_id[sid], '_out': str(Path(args.out_root)/sid), '_device': other[0], '_repeat_of': str(original)})
+    Path(args.out_root).mkdir(parents=True, exist_ok=True)
+    write_new(next_free(Path(args.out_root)/'repeat_selection.json'),
+              {'meta': meta(args, config), 'rule': config['metrics']['reliability']['reproducibility'],
+               'jobs': [{k: j[k] for k in ('sample_id', '_device', '_repeat_of')} for j in jobs], 'skipped': skipped})
+    return run_jobs(args, jobs, 'REPEAT')
+
+
+def run_jobs(args, pending, name):
+    """Launch ``kinematic`` children for ``pending`` rows (``_out`` output dir, optional ``_device``) in order: at most
+    ``--max-concurrent`` per device, a device is used only while <= ``--max-other`` other active jobs run on it, an
+    existing output directory is skipped and preserved, and no job starts once ``--cap-job-hours`` (summed job wall
+    time, finished plus running) is reached: the rest stay pending (PAUSE, resumable with the same command)."""
+    logs = Path(args.log_dir)
     logs.mkdir(parents=True, exist_ok=True)
+    for row in pending:
+        Path(row['_out']).parent.mkdir(parents=True, exist_ok=True)
     running, log = {}, open(args.queue_log, 'a')
 
     def note(text):
         log.write(f'{datetime.now().astimezone().isoformat()} {text}\n')
         log.flush()
-    note(f'QUEUE start {len(pending)} valid_feasible samples; devices {args.devices}; max {args.max_concurrent} per device; '
-         f'launch when <= {args.max_other} other active jobs on that GPU; {git_state()}')
-    fast_failures, last_wait = 0, None
+    note(f'{name} start {len(pending)} valid_feasible samples; devices {args.devices}; max {args.max_concurrent} per device; '
+         f'launch when <= {args.max_other} other active jobs on that GPU; cap {args.cap_job_hours} job-h; '
+         f'provenance {args.provenance}; {git_state()}')
+    fast_failures, last_wait, used_s = 0, None, 0.
     while pending or running:
         for pid, (proc, row, began, device) in list(running.items()):
             if proc.poll() is not None:
                 wall = time.monotonic()-began
-                note(f"END {row['sample_id']} device={device} rc={proc.returncode} wall={wall:.0f}s")
+                used_s += wall
+                note(f"END {row['sample_id']} device={device} rc={proc.returncode} wall={wall:.0f}s job_hours={used_s/3600:.2f}")
                 del running[pid]
-                fast = proc.returncode != 0 and wall < 60 and not (root/row['sample_id']/'result.json').exists()
+                fast = proc.returncode != 0 and wall < 60 and not (Path(row['_out'])/'result.json').exists()
                 fast_failures = fast_failures+1 if fast else 0
                 if fast_failures >= 2:
                     note(f'ABORT two consecutive fast launch failures; {len(pending)} pending left unlaunched')
                     pending = []
+        if args.cap_job_hours is not None and pending:
+            committed = used_s+sum(time.monotonic()-e[2] for e in running.values())
+            if committed >= args.cap_job_hours*3600:
+                note(f'PAUSE job-hour cap {args.cap_job_hours} reached ({committed/3600:.2f}); {len(pending)} pending stay '
+                     f'unlaunched (resume with the same command; finished outputs are kept)')
+                pending = []
+                continue
         launched, waits = False, {}
         for device in args.devices:
             if not pending:
                 break
-            if args.min_free_gb is not None and shutil.disk_usage(root).free/1e9 < args.min_free_gb:
+            if args.min_free_gb is not None and shutil.disk_usage(Path(pending[0]['_out']).parent).free/1e9 < args.min_free_gb:
                 waits['disk'] = f'< {args.min_free_gb} GB free'
                 break
             if len([1 for e in running.values() if e[3] == device]) >= args.max_concurrent:
+                continue
+            index = next((i for i, r in enumerate(pending) if r.get('_device') in (None, device)), None)
+            if index is None:
                 continue
             others = RG.gpu_other_jobs(int(device.split(':')[1]), set(running))
             if len(others) > args.max_other:
                 waits[device] = others
                 continue
-            row = pending.pop(0)
-            out = root/row['sample_id']
+            row = pending.pop(index)
+            out = Path(row['_out'])
             if out.exists():
                 note(f"SKIP {row['sample_id']} (output exists; preserved, not rerun)")
                 continue
-            log_path = next_free(logs/f"phase5_{row['sample_id']}_001.log")
-            command = [sys.executable, str(Path(__file__).resolve()), '--config', str(args.config), 'kinematic',
+            log_path = next_free(logs/f"phase5_{out.parent.name}_{row['sample_id']}_001.log")
+            command = [*child_prefix(args), 'kinematic',
                        '--sample-id', row['sample_id'], '--device', device, '--out', str(out),
                        '--feasibility-class', 'valid_feasible']
             task_id = (row.get('compile') or {}).get('task_id')
@@ -374,7 +537,8 @@ def cmd_queue(args):
             proc = subprocess.Popen(command, cwd=str(ROOT), stdout=open(log_path, 'w'), stderr=subprocess.STDOUT,
                                     env={**os.environ, 'TMPDIR': os.environ.get('TMPDIR', '/mnt/data/ningan/tmp')})
             running[proc.pid] = (proc, row, time.monotonic(), device)
-            note(f"START {row['sample_id']} device={device} pid={proc.pid} others={others} log={log_path}")
+            note(f"START {row['sample_id']} device={device} pid={proc.pid} others={others} log={log_path}"
+                 + (f" repeat_of={row['_repeat_of']}" if row.get('_repeat_of') else ''))
             launched = True
         if launched:
             time.sleep(20)
@@ -383,7 +547,60 @@ def cmd_queue(args):
             note(f'WAIT {waits}; {len(running)} running; {len(pending)} pending')
             last_wait = time.monotonic()
         time.sleep(args.poll_s)
-    note('QUEUE done')
+    note(f'{name} done; job_hours={used_s/3600:.2f}')
+    return 0
+
+
+# ----------------------------------------------------------------------------- Phase 7 Demo 7
+
+DEMO7_DEFAULT_OUT = ROOT/'artifacts/wp12/phase7_demo7_selection_001.json'
+
+
+def held_out_episode_outputs():
+    """Every held-out kinematic or Native episode output under artifacts/wp12 (a Demo 7 draw must precede them all)."""
+    base = ROOT/'artifacts/wp12'
+    found = set()
+    for pattern in ('*/P5_*_held_out_*/manifest.json', '*/*/P5_*_held_out_*/manifest.json',
+                    '*/P5_*_held_out_*/result.json', '*/*/P5_*_held_out_*/result.json',
+                    '*/P5_*_held_out_*/launch.json', '*/*/P5_*_held_out_*/launch.json'):
+        found.update(str(p.parent) for p in base.glob(pattern))
+    return sorted(found)
+
+
+def cmd_demo7_select(args):
+    """The Demo 7 draw (benchmark phase7_demos.demo_7): after the held-out feasibility, before any held-out episode,
+    once (refused when a selection file already exists or any held-out episode output exists, unless --dev)."""
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    rows = [json.loads(p.read_text()) for p in sorted(feas.glob(f"{config['sample_prefix']}_*_held_out_*.json"))]
+    problems = []
+    existing = sorted(str(p) for p in (ROOT/'artifacts/wp12').glob('phase7_demo7_selection_*.json'))
+    if existing:
+        problems.append(f'a Demo 7 selection already exists ({existing}); it is never redrawn')
+    episodes = held_out_episode_outputs()
+    if episodes:
+        problems.append(f'{len(episodes)} held-out episode outputs exist ({episodes[:3]}); the draw must precede them')
+    if problems and not args.dev:
+        raise SystemExit('Refused: ' + '; '.join(problems))
+    selection = W.demo7_selection(config, rows)
+    declared_held_out = [sid for sid, _ in declared(config, 'held_out')]
+    by_id = {r['sample_id']: r for r in rows}
+    record = {'schema': 'rcs_wp12_phase7_demo7_selection_v1', 'label': 'DEV' if args.dev else None,
+              'meta': meta(args, config), 'drawn': datetime.now().astimezone().isoformat(),
+              'feasibility_dir': _rel(feas), 'held_out_declared': len(declared_held_out),
+              'held_out_feasibility_rows': len(rows),
+              'held_out_feasibility_classes': {c: sum(by_id.get(s, {}).get('feasibility_class') == c for s in declared_held_out)
+                                               for c in (*W.FEASIBILITY_CLASSES, None)},
+              'held_out_episode_outputs_at_draw': episodes, 'refusal_overridden_by_dev': problems if args.dev else [],
+              **selection,
+              'next': 'commit this file before any held-out kinematic episode; Native Demo 7 runs this sample with '
+                      'particle_surface_v1 then cut_aware_surface_v1 (configs/wp12/phase7_demos_v1.json); never redrawn'}
+    out = Path(args.out) if args.out else DEMO7_DEFAULT_OUT
+    write_new(out, record)
+    if args.evidence_copy:
+        write_new(args.evidence_copy, record)
+    print(json.dumps({'demo_7_sample_id': selection['demo_7_sample_id'], 'pool_size': selection['pool_size'],
+                      'out': str(out), 'evidence_copy': args.evidence_copy}))
     return 0
 
 
@@ -472,6 +689,8 @@ def cmd_native_launch(args):
         write_new(out/'attempt.json', {**attempt, 'status': 'NOT_RUN', 'reason': '--dry-run (command recorded only)'})
         print(json.dumps({'dry_run': True, 'command': command}))
         return 0
+    write_new(out/'launch.json', {**attempt, 'status': 'LAUNCHING',
+                                  'note': 'written before the Native process starts: from here on a missing result is a crash'})
     start = time.monotonic()
     with log.open('w') as stream:
         proc = subprocess.Popen(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT)
@@ -485,28 +704,43 @@ def cmd_native_launch(args):
     return 0
 
 
-def native_execution(root, sample_id):
-    """Execution result (classify_execution shape) of a Native attempt directory, or None if absent.
+def _load_live_analysis():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('wp12_phase5_live_analysis', ROOT/'scripts/run_wp12_workcell_live_analysis.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
-    PROVISIONAL mapping, to be confirmed against run_wp12_workcell_live_analysis before the freeze: run_wp10_live
-    status FAIL_EXECUTION -> crash; refused_before_launch -> not_run (Native preflight refusal); a row's task_outcome is
-    the goal evaluation; a task_end_reason containing GRASP -> grasp failure; policy_final_phase DONE = plan finished."""
-    attempt = Path(root)/sample_id
-    if not attempt.exists():
+
+def native_execution(root, sample_id):
+    """Execution result of a Native attempt directory ``root/sample_id`` by the DECLARED Native success definition
+    (benchmark_v1.json native.success_definition; decision finding 1), or None if the sample has no attempt directory.
+
+    The Phase 2b class is ``run_wp12_workcell_live_analysis.live_classification`` (``classify_live`` with the grasp
+    warning gates 2 mm / pi/60 rad and the task-phase IK-not-ok / workspace-clamp counts), mapped by
+    ``generalization_wp12.map_live_class``. A plan-preflight refusal is an execution failure (IK_FAILURE or
+    SCENE_INFEASIBLE, reason kept); a launched attempt without an episode result is a crash. Only an attempt never
+    launched is not_run: no ``run/`` directory and no launch receipt (``launch.json``, written just before the Native
+    process starts), e.g. a ``--dry-run`` or a disk-floor refusal."""
+    attempt_dir = Path(root)/sample_id
+    if not attempt_dir.exists():
         return None
-    path = attempt/'run'/'result.json'
-    if not path.exists():
-        return {'status': 'ABORTED', 'reason': 'Native run ended without result.json'}
-    data = json.loads(path.read_text())
-    if data.get('refused_before_launch'):
-        return {'status': 'NOT_RUN', 'reason': f"Native plan preflight refused: {data.get('status')}"}
-    if data.get('status') != 'PASS_EXECUTION' or not data.get('rows'):
-        return {'status': 'ABORTED', 'reason': f"Native status {data.get('status')}"}
-    row = data['rows'][0]
-    if 'GRASP' in str(row.get('task_end_reason') or ''):
-        return {'status': 'COMPLETE', 'grasp_failure': row.get('task_end_reason')}
-    return {'status': 'COMPLETE', 'policy_done': row.get('policy_final_phase') in ('DONE', 'RETURN_HOME'),
-            'evaluation': row.get('task_outcome') or {}, 'solver_invalid': None}
+    attempt = json.loads((attempt_dir/'attempt.json').read_text()) if (attempt_dir/'attempt.json').exists() else None
+    run = attempt_dir/'run'
+    launched = run.exists() or (attempt_dir/'launch.json').exists() or (attempt or {}).get('returncode') is not None
+    if not launched:
+        why = (attempt or {}).get('reason') or 'attempt directory without a launch receipt or run directory'
+        cls, kind, reason = W.map_live_class(None, why, launched=False)
+        return {'status': 'NOT_RUN', 'reason': reason, 'runtime_source': 'live_isaac_sim',
+                'native_classification': {'class': cls, 'failure_kind': kind, 'reason': reason, 'launched': False}}
+    live = _load_live_analysis().live_classification(run)
+    cls, kind, reason = W.map_live_class(live['class'], live['reason'])
+    return {'status': 'COMPLETE' if live['episode_result_present'] else 'ABORTED', 'reason': reason,
+            'runtime_source': 'live_isaac_sim', 'returncode': (attempt or {}).get('returncode'),
+            'native_classification': {'class': cls, 'failure_kind': kind, 'reason': reason, 'launched': True,
+                                      'live_class': live['class'], 'live_reason': live['reason'],
+                                      'definition': 'benchmark_v1.json native.success_definition (workcell_live_v1 rules)'},
+            'live': live}
 
 
 # ----------------------------------------------------------------------------- summary
@@ -550,8 +784,12 @@ def cmd_summarize(args):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--config', type=Path, default=W.DRAFT)
-    p.add_argument('--envelope', type=Path, default=W.ENVELOPE)
+    p.add_argument('--config', type=Path, default=W.BENCHMARK_V1,
+                   help='benchmark file (default: the FROZEN configs/wp12/benchmark_v1.json)')
+    p.add_argument('--envelope', type=Path, default=None,
+                   help="FROZEN config: defaults to the config's declared envelope; another envelope is refused")
+    p.add_argument('--dev', action='store_true',
+                   help='allow a DRAFT config or an unpinned/edited file; every output is labelled DEV (never evidence)')
     sub = p.add_subparsers(dest='cmd', required=True)
     s = sub.add_parser('samples')
     s.add_argument('--split', choices=W.SPLITS, default='dev')
@@ -585,6 +823,24 @@ def main(argv=None):
     s.add_argument('--poll-s', type=float, default=60.)
     s.add_argument('--only', nargs='*')
     s.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'))
+    s.add_argument('--cap-job-hours', type=float, help='pause (no new launch) once summed job wall time reaches this')
+    s = sub.add_parser('repeat')
+    s.add_argument('--feasibility', required=True)
+    s.add_argument('--kinematic-root', required=True, help='the benchmark kinematic root (original runs)')
+    s.add_argument('--out-root', required=True)
+    s.add_argument('--log-dir', default=str(ROOT/'artifacts/wp12/logs'))
+    s.add_argument('--queue-log', required=True)
+    s.add_argument('--devices', nargs='+', default=['cuda:1', 'cuda:0'])
+    s.add_argument('--max-concurrent', type=int, default=2)
+    s.add_argument('--max-other', type=int, default=2)
+    s.add_argument('--min-free-gb', type=float)
+    s.add_argument('--poll-s', type=float, default=60.)
+    s.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'))
+    s.add_argument('--cap-job-hours', type=float)
+    s = sub.add_parser('demo7-select')
+    s.add_argument('--feasibility', required=True, help='the held-out feasibility directory')
+    s.add_argument('--out', help=f'default {DEMO7_DEFAULT_OUT.relative_to(ROOT)}')
+    s.add_argument('--evidence-copy', help='also write the record here (e.g. docs/evidence/wp12/...) for the commit')
     s = sub.add_parser('native-select')
     s.add_argument('--split', choices=W.SPLITS, default='benchmark', help='dev only to exercise the rule (DEV)')
     s.add_argument('--feasibility', required=True)
@@ -606,8 +862,9 @@ def main(argv=None):
     s.add_argument('--native-root')
     s.add_argument('--out', required=True)
     args = p.parse_args(argv)
-    args.config, args.envelope = args.config.resolve(), args.envelope.resolve()
+    args.config, args.envelope, args.provenance = resolve_provenance(args.config, args.envelope, args.dev)
     return {'samples': cmd_samples, 'feasibility': cmd_feasibility, 'kinematic': cmd_kinematic, 'queue': cmd_queue,
+            'repeat': cmd_repeat, 'demo7-select': cmd_demo7_select,
             'native-select': cmd_native_select, 'native-prepare': cmd_native_prepare, 'native-launch': cmd_native_launch,
             'summarize': cmd_summarize}[args.cmd](args)
 

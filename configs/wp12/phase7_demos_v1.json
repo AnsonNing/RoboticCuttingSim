@@ -1,0 +1,180 @@
+{
+ "schema": "rcs_wp12_phase7_demos_v1",
+ "demos_id": "wp12_phase7_demos_v1",
+ "status": "PREDECLARED",
+ "declared": "2026-10-31 (KST), WP-12 Phase 5 tooling, before any Phase 5 benchmark episode, any held-out episode and any Phase 7 Native demo run. Written from docs/reports/WP12_PHASE5_FREEZE_DECISION.md section 3 (decision E-4) exactly; any change is a new file (phase7_demos_v2), never an edit. Failed runs are kept and reported as the demo result.",
+ "decision": "docs/reports/WP12_PHASE5_FREEZE_DECISION.md section 3 (E-4)",
+ "benchmark": {
+  "file": "configs/wp12/benchmark_v1.json",
+  "sha256": "915a2a8f44af80b5b5115598bd5561ec82f77a214233d30cef35549962809c37",
+  "phase7_demos_block": "benchmark_v1.json phase7_demos (Demo 7 rule)"
+ },
+ "scope": "LIVE Native Isaac Sim 6.2 results only (runtime_source live_isaac_sim): Franka articulation with the physically grasped ruler_knife_v2_y on blade_master_flat_board_v1 plus retained TLMPM material. Never a kinematic replay. Material parameters are provisional and uncalibrated. One seed per run, no repeat statistics.",
+ "common": {
+  "physics": {
+   "solver": "tlmpm_v5",
+   "cutting_law": 8,
+   "particle_spacing_m": 0.001,
+   "grid_dx_m": 0.004,
+   "material_dt_s": 0.0001,
+   "material_profile": "cutting_tasks_v1",
+   "seed": 42,
+   "check": "every demo scene declares solver tlmpm_v5, cutting_law 8, 1 mm / 4 mm and cutting_tasks_v1 (tests/test_wp12_phase5_frozen.py)"
+  },
+  "runtime": {
+   "backend": "scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal (the Phase 2b workcell_live_v1 path)",
+   "python": ".deps/isaacsim-venv/bin/python",
+   "gpu": 0,
+   "one_native_run_at_a_time": true,
+   "tmpdir": "/mnt/data/ningan/tmp",
+   "flags": [
+    "--controller",
+    "scripted",
+    "--edge-feedback",
+    "measured",
+    "--hold-until-time-limit",
+    "--return-home",
+    "--record-cameras",
+    "--overview-camera"
+   ],
+   "flags_rule": "the Phase 2b flags (--controller scripted --edge-feedback measured --hold-until-time-limit --return-home) plus --record-cameras --overview-camera",
+   "record_every": 10,
+   "history_stride": "max(5, ceil(live control steps / 40)), passed as --oracle-stride (WP-11 round-1 rule)",
+   "plan_preflight": "runner default C2 plan preflight of the full plan must PASS before launch (staged per-protrusion geometry for >= 2 protrusions, runner default)"
+  },
+  "planner_overrides": {
+   "max_rotation_deg": 1.0,
+   "max_translation_m": 0.001,
+   "controller_profile": "path_v2"
+  },
+  "duration_rule": {
+   "probe_duration_s": 120.0,
+   "plan_end_factor": 1.1,
+   "settle_after_plan_s": 1.0,
+   "round_up_to_s": 0.5,
+   "text": "As WP-11 Phase E live: probe-compile with the live options; plan end = first DONE knot of the ideal reference schedule; duration = ceil((1.1 x plan end + 1.0 s) / 0.5 s) x 0.5 s. The live goal JSON differs from the source goal JSON only in episode.duration_s."
+  },
+  "surface_profiles": {
+   "order": [
+    "particle_surface_v1",
+    "cut_aware_surface_v1"
+   ],
+   "rule": "particle_surface_v1 runs first (the regression record), then cut_aware_surface_v1 on identical inputs (same scene, goal, overrides, duration, seed) with cut close-ups. Never cut_aware_surface_v2. Every run is kept.",
+   "never": [
+    "cut_aware_surface_v2"
+   ]
+  },
+  "success": "configs/wp12/workcell_live_v1.json task_success_requires, classified by scripts/run_wp12_workcell_live_analysis.py (classify_live with the grasp warning gates and the IK / workspace-clamp counts); the report states each demo's class, failures included",
+  "media": "per run: RGB-D of the global D455 and both wrist D405, the overview camera; Phase 7 pairs show particle_surface_v1 next to cut_aware_surface_v1"
+ },
+ "demos": [
+  {
+   "id": "DEMO1",
+   "title": "Clean cut",
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp11/goals/sever_mid.json",
+   "scene_sha256": "462b4e155e6359c5afe47372155b10a5c68952fd5541ab4dbbbb669520a83747",
+   "goal_sha256": "32479130597e2d4c20cb89d9fce67d82536c8602d235dd7dfec9a5e3b1a86918",
+   "workcell_live_episode": "CUT",
+   "evidence_now": "artifacts/wp12/workcell_live_001 TASK_SUCCESS (docs/evidence/wp12/phase2b_native_001.json)",
+   "phase7": "rerun + surface pair"
+  },
+  {
+   "id": "DEMO2",
+   "title": "Oblique (slotted board, Option D)",
+   "scene": "configs/wp12/phase7/demo2_slot_p20_scene.json",
+   "goal": "configs/wp12/phase7/demo2_slot_p20_goal.json",
+   "scene_sha256": "9d4ccab2332626a0dc5252c8ad219cfcd6f08f69fbf420002db4c2825cc9465e",
+   "goal_sha256": "aa68664d7b89697084f56234528837b17b6437c32dc334105f59a997569bf6f0",
+   "generated_from": {
+    "protocol": "configs/wp12/phase4_e2_protocol_v1.json",
+    "protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "row": "SLOT_p20",
+    "generator": "scripts/make_wp12_phase7_demo_inputs.py (run_wp12_phase4_e2.build_row_sample + generalization_wp12.compile_sample)",
+    "e2_task_id": "CFG-E2_SLOT_p20-E2_SLOT_p20_sever_tilt_slotted-c2423454",
+    "equals": "the scene / goal recorded in artifacts/wp12/phase4_e2_001/SLOT_p20/manifest.json"
+   },
+   "configuration": "explicit Option D 8 mm wide, 8 mm deep groove under the plane; tilt +20 deg about local y; plane through x = 0 at the board top; 4 mm overtravel; cut speed 10 mm/s",
+   "label": "Option D (explicit slotted board); the solid-board tilt is NOT supported (ID cell solid theta = 0 only)",
+   "evidence_now": "E2 SLOT_p20 kinematic CONFIRMED (docs/evidence/wp12/phase4_e2_001.json); Native NOT_RUN",
+   "phase7": "Native + surface pair",
+   "optional_still": {
+    "source": "E2 SOLID_p05 (artifacts/wp12/phase4_e2_001/SOLID_p05)",
+    "label": "KNOWN FAILURE (solid board, 5 deg: 1 part, 26 direct bridges)"
+   }
+  },
+  {
+   "id": "DEMO3",
+   "title": "Trim",
+   "scene": "configs/wp12/scenes/trim01_flat_board.json",
+   "goal": "configs/wp11/goals/trim_bump_rho10.json",
+   "scene_sha256": "9f707ab90d332c66e74ca77adc714c5367320d880594e5b6d71dede5649f5e97",
+   "goal_sha256": "f26cedae612e58aa54858805d1a58f601ea26b5eb1e94b72fc4fa7493ccec431",
+   "workcell_live_episode": "TRIM",
+   "configuration": "path_v2, rho 10",
+   "evidence_now": "artifacts/wp12/workcell_live_003 TASK_SUCCESS, removal 0.977",
+   "disclose": "the report-only PRE_CUT measured-path C2 blade-clearance dip (blade 0.18 mm below the uncut bar top, cutting disabled); spikes are shown, not hidden",
+   "phase7": "rerun + surface pair (spikes shown)"
+  },
+  {
+   "id": "DEMO4",
+   "title": "Four slices",
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp12/goals/divide_5_slices.json",
+   "scene_sha256": "462b4e155e6359c5afe47372155b10a5c68952fd5541ab4dbbbb669520a83747",
+   "goal_sha256": "408c282cb42a4ea73e4673357bc2b16ef5b365c925011a8ec051001063cc4771",
+   "workcell_live_episode": "TESTB",
+   "evidence_now": "artifacts/wp12/workcell_live_004 TASK_SUCCESS",
+   "phase7": "rerun + surface pair"
+  },
+  {
+   "id": "DEMO5",
+   "title": "Three bumps",
+   "scene": "configs/wp12/scenes/bar_three_bumps_flat_board.json",
+   "goal": "configs/wp12/goals/remove_all_protrusions_rho10.json",
+   "scene_sha256": "5a56239880ca59e68e8cff03356749103e7d81db952adf3ce069cce59b6f6d73",
+   "goal_sha256": "01da3d6498e6b9bdb4a73344508f45e7ed0c701772722132dc13de71d881c3ef",
+   "workcell_live_episode": "TESTC",
+   "evidence_now": "artifacts/wp12/workcell_live_005 TASK_SUCCESS",
+   "disclose": "2 chip particles 0.6 mm below the board top",
+   "phase7": "rerun + surface pair"
+  },
+  {
+   "id": "DEMO6",
+   "title": "Mixed: cut, push, trim (CUT_PUSH_TRIM)",
+   "scene": "configs/wp12/phase7/demo6_cut_push_trim_scene.json",
+   "goal": "configs/wp12/phase7/demo6_cut_push_trim_goal.json",
+   "scene_sha256": "37ca56ebbb5d9084c9c67a29890b52830f0a4532f79599cd0c3f76ab46e68d83",
+   "goal_sha256": "a3e33c2564c9698bf1e2440ff76a31b0a3cfa0cda7141dfd7a059c17f3548b82",
+   "generated_from": {
+    "protocol": "configs/wp12/phase4_e2_protocol_v1.json",
+    "protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "row": "CUT_PUSH_TRIM",
+    "generator": "scripts/make_wp12_phase7_demo_inputs.py (run_wp12_phase4_e2.build_row_sample + generalization_wp12.compile_sample)",
+    "e2_task_id": "CFG-E2_CUT_PUSH_TRIM-E2_CUT_PUSH_TRIM_cut_push_trim-f8bb915d",
+    "equals": "the scene / goal recorded in artifacts/wp12/phase4_e2_001/CUT_PUSH_TRIM/manifest.json"
+   },
+   "configuration": "sever at x = 0, push the +x piece 20 mm (kerf_face, cut disabled), then trim p0 (12 x 10 x 8 mm dome at x = -44.8 mm) on the STATIONARY -x piece; one episode",
+   "describe_as": "the other piece was moved (the trimmed piece is the stationary one)",
+   "evidence_now": "E2 CUT_PUSH_TRIM kinematic CONFIRMED (3 parts, removal 0.968); Native NOT_RUN",
+   "phase7": "Native + surface pair"
+  },
+  {
+   "id": "DEMO7",
+   "title": "Generalized (held-out benchmark sample)",
+   "selection": {
+    "rule": "benchmark_v1.json phase7_demos.demo_7",
+    "selector": "scripts/run_wp12_phase5.py demo7-select (generalization_wp12.demo7_selection)",
+    "pool": "held_out split, range set ID, population ID_validated (target_scope), feasibility class valid_feasible under this file and envelope v2",
+    "order": "the pool in declared order (strata order, then seed); permutation numpy.random.default_rng([1205, 7]).permutation(len(pool)); the first sample of the permuted pool is Demo 7",
+    "when": "immediately after the held-out feasibility classification and before any held-out kinematic episode; the pool, permutation and chosen sample id are written to artifacts/wp12/phase7_demo7_selection_001.json (new file, never overwritten) and committed before the Native run",
+    "record": "artifacts/wp12/phase7_demo7_selection_001.json (and its committed copy docs/evidence/wp12/phase7_demo7_selection_001.json)",
+    "never": "never re-drawn after any outcome (kinematic or Native); a failed Native Demo 7 is reported as the Demo 7 result; one rerun of the same sample only if the process dies before the first armed control step (infrastructure), recorded with both attempts"
+   },
+   "inputs": "the selected sample's scene / goal from scripts/run_wp12_phase5.py native-prepare (benchmark_v1 native duration rule and planner overrides), run with the common flags above",
+   "evidence_now": "after the freeze: drawn after the held-out feasibility, before any held-out episode",
+   "phase7": "Native + surface pair; never redrawn"
+  }
+ ],
+ "every_demo": "tlmpm_v5 law 8 at 1 mm / 4 mm / 0.1 ms, seed 42, cutting_tasks_v1; Native Isaac Sim 6.2 only, never a kinematic replay; the Phase 2b flags plus --record-cameras and --overview-camera; planner overrides 1 deg, 1 mm, path_v2; particle_surface_v1 first, then cut_aware_surface_v1 on identical inputs with cut close-ups (never cut_aware_surface_v2); every run kept"
+}

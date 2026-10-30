@@ -1,0 +1,79 @@
+{
+ "schema": "rcs_goal_v1",
+ "goal_id": "E2_CUT_PUSH_TRIM_cut_push_trim",
+ "type": "sequence",
+ "description": "Sever at x = 0.0 mm, push the +x piece 20.0 mm along +x (cut disabled), then remove p0 at x = -44.8 mm on the stationary piece (one surface_trim pass).",
+ "episode": {
+  "duration_s": 20.5,
+  "control_dt_s": 0.02
+ },
+ "planner": {
+  "controller_profile": "path_v2",
+  "cut_extent": "plane_section",
+  "cut_speed_m_s": 0.01,
+  "cut_clearance_m": 0.008,
+  "rake_deg": 10.0,
+  "skew_deg": 0.0,
+  "skim_direction_local": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "skim_speed_m_s": 0.025
+ },
+ "evaluator_version": "goal_eval_v2a",
+ "steps": [
+  {
+   "type": "sever",
+   "goal_id": "sever",
+   "planes": [
+    {
+     "origin_local_m": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "normal_local": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "expected_pieces": 2,
+   "minimum_part_mass_fraction": 0.25
+  },
+  {
+   "type": "move_piece",
+   "goal_id": "push",
+   "direction_local": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "distance_m": 0.02,
+   "selector": {
+    "side_of_plane": {
+     "origin_local_m": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "normal_local": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "side": "positive"
+    }
+   }
+  },
+  {
+   "type": "remove_protrusions",
+   "goal_id": "trim_p0",
+   "select": [
+    "p0"
+   ]
+  }
+ ]
+}
