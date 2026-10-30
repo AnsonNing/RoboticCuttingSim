@@ -674,7 +674,7 @@ class LiveIsaacSimCutting:
         spacing=self.task.particle_spacing_m if self.task else c.dx/2
         voxel=spacing/2 if c.surface_profile=="current_volume_v1" else min(spacing,.0015)
         self.cut_aware_surface = None
-        # In-memory profiling traces (both profiles; perf_counter only): never written unless a caller asks.
+        # In-memory timing traces (both profiles; perf_counter only): never written unless a caller asks.
         self.surface_trace, self.step_trace, self.capture_trace = [], [], []
         if c.surface_profile == "cut_aware_surface_v1":
             # A fresh extractor per reset (no topology cache survives an episode); never meshes nothing.
@@ -1224,7 +1224,7 @@ class LiveIsaacSimCutting:
                 "cut_events": self.material.cut_events_metadata()}
 
     def runtime_timing_trace(self):
-        """In-memory per-step physics / surface / camera timings since reset (profiling; both profiles)."""
+        """In-memory per-step physics / surface / camera timings since reset (timings; both profiles)."""
         return {"surface": list(getattr(self, "surface_trace", [])), "capture": list(getattr(self, "capture_trace", [])),
                 "steps": list(getattr(self, "step_trace", []))}
 

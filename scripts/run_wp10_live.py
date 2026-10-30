@@ -120,7 +120,7 @@ class EpisodeRecorder:
         state = backend.material.history_state()
         self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
         self.states.append(jsonable(self.measured()))
-        if self.surface_selection is not None:
+        if getattr(self, "surface_selection", None) is not None:
             row = backend.surface_frame()
             self.surface_frames.append(dict(frame=index, time_s=env.time_s, extraction=row['extraction'],
                                             codes_sha256=row['codes_sha256']))
@@ -233,7 +233,7 @@ class EpisodeRecorder:
             write_json(self.output / 'setup.json', dict(body_labels=body_paths))
         write_json(self.output / 'task.json', env.task.to_dict())
         write_json(self.output / 'material.json', material.parameter_receipt)
-        if self.surface_selection is not None:
+        if getattr(self, "surface_selection", None) is not None:
             self.write_surface_provenance(material)
         metrics = dict(steps=self.steps, events=self.events,
                        tracking_error_m={key: float(value) for key, value in zip(
