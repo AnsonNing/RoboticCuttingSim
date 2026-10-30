@@ -29,6 +29,7 @@ import json
 import math
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -97,7 +98,8 @@ def stage1(config, family, seed, index=None):
                       'control_steps': int(round(task.duration_s/task.control_dt_s))}
     row['scene_compiled'], row['goal_compiled'] = info['scene'], info['goal']
     checker = mp.MotionChecker(task)
-    receipt, checkers = G.staged_preflight(task, checker)
+    geometry = config.get('stages', {}).get('stage1_geometry_version', 'staged_v1')
+    receipt, checkers = G.staged_preflight(task, checker, geometry=geometry)
     cls, reason = G.classify_preflight(receipt)
     row['preflight'] = receipt
     if cls is not None:
@@ -134,7 +136,7 @@ def cmd_preflight(args):
         try:
             row = stage1(config, family, seed)
         except Exception as error:
-            row = {'family': family, 'seed': seed, 'sample_id': f'E1_{family}_s{seed}', 'class': 'NOT_RUN',
+            row = {'family': family, 'seed': seed, 'sample_id': G.make_sample_id(config, family, seed), 'class': 'NOT_RUN',
                    'reason': f'stage-1 error: {error!r}', 'traceback': traceback.format_exc()}
         write_new(out/f"{row['sample_id']}.json", row)
         rows.append(row)
@@ -174,14 +176,15 @@ def cmd_material(args):
                   'task_id': task.task_id, 'config_sha256': task.config_sha256, 'device': args.device,
                   'material_dt_s': common['material_dt_s'], 'material_seed': common['material_seed'],
                   'history_stride': stride, 'control_steps': steps_total, 'solver_module': info['solver_module'],
-                  'max_cuts': info['max_cuts'], 'cutting_law': common['solver']['cutting_law'],
+                  'max_cuts': info['max_cuts'], 'slots_per_node': info.get('slots_per_node'),
+                  'cutting_law': common['solver']['cutting_law'],
                   'particle_spacing_m': task.particle_spacing_m, 'grid_dx_m': task.grid_dx_m,
                   'runtime_source': 'kinematic_ideal_tracking', 'scene': info['scene'], 'goal': info['goal'],
                   'planner_options': options, 'draws': sample['draws'], 'derived': sample['derived']}
     (out/'manifest.json').write_text(json.dumps(jsonable(manifest(run_config, 'kinematic_ideal_tracking')), indent=1))
     run_config['declared_sample'] = sample['declared']
     result = {'status': 'RUNNING', 'declared_sample': sample['declared'], 'device': args.device, **{k: run_config[k] for k in ('round_id', 'family', 'seed', 'sample_id', 'task_id',
-                                                                    'config_sha256', 'solver_module', 'max_cuts',
+                                                                    'config_sha256', 'solver_module', 'max_cuts', 'slots_per_node',
                                                                     'history_stride', 'control_steps', 'runtime_source')}}
     start = time.monotonic()
     env = make_configured_kinematic_env(task, seed=common['material_seed'], device=args.device,
@@ -311,7 +314,7 @@ def cmd_queue(args):
     root.mkdir(parents=True, exist_ok=True)
     logs = Path(args.log_dir)
     logs.mkdir(parents=True, exist_ok=True)
-    pending = [row for row in stage1['samples'] if row['feasible']]
+    pending = G.stage2_selection(config, stage1['samples'])  # every feasible sample unless the round declares a subset
     if args.only:
         keep = set(selected(config, args.only))
         pending = [row for row in pending if (row['family'], row['seed']) in keep]
@@ -341,6 +344,13 @@ def cmd_queue(args):
         for device in devices:
             if not pending:
                 break
+            if args.max_total is not None and len(running) >= args.max_total:
+                break
+            if args.min_free_gb is not None:
+                free_gb = shutil.disk_usage(root).free/1e9
+                if free_gb < args.min_free_gb:
+                    waits['disk'] = f'{free_gb:.1f} GB free < {args.min_free_gb} GB'
+                    break
             mine = [pid for pid, entry in running.items() if entry[3] == device]
             if len(mine) >= args.max_concurrent:
                 continue
@@ -402,8 +412,11 @@ def cmd_summarize(args):
     config = G.load_round(args.config)
     stage1_dir, material_root = Path(args.stage1), Path(args.material_root)
     rows = []
+    s1_rows = json.loads((stage1_dir/'stage1_summary.json').read_text())['samples']
+    chosen = {(r['family'], int(r['seed'])) for r in G.stage2_selection(config, s1_rows)}
+    subset = config.get('stages', {}).get('stage2_subset')
     for family, seed in G.sample_ids(config):
-        sample_id = f'E1_{family}_s{seed}'
+        sample_id = G.make_sample_id(config, family, seed)
         s1 = json.loads((stage1_dir/f'{sample_id}.json').read_text())
         row = {'family': family, 'seed': seed, 'sample_id': sample_id,
                'goal_id': s1['sample']['goal']['goal_id'], 'goal_type': s1['sample']['goal']['type'],
@@ -425,6 +438,9 @@ def cmd_summarize(args):
                 result = {'status': 'NOT_RUN', 'reason': f"stage-2 task id {result.get('task_id')} != stage-1 {row['task_id']}"}
             if result is None and (material_root/sample_id).exists():
                 result = crashed_run(material_root/sample_id, Path(args.log_dir), sample_id)
+            if result is None and subset is not None and (family, seed) not in chosen:
+                result = {'status': 'NOT_RUN', 'reason': 'preflight-feasible; not in the predeclared stage-2 subset '
+                                                         '(stages.stage2_subset)'}
             if result is None:
                 result = {'status': 'NOT_RUN', 'reason': 'stage 2 not run'}
             row['class'], row['reason'] = G.classify_material(result)
@@ -441,6 +457,8 @@ def cmd_summarize(args):
                                  'stability': result['stability'], 'artifact': str(material_root/sample_id),
                                  'git': {k: v for k, v in json.loads((material_root/sample_id/'manifest.json').read_text()).items()
                                          if k in ('git_sha', 'git_dirty')}}
+        if subset is not None:
+            row['stage2_selected'] = (family, seed) in chosen
         rows.append(row)
     families = list(config['families'])
     out = {'schema': 'rcs_generalization_round_evidence_v1', 'round_id': config['round_id'], 'config': str(args.config),
@@ -479,6 +497,8 @@ def main(argv=None):
     c.add_argument('--devices', nargs='+', default=['cuda:0'])
     c.add_argument('--max-concurrent', type=int, default=2, help='Per device')
     c.add_argument('--max-other', type=int, default=2)
+    c.add_argument('--max-total', type=int, help='At most this many of this queue\'s jobs over all devices')
+    c.add_argument('--min-free-gb', type=float, help='Launch only while the output disk has at least this much free')
     c.add_argument('--poll-s', type=float, default=60.)
     c.add_argument('--only', nargs='*')
     d = sub.add_parser('summarize')

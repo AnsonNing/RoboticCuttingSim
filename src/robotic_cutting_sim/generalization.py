@@ -16,6 +16,13 @@ angle, protrusion family, rake, slice count) follow declared seed-index rules,
 not the RNG. Every sampled and derived value is recorded per sample, and the
 scene-level values are also written into the scene's ``randomization.sampled``
 block (ADR 0015), so a compiled task carries them.
+
+Round 2 (``configs/wp11/generalization_round2.json``) adds, all opt-in so round 1 builds,
+compiles and ids are unchanged: ``common.sample_prefix`` / ``common.round_label`` (default
+"E1" / "round 1"), a per-family ``solver`` override (tlmpm_v5 with ``slots_per_node``), a
+per-family ``evaluator_version`` for its goals, the builders ``fixed_workpiece_posed``
+(Test A variants on a drawn pose) and ``sequence_mixed`` (Test D2 declared step patterns),
+and ``stages.stage2_subset`` (a predeclared rule-based stage-2 subset).
 """
 from copy import deepcopy
 import json
@@ -41,6 +48,36 @@ def load_round(path=ROUND1):
 def sample_ids(config):
     """[(family, seed)] in declared order."""
     return [(name, int(seed)) for name, family in config["families"].items() for seed in family["seeds"]]
+
+
+def make_sample_id(config, family, seed):
+    return f"{config['common'].get('sample_prefix', 'E1')}_{family}_s{int(seed)}"
+
+
+def stage2_selection(config, stage1_rows):
+    """Stage-1 rows (declared order) that stage 2 runs: every feasible sample, or the declared subset rule.
+
+    ``stages.stage2_subset`` = {"all_feasible": [families], "first_feasible_per_family": {"count": n,
+    "families": [...]}} selects every feasible sample of the first list and the first n feasible samples
+    (declared seed order) of each family of the second. Families in neither list run no stage 2.
+    """
+    rule = config.get("stages", {}).get("stage2_subset")
+    feasible = [row for row in stage1_rows if row.get("feasible")]
+    if rule is None:
+        return feasible
+    order = {key: i for i, key in enumerate(sample_ids(config))}
+    feasible.sort(key=lambda row: order[(row["family"], int(row["seed"]))])
+    every = set(rule.get("all_feasible", []))
+    first = rule.get("first_feasible_per_family", {"count": 0, "families": []})
+    taken, out = {}, []
+    for row in feasible:
+        family = row["family"]
+        if family in every:
+            out.append(row)
+        elif family in first["families"] and taken.get(family, 0) < int(first["count"]):
+            taken[family] = taken.get(family, 0)+1
+            out.append(row)
+    return out
 
 
 # ----------------------------------------------------------------------------- draws
@@ -103,11 +140,13 @@ def _scene(config, sample_id, dims, pose, protrusions, slots, scene_rows, descri
     return scene
 
 
-def _goal(config, goal_id, kind, description, fields, planner=None):
+def _goal(config, goal_id, kind, description, fields, planner=None, evaluator_version=None):
     goal = {"schema": "rcs_goal_v1", "goal_id": goal_id, "type": kind, "description": description,
             "episode": {"duration_s": config["common"]["duration_rule"]["probe_duration_s"],
                         "control_dt_s": config["common"]["control_dt_s"]},
             "planner": {**config["common"]["planner"], **(planner or {})}, **fields}
+    if evaluator_version is not None:  # round 2 opt-in (ADR 0015 Amendment 1); absent in round 1
+        goal["evaluator_version"] = evaluator_version
     return goal
 
 
@@ -200,20 +239,29 @@ def build_sample(config, family, seed, *, index=None):
     values, rows, rng = _draws(config, family, seed)
     index = _index(config, family, seed, index)
     specs = {name: (low, high) for name, low, high in spec.get("draws", [])}
-    sample_id = f"E1_{family}_s{seed}"
+    sample_id = make_sample_id(config, family, seed)
     rules = spec.get("index_rules", {})
     derived = {"seed_index": index}
     kind = spec["builder"]
+    version = spec.get("evaluator_version")
     v = values
     if kind == "fixed_workpiece":
         wp = spec["workpiece"]
         dims, pose = (wp["length_m"], wp["width_m"], wp["height_m"]), (0., 0., 0.)
+    elif kind == "fixed_workpiece_posed":
+        wp = spec["workpiece"]
+        dims, pose = (wp["length_m"], wp["width_m"], wp["height_m"]), (v["x_m"], v["y_m"], v["yaw_deg"])
     else:
         dims, pose = _dims(config, v), (v["x_m"], v["y_m"], v["yaw_deg"])
         derived["applied_dims_m"] = list(dims)
     L, W, H = dims
     applied = {"length_m": L, "width_m": W, "height_m": H}
-    scene_rows = [] if kind == "fixed_workpiece" else _scene_rows(seed, v, _POSE_PATHS, specs, applied)
+    if kind == "fixed_workpiece":
+        scene_rows = []
+    elif kind == "fixed_workpiece_posed":
+        scene_rows = _scene_rows(seed, v, _POSE_PATHS[3:], specs)
+    else:
+        scene_rows = _scene_rows(seed, v, _POSE_PATHS, specs, applied)
     protrusions, slots, planner = [], [], {}
 
     if kind == "cut":
@@ -254,7 +302,7 @@ def build_sample(config, family, seed, *, index=None):
                      {"steps": [{"type": "sever", "goal_id": "slice_two", **fields}, push]})
         derived.update(cut_x_local_m=[x1, x2], nominal_piece_fractions=fractions,
                        wrist_depth_relocation="NOT_EXERCISED (ADR 0009 survey is a live-only feature)")
-    elif kind == "fixed_workpiece":
+    elif kind in ("fixed_workpiece", "fixed_workpiece_posed"):
         wp = spec["workpiece"]
         variant = spec["variants"][index]
         derived.update(variant=variant)
@@ -264,6 +312,9 @@ def build_sample(config, family, seed, *, index=None):
         if variant["op"] == "sever":
             angle = variant.get("cut_angle_deg", 0.)
             plane = _vertical_plane(x_c) if angle == 0 else _oblique_plane(x_c, H, angle)
+            if kind == "fixed_workpiece_posed" and wp["relief_slot"].get("rule") == "under_plane":
+                slots = [_relief_slot(config, plane, H, wp["relief_slot"]["width_m"])]
+                derived.update(relief_slot_x_local_m=slots[0][0])
             if "approach_local" in variant:
                 plane["approach_local"] = variant["approach_local"]
             fields, fractions = _sever_fields(config, [plane], L)
@@ -340,11 +391,60 @@ def build_sample(config, family, seed, *, index=None):
         else:
             raise ValueError(f"Unknown Test D goal kind {choice!r}")
         derived.update(cut_x_local_m=x_c, nominal_piece_fractions=fractions)
+    elif kind == "sequence_mixed":
+        pattern = spec["step_patterns"][index % len(spec["step_patterns"])]
+        families = [spec["protrusion_families"][int(rng.integers(len(spec["protrusion_families"])))] for _ in range(2)]
+        rake = spec["rakes_deg"][index % len(spec["rakes_deg"])]
+        derived.update(step_pattern=pattern, protrusion_families=families, rake_deg=rake,
+                       discrete_rng="rng.integers after the uniform draws: the two protrusion families, in order")
+        for i in range(2):
+            protrusions.append(_bump(config, f"p{i}", families[i], v[f"p{i}_x_fraction"]*L, v[f"p{i}_y_m"],
+                                     v[f"p{i}_radius_m"], v[f"p{i}_radius_m"], v[f"p{i}_height_m"]))
+            scene_rows += _scene_rows(seed, v, ((f"p{i}_y_m", f"workpiece.protrusions.{i}.y_m"),
+                                                (f"p{i}_radius_m", f"workpiece.protrusions.{i}.radius_x_m"),
+                                                (f"p{i}_radius_m", f"workpiece.protrusions.{i}.radius_y_m"),
+                                                (f"p{i}_height_m", f"workpiece.protrusions.{i}.height_m")), specs)
+        steps, cuts, texts = [], [], []
+        for token in pattern:
+            op, _, arg = token.partition(":")
+            if op == "sever":
+                angle = float(arg)
+                x_c = _node_x(config, v["cut_fraction"]*L) if angle == 0 else v["cut_fraction"]*L
+                plane = _vertical_plane(x_c) if angle == 0 else _oblique_plane(x_c, H, angle)
+                fields, fractions = _sever_fields(config, [plane], L)
+                slots.append(_relief_slot(config, plane, H, spec["slot_width_m"]))
+                steps.append({"type": "sever", "goal_id": "sever", **fields})
+                cuts.append({"cut_angle_deg": angle, "cut_x_local_m": x_c, "nominal_piece_fractions": fractions})
+                texts.append(f"sever at local x = {x_c*1e3:.2f} mm (angle {angle:g} deg)")
+            elif op == "remove":
+                select = "all" if arg == "all" else [arg]
+                steps.append({"type": "remove_protrusions", "goal_id": f"remove_{arg}", **_remove_fields(config, select)})
+                texts.append(f"remove {'all protrusions' if arg == 'all' else arg + ' (keep the other)'}")
+            elif op == "trim":
+                bump = protrusions[int(arg[1:])]
+                margin = spec["trim_region_margin_m"]
+                region = [bump["x_m"]-bump["radius_x_m"]-margin, bump["x_m"]+bump["radius_x_m"]+margin]
+                rule = config["common"]["remove_rule"]
+                steps.append({"type": "trim_plane", "goal_id": f"trim_{arg}",
+                              "plane": {"origin_local_m": [0., 0., H], "normal_local": [0., 0., 1.]},
+                              "region_local_m": {"x": region}, "edge_clearance_m": rule["edge_clearance_m"],
+                              "minimum_removed_fraction": rule["minimum_removed_fraction"],
+                              "minimum_substrate_share": rule["minimum_substrate_share"],
+                              "maximum_detached_below_fraction": rule["maximum_detached_below_fraction"]})
+                texts.append(f"trim the plane z = H over local x [{region[0]*1e3:.1f}, {region[1]*1e3:.1f}] mm ({arg})")
+            else:
+                raise ValueError(f"Unknown Test D2 step {token!r}")
+        derived.update(sever=cuts)
+        goal = _goal(config, f"{sample_id}_{'_'.join(t.replace(':', '') for t in pattern)}", "sequence",
+                     "; then ".join(texts)+f" (rake {rake:g} deg).", {"steps": steps}, {"rake_deg": rake}, version)
     else:
         raise ValueError(f"Unknown builder {kind!r}")
+    if version is not None and goal.get("evaluator_version") != version:
+        goal["evaluator_version"] = version
 
     scene = _scene(config, sample_id, dims, pose, protrusions, slots, scene_rows,
-                   f"Phase E round 1 sample {family} seed {seed} ({spec['description']})")
+                   f"Phase E {config['common'].get('round_label', 'round 1')} sample {family} seed {seed} "
+                   f"({spec['description']})")
     return {"family": family, "seed": int(seed), "sample_id": sample_id, "scene": scene, "goal": goal,
             "declared": int(seed) in spec["seeds"], "draws": rows, "derived": derived, "rng": config["common"]["rng"].replace("salt", str(spec["salt"]))}
 
@@ -367,7 +467,12 @@ def compile_sample(config, sample):
     resolved = resolve_scene(scene)
     _, report = goal_planner.plan_with_report(resolved, goal, PROFILES[resolved["tool"]["profile_id"]])
     digits = int(report["digits_used"])
-    if digits <= 2:
+    override = config["families"].get(sample.get("family"), {}).get("solver")
+    if override is not None:  # round 2 opt-in: e.g. tlmpm_v5 with slots_per_node 16 for every digit count
+        scene["solver"].update(module=override["module"], max_cuts=max(1, digits))
+        if "slots_per_node" in override:
+            scene["solver"]["slots_per_node"] = int(override["slots_per_node"])
+    elif digits <= 2:
         scene["solver"].update(module="tlmpm_v4", max_cuts=max(1, digits))
     else:
         scene["solver"].update(module="tlmpm_v5", max_cuts=digits)
@@ -382,7 +487,8 @@ def compile_sample(config, sample):
     duration = math.ceil((done+float(rule["settle_after_plan_s"]))/step-1e-9)*step
     goal["episode"]["duration_s"] = float(duration)
     task = compile_task(scene, goal, seed=common["material_seed"])
-    return task, {"digits_used": digits, "solver_module": scene["solver"]["module"], "max_cuts": scene["solver"]["max_cuts"],
+    extra = {"slots_per_node": scene["solver"]["slots_per_node"]} if "slots_per_node" in scene["solver"] else {}
+    return task, {**extra, "digits_used": digits, "solver_module": scene["solver"]["module"], "max_cuts": scene["solver"]["max_cuts"],
                   "plan_end_s": done, "duration_s": float(duration), "plan_report_operations": report["operations"],
                   "phases": report["phases"], "scene": scene, "goal": goal}
 
@@ -394,22 +500,50 @@ def history_stride(config, steps):
 
 # ----------------------------------------------------------------------------- stage-1 preflight
 
-def _removed_sets(labels, protrusion_ids):
-    """Per plan sample: protrusion ids removed by earlier remove operations of the same plan (ordered)."""
+def _removed_sets(labels, protrusion_ids, aliases=None):
+    """Per plan sample: protrusion ids removed by earlier remove operations of the same plan (ordered).
+
+    ``aliases`` (staged_v2 only) maps other operation names (trim_plane passes) to the protrusion ids they
+    remove; without it only operations named after a protrusion remove one (staged_v1, round 1).
+    """
     ops = [label.split(":", 1)[1] if ":" in label else None for label in labels]
     first = {}
     for i, op in enumerate(ops):
         if op is not None:
             first.setdefault(op, i)
-    order = sorted((op for op in first if op in protrusion_ids), key=first.get)
+    removes = {op: ((op,) if op in protrusion_ids else tuple((aliases or {}).get(op, ()))) for op in first}
+    order = sorted((op for op in first if removes[op]), key=first.get)
+
+    def ids(ops_done):
+        out = []
+        for op in ops_done:
+            out += [p for p in removes[op] if p not in out]
+        return tuple(out)
     out = []
     for i, (label, op) in enumerate(zip(labels, ops)):
         if label.split(":", 1)[0] in ("RETURN_HOME", "DONE"):
-            out.append(tuple(order))
+            out.append(ids(order))
         elif op is None:
-            out.append(tuple(p for p in order if first[p] < i))
+            out.append(ids([o for o in order if first[o] < i]))
         else:
-            out.append(tuple(p for p in order if first[p] < first[op]))
+            out.append(ids([o for o in order if first[o] < first[op]]))
+    return out
+
+
+def trim_aliases(task):
+    """{trim op name: protrusion ids whose centre lies in a trim_plane step's region at or below the base top}."""
+    from .goals import step_digit_allocation
+    goal, scene = task.goal, task.scene
+    steps = goal["steps"] if goal["type"] == "sequence" else [goal]
+    digits = step_digit_allocation(goal, scene) if goal["type"] == "sequence" else [[0]]
+    base = scene["workpiece"]["base_box_m"]["height_m"]
+    out = {}
+    for step, row in zip(steps, digits):
+        if step["type"] != "trim_plane" or step["plane"]["origin_local_m"][2] > base+1e-9:
+            continue
+        region = step["region_local_m"] or {}
+        out[f"trim{row[0]}"] = tuple(p["id"] for p in scene["workpiece"]["protrusions"]
+                                     if all(region[a][0] <= p[f"{a}_m"] <= region[a][1] for a in region))
     return out
 
 
@@ -419,7 +553,7 @@ def _variant_task(task, removed):
     return task if len(keep) == len(task.geometry.bumps) else replace(task, geometry=replace(task.geometry, bumps=keep))
 
 
-def staged_preflight(task, checker=None, *, until_phase=None):
+def staged_preflight(task, checker=None, *, until_phase=None, geometry="staged_v1"):
     """Stage-1 motion preflight (round file ``stages.stage1_geometry``).
 
     Scenes with at most one protrusion, or plans without remove operations, use
@@ -431,13 +565,24 @@ def staged_preflight(task, checker=None, *, until_phase=None):
 
     ``until_phase`` (default None: the full plan, as in round 1) checks only the plan prefix
     through that phase, exactly as ``motion_preflight.preflight_plan(until_phase=...)`` does.
+
+    ``geometry="staged_v2"`` (round 2 opt-in; round 1 is ``staged_v1``): every scene with two or
+    more protrusions is staged (also before any removal), trim_plane passes remove the protrusions
+    whose centre lies in their region (``trim_aliases``), and a chunk with two or more remaining
+    protrusions is checked against each remaining protrusion's own C2 hull in turn (one checker per
+    single-protrusion variant; the chunk passes only if every variant passes and the worst slack is
+    the minimum over them). That is blade/robot vs the union of per-protrusion hulls instead of the
+    C2 model's one hull over all protrusions, which bridges the gaps between them.
     """
+    if geometry not in ("staged_v1", "staged_v2"):
+        raise ValueError("geometry must be staged_v1 or staged_v2")
     from . import motion_preflight as mp
     checker = checker or mp.MotionChecker(task)
     q_home = task.home["joint_positions"]
     poses, labels, armed = mp.plan_samples(task, until_phase=until_phase)
-    removed = _removed_sets(labels, set(task.protrusion_ids))
-    if len(task.protrusion_ids) <= 1 or not any(removed):
+    v2 = geometry == "staged_v2"
+    removed = _removed_sets(labels, set(task.protrusion_ids), trim_aliases(task) if v2 else None)
+    if len(task.protrusion_ids) <= 1 or (not v2 and not any(removed)):
         receipt = (mp.preflight_plan(task, q_home, checker=checker) if until_phase is None else
                    mp.preflight_plan(task, q_home, until_phase=until_phase, checker=checker))
         return {**receipt, "geometry": "declared (motion_preflight.preflight_plan unchanged)"}, {(): checker}
@@ -460,13 +605,15 @@ def staged_preflight(task, checker=None, *, until_phase=None):
     receipt = {"samples": int(len(poses)), **({} if until_phase is None else {"until_phase": until_phase}),
                "ik_worst": ik_worst, "q_home": list(map(float, q_home)),
                "phases": sorted(set(label.split(":", 1)[0] for label in labels)),
-               "geometry": "staged: declared workpiece minus protrusions removed by earlier remove operations"}
+               "geometry": ("staged: declared workpiece minus protrusions removed by earlier remove operations" if not v2 else
+                            "staged_v2: declared workpiece minus protrusions removed by earlier remove/trim operations; "
+                            "union of per-protrusion C2 hulls")}
     if failure is not None:
         return {**receipt, "status": "FAIL", "reason": "IK_FAILURE", "ik_failure": failure,
                 "wall_s": time.perf_counter()-start}, {(): checker}
     qs = np.asarray(qs)
     modes = [mp.phase_mode(label, flag) for label, flag in zip(labels, armed)]
-    checkers, chunks, worst, failing = {(): checker}, [], {}, set()
+    checkers, chunks, worst, failing, single = {(): checker}, [], {}, set(), {}
     i = 0
     while i < len(qs):
         j = i
@@ -475,14 +622,26 @@ def staged_preflight(task, checker=None, *, until_phase=None):
         key = removed[i]
         if key not in checkers:
             checkers[key] = mp.MotionChecker(_variant_task(task, set(key)))
-        part = checkers[key].check_joint_path(qs[i:j], modes[i:j], labels[i:j])
-        chunks.append({"removed_protrusions": list(key), "samples": [i, j], "status": part["status"],
-                       "failing": part["failing"]})
-        for name, row in part["worst"].items():
-            row = {**row, "sample": row["sample"]+i, "removed_protrusions": list(key)}
-            if name not in worst or row["slack"] < worst[name]["slack"]:
-                worst[name] = row
-        failing |= set(part["failing"])
+        remaining = [p for p in task.protrusion_ids if p not in key]
+        if v2 and len(remaining) >= 2:
+            variants = []
+            for keep in remaining:
+                if keep not in single:
+                    single[keep] = mp.MotionChecker(_variant_task(task, set(task.protrusion_ids)-{keep}))
+                variants.append((keep, single[keep].check_joint_path(qs[i:j], modes[i:j], labels[i:j])))
+        else:
+            variants = [(None, checkers[key].check_joint_path(qs[i:j], modes[i:j], labels[i:j]))]
+        chunk_failing = sorted(set().union(*(set(part["failing"]) for _, part in variants)))
+        chunks.append({"removed_protrusions": list(key), "samples": [i, j], "status": "PASS" if not chunk_failing else "FAIL",
+                       "failing": chunk_failing, **({"per_protrusion_hull": [keep for keep, _ in variants]} if v2 and
+                                                    variants[0][0] is not None else {})})
+        for keep, part in variants:
+            for name, row in part["worst"].items():
+                row = {**row, "sample": row["sample"]+i, "removed_protrusions": list(key),
+                       **({"hull_of": keep} if keep is not None else {})}
+                if name not in worst or row["slack"] < worst[name]["slack"]:
+                    worst[name] = row
+            failing |= set(part["failing"])
         i = j
     step = np.abs(np.diff(qs, axis=0)).max(1) if len(qs) > 1 else np.zeros(0)
     if len(step):
@@ -588,7 +747,8 @@ def _remove_metrics(outcome, quality):
     return {"cut_completion": None if not removed or None in removed else min(removed),
             "per_protrusion_removed": {row["id"]: row["removed_mass_fraction"] for row in m.get("items", [])},
             "separation": bool(outcome.get("checks", {}).get("selected_protrusions_removed"))
-                          and bool(outcome.get("checks", {}).get("single_substrate_component")),
+                          and bool(outcome.get("checks", {}).get("single_substrate_component",
+                                   outcome.get("checks", {}).get("single_substrate_component_per_prior_piece"))),
             "mechanical_components": m.get("mechanical_components"),
             "cut_position_error_m": max(residual) if residual else None,
             "overcut_detached_below_plane_fraction": m.get("detached_below_plane_mass_fraction"),
@@ -597,6 +757,22 @@ def _remove_metrics(outcome, quality):
                             "cut_position_error_m": "max residual substrate particle-centre height above the plane in "
                                                     "the selected footprints (reported quality)",
                             "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"}}
+
+
+def _trim_metrics(outcome, quality):
+    m, checks = outcome.get("metrics", {}), outcome.get("checks", {})
+    pieces = m.get("prior_pieces") or []
+    detached = (m.get("detached_below_plane_mass_fraction") if not pieces else
+                max((r["detached_below_plane_mass_fraction"] or 0.) for r in pieces))
+    return {"cut_completion": m.get("removed_above_plane_mass_fraction"),
+            "separation": bool(checks.get("material_above_plane_removed"))
+                          and bool(checks.get("single_substrate_component", checks.get("single_substrate_component_per_prior_piece"))),
+            "mechanical_components": m.get("mechanical_components"),
+            "cut_position_error_m": quality.get("current_substrate_particle_center_max_residual_m"),
+            "overcut_detached_below_plane_fraction": detached,
+            "definitions": {"cut_completion": "removed above-plane mass fraction in the region",
+                            "cut_position_error_m": "max residual substrate particle-centre height above the plane in "
+                                                    "the region (reported quality)"}}
 
 
 def _move_metrics(outcome):
@@ -623,6 +799,8 @@ def episode_metrics(goal, evaluation):
                 steps.append(_sever_metrics(row["outcome"], q, step))
             elif step["type"] == "remove_protrusions":
                 steps.append(_remove_metrics(row["outcome"], q))
+            elif step["type"] == "trim_plane":
+                steps.append(_trim_metrics(row["outcome"], q))
             elif step["type"] == "move_piece":
                 steps.append(_move_metrics(row["outcome"]))
         completions = [s["cut_completion"] for s in steps if "cut_completion" in s]
@@ -644,7 +822,12 @@ def summarize(rows, families):
         total = len(group)
         feasible = total-counts["SCENE_INFEASIBLE"]-counts["IK_FAILURE"]
         success = counts["TASK_SUCCESS"]
-        out[name] = {"samples": total, "counts": counts, "preflight_feasible": feasible,
+        extra = {}
+        if any(r.get("stage2_selected") is False for r in rows):  # round files with a stage-2 subset rule
+            selected = sum(bool(r.get("stage2_selected")) for r in group)
+            extra = {"stage2_selected": selected, "kinematic_task_success_among_stage2": success/selected if selected else None,
+                     "not_run_not_selected": sum(r.get("stage2_selected") is False and r["class"] == "NOT_RUN" for r in group)}
+        out[name] = {**extra, "samples": total, "counts": counts, "preflight_feasible": feasible,
                      "feasible_fraction": feasible/total if total else None,
                      "kinematic_task_success_among_feasible": success/feasible if feasible else None,
                      "overall_kinematic_success": success/total if total else None,
