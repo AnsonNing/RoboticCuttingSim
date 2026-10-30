@@ -14,8 +14,11 @@
 - Phase 3 **關閉**（xhigh，`a94bd9f`）：比較 gate 在凍結 protocol v1（`bdc5da0`）與 v2（`dc210ff`）下都 FAIL，全部保留；`cut_aware_surface_v1` 作為 opt-in profile 提供，預設仍是 `particle_surface_v1`；已接進 live／Native（`9fde661`，物理與 Phase 2b 相同）。closure 診斷 `b0a3fb8`。
 - Phase 4：原 law 9 被 xhigh 否決（`81a9626`）。E1（`15e5ec1`）：平板上 law 8 斜切只到 5° 會分離，≥10° 全部不分離；8 mm 開槽板可分離 20–30°。解析度研究 110 列（`77fd033`）：垂直切與兩刀切在各解析度下分離與否的結果不變（不宣稱數值收斂）；斜切 20° 在各解析度都不分離；接觸力、近切面變形、TRIM 壓陷不收斂。4c 工件／材料（`05b31c5`）。方法研究（xhigh，`5ccfa96`）：粒子位置用 FLIP 速度、F 用網格速度梯度 → 切面附近不一致；薄屑「撕裂」是同一漂移不是斷裂；接觸力 ∝ m/dt²。
 - Phase 5 基礎設施 DRAFT（`94c7602`）；Phase 6 完成（`73c6e43`：§6.7 全 PASS；Native 單一 process CUT→TRIM→CUT PASS；kinematic 記憶體檢查 FAIL 保留）。
-- 執行中：V1–V4 根因驗證（protocol `ecfa8c6`，`artifacts/wp12/phase4_verify_001`）；Phase 4 xhigh 決策 D1–D5（斜切處理、支援角度範圍、解析度與 4c 結論、Phase 5 ID 範圍、Phase 7 Demo 配置）。
-- 下一步：依 D1–D5 凍結 Phase 5 benchmark 並執行；V1–V4 結果決定是否做 opt-in 原型（網格一致位置更新、與 dt 無關的接觸剛度）；Phase 7 Native Demo 1–7。
+- V1–V4 根因驗證（`71a0822`）：x 與 F 不一致確認為 FLIP 漂移；網格速度位置更新可大幅降低（counterfactual）；斜切 ≥10° 由 in-core wedge 維持連接；接觸力 dt 依賴無法只用 penalty compliance 解釋；薄屑是否應斷裂是材料校準問題。
+- Phase 4 決策（xhigh）：D1–D5 與 envelope v1（`1876424`）；不改 contact、斷裂列 future work；`tlmpm_v6`（網格一致位置更新）作為 opt-in 候選，不在關鍵路徑（`28c8379`，Stage 0 PASS，Stage 1 kill set 進行中）。E2（`1f9d441`）：17 CONFIRMED，平板經 planner 的界線在 2°–5° 之間；Demo 2 用開槽板 20°；Demo 6 cut→push→trim 可行。
+- **Phase 5 已凍結**（`722468c`）：envelope v2 與 `benchmark_v1`（170＋85 held-out，Native 27 集）。
+- 執行中：`tlmpm_v6` 驗收（`artifacts/wp12/gridpos_001`）；Phase 5 工具（Native 判定、hash pin、Demo 7 selector、`phase7_demos_v1.json`），之後跑 kinematic benchmark。
+- 下一步：Phase 5 kinematic → held-out → Native 子樣本 27 集；Phase 7 Native Demo 1–7（兩種 surface profile 成對）；最終 regression、rcs-review、README、合併。
 - 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
