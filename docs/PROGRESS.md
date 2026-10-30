@@ -10,7 +10,7 @@
 - Phase 3 核心完成（`89b289d`）：`cut_aware_surface_v1` Layers 3–6，40 個單元測試，CPU 全套 1290 passed。
 - 執行中（背景 agent）：Phase 2b Native 驗收（cuda:0，`artifacts/wp12/workcell_live_*`）；Phase 3 S0–S9 量測（cuda:1，`artifacts/wp12/phase3_s*`，報告 `docs/reports/WP12_SURFACE_RECONSTRUCTION.md`）；Phase 4a law 8 失敗根因診斷（cuda:1，`artifacts/wp12/phase4a_*`，報告 `docs/reports/WP12_CUTTING_PHYSICS.md`）。
 - 下一步：2b 完成後把 cut-aware surface 接進 live／Native（USD、metadata、效能）；4a 結果決定是否做 law 9。
-- 事件紀錄：2026-10-30 23:26 KST，`artifacts/wp11/phaseE/` 下的 `physics_state.npz`（約 18 GB）被刪除以釋放磁碟，留下清單 `artifacts/wp11/phaseE/DELETED_NPZ_20261030.txt`；三個 WP-12 agent 都表示不是自己刪的，來源不明。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只能比 verdict 與指標，不能逐粒子比。已要求所有 agent 只刪自己建立的輸出。
+- 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
 

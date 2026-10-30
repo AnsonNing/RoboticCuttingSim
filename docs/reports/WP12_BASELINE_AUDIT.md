@@ -338,8 +338,9 @@ copied into the evidence JSON. Summary:
 
 ## 10. Open items
 
-- The Phase E round 1/2 kinematic `physics_state.npz` recordings were deleted outside this step at 23:26:18 KST;
-  the orchestrator should find out by whom and record it. Scene-level reproductions with full state now exist under
+- The Phase E round 1/2 kinematic `physics_state.npz` recordings were deleted outside this step at 23:26:18 KST
+  in an intentional cleanup requested by the user (only npz files not cited by docs; the 12 cited ones were kept;
+  each folder has a `DELETED_NPZ_20261030.txt` list; see PROGRESS). Scene-level reproductions with full state now exist under
   `artifacts/wp12/baseline/` for s1502, s1602, s1301, s2201, s2307, s2505.
 - Native was not rerun; Native capability rows are historical.
 - `surface_metrics_v1` is a draft: Phase 1 should fix the region rule, decide on the core exclusion and add
