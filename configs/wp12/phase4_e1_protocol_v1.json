@@ -1,0 +1,564 @@
+{
+ "protocol_id": "wp12_phase4_e1_protocol_v1",
+ "spec": "docs/WP12_SPECIFICATION.md Phase 4 (4.1 item 1, 4.2, 4.3, 4.4); experiment E1 of docs/reports/WP12_PHASE4_XHIGH_REVIEW.md (81a9626) section 6, with the exit-ligament rule of its section 3.3",
+ "declared": "2026-10-31 (KST). Written before any formal E1 row ran. Only rows labelled DEV (artifacts/wp12/phase4_e1_dev_NNN) ran before; they are development smoke checks, never evidence. The orchestrator commits it before the formal matrix. A change after the commit is a new protocol version; failed rows are kept and reported, never rescored or silently rerun.",
+ "purpose": "Decisive flat-board experiment for class (a) (oblique exit). Measure where the UNCHANGED law 8 stops separating oblique through-cuts on blade_master_flat_board_v1 (Option A: the edge ends on the solid board top), how a raised edge changes it, whether the explicit 8 mm slotted variant (Option D) separates the same obliques, and whether each oblique is kinematically reachable. Offline, it also scores what two candidate exit rules WOULD label on the recorded law-8 trajectories. No law code exists or is written for this experiment; decision D1 (review section 6) is taken afterwards at xhigh, not by this protocol.",
+ "frozen_and_unchanged": [
+  "tlmpm_v5.py (law 8 and every law-4/5/8 parameter as the solver computes them; nothing is overridden), tlmpm.py, tlmpm_v2.py, tlmpm_v4.py",
+  "final_v4, every v1-v4 and goal threshold, the WP-11 records, the Phase 4a records and figures",
+  "blade_master_flat_board_v1 and the two scene files configs/wp12/scenes/bar_flat_board.json and bar_flat_board_slotted.json (read; only solver.max_cuts is set to 1 in memory, see setup.scene_override)"
+ ],
+ "runner": {
+  "physics": "scripts/run_wp12_phase4_e1.py (one row per process; refuses row ids not declared here unless --dev; records protocol_sha256, runner_sha256 and the sha256 of tlmpm_v5.py, cut_diagnostics.py and exit_candidates.py in every result.json; never overwrites an output directory)",
+  "queue": "scripts/run_wp12_phase4_e1_queue.py (declared order; at most 2 concurrent jobs; per-job device; skips rows whose directory exists; GNU time per job in artifacts/wp12/logs/)",
+  "reachability": "scripts/preflight_wp12_phase4_e1.py (CPU, .venv; motion_preflight.MotionChecker on the compiled scene)",
+  "summary": "scripts/summarize_wp12_phase4_e1.py (read-only; writes docs/evidence/wp12/phase4_e1_001.json)",
+  "evaluator": "src/robotic_cutting_sim/exit_candidates.py exit_candidates_v1 (read-only shadow evaluator; CPU tests tests/test_exit_candidates.py)",
+  "python": ".venv/bin/python (Warp 1.17.0, CUDA graph per control step); TMPDIR=/mnt/data/ningan/tmp"
+ },
+ "scope": "Kinematic ideal tracking of the knife edge (no robot dynamics, PhysX or cameras in the physics rows). Provisional, uncalibrated material. One deterministic setup per row, seed 42; no claim beyond the declared cases. Reachability is geometric (IK + collision preflight) and is reported as 'reachable', never as validated cutting.",
+ "setup": {
+  "solver": "tlmpm_v5, cutting_law 8, slots_per_node 8, max_cuts 1 (one cut digit)",
+  "resolution": {
+   "particle_spacing_m": 0.001,
+   "grid_dx_m": 0.004,
+   "material_dt_s": 0.0001,
+   "control_dt_s": 0.02,
+   "substeps_per_control_step": 200
+  },
+  "seed": 42,
+  "material": "cutting_tasks_v1 via scene_config.compile_task: density 1500 kg/m^3, E 50 kPa, nu 0.3, yield 1 kPa, hardening 0, friction 0.3, G_c 0.05 J/m^2 (provisional_uncalibrated); TLMPMConfig defaults otherwise (pic 0.05, contact_stiffness 0.1, particle_contact_stiffness 0.05, contact_radius_scale 0.9, sharpness 0.8), gravity -9.81 m/s^2 z",
+  "workpiece": "the standard CUT-01-R bar, 160 x 30 x 20 mm (96,000 particles), bottom on the board top (workpiece-local z = 0)",
+  "supports": {
+   "bar_flat_board": "one solid board box 360 x 190 x 20 mm (local centre (0, 30, -10) mm), table plane at local z = -20 mm; the TLMPM fixture boxes come from compile_task (same source as the PhysX collider)",
+   "bar_flat_board_slotted": "explicit slotted variant (Option D, opt-in): the same board with four 8 mm wide, 8 mm deep through-width grooves at local x = -48, -16, +16, +48 mm (base slab + five top segments). E1.2 uses the +16 mm groove (x 12..20 mm)."
+  },
+  "scene_override": "solver.max_cuts 4 -> 1 in memory before compile_task (scene_id suffix '_e1_k1'); nothing else is changed and no file is written",
+  "tool": "ruler_knife_v2_y: 120 mm edge (half width 60 mm, 120 edge segments of 1 mm), TLMPM blade cross-section polygon (40 mm deep, 1.5 mm thick, double bevel 25 deg), handle box as the blunt obstacle (LiveCuttingMaterial default for profile tasks)",
+  "runtime": "LiveCuttingMaterial (as KinematicCuttingBackend.reset builds it: CouplingConfig(control_dt 0.02, material_dt 1e-4, dx 0.004), cutting_law 8, solver tlmpm_v5) driven by explicit world edge poses, one advance() per 20 ms control step (constant twist interpolation, one CUDA graph per control step). cut_index 0 while ARMED, cutting=False otherwise.",
+  "recorders": "cut_diagnostics_v1 (read-only, inside the graph: before_step/after_step) and exit_candidates_v1 (read-only shadow evaluator after it). Neither writes a solver array; bitwise neutrality is a CPU test (tests/test_cut_diagnostics.py, tests/test_exit_candidates.py).",
+  "devices": "cuda:0 and cuda:1 are both shared with other users; nvidia-smi is checked before each launch; at most 2 E1 jobs at once; processes of others are never stopped. A row's device is recorded; device is not a science variable (repeats A_p20_rep2 and A_p35_rep2 set the GPU nondeterminism band).",
+  "worktree": "The repository working tree is shared with other agents and may be dirty in files E1 does not import. Each result records git HEAD, git status --porcelain and the sha256 of every E1-relevant source; rows are comparable only if those hashes agree."
+ },
+ "geometry": {
+  "frame": "Edge frame columns (d, e, n) in workpiece-local coordinates: advance d = (-sin tau, 0, -cos tau), edge line e = (0, 1, 0), blade normal n = d x e = (cos tau, 0, -sin tau). tau is the tilt of the blade (and of the cut plane) about the edge line (+y); tau = 0 is the vertical sever (= goal_planner.through_cut_rotation([1, 0, 0])). -tau mirrors the cut about x = x0. Round-2 OBLIQUE_W and Phase 4a sweep convention; s = (x - o).n, f = (x - edge).d.",
+  "plane": "The cut plane contains the edge line and d and meets the board top (z = 0) at x = x0 (plane_x0_mm): o = (x0, 0, 0).",
+  "edge_path": "Edge positions o + t d. ARMED from t_start = -(20 mm / cos tau) - 8 mm (8 mm along d before the section top, the goal planner's cut clearance) to t_end = -edge_end_z / cos tau, at 10 mm/s along d (goal planner cut speed). edge_end_z_mm is the local z of the edge line (= the blade's lowest point: the edge vertex is the lowest polygon vertex for |tau| < 77.5 deg; checked per row) at the end of the stroke: 0 for Option A (h = 0), h for raised rows, -overtravel*cos tau for slotted rows.",
+  "phases": [
+   "SETTLE 0.5 s: disarmed, edge parked at the armed start (no contact)",
+   "CUT: ARMED, constant 10 mm/s along d from start to end (the last control step is shorter so the end is exact)",
+   "HOLD 0.3 s: disarmed at the end pose (goal planner hold)",
+   "WITHDRAW: disarmed, 20 mm/s along -d back to the start",
+   "SETTLE_END 0.5 s: disarmed at the start"
+  ],
+  "slotted_rule": "Two overtravel levels per slotted tilt, both computed before any formal run (DEV, artifacts/wp12/phase4_e1_dev_001). groove_limit: the largest t_end for which the region swept by the TLMPM blade polygon (convex hull of the start and end poses; the edge line is horizontal so y does not matter) keeps >= 1.0 mm from every board box (the C2 free-space blade-fixture clearance; the groove floor binds at 0-30 deg, the walls at 35 deg), with x0 chosen to maximise the wall clearance at that overtravel (rounded to 0.05 mm, overtravel then floored to 0.001 mm). reach_limit: with the same x0, the largest overtravel (bisection, floored to 0.01 mm) for which the full E1.3 motion preflight passes; at 20-35 deg the binding check is knife_handle_clearance (5 mm) of the handle against the board top, so the reachable overtravel is 6.67 / 5.35 / 3.87 / 2.19 mm at 20 / 25 / 30 / 35 deg against the groove limit 7.45-8.46 mm. The runner recomputes the swept-blade clearance and marks a row FAIL_INTEGRITY below 1.0 mm. The edge stays above the action-workspace floor (local z >= -8 mm for the slotted board).",
+  "option_A_rule": "The edge's lowest point ends exactly on the solid board top (h = 0) or h above it; the rigid board is never entered (blade-board overlap is computed and reported per row; any overlap > 1e-9 m fails the row's integrity check)."
+ },
+ "row_list_reconciliation": "The orchestrator's list and the review's E1.1 list differ; this protocol runs their union: tau in {0,1,2,3,5,10,15,20,25,30,35} and all negative mirrors {-1,...,-35} (the review listed -5, -20, -35); raised h in {0.25, 0.375, 0.5, 0.75, 1.0} mm at tau in {5, 20, 35} (the review listed 0.25, 0.375, 0.5, 1.0; the orchestrator 0.25, 0.5, 0.75, 1.0); slotted tau in {20, 25, 30, 35} plus the 0 deg control; two repeats. After the DEV preflight, four reach-limited slotted rows (D_p20_reach ... D_p35_reach) were added before the protocol was committed.",
+ "rows": [
+  {
+   "id": "A_p00",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 0.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p01",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 1.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p02",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 2.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p03",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 3.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p05",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p10",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 10.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p15",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 15.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p20",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p25",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 25.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p30",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 30.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_p35",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m01",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -1.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m02",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -2.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m03",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -3.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m05",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m10",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -10.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m15",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -15.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m20",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m25",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -25.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m30",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -30.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "A_m35",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": -35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "edge lowest point ends on the board top (h = 0)"
+  },
+  {
+   "id": "R_p05_h0250",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.25,
+   "note": "edge stops h = 0.25 mm above the board top"
+  },
+  {
+   "id": "R_p05_h0375",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.375,
+   "note": "edge stops h = 0.375 mm above the board top"
+  },
+  {
+   "id": "R_p05_h0500",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.5,
+   "note": "edge stops h = 0.5 mm above the board top"
+  },
+  {
+   "id": "R_p05_h0750",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.75,
+   "note": "edge stops h = 0.75 mm above the board top"
+  },
+  {
+   "id": "R_p05_h1000",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 5.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 1.0,
+   "note": "edge stops h = 1.0 mm above the board top"
+  },
+  {
+   "id": "R_p20_h0250",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.25,
+   "note": "edge stops h = 0.25 mm above the board top"
+  },
+  {
+   "id": "R_p20_h0375",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.375,
+   "note": "edge stops h = 0.375 mm above the board top"
+  },
+  {
+   "id": "R_p20_h0500",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.5,
+   "note": "edge stops h = 0.5 mm above the board top"
+  },
+  {
+   "id": "R_p20_h0750",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.75,
+   "note": "edge stops h = 0.75 mm above the board top"
+  },
+  {
+   "id": "R_p20_h1000",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 1.0,
+   "note": "edge stops h = 1.0 mm above the board top"
+  },
+  {
+   "id": "R_p35_h0250",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.25,
+   "note": "edge stops h = 0.25 mm above the board top"
+  },
+  {
+   "id": "R_p35_h0375",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.375,
+   "note": "edge stops h = 0.375 mm above the board top"
+  },
+  {
+   "id": "R_p35_h0500",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.5,
+   "note": "edge stops h = 0.5 mm above the board top"
+  },
+  {
+   "id": "R_p35_h0750",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.75,
+   "note": "edge stops h = 0.75 mm above the board top"
+  },
+  {
+   "id": "R_p35_h1000",
+   "family": "E1.1_option_A_raised",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 1.0,
+   "note": "edge stops h = 1.0 mm above the board top"
+  },
+  {
+   "id": "D_p00",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 0.0,
+   "plane_x0_mm": 16.0,
+   "overtravel_mm": 6.999,
+   "edge_end_z_mm": -6.999,
+   "note": "0 deg control; the groove limit is also reachable (DEV preflight)",
+   "overtravel_rule": "groove_limit"
+  },
+  {
+   "id": "D_p20",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 16.8,
+   "overtravel_mm": 7.449,
+   "edge_end_z_mm": -6.9998,
+   "note": "largest overtravel the +16 mm groove allows with 1.0 mm blade clearance to walls and floor (groove limit); the DEV preflight found it NOT reachable (knife handle within 5 mm of the board), so it is a physics-only row",
+   "overtravel_rule": "groove_limit"
+  },
+  {
+   "id": "D_p20_reach",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 16.8,
+   "overtravel_mm": 6.67,
+   "edge_end_z_mm": -6.2677,
+   "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+   "overtravel_rule": "reach_limit"
+  },
+  {
+   "id": "D_p25",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 25.0,
+   "plane_x0_mm": 17.1,
+   "overtravel_mm": 7.723,
+   "edge_end_z_mm": -6.9994,
+   "note": "largest overtravel the +16 mm groove allows with 1.0 mm blade clearance to walls and floor (groove limit); the DEV preflight found it NOT reachable (knife handle within 5 mm of the board), so it is a physics-only row",
+   "overtravel_rule": "groove_limit"
+  },
+  {
+   "id": "D_p25_reach",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 25.0,
+   "plane_x0_mm": 17.1,
+   "overtravel_mm": 5.35,
+   "edge_end_z_mm": -4.8487,
+   "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+   "overtravel_rule": "reach_limit"
+  },
+  {
+   "id": "D_p30",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 30.0,
+   "plane_x0_mm": 17.5,
+   "overtravel_mm": 8.082,
+   "edge_end_z_mm": -6.9992,
+   "note": "largest overtravel the +16 mm groove allows with 1.0 mm blade clearance to walls and floor (groove limit); the DEV preflight found it NOT reachable (knife handle within 5 mm of the board), so it is a physics-only row",
+   "overtravel_rule": "groove_limit"
+  },
+  {
+   "id": "D_p30_reach",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 30.0,
+   "plane_x0_mm": 17.5,
+   "overtravel_mm": 3.87,
+   "edge_end_z_mm": -3.3515,
+   "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+   "overtravel_rule": "reach_limit"
+  },
+  {
+   "id": "D_p35",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 17.85,
+   "overtravel_mm": 8.455,
+   "edge_end_z_mm": -6.9259,
+   "note": "largest overtravel the +16 mm groove allows with 1.0 mm blade clearance to walls and floor (groove limit); the DEV preflight found it NOT reachable (knife handle within 5 mm of the board), so it is a physics-only row",
+   "overtravel_rule": "groove_limit"
+  },
+  {
+   "id": "D_p35_reach",
+   "family": "E1.2_option_D_slotted",
+   "scene": "bar_flat_board_slotted",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 17.85,
+   "overtravel_mm": 2.19,
+   "edge_end_z_mm": -1.7939,
+   "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+   "overtravel_rule": "reach_limit"
+  },
+  {
+   "id": "A_p20_rep2",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 20.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "repeat of A_p20 (GPU nondeterminism band)",
+   "repeat_of": "A_p20"
+  },
+  {
+   "id": "A_p35_rep2",
+   "family": "E1.1_option_A",
+   "scene": "bar_flat_board",
+   "tau_deg": 35.0,
+   "plane_x0_mm": 0.0,
+   "edge_end_z_mm": 0.0,
+   "note": "repeat of A_p35 (GPU nondeterminism band)",
+   "repeat_of": "A_p35"
+  }
+ ],
+ "metrics": {
+  "topology": "Law-8 mechanical components on the reference stencil (cut_topology.mechanical_components_packed, the WP-11 rule) at the end of CUT and at the FINAL state (codes change only while armed, so they agree); piece mass fractions; pieces = components with >= 1% of the mass.",
+  "bridges": "Direct code-0 bridges (cut_diagnostics.direct_bridges = law8_validation.bridge_report rule): count, s / f / reference z ranges, layer counts.",
+  "unlabelled_by_failing_condition": "Digit-0 particles within |s_ref| <= 12 mm of the plane: count; cut_diagnostics.classify_unassigned classes; first-failing and only-failing law-4 band condition totals (REASONS); in-core count (|s| <= dx = 4 mm); ahead of the final edge in reference and final positions; s range; reference layers.",
+  "exit_face_assignment": "Bottom four reference layers (z_ref < 4 mm) within |s_ref| <= 12 mm, per layer and per side (s < 0 uphill for tau > 0; s >= 0): counts of digit 0 / 1 / 2, labels disagreeing with the plane side for |s| > 2 mm, and the law-4 rule that labelled them (band / lead).",
+  "edge_to_board_clearance": "Edge lowest point at the end of CUT minus the board top (mm); lowest blade vertex index; minimum signed distance of the swept blade region to the board boxes (mm, geometric); blade-board overlap depth (must be 0).",
+  "board_penetration": "Material particle centres inside board boxes (max over steps, final), minimum particle signed distance to the boxes, particles below the board top (slotted: these may hang into the groove, which is not penetration), solver max fixture penetration statistic.",
+  "candidate_rules_offline": "For each candidate ('proposed' = rejected breakthrough-gated lead of the Phase 4a draft; 'exit_ligament' = L9-EL of review section 3.3): shadow labels (count, side, s and f at assignment, substep), labels the later law-8 band gave a different side, predicted codes (shadow digit where the candidate labelled first, else the law-8 digit), predicted components and pieces, remaining direct bridges. Proposed B_k: fraction of material segments with B_k = 1 at the last armed moving control step (material segment = >= 1 particle within the edge width, the reviewer's definition) and the substep series; L9-EL: seen / X / ligament segment counts per substep and the first X substep. Both use the relative swept-normal fallback (review section 4); substeps where it differs from the solver's are counted.",
+  "reachability": "E1.3: per row, IK chain from the workcell HOME (runtime Newton IK) plus the C2 collision check (motion_preflight.MotionChecker.check_joint_path) over HOME -> REORIENT/APPROACH (30 mm above the armed start along -d) -> PRE_CUT -> CUT -> HOLD -> WITHDRAW -> LIFT, <= 2 mm / 1 deg samples; status PASS/FAIL, binding check and slack, IK worst errors, joint margin. Reported as 'kinematically reachable' (or not), never as validated cutting. Declared reading of a contact tie: at h = 0 the blade-board rule is distance >= 0 with the edge planned exactly on the board top, so sub-micrometre IK residuals decide it (DEV: A_p35 -0.23 um FAIL, A_p00 +0.29 um PASS). The checker's status is reported unchanged; a row whose ONLY failing check is blade-board with |slack| < 1 um is additionally flagged TIE_AT_CONTACT (not reclassified).",
+  "dynamics_context": "Peak blade reaction, max tool penetration, min det F, bottom-layer mean z displacement per side, max particle speed at the end (reported only)."
+ },
+ "outcome_labels": {
+  "SEPARATED": "law-8 components >= 2 with two pieces >= 1% each and 0 direct bridges at FINAL",
+  "CONNECTED": "law-8 components == 1",
+  "OTHER": "anything else (reported with the numbers)",
+  "row_status": "PASS = the row ran to completion, recorders report no overflow and the integrity checks hold (no blade-board overlap, slotted clearance >= 1 mm, no slot overflow); FAIL_INTEGRITY otherwise; ERROR = crashed. A row's outcome label is a measurement, not a pass/fail of law 8."
+ },
+ "declared_predictions": {
+  "source": "REVIEWER predictions from WP12_PHASE4_XHIGH_REVIEW.md section 6 (E1.1, E1.2) and section 2 (reviewer CPU probe on a 40 x 12 x 12 mm bar, which is a prediction, not a result). They are scored and reported, not used to pass or fail any row.",
+  "P1_E1.1_onset": "Law 8 on Option A fails (stays connected) from 5-10 deg (margin) and robustly from 15-20 deg.",
+  "P2_E1.1_proposed_B_k": "The proposed B_k stays 0 on >= 40% of material segments at the end for tau >= 20 deg (>= 75% at 30-35 deg).",
+  "P3_E1.2_slotted": "Option D (8 mm groove) separates at 20, 25, 30, 35 deg at the largest overtravel the groove allows (review: 'at the largest overtravel the 8 mm groove allows'). No declared prediction for the reach-limited rows (2.19-6.67 mm); for reference, the Phase 4a 30 mm relief-slot sweep separated 35 deg at >= 6 mm and failed at 4 mm, and the reviewer's geometric model says that without sag 1-2 mm of overtravel separates under law 8.",
+  "P4_mirror": "Negative tilts mirror the positive rows (same outcome; counts equal within the repeat band).",
+  "P5_static_probe_candidates": "Reviewer static relabel on the CPU probe: the proposed rule gives 2 components only at 5 deg (1 at 10-35 deg); the exit-ligament rule gives 2 at 0-20 and 30-35 deg (25 deg a static-test margin). On E1 this is checked with the per-substep shadow evaluator (offline).",
+  "P6_tau0": "tau = 0, h = 0 separates (it equals the Phase 2 S_000 through-cut setup on the workcell board) and both candidates predict the law-8 topology.",
+  "not_predicted": "Raised-edge rows have no declared prediction for law 8 at tau > 0 (Phase 2 at tau = 0: h <= 0.375 mm separates, h >= 0.5 mm leaves a layer-0 bridge). Reachability has no declared prediction (flat-board reachability is unmeasured; WP11_PHASE_E_ROUND2.md:237 reports 5.6-6.1 mm handle-clearance slack at +-30-35 deg on wp11_workcell_v1)."
+ },
+ "budget": {
+  "rows": 47,
+  "estimate_per_row": "about 290-340 control steps (5.8-6.8 s simulated); DEV measured 1.37 s per control step for the full bar on a shared RTX 5090 with both recorders, so 6.5-8 min per row",
+  "gpu_hours_max": 12.0,
+  "wall_hours_max": 10.0,
+  "concurrency": "at most 2 E1 jobs at once over cuda:0 and cuda:1 (shared)",
+  "reachability_cpu": "one CPU process, <= 1 h",
+  "stop_rule": "If the budget is exhausted, the remaining rows are reported NOT_RUN; no row is dropped silently. A crashed row is preserved and may be rerun once under '<id>_rerun1' with the reason recorded."
+ },
+ "outputs": {
+  "formal": "artifacts/wp12/phase4_e1_NNN/<row id>/ (result.json, steps.jsonl, snapshots.npz, diag.npz); NNN is the next free number (001 first); never overwritten",
+  "reachability": "artifacts/wp12/phase4_e1_NNN/reachability/",
+  "dev": "artifacts/wp12/phase4_e1_dev_NNN/ (label DEV; not evidence)",
+  "logs": "artifacts/wp12/logs/phase4_e1_*.log",
+  "evidence": "docs/evidence/wp12/phase4_e1_001.json",
+  "report": "'E1 results' section appended to docs/reports/WP12_CUTTING_PHYSICS.md (data only; D1 is decided at xhigh)"
+ },
+ "not_in_scope": [
+  "any law-9 code, any change to tlmpm_v5 or to law-8 parameters",
+  "the (e) swept-normal fallback variant (shipped separately; E1's evaluator uses the relative fallback only offline)",
+  "classes (b), (c), (d); live tracking noise; Native or Lab runs"
+ ],
+ "dev_runs_before_commit": {
+  "label": "DEV (development smoke checks; never evidence; kept)",
+  "runs": {
+   "artifacts/wp12/phase4_e1_dev_001/A_p35_bar40x12x12": "reduced bar 40 x 12 x 12 mm, full schedule, cuda:1, 63 s: law 8 CONNECTED, 234 bridges; proposed B_k = 1 on 4/16 material segments at the end; L9-EL predicted 2 components (reproduces the reviewer CPU probe at 35 deg: 1 component, 234 bridges, 4/16)",
+   "artifacts/wp12/phase4_e1_dev_001/A_p20_full_steps60": "full bar, capped at 60 control steps (incomplete by design), cuda:1, 86 s: 1.37 s per control step",
+   "artifacts/wp12/phase4_e1_dev_001/D_p35_full_steps40": "full bar slotted, capped at 40 steps, cuda:0, 58 s: swept-blade clearance 0.99987 mm at x0 17.85 / overtravel 8.456 (the declared value was then floored to 8.455 mm -> 1.00041 mm)",
+   "artifacts/wp12/phase4_e1_dev_001/reachability": "A_p00 PASS (blade-board +0.29 um), A_p35 FAIL blade-board -0.23 um (contact tie, IK residual), A_m35 PASS (+0.25 um), D_p35 at the groove limit FAIL knife_handle_clearance -5.13 mm (handle 0.13 mm into the board top segment); the reach-limited rows and the TIE_AT_CONTACT reading were added because of this",
+   "artifacts/wp12/phase4_e1_dev_002/{A_p00,A_p05,A_p35,A_m35}": "reduced bar 40 x 12 x 12 mm, full schedule, 68-73 s each: 0 deg SEPARATED; 5 deg CONNECTED (2 bridges); +-35 deg CONNECTED (234 bridges each, exact mirror); proposed predicts 2 / 2 / 1 / 1, L9-EL 2 / 2 / 2 / 2 components. L9-EL shadow-labels 337 particles even at 0 deg (the two sides of the core strip cross f = 0 a few substeps apart); the CPU test shows such labels equal the side law 8 gives later.",
+   "scratch reachability bisection": "max reachable slotted overtravel (same x0): 20 deg 6.676, 25 deg 5.354, 30 deg 3.878, 35 deg 2.192 mm (binding knife_handle_clearance); groove limit at 0 deg (6.999 mm) passes"
+  },
+  "cpu_tests": ".venv/bin/python -m pytest -q tests/test_exit_candidates.py tests/test_wp12_phase4_e1.py tests/test_cut_diagnostics.py tests/test_repo_naming.py: 17 passed (evaluator bitwise neutral; counts equal a NumPy recomputation)"
+ }
+}

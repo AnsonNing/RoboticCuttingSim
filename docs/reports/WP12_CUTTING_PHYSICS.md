@@ -13,6 +13,11 @@ Figures: [`docs/media/wp12/phase4/`](../media/wp12/phase4/).
 Rows marked **COUNTERFACTUAL** override one law parameter on the solver instance to test what that condition
 decides. They are never law-8 or acceptance results.
 
+> **Read with the corrections.** The xhigh review ([WP12_PHASE4_XHIGH_REVIEW.md](WP12_PHASE4_XHIGH_REVIEW.md),
+> `81a9626`) corrected parts of this draft. The original text below is unchanged. The dated section
+> [Corrections after the xhigh review (2026-10-31)](#corrections-after-the-xhigh-review-2026-10-31) at the end
+> supersedes it where they differ. In particular, the §8 law-9 recommendation is withdrawn.
+
 ## Result at a glance
 
 | Class (task item) | Reproduced | Root cause (spec §4.2 class) | Decisive evidence |
@@ -371,3 +376,124 @@ TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4a_sweep.py -
   dynamics after the extra labels. Law 9's effect must be measured, never inferred from them.
 - **The breakthrough condition was checked at the final armed pose only.** There, no unassigned particle lay within
   \|s\| ≤ 4 mm and every unassigned particle had f ≤ 5.05 mm. It was not checked per segment at every substep.
+
+## Corrections after the xhigh review (2026-10-31)
+
+Added 2026-10-31 (KST) after the `rcs-xhigh` review [WP12_PHASE4_XHIGH_REVIEW.md](WP12_PHASE4_XHIGH_REVIEW.md)
+(`81a9626`, verdict **REJECT law 9 as proposed**). Sections 1–10 above stay as written. Where they differ from
+this section, this section applies.
+
+The review re-ran the draft's numbers from the saved runs (its §1). The (a) counts and bridges, the static B_k at
+the final pose, the (b) gate tie, the θ_max = 60° counterfactual and the (e) zero-flip result all reproduce. One
+claim does not: "unchanged until breakthrough" (C4 below).
+
+### C1. Class (a): root cause restated
+
+**Root cause.** The law-4 front f = (x − o)·d ≤ 0 (`tlmpm_v5.py:630`) is the plane through the edge, normal to
+the advance d. At a tilted exit face, the uphill material beside the swept surface is never behind the edge when
+the edge leaves the bar.
+
+**What sets the margin.** Sag and overtravel. With overtravel t along d, a bottom-layer particle at height z_b is
+passed only if |s| ≤ z_b/sinθ + t/tanθ:
+- **Overtravel.** The WP-11 4 mm came from the action workspace (`cut_extent = plane_section`), not from physics.
+- **Sag.** The overhang over the 30 mm relief slot sags. That decided the reproduced bridges, which had
+  f_reference < 0. This support does not exist on `blade_master_flat_board_v1`.
+
+**The law-8 plow gate is not a root cause.**
+- It matters only once overtravel moves the wedge outside the core (|s| > Δx).
+- So "law 5 would have labelled them" (§3, `lead_rule_blocked_by_plow_gate` = 684 / 616 / 314) holds only on
+  the slotted/relief-slot support.
+- The "Root cause" cell of the at-a-glance table for (a) should read: missing side assignment because the f ≤ 0
+  front meets a tilted exit face, with the margin set by support sag and overtravel.
+
+### C2. The handle-clearance claim was a misreading
+
+- **Withdrawn.** The §8 table says ±30–35° obliques "already bind on handle clearance" and calls planner
+  overtravel "Impossible on the flat board".
+- **What the source says.** WP11_PHASE_E_ROUND2.md:237 names `knife_handle_clearance` as the *binding* (active)
+  constraint, with 5.6–6.1 mm of margin. That is a margin, not a failure.
+- **Flat-board reachability is unmeasured.** E1.3 measures it.
+- **The slotted variant was never tested.** ADR 0017:121 and WP12_WORKCELL.md:193 keep oblique planes on the
+  explicit slotted variant (Option D), so overtravel is not impossible in the WP-12 workcell. No oblique has yet run
+  on its 8 mm grooves.
+
+### C3. (a) on the flat board is undemonstrated until E1
+
+- **Status: NOT_RUN.** The draft ran no oblique on `blade_master_flat_board_v1`, so (a) on that board is NOT_RUN.
+- **The reviewer's CPU probe is only a prediction.** It is `artifacts/wp12/phase4_xhigh_review_001/cpu_flat_oblique.py`:
+  a 40 × 12 × 12 mm bar on a solid box, law 8, edge ending on the board top. It predicts:
+  - failure from 5–10° by a margin (two bottom-layer particles 0.01–0.05 mm ahead of the edge);
+  - robust failure from 15–20° to 35°, where the unassigned wedge lies inside the core strip.
+- **Withdrawn from §8.** Obliques "ending on a solid board" are no longer claimed as an effect of the proposed
+  law 9.
+- **Scope of the §3 and §7.1 diagnosis.** It stands for the WP-11 relief-slot support only.
+
+### C4. Law 9 as proposed (breakthrough-gated lead + relative fallback): REJECTED
+
+The §8 recommendation is withdrawn. The review's reasons (its §3):
+
+1. **Wrong test.** "No digit-0 particle in {0 < f ≤ 2Δx, |s| ≤ Δx}" asks whether there is *material* in the core
+   ahead. The question that matters is whether a *ligament straddles* the swept surface.
+2. **It blocks itself at a supported oblique exit.**
+   - The one-sided uphill wedge, which holds the very particles that need labels, sits in the core strip.
+   - The reused law-5 rule excludes |s| ≤ Δx anyway.
+3. **It still needs overtravel.** About Δx·tanθ − z_b/cosθ (≈ 1.3–2.2 mm at 25–35°), which Option A does not
+   provide. Its only proven gain is cutting the slotted-board overtravel from about 6–10 mm to about 2–4 mm.
+4. **"Unchanged until breakthrough" is refuted.** On snapshots, B_k = 1 fires mid-cut on 2–4 material segments with
+   an empty core, and lags the exit by about 1–3 mm. The draft checked the breakthrough condition at the final pose
+   only (§10).
+5. **Not safe:**
+   - **Empty space beside material.** S persists for 2Δx, so any moving segment with an empty core gets B_k = 1.
+     The lead rule then labels material the edge never reached, which voids ADR 0008's safety argument.
+   - **Digit-0 counting.** Re-entered kerfs, labelled chips and the rule's own labels all count as "empty".
+   - **Unmeasured field-split dynamics.** About 2.4–3.7 thousand particles would be labelled at once at the exit,
+     with untested effects on the FLIP transfer (law 5 failed M8b this way).
+   - **Strip sampling.** One stray particle blocks the mask, and one void opens it.
+   - **Multi-cut and intersecting cuts.** Labels can land on separate bodies.
+6. **No new press-versus-directional distinction.** The rule inherits law 4's S/M_k gate.
+
+**Next.** No law code until D1 is decided at xhigh.
+- E1 (`configs/wp12/phase4_e1_protocol_v1.json`) runs law 8 unchanged, with a read-only offline evaluator.
+- The evaluator scores the rejected breakthrough mask and the two-sided exit-ligament rule L9-EL (review §3.3) on
+  the recorded per-substep states.
+- It never writes a label into the physics run.
+- L9-EL is a candidate under evaluation, not an approved law.
+
+### C5. (e) ships as its own variant
+
+- **Withdrawn.** The §8 row (e) wording "include in law 9 as a numerical correction".
+- **The relative fallback ships alone.** |m×e|² ≤ max(1e-20, (1e-5|m|)²) becomes its own opt-in numerical variant,
+  "law 8 + swept-normal fallback v2".
+- **Acceptance:**
+  - CPU bitwise equality with law 8 wherever no `ill_float` digit exists;
+  - the generic-yaw pure-draw test;
+  - a recorder matrix rerun, predicted equal within GPU nondeterminism.
+- **Scope limit.** It repairs float noise (`ill_float`) only. Near-pure draws under tracking noise (`ill_geom`; in
+  Phase F, 0.3 mm/s turns n_s by about 45°) need their own study.
+- **Not bundled.** It is not part of any (a) law. A later exit law builds on it with an ablation row.
+
+### C6. (b): envelope wording (replaces the §8 "Supported orientation" paragraph)
+
+Scope: law 8, `ruler_knife_v2_y`, kinematic ideal tracking, 1 mm. ρ ≤ 44° is declared now, and the motion gate
+is unchanged.
+
+| Status | Rake |
+| --- | --- |
+| Validated cutting | ρ = 10° (F3/C4); 14, 15, 16° (F2.1); 25° (M3a); 35° (M3b/M3c) |
+| Partially validated | ρ = 10–44° (dome sweep, diagnostic) |
+| Known failure / unsupported | ρ = 45°. The motion lies on θ_max and float32 decides the gate (s2307, 0 labels; the frozen FAIL stands) |
+| Unsupported by law | ρ > 45°. The gate is closed by design: contact and directional work, no labels |
+| Physically infeasible | ρ ≈ 5° at 0.2 mm clearance |
+| Physically feasible, not validated | edge-first contact up to 77.5° |
+
+**Sampling rule.** Generators and planners sample ρ ≤ 44°. Live tracking needs an extra margin equal to the
+measured out-of-plane motion noise (NOT_RUN).
+
+**The bevel-derived gate** (|α| < 77.5°) is only a necessary condition, and it would not rescue s2307. It is
+studied only after (c), with face-first controls at α = 80/85/90° and a 70° wedge press without draw.
+
+### C7. Unchanged
+
+- (b), (c) and (d) stand as written, with the (d) remark that "planner clearance relative to the lattice" can at
+  most be a declared, resolution-specific planner rule, never a physics fix.
+- No solver, law, threshold, frozen record or WP-11 evidence was changed by these corrections.
