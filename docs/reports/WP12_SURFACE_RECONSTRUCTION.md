@@ -598,3 +598,78 @@ and every threshold.
 
     TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -q tests/test_cut_aware_surface.py tests/test_surface_metrics_v1.py \
         tests/test_cut_debug_view.py tests/test_repo_naming.py tests/test_wp12_phase3_driver.py tests/test_cut_event_snapshots.py
+
+## Addendum (2026-10-31, after the decision review)
+
+**Scope.** This addendum records the corrections of the Phase 3 decision review
+([`WP12_PHASE3_DECISION_REVIEW.md`](WP12_PHASE3_DECISION_REVIEW.md), commit `b67e80c`). It corrects attributions only.
+**Every v1 verdict and number above stays as recorded, and the Phase 3 comparison gate FAIL under the frozen
+`surface_protocol_v1` stands.** Nothing in `phase3_surface_001` was rewritten; no B, metric or physics code changed.
+
+**Evidence.** The reviewer's ad-hoc checks are now in
+[`diagnose_wp12_phase3_surface.py`](../../scripts/diagnose_wp12_phase3_surface.py) (`review_checks`,
+`s8_frame_motion`, `data_reads`, `review_reproduction`). They ran read-only on the saved r0 states, CPU only, 10.6 s:
+
+```
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/diagnose_wp12_phase3_surface.py --run artifacts/wp12/phase3_surface_001 \
+    --cases S1_G3a_r0,S1_G3b_r0,S2_r0,S3_r0,S4_r0,S5_r0,S6_r0,S7_r0,S8_r0 --jobs 9
+```
+
+- Output: `artifacts/wp12/phase3_surface_001/diagnostics_003.json`. `diagnostics_001/002` are kept, and every
+  `diagnostics_002` field reappears in `_003` unchanged.
+- `review_reproduction` compares 68 numbers printed in the review with the measured values, at the printed precision.
+- **66 reproduce. Two are flagged:**
+  - **F3, S2 deficit share within 3 mm:** measured 0.644, printed 65 %. The review added rounded bins
+    (0.43 + 0.22). Read 64 %.
+  - **F5, G2 QEF rank counts:** a key-order error in the `_003` comparison table. It read the ranks as 3/2/1; the
+    review lists them as 1/2/3. The stored values match: rank 1 / 2 / 3 = 6,274 / 610 / 20. The script is corrected.
+    A rerun would write `diagnostics_004.json`; `_003` is kept as written.
+
+### A.1 Corrections
+
+| # | Section corrected | Correction (diagnostics_003) |
+|---|---|---|
+| F1 | §4, §5, §6.5, §8 (S6 current P95 `B_WORSE`; S6/S8 "faces nearer another component") | **Metric artefact, not physics.** `region_rule_v1` takes a vertex's component from its nearest particle. B draws each face ½ s outside its piece, and the S6 slices are within 1 s of each other (opening P50 0.56 mm, 197 links with crossed sides). As a result, **492 of 2,194** S6 cut-face vertices are assigned to the neighbouring slice. Measured against B's own cut faces, all 492 sit on the right cut but the wrong side. S8 has 18 of 577 and S5 2 of 3,386. **Without these vertices**, B's current P95 is **0.345 s in S6** (recorded 0.530; A 0.442) and 0.392 s in S8 (recorded 0.412). S5 also has 62 junction vertices with the wrong cut digit; without them its P95 is 0.415 s (recorded 0.416). Both extractors record each vertex's component (`component_ranges`), so the rule did not need to guess. The recorded v1 decision `B_WORSE` stands; it is not evidence that B places the S6 faces worse |
+| F2 | §6.3 (S4 tip) | **Mechanism sharpened.** Each of the 25 tip regions has 1–2 side-1, 1–2 side-2 and 2–4 code-0 corners; 14 of 25 are clamped. The restricted trilinear weight of the code-0 (joined hinge) corners is **0 in 20 of 25** regions. The vertex therefore sits 2.40 mm from side 1, inside an opening of 4.60 mm (centre to centre). Under the tip, the code-0 links along N are 0.99 mm long: the physical notch closes within one link. §6.3's "embedded by the whole mixed region (sides 1, 2 and digit 0)" is corrected: digit 0 carries no weight in 20 of 25 regions. This is a B placement limit, not a bug |
+| F3 | §2 item 2, §6.4, §6.6 (volume rows; "particle-scale roughness") | **The det F / position disagreement is localised at the cut.** In reference, the mean cell volume is 1.000000. In S5, cells within 1.5 mm of the Hermite locus have mean V/J **0.77** (P5 0.15); 86.5 % of the deficit is within 3 mm, and the far field is 1.006. In S2 the near-cut mean is 0.52 and 64 % of the deficit is within 3 mm; most of the rest (39 %) is beyond 6 mm, in the pressed zone. Near the cut, the particle positions collapse while the solver's F keeps det F ≈ 0.999. **The wording "real material roughness" / "particle-scale roughness of the post-cut face" (§2, §6.4) is too strong.** The 0.22–0.39 s face roughness that B follows lies in this same layer: it is position roughness of the solver state, which F does not see. It is a solver-state finding for Phase 4 (with F7), possibly a resolution effect (4 mm grid against 1 mm particles) |
+| F4 | §6.4 (normal and current-distance rows) | **The v1 rows cannot all be met on these states, by any method.** The protocol's own current-space reference (side-locus samples, core) has these residuals against its own 2 mm plane, with each sample inside its own fit: P95 **0.512 (G3b)**, 0.402 (S2), 0.437 (S6), 0.315 (S8). G3b alone exceeds the 0.5 s limit. A Delaunay mesh built exactly through the locus samples has triangle-normal error against the 3 mm locus plane of P50 16.5–28.4° and P95 **32.1–61.3°**. So any 1 mm mesh that keeps the distance rows fails the 10° row, and only a smoothed mesh could pass it. B's own 3 mm planes match the locus planes at P50 2.5–5.4°. **Open:** the P95 outliers of that agreement, G3a 30.2° and S4 27.8°, are not explained |
+| F6 | §6.2 (S5 reference max: "not separately verified") | **Now verified.** 14 S5 vertices have a reference error > 0.5 s (0.85–1.32 s). 7 are exterior representatives with no cut face. The other 7 are cut vertices that the region rule assigns to the wrong cut digit at a junction; against B's own face digit their error is ≤ 0.018 s. In G3b, the 24 exterior vertices in the cut region carry P50 0.90 / max 1.70 s, and the true cut-face max is 0.17 s (crease) |
+| F7 | §6.7 (S7 chip) | **The cause sits upstream of B.** All 86 chip particles carry code 2, so every link inside the chip is uncut by definition. Yet those uncut links are 2.4 mm long at P50 and up to 19.8 mm, with \|dx − F dX\| up to 19.2 mm. This is the position/F inconsistency of F3 in its extreme form. It goes to Phase 4 as a thin-chip item |
+| F9 | §2 item 3(c), §6.5 ("0 in the pre-embedding mesh") | That holds for G3b and S3 only. **S4 has 95 intersecting pairs in its reference (pre-embedding) mesh**, already in `diagnostics_002`. They come from the zero-thickness slit: both sides' faces coincide in reference space |
+| F10 | §6.8 (S8 slow motion) | The frames are 40 ms apart. "The material moves P95 0.46–0.48 s between them" is the **per-repeat maximum** (r1 0.459, r0 0.479), not every frame. The median is 0.36 s; at the frame of B's maximum residual it is 0.38 (r0) and 0.39 s (r1); 5 of 21 pairs per repeat (hold frames) move ≤ 0.10 s. The metric's premise (slow motion) is unmet on the push frames. Nearest-particle transport is a piecewise-constant field, so its own error grows with the strain increment. The B repeat spread of the row is 0.020 s (0.072 / 0.052) |
+| F11 | §4 table (B midpoint fallback, S8 PASS), §6.9 ("B_mid passes S8 only") | **Read NOT_RUN; never cite this PASS.** `s8_rows` returned no rows for B_mid, because the recontact frames are evaluated for A and B only. The case verdict was therefore built from the four `all_*` rows alone. The driver is fixed (below). The stored `S8_r0/r1.json` and `summary.json` keep their original PASS as recorded |
+| F12 | §5 (thickness bias) | **Untraced.** The thickness bias of G3b 0.152, S2 0.120, S3 0.124, S4 0.283 and S5 cut 2 0.149 s is not attributed. *Hypothesis (review, untested):* the same-side corners one layer inside the face are extrapolated with F across the collapsed near-cut layer of F3, which places the face outward. It must be attributed before a v2 method is designed against it |
+
+### A.2 Driver fix: unevaluated rows read NOT_RUN
+
+`scripts/run_wp12_phase3_surface.py` now has a `not_run(reason)` row. `verdict_of` ranks
+FAIL > NOT_EVALUABLE > NOT_RUN > PASS, so a method whose case rows were not all evaluated never reads PASS. For B_mid,
+`s8_rows` now returns the three S8 rows as NOT_RUN ("recontact frames not evaluated for B_mid").
+
+- Test: `tests/test_wp12_phase3_driver.py::test_unevaluated_rows_read_not_run_never_pass`.
+- `diagnostics_003.json` → `data_reads.stored_verdicts_rederived` re-derives all 54 stored method × case verdicts
+  (S1–S8, both repeats) with the fixed driver. **Exactly two differ:** B_mid S8 in r0 and r1, PASS → NOT_RUN.
+
+### A.3 What stays as recorded
+
+- Every number and verdict in §1–§12, including the B v1 FAIL rows, `B_WORSE` on normals and the gate FAIL.
+- The physics and negative controls:
+  - Phase 3 changed no physics (`tlmpm_v5`, law 8 and `cut_events` are untouched);
+  - S0 is exact; S9 is bit-identical to the uncut extraction;
+  - 0 Hermite points outside the swept region;
+  - the S4 provenance rows put faces exactly on the 144 conflicting links.
+- The honest Phase 3 claim is that of the review (§4 there). B is render geometry from solver state, not the contact
+  surface.
+
+### A.4 Next (not measured here)
+
+- [`configs/wp12/surface_protocol_v2.json`](../../configs/wp12/surface_protocol_v2.json) implements review §3:
+  - changes P1–P7, each with its justification;
+  - the unchanged v1 rows;
+  - the matrix {A, B v1, B v2} × {protocol v1, v2} on the saved states and on held-out states (H1 = new placement
+    seed, H2 = new geometry);
+  - the v2 gate.
+- The v2 metric definitions are in the new module `surface_metrics_v2.py`; `surface_metrics_v1.py` is unchanged.
+  Tests: `tests/test_surface_metrics_v2.py`.
+- v2 is frozen by the commit that adds the file, and only then may any v2 number be measured. No v2 number exists yet.
+- F3, F7 and the F12 hypothesis go to Phase 4 (xhigh) as solver-state questions for the resolution study.

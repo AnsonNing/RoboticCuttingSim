@@ -52,3 +52,24 @@ def test_topology_hash_depends_on_faces_and_reference_vertices():
     assert D.topo_hash(f, x) == D.topo_hash(f.copy(), x.copy())
     assert D.topo_hash(f, x) != D.topo_hash(f[:, ::-1], x)
     assert D.topo_hash(f, x) != D.topo_hash(f, x+1e-12)
+
+
+def test_unevaluated_rows_read_not_run_never_pass():
+    """Decision review F11: the S8 rows are not evaluated for B_mid (recontact frames cover A and B only), so its S8
+    verdict must read NOT_RUN, not PASS; FAIL and NOT_EVALUABLE still take precedence."""
+    assert D.verdict_of({"a": D.check(1, "==", 1), "b": D.not_run("x")}) == "NOT_RUN"
+    assert D.verdict_of({"a": D.check(2, "==", 1), "b": D.not_run("x")}) == "FAIL"
+    assert D.verdict_of({"a": D.check(None, "==", 1), "b": D.not_run("x")}) == "NOT_EVALUABLE"
+    assert D.verdict_of({"a": D.check(1, "==", 1), "b": D.not_applicable("x")}) == "PASS"
+    T = D.protocol_thresholds()
+    rows = D.s8_rows(D.B_MID, {"recontact_frames": []}, T)
+    assert set(rows) == {"vertices_shared_across_conflicting_codes", "shell_set_unchanged_since_separation",
+                         "all_temporal_slow_motion_residual_p95_s"}
+    assert {r["verdict"] for r in rows.values()} == {"NOT_RUN"}
+    rep = {"scalars": {}, "temporal_fixed_state": {"topology_stable": True, "residual_max_s": 0.},
+           "volume_checks": {"reference_abs_error_m3": 0., "reference_bound_m3": 1., "reference_source": "test",
+                             "current_rel_error": .001}}
+    result = {"frames": [{"reports": {D.B_MID: rep}}], "recontact_frames": []}
+    out = D.case_checks("S8", result, T)[D.B_MID]
+    assert all(out["checks"][k]["verdict"] == "PASS" for k in out["checks"] if k.startswith("all_volume"))
+    assert out["verdict"] == "NOT_RUN"

@@ -170,12 +170,20 @@ def not_applicable(reason):
     return {"value": None, "verdict": "NOT_APPLICABLE", "note": reason}
 
 
+def not_run(reason):
+    """A protocol row this driver did not evaluate for the method (never a PASS; added 2026-10-31, decision review F11)."""
+    return {"value": None, "verdict": "NOT_RUN", "note": reason}
+
+
 def verdict_of(checks):
+    """FAIL > NOT_EVALUABLE > NOT_RUN > PASS: a method whose case rows were not all evaluated never reads PASS."""
     vs = [c["verdict"] for c in checks.values()]
     if any(v == "FAIL" for v in vs):
         return "FAIL"
     if any(v == "NOT_EVALUABLE" for v in vs):
         return "NOT_EVALUABLE"
+    if any(v == "NOT_RUN" for v in vs):
+        return "NOT_RUN"
     return "PASS" if vs else "NOT_EVALUABLE"
 
 
@@ -970,7 +978,11 @@ def s8_rows(method, result, T):
     frames = result.get("recontact_frames", [])
     rows = {}
     if method == B_MID:
-        return rows
+        # The recontact frames are evaluated for A and B only (light frames skip B_mid): no S8 row was evaluated for
+        # B_mid, so its S8 rows read NOT_RUN (decision review F11; the stored v1 records keep their original verdict).
+        reason = "recontact frames not evaluated for B_mid (light frames: A and B only)"
+        return {k: not_run(reason) for k in ("vertices_shared_across_conflicting_codes", "shell_set_unchanged_since_separation",
+                                             "all_temporal_slow_motion_residual_p95_s")}
     vals = [f["meshes"][method] for f in frames if method in f["meshes"]]
     if method == B:
         shared = max((v["mixed_side_regions"] for v in vals), default=None)
