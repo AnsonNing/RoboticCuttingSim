@@ -32,7 +32,8 @@ quaternions XYZW; unknown keys are errors)::
       },
       "tool": {"profile_id": "ruler_knife_v1", "grasp_preset": "default"},
       "solver": {"module": "tlmpm_v4" | "tlmpm_v5", "cutting_law": 8, "max_cuts": 2,
-                 "particle_spacing_m": .001, "grid_dx_m": .004},
+                 "particle_spacing_m": .001, "grid_dx_m": .004,
+                 "slots_per_node": 16},                 # optional, tlmpm_v5 only (absent: solver default 8)
       "table_top_world_z_m": -.01,              # optional (v1 common default)
       "randomization": null | {"seed": 7, "ranges": [
           {"path": "workpiece.world_pose.yaw_deg", "low": -15, "high": 15},
@@ -221,7 +222,7 @@ def validate_scene(source):
         raise SceneConfigError(f"tool.profile_id must be one of {sorted(PROFILES)}")
     out["tool"] = {"profile_id": tool["profile_id"], "grasp_preset": str(tool.get("grasp_preset", "default"))}
     solver = doc["solver"]
-    _keys(solver, "solver", ("module", "cutting_law", "max_cuts"), ("particle_spacing_m", "grid_dx_m"))
+    _keys(solver, "solver", ("module", "cutting_law", "max_cuts"), ("particle_spacing_m", "grid_dx_m", "slots_per_node"))
     if solver["module"] not in SOLVERS:
         raise SceneConfigError(f"solver.module must be one of {sorted(SOLVERS)}")
     limits = SOLVERS[solver["module"]]
@@ -232,6 +233,10 @@ def validate_scene(source):
                      "max_cuts": _integer(solver["max_cuts"], "solver.max_cuts", 1, limits["max_cuts"]),
                      "particle_spacing_m": _number(solver.get("particle_spacing_m", .001), "solver.particle_spacing_m", positive=True),
                      "grid_dx_m": _number(solver.get("grid_dx_m", .004), "solver.grid_dx_m", positive=True)}
+    if "slots_per_node" in solver:  # opt-in (WP-11 Phase E round 2): kept only when declared, so other ids are unchanged
+        if solver["module"] != "tlmpm_v5":
+            raise SceneConfigError("solver.slots_per_node applies to tlmpm_v5 only")
+        out["solver"]["slots_per_node"] = _integer(solver["slots_per_node"], "solver.slots_per_node", 1, 64)
     out["table_top_world_z_m"] = _number(doc.get("table_top_world_z_m", _protocol()["common"]["table_top_world_z_m"]),
                                          "table_top_world_z_m")
     out["randomization"] = _validate_randomization(doc.get("randomization"))
@@ -845,6 +850,11 @@ def make_configured_kinematic_env(task, **options):
         raise NotImplementedError("tlmpm_v5 is not available in the kinematic backend yet (ADR 0014 pending)")
     if task.solver_module == "tlmpm_v5":
         options.setdefault("solver", "tlmpm_v5")
+    declared = task.scene["solver"].get("slots_per_node")
+    if declared is not None:  # opt-in scene slot capacity (LiveCuttingMaterial also reads it from the task)
+        if options.get("slots_per_node") not in (None, declared):
+            raise ValueError(f"slots_per_node {options['slots_per_node']} differs from the scene's {declared}")
+        options["slots_per_node"] = declared
     options.setdefault("cutting_law", task.cutting_law)
     options.setdefault("max_cuts", task.max_cuts)
     return make_kinematic_env(task=task, **options)

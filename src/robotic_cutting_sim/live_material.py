@@ -44,6 +44,15 @@ class LiveCuttingMaterial:
                 obstacle_boxes_edge = [handle_box_edge(tool_profile)]
         if solver not in (None, 'tlmpm_v5'):
             raise ValueError("solver is None (v1-v4 by law) or 'tlmpm_v5'")
+        # A configured scene may declare its tlmpm_v5 slot capacity (scene_config solver.slots_per_node, opt-in);
+        # every runtime that passes the task then uses it. Absent: the explicit argument or the default 8.
+        declared = task.scene['solver'].get('slots_per_node') if getattr(task, 'scene_json', '') else None
+        if declared is not None:
+            if solver != 'tlmpm_v5':
+                raise ValueError("The scene declares slots_per_node, which applies to solver='tlmpm_v5' only")
+            if slots_per_node not in (None, declared):
+                raise ValueError(f"slots_per_node {slots_per_node} differs from the scene's {declared}")
+            slots_per_node = int(declared)
         if solver == 'tlmpm_v5':
             from .cut_topology import PACKED_MAX_CUTS
             if tool_profile is None or cutting_law not in (4, 5, 8):
