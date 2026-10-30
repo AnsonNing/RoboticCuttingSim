@@ -88,6 +88,11 @@
   - 修正：顯示用網格遇到無法成網格的小碎片時跳過並記錄（物理、標籤、評估不變；可成網格時輸出逐位相同）；runner 預設預檢在 ≥ 2 個凸起時改用分段幾何（0／1 個凸起不變）。
   - live_001（SCENE_INFEASIBLE）與 live_002（NOT_RUN）紀錄不變。
   - 未解：PRE-CUT 時刀身低於頂面 0.23 mm（這次仍用 C5 控制器，`path_v3` 可解）；表面品質指標顯示頂面缺 0.66%、最大凹陷 22 mm（未計分，未調查）。
+- **SLICE-PUSH 手腕深度重新定位（configured task）**（[ADR 0016](adr/0016-configured-perception-relocation.md)，`0e96f07` 程式，`c29f02a` 先宣告 live_004，`fa0eabb` 證據，[影片](media/wp11/slice_push_relocate/demo.gif)）。
+  - opt-in `planner_options.perception = "wrist_depth_relocate_v1"`：每刀之間在場景設定決定的固定位姿用腕部 D405 深度量 +x 端面位移，平移下一刀；不用 look-at、不最佳化觀測位姿、不讀粒子／標籤／刀具真值。不要求時，計畫與 task id 完全不變。
+  - Live s1301 **TASK_SUCCESS**：量到 +1.158 mm（oracle +1.149 mm），第二刀落在 +24.00 mm（live_001 是 +23.00 mm），凍結統計 1.5 mm ≤ 2 mm，三塊、推開 16.7 mm，Return-to-Home PASS。round 1 的 kinematic 與 live_001 失敗紀錄不變。
+  - s1302／s1303 因 /mnt/data 降到 15 GB 下限而沒有啟動（NOT_RUN）；又搬了 22 個舊 artifact（約 12 GB）到根磁碟，現在剩 27 GB，兩個 seed 第一次啟動中。
+- CI：`beb92b5` 修正 GitHub Actions 失敗（Test C 預檢測試在沒有 newton／mujoco／Franka 資產時改標 NOT_RUN）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
