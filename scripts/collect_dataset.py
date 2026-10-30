@@ -33,11 +33,12 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'src'))
 from robotic_cutting_sim import dataset as ds  # noqa: E402
-from robotic_cutting_sim.policy_env import (PRESET_ID, PRIVILEGED_CONTROLLER_INPUTS, find_privileged_keys,  # noqa: E402
-                                            jsonable, process_memory)
+from robotic_cutting_sim.policy_env import (PRESET_ID, PRIVILEGED_CONTROLLER_INPUTS,  # noqa: E402
+                                            find_privileged_info_keys, find_privileged_keys, jsonable, process_memory)
 from robotic_cutting_sim.recording import manifest, new_output, write_json  # noqa: E402
 
 CONTROLLERS = ('scripted', 'action_file', 'policy')
+INFO_LEAK_PATHS_KEPT = 20
 PLAN_SCHEMA = 'rcs_episode_plan_v1'
 RELIABILITY_CONFIG = ROOT/'configs/wp11/phaseG_reliability_v1.json'
 HOLD = {'type': 'edge_delta', 'target': [0.]*6, 'frame': 'world', 'cut_enabled': False}
@@ -169,6 +170,17 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
     stop = entry.get('stop_after_phase')
     seen_stop, stop_reason, statuses = False, None, {}
     leaks, clock_errors, camera_age_max = 0, 0, 0.
+    # Privileged names in the policy-facing reset/step info outside info["privileged"] (WP-11 delta review E2):
+    # one count per leaking info dict, and the distinct leaking paths (the first INFO_LEAK_PATHS_KEPT)
+    info_leaks, info_leak_paths = 0, []
+
+    def note_info(info, where):
+        nonlocal info_leaks
+        paths = find_privileged_info_keys(info)
+        info_leaks += bool(paths)
+        for path in paths:
+            if f'{where}:{path}' not in info_leak_paths and len(info_leak_paths) < INFO_LEAK_PATHS_KEPT:
+                info_leak_paths.append(f'{where}:{path}')
     steps = int(round(duration/dt))
     if entry.get('max_steps') is not None:   # smoke/debug budget: the episode then ends with STEP_BUDGET
         steps = min(steps, int(entry['max_steps']))
@@ -176,6 +188,7 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
     def note(observation, info):
         nonlocal leaks, clock_errors, camera_age_max
         leaks += bool(find_privileged_keys(observation))
+        note_info(info, 'step')
         executed = (info.get('action_executed') or {}).get('kind') != 'NOT_EXECUTED'
         clock_errors += bool(abs(observation['timestamp_s'] - env.time_s) > 1e-9
                              or (executed and abs(info['timestamp_s'] - info['action_timestamp_s'] - dt) > 1e-9))
@@ -183,6 +196,7 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
             camera_age_max = max(camera_age_max, float(observation['camera_age_s']))
         statuses[info['action_status']] = statuses.get(info['action_status'], 0) + 1
     leaks += bool(find_privileged_keys(observation))
+    note_info(reset_info, 'reset')
     for _ in range(steps):
         if env.time_s >= duration - 1e-9:
             break
@@ -266,7 +280,8 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                 # harness's full post-reset receipt (privileged fields included) used by the reliability checks
                 reset_info=jsonable({k: v for k, v in reset_info.items() if k != 'privileged'}),
                 reset_checks=jsonable(env.last_reset_checks),
-                observation_privileged_leaks=leaks, clock_errors=clock_errors, camera_age_max_s=camera_age_max,
+                observation_privileged_leaks=leaks, info_privileged_leaks=info_leaks,
+                info_privileged_leak_paths=info_leak_paths, clock_errors=clock_errors, camera_age_max_s=camera_age_max,
                 recorder_closed=recorder_closed, final_codes_sha256=hashlib.sha256(np.ascontiguousarray(codes).tobytes()).hexdigest(),
                 privileged_controller_inputs=privileged_inputs, memory_before=memory_before, memory_after=memory_after,
                 runtime_profile=getattr(env, 'runtime_profile', None),

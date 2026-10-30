@@ -182,6 +182,11 @@ class IsaacSimCuttingConfig:
         from .cutting_surface import UNMESHABLE_POLICIES
         if self.surface_unmeshable not in UNMESHABLE_POLICIES:
             raise ValueError(f"surface_unmeshable must be one of {UNMESHABLE_POLICIES}")
+        if self.surface_unmeshable == "skip_presentation_v1" and self.configured_task is None:
+            # Registered tasks score the surface on the v1 oracle path, where SurfaceNotScorable has no NOT_RUN
+            # handling (WP-11 delta review E1); the skip policy exists for configured goal evaluators only.
+            raise ValueError("surface_unmeshable='skip_presentation_v1' requires configured_task; registered and "
+                             "legacy tasks use 'raise'")
         if self.particle_spacing_m is not None:
             if self.task_id is None:
                 raise ValueError("Explicit particle spacing requires CUT/TRIM task_id; legacy D0 is unchanged")
@@ -1087,6 +1092,13 @@ class LiveIsaacSimCutting:
         self.surface_arrays = (vertices, faces)
         self._surface_time = self.time_s
 
+    def _refresh_surface(self):
+        """Re-extract the presentation surface unless it is already of this time step (no scorability check).
+        Used only by capture() with surface_update='on_capture'; refresh_surface_for_evaluation keeps its own copy
+        so the every_step path is byte-for-byte unchanged."""
+        if getattr(self, '_surface_time', None) != self.time_s:
+            self._update_surface()
+
     def refresh_surface_for_evaluation(self):
         if getattr(self, '_surface_time', None) != self.time_s:
             self._update_surface()
@@ -1403,7 +1415,9 @@ class LiveIsaacSimCutting:
     def capture(self):
         import omni.replicator.core as rep
         if self.config.surface_update == "on_capture":
-            self.refresh_surface_for_evaluation()   # the surface of this time step, before rendering it
+            # The surface of this time step, before rendering it. Presentation only: a skipped substrate component
+            # makes the surface unscorable (refresh_surface_for_evaluation raises), never unrenderable.
+            self._refresh_surface()
         manager = self.SimulationManager
         before = (manager.get_simulation_time(),manager.get_num_physics_steps())
         robot_before=self.proprioception()

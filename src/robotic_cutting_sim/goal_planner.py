@@ -90,7 +90,7 @@ def planner_options(goal, overrides=None):
         merged.update(source)
     if merged["controller_profile"] not in CONTROLLER_PROFILES or merged["controller_profile"] == "path_v2_vision":
         from .scene_config import SceneConfigError
-        raise SceneConfigError("planner controller_profile must be v1, path_v2 or path_v3")
+        raise SceneConfigError("planner controller_profile must be v1, path_v2, path_v3 or path_v3a")
     if merged["protrusion_order"] not in ("along_skim", "goal"):
         from .scene_config import SceneConfigError
         raise SceneConfigError("planner protrusion_order must be along_skim or goal")

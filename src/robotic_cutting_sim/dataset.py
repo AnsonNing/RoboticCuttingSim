@@ -397,6 +397,9 @@ def reliability_report(metas, config, runtime, *, validations=(), execution_fail
                                              and rc["tool_angular_speed_rad_s"] <= th["tool_angular_speed_max_rad_s"])}),
             "action_observation_clocks_consistent": meta["clock_errors"] == 0,
             "no_privileged_keys_in_observations": meta["observation_privileged_leaks"] == 0,
+            # collectors since WP-11 delta review E2 also walk reset/step info; older metas lack the field (not checked)
+            **({"no_privileged_keys_in_info": meta["info_privileged_leaks"] == 0}
+               if "info_privileged_leaks" in meta else {}),
             "recorder_closed": bool(meta["recorder_closed"]),
             "evaluated": meta.get("verdict") is not None,
             "expected_outcome": meta.get("expect") is None or meta.get("verdict") == meta.get("expect"),
