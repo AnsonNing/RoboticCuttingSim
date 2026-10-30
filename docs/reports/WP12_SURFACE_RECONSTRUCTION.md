@@ -673,3 +673,308 @@ FAIL > NOT_EVALUABLE > NOT_RUN > PASS, so a method whose case rows were not all 
   Tests: `tests/test_surface_metrics_v2.py`.
 - v2 is frozen by the commit that adds the file, and only then may any v2 number be measured. No v2 number exists yet.
 - F3, F7 and the F12 hypothesis go to Phase 4 (xhigh) as solver-state questions for the resolution study.
+
+## Phase 3 v2 results (2026-10-31): `cut_aware_surface_v2` and the {A, B v1, B v2} × {protocol v1, v2} matrix
+
+**Question.** Does `cut_aware_surface_v2` (B v2: the review's §2 fixes M1–M4) pass the frozen `surface_protocol_v2`
+comparison gate against `particle_surface_v1` (A)? The gate is checked on the saved `phase3_surface_001` states and on
+the declared held-out states H1/H2. Everything above this section (v1 numbers, v1 verdicts, the v1 gate FAIL) stays as
+recorded.
+
+**Answer: Phase 3 comparison gate FAIL under protocol v2 (B v2 vs A), on the saved, H1 and H2 sets, both repeats.**
+The v1 verdicts are printed beside it and also FAIL:
+
+| Gate (decided on saved AND H1 AND H2) | saved | H1 | H2 | verdict |
+|---|---|---|---|---|
+| **B v2 vs A, protocol v2 (decides)** | FAIL | FAIL | FAIL | **FAIL** |
+| B v1 vs A, protocol v2 (metric relief only) | FAIL | FAIL | FAIL | FAIL |
+| B v2 vs A, protocol v1 | FAIL | FAIL | FAIL | FAIL |
+| B v1 vs A, protocol v1 (as `phase3_surface_001`) | FAIL | FAIL | FAIL | FAIL |
+
+Gate parts are the same on every set. The per-case "B worse" lists are in `tables_001.md`.
+
+| Gate part | B v2, protocol v2 | B v1, protocol v2 |
+|---|---|---|
+| not worse than A on any `GATE_METRICS_V2` metric | FAIL | FAIL |
+| better current-space P95 in every case | FAIL | FAIL |
+| better coverage in S4 and S7 | PASS | PASS |
+| better topology in ≥ 1 case and never worse | FAIL | saved / H1 PASS; H2 FAIL |
+
+### R.1 What B v2 is, and how it was frozen
+
+- **Code.** New module [`cut_aware_surface_v2.py`](../../src/robotic_cutting_sim/cut_aware_surface_v2.py), class
+  `CutAwareSurfaceV2(CutAwareSurface)`. `cut_aware_surface.py` (v1) is **byte-identical**: git blob `3dccc993…`, the
+  same as HEAD. B v1 stays the default for every existing record.
+- **The fixes as implemented.** Everything is render geometry only: no target plane, no particle edit, no face on a
+  non-conflicting link. Every activation is counted in `info['v2']`.
+  - **M1:** the exact box-constrained minimiser of v1's truncated QEF, by enumerating all 26 faces, edges and
+    vertices of the cell. Where v1's solution lies inside the cell it is kept bit-identical.
+  - **M2:** a region holding both side digits moves its representative along the QEF null space, in plane, toward
+    the mean of its code-0 hinge corners (fraction 1.0, limited to the cell).
+  - **M3:** a triangle is flipped when `n_cur · (cof F_side n_ref) ≤ 0`. Flipped representatives are re-embedded by
+    `lsq_affine`, then translation-only; nothing is done where det F ≤ 0.
+  - **M4:** an uncut link is flagged when its length is > 2 s **and** `|dx − F̄ dX|` > s. The thresholds are those of
+    review §2; protocol v2 declares none, so they were frozen with the code. Both endpoints of a flagged link become
+    labelled particle cells (`unlabelled_separation_v1`: a cube of volume (m/ρ) det F with the polar rotation of F).
+    Their lattice sites become absent: boundary faces with `cell_face_v1`, and a conflicting link keeps its cut face
+    on the kept side.
+  - **M5:** a separately labelled variant, `cut_aware_surface_v2_position_consistent` (`lsq_affine` where
+    |det F_lsq / det F − 1| > 0.10). Report only.
+- **CPU tests.** [`tests/test_cut_aware_surface_v2.py`](../../tests/test_cut_aware_surface_v2.py), 23 tests on
+  synthetic data:
+  - v2 without fixes equals v1;
+  - v2 equals v1 bit for bit on uncut, affine and rotated-frame states;
+  - M1 matches `scipy.optimize.lsq_linear` (BVLS) on the same truncated QEF;
+  - M2 moves in plane toward the hinge;
+  - M3 detects and repairs an F-extrapolation fold, and never acts where det F ≤ 0;
+  - M4: tear, F-recorded stretch, kept-side cut face, and disabled without F;
+  - M5;
+  - incremental update equals full rebuild;
+  - inputs are never modified.
+
+  The v1 suites are unchanged and pass: 113 passed across `test_cut_aware_surface`, `_v2`, `test_surface_metrics_v1/v2`
+  and `test_wp12_phase3_driver`; `test_repo_naming` passes 2.
+- **Freeze.** `artifacts/wp12/phase3_surface_002/METHOD_FROZEN.txt` was written before any physical-state
+  measurement. It records:
+  - B v2 sha256 `b078c2b4…`;
+  - the v1 file unchanged, with an empty `git diff` (sha256 of the empty diff `e3b0c442…`);
+  - the frozen parameters.
+
+  B v2 was not changed afterwards: the module hash matches at the end of the run. Pre-freeze development used only
+  analytic planes and random synthetic fuzz states.
+- **Protocol record.** `protocol_record.json` was written before any measurement. It holds:
+  - protocol v1 sha256 `afc30c75…` (b31553d) and v2 sha256 `d73c95b2…` (9157725), both unchanged since their freeze;
+  - the case list;
+  - the held-out offsets recomputed from the seeds, which match the protocol.
+- **Disclosure: `protocol_record_addendum_001.json`.** One smoke evaluation of saved S1_G3b r0 into a scratch
+  directory (not an artifact) ran after the record. It showed that my v2 reading counted M4 particle-cell vertices
+  as cut-face vertices, which review §2 M4 forbids. Before the official evaluations, the addendum declared two
+  things:
+  1. particle-cell vertices are removed from the v2 cut-face rows (P1–P3 and the reference rows); they stay in P6,
+     topology and volume, and in every protocol v1 reading;
+  2. a labelled **diagnostic ablation** `cut_aware_surface_v2_ablation_no_M4`: the same frozen class with
+     `fixes=('M1','M2','M3')`. It is report-only, never gated, and never a method.
+
+  S0 and G2 were evaluated before the addendum, so they have no ablation column.
+
+### R.2 Commands, environment, wall times
+
+TMPDIR=/mnt/data/ningan/tmp; device cuda:0 (RTX 5090, shared with other users' jobs, which inflates the wall times); Warp 1.17.0; Newton 1.6.1.
+
+```
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py record
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py static   --device cuda:0                 # S0, G2: 17 s
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py heldout  --variant H1 --device cuda:0    # physics, recorder on
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py heldout  --variant H2 --device cuda:0
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py evaluate --set saved|H1|H2 --device cuda:0
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py gate                                      # summary_002.json (summary_001 = saved-only, provisional)
+.venv/bin/python scripts/run_wp12_phase3_surface_v2.py figures
+.venv/bin/python scripts/summarize_wp12_phase3_v2.py --run artifacts/wp12/phase3_surface_002 --summary summary_002.json \
+    --evidence docs/evidence/wp12/phase3_surface_002.json                                         # tables_001.md
+```
+
+**Held-out physics.**
+- Seeds 43/44 (CUT-01-R) and 3101–3109 / 3201–3209; offsets as protocol v2 `held_out_states`.
+- Two GPU repeats per (case, variant), recorder on.
+- 36 physical runs + 2 × 2 × 5 S9 controls; no run failed.
+- Physics wall time:
+  - CUT-01-R 381–542 s;
+  - S6 160–194 s;
+  - S5 89–98 s;
+  - others 11–90 s.
+- S8 uses `drive_blade(chunk=40)`, because the recorder hook can snapshot only at chunk ends. The chunk is
+  graph-launch granularity, not a physics parameter. This gives 203 (H1) / 178 (H2) dense frames at 4 ms.
+
+**Evaluation.** Every repeat was bitwise reproducible for B on the same state. Analysis took:
+- 7–15 s per final frame for all five meshes;
+- dense S8 about 4 min per repeat at about 1.1 s per frame.
+
+### R.3 Zero-physics controls (rows unchanged from v1)
+
+| Control | A | B v1 | B v2 |
+|---|---|---|---|
+| S0 static box | FAIL | PASS | **PASS**, bit-identical to B v1 |
+| S9, five controls × 2 repeats × {saved re-run at the v1 offsets, H1, H2} | PASS | PASS | **PASS**: 0 events, 0 cut faces, mesh = uncut extraction |
+| S9 G4 hold of S4: saved, H1 | — | PASS | PASS |
+| S9 G4 hold of S4: H2 | — | PASS | **FAIL** (see R.5 (d)) |
+
+G2 cut-face max, s (numeric tolerance 1e-8 m; limit 0.25):
+
+| Plane | B v1 | B v2 |
+|---|---|---|
+| n30_xz | 0.059 | 0.000 |
+| n45_xy | 0.000 | 0.000 |
+| n123 | 0.401 FAIL | **0.281 FAIL** |
+| axis_x | 0.000 | 0.000 |
+| n213 (held out) | 0.454 FAIL | **0.265 FAIL** |
+| n60_xz (held out) | 0.415 FAIL | **0.237 PASS** |
+
+M1 reduces the crease error by 30–43 %, but the cut/boundary crease line misses the dual cell. The constrained QEF
+optimum therefore still sits 0.24–0.28 s from the cut plane, so **G2 stays FAIL for B v2** (n123, n213). A's G2 is FAIL
+on every plane.
+
+In G2, B v2 midpoint fallback passes every plane, and B v1 midpoint fallback fails n30 (0.509, as in `phase3_surface_001`).
+
+### R.4 Threshold verdicts: counts over 9 cases × 2 repeats
+
+Per-case r0/r1 tables are in `tables_001.md`. Each cell lists the count per verdict; INC = INCONCLUSIVE_REFERENCE.
+
+| Set | Protocol | A | B v1 | B v2 | B v2 pc (label) | B v2 no-M4 (ablation) |
+|---|---|---|---|---|---|---|
+| saved | v1 | 18 FAIL | 2 PASS, 16 FAIL | 2 PASS, 16 FAIL | 2 PASS, 14 FAIL, 2 NOT_RUN | 2 PASS, 14 FAIL, 2 NOT_RUN |
+| saved | v2 | 18 FAIL | 4 PASS, 8 INC, 6 FAIL | 6 INC, 12 FAIL | 6 INC, 12 FAIL | 4 PASS, 8 INC, 6 FAIL |
+| H1 | v1 | 18 FAIL | 4 PASS, 14 FAIL | 4 PASS, 14 FAIL | 2 PASS, 16 FAIL | 2 PASS, 14 FAIL, 2 NOT_RUN |
+| H1 | v2 | 18 FAIL | 3 PASS, 6 INC, 9 FAIL | 6 INC, 12 FAIL | 6 INC, 12 FAIL | 3 PASS, 6 INC, 9 FAIL |
+| H2 | v1 | 18 FAIL | 4 PASS, 14 FAIL | 4 PASS, 14 FAIL | 2 PASS, 16 FAIL | 2 PASS, 14 FAIL, 2 NOT_RUN |
+| H2 | v2 | 18 FAIL | 4 PASS, 6 INC, 8 FAIL | 2 PASS, 6 INC, 10 FAIL | 2 PASS, 6 INC, 10 FAIL | 4 PASS, 8 INC, 6 FAIL |
+
+Which case-repeats pass:
+
+- **B v1, protocol v2:** S1_G3a (saved 2/2, H1 1/2, H2 2/2) and S4 (2/2 on every set).
+- **B v2, protocol v2:** only H2 S4 (2/2). There M4 did not fire and M2 moved all 29 tip regions.
+- **B v2, protocol v1:** S7 passes on saved and H1 (the M4 chip, see R.5 (c)). S8 passes on H1 and H2, as does B v1.
+
+INC rows:
+- **P4:** the det F / position precondition is INCONSISTENT in every state except G3a and S4, on all three sets.
+  Every current-volume row there reads INCONCLUSIVE_REFERENCE, never PASS.
+- **P7:** the S7 chip row is INCONCLUSIVE everywhere: the chip components are unverified or inconsistent.
+
+### R.5 Attribution: which fix did what (B v2 activations are identical in both repeats ± 2)
+
+**(a) M4 fires in every through-cut, not only on the S7 tear. This is the dominant effect and the main reason B v2
+is worse than B v1.**
+
+M4 flagged links / particle cells:
+
+| Case | saved | H1 | H2 |
+|---|---|---|---|
+| G3a | 140 / 276 | 140 / 276 | 140–144 / 276–284 |
+| G3b | 27 / 53 | 33 / 65 | 35 / 66 |
+| S3 | 29 / 50 | 27–28 / 47–49 | 74 / 128 |
+| S4 | 48 / 96 | 46 / 92 | **0** |
+| S5 | 97 / 167 | 105 / 185 | 621 / 1,107 |
+| S6 | 2 / 4 | 1 / 2 | 595 / 1,140 |
+| S7 | 134 / 124 | 134 / 124 | 165–167 / 190–192 |
+| S2, S8 | 0 | 0 | 0 |
+
+- **Cause.** The flagged links are near-cut links 2.15–2.6 s long and 1.9–2.5 s inconsistent with F (saved G3b).
+  This is exactly the near-cut layer where the positions disagree with F (review F3), so the second test (`|dx − F̄
+  dX|` > s) does not separate a real tear from that layer.
+- **Consequences**, each measured:
+  - `shells = components` FAIL in every case where M4 fires (the cells are extra shells of their component), which
+    makes the topology part of the gate worse than A;
+  - unexplained P6 pairs of 1,000–28,000: overlapping cells. On the lattice faces alone, B v2's raw pairs are
+    comparable to the ablation's (G3a 0 against 0; G3b 64–97 against 85–103);
+  - reference P95 0.77–1.29 s instead of 0.00–0.13 s. The cavity boundary faces of removed sites sit next to the
+    cut face and are classified as cut-face vertices;
+  - S4 (saved, H1): **M4 converts both tip sides into cells.** 24 deepest conflicting links lose their cut face, so
+    `slit_extent` and `tip_representatives_shared` FAIL and M2 never activates (0 mixed regions).
+- **The no-M4 ablation** reproduces B v1 to within the band everywhere except S4, where M2 acts.
+
+**(b) M2 works when it can act.**
+
+| S4 state | Regions moved | Current P95 (s) | Matched normal P95 | v1 triangle normal P95 | S4 v2 rows |
+|---|---|---|---|---|---|
+| saved, ablation | 25 / 25, 1.00 mm each | 0.96 → **0.44** | 27.8° → 14.8° | 80.6° → 73.5° | all pass |
+| H1, ablation | — | 0.88 → **0.45** | 34.7° → 12.4° | — | — |
+| H2, B v2 itself (smaller 4 mm notch, M4 off) | 29 / 29 | 0.37 → 0.36 | 9.9° → 15.7° | — | 2/2 PASS |
+
+With fraction 1.0, M2 puts the tip vertex on the hinge (code-0) row: the far end of the review's "≤ 1 link"
+uncertainty (visible in `phase3v2_saved_S4_partial_A_B1_B2.png`). The S4 normal rows stay report-only, as declared.
+
+**(c) S7 chip: M4 does what the review intended.**
+- The membrane across the scattered chip particles is replaced by labelled cells (`phase3v2_H2_S7_chip_A_B1_B2.png`).
+- The P7 lattice-faced chip volume error falls from 4.71 (B v1) to **0.24** on saved and H1 (70 cell particles
+  excluded as "by construction"). On H2 it falls from 0.83–0.85 to 0.82–0.83 (138 cells).
+- The P7 row still reads INCONCLUSIVE_REFERENCE everywhere: the chip fails the P4 precondition.
+- Under protocol v1, B v2 passes S7 on saved and H1.
+
+**(d) M4 is position-dependent, so B v2's topology can change at a fixed code state.**
+- The H2 S4 armed hold has 0 events and 0 new digits, but M4 flags 4 particles by the hold end.
+- Cut triangles go 448 → 440 and the topology hash changes: **S9 G4 hold FAIL (2/2)**.
+- B v1 passes the hold. This violates the review's "must not move any tip on a closed (G4 hold) state".
+
+**(e) M1:** 2–140 representatives are constrained per state (G3b 52–87, S3 11–24, H2 S5 139–140, H2 S4 14, S7 2;
+0 elsewhere). It is the only fix acting on G2. On the physical states its effect is within the band of B v1; the ablation equals B v1 there.
+
+**(f) M3 rarely acts and does not remove the folds.**
+
+| State | Flipped triangles before → after | Representatives re-embedded (LSQ, translation-only) | Intra-shell pairs, ablation vs B v1 |
+|---|---|---|---|
+| saved G3b | 53 → 43 | 138, 103 | 90 vs 85 |
+| H2 S5 | 333 → 333 | — | — |
+| S3 (saved) | 11 → 15 | — | 46 vs 27 |
+| S3 (H1) | 8 → 11 | — | — |
+
+- Re-embedding sometimes adds flips (S3 above).
+- Most of v1's intra-shell intersections are not orientation flips, so a flip guard cannot remove them.
+- The unexplained P6 pairs of the ablation equal or exceed B v1's.
+
+**(g) M5 (labelled):** worse than B v2 on current P95 in most cases (for example G3a 0.89 against 0.71, S2 0.74
+against 0.54) and adds intersections. It is not recommended.
+
+### R.6 Metric relief (B v1 under v2 against v1) and held-out against saved
+
+- **Protocol v2 removes the triangle-normal failures.** B v1's matched-scale normal is better than A's in most
+  cases (for example G3b 8.4° against 14.7°; v1 triangle normals 41° against 19°).
+- **It also removes the S6 region-rule artefact.** S6 current P95 is NOT_DIFFERENT on saved and B_BETTER on H1/H2,
+  where v1 read B_WORSE on saved and H1.
+- **B v1 still fails the v2 gate**, on:
+  - unexplained intra-shell intersections (folds) in G3b, S3–S7;
+  - S4 current P95 (saved, H1), i.e. the tip-in-notch problem;
+  - S7 maxima;
+  - S8 current P95 on H1/H2;
+  - faces nearer another component without physical proximity (S5, S6, S8).
+- **Held-out against saved.** Verdicts and B activations agree between saved and H1, which share the geometries.
+  - H2 (new geometries) is harder for B v2: M4 fires on 1,100+ particles in S5 (75° crossing cut) and S6 (20 mm
+    pitch).
+  - H2 is easier for B v1: current P95 B_BETTER in 10 of 12 comparisons (S2 not different, S8 B_WORSE).
+  - The repeats agree on every verdict except B v1 / ablation H1 S1_G3a under v2 (PASS r0, FAIL r1).
+- **P5 (dense S8).**
+  - H1: 201 of 201 4 ms pairs eligible; H2: 176 of 176.
+  - B v1 and B v2 max P95 0.0008 s against A 0.0043–0.0049 s (limit 0.05).
+  - The pushed piece moved 3.9 s cumulative P95 and recontacted to a 0.63 mm gap, so the premise is met.
+  - Saved S8 had 5 eligible hold pairs (the push frames are not slow).
+  - Topology hash and shell set were constant over all S8 frames for B v1 and B v2 (M4 never fired in S8).
+
+### R.7 Timing (A = particle_surface_v1, B v2)
+
+Extraction wall time per final frame, from `reports[*].extract_wall_s`:
+
+| Method | Runs on | Median (s) | Sum over 18 frames per set (s) |
+|---|---|---|---|
+| A | cuda:0, incl. GPU | 0.19–0.27 | 5.8–8.6 |
+| B v1 | CPU NumPy | 0.12 | 3.1 |
+| B v2 | CPU NumPy | 0.15–0.17 | 3.8–4.0 |
+
+- B v2 is 1.2–1.9× B v1: the M4 detector, M3 recheck and particle cells.
+- B v2 remains faster than A in every case except CUT-01-R, where it takes 0.61–0.64 s against A's 0.40–0.51 s.
+- No fresh-process perf stage was run for v2.
+
+### R.8 Failures kept, and what follows
+
+- **Kept, never overwritten:**
+  - every repeat and every FAIL / INCONCLUSIVE row in `artifacts/wp12/phase3_surface_002/` (`eval_{static,saved,H1,H2}`,
+    `heldout_{H1,H2}`);
+  - `summary_001.json` (provisional, saved-only) and `summary_002.json` (final).
+  - No ERROR file was produced.
+- **B v2 as frozen is not an improvement over B v1.** It is worse on most current-space and topology rows, because
+  M4's tear test cannot tell an MPM tear from the near-cut position/F collapse (F3). It also fails S4 provenance on
+  saved/H1 and the G4 hold on H2. No code bug was found; B v2 behaves as specified.
+- **Not done (would be method changes, not bugs).** A v2a that restricts M4, for example to particles whose links are
+  inconsistent on most sides or to pieces separated from the main body, or that excludes the conflicting-link layer,
+  would be designed against these states. Under the rules it needs a new frozen proposal and fresh held-out states.
+  It should be decided at the Phase 4 / xhigh level together with F3/F7. **The ablation is the evidence:**
+  - M1+M2+M3 equals B v1 except at the S4 tip, where M2 helps;
+  - M3 is ineffective;
+  - M1 alone cannot pass G2.
+- **Honest claim.** The Phase 3 gate is FAIL under protocol v1 and under protocol v2. B v1 remains the best B; B v2
+  is a labelled, opt-in experiment. B is render geometry from solver state, not the contact surface.
+- **Evidence and figures.**
+  - Evidence: [`phase3_surface_002.json`](../evidence/wp12/phase3_surface_002.json).
+  - Tables: `artifacts/wp12/phase3_surface_002/tables_001.md`.
+  - Figures in `docs/media/wp12/phase3/` (`index_phase3v2.json`). Each figure's rows are A / B v1 / B v2 /
+    no-M4 ablation:
+    - `phase3v2_saved_{S4_partial,S7_chip,S1_G3b_oblique,S6_slices}_A_B1_B2.png`;
+    - `phase3v2_H1_S4_partial_A_B1_B2.png`;
+    - `phase3v2_H2_{S4_partial_yaw10,S7_chip,S1_G3b_yaw35,S5_cross75}_A_B1_B2.png`.
