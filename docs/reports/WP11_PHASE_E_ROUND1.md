@@ -604,3 +604,112 @@ the list above are addressed by `d3f94e9` and `2b4f0a7`. Remaining:
 - the Test C missing-surface quality anomaly;
 - persisting `surface_info` skip counts in the recording;
 - repeated seeds.
+
+### SLICE-PUSH live_004 (supplementary controller variant, ADR 0016 wrist-depth relocation)
+
+**Declarations.**
+- Stage: [`configs/wp11/generalization_round1_live_004.json`](../../configs/wp11/generalization_round1_live_004.json)
+  (`c29f02a`, committed and pushed before any live_004 run).
+- Design: [ADR 0016](../adr/0016-configured-perception-relocation.md) (`0e96f07`).
+- Evidence: [`docs/evidence/wp11/phaseE_round1_live_004.json`](../evidence/wp11/phaseE_round1_live_004.json).
+
+**What changes, and what does not.**
+- Inherited from live_001: the builder, the goal JSON (only the duration differs), `goals.evaluate_goal` with every
+  threshold, the classes, the measured edge feedback and the default C2 preflight.
+- The only new element is `planner_options.perception = wrist_depth_relocate_v1`, plus the longer plan it gives under
+  the duration rule.
+- The round-1 kinematic CUTTING_FAILUREs (5/5) and the live_001 s1301 CUTTING_FAILURE stay as recorded above. live_004
+  is a separate, labelled controller-variant result, and nothing is rescored.
+
+**Why the ADR 0009 poses were not reused.** On the live_001 s1301 recording, the v5 wrist D405_0 sits about 113 mm
+above, 174 mm −y and 45 mm −x of the edge, looking along local +y. From the cut-start settles:
+- the +x end face is out of the image (row −14);
+- the −x end belongs to the left piece (−1.23 mm);
+- the kerf face reads the blade-deformed layer (+0.53 mm error).
+
+ADR 0016 therefore adds a planned survey pose: the edge in the cut orientation at local (L/2 + 10 mm, 0, top + 8 mm).
+It is visited once before cut 0 (calibration) and once after cut 0. The shift is the difference of the +x end-face
+positions measured with the unchanged `wrist_depth_survey.end_face_x`. It is applied to cut 1 and to the push; HOME and
+the survey poses are not shifted.
+
+**Inputs.** The hook reads only deployable inputs:
+- wrist depth with K and T_world_camera;
+- the nominal edge from joint state, used for blade exclusion;
+- the scene config.
+
+The measured tool-edge pose stays the privileged tracking feedback, as in live_001, and the hook never reads it. The
+oracle values below are report-only.
+
+| Seed | Measured shift (wrist depth) | Actual shift (oracle, report-only) | Cut 0 / cut 1 label boundary | Frozen statistic | Pieces | Push / others | Grasp (slip, rotation) | `home_outcome` | **Class** | Wall (episode / process) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| s1301 | **+1.158 mm** (40 / 39 lines, spread 9 / 29 µm) | +1.149 mm, cut-1 layers (error **+0.009 mm**); +1.150 mm, end layer | −28.00 / **+24.00 mm** (declared −28 / +24) | 1.5 mm ≤ 2 mm | 3 / 3 | 16.7 mm (≥ 10) / 0.04 mm (≤ 2) | HOLDING, 0.95 µm, 0.095 mrad | PASS | **TASK_SUCCESS** | 1257 s / 1320 s |
+| s1302 | — | — | — | — | — | — | — | — | **NOT_RUN** (disk floor, never launched) | — |
+| s1303 | — | — | — | — | — | — | — | — | **NOT_RUN** (disk floor, never launched) | — |
+
+**s1301 details** (`artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/`: `run_001`, `analysis_001`,
+`perception_001.json`):
+- **Measurement.** The calibration frame was taken at t = 4.70 s and the survey frame at t = 17.74 s. Each frame
+  timestamp equals its observation timestamp.
+- **Applied shift.** The world shift was (+1.151, −0.127, 0) mm, the bar's local +x at a yaw of −6.3°. It was applied to
+  the 13 waypoints from APPROACH:cut1 to RETRACT:move1.
+- **Cut 1 position.** The measured edge was +1.156 mm (mean) from the declared world plane during cut 1, as intended:
+  the relocation itself. In the reference frame cut 1 landed on the declared plane. The material had shifted +1.165 mm
+  before cut 1; in live_001 the shift was +1.16 mm and the cut landed at +23.00.
+- **Plan end.** The live plan ended at 35.06 s against 34.44 s ideal, a lag of 0.62 s.
+- **IK.** `ik_status` was ok on all 1950 task steps, with 0 workspace clamps.
+- **Contacts and clearance.** There were 0 unintended contacts, and the measured-path C2 audit PASSed.
+- **Run.** Device cuda:1, run directory 1.43 GB, git `c29f02a` (clean detached worktree
+  `/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a`), seed 42.
+
+**s1302 and s1303: NOT_RUN.** Free space on `/mnt/data` fell from 23.0 GB to 15.4 GB while s1301 ran. s1301 wrote
+1.43 GB, and other agents wrote the rest concurrently. The queue then refused the next launch under the declared
+policy: 15.4 GB minus the 1.6 GB estimate is below the 15 GB floor. Neither seed was launched, so neither is a retry
+case. Both can be run later from the same commit with:
+
+    cd /mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a && TMPDIR=/mnt/data/ningan/tmp .venv/bin/python \
+        scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json queue \
+        --root artifacts/wp11/phaseE/round1_live_004 --queue-log artifacts/wp11/logs/phaseE_live004_queue_002.log \
+        --only E1_SLICE_PUSH_s1302 E1_SLICE_PUSH_s1303
+
+**Pre-run checks.**
+- **CPU C2 preflight.** The full hooked live plans PASSed for all three seeds before the declaration. The runner
+  repeated the check for s1301 before launch, and it PASSed.
+- **CPU tests.**
+  - The new `tests/test_perception_relocate.py` has 20 tests. They cover:
+    - the hook is inert when not requested, and the live_001 task id is reproduced;
+    - with the hook, the plan is the default plan plus the survey waypoints;
+    - eligibility errors;
+    - synthetic-depth shift recovery within 0.1 mm, including a +18° yaw;
+    - invalid, stale or missing frames apply no shift;
+    - runner wiring.
+  - The live_004 declaration test passes.
+  - The existing pin suites pass unchanged (`.venv/bin/python -m pytest` exit 0, 305 passed):
+    `test_wrist_depth_survey`, `test_controller_path_v2`, `test_scene_goal_config`, `test_generalization_round1*`,
+    `test_wp11_phase_d`, `test_wp11_phase_c5b`, `test_blademaster_demo*`, `test_policy_ready_env`, and
+    `test_wp11_default_preflight_staged`.
+
+**Commands.**
+
+    .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json \
+        queue --root artifacts/wp11/phaseE/round1_live_004 --queue-log artifacts/wp11/logs/phaseE_live004_queue_001.log
+    # runner argv (attempt_001.json): run_wp10_live.py --runtime isaac_sim --scene/--goal <inputs> --planner-options
+    #   '{"max_rotation_deg": 1.0, "max_translation_m": 0.001, "perception": "wrist_depth_relocate_v1"}' --controller scripted
+    #   --edge-feedback measured --hold-until-time-limit --return-home --record-cameras --overview-camera --record-every 10
+    #   --oracle-stride 49 --steps 1950 --gpu 1 --seed 42
+    .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json \
+        analyze --sample-dir artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301 --run run_001 \
+        --out artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/analysis_001
+    .venv/bin/python scripts/analyze_perception_relocate.py --sample-dir artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301 \
+        --planner-options '{"max_rotation_deg": 1.0, "max_translation_m": 0.001, "perception": "wrist_depth_relocate_v1"}' \
+        --out artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/perception_001.json
+
+**Media.** These are from s1301, the only TASK_SUCCESS. They were rendered with `scripts/render_demo_episode.py`
+(K = 2), and the render directory is `round1_live_004/render_E1_SLICE_PUSH_s1301_001`:
+- [demo.gif](../media/wp11/slice_push_relocate/demo.gif) (3.5 MB);
+- [demo.mp4](../media/wp11/slice_push_relocate/demo.mp4);
+- [poster.png](../media/wp11/slice_push_relocate/poster.png).
+
+The temporary frames were rendered on the root disk to keep `/mnt/data` usage minimal.
+
+**Scope.** This is one live seed, with no repeat statistics. The relocation is validated live for one yaw (−6.3°); the
++18° yaw is covered only by synthetic CPU tests. The material is provisional and uncalibrated.

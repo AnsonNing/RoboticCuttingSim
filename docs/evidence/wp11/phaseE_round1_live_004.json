@@ -1,0 +1,1481 @@
+{
+ "schema": "rcs_generalization_live_evidence_v1",
+ "round_id": "wp11_phaseE_round1",
+ "stage_id": "wp11_phaseE_round1_live_004",
+ "live_config": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a/configs/wp11/generalization_round1_live_004.json",
+ "generated": "2026-10-30T09:05:21.617584+09:00",
+ "command": [
+  "scripts/run_generalization_live.py",
+  "--live-config",
+  "configs/wp11/generalization_round1_live_004.json",
+  "summarize",
+  "--root",
+  "artifacts/wp11/phaseE/round1_live_004",
+  "--out",
+  "artifacts/wp11/phaseE/round1_live_004/summary_001.json"
+ ],
+ "root": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a",
+ "label": "LIVE Native results (runtime_source live_isaac_sim): Isaac Sim 6.2 Kit/PhysX Franka articulation with the physically grasped ruler_knife_v2_y (two-finger physical_grasp, pregrasped at HOME) + retained TLMPM material (law 8, 1 mm particles, 4 mm grid, 0.1 ms) + RTX cameras. Material parameters are provisional and uncalibrated. One seed per sample (no repeat statistics). No Lab parity.",
+ "counts": {
+  "SLICE_PUSH": {
+   "SCENE_INFEASIBLE": 0,
+   "IK_FAILURE": 0,
+   "GRASP_FAILURE": 0,
+   "CUTTING_FAILURE": 0,
+   "TASK_SUCCESS": 1,
+   "NOT_RUN": 2
+  }
+ },
+ "totals": {
+  "SCENE_INFEASIBLE": 0,
+  "IK_FAILURE": 0,
+  "GRASP_FAILURE": 0,
+  "CUTTING_FAILURE": 0,
+  "TASK_SUCCESS": 1,
+  "NOT_RUN": 2
+ },
+ "held": {
+  "E1_SLICE_PUSH_s1304": "not nominated for this stage; not run",
+  "E1_SLICE_PUSH_s1305": "not nominated for this stage; not run",
+  "other_round1_seeds": "not part of this stage"
+ },
+ "samples": [
+  {
+   "sample_id": "E1_SLICE_PUSH_s1301",
+   "family": "SLICE_PUSH",
+   "seed": 1301,
+   "priority": 1,
+   "purpose": "live_001 failure seed (cut 1 1 mm short after a 1.16 mm slide), with the ADR 0016 relocation",
+   "kinematic": {
+    "class": "CUTTING_FAILURE",
+    "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+    "task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-db93fecd",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.00400000044703484,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019902379615071544,
+       "other_piece_displacement_max_m": 2.005846844012891e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.00400000044703484
+    },
+    "device": "cuda:0",
+    "scope": "KINEMATIC ideal tracking (round 1 stage 2), default planner limits"
+   },
+   "attempts": [
+    {
+     "sample_id": "E1_SLICE_PUSH_s1301",
+     "attempt": 1,
+     "gpu": 1,
+     "device": "cuda:1",
+     "pid": 2310634,
+     "command": [
+      ".deps/isaacsim-venv/bin/python",
+      "scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/inputs/scene.json",
+      "--goal",
+      "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/inputs/goal.json",
+      "--planner-options",
+      "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"perception\": \"wrist_depth_relocate_v1\"}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "49",
+      "--steps",
+      "1950",
+      "--gpu",
+      "1",
+      "--seed",
+      "42",
+      "--out",
+      "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001"
+     ],
+     "cwd": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a",
+     "env": {
+      "OMNI_KIT_ACCEPT_EULA": "YES",
+      "PYTHONUNBUFFERED": "1",
+      "TMPDIR": "/mnt/data/ningan/tmp"
+     },
+     "log": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a/artifacts/wp11/logs/phaseE_live004_E1_SLICE_PUSH_s1301_001.log",
+     "started": "2026-10-30T08:40:19.691960+09:00",
+     "gpu_free_mib_at_launch": 32050,
+     "other_active_jobs_at_launch": [],
+     "disk_free_gb_before": 23.028158464,
+     "git_sha": "c29f02abdef593e8419b029654d34aef8e23e216",
+     "git_dirty": false,
+     "root": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a",
+     "returncode": 0,
+     "wall_s": 1320.0056427149975,
+     "ended": "2026-10-30T09:02:19.718389+09:00",
+     "recorded_control_steps": 2003,
+     "run_dir_bytes": 1431198487,
+     "disk_free_gb_after": 15.398940672,
+     "result_status": "PASS_EXECUTION"
+    }
+   ],
+   "live": {
+    "sample_id": "E1_SLICE_PUSH_s1301",
+    "family": "SLICE_PUSH",
+    "seed": 1301,
+    "run": "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001",
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+    "runtime_source": "live_isaac_sim",
+    "device": "cuda:1",
+    "attempt": {
+     "sample_id": "E1_SLICE_PUSH_s1301",
+     "attempt": 1,
+     "gpu": 1,
+     "device": "cuda:1",
+     "pid": 2310634,
+     "command": [
+      ".deps/isaacsim-venv/bin/python",
+      "scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/inputs/scene.json",
+      "--goal",
+      "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/inputs/goal.json",
+      "--planner-options",
+      "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"perception\": \"wrist_depth_relocate_v1\"}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "49",
+      "--steps",
+      "1950",
+      "--gpu",
+      "1",
+      "--seed",
+      "42",
+      "--out",
+      "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001"
+     ],
+     "cwd": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a",
+     "env": {
+      "OMNI_KIT_ACCEPT_EULA": "YES",
+      "PYTHONUNBUFFERED": "1",
+      "TMPDIR": "/mnt/data/ningan/tmp"
+     },
+     "log": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a/artifacts/wp11/logs/phaseE_live004_E1_SLICE_PUSH_s1301_001.log",
+     "started": "2026-10-30T08:40:19.691960+09:00",
+     "gpu_free_mib_at_launch": 32050,
+     "other_active_jobs_at_launch": [],
+     "disk_free_gb_before": 23.028158464,
+     "git_sha": "c29f02abdef593e8419b029654d34aef8e23e216",
+     "git_dirty": false,
+     "root": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a",
+     "returncode": 0,
+     "wall_s": 1320.0056427149975,
+     "ended": "2026-10-30T09:02:19.718389+09:00",
+     "recorded_control_steps": 2003,
+     "run_dir_bytes": 1431198487,
+     "disk_free_gb_after": 15.398940672,
+     "result_status": "PASS_EXECUTION"
+    },
+    "task_id_recorded": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-a17dd6c4",
+    "task_id_recompiled_cpu": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-a17dd6c4",
+    "task_id_match": true,
+    "kinematic_task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-db93fecd",
+    "task_outcome": {
+     "verdict": "PASS",
+     "integrity_checks": {
+      "initial_codes_zero": true,
+      "initial_continuous_graph": true,
+      "persistent_history_no_digit_rewrites": true,
+      "valid_digit_values": true,
+      "reference_matches_scene_sampler": true,
+      "reference_mass_budget": true,
+      "complete_episode": true
+     },
+     "outcome_checks": {
+      "step_0_slice_two": true,
+      "step_1_push_right": true
+     },
+     "failed_checks": [],
+     "outcome_metrics": null,
+     "quality": {
+      "status": "REPORTED_NOT_SCORED",
+      "0:slice_two": {
+       "plane_location": [
+        {
+         "plane": 0,
+         "origin_local_m": [
+          -0.028,
+          0.0,
+          0.0
+         ],
+         "normal_local": [
+          1.0,
+          0.0,
+          0.0
+         ],
+         "grid_aligned": true,
+         "actual": {
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 1497600,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000003129243891
+         },
+         "ideal_geometric_label": {
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 1497600,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000003129243891
+         },
+         "frozen_2mm_statistic_m": 0.0015000003129243891,
+         "frozen_bound_m": 0.002,
+         "rule": "frozen midpoint statistic <= plane_error_bound_m",
+         "pass": true
+        },
+        {
+         "plane": 1,
+         "origin_local_m": [
+          0.024,
+          0.0,
+          0.0
+         ],
+         "normal_local": [
+          1.0,
+          0.0,
+          0.0
+         ],
+         "grid_aligned": true,
+         "actual": {
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 1497600,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000372529104
+         },
+         "ideal_geometric_label": {
+          "cross_component_reference_node_count": 54,
+          "severed_particle_pair_node_incidences": 1497600,
+          "maximum_reference_midpoint_plane_distance_m": 0.0015000000372529104
+         },
+         "frozen_2mm_statistic_m": 0.0015000000372529104,
+         "frozen_bound_m": 0.002,
+         "rule": "frozen midpoint statistic <= plane_error_bound_m",
+         "pass": true
+        }
+       ]
+      },
+      "1:push_right": {
+       "component_mass_fractions": [
+        0.32051282051298646,
+        0.3333333333335121,
+        0.34615384615403777
+       ]
+      }
+     }
+    },
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.0015000003129243891,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.016738518647877256,
+       "other_piece_displacement_max_m": 4.388297877747547e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.0015000003129243891
+    },
+    "home_outcome": {
+     "status": "PASS",
+     "failed_checks": [],
+     "reason": null,
+     "measurement": {
+      "plan_status": "PLANNED",
+      "plan_reason": null,
+      "executed": true,
+      "aborted_reason": null,
+      "grasp_lost": false,
+      "steps": 53,
+      "start_time_s": 39.0,
+      "q_start": [
+       -0.18356038630008698,
+       -0.3412320613861084,
+       -0.0782022774219513,
+       -2.274343729019165,
+       -0.028048083186149597,
+       1.9335836172103882,
+       0.5379523634910583
+      ],
+      "q_home": [
+       -0.0874749943614006,
+       -0.3457081913948059,
+       -0.1642773449420929,
+       -2.275455951690674,
+       -0.05930738523602486,
+       1.9334616661071777,
+       0.5642676949501038
+      ],
+      "end_time_s": 40.06,
+      "duration_s": 1.0600000000000023,
+      "planned_steps": 53,
+      "home_joint_error_max_rad": 0.0004515647888183594,
+      "home_joint_error_rad": [
+       1.1175870895385742e-07,
+       0.0003807246685028076,
+       -3.142654895782471e-05,
+       -0.0004515647888183594,
+       -1.4416873455047607e-06,
+       -0.00014472007751464844,
+       2.8789043426513672e-05
+      ],
+      "tool_translation_error_m": 6.253620131077489e-05,
+      "tool_rotation_error_rad": 0.00011146115356019267,
+      "edge_translation_error_m": 7.089103122638415e-05,
+      "edge_rotation_error_rad": 0.00011146115356018401,
+      "tool_pose_reference": "tool body pose measured right after the reset pregrasp settle",
+      "grasp_slip_max_m": 5.297110832119569e-07,
+      "grasp_rotation_max_rad": 3.2664324264946096e-05,
+      "grasp_slip_final_m": 1.758415352387203e-07,
+      "grasp_rotation_final_rad": 2.7809654224730526e-05,
+      "unintended_tool_contacts_max": 0,
+      "max_tool_contact_penetration_m": 6.765127182006836e-06,
+      "max_material_reaction_force_n": 0.0,
+      "label_changes": 0,
+      "measured_path_clearance_status": "PASS",
+      "measured_path_clearance": {
+       "status": "PASS",
+       "failing": [],
+       "binding": "franka_self_collision",
+       "worst": {
+        "joint_limit_margin": {
+         "slack": 0.7458924770355224,
+         "value": 0.7958924770355225,
+         "threshold": 0.05,
+         "sample": 29,
+         "label": null,
+         "joint": 4
+        },
+        "gripper_pad_clearance": {
+         "slack": 0.095,
+         "value": 0.1,
+         "threshold": 0.005,
+         "sample": 0,
+         "label": null,
+         "pair": [
+          "arm0_left_finger_pad",
+          "static_table"
+         ],
+         "mode": null
+        },
+        "franka1_collision": {
+         "slack": 0.1746932702077839,
+         "value": 0.17969327020778392,
+         "threshold": 0.005,
+         "sample": 4,
+         "label": null,
+         "pair": [
+          "arm0_hand_c",
+          "arm1_link2_c"
+         ],
+         "mode": null
+        },
+        "franka_workcell_collision": {
+         "slack": 0.095,
+         "value": 0.1,
+         "threshold": 0.005,
+         "sample": 0,
+         "label": null,
+         "pair": [
+          "arm0_hand_capsule",
+          "static_table"
+         ],
+         "mode": null
+        },
+        "knife_handle_clearance": {
+         "slack": 0.095,
+         "value": 0.1,
+         "threshold": 0.005,
+         "sample": 0,
+         "label": null,
+         "pair": [
+          "tool_handle",
+          "static_table"
+         ],
+         "mode": null
+        },
+        "blade_collision": {
+         "slack": 0.098,
+         "value": 0.1,
+         "threshold": 0.002,
+         "sample": 1,
+         "label": null,
+         "pair": [
+          "tool_blade",
+          "static_workpiece_base"
+         ],
+         "mode": "free"
+        },
+        "wrist_camera_clearance": {
+         "slack": 0.0516943141876309,
+         "value": 0.053694314187630904,
+         "threshold": 0.002,
+         "sample": 26,
+         "label": null,
+         "pair": [
+          "arm0_d405_Housing",
+          "arm0_link6_c"
+         ],
+         "mode": null
+        },
+        "franka_self_collision": {
+         "slack": 0.02003467832205974,
+         "value": 0.02203467832205974,
+         "threshold": 0.002,
+         "sample": 1,
+         "label": null,
+         "pair": [
+          "arm0_link7_c",
+          "arm0_link5_c2"
+         ],
+         "mode": null
+        },
+        "joint_continuity": {
+         "slack": 0.05265289306640625,
+         "value": -0.00734710693359375,
+         "threshold": -0.06,
+         "sample": 13,
+         "label": null
+        }
+       },
+       "samples": 54,
+       "wall_s": 3.047119973998633,
+       "checker": "C2 GeometryModel (scripts/preflight_wp11_orientations.py)",
+       "thresholds": {
+        "ik_position_m": 0.001,
+        "ik_rotation_rad": 0.01,
+        "ik_active_position_m": 0.0002,
+        "ik_active_rotation_rad": 0.002,
+        "joint_margin_rad": 0.05,
+        "joint_step_rad": 0.06,
+        "env_clearance_m": 0.005,
+        "blade_fixture_clearance_m": 0.001,
+        "blade_free_workpiece_clearance_m": 0.002,
+        "self_clearance_m": 0.002,
+        "distmax_m": 0.1,
+        "max_sample_translation_m": 0.002,
+        "max_sample_rotation_deg": 1.0
+       },
+       "blade_workpiece_modes": {
+        "free": 53,
+        "contact_free": 1,
+        "contact_allowed": 0
+       },
+       "scope": "Geometry only; declared (uncut) workpiece; knife at the nominal grasp; no dynamics or material",
+       "mode": "check-path",
+       "task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-a17dd6c4",
+       "config_sha256": "a17dd6c42ad2f1d0e672a19bdceca560f9e67aff5a1f4760085af060aa90ee91",
+       "checker_build_wall_s": 2.460923192993505,
+       "process": {
+        "command": [
+         "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a/.venv/bin/python",
+         "-I",
+         "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a/scripts/wp11_motion_preflight.py",
+         "--request",
+         "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/runtime/motion_preflight/check-path_20261030_090136_2310634_344650_request.json",
+         "--out",
+         "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/runtime/motion_preflight/check-path_20261030_090136_2310634_344650_receipt.json"
+        ],
+        "wall_s": 5.044695882010274,
+        "request": "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/runtime/motion_preflight/check-path_20261030_090136_2310634_344650_request.json",
+        "receipt": "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/runtime/motion_preflight/check-path_20261030_090136_2310634_344650_receipt.json"
+       }
+      },
+      "measured_q_final": [
+       -0.08747488260269165,
+       -0.3453274667263031,
+       -0.16430877149105072,
+       -2.275907516479492,
+       -0.05930882692337036,
+       1.933316946029663,
+       0.5642964839935303
+      ],
+      "secondary_arm_q_final": [
+       -1.5707963705062866,
+       -0.5,
+       8.928514871886506e-11,
+       -2.0,
+       -1.3133208062732216e-11,
+       1.5,
+       0.7853981852531433
+      ]
+     },
+     "variant": "rotate_then_move"
+    },
+    "episode_state_final": {
+     "state": "FINISHED",
+     "termination_reason": "TIME_LIMIT",
+     "home_outcome": "PASS",
+     "transitions": 7
+    },
+    "state_path": [
+     [
+      null,
+      "RESETTING",
+      0.0,
+      "reset"
+     ],
+     [
+      "RESETTING",
+      "READY",
+      0.0,
+      "reset_complete"
+     ],
+     [
+      "READY",
+      "RUNNING",
+      0.02,
+      "first_step"
+     ],
+     [
+      "RUNNING",
+      "TASK_COMPLETE",
+      39.0,
+      "TIME_LIMIT"
+     ],
+     [
+      "TASK_COMPLETE",
+      "RETRACTING",
+      39.0,
+      "return_home"
+     ],
+     [
+      "RETRACTING",
+      "RETURNING_HOME",
+      39.0,
+      "ROTATE_HAND_DOWN"
+     ],
+     [
+      "RETURNING_HOME",
+      "FINISHED",
+      40.06,
+      "home_PASS"
+     ]
+    ],
+    "task_end_reason": "CONTROLLER_DONE",
+    "policy_final_phase": "done",
+    "plan_timing": {
+     "live_reference_plan_end_s": 34.44,
+     "live_controller_done_s": 35.06,
+     "lag_s": 0.6200000000000045,
+     "duration_s": 39.0
+    },
+    "ik": {
+     "task_steps_ik_not_ok": 0,
+     "task_steps_workspace_clamped": 0,
+     "task_steps_translation_clamped": 94,
+     "task_steps_rotation_clamped": 246,
+     "ik_status_counts": {
+      "ok": 1950
+     }
+    },
+    "grasp_task_phase": {
+     "max_slip_m": 9.456930917400813e-07,
+     "max_rotation_rad": 9.541822951195705e-05,
+     "final_slip_m": 2.4129533420046516e-07,
+     "final_rotation_rad": 2.7757514506780424e-05,
+     "grasp_lost": false,
+     "gates": {
+      "translation_warning_m": 0.002,
+      "rotation_warning_rad": 0.05235987755982988,
+      "translation_loss_m": 0.02,
+      "rotation_loss_rad": 0.5235987755982988
+     },
+     "within_warning_gates": true
+    },
+    "grasp_all": {
+     "max_slip_m": 9.456930917400813e-07,
+     "max_rotation_rad": 9.541822951195705e-05,
+     "final_slip_m": 1.758415352387203e-07,
+     "final_rotation_rad": 2.7809654224730526e-05,
+     "grasp_lost": false,
+     "gates": {
+      "translation_warning_m": 0.002,
+      "rotation_warning_rad": 0.05235987755982988,
+      "translation_loss_m": 0.02,
+      "rotation_loss_rad": 0.5235987755982988
+     },
+     "within_warning_gates": true
+    },
+    "contacts_task_phase": {
+     "unintended_contact_count_max": 0,
+     "steps_with_unintended_contacts": 0,
+     "non_finger_roles_in_contact": {},
+     "tensor_contact_min_separation_m": -6.895512342453003e-06,
+     "tensor_contact_max_penetration_m": 6.895512342453003e-06,
+     "tensor_contact_worst_role": "right_finger",
+     "tensor_contact_worst_phase": "SURVEY_APPROACH:survey0",
+     "grasp_status_steps": {
+      "HOLDING": 1950
+     },
+     "scope": "Native ContactSensor on the tool body (fingers, palm, table, fixture, other) and the tensor contact view (finger/palm pairs); robot links vs workcell are not natively sensed here"
+    },
+    "contacts_all": {
+     "unintended_contact_count_max": 0,
+     "steps_with_unintended_contacts": 0,
+     "non_finger_roles_in_contact": {},
+     "tensor_contact_min_separation_m": -6.895512342453003e-06,
+     "tensor_contact_max_penetration_m": 6.895512342453003e-06,
+     "tensor_contact_worst_role": "right_finger",
+     "tensor_contact_worst_phase": "SURVEY_APPROACH:survey0",
+     "grasp_status_steps": {
+      "HOLDING": 2003
+     },
+     "scope": "Native ContactSensor on the tool body (fingers, palm, table, fixture, other) and the tensor contact view (finger/palm pairs); robot links vs workcell are not natively sensed here"
+    },
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "steps": 436,
+      "armed_steps": 143,
+      "time_s": [
+       5.32,
+       14.02
+      ],
+      "armed_time_s": [
+       8.84,
+       11.68
+      ],
+      "tracking_error_m": {
+       "min": 0.00010256398254860805,
+       "max": 0.0016189721296600095,
+       "mean": 0.0008669757393454096,
+       "p95": 0.0011065999905832305,
+       "max_abs": 0.0016189721296600095,
+       "samples": 436
+      },
+      "material_reaction_armed": {
+       "steps": 143,
+       "blade_force_norm_N": {
+        "min": 0.0,
+        "max": 0.03845880181679016,
+        "mean": 0.010853576475323702,
+        "p95": 0.03049389642111189,
+        "samples": 143
+       },
+       "blade_force_world_mean_N": [
+        -0.007258633344614349,
+        0.0008009209200721895,
+        0.0065415729189440665
+       ],
+       "blade_force_z_N": {
+        "min": -1.2089671486137377e-07,
+        "max": 0.0376140873413533,
+        "mean": 0.0065415729189440665,
+        "p95": 0.02525059011531994,
+        "samples": 143
+       },
+       "total_force_norm_N": {
+        "min": 0.0,
+        "max": 0.03845880181679016,
+        "mean": 0.010853576475323702,
+        "p95": 0.03049389642111189,
+        "samples": 143
+       },
+       "steps_with_blade_force": 101
+      },
+      "measured_edge_signed_distance_from_plane_m": {
+       "min": -7.7413696560537e-05,
+       "max": 0.00010949545194844974,
+       "mean": -1.0094025282047388e-06,
+       "p95": 3.009911279103765e-06,
+       "max_abs": 0.00010949545194844974,
+       "samples": 143
+      },
+      "measured_edge_start_local_m": [
+       -0.027890504548051552,
+       -0.00011902804206936728,
+       0.025026761934243996
+      ],
+      "measured_edge_end_local_m": [
+       -0.028002139477342855,
+       -5.539502496900578e-07,
+       -0.0037734666382276266
+      ],
+      "planned_start_local_m": [
+       -0.027999999999999987,
+       0.0,
+       0.024999999999999998
+      ],
+      "planned_end_local_m": [
+       -0.027999999999999987,
+       0.0,
+       -0.003999999999999993
+      ]
+     },
+     {
+      "op": "cut1",
+      "kind": "through_cut",
+      "digit": 1,
+      "steps": 384,
+      "armed_steps": 143,
+      "time_s": [
+       18.36,
+       26.02
+      ],
+      "armed_time_s": [
+       20.84,
+       23.68
+      ],
+      "tracking_error_m": {
+       "min": 0.00017922002662652294,
+       "max": 0.0017135606052296674,
+       "mean": 0.0008745911332231774,
+       "p95": 0.0011774396042417287,
+       "max_abs": 0.0017135606052296674,
+       "samples": 384
+      },
+      "material_reaction_armed": {
+       "steps": 143,
+       "blade_force_norm_N": {
+        "min": 0.0,
+        "max": 0.038107698056780256,
+        "mean": 0.0066808335079984425,
+        "p95": 0.02444563805725381,
+        "samples": 143
+       },
+       "blade_force_world_mean_N": [
+        -0.0012670855962126125,
+        0.00014046158799952248,
+        0.0061843035058456956
+       ],
+       "blade_force_z_N": {
+        "min": -1.4719958585374116e-08,
+        "max": 0.03802285937126726,
+        "mean": 0.0061843035058456956,
+        "p95": 0.023660995066165928,
+        "samples": 143
+       },
+       "total_force_norm_N": {
+        "min": 0.0,
+        "max": 0.038107698056780256,
+        "mean": 0.0066808335079984425,
+        "p95": 0.02444563805725381,
+        "samples": 143
+       },
+       "steps_with_blade_force": 101
+      },
+      "measured_edge_signed_distance_from_plane_m": {
+       "min": 0.0010717785232461055,
+       "max": 0.0012373123132302232,
+       "mean": 0.001155895360194826,
+       "p95": 0.0011596773810724544,
+       "max_abs": 0.0012373123132302232,
+       "samples": 143
+      },
+      "measured_edge_start_local_m": [
+       0.025237312313230217,
+       -7.651708478389856e-05,
+       0.024990666994396754
+      ],
+      "measured_edge_end_local_m": [
+       0.025158719530111166,
+       6.470592105439071e-07,
+       -0.0038758951987100387
+      ],
+      "planned_start_local_m": [
+       0.023999999999999987,
+       0.0,
+       0.024999999999999998
+      ],
+      "planned_end_local_m": [
+       0.023999999999999987,
+       0.0,
+       -0.003999999999999993
+      ]
+     },
+     {
+      "op": "move1",
+      "kind": "blade_face_push",
+      "digit": null,
+      "steps": 299,
+      "armed_steps": 0,
+      "time_s": [
+       26.04,
+       32.0
+      ],
+      "armed_time_s": null,
+      "tracking_error_m": {
+       "min": 0.00035043472837160646,
+       "max": 0.00308844855613351,
+       "mean": 0.0009014822414428079,
+       "p95": 0.0014446187955909312,
+       "max_abs": 0.00308844855613351,
+       "samples": 299
+      },
+      "material_reaction_armed": null,
+      "push_time_s": [
+       28.68,
+       30.94
+      ],
+      "cut_enabled_steps": 0
+     }
+    ],
+    "phases": {
+     "HOME": {
+      "steps": 6,
+      "t_s": [
+       0.02,
+       0.12
+      ],
+      "tracking_error_max_m": 0.0018316751092792908,
+      "rotation_error_max_rad": 0.002259707295736966
+     },
+     "SURVEY_APPROACH:survey0": {
+      "steps": 187,
+      "t_s": [
+       0.14,
+       3.86
+      ],
+      "tracking_error_max_m": 0.00413133954091394,
+      "rotation_error_max_rad": 0.013451785262220349
+     },
+     "SURVEY:survey0": {
+      "steps": 42,
+      "t_s": [
+       3.88,
+       4.7
+      ],
+      "tracking_error_max_m": 0.0018909196779117938,
+      "rotation_error_max_rad": 0.0025412991373103566
+     },
+     "SURVEY_LEAVE:survey0": {
+      "steps": 30,
+      "t_s": [
+       4.72,
+       5.3
+      ],
+      "tracking_error_max_m": 0.0020280963471135125,
+      "rotation_error_max_rad": 0.0035206851196267963
+     },
+     "APPROACH:cut0": {
+      "steps": 116,
+      "t_s": [
+       5.32,
+       7.62
+      ],
+      "tracking_error_max_m": 0.0014183546533899098,
+      "rotation_error_max_rad": 0.0021144153250915293
+     },
+     "PRE_CUT:cut0": {
+      "steps": 60,
+      "t_s": [
+       7.640000000000001,
+       8.82
+      ],
+      "tracking_error_max_m": 0.0016189721296600095,
+      "rotation_error_max_rad": 0.0027385630930225635
+     },
+     "CUT:cut0": {
+      "steps": 143,
+      "t_s": [
+       8.84,
+       11.68
+      ],
+      "tracking_error_max_m": 0.0008448233726776062,
+      "rotation_error_max_rad": 0.0008440924339590867
+     },
+     "HOLD:cut0": {
+      "steps": 15,
+      "t_s": [
+       11.700000000000001,
+       11.98
+      ],
+      "tracking_error_max_m": 0.0011253563513248818,
+      "rotation_error_max_rad": 0.0014071249744053308
+     },
+     "WITHDRAW:cut0": {
+      "steps": 102,
+      "t_s": [
+       12.0,
+       14.02
+      ],
+      "tracking_error_max_m": 0.001236915208194312,
+      "rotation_error_max_rad": 0.0021163266872893404
+     },
+     "SURVEY_APPROACH:survey1": {
+      "steps": 139,
+      "t_s": [
+       14.040000000000001,
+       16.8
+      ],
+      "tracking_error_max_m": 0.003073251810400767,
+      "rotation_error_max_rad": 0.00504013041342951
+     },
+     "SURVEY:survey1": {
+      "steps": 47,
+      "t_s": [
+       16.82,
+       17.740000000000002
+      ],
+      "tracking_error_max_m": 0.0021852179079088346,
+      "rotation_error_max_rad": 0.0033558113353669705
+     },
+     "SURVEY_LEAVE:survey1": {
+      "steps": 30,
+      "t_s": [
+       17.76,
+       18.34
+      ],
+      "tracking_error_max_m": 0.002145101649914614,
+      "rotation_error_max_rad": 0.0036944447678104275
+     },
+     "APPROACH:cut1": {
+      "steps": 63,
+      "t_s": [
+       18.36,
+       19.6
+      ],
+      "tracking_error_max_m": 0.0014515921006669373,
+      "rotation_error_max_rad": 0.0021933050142744766
+     },
+     "PRE_CUT:cut1": {
+      "steps": 61,
+      "t_s": [
+       19.62,
+       20.82
+      ],
+      "tracking_error_max_m": 0.0017135606052296674,
+      "rotation_error_max_rad": 0.0027993389645139095
+     },
+     "CUT:cut1": {
+      "steps": 143,
+      "t_s": [
+       20.84,
+       23.68
+      ],
+      "tracking_error_max_m": 0.0008693978158094265,
+      "rotation_error_max_rad": 0.0008891792010240697
+     },
+     "HOLD:cut1": {
+      "steps": 15,
+      "t_s": [
+       23.7,
+       23.98
+      ],
+      "tracking_error_max_m": 0.0011632292791809336,
+      "rotation_error_max_rad": 0.001488568530605196
+     },
+     "WITHDRAW:cut1": {
+      "steps": 102,
+      "t_s": [
+       24.0,
+       26.02
+      ],
+      "tracking_error_max_m": 0.0013067928921363364,
+      "rotation_error_max_rad": 0.0022647270721851027
+     },
+     "APPROACH_PUSH:move1": {
+      "steps": 25,
+      "t_s": [
+       26.04,
+       26.52
+      ],
+      "tracking_error_max_m": 0.00308844855613351,
+      "rotation_error_max_rad": 0.005392113145135409
+     },
+     "LOWER:move1": {
+      "steps": 107,
+      "t_s": [
+       26.54,
+       28.66
+      ],
+      "tracking_error_max_m": 0.0009718871642800789,
+      "rotation_error_max_rad": 0.001318621870506522
+     },
+     "PUSH:move1": {
+      "steps": 99,
+      "t_s": [
+       28.68,
+       30.64
+      ],
+      "tracking_error_max_m": 0.0012755443862512831,
+      "rotation_error_max_rad": 0.0018223119047053522
+     },
+     "PUSH_HOLD:move1": {
+      "steps": 15,
+      "t_s": [
+       30.66,
+       30.94
+      ],
+      "tracking_error_max_m": 0.0009653131256057823,
+      "rotation_error_max_rad": 0.0009885092291700727
+     },
+     "RELEASE:move1": {
+      "steps": 9,
+      "t_s": [
+       30.96,
+       31.12
+      ],
+      "tracking_error_max_m": 0.0008856627817460775,
+      "rotation_error_max_rad": 0.0008760900078459422
+     },
+     "RETRACT:move1": {
+      "steps": 44,
+      "t_s": [
+       31.14,
+       32.0
+      ],
+      "tracking_error_max_m": 0.0019214802213067261,
+      "rotation_error_max_rad": 0.003386342152273422
+     },
+     "RETURN_HOME": {
+      "steps": 153,
+      "t_s": [
+       32.02,
+       35.06
+      ],
+      "tracking_error_max_m": 0.0034324731300587863,
+      "rotation_error_max_rad": 0.009803143324232886
+     },
+     "HOLD_AFTER_STOP": {
+      "steps": 197,
+      "t_s": [
+       35.08,
+       39.0
+      ],
+      "tracking_error_max_m": 0.001123535146447515,
+      "rotation_error_max_rad": 0.0018958749078197767
+     },
+     "RETURN_HOME:ROTATE_HAND_DOWN": {
+      "steps": 26,
+      "t_s": [
+       39.02,
+       39.52
+      ],
+      "tracking_error_max_m": 0.0007082121404422599,
+      "rotation_error_max_rad": 0.0003759949582822972
+     },
+     "RETURN_HOME:MOVE_HOME": {
+      "steps": 2,
+      "t_s": [
+       39.54,
+       39.56
+      ],
+      "tracking_error_max_m": 0.000707695087591141,
+      "rotation_error_max_rad": 0.000374288573615509
+     },
+     "RETURN_HOME:SETTLE_HOME": {
+      "steps": 25,
+      "t_s": [
+       39.58,
+       40.06
+      ],
+      "tracking_error_max_m": 0.000707850873206747,
+      "rotation_error_max_rad": 0.0003747669191862908
+     }
+    },
+    "finite_recorded_state": true,
+    "recorded_control_steps": 2003,
+    "wall_s": {
+     "run_total": 1306.4135032310005,
+     "episode": 1256.908937242988,
+     "process": 1320.0056427149975
+    },
+    "run_dir_bytes": 1431198487,
+    "failure": null,
+    "scope": "Read-only analysis of a live Native episode; oracle material state is evaluation-only",
+    "analysis_tool": {
+     "git_sha": "c29f02abdef593e8419b029654d34aef8e23e216",
+     "git_dirty": false,
+     "root": "/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a",
+     "note": "analysis_001 of the first sample (E1_TRIM_s1203, run_generalization_live.py at 1ecfe5e) treated the planner RETURN_HOME phase as return-home rows; fixed: only the physical RETURN_HOME:<stage> rows are excluded from the task phase"
+    },
+    "measured_task_path_clearance": {
+     "status": "PASS",
+     "failing": [],
+     "binding": "blade_collision",
+     "worst": {
+      "joint_limit_margin": {
+       "slack": 0.7224273204803466,
+       "value": 0.7724273204803467,
+       "threshold": 0.05,
+       "sample": 1723,
+       "label": null,
+       "joint": 4
+      },
+      "gripper_pad_clearance": {
+       "slack": 0.0307544425898293,
+       "value": 0.0357544425898293,
+       "threshold": 0.005,
+       "sample": 1194,
+       "label": null,
+       "pair": [
+        "arm0_right_finger_pad",
+        "static_board_2_board"
+       ],
+       "mode": null
+      },
+      "franka1_collision": {
+       "slack": 0.10908756498492,
+       "value": 0.11408756498492001,
+       "threshold": 0.005,
+       "sample": 61,
+       "label": null,
+       "pair": [
+        "arm0_link5_c2",
+        "arm1_link3_c"
+       ],
+       "mode": null
+      },
+      "franka_workcell_collision": {
+       "slack": 0.07176177904324814,
+       "value": 0.07676177904324814,
+       "threshold": 0.005,
+       "sample": 586,
+       "label": null,
+       "pair": [
+        "arm0_hand_capsule",
+        "static_board_2_board"
+       ],
+       "mode": null
+      },
+      "knife_handle_clearance": {
+       "slack": 0.010946613215138283,
+       "value": 0.015946613215138284,
+       "threshold": 0.005,
+       "sample": 1194,
+       "label": null,
+       "pair": [
+        "tool_handle",
+        "static_board_2_board"
+       ],
+       "mode": null
+      },
+      "blade_collision": {
+       "slack": 0.000986792267970253,
+       "value": 0.001986792267970253,
+       "threshold": 0.001,
+       "sample": 1190,
+       "label": null,
+       "pair": [
+        "tool_blade",
+        "static_board_2_board"
+       ],
+       "mode": "contact_allowed"
+      },
+      "wrist_camera_clearance": {
+       "slack": 0.05165687397493056,
+       "value": 0.05365687397493056,
+       "threshold": 0.002,
+       "sample": 22,
+       "label": null,
+       "pair": [
+        "arm0_d405_Housing",
+        "arm0_link6_c"
+       ],
+       "mode": null
+      },
+      "franka_self_collision": {
+       "slack": 0.019713034545725254,
+       "value": 0.021713034545725252,
+       "threshold": 0.002,
+       "sample": 1274,
+       "label": null,
+       "pair": [
+        "arm0_link7_c",
+        "arm0_link5_c2"
+       ],
+       "mode": null
+      },
+      "joint_continuity": {
+       "slack": 0.04518967628479004,
+       "value": -0.014810323715209961,
+       "threshold": -0.06,
+       "sample": 7,
+       "label": null
+      }
+     },
+     "samples": 1950,
+     "blade_workpiece_modes": {
+      "free": 1035,
+      "contact_free": 121,
+      "contact_allowed": 794
+     },
+     "scope": "Geometry only; declared (uncut) workpiece; knife at the nominal grasp; no dynamics or material",
+     "note": "Task phase only (episode before TASK_COMPLETE); the physical return-home path has its own check in home_outcome. Declared uncut workpiece, nominal grasp: material removed earlier in the episode is still treated as present."
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "stage_id": "wp11_phaseE_round1_live_004",
+   "perception_report": {
+    "schema": "rcs_perception_relocate_report_v1",
+    "adr": "docs/adr/0016-configured-perception-relocation.md",
+    "sample_dir": "artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301",
+    "run": "run_001",
+    "task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-a17dd6c4",
+    "recompiled_task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-a17dd6c4",
+    "planes_local_x_m": [
+     -0.028,
+     0.024
+    ],
+    "scope": "measurement = controller input (wrist depth); truth = oracle particle state read here after the episode, report-only",
+    "measurement": {
+     "side": 1,
+     "camera_id": "wrist_d405_0",
+     "calibration": {
+      "valid": true,
+      "reason": null,
+      "frame_timestamp_s": 4.7,
+      "lines_used": 40,
+      "line_spread_m": 9.290849058525064e-06,
+      "x_m": 0.07738798357577184
+     },
+     "surveys": [
+      {
+       "op": "survey1",
+       "next_cut_op": "cut1",
+       "valid": true,
+       "reasons": [],
+       "shift_m": 0.0011576952887313585,
+       "applied_shift_m": 0.0011576952887313585,
+       "calibration_face_x_m": 0.07738798357577184,
+       "survey_face_x_m": 0.0785456788645032,
+       "calibration_timestamp_s": 4.7,
+       "survey_timestamp_s": 17.740000000000002,
+       "survey_lines_used": 39,
+       "survey_line_spread_m": 2.902903114284542e-05
+      }
+     ],
+     "applied_shift_m": 0.0011576952887313585,
+     "applied_shift_world_m": [
+      0.001150713714812116,
+      -0.00012695010080375623,
+      0.0
+     ],
+     "shifted_labels": [
+      "APPROACH:cut1",
+      "PRE_CUT:cut1",
+      "PRE_CUT:cut1",
+      "CUT:cut1",
+      "HOLD:cut1",
+      "WITHDRAW:cut1",
+      "WITHDRAW:cut1",
+      "APPROACH_PUSH:move1",
+      "LOWER:move1",
+      "PUSH:move1",
+      "PUSH_HOLD:move1",
+      "RELEASE:move1",
+      "RETRACT:move1"
+     ],
+     "inputs": {
+      "deployable": [
+       "wrist_d405_0 depth_m, valid_mask, K (rendered sensor)",
+       "T_world_camera of the frame (robot kinematics + the fixed hand-eye mount)",
+       "nominal edge pose from joint-state proprioception (policies.edge_from_observation; blade exclusion)",
+       "scene config (base box, world pose, supports) and goal planes (survey pose, bands, side)"
+      ],
+      "privileged_not_used_by_the_hook": [
+       "measured tool-edge pose (--edge-feedback measured): WaypointPolicy tracking feedback only, simulator tool truth, as live_001"
+      ],
+      "never_used": [
+       "particle positions",
+       "cut labels / codes",
+       "mechanical components",
+       "oracle part positions"
+      ]
+     }
+    },
+    "oracle_truth_report_only": {
+     "frames": {
+      "n": 202,
+      "stride_s": 0.1999999999999993
+     },
+     "survey_truth": {
+      "survey1": {
+       "calibration_frame_time_s": 4.6000000000000005,
+       "survey_frame_time_s": 17.8,
+       "actual_displacement_m": {
+        "cut_layers_adjacent_to_plane": 0.0011485929937422776,
+        "end_layer": 0.0011498204925481014,
+        "outer_piece_beyond_previous_cut": 0.0011194405338093665
+       },
+       "measured_minus_actual_cut_layers_m": 9.102294989080887e-06
+      }
+     },
+     "cut_label_boundaries": [
+      {
+       "plane_local_x_m": -0.028,
+       "label_boundary_local_x_m": -0.027999999932944775,
+       "offset_m": 6.705522595518154e-11,
+       "material_shift_before_cut_m": -2.027224444103306e-05,
+       "frame_before_cut_s": 9.6
+      },
+      {
+       "plane_local_x_m": 0.024,
+       "label_boundary_local_x_m": 0.023999999277293682,
+       "offset_m": -7.227063184012117e-10,
+       "material_shift_before_cut_m": 0.001165129897427283,
+       "frame_before_cut_s": 21.6
+      }
+     ]
+    },
+    "git": "c29f02abdef593e8419b029654d34aef8e23e216"
+   },
+   "perception_report_path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/perception_001.json"
+  },
+  {
+   "sample_id": "E1_SLICE_PUSH_s1302",
+   "family": "SLICE_PUSH",
+   "seed": 1302,
+   "priority": 2,
+   "purpose": "kinematic failure seed (yaw +18.1 deg, 1.24 mm slide), first live run, with the ADR 0016 relocation",
+   "kinematic": {
+    "class": "CUTTING_FAILURE",
+    "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+    "task_id": "CFG-E1_SLICE_PUSH_s1302-E1_SLICE_PUSH_s1302_slice_push-80a5ecfd",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.003999999791383749,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.01992941599699242,
+       "other_piece_displacement_max_m": 2.5915607147821383e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.003999999791383749
+    },
+    "device": "cuda:1",
+    "scope": "KINEMATIC ideal tracking (round 1 stage 2), default planner limits"
+   },
+   "attempts": [],
+   "class": "NOT_RUN",
+   "reason": "no live analysis (not launched or not finished)",
+   "stage_id": "wp11_phaseE_round1_live_004",
+   "perception_report": null,
+   "perception_report_path": null,
+   "not_run_detail": {
+    "cause": "declared disk policy: not launched",
+    "queue_log_line": "2026-10-30T09:02:19.721893+09:00 DISK 15.4 GB free - 0.0 GB still to be written by running jobs - estimate 1.6 GB for E1_SLICE_PUSH_s1302 would cross the 15 GB floor: no further launches; pending [('E1_SLICE_PUSH_s1302', 1), ('E1_SLICE_PUSH_s1303', 1)]",
+    "note": "Free space on /mnt/data fell from 23.0 GB to 15.4 GB during the s1301 run (s1301 wrote 1.43 GB; the rest was other agents writing concurrently). 15.4 GB - 1.6 GB estimate < 15 GB floor. Never launched, so this is not a retry case; it can be launched later from the same pinned commit when the disk allows."
+   }
+  },
+  {
+   "sample_id": "E1_SLICE_PUSH_s1303",
+   "family": "SLICE_PUSH",
+   "seed": 1303,
+   "priority": 3,
+   "purpose": "kinematic failure seed (168 mm bar, yaw -14.2 deg, 1.19 mm slide), first live run, with the ADR 0016 relocation",
+   "kinematic": {
+    "class": "CUTTING_FAILURE",
+    "reason": "outcome: step0:slice_two:cut_at_declared_planes",
+    "task_id": "CFG-E1_SLICE_PUSH_s1303-E1_SLICE_PUSH_s1303_slice_push-0bf8b097",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 3,
+       "expected_pieces": 3,
+       "cut_position_error_m": 0.003999999411404127,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019917691845185406,
+       "other_piece_displacement_max_m": 2.070145703963844e-05,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.003999999411404127
+    },
+    "device": "cuda:1",
+    "scope": "KINEMATIC ideal tracking (round 1 stage 2), default planner limits"
+   },
+   "attempts": [],
+   "class": "NOT_RUN",
+   "reason": "no live analysis (not launched or not finished)",
+   "stage_id": "wp11_phaseE_round1_live_004",
+   "perception_report": null,
+   "perception_report_path": null,
+   "not_run_detail": {
+    "cause": "declared disk policy: not launched",
+    "queue_log_line": "2026-10-30T09:02:19.721893+09:00 DISK 15.4 GB free - 0.0 GB still to be written by running jobs - estimate 1.6 GB for E1_SLICE_PUSH_s1302 would cross the 15 GB floor: no further launches; pending [('E1_SLICE_PUSH_s1302', 1), ('E1_SLICE_PUSH_s1303', 1)]",
+    "note": "Free space on /mnt/data fell from 23.0 GB to 15.4 GB during the s1301 run (s1301 wrote 1.43 GB; the rest was other agents writing concurrently). 15.4 GB - 1.6 GB estimate < 15 GB floor. Never launched, so this is not a retry case; it can be launched later from the same pinned commit when the disk allows."
+   }
+  }
+ ],
+ "supplementary_stages": [],
+ "supplementary_rule": "Supplementary stages are separately declared, labelled results; they never change the class of a sample in this stage.",
+ "git_sha": "c29f02abdef593e8419b029654d34aef8e23e216",
+ "git_dirty": false,
+ "stage_kind": "supplementary controller variant (ADR 0016 perception hook); round-1 kinematic and live_001 SLICE-PUSH results unchanged",
+ "summarize_output": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseE/round1_live_004/summary_001.json"
+}
