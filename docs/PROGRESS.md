@@ -103,6 +103,12 @@
     - **rake 45° 削切完全沒有標籤**（3 個）：law 4 的 θ_max = 45°，運動與刀身平面夾角達到上限，stroke 不啟動。
     - **Test D2 三個 chip 沒脫離**：1–4 顆內部粒子沒有標籤；S = 8 與 16 結果相同，與 slot 數無關。
   - 這些是 law 8／規劃的適用邊界，記入已知限制，不改 law。
+- **Native 可靠性 v1b**（`a65e71d` 先宣告，`1a2af70` 證據，[證據](evidence/wp11/phaseH_native_reliability_v1b_001.json)）：同一個 process 連跑 8 個完整 episode（乾淨 worktree），**v1b 與 v1a 下 Native POLICY_READY**。host 斜率 48.8 MiB/episode（≤ 64），GPU 2.0 MiB/episode（≤ 32，Phase H 的 52 MiB 是 3 點雜訊）；reset 都與 episode 0 逐位相同；v1 只有 `tool_at_rest_after_reset` FAIL（已知的 PhysX 夾持抖動）。
+  - 不是「沒有洩漏」：host 每個 episode 仍增加約 49 MiB。
+  - 選用的 process 回收（`--recycle-every`）Native run FAIL（Kit 關閉時子 process 先結束，沒寫出結果）；已修正（`16f0ffa`）但未重跑。
+  - 待確認：同一 seed 的 scripted episode，接在刻意失敗 episode 之後的結果是 0.9770，其他是 0.9789。正在診斷是否有 reset 沒清掉的狀態。
+- 磁碟：其餘 86 個 WP-11 之前的舊 artifact 也搬到根磁碟（同樣 rsync＋比對＋symlink）；/mnt/data 25 GB、根磁碟 37 GB。
+- **Phase I 進行中**：rcs-review 審查整個分支；final_v4 live regression（乾淨 worktree，新 run id）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
