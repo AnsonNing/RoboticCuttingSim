@@ -36,6 +36,8 @@ class KinematicConfig:
     def __post_init__(self):
         if self.solver not in (None, "tlmpm_v5"):
             raise ValueError("solver is None or 'tlmpm_v5'")
+        if self.slots_per_node is not None and self.solver != "tlmpm_v5":
+            raise ValueError("slots_per_node applies to solver='tlmpm_v5' only (it was ignored without it)")
         allowed = range(1, 16) if self.solver == "tlmpm_v5" else (1, 2)
         if self.max_cuts not in allowed or self.material_dt <= 0 or not np.isfinite(self.material_dt):
             raise ValueError("max_cuts is 1 or 2 (1..15 with solver='tlmpm_v5') and material_dt must be positive")

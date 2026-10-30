@@ -68,7 +68,10 @@ separate preflighted physical motion with its own `home_outcome`
 Every `info` carries `episode_state` (`episode_lifecycle.EpisodeStateMachine`:
 `RESETTING -> READY -> RUNNING -> TASK_COMPLETE | TASK_FAILED -> RETRACTING ->
 RETURNING_HOME -> FINISHED`) and `termination_reason`. `TASK_COMPLETE` is not
-task success; success is only `evaluate()`.
+task success; success is only `evaluate()`. When the backend reports surface cells it could not mesh
+(`backend.surface_unmeshable_summary()` returns a dict), the `evaluate()` result
+also carries `surface_unmeshable`; without such a summary (kinematic, or the raising
+surface mode) the key is absent and every result is unchanged.
 
 ## Actions
 
@@ -106,6 +109,15 @@ the geometric collision check, and finally the runtime's IK. `info` reports:
 | `action_timestamp_s`, `timestamp_s` | observation time the action was computed from, and the time after the step |
 | `ik_status`, `ik_info` | `rejected` with the runtime's IK report on `REJECTED_IK_UNREACHABLE` |
 
+Default step info carries no privileged value: the inner env's `grasp_status` (the
+contact-based grasp monitor, simulator truth) is removed from the returned info
+(WP-11 review finding 9, 2026-10-30) and is available as
+`info["privileged"]["grasp_status"]` with `observation_profile="privileged_state"`.
+A grasp loss still ends the episode and is named in `termination_reason` /
+`episode_state`. The recorder keeps the full inner info in `actions.jsonl`
+(privileged storage). The legacy `open_cutting_env` without `preset=` is unchanged
+and still returns `grasp_status` in its info.
+
 Rejection reasons: `INVALID_SCHEMA`, `INVALID_TARGET`, `CUT_INDEX_OUT_OF_RANGE`,
 `JOINT_LIMIT`, `GRIPPER_LOCKED`, `GRIPPER_UNSUPPORTED`, `UNSUPPORTED_BY_RUNTIME`
 (joint targets on the kinematic backend), `COLLISION_FIXTURE`,
@@ -113,7 +125,10 @@ Rejection reasons: `INVALID_SCHEMA`, `INVALID_TARGET`, `CUT_INDEX_OUT_OF_RANGE`,
 never replaced silently**: with `rejection_policy="hold"` the env runs one
 explicit cut-disabled hold of the last accepted target (reported as
 `HOLD_AFTER_REJECTION`) so the 50 Hz clock keeps running; with `no_step` nothing
-runs. `env.action_log` keeps one row per step (status, executed kind, cut flags,
+runs. This includes the gripper part: an action with `"gripper": "release"` whose
+target the runtime IK rejects leaves the gripper command unchanged (the inner env
+sets it before the IK fails, before any physics step; the wrapper restores it), so
+the HOLD runs with the previous gripper command. `env.action_log` keeps one row per step (status, executed kind, cut flags,
 timestamps, wall time) and the recorder stores it.
 
 The collision check is geometry only: about 9,000 sampled points on the blade
@@ -155,7 +170,8 @@ action types, action limits, preset). The kinematic backend renders no cameras
 ### Privileged state (debug only)
 
 `observation_profile="privileged_state"` (explicit opt-in) adds `info["privileged"]`
-to every step and enables `env.privileged(components=...)`; otherwise
+to every step and to the reset info (there also `info["privileged"]["reset_checks"]`,
+the full post-reset receipt) and enables `env.privileged(components=...)`; otherwise
 `privileged()` raises `PermissionError`. The privileged dict is never merged into
 the observation: `material_state` (particle positions, velocities, codes),
 `cut_codes`, `code_encoding`, `oracle_geometry` (reference particles, lattice,
@@ -164,13 +180,29 @@ wrench), `tool_truth` (simulator pose and velocity of the held knife body and
 edge), `grasp_status`, and optionally `component_labels` (actual MPM stencil
 graph). `policy_env.PRIVILEGED_KEYS` lists the names that must never appear in a
 deployable observation; the tests and the collector walk every observation for
-them.
+them. `policy_env.PRIVILEGED_INFO_KEYS` (a superset: also the privileged reset-check
+names) must never appear in a default reset or step info outside `info["privileged"]`;
+`find_privileged_info_keys(info)` walks an info dict recursively
+(`tests/test_policy_ready_env.py`).
+
+**Reset checks.** The default reset info's `reset_checks` holds only bookkeeping and
+deployable fields (`policy_env.DEPLOYABLE_RESET_CHECKS`: clock at zero, history /
+lifecycle / IK counter / termination / step counter / action log reset, observation
+and camera timestamps, `q_active`). The privileged fields (`labels_clean`,
+`material_at_reference_max_m`, `material_velocity_max_m_s`, `material_codes_sha256`,
+`particles`, simulator `tool_pose_world_xyzw` / `edge_pose_world_xyzw`, tool speeds,
+`grasp_reset_status`) are in `env.last_reset_checks` for the harness (the collector
+stores the full receipt in `episode.json` `reset_checks`, which the reliability checks
+read, unchanged) and in `info["privileged"]["reset_checks"]` with
+`privileged_state`. Before 2026-10-30 (review finding 9) the default reset info
+carried the full receipt; `episode.json` `reset_info` of datasets collected before
+then therefore contains it too.
 
 **Privileged controller inputs** (`policy_env.PRIVILEGED_CONTROLLER_INPUTS`):
 
 | Input | Why it is privileged |
 | --- | --- |
-| `edge_feedback="measured"` (path_v2/path_v3 measured-edge feedback, used by the C5 scripted run) | simulator tool-edge pose of the physically held knife (tool truth) |
+| `edge_feedback="measured"` (path_v2/path_v3/path_v3a measured-edge feedback, used by the C5 scripted run) | simulator tool-edge pose of the physically held knife (tool truth) |
 | `reward.CuttingReward` | reference particles, cut codes, measured tool edge (shaping only) |
 | `env.evaluate()` | oracle particle history, codes, components (scoring only) |
 
@@ -196,7 +228,10 @@ OMNI_KIT_ACCEPT_EULA=YES TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/pyt
 ```
 
 Controllers: `scripted` (the goal planner through `WaypointPolicy`, optional
-`edge_feedback: measured`, `stop_after_phase`, `hold_until_time_limit`),
+`edge_feedback: measured`, `stop_after_phase`, `hold_until_time_limit`, and with a
+`bias_pose` profile (path_v3/path_v3a) the opt-in stall options `stall_timeout_s`,
+`stall_action` (`end_episode` | `skip_waypoint`), `stall_timeouts_by_label`; see
+"Controller profile path_v3a" below),
 `action_file` (an open-loop `rcs_action_program_v1` file) and `policy` (an
 external `module:factory`, `factory(task_spec, seed) -> policy(observation) ->
 action`; examples in `policy_examples.py`). An episode plan
@@ -255,6 +290,45 @@ camera frames, verdict). `--replay-kinematic` re-executes a kinematic
 episode's executed absolute edge targets open loop on a fresh kinematic env
 and compares the final cut codes (exact on CPU); Native episodes are analyzed
 only.
+
+The collector refuses, before it creates the output directory or launches a runtime,
+a scripted plan with `planner_options.perception` (the ADR 0016 wrist-depth survey +
+relocation): its scripted controller is a plain `WaypointPolicy` without the relocation
+hook or a depth source, and it used to drop the option silently. Run relocation with
+`scripts/run_wp10_live.py`. Stall options with a non-`bias_pose` profile are refused
+the same way.
+
+### Controller profile path_v3a (WP-11 review finding 8, opt-in)
+
+`path_v3` integrates its bias without bound, also while the command is clamped: with a
+blocked blade the bias wound up (> 30 mm on the fitted C5 plant with a floor;
+-12 mm in the review) and the arm kept pressing until the time limit. `path_v3a`
+(`policies.CONTROLLER_PROFILES`, planner option `"controller_profile": "path_v3a"`) is
+path_v3 plus anti-windup:
+
+- the bias is clipped to `bias_limit_m = 3 mm` and `bias_limit_rad = 15 mrad` (the C5b
+  live run peaked at 1.55 mm / 5.9 mrad);
+- `anti_windup`: no bias integration on a step whose previous command was clamped by
+  the action limits (translation, rotation or workspace);
+- opt-in stall timeout (`WaypointPolicy(stall_timeout_s=..., stall_action=...,
+  stall_timeouts_by_label=...)`, any `bias_pose` profile; default off): a waypoint whose
+  measured edge is outside the tolerance and has not come `stall_min_progress_m`
+  (0.2 mm) / `stall_min_progress_rad` (2 mrad) closer within the timeout is a stall.
+  `end_episode` makes the policy done with `termination_request =
+  "WAYPOINT_STALL:<label>"` (the collector ends the task with that reason and does not
+  run `hold_until_time_limit`); `skip_waypoint` starts the next waypoint. Every stall is
+  in `policy.stall_events` and the collector receipt (`controller_receipt.stall`).
+
+path_v3 is unchanged, because a fix in place would have changed the C5b live run: an
+open-loop replay of the recorded C5b episode
+(`artifacts/wp11/phaseC5/live_trim_rho10_clear_002`, `tests/c5b_replay.py`) through the
+current path_v3 reproduces all 1056 recorded commands and `policy_tracking` rows
+bitwise, and the controller's own action-limit clamp was active on 254 of its 1057
+calls (REORIENT, WITHDRAW, APPROACH_PUSH, RETRACT, PRE_CUT), so the freeze would have
+been active (`tests/test_wp11_path_v3a.py`). On the fitted C5 plant path_v3a keeps the
+C5b settle / SKIM quality, raises no false stall over the full nominal plan, stays at
+the 3 mm bound on a blocked blade and detects the stall about 1 s after the blade
+stops. path_v3a has not been run on a live runtime (NOT_RUN).
 
 ## Action programs (`rcs_action_program_v1`)
 
@@ -431,4 +505,6 @@ With the default `stage_reset="reopen"` (no runtime profile) Native was not show
 - One compiled task per process on Native (the runtime config carries the
   configured task); different goals need separate processes.
 - `stage_reset="reload_in_place"` requires live cameras (camera-off in-place resets crash PhysX).
+- The kinematic backend raises `ValueError` for `slots_per_node` unless `solver="tlmpm_v5"`
+  (it used to ignore it silently).
 - Material parameters are provisional and uncalibrated.

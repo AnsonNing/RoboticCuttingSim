@@ -81,30 +81,59 @@ def measured_edge_estimator(env):
     return estimate
 
 
+STALL_KEYS = ('stall_timeout_s', 'stall_action', 'stall_timeouts_by_label')
+UNSUPPORTED_RELOCATION = ('planner_options.perception (ADR 0016 wrist-depth survey + relocation) is not supported by '
+                          'collect_dataset.py: its scripted controller is a plain WaypointPolicy without the relocation '
+                          'hook or a wrist depth source; run the relocation with scripts/run_wp10_live.py')
+
+
+def check_scripted_planner(goal, planner_options, entries):
+    """Refuse, before any output or runtime launch, scripted episodes the collector cannot run as declared."""
+    scripted = [e for e in entries if e['controller'] == 'scripted']
+    if not scripted:
+        return
+    from robotic_cutting_sim import goal_planner
+    from robotic_cutting_sim.goals import validate_goal
+    merged = goal_planner.planner_options(validate_goal(goal), planner_options)
+    if merged.get('perception') is not None:
+        raise SystemExit(UNSUPPORTED_RELOCATION)
+    for e in scripted:
+        if any(e.get(key) is not None for key in STALL_KEYS) and \
+                goal_planner.policy_options(merged).get('command_mode') != 'bias_pose':
+            raise SystemExit(f"episode {e['label']}: stall_timeout_s/stall_action need a bias_pose controller profile "
+                             f"(path_v3a), not {merged['controller_profile']}")
+
+
 def make_controller(env, entry):
-    """(callable obs -> (action, phase, tracking), done(), receipt, privileged inputs)."""
+    """(callable obs -> (action, phase, tracking), done() -> bool | reason str, receipt, privileged inputs)."""
     kind = entry['controller']
     if kind == 'scripted':
         from robotic_cutting_sim import goal_planner
         from robotic_cutting_sim.policies import WaypointPolicy
         task = env.task
         options = task.controller['planner']
+        if options.get('perception') is not None:   # never drop the relocation silently (main() refuses it earlier)
+            raise ValueError(UNSUPPORTED_RELOCATION)
         waypoints = goal_planner.plan(task.scene, task.goal, task.tool_profile, options)
         policy_options = dict(goal_planner.policy_options(options))
         privileged = []
         if entry.get('edge_feedback') == 'measured':
             policy_options['edge_estimator'] = measured_edge_estimator(env)
             privileged.append('measured tool-edge pose (simulator tool truth) as waypoint feedback')
+        stall = {key: entry[key] for key in STALL_KEYS if entry.get(key) is not None}   # opt-in (path_v3a)
+        policy_options.update(stall)
         policy = WaypointPolicy(task, waypoints, task.action_limits(), **policy_options)
         receipt = dict(kind=kind, planner=goal_planner.PLANNER_VERSION, planner_options=options,
                        controller_profile=goal_planner.CONTROLLER_PROFILES[options['controller_profile']],
                        phases=[w.label for w in waypoints], edge_feedback=entry.get('edge_feedback'),
                        stop_after_phase=entry.get('stop_after_phase'))
+        if stall:
+            receipt['stall'] = dict(stall, events=policy.stall_events)   # the policy's own list, filled while running
 
         def act(observation):
             action = policy(observation)
             return action, policy.phase, policy.last_tracking
-        return act, (lambda: policy.done), receipt, privileged
+        return act, (lambda: policy.termination_request or policy.done), receipt, privileged
     if kind == 'action_file':
         path = Path(entry['action_file'])
         program = ds.load_action_program(path)
@@ -164,15 +193,17 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
             if seen_stop and base != stop:
                 stop_reason = f'STOP_AFTER_PHASE:{stop}'
                 break
-        if done():
-            stop_reason = 'CONTROLLER_DONE'
+        finished = done()
+        if finished:   # a controller may name its reason (e.g. WAYPOINT_STALL:<label> of path_v3a)
+            stop_reason = finished if isinstance(finished, str) else 'CONTROLLER_DONE'
             break
         observation, _, terminated, truncated, info = env.step(action, annotation=dict(policy_phase=phase,
                                                                                        policy_tracking=tracking))
         note(observation, info)
         if terminated or truncated:
             break
-    if stop_reason and entry.get('hold_until_time_limit') and env.episode_state == 'RUNNING':
+    stalled = bool(stop_reason and stop_reason.startswith('WAYPOINT_STALL'))   # never keep pressing after a stall
+    if stop_reason and not stalled and entry.get('hold_until_time_limit') and env.episode_state == 'RUNNING':
         while env.time_s < duration - 1e-9:
             observation, _, terminated, truncated, info = env.step(HOLD, annotation=dict(policy_phase='HOLD_AFTER_STOP'))
             note(observation, info)
@@ -231,7 +262,10 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                                           events=metrics.get('events'),
                                           grasp_status_final=jsonable((env.backend.last_diagnostics or {}).get('grasp_status'))
                                           if isinstance(env.backend.last_diagnostics, dict) else None),
-                reset_info=jsonable(reset_info), reset_checks=reset_info['reset_checks'],
+                # reset_info is what the policy saw (deployable reset checks only, no privileged dict); reset_checks is the
+                # harness's full post-reset receipt (privileged fields included) used by the reliability checks
+                reset_info=jsonable({k: v for k, v in reset_info.items() if k != 'privileged'}),
+                reset_checks=jsonable(env.last_reset_checks),
                 observation_privileged_leaks=leaks, clock_errors=clock_errors, camera_age_max_s=camera_age_max,
                 recorder_closed=recorder_closed, final_codes_sha256=hashlib.sha256(np.ascontiguousarray(codes).tobytes()).hexdigest(),
                 privileged_controller_inputs=privileged_inputs, memory_before=memory_before, memory_after=memory_after,
@@ -538,6 +572,7 @@ def main(argv=None):
     if a.recycle_every is not None and a.recycle_every < 1:
         raise SystemExit('--recycle-every must be >= 1')
     entries = episode_entries(a)
+    check_scripted_planner(a.goal, json.loads(a.planner_options) if a.planner_options else None, entries)
     if a.recycle_child is not None:   # the parent created the dataset directory, manifest and preflight
         out = Path(a.out)
         if not (out/'dataset_manifest.json').exists():

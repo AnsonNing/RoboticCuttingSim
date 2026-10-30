@@ -59,6 +59,20 @@ PRIVILEGED_KEYS = frozenset({
     "contact_wrench_world", "next_material_wrench_world", "force", "wrench", "tool_truth",
     "tool_body_pose_xyzw", "tool_linear_velocity_world_m_s", "tool_angular_velocity_world_rad_s",
     "grasp_status", "privileged", "material", "oracle"})
+# Reset-check fields that are bookkeeping of the env itself (clocks, counters, logs, lifecycle) or deployable
+# measurements (joint encoders, camera timestamps). Every other reset_checks field (material state, cut codes,
+# simulator tool/edge pose and speeds, the grasp re-stabilization receipt) is privileged and appears in reset
+# info only under info["privileged"] with observation_profile="privileged_state" (WP-11 review finding 9).
+DEPLOYABLE_RESET_CHECKS = ("time_zero", "oracle_history_single_sample", "lifecycle_ready_after_reset",
+                           "ik_failures_zero", "not_terminated", "control_steps_zero", "action_log_empty",
+                           "observation_timestamp_matches", "q_active", "camera_timestamp_matches")
+# Info-only names that are privileged in addition to PRIVILEGED_KEYS (walked by find_privileged_info_keys).
+PRIVILEGED_INFO_KEYS = PRIVILEGED_KEYS | frozenset({
+    "reset_checks_privileged", "labels_clean", "material_at_reference_max_m", "material_velocity_max_m_s",
+    "tool_pose_world_xyzw", "edge_pose_world_xyzw", "tool_linear_speed_m_s", "tool_angular_speed_rad_s",
+    "grasp_reset_status", "material_codes_sha256", "particles", "measured_tool_pose"})
+# Inner (CuttingTaskEnv) step-info keys that are privileged: removed from the default step info.
+PRIVILEGED_STEP_INFO = ("grasp_status",)
 # Controller inputs that are simulator truth, not deployable sensing (documented in POLICY_READY_API.md).
 PRIVILEGED_CONTROLLER_INPUTS = {
     "edge_feedback=measured (path_v2/path_v3 measured-edge feedback)":
@@ -222,19 +236,25 @@ def jsonable(value):
     return str(value)
 
 
-def find_privileged_keys(tree, path=""):
-    """Paths of every PRIVILEGED_KEYS name anywhere inside a nested observation."""
+def find_privileged_keys(tree, path="", keys=PRIVILEGED_KEYS):
+    """Paths of every PRIVILEGED_KEYS name (or of ``keys``) anywhere inside a nested observation."""
     found = []
     if isinstance(tree, dict):
         for key, value in tree.items():
             here = f"{path}/{key}"
-            if key in PRIVILEGED_KEYS:
+            if key in keys:
                 found.append(here)
-            found += find_privileged_keys(value, here)
+            found += find_privileged_keys(value, here, keys)
     elif isinstance(tree, (list, tuple)):
         for i, value in enumerate(tree):
-            found += find_privileged_keys(value, f"{path}[{i}]")
+            found += find_privileged_keys(value, f"{path}[{i}]", keys)
     return found
+
+
+def find_privileged_info_keys(info, path=""):
+    """Paths of every PRIVILEGED_INFO_KEYS name inside a reset/step info outside ``info["privileged"]``."""
+    tree = {key: value for key, value in info.items() if key != "privileged"} if isinstance(info, dict) else info
+    return find_privileged_keys(tree, path, PRIVILEGED_INFO_KEYS)
 
 
 # ----------------------------------------------------------------------------- the wrapper
@@ -278,6 +298,7 @@ class PolicyReadyEnv:
         self._points_edge = None
         self._recorder_class = None
         self.reset_info = None
+        self.last_reset_checks = None
         self.runtime_profile = runtime_profile   # WP-11 Phase H4 receipt (None: no profile requested)
 
     # -- delegated views
@@ -342,8 +363,12 @@ class PolicyReadyEnv:
         self._task_info = self._make_task_info()
         self._refresh_cameras(force=True)
         checks = self.reset_checks()
+        # The full checks (privileged fields included) stay available to the harness as ``last_reset_checks``
+        # (the collector stores them in episode.json); reset info carries only the deployable/bookkeeping part.
+        self.last_reset_checks = checks
         self.reset_info = {**info, "preset": self.preset.to_dict(), "observation_profile": self.observation_profile,
-                           "episode_index": self._episode_index, "reset_checks": checks,
+                           "episode_index": self._episode_index,
+                           "reset_checks": {key: checks[key] for key in DEPLOYABLE_RESET_CHECKS if key in checks},
                            "home_reset": getattr(self.backend, "home", None) is not None,
                            "reset_wall_s": time.perf_counter()-start, "max_cuts": self.max_cuts,
                            "cameras_available": self.cameras_available}
@@ -352,7 +377,10 @@ class PolicyReadyEnv:
                                    acceptance_valid=bool(self.runtime_profile["acceptance_valid"]))
         if self.recording is not None:
             self._open_recorder(controller or self.recording.get("controller", "external"))
-        return self.observe(), copy.deepcopy(self.reset_info)
+        info = copy.deepcopy(self.reset_info)
+        if self.observation_profile == "privileged_state":
+            info["privileged"] = {**self.privileged(), "reset_checks": copy.deepcopy(checks)}
+        return self.observe(), info
 
     def _open_recorder(self, controller):
         if self._recorder_class is None:
@@ -614,11 +642,17 @@ class PolicyReadyEnv:
                 payload["gripper"] = gripper
             if not payload:   # gripper "hold" on a gripperless runtime: an explicit hold of the commanded edge
                 payload, kind = self._hold_command(), "HOLD_GRIPPER_NOOP"
+            gripper_before = getattr(self.backend, "gripper_command", None)
             try:
                 result = inner.step(payload)
                 executed, kind = payload, kind or "REQUESTED"
             except IKFailure as failure:
                 rejection, ik_info = ActionRejected("IK_UNREACHABLE", str(failure).split(":")[0]), failure.info
+                # The inner env sets the gripper before the runtime IK fails (no physics step ran): undo it, so no
+                # part of a rejected action executes (WP-11 review finding 10).
+                if gripper is not None and gripper_before is not None and \
+                        getattr(self.backend, "gripper_command", None) != gripper_before:
+                    self.backend.set_gripper(gripper_before)
         if rejection is not None:
             if self.preset.rejection_policy == "no_step":
                 kind = "NOT_EXECUTED"
@@ -668,6 +702,11 @@ class PolicyReadyEnv:
                                 jsonable({k: v for k, v in info.items() if k != "privileged"})),
                                 before, time.perf_counter()-wall, policy_phase=phase,
                                 policy_tracking=(annotation or {}).get("policy_tracking"))
+        # ``grasp_status`` (contact-based grasp monitor, simulator truth) is privileged (WP-11 review finding 9):
+        # it leaves the returned info and is under info["privileged"]["grasp_status"] with
+        # observation_profile="privileged_state". The recording above keeps the full inner info (actions.jsonl is
+        # privileged storage) and the termination reason stays in info["termination_reason"]/"episode_state".
+        info = {key: value for key, value in info.items() if key not in PRIVILEGED_STEP_INFO}
         if self.observation_profile == "privileged_state":
             info["privileged"] = self.privileged()
         return observation, reward, terminated, truncated, info

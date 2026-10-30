@@ -424,6 +424,28 @@ class CuttingTaskEnv:
         return self._frames[camera]["rgb" if mode == "rgb_array" else "depth_m"].copy()
 
     def evaluate(self, profile=None, *, goal=None, represented_target=None, push_interval_s=None):
+        """Independent oracle score; a completed episode alone never means success (see ``_evaluate``).
+
+        When the backend reports surface cells it could not mesh
+        (``backend.surface_unmeshable_summary()`` returns a dict; Native with a
+        non-raising surface mode), the result also carries it under
+        ``"surface_unmeshable"``. The key is absent when the backend has no such
+        method or it returns None, so every existing result is unchanged.
+        """
+        result = self._evaluate(profile, goal=goal, represented_target=represented_target,
+                                push_interval_s=push_interval_s)
+        return self._with_surface_unmeshable(result)
+
+    def _with_surface_unmeshable(self, result):
+        if not isinstance(result, dict) or "surface_unmeshable" in result:
+            return result
+        summary = getattr(self.backend, "surface_unmeshable_summary", None)
+        summary = summary() if callable(summary) else None
+        if summary is not None:
+            result["surface_unmeshable"] = summary
+        return result
+
+    def _evaluate(self, profile=None, *, goal=None, represented_target=None, push_interval_s=None):
         """Independent oracle score; a completed episode alone never means success.
 
         A v3 demo task (tasks.DemoTaskSpec) with neither ``profile`` nor
@@ -546,8 +568,9 @@ class CuttingTaskEnv:
         except Exception as error:  # quality evidence only; the outcome never depends on it
             surface_status = f"NOT_RUN: surface extraction failed ({error!r})"
         result = self.task.evaluate_goal(data)
-        return {**result, "surface_extraction": surface_status, "runtime_source": self.runtime_source,
-                "episode_complete": self.time_s >= self.task.duration_s-1e-9}
+        return self._with_surface_unmeshable(
+            {**result, "surface_extraction": surface_status, "runtime_source": self.runtime_source,
+             "episode_complete": self.time_s >= self.task.duration_s-1e-9})
 
     def close(self):
         if not self._closed:

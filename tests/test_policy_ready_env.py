@@ -12,8 +12,9 @@ import numpy as np
 import pytest
 
 from robotic_cutting_sim import dataset as ds
-from robotic_cutting_sim.policy_env import (ACTION_STATUSES, PRIVILEGED_KEYS, ResearchPreset, check_tool_collision,
-                                            find_privileged_keys)
+from robotic_cutting_sim.policy_env import (ACTION_STATUSES, DEPLOYABLE_RESET_CHECKS, PRIVILEGED_INFO_KEYS,
+                                            PRIVILEGED_KEYS, ResearchPreset, check_tool_collision,
+                                            find_privileged_info_keys, find_privileged_keys)
 from robotic_cutting_sim.tasks import make_task
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -101,12 +102,13 @@ def test_preset_defaults_and_reset_checks(trim_env):
     preset = info["preset"]
     assert preset["preset_id"] == "cutting_research_v1" and preset["tool_attachment_mode"] == "physical_grasp"
     assert preset["tool_init_mode"] == "pregrasped" and preset["gripper_control_mode"] == "hold"
-    checks = info["reset_checks"]
+    checks = env.last_reset_checks          # the harness's full receipt (privileged fields included)
     for key in ("time_zero", "labels_clean", "oracle_history_single_sample", "lifecycle_ready_after_reset",
                 "ik_failures_zero", "not_terminated", "control_steps_zero", "action_log_empty",
                 "observation_timestamp_matches"):
         assert checks[key] is True, key
     assert checks["material_at_reference_max_m"] == 0. and info["max_cuts"] == 1
+    assert info["reset_checks"] == {key: checks[key] for key in DEPLOYABLE_RESET_CHECKS if key in checks}
     assert env.task.task_id.startswith("CFG-trim01_wp11_workcell-trim_bump_rho10")
     assert observation["task"]["goal"]["goal_id"] == "trim_bump_rho10" and observation["task"]["goal_text"]
     assert observation["episode"]["state"] == "READY" and observation["timestamp_s"] == 0.
@@ -201,14 +203,51 @@ def test_deployable_observation_has_no_privileged_keys_and_privileged_needs_opt_
 def test_reset_isolates_episodes(trim_env):
     env = trim_env
     _, first = env.reset(seed=42)
+    first_full = dict(env.last_reset_checks)   # privileged reset checks live on the harness side, not in info
     for _ in range(5):
         env.step({"type": "edge_delta", "target": [0., 0., -.001, 0., 0., 0.], "frame": "world", "cut_enabled": True})
     _, second = env.reset(seed=42)
-    for key in ("time_zero", "labels_clean", "action_log_empty", "control_steps_zero", "oracle_history_single_sample"):
+    for key in ("time_zero", "action_log_empty", "control_steps_zero", "oracle_history_single_sample"):
         assert second["reset_checks"][key] is True
-    assert second["reset_checks"]["material_codes_sha256"] == first["reset_checks"]["material_codes_sha256"]
-    assert second["reset_checks"]["edge_pose_world_xyzw"] == first["reset_checks"]["edge_pose_world_xyzw"]
+    assert env.last_reset_checks["labels_clean"] is True
+    assert env.last_reset_checks["material_codes_sha256"] == first_full["material_codes_sha256"]
+    assert env.last_reset_checks["edge_pose_world_xyzw"] == first_full["edge_pose_world_xyzw"]
     assert second["episode_index"] == first["episode_index"]+1
+
+
+# ----------------------------------------------------------------------------- info dicts (WP-11 review finding 9)
+
+@pytest.mark.cpu_sim
+def test_default_info_dicts_carry_no_privileged_key(trim_env):
+    env = trim_env
+    observation, info = env.reset(seed=42)
+    assert find_privileged_info_keys(info) == [] and "privileged" not in info
+    assert set(info["reset_checks"]) <= set(DEPLOYABLE_RESET_CHECKS)
+    infos = [env.step(action)[4] for action in (
+        {"type": "edge_delta", "target": [0.]*6}, {"type": "edge_delta", "target": [0., 0., -.05, 0., 0., 0.]},
+        {"type": "edge_pose", "target": [0, 0, 0, 0, 0, 0, 2]}, {"gripper": "hold"})]
+    for step_info in infos:
+        assert find_privileged_info_keys(step_info) == [], step_info
+        assert "grasp_status" not in step_info and "privileged" not in step_info
+    # the walk itself finds privileged names at any depth
+    assert find_privileged_info_keys({"a": [{"b": {"edge_pose_world_xyzw": 1}}], "grasp_status": "HOLDING"}) == [
+        "/a[0]/b/edge_pose_world_xyzw", "/grasp_status"]
+    assert PRIVILEGED_KEYS <= PRIVILEGED_INFO_KEYS
+
+
+@pytest.mark.cpu_sim
+def test_privileged_profile_moves_reset_checks_and_grasp_status_to_the_privileged_channel(tmp_path):
+    from robotic_cutting_sim.live_env import open_cutting_env
+    with open_cutting_env(runtime="kinematic", output_dir=tmp_path/"priv", preset="cutting_research_v1",
+                          particle_spacing_m=.004, material_dt=.0005, device="cpu",
+                          observation_profile="privileged_state", **TRIM) as env:
+        _, info = env.reset(seed=42)
+        assert find_privileged_info_keys(info) == []            # everything privileged is under info["privileged"]
+        full = info["privileged"]["reset_checks"]
+        assert full == env.last_reset_checks and "edge_pose_world_xyzw" in full and "material_at_reference_max_m" in full
+        assert "tool_truth" in info["privileged"] and set(info["reset_checks"]) <= set(DEPLOYABLE_RESET_CHECKS)
+        _, _, _, _, step_info = env.step({"type": "edge_delta", "target": [0.]*6})
+        assert find_privileged_info_keys(step_info) == [] and "grasp_status" in step_info["privileged"]
 
 
 # ----------------------------------------------------------------------------- action programs
