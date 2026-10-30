@@ -87,13 +87,19 @@ trim plane while still attached to it.
 | ![Test B](docs/media/wp11/test_b_s1502/demo.gif) | ![Test C](docs/media/wp11/test_c_s1602/demo.gif) |
 
 `tlmpm_v5` keeps each cut as packed 2-bit digits, so an episode can hold up
-to 15 cuts. Each grid node stores its logical fields in sparse slots, which
-makes the cost independent of the number of cuts
+to 15 cuts. Each grid node stores its logical fields in a fixed number of
+sparse slots, `slots_per_node`. The measured cost stayed flat for K = 1–8
 ([ADR 0014](docs/adr/0014-scalable-cut-history-sparse-logical-fields.md)).
+
+In practice the slot count limits the number of cuts: one round-1 sequence
+overflowed the default S = 8 and aborted, as designed. Round 2 used S = 16,
+with at most 8 slots in use.
 - **Test B:** four slices give five independent pieces.
 - **Test C:** 96.2%, 99.7% and 97.2% of the three protrusions are removed.
   The substrate remains one component, each chip separates during its own
   skim, and the return home passes.
+- **Test C residual:** the skims press the remaining substrate top down by
+  1.4–1.5 mm on average (3.19 mm at most) inside their footprints.
 
 | Slice, then push, with wrist-depth relocation | Test A: skim along −x |
 | --- | --- |
@@ -122,10 +128,23 @@ With the opt-in perception hook `wrist_depth_relocate_v1`
 | [Round 1](docs/reports/WP11_PHASE_E_ROUND1.md) | 41 seeded samples (CUT, TRIM, SLICE-PUSH, Tests A–D) | Kinematic 32/41 TASK_SUCCESS, 9 CUTTING_FAILURE |
 | Round 1 | Live Native, nominated seeds | 6/9 TASK_SUCCESS (2 failures as in kinematic, 1 preflight refusal); Test C after the fix: PASS; SLICE-PUSH with relocation: 3/3 |
 | [Round 2](docs/reports/WP11_PHASE_E_ROUND2.md) | 40-sample sweep over wider ranges | 4 SCENE_INFEASIBLE, 8 IK_FAILURE, 28 feasible |
-| Round 2 | Kinematic run of 18 of the feasible samples | 8 succeed; the failures map law-8 limits (below) |
+| Round 2 | Kinematic: all 6 Test D2 sequences, plus 12 of the 28 feasible sweep samples (a predeclared subset; the other 16 were not run) | 8 of 18 succeed (D2 3/6, sweep 5/12). The failures map the law-8 limits below |
 
-Round 2 also introduced `goal_eval_v2`, which scores each step of a sequence
-goal only on its own cuts.
+**Report-only path audit.** All of round 1's live 10° skims (two TRIM seeds,
+Test A s6 and Test C) failed the measured-path PRE-CUT clearance audit. They
+used `path_v2`, and the blade dipped 0.19–0.24 mm into the bar while
+settling. `path_v3`, used in the C5b run above, passes the audit.
+
+**Evaluator changes.** Round 2 introduced `goal_eval_v2`, which scores each
+step of a sequence goal only on its own cuts. Review then found three defects
+in v2:
+- it ignored cuts that no step owns;
+- it had no combined check for substrate detachment;
+- it gave a false FAIL when a removal came before a sever.
+
+They are fixed in the opt-in `goal_eval_v2a`. v2 stays as declared, and
+rescoring with v2a changed no recorded verdict
+([ADR 0015](docs/adr/0015-scene-goal-controller-evaluation-separation.md)).
 
 ### Policy-ready API
 
@@ -181,12 +200,24 @@ Validated in the 1 mm boundary study ([report](docs/reports/WP11_PHASE_F_LAW8.md
   three-cut history.
 - **Negative controls:** side push, flat press, no contact and a loaded
   blunt handle never cut.
+  - The first blunt-handle control is still recorded as FAIL: it was loaded
+    too weakly (0.077 N) to test anything.
+  - The corrected, declared version passes.
+  - [Post-review controls](docs/reports/WP11_REVIEW_NEGATIVE_CONTROLS.md)
+    pass 14 of 14. Seven are at ρ = 10° on `tlmpm_v4`, run after the live
+    TRIM. Seven use `tlmpm_v5` with K = 5, but only with single-digit
+    histories, so controls after earlier real cuts were not run.
 
 Known limits, reported and not hidden:
 - Oblique cuts of 30–35° do not separate the bar.
-- Skims at a rake of 45° or more never engage the law.
+- Skims at a rake of 45° never engage the law. Higher rakes were not run.
 - A few chip particles can stay unlabelled after a sever followed by skims.
-- Removal and contact force are not converged at 1.5–2 mm resolution.
+- Results are not converged with resolution:
+  - Contact forces change 2.6× when the time step is halved, even at 1 mm.
+  - TRIM removal drops to 0.82 at 2 mm, and to 0.58 in a non-protocol 1.5 mm
+    supplementary row. The declared 1.5 mm row could not run.
+  - CUT location fails the 2 mm limit on coarser lattices, so a
+    `research_fast_v1` sever fails its plane check.
 - No Isaac Lab parity.
 
 ### Frozen baseline still reproduces
