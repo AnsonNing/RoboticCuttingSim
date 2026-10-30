@@ -91,7 +91,8 @@
 - **SLICE-PUSH 手腕深度重新定位（configured task）**（[ADR 0016](adr/0016-configured-perception-relocation.md)，`0e96f07` 程式，`c29f02a` 先宣告 live_004，`fa0eabb` 證據，[影片](media/wp11/slice_push_relocate/demo.gif)）。
   - opt-in `planner_options.perception = "wrist_depth_relocate_v1"`：每刀之間在場景設定決定的固定位姿用腕部 D405 深度量 +x 端面位移，平移下一刀；不用 look-at、不最佳化觀測位姿、不讀粒子／標籤／刀具真值。不要求時，計畫與 task id 完全不變。
   - Live s1301 **TASK_SUCCESS**：量到 +1.158 mm（oracle +1.149 mm），第二刀落在 +24.00 mm（live_001 是 +23.00 mm），凍結統計 1.5 mm ≤ 2 mm，三塊、推開 16.7 mm，Return-to-Home PASS。round 1 的 kinematic 與 live_001 失敗紀錄不變。
-  - s1302／s1303 因 /mnt/data 降到 15 GB 下限而沒有啟動（NOT_RUN）；又搬了 22 個舊 artifact（約 12 GB）到根磁碟，現在剩 27 GB，兩個 seed 第一次啟動中。
+  - s1302／s1303 第一次因 /mnt/data 降到 15 GB 下限而沒有啟動；搬了 22 個舊 artifact（約 12 GB）到根磁碟後第一次啟動（不是重試）：**live_004 三個 seed 全部 TASK_SUCCESS**（yaw −6.3°／+18.1°／−14.2°），第二刀都落在宣告切面上，位置統計 1.5 mm，推開 14–18 mm，全部 Return-to-Home PASS。
+  - 限制：s1302 的外側那塊不是剛體平移，端面量測誤差只有 −0.007 mm，但切口處材料多移了 0.28 mm；在 1 mm 粒子格子的半層餘裕內，所以這次仍切在正確位置，較大的非剛體滑動不會被完全修正。
 - CI：`beb92b5` 修正 GitHub Actions 失敗（Test C 預檢測試在沒有 newton／mujoco／Franka 資產時改標 NOT_RUN）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
