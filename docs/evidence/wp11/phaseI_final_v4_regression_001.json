@@ -1,0 +1,959 @@
+{
+ "schema": "wp11_phaseI_final_v4_regression_v1",
+ "id": "phaseI_final_v4_regression_001",
+ "verdict": "PASS",
+ "verdict_rule": "PASS iff every demo has identical runner verdict, execution/outcome layers, frozen strict status and failed-check set, task/protocol identity, and metrics within GPU nondeterminism; any verdict change = FAIL (regression)",
+ "question": "Does the frozen BladeMaster final_v4 set (cutting law 8) still reproduce at WP-11 HEAD?",
+ "reference_run": {
+  "run_id": "live_20261029_law8_final",
+  "root": "artifacts/wp10_claude/demos/live_20261029_law8_final",
+  "evidence": "docs/evidence/phase3/demos_live_004.json",
+  "run_shas": {
+   "demo1a": "3e5055c27c36b984716c03bc8962c7e77bbe1cbe",
+   "demo1b": "f7ab36eddf176ba51fe990900fb4399302dbeb44",
+   "demo2": "9f895758c1e67f92e81dc5fc72c127d8f6d5d8b0",
+   "demo3": "9f895758c1e67f92e81dc5fc72c127d8f6d5d8b0"
+  },
+  "device": "GPU 1 (RTX 5090)"
+ },
+ "regression_run": {
+  "run_id": "live_20261030_wp11_regression_001",
+  "root": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001",
+  "index": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/index.json",
+  "code_sha": "d57d0f2f711960aa9e4acaef5bfcb355b5c5a47e",
+  "git_dirty_all_receipts": false,
+  "git_dirty_checked": [
+   "logs/<demo>_run.json git.dirty",
+   "demo_summary evaluator.git.dirty",
+   "<demo>/manifest.json and episode_000/manifest.json git_dirty",
+   "index.json git.dirty"
+  ],
+  "worktree": "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2 (git worktree add --detach, HEAD d57d0f2; symlinks .venv, .deps/{IsaacLab,isaaclab-venv,isaacsim-extension-cache,isaacsim-venv,newton}, artifacts/{assets_audit_002,workcell_asset_cache} -> main checkout, artifacts/wp10_claude -> /mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude)",
+  "sha_note": "HEAD advanced from a24cbd4 to d57d0f2 (docs/PROGRESS.md only) between the task prompt and worktree creation; d57d0f2 is the pinned sha",
+  "command": "cd /mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2 && TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_blademaster_demos.py --demo-set final_v4 --gpu 0 --run-id live_20261030_wp11_regression_001",
+  "only_argv_difference_vs_reference": "--gpu 0 (reference --gpu 1) and the --out path",
+  "stages": "run, evaluate, render (default; no publish)",
+  "seed": 42,
+  "cutting_law": 8,
+  "device": "GPU 0, NVIDIA GeForce RTX 5090 (GPU-76f61dc7-9c48-d525-ce02-df1d879024ad)",
+  "started": "2026-10-30T11:05:36+09:00",
+  "runner_wall": "32:11 (/usr/bin/time), exit 0, max RSS 15.5 GB",
+  "runner_stdout": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/wp11_phaseI/runner_stdout_001.log",
+  "resource_samples": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/wp11_phaseI/resource_samples_001.log",
+  "attempts": 1,
+  "relaunches": 0,
+  "gpu_policy": "GPU 0 chosen: at launch 2 other processes (flospo pids 22335/22336, 766 MiB each, 0% util), 30.8 GB free; GPU 1 had an 18.6 GB job at 88-99% util. During demo 2/3 another RCS agent started 2 Phase R kinematic jobs (pids 3688340/3688341, --device cuda:1) that also hold ~0.5 GB idle contexts on GPU 0 (GPU 0 util 0%); demo 3 launched automatically within the same runner with 29.8 GB free on GPU 0. No process was stopped except my own disk/GPU sampler.",
+  "disk": "/mnt/data free 24.4 GiB at launch, 18.5 GiB minimum sampled at end (other users also write); run directory 2.2 GiB; floor 15 GB never reached"
+ },
+ "comparison_script": {
+  "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/wp11_phaseI/compare_phaseI_001.py",
+  "sha256": "1e147302ef924d7f55e1987c4cd8c2b5854820249a97e3d9fc57d9763c13dd88",
+  "output": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/wp11_phaseI/compare_phaseI_001.json",
+  "command": ".venv/bin/python /mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/wp11_phaseI/compare_phaseI_001.py --ref artifacts/wp10_claude/demos/live_20261029_law8_final --new artifacts/wp10_claude/demos/live_20261030_wp11_regression_001 --out /mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/wp11_phaseI/compare_phaseI_001.json",
+  "read_only": true,
+  "edge_error_definition": "max |measured edge centre - target| over cut-enabled steps (1a: x vs target plane; 2: z vs target plane + edge_clearance_m 0.2 mm); reproduces the README 0.046 mm / 0.026 mm on the reference run"
+ },
+ "plan_hash_note": "final_v4 artifacts record no plan hash field; plan identity is compared via task.json sha256, policy_plan, the controller_profile receipt, policy_motion and demo_set (all identical)",
+ "demos": {
+  "demo1a": {
+   "status": "PASS",
+   "regression": "NONE",
+   "identity_all_equal": true,
+   "verdict_layers_all_equal": true,
+   "compared": {
+    "verdict": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "execution": {
+     "ref": "PASS_EXECUTION",
+     "new": "PASS_EXECUTION"
+    },
+    "outcome": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "frozen_strict_status": {
+     "ref": "PASS_TASK_METRICS",
+     "new": "PASS_TASK_METRICS"
+    },
+    "frozen_strict_failed_checks": {
+     "ref": [],
+     "new": []
+    },
+    "task_id": {
+     "ref": "CUT-01-R",
+     "new": "CUT-01-R"
+    },
+    "task_json_sha256": {
+     "ref": "43051e1c39bcbc247a8fed5069f6797589a246ad710aef3a0f13e2e4487258b9",
+     "new": "43051e1c39bcbc247a8fed5069f6797589a246ad710aef3a0f13e2e4487258b9"
+    },
+    "task_protocol_sha256": {
+     "ref": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+     "new": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+    },
+    "strict_protocol_sha256": {
+     "ref": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+     "new": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+    },
+    "research_protocol_sha256": {
+     "ref": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe",
+     "new": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe"
+    },
+    "outcome_protocol": {
+     "ref": "demo1_complete_cut_v1",
+     "new": "demo1_complete_cut_v1"
+    },
+    "policy_plan": {
+     "ref": "through_cut",
+     "new": "through_cut"
+    },
+    "steps_executed": {
+     "ref": 400,
+     "new": 400
+    },
+    "ik_rejections": {
+     "ref": 0,
+     "new": 0
+    },
+    "action_clamps": {
+     "ref": 10,
+     "new": 5
+    },
+    "cut_enabled_steps": {
+     "ref": 158,
+     "new": 158
+    },
+    "grasp_final": {
+     "ref": "HOLDING",
+     "new": "HOLDING"
+    },
+    "max_slip_m": {
+     "ref": 7.219407476128225e-07,
+     "new": 7.273803175828353e-07
+    },
+    "tracking_error_p95_m": {
+     "ref": 0.002259625209656953,
+     "new": 0.002259625209656953
+    },
+    "tracking_error_max_m": {
+     "ref": 0.005287701439970176,
+     "new": 0.005287701439970176
+    },
+    "part_mass_fractions": {
+     "ref": [
+      0.5000000000003806,
+      0.5000000000003806
+     ],
+     "new": [
+      0.5000000000003806,
+      0.5000000000003806
+     ]
+    },
+    "frozen_location_m": {
+     "ref": 0.0015000000421423465,
+     "new": 0.0015000000421423465
+    },
+    "last_active_cut_time_s": {
+     "ref": 4.76,
+     "new": 4.76
+    },
+    "persistence_after_withdrawal_s": {
+     "ref": 3.0,
+     "new": 3.0
+    },
+    "frozen_postcut_persistence_s": {
+     "ref": 2.3999999999999995,
+     "new": 2.3999999999999995
+    },
+    "edge_x_error": {
+     "ref": {
+      "axis": "x",
+      "target_world_m": 0.0,
+      "max_abs_cut_enabled_contact_m": 2.2213841754890192e-05,
+      "max_abs_cut_enabled_m": 4.6238384782573026e-05,
+      "contact_steps": 113,
+      "cut_enabled_steps": 158
+     },
+     "new": {
+      "axis": "x",
+      "target_world_m": 0.0,
+      "max_abs_cut_enabled_contact_m": 2.4776215770453718e-05,
+      "max_abs_cut_enabled_m": 4.6238384782573026e-05,
+      "contact_steps": 113,
+      "cut_enabled_steps": 158
+     }
+    }
+   },
+   "new_episode": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo1a/episode_000",
+   "new_summary": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo1a/demo_summary.json",
+   "ref_summary": "artifacts/wp10_claude/demos/live_20261029_law8_final/demo1a/demo_summary.json",
+   "new_label": "outcome PASS (2 components 50/50%, separated after withdrawal, grasp held) | frozen strict PASS_TASK_METRICS | controller path_v2",
+   "ref_label": "outcome PASS (2 components 50/50%, separated after withdrawal, grasp held) | frozen strict PASS_TASK_METRICS | controller path_v2",
+   "run": {
+    "command": [
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/.deps/isaacsim-venv/bin/python",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--task",
+     "CUT-01-R",
+     "--preset",
+     "policy",
+     "--tool-attachment-mode",
+     "physical_grasp",
+     "--controller",
+     "scripted",
+     "--scenario",
+     "blademaster_workcell_v1",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "5",
+     "--edge-feedback",
+     "measured",
+     "--cutting-law",
+     "8",
+     "--motion",
+     "push",
+     "--controller-profile",
+     "path_v2",
+     "--steps",
+     "400",
+     "--seed",
+     "42",
+     "--gpu",
+     "0",
+     "--out",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo1a"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "started": "2026-10-30T11:05:41+09:00",
+    "finished": "2026-10-30T11:11:45+09:00",
+    "wall_s": {
+     "runner_process": 363.4706581549981,
+     "run_wp10_live_total": 362.3712545840099,
+     "episode": 342.4698890009895
+    },
+    "ref_wall_s": {
+     "runner_process": 350.2212132099994,
+     "run_wp10_live_total": 349.2716978549979,
+     "episode": 329.70816238000043
+    },
+    "git": {
+     "sha": "d57d0f2f711960aa9e4acaef5bfcb355b5c5a47e",
+     "dirty": false,
+     "branch": "HEAD"
+    },
+    "gpu_before": "0, NVIDIA GeForce RTX 5090, 1825 MiB, 32607 MiB, 0 %\n1, NVIDIA GeForce RTX 5090, 18692 MiB, 32607 MiB, 99 %"
+   }
+  },
+  "demo1b": {
+   "status": "PASS",
+   "regression": "NONE",
+   "identity_all_equal": true,
+   "verdict_layers_all_equal": true,
+   "compared": {
+    "verdict": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "execution": {
+     "ref": "PASS_EXECUTION",
+     "new": "PASS_EXECUTION"
+    },
+    "outcome": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "frozen_strict_status": {
+     "ref": "FAIL_TASK_METRICS",
+     "new": "FAIL_TASK_METRICS"
+    },
+    "frozen_strict_failed_checks": {
+     "ref": [
+      "cut_at_workpiece_local_target_plane",
+      "postcut_disconnected_topology_persists"
+     ],
+     "new": [
+      "cut_at_workpiece_local_target_plane",
+      "postcut_disconnected_topology_persists"
+     ]
+    },
+    "task_id": {
+     "ref": "CUT-01-R",
+     "new": "CUT-01-R"
+    },
+    "task_json_sha256": {
+     "ref": "43051e1c39bcbc247a8fed5069f6797589a246ad710aef3a0f13e2e4487258b9",
+     "new": "43051e1c39bcbc247a8fed5069f6797589a246ad710aef3a0f13e2e4487258b9"
+    },
+    "task_protocol_sha256": {
+     "ref": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+     "new": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+    },
+    "strict_protocol_sha256": {
+     "ref": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+     "new": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+    },
+    "research_protocol_sha256": {
+     "ref": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe",
+     "new": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe"
+    },
+    "outcome_protocol": {
+     "ref": "demo1_oblique_cut_adr0006_amendment1_v1",
+     "new": "demo1_oblique_cut_adr0006_amendment1_v1"
+    },
+    "policy_plan": {
+     "ref": "through_cut",
+     "new": "through_cut"
+    },
+    "steps_executed": {
+     "ref": 400,
+     "new": 400
+    },
+    "ik_rejections": {
+     "ref": 0,
+     "new": 0
+    },
+    "action_clamps": {
+     "ref": 17,
+     "new": 17
+    },
+    "cut_enabled_steps": {
+     "ref": 168,
+     "new": 168
+    },
+    "grasp_final": {
+     "ref": "HOLDING",
+     "new": "HOLDING"
+    },
+    "max_slip_m": {
+     "ref": 7.862829354459147e-07,
+     "new": 7.862829354459147e-07
+    },
+    "tracking_error_p95_m": {
+     "ref": 0.002739271822102687,
+     "new": 0.002739271822102687
+    },
+    "tracking_error_max_m": {
+     "ref": 0.0063715226969588475,
+     "new": 0.0063715226969588475
+    },
+    "part_mass_fractions": {
+     "ref": [
+      0.5046250000003852,
+      0.49537500000037593
+     ],
+     "new": [
+      0.5046250000003852,
+      0.49537500000037593
+     ]
+    },
+    "frozen_location_m": {
+     "ref": 0.005499999970197678,
+     "new": 0.005499999970197678
+    },
+    "swept_actual_interface_m": {
+     "ref": 0.004783529392716864,
+     "new": 0.004783381541641375
+    },
+    "swept_allowed_interface_m": {
+     "ref": 0.005443567719819884,
+     "new": 0.005443760891158053
+    },
+    "swept_ideal_interface_m": {
+     "ref": 0.004443567719819884,
+     "new": 0.004443760891158053
+    },
+    "label_geometry_disagreement_max_m": {
+     "ref": 0.0010669995862638995,
+     "new": 0.001066649008391728
+    },
+    "swept_tilt_deg": {
+     "ref": 19.9835924443763,
+     "new": 19.98491884255321
+    },
+    "last_active_cut_time_s": {
+     "ref": 5.94,
+     "new": 5.94
+    },
+    "persistence_after_withdrawal_s": {
+     "ref": 1.8200000000000003,
+     "new": 1.8200000000000003
+    },
+    "frozen_postcut_persistence_s": {
+     "ref": 2.3999999999999995,
+     "new": 2.3999999999999995
+    }
+   },
+   "new_episode": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo1b/episode_000",
+   "new_summary": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo1b/demo_summary.json",
+   "ref_summary": "artifacts/wp10_claude/demos/live_20261029_law8_final/demo1b/demo_summary.json",
+   "new_label": "outcome PASS (2 components 50/50%, separated after withdrawal, grasp held, swept-plane ok) | frozen strict FAIL_TASK_METRICS | controller path_v2",
+   "ref_label": "outcome PASS (2 components 50/50%, separated after withdrawal, grasp held, swept-plane ok) | frozen strict FAIL_TASK_METRICS | controller path_v2",
+   "run": {
+    "command": [
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/.deps/isaacsim-venv/bin/python",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--task",
+     "CUT-01-R",
+     "--preset",
+     "policy",
+     "--tool-attachment-mode",
+     "physical_grasp",
+     "--controller",
+     "scripted",
+     "--scenario",
+     "blademaster_workcell_v1",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "5",
+     "--edge-feedback",
+     "measured",
+     "--cutting-law",
+     "8",
+     "--motion",
+     "oblique",
+     "--angle",
+     "20",
+     "--controller-profile",
+     "path_v2",
+     "--steps",
+     "400",
+     "--seed",
+     "42",
+     "--gpu",
+     "0",
+     "--out",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo1b"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "started": "2026-10-30T11:12:25+09:00",
+    "finished": "2026-10-30T11:19:51+09:00",
+    "wall_s": {
+     "runner_process": 445.78467705000367,
+     "run_wp10_live_total": 444.7247308530059,
+     "episode": 425.14072539799963
+    },
+    "ref_wall_s": {
+     "runner_process": 440.37284604100205,
+     "run_wp10_live_total": 439.47461612500047,
+     "episode": 420.1894125609979
+    },
+    "git": {
+     "sha": "d57d0f2f711960aa9e4acaef5bfcb355b5c5a47e",
+     "dirty": false,
+     "branch": "HEAD"
+    },
+    "gpu_before": "0, NVIDIA GeForce RTX 5090, 1812 MiB, 32607 MiB, 0 %\n1, NVIDIA GeForce RTX 5090, 18692 MiB, 32607 MiB, 100 %"
+   }
+  },
+  "demo2": {
+   "status": "PASS",
+   "regression": "NONE",
+   "identity_all_equal": true,
+   "verdict_layers_all_equal": true,
+   "compared": {
+    "verdict": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "execution": {
+     "ref": "PASS_EXECUTION",
+     "new": "PASS_EXECUTION"
+    },
+    "outcome": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "frozen_strict_status": {
+     "ref": "FAIL_TASK_METRICS",
+     "new": "FAIL_TASK_METRICS"
+    },
+    "frozen_strict_failed_checks": {
+     "ref": [
+      "maximum_gouge_depth_m",
+      "overcut_volume_fraction_of_initial_base",
+      "surface_p95_absolute_plane_error_m"
+     ],
+     "new": [
+      "maximum_gouge_depth_m",
+      "overcut_volume_fraction_of_initial_base",
+      "surface_p95_absolute_plane_error_m"
+     ]
+    },
+    "task_id": {
+     "ref": "TRIM-01-R",
+     "new": "TRIM-01-R"
+    },
+    "task_json_sha256": {
+     "ref": "9120a3a395b2eda356ad1288f4d719c50cdc11bb4e063d5657c7f0aba306d1d4",
+     "new": "9120a3a395b2eda356ad1288f4d719c50cdc11bb4e063d5657c7f0aba306d1d4"
+    },
+    "task_protocol_sha256": {
+     "ref": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+     "new": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+    },
+    "strict_protocol_sha256": {
+     "ref": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7",
+     "new": "47af3668c5328946919cefc6c51fc21d96fdea87dbae6ced2f9b906006640fb7"
+    },
+    "research_protocol_sha256": {
+     "ref": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe",
+     "new": "49b49c61a53638f6ab784e22c3cfe817a81836de1d34f05f0148d67635050afe"
+    },
+    "outcome_protocol": {
+     "ref": "demo2_trim_separation_v1",
+     "new": "demo2_trim_separation_v1"
+    },
+    "policy_plan": {
+     "ref": "skim",
+     "new": "skim"
+    },
+    "steps_executed": {
+     "ref": 400,
+     "new": 400
+    },
+    "ik_rejections": {
+     "ref": 0,
+     "new": 0
+    },
+    "action_clamps": {
+     "ref": 2,
+     "new": 3
+    },
+    "cut_enabled_steps": {
+     "ref": 167,
+     "new": 167
+    },
+    "grasp_final": {
+     "ref": "HOLDING",
+     "new": "HOLDING"
+    },
+    "max_slip_m": {
+     "ref": 7.158642453499766e-07,
+     "new": 6.945429058476497e-07
+    },
+    "tracking_error_p95_m": {
+     "ref": 0.0010731340014480024,
+     "new": 0.0010731340014480024
+    },
+    "tracking_error_max_m": {
+     "ref": 0.00350774917214147,
+     "new": 0.00350774917214147
+    },
+    "removed_fraction": {
+     "ref": 0.9798850574712644,
+     "new": 0.978927203065134
+    },
+    "substrate_share": {
+     "ref": 0.9999166666663274,
+     "new": 0.9999166666663274
+    },
+    "detached_below_plane_fraction": {
+     "ref": 8.333333333333336e-05,
+     "new": 8.333333333333336e-05
+    },
+    "precision_passed": {
+     "ref": 5,
+     "new": 5
+    },
+    "precision_failed_checks": {
+     "ref": [
+      "maximum_gouge_depth_m",
+      "overcut_volume_fraction_of_initial_base",
+      "surface_p95_absolute_plane_error_m"
+     ],
+     "new": [
+      "maximum_gouge_depth_m",
+      "overcut_volume_fraction_of_initial_base",
+      "surface_p95_absolute_plane_error_m"
+     ]
+    },
+    "surface_p95_m": {
+     "ref": 0.0005830589731135782,
+     "new": 0.0005806052359593375
+    },
+    "surface_rms_m": {
+     "ref": 0.00028877093132268037,
+     "new": 0.00028891732593089124
+    },
+    "max_gouge_m": {
+     "ref": 0.02,
+     "new": 0.02
+    },
+    "overcut_fraction": {
+     "ref": 0.01658307231459225,
+     "new": 0.01659564924189805
+    },
+    "missing_surface_fraction": {
+     "ref": 0.006249999999999978,
+     "new": 0.006249999999999978
+    },
+    "max_residual_height_m": {
+     "ref": 0.00036458698529102246,
+     "new": 0.00036496696242222654
+    },
+    "edge_z_error": {
+     "ref": {
+      "axis": "z",
+      "target_world_m": 0.07020000000000001,
+      "max_abs_cut_enabled_contact_m": 9.429187825177321e-06,
+      "max_abs_cut_enabled_m": 2.6497451165452546e-05,
+      "contact_steps": 104,
+      "cut_enabled_steps": 167
+     },
+     "new": {
+      "axis": "z",
+      "target_world_m": 0.07020000000000001,
+      "max_abs_cut_enabled_contact_m": 9.298282488579002e-06,
+      "max_abs_cut_enabled_m": 2.6497451165452546e-05,
+      "contact_steps": 104,
+      "cut_enabled_steps": 167
+     }
+    }
+   },
+   "new_episode": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo2/episode_000",
+   "new_summary": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo2/demo_summary.json",
+   "ref_summary": "artifacts/wp10_claude/demos/live_20261029_law8_final/demo2/demo_summary.json",
+   "new_label": "outcome PASS (above-plane removed 97.9%, substrate 100.0%) | precision 5/8 (FAIL_PRECISION) | controller path_v2",
+   "ref_label": "outcome PASS (above-plane removed 98.0%, substrate 100.0%) | precision 5/8 (FAIL_PRECISION) | controller path_v2",
+   "run": {
+    "command": [
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/.deps/isaacsim-venv/bin/python",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--task",
+     "TRIM-01-R",
+     "--preset",
+     "policy",
+     "--tool-attachment-mode",
+     "physical_grasp",
+     "--controller",
+     "scripted",
+     "--scenario",
+     "blademaster_workcell_v1",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "5",
+     "--edge-feedback",
+     "measured",
+     "--cutting-law",
+     "8",
+     "--controller-profile",
+     "path_v2",
+     "--steps",
+     "400",
+     "--seed",
+     "42",
+     "--gpu",
+     "0",
+     "--out",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo2"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "started": "2026-10-30T11:20:36+09:00",
+    "finished": "2026-10-30T11:26:35+09:00",
+    "wall_s": {
+     "runner_process": 358.95930768200196,
+     "run_wp10_live_total": 357.5461953780032,
+     "episode": 337.4925973710051
+    },
+    "ref_wall_s": {
+     "runner_process": 351.5724877009998,
+     "run_wp10_live_total": 350.67560939599934,
+     "episode": 330.81045458800145
+    },
+    "git": {
+     "sha": "d57d0f2f711960aa9e4acaef5bfcb355b5c5a47e",
+     "dirty": false,
+     "branch": "HEAD"
+    },
+    "gpu_before": "0, NVIDIA GeForce RTX 5090, 1812 MiB, 32607 MiB, 1 %\n1, NVIDIA GeForce RTX 5090, 19121 MiB, 32607 MiB, 88 %"
+   }
+  },
+  "demo3": {
+   "status": "PASS",
+   "regression": "NONE",
+   "identity_all_equal": true,
+   "verdict_layers_all_equal": true,
+   "compared": {
+    "verdict": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "execution": {
+     "ref": "PASS_EXECUTION",
+     "new": "PASS_EXECUTION"
+    },
+    "outcome": {
+     "ref": "PASS",
+     "new": "PASS"
+    },
+    "frozen_strict_status": {
+     "ref": "NOT_APPLICABLE",
+     "new": "NOT_APPLICABLE"
+    },
+    "frozen_strict_failed_checks": {
+     "ref": [],
+     "new": []
+    },
+    "task_id": {
+     "ref": "SLICE-PUSH-01",
+     "new": "SLICE-PUSH-01"
+    },
+    "task_json_sha256": {
+     "ref": "937df6ce4975a896cfb95324f03a8e78dcae72c3012c38490c98e34736ce1ce9",
+     "new": "937df6ce4975a896cfb95324f03a8e78dcae72c3012c38490c98e34736ce1ce9"
+    },
+    "task_protocol_sha256": {
+     "ref": "a737204ce5807bc05ebcfcdbe0f66f106edd731193b0dd18a0b501b2eedabf90",
+     "new": "a737204ce5807bc05ebcfcdbe0f66f106edd731193b0dd18a0b501b2eedabf90"
+    },
+    "strict_protocol_sha256": {
+     "ref": "a737204ce5807bc05ebcfcdbe0f66f106edd731193b0dd18a0b501b2eedabf90",
+     "new": "a737204ce5807bc05ebcfcdbe0f66f106edd731193b0dd18a0b501b2eedabf90"
+    },
+    "research_protocol_sha256": {
+     "ref": null,
+     "new": null
+    },
+    "outcome_protocol": {
+     "ref": "demo3_slice_push_v1",
+     "new": "demo3_slice_push_v1"
+    },
+    "policy_plan": {
+     "ref": "slice_push_vision",
+     "new": "slice_push_vision"
+    },
+    "steps_executed": {
+     "ref": 800,
+     "new": 800
+    },
+    "ik_rejections": {
+     "ref": 0,
+     "new": 0
+    },
+    "action_clamps": {
+     "ref": 4,
+     "new": 9
+    },
+    "cut_enabled_steps": {
+     "ref": 317,
+     "new": 317
+    },
+    "grasp_final": {
+     "ref": "HOLDING",
+     "new": "HOLDING"
+    },
+    "max_slip_m": {
+     "ref": 8.064191758919555e-07,
+     "new": 9.061057675115675e-07
+    },
+    "tracking_error_p95_m": {
+     "ref": 0.0012413714829956834,
+     "new": 0.001238053150121446
+    },
+    "tracking_error_max_m": {
+     "ref": 0.0033688712119506114,
+     "new": 0.0033683629582260733
+    },
+    "part_mass_fractions": {
+     "ref": [
+      0.3750000000002555,
+      0.312500000000193,
+      0.312500000000193
+     ],
+     "new": [
+      0.3750000000002555,
+      0.312500000000193,
+      0.312500000000193
+     ]
+    },
+    "cut_plane_max_error_m": {
+     "ref": [
+      2.60770322002557e-10,
+      2.60770322002557e-10
+     ],
+     "new": [
+      2.60770322002557e-10,
+      2.60770322002557e-10
+     ]
+    },
+    "cut_severed_bonds": {
+     "ref": [
+      600,
+      600
+     ],
+     "new": [
+      600,
+      600
+     ]
+    },
+    "push_distance_m": {
+     "ref": 0.019679520996524126,
+     "new": 0.01968657574528234
+    },
+    "other_piece_displacement_norm_m": {
+     "ref": [
+      3.005088613898635e-08,
+      8.866999892314672e-07
+     ],
+     "new": [
+      2.623633038272889e-08,
+      5.747804817315764e-08
+     ]
+    },
+    "frames_with_code_changes_during_push": {
+     "ref": 0,
+     "new": 0
+    },
+    "merge_frame_times_s": {
+     "ref": [],
+     "new": []
+    },
+    "push_interval_s": {
+     "ref": [
+      11.48,
+      13.46
+     ],
+     "new": [
+      11.48,
+      13.46
+     ]
+    },
+    "vision_shift_estimate_m": {
+     "ref": 0.0012008692616193167,
+     "new": 0.0012005310073888859
+    },
+    "vision_applied_shift_m": {
+     "ref": 0.0012008692616193167,
+     "new": 0.0012005310073888859
+    },
+    "vision_calibration_face_x_m": {
+     "ref": 0.07904614779913492,
+     "new": 0.079046182485188
+    },
+    "vision_survey_face_x_m": {
+     "ref": 0.08024701706075424,
+     "new": 0.08024671349257688
+    }
+   },
+   "new_episode": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo3/episode_000",
+   "new_summary": "artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo3/demo_summary.json",
+   "ref_summary": "artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/demo_summary.json",
+   "new_label": "outcome PASS (PASS_SLICE_PUSH, components 3, pushed 19.7 mm, push completed) | controller path_v2_vision",
+   "ref_label": "outcome PASS (PASS_SLICE_PUSH, components 3, pushed 19.7 mm, push completed) | controller path_v2_vision",
+   "run": {
+    "command": [
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/.deps/isaacsim-venv/bin/python",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--task",
+     "SLICE-PUSH-01",
+     "--preset",
+     "policy",
+     "--tool-attachment-mode",
+     "physical_grasp",
+     "--controller",
+     "scripted",
+     "--scenario",
+     "blademaster_workcell_v1",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "5",
+     "--edge-feedback",
+     "measured",
+     "--cutting-law",
+     "8",
+     "--max-cuts",
+     "2",
+     "--controller-profile",
+     "path_v2_vision",
+     "--steps",
+     "800",
+     "--seed",
+     "42",
+     "--gpu",
+     "0",
+     "--out",
+     "/mnt/data/ningan/RoboticCuttingSim-wp11-I-d57d0f2/artifacts/wp10_claude/demos/live_20261030_wp11_regression_001/demo3"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "started": "2026-10-30T11:27:14+09:00",
+    "finished": "2026-10-30T11:36:27+09:00",
+    "wall_s": {
+     "runner_process": 553.2104050019989,
+     "run_wp10_live_total": 551.6307758650073,
+     "episode": 515.4935293519957
+    },
+    "ref_wall_s": {
+     "runner_process": 528.1048702350017,
+     "run_wp10_live_total": 526.7132070369989,
+     "episode": 491.8259573700052
+    },
+    "git": {
+     "sha": "d57d0f2f711960aa9e4acaef5bfcb355b5c5a47e",
+     "dirty": false,
+     "branch": "HEAD"
+    },
+    "gpu_before": "0, NVIDIA GeForce RTX 5090, 2815 MiB, 32607 MiB, 0 %\n1, NVIDIA GeForce RTX 5090, 19910 MiB, 32607 MiB, 96 %"
+   }
+  }
+ },
+ "documented_frozen_strict_fails_repeat": {
+  "demo1b": "yes: FAIL_TASK_METRICS on cut_at_workpiece_local_target_plane (5.5 mm, vertical-plane check not applicable to 20 deg oblique) and postcut_disconnected_topology_persists (window), same as reference",
+  "demo2": "yes: precision 5/8 FAIL_PRECISION, same failed checks (surface p95 0.581 vs 0.583 mm, max gouge 20 mm conservative rule, overcut 1.660% vs 1.658%)"
+ },
+ "nondeterminism_observed": "1a/1b/2 tracking-error p95/max bit-identical to reference; 1b slip bit-identical; remaining metrics differ at 1e-4..1e-7 relative level (e.g. Demo 2 removal 97.89% vs 97.99%, Demo 3 push 19.687 vs 19.680 mm, vision shift 1.2005 vs 1.2009 mm). Action clamp counts differ (1a 5 vs 10, 2 3 vs 2, 3 9 vs 4) without effect on any layer. Run on a different GPU index than the reference.",
+ "final_v4_path_changes_since_3e26d6b": {
+  "note": "Changed files on the final_v4 code path; none changed a verdict. tlmpm_v4.py, tlmpm_v3.py, run_blademaster_demos.py, render_demo_episode.py, demo_evaluation.py, evaluation.py and cutting_tasks_v2/v3.json are unchanged.",
+  "diffstat": [
+   "scripts/run_wp10_live.py                        |  238 ++++++++++++++++++++++++++++++-",
+   " src/robotic_cutting_sim/blade_probe.py          |   49 +++++--",
+   " src/robotic_cutting_sim/cut_topology.py         |  128 +++++++++++++++++",
+   " src/robotic_cutting_sim/cutting_surface.py      |   43 ++++--",
+   " src/robotic_cutting_sim/dataset.py              |  471 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/episode_lifecycle.py    |  352 ++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/generalization.py       |  837 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/goal_planner.py         |  592 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/goals.py                | 1106 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/isaac_sim_runner.py     |  292 ++++++++++++++++++++++++++++++++++----",
+   " src/robotic_cutting_sim/kinematic_env.py        |   61 ++++++--",
+   " src/robotic_cutting_sim/law8_validation.py      |  545 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/live_env.py             |  329 +++++++++++++++++++++++++++++++++++++++++--",
+   " src/robotic_cutting_sim/live_material.py        |   50 ++++++-",
+   " src/robotic_cutting_sim/motion_preflight.py     |  247 ++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/multi_cut_evaluation.py |   96 ++++++++++++-",
+   " src/robotic_cutting_sim/native_fixture.py       |    3 +",
+   " src/robotic_cutting_sim/perception_relocate.py  |  299 +++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/policies.py             |  204 ++++++++++++++++++++++++++-",
+   " src/robotic_cutting_sim/policy_env.py           |  822 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/policy_examples.py      |   38 +++++",
+   " src/robotic_cutting_sim/profiling.py            |  330 +++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/runtime_profiles.py     |   72 ++++++++++",
+   " src/robotic_cutting_sim/scene_config.py         |  860 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/skim_orientation.py     |   79 +++++++++++",
+   " src/robotic_cutting_sim/task_scenarios.py       |   41 +++++-",
+   " src/robotic_cutting_sim/tasks.py                |  121 +++++++++++++++-",
+   " src/robotic_cutting_sim/tlmpm_v5.py             |  930 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+   " src/robotic_cutting_sim/tool_profile.py         |  116 ++++++++++++++-",
+   " 29 files changed, 9258 insertions(+), 93 deletions(-)"
+  ]
+ },
+ "integrity": "No source file edited; no thresholds, physics or records changed; reference run untouched; new run id; nothing overwritten; no publish stage (docs/media untouched).",
+ "material_note": "Material parameters are provisional and uncalibrated"
+}
