@@ -117,7 +117,8 @@
     4. final_v4 live regression PASS；
     5. 最終 HEAD 的 CI 綠燈。
   - 其他應修項目：path_v3 bias 沒有 anti-windup；info dict 帶出 privileged 值；被拒絕的動作仍會放開夾爪；v5 的 cut index 沒有邊界檢查；C5／C5b 有 7 顆底材邊緣粒子留在切面上方 3.6–12 mm 但沒有在報告裡揭露；Test C 的 22 mm 凹陷是 heightfield 對位假象（長條滑了 0.77 mm），背後有平均 1.4 mm、最深 3.2 mm 的真實壓痕。
-  - 三個修正代理（R1 表面／揭露、R2 評估器 v2a＋邊界檢查＋ρ = 10° 與 v5 K = 5 負對照、R3 控制器／API）正在進行；final_v4 regression 進行中。
+  - **final_v4 live regression PASS**（`d57d0f2`，乾淨 worktree，GPU 0，32 min，[報告](reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)，[證據](evidence/wp11/phaseI_final_v4_regression_001.json)）：Demo 1a／1b／2／3 verdict 與 task／protocol identity 都和 `live_20261029_law8_final` 相同；已記錄的凍結 strict FAIL（1b 位置／時間窗、Demo 2 精度 5/8）照樣重現；Demo 2 去除 97.99% → 97.89%，Demo 3 推開 19.680 → 19.687 mm、手腕深度位移 1.2009 → 1.2005 mm。之後的修正 commit 有動到 final_v4 路徑的檔案，所以修正完成後會在最終 HEAD 再跑一次。
+  - 三個修正代理（R1 表面／揭露、R2 評估器 v2a＋邊界檢查＋ρ = 10° 與 v5 K = 5 負對照、R3 控制器／API）進行中。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
