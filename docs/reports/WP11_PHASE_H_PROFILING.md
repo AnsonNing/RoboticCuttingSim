@@ -326,3 +326,170 @@ changed to `4b5b2e1` while it ran, and `tests/test_phaseH_runtime.py` was rerun 
   cameras vs 0.49 s for three) and the PhysX/IK/contact-sensor loop do not scale with the material
   resolution. A cheaper camera profile would need a declared rendering change.
 - Material parameters are provisional and uncalibrated.
+
+## Native reliability v1b (declared 8-episode run)
+
+**Verdict: Native is POLICY_READY under the predeclared `phaseG_reliability_v1b` gates.** v1a agrees
+(identical scoring, as declared); v1 is NOT POLICY_READY on its `tool_at_rest_after_reset` rule only
+(all 8 episodes, the known PhysX clamped-body jitter that v1a/v1b replace). This resolves the
+3-point GPU result of the Phase H rerun: over 7 fitted points the process GPU slope is 2.0 MiB/episode.
+Host memory still grows (48.8 MiB/episode, under the 64 MiB gate): POLICY_READY here is not "no leak".
+
+| Item | Value |
+| --- | --- |
+| Declaration (before any run) | [`configs/wp11/phaseG_reliability_v1b.json`](../../configs/wp11/phaseG_reliability_v1b.json), plan [`configs/wp11/phaseH/native_reliability_trim_v1b_8ep.json`](../../configs/wp11/phaseH/native_reliability_trim_v1b_8ep.json), commit `a65e71d` |
+| Gates | v1a unchanged (every key the scorer reads is copied; checked on the Phase H rerun: v1a and v1b reports identical). Memory estimator spelled out: unweighted OLS (`numpy.polyfit`) of `memory_after` over episodes 1..7 (7 points), episode 0 excluded as v1/v1a already allow |
+| Plan | the Phase G/H Native Test F plan cycled twice: scripted (measured-edge feedback, expect PASS), hand-written action program, deliberate failure (stop after PRE_CUT, expect FAIL), scripted repeat; fixed seed 42; physical return home after every episode; one process |
+| Source | clean worktree `/mnt/data/ningan/RoboticCuttingSim-wp11-Hv1b-a65e71d` at `a65e71d`, `git_dirty = false` in every `episode.json` |
+| Runtime | Isaac Sim 6.2 Native, `full_physics_v1` (1 mm / 4 mm / 0.1 ms, `stage_reset = reload_in_place`), cameras on (2 x D405 + D455), `--camera-every 5 --record-every 10 --profile stages` (as the Phase H rerun) |
+| Device | GPU 0 (RTX 5090); at launch 1 other job counted by the `gpu_other_jobs` rule (RCS SLICE-PUSH live, idle), 29752 MiB free; GPU 1 was refused (2 active jobs, 6532 MiB free). Gate receipt `artifacts/wp11/logs/phaseH_native_v1b_001_gpu_gate.json` |
+| Output | `artifacts/wp11/phaseH/native_reliability_v1b_001` (log `artifacts/wp11/logs/phaseH_native_v1b_001.log`) |
+| Wall | started 2026-10-30 08:41:57 KST, finished 10:16:02 (5600 s scored wall); exit code not captured by the launcher (nohup without a wrapper); the run wrote `reliability.json` with `POLICY_READY = true` and no `failure.json`, i.e. collector status 0 |
+| Reader | `.venv/bin/python scripts/read_dataset.py artifacts/wp11/phaseH/native_reliability_v1b_001 --out artifacts/wp11/phaseH/native_reliability_v1b_001_read_dataset.json`: 8/8 PASS, `READ_DATASET PASS`, rc 0 |
+| Evidence | [`docs/evidence/wp11/phaseH_native_reliability_v1b_001.json`](../evidence/wp11/phaseH_native_reliability_v1b_001.json) (`scripts/summarize_phase_h_v1b.py`, read-only) |
+
+Command (from the worktree):
+
+    OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/python \
+      scripts/collect_dataset.py --runtime isaac_sim --gpu 0 --scene trim01_wp11_workcell --goal trim_bump_rho10 \
+      --planner-options '{"max_rotation_deg": 1.0, "max_translation_m": 0.001}' \
+      --episode-plan configs/wp11/phaseH/native_reliability_trim_v1b_8ep.json --runtime-profile full_physics_v1 \
+      --camera-every 5 --record-every 10 --profile stages \
+      --reliability-config configs/wp11/phaseG_reliability_v1b.json --reliability-config configs/wp11/phaseG_reliability_v1a.json \
+      --reliability-config configs/wp11/phaseG_reliability_v1.json --out artifacts/wp11/phaseH/native_reliability_v1b_001
+
+### Per-episode results and memory
+
+Host RSS is the collector's `VmRSS` after the episode was evaluated, returned home, recorded and
+exported. Process GPU is this pid's `nvidia-smi` compute memory summed over both GPUs (the gated
+value); it includes a constant 516 MiB Kit context on GPU 1 (the Phase H report table quoted the
+GPU 0 share only, i.e. 516 MiB less; the slope is the same).
+
+| Ep | Label | Verdict (expect) | Dome removed | Home | Reset wall (s) | Episode wall (s) | Host RSS after (MiB) | Process GPU after (MiB) | of which GPU 0 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | scripted_measured_seed42 | PASS (PASS) | 0.9789 | PASS | 11.4 (first open) | 562 | 10978.0 | 6205 | 5689 |
+| 1 | action_program_seed42 | PASS (–) | 0.9847 | PASS | 7.1 | 572 | 11139.9 | 6334 | 5818 |
+| 2 | deliberate_fail_stop_after_pre_cut | FAIL (FAIL) | 0.0 | FAIL (`measured_path_clearance`) | 7.4 | 602 | 11214.8 | 6178 | 5662 |
+| 3 | scripted_measured_seed42_repeat | PASS (PASS) | 0.9770 | PASS | 7.8 | 924 | 11292.7 | 6338 | 5822 |
+| 4 | scripted_measured_seed42_cycle1 | PASS (PASS) | 0.9789 | PASS | 8.7 | 844 | 11295.0 | 6402 | 5886 |
+| 5 | action_program_seed42_cycle1 | PASS (–) | 0.9847 | PASS | 7.7 | 805 | 11340.0 | 6402 | 5886 |
+| 6 | deliberate_fail_stop_after_pre_cut_cycle1 | FAIL (FAIL) | 0.0 | FAIL (`measured_path_clearance`) | 7.8 | 718 | 11426.2 | 6222 | 5706 |
+| 7 | scripted_measured_seed42_repeat_cycle1 | PASS (PASS) | 0.9770 | PASS | 7.3 | 549 | 11438.9 | 6302 | 5786 |
+
+Episode walls 3-6 are longer while another job shared GPU 0; wall time is not gated.
+
+| Trend (episodes 1..7) | Host RSS | Process GPU |
+| --- | --- | --- |
+| **Declared OLS slope (gating)** | **48.8 MiB/episode** (gate 64: PASS) | **2.0 MiB/episode** (gate 32: PASS) |
+| Theil-Sen slope (diagnostic) | 49.5 | 2.0 |
+| OLS over episodes 1..3 only (diagnostic, the Phase H rerun's window) | 76.4 | 2.0 |
+| Last minus first fitted point (diagnostic) | +299.0 MiB over 6 episodes | -32 MiB |
+| Per-episode deltas (diagnostic) | +161.9, +75.0, +77.9, +2.3, +45.0, +86.2, +12.7 | +129, -156, +160, +64, 0, -180, +80 |
+
+The GPU readings oscillate in a ~240 MiB band with no trend, consistent with the Phase H reading
+that the 52 MiB/episode 3-point slope was allocator noise. The host keeps growing at about
+50 MiB per full episode (the residual native growth of `reload_in_place` described in H1); a
+3-point window can exceed the gate (76.4 over episodes 1..3) while the declared 7-point fit passes.
+At this rate a 100-episode single-process Native collection would add about 5 GB of host RSS;
+process recycling (below) is the mitigation for long collections.
+
+### Gate verdicts
+
+| Gate | v1 | v1a | v1b |
+| --- | --- | --- | --- |
+| Per-episode reset/clock/camera/storage checks (23 live checks per episode) | **FAIL**: `tool_at_rest_after_reset` on episodes 0-7 (|v| 3.57 mm/s, |w| 0.148 rad/s, identical every reset); every other check PASS | PASS (8/8; `tool_velocity_repeats_episode_0` holds bitwise) | PASS (8/8) |
+| `consecutive_episodes_in_one_process` (8 planned, 8 stored, 0 execution failures) | PASS | PASS | PASS |
+| `host_memory_no_leak` (OLS <= 64) | PASS (48.8) | PASS | PASS |
+| `gpu_memory_no_leak` (OLS <= 32) | PASS (2.0) | PASS | PASS |
+| `same_seed_same_controller_repeatable` (Native: verdict rule) | PASS | PASS | PASS |
+| `failed_episode_stored_and_usable` | PASS | PASS | PASS |
+| **POLICY_READY** | **false** | **true** | **true** |
+
+Reset isolation: every post-reset tool pose, edge pose, active joints, material codes hash and tool
+linear/angular speed of episodes 1-7 is bitwise identical to episode 0, the grasp re-stabilized
+(`PASS_STABLE_GRASP`) at every reset, and the runtime setup receipts differ only in the PhysX step
+counter (`native_step_origin`). Repeatability groups: scripted (episodes 0, 3, 4, 7) verdict PASS x4;
+final codes are identical by cycle position (0 = 4, sha256 `672c04b1…`; 3 = 7, `3bb58cfe…`) but
+0 != 3 (dome 0.9789 vs 0.9770), so cross-reset material bitwise equality is not established on
+Native (GPU atomics; reported, not gated). Action program (1, 5) and deliberate failure (2, 6):
+final codes identical. Both deliberate-failure episodes failed the physical return home on
+`measured_path_clearance` (every other home check passed); home outcome is not a reliability gate.
+
+**Erratum (Phase H rerun above):** the H1 Test F table lists home PASS for episode 2 of
+`native_reliability_trim_full_physics_001`; its stored `home_outcome` is FAIL
+(`MEASURED_PATH_CLEARANCE`), the same as the v1b deliberate-failure episodes. No verdict changes.
+
+Disk floor: the eight runtime grasp traces were gzip-compressed as each completed
+(`artifacts/wp11/phaseH/native_reliability_v1b_001_grasp_trace_sha256_before_gzip.txt`), and the
+reader-unused `final_live_scene.usda`, `camera_pose_trace.json` and runtime `camera_extrinsics*.jsonl`
+of completed episodes as well (`…_episode_extras_sha256_before_gzip.txt`); every decompressed copy
+matches its original sha256. The same was done for the completed Phase H rerun and the Phase G
+Native runs (`artifacts/wp11/phaseG/*_sha256_before_gzip.txt`) when /mnt/data dropped to 14.9 GB
+free during the run (mostly other users' jobs). `read_dataset.py` still passes on the compressed
+Phase H rerun (4/4).
+
+### Process recycling mitigation (opt-in, declared)
+
+Implementation (opt-in, default unchanged): `scripts/collect_dataset.py --recycle-every N` (commit
+`209fa76`, fix `16f0ffa`), documented in [POLICY_READY_API.md](../POLICY_READY_API.md#process-recycling-collect_datasetpy---recycle-every-n-opt-in-mitigation).
+CPU tests `tests/test_collector_recycling.py` (kinematic, 5 passed after the fix: 5 episodes in 3
+fresh processes are bitwise equal to the one-process collection, continuous ids/seeds/index,
+`read_dataset.py` PASS incl. a kinematic replay; per-process memory scope; hard-exit regression).
+
+**Declared short Native run `native_recycle_mitigation_001`: MITIGATION_NOT_DEMONSTRATED (FAIL).**
+Declaration [`configs/wp11/phaseH/native_recycle_mitigation_v1.json`](../../configs/wp11/phaseH/native_recycle_mitigation_v1.json)
+(commit `4925c60`, before any recycled Native run): the 4-episode Test F plan, `--recycle-every 2`,
+otherwise the v1b flags; clean worktree `/mnt/data/ningan/RoboticCuttingSim-wp11-Hrecycle-4925c60`
+(`git_dirty = false`), GPU 0 (2 other RCS jobs counted, idle; 29295 MiB free), 16.9-19.4 GB free on
+/mnt/data, started 10:17:01 KST, exit code **3** at 10:59:48 (log
+`artifacts/wp11/logs/phaseH_native_recycle_mitigation_001.log`).
+
+Cause: a collector bug on Native only. The child wrote `recycle/block_###_result.json` after leaving
+the env context, but on Native the env close (Kit `SimulationApp.close`, `runtime_block_000/kit.log`:
+"Simulation App Shutting Down") ends the process (exit code 0) first. The parent therefore found no
+block results and indexed all four stored episodes as `FAIL_EXECUTION` ("child exited with code 0
+before episode i was stored"), stopped after "two consecutive failed blocks" (both had in fact run),
+and scored zero episodes (every v1/v1a/v1b report: NOT POLICY_READY, failing
+`consecutive_episodes_in_one_process`, `failed_episode_stored_and_usable`, `host_memory_no_leak`).
+`read_dataset.py` printed `READ_DATASET PASS` on **0** indexed episodes (vacuous; not a pass).
+The kinematic tests could not see this because the kinematic env close returns normally.
+Fix `16f0ffa`: the child writes its block result after every episode inside the env context;
+regression test `test_recycle_child_reports_its_episodes_even_when_env_close_ends_the_process`
+fails on `4925c60` (no result file) and passes now. The fix is not validated on Native (a new
+declared run would be needed; NOT_RUN).
+
+| Declared criterion | Result |
+| --- | --- |
+| 1 both children exit 0 with distinct pids | **FAIL** as scored (exit 0 x2, pids not reported by the missing results; the `episode.json` receipts show distinct pids 3166947 and 3322700) |
+| 2 continuous ids, plan seeds, index rows in order, `read_dataset.py` PASS | **FAIL** (all four index rows `FAIL_EXECUTION`; reader PASS is vacuous) |
+| 3 every per-episode v1b check passes | **FAIL** (no episode scored) |
+| 4 host RSS after block 1's first episode within 64 MiB of block 0's first | **FAIL**: 11018.9 vs 10941.6 MiB (+77.3; different controllers: deliberate failure vs scripted) |
+
+Diagnostics only (no verdict): all four episode directories are complete and validate with
+`dataset.validate_episode` when the export sha256 is taken from `episode.json` (it matches the file):
+
+| Ep | Block (pid) | Verdict | Home | Reset wall (s) | Episode wall (s) | Host RSS after (MiB) | Same episode in the v1b single process (MiB) | Process GPU after (MiB) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 0 (3166947) | PASS | PASS | 11.4 (first open) | 676 | 10941.6 | 10978.0 | 6205 |
+| 1 | 0 (3166947) | PASS | PASS | 7.0 | 786 | 11071.6 | 11139.9 | 6314 |
+| 2 | 1 (3322700) | FAIL (as planned) | FAIL (`measured_path_clearance`) | 12.2 (first open) | 545 | 11018.9 | 11214.8 | 6010 |
+| 3 | 1 (3322700) | PASS | PASS | 7.0 | 549 | 11209.3 | 11292.7 | 6338 |
+
+Each fresh process ends its first episode at about 10.9-11.0 GB, i.e. recycling resets the
+accumulated growth, but with 2 episodes per process this run cannot show more than that and it
+makes no leak, POLICY_READY or long-run claim. Traces and reader-unused extras were gzip-compressed
+after completion (`artifacts/wp11/phaseH/native_recycle_mitigation_001_*_sha256_before_gzip.txt`,
+all decompressed hashes match).
+
+### Open items (v1b)
+
+- Native POLICY_READY holds for the declared task/configuration (`full_physics_v1`,
+  `reload_in_place`, cameras on, physical grasp); the default `reopen` reset was not re-qualified.
+- Host RSS still grows about 49 MiB per full Native episode in one process (unattributed native
+  memory after `reload_in_place`); a 3-episode window can exceed the 64 MiB gate.
+- Native final cut codes of repeated scripted episodes match by cycle position but not across
+  positions (0.9789 vs 0.9770 dome); cause not investigated (GPU atomics suspected); verdicts agree.
+- Process recycling on Native: the fixed collector (`16f0ffa`) is NOT_RUN on Native; a new
+  declared run (new declaration, new commit, >= 3 episodes per process to fit within-process
+  slopes) is needed before recycling can be called demonstrated.
+- Material parameters are provisional and uncalibrated.

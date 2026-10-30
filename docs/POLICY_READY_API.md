@@ -360,7 +360,12 @@ on the largest within-process slope); every existing config keeps the whole-run 
 Recycling bounds per-process growth by restarting the process; it is a mitigation, not
 evidence that the runtime does not leak. Tested on the kinematic CPU backend
 (`tests/test_collector_recycling.py`: 5 episodes in 3 processes are bitwise equal to the
-one-process collection, `read_dataset.py` PASS).
+one-process collection, `read_dataset.py` PASS). Each child writes its block result after every
+episode inside the env context, because on Native the env close (Kit `SimulationApp.close`) ends
+the process. **Native status: not demonstrated.** The declared Native run
+`native_recycle_mitigation_001` (at `4925c60`, before that fix) stored all 4 episodes but lost both
+block results, so they were indexed as `FAIL_EXECUTION` (MITIGATION_NOT_DEMONSTRATED); the fixed
+collector (`16f0ffa`) has not been run on Native (NOT_RUN).
 
 ## Phase G results (2026-10-30)
 
@@ -391,8 +396,29 @@ Full receipts: [phaseH_profiling_001](evidence/wp11/phaseH_profiling_001.json), 
 | Native Test F rerun, clean worktree `ecc77de`, `full_physics_v1` (`native_reliability_trim_full_physics_001`) | same 4-episode plan: PASS / PASS / FAIL (as declared) / PASS (repeat with identical final codes), home PASS x4, every reset bitwise equal to episode 0. Host RSS slope **56.5 MiB/episode** (PASS, gate 64; Phase G 140). **Not POLICY_READY**: GPU slope 52 MiB/episode over 3 non-monotonic points (gate 32). v1 additionally fails the known `tool_at_rest_after_reset`. |
 | Native memory diagnostic with `reload_in_place` (`native_memory_probe_inplace_001`, 8 x 20 steps) | host 24.2 MiB/episode (Phase G 82.0), GPU 9.3; reset checks bitwise equal to episode 0 and to a Phase G reopen reset |
 
-Native therefore stays **NOT POLICY_READY** under the predeclared gates; the kinematic backend
-remains POLICY_READY. Host growth is reduced, not eliminated.
+Native therefore stayed **NOT POLICY_READY** after the Phase H rerun (superseded by v1b below); the
+kinematic backend remains POLICY_READY. Host growth is reduced, not eliminated.
+
+## Native status: POLICY_READY under v1b (2026-10-30)
+
+Full receipts: [phaseH_native_reliability_v1b_001](evidence/wp11/phaseH_native_reliability_v1b_001.json),
+report section "Native reliability v1b" in [WP11_PHASE_H_PROFILING.md](reports/WP11_PHASE_H_PROFILING.md).
+
+[`phaseG_reliability_v1b`](../configs/wp11/phaseG_reliability_v1b.json) keeps every v1a gate and
+threshold and declares (before the run) 8 consecutive full Native episodes in one process
+(the Test F plan cycled twice, `full_physics_v1` with `reload_in_place`) and the memory estimator
+(unweighted least-squares slope over episodes 1..7).
+
+| Run | Result |
+| --- | --- |
+| `native_reliability_v1b_001` (clean worktree `a65e71d`, GPU 0, 8 full episodes with physical return home, 5600 s) | PASS / PASS / FAIL (as declared) / PASS, twice; 8/8 stored episodes validate (`read_dataset.py` PASS); every reset bitwise equal to episode 0 and `PASS_STABLE_GRASP`. Host RSS slope **48.8 MiB/episode** (gate 64), process GPU slope **2.0 MiB/episode** (gate 32). **v1b POLICY_READY = true**, v1a true (identical scoring), v1 false (`tool_at_rest_after_reset` only, the known clamp jitter) |
+
+**Native (Isaac Sim) is POLICY_READY** under v1b for this task and configuration
+(`cutting_research_v1`, `full_physics_v1` + `reload_in_place`, cameras on, physical grasp). It is
+an API/lifecycle/storage reliability statement, not "no leak": the host still grows about 50 MiB per
+full episode, so long single-process collections should use `--recycle-every N` (mitigation, above).
+With the default `stage_reset="reopen"` (no runtime profile) Native was not shown POLICY_READY
+(Phase G: 140 MiB/episode).
 
 ## Scope and limits
 
