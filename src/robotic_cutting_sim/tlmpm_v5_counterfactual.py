@@ -4,7 +4,7 @@ Label: ``COUNTERFACTUAL_NOT_A_GATE``. Results computed with this module are coun
 test a diagnosed mechanism. They are never acceptance results, never a cutting law, never a material or surface
 profile, and never enter a verdict on law 8 or on a supported configuration. The module is deliberately not
 importable through any production entry point: ``LiveCuttingMaterial``, ``blade_probe``, ``scene_config``,
-``policy_env`` and every preset select ``tlmpm_v5`` (or older) only; ``tests/test_tlmpm_v5_counterfactual.py``
+``policy_env`` and every preset select ``tlmpm_v5`` (or older) only; ``tests/test_root_cause_recorders.py``
 checks that no module under ``src/`` other than this one names it. ``tlmpm_v5.py`` is not modified.
 
 ``CounterfactualTLMPM`` subclasses ``tlmpm_v5.TLMPM`` and replaces only ``step()``. Its body is the v5 step, launch
