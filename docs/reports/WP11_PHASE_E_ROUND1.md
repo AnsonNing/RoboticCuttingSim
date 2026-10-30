@@ -643,8 +643,12 @@ oracle values below are report-only.
 | Seed | Measured shift (wrist depth) | Actual shift (oracle, report-only) | Cut 0 / cut 1 label boundary | Frozen statistic | Pieces | Push / others | Grasp (slip, rotation) | `home_outcome` | **Class** | Wall (episode / process) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | s1301 | **+1.158 mm** (40 / 39 lines, spread 9 / 29 µm) | +1.149 mm, cut-1 layers (error **+0.009 mm**); +1.150 mm, end layer | −28.00 / **+24.00 mm** (declared −28 / +24) | 1.5 mm ≤ 2 mm | 3 / 3 | 16.7 mm (≥ 10) / 0.04 mm (≤ 2) | HOLDING, 0.95 µm, 0.095 mrad | PASS | **TASK_SUCCESS** | 1257 s / 1320 s |
-| s1302 | — | — | — | — | — | — | — | — | **NOT_RUN** (disk floor, never launched) | — |
-| s1303 | — | — | — | — | — | — | — | — | **NOT_RUN** (disk floor, never launched) | — |
+| s1302 | **+0.876 mm** (47 / 47 lines, spread 11 / 20 µm) | +1.160 mm, cut-1 layers (error **−0.283 mm**); +0.884 mm, end layer (error −0.007 mm) | −24.00 / **+28.00 mm** (declared −24 / +28) | 1.5 mm ≤ 2 mm | 3 / 3 | 18.1 mm (≥ 10) / 0.04 mm (≤ 2) | HOLDING, 0.94 µm, 0.103 mrad | PASS | **TASK_SUCCESS** | 1742 s / 1830 s |
+| s1303 | **+1.177 mm** (43 / 43 lines, spread 8 / 28 µm) | +1.167 mm, cut-1 layers (error **+0.010 mm**); +1.170 mm, end layer | −28.00 / **+36.00 mm** (declared −28 / +36) | 1.5 mm ≤ 2 mm | 3 / 3 | 14.0 mm (≥ 10) / 0.01 mm (≤ 2) | HOLDING, 1.33 µm, 0.140 mrad | PASS | **TASK_SUCCESS** | 1418 s / 1500 s |
+
+**live_004 totals (3 declared seeds): TASK_SUCCESS 3**; CUTTING_FAILURE, GRASP_FAILURE, IK_FAILURE, SCENE_INFEASIBLE and NOT_RUN 0.
+For the same seeds, the round-1 kinematic results (plain planner) are 3 CUTTING_FAILURE and live_001 s1301 is CUTTING_FAILURE.
+Those records are unchanged.
 
 **s1301 details** (`artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/`: `run_001`, `analysis_001`,
 `perception_001.json`):
@@ -661,15 +665,42 @@ oracle values below are report-only.
 - **Run.** Device cuda:1, run directory 1.43 GB, git `c29f02a` (clean detached worktree
   `/mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a`), seed 42.
 
-**s1302 and s1303: NOT_RUN.** Free space on `/mnt/data` fell from 23.0 GB to 15.4 GB while s1301 ran. s1301 wrote
-1.43 GB, and other agents wrote the rest concurrently. The queue then refused the next launch under the declared
-policy: 15.4 GB minus the 1.6 GB estimate is below the 15 GB floor. Neither seed was launched, so neither is a retry
-case. Both can be run later from the same commit with:
+**s1302 and s1303: first launch, not a retry.**
+- **Why they were not in the first queue.** queue_001 did not launch them: free space on `/mnt/data` fell from 23.0 GB
+  to 15.4 GB while s1301 ran (s1301 wrote 1.43 GB, other agents the rest), and the declared policy refused the next
+  launch (15.4 GB minus the 1.6 GB estimate is below the 15 GB floor). That first evidence commit `fa0eabb` recorded
+  them as NOT_RUN.
+- **The launch.** Main then freed `/mnt/data` (26.8 GB free). Both seeds were launched for the first time with the
+  recorded command, from the same clean worktree (`c29f02a`), under the same declaration and the same GPU/disk policy.
+  Neither seed had started before, so this is a first launch, not a retry, as the NOTE line at the top of
+  `artifacts/wp11/logs/phaseE_live004_queue_002.log` records:
 
-    cd /mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a && TMPDIR=/mnt/data/ningan/tmp .venv/bin/python \
-        scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json queue \
-        --root artifacts/wp11/phaseE/round1_live_004 --queue-log artifacts/wp11/logs/phaseE_live004_queue_002.log \
-        --only E1_SLICE_PUSH_s1302 E1_SLICE_PUSH_s1303
+      cd /mnt/data/ningan/RoboticCuttingSim-wp11-Elive4-c29f02a && TMPDIR=/mnt/data/ningan/tmp .venv/bin/python \
+          scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json queue \
+          --root artifacts/wp11/phaseE/round1_live_004 --queue-log artifacts/wp11/logs/phaseE_live004_queue_002.log \
+          --only E1_SLICE_PUSH_s1302 E1_SLICE_PUSH_s1303
+
+- **s1302** ran 09:07:51–09:38:21 on cuda:0. The GPU had 1 other active job, and disk went from 28.1 to 24.4 GB.
+  - The world shift was (+0.833, +0.273, 0) mm at a yaw of +18.1°. The measured edge during cut 1 was +0.875 mm (mean)
+    from the declared world plane.
+  - `ik_status` was ok on all 1975 task steps. The plan lagged 0.44 s, and the run directory is 1.68 GB.
+  - The +x piece did not move rigidly here. The wrist estimate matches the end layer it measures, but the layers at cut
+    1 had moved 0.28 mm more.
+  - The relocation still put cut 1 on the declared reference plane (the label boundary is exactly +28.00 mm), because
+    a 0.28 mm residual is inside the half-layer (0.5 mm) margin of the 1 mm lattice.
+  - This is the first live evidence of a limit of the ADR 0016 rigid-piece assumption. A larger non-rigid slide would
+    not be corrected fully.
+- **s1303** waited 37 s for a GPU: both GPUs had 3 other active jobs, more than the ≤ 2 the policy allows. It then ran
+  09:39:02–10:04:02 on cuda:0, with 2 other active jobs; disk went from 24.4 to 21.5 GB.
+  - The world shift was (+1.141, −0.289, 0) mm at a yaw of −14.2°. The measured edge during cut 1 was +1.176 mm (mean)
+    from the declared world plane.
+  - `ik_status` was ok on all 2000 task steps. The plan lagged 1.04 s, and the run directory is 1.60 GB.
+- **Both seeds:**
+  - 0 workspace clamps and 0 unintended contacts;
+  - the measured-path C2 audit PASSed;
+  - the runner's plan preflight PASSed before each launch;
+  - the recorded task id equals the CPU recompile;
+  - analysis (`analysis_001`, `perception_001.json`) used the same clean worktree.
 
 **Pre-run checks.**
 - **CPU C2 preflight.** The full hooked live plans PASSed for all three seeds before the declaration. The runner
@@ -692,6 +723,7 @@ case. Both can be run later from the same commit with:
 
     .venv/bin/python scripts/run_generalization_live.py --live-config configs/wp11/generalization_round1_live_004.json \
         queue --root artifacts/wp11/phaseE/round1_live_004 --queue-log artifacts/wp11/logs/phaseE_live004_queue_001.log
+    # s1302 / s1303: the queue_002 command above (first launch, --steps 1975 / 2000, --oracle-stride 50, --gpu 0)
     # runner argv (attempt_001.json): run_wp10_live.py --runtime isaac_sim --scene/--goal <inputs> --planner-options
     #   '{"max_rotation_deg": 1.0, "max_translation_m": 0.001, "perception": "wrist_depth_relocate_v1"}' --controller scripted
     #   --edge-feedback measured --hold-until-time-limit --return-home --record-cameras --overview-camera --record-every 10
@@ -703,7 +735,7 @@ case. Both can be run later from the same commit with:
         --planner-options '{"max_rotation_deg": 1.0, "max_translation_m": 0.001, "perception": "wrist_depth_relocate_v1"}' \
         --out artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/perception_001.json
 
-**Media.** These are from s1301, the only TASK_SUCCESS. They were rendered with `scripts/render_demo_episode.py`
+**Media.** These are from s1301, the first TASK_SUCCESS (no render of s1302/s1303 was made). They were rendered with `scripts/render_demo_episode.py`
 (K = 2), and the render directory is `round1_live_004/render_E1_SLICE_PUSH_s1301_001`:
 - [demo.gif](../media/wp11/slice_push_relocate/demo.gif) (3.5 MB);
 - [demo.mp4](../media/wp11/slice_push_relocate/demo.mp4);
@@ -711,5 +743,9 @@ case. Both can be run later from the same commit with:
 
 The temporary frames were rendered on the root disk to keep `/mnt/data` usage minimal.
 
-**Scope.** This is one live seed, with no repeat statistics. The relocation is validated live for one yaw (−6.3°); the
-+18° yaw is covered only by synthetic CPU tests. The material is provisional and uncalibrated.
+**Scope.**
+- These are three live seeds, one run each, so there are no repeat statistics.
+- The relocation is validated live at yaws of −6.3°, +18.1° and −14.2°, and bar lengths of 156, 150 and 168 mm.
+- The hook assumes the outer piece moves rigidly. s1302 shows a 0.28 mm non-rigid residual at the cut, inside the
+  layer margin.
+- The material is provisional and uncalibrated.
