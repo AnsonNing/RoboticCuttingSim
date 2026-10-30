@@ -68,10 +68,36 @@ def combine_component_meshes(meshes):
     return np.vstack(vertices), np.vstack(faces), rows
 
 
+UNMESHABLE_POLICIES = ("raise", "skip_presentation_v1")
+UNMESHABLE_SKIP_RULE = ("current mechanical components for which ParticleSurface yields no triangles are omitted from "
+                        "the presentation mesh only; physics, cut labels, evaluation and recording are unchanged")
+
+
+def substrate_anchor_mask(reference_points_local, tolerance_m=1e-7):
+    """Particles of the lowest reference layer: the anchors that define 'substrate' components in the frozen
+    TRIM oracle (scene_validation.material_task_metrics) and the configured goals (goals._substrate)."""
+    z = np.asarray(reference_points_local, float)[:, 2]
+    return z <= z.min()+tolerance_m
+
+
 class CuttingSurface:
-    """Newton ParticleSurface per current component, with no intercomponent weld."""
-    def __init__(self, partition, spacing_m, voxel_size_m=.001, device="cuda:0", *, profile="legacy"):
+    """Newton ParticleSurface per current component, with no intercomponent weld.
+
+    ``unmeshable`` (versioned): ``"raise"`` (default, the v1 behaviour) raises when ParticleSurface returns
+    no mesh for a current component. ``"skip_presentation_v1"`` (opt-in, WP-11 Phase E live_003) omits such a
+    component from the presentation mesh and records it in ``info["unmeshable_skipped"]``; that key is present
+    only when something was skipped, so all-meshable outputs are byte-identical across both policies.
+    ``substrate_anchors`` (optional bool mask, see ``substrate_anchor_mask``) lets a skip record say whether a
+    skipped component is a substrate component (contains a lowest-layer anchor particle)."""
+    def __init__(self, partition, spacing_m, voxel_size_m=.001, device="cuda:0", *, profile="legacy",
+                 unmeshable="raise", substrate_anchors=None):
         from newton.geometry import ParticleSurface
+        if unmeshable not in UNMESHABLE_POLICIES:
+            raise ValueError(f"unmeshable must be one of {UNMESHABLE_POLICIES}")
+        self.unmeshable = unmeshable
+        self.substrate_anchors = None if substrate_anchors is None else np.asarray(substrate_anchors, bool)
+        if self.substrate_anchors is not None and self.substrate_anchors.shape != (len(partition.nodes),):
+            raise ValueError("substrate_anchors needs one flag per particle")
         self.partition = partition
         self.spacing_m, self.voxel_size_m, self.device = spacing_m, voxel_size_m, device
         if profile not in ("legacy", "current_volume_v1"):
@@ -112,13 +138,19 @@ class CuttingSurface:
                     if self.profile == "current_volume_v1" else
                     wp.full(len(selected), self.spacing_m / 2, dtype=float, device=self.device))
                 vertices, indices, _ = self.surfaces[key].extract(points, radii)
-                if vertices is None or indices is None or not len(indices):
-                    # A fragment too sparse/small for the isosurface (e.g. a few loose particles): it stays in the
-                    # physics, labels and evaluation unchanged; only the presentation mesh omits it (recorded below).
-                    skipped.append({"mechanical_component": int(label), "particles": int(len(selected))})
+                if self.unmeshable == "raise":
+                    if vertices is None or indices is None:   # v1 behaviour, unchanged
+                        raise RuntimeError(f"ParticleSurface returned no mesh for {len(selected)} physical particles")
+                elif vertices is None or indices is None or not len(indices):
+                    # skip_presentation_v1: a fragment too sparse/small for the isosurface stays in the physics,
+                    # labels and evaluation unchanged; only the presentation mesh omits it (recorded below).
+                    row = {"mechanical_component": int(label), "particles": int(len(selected))}
+                    if self.substrate_anchors is not None:
+                        row["substrate_anchor_particles"] = int(self.substrate_anchors[selected].sum())
+                    skipped.append(row)
                     continue
                 chunks.append((label, vertices.numpy().copy(), indices.numpy().reshape(-1, 3).copy(), len(selected)))
-        if not chunks:
+        if not chunks and self.unmeshable != "raise":
             raise RuntimeError(f"ParticleSurface returned no mesh for any of {count} current mechanical components")
         vertices, faces, ranges = combine_component_meshes(chunks)
         info = {**provenance, "mechanical_components": count, "component_ranges": ranges,
@@ -126,18 +158,22 @@ class CuttingSurface:
         if skipped:
             # Present only when something was skipped, so all-meshable outputs stay byte-identical.
             info["unmeshable_skipped"] = {
+                "policy": self.unmeshable,
                 "fragments": len(skipped), "particles": int(sum(row["particles"] for row in skipped)),
-                "components": skipped,
-                "rule": "current mechanical components for which ParticleSurface yields no triangles are omitted from "
-                        "the presentation mesh only; physics, cut labels, evaluation and recording are unchanged"}
+                "substrate_component_skipped": (None if self.substrate_anchors is None else
+                                                any(row["substrate_anchor_particles"] > 0 for row in skipped)),
+                "components": skipped, "rule": UNMESHABLE_SKIP_RULE}
         return vertices, faces, info
 
 
 class ComponentSurface:
     """Live-bed convenience adapter; reference stencil is copied only once."""
-    def __init__(self, spacing, device="cuda:0", voxel_size=.001, *, profile="legacy"):
+    def __init__(self, spacing, device="cuda:0", voxel_size=.001, *, profile="legacy", unmeshable="raise",
+                 substrate_anchors=None):
+        if unmeshable not in UNMESHABLE_POLICIES:
+            raise ValueError(f"unmeshable must be one of {UNMESHABLE_POLICIES}")
         self.spacing, self.device, self.voxel_size = spacing, device, voxel_size
-        self.profile = profile
+        self.profile, self.unmeshable, self.substrate_anchors = profile, unmeshable, substrate_anchors
         self.surface = None
         self.bed_identity = None
 
@@ -146,7 +182,8 @@ class ComponentSurface:
             partition = CurrentMechanicalPartition(bed.nodes.numpy(), bed.weights.numpy(),
                                                     bed.gradients.numpy(), bed.config.cuts,
                                                     encoding=getattr(bed, "code_encoding", "ternary"))
-            self.surface = CuttingSurface(partition, self.spacing, self.voxel_size, self.device, profile=self.profile)
+            self.surface = CuttingSurface(partition, self.spacing, self.voxel_size, self.device, profile=self.profile,
+                                          unmeshable=self.unmeshable, substrate_anchors=self.substrate_anchors)
             self.bed_identity = id(bed)
         return self.surface.extract(bed.x.numpy(), bed.code.numpy(),
                                     bed.F.numpy() if self.profile == "current_volume_v1" else None)
