@@ -19,7 +19,8 @@ from .scene_frames import (WorkpieceTarget, pose_matrix, invert_transform, trans
 
 class LiveCuttingMaterial:
     def __init__(self, config=None, target=None, *, task=None, tool_profile=None, cutting_law=None,
-                 slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1, solver=None, slots_per_node=None):
+                 slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1, solver=None, slots_per_node=None,
+                 cut_events=None, cut_events_capacity=None):
         """``tool_profile`` (tool_profile.ToolProfile) selects the tlmpm_v2 solver
         with that blade polygon; None keeps the frozen v1 solver and task wedge.
 
@@ -33,6 +34,10 @@ class LiveCuttingMaterial:
         in every state/history output are then packed (``code_encoding``
         'packed2'; cut_topology.decode_digits). Slot overflow raises after the
         control step. None keeps the v1-v4 selection and limits unchanged.
+
+        ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) attaches the read-only Hermite
+        cut-event recorder (cut_events.CutEventRecorder) to every substep; its overflow raises after the
+        control step. None (default) creates no recorder and launches nothing new.
         """
         from .tasks import ProfileTaskSpec
         from .tool_profile import handle_box_edge
@@ -71,6 +76,12 @@ class LiveCuttingMaterial:
             raise ValueError("slots_per_node applies to solver='tlmpm_v5' only")
         elif max_cuts not in (1, 2) or (max_cuts == 2 and tool_profile is None):
             raise ValueError("max_cuts is 1 or 2; two cut digits require a tool profile (tlmpm_v2)")
+        if cut_events not in (None, 'cut_events_v1'):
+            raise ValueError("cut_events is None (off) or 'cut_events_v1'")
+        if cut_events is not None and solver != 'tlmpm_v5':
+            raise ValueError("cut_events records tlmpm_v5 only (solver='tlmpm_v5')")
+        self.cut_events, self.cut_events_capacity = cut_events, cut_events_capacity
+        self.cut_event_recorder = None
         self.solver = solver
         self.slots_per_node = None if solver is None else int(slots_per_node or 8)
         self.code_encoding = 'packed2' if solver == 'tlmpm_v5' else 'ternary'
@@ -217,13 +228,23 @@ class LiveCuttingMaterial:
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md"}
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
+        recorder = self.cut_event_recorder = None
+        if self.cut_events is not None:
+            from .cut_events import CutEventRecorder
+            recorder = self.cut_event_recorder = CutEventRecorder(self.bed, self.lattice,
+                                                                  capacity=self.cut_events_capacity)
+            wp.load_module(module="robotic_cutting_sim.cut_events", device=c.device)
         wp.load_module(module=solver_module, device=c.device)
         if self.task:
             wp.load_module(module="robotic_cutting_sim.fixture_contacts", device=c.device)
         if wp.get_device(c.device).is_cuda:
             with wp.ScopedCapture(device=c.device) as capture:
                 for _ in range(self.substeps):
+                    if recorder is not None:
+                        recorder.before_step()
                     self.bed.step()
+                    if recorder is not None:
+                        recorder.after_step()
             self.graph = capture.graph
         else:
             self.graph = None  # CPU: no graph capture; advance() replays the substeps.
@@ -238,7 +259,8 @@ class LiveCuttingMaterial:
             "workpiece_local_target_height_m": (self.task.target_origin_local_m[2]
                 if self.task and self.task.goal_kind == "flatten" else None if self.task else self.target.height_m),
             "world_from_workpiece_xyzw": list(self.task.world_from_workpiece_xyzw if self.task else self.target.world_from_workpiece_xyzw),
-            "task_id": self.task.task_id if self.task else None, "particle_spacing_m": self.spacing}
+            "task_id": self.task.task_id if self.task else None, "particle_spacing_m": self.spacing,
+            **({"cut_events": recorder.metadata()} if recorder is not None else {})}
 
     def advance(self, measured_edge_pose, time_s, *, cutting=True, cut_index=None):
         import warp as wp
@@ -271,14 +293,20 @@ class LiveCuttingMaterial:
             self.bed.box_reactions.zero_()
         self.bed.stats.zero_()
         start = time.perf_counter()
+        recorder = self.cut_event_recorder
         if self.graph is None:
             for _ in range(self.substeps):
+                if recorder is not None:
+                    recorder.before_step()
                 self.bed.step()
+                if recorder is not None:
+                    recorder.after_step()
         else:
             wp.capture_launch(self.graph)
         wp.synchronize_device(c.device)
         if self.solver == 'tlmpm_v5':
             self.bed.check_slots()  # overflow is an error, never a silent merge (ADR 0014)
+        cut_event_counters = recorder.check() if recorder is not None else None  # overflow raises (WP-12)
         impulse = self.bed.reaction.numpy()[0].astype(float)
         if self.task:
             impulse = rotate_wrench_at_same_point(self.T_world_local, impulse)
@@ -306,8 +334,15 @@ class LiveCuttingMaterial:
             "next_material_wrench_world": self.pending_wrench.copy(),
             "material_contact_statistics": self.bed.stats.numpy().copy(),
             "feedback_enabled": c.feedback, "feedback_delay_s": c.control_dt,
-            "material_wall_s": time.perf_counter()-start, "active_cut": cut >= 0, "cut_index": cut}
+            "material_wall_s": time.perf_counter()-start, "active_cut": cut >= 0, "cut_index": cut,
+            **({"cut_events": cut_event_counters} if recorder is not None else {})}
         return self.last_diagnostics.copy()
+
+    def cut_events_metadata(self):
+        """cut_events_v1 provenance (version, on/off, counts, overflow, log SHA256); oracle only."""
+        if self.cut_event_recorder is None:
+            return {"version": "cut_events_v1", "enabled": False}
+        return self.cut_event_recorder.metadata()
 
     def cutting_state(self):
         """Law-4 stroke state after the last substep (oracle only, never observed)."""

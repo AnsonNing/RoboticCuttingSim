@@ -51,7 +51,7 @@ class Phase:
 def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None, spacing=.004,
                 cutting_law=2, cutting_energy=5., slice_efficiency=1., cuts=1, obstacle_boxes_edge=None,
                 device="cpu", chunk=200, config_overrides=None, gpu_graph=False, record_history=False,
-                solver_version=None, slots_per_node=None):
+                solver_version=None, slots_per_node=None, cut_events=None, cut_events_capacity=None):
     """Drive the edge frame (rotation: edge->world Rotation) through phases.
 
     ``solver_version`` None uses tlmpm_v4 for laws 4-8, tlmpm_v3 for law 3 and
@@ -61,6 +61,10 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
     default 8); its codes stay packed in the result, which then also carries
     ``code_encoding``, per-phase per-digit label counts and slot diagnostics,
     and slot overflow raises after the chunk where it occurred.
+
+    ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) brackets every substep with the read-only
+    Hermite cut-event recorder (cut_events.CutEventRecorder); the result then carries ``cut_events``
+    (metadata, sorted log, per-substep activation rows) and recorder overflow raises after the chunk.
 
     Returns per-phase label counts, final components, mean and peak tool
     reaction force (world, N) per phase, and the solver snapshot.
@@ -73,6 +77,8 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                          'and tlmpm_v5 runs laws 4, 5 and 8')
     if slots_per_node is not None and solver_version != 5:
         raise ValueError('slots_per_node applies to tlmpm_v5 only')
+    if cut_events not in (None, 'cut_events_v1') or (cut_events is not None and solver_version != 5):
+        raise ValueError("cut_events is None or 'cut_events_v1' (tlmpm_v5 only, solver_version=5)")
     # Every phase digit is -1 (disarmed) or a retained digit (WP-11 review finding 7): an out-of-range digit
     # would release contact force as if cutting but write no label.
     for phase in phases:
@@ -97,6 +103,11 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
     bed = TLMPM(points, masses, spacing, config, device, blade_profile_xz=polygon, cutting_law=cutting_law,
                 slice_efficiency=slice_efficiency, obstacle_boxes_edge=obstacle_boxes_edge,
                 **({'slots_per_node': slots_per_node} if packed and slots_per_node is not None else {}))
+    recorder = None
+    if cut_events is not None:
+        from .cut_events import CutEventRecorder
+        recorder = CutEventRecorder(bed, np.round((points-points.min(0))/spacing).astype(int),
+                                    capacity=cut_events_capacity)
     graphs = {}
     if gpu_graph:
         if not wp.get_device(device).is_cuda:
@@ -104,6 +115,8 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
         from .probe_kernels import record_reaction
         wp.load_module(module=TLMPM.__module__, device=device)
         wp.load_module(module='robotic_cutting_sim.probe_kernels', device=device)
+        if recorder is not None:
+            wp.load_module(module='robotic_cutting_sim.cut_events', device=device)
     quaternion = rotation.as_quat()
     position = np.asarray(start_m, float)
     labels, forces, histories, bonds_after_phase, strokes, digit_labels = [], [], [], [], [], []
@@ -123,7 +136,11 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                     with wp.ScopedCapture(device=device) as capture:
                         for index in range(count):
                             bed.reaction.zero_()
+                            if recorder is not None:
+                                recorder.before_step()
                             bed.step()
+                            if recorder is not None:
+                                recorder.after_step()
                             wp.launch(record_reaction, dim=1, inputs=[bed.reaction, history, index, config.dt], device=device)
                     graphs[count] = (capture.graph, bed.poses, bed.twists, bed.cuts, history)
                 graph, pose_buffer, twist_buffer, digit_buffer, history = graphs[count]
@@ -137,11 +154,17 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                 bed.set_trajectory(poses, twists, digits)
                 for _ in range(count):
                     bed.reaction.zero_()
+                    if recorder is not None:
+                        recorder.before_step()
                     bed.step()
+                    if recorder is not None:
+                        recorder.after_step()
                     reaction.append(bed.reaction.numpy()[0][:3].copy()/config.dt)
             position = position+velocity*config.dt*count
             if packed:
                 bed.check_slots()
+            if recorder is not None:
+                recorder.check()
         wp.synchronize_device(device)
         labels.append(int(np.count_nonzero(bed.code.numpy())))
         if packed:
@@ -169,7 +192,10 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                 "slot_diagnostics": bed.check_slots(), "solver_module": TLMPM.__module__} if packed else {}),
             **({'force_history_N': histories, 'severed_bonds_after_phase': bonds_after_phase,
                 'reference_stencil_nodes': bed.nodes.numpy(), 'reference_stencil_weights': bed.weights.numpy(),
-                'reference_stencil_gradients': bed.gradients.numpy()} if record_history else {})}
+                'reference_stencil_gradients': bed.gradients.numpy()} if record_history else {}),
+            **({'cut_events': {'metadata': recorder.metadata(), 'log': recorder.log(),
+                               'activation': recorder.activation(), 'neighbours': recorder.neighbours_host}}
+               if recorder is not None else {})}
 
 
 VERTICAL_CUT = Rotation.from_euler("y", 90, degrees=True)  # advance -z, edge along y, normal +x
