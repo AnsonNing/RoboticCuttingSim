@@ -319,7 +319,14 @@ def _through_cut(scene, origin, normal, approach, digit, profile, options, frame
 
 
 def _support_along(bump, direction):
-    """Half extent of a protrusion footprint along a unit in-plane direction (rectangle bound, conservative)."""
+    """Half extent of a protrusion footprint along a unit in-plane direction (rectangle bound, conservative).
+
+    A heightfield_v2 row with a yaw uses its local axis-aligned half extents (WP-12 Phase 4c); every other row
+    keeps radius_x / radius_y exactly."""
+    if bump.get("yaw_deg"):
+        from .geometry_providers import protrusion_half_extents
+        rx, ry = protrusion_half_extents(bump)
+        return abs(direction[0])*rx+abs(direction[1])*ry
     return abs(direction[0])*bump["radius_x_m"]+abs(direction[1])*bump["radius_y_m"]
 
 

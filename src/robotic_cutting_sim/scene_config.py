@@ -192,24 +192,39 @@ def validate_scene(source):
     out = {"schema": SCENE_SCHEMA, "scene_id": _identifier(doc["scene_id"], "scene.scene_id"),
            "description": str(doc.get("description", ""))}
     workpiece = doc["workpiece"]
-    _keys(workpiece, "workpiece", ("base_box_m",), ("protrusions", "world_pose", "material_profile"))
+    _keys(workpiece, "workpiece", ("base_box_m",), ("protrusions", "world_pose", "material_profile", "geometry_provider"))
     base = workpiece["base_box_m"]
     _keys(base, "workpiece.base_box_m", ("length_m", "width_m", "height_m"))
     base = {key: _number(base[key], f"workpiece.base_box_m.{key}", positive=True) for key in ("length_m", "width_m", "height_m")}
+    # WP-12 Phase 4c (opt-in): workpiece.geometry_provider; absent (= heightfield_v1) keeps every scene unchanged.
+    from . import geometry_providers as gp
+    try:
+        provider = gp.validate_provider(workpiece.get("geometry_provider"), base)
+    except gp.GeometryProviderError as error:
+        raise SceneConfigError(str(error)) from None
+    provider_id = gp.DEFAULT_PROVIDER if provider is None else provider["id"]
+    families = gp.protrusion_families(provider_id)
     protrusions, ids = [], set()
     for i, row in enumerate(workpiece.get("protrusions", [])):
         where = f"workpiece.protrusions[{i}]"
-        _keys(row, where, ("id", "family", "x_m", "y_m", "radius_x_m", "radius_y_m", "height_m"))
+        _keys(row, where, ("id", "family", "x_m", "y_m", "radius_x_m", "radius_y_m", "height_m"),
+              gp.protrusion_extra_keys(provider_id))
         pid = _identifier(row["id"], f"{where}.id")
         if pid in ids or pid in ("all", "base"):
             raise SceneConfigError(f"{where}.id {pid!r} is duplicated or reserved")
         ids.add(pid)
-        if row["family"] not in FAMILIES:
-            raise SceneConfigError(f"{where}.family must be one of {FAMILIES}")
+        if row["family"] not in families:
+            raise SceneConfigError(f"{where}.family must be one of {families}")
+        try:
+            extras = gp.normalize_protrusion_extras(provider_id, row, where)
+        except gp.GeometryProviderError as error:
+            raise SceneConfigError(str(error)) from None
         protrusions.append({"id": pid, "family": row["family"],
                             **{key: _number(row[key], f"{where}.{key}") for key in ("x_m", "y_m")},
                             **{key: _number(row[key], f"{where}.{key}", positive=True)
-                               for key in ("radius_x_m", "radius_y_m", "height_m")}})
+                               for key in ("radius_x_m", "radius_y_m", "height_m")}, **extras})
+    if provider_id == gp.SDF_CSG and protrusions:
+        raise SceneConfigError("workpiece.geometry_provider sdf_csg_experimental_v1 takes no protrusions")
     pose = workpiece.get("world_pose", {})
     _keys(pose, "workpiece.world_pose", (), ("translation_m", "yaw_deg"))
     world_pose = {"translation_m": _vector(pose.get("translation_m", [0., 0., 0.]), "workpiece.world_pose.translation_m"),
@@ -217,10 +232,14 @@ def validate_scene(source):
     material = workpiece.get("material_profile", V1_MATERIAL_PROFILE)
     if material != V1_MATERIAL_PROFILE:
         from .food_materials import profiles
-        if material not in profiles():
-            raise SceneConfigError(f"workpiece.material_profile must be {V1_MATERIAL_PROFILE!r} or a food_profiles_v1 id")
+        from .materials_wp12 import is_profile
+        if material not in profiles() and not is_profile(material):
+            raise SceneConfigError(f"workpiece.material_profile must be {V1_MATERIAL_PROFILE!r}, a food_profiles_v1 id "
+                                   "or a materials_wp12_v1 id")
     out["workpiece"] = {"base_box_m": base, "protrusions": protrusions, "world_pose": world_pose,
                         "material_profile": material}
+    if provider is not None:   # only opt-in scenes carry the key (default scene_json and task ids unchanged)
+        out["workpiece"]["geometry_provider"] = provider
     out["supports"] = _validate_supports(doc["supports"])
     tool = doc["tool"]
     _keys(tool, "tool", ("profile_id",), ("grasp_preset",))
@@ -372,6 +391,15 @@ def _check_geometry(scene):
     base = scene["workpiece"]["base_box_m"]
     if not scene["solver"]["particle_spacing_m"] <= base["height_m"]/2:
         raise SceneInfeasible("spacing_too_coarse", "particle spacing must give at least two base layers")
+    if "geometry_provider" in scene["workpiece"]:   # WP-12 Phase 4c opt-in providers: lattice-level validation
+        from .geometry_providers import lattice_report, sample_lattice
+        geometry = scene_heightfield(scene)
+        if not scene["solver"]["particle_spacing_m"] <= geometry.min_height_m/2:
+            raise SceneInfeasible("spacing_too_coarse", "particle spacing must give at least two layers under the "
+                                                        "lowest point of the surface noise")
+        report = lattice_report(sample_lattice(geometry, scene["solver"]["particle_spacing_m"], 1.)[2])
+        if not report["ok"]:
+            raise SceneInfeasible(report["problems"][0], f"lattice check {report}")
     supports = scene["supports"]
     if supports["kind"] == "flat_board":
         from .flat_board_workcell import check_placement
@@ -436,6 +464,12 @@ def resolve_scene(source):
 # ---------------------------------------------------------------- scene geometry (config only, no oracle)
 
 def scene_heightfield(scene):
+    if "geometry_provider" in scene["workpiece"]:   # WP-12 Phase 4c opt-in (geometry_providers.py)
+        from .geometry_providers import GeometryProviderError, geometry_from_scene
+        try:
+            return geometry_from_scene(scene["workpiece"])
+        except GeometryProviderError as error:
+            raise ValueError(str(error)) from None
     base = scene["workpiece"]["base_box_m"]
     bumps = tuple(Bump(row["x_m"], row["y_m"], row["radius_x_m"], row["radius_y_m"], row["height_m"], row["family"])
                   for row in scene["workpiece"]["protrusions"])
@@ -453,7 +487,9 @@ def scene_world_pose(scene):
 def scene_top_m(scene):
     """Highest local material z (base plus the tallest protrusion)."""
     rows = scene["workpiece"]["protrusions"]
-    return scene["workpiece"]["base_box_m"]["height_m"]+max((row["height_m"] for row in rows), default=0.)
+    noise = (scene["workpiece"].get("geometry_provider") or {}).get("surface_noise") or {}
+    return (scene["workpiece"]["base_box_m"]["height_m"]+max((row["height_m"] for row in rows), default=0.)
+            + noise.get("amplitude_m", 0.))
 
 
 def flat_board_record(scene):
@@ -474,8 +510,10 @@ def _footprint_local_xy(scene):
     base = scene["workpiece"]["base_box_m"]
     hx, hy = base["length_m"]/2, base["width_m"]/2
     points = [(sx*hx, sy*hy) for sx in (-1, 1) for sy in (-1, 1)]
+    from .geometry_providers import protrusion_half_extents
     for row in scene["workpiece"]["protrusions"]:
-        points += [(row["x_m"]+sx*row["radius_x_m"], row["y_m"]+sy*row["radius_y_m"]) for sx in (-1, 1) for sy in (-1, 1)]
+        rx, ry = protrusion_half_extents(row)   # radius_x/y unless the row declares a yaw (heightfield_v2)
+        points += [(row["x_m"]+sx*rx, row["y_m"]+sy*ry) for sx in (-1, 1) for sy in (-1, 1)]
     return np.asarray(points, float)
 
 
@@ -550,6 +588,9 @@ def scene_material(scene):
     name = scene["workpiece"]["material_profile"]
     if name == V1_MATERIAL_PROFILE:
         return material
+    from .materials_wp12 import is_profile, recipe
+    if is_profile(name):   # WP-12 Phase 4c materials_wp12_v1 (opt-in)
+        return recipe(name, material)
     from .food_materials import profiles
     profile = profiles()[name]
     return replace(material, **{key: value for key, value in profile.items() if key != "material_dt_s"},
@@ -762,6 +803,13 @@ class ConfiguredTaskSpec(ProfileTaskSpec):
         from .goals import evaluate_goal
         return evaluate_goal(self.goal, recording, task=self, **options)
 
+    def sample_particles(self):
+        """As CuttingTaskSpec; an opt-in geometry provider (WP-12 Phase 4c) samples its own solid on the same lattice."""
+        from .geometry_providers import ProviderGeometry, sample_lattice
+        if not isinstance(self.geometry, ProviderGeometry):
+            return super().sample_particles()
+        return sample_lattice(self.geometry, self.particle_spacing_m, self.material.density_kg_m3)
+
 
 def _goal_target(goal, scene):
     """(goal_kind, base task id, target origin, target normal, edge clearance) of a validated goal."""
@@ -951,4 +999,8 @@ def make_configured_kinematic_env(task, **options):
         options["slots_per_node"] = declared
     options.setdefault("cutting_law", task.cutting_law)
     options.setdefault("max_cuts", task.max_cuts)
+    from .materials_wp12 import admit, is_profile
+    if is_profile(task.scene["workpiece"]["material_profile"]):   # refuse an unstable (dt, dx) before building a solver
+        admit(task.scene["workpiece"]["material_profile"], task.grid_dx_m, options.get("material_dt", .0001),
+              task.particle_spacing_m)
     return make_kinematic_env(task=task, **options)

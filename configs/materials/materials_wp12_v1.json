@@ -1,0 +1,84 @@
+{
+  "version": "materials_wp12_v1",
+  "status": "PROVISIONAL_UNCALIBRATED",
+  "defined": "WP-12 Phase 4c (spec 4.6), 2026-10-31, before any run of these profiles. A change is a new version.",
+  "scope": "Interpretable TLMPM parameter sets for the opt-in rcs_scene_v1 workpiece.material_profile. Every profile is a single- or two-factor variation of wp12_reference_v1 (= the frozen cutting_tasks_v1 recipe) so a behaviour difference can be traced to one parameter. No value is measured on a real material; the names describe the intended qualitative regime only.",
+  "solver_mapping": {
+    "density_kg_m3": "TLMPMConfig.density (particle mass = density * spacing^3)",
+    "young_modulus_pa": "TLMPMConfig.young (Neo-Hookean / Kirchhoff elastic predictor)",
+    "poisson_ratio": "TLMPMConfig.poisson",
+    "yield_stress_pa": "TLMPMConfig.yield_stress (perfect J2 return mapping; hardening is not supported by the retained cutting law and is fixed to 0)",
+    "friction": "TLMPMConfig.contact_friction: Coulomb coefficient of BOTH blade-material and board(fixture)-material contact in TLMPM",
+    "fracture_energy_j_m2": "TLMPMConfig.cutting_energy G_c: law-8 edge-work separation threshold G_c * V^(2/3) * (1 - sharpness) / sharpness per particle (cutting resistance)",
+    "hardening_ratio": "fixed 0 (LiveCuttingMaterial raises NotImplementedError otherwise)"
+  },
+  "stability_rule": {
+    "quantity": "longitudinal elastic wave speed c = sqrt((lambda + 2 mu) / rho); grid CFL = dt * c / grid_dx",
+    "admit_if": "grid CFL <= 0.2 on the scene grid (4 mm) at the requested material dt (same rule as food_profiles_v1.numerical_selection)",
+    "particle_spacing_cfl": "dt * c / particle_spacing (1 mm) is reported only: TLMPM integrates on the grid, and the frozen reference recipe itself has 0.67 at 1 mm / 0.1 ms",
+    "material_dt_s": "largest declared dt of the profile (a run may use a smaller dt; a larger one is refused)"
+  },
+  "profiles": {
+    "wp12_reference_v1": {
+      "interpretation": "Control: the frozen cutting_tasks_v1 provisional Plasticine-like recipe, unchanged.",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_soft_elastic_v1": {
+      "interpretation": "Soft elastic: E 2.5x lower and yield effectively disabled (1 MPa), so deformation is recoverable and larger under the same load.",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 20000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_clay_plastic_v1": {
+      "interpretation": "Clay-like plastic: same E, yield 2.5x lower (400 Pa, self-weight stress rho g H of a 16 mm bar is 235 Pa), so the blade leaves permanent plastic flow.",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 400.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_firm_v1": {
+      "interpretation": "Firmer deformable, the stiffest admissible at 0.1 ms: E 1.4x (70 kPa) and yield 3x (3 kPa); grid CFL 0.198.",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 70000.0, "poisson_ratio": 0.3, "yield_stress_pa": 3000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_stiff_v1": {
+      "interpretation": "Stiffer deformable: E 3x (150 kPa), yield 5x (5 kPa). Grid CFL 0.29 at 0.1 ms is REFUSED; admitted at 50 us (0.145).",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 150000.0, "poisson_ratio": 0.3, "yield_stress_pa": 5000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.00005
+    },
+    "wp12_low_friction_v1": {
+      "interpretation": "Slippery surface (wet / oily): Coulomb 0.05 against blade and board.",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.05, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_high_friction_v1": {
+      "interpretation": "Sticky / grippy surface: Coulomb 0.8 against blade and board.",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.8, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_low_cut_resistance_v1": {
+      "interpretation": "Easy to cut: law-8 cutting energy G_c 5x lower (0.01 J/m^2).",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.01, "material_dt_s": 0.0001
+    },
+    "wp12_high_cut_resistance_v1": {
+      "interpretation": "Hard to cut (tough): law-8 cutting energy G_c 10x higher (0.5 J/m^2).",
+      "density_kg_m3": 1500.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.5, "material_dt_s": 0.0001
+    },
+    "wp12_light_v1": {
+      "interpretation": "Light (foam-like density): rho 1100 kg/m^3; grid CFL 0.196 at 0.1 ms.",
+      "density_kg_m3": 1100.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    },
+    "wp12_dense_v1": {
+      "interpretation": "Dense: rho 2200 kg/m^3 (self-weight and inertia 1.47x).",
+      "density_kg_m3": 2200.0, "young_modulus_pa": 50000.0, "poisson_ratio": 0.3, "yield_stress_pa": 1000.0,
+      "friction": 0.3, "fracture_energy_j_m2": 0.05, "material_dt_s": 0.0001
+    }
+  },
+  "limitations": [
+    "Isotropic perfect J2 plasticity only: no hardening, viscosity, rate or temperature dependence, anisotropy or damage",
+    "One friction coefficient for blade and board contact",
+    "Cutting resistance is the law-8 edge-work threshold, not a measured fracture toughness",
+    "No profile is calibrated against a measurement"
+  ]
+}
