@@ -11,7 +11,10 @@
 - Phase 2b 完成（`2f299cc`）：平板上 live Native CUT、partial、TRIM、Test B（5 塊）、Test C 全部 PASS 並回 HOME；刀停在板面不穿透。長條每刀仍滑約 1 mm（PARTIAL）。
 - Phase 3 量測（`bdc5da0`）：凍結 protocol v1 下比較 gate **FAIL**（保留）；cut-aware 在參考空間、覆蓋率、拓撲、邊緣、體積勝出，法向與部分最大值不過。審查（`b67e80c`）確認 FAIL 成立並找出 S6 指標缺陷與 v1 自相矛盾的門檻列，建議 v2 方法＋獨立理由的 protocol v2。
 - Phase 4a 根因草稿（`b012902`）：(a) 斜切出口面未指派、(b) 45° rake 剛好卡在 θ_max、(c) core band 被刀帶走的粒子、(d) 楔形下壓、(e) swept normal fallback 潛在問題；建議 law 9 只處理 (a)。
-- 執行中（背景 agent）：Phase 3 Native 整合（cuda:0，`artifacts/wp12/surface_live_*`）；Phase 3 addendum＋protocol v2 草稿；Phase 4a 的 xhigh 審查（`docs/reports/WP12_PHASE4_XHIGH_REVIEW.md`，law 9 實作在其後）；Phase 4c 工件／材料泛化（cuda:1，`artifacts/wp12/phase4c_*`）；解析度研究（cuda:1，protocol 先 commit 再正式跑）。
+- Phase 3 protocol v2 已凍結（`9157725`）；cut-aware surface 已接進 live／Native（`9fde661`）：4 個 Native episode 物理與 Phase 2b 相同，partial kerf 可見；TRIM 出現 solver 撕裂 chip 但未給 cut code 的拉長三角形（交 Phase 4）。
+- Phase 4：xhigh 審查（`81a9626`）**否決**原 law 9；平板上 law 8 斜切 5–35° 全部不分離（CPU probe）。E1 protocol 已凍結（`3dd3848`）並開始正式跑。解析度 protocol 已凍結（`5efbfa0`，預算修正 `cce4944`）；初步：力對 dt 不收斂，機制候選為 penalty contact 有效剛度 ∝ m/dt²。
+- 執行中（背景 agent）：E1（`artifacts/wp12/phase4_e1_001`）；解析度矩陣（`artifacts/wp12/resolution_002`）；Phase 4c 工件／材料（`artifacts/wp12/phase4c_002`）；cut_aware_surface_v2 與 v2 矩陣（`artifacts/wp12/phase3_surface_002`）；Phase 5 基礎設施（草稿，envelope 待 Phase 4 決定）。
+- 決策層級：Phase 4 與複雜的 Phase 3 審查／分析／決策用 xhigh（使用者 2026-10-31）。
 - 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
