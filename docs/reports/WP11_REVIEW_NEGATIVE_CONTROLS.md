@@ -115,8 +115,10 @@ Every row's mass check passed and every row was numerically stable (no NaN/inf, 
     press 1.490002 vs 1.489993 N, grip 0.854978 vs 0.854973 N). The labelled counts of the withdrawal rows are
     identical (13496).
   - The stop row's hold count is identical (11196). Its final count after the resumed skim differs by 16 of
-    36774 particles (0.04%), within GPU float32 atomic nondeterminism (Phase M: v4-vs-v4 repeats differ at the
-    same level).
+    36774 particles (0.04%); this is report-only and outside the stop criterion. The cause is not isolated.
+    Same-seed v4 GPU repeats of a skim differ by up to 19 labels (C4 `k2c_r10_skim_law8_001` / `_002`: 36885 /
+    36866), so the difference is consistent with GPU float32 atomic nondeterminism. However, the R05 skim
+    repeats were identical (36324 / 36324), and no v5 stop repeat was run.
   - The label-free rows never activate a stroke. So they exercise the armed `cut_index` 4 path and the
     packed-code bookkeeping, but not digit-4 labelling.
   - The stop, withdrawal and half-depth rows do write digit-4 labels (13496–36758) and keep digits 0–3 at zero.
