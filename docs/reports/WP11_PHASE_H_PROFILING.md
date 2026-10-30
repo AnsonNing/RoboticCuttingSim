@@ -428,6 +428,106 @@ Native runs (`artifacts/wp11/phaseG/*_sha256_before_gzip.txt`) when /mnt/data dr
 free during the run (mostly other users' jobs). `read_dataset.py` still passes on the compressed
 Phase H rerun (4/4).
 
+### Repeatability across cycle position (diagnosis, read-only + CPU; no verdict or gate changed)
+
+**Question.** In v1b the scripted episodes 0 and 4 end at dome 0.9789 (final codes `672c04b1`) and
+the scripted repeats 3 and 7 at 0.9770 (`3bb58cfe`); 3 and 7 both follow a deliberate failure. Does
+some state survive the reset?
+
+**1. Are they identical runs? Yes.** The plan entries differ only in `label`
+(`scripted_measured_seed42` vs `…_repeat`): controller `scripted`, seed 42, `edge_feedback: measured`,
+`stop_after_phase: WITHDRAW`, `hold_until_time_limit`, `return_home`, `expect: PASS`. Flattening
+both `episode.json` files and excluding outputs leaves only `label` and `reset_info.episode_index`
+different (controller receipt, planner options, action limits, task id / config sha256, duration,
+control dt, frequencies, recording rate, preset and runtime options all equal).
+
+**2. Where the episodes diverge** (`actions.jsonl` every control step, `physics_state.npz` every 10
+steps; v1b episode 0 vs 3):
+
+| Signal | First difference |
+| --- | --- |
+| material: recorded frame 0 (reset state: positions, velocities, codes, reference) | none: bitwise identical |
+| material: max particle speed / min det F diagnostics | **step 1** (HOME, tool far from the specimen), 4e-7 m/s |
+| material positions | frame 1 (t = 0.2 s), max 6.7e-8 m, ~258k of 291k components |
+| material reaction wrench on the tool | step 227 (SKIM:dome, first blade contact), 4.7e-7 |
+| measured joints, tool body, measured edge, fingers | step 228 (2e-7 rad, 5.9e-6 m) |
+| submitted target (measured-edge feedback, one step later) | step 229 |
+| cut codes | frame 24 (t = 4.8 s), then 12 of 97 044 particles differ at the end |
+
+The same signature holds for **every** pair examined, whatever precedes the episode:
+v1b 0 vs 4 (same final codes; trajectories still differ from step 1 and codes differ transiently at
+t = 5.2 s), 3 vs 7, 1 vs 5 (action program), 2 vs 6 (deliberate failure: material differs from step 1,
+robot identical throughout because there is no contact), Phase H rerun 0 vs 3, v1b 3 vs the
+mitigation run's episode 3 (another process; final codes equal), and **v1b episode 0 vs mitigation
+episode 0: two fresh processes on their very first reset**, where no earlier state exists, which
+diverge exactly the same way (step 1, 1.6e-7) and end in different code sets (`672c04b1` vs
+`cd4631b3`). Across the 10 Native scripted episodes on record (Phase G 2, Phase H rerun 2, v1b 4,
+mitigation 2) three final code sets occur: `672c04b1` x3 (dome 0.9789), `3bb58cfe` x4 (0.9770),
+`cd4631b3` x3 (0.9770). Position in the cycle does not determine them (the Phase H rerun's
+post-failure repeat gave its episode 0's set `cd4631b3`).
+
+**Cause.** `tlmpm_v5` P2G accumulates grid mass and momentum with float32 `wp.atomic_add`
+(`tlmpm_v5.py` lines 511-513, 600; also the contact impulse/reaction sums). On CUDA the summation
+order of atomics is not deterministic, so the first material step from a bitwise-identical state
+differs by ~1 ulp; contact amplifies it after the blade engages, and the discrete cut-code outcome
+falls into one of a few nearby sets. On CPU Warp runs kernels sequentially and the same code is
+exact.
+
+**CPU check (kinematic, this diagnosis; undeclared diagnostic, no verdict):**
+`collect_dataset.py --runtime kinematic --scene trim01_wp11_workcell --goal trim_bump_rho10
+--planner-options '{"max_rotation_deg": 1.0, "max_translation_m": 0.001}' --spacing 0.004
+--material-dt 0.0005 --device cpu` with the Native Test F plan
+(`artifacts/wp11/phaseH/kin_isolation_check_001`, main checkout `d57d0f2`, `git_dirty = false`, 4 x ~60 s)
+and with the scripted entry alone in a fresh process (`…/kin_isolation_check_fresh_001`). Both exit 3
+(scored; not POLICY_READY only because 4 < 5 and 1 < 5 episodes, as expected). The scripted repeat
+after the deliberate failure (episode 3) and the fresh-process scripted episode are **bitwise
+identical to episode 0 at every recorded frame** (material positions, velocities, codes; executed
+edge targets; tool pose), final codes `22596663` x3. The shared TLMPM reset therefore isolates
+the material completely when the arithmetic is deterministic.
+
+**Candidates that could survive a reset, checked against the data:**
+
+| Candidate | Finding |
+| --- | --- |
+| PhysX contact / warm-start caches under `reload_in_place` | not needed and not observed: robot, tool and fingers are bitwise identical for the first 226 steps in every pair (also with Phase G `reopen` and across fresh processes); the robot diverges only after the material wrench does |
+| Controller / bias / waypoint objects | rebuilt per episode (`make_controller`); submitted targets bitwise identical until one step after the measured edge diverges |
+| Grasp monitor | finger states identical until step 228; `PASS_STABLE_GRASP` receipts bitwise equal every reset |
+| TLMPM buffers not reallocated | recorded reset state (positions, velocities, codes) bitwise identical; deformation gradient, plastic strain, APIC/MLS affine and grid buffers are not recorded or hashed on Native, but the fresh-process pair shows the same divergence, and on CPU the same reset is bitwise complete |
+| Warp RNG | none in `tlmpm_v5` (no `wp.rand*`); seeds identical |
+| Measured-edge feedback reading stale state | feedback follows the measured edge with the declared one-step delay (step 228 -> 229); not stale |
+| PhysX absolute clock | `native_physics_timestamp_s` and the relative clock are identical per step across episodes |
+
+**3. What `same_seed_same_controller_repeatable` compares.** Declared identically in v1, v1a and v1b
+(`determinism`): CPU kinematic: "final cut codes identical (sha256)"; GPU or live: "verdict identical;
+reported metrics compared, not gated". `dataset.reliability_report` groups episodes by
+(controller, controller receipt, seed) and on Native passes a group iff the verdicts agree; it reports
+`final_codes_identical` without gating it (v1b scripted group: `false`). It cannot detect a state-isolation
+leak on Native unless the leak flips a verdict, and an exact-codes gate would fail on Native even with
+perfect isolation (two fresh processes differ).
+
+**4. Classification.** Not a state-isolation leak and not a controller difference: the
+"cycle-position" pattern is GPU float-atomic nondeterminism in the material, amplified by contact into a
+few discrete outcomes (12 of 97 044 particles; dome 0.9789 vs 0.9770; verdict PASS every time). It is
+a **Test F weakness**: on Native the declared checks could not have told a real carry-over from this
+nondeterminism. The reset-equality check covers recorded positions/velocities/codes, tool and robot
+state, but not the full solver state, and the repeatability gate is verdict-only. The v1b POLICY_READY
+verdict stands as declared; its repeatability statement is verdict-level only.
+
+**Proposed fix (not run; would need a new declaration):**
+1. A Native reset-state digest: hash every solver array (positions, velocities, F, plastic state,
+   affine/MLS matrices, codes, slot tables, grid buffers zeroed) and the PhysX articulation/tool state
+   after each reset, and gate bitwise equality to episode 0. That is a direct isolation check
+   independent of arithmetic determinism.
+2. A carry-over test that separates history from noise: N in-process repeats after different
+   predecessors vs N fresh-process first episodes, with the same declared outcome metrics (dome removal,
+   code-set frequencies); isolation passes if the in-process spread is not larger than the fresh-process
+   spread under a declared test.
+3. Optional, versioned and opt-in (frozen solvers untouched): a deterministic P2G (fixed-point integer
+   atomics or sorted segmented reduction) in a new solver version, which would allow an exact-codes
+   repeatability gate on GPU; its cost and fidelity must be measured first.
+4. A declared kinematic `cuda` repeat (same plan) to confirm the attribution on GPU without Isaac
+   (not run here: no new GPU runs without a declaration).
+
 ### Process recycling mitigation (opt-in, declared)
 
 Implementation (opt-in, default unchanged): `scripts/collect_dataset.py --recycle-every N` (commit
@@ -487,8 +587,9 @@ all decompressed hashes match).
   `reload_in_place`, cameras on, physical grasp); the default `reopen` reset was not re-qualified.
 - Host RSS still grows about 49 MiB per full Native episode in one process (unattributed native
   memory after `reload_in_place`); a 3-episode window can exceed the 64 MiB gate.
-- Native final cut codes of repeated scripted episodes match by cycle position but not across
-  positions (0.9789 vs 0.9770 dome); cause not investigated (GPU atomics suspected); verdicts agree.
+- Native final cut codes of repeated scripted episodes differ (0.9789 vs 0.9770 dome; verdicts agree):
+  diagnosed below in "Repeatability across cycle position" as GPU float-atomic nondeterminism of the
+  material, not a reset leak; Test F cannot tell the two apart on Native (proposed fixes there).
 - Process recycling on Native: the fixed collector (`16f0ffa`) is NOT_RUN on Native; a new
   declared run (new declaration, new commit, >= 3 episodes per process to fit within-process
   slopes) is needed before recycling can be called demonstrated.
