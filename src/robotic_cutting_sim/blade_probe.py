@@ -60,7 +60,8 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
     (ADR 0014: laws 4, 5, 8; packed codes, ``cuts`` up to 15, ``slots_per_node``
     default 8); its codes stay packed in the result, which then also carries
     ``code_encoding``, per-phase per-digit label counts and slot diagnostics,
-    and slot overflow raises after the chunk where it occurred.
+    and slot overflow raises after the chunk where it occurred. ``solver_version`` 6 (opt-in CANDIDATE, ADR 0020
+    proposed) is tlmpm_v6: tlmpm_v5 with the grid-consistent position update, same packed outputs.
 
     ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) brackets every substep with the read-only
     Hermite cut-event recorder (cut_events.CutEventRecorder); the result then carries ``cut_events``
@@ -70,23 +71,25 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
     reaction force (world, N) per phase, and the solver snapshot.
     """
     import warp as wp
-    if (solver_version not in (None, 2, 3, 4, 5) or (solver_version == 2 and cutting_law in (3, 4, 5, 6, 7, 8))
+    if (solver_version not in (None, 2, 3, 4, 5, 6) or (solver_version == 2 and cutting_law in (3, 4, 5, 6, 7, 8))
             or (solver_version == 3 and cutting_law in (4, 5, 6, 7, 8))
-            or (solver_version == 5 and cutting_law not in (4, 5, 8))):
-        raise ValueError('solver_version is 2, 3, 4 or 5; law 3 needs tlmpm_v3/v4, laws 4-8 tlmpm_v4, '
-                         'and tlmpm_v5 runs laws 4, 5 and 8')
-    if slots_per_node is not None and solver_version != 5:
-        raise ValueError('slots_per_node applies to tlmpm_v5 only')
-    if cut_events not in (None, 'cut_events_v1') or (cut_events is not None and solver_version != 5):
-        raise ValueError("cut_events is None or 'cut_events_v1' (tlmpm_v5 only, solver_version=5)")
+            or (solver_version in (5, 6) and cutting_law not in (4, 5, 8))):
+        raise ValueError('solver_version is 2, 3, 4, 5 or 6; law 3 needs tlmpm_v3/v4, laws 4-8 tlmpm_v4, '
+                         'and tlmpm_v5 (and the opt-in candidate tlmpm_v6) run laws 4, 5 and 8')
+    if slots_per_node is not None and solver_version not in (5, 6):
+        raise ValueError('slots_per_node applies to tlmpm_v5 (or tlmpm_v6) only')
+    if cut_events not in (None, 'cut_events_v1') or (cut_events is not None and solver_version not in (5, 6)):
+        raise ValueError("cut_events is None or 'cut_events_v1' (tlmpm_v5 only, solver_version=5; or tlmpm_v6)")
     # Every phase digit is -1 (disarmed) or a retained digit (WP-11 review finding 7): an out-of-range digit
     # would release contact force as if cutting but write no label.
     for phase in phases:
         if (isinstance(phase.cut, (bool, np.bool_)) or not isinstance(phase.cut, (int, np.integer))
                 or not -1 <= phase.cut < cuts):
             raise ValueError(f'Phase cut index {phase.cut!r} must be -1 or an integer in [0, {cuts})')
-    packed = solver_version == 5
-    if packed:
+    packed = solver_version in (5, 6)
+    if solver_version == 6:
+        from .tlmpm_v6 import TLMPM   # opt-in CANDIDATE (ADR 0020 proposed)
+    elif packed:
         from .tlmpm_v5 import TLMPM
     elif cutting_law in (4, 5, 6, 7, 8) or solver_version == 4:
         from .tlmpm_v4 import TLMPM
@@ -190,6 +193,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
             **({"cutting_state_after_phase": strokes} if cutting_law in (4, 5, 6, 7, 8) else {}),
             **({"code_encoding": bed.code_encoding, "digit_labelled_after_phase": digit_labels,
                 "slot_diagnostics": bed.check_slots(), "solver_module": TLMPM.__module__} if packed else {}),
+            **({"solver_receipt": bed.solver_receipt()} if solver_version == 6 else {}),
             **({'force_history_N': histories, 'severed_bonds_after_phase': bonds_after_phase,
                 'reference_stencil_nodes': bed.nodes.numpy(), 'reference_stencil_weights': bed.weights.numpy(),
                 'reference_stencil_gradients': bed.gradients.numpy()} if record_history else {}),

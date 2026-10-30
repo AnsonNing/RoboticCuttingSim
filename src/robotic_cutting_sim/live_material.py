@@ -34,6 +34,9 @@ class LiveCuttingMaterial:
         in every state/history output are then packed (``code_encoding``
         'packed2'; cut_topology.decode_digits). Slot overflow raises after the
         control step. None keeps the v1-v4 selection and limits unchanged.
+        ``solver='tlmpm_v6'`` (opt-in CANDIDATE, ADR 0020 proposed; never a default) is tlmpm_v5 with the
+        grid-consistent position update and is handled exactly as tlmpm_v5 here (packed codes, slots, recorders);
+        its receipt adds ``tlmpm_v6`` (position update and source hashes).
 
         ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) attaches the read-only Hermite
         cut-event recorder (cut_events.CutEventRecorder) to every substep; its overflow raises after the
@@ -49,18 +52,20 @@ class LiveCuttingMaterial:
             cutting_law = 2 if cutting_law is None else cutting_law
             if obstacle_boxes_edge is None:
                 obstacle_boxes_edge = [handle_box_edge(tool_profile)]
-        if solver not in (None, 'tlmpm_v5'):
-            raise ValueError("solver is None (v1-v4 by law) or 'tlmpm_v5'")
+        from .packed_solvers import is_packed_solver
+        packed = is_packed_solver(solver)
+        if solver is not None and not packed:
+            raise ValueError("solver is None (v1-v4 by law), 'tlmpm_v5' or the opt-in candidate 'tlmpm_v6'")
         # A configured scene may declare its tlmpm_v5 slot capacity (scene_config solver.slots_per_node, opt-in);
         # every runtime that passes the task then uses it. Absent: the explicit argument or the default 8.
         declared = task.scene['solver'].get('slots_per_node') if getattr(task, 'scene_json', '') else None
         if declared is not None:
-            if solver != 'tlmpm_v5':
+            if not packed:
                 raise ValueError("The scene declares slots_per_node, which applies to solver='tlmpm_v5' only")
             if slots_per_node not in (None, declared):
                 raise ValueError(f"slots_per_node {slots_per_node} differs from the scene's {declared}")
             slots_per_node = int(declared)
-        if solver == 'tlmpm_v5':
+        if packed:
             from .cut_topology import PACKED_MAX_CUTS
             if tool_profile is None or cutting_law not in (4, 5, 8):
                 raise ValueError("tlmpm_v5 needs a tool profile and cutting law 4, 5 or 8")
@@ -80,7 +85,7 @@ class LiveCuttingMaterial:
             raise ValueError("max_cuts is 1 or 2; two cut digits require a tool profile (tlmpm_v2)")
         if cut_events not in (None, 'cut_events_v1'):
             raise ValueError("cut_events is None (off) or 'cut_events_v1'")
-        if cut_events is not None and solver != 'tlmpm_v5':
+        if cut_events is not None and not packed:
             raise ValueError("cut_events records tlmpm_v5 only (solver='tlmpm_v5')")
         if cut_events_summary_capacity is not None and cut_events is None:
             raise ValueError("cut_events_summary_capacity applies to cut_events='cut_events_v1' only")
@@ -89,7 +94,7 @@ class LiveCuttingMaterial:
         self.cut_event_recorder = None
         self.solver = solver
         self.slots_per_node = None if solver is None else int(slots_per_node or 8)
-        self.code_encoding = 'packed2' if solver == 'tlmpm_v5' else 'ternary'
+        self.code_encoding = 'packed2' if packed else 'ternary'
         if tool_profile is None and (cutting_law not in (None, 1) or obstacle_boxes_edge is not None):
             raise ValueError("Cutting law 2 and tool obstacles require a tool profile (tlmpm_v2)")
         self.tool_profile = tool_profile
@@ -151,6 +156,8 @@ class LiveCuttingMaterial:
         else:
             if self.solver == 'tlmpm_v5':
                 from .tlmpm_v5 import TLMPM
+            elif self.solver == 'tlmpm_v6':
+                from .tlmpm_v6 import TLMPM   # opt-in CANDIDATE (ADR 0020 proposed)
             elif self.cutting_law in (4, 5, 6, 7, 8):
                 from .tlmpm_v4 import TLMPM
             elif self.cutting_law == 3:
@@ -161,7 +168,7 @@ class LiveCuttingMaterial:
             solver_module, solver_kwargs = TLMPM.__module__, {"blade_profile_xz": polygon,
                 "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency,
                 "obstacle_boxes_edge": self.obstacle_boxes_edge}
-            if self.solver == 'tlmpm_v5':
+            if self.solver in ('tlmpm_v5', 'tlmpm_v6'):
                 solver_kwargs["slots_per_node"] = self.slots_per_node
 
         start = time.perf_counter()
@@ -231,6 +238,13 @@ class LiveCuttingMaterial:
                                       "slots_per_node": self.slots_per_node,
                                       "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md"}
+        elif self.solver == 'tlmpm_v6':
+            self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
+                                      "code_encoding": self.code_encoding, "max_cuts": self.max_cuts,
+                                      "slots_per_node": self.slots_per_node,
+                                      "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
+                                      "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
+                                      "tlmpm_v6": self.bed.solver_receipt()}
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
         recorder = self.cut_event_recorder = None
@@ -311,7 +325,7 @@ class LiveCuttingMaterial:
         else:
             wp.capture_launch(self.graph)
         wp.synchronize_device(c.device)
-        if self.solver == 'tlmpm_v5':
+        if self.solver in ('tlmpm_v5', 'tlmpm_v6'):
             self.bed.check_slots()  # overflow is an error, never a silent merge (ADR 0014)
         cut_event_counters = recorder.check() if recorder is not None else None  # overflow raises (WP-12)
         impulse = self.bed.reaction.numpy()[0].astype(float)

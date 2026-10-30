@@ -30,8 +30,9 @@ class KinematicConfig:
     slice_efficiency: float = 1.
     scenario: str | None = None
     material_profile_id: str | None = None
-    solver: str | None = None                  # None = v1-v4 by law; 'tlmpm_v5' opt-in (ADR 0014)
-    slots_per_node: int | None = None          # tlmpm_v5 only (None = 8)
+    solver: str | None = None                  # None = v1-v4 by law; 'tlmpm_v5' opt-in (ADR 0014);
+    #                                            'tlmpm_v6' opt-in CANDIDATE (ADR 0020 proposed, never a default)
+    slots_per_node: int | None = None          # tlmpm_v5 / tlmpm_v6 only (None = 8)
     cut_events: str | None = None              # 'cut_events_v1': read-only Hermite recorder (WP-12, tlmpm_v5 only)
     # WP-12 Layer 6 (opt-in): 'particle_surface_v1' (None, default: ComponentSurface current_volume_v1, unchanged) or
     # 'cut_aware_surface_v1' (tlmpm_v5 only; turns the cut_events_v1 recorder on). surface_runtime.py.
@@ -46,14 +47,16 @@ class KinematicConfig:
                     raise ValueError("surface_profile='cut_aware_surface_v1' needs solver='tlmpm_v5' (packed codes and "
                                      "the cut_events_v1 recorder)")
                 object.__setattr__(self, "cut_events", "cut_events_v1")   # recorder-quality Hermite data (recorded)
-        if self.solver not in (None, "tlmpm_v5"):
-            raise ValueError("solver is None or 'tlmpm_v5'")
-        if self.slots_per_node is not None and self.solver != "tlmpm_v5":
+        from .packed_solvers import is_packed_solver
+        packed = is_packed_solver(self.solver)
+        if self.solver is not None and not packed:
+            raise ValueError("solver is None, 'tlmpm_v5' or the opt-in candidate 'tlmpm_v6'")
+        if self.slots_per_node is not None and not packed:
             raise ValueError("slots_per_node applies to solver='tlmpm_v5' only (it was ignored without it)")
-        allowed = range(1, 16) if self.solver == "tlmpm_v5" else (1, 2)
+        allowed = range(1, 16) if packed else (1, 2)
         if self.max_cuts not in allowed or self.material_dt <= 0 or not np.isfinite(self.material_dt):
             raise ValueError("max_cuts is 1 or 2 (1..15 with solver='tlmpm_v5') and material_dt must be positive")
-        if self.cut_events not in (None, "cut_events_v1") or (self.cut_events is not None and self.solver != "tlmpm_v5"):
+        if self.cut_events not in (None, "cut_events_v1") or (self.cut_events is not None and not packed):
             raise ValueError("cut_events is None or 'cut_events_v1' (solver='tlmpm_v5' only)")
 
 

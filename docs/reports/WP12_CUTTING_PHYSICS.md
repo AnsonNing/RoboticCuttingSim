@@ -785,3 +785,36 @@ TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/summarize_wp12_phase4_verif
   the declared input set included.
 - **V2.2.** The Griffith number uses the history maximum of the tensile energy and a provisional G_c. It shows that
   the material model does not exclude tearing; it does not show tearing.
+
+## Omissions in the V1–V4 reading (per prototype decision findings 1 and 3) — note dated 2026-10-31
+
+Added after the [prototype decision](WP12_PHASE4_PROTOTYPE_DECISION.md) (`b05c7f0`, findings 1 and 3). The
+"Reading" above reports the counterfactual grid-position rows (V1.4) only through link scatter and component counts.
+The same row files also record physics changes that the Reading omits. All numbers below are
+**COUNTERFACTUAL_NOT_A_GATE** measurements from `artifacts/wp12/phase4_verify_001` (1 mm, 4 mm grid, 0.1 ms unless
+stated; V12_* unchanged solver vs V14_* `position_update='grid_musl'`). Force, work, bridges, labels and the TRIM
+kinetic energy were re-read from the row files for this note; overlap, unassigned counts, det F, the 0.5 mm removal
+and wall times are quoted from the decision. They are not evidence for or against the
+candidate `tlmpm_v6`, which is judged only by its own protocol (`configs/wp12/phase4_gridpos_protocol_v1.json`).
+
+**Finding 1 (high): the grid-position update is a physics change, not a visual one.**
+
+| Quantity | CUT | MULTI2 | TRIM | OBL20 |
+| --- | --- | --- | --- | --- |
+| Steady blade force (mean \|F\|) | 0.0145 → 0.0240 N (+66 %) | 0.0165 → 0.0247 N (+49 %) | 0.0905 → 0.1123 N (+24 %) | 0.0275 → 0.0218 N (−21 %) |
+| Tool work | ×2.04 | ×1.81 (decision: ×1.82) | ×1.43 | ×0.94 |
+
+- Blade overlap (max penetration): 0.37–0.70 mm → 0.24–0.42 mm.
+- OBL20: direct code-0 bridges 54 → 110, and 0 → 38 unassigned particles within 3 mm; the row stays CONNECTED.
+- TRIM: labels 29 112 → 26 562; final kinetic energy 1.7e-9 → 5.9e-8 J (×36); min det F 0.856 → 0.837; at 0.5 mm the
+  removal falls 0.984 → 0.952 (the ≥ 0.9 criterion still holds).
+- Wall time −4 to +15 %.
+
+**Finding 3 (medium): V4.5 omitted the s = 0.75 mm, 1 mm-zone row, which refutes the "zone in metres" remedy.** At
+0.05 ms a fixed 1 mm cutting zone still depends on the particle spacing: steady force 0.082 / 0.056 / 0.033 /
+0.015 N at s = 2 / 1.5 / 1 / 0.75 mm (`V45_CUT_s*_dt0050_zone1mm`); at s = 0.75 mm it moves 0.048 → 0.015 N against
+the unchanged zone = s. The force counts flank contacts outside the zone (geometry, not material), so no contact
+change is made in WP-12 (decision P-B) and tool force stays NOT_CONVERGED in dt and s.
+
+These omissions change no verdict of V1–V4. They are why the decision classifies `tlmpm_v6` as a physics change that
+needs the full law-8 acceptance, and why forces, work, overlap and kinetic energy are reported (never gated) there.
