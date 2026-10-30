@@ -4,9 +4,11 @@ Date: 2026-10-31 (KST). Branch `claude/wp12-physical-cut-surfaces`. Protocol:
 [`configs/wp12/phase4_e2_protocol_v1.json`](../../configs/wp12/phase4_e2_protocol_v1.json). Runner:
 `scripts/run_wp12_phase4_e2.py` (CPU tests `tests/test_wp12_phase4_e2.py`).
 
-> **Status: protocol written, formal rows NOT_RUN.** Before the commit, only DEV runs were made: a CPU feasibility
-> pass over all 20 rows and one GPU control row that is not part of the protocol. They are not evidence. The
-> orchestrator commits the protocol, and then the formal rows run.
+> **Status: formal E2 complete (kinematic).** The protocol was committed in `1876424`, with the cap raised to 3.0 GPU-h
+> by the orchestrator before any formal row. Results: **17 CONFIRMED, 1 FAIL (as predicted), 2 NOT_EXECUTABLE (as
+> predicted)**. Evidence: [`phase4_e2_001.json`](../evidence/wp12/phase4_e2_001.json). The proposed envelope v2 is
+> [`supported_envelope_v2_PROPOSED.json`](../../configs/wp12/supported_envelope_v2_PROPOSED.json) (status PROPOSED,
+> not in force; the xhigh reviewer decides). Nothing is committed.
 
 ## 1. Decision follow-up
 
@@ -114,3 +116,115 @@ executable rows. That is over the 2.0 GPU-h cap. The rows are declared in priori
 At the measured throughput the cap stops at SKIM_r35. So SKIM_r35 and SKIM_psi_±10 are expected to be NOT_RUN
 (budget) unless the GPUs are less loaded. Raising the cap is the orchestrator's choice **before** the commit, never
 after a result.
+
+## 4. E2 results (formal, 2026-10-31)
+
+**Commands** (`.venv/bin/python`, `TMPDIR=/mnt/data/ningan/tmp`, HEAD `1876424`):
+
+```
+scripts/run_wp12_phase4_e2.py feasibility --out artifacts/wp12/phase4_e2_001/feasibility        # CPU, 1:57 wall
+nohup scripts/run_wp12_phase4_e2.py queue --out-root artifacts/wp12/phase4_e2_001 \
+    --feasibility artifacts/wp12/phase4_e2_001/feasibility --devices cuda:1 cuda:0 \
+    >> artifacts/wp12/logs/phase4_e2_001_queue.log 2>&1 &                                       # 07:25-07:51 KST
+scripts/run_wp12_phase4_e2.py summarize --out-root artifacts/wp12/phase4_e2_001 \
+    --feasibility artifacts/wp12/phase4_e2_001/feasibility --evidence docs/evidence/wp12/phase4_e2_001.json
+```
+
+### 4.1 Execution and integrity
+
+- **18 rows executed** (2 lanes, cuda:1 / cuda:0, at most 2 jobs). Every row has exit 0 in GNU time, label
+  `E2_FORMAL`, `policy_done`, no solver invalidity and no workspace clamp.
+- **Wall time** (GNU time): 0.74 GPU-h summed, 1:43–4:54 per row. The queue's own 30 s polling records 0.83 h; the cap
+  is 3.0 h. The GPUs were idle at launch (0 %), so this is about 3× faster than the DEV estimate.
+- **The 2 ADV rows were not executed** (`not_run_board_collision`, from the formal preflight).
+- **First launch failed (kept).** The first queue process (PID 724144) launched 16 jobs, and each exited 2 in argparse
+  within seconds: the queue passed the top-level `--protocol` after the `run` subcommand. No row directory was created
+  and no physics ran. Fix: the argument order in `cmd_queue`, one line. That is the only change to
+  `scripts/run_wp12_phase4_e2.py` since `1876424`. The failure events and an operator note are kept in
+  `queue.jsonl`; the logs are kept as `artifacts/wp12/logs/phase4_e2_001_<row>_argparse_fail.log`.
+- **Sources.** Every result records `tlmpm_v5`, with no counterfactual. The sha256 of `tlmpm_v5.py`,
+  `goal_planner.py`, `policies.py`, `goals.py`, `generalization_wp12.py`, `cut_diagnostics.py`, `run_wp12_phase5.py`
+  and `run_wp12_phase4a_diagnose.py` equals commit `1876424` in all 18 rows.
+- **Shared worktree.** The tlmpm_v6 agent had uncommitted edits in `kinematic_env.py`, `live_material.py` and
+  `blade_probe.py`, made at 07:24, before the relaunch, and imported by these runs. By inspection the edits only add an
+  opt-in `solver == 'tlmpm_v6'` branch. For `solver='tlmpm_v5'`, `is_packed_solver` is true, and the import, kwargs and
+  code encoding are unchanged. The edits are not hash-verified against the commit; this is disclosed, not hidden.
+
+### 4.2 Row results
+
+All rows are kinematic ideal tracking with `path_v2`, law 8, 1 mm / 4 mm / 0.1 ms and seed 42. The "armed end" is
+the lowest edge point above the board top at the last armed step; on the slotted board it is negative (in the groove).
+
+| Row | Verdict | Predicted | Parts | Direct bridges (sever digit) | Armed end (mm) | Goal / key metric | Preflight (handle slack) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| SLOT_p20 | **CONFIRMED** | CONFIRMED | 2 | 0 | −3.49 | PASS, pieces 0.520 / 0.480 | PASS (2.52 mm) |
+| SLOT_m20 | **CONFIRMED** | CONFIRMED | 2 | 0 | −3.49 | PASS | PASS (2.52 mm) |
+| SLOT_p25 | **CONFIRMED** | CONFIRMED | 2 | 0 | −3.38 | PASS, pieces 0.527 / 0.473 | PASS (1.23 mm) |
+| SOLID_p05 | **FAIL** | FAIL | **1** | **26** | 0.275 | FAIL (no interface at the plane) | PASS |
+| SOLID_p02 | **CONFIRMED** | none | 2 | 0 | 0.212 | PASS, pieces 0.506 / 0.494 | PASS |
+| CUT_PUSH_TRIM | **CONFIRMED** | CONFIRMED | 3 | 0 (trim digit 0) | 0.20 | PASS: push 19.91 mm, other piece 8 µm, trim removal 0.968 | PASS (envelope v1: unsupported pattern) |
+| CUT_PUSH | **CONFIRMED** | CONFIRMED | 2 | 0 | 0.20 | PASS: push 19.90 mm, other piece 0.3 µm | PASS |
+| TRIM_PLANE | **CONFIRMED** | CONFIRMED | 2 | 0 | (trim) | PASS, removed 0.959, substrate share 1.000 | PASS |
+| TRIM_TRIM | **CONFIRMED** | CONFIRMED | 3 | (trim rule) | (trim) | PASS, 0.970 per step | PASS |
+| YAW_p15 / YAW_m15 | **CONFIRMED** | CONFIRMED | 2 / 2 | 0 / 0 | 0.20 / 0.20 | PASS / PASS | PASS |
+| CUT_v08 / CUT_v12 | **CONFIRMED** | CONFIRMED | 2 / 2 | 0 / 0 | 0.16 / 0.16 | PASS / PASS | PASS |
+| SKIM_v20 / SKIM_v30 | **CONFIRMED** | CONFIRMED | 2 / 2 | 0 / 0 | (trim) | removal 0.975 / 0.961 | PASS |
+| SKIM_r35 | **CONFIRMED** | CONFIRMED | 2 | 0 | (trim) | removal 0.952 | PASS |
+| SKIM_psi_p10 / _m10 | **CONFIRMED** | CONFIRMED | 2 / 2 | 0 / 0 | (trim) | removal 0.973 / 0.973 | PASS |
+| ADV_p15 / ADV_m15 | **NOT_EXECUTABLE_BOARD_COLLISION** | same | – | – | – | not run | blade −15.53 mm into the board |
+
+Every declared directional prediction was met: 19 of 19, including SOLID_p05 FAIL and the two ADV rows. SOLID_p02 had none.
+
+Particles below the board top: 0 in every solid-board row. SLOT_p25 has 2 particles at −0.03 mm, inside the groove.
+
+**TRIM_TRIM, digit 1.** The second trim digit has 380 "direct bridge" particles. These are unlabelled (digit 0)
+particles touching both sides of the second trim region. By protocol, trim digits are judged by goal_eval_v2a (the
+WP-11 trim criterion), not by the bridge count. Both steps pass, and 3 mechanical components exist, so both chips are
+separate. The number is reported, not gated.
+
+### 4.3 What E2 shows
+
+1. **The D1 armed-end argument holds** (the falsification test did not falsify it). Through the real planner the 5°
+   flat-board cut ends with the lowest edge point **0.275 mm** above the board. It stays **one part with 26 bridges**,
+   as predicted. At **2°**, with the armed end at 0.212 mm, it separates. So in the planner pipeline the flat-board
+   oblique boundary lies between 2° and 5° at this bar and lattice phase. 3–4° is NOT_RUN. One run per point.
+2. **The Demo 2 configuration works kinematically.** The slotted Option D variant with the planner's 4 mm overtravel
+   separates at ±20° and +25°, with 0 bridges. The measured knife-handle slack is 2.52 mm at 20°, matching the decision's
+   ≈ 2.5 mm estimate, and 1.23 mm at 25°. Native is next (NOT_RUN).
+3. **The Demo 6 configuration works kinematically.** In one episode on the flat board: sever, push of the +x piece by
+   19.91 mm, then trim of the stationary piece's dome (removal 0.968). The result is 3 parts, with no class (c) residue
+   on the sever digit. Native is next (NOT_RUN).
+4. **These cells move to VALIDATED** (single points or confirmed ends):
+   - plane yaw ±15°;
+   - cut speed 8–12 mm/s and skim speed 20–30 mm/s;
+   - ρ 35° and ψ ±10° on the flat board;
+   - region `trim_plane`, `trim_trim` and `cut_push`.
+5. **The slanted chop (β) cannot be executed on the solid board with this planner.** The geometry puts the low end of
+   the tilted edge 15.5 mm into the board. This is a planner limitation, not a physics result.
+6. **Armed ends.** All solid-board armed ends lie in 0.16–0.28 mm, inside the 1 mm clean-cut window [0, 0.375] mm,
+   consistent with Phase 2b live values (0.16–0.28 mm). With the tolerance at 0.3 mm the margin to the window edge is
+   only about 0.1 mm.
+
+### 4.4 Proposed envelope v2
+
+[`supported_envelope_v2_PROPOSED.json`](../../configs/wp12/supported_envelope_v2_PROPOSED.json) is a copy of v1 with
+status **PROPOSED**. It is not in force: `evaluate_envelope` marks every sample PENDING for a non-DECLARED file. **No
+bound changes.** The E2 outcome is appended to the notes of nine rules, and a `proposal` block lists the following.
+
+**Phase 5 ID candidates:**
+- B: slotted |θ| ≤ 20° with the planner's 4 mm overtravel; φ ≤ 15° on the solid board; no advance tilt and no
+  solid-board tilt;
+- speeds: cut 8–12 mm/s and skim 20–30 mm/s;
+- C `trim_plane_protrusion`, E `trim_trim`, G `cut_push`.
+
+**Widening candidate (not applied):** the pattern `sequence:sever>move_piece>remove_protrusions`. Adding it would
+widen the admissible set, which the protocol forbids.
+
+**Tightening candidate (not applied):** the solid-board tilt bound at 9.9°. v1 already lists 5° at h ≥ 0.25 mm as a
+known failure, and D5 uses 0 < |θ| ≤ 9.9° as an OOD boundary dimension.
+
+The xhigh reviewer decides. A DECLARED v2 is then followed by a Phase 5 re-declaration and the freeze.
+
+**Limits.** One run per point, one workpiece, one seed. Kinematic only: no robot dynamics, grasp or PhysX.
+Forces are not converged. The material is provisional and uncalibrated.
+

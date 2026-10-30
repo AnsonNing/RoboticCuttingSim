@@ -1,0 +1,4262 @@
+{
+ "schema": "wp12_phase4_e2_evidence_v1",
+ "protocol": "configs/wp12/phase4_e2_protocol_v1.json",
+ "protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+ "summarizer_sha256": "a77442491ed6be61e699efa3699188a91ffe351d792766d217f50948cfa45345",
+ "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+ "git_status_porcelain": [
+  "M docs/reports/WP12_CUTTING_PHYSICS.md",
+  " M scripts/run_wp12_phase4_e2.py",
+  " M src/robotic_cutting_sim/blade_probe.py",
+  " M src/robotic_cutting_sim/kinematic_env.py",
+  " M src/robotic_cutting_sim/live_material.py",
+  "?? configs/wp12/phase4_gridpos_protocol_v1.json",
+  "?? docs/adr/0020-tlmpm-v6-grid-consistent-position-update.md",
+  "?? docs/reports/WP12_TLMPM_V6_CANDIDATE.md",
+  "?? scripts/run_wp12_gridpos.py",
+  "?? scripts/summarize_wp12_gridpos.py",
+  "?? src/robotic_cutting_sim/packed_solvers.py",
+  "?? src/robotic_cutting_sim/tlmpm_v6.py",
+  "?? tests/test_tlmpm_v6.py",
+  "?? tests/test_wp12_gridpos_protocol.py"
+ ],
+ "command": [
+  "scripts/run_wp12_phase4_e2.py",
+  "summarize",
+  "--out-root",
+  "artifacts/wp12/phase4_e2_001",
+  "--feasibility",
+  "artifacts/wp12/phase4_e2_001/feasibility",
+  "--evidence",
+  "docs/evidence/wp12/phase4_e2_001.json"
+ ],
+ "out_root": "artifacts/wp12/phase4_e2_001",
+ "feasibility": "artifacts/wp12/phase4_e2_001/feasibility",
+ "verdict_counts": {
+  "CONFIRMED": 17,
+  "FAIL": 1,
+  "NOT_EXECUTABLE_BOARD_COLLISION": 2
+ },
+ "scope": "Kinematic ideal tracking (no robot dynamics, PhysX, grasp or cameras); the motion preflight is geometric (Newton IK + C2 MuJoCo distances, flat-board blade/board rule). Law 8, tlmpm_v5, ruler_knife_v2_y, 1 mm particles, 4 mm grid, material dt 0.1 ms, control dt 20 ms, seed 42, cutting_tasks_v1 (provisional, uncalibrated). One run per row: a CONFIRMED row validates one point of a cell, never a range by itself. No Native row: decision D5 runs Demos 2 and 6 in Native only after their E2 rows.",
+ "rows": [
+  {
+   "id": "SLOT_p20",
+   "tests": "slotted theta +20 deg with the planner 4 mm overtravel (Demo 2 configuration); handle slack measured by the preflight",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "E1 D_p20_reach separated at 6.67 mm overtravel; 4 mm still passes the whole section; decision D5 estimates a handle slack of about 2.5 mm",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 567.526,
+    "gripper_pad_clearance": 12.57,
+    "franka1_collision": 98.424,
+    "franka_workcell_collision": 46.345,
+    "knife_handle_clearance": 2.516,
+    "blade_collision": 2.63,
+    "wrist_camera_clearance": 51.199,
+    "franka_self_collision": 19.746,
+    "joint_continuity": 45.078
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       -0.00136808057330267,
+       0.0,
+       -0.0037587704831436274
+      ],
+      "planned_lowest_edge_point_local_z_m": -0.0037587704831436274
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       -0.00136808057330267,
+       0.0,
+       -0.0037587704831436274
+      ],
+      "end_on_support": false,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.00017101009969356946,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9315772433292872,
+      "max_speed_m_s_sampled": 0.04405053332448006,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.00013944219972472638,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.8929765920038335,
+     "episode_wall_s": 144.04613572297967,
+     "evaluation_wall_s": 1.6492495340062305,
+     "simulated_s": 10.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07289331259946417,
+     "surface_reconstruction_s": 0.2911800889996812,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9315772433292872,
+     "max_speed_m_s_sampled": 0.04405053332448006,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SLOT_p20-E2_SLOT_p20_sever_tilt_slotted-c2423454",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 525,
+    "control_steps": 525,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 117,
+      "last_step": 281,
+      "armed_steps": 165,
+      "edge_centre_local_z_mm": -3.4923155326396227,
+      "lowest_edge_point_local_z_mm": -3.4923155326396227
+     }
+    ],
+    "min_particle_local_z_mm": 0.13944220542907715,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SLOT_m20",
+   "tests": "slotted theta -20 deg (negative tilts NOT_RUN on the slotted board)",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "E1 flat-board A_m rows behaved like A_p rows (sign symmetry); same groove geometry mirrored",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 548.924,
+    "gripper_pad_clearance": 12.57,
+    "franka1_collision": 152.314,
+    "franka_workcell_collision": 46.346,
+    "knife_handle_clearance": 2.515,
+    "blade_collision": 2.633,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.7,
+    "joint_continuity": 46.191
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       0.00136808057330267,
+       0.0,
+       -0.0037587704831436274
+      ],
+      "planned_lowest_edge_point_local_z_m": -0.0037587704831436274
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.00136808057330267,
+       0.0,
+       -0.0037587704831436274
+      ],
+      "end_on_support": false,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.00017101009969356946,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9314624089858209,
+      "max_speed_m_s_sampled": 0.04405838996171951,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.00014546701277140528,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.8036758349917363,
+     "episode_wall_s": 143.32859175198246,
+     "evaluation_wall_s": 1.5502642590145115,
+     "simulated_s": 10.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07325823739459694,
+     "surface_reconstruction_s": 0.2822731230116915,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9314624089858209,
+     "max_speed_m_s_sampled": 0.04405838996171951,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SLOT_m20-E2_SLOT_m20_sever_tilt_slotted-7785371f",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 525,
+    "control_steps": 525,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 117,
+      "last_step": 281,
+      "armed_steps": 165,
+      "edge_centre_local_z_mm": -3.4923155326396227,
+      "lowest_edge_point_local_z_mm": -3.4923155326396227
+     }
+    ],
+    "min_particle_local_z_mm": 0.14546701312065125,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SLOT_p25",
+   "tests": "slotted theta +25 deg with the planner 4 mm overtravel",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "E1 D_p25_reach separated at 5.35 mm; handle slack smaller than at 20 deg (the DEV sample at 32.1 deg collides by 0.68 mm), so reachability is the main risk",
+    "confidence": "low"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 561.757,
+    "gripper_pad_clearance": 11.961,
+    "franka1_collision": 95.0,
+    "franka_workcell_collision": 45.152,
+    "knife_handle_clearance": 1.228,
+    "blade_collision": 2.308,
+    "wrist_camera_clearance": 50.576,
+    "franka_self_collision": 19.717,
+    "joint_continuity": 43.775
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       -0.0016904730469628013,
+       0.0,
+       -0.0036252311481466022
+      ],
+      "planned_lowest_edge_point_local_z_m": -0.0036252311481466022
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       -0.0016904730469628013,
+       0.0,
+       -0.0036252311481466022
+      ],
+      "end_on_support": false,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0007463087927161022,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9302377913624026,
+      "max_speed_m_s_sampled": 0.056027524173259735,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": -3.2293512049363926e-05,
+      "particles_below_board_top": 2,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.968463518016506,
+     "episode_wall_s": 143.24495450299582,
+     "evaluation_wall_s": 1.5517842520202976,
+     "simulated_s": 10.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07330101109969918,
+     "surface_reconstruction_s": 0.28193516601459123,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9302377913624026,
+     "max_speed_m_s_sampled": 0.056027524173259735,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SLOT_p25-E2_SLOT_p25_sever_tilt_slotted-32ccff11",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 525,
+    "control_steps": 525,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 119,
+      "last_step": 287,
+      "armed_steps": 169,
+      "edge_centre_local_z_mm": -3.382741007953882,
+      "lowest_edge_point_local_z_mm": -3.382741007953882
+     }
+    ],
+    "min_particle_local_z_mm": -0.03229351341724396,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SOLID_p05",
+   "tests": "solid flat board theta 5 deg through the real planner: falsification test of the armed-end argument (decision D1)",
+   "verdict": "FAIL",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": false,
+    "components_ge_expected": false,
+    "zero_direct_bridges": false
+   },
+   "prediction": {
+    "verdict": "FAIL",
+    "basis": "decision D1/D5: the path_v2 armed end (0.1-0.3 mm) lies outside the 5 deg window E1 measured (R_p05_h0250 connected with 20 bridges): predicted CONNECTED (one part or direct bridges > 0)",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 574.414,
+    "gripper_pad_clearance": 18.779,
+    "franka1_collision": 119.762,
+    "franka_workcell_collision": 53.382,
+    "knife_handle_clearance": 9.981,
+    "blade_collision": 0.0,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.858,
+    "joint_continuity": 46.851
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       1.3010426069826053e-18,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       1.3010426069826053e-18,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "execution_failure",
+    "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+    "verdict": "FAIL",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 0.5,
+     "separation": false,
+     "mechanical_components": 1,
+     "expected_pieces": 2,
+     "cut_position_error_m": null,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9362975485774622,
+      "max_speed_m_s_sampled": 0.08934659510850906,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.0003798055404331535,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 1,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.919470963999629,
+     "episode_wall_s": 128.5354629229987,
+     "evaluation_wall_s": 1.583010798000032,
+     "simulated_s": 9.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07390956381968401,
+     "surface_reconstruction_s": 0.2827012900088448,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 1012.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9362975485774622,
+     "max_speed_m_s_sampled": 0.08934659510850906,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SOLID_p05-E2_SOLID_p05_sever_tilt_solid-e1db58ec",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 475,
+    "control_steps": 475,
+    "mechanical_components": 1,
+    "direct_code0_bridges_by_digit": {
+     "0": 26
+    },
+    "direct_code0_bridges_total": 26,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 254,
+      "armed_steps": 139,
+      "edge_centre_local_z_mm": 0.27534496621228755,
+      "lowest_edge_point_local_z_mm": 0.27534496621228755
+     }
+    ],
+    "min_particle_local_z_mm": 0.3798055350780487,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SOLID_p02",
+   "tests": "solid flat board theta 2 deg through the real planner (armed end 0.1-0.3 mm above the board top)",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "NO_DIRECTIONAL_PREDICTION",
+    "basis": "E1 measured 2 deg only at h = 0 (separated); no row between h = 0 and the planner armed end exists at 2 deg",
+    "confidence": "none"
+   },
+   "prediction_met": null,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 571.549,
+    "gripper_pad_clearance": 19.821,
+    "franka1_collision": 123.835,
+    "franka_workcell_collision": 54.823,
+    "knife_handle_clearance": 10.607,
+    "blade_collision": 0.0,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.751,
+    "joint_continuity": 46.942
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       6.505213034913027e-19,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       6.505213034913027e-19,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.00038389446367875736,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9510691493560972,
+      "max_speed_m_s_sampled": 0.06024415045976639,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.00038490368751809,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.4888864829845261,
+     "episode_wall_s": 129.79081447300268,
+     "evaluation_wall_s": 1.5641724209999666,
+     "simulated_s": 9.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.0731947020948548,
+     "surface_reconstruction_s": 0.28318524098722264,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9510691493560972,
+     "max_speed_m_s_sampled": 0.06024415045976639,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SOLID_p02-E2_SOLID_p02_sever_tilt_solid-4c3c3fe5",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 475,
+    "control_steps": 475,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 254,
+      "armed_steps": 139,
+      "edge_centre_local_z_mm": 0.21206162637099624,
+      "lowest_edge_point_local_z_mm": 0.21206162637099624
+     }
+    ],
+    "min_particle_local_z_mm": 0.3849036991596222,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "CUT_PUSH_TRIM",
+   "tests": "Demo 6 candidate: sever at x = 0, push the +x piece 20 mm (kerf_face), then remove the dome on the STATIONARY -x piece (x = -44.8 mm, one surface_trim pass, rho 10, 25 mm/s) in ONE episode on the flat board",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "each step is validated alone (sever, kerf_face push on wp11_workcell_v1, dome skim); risk: class (c) core-band carry seen in 3/6 WP-11 TEST_D2 sever/trim sequences",
+    "confidence": "low"
+   },
+   "prediction_met": true,
+   "feasibility_class": "physically_unsupported",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 508.813,
+    "gripper_pad_clearance": 11.403,
+    "franka1_collision": 129.225,
+    "franka_workcell_collision": 43.648,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.0,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.686,
+    "joint_continuity": 39.667
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     },
+     {
+      "label": "SKIM:p0",
+      "cut_index": 1,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       -0.022800000000000008,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     },
+     {
+      "op": "move1",
+      "kind": "blade_face_push",
+      "digit": null
+     },
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "digit": 1,
+      "end_local_m": [
+       -0.022800000000000008,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [
+     null,
+     null,
+     null
+    ],
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0015000000421423465,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019909727823596422,
+       "other_piece_displacement_max_m": 8.008959358833436e-06,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      },
+      {
+       "cut_completion": 0.9682539682539681,
+       "per_protrusion_removed": {
+        "p0": 0.9682539682539681
+       },
+       "separation": true,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.004127490818500518,
+       "overcut_detached_below_plane_fraction": null,
+       "substrate_share": null,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      }
+     ],
+     "cut_completion": 0.9682539682539681,
+     "separation": true,
+     "cut_position_error_m": 0.004127490818500518
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9011026894446726,
+      "max_speed_m_s_sampled": 0.9641086459159851,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 3.12776755890809e-05,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6891724340093788,
+     "episode_wall_s": 283.5407885379973,
+     "evaluation_wall_s": 4.17057486900012,
+     "simulated_s": 20.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07230000348698613,
+     "surface_reconstruction_s": 0.29412531599518843,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 1012.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9011026894446726,
+     "max_speed_m_s_sampled": 0.9641086459159851,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_CUT_PUSH_TRIM-E2_CUT_PUSH_TRIM_cut_push_trim-f8bb915d",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 1025,
+    "control_steps": 1025,
+    "mechanical_components": 3,
+    "direct_code0_bridges_by_digit": {
+     "0": 0,
+     "1": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 112,
+      "last_step": 290,
+      "armed_steps": 179,
+      "edge_centre_local_z_mm": 0.19999999494757503,
+      "lowest_edge_point_local_z_mm": 0.19999999494757503
+     },
+     {
+      "cut_index": 1,
+      "first_step": 800,
+      "last_step": 887,
+      "armed_steps": 88,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     }
+    ],
+    "min_particle_local_z_mm": 0.031277675181627274,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "CUT_PUSH",
+   "tests": "cut -> push: sever at x = 0, kerf_face push of the +x piece by 20 mm on the flat board",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "pushes passed on wp11_workcell_v1 (SLICE-PUSH); flat-board friction is the material friction (TLMPM)",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 563.556,
+    "gripper_pad_clearance": 20.517,
+    "franka1_collision": 116.677,
+    "franka_workcell_collision": 55.811,
+    "knife_handle_clearance": 11.0,
+    "blade_collision": 0.0,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.685,
+    "joint_continuity": 46.525
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     },
+     {
+      "op": "move1",
+      "kind": "blade_face_push",
+      "digit": null
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [
+     null,
+     null
+    ],
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0015000000421423465,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "push_displacement_m": 0.019904599628706172,
+       "other_piece_displacement_max_m": 3.263527697714216e-07,
+       "label_changes_while_disarmed_frames": 0,
+       "separation": true
+      }
+     ],
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.0015000000421423465
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9536737750892769,
+      "max_speed_m_s_sampled": 0.03059283271431923,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.0003772819181904197,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.5389128269744106,
+     "episode_wall_s": 204.59612965400447,
+     "evaluation_wall_s": 1.811649885989027,
+     "simulated_s": 15.0,
+     "simulation_throughput_sim_s_per_wall_s": 0.07331516986839742,
+     "surface_reconstruction_s": 0.2919761699740775,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9536737750892769,
+     "max_speed_m_s_sampled": 0.03059283271431923,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_CUT_PUSH-E2_CUT_PUSH_cut_push-efd3905c",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 750,
+    "control_steps": 750,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 254,
+      "armed_steps": 139,
+      "edge_centre_local_z_mm": 0.19999999494757503,
+      "lowest_edge_point_local_z_mm": 0.19999999494757503
+     }
+    ],
+    "min_particle_local_z_mm": 0.37728190422058105,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "TRIM_PLANE",
+   "tests": "trim_plane over the dome region (C trim_plane_protrusion)",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "phase4c G15_overlapping_TRIMPLANE_DIAG region trim passed (one diagnostic run)",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 516.112,
+    "gripper_pad_clearance": 11.402,
+    "franka1_collision": 147.771,
+    "franka_workcell_collision": 43.648,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.049,
+    "wrist_camera_clearance": 51.661,
+    "franka_self_collision": 19.718,
+    "joint_continuity": 35.539
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:trim0",
+      "cut_index": 0,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       0.0698,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "trim0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       0.0698,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {},
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": null,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9026462388040791,
+      "max_speed_m_s_sampled": 0.13879495859146118,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.00014285207726061344,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": null,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6673778200056404,
+     "episode_wall_s": 101.81058325699996,
+     "evaluation_wall_s": 2.5789308050007094,
+     "simulated_s": 7.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07366621190124986,
+     "surface_reconstruction_s": 0.2913988289947156,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9026462388040791,
+     "max_speed_m_s_sampled": 0.13879495859146118,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_TRIM_PLANE-E2_TRIM_PLANE_trim_plane-3dd6f08e",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 375,
+    "control_steps": 375,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 121,
+      "last_step": 220,
+      "armed_steps": 100,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     }
+    ],
+    "min_particle_local_z_mm": 0.1428520828485489,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "TRIM_TRIM",
+   "tests": "trim -> trim: two trim_plane steps over two separate domes (E trim_trim)",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "each step is a region trim over a separate footprint; goal_eval_v2a scopes each step",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 502.968,
+    "gripper_pad_clearance": 11.402,
+    "franka1_collision": 145.255,
+    "franka_workcell_collision": 43.648,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.049,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.706,
+    "joint_continuity": 34.937
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:trim0",
+      "cut_index": 0,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       -0.025,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     },
+     {
+      "label": "SKIM:trim1",
+      "cut_index": 1,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       0.07500000000000001,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "trim0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       -0.025,
+       0.0,
+       0.0202
+      ]
+     },
+     {
+      "op": "trim1",
+      "kind": "surface_trim",
+      "digit": 1,
+      "end_local_m": [
+       0.07500000000000001,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [
+     null,
+     null
+    ],
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 0.9704545454545455,
+       "separation": true,
+       "mechanical_components": 2,
+       "cut_position_error_m": 0.0004416383057832714,
+       "overcut_detached_below_plane_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "removed above-plane mass fraction in the region",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the region (reported quality)"
+       }
+      },
+      {
+       "cut_completion": 0.9704545454545455,
+       "separation": true,
+       "mechanical_components": 2,
+       "cut_position_error_m": 0.000442506298422813,
+       "overcut_detached_below_plane_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "removed above-plane mass fraction in the region",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the region (reported quality)"
+       }
+      }
+     ],
+     "cut_completion": 0.9704545454545455,
+     "separation": true,
+     "cut_position_error_m": 0.000442506298422813
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.8992014923979438,
+      "max_speed_m_s_sampled": 0.7900566458702087,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.0002549588098190725,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.5423836239788216,
+     "episode_wall_s": 157.87287619998096,
+     "evaluation_wall_s": 5.1517278859973885,
+     "simulated_s": 11.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07284341855805998,
+     "surface_reconstruction_s": 0.2930263449961785,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8992014923979438,
+     "max_speed_m_s_sampled": 0.7900566458702087,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_TRIM_TRIM-E2_TRIM_TRIM_trim_trim-e89c834f",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 575,
+    "control_steps": 575,
+    "mechanical_components": 3,
+    "direct_code0_bridges_by_digit": {
+     "0": 0,
+     "1": 380
+    },
+    "direct_code0_bridges_total": 380,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 130,
+      "last_step": 229,
+      "armed_steps": 100,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     },
+     {
+      "cut_index": 1,
+      "first_step": 328,
+      "last_step": 427,
+      "armed_steps": 100,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     }
+    ],
+    "min_particle_local_z_mm": 0.2549588084220886,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "YAW_p15",
+   "tests": "vertical plane yawed +15 deg about z on the solid board (no tilted exit front)",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "no class (a) mechanism (vertical exit at the board top); the plane crosses the lattice obliquely; reachable at 13 deg in DEV",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 420.18,
+    "gripper_pad_clearance": 15.531,
+    "franka1_collision": 95.0,
+    "franka_workcell_collision": 32.698,
+    "knife_handle_clearance": 11.001,
+    "blade_collision": 0.001,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.626,
+    "joint_continuity": 44.929
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9443032745888025,
+      "max_speed_m_s_sampled": 0.03943254053592682,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.00036862448905594647,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6678894670039881,
+     "episode_wall_s": 127.96774132401333,
+     "evaluation_wall_s": 1.550740572012728,
+     "simulated_s": 9.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07423745939178589,
+     "surface_reconstruction_s": 0.28173358101048507,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9443032745888025,
+     "max_speed_m_s_sampled": 0.03943254053592682,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_YAW_p15-E2_YAW_p15_sever_plane_yaw-54a2fd27",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 475,
+    "control_steps": 475,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 254,
+      "armed_steps": 139,
+      "edge_centre_local_z_mm": 0.19999999494757503,
+      "lowest_edge_point_local_z_mm": 0.19999999494757503
+     }
+    ],
+    "min_particle_local_z_mm": 0.3686244785785675,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "YAW_m15",
+   "tests": "vertical plane yawed -15 deg on the solid board",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as YAW_p15",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 583.016,
+    "gripper_pad_clearance": 15.531,
+    "franka1_collision": 151.95,
+    "franka_workcell_collision": 32.812,
+    "knife_handle_clearance": 11.0,
+    "blade_collision": 0.0,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.85,
+    "joint_continuity": 48.545
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9443963756582062,
+      "max_speed_m_s_sampled": 0.04014262557029724,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.000368248438462615,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.5449582079891115,
+     "episode_wall_s": 127.09916187199997,
+     "evaluation_wall_s": 1.5503202550171409,
+     "simulated_s": 9.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07474478871518708,
+     "surface_reconstruction_s": 0.2842086990131065,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 948.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9443963756582062,
+     "max_speed_m_s_sampled": 0.04014262557029724,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_YAW_m15-E2_YAW_m15_sever_plane_yaw-f54a4326",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 475,
+    "control_steps": 475,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 254,
+      "armed_steps": 139,
+      "edge_centre_local_z_mm": 0.19999999494757503,
+      "lowest_edge_point_local_z_mm": 0.19999999494757503
+     }
+    ],
+    "min_particle_local_z_mm": 0.36824843287467957,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "CUT_v08",
+   "tests": "vertical CUT at 8 mm/s (ID 10 mm/s only)",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "quasi-static material; path_v2 armed end within [0, 0.3] mm at 0.16 mm per control step",
+    "confidence": "high"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 568.556,
+    "gripper_pad_clearance": 20.517,
+    "franka1_collision": 126.507,
+    "franka_workcell_collision": 55.811,
+    "knife_handle_clearance": 11.0,
+    "blade_collision": 0.0,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.676,
+    "joint_continuity": 46.976
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.008,
+      "planned_edge_centre_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000000421423465,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9446448846764742,
+      "max_speed_m_s_sampled": 0.034494753926992416,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.00036894946242682636,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6653572779905517,
+     "episode_wall_s": 141.7555789219914,
+     "evaluation_wall_s": 1.5509375020046718,
+     "simulated_s": 10.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07407115882033953,
+     "surface_reconstruction_s": 0.2912634660024196,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9446448846764742,
+     "max_speed_m_s_sampled": 0.034494753926992416,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_CUT_v08-E2_CUT_v08_sever-5ea4aceb",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 525,
+    "control_steps": 525,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 289,
+      "armed_steps": 174,
+      "edge_centre_local_z_mm": 0.15999999595806003,
+      "lowest_edge_point_local_z_mm": 0.15999999595806003
+     }
+    ],
+    "min_particle_local_z_mm": 0.3689494729042053,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "CUT_v12",
+   "tests": "vertical CUT at 12 mm/s",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true,
+    "components_ge_expected": true,
+    "zero_direct_bridges": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as CUT_v08 (0.24 mm per control step)",
+    "confidence": "high"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 568.556,
+    "gripper_pad_clearance": 20.517,
+    "franka1_collision": 126.507,
+    "franka_workcell_collision": 55.811,
+    "knife_handle_clearance": 11.001,
+    "blade_collision": 0.001,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.676,
+    "joint_continuity": 46.977
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.012,
+      "planned_edge_centre_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.0
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000000421423465,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": null,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9605833242654823,
+      "max_speed_m_s_sampled": 0.05147964134812355,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.0003814021765720099,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.5406095479847863,
+     "episode_wall_s": 122.62653805900482,
+     "evaluation_wall_s": 1.5714343600266147,
+     "simulated_s": 9.0,
+     "simulation_throughput_sim_s_per_wall_s": 0.07339357485301776,
+     "surface_reconstruction_s": 0.2809636800084263,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 980.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9605833242654823,
+     "max_speed_m_s_sampled": 0.05147964134812355,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_CUT_v12-E2_CUT_v12_sever-bfb64049",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 450,
+    "control_steps": 450,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 116,
+      "last_step": 231,
+      "armed_steps": 116,
+      "edge_centre_local_z_mm": 0.15999999595806003,
+      "lowest_edge_point_local_z_mm": 0.15999999595806003
+     }
+    ],
+    "min_particle_local_z_mm": 0.3814021646976471,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SKIM_v20",
+   "tests": "dome skim at 20 mm/s (ID 25 mm/s only), rho 10",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "the dome skim passes at 25 mm/s (Native Test C, resolution TRIM); speed effect expected small",
+    "confidence": "high"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 522.146,
+    "gripper_pad_clearance": 11.402,
+    "franka1_collision": 149.167,
+    "franka_workcell_collision": 43.648,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.049,
+    "wrist_camera_clearance": 51.662,
+    "franka_self_collision": 19.719,
+    "joint_continuity": 35.71
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:p0",
+      "cut_index": 0,
+      "speed_m_s": 0.02,
+      "planned_edge_centre_local_m": [
+       0.0668,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       0.0668,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 0.9750566893424036,
+     "per_protrusion_removed": {
+      "p0": 0.9750566893424036
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.0013606320321559902,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999996599,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": 0.9999999999996599,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.8878615598227788,
+      "max_speed_m_s_sampled": 0.22985850274562836,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 8.513427746947855e-05,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6400933999975678,
+     "episode_wall_s": 101.74880482599838,
+     "evaluation_wall_s": 2.571444394008722,
+     "simulated_s": 7.5,
+     "simulation_throughput_sim_s_per_wall_s": 0.07371093953217261,
+     "surface_reconstruction_s": 0.2986226520151831,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8878615598227788,
+     "max_speed_m_s_sampled": 0.22985850274562836,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SKIM_v20-E2_SKIM_v20_skim-23296c60",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 375,
+    "control_steps": 375,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 121,
+      "last_step": 230,
+      "armed_steps": 110,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     }
+    ],
+    "min_particle_local_z_mm": 0.08513427525758743,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SKIM_v30",
+   "tests": "dome skim at 30 mm/s, rho 10",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as SKIM_v20",
+    "confidence": "high"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 522.542,
+    "gripper_pad_clearance": 11.402,
+    "franka1_collision": 149.167,
+    "franka_workcell_collision": 43.648,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.049,
+    "wrist_camera_clearance": 51.662,
+    "franka_self_collision": 19.719,
+    "joint_continuity": 35.71
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:p0",
+      "cut_index": 0,
+      "speed_m_s": 0.03,
+      "planned_edge_centre_local_m": [
+       0.0668,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       0.0668,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 0.9614512471655327,
+     "per_protrusion_removed": {
+      "p0": 0.9614512471655327
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.001042663604021072,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999996599,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": 0.9999999999996599,
+     "material_loss": 0.0,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.8950048573064254,
+      "max_speed_m_s_sampled": 0.11502651125192642,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.0004252913349773735,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 1.0487064649933018,
+     "episode_wall_s": 134.61480363400187,
+     "evaluation_wall_s": 2.599547962017823,
+     "simulated_s": 7.0,
+     "simulation_throughput_sim_s_per_wall_s": 0.05200022442577701,
+     "surface_reconstruction_s": 0.29070154900546186,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8950048573064254,
+     "max_speed_m_s_sampled": 0.11502651125192642,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SKIM_v30-E2_SKIM_v30_skim-beec36a1",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 350,
+    "control_steps": 350,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 121,
+      "last_step": 193,
+      "armed_steps": 73,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     }
+    ],
+    "min_particle_local_z_mm": 0.4252913296222687,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SKIM_r35",
+   "tests": "dome skim at rho 35 deg on the flat board through the planner",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "law-8 acceptance M3b/M3c at rho 35 and the 10-44 dome sweep (diagnostic) separated",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 542.701,
+    "gripper_pad_clearance": 14.321,
+    "franka1_collision": 144.36,
+    "franka_workcell_collision": 43.933,
+    "knife_handle_clearance": 15.367,
+    "blade_collision": 0.201,
+    "wrist_camera_clearance": 51.667,
+    "franka_self_collision": 19.681,
+    "joint_continuity": 38.431
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:p0",
+      "cut_index": 0,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       0.0668,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       0.0668,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 0.9523809523809523,
+     "per_protrusion_removed": {
+      "p0": 0.9523809523809523
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.011101645901799202,
+     "overcut_detached_below_plane_fraction": 4.166666666666668e-05,
+     "substrate_share": 0.9999583333329937,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": 0.9999583333329937,
+     "material_loss": 4.166666666666668e-05,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.8556273794393644,
+      "max_speed_m_s_sampled": 0.19455835223197937,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 0.0004225735319778323,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.9163844870054163,
+     "episode_wall_s": 94.86405416199705,
+     "evaluation_wall_s": 2.616737070988165,
+     "simulated_s": 7.0,
+     "simulation_throughput_sim_s_per_wall_s": 0.07378980438730005,
+     "surface_reconstruction_s": 0.2897407879936509,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8556273794393644,
+     "max_speed_m_s_sampled": 0.19455835223197937,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SKIM_r35-E2_SKIM_r35_skim-10157719",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 350,
+    "control_steps": 350,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 121,
+      "last_step": 208,
+      "armed_steps": 88,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.19999921321869
+     }
+    ],
+    "min_particle_local_z_mm": 0.4225735366344452,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SKIM_psi_p10",
+   "tests": "dome skim with edge skew psi +10 deg on the flat board",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "psi 20 passed on the WP-11 workcell (E1_TEST_A_s7); skim physics does not involve the board",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 357.673,
+    "gripper_pad_clearance": 14.51,
+    "franka1_collision": 147.049,
+    "franka_workcell_collision": 47.287,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.049,
+    "wrist_camera_clearance": 51.663,
+    "franka_self_collision": 19.816,
+    "joint_continuity": 35.924
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:p0",
+      "cut_index": 0,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       0.0668,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       0.0668,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 0.9727891156462584,
+     "per_protrusion_removed": {
+      "p0": 0.9727891156462584
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.0031586303561925884,
+     "overcut_detached_below_plane_fraction": 2.083333333333334e-05,
+     "substrate_share": 0.9999791666663268,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": 0.9999791666663268,
+     "material_loss": 2.083333333333334e-05,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.906030093952289,
+      "max_speed_m_s_sampled": 0.1579538881778717,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 3.389712219359353e-05,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6116076080070343,
+     "episode_wall_s": 94.93936283100629,
+     "evaluation_wall_s": 2.65144771602354,
+     "simulated_s": 7.0,
+     "simulation_throughput_sim_s_per_wall_s": 0.07373127216431946,
+     "surface_reconstruction_s": 0.31522916100220755,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.906030093952289,
+     "max_speed_m_s_sampled": 0.1579538881778717,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SKIM_psi_p10-E2_SKIM_psi_p10_skim-fb230659",
+    "device": "cuda:0",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 350,
+    "control_steps": 350,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 121,
+      "last_step": 208,
+      "armed_steps": 88,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.199999193597804
+     }
+    ],
+    "min_particle_local_z_mm": 0.033897120505571365,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "SKIM_psi_m10",
+   "tests": "dome skim with edge skew psi -10 deg",
+   "verdict": "CONFIRMED",
+   "checks": {
+    "policy_done": true,
+    "solver_valid": true,
+    "goal_eval_v2a_PASS": true
+   },
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as SKIM_psi_p10",
+    "confidence": "moderate"
+   },
+   "prediction_met": true,
+   "feasibility_class": "valid_feasible",
+   "preflight_status": "PASS",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 583.016,
+    "gripper_pad_clearance": 3.449,
+    "franka1_collision": 149.656,
+    "franka_workcell_collision": 34.565,
+    "knife_handle_clearance": 7.146,
+    "blade_collision": 0.049,
+    "wrist_camera_clearance": 51.661,
+    "franka_self_collision": 19.661,
+    "joint_continuity": 35.891
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "SKIM:p0",
+      "cut_index": 0,
+      "speed_m_s": 0.025,
+      "planned_edge_centre_local_m": [
+       0.0668,
+       0.0,
+       0.020199999999999996
+      ],
+      "planned_lowest_edge_point_local_z_m": 0.020199999999999996
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "digit": 0,
+      "end_local_m": [
+       0.0668,
+       0.0,
+       0.0202
+      ]
+     }
+    ]
+   },
+   "run": {
+    "status": "COMPLETE",
+    "label": "E2_FORMAL",
+    "partial": false,
+    "policy_done": true,
+    "solver_invalid": null,
+    "class": "task_success",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "verdict": "PASS",
+    "integrity": "PASS",
+    "step_verdicts": [],
+    "metrics": {
+     "cut_completion": 0.9727891156462584,
+     "per_protrusion_removed": {
+      "p0": 0.9727891156462584
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.0032822112739086147,
+     "overcut_detached_below_plane_fraction": 2.083333333333334e-05,
+     "substrate_share": 0.9999791666663268,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "physical_quality": {
+     "substrate_retention": 0.9999791666663268,
+     "material_loss": 2.083333333333334e-05,
+     "contact_stability": {
+      "finite": true,
+      "min_det_F_sampled": 0.9058963529316882,
+      "max_speed_m_s_sampled": 0.15586541593074799,
+      "sampling": "every 10 control steps"
+     },
+     "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+     "physical_cutting_validity": {
+      "integrity": "PASS",
+      "failed_integrity_checks": []
+     },
+     "penetration": {
+      "min_particle_z_local_m": 3.43965002684854e-05,
+      "particles_below_board_top": 0,
+      "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+      "particle_spacing_m": 0.001
+     },
+     "remaining_unwanted_bridges": null,
+     "mechanical_components": 2,
+     "workspace_clamped_steps": 0
+    },
+    "runtime": {
+     "reset_overhead_s": 0.6620661850029137,
+     "episode_wall_s": 143.39438601298025,
+     "evaluation_wall_s": 2.645472875010455,
+     "simulated_s": 7.0,
+     "simulation_throughput_sim_s_per_wall_s": 0.04881641600227188,
+     "surface_reconstruction_s": 0.33652295998763293,
+     "gpu_process_memory_mib": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 496.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 916.0
+     }
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9058963529316882,
+     "max_speed_m_s_sampled": 0.15586541593074799,
+     "sampling": "every 10 control steps"
+    },
+    "task_id": "CFG-E2_SKIM_psi_m10-E2_SKIM_psi_m10_skim-1ce565b7",
+    "device": "cuda:1",
+    "e2_protocol_sha256": "17237aefe1ab28ec222446e904d5ce9502c528f423a2d5b7e720fe32c77b9b0d",
+    "git_sha": "18764248f300de8b7f5a1089d74cf2ed19764d0e",
+    "steps_run": 350,
+    "control_steps": 350,
+    "mechanical_components": 2,
+    "direct_code0_bridges_by_digit": {
+     "0": 0
+    },
+    "direct_code0_bridges_total": 0,
+    "armed_ends": [
+     {
+      "cut_index": 0,
+      "first_step": 121,
+      "last_step": 208,
+      "armed_steps": 88,
+      "edge_centre_local_z_mm": 20.19999921321869,
+      "lowest_edge_point_local_z_mm": 20.199999193597804
+     }
+    ],
+    "min_particle_local_z_mm": 0.03439649939537048,
+    "diag_wrapped_exit": 0
+   }
+  },
+  {
+   "id": "ADV_p15",
+   "tests": "slanted chop: advance tilted +15 deg inside a vertical blade plane on the solid board",
+   "verdict": "NOT_EXECUTABLE_BOARD_COLLISION",
+   "checks": {
+    "collisions": [
+     {
+      "check": "blade_collision",
+      "slack_mm": -15.52877430499377,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     }
+    ]
+   },
+   "prediction": {
+    "verdict": "NOT_EXECUTABLE_BOARD_COLLISION",
+    "basis": "DEV feasibility (CPU geometry only, artifacts/wp12/phase4_e2_dev_001): the planner tilts the edge line with the advance (through_cut_rotation keeps the edge perpendicular to the advance) and ends the stroke with the edge CENTRE on the board top (_relief_end), so the low end of the 120 mm edge is 60 mm x sin 15 deg = 15.5 mm inside the solid board (blade_collision -15.53 mm at HOLD:cut0; ADV_m15 also knife_handle_clearance -6.5 mm). The prediction before that check was CONFIRMED. A valid flat-board slanted chop needs a planner change (stop at the lowest edge point), which is out of scope",
+    "confidence": "high (deterministic geometry)"
+   },
+   "prediction_met": true,
+   "feasibility_class": "collision_constrained",
+   "preflight_status": "FAIL",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 560.226,
+    "gripper_pad_clearance": 36.428,
+    "franka1_collision": 135.756,
+    "franka_workcell_collision": 67.472,
+    "knife_handle_clearance": 25.984,
+    "blade_collision": -15.529,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.801,
+    "joint_continuity": 48.559
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       -5.551115123125783e-19,
+       -0.0026794919243112282,
+       -3.469446951953614e-18
+      ],
+      "planned_lowest_edge_point_local_z_m": -0.015529142706151248
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       -5.551115123125783e-19,
+       -0.0026794919243112282,
+       -3.469446951953614e-18
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "NOT_RUN"
+   }
+  },
+  {
+   "id": "ADV_m15",
+   "tests": "slanted chop -15 deg on the solid board",
+   "verdict": "NOT_EXECUTABLE_BOARD_COLLISION",
+   "checks": {
+    "collisions": [
+     {
+      "check": "blade_collision",
+      "slack_mm": -15.528264776594519,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     {
+      "check": "knife_handle_clearance",
+      "slack_mm": -6.516145271237041,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     }
+    ]
+   },
+   "prediction": {
+    "verdict": "NOT_EXECUTABLE_BOARD_COLLISION",
+    "basis": "DEV feasibility (CPU geometry only, artifacts/wp12/phase4_e2_dev_001): the planner tilts the edge line with the advance (through_cut_rotation keeps the edge perpendicular to the advance) and ends the stroke with the edge CENTRE on the board top (_relief_end), so the low end of the 120 mm edge is 60 mm x sin 15 deg = 15.5 mm inside the solid board (blade_collision -15.53 mm at HOLD:cut0; ADV_m15 also knife_handle_clearance -6.5 mm). The prediction before that check was CONFIRMED. A valid flat-board slanted chop needs a planner change (stop at the lowest edge point), which is out of scope",
+    "confidence": "high (deterministic geometry)"
+   },
+   "prediction_met": true,
+   "feasibility_class": "collision_constrained",
+   "preflight_status": "FAIL",
+   "preflight_worst_slack_mm": {
+    "joint_limit_margin": 351.691,
+    "gripper_pad_clearance": 11.266,
+    "franka1_collision": 118.786,
+    "franka_workcell_collision": 42.766,
+    "knife_handle_clearance": -6.516,
+    "blade_collision": -15.528,
+    "wrist_camera_clearance": 51.657,
+    "franka_self_collision": 19.796,
+    "joint_continuity": 45.359
+   },
+   "plan_facts": {
+    "armed_waypoints": [
+     {
+      "label": "CUT:cut0",
+      "cut_index": 0,
+      "speed_m_s": 0.01,
+      "planned_edge_centre_local_m": [
+       -5.551115123125783e-19,
+       0.0026794919243112282,
+       -3.469446951953614e-18
+      ],
+      "planned_lowest_edge_point_local_z_m": -0.015529142706151248
+     }
+    ],
+    "controller_profile": "path_v2",
+    "position_tolerance_rule": "WaypointPolicy completes a waypoint within the controller position tolerance (path_v2 0.3 mm): the armed end lies 0-0.3 mm short of the planned end",
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "digit": 0,
+      "end_local_m": [
+       -5.551115123125783e-19,
+       0.0026794919243112282,
+       -3.469446951953614e-18
+      ],
+      "end_on_support": true,
+      "cut_extent": "plane_section"
+     }
+    ]
+   },
+   "run": {
+    "status": "NOT_RUN"
+   }
+  }
+ ],
+ "queue": [
+  {
+   "time": "2026-10-31T07:21:25.853339+09:00",
+   "row": "ADV_p15",
+   "event": "not_run_board_collision",
+   "collisions": [
+    {
+     "check": "blade_collision",
+     "slack_mm": -15.52877430499377,
+     "label": "HOLD:cut0",
+     "pair": [
+      "tool_blade",
+      "static_flat_board"
+     ]
+    }
+   ]
+  },
+  {
+   "time": "2026-10-31T07:21:25.853493+09:00",
+   "row": "ADV_m15",
+   "event": "not_run_board_collision",
+   "collisions": [
+    {
+     "check": "blade_collision",
+     "slack_mm": -15.528264776594519,
+     "label": "HOLD:cut0",
+     "pair": [
+      "tool_blade",
+      "static_flat_board"
+     ]
+    },
+    {
+     "check": "knife_handle_clearance",
+     "slack_mm": -6.516145271237041,
+     "label": "HOLD:cut0",
+     "pair": [
+      "tool_handle",
+      "static_flat_board"
+     ]
+    }
+   ]
+  },
+  {
+   "time": "2026-10-31T07:21:25.877706+09:00",
+   "row": "SLOT_p20",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 724211,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "SLOT_p20",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SLOT_p20",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SLOT_p20.log"
+  },
+  {
+   "time": "2026-10-31T07:21:25.906640+09:00",
+   "row": "SLOT_m20",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 724278,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "SLOT_m20",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SLOT_m20",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SLOT_m20.log"
+  },
+  {
+   "time": "2026-10-31T07:21:55.906857+09:00",
+   "row": "SLOT_p20",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 2,
+   "wall_s": 30.029143916006433,
+   "gpu_hours_used": 0.008341428865557343
+  },
+  {
+   "time": "2026-10-31T07:21:55.907025+09:00",
+   "row": "SLOT_m20",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 2,
+   "wall_s": 30.0003860630095,
+   "gpu_hours_used": 0.016674869438615538
+  },
+  {
+   "time": "2026-10-31T07:21:55.930917+09:00",
+   "row": "SLOT_p25",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 724706,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "SLOT_p25",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SLOT_p25",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SLOT_p25.log"
+  },
+  {
+   "time": "2026-10-31T07:21:55.950758+09:00",
+   "row": "SOLID_p05",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 724739,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "SOLID_p05",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SOLID_p05",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SOLID_p05.log"
+  },
+  {
+   "time": "2026-10-31T07:22:25.951285+09:00",
+   "row": "SLOT_p25",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 2,
+   "wall_s": 30.02035983800306,
+   "gpu_hours_used": 0.025013858282505276
+  },
+  {
+   "time": "2026-10-31T07:22:25.951444+09:00",
+   "row": "SOLID_p05",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 2,
+   "wall_s": 30.00068987099803,
+   "gpu_hours_used": 0.03334738324667139
+  },
+  {
+   "time": "2026-10-31T07:22:25.977701+09:00",
+   "row": "SOLID_p02",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 725153,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "SOLID_p02",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SOLID_p02",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SOLID_p02.log"
+  },
+  {
+   "time": "2026-10-31T07:22:25.997388+09:00",
+   "row": "CUT_PUSH_TRIM",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 725157,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "CUT_PUSH_TRIM",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_PUSH_TRIM",
+    "--feasibility-class",
+    "physically_unsupported"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_PUSH_TRIM.log"
+  },
+  {
+   "time": "2026-10-31T07:22:55.997833+09:00",
+   "row": "SOLID_p02",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 2,
+   "wall_s": 30.02012862599804,
+   "gpu_hours_used": 0.041686307865004185
+  },
+  {
+   "time": "2026-10-31T07:22:55.997998+09:00",
+   "row": "CUT_PUSH_TRIM",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 2,
+   "wall_s": 30.000610978982877,
+   "gpu_hours_used": 0.05001981091472165
+  },
+  {
+   "time": "2026-10-31T07:22:56.022582+09:00",
+   "row": "CUT_PUSH",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 725547,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "CUT_PUSH",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_PUSH",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_PUSH.log"
+  },
+  {
+   "time": "2026-10-31T07:22:56.038879+09:00",
+   "row": "TRIM_PLANE",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 725551,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "TRIM_PLANE",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/TRIM_PLANE",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_TRIM_PLANE.log"
+  },
+  {
+   "time": "2026-10-31T07:23:26.039165+09:00",
+   "row": "CUT_PUSH",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 2,
+   "wall_s": 30.016577953007072,
+   "gpu_hours_used": 0.058357749235001394
+  },
+  {
+   "time": "2026-10-31T07:23:26.039334+09:00",
+   "row": "TRIM_PLANE",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 2,
+   "wall_s": 30.000458586000605,
+   "gpu_hours_used": 0.0666912099533349
+  },
+  {
+   "time": "2026-10-31T07:23:26.066810+09:00",
+   "row": "TRIM_TRIM",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 725902,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "TRIM_TRIM",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/TRIM_TRIM",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_TRIM_TRIM.log"
+  },
+  {
+   "time": "2026-10-31T07:23:26.089071+09:00",
+   "row": "YAW_p15",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 725910,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "YAW_p15",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/YAW_p15",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_YAW_p15.log"
+  },
+  {
+   "time": "2026-10-31T07:23:56.089578+09:00",
+   "row": "TRIM_TRIM",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 2,
+   "wall_s": 30.02276229101699,
+   "gpu_hours_used": 0.07503086614528406
+  },
+  {
+   "time": "2026-10-31T07:23:56.089899+09:00",
+   "row": "YAW_p15",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 2,
+   "wall_s": 30.000830934994156,
+   "gpu_hours_used": 0.08336443029389355
+  },
+  {
+   "time": "2026-10-31T07:23:56.114890+09:00",
+   "row": "YAW_m15",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 726317,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "YAW_m15",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/YAW_m15",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_YAW_m15.log"
+  },
+  {
+   "time": "2026-10-31T07:23:56.137334+09:00",
+   "row": "CUT_v08",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 726384,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "CUT_v08",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_v08",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_v08.log"
+  },
+  {
+   "time": "2026-10-31T07:24:26.137551+09:00",
+   "row": "YAW_m15",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 2,
+   "wall_s": 30.02265713599627,
+   "gpu_hours_used": 0.09170405727611473
+  },
+  {
+   "time": "2026-10-31T07:24:26.137688+09:00",
+   "row": "CUT_v08",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 2,
+   "wall_s": 30.000355822994607,
+   "gpu_hours_used": 0.10003748944916879
+  },
+  {
+   "time": "2026-10-31T07:24:26.162991+09:00",
+   "row": "CUT_v12",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 726737,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "CUT_v12",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_v12",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_v12.log"
+  },
+  {
+   "time": "2026-10-31T07:24:26.181907+09:00",
+   "row": "SKIM_v20",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 726749,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "run",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "--row",
+    "SKIM_v20",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SKIM_v20",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SKIM_v20.log"
+  },
+  {
+   "time": "2026-10-31T07:25:03+09:00",
+   "event": "operator_note",
+   "note": "queue process 724144 stopped by its owner: every launch exited 2 in argparse (--protocol placed after the run subcommand; runner CLI bug, no row directory created, no physics run). Fixed the argument order in scripts/run_wp12_phase4_e2.py cmd_queue only; relaunching. The failed launch events above are kept."
+  },
+  {
+   "time": "2026-10-31T07:25:07.320484+09:00",
+   "row": "ADV_p15",
+   "event": "not_run_board_collision",
+   "collisions": [
+    {
+     "check": "blade_collision",
+     "slack_mm": -15.52877430499377,
+     "label": "HOLD:cut0",
+     "pair": [
+      "tool_blade",
+      "static_flat_board"
+     ]
+    }
+   ]
+  },
+  {
+   "time": "2026-10-31T07:25:07.320653+09:00",
+   "row": "ADV_m15",
+   "event": "not_run_board_collision",
+   "collisions": [
+    {
+     "check": "blade_collision",
+     "slack_mm": -15.528264776594519,
+     "label": "HOLD:cut0",
+     "pair": [
+      "tool_blade",
+      "static_flat_board"
+     ]
+    },
+    {
+     "check": "knife_handle_clearance",
+     "slack_mm": -6.516145271237041,
+     "label": "HOLD:cut0",
+     "pair": [
+      "tool_handle",
+      "static_flat_board"
+     ]
+    }
+   ]
+  },
+  {
+   "time": "2026-10-31T07:25:07.350084+09:00",
+   "row": "SLOT_p20",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 727304,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SLOT_p20",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SLOT_p20",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SLOT_p20.log"
+  },
+  {
+   "time": "2026-10-31T07:25:07.370201+09:00",
+   "row": "SLOT_m20",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 727308,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SLOT_m20",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SLOT_m20",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SLOT_m20.log"
+  },
+  {
+   "time": "2026-10-31T07:28:07.371036+09:00",
+   "row": "SLOT_p20",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 180.0209418119921,
+   "gpu_hours_used": 0.0500058171699978
+  },
+  {
+   "time": "2026-10-31T07:28:07.371217+09:00",
+   "row": "SLOT_m20",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 180.00101810198976,
+   "gpu_hours_used": 0.10000609997610607
+  },
+  {
+   "time": "2026-10-31T07:28:07.390645+09:00",
+   "row": "SLOT_p25",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 728898,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SLOT_p25",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SLOT_p25",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SLOT_p25.log"
+  },
+  {
+   "time": "2026-10-31T07:28:07.424856+09:00",
+   "row": "SOLID_p05",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 728965,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SOLID_p05",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SOLID_p05",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SOLID_p05.log"
+  },
+  {
+   "time": "2026-10-31T07:30:37.425525+09:00",
+   "row": "SOLID_p05",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 150.00065276701935,
+   "gpu_hours_used": 0.14167294796694477
+  },
+  {
+   "time": "2026-10-31T07:30:37.442216+09:00",
+   "row": "SOLID_p02",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 730656,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SOLID_p02",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SOLID_p02",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SOLID_p02.log"
+  },
+  {
+   "time": "2026-10-31T07:31:07.442463+09:00",
+   "row": "SLOT_p25",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 180.05181355099194,
+   "gpu_hours_used": 0.1916873406199981
+  },
+  {
+   "time": "2026-10-31T07:31:07.467400+09:00",
+   "row": "CUT_PUSH_TRIM",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 730960,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "CUT_PUSH_TRIM",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_PUSH_TRIM",
+    "--feasibility-class",
+    "physically_unsupported"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_PUSH_TRIM.log"
+  },
+  {
+   "time": "2026-10-31T07:33:07.467878+09:00",
+   "row": "SOLID_p02",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 150.0256602919835,
+   "gpu_hours_used": 0.23336113514554907
+  },
+  {
+   "time": "2026-10-31T07:33:07.486487+09:00",
+   "row": "CUT_PUSH",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 731590,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "CUT_PUSH",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_PUSH",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_PUSH.log"
+  },
+  {
+   "time": "2026-10-31T07:36:07.487285+09:00",
+   "row": "CUT_PUSH_TRIM",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 300.0198786139954,
+   "gpu_hours_used": 0.31669999031610335
+  },
+  {
+   "time": "2026-10-31T07:36:07.505090+09:00",
+   "row": "TRIM_PLANE",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 732557,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "TRIM_PLANE",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/TRIM_PLANE",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_TRIM_PLANE.log"
+  },
+  {
+   "time": "2026-10-31T07:37:07.505394+09:00",
+   "row": "CUT_PUSH",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 240.01890264300164,
+   "gpu_hours_used": 0.38337190771693713
+  },
+  {
+   "time": "2026-10-31T07:37:07.525035+09:00",
+   "row": "TRIM_TRIM",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 733017,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "TRIM_TRIM",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/TRIM_TRIM",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_TRIM_TRIM.log"
+  },
+  {
+   "time": "2026-10-31T07:38:07.525375+09:00",
+   "row": "TRIM_PLANE",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 120.02027924798313,
+   "gpu_hours_used": 0.4167108741747102
+  },
+  {
+   "time": "2026-10-31T07:38:07.549245+09:00",
+   "row": "YAW_p15",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 733469,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "YAW_p15",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/YAW_p15",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_YAW_p15.log"
+  },
+  {
+   "time": "2026-10-31T07:40:07.549689+09:00",
+   "row": "TRIM_TRIM",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 180.02464919400518,
+   "gpu_hours_used": 0.466717721173045
+  },
+  {
+   "time": "2026-10-31T07:40:07.568708+09:00",
+   "row": "YAW_m15",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 734126,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "YAW_m15",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/YAW_m15",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_YAW_m15.log"
+  },
+  {
+   "time": "2026-10-31T07:40:37.568912+09:00",
+   "row": "YAW_p15",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 150.01966229800018,
+   "gpu_hours_used": 0.5083898495891561
+  },
+  {
+   "time": "2026-10-31T07:40:37.595573+09:00",
+   "row": "CUT_v08",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 734437,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "CUT_v08",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_v08",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_v08.log"
+  },
+  {
+   "time": "2026-10-31T07:42:37.596133+09:00",
+   "row": "YAW_m15",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 150.02741846101708,
+   "gpu_hours_used": 0.5500641324949942
+  },
+  {
+   "time": "2026-10-31T07:42:37.615542+09:00",
+   "row": "CUT_v12",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 735076,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "CUT_v12",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/CUT_v12",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_CUT_v12.log"
+  },
+  {
+   "time": "2026-10-31T07:43:07.615734+09:00",
+   "row": "CUT_v08",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 150.0201544520096,
+   "gpu_hours_used": 0.5917363976205524
+  },
+  {
+   "time": "2026-10-31T07:43:07.630046+09:00",
+   "row": "SKIM_v20",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 735370,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SKIM_v20",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SKIM_v20",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SKIM_v20.log"
+  },
+  {
+   "time": "2026-10-31T07:45:07.630557+09:00",
+   "row": "SKIM_v20",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 120.00050401099725,
+   "gpu_hours_used": 0.6250698709569406
+  },
+  {
+   "time": "2026-10-31T07:45:07.630734+09:00",
+   "row": "CUT_v12",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 150.01519346699934,
+   "gpu_hours_used": 0.6667407580311071
+  },
+  {
+   "time": "2026-10-31T07:45:07.657794+09:00",
+   "row": "SKIM_v30",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 736240,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SKIM_v30",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SKIM_v30",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SKIM_v30.log"
+  },
+  {
+   "time": "2026-10-31T07:45:07.681520+09:00",
+   "row": "SKIM_r35",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 736307,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SKIM_r35",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SKIM_r35",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SKIM_r35.log"
+  },
+  {
+   "time": "2026-10-31T07:47:07.682014+09:00",
+   "row": "SKIM_r35",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 120.00048704698565,
+   "gpu_hours_used": 0.7000742266552697
+  },
+  {
+   "time": "2026-10-31T07:47:07.696882+09:00",
+   "row": "SKIM_psi_p10",
+   "event": "started",
+   "device": "cuda:0",
+   "pid": 738282,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SKIM_psi_p10",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SKIM_psi_p10",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SKIM_psi_p10.log"
+  },
+  {
+   "time": "2026-10-31T07:47:37.697122+09:00",
+   "row": "SKIM_v30",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 150.03932311901008,
+   "gpu_hours_used": 0.7417518164105503
+  },
+  {
+   "time": "2026-10-31T07:47:37.711100+09:00",
+   "row": "SKIM_psi_m10",
+   "event": "started",
+   "device": "cuda:1",
+   "pid": 738995,
+   "command": [
+    "/usr/bin/time",
+    "-v",
+    "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+    "/home/ningan/RoboticCuttingSim/scripts/run_wp12_phase4a_diagnose.py",
+    "--",
+    "scripts/run_wp12_phase4_e2.py",
+    "--protocol",
+    "/home/ningan/RoboticCuttingSim/configs/wp12/phase4_e2_protocol_v1.json",
+    "run",
+    "--row",
+    "SKIM_psi_m10",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4_e2_001/SKIM_psi_m10",
+    "--feasibility-class",
+    "valid_feasible"
+   ],
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase4_e2_001_SKIM_psi_m10.log"
+  },
+  {
+   "time": "2026-10-31T07:49:07.711492+09:00",
+   "row": "SKIM_psi_p10",
+   "event": "finished",
+   "device": "cuda:0",
+   "exit": 0,
+   "wall_s": 120.01460691800457,
+   "gpu_hours_used": 0.7750892072211072
+  },
+  {
+   "time": "2026-10-31T07:50:37.711909+09:00",
+   "row": "SKIM_psi_m10",
+   "event": "finished",
+   "device": "cuda:1",
+   "exit": 0,
+   "wall_s": 180.00080378798884,
+   "gpu_hours_used": 0.8250894304955485
+  },
+  {
+   "time": "2026-10-31T07:51:07.712133+09:00",
+   "event": "queue_done",
+   "gpu_hours_used": 0.8250894304955485
+  }
+ ]
+}

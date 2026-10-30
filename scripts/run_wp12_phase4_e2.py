@@ -366,7 +366,7 @@ def cmd_queue(args):
             out = root/row['id']
             log = logs/f"{root.name}_{row['id']}.log"
             cmd = ['/usr/bin/time', '-v', sys.executable, str(ROOT/'scripts/run_wp12_phase4a_diagnose.py'), '--',
-                   'scripts/run_wp12_phase4_e2.py', 'run', '--protocol', str(args.protocol), '--row', row['id'],
+                   'scripts/run_wp12_phase4_e2.py', '--protocol', str(args.protocol), 'run', '--row', row['id'],
                    '--device', dev, '--out', str(out), '--feasibility-class', str(cls)]
             task_id = None
             f = feas/f"{row['id']}.json"
