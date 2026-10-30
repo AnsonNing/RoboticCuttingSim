@@ -72,6 +72,14 @@ change.
    - CPU: positions, velocities, codes (decoded to ternary), F, progress and
      reactions equal v4 to float rounding (the summation order changes, so
      the result is not bitwise). The tolerance is stated in the test.
+     *Correction (2026-10-30, WP-11 review finding 11):* the expectation in
+     parentheses was wrong. The observed CPU result is bitwise equal to v4
+     (Phase M evidence `phaseM_tlmpm_v5_001.json`, `cpu_tests`), and
+     `tests/test_tlmpm_v5.py::test_v5_bitwise_equals_v4_on_aligned_push`
+     asserts bitwise equality of positions, velocities, F and forces for the
+     aligned push. The requirement stays the stated tolerance; bitwise
+     equality is an observed, stronger property on CPU, not a GPU guarantee
+     (GPU float32 atomics are nondeterministic).
    - GPU 1 mm: final codes and components match v4 to within GPU
      nondeterminism on the CUT-01-R and M8b rows.
 2. **Scaling.** Memory and substep time are measured for K = 1…8 on the 1 mm

@@ -29,6 +29,16 @@ class RewardWeights:
             raise ValueError("Reward weights must be finite and nonnegative")
 
 
+def require_ternary_codes(material):
+    """This reward reads ternary cut codes (``conflicting(..., 2)``). Packed tlmpm_v5 codes (ADR 0014) equal ternary
+    codes only for one digit, so a packed history with max_cuts >= 2 is rejected explicitly instead of misread."""
+    encoding = getattr(material, "code_encoding", "ternary")
+    cuts = int(getattr(material, "max_cuts", 1) or 1)
+    if encoding != "ternary" and cuts >= 2:
+        raise ValueError(f"{VERSION} reads ternary cut codes; {encoding} codes with max_cuts {cuts} >= 2 are not "
+                         "supported (only one packed digit equals its ternary code)")
+
+
 class CuttingReward:
     """Callable reward adapter; keeps per-episode state between steps."""
 
@@ -53,6 +63,7 @@ class CuttingReward:
         nothing and must not earn reward.
         """
         material = env.backend.material
+        require_ternary_codes(material)
         reference = np.asarray(material.world_points, float)
         lattice = np.asarray(material.lattice)
         self._cuts = int(getattr(getattr(material, "material_config", None), "cuts", 2) or 2)
