@@ -5,12 +5,16 @@ Date: 2026-10-30. Protocol `wp11_phaseR_negative_controls_v1`
 It was declared, committed and pushed in `18c4301` before any run, smoke or formal. Evidence:
 [`docs/evidence/wp11/phaseR_negative_controls_001.json`](../evidence/wp11/phaseR_negative_controls_001.json).
 
-These runs close two review DoD gaps:
+These runs narrow two review DoD gaps; neither is closed in full:
 
 - **(a) Phase C gap.** C4 ran its negative controls at ρ = 5° (TRIM-02-K2-R05; the flat press at R00), but the
-  live TRIM uses ρ = 10°.
+  live TRIM uses ρ = 10°. (a) runs the C4 set at ρ = 10° on **`tlmpm_v4`**. The live TRIM scene uses
+  **`tlmpm_v5`** (`configs/wp11/scenes/trim01_wp11_workcell.json`, `solver.module`). Coverage at ρ = 10° on v5
+  therefore rests on (b)'s v4 ≡ v5 agreement on other tasks; only `Rb_no_contact` runs at ρ = 10° on v5.
 - **(b) Phase M gap.** ADR 0014 validation item 4 says the negative controls hold under `tlmpm_v5`. That was shown
-  only by CPU unit tests on a coarse block, never at formal resolution with a multi-digit packed history.
+  only by CPU unit tests on a coarse block. (b) shows it at formal resolution for **single-digit histories at
+  K = 5 only**: digit 4 is armed and digits 0–3 are forced to zero (a checked condition). Negative controls
+  after earlier real cuts (a nonzero lower digit) are **NOT_RUN**.
 
 **Label.** Protocol (a) is **POST_LIVE**: it runs after the live TRIM at ρ = 10° (C5/C5b). It does not gate or
 re-score any live record.
@@ -77,17 +81,23 @@ Declared choices:
   from 3 mm above the bar top to 8 mm into it (so the whole face is in), then a 0.3 s armed hold. The window is
   press + press_hold.
 
-| Row | Criterion (counterpart's) | Measured | Verdict | v4 counterpart(s) | Wall s |
+| Row | Criterion (counterpart's; flat press: F2.9's contact-window criterion, see the note below) | Measured | Verdict | v4 counterpart(s) | Wall s |
 | --- | --- | --- | --- | --- | --- |
 | Ra_no_contact | zero labels; 0 blade contacts in skim; 0 blade contacts and 0 grip force on armed steps; 1 component; mass | 167 armed steps, 0 blade-contact steps, 0 grip-force steps, max labelled 0, 1 component, mass ✓ | **PASS** | C4 R05 PASS (0 contacts); F2.9_no_contact (R10) PASS | 333 |
 | Ra_side_push | zero labels; 1 component; contact-window mean \|F\| > 0.1 N; mass | window mean 0.308 N (max 0.412, 61 of 100 steps in contact; all-steps mean 0.188 N); labels 0; 1 component | **PASS** | C4 R05 PASS (all-steps 0.230 N); F2.9_side_push (CUT-03-K2) 0.318 N PASS | 335 |
-| Ra_flat_press_normal | zero labels; 1 component; contact-window mean \|F\| > 1 N; mass | window mean **1.212 N** (max 1.932, 55 of 71 steps; all-steps 0.939; press-only window reported in the evidence); labels 0; 1 component. Declared prediction 1–2 N | **PASS** | C4 R00 FAIL (all-steps 0.931 N); F2.9_flat_press (R00) 1.490 N PASS | 331 |
+| Ra_flat_press_normal | F2.9_flat_press's criterion (not C4's): zero labels; 1 component; contact-window mean \|F\| over press + press_hold > 1 N; mass | window mean **1.212 N** (max 1.932, 55 of 71 steps; mean over all 71 press + press_hold steps 0.939 N); **C4's own press-phase all-steps mean 0.768 N** (56 steps; evidence `c4_force_all_steps`), below 1 N; labels 0; 1 component. Declared prediction 1–2 N | **PASS** (on the contact-window criterion) | C4 R00 FAIL (all-steps 0.931 N); F2.9_flat_press (R00) 1.490 N PASS | 331 |
 | Ra_blunt_handle_v2 | zero labels; 1 component; grip contact-window mean > 0.1 N; mass; validity: 0 blade-contact steps, footprint on the bar top, over the floor, off the dome | grip window mean **0.848 N** (max 1.012, 25 of 40 steps); 0 blade-contact steps; footprint x 43–67 mm (dome \|x\| ≤ 12 mm); bar COM moved 0.22 mm, yaw −2.6e-5° | **PASS** (validity all true) | C4 R05 dome sweep FAIL (0.033 N); F2.9_blunt_handle_v2 (CUT-03-K2) 0.855 N PASS | 327 |
 | Ra_stop_mid | labels unchanged during the 0.5 s armed stop; resumed outcome report-only; mass | hold change 0 (11338 → 11338, stroke inactive); resumed run PASS_TRIM_SEPARATION (removed 0.979) | **PASS** | C4 R05 PASS (hold 11196, change 0) | 298 |
 | Ra_lift_mid | labels unchanged during the armed lift; far region ≥ 99% attached; no label beyond the lead bound | lift change 0; far region (340 particles, x > 2 mm) 100% attached, 0 labelled; max labelled x −0.5 mm ≤ 8 mm bound | **PASS** | C4 R05 PASS (same far/lead numbers) | 295 |
 | Ra_half_length | labels unchanged during the stop, the backward withdrawal and the lift; far region and lead bound as lift_mid | hold, withdraw (84 steps) and lift (150 steps) changes all 0; far 100% attached; max labelled x −0.5 mm | **PASS** | C4 R05 PASS | 293 |
 
-## (b) tlmpm_v5, packed K = 5, armed digit 4 — each on its v4 counterpart's task and plan
+**Flat-press metric note.** `Ra_flat_press_normal` passes on F2.9's contact-window metric (1.212 N). On C4's
+own metric, the mean over all press-phase steps, it reads 0.768 N, which is below the 1 N level; C4's R00 flat
+press failed on that metric too (0.931 N). The switch to the contact-window metric was declared in the protocol
+before any run (`configs/wp11/phaseR_negative_controls_v1.json`, `contact_window`). It is the F2.9 criterion,
+not the C4 one.
+
+## (b) tlmpm_v5, packed K = 5, single-digit history (digit 4 armed, digits 0–3 forced zero) — each on its v4 counterpart's task and plan
 
 | Row | Task / plan | Criterion (counterpart's) | Measured (single-digit view) | Native packed checks | Verdict | v4 counterpart | Wall s |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -103,14 +113,18 @@ Every row's mass check passed and every row was numerically stable (no NaN/inf, 
 
 ## Interpretation
 
-- **(a)** At the chosen ρ = 10°, law 8 labels nothing under a spine-first side push, a normal press (1.21 N), a
+- **(a)** At the chosen ρ = 10° on `tlmpm_v4`, law 8 labels nothing under a spine-first side push, a normal press (1.21 N), a
   grip press (0.85 N) or a skim 3 mm above the dome.
   - No label changes during an armed stop, an armed lift-out or an armed backward withdrawal.
   - No label appears ahead of the lead bound, and the uncut far half stays 100% attached.
   - This matches the C4 R05 controls. The two C4 control-design failures are now passed by the corrected
-    designs at ρ = 10°: the all-steps force mean of the flat press and the dome-sweep handle. The C4 records
-    themselves stay FAIL.
-- **(b)** With a five-digit packed history and the top digit armed, every v4 negative-control criterion holds.
+    designs at ρ = 10°: the dome-sweep handle, and the flat press on F2.9's contact-window metric. On C4's
+    all-steps press mean the ρ = 10° flat press still reads below 1 N (0.768 N). The C4 records themselves stay
+    FAIL.
+  - These rows ran on `tlmpm_v4`; the live TRIM runs `tlmpm_v5`. That they carry over to v5 at ρ = 10° is an
+    inference from (b)'s v4 ≡ v5 agreement, not a v5 run, except for `Rb_no_contact`.
+- **(b)** With K = 5 packed storage and a single-digit history (top digit armed, digits 0–3 zero), every v4
+  negative-control criterion holds.
   - The force numbers equal the v4 rows to 5–6 significant figures (side push 0.318079 vs 0.318079 N, flat
     press 1.490002 vs 1.489993 N, grip 0.854978 vs 0.854973 N). The labelled counts of the withdrawal rows are
     identical (13496).
@@ -129,9 +143,11 @@ Every row's mass check passed and every row was numerically stable (no NaN/inf, 
   evidence. The material is uncalibrated.
 - One formal attempt per row, seed 42. There is no repeat statistic.
 - `flat_press_normal` is a declared new design for ρ ≠ 0. Its 1.21 N contact-window mean clears the 1 N level by
-  21%, a smaller margin than F2.9 at ρ = 0 (1.49 N).
-- Protocol (b) arms one digit per episode. Interactions between digits (a later digit's control after earlier
-  cuts) are covered by Phase M Test B/C and F2.11, not here.
+  21%, a smaller margin than F2.9 at ρ = 0 (1.49 N). On C4's press-phase all-steps mean it is 0.768 N.
+- Protocol (b) arms one digit per episode and forces digits 0–3 to zero, so it covers single-digit histories at
+  K = 5 only. Negative controls after earlier real cuts (a later digit's control on material that already holds
+  lower-digit labels) are NOT_RUN. Phase M Test B/C and F2.11 exercise multi-digit cutting, not these controls.
+- Protocol (a) ran on `tlmpm_v4`; the live TRIM scene uses `tlmpm_v5`. At ρ = 10° only `Rb_no_contact` ran on v5.
 - The single-digit view is exact only for single-digit histories, which the native check enforces. It is not a
   general packed-to-ternary path.
 
