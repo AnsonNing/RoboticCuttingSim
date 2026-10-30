@@ -423,3 +423,43 @@ change no class.
 | `0496562` | **round-2 declaration** (`configs/wp11/generalization_round2.json`), generalization/run_generalization round-2 support, `staged_v2`, `scripts/rescore_goal_eval_v2.py`, `tests/test_generalization_round2.py` |
 | `39c4e82` | `scripts/diagnose_generalization_round2.py` (read-only) |
 | this commit | report, evidence |
+
+## Post-review diagnostic: rescoring under `goal_eval_v2a` (`POST_HOC_DIAGNOSTIC`, 2026-10-30)
+
+Read-only. This answers WP-11 review finding 3: does any recorded Test D verdict depend on the three v2 defects
+(unowned digits ignored, no combined substrate check, a removed chip bridging a later sever)? `goal_eval_v2a`
+(ADR 0015 Amendment 2, commit `ec947f3`) fixes them. Round 2 was declared and scored with `goal_eval_v2`, and
+its verdicts, classes and evidence **stay as recorded**; this is not a round result and re-classifies nothing.
+
+    cd /mnt/data/ningan/RoboticCuttingSim-wp11-R2-f1c3a4b          # clean worktree of f1c3a4b
+    TMPDIR=/mnt/data/ningan/tmp /home/ningan/RoboticCuttingSim/.venv/bin/python scripts/rescore_goal_eval_v2a.py \
+        --round round2 …/phaseE/round2_stage1_001 …/phaseE/round2_kinematic_001 E2_TEST_D2_s2501 … E2_TEST_D2_s2506 \
+        --round round1 …/phaseE/round1_stage1_001 …/phaseE/round1_kinematic_001 E1_TEST_D_s1702 E1_TEST_D_s1704 \
+        --out …/artifacts/wp11/phaseE/review_posthoc_v2a_001             # rc 0, 43 s, git_dirty false
+
+For each sample, `compile_task` reproduces the recorded task id, and the goal as recorded reproduces the recorded
+verdict and failed checks exactly (`match = True` for all 8). The same recording is then scored with v1, v2 and
+v2a.
+
+| Sample | Pattern | Recorded (version) | v1 | v2 | v2a | Unowned digits | Detached by earlier steps (particles) | Final all-digit check: below-plane share / detached per piece |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| E2_TEST_D2_s2501 | sever:0 → remove:all | FAIL (v2) | FAIL | FAIL | FAIL | none | 0 / 0 | PASS: 1.000 / 0 (pieces 0.230, 0.770) |
+| E2_TEST_D2_s2502 | sever:20 → remove:all | FAIL (v2) | FAIL | FAIL | FAIL | none | 0 / 0 | PASS: 1.000 / 0 |
+| E2_TEST_D2_s2503 | remove:p0 → sever:0 | PASS (v2) | FAIL | PASS | PASS | none | sever step: 541 (the p0 chip) | PASS: 1.000 / 0 |
+| E2_TEST_D2_s2504 | sever:0 → trim:p1 | PASS (v2) | FAIL | PASS | PASS | none | 0 / 0 | PASS: 1.000 and 0.99987 / 0 and 1.3e-4 |
+| E2_TEST_D2_s2505 | sever:20 → remove:p0 → trim:p1 | PASS (v2) | FAIL | PASS | PASS | none | trim step: 454 (the p0 chip) | PASS: 1.000 / 0 |
+| E2_TEST_D2_s2506 | trim:p0 → sever:0 → remove:p1 | FAIL (v2) | FAIL | FAIL | FAIL | none | 0 (the trim removed nothing) | PASS: 1.000 / 0 |
+| E1_TEST_D_s1702 | sever:0 → remove p0+p1 | FAIL (v1) | FAIL | PASS | PASS | none | 0 / 0 | PASS: 1.000 / 0 |
+| E1_TEST_D_s1704 | sever:0 → remove p0 | FAIL (v1) | FAIL | PASS | PASS | none | 0 / 0 | PASS: 1.000 / 0 |
+
+**Result: no v2a verdict differs from v2** (`any_v2a_verdict_differs_from_v2 = false`). The failed checks are also
+identical (s2501/s2502 `step1:remove_all:selected_protrusions_removed`; s2506 `step0:trim_p0:material_above_plane_removed`).
+
+- No recording has a labelled digit outside the allocation.
+- No final sever piece loses more than 1.3e-4 of its below-plane mass under all digits.
+- In the one remove-before-sever sample (s2503), excluding the 541-particle p0 chip from the later sever's graph
+  does not change its result. p0 does not straddle the cut, so in v2 the chip had no pieces to bridge.
+
+The three v2 defects therefore did not decide any recorded Test D verdict. Outputs:
+`artifacts/wp11/phaseE/review_posthoc_v2a_001/` (`posthoc_summary.json`, per-sample `*_goal_eval_v1/v2/v2a.json`),
+log `artifacts/wp11/logs/phaseE_review_posthoc_v2a_001.log`.
