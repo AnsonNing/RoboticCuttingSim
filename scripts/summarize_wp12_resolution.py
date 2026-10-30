@@ -296,6 +296,7 @@ MARKERS = {'CUT': 'o', 'OBL20': 's', 'TRIM': '^', 'MULTI2': 'D'}
 
 def figures(flats, media):
     import matplotlib
+    import matplotlib.ticker
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     media.mkdir(parents=True, exist_ok=True)
@@ -326,6 +327,7 @@ def figures(flats, media):
         ax.set_xscale('log')
         if logy:
             ax.set_yscale('log')
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
         ax.set_xticks([.5, .75, 1, 1.5, 2])
         ax.set_xticklabels(['0.5', '0.75', '1', '1.5', '2'])
         ax.invert_xaxis()
@@ -348,6 +350,10 @@ def figures(flats, media):
                 ax.plot(np.asarray(h)*1e3, q, '-o', color=col, ms=5, lw=1.6, label=f's {sp*1e3:g} mm')
         ax.set_xscale('log')
         ax.set_yscale('log')
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.set_xticks([.025, .05, .1, .2])
+        ax.set_xticklabels(['0.025', '0.05', '0.1', '0.2'])
         ax.invert_xaxis()
         ax.set_xlabel('material dt (ms)')
         ax.set_title(f'{case}: contact-window mean |F| (N)', fontsize=9)
@@ -370,6 +376,10 @@ def figures(flats, media):
                 xs.append(sp*1e3)
                 ys.append(flats[r]['removal_fraction'])
         ax.plot(xs, ys, ls, marker='^', color='#1baf7a', ms=6, lw=1.6, label=lab)
+    r05 = flats.get('TRIM_s050_g4s_dt0100') or {}
+    if r05.get('removal_fraction') is not None:
+        ax.text(1.05, .925, f'not shown (off scale): 0.5 mm at dt 0.1 ms,\nmetres-fixed edge: removal '
+                f'{r05["removal_fraction"]:.3f}, {r05.get("components")} part', fontsize=7, color='#0b0b0b')
     ax.axhline(.9, color='#52514e', lw=.8, ls=':')
     ax.text(1.9, .905, 'WP-11 criterion 0.9', fontsize=7, color='#52514e')
     ax.set_xlabel('particle spacing s (mm)')
@@ -377,7 +387,8 @@ def figures(flats, media):
     ax.invert_xaxis()
     ax.legend(fontsize=7, frameon=False)
     ax = axes[1]
-    for variant, ls, lab in (('', '-', 'h = 0 (board top)'), ('_h0375m', '--', 'h = +0.375 mm'), ('_h0375s', ':', 'h = +0.375 s')):
+    for variant, ls, lab, mk in (('', '-', 'h = 0 (board top)', 'o'), ('_h0375m', '--', 'h = +0.375 mm', 's'),
+                                 ('_h0375s', ':', 'h = +0.375 s', '^')):
         xs, ys = [], []
         for sp in SPACINGS:
             r = f'CUT_s{int(round(sp*1e5)):03d}_g4s_dt0050{variant}'
@@ -386,7 +397,7 @@ def figures(flats, media):
             if r in flats and flats[r].get('direct_code0_bridges') is not None:
                 xs.append(sp*1e3)
                 ys.append(flats[r]['direct_code0_bridges'])
-        ax.plot(xs, ys, ls, marker='o', color='#2a78d6', ms=6, lw=1.6, label=lab)
+        ax.plot(xs, ys, ls, marker=mk, color='#2a78d6', ms=6, lw=1.6, label=lab, mfc='none' if mk != 'o' else None)
     ax.set_xlabel('particle spacing s (mm)')
     ax.set_ylabel('CUT direct code-0 bridges at the end')
     ax.invert_xaxis()
@@ -406,7 +417,8 @@ def figures(flats, media):
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel('particles')
-    ax.set_ylabel('ms per substep (exclusive, dt 0.1 ms)')
+    ax.set_ylabel('ms per substep (dt 0.1 ms)')
+    ax.set_title('F8: no other row of this study running;\nGPU shared with other agents', fontsize=8)
     ax.legend(fontsize=7, frameon=False)
     fig.tight_layout()
     path = media/'resolution_runtime_scaling.png'
@@ -453,12 +465,12 @@ def main():
                      'contact_force': r.get('contact_force'), 'penetration': r.get('penetration'),
                      'stability': r.get('stability'), 'cut_events': r.get('cut_events'),
                      'slot_diagnostics': r.get('slot_diagnostics'),
-                     'analysis_final': (r.get('analysis') or {}).get('FINAL'),
-                     'analysis_end_cut': last_cut_state(r.get('analysis') or {})}
+                     'analysis_final': (r.get('analysis') or {}).get('FINAL')}
     queue = []
     q = a.run/'queue.jsonl'
     if q.exists():
-        queue = [json.loads(line) for line in q.read_text().splitlines() if line.strip()]
+        queue = [{k: v for k, v in json.loads(line).items() if k != 'command'}   # the command is in rows[].command
+                 for line in q.read_text().splitlines() if line.strip()]
     conv = verdicts(flats, protocol)
     head = {case: {m: v['headline'] for m, v in d.items()} for case, d in conv.items()}
     status_counts = {}

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Queue for the WP-12 resolution study (configs/wp12/resolution_protocol_v1.json): rows in the declared order.
 
-At most ``--jobs`` (default 2) rows of this study at once on one device; rows marked ``exclusive`` run alone. Every
+At most ``--jobs`` (default 2) rows of this study at once per device over ``--devices`` (amendment 001,
+``configs/wp12/resolution_protocol_v1_amendment_001.json``: cuda:0 and cuda:1, 24 GPU-h / 18 h); rows start in the
+declared order on the device with the fewest running rows of this study; rows marked ``exclusive`` run alone. Every
 row writes ``<out>/<row_id>/`` (the runner refuses an existing directory) and ``artifacts/wp12/logs/<out name>_<row_id>.log``
 with GNU time. Rows whose directory exists are skipped (never overwritten). Declared failure rule: a row that ends with
 SlotOverflowError is queued once more as ``<row_id>_slots16``. Budget: no new row starts once the summed row wall
@@ -10,7 +12,7 @@ The queue log ``<out>/queue.jsonl`` records start/end, GNU time exit status and 
 nvidia-smi snapshot. It never stops a process it did not start.
 
   TMPDIR=/mnt/data/ningan/tmp nohup .venv/bin/python scripts/run_wp12_resolution_queue.py \\
-      --out artifacts/wp12/resolution_002 --device cuda:1 > artifacts/wp12/logs/resolution_002_queue.log 2>&1 &
+      --out artifacts/wp12/resolution_002 --devices cuda:0 cuda:1 > artifacts/wp12/logs/resolution_002_queue.log 2>&1 &
 """
 import argparse
 import json
@@ -49,10 +51,10 @@ def gnu_time(log):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--out', type=Path, required=True)
-    ap.add_argument('--device', default='cuda:1')
+    ap.add_argument('--devices', nargs='+', default=['cuda:1'])
     ap.add_argument('--jobs', type=int, default=2)
-    ap.add_argument('--gpu-hours', type=float, default=8.)
-    ap.add_argument('--wall-hours', type=float, default=6.)
+    ap.add_argument('--gpu-hours', type=float, default=24.)
+    ap.add_argument('--wall-hours', type=float, default=18.)
     ap.add_argument('--rows', nargs='*', help='subset of declared row ids (default: all, declared order)')
     a = ap.parse_args()
     protocol = json.loads(PROTOCOL.read_text())
@@ -71,14 +73,14 @@ def main():
             f.write(json.dumps(rec)+'\n')
 
     while pending or running:
-        for rid, (proc, t0, log, alongside) in list(running.items()):
+        for rid, (proc, t0, log, alongside, device) in list(running.items()):
             if proc.poll() is None:
                 continue
             del running[rid]
             info = gnu_time(log)
             used_s += time.monotonic()-t0
             write({'event': 'end', 'row': rid, 'time': time.time(), 'returncode': proc.returncode, **info,
-                   'queue_wall_s': time.monotonic()-t0, 'alongside': alongside})
+                   'queue_wall_s': time.monotonic()-t0, 'alongside': alongside, 'device': device})
             print(f'{rid}: end rc={proc.returncode} exit={info["exit_status"]} wall={info["wall_s"]}', flush=True)
             if info['slot_overflow'] and not rid.endswith('_slots16'):
                 pending.insert(0, rid+'_slots16')
@@ -95,22 +97,24 @@ def main():
                 pending.pop(0)
                 write({'event': 'NOT_RUN', 'row': rid, 'reason': 'budget', 'time': time.time(), 'used_row_s': used_s})
                 continue
-            can = (not running) if exclusive else (len(running) < a.jobs and not any(
+            load = {d: sum(1 for v in running.values() if v[4] == d) for d in a.devices}
+            device = min(a.devices, key=lambda d: (load[d], a.devices.index(d)))
+            can = (not running) if exclusive else (load[device] < a.jobs and not any(
                 protocol['rows'].get(r.removesuffix('_slots16'), {}).get('exclusive') for r in running))
             if can:
                 pending.pop(0)
                 log = logs/f'{a.out.name}_{rid}.log'
                 cmd = ['/usr/bin/time', '-v', str(ROOT/'.venv/bin/python'), str(ROOT/'scripts/run_wp12_resolution.py'),
-                       '--row', rid, '--device', a.device, '--out', str(a.out/rid)]
+                       '--row', rid, '--device', device, '--out', str(a.out/rid)]
                 with open(log, 'w') as f:
                     f.write('$ '+' '.join(cmd)+'\n')
                     f.flush()
                     proc = subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=f, stderr=subprocess.STDOUT)
-                alongside = list(running)
-                running[rid] = (proc, time.monotonic(), log, alongside)
+                alongside = [f'{r}@{v[4]}' for r, v in running.items()]
+                running[rid] = (proc, time.monotonic(), log, alongside, device)
                 write({'event': 'start', 'row': rid, 'time': time.time(), 'command': cmd, 'alongside': alongside,
-                       'nvidia_smi': smi(), 'used_row_s': used_s})
-                print(f'{rid}: start (alongside {alongside})', flush=True)
+                       'device': device, 'nvidia_smi': smi(), 'used_row_s': used_s})
+                print(f'{rid}: start on {device} (alongside {alongside})', flush=True)
                 continue
         time.sleep(2)
     write({'event': 'queue_done', 'time': time.time(), 'used_row_s': used_s, 'queue_wall_s': time.monotonic()-start})
