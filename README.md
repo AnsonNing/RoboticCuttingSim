@@ -1,14 +1,203 @@
 # RoboticCuttingSim
 
-A robotic cutting research environment for **Isaac Sim 6.2 / Isaac Lab 3.0**.
-It has two Franka Pandas. One holds a ruler knife in a physical two-finger
-grasp; the other stays parked. The workpiece is a continuous soft material
-that the knife separates permanently, using total-Lagrangian MPM (TLMPM) with
-persistent side labels in the style of
-[BladeMaster](https://arxiv.org/abs/2609.27342). Wrist D405 and Global D455
-RGB-D cameras provide the observations. No policy is trained.
+A reusable, physically interactive robotic cutting environment for
+**Isaac Sim 6.2 / Isaac Lab 3.0**. Two Franka Pandas share the workcell: one
+holds an end-held ruler knife in a physical two-finger friction grasp, and the
+other stays parked. The workpiece is one continuous soft material. The knife
+separates it permanently through total-Lagrangian MPM (TLMPM) with persistent
+side labels in the style of [BladeMaster](https://arxiv.org/abs/2609.27342).
+Wrist D405 and Global D455 RGB-D cameras provide the observations.
 
-## Three BladeMaster-style demos (live Native Isaac Sim)
+The environment is organised in separate layers:
+
+| Layer | What it is |
+| --- | --- |
+| Scene | The workpiece geometry, pose, protrusions and supports, as configuration |
+| Goal | What to achieve: sever, divide, remove protrusions, trim, move a piece, or a sequence |
+| Controller | Any controller drives the same public API: the scripted planner, an action file, or a policy |
+| Evaluation | Each goal has its own evaluator |
+
+One episode can hold several cuts. No policy is trained, and the material
+parameters are provisional and uncalibrated.
+
+## WP-11: reusable cutting environment (live Native Isaac Sim)
+
+Every clip below is a **live Native Isaac Sim** episode (PhysX/Kit/RTX) in
+`wp11_workcell_v1`:
+
+- **Tool:** Franka 0 holds `ruler_knife_v2_y` in a physical grasp, with no fixed
+  joint and no pose sync.
+- **Material:** cutting law 8 at formal resolution (1 mm particles, 4 mm grid,
+  0.1 ms), seed 42.
+- **Motion:** each episode ends with a **physical return to HOME**, which is
+  scored separately from the task.
+
+The particle panel in each video is an oracle debug view, not an observation.
+[Plan](docs/WP11_PLAN.md) · [progress, including every failure](docs/PROGRESS.md).
+
+### The knife: `ruler_knife_v2` (end-held, like the reference image)
+
+| `ruler_knife_v2_y` profile | HOME: blade hanging below the fingers |
+| --- | --- |
+| ![ruler_knife_v2_y](docs/media/wp11/knife_v2_y.png) | ![HOME pose](docs/media/wp11/phaseD_home_blade_hanging.png) |
+
+The two fingers pinch a 60 mm grip at one end of a flat 120 × 40 × 1.5 mm
+blade with a 25° double bevel. The straight edge runs along the approach
+axis. One `ToolProfile` defines everything else: the visual mesh, the PhysX
+colliders, mass and inertia, the grasp frame, the edge frame and the TLMPM
+blade polygon ([ADR 0013](docs/adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)).
+
+Grasp stress tests, all Native:
+- **Holds:** 30 s at HOME and in the TRIM pose, 2× reorientation speed,
+  0.1–0.5 N loads, and 10× the recorded cutting reaction. Slip stays at or
+  below 4.8 µm.
+- **Fails as expected:** the corrected low-friction negative controls (v9) do
+  lose the knife ([report](docs/reports/WP11_PHASE_F1_GRASP.md)). The first
+  v8 run is still recorded as FAIL because one of its negative controls was
+  designed wrongly.
+
+### Near-horizontal trimming, then clearing the chip
+
+![Near-horizontal TRIM at rho = 10 deg, then a disarmed sweep pushes the chip off the bar](docs/media/wp11/trim_rho10_clear/demo.gif)
+
+**PASS.** The sequence is HOME → REORIENT → PRE-CUT → SKIM at blade rake
+ρ = 10° → WITHDRAW. A disarmed near-horizontal sweep then pushes the chip off
+the bar, and the arm makes a physical RETURN_HOME.
+- 97.89% of the dome is removed and the substrate keeps a 0.99996 share as one body.
+- The chip travels 109 mm and stays an independent piece.
+- Grasp slip is 0.78 µm, and the return home passes.
+
+Orientation is reported as four separate metrics: edge tilt τ, edge skew ψ,
+blade rake ρ and motion elevation μ. ρ = 10° is the lowest rake the 25°
+double bevel allows. Below 12.5° its lower face sits beneath the edge, so at
+0° and 5° it would scrape 0.55 and 0.25 mm into the substrate
+([Phase C report](docs/reports/WP11_PHASE_C_TRIM.md)).
+
+The controller is `path_v3`: a planned reference plus a slowly adapting bias.
+It replaced `path_v2`, which oscillated during PRE-CUT.
+
+Known residual: 7 rim particles of the substrate end 3.4–12 mm above the
+trim plane while still attached to it.
+[Evidence](docs/evidence/wp11/phaseC5b_live_trim_clear_001.json).
+
+### Several cuts in one episode (`tlmpm_v5`)
+
+| Test B: four slices, five pieces | Test C: three protrusions removed one at a time |
+| --- | --- |
+| ![Test B](docs/media/wp11/test_b_s1502/demo.gif) | ![Test C](docs/media/wp11/test_c_s1602/demo.gif) |
+
+`tlmpm_v5` keeps each cut as packed 2-bit digits, so an episode can hold up
+to 15 cuts. Each grid node stores its logical fields in sparse slots, which
+makes the cost independent of the number of cuts
+([ADR 0014](docs/adr/0014-scalable-cut-history-sparse-logical-fields.md)).
+- **Test B:** four slices give five independent pieces.
+- **Test C:** 96.2%, 99.7% and 97.2% of the three protrusions are removed.
+  The substrate remains one component, each chip separates during its own
+  skim, and the return home passes.
+
+| Slice, then push, with wrist-depth relocation | Test A: skim along −x |
+| --- | --- |
+| ![SLICE-PUSH with relocation](docs/media/wp11/slice_push_relocate/demo.gif) | ![Test A](docs/media/wp11/test_a_s6/demo.gif) |
+
+**Slice-push.** After the first cut the bar slides about 1.2 mm, so without
+help the second cut misses its plane. Every round-1 seed failed that way.
+
+With the opt-in perception hook `wrist_depth_relocate_v1`
+([ADR 0016](docs/adr/0016-configured-perception-relocation.md)):
+- The wrist D405 depth image measures the slide of the bar's end face between
+  cuts. The hook does not use simulator truth and does not aim the camera.
+- The next cut is shifted by the measured amount.
+- 3 of 3 live seeds pass, at workpiece yaw −6°, +18° and −14°, and every
+  second cut lands on its declared plane.
+- On two seeds the measured slide matched the material's actual slide at the
+  cut to within 0.01 mm.
+- On the third, the piece did not slide rigidly: the material at the cut moved
+  0.28 mm more than the end face did. The error stayed within half a particle
+  layer, but a larger non-rigid slide would not be fully corrected.
+
+### Generalization (predeclared seeds, no silent exclusion)
+
+| Round | Stage | Result |
+| --- | --- | --- |
+| [Round 1](docs/reports/WP11_PHASE_E_ROUND1.md) | 41 seeded samples (CUT, TRIM, SLICE-PUSH, Tests A–D) | Kinematic 32/41 TASK_SUCCESS, 9 CUTTING_FAILURE |
+| Round 1 | Live Native, nominated seeds | 6/9 TASK_SUCCESS (2 failures as in kinematic, 1 preflight refusal); Test C after the fix: PASS; SLICE-PUSH with relocation: 3/3 |
+| [Round 2](docs/reports/WP11_PHASE_E_ROUND2.md) | 40-sample sweep over wider ranges | 4 SCENE_INFEASIBLE, 8 IK_FAILURE, 28 feasible |
+| Round 2 | Kinematic run of 18 of the feasible samples | 8 succeed; the failures map law-8 limits (below) |
+
+Round 2 also introduced `goal_eval_v2`, which scores each step of a sequence
+goal only on its own cuts.
+
+### Policy-ready API
+
+```python
+from robotic_cutting_sim.live_env import open_cutting_env
+
+with open_cutting_env(runtime="isaac_sim",           # or "kinematic"
+                      output_dir="artifacts/my_run", # a fresh directory
+                      preset="cutting_research_v1",  # physical grasp, HOME reset
+                      scene="trim01_wp11_workcell",  # scene config
+                      goal="trim_bump_rho10",        # goal config, separate from the scene
+                      runtime_profile="full_physics_v1",
+                      seed=42) as env:
+    obs, info = env.reset(seed=42)
+    obs, reward, terminated, truncated, info = env.step(
+        {"type": "edge_delta", "target": [0, 0, -0.001, 0, 0, 0], "cut_enabled": False})
+    result = env.evaluate()   # the goal's own evaluator
+```
+
+- **Actions:** every step reports `ACCEPTED`, `CLAMPED` or `REJECTED_<reason>`.
+  A rejected action never executes.
+- **Observations:** wrist D405 ×2, D455 RGB-D, joint state, end-effector
+  pose, gripper state and the goal. Simulator truth (particles, codes,
+  contact forces, the true tool pose) is available only with
+  `observation_profile="privileged_state"`.
+- **Datasets:** `scripts/collect_dataset.py` records successful and failed
+  episodes, and `scripts/read_dataset.py` validates and replays them.
+- **Reliability (Test F):** both the kinematic backend and Native Isaac Sim
+  are **POLICY_READY**.
+  - Native was checked over 8 full episodes in one process, under the
+    declared v1a/v1b gates.
+  - The original v1 gate still fails one check: the clamped tool shows PhysX
+    velocity jitter after reset.
+  - Native host memory still grows by about 49 MiB per episode.
+  - Native results repeat at the verdict level only, because of GPU float32
+    atomics.
+- **Controller independence (Test E):** the same goal is run by the scripted
+  planner and by an action program written only from scene numbers. Both pass.
+- **Runtime profiles:**
+  - `full_physics_v1` is the only profile valid for acceptance.
+  - `research_fast_v1` runs 8–10× faster in the kinematic backend and 2.3×
+    faster in Native, and marks every episode `acceptance_valid: false`.
+
+[API](docs/POLICY_READY_API.md) · [profiling](docs/reports/WP11_PHASE_H_PROFILING.md).
+
+### Where law 8 is validated, and where it is not
+
+Validated in the 1 mm boundary study ([report](docs/reports/WP11_PHASE_F_LAW8.md)):
+- **Plow gate:** behaves as specified. At 14° and 15° it never plows; at
+  16° it plows on every step.
+- **Cuts and blade motions:** vertical and 20° oblique cuts; rocking; pure
+  rotation; sawing; pure draw; withdrawal; a finite edge; re-contact;
+  three-cut history.
+- **Negative controls:** side push, flat press, no contact and a loaded
+  blunt handle never cut.
+
+Known limits, reported and not hidden:
+- Oblique cuts of 30–35° do not separate the bar.
+- Skims at a rake of 45° or more never engage the law.
+- A few chip particles can stay unlabelled after a sever followed by skims.
+- Removal and contact force are not converged at 1.5–2 mm resolution.
+- No Isaac Lab parity.
+
+### Frozen baseline still reproduces
+
+The `final_v4` BladeMaster set below was rerun live after the WP-11 changes
+([regression report](docs/reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)):
+- Every verdict is unchanged, and so is the task and protocol identity.
+- The documented strict FAILs (Demo 1b location and window, Demo 2 precision 5/8) repeat.
+- Metrics stay within GPU nondeterminism.
+
+## Three BladeMaster-style demos (frozen baseline, live Native Isaac Sim)
 
 All four episodes below are **live Native Isaac Sim** (PhysX/Kit/RTX) runs in
 the same workcell, `blademaster_workcell_v1`:
@@ -175,10 +364,18 @@ For full episodes, GPU selection and installation details, see
 
 ## Use the environment
 
-Both tasks expose `reset()`, `step(action)`, `observe()`, `render()`, `evaluate()`
-and `close()`. Joint and Cartesian actions share the same underlying scene.
-Policy observations use RGB-D and robot proprioception; force and oracle state
-stay in separate debug/evaluation data. See the [shared API](docs/SHARED_TASK_API.md).
+Every environment exposes `reset()`, `step(action)`, `observe()`, `render()`,
+`evaluate()` and `close()`. Joint and Cartesian actions share the same
+underlying scene. Policy observations use RGB-D and robot proprioception;
+force and oracle state stay in separate privileged or evaluation data.
+
+- **New tasks from configuration, no new code:**
+  - write a scene ([`configs/wp11/scenes/`](configs/wp11/scenes/), `rcs_scene_v1`)
+    and a goal ([`configs/wp11/goals/`](configs/wp11/goals/), `rcs_goal_v1`);
+  - open them with `open_cutting_env(scene=..., goal=..., preset="cutting_research_v1")`;
+  - see [ADR 0015](docs/adr/0015-scene-goal-controller-evaluation-separation.md).
+- **Further reading:** [policy-ready API and datasets](docs/POLICY_READY_API.md)
+  and the older [shared API](docs/SHARED_TASK_API.md).
 
 The optional [remote viewer](docs/REMOTE_INTERACTIVE_VIEWER.md) provides the
 same live simulation's GUI, task selection, gripper controls and camera views.

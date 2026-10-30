@@ -120,7 +120,13 @@
   - **final_v4 live regression PASS**（`d57d0f2`，乾淨 worktree，GPU 0，32 min，[報告](reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)，[證據](evidence/wp11/phaseI_final_v4_regression_001.json)）：Demo 1a／1b／2／3 verdict 與 task／protocol identity 都和 `live_20261029_law8_final` 相同；已記錄的凍結 strict FAIL（1b 位置／時間窗、Demo 2 精度 5/8）照樣重現；Demo 2 去除 97.99% → 97.89%，Demo 3 推開 19.680 → 19.687 mm、手腕深度位移 1.2009 → 1.2005 mm。之後的修正 commit 有動到 final_v4 路徑的檔案，所以修正完成後會在最終 HEAD 再跑一次。
   - **R1 完成**（`d009053`、`63ad26b`）：`cutting_surface` 預設恢復為 `unmeshable="raise"`（與 main 相同）；`skip_presentation_v1` 只在 configured（WP-11）task 自動啟用，每次跳過都寫進 `runtime/surface_unmeshable_NN.jsonl`，跳過的碎片含底材時表面指標回報 NOT_RUN；CI 的 test extra 加入 `newton==1.6.1`（全新 venv 安裝 28 s 成功）；`reload_in_place` 失敗後下一次 reset 會重新開啟 stage；新增 [Phase C 報告](reports/WP11_PHASE_C_TRIM.md)，揭露 C5／C5b 的殘留粒子（C5b 有 7 顆底材邊緣粒子在切面上方 3.4–12 mm，仍連在底材上；網格殘留只有 0.105 mm，看不出來）。全套 CPU 測試 1121 passed、5 xfailed。
   - **R3 完成**（`3a75b83`、`2e790ff`）：path_v3 原地修會改變 C5b live 的指令（replay 證明 path_v3 逐位重現 1056 個錄下的指令，而 anti-windup 凍結在 253 步會啟動），所以新增 `path_v3a`（bias 上限 3 mm／15 mrad、被限幅時凍結），path_v3 不變；opt-in 卡住逾時（`stall_timeout_s`）。privileged 的 `reset_checks`／`grasp_status` 移到 `privileged_state`；被拒絕的動作不再改夾爪；collector 明確拒絕 relocation 選項；`slots_per_node` 沒有 v5 solver 時報錯。全套 CPU 測試 1180 passed、5 xfailed。path_v3a 尚未在 Native 跑過（NOT_RUN）。
-  - R2（評估器 v2a＋邊界檢查＋ρ = 10° 與 v5 K = 5 負對照）進行中。
+  - **R2 完成**（`18c4301` 先宣告負對照，`46be189`…`14c1a0e`）：
+    - 新增 opt-in `goal_eval_v2a`：不屬於任何步驟的 digit 判 FAIL；remove 在 sever 之前的假 FAIL 修正；最後每個 sever 塊做全 digit 底材檢查。v2 不變並以 digest 固定；事後診斷 8 個 episode 的 verdict 與 v2 完全相同。
+    - v5 cut index 超出範圍時報錯。
+    - reward／live_acceptance 遇到 K ≥ 2 的 packed code 時報錯或回 NOT_APPLICABLE。
+    - ADR 0014 改正為 CPU 逐位相同。
+    - [負對照](reports/WP11_REVIEW_NEGATIVE_CONTROLS.md)：ρ = 10° 的 C4 組 7 列 PASS（標為 live 之後補做）；`tlmpm_v5` K = 5 的 7 列 PASS，數值與 v4 對應列相同。全套 CPU 測試 1190 passed、5 xfailed。
+- README 與文件索引加入 WP-11 章節（影片、泛化、policy API、law 8 適用範圍）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
