@@ -1,0 +1,45 @@
+{
+ "root": "artifacts/wp12/surface_live_002",
+ "frames": {
+  "start": {
+   "index": 0,
+   "time_s": 0.0
+  },
+  "progress": {
+   "index": 34,
+   "time_s": 6.8
+  },
+  "final": {
+   "index": 74,
+   "time_s": 14.8
+  }
+ },
+ "written": {
+  "start_closeup_rgb": "docs/media/wp12/surface_live/cut/start_closeup.png",
+  "start_overview_rgb": "docs/media/wp12/surface_live/cut/start_overview.png",
+  "progress_closeup_rgb": "docs/media/wp12/surface_live/cut/progress_closeup.png",
+  "progress_overview_rgb": "docs/media/wp12/surface_live/cut/progress_overview.png",
+  "final_closeup_rgb": "docs/media/wp12/surface_live/cut/final_closeup.png",
+  "final_overview_rgb": "docs/media/wp12/surface_live/cut/final_overview.png",
+  "start_global_d455_rgb": "docs/media/wp12/surface_live/cut/start_global_d455_rgb.png",
+  "start_global_d455_depth": "docs/media/wp12/surface_live/cut/start_global_d455_depth.png",
+  "start_wrist_d405_0_rgb": "docs/media/wp12/surface_live/cut/start_wrist_d405_0_rgb.png",
+  "start_wrist_d405_0_depth": "docs/media/wp12/surface_live/cut/start_wrist_d405_0_depth.png",
+  "start_wrist_d405_1_rgb": "docs/media/wp12/surface_live/cut/start_wrist_d405_1_rgb.png",
+  "start_wrist_d405_1_depth": "docs/media/wp12/surface_live/cut/start_wrist_d405_1_depth.png",
+  "final_global_d455_rgb": "docs/media/wp12/surface_live/cut/final_global_d455_rgb.png",
+  "final_global_d455_depth": "docs/media/wp12/surface_live/cut/final_global_d455_depth.png",
+  "final_wrist_d405_0_rgb": "docs/media/wp12/surface_live/cut/final_wrist_d405_0_rgb.png",
+  "final_wrist_d405_0_depth": "docs/media/wp12/surface_live/cut/final_wrist_d405_0_depth.png",
+  "final_wrist_d405_1_rgb": "docs/media/wp12/surface_live/cut/final_wrist_d405_1_rgb.png",
+  "final_wrist_d405_1_depth": "docs/media/wp12/surface_live/cut/final_wrist_d405_1_depth.png"
+ },
+ "command": [
+  "scripts/export_wp12_workcell_media.py",
+  "--root",
+  "artifacts/wp12/surface_live_002",
+  "--media",
+  "docs/media/wp12/surface_live/cut"
+ ],
+ "scope": "Recorded live Native frames (presentation close-up/overview are presentation-only, never observations)"
+}

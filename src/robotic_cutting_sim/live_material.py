@@ -20,7 +20,7 @@ from .scene_frames import (WorkpieceTarget, pose_matrix, invert_transform, trans
 class LiveCuttingMaterial:
     def __init__(self, config=None, target=None, *, task=None, tool_profile=None, cutting_law=None,
                  slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1, solver=None, slots_per_node=None,
-                 cut_events=None, cut_events_capacity=None):
+                 cut_events=None, cut_events_capacity=None, cut_events_summary_capacity=None):
         """``tool_profile`` (tool_profile.ToolProfile) selects the tlmpm_v2 solver
         with that blade polygon; None keeps the frozen v1 solver and task wedge.
 
@@ -38,6 +38,8 @@ class LiveCuttingMaterial:
         ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) attaches the read-only Hermite
         cut-event recorder (cut_events.CutEventRecorder) to every substep; its overflow raises after the
         control step. None (default) creates no recorder and launches nothing new.
+        ``cut_events_summary_capacity`` (opt-in, recorder only): substep rows of the recorder's activation summary
+        (None keeps the recorder default 2^18; long live episodes need more, e.g. surface_runtime).
         """
         from .tasks import ProfileTaskSpec
         from .tool_profile import handle_box_edge
@@ -80,7 +82,10 @@ class LiveCuttingMaterial:
             raise ValueError("cut_events is None (off) or 'cut_events_v1'")
         if cut_events is not None and solver != 'tlmpm_v5':
             raise ValueError("cut_events records tlmpm_v5 only (solver='tlmpm_v5')")
+        if cut_events_summary_capacity is not None and cut_events is None:
+            raise ValueError("cut_events_summary_capacity applies to cut_events='cut_events_v1' only")
         self.cut_events, self.cut_events_capacity = cut_events, cut_events_capacity
+        self.cut_events_summary_capacity = cut_events_summary_capacity
         self.cut_event_recorder = None
         self.solver = solver
         self.slots_per_node = None if solver is None else int(slots_per_node or 8)
@@ -231,8 +236,10 @@ class LiveCuttingMaterial:
         recorder = self.cut_event_recorder = None
         if self.cut_events is not None:
             from .cut_events import CutEventRecorder
+            summary = ({} if self.cut_events_summary_capacity is None
+                       else {"summary_capacity": int(self.cut_events_summary_capacity)})
             recorder = self.cut_event_recorder = CutEventRecorder(self.bed, self.lattice,
-                                                                  capacity=self.cut_events_capacity)
+                                                                  capacity=self.cut_events_capacity, **summary)
             wp.load_module(module="robotic_cutting_sim.cut_events", device=c.device)
         wp.load_module(module=solver_module, device=c.device)
         if self.task:

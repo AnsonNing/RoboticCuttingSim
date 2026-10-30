@@ -58,7 +58,9 @@ PRIVILEGED_KEYS = frozenset({
     "reference_positions", "reference_positions_world", "reference_indices", "mass_kg", "oracle_geometry",
     "contact_wrench_world", "next_material_wrench_world", "force", "wrench", "tool_truth",
     "tool_body_pose_xyzw", "tool_linear_velocity_world_m_s", "tool_angular_velocity_world_rad_s",
-    "grasp_status", "privileged", "material", "oracle"})
+    "grasp_status", "privileged", "material", "oracle",
+    # WP-12 Layer 6: render-surface provenance and the Hermite cut-event record are oracle/debug data
+    "surface_provenance", "hermite", "cut_events"})
 # Reset-check fields that are bookkeeping of the env itself (clocks, counters, logs, lifecycle) or deployable
 # measurements (joint encoders, camera timestamps). Every other reset_checks field (material state, cut codes,
 # simulator tool/edge pose and speeds, the grasp re-stabilization receipt) is privileged and appears in reset
@@ -349,6 +351,21 @@ class PolicyReadyEnv:
     def recorder(self):
         return self._recorder
 
+    @property
+    def surface_profile(self):
+        """Rendered surface profile: ``particle_surface_v1`` (default) or ``cut_aware_surface_v1`` (opt-in)."""
+        selection = getattr(self.backend, "surface_selection", None)
+        selection = selection() if callable(selection) else None
+        return "particle_surface_v1" if selection is None else selection["surface_profile"]
+
+    def surface_provenance(self):
+        """Privileged per-extraction surface provenance (cut-aware only; None by default). Debug/oracle data:
+        needs observation_profile='privileged_state' and never enters observe() or step info."""
+        if self.observation_profile != "privileged_state":
+            raise PermissionError("Surface provenance is privileged; use observation_profile='privileged_state'")
+        provenance = getattr(self.backend, "surface_provenance", None)
+        return provenance() if callable(provenance) else None
+
     # -- lifecycle
     def reset(self, seed=None, *, controller=None):
         """Direct simulator reset (robot, knife, grasp, material, labels, clocks); never a physical motion."""
@@ -375,6 +392,9 @@ class PolicyReadyEnv:
         if self.runtime_profile is not None:
             self.reset_info.update(runtime_profile=copy.deepcopy(self.runtime_profile),
                                    acceptance_valid=bool(self.runtime_profile["acceptance_valid"]))
+        if self.surface_profile != "particle_surface_v1":
+            # WP-12 Layer 6 (opt-in): the profile NAME is configuration, not oracle state; the default info is unchanged.
+            self.reset_info["surface_profile"] = self.surface_profile
         if self.recording is not None:
             self._open_recorder(controller or self.recording.get("controller", "external"))
         info = copy.deepcopy(self.reset_info)

@@ -33,8 +33,19 @@ class KinematicConfig:
     solver: str | None = None                  # None = v1-v4 by law; 'tlmpm_v5' opt-in (ADR 0014)
     slots_per_node: int | None = None          # tlmpm_v5 only (None = 8)
     cut_events: str | None = None              # 'cut_events_v1': read-only Hermite recorder (WP-12, tlmpm_v5 only)
+    # WP-12 Layer 6 (opt-in): 'particle_surface_v1' (None, default: ComponentSurface current_volume_v1, unchanged) or
+    # 'cut_aware_surface_v1' (tlmpm_v5 only; turns the cut_events_v1 recorder on). surface_runtime.py.
+    surface_profile: str | None = None
 
     def __post_init__(self):
+        if self.surface_profile is not None:
+            from .surface_runtime import CUT_AWARE, check_surface_profile
+            check_surface_profile(self.surface_profile)
+            if self.surface_profile == CUT_AWARE:
+                if self.solver != "tlmpm_v5":
+                    raise ValueError("surface_profile='cut_aware_surface_v1' needs solver='tlmpm_v5' (packed codes and "
+                                     "the cut_events_v1 recorder)")
+                object.__setattr__(self, "cut_events", "cut_events_v1")   # recorder-quality Hermite data (recorded)
         if self.solver not in (None, "tlmpm_v5"):
             raise ValueError("solver is None or 'tlmpm_v5'")
         if self.slots_per_node is not None and self.solver != "tlmpm_v5":
@@ -62,6 +73,12 @@ class KinematicCuttingBackend:
         self.last_diagnostics = {}
         self.stroke_history = []  # law 4 only: per-control-step stroke state (oracle)
         self._surface, self._surface_time = None, None
+        self.cut_aware_surface = None   # surface_runtime.LiveCutAwareSurface of the current episode (cut-aware only)
+
+    @property
+    def cut_aware(self):
+        from .surface_runtime import CUT_AWARE
+        return self.config.surface_profile == CUT_AWARE
 
     @property
     def tool_attachment_mode(self):
@@ -90,6 +107,9 @@ class KinematicCuttingBackend:
             kwargs.update(solver=c.solver, slots_per_node=c.slots_per_node)
         if c.cut_events is not None:
             kwargs["cut_events"] = c.cut_events
+        if self.cut_aware:   # the recorder summary sized for the whole episode (surface_runtime)
+            from .surface_runtime import recorder_summary_capacity
+            kwargs["cut_events_summary_capacity"] = recorder_summary_capacity(self.task, c.material_dt)
         if not isinstance(self.task, ProfileTaskSpec):
             if c.max_cuts == 1 and c.cutting_law in (None, 1) and c.device != "cpu" and c.solver is None:
                 kwargs = {}  # v1 tasks keep the frozen v1 solver by default
@@ -104,6 +124,13 @@ class KinematicCuttingBackend:
         self.last_diagnostics = {"material_reset": receipt}
         self.stroke_history = []
         self._surface = None
+        if self.cut_aware:
+            # A new extractor per reset: no topology cache (incremental state) survives into the next episode.
+            from .surface_runtime import LiveCutAwareSurface
+            self.cut_aware_surface = LiveCutAwareSurface(self.material, to_world=self.task.points_to_world,
+                                                         density_kg_m3=self.task.material.density_kg_m3)
+            receipt = {**receipt, "surface_selection": self.cut_aware_surface.selection()}
+            self.last_diagnostics = {"material_reset": receipt}
         return receipt
 
     def measured(self):
@@ -150,6 +177,11 @@ class KinematicCuttingBackend:
         return self.measured(), self.last_diagnostics
 
     def _extract_surface(self):
+        if self._surface_time != self.time_s and self.cut_aware:
+            vertices, triangles, normals, metadata = self.cut_aware_surface.extract(
+                time_s=self.time_s, step_index=round(self.time_s/self.task.control_dt_s))
+            metadata["face_varying_normals_world"] = normals
+            self._surface, self._surface_time = (vertices, triangles, metadata), self.time_s
         if self._surface_time != self.time_s:
             from .cutting_surface import ComponentSurface
             spacing = self.material.spacing
@@ -167,6 +199,25 @@ class KinematicCuttingBackend:
     @property
     def surface_metadata(self):
         return self._extract_surface()[2]
+
+    def surface_selection(self):
+        """Recorded surface selection (None for the default particle_surface_v1: nothing changes there)."""
+        return None if self.cut_aware_surface is None else self.cut_aware_surface.selection()
+
+    def surface_frame(self):
+        """Provenance row of the surface at the current time (extracting it if stale); None by default."""
+        if self.cut_aware_surface is None:
+            return None
+        self._extract_surface()
+        return self.cut_aware_surface.rows[-1]
+
+    def surface_provenance(self):
+        """Selection, per-extraction rows and summary of this episode's cut-aware surface; None by default."""
+        surface = self.cut_aware_surface
+        if surface is None:
+            return None
+        return {"selection": surface.selection(), "summary": surface.summary(), "rows": list(surface.rows),
+                "cut_events": self.material.cut_events_metadata()}
 
     def law4_stroke_arrays(self):
         """Per-control-step law-4..8 stroke record as arrays for physics_state.npz ({} otherwise).
@@ -193,6 +244,8 @@ class KinematicCuttingBackend:
         config = asdict(self.config)
         if config["cut_events"] is None:
             del config["cut_events"]  # the default-off receipt keeps its pre-WP-12 keys
+        if config["surface_profile"] is None:
+            del config["surface_profile"]  # the default receipt keeps its pre-Layer-6 keys
         return {"runtime_source": self.runtime_source, "config": config,
                 "scope": "Ideal edge tracking; no robot, IK, grasp, slip, dynamics or cameras",
                 "material": self.material.parameter_receipt if self.material else None}
@@ -201,11 +254,12 @@ class KinematicCuttingBackend:
 def make_kinematic_env(task_id="CUT-01-R", *, seed=42, particle_spacing_m=None, material_dt=.0001,
                        device="cpu", cutting_law=None, max_cuts=1, slice_efficiency=1.,
                        observation_profile="state", scenario=None, material_profile_id=None, solver=None,
-                       slots_per_node=None, cut_events=None, **wrapper_options):
+                       slots_per_node=None, cut_events=None, surface_profile=None, **wrapper_options):
     """CuttingTaskEnv over the kinematic backend (state observations only).
 
     solver='tlmpm_v5' (opt-in, ADR 0014) and cut_events='cut_events_v1' (opt-in, WP-12) pass through to
-    LiveCuttingMaterial."""
+    LiveCuttingMaterial. surface_profile='cut_aware_surface_v1' (opt-in, WP-12 Layer 6) selects the cut-aware
+    surface and turns the recorder on; None / 'particle_surface_v1' keep the default surface."""
     from .live_env import CuttingTaskEnv
     if observation_profile != "state":
         raise ValueError("The kinematic backend renders no cameras; use observation_profile='state'")
@@ -214,6 +268,8 @@ def make_kinematic_env(task_id="CUT-01-R", *, seed=42, particle_spacing_m=None, 
         task_id = task.task_id
     backend = KinematicCuttingBackend(KinematicConfig(task_id, seed, particle_spacing_m, material_dt, device,
                                                       cutting_law, max_cuts, slice_efficiency, scenario, material_profile_id,
-                                                      solver, slots_per_node, cut_events), task=task)
+                                                      solver, slots_per_node, cut_events,
+                                                      None if surface_profile == "particle_surface_v1"
+                                                      else surface_profile), task=task)
     env = CuttingTaskEnv(backend, seed=seed, observation_profile="state", **wrapper_options)
     return env

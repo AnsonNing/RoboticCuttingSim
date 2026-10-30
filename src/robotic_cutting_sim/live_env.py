@@ -606,6 +606,11 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
     optional ``scene=``/``goal=``/``tool_profile=``/``planner_options=``/
     ``particle_spacing_m=``/``recording=``/``observation_profile=`` arguments
     (see docs/POLICY_READY_API.md). Without ``preset`` nothing changes.
+
+    ``surface_profile`` (WP-12 Layer 6, opt-in backend option on ``kinematic`` and ``isaac_sim``):
+    ``"particle_surface_v1"`` (default; nothing changes) or ``"cut_aware_surface_v1"`` (tlmpm_v5 configured
+    tasks; turns the cut_events_v1 recorder on; selection and per-frame provenance are recorded,
+    ``surface_runtime.py``). The surface is render geometry only and never feeds back into physics.
     """
     if preset is not None:
         from .policy_env import open_policy_env

@@ -172,10 +172,21 @@ class IsaacSimCuttingConfig:
             object.__setattr__(self,"native_noise","off" if self.task_id else "on")
         if self.native_noise not in ("off", "on"):
             raise ValueError("native_noise must be off or on, matching independent sensor controls")
-        if self.surface_profile is None:
+        # surface_profile (WP-12 Layer 6, versioned): the ParticleSurface kernels "legacy"/"current_volume_v1" are
+        # particle_surface_v1; "particle_surface_v1" names that default and resolves to the same kernel (so the
+        # recorded config is unchanged); "cut_aware_surface_v1" (opt-in) draws surface_runtime.LiveCutAwareSurface.
+        if self.surface_profile in (None, "particle_surface_v1"):
             object.__setattr__(self,"surface_profile","current_volume_v1" if self.task_id else "legacy")
-        if self.surface_profile not in ("legacy","current_volume_v1"):
-            raise ValueError("surface_profile must be legacy or current_volume_v1")
+        if self.surface_profile not in ("legacy","current_volume_v1","cut_aware_surface_v1"):
+            raise ValueError("surface_profile must be particle_surface_v1 (legacy | current_volume_v1 kernel) "
+                             "or cut_aware_surface_v1")
+        if self.surface_profile == "cut_aware_surface_v1":
+            import json
+            solver = ((json.loads(self.configured_task).get("scene") or {}).get("solver") or {}
+                      if self.configured_task is not None else {})
+            if solver.get("module") != "tlmpm_v5":
+                raise ValueError("surface_profile='cut_aware_surface_v1' needs a configured tlmpm_v5 task (packed codes "
+                                 "and the cut_events_v1 recorder, which it turns on)")
         if self.surface_unmeshable is None:
             object.__setattr__(self, "surface_unmeshable",
                                "skip_presentation_v1" if self.configured_task is not None else "raise")
@@ -641,8 +652,15 @@ class LiveIsaacSimCutting:
                        dx=c.dx, device=c.device, feedback=c.feedback)
         if c.configured_task is not None:
             # Solver, law and K from the scene (tlmpm_v5 packed history allowed up to its limit).
+            # cut_aware_surface_v1 (opt-in) turns the read-only cut_events_v1 recorder on; the default call is unchanged.
+            recorder = {}
+            if c.surface_profile == "cut_aware_surface_v1":
+                from .surface_runtime import recorder_summary_capacity
+                recorder = {"cut_events": "cut_events_v1",
+                            "cut_events_summary_capacity": recorder_summary_capacity(self.task, c.material_dt)}
             self.material = LiveCuttingMaterial(material_config, task=self.task, max_cuts=self.task.max_cuts,
-                cutting_law=self.task.cutting_law, solver="tlmpm_v5" if self.task.solver_module == "tlmpm_v5" else None)
+                cutting_law=self.task.cutting_law, solver="tlmpm_v5" if self.task.solver_module == "tlmpm_v5" else None,
+                **recorder)
         else:
             self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
         if self.pad_geometry:
@@ -655,7 +673,17 @@ class LiveIsaacSimCutting:
                         'scope': 'Actual USD pads; conservative edge-aligned bounds at each coupling boundary; separate finger reactions'})
         spacing=self.task.particle_spacing_m if self.task else c.dx/2
         voxel=spacing/2 if c.surface_profile=="current_volume_v1" else min(spacing,.0015)
-        if c.surface_unmeshable == "raise":
+        self.cut_aware_surface = None
+        # In-memory profiling traces (both profiles; perf_counter only): never written unless a caller asks.
+        self.surface_trace, self.step_trace, self.capture_trace = [], [], []
+        if c.surface_profile == "cut_aware_surface_v1":
+            # A fresh extractor per reset (no topology cache survives an episode); never meshes nothing.
+            from .surface_runtime import LiveCutAwareSurface
+            self.cut_aware_surface = LiveCutAwareSurface(self.material, to_world=self.task.points_to_world,
+                                                         density_kg_m3=self.task.material.density_kg_m3)
+            self.surface = None
+            self.unmeshable_log = None
+        elif c.surface_unmeshable == "raise":
             self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
             self.unmeshable_log = None
         else:
@@ -702,6 +730,11 @@ class LiveIsaacSimCutting:
         if self.unmeshable_log is not None:
             setup["surface_unmeshable"]={"policy":c.surface_unmeshable,"log":str(self.unmeshable_log.path),
                 "initial_surface":self.unmeshable_log.summary(self.surface_info)}
+        if self.cut_aware_surface is not None:   # opt-in only: the default setup.json is unchanged
+            setup["surface_selection"]={**self.cut_aware_surface.selection(),
+                "surface_unmeshable":"not used: cut_aware_surface_v1 never drops a component",
+                "cut_events":self.material.cut_events_metadata(),
+                "initial_surface":self.cut_aware_surface.rows[-1]}
         if self.task is not None and (getattr(self,"fixture_plan",None) or {}).get("any_material_declared"):
             from .native_fixture import authored_material_receipt
             setup["task_fixture_materials"]=authored_material_receipt(stage,self.fixture_plan)
@@ -1128,15 +1161,72 @@ class LiveIsaacSimCutting:
                            *pad_boxes_edge(self.pad_geometry, self._pad_poses(), edge)], np.float32)
 
     def _update_surface(self):
+        if getattr(self, "cut_aware_surface", None) is not None:
+            return self._update_cut_aware_surface()
+        start = time.perf_counter()
         vertices, faces, self.surface_info = self.surface.extract(self.material.bed)
+        extracted = time.perf_counter()
         if getattr(self, "unmeshable_log", None) is not None:
             self.unmeshable_log.record(self.surface_info, reset_index=self.reset_index,
                                        step_index=self.step_index, time_s=self.time_s)
         if self.task:
             vertices=self.task.points_to_world(vertices).astype(np.float32)
+        transformed = time.perf_counter()
         self.surface_receipt = self.bridge.update(vertices, faces, self.time_s)
         self.surface_arrays = (vertices, faces)
         self._surface_time = self.time_s
+        if hasattr(self, "surface_trace"):   # in memory only; the default outputs are unchanged
+            done = time.perf_counter()
+            self.surface_trace.append({"time_s": self.time_s, "step_index": self.step_index,
+                "surface_profile": "particle_surface_v1", "kernel": self.config.surface_profile,
+                "codes_sha256": self.surface_info.get("codes_sha256"),
+                "vertices": int(len(vertices)), "triangles": int(len(faces)),
+                "mechanical_components": int(self.surface_info.get("mechanical_components", -1)),
+                "timings_ms": {"extract_total": 1e3*(extracted-start), "world_transform": 1e3*(transformed-extracted),
+                               "usd_upload": 1e3*(done-transformed), "surface_and_upload_total": 1e3*(done-start)}})
+
+    def _update_cut_aware_surface(self):
+        """cut_aware_surface_v1 (opt-in): local extraction with the recorder's Hermite log, WORLD vertices and
+        face-varying normals, staged through the additive DynamicSurfaceBridge.update_face_varying_v1."""
+        surface = self.cut_aware_surface
+        vertices, faces, normals, self.surface_info = surface.extract(time_s=self.time_s, step_index=self.step_index)
+        start = time.perf_counter()
+        self.surface_receipt = self.bridge.update_face_varying_v1(vertices, faces, normals, self.time_s)
+        surface.note_upload(self.surface_receipt, 1e3*(time.perf_counter()-start))
+        self.surface_arrays = (vertices, faces)
+        self._surface_time = self.time_s
+        self.surface_trace.append({"time_s": self.time_s, "step_index": self.step_index,
+            "surface_profile": "cut_aware_surface_v1", "codes_sha256": surface.rows[-1]["codes_sha256"],
+            "vertices": int(len(vertices)), "triangles": int(len(faces)),
+            "mechanical_components": int(self.surface_info["mechanical_components"]),
+            "timings_ms": dict(surface.rows[-1]["timings_ms"])})
+
+    def surface_selection(self):
+        """Recorded surface selection (None for the default particle_surface_v1: nothing changes there)."""
+        surface = getattr(self, "cut_aware_surface", None)
+        return None if surface is None else surface.selection()
+
+    def surface_frame(self):
+        """Provenance row of the surface at the current time (refreshing it if stale); None by default."""
+        surface = getattr(self, "cut_aware_surface", None)
+        if surface is None:
+            return None
+        if getattr(self, "_surface_time", None) != self.time_s:
+            self._update_surface()
+        return surface.rows[-1]
+
+    def surface_provenance(self):
+        """Selection, per-extraction rows and summary of this episode's cut-aware surface; None by default."""
+        surface = getattr(self, "cut_aware_surface", None)
+        if surface is None:
+            return None
+        return {"selection": surface.selection(), "summary": surface.summary(), "rows": list(surface.rows),
+                "cut_events": self.material.cut_events_metadata()}
+
+    def runtime_timing_trace(self):
+        """In-memory per-step physics / surface / camera timings since reset (profiling; both profiles)."""
+        return {"surface": list(getattr(self, "surface_trace", [])), "capture": list(getattr(self, "capture_trace", [])),
+                "steps": list(getattr(self, "step_trace", []))}
 
     def _refresh_surface(self):
         """Re-extract the presentation surface unless it is already of this time step (no scorability check).
@@ -1320,6 +1410,7 @@ class LiveIsaacSimCutting:
 
     def step(self,action=None,*,cutting=True):
         c, manager = self.config, self.SimulationManager
+        step_wall_start = time.perf_counter()
         if self._rigid_probe_only:
             raise RuntimeError("Reset after rigid-only controls before starting coupled cutting")
         if c.observation_motion_probe and action is not None:
@@ -1420,8 +1511,10 @@ class LiveIsaacSimCutting:
         diagnostics.update(minimum_detF=float(determinant.min()),
                            maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
+        surface_start = time.perf_counter()
         if c.camera and c.surface_update == "every_step":
             self._update_surface()
+        surface_wall = time.perf_counter()-surface_start
         if c.camera and c.camera_layout == "wrist_d405_global_d455":
             self._update_camera_extrinsics(actual["hand_pose_both_xyzw"])
         physical = {}
@@ -1456,9 +1549,30 @@ class LiveIsaacSimCutting:
                  **physical}
         if self.unmeshable_log is not None:   # skip_presentation_v1 only; absent under "raise"
             self.last_diagnostics["surface_unmeshable"] = self.unmeshable_log.step_receipt()
+        if getattr(self, "cut_aware_surface", None) is not None and self.cut_aware_surface.rows:
+            # cut_aware_surface_v1 only (privileged diagnostics; recorded in actions.jsonl, never observed)
+            row = self.cut_aware_surface.rows[-1]
+            self.last_diagnostics["surface"] = {"surface_profile": "cut_aware_surface_v1",
+                "extraction": row["extraction"], "time_s": row["time_s"], "codes_sha256": row["codes_sha256"],
+                "cut_events_entries": (row["cut_events"] or {}).get("entries"),
+                "crossings_by_source": row["hermite"]["crossings_by_source"], "audit_ok": row["audit"]["ok"],
+                "mesh_shells": row["audit"]["mesh_shells"], "triangles": row["mesh"]["triangles"],
+                "update": row["update"]["mode"], "timings_ms": row["timings_ms"]}
+        if hasattr(self, "step_trace"):   # in memory only
+            self.step_trace.append({"time_s": self.time_s, "step_index": self.step_index,
+                "robot_physics_wall_s": self.last_diagnostics["robot_physics_wall_s"],
+                "material_wall_s": diagnostics.get("material_wall_s"), "surface_update_wall_s": surface_wall,
+                "step_wall_s": time.perf_counter()-step_wall_start})
         return actual, self.last_diagnostics
 
     def capture(self):
+        capture_start = time.perf_counter()
+        result = self._capture()
+        if hasattr(self, "capture_trace"):   # in memory only
+            self.capture_trace.append({"time_s": self.time_s, "capture_wall_s": time.perf_counter()-capture_start})
+        return result
+
+    def _capture(self):
         import omni.replicator.core as rep
         if self.config.surface_update == "on_capture":
             # The surface of this time step, before rendering it. Presentation only: a skipped substrate component

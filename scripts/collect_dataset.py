@@ -295,6 +295,13 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                 export=dict(path=str(exported.relative_to(out)), sha256=export['export_sha256'], keys=export['keys']))
     if extra:   # e.g. the process-recycling receipt (only with --recycle-every)
         meta.update(extra)
+    selection = getattr(env.backend, 'surface_selection', None)
+    selection = selection() if callable(selection) else None
+    if selection is not None:   # WP-12 Layer 6 opt-in only: the default episode.json keys are unchanged
+        provenance = env.backend.surface_provenance()
+        meta['surface'] = dict(surface_profile=selection['surface_profile'], selection=selection,
+                               summary=provenance['summary'], cut_events=provenance['cut_events'],
+                               provenance_file='surface_provenance.json')
     write_json(directory/'episode.json', jsonable(meta))
     return meta
 
@@ -568,6 +575,9 @@ def main(argv=None):
                         'or the --runtime-profile value)')
     p.add_argument('--surface-update', choices=('every_step', 'on_capture'),
                    help='Isaac Sim: IsaacSimCuttingConfig.surface_update (WP-11 Phase H3 opt-in; default every_step)')
+    p.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'), default=argparse.SUPPRESS,
+                   help='WP-12 Layer 6 opt-in rendered surface (kinematic and Isaac Sim; default particle_surface_v1). '
+                        'Absent from the recorded arguments unless given.')
     p.add_argument('--profile', choices=('stages', 'kernels'),
                    help='Opt-in per-stage timing (robotic_cutting_sim.profiling); writes episode_###/profile.json. '
                         "'kernels' times every Warp kernel eagerly (perturbing; use for the split only)")
@@ -614,6 +624,8 @@ def main(argv=None):
         if a.runtime != 'isaac_sim':
             raise SystemExit('--surface-update applies to --runtime isaac_sim only')
         runtime_options['surface_update'] = a.surface_update
+    if getattr(a, 'surface_profile', None) is not None:
+        runtime_options['surface_profile'] = a.surface_profile   # recorded (runtime_options) and replayed
     if a.runtime == 'kinematic':
         runtime_options['device'] = a.device
     else:
