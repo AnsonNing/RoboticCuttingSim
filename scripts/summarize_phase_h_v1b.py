@@ -80,6 +80,15 @@ def run_summary(directory, fit_from):
     if summary.get('status') == 'MISSING':
         return summary
     episodes = [e for e in summary['episodes'] if 'host_rss_mib_after' in e]
+    for e in episodes:   # per-GPU split of the gated process total, the pid, and the recycle receipt if any
+        meta = load(directory/e['episode_id']/'episode.json')
+        e['gpu_used_mib_after_per_gpu'] = meta['memory_after'].get('gpu_used_mib')
+        e['pid'] = meta['memory_after'].get('pid')
+        e['home_failed_checks'] = (meta.get('home_outcome') or {}).get('failed_checks')
+        e['final_codes_sha256'] = meta.get('final_codes_sha256')
+        e['git'] = {k: (meta.get('git') or {}).get(k) for k in ('git_sha', 'git_dirty')}
+        if meta.get('recycle'):
+            e['recycle'] = meta['recycle']
     summary['memory'] = {'host_rss': memory_block([e['host_rss_mib_after'] for e in episodes], fit_from),
                          'gpu_process': memory_block([e['gpu_used_mib_after'] for e in episodes], fit_from)}
     summary['reliability'] = reports(directory)
@@ -105,6 +114,35 @@ def run_summary(directory, fit_from):
     return summary
 
 
+def mitigation_criteria(directory, summary):
+    """The four declared criteria of configs/wp11/phaseH/native_recycle_mitigation_v1.json."""
+    declaration = load(ROOT/'configs/wp11/phaseH/native_recycle_mitigation_v1.json')
+    index = load(directory/'index.json')
+    blocks = (index.get('process_recycling') or {}).get('blocks', [])
+    plan = load(ROOT/'configs/wp11/phaseG/native_reliability_trim_v1.json')['episodes']
+    rows = index['episodes']
+    episodes = {e['episode_id']: e for e in summary['episodes'] if 'host_rss_mib_after' in e}
+    pids = [b.get('pid') for b in blocks]
+    c1 = len(blocks) == 2 and all(b['returncode'] == 0 for b in blocks) and None not in pids and len(set(pids)) == 2
+    c2 = ([r['episode_id'] for r in rows] == [f'episode_{i:03d}' for i in range(len(plan))]
+          and all(r['status'] == 'STORED' for r in rows)
+          and [r['seed'] for r in rows] == [e['seed'] for e in plan]
+          and (summary.get('read_dataset') or {}).get('status') == 'PASS')
+    per_episode = ((summary.get('reliability') or {}).get('phaseG_reliability_v1b') or {}).get('per_episode_failing')
+    c3 = per_episode is not None and len(per_episode) == len(plan) and not any(per_episode.values())
+    first = [next((e for e in episodes.values() if (e.get('recycle') or {}).get('block') == b
+                   and e['recycle']['block_episode'] == 0), None) for b in (0, 1)]
+    delta = None if None in first else first[1]['host_rss_mib_after'] - first[0]['host_rss_mib_after']
+    c4 = delta is not None and abs(delta) <= 64
+    checks = {'1_both_children_exit_0_distinct_pids': c1, '2_continuous_ids_seeds_index_reader_pass': c2,
+              '3_every_per_episode_v1b_check_passes': c3, '4_block1_first_rss_within_64_mib_of_block0_first': c4}
+    return {'declaration': declaration['version'], 'checks': checks, 'block_pids': pids,
+            'block_returncodes': [b['returncode'] for b in blocks], 'first_episode_rss_delta_mib': delta,
+            'verdict': 'MITIGATION_DEMONSTRATED' if all(checks.values()) else 'MITIGATION_NOT_DEMONSTRATED',
+            'failing': sorted(k for k, v in checks.items() if not v),
+            'not_claimed': declaration['criteria']['not_claimed']}
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--out', type=Path, required=True)
@@ -124,6 +162,7 @@ def main(argv=None):
     mitigation = {'declaration': 'configs/wp11/phaseH/native_recycle_mitigation_v1.json'}
     if (MITIGATION/'index.json').exists():
         mitigation['run'] = run_summary(MITIGATION, fit_from)
+        mitigation['criteria'] = mitigation_criteria(MITIGATION, mitigation['run'])
     else:
         mitigation['status'] = 'NOT_RUN'
     evidence['recycle_mitigation'] = mitigation

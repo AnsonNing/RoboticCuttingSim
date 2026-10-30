@@ -456,21 +456,30 @@ def recycle_child(a, entries, out, runtime_options, clocks, planner_options):
     memory_start, start = process_memory(), time.monotonic()
     receipt = lambda i, j: dict(recycle=dict(block=block, every=int(spec['every']), block_episode=j,
                                              pid=memory_start['pid'], runtime_dir=spec['runtime_dir']))
-    status = 0
+    state = dict(status=0, closed=False)
+
+    def write_result():
+        # Written after every episode INSIDE the env context: on Native, closing the env (Kit SimulationApp.close)
+        # ends the process, so nothing after the `with` block is guaranteed to run.
+        write_json(result_path, jsonable(dict(block=block, pid=memory_start['pid'], first_episode=first,
+                                              episodes_planned=len(block_entries), index_rows=index['episodes'],
+                                              failures=failures, memory_start=memory_start,
+                                              memory_end=process_memory(), wall_s=time.monotonic() - start,
+                                              status=state['status'], env_closed=state['closed'])))
     try:
         with open_env(a, int(spec['compile_seed']), out, out/spec['runtime_dir'], runtime_options, planner_options,
                       episode_index_start=first) as env:
+            write_result()
             run_entries(env, block_entries, first, out, a, clocks, runtime_options, metas, failures, index,
-                        lambda: None, extra=receipt)
+                        write_result, extra=receipt)
+        state['closed'] = True
     except BaseException as error:
         write_json(out/'recycle'/f'block_{block:03d}_failure.json', dict(error=repr(error),
                                                                        traceback=traceback.format_exc()))
         traceback.print_exc()
-        status = 1
-    write_json(result_path, jsonable(dict(block=block, pid=memory_start['pid'], first_episode=first,
-                                          index_rows=index['episodes'], failures=failures, memory_start=memory_start,
-                                          memory_end=process_memory(), wall_s=time.monotonic() - start,
-                                          status=status)))
+        state['status'] = 1
+    write_result()
+    status = state['status']
     return status
 
 

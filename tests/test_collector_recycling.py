@@ -148,3 +148,52 @@ def test_per_process_trend_scope_is_opt_in_and_fits_within_each_process():
     assert "per_process" not in ds.reliability_report(plain, v1a, "kinematic", validations=validations)["memory"]
     with pytest.raises(ValueError):
         ds.reliability_report(plain, scoped, "kinematic", validations=validations)
+
+
+_HARD_EXIT_CHILD = r'''
+import contextlib, json, os, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+import collect_dataset as cd
+
+@contextlib.contextmanager
+def fake_env(*args, **kwargs):
+    yield object()
+    os._exit(0)   # what Kit's SimulationApp.close does on Native: the process ends inside the env close
+
+def fake_episode(env, entry, index, out, a, clocks, extra=None):
+    meta = dict(episode_id=f"episode_{index:03d}", label=entry["label"], controller=entry["controller"],
+                seed=entry["seed"], verdict="PASS", expect=None, termination_reason="TIME_LIMIT", home_outcome=None,
+                steps_recorded=1, export=dict(sha256="x"), wall_s=0., action_status_counts={},
+                memory_after=dict(host_rss_mib=1.), **(extra or {}))
+    return meta
+
+cd.open_env, cd.run_episode = fake_env, fake_episode
+sys.exit(cd.main(sys.argv[2:]))
+'''
+
+
+def test_recycle_child_reports_its_episodes_even_when_env_close_ends_the_process(tmp_path):
+    """Regression (WP-11 Phase H mitigation run 001): on Native the env close (Kit SimulationApp.close) ends the
+    child process, so the block result must already be on disk when the env context exits."""
+    plan = {"schema": "rcs_episode_plan_v1", "episodes": [
+        {"label": f"hold_{i}", "controller": "policy", "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+         "seed": 7} for i in range(2)]}
+    (tmp_path/"plan.json").write_text(json.dumps(plan))
+    out = tmp_path/"dataset"
+    (out/"recycle").mkdir(parents=True)
+    (out/"dataset_manifest.json").write_text("{}")
+    entries = [dict(e, seed_source="fixed", edge_feedback="nominal") for e in plan["episodes"]]
+    spec = out/"recycle"/"block_000.json"
+    spec.write_text(json.dumps(dict(block=0, every=2, first_episode=0, episodes=2, compile_seed=7,
+                                    runtime_dir="runtime_block_000", entries=entries)))
+    (tmp_path/"child.py").write_text(_HARD_EXIT_CHILD)
+    done = subprocess.run([sys.executable, str(tmp_path/"child.py"), str(ROOT/"scripts"), "--runtime", "kinematic",
+                           "--scene", "bar_160x30x20", "--goal", "sever_mid", "--episode-plan", str(tmp_path/"plan.json"),
+                           "--recycle-every", "2", "--recycle-child", str(spec), "--out", str(out)],
+                          cwd=ROOT, capture_output=True, text=True, timeout=600)
+    assert done.returncode == 0, done.stderr[-3000:]
+    result = json.loads((out/"recycle"/"block_000_result.json").read_text())
+    assert [row["episode_id"] for row in result["index_rows"]] == ["episode_000", "episode_001"]
+    assert [row["status"] for row in result["index_rows"]] == ["STORED", "STORED"]
+    assert result["env_closed"] is False and result["status"] == 0 and result["failures"] == []
