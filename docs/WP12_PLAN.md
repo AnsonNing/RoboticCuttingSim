@@ -83,10 +83,11 @@ and opt-in. Material parameters remain provisional and uncalibrated.
 | Phase | State | Commits / evidence |
 | --- | --- | --- |
 | 0 | done: acronym removal + guard (`ce547f9`), plan (`1c91605`), technology review (`3f13379`), baseline audit: 8/8 scenes reproduce frozen verdicts, CPU 1196 passed (`2df1e13`) | [audit](reports/WP12_BASELINE_AUDIT.md), [review](reports/WP12_SURFACE_TECH_REVIEW.md) |
-| 1 | in progress: surface diagnosis, G1–G8, debug viewer, frozen surface protocol | |
+| 1 | done (`b31553d`): attribution, G1–G8, debug viewer; surface protocol v1 frozen | [diagnosis](reports/WP12_SURFACE_DIAGNOSIS.md) |
 | 2 | 2a done (`ec3e8a7`): profile, single-source geometry, through-cut study (A+B), Native settle and knife-on-board; 2b in progress: live Native cutting acceptance on the board, old-vs-new comparison | [workcell report](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md) |
-| 3 | Layer 2 `cut_events_v1` recorder done (`403870f`); Layers 3–6 after the Phase 1 gate | |
-| 4–7 | not started | |
+| 3 | recorder (`403870f`) and Layers 3–6 core (`89b289d`) done; S0–S9 measurement running; live/Native integration next | |
+| 4 | 4a root-cause diagnosis running | |
+| 5–7 | not started | |
 
 **Phase 0 gate decision (2026-10-31).** Architecture: Approach B on the 1 mm particle
 lattice (review §6), links cut iff endpoint codes conflict, Hermite data from

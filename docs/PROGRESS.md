@@ -6,8 +6,10 @@
 - Phase 0 完成：縮寫移除＋守門測試（`ce547f9`）、計畫（`1c91605`）、技術研究（`3f13379`）、baseline audit（`2df1e13`：8 個場景全部重現凍結結果；CPU 1196 passed／5 xfail）。
 - Phase 2a 完成（`ec3e8a7`，[報告](reports/WP12_WORKCELL.md)，ADR 0017）：`blade_master_flat_board_v1` 一塊完整木板直接放桌面、無墊高；刀刃停在板面 +0～+0.375 mm 可完全切斷，PhysX 擋住刀不穿板。
 - Phase 3 Layer 2 完成（`403870f`）：`cut_events_v1` 唯讀 recorder，物理不變，開銷約 0.8%。
-- 執行中（背景 agent）：Phase 1 切面診斷（cuda:1，`artifacts/wp12/phase1_*`，報告 `docs/reports/WP12_SURFACE_DIAGNOSIS.md`，門檻 `configs/wp12/surface_protocol_v1.json`）；Phase 2b Native 驗收（cuda:0，`artifacts/wp12/workcell_live_*`）。
-- 下一步：Phase 1 完成後先 commit 凍結門檻，再做 Phase 3 Layers 3–6。
+- Phase 1 完成（`b31553d`，[報告](reports/WP12_SURFACE_DIAGNOSIS.md)）：切面不平整主要來自切後刀身楔形推擠的材料變形（P95 0.6–2.0 mm），solver 在參考空間的切口是平的；1 mm 格子造成最多 0.4 s 的階梯；ParticleSurface 加上 0.36–0.77 s 偏移、法向 P95 19–51°、圓角邊、部分切口與薄屑幾乎不畫。G1、G3–G8 PASS；G2 一個 1e-9 m 子項 FAIL（float32），保留。Phase 3 門檻已凍結於 `configs/wp12/surface_protocol_v1.json`。
+- Phase 3 核心完成（`89b289d`）：`cut_aware_surface_v1` Layers 3–6，40 個單元測試，CPU 全套 1290 passed。
+- 執行中（背景 agent）：Phase 2b Native 驗收（cuda:0，`artifacts/wp12/workcell_live_*`）；Phase 3 S0–S9 量測（cuda:1，`artifacts/wp12/phase3_s*`，報告 `docs/reports/WP12_SURFACE_RECONSTRUCTION.md`）；Phase 4a law 8 失敗根因診斷（cuda:1，`artifacts/wp12/phase4a_*`，報告 `docs/reports/WP12_CUTTING_PHYSICS.md`）。
+- 下一步：2b 完成後把 cut-aware surface 接進 live／Native（USD、metadata、效能）；4a 結果決定是否做 law 9。
 - 事件紀錄：2026-10-30 23:26 KST，`artifacts/wp11/phaseE/` 下的 `physics_state.npz`（約 18 GB）被刪除以釋放磁碟，留下清單 `artifacts/wp11/phaseE/DELETED_NPZ_20261030.txt`；三個 WP-12 agent 都表示不是自己刪的，來源不明。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只能比 verdict 與指標，不能逐粒子比。已要求所有 agent 只刪自己建立的輸出。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
