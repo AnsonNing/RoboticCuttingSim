@@ -13,7 +13,7 @@ WP-11 frozen results, task identities and all historical evidence. Every new
 law, surface profile, workcell profile and evaluation protocol is versioned
 and opt-in. Material parameters remain provisional and uncalibrated.
 
-**Effort:** all work at high (orchestrator, `rcs-impl`, `rcs-review`), except Phase 4 decisions, root-cause analysis, law-9 design, acceptance verdicts, orientation envelope and resolution-study conclusions, which run at xhigh (`rcs-xhigh`, or `rcs-review` launched with effort xhigh) per the user's 2026-10-31 instruction; Phase 4 implementation and runs stay with `rcs-impl` at high. The Phase 4a root-cause draft and its "law 9 for class (a) only" recommendation are reviewed at xhigh before any law-9 implementation.
+**Effort:** all work at high (orchestrator, `rcs-impl`, `rcs-review`), except Phase 4 decisions, root-cause analysis, law-9 design, acceptance verdicts, orientation envelope and resolution-study conclusions, which run at xhigh (`rcs-xhigh`, or `rcs-review` launched with effort xhigh) per the user's 2026-10-31 instruction; Phase 4 implementation and runs stay with `rcs-impl` at high. Per the user's later 2026-10-31 instruction, the same applies to Phase 3 where it is complex: reviews, analysis and decisions about the cut-aware surface (the v2 method, protocol v2 and the Phase 3 gate) run at xhigh; implementation and measurement stay at high. The Phase 4a root-cause draft and its "law 9 for class (a) only" recommendation are reviewed at xhigh before any law-9 implementation.
 **Naming:** the repository does not name the user's separate project
 (`tests/test_repo_naming.py`); future users are called agentic control.
 
