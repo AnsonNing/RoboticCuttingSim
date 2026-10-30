@@ -12,6 +12,25 @@
 | Use the same-instance remote GUI | [Remote interactive viewer](REMOTE_INTERACTIVE_VIEWER.md) |
 | Run or reproduce the three BladeMaster-style demos | [Demo report](reports/BLADEMASTER_DEMOS.md) · [Plan](BLADEMASTER_DEMO_PLAN.md) |
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
+| Use the reusable WP-11 environment (scene + goal configs, policy API, datasets) | [Policy-ready API](POLICY_READY_API.md) · [WP-11 plan](WP11_PLAN.md) |
+
+## WP-11: reusable cutting environment (2026-10-30)
+
+- Plan and acceptance: [WP11_PLAN.md](WP11_PLAN.md). Decisions:
+  - [ADR 0013](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md): `ruler_knife_v2` and the τ/ψ/ρ/μ orientation metrics;
+  - [ADR 0014](adr/0014-scalable-cut-history-sparse-logical-fields.md): `tlmpm_v5` multi-cut history;
+  - [ADR 0015](adr/0015-scene-goal-controller-evaluation-separation.md): scene, goal, controller and evaluation as separate layers, with `goal_eval_v2`;
+  - [ADR 0016](adr/0016-configured-perception-relocation.md): wrist-depth relocation for configured multi-cut plans.
+- Reports:
+  - [Phase A: CI](reports/WP11_PHASE_A_CI.md)
+  - [Phase C: near-horizontal TRIM](reports/WP11_PHASE_C_TRIM.md)
+  - [Phase E round 1](reports/WP11_PHASE_E_ROUND1.md) and [round 2](reports/WP11_PHASE_E_ROUND2.md) (generalization)
+  - [Phase F1: grasp stress](reports/WP11_PHASE_F1_GRASP.md)
+  - [Phase F2/F3: law 8 boundaries and resolution](reports/WP11_PHASE_F_LAW8.md)
+  - [Phase G/H: policy API, profiling, Native reliability](reports/WP11_PHASE_H_PROFILING.md)
+  - [Review negative controls](reports/WP11_REVIEW_NEGATIVE_CONTROLS.md)
+  - [Phase I: final_v4 regression](reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)
+- Evidence lives under [evidence/wp11/](evidence/wp11/) and media under [media/wp11/](media/wp11/).
 
 ## BladeMaster demos (2026-10-29)
 

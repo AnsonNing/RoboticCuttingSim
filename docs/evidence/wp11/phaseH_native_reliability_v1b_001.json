@@ -1,0 +1,1985 @@
+{
+ "schema": "rcs_evidence_v1",
+ "id": "phaseH_native_reliability_v1b_001",
+ "declaration": "configs/wp11/phaseG_reliability_v1b.json",
+ "plan": "configs/wp11/phaseH/native_reliability_trim_v1b_8ep.json",
+ "memory_estimator": {
+  "status": "declared before the run; gating; identical to the v1a / dataset.reliability_report implementation (src/robotic_cutting_sim/dataset.py _slope)",
+  "samples": "one sample per stored episode, taken by scripts/collect_dataset.py after the episode is evaluated, returned home, recorded and exported (episode.json memory_after)",
+  "host_value": "memory_after.host_rss_mib = VmRSS of the collector process from /proc/<pid>/status, MiB",
+  "gpu_value": "memory_after.gpu_used_mib_total = sum over GPUs of nvidia-smi --query-compute-apps used_memory for the collector pid, MiB (this process only; other jobs on the GPU are not counted)",
+  "fit_episodes": "episodes fit_from_episode .. N-1 = 1..7 for the declared 8-episode run (episode 0 is excluded as v1/v1a already allow: one-time kernel compilation, caches and the only Kit open_stage); 7 points",
+  "abscissa": "x = 0, 1, ..., M-1 in episode order over the fitted episodes (unit spacing = one episode); samples that are None are dropped before the fit (as _slope does)",
+  "slope": "numpy.polyfit(x, y, 1)[0]: unweighted ordinary least squares, MiB per episode; no outlier rejection, no smoothing, no alternative estimator gates",
+  "gates": "host slope <= memory.host_rss_slope_max_mib_per_episode (64); GPU slope <= memory.gpu_slope_max_mib_per_episode (32)",
+  "diagnostics_not_gating": "reported alongside, never used for a verdict: Theil-Sen median slope over the same points, the OLS slope over episodes 1..3 only (comparable to the Phase H 4-episode rerun), last-minus-first of the fitted points, and the per-episode deltas"
+ },
+ "run": {
+  "dir": "artifacts/wp11/phaseH/native_reliability_v1b_001",
+  "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+  "git_dirty": false,
+  "command": "scripts/collect_dataset.py --runtime isaac_sim --gpu 0 --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options {\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001} --episode-plan configs/wp11/phaseH/native_reliability_trim_v1b_8ep.json --runtime-profile full_physics_v1 --camera-every 5 --record-every 10 --profile stages --reliability-config configs/wp11/phaseG_reliability_v1b.json --reliability-config configs/wp11/phaseG_reliability_v1a.json --reliability-config configs/wp11/phaseG_reliability_v1.json --out artifacts/wp11/phaseH/native_reliability_v1b_001",
+  "episodes": [
+   {
+    "episode_id": "episode_000",
+    "label": "scripted_measured_seed42",
+    "controller": "scripted",
+    "seed": 42,
+    "verdict": "PASS",
+    "expect": "PASS",
+    "wall_s": 562.3495658320026,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1035,
+    "task_steps": 700,
+    "home_outcome": "PASS",
+    "host_rss_mib_after": 10978.02734375,
+    "gpu_used_mib_after": 6205.0,
+    "reset_wall_s": 11.352142174000619,
+    "items": null,
+    "outcome_status": "PASS",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_000/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5689.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [],
+    "final_codes_sha256": "672c04b1125309f9d170c9932dccb9e8e7ff9516930de2b54c0cab86b0ec6969",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_001",
+    "label": "action_program_seed42",
+    "controller": "action_file",
+    "seed": 42,
+    "verdict": "PASS",
+    "expect": null,
+    "wall_s": 572.1082237860101,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1033,
+    "task_steps": 700,
+    "home_outcome": "PASS",
+    "host_rss_mib_after": 11139.8828125,
+    "gpu_used_mib_after": 6334.0,
+    "reset_wall_s": 7.102650015993277,
+    "items": null,
+    "outcome_status": "PASS",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_001/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5818.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [],
+    "final_codes_sha256": "68c9f55269b11f98ca5673d3d888f5e3ee5e06012e83c489778a29e47b5ec4b7",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_002",
+    "label": "deliberate_fail_stop_after_pre_cut",
+    "controller": "scripted",
+    "seed": 42,
+    "verdict": "FAIL",
+    "expect": "FAIL",
+    "wall_s": 601.6455850230122,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1077,
+    "task_steps": 700,
+    "home_outcome": "FAIL",
+    "host_rss_mib_after": 11214.8359375,
+    "gpu_used_mib_after": 6178.0,
+    "reset_wall_s": 7.3621409210027196,
+    "items": null,
+    "outcome_status": "FAIL",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_002/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5662.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [
+     "measured_path_clearance"
+    ],
+    "final_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_003",
+    "label": "scripted_measured_seed42_repeat",
+    "controller": "scripted",
+    "seed": 42,
+    "verdict": "PASS",
+    "expect": "PASS",
+    "wall_s": 924.3243379119958,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1035,
+    "task_steps": 700,
+    "home_outcome": "PASS",
+    "host_rss_mib_after": 11292.71484375,
+    "gpu_used_mib_after": 6338.0,
+    "reset_wall_s": 7.779001613002038,
+    "items": null,
+    "outcome_status": "PASS",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_003/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5822.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [],
+    "final_codes_sha256": "3bb58cfe6585968ee0fd72e3b005df2cbc82ad956b096d935e8e61c266a277b8",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_004",
+    "label": "scripted_measured_seed42_cycle1",
+    "controller": "scripted",
+    "seed": 42,
+    "verdict": "PASS",
+    "expect": "PASS",
+    "wall_s": 843.7060530229937,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1035,
+    "task_steps": 700,
+    "home_outcome": "PASS",
+    "host_rss_mib_after": 11294.9765625,
+    "gpu_used_mib_after": 6402.0,
+    "reset_wall_s": 8.660523600003216,
+    "items": null,
+    "outcome_status": "PASS",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_004/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5886.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [],
+    "final_codes_sha256": "672c04b1125309f9d170c9932dccb9e8e7ff9516930de2b54c0cab86b0ec6969",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_005",
+    "label": "action_program_seed42_cycle1",
+    "controller": "action_file",
+    "seed": 42,
+    "verdict": "PASS",
+    "expect": null,
+    "wall_s": 805.2365408549958,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1033,
+    "task_steps": 700,
+    "home_outcome": "PASS",
+    "host_rss_mib_after": 11340.0078125,
+    "gpu_used_mib_after": 6402.0,
+    "reset_wall_s": 7.653474807011662,
+    "items": null,
+    "outcome_status": "PASS",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_005/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5886.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [],
+    "final_codes_sha256": "68c9f55269b11f98ca5673d3d888f5e3ee5e06012e83c489778a29e47b5ec4b7",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_006",
+    "label": "deliberate_fail_stop_after_pre_cut_cycle1",
+    "controller": "scripted",
+    "seed": 42,
+    "verdict": "FAIL",
+    "expect": "FAIL",
+    "wall_s": 718.139397972991,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1077,
+    "task_steps": 700,
+    "home_outcome": "FAIL",
+    "host_rss_mib_after": 11426.234375,
+    "gpu_used_mib_after": 6222.0,
+    "reset_wall_s": 7.7831063519988675,
+    "items": null,
+    "outcome_status": "FAIL",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_006/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5706.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [
+     "measured_path_clearance"
+    ],
+    "final_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   },
+   {
+    "episode_id": "episode_007",
+    "label": "scripted_measured_seed42_repeat_cycle1",
+    "controller": "scripted",
+    "seed": 42,
+    "verdict": "PASS",
+    "expect": "PASS",
+    "wall_s": 549.3283147430047,
+    "termination_reason": "TIME_LIMIT",
+    "acceptance_valid": true,
+    "steps_recorded": 1035,
+    "task_steps": 700,
+    "home_outcome": "PASS",
+    "host_rss_mib_after": 11438.91015625,
+    "gpu_used_mib_after": 6302.0,
+    "reset_wall_s": 7.349571632003062,
+    "items": null,
+    "outcome_status": "PASS",
+    "reset_checks": {
+     "tool_pose_world_xyzw": [
+      -0.02808850072324276,
+      2.7789981686510146e-05,
+      0.37693944573402405,
+      0.9999999616871847,
+      -7.696449461749657e-05,
+      -0.0002545118234398531,
+      -7.697939577811952e-05
+     ],
+     "edge_pose_world_xyzw": [
+      -0.0001343157424531817,
+      3.7340883930860404e-05,
+      0.2869252054670526,
+      0.7070523214425298,
+      -0.0002343891523011008,
+      -0.00012554492019184612,
+      -0.7071611867480624
+     ],
+     "q_active": [
+      -0.08747471868991852,
+      -0.34531980752944946,
+      -0.16429652273654938,
+      -2.2757999897003174,
+      -0.059308748692274094,
+      1.933347463607788,
+      0.5642675161361694
+     ],
+     "grasp_reset_status": "PASS_STABLE_GRASP",
+     "tool_linear_speed_m_s": 0.0035728684160858393,
+     "tool_angular_speed_rad_s": 0.14757895469665527,
+     "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "particles": 97044,
+     "labels_clean": true,
+     "material_at_reference_max_m": 0.0
+    },
+    "profile": {
+     "mode": "stages",
+     "path": "episode_007/profile.json"
+    },
+    "gpu_used_mib_after_per_gpu": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5786.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "pid": 2381775,
+    "home_failed_checks": [],
+    "final_codes_sha256": "3bb58cfe6585968ee0fd72e3b005df2cbc82ad956b096d935e8e61c266a277b8",
+    "git": {
+     "git_sha": "a65e71dd995df4948916a2541adc60c846909380",
+     "git_dirty": false
+    }
+   }
+  ],
+  "reliability": {
+   "phaseG_reliability_v1": {
+    "POLICY_READY": false,
+    "failing": [
+     "episode_000:tool_at_rest_after_reset",
+     "episode_001:tool_at_rest_after_reset",
+     "episode_002:tool_at_rest_after_reset",
+     "episode_003:tool_at_rest_after_reset",
+     "episode_004:tool_at_rest_after_reset",
+     "episode_005:tool_at_rest_after_reset",
+     "episode_006:tool_at_rest_after_reset",
+     "episode_007:tool_at_rest_after_reset"
+    ],
+    "cross_episode": {
+     "consecutive_episodes_in_one_process": true,
+     "host_memory_no_leak": true,
+     "gpu_memory_no_leak": true,
+     "same_seed_same_controller_repeatable": true,
+     "failed_episode_stored_and_usable": true
+    },
+    "per_episode_failing": {
+     "episode_000": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_001": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_002": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_003": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_004": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_005": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_006": [
+      "tool_at_rest_after_reset"
+     ],
+     "episode_007": [
+      "tool_at_rest_after_reset"
+     ]
+    },
+    "memory": {
+     "host_rss_mib_after_episode": [
+      10978.02734375,
+      11139.8828125,
+      11214.8359375,
+      11292.71484375,
+      11294.9765625,
+      11340.0078125,
+      11426.234375,
+      11438.91015625
+     ],
+     "gpu_used_mib_after_episode": [
+      6205.0,
+      6334.0,
+      6178.0,
+      6338.0,
+      6402.0,
+      6402.0,
+      6222.0,
+      6302.0
+     ],
+     "host_rss_slope_mib_per_episode": 48.827566964286,
+     "gpu_slope_mib_per_episode": 2.00000000000007,
+     "fit_from_episode": 1
+    },
+    "determinism": [
+     {
+      "episodes": [
+       "episode_000",
+       "episode_003",
+       "episode_004",
+       "episode_007"
+      ],
+      "controller": "scripted",
+      "seed": 42,
+      "final_codes_identical": false,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     },
+     {
+      "episodes": [
+       "episode_001",
+       "episode_005"
+      ],
+      "controller": "action_file",
+      "seed": 42,
+      "final_codes_identical": true,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     },
+     {
+      "episodes": [
+       "episode_002",
+       "episode_006"
+      ],
+      "controller": "scripted",
+      "seed": 42,
+      "final_codes_identical": true,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     }
+    ],
+    "execution_failures": [],
+    "validations": {
+     "episode_000": "PASS",
+     "episode_001": "PASS",
+     "episode_002": "PASS",
+     "episode_003": "PASS",
+     "episode_004": "PASS",
+     "episode_005": "PASS",
+     "episode_006": "PASS",
+     "episode_007": "PASS"
+    },
+    "primary": false,
+    "wall_s": 5599.809371483003
+   },
+   "phaseG_reliability_v1a": {
+    "POLICY_READY": true,
+    "failing": [],
+    "cross_episode": {
+     "consecutive_episodes_in_one_process": true,
+     "host_memory_no_leak": true,
+     "gpu_memory_no_leak": true,
+     "same_seed_same_controller_repeatable": true,
+     "failed_episode_stored_and_usable": true
+    },
+    "per_episode_failing": {
+     "episode_000": [],
+     "episode_001": [],
+     "episode_002": [],
+     "episode_003": [],
+     "episode_004": [],
+     "episode_005": [],
+     "episode_006": [],
+     "episode_007": []
+    },
+    "memory": {
+     "host_rss_mib_after_episode": [
+      10978.02734375,
+      11139.8828125,
+      11214.8359375,
+      11292.71484375,
+      11294.9765625,
+      11340.0078125,
+      11426.234375,
+      11438.91015625
+     ],
+     "gpu_used_mib_after_episode": [
+      6205.0,
+      6334.0,
+      6178.0,
+      6338.0,
+      6402.0,
+      6402.0,
+      6222.0,
+      6302.0
+     ],
+     "host_rss_slope_mib_per_episode": 48.827566964286,
+     "gpu_slope_mib_per_episode": 2.00000000000007,
+     "fit_from_episode": 1
+    },
+    "determinism": [
+     {
+      "episodes": [
+       "episode_000",
+       "episode_003",
+       "episode_004",
+       "episode_007"
+      ],
+      "controller": "scripted",
+      "seed": 42,
+      "final_codes_identical": false,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     },
+     {
+      "episodes": [
+       "episode_001",
+       "episode_005"
+      ],
+      "controller": "action_file",
+      "seed": 42,
+      "final_codes_identical": true,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     },
+     {
+      "episodes": [
+       "episode_002",
+       "episode_006"
+      ],
+      "controller": "scripted",
+      "seed": 42,
+      "final_codes_identical": true,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     }
+    ],
+    "execution_failures": [],
+    "validations": {
+     "episode_000": "PASS",
+     "episode_001": "PASS",
+     "episode_002": "PASS",
+     "episode_003": "PASS",
+     "episode_004": "PASS",
+     "episode_005": "PASS",
+     "episode_006": "PASS",
+     "episode_007": "PASS"
+    },
+    "primary": false,
+    "wall_s": 5599.807531605009
+   },
+   "phaseG_reliability_v1b": {
+    "POLICY_READY": true,
+    "failing": [],
+    "cross_episode": {
+     "consecutive_episodes_in_one_process": true,
+     "host_memory_no_leak": true,
+     "gpu_memory_no_leak": true,
+     "same_seed_same_controller_repeatable": true,
+     "failed_episode_stored_and_usable": true
+    },
+    "per_episode_failing": {
+     "episode_000": [],
+     "episode_001": [],
+     "episode_002": [],
+     "episode_003": [],
+     "episode_004": [],
+     "episode_005": [],
+     "episode_006": [],
+     "episode_007": []
+    },
+    "memory": {
+     "host_rss_mib_after_episode": [
+      10978.02734375,
+      11139.8828125,
+      11214.8359375,
+      11292.71484375,
+      11294.9765625,
+      11340.0078125,
+      11426.234375,
+      11438.91015625
+     ],
+     "gpu_used_mib_after_episode": [
+      6205.0,
+      6334.0,
+      6178.0,
+      6338.0,
+      6402.0,
+      6402.0,
+      6222.0,
+      6302.0
+     ],
+     "host_rss_slope_mib_per_episode": 48.827566964286,
+     "gpu_slope_mib_per_episode": 2.00000000000007,
+     "fit_from_episode": 1
+    },
+    "determinism": [
+     {
+      "episodes": [
+       "episode_000",
+       "episode_003",
+       "episode_004",
+       "episode_007"
+      ],
+      "controller": "scripted",
+      "seed": 42,
+      "final_codes_identical": false,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     },
+     {
+      "episodes": [
+       "episode_001",
+       "episode_005"
+      ],
+      "controller": "action_file",
+      "seed": 42,
+      "final_codes_identical": true,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     },
+     {
+      "episodes": [
+       "episode_002",
+       "episode_006"
+      ],
+      "controller": "scripted",
+      "seed": 42,
+      "final_codes_identical": true,
+      "verdict_identical": true,
+      "rule": "verdict",
+      "pass": true
+     }
+    ],
+    "execution_failures": [],
+    "validations": {
+     "episode_000": "PASS",
+     "episode_001": "PASS",
+     "episode_002": "PASS",
+     "episode_003": "PASS",
+     "episode_004": "PASS",
+     "episode_005": "PASS",
+     "episode_006": "PASS",
+     "episode_007": "PASS"
+    },
+    "primary": true,
+    "wall_s": 5599.804450826006
+   }
+  },
+  "reliability_phaseG_reliability_v1": {
+   "version": "phaseG_reliability_v1",
+   "POLICY_READY": false,
+   "failing": [
+    "episode_000:tool_at_rest_after_reset",
+    "episode_001:tool_at_rest_after_reset",
+    "episode_002:tool_at_rest_after_reset",
+    "episode_003:tool_at_rest_after_reset",
+    "episode_004:tool_at_rest_after_reset",
+    "episode_005:tool_at_rest_after_reset",
+    "episode_006:tool_at_rest_after_reset",
+    "episode_007:tool_at_rest_after_reset"
+   ],
+   "cross_episode": {
+    "consecutive_episodes_in_one_process": true,
+    "host_memory_no_leak": true,
+    "gpu_memory_no_leak": true,
+    "same_seed_same_controller_repeatable": true,
+    "failed_episode_stored_and_usable": true
+   },
+   "memory": {
+    "host_rss_mib_after_episode": [
+     10978.02734375,
+     11139.8828125,
+     11214.8359375,
+     11292.71484375,
+     11294.9765625,
+     11340.0078125,
+     11426.234375,
+     11438.91015625
+    ],
+    "gpu_used_mib_after_episode": [
+     6205.0,
+     6334.0,
+     6178.0,
+     6338.0,
+     6402.0,
+     6402.0,
+     6222.0,
+     6302.0
+    ],
+    "host_rss_slope_mib_per_episode": 48.827566964286,
+    "gpu_slope_mib_per_episode": 2.00000000000007,
+    "fit_from_episode": 1
+   },
+   "determinism": [
+    {
+     "episodes": [
+      "episode_000",
+      "episode_003",
+      "episode_004",
+      "episode_007"
+     ],
+     "controller": "scripted",
+     "seed": 42,
+     "final_codes_identical": false,
+     "verdict_identical": true,
+     "rule": "verdict",
+     "pass": true
+    },
+    {
+     "episodes": [
+      "episode_001",
+      "episode_005"
+     ],
+     "controller": "action_file",
+     "seed": 42,
+     "final_codes_identical": true,
+     "verdict_identical": true,
+     "rule": "verdict",
+     "pass": true
+    },
+    {
+     "episodes": [
+      "episode_002",
+      "episode_006"
+     ],
+     "controller": "scripted",
+     "seed": 42,
+     "final_codes_identical": true,
+     "verdict_identical": true,
+     "rule": "verdict",
+     "pass": true
+    }
+   ],
+   "wall_s": 5599.809371483003
+  },
+  "reliability_phaseG_reliability_v1a": {
+   "version": "phaseG_reliability_v1a",
+   "POLICY_READY": true,
+   "failing": [],
+   "cross_episode": {
+    "consecutive_episodes_in_one_process": true,
+    "host_memory_no_leak": true,
+    "gpu_memory_no_leak": true,
+    "same_seed_same_controller_repeatable": true,
+    "failed_episode_stored_and_usable": true
+   },
+   "memory": {
+    "host_rss_mib_after_episode": [
+     10978.02734375,
+     11139.8828125,
+     11214.8359375,
+     11292.71484375,
+     11294.9765625,
+     11340.0078125,
+     11426.234375,
+     11438.91015625
+    ],
+    "gpu_used_mib_after_episode": [
+     6205.0,
+     6334.0,
+     6178.0,
+     6338.0,
+     6402.0,
+     6402.0,
+     6222.0,
+     6302.0
+    ],
+    "host_rss_slope_mib_per_episode": 48.827566964286,
+    "gpu_slope_mib_per_episode": 2.00000000000007,
+    "fit_from_episode": 1
+   },
+   "determinism": [
+    {
+     "episodes": [
+      "episode_000",
+      "episode_003",
+      "episode_004",
+      "episode_007"
+     ],
+     "controller": "scripted",
+     "seed": 42,
+     "final_codes_identical": false,
+     "verdict_identical": true,
+     "rule": "verdict",
+     "pass": true
+    },
+    {
+     "episodes": [
+      "episode_001",
+      "episode_005"
+     ],
+     "controller": "action_file",
+     "seed": 42,
+     "final_codes_identical": true,
+     "verdict_identical": true,
+     "rule": "verdict",
+     "pass": true
+    },
+    {
+     "episodes": [
+      "episode_002",
+      "episode_006"
+     ],
+     "controller": "scripted",
+     "seed": 42,
+     "final_codes_identical": true,
+     "verdict_identical": true,
+     "rule": "verdict",
+     "pass": true
+    }
+   ],
+   "wall_s": 5599.807531605009
+  },
+  "reset_setup_differences_vs_reset_0": [
+   {
+    "reset": "reset_setup_01",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   },
+   {
+    "reset": "reset_setup_02",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   },
+   {
+    "reset": "reset_setup_03",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   },
+   {
+    "reset": "reset_setup_04",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   },
+   {
+    "reset": "reset_setup_05",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   },
+   {
+    "reset": "reset_setup_06",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   },
+   {
+    "reset": "reset_setup_07",
+    "differing_keys": [
+     "/native_step_origin"
+    ]
+   }
+  ],
+  "reset_repeat_vs_episode_0": [
+   {
+    "episode_id": "episode_001",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   },
+   {
+    "episode_id": "episode_002",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   },
+   {
+    "episode_id": "episode_003",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   },
+   {
+    "episode_id": "episode_004",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   },
+   {
+    "episode_id": "episode_005",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   },
+   {
+    "episode_id": "episode_006",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   },
+   {
+    "episode_id": "episode_007",
+    "tool_pose_world_xyzw_identical": true,
+    "edge_pose_world_xyzw_identical": true,
+    "q_active_identical": true,
+    "material_codes_sha256_identical": true,
+    "tool_linear_speed_m_s_identical": true,
+    "tool_angular_speed_rad_s_identical": true
+   }
+  ],
+  "memory": {
+   "host_rss": {
+    "after_episode_mib": [
+     10978.02734375,
+     11139.8828125,
+     11214.8359375,
+     11292.71484375,
+     11294.9765625,
+     11340.0078125,
+     11426.234375,
+     11438.91015625
+    ],
+    "fit_episodes": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "declared_ols_slope_mib_per_episode": 48.827566964286,
+    "diagnostic_theil_sen_slope_mib_per_episode": 49.451171875,
+    "diagnostic_ols_slope_episodes_1_3_mib_per_episode": 76.41601562500264,
+    "diagnostic_last_minus_first_fitted_mib": 299.02734375,
+    "diagnostic_deltas_mib": [
+     161.85546875,
+     74.953125,
+     77.87890625,
+     2.26171875,
+     45.03125,
+     86.2265625,
+     12.67578125
+    ]
+   },
+   "gpu_process": {
+    "after_episode_mib": [
+     6205.0,
+     6334.0,
+     6178.0,
+     6338.0,
+     6402.0,
+     6402.0,
+     6222.0,
+     6302.0
+    ],
+    "fit_episodes": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "declared_ols_slope_mib_per_episode": 2.00000000000007,
+    "diagnostic_theil_sen_slope_mib_per_episode": 2.0,
+    "diagnostic_ols_slope_episodes_1_3_mib_per_episode": 2.00000000000003,
+    "diagnostic_last_minus_first_fitted_mib": -32.0,
+    "diagnostic_deltas_mib": [
+     129.0,
+     -156.0,
+     160.0,
+     64.0,
+     0.0,
+     -180.0,
+     80.0
+    ]
+   }
+  },
+  "v1a_v1b_scoring_identical": true,
+  "execution_failure_files": [],
+  "read_dataset": {
+   "report": "artifacts/wp11/phaseH/native_reliability_v1b_001_read_dataset.json",
+   "status": "PASS",
+   "episodes": {
+    "episode_000": "PASS",
+    "episode_001": "PASS",
+    "episode_002": "PASS",
+    "episode_003": "PASS",
+    "episode_004": "PASS",
+    "episode_005": "PASS",
+    "episode_006": "PASS",
+    "episode_007": "PASS"
+   }
+  },
+  "grasp_trace_gzip_sha256": "artifacts/wp11/phaseH/native_reliability_v1b_001_grasp_trace_sha256_before_gzip.txt"
+ },
+ "native_policy_ready": {
+  "verdict_source": "phaseG_reliability_v1b POLICY_READY of native_reliability_v1b_001",
+  "POLICY_READY": true,
+  "failing": []
+ },
+ "recycle_mitigation": {
+  "declaration": "configs/wp11/phaseH/native_recycle_mitigation_v1.json",
+  "run": {
+   "dir": "artifacts/wp11/phaseH/native_recycle_mitigation_001",
+   "git_sha": "4925c608a946e02ff6dfb995fe5bdf266abc10cb",
+   "git_dirty": false,
+   "command": "scripts/collect_dataset.py --runtime isaac_sim --gpu 0 --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options {\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001} --episode-plan configs/wp11/phaseG/native_reliability_trim_v1.json --runtime-profile full_physics_v1 --camera-every 5 --record-every 10 --profile stages --recycle-every 2 --reliability-config configs/wp11/phaseG_reliability_v1b.json --reliability-config configs/wp11/phaseG_reliability_v1a.json --reliability-config configs/wp11/phaseG_reliability_v1.json --out artifacts/wp11/phaseH/native_recycle_mitigation_001",
+   "episodes": [
+    {
+     "episode_id": "episode_000",
+     "label": "scripted_measured_seed42",
+     "controller": "scripted",
+     "seed": 42,
+     "verdict": "PASS",
+     "expect": "PASS",
+     "wall_s": 676.3053166289901,
+     "termination_reason": "TIME_LIMIT",
+     "acceptance_valid": true,
+     "steps_recorded": 1035,
+     "task_steps": 700,
+     "home_outcome": "PASS",
+     "host_rss_mib_after": 10941.6171875,
+     "gpu_used_mib_after": 6205.0,
+     "reset_wall_s": 11.388637358992128,
+     "items": null,
+     "outcome_status": "PASS",
+     "reset_checks": {
+      "tool_pose_world_xyzw": [
+       -0.02808850072324276,
+       2.7789981686510146e-05,
+       0.37693944573402405,
+       0.9999999616871847,
+       -7.696449461749657e-05,
+       -0.0002545118234398531,
+       -7.697939577811952e-05
+      ],
+      "edge_pose_world_xyzw": [
+       -0.0001343157424531817,
+       3.7340883930860404e-05,
+       0.2869252054670526,
+       0.7070523214425298,
+       -0.0002343891523011008,
+       -0.00012554492019184612,
+       -0.7071611867480624
+      ],
+      "q_active": [
+       -0.08747471868991852,
+       -0.34531980752944946,
+       -0.16429652273654938,
+       -2.2757999897003174,
+       -0.059308748692274094,
+       1.933347463607788,
+       0.5642675161361694
+      ],
+      "grasp_reset_status": "PASS_STABLE_GRASP",
+      "tool_linear_speed_m_s": 0.0035728684160858393,
+      "tool_angular_speed_rad_s": 0.14757895469665527,
+      "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+      "particles": 97044,
+      "labels_clean": true,
+      "material_at_reference_max_m": 0.0
+     },
+     "profile": {
+      "mode": "stages",
+      "path": "episode_000/profile.json"
+     },
+     "gpu_used_mib_after_per_gpu": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5689.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+     },
+     "pid": 3166947,
+     "home_failed_checks": [],
+     "final_codes_sha256": "cd4631b342bedbe29dd57f30ebca56002a9978ebc15ac65fdd8bce3b53266d87",
+     "git": {
+      "git_sha": "4925c608a946e02ff6dfb995fe5bdf266abc10cb",
+      "git_dirty": false
+     },
+     "recycle": {
+      "block": 0,
+      "every": 2,
+      "block_episode": 0,
+      "pid": 3166947,
+      "runtime_dir": "runtime_block_000"
+     }
+    },
+    {
+     "episode_id": "episode_001",
+     "label": "action_program_seed42",
+     "controller": "action_file",
+     "seed": 42,
+     "verdict": "PASS",
+     "expect": null,
+     "wall_s": 785.5738926960039,
+     "termination_reason": "TIME_LIMIT",
+     "acceptance_valid": true,
+     "steps_recorded": 1033,
+     "task_steps": 700,
+     "home_outcome": "PASS",
+     "host_rss_mib_after": 11071.64453125,
+     "gpu_used_mib_after": 6314.0,
+     "reset_wall_s": 6.973750158998882,
+     "items": null,
+     "outcome_status": "PASS",
+     "reset_checks": {
+      "tool_pose_world_xyzw": [
+       -0.02808850072324276,
+       2.7789981686510146e-05,
+       0.37693944573402405,
+       0.9999999616871847,
+       -7.696449461749657e-05,
+       -0.0002545118234398531,
+       -7.697939577811952e-05
+      ],
+      "edge_pose_world_xyzw": [
+       -0.0001343157424531817,
+       3.7340883930860404e-05,
+       0.2869252054670526,
+       0.7070523214425298,
+       -0.0002343891523011008,
+       -0.00012554492019184612,
+       -0.7071611867480624
+      ],
+      "q_active": [
+       -0.08747471868991852,
+       -0.34531980752944946,
+       -0.16429652273654938,
+       -2.2757999897003174,
+       -0.059308748692274094,
+       1.933347463607788,
+       0.5642675161361694
+      ],
+      "grasp_reset_status": "PASS_STABLE_GRASP",
+      "tool_linear_speed_m_s": 0.0035728684160858393,
+      "tool_angular_speed_rad_s": 0.14757895469665527,
+      "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+      "particles": 97044,
+      "labels_clean": true,
+      "material_at_reference_max_m": 0.0
+     },
+     "profile": {
+      "mode": "stages",
+      "path": "episode_001/profile.json"
+     },
+     "gpu_used_mib_after_per_gpu": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5798.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+     },
+     "pid": 3166947,
+     "home_failed_checks": [],
+     "final_codes_sha256": "6147c62018f0209d5184590046dee2736d69eac23b670465e8698e71d49ee7c6",
+     "git": {
+      "git_sha": "4925c608a946e02ff6dfb995fe5bdf266abc10cb",
+      "git_dirty": false
+     },
+     "recycle": {
+      "block": 0,
+      "every": 2,
+      "block_episode": 1,
+      "pid": 3166947,
+      "runtime_dir": "runtime_block_000"
+     }
+    },
+    {
+     "episode_id": "episode_002",
+     "label": "deliberate_fail_stop_after_pre_cut",
+     "controller": "scripted",
+     "seed": 42,
+     "verdict": "FAIL",
+     "expect": "FAIL",
+     "wall_s": 544.5201621699962,
+     "termination_reason": "TIME_LIMIT",
+     "acceptance_valid": true,
+     "steps_recorded": 1077,
+     "task_steps": 700,
+     "home_outcome": "FAIL",
+     "host_rss_mib_after": 11018.92578125,
+     "gpu_used_mib_after": 6010.0,
+     "reset_wall_s": 12.219997402004083,
+     "items": null,
+     "outcome_status": "FAIL",
+     "reset_checks": {
+      "tool_pose_world_xyzw": [
+       -0.02808850072324276,
+       2.7789981686510146e-05,
+       0.37693944573402405,
+       0.9999999616871847,
+       -7.696449461749657e-05,
+       -0.0002545118234398531,
+       -7.697939577811952e-05
+      ],
+      "edge_pose_world_xyzw": [
+       -0.0001343157424531817,
+       3.7340883930860404e-05,
+       0.2869252054670526,
+       0.7070523214425298,
+       -0.0002343891523011008,
+       -0.00012554492019184612,
+       -0.7071611867480624
+      ],
+      "q_active": [
+       -0.08747471868991852,
+       -0.34531980752944946,
+       -0.16429652273654938,
+       -2.2757999897003174,
+       -0.059308748692274094,
+       1.933347463607788,
+       0.5642675161361694
+      ],
+      "grasp_reset_status": "PASS_STABLE_GRASP",
+      "tool_linear_speed_m_s": 0.0035728684160858393,
+      "tool_angular_speed_rad_s": 0.14757895469665527,
+      "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+      "particles": 97044,
+      "labels_clean": true,
+      "material_at_reference_max_m": 0.0
+     },
+     "profile": {
+      "mode": "stages",
+      "path": "episode_002/profile.json"
+     },
+     "gpu_used_mib_after_per_gpu": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5494.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+     },
+     "pid": 3322700,
+     "home_failed_checks": [
+      "measured_path_clearance"
+     ],
+     "final_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+     "git": {
+      "git_sha": "4925c608a946e02ff6dfb995fe5bdf266abc10cb",
+      "git_dirty": false
+     },
+     "recycle": {
+      "block": 1,
+      "every": 2,
+      "block_episode": 0,
+      "pid": 3322700,
+      "runtime_dir": "runtime_block_001"
+     }
+    },
+    {
+     "episode_id": "episode_003",
+     "label": "scripted_measured_seed42_repeat",
+     "controller": "scripted",
+     "seed": 42,
+     "verdict": "PASS",
+     "expect": "PASS",
+     "wall_s": 548.7808867300046,
+     "termination_reason": "TIME_LIMIT",
+     "acceptance_valid": true,
+     "steps_recorded": 1035,
+     "task_steps": 700,
+     "home_outcome": "PASS",
+     "host_rss_mib_after": 11209.328125,
+     "gpu_used_mib_after": 6338.0,
+     "reset_wall_s": 7.041907384002116,
+     "items": null,
+     "outcome_status": "PASS",
+     "reset_checks": {
+      "tool_pose_world_xyzw": [
+       -0.02808850072324276,
+       2.7789981686510146e-05,
+       0.37693944573402405,
+       0.9999999616871847,
+       -7.696449461749657e-05,
+       -0.0002545118234398531,
+       -7.697939577811952e-05
+      ],
+      "edge_pose_world_xyzw": [
+       -0.0001343157424531817,
+       3.7340883930860404e-05,
+       0.2869252054670526,
+       0.7070523214425298,
+       -0.0002343891523011008,
+       -0.00012554492019184612,
+       -0.7071611867480624
+      ],
+      "q_active": [
+       -0.08747471868991852,
+       -0.34531980752944946,
+       -0.16429652273654938,
+       -2.2757999897003174,
+       -0.059308748692274094,
+       1.933347463607788,
+       0.5642675161361694
+      ],
+      "grasp_reset_status": "PASS_STABLE_GRASP",
+      "tool_linear_speed_m_s": 0.0035728684160858393,
+      "tool_angular_speed_rad_s": 0.14757895469665527,
+      "material_codes_sha256": "62ea710d1a1c7462e87c1de0166e363f75ae410954b5e778454a1de99d5b766d",
+      "particles": 97044,
+      "labels_clean": true,
+      "material_at_reference_max_m": 0.0
+     },
+     "profile": {
+      "mode": "stages",
+      "path": "episode_003/profile.json"
+     },
+     "gpu_used_mib_after_per_gpu": {
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 5822.0,
+      "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+     },
+     "pid": 3322700,
+     "home_failed_checks": [],
+     "final_codes_sha256": "3bb58cfe6585968ee0fd72e3b005df2cbc82ad956b096d935e8e61c266a277b8",
+     "git": {
+      "git_sha": "4925c608a946e02ff6dfb995fe5bdf266abc10cb",
+      "git_dirty": false
+     },
+     "recycle": {
+      "block": 1,
+      "every": 2,
+      "block_episode": 1,
+      "pid": 3322700,
+      "runtime_dir": "runtime_block_001"
+     }
+    }
+   ],
+   "reliability": {
+    "phaseG_reliability_v1": {
+     "POLICY_READY": false,
+     "failing": [
+      "consecutive_episodes_in_one_process",
+      "failed_episode_stored_and_usable",
+      "host_memory_no_leak"
+     ],
+     "cross_episode": {
+      "consecutive_episodes_in_one_process": false,
+      "host_memory_no_leak": false,
+      "gpu_memory_no_leak": true,
+      "same_seed_same_controller_repeatable": true,
+      "failed_episode_stored_and_usable": false
+     },
+     "per_episode_failing": {},
+     "memory": {
+      "host_rss_mib_after_episode": [],
+      "gpu_used_mib_after_episode": [],
+      "host_rss_slope_mib_per_episode": null,
+      "gpu_slope_mib_per_episode": null,
+      "fit_from_episode": 1
+     },
+     "determinism": [],
+     "execution_failures": [
+      {
+       "episode_index": 0,
+       "label": "scripted_measured_seed42",
+       "error": "recycle block 0 child exited with code 0 before episode 0 was stored"
+      },
+      {
+       "episode_index": 1,
+       "label": "action_program_seed42",
+       "error": "recycle block 0 child exited with code 0 before episode 1 was stored"
+      },
+      {
+       "episode_index": 2,
+       "label": "deliberate_fail_stop_after_pre_cut",
+       "error": "recycle block 1 child exited with code 0 before episode 2 was stored"
+      },
+      {
+       "episode_index": 3,
+       "label": "scripted_measured_seed42_repeat",
+       "error": "recycle block 1 child exited with code 0 before episode 3 was stored"
+      }
+     ],
+     "validations": {},
+     "primary": false,
+     "wall_s": 2567.557176023998
+    },
+    "phaseG_reliability_v1a": {
+     "POLICY_READY": false,
+     "failing": [
+      "consecutive_episodes_in_one_process",
+      "failed_episode_stored_and_usable",
+      "host_memory_no_leak"
+     ],
+     "cross_episode": {
+      "consecutive_episodes_in_one_process": false,
+      "host_memory_no_leak": false,
+      "gpu_memory_no_leak": true,
+      "same_seed_same_controller_repeatable": true,
+      "failed_episode_stored_and_usable": false
+     },
+     "per_episode_failing": {},
+     "memory": {
+      "host_rss_mib_after_episode": [],
+      "gpu_used_mib_after_episode": [],
+      "host_rss_slope_mib_per_episode": null,
+      "gpu_slope_mib_per_episode": null,
+      "fit_from_episode": 1
+     },
+     "determinism": [],
+     "execution_failures": [
+      {
+       "episode_index": 0,
+       "label": "scripted_measured_seed42",
+       "error": "recycle block 0 child exited with code 0 before episode 0 was stored"
+      },
+      {
+       "episode_index": 1,
+       "label": "action_program_seed42",
+       "error": "recycle block 0 child exited with code 0 before episode 1 was stored"
+      },
+      {
+       "episode_index": 2,
+       "label": "deliberate_fail_stop_after_pre_cut",
+       "error": "recycle block 1 child exited with code 0 before episode 2 was stored"
+      },
+      {
+       "episode_index": 3,
+       "label": "scripted_measured_seed42_repeat",
+       "error": "recycle block 1 child exited with code 0 before episode 3 was stored"
+      }
+     ],
+     "validations": {},
+     "primary": false,
+     "wall_s": 2567.557034240992
+    },
+    "phaseG_reliability_v1b": {
+     "POLICY_READY": false,
+     "failing": [
+      "consecutive_episodes_in_one_process",
+      "failed_episode_stored_and_usable",
+      "host_memory_no_leak"
+     ],
+     "cross_episode": {
+      "consecutive_episodes_in_one_process": false,
+      "host_memory_no_leak": false,
+      "gpu_memory_no_leak": true,
+      "same_seed_same_controller_repeatable": true,
+      "failed_episode_stored_and_usable": false
+     },
+     "per_episode_failing": {},
+     "memory": {
+      "host_rss_mib_after_episode": [],
+      "gpu_used_mib_after_episode": [],
+      "host_rss_slope_mib_per_episode": null,
+      "gpu_slope_mib_per_episode": null,
+      "fit_from_episode": 1
+     },
+     "determinism": [],
+     "execution_failures": [
+      {
+       "episode_index": 0,
+       "label": "scripted_measured_seed42",
+       "error": "recycle block 0 child exited with code 0 before episode 0 was stored"
+      },
+      {
+       "episode_index": 1,
+       "label": "action_program_seed42",
+       "error": "recycle block 0 child exited with code 0 before episode 1 was stored"
+      },
+      {
+       "episode_index": 2,
+       "label": "deliberate_fail_stop_after_pre_cut",
+       "error": "recycle block 1 child exited with code 0 before episode 2 was stored"
+      },
+      {
+       "episode_index": 3,
+       "label": "scripted_measured_seed42_repeat",
+       "error": "recycle block 1 child exited with code 0 before episode 3 was stored"
+      }
+     ],
+     "validations": {},
+     "primary": true,
+     "wall_s": 2567.5566447460005
+    }
+   },
+   "reliability_phaseG_reliability_v1": {
+    "version": "phaseG_reliability_v1",
+    "POLICY_READY": false,
+    "failing": [
+     "consecutive_episodes_in_one_process",
+     "failed_episode_stored_and_usable",
+     "host_memory_no_leak"
+    ],
+    "cross_episode": {
+     "consecutive_episodes_in_one_process": false,
+     "host_memory_no_leak": false,
+     "gpu_memory_no_leak": true,
+     "same_seed_same_controller_repeatable": true,
+     "failed_episode_stored_and_usable": false
+    },
+    "memory": {
+     "host_rss_mib_after_episode": [],
+     "gpu_used_mib_after_episode": [],
+     "host_rss_slope_mib_per_episode": null,
+     "gpu_slope_mib_per_episode": null,
+     "fit_from_episode": 1
+    },
+    "determinism": [],
+    "wall_s": 2567.557176023998
+   },
+   "reliability_phaseG_reliability_v1a": {
+    "version": "phaseG_reliability_v1a",
+    "POLICY_READY": false,
+    "failing": [
+     "consecutive_episodes_in_one_process",
+     "failed_episode_stored_and_usable",
+     "host_memory_no_leak"
+    ],
+    "cross_episode": {
+     "consecutive_episodes_in_one_process": false,
+     "host_memory_no_leak": false,
+     "gpu_memory_no_leak": true,
+     "same_seed_same_controller_repeatable": true,
+     "failed_episode_stored_and_usable": false
+    },
+    "memory": {
+     "host_rss_mib_after_episode": [],
+     "gpu_used_mib_after_episode": [],
+     "host_rss_slope_mib_per_episode": null,
+     "gpu_slope_mib_per_episode": null,
+     "fit_from_episode": 1
+    },
+    "determinism": [],
+    "wall_s": 2567.557034240992
+   },
+   "reset_repeat_vs_episode_0": [
+    {
+     "episode_id": "episode_001",
+     "tool_pose_world_xyzw_identical": true,
+     "edge_pose_world_xyzw_identical": true,
+     "q_active_identical": true,
+     "material_codes_sha256_identical": true,
+     "tool_linear_speed_m_s_identical": true,
+     "tool_angular_speed_rad_s_identical": true
+    },
+    {
+     "episode_id": "episode_002",
+     "tool_pose_world_xyzw_identical": true,
+     "edge_pose_world_xyzw_identical": true,
+     "q_active_identical": true,
+     "material_codes_sha256_identical": true,
+     "tool_linear_speed_m_s_identical": true,
+     "tool_angular_speed_rad_s_identical": true
+    },
+    {
+     "episode_id": "episode_003",
+     "tool_pose_world_xyzw_identical": true,
+     "edge_pose_world_xyzw_identical": true,
+     "q_active_identical": true,
+     "material_codes_sha256_identical": true,
+     "tool_linear_speed_m_s_identical": true,
+     "tool_angular_speed_rad_s_identical": true
+    }
+   ],
+   "memory": {
+    "host_rss": {
+     "after_episode_mib": [
+      10941.6171875,
+      11071.64453125,
+      11018.92578125,
+      11209.328125
+     ],
+     "fit_episodes": [
+      1,
+      2,
+      3
+     ],
+     "declared_ols_slope_mib_per_episode": 68.84179687500057,
+     "diagnostic_theil_sen_slope_mib_per_episode": 68.841796875,
+     "diagnostic_ols_slope_episodes_1_3_mib_per_episode": 68.84179687500057,
+     "diagnostic_last_minus_first_fitted_mib": 137.68359375,
+     "diagnostic_deltas_mib": [
+      130.02734375,
+      -52.71875,
+      190.40234375
+     ]
+    },
+    "gpu_process": {
+     "after_episode_mib": [
+      6205.0,
+      6314.0,
+      6010.0,
+      6338.0
+     ],
+     "fit_episodes": [
+      1,
+      2,
+      3
+     ],
+     "declared_ols_slope_mib_per_episode": 12.000000000001023,
+     "diagnostic_theil_sen_slope_mib_per_episode": 12.0,
+     "diagnostic_ols_slope_episodes_1_3_mib_per_episode": 12.000000000001023,
+     "diagnostic_last_minus_first_fitted_mib": 24.0,
+     "diagnostic_deltas_mib": [
+      109.0,
+      -304.0,
+      328.0
+     ]
+    }
+   },
+   "v1a_v1b_scoring_identical": true,
+   "execution_failure_files": [
+    "episode_000_failure.json",
+    "episode_001_failure.json",
+    "episode_002_failure.json",
+    "episode_003_failure.json"
+   ],
+   "read_dataset": {
+    "report": "artifacts/wp11/phaseH/native_recycle_mitigation_001_read_dataset.json",
+    "status": "PASS",
+    "episodes": {}
+   },
+   "grasp_trace_gzip_sha256": "artifacts/wp11/phaseH/native_recycle_mitigation_001_grasp_trace_sha256_before_gzip.txt",
+   "process_recycling": {
+    "blocks": []
+   }
+  },
+  "criteria": {
+   "declaration": "phaseH_native_recycle_mitigation_v1",
+   "checks": {
+    "1_both_children_exit_0_distinct_pids": false,
+    "2_continuous_ids_seeds_index_reader_pass": false,
+    "3_every_per_episode_v1b_check_passes": false,
+    "4_block1_first_rss_within_64_mib_of_block0_first": false
+   },
+   "block_pids": [
+    null,
+    null
+   ],
+   "block_returncodes": [
+    0,
+    0
+   ],
+   "first_episode_rss_delta_mib": 77.30859375,
+   "verdict": "MITIGATION_NOT_DEMONSTRATED",
+   "failing": [
+    "1_both_children_exit_0_distinct_pids",
+    "2_continuous_ids_seeds_index_reader_pass",
+    "3_every_per_episode_v1b_check_passes",
+    "4_block1_first_rss_within_64_mib_of_block0_first"
+   ],
+   "not_claimed": "no leak absence, no POLICY_READY verdict, no statement about runs longer than 4 episodes"
+  },
+  "diagnostic_on_disk_validation": {
+   "scope": "diagnostic only; the declared criteria use the index as written",
+   "episodes": [
+    {
+     "episode_id": "episode_000",
+     "index_status": "FAIL_EXECUTION",
+     "export_sha256_matches_episode_json": true,
+     "validation_with_export_sha_from_episode_json": "PASS",
+     "failing": [],
+     "verdict": "PASS",
+     "home": "PASS",
+     "recycle": {
+      "block": 0,
+      "every": 2,
+      "block_episode": 0,
+      "pid": 3166947,
+      "runtime_dir": "runtime_block_000"
+     }
+    },
+    {
+     "episode_id": "episode_001",
+     "index_status": "FAIL_EXECUTION",
+     "export_sha256_matches_episode_json": true,
+     "validation_with_export_sha_from_episode_json": "PASS",
+     "failing": [],
+     "verdict": "PASS",
+     "home": "PASS",
+     "recycle": {
+      "block": 0,
+      "every": 2,
+      "block_episode": 1,
+      "pid": 3166947,
+      "runtime_dir": "runtime_block_000"
+     }
+    },
+    {
+     "episode_id": "episode_002",
+     "index_status": "FAIL_EXECUTION",
+     "export_sha256_matches_episode_json": true,
+     "validation_with_export_sha_from_episode_json": "PASS",
+     "failing": [],
+     "verdict": "FAIL",
+     "home": "FAIL",
+     "recycle": {
+      "block": 1,
+      "every": 2,
+      "block_episode": 0,
+      "pid": 3322700,
+      "runtime_dir": "runtime_block_001"
+     }
+    },
+    {
+     "episode_id": "episode_003",
+     "index_status": "FAIL_EXECUTION",
+     "export_sha256_matches_episode_json": true,
+     "validation_with_export_sha_from_episode_json": "PASS",
+     "failing": [],
+     "verdict": "PASS",
+     "home": "PASS",
+     "recycle": {
+      "block": 1,
+      "every": 2,
+      "block_episode": 1,
+      "pid": 3322700,
+      "runtime_dir": "runtime_block_001"
+     }
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "bar_slotted_board_4slots",
+  "description": "Supplement Test B workpiece: the 160 x 30 x 20 mm bar on a BladeMaster board (blademaster_workcell_v1 board + riser semantics, +50 mm) with four 8 mm relief slots at x = -48, -16, +16, +48 mm, i.e. up to five supported 32 mm pieces. Several slices need more than two digits, so the scene declares tlmpm_v5 (ADR 0014).",
+  "workpiece": {
+    "base_box_m": {"length_m": 0.16, "width_m": 0.03, "height_m": 0.02},
+    "protrusions": [],
+    "world_pose": {"translation_m": [0.0, 0.0, 0.05], "yaw_deg": 0.0},
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {
+    "kind": "slotted_board",
+    "x_range_m": [-0.09, 0.09],
+    "half_width_y_m": 0.021,
+    "thickness_m": 0.01,
+    "slots": [{"x_m": -0.048, "width_m": 0.008}, {"x_m": -0.016, "width_m": 0.008},
+              {"x_m": 0.016, "width_m": 0.008}, {"x_m": 0.048, "width_m": 0.008}],
+    "workcell": {"from_scenario": "blademaster_workcell_v1"}
+  },
+  "tool": {"profile_id": "ruler_knife_v1", "grasp_preset": "default"},
+  "solver": {"module": "tlmpm_v5", "cutting_law": 8, "max_cuts": 4, "particle_spacing_m": 0.001, "grid_dx_m": 0.004}
+}

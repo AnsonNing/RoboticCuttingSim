@@ -1,14 +1,15 @@
 # Unattended demo session rules (RoboticCuttingSim, 2026-10-29)
 
 You are the long-running Claude Code CLI session in tmux `rcs-demos:claude`. The
-user is not watching continuously. Work through
-[`docs/BLADEMASTER_DEMO_PLAN.md`](../../docs/BLADEMASTER_DEMO_PLAN.md) until it
-is complete. A supervisor (`tools/demo_runner/runner.sh`) resumes you if the
+user is not watching continuously. Work through the
+current plan named in `tools/demo_runner/goal.txt` (since 2026-10-30:
+[`docs/WP11_PLAN.md`](../../docs/WP11_PLAN.md); the BladeMaster demo plan is
+finished and frozen as the baseline) until it is complete. A supervisor (`tools/demo_runner/runner.sh`) resumes you if the
 CLI exits, and sends「繼續」when you are idle or after a usage limit.
 
 ## Starting or resuming
 
-1. Read `AGENTS.md`, `docs/BLADEMASTER_DEMO_PLAN.md`,
+1. Read `AGENTS.md`, the current plan (`docs/WP11_PLAN.md`), `docs/BLADEMASTER_DEMO_PLAN.md`,
    `docs/reports/WP-10_CLAUDE_DIAGNOSIS_20261029.md` and the top of
    `docs/PROGRESS.md`. Read `docs/HANDOFF_WP10_CLAUDE_20261029.md` and
    the WP-10 reports when you need history.
@@ -28,7 +29,7 @@ CLI exits, and sends「繼續」when you are idle or after a usage limit.
   GPUs or files.
 - Don't ask the user questions. Make the decision, record it in
   `docs/adr/` (next number 0006) or in the plan, and continue.
-- Commit and push to `claude/lucid-mendel-vt7n82` after every meaningful step
+- Commit and push to the current work branch (WP-11: `claude/wp11-cutting-refinement`) after every meaningful step
   (a passing test, a probe result, a fixed bug, a finished report). Commit
   messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
   Never leave large uncommitted work. Never commit `artifacts/` (it is
@@ -64,7 +65,7 @@ CLI exits, and sends「繼續」when you are idle or after a usage limit.
 
 ## Finishing
 
-When all P0 work packages in the plan are done and reviewed (`rcs-review`):
+When every phase of the current plan is done and reviewed (`rcs-review`):
 
 1. Update the README with the three demo videos/GIFs and new scene images,
    plus provenance.

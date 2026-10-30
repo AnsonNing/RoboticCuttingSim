@@ -1,0 +1,828 @@
+{
+ "protocol": "wp11_phaseF_v2",
+ "protocol_file": "configs/wp11/phaseF_protocol_v2.json",
+ "protocol_sha256": "e347607f0a46752f344db809ddf0a672abbda5043319cc18a8800d20df9a16df",
+ "created": "2026-10-30T05:38:11.409902+09:00",
+ "read_only": true,
+ "summary_git_sha": "dc64f4971b18333dc3b9bc0fbf5d20c110705492",
+ "script_sha256": "c89f4c9e1fa9d5a34201bb261e97568a73b662a64efbbd8360fb14f23d9cad1b",
+ "v1_record": {
+  "run": "artifacts/wp11/phaseF/f2_9_blunt_handle_law8_001",
+  "protocol_id": "wp11_phaseF_v1",
+  "verdict": "FAIL",
+  "contact_window_mean_N": 0.07673027911739332,
+  "statement": "v1 F2.9_blunt_handle stays FAIL; v2 is a separate, newly declared row"
+ },
+ "row": {
+  "row": "F2.9_blunt_handle_v2",
+  "run": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001",
+  "verdict": "PASS",
+  "criterion_outcome": "PASS",
+  "checks": {
+   "zero_new_labels": true,
+   "one_component": true,
+   "grip_contact_window_mean_force_gt_0_1N": true,
+   "mass_conserved": true
+  },
+  "control_validity": {
+   "zero_blade_contact_steps_episode": true,
+   "grip_footprint_inside_right_pedestal_span": true,
+   "grip_footprint_inside_bar_top": true
+  },
+  "protocol_sha256_recorded": "e347607f0a46752f344db809ddf0a672abbda5043319cc18a8800d20df9a16df",
+  "protocol_digest_matches": true,
+  "git_sha": "dc64f4971b18333dc3b9bc0fbf5d20c110705492",
+  "git_dirty": false,
+  "device": "cuda:0",
+  "seed": 42,
+  "command": [
+   "scripts/run_phase_f_v2_material.py",
+   "--device",
+   "cuda:0",
+   "--out",
+   "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001"
+  ],
+  "runner_sha256": "1222a9faf4cfe8412b9beef14e22f25d65b39cffaff41c5d0f2ed9f64c094951",
+  "v1_runner_sha256": "5aea75d789bc0c46a954b0763fc9a5ed996da0f9b9c85749c7ab37e80e90b989",
+  "formal_resolution": true,
+  "resolution": {
+   "particle_spacing_m": 0.001,
+   "grid_dx_m": 0.004,
+   "material_dt_s": 0.0001,
+   "control_dt_s": 0.02
+  },
+  "runtime_source": "kinematic_ideal_tracking",
+  "wall_s": 434.3017072340008,
+  "log": {
+   "Elapsed (wall clock) time (h:mm:ss or m:ss)": "7:15.27",
+   "Maximum resident set size (kbytes)": "1894700",
+   "Exit status": "0"
+  },
+  "error": null
+ },
+ "declared": {
+  "force_estimate": {
+   "contact_area_m2": 0.000528,
+   "contact_area_note": "handle far face 24 mm (edge x) x 22 mm (edge z), fully on the bar top",
+   "bar_height_m": 0.02,
+   "press_depth_m": 0.002,
+   "nominal_strain": 0.1,
+   "elastic_unconfined_N": 2.64,
+   "elastic_formula": "E * (d / H) * A = 50e3 * 0.1 * 5.28e-4",
+   "yield_onset_depth_m": 0.0004,
+   "yield_onset_formula": "H * sigma_y / E = 0.02 * 1e3 / 50e3",
+   "yield_uniaxial_N": 0.528,
+   "yield_uniaxial_formula": "sigma_y * A = 1e3 * 5.28e-4",
+   "yield_confined_punch_N": 1.57,
+   "yield_confined_punch_formula": "(2 + pi) / sqrt(3) * sigma_y * A (Prandtl punch, rigid-perfectly-plastic upper estimate)",
+   "bar_weight_N": 1.413,
+   "support_note": "the right pedestal reacts the press directly below the footprint; the press (< bar weight) cannot lift or yaw the bar"
+  },
+  "prediction": {
+   "grip_force_after_yield_onset_N": [
+    0.5,
+    1.6
+   ],
+   "grip_contact_window_mean_N": [
+    0.35,
+    1.6
+   ],
+   "statement": "Once the grip is more than ~0.4 mm into the top the load is yield-limited at about 0.5-1.6 N and stays there through the hold; the contact-window mean (ramp steps included) is 0.35-1.6 N, i.e. at least 3.5x the 0.1 N criterion. Rigid motion of the bar during press/hold: |COM displacement| < 0.2 mm and yaw < 0.1 deg; compression under the grip (bottom minus top layer z displacement) 1-2 mm, at least 5x the rigid displacement. Zero labels (only the blunt box touches material). Prediction is report-only; it is not a pass criterion."
+  },
+  "blade_clearance_check": {
+   "statement": "The blade edge and faces must not touch the material. Static check before the run (CPU test on the ideal-integrated plan): minimum distance from the sampled blade prism (tool_profile.blade_mesh_edge) to the reference bar box > 5 mm on every step, >= 50 mm during handle_press / handle_hold; the grip box does not touch the bar before handle_press. Formal run: blade contact steps (contact_statistics[1] > 0) must be 0 on every control step of the episode.",
+   "rule": "control validity: a run with blade contact steps > 0 is INVALID_CONTROL and not PASS, whatever the criteria"
+  }
+ },
+ "measured": {
+  "contact_window": {
+   "phases": [
+    "handle_press",
+    "handle_hold"
+   ],
+   "phase_steps": 40,
+   "contact_steps": 25,
+   "force": "grip",
+   "contact": "grip",
+   "mean_N": 0.8549731774046357,
+   "max_N": 1.015020025036319,
+   "all_phase_steps_mean_N": 0.5343582358778973,
+   "first_contact_time_s": 2.7,
+   "last_contact_time_s": 3.18
+  },
+  "grip_force_by_phase": {
+   "lift": {
+    "steps": 53,
+    "contact_steps": 0,
+    "mean_N": 0.0,
+    "max_N": 0.0,
+    "last_N": 0.0
+   },
+   "reorient": {
+    "steps": 60,
+    "contact_steps": 0,
+    "mean_N": 0.0,
+    "max_N": 0.0,
+    "last_N": 0.0
+   },
+   "lower_outside": {
+    "steps": 6,
+    "contact_steps": 0,
+    "mean_N": 0.0,
+    "max_N": 0.0,
+    "last_N": 0.0
+   },
+   "handle_press": {
+    "steps": 25,
+    "contact_steps": 10,
+    "mean_N": 0.28426334083046684,
+    "max_N": 1.015020025036319,
+    "last_N": 1.015020025036319
+   },
+   "handle_hold": {
+    "steps": 15,
+    "contact_steps": 15,
+    "mean_N": 0.9511830609569482,
+    "max_N": 0.9790193907978743,
+    "last_N": 0.9464972305879706
+   },
+   "retract": {
+    "steps": 9,
+    "contact_steps": 1,
+    "mean_N": 0.01396993965322793,
+    "max_N": 0.12572945687905138,
+    "last_N": 0.0
+   },
+   "done": {
+    "steps": 232,
+    "contact_steps": 0,
+    "mean_N": 0.0,
+    "max_N": 0.0,
+    "last_N": 0.0
+   }
+  },
+  "grip_force_press_hold_series_N": [
+   [
+    2.4,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.42,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.44,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.46,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.48,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.5,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.52,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.54,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.56,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.58,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.6,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.62,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.64,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.66,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.68,
+    "handle_press",
+    0.0,
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   [
+    2.7,
+    "handle_press",
+    0.005194439976326153,
+    [
+     -2.387888571320218e-05,
+     2.370273088914132e-07,
+     0.005194385084905662
+    ]
+   ],
+   [
+    2.72,
+    "handle_press",
+    0.18533522045030912,
+    [
+     0.0016542908269912004,
+     1.950866135302931e-06,
+     0.18532783724367619
+    ]
+   ],
+   [
+    2.74,
+    "handle_press",
+    0.4707648877993406,
+    [
+     0.003140707121929154,
+     4.3424224216437324e-07,
+     0.4707544110715389
+    ]
+   ],
+   [
+    2.76,
+    "handle_press",
+    0.7300871389639589,
+    [
+     0.00445524237875361,
+     5.873556085944642e-08,
+     0.7300735451281071
+    ]
+   ],
+   [
+    2.78,
+    "handle_press",
+    0.8597817844396711,
+    [
+     0.010883115464821458,
+     -1.3517616359592921e-06,
+     0.859712902456522
+    ]
+   ],
+   [
+    2.8,
+    "handle_press",
+    0.917384183170146,
+    [
+     0.014406381524167955,
+     -3.364116452075905e-06,
+     0.9172710590064526
+    ]
+   ],
+   [
+    2.82,
+    "handle_press",
+    0.9509209808296335,
+    [
+     0.015550140233244747,
+     -2.758503825361913e-06,
+     0.9507938288152218
+    ]
+   ],
+   [
+    2.84,
+    "handle_press",
+    0.9755782620495509,
+    [
+     0.01581689721206203,
+     -2.127276310659454e-06,
+     0.9754500351846218
+    ]
+   ],
+   [
+    2.86,
+    "handle_press",
+    0.9965165980464149,
+    [
+     0.016776935080997646,
+     4.909138096031995e-08,
+     0.9963753633201122
+    ]
+   ],
+   [
+    2.88,
+    "handle_press",
+    1.015020025036319,
+    [
+     0.017818847845774144,
+     1.4267618198005039e-06,
+     1.0148636065423489
+    ]
+   ],
+   [
+    2.9,
+    "handle_hold",
+    0.9790193907978743,
+    [
+     0.018994431593455374,
+     2.5449494955864793e-06,
+     0.9788351133465767
+    ]
+   ],
+   [
+    2.92,
+    "handle_hold",
+    0.9615073880786386,
+    [
+     0.020860080257989466,
+     1.4233014766773522e-06,
+     0.9612810797989368
+    ]
+   ],
+   [
+    2.94,
+    "handle_hold",
+    0.9544796801675194,
+    [
+     0.021492381347343326,
+     -7.006431879119646e-07,
+     0.9542376734316349
+    ]
+   ],
+   [
+    2.96,
+    "handle_hold",
+    0.9514818776291901,
+    [
+     0.02175113040721044,
+     -1.778908220728681e-06,
+     0.9512332268059254
+    ]
+   ],
+   [
+    2.98,
+    "handle_hold",
+    0.9496598613476818,
+    [
+     0.02151046646758914,
+     -2.147245226069572e-06,
+     0.9494162164628506
+    ]
+   ],
+   [
+    3.0,
+    "handle_hold",
+    0.9486292630486184,
+    [
+     0.021176056179683656,
+     -2.3856800979160653e-06,
+     0.9483928792178631
+    ]
+   ],
+   [
+    3.02,
+    "handle_hold",
+    0.9479474966513435,
+    [
+     0.020634636166505516,
+     -2.9918741262235926e-06,
+     0.9477228857576847
+    ]
+   ],
+   [
+    3.04,
+    "handle_hold",
+    0.9474795525578578,
+    [
+     0.020160162239335477,
+     -2.6410788223074633e-06,
+     0.9472650475800037
+    ]
+   ],
+   [
+    3.06,
+    "handle_hold",
+    0.9471835026813892,
+    [
+     0.019508607510942966,
+     -1.9871654544090234e-06,
+     0.9469825774431229
+    ]
+   ],
+   [
+    3.08,
+    "handle_hold",
+    0.9470261691485061,
+    [
+     0.018885206372942775,
+     -7.96178767359379e-07,
+     0.9468378499150276
+    ]
+   ],
+   [
+    3.1,
+    "handle_hold",
+    0.9468669258941347,
+    [
+     0.018204387743026018,
+     -1.5109874240692989e-06,
+     0.9466919116675854
+    ]
+   ],
+   [
+    3.12,
+    "handle_hold",
+    0.9467399954583876,
+    [
+     0.017577836115378886,
+     -2.484040884098704e-06,
+     0.9465768001973629
+    ]
+   ],
+   [
+    3.14,
+    "handle_hold",
+    0.9466513243580007,
+    [
+     0.016958829655777663,
+     -1.5710078571373742e-06,
+     0.9464994072914124
+    ]
+   ],
+   [
+    3.16,
+    "handle_hold",
+    0.9465762559471097,
+    [
+     0.01638159592403099,
+     -6.608193103829763e-07,
+     0.9464344941079617
+    ]
+   ],
+   [
+    3.18,
+    "handle_hold",
+    0.9464972305879706,
+    [
+     0.015830787015147507,
+     -4.4214715222423706e-08,
+     0.9463648311793804
+    ]
+   ]
+  ],
+  "prediction_check_report_only": {
+   "predicted_contact_window_mean_N": [
+    0.35,
+    1.6
+   ],
+   "measured_contact_window_mean_N": 0.8549731774046357,
+   "within_predicted_range": true,
+   "predicted_force_after_yield_onset_N": [
+    0.5,
+    1.6
+   ],
+   "measured_contact_window_max_N": 1.015020025036319
+  },
+  "final_mechanical_components": 1,
+  "components": {
+   "component_mass_kg": [
+    0.143999999999951
+   ],
+   "component_mass_fraction": [
+    0.9999999999996599
+   ],
+   "component_ids_by_mass": [
+    0
+   ],
+   "total_mass_kg": 0.14399999999999996
+  },
+  "final_labelled_count": 0,
+  "max_labelled_count": 0,
+  "mass_check": {
+   "recorded_total_mass_kg": 0.14400000509340316,
+   "sampler_total_mass_kg": 0.14399999999999996,
+   "absolute_difference_kg": 5.093403199207813e-09,
+   "allowed_difference_kg": 1.4399999999999997e-07,
+   "recorded_particles": 96000,
+   "sampler_particles": 96000,
+   "solver_particles": 96000,
+   "per_particle_max_abs_difference_kg": 5.3056282884624256e-14,
+   "pass": true,
+   "tolerance_source": "cutting_tasks_v1.json common.mass_relative_tolerance / mass_absolute_tolerance_kg"
+  },
+  "blade_contact_steps": {
+   "episode": 0,
+   "armed": 0,
+   "press_hold": 0,
+   "episode_blade_force_max_N": 1.0150203974823948
+  },
+  "footprint": {
+   "footprint_local_x_m": [
+    0.04299999999999998,
+    0.06699999999999999
+   ],
+   "footprint_local_y_m": [
+    -0.011000000000000013,
+    0.011000000000000013
+   ],
+   "footprint_area_m2": 0.0005280000000000008,
+   "grip_bottom_local_z_m": 0.017999999999999947,
+   "right_pedestal_local_x_m": [
+    0.019999999999999997,
+    0.09
+   ],
+   "right_pedestal_local_y_m": [
+    -0.021,
+    0.021
+   ],
+   "inside_pedestal_span": true,
+   "inside_bar_top": true,
+   "pose_source": "recorded"
+  },
+  "tool_clearance_recorded_poses": {
+   "lift": {
+    "steps": 53,
+    "blade_min_m": 0.03200000000000003,
+    "grip_min_m": 0.06579513659838396
+   },
+   "reorient": {
+    "steps": 60,
+    "blade_min_m": 0.07499999999999997,
+    "grip_min_m": 0.014999999999999946
+   },
+   "lower_outside": {
+    "steps": 6,
+    "blade_min_m": 0.06299999999999999,
+    "grip_min_m": 0.0029999999999999506
+   },
+   "handle_press": {
+    "steps": 25,
+    "blade_min_m": 0.057999999999999975,
+    "grip_min_m": -0.002000000000000054
+   },
+   "handle_hold": {
+    "steps": 15,
+    "blade_min_m": 0.057999999999999975,
+    "grip_min_m": -0.002000000000000054
+   },
+   "retract": {
+    "steps": 9,
+    "blade_min_m": 0.05999999999999998,
+    "grip_min_m": -5.204170427930421e-17
+   },
+   "done": {
+    "steps": 232,
+    "blade_min_m": 0.07499999999999997,
+    "grip_min_m": 0.014999999999999932
+   }
+  },
+  "workpiece_motion": {
+   "baseline_frame_time_s": 2.3,
+   "hold_end_frame_time_s": 3.1,
+   "final_frame_time_s": 8.0,
+   "hold_end_vs_pre_press": {
+    "rigid_fit_all_particles": {
+     "com_displacement_m": [
+      -8.849777401530186e-05,
+      1.3066218039997997e-08,
+      -0.0001519584930637398
+     ],
+     "com_displacement_norm_m": 0.00017585004916289375,
+     "rotation_deg": 0.24351366258659557,
+     "yaw_deg": -4.3411398365864664e-05,
+     "residual_rms_m": 0.0004669233064523921,
+     "residual_max_m": 0.0015083071512231817
+    },
+    "under_footprint": {
+     "particles": 10560,
+     "top_layer": 528,
+     "bottom_layer": 528,
+     "top_mean_dz_m": -0.0017056378825200777,
+     "top_min_dz_m": -0.0018509365618228912,
+     "bottom_mean_dz_m": -5.441990266042536e-05,
+     "column_height_m": 0.018952047365019098,
+     "compression_m": 0.0016512179798596524,
+     "compression_strain": 0.08712610031290878
+    },
+    "left_half_max_displacement_m": 0.0002465529315549748,
+    "compression_over_rigid_com_displacement": 9.38992049032692
+   },
+   "hold_end_vs_reference": {
+    "rigid_fit_all_particles": {
+     "com_displacement_m": [
+      -8.849971296508136e-05,
+      6.83932000050605e-08,
+      -0.00041367443444729514
+     ],
+     "com_displacement_norm_m": 0.0004230351540803921,
+     "rotation_deg": 0.2429526397830454,
+     "yaw_deg": -5.34190523323553e-05,
+     "residual_rms_m": 0.0004820039062648827,
+     "residual_max_m": 0.0015736135962810369
+    },
+    "under_footprint": {
+     "particles": 10560,
+     "top_layer": 528,
+     "bottom_layer": 528,
+     "top_mean_dz_m": -0.0018306265048908465,
+     "top_min_dz_m": -0.001978829503059387,
+     "bottom_mean_dz_m": -0.00012214041684770066,
+     "column_height_m": 0.019000000378582627,
+     "compression_m": 0.0017084860880431459,
+     "compression_strain": 0.08992031863162503
+    },
+    "left_half_max_displacement_m": 0.0008419519130660823,
+    "compression_over_rigid_com_displacement": 4.0386385660007615
+   },
+   "final_vs_pre_press": {
+    "rigid_fit_all_particles": {
+     "com_displacement_m": [
+      0.0001434276291836427,
+      8.127592688405336e-09,
+      -0.0001074350746273281
+     ],
+     "com_displacement_norm_m": 0.00017920318116450341,
+     "rotation_deg": 0.1646618134081746,
+     "yaw_deg": -1.8362132566766746e-05,
+     "residual_rms_m": 0.00036378015924694773,
+     "residual_max_m": 0.0011290461061938281
+    },
+    "under_footprint": {
+     "particles": 10560,
+     "top_layer": 528,
+     "bottom_layer": 528,
+     "top_mean_dz_m": -0.0012120554421209927,
+     "top_min_dz_m": -0.0013326779007911682,
+     "bottom_mean_dz_m": 6.802462876569762e-06,
+     "column_height_m": 0.018952047365019098,
+     "compression_m": 0.0012188579049975624,
+     "compression_strain": 0.06431272999281754
+    },
+    "left_half_max_displacement_m": 9.976456494694825e-05,
+    "compression_over_rigid_com_displacement": 6.801541675081569
+   },
+   "scope": "history frames every history_stride control steps; local coordinates; compression = bottom minus top layer mean z displacement under the grip footprint (positive = compressed)"
+  },
+  "stability": {
+   "all_positions_velocities_finite": true,
+   "minimum_det_F": 0.9470430500550641,
+   "inverted_steps": 0,
+   "maximum_particle_speed_m_s": 0.05949575453996658,
+   "stable": true,
+   "scope": "Checked after every control step on the device state (positions, velocities, deformation gradient)"
+  },
+  "armed_stroke": {
+   "phases": [
+    "handle_press",
+    "handle_hold"
+   ],
+   "steps": 40,
+   "armed_steps": 40,
+   "stroke_active_steps": 0,
+   "engaged_steps_last_substep": 0,
+   "any_motion_steps_last_substep": 25,
+   "max_travel_since_engaged_m": 0.0,
+   "cutting_segments_last_substep": [
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "labelled_before": null,
+   "labelled_after": 0
+  },
+  "workspace_clamped_steps": 0,
+  "ik_not_ok_steps": 0
+ },
+ "diagnosis": null,
+ "scope": "Kinematic ideal tracking, seed 42, formal resolution, provisional uncalibrated material. A blunt-contact negative control only: no robot, IK, grasp, Isaac Sim/Lab or cameras. Full physics acceptance: false."
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "rcs_reliability_v1",
+  "version": "phaseG_reliability_v1a",
+  "declared": "2026-10-30, after the Native smoke artifacts/wp11/phaseG/native_smoke_001 and before any formal Native reliability run",
+  "description": "Multi-episode reliability checks of the cutting_research_v1 policy-ready env (supplement Test F). POLICY_READY is set only if every check of every episode passes and every stored episode validates with the dataset reader.",
+  "minimum_consecutive_episodes": {
+    "kinematic": 5,
+    "isaac_sim": 3
+  },
+  "reset": {
+    "material_at_reference_max_m": 1e-06,
+    "material_velocity_max_m_s": 1e-06,
+    "tool_pose_repeat_translation_max_m": 0.0001,
+    "tool_pose_repeat_rotation_max_rad": 0.001,
+    "tool_linear_speed_max_m_s": 0.001,
+    "tool_angular_speed_max_rad_s": 0.01,
+    "grasp_reset_status_live": "PASS_STABLE_GRASP",
+    "tool_velocity_rule": "repeat_episode_0",
+    "tool_linear_speed_repeat_max_m_s": 0.001,
+    "tool_angular_speed_repeat_max_rad_s": 0.01
+  },
+  "clock": {
+    "tolerance_s": 1e-09,
+    "control_rate_hz": 50
+  },
+  "camera": {
+    "latest_frame_max_age_steps": "camera_every - 1 (live only)"
+  },
+  "memory": {
+    "fit_from_episode": 1,
+    "host_rss_slope_max_mib_per_episode": 64,
+    "gpu_slope_max_mib_per_episode": 32,
+    "note": "Least-squares slope of the post-episode host RSS / process GPU memory over episodes >= fit_from_episode (episode 0 includes one-time kernel compilation and caches)."
+  },
+  "determinism": {
+    "same_seed_same_controller_cpu": "final cut codes identical (sha256)",
+    "same_seed_same_controller_gpu_or_live": "verdict identical; reported metrics compared, not gated"
+  },
+  "episodes": {
+    "expected_failures_must_fail": true,
+    "failed_episodes_must_validate": true
+  },
+  "amends": "phaseG_reliability_v1",
+  "amendment": "Only the tool-at-rest-after-reset rule changes. The smoke showed the PhysX instantaneous velocity of the physically clamped tool body is contact-solver jitter (|v| 3.6 mm/s, |w| 0.148 rad/s, bitwise identical in both resets) while the arm is at rest (|qdot| <= 8e-4 rad/s) and the runtime's pose-derived hand-tool speeds over the settle window are 6.1e-5 m/s and 8.5e-4 rad/s with 0.15 um drift (grasp receipt PASS_STABLE_GRASP). v1a therefore requires (a) the pose-derived settle-window speeds of the runtime grasp receipt (already gated by PASS_STABLE_GRASP: 1e-3 m/s, 1e-2 rad/s in the unchanged ToolGraspConfig) and (b) the instantaneous post-reset tool velocity to repeat episode 0 (state isolation) within the declared differences; the absolute instantaneous velocity is still recorded and the v1 rule is still evaluated and reported alongside."
+}

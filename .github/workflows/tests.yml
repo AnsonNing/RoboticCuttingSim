@@ -5,9 +5,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the cutting-law regression tests load committed pre-law
+          # modules with `git show <commit>:...` and skip on a shallow clone.
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: pip
-      - run: python -m pip install -c requirements.lock -e '.[policy]' pytest usd-core warp-lang
-      - run: python -m pytest -q
+      - run: python -m pip install -c requirements.lock -e '.[policy,test]'
+      - name: Record environment
+        run: |
+          python -VV
+          python -m pip freeze
+          lscpu | grep -E '^(Model name|CPU\(s\)|Thread|Core)' || true
+          echo "x86 SIMD: $(grep -o -w -E 'avx2|fma|avx512f|avx512_vnni' /proc/cpuinfo | sort -u | tr '\n' ' ')"
+          OPENBLAS_VERBOSE=2 python -c "import numpy, scipy; print('numpy', numpy.__version__, 'scipy', scipy.__version__); numpy.show_runtime()"
+      - run: python -m pytest -q -rsx

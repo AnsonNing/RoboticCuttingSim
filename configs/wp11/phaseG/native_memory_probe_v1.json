@@ -1,0 +1,63 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseG_native_memory_probe_v1",
+  "description": "Diagnostic only (does not change the native_reliability_trim_001 verdict): 8 consecutive 20-step Native episodes of the same task in one process (hold policy, cameras on) to characterise host RSS / GPU memory per reset after the formal run showed host RSS growth of ~140 MiB per episode.",
+  "episodes": [
+    {
+      "label": "memory_probe_0",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_1",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_2",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_3",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_4",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_5",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_6",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    },
+    {
+      "label": "memory_probe_7",
+      "controller": "policy",
+      "policy": "robotic_cutting_sim.policy_examples:hold_policy",
+      "seed": 42,
+      "max_steps": 20
+    }
+  ]
+}

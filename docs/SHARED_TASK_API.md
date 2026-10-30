@@ -161,3 +161,71 @@ results. Live values have explicit incomplete source-audit status; the offline
 recording evaluator verifies archived bytes and physics/mesh provenance.
 Evaluation never stops physics or prevents saving a failed episode. See
 [the new API and profiles](EVALUATION_V2.md).
+
+# Configured tasks, HOME and physical return-to-home (WP-11 Phase D)
+
+Isaac Sim accepts a compiled scene/goal task (ADR 0015). The runner rebuilds it
+from its recorded scene, goal and planner config and requires the same
+`CFG-...` id. Fixtures, tool, material solver, cutting law and number of cut
+digits all come from the scene; `tlmpm_v5` is allowed up to its digit limit.
+Isaac Lab still raises `NotImplementedError` for compiled tasks.
+
+```python
+from robotic_cutting_sim.scene_config import compile_task
+task = compile_task("trim01_wp11_workcell", "trim_bump_rho10")
+with open_cutting_env(runtime="isaac_sim", task=task, action_limits=task.action_limits(),
+                      output_dir="artifacts/my_configured_run") as env:
+    observation, info = env.reset(seed=42)        # READY, Franka 0 at HOME
+    ...                                           # env.step(...) while RUNNING
+    env.end_task("CONTROLLER_DONE")               # TASK_COMPLETE (not a success claim)
+    task_outcome = env.evaluate()                 # the goal evaluator
+    home = env.return_home()                      # physical motion, separate home_outcome
+```
+
+`scripts/run_wp10_live.py --scene <scene> --goal <goal> --controller scripted`
+drives the goal planner's waypoints with the planner's controller profile and,
+with `--edge-feedback measured`, the measured tool-edge feedback. Before Isaac
+starts, the plan is preflighted in the CPU `.venv` with the C2 collision checker
+(`scripts/wp11_motion_preflight.py`). If the plan fails, the run is refused with
+`SCENE_INFEASIBLE` or `IK_FAILURE`. `--stop-after-phase`, `--hold-after-stop-s`
+and `--return-home` are opt-in.
+
+**HOME reset.** Some scenarios declare `home_joint_positions`, for example
+`wp11_workcell_v1` in `configs/wp11_scenarios_v1.json`, or a scene can name one
+with `supports.workcell.from_scenario`. For these, reset puts Franka 0 at
+q_home and authors the knife at FK(q_home)·hand_from_tool, with the blade
+hanging below the fingers. It then runs the unchanged physical pregrasp settle.
+Franka 1 stays at the shared park. `setup.json` records the result under
+`home_reset`.
+
+**Lifecycle.** `info["episode_state"]` is always present. Pass
+`expose_episode_state=True` to also add it to the observation under `"episode"`.
+It contains only the state, the termination reason and the home outcome. The
+states run in this order:
+
+`RESETTING → READY → RUNNING → TASK_COMPLETE | TASK_FAILED → RETRACTING →
+RETURNING_HOME → FINISHED`
+
+Illegal transitions raise. `reset()` is the simulator state reset; it is not
+`return_home()`.
+
+**Return to home.** `return_home()` runs these segments, in order:
+
+1. a straight Cartesian lift to the HOME edge height;
+2. a joint-space rotation to the hand-down orientation;
+3. a joint-space move to q_home;
+4. a settle.
+
+The rules (`configs/wp11/return_home_v1.json`):
+
+- The whole path is checked before anything moves: joint velocity and
+  acceleration limits, the C2 geometric preflight including the held knife,
+  and cutting disabled throughout.
+- `home_outcome` (PASS / FAIL / NOT_APPLICABLE, with a reason) measures:
+  - joint error to home;
+  - tool pose error against the post-reset tool pose;
+  - grasp slip and rotation;
+  - native unintended tool contacts;
+  - cut-label changes, which must be 0;
+  - clearance of the measured joint path.
+- The home outcome is never merged with the task outcome.

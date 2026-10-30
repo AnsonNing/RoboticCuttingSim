@@ -1,0 +1,13 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "remove_all_protrusions",
+  "type": "remove_protrusions",
+  "description": "Remove every protrusion above the base top (one surface_trim pass and one digit each): >= 90% of each protrusion's above-plane reference mass detached, the substrate keeps >= 99% of the below-plane mass, <= 1% below-plane mass detached. Precision is reported separately.",
+  "episode": {"duration_s": 14.0, "control_dt_s": 0.02},
+  "select": "all",
+  "plane_local_z_m": null,
+  "edge_clearance_m": 0.0002,
+  "minimum_removed_fraction": 0.9,
+  "minimum_substrate_share": 0.99,
+  "maximum_detached_below_fraction": 0.01
+}

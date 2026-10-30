@@ -100,7 +100,85 @@ class ToolProfile:
 
 RULER_KNIFE_V1 = ToolProfile("ruler_knife_v1", edge_length_m=.120, blade_depth_m=.040, thickness_m=.0015,
                              bevel="double", bevel_included_angle_deg=25.)
-PROFILES = {RULER_KNIFE_V1.profile_id: RULER_KNIFE_V1}
+
+
+@dataclass(frozen=True)
+class EndHeldToolProfile(ToolProfile):
+    """tool_profile_v2 (ADR 0013): a slim grip at one END of the blade.
+
+    The handle box is centred at the finger pads (HAND_FROM_TOOL). The blade
+    starts at the handle's far +z face and runs ``edge_length_m`` further along
+    hand +z, so the edge line is parallel to the approach axis. The blade width
+    (``blade_depth_m``) spans from a spine flush with one handle face to the
+    edge, across hand x (arrangement "y") or across the finger closing axis
+    hand y (arrangement "x"). ``blade_normal_hand_axis`` names the hand axis
+    along the blade thickness. The blade cross-section is the same polygon as
+    any ToolProfile with the same blade numbers.
+
+    Edge frame in hand coordinates: +y (the edge line) = hand +z, pointing from
+    the grip toward the tip; +x (advance, away from the blade body) = hand +x
+    ("y") or hand +y ("x"); z = x × y, i.e. -hand y ("y") or +hand x ("x").
+    """
+
+    # 60 mm grip: ADR 0013's 70 mm default, centred at the pads, reaches the
+    # actual Native panda_hand palm collider face (hand z = 0.0700 m, measured in
+    # artifacts/wp11/phaseB/view_v2_y_001); 60 mm leaves 3.65 mm of clearance.
+    handle_half_extents_hand_m: tuple = (.012, .011, .030)
+    blade_normal_hand_axis: str = "y"
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.bevel == "legacy_wedge" or self.blade_normal_hand_axis not in ("x", "y"):
+            raise ValueError("An end-held profile needs a real bevel and blade_normal_hand_axis 'x' or 'y'")
+        half = np.asarray(self.handle_half_extents_hand_m, float)
+        spine_face, normal_face = (half[0], half[1]) if self.blade_normal_hand_axis == "y" else (half[1], half[0])
+        if self.blade_depth_m <= 2*spine_face or self.thickness_m/2 > normal_face:
+            raise ValueError("The blade must overhang the handle width and stay within its thickness")
+
+    def _hand_axes(self):
+        """(advance axis, edge-line axis) as hand unit vectors."""
+        advance = [1., 0., 0.] if self.blade_normal_hand_axis == "y" else [0., 1., 0.]
+        return np.asarray(advance), np.array([0., 0., 1.])
+
+    def hand_from_edge(self):
+        """Edge centre half an edge length beyond the handle's far face, on the edge line.
+
+        The spine is flush with the handle's -advance face, so the edge lies
+        ``blade_depth_m`` from it along the advance axis.
+        """
+        advance, along = self._hand_axes()
+        half = np.asarray(self.handle_half_extents_hand_m, float)
+        spine = half[0] if self.blade_normal_hand_axis == "y" else half[1]
+        R = np.column_stack([advance, along, np.cross(advance, along)])
+        position = (np.asarray(HAND_FROM_TOOL[:3])+(self.blade_depth_m-spine)*advance
+                    + (half[2]+self.half_width_m)*along)
+        return (*map(float, position), *Rotation.from_matrix(R).as_quat())
+
+    def to_dict(self):
+        return {**super().to_dict(), "version": "tool_profile_v2", "arrangement": self.arrangement,
+                "grip": "end_held", "edge_line_hand_axis": "+z",
+                "blade_normal_hand_axis": self.blade_normal_hand_axis,
+                "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"}
+
+    @property
+    def arrangement(self):
+        return "A_blade_normal_hand_y" if self.blade_normal_hand_axis == "y" else "B_blade_normal_hand_x"
+
+
+RULER_KNIFE_V2_Y = EndHeldToolProfile("ruler_knife_v2_y", edge_length_m=.120, blade_depth_m=.040, thickness_m=.0015,
+                                      bevel="double", bevel_included_angle_deg=25., blade_normal_hand_axis="y")
+RULER_KNIFE_V2_X = EndHeldToolProfile("ruler_knife_v2_x", edge_length_m=.120, blade_depth_m=.040, thickness_m=.0015,
+                                      bevel="double", bevel_included_angle_deg=25., blade_normal_hand_axis="x")
+# WP-11 Phase C4 comparison variant (cutting_tasks_v4.json TRIM-02-K2C-*): the same 120 x 40 x 1.5 mm blade
+# and grip as ruler_knife_v2_y with a SINGLE 25 deg (chisel) bevel. The flat reference face is edge z = 0
+# (toward the target when the blade normal is near +z), the bevel is on +z, so at rake >= 0 no blade point
+# lies below the edge (the double bevel's lower face does for rake < 12.5 deg).
+RULER_KNIFE_V2_Y_CHISEL = EndHeldToolProfile("ruler_knife_v2_y_chisel", edge_length_m=.120, blade_depth_m=.040,
+                                             thickness_m=.0015, bevel="single", bevel_included_angle_deg=25.,
+                                             blade_normal_hand_axis="y")
+PROFILES = {RULER_KNIFE_V1.profile_id: RULER_KNIFE_V1, RULER_KNIFE_V2_Y.profile_id: RULER_KNIFE_V2_Y,
+            RULER_KNIFE_V2_X.profile_id: RULER_KNIFE_V2_X,
+            RULER_KNIFE_V2_Y_CHISEL.profile_id: RULER_KNIFE_V2_Y_CHISEL}
 
 
 def legacy_profile(task):
@@ -150,6 +228,42 @@ def require_profile_consistency(spec, profile):
     if not np.allclose([spec.blade_length_m, spec.blade_height_m, spec.blade_half_width_m],
                        [profile.blade_depth_m, profile.thickness_m, profile.half_width_m], atol=1e-12, rtol=0):
         raise NotImplementedError("ToolSpec blade dimensions differ from the profile")
+
+
+def retarget_task_tool(task, profile_id, hand_offset_world_m=(0., 0., 0.)):
+    """A v2 task carrying another profile tool on the SAME hand trajectory.
+
+    Every scripted hand pose is kept (optionally translated by a world offset)
+    and the edge knots/orientation are re-derived through the new profile's
+    mount, so IK, colliders and TLMPM stay on one profile. Opt-in: used for
+    rigid grasp controls and presentation views; the result is not a new
+    cutting task and keeps the base task's thresholds and id.
+    """
+    from dataclasses import replace
+    from .tasks import DemoTaskSpec, ProfileTaskSpec
+    if not isinstance(task, ProfileTaskSpec) or isinstance(task, DemoTaskSpec):
+        raise NotImplementedError("Tool retargeting is defined only for v2 ProfileTaskSpec tasks")
+    profile = PROFILES[profile_id]
+    offset = np.asarray(hand_offset_world_m, float)
+    if offset.shape != (3,) or not np.isfinite(offset).all():
+        raise ValueError("Hand offset must be one finite world translation")
+    old_mount, new_mount = pose_matrix(task.hand_from_edge_xyz_xyzw), pose_matrix(profile.hand_from_edge())
+    T_local_world = invert_transform(task.T_world_workpiece)
+    offset_local = T_local_world[:3, :3]@offset
+    R_old = Rotation.from_quat(task.edge_orientation_local_xyzw).as_matrix()
+    knots, orientation = [], None
+    for t, *position in task.edge_position_knots_local_txyz:
+        T_edge = np.eye(4)
+        T_edge[:3, :3], T_edge[:3, 3] = R_old, position
+        T_hand = T_edge@invert_transform(old_mount)
+        T_hand[:3, 3] += offset_local
+        T_new = T_hand@new_mount
+        knots.append((float(t), *map(float, T_new[:3, 3])))
+        orientation = tuple(map(float, Rotation.from_matrix(T_new[:3, :3]).as_quat()))
+    return replace(task, tool_profile_id=profile.profile_id, hand_from_edge_xyz_xyzw=tuple(profile.hand_from_edge()),
+                   blade_length_m=profile.blade_depth_m, blade_height_m=profile.thickness_m,
+                   blade_half_width_m=profile.half_width_m, edge_orientation_local_xyzw=orientation,
+                   edge_position_knots_local_txyz=tuple(knots))
 
 
 def tool_spec_for_task(task):

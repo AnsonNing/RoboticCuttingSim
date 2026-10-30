@@ -1,0 +1,25 @@
+{
+  "schema": "rcs_mitigation_run_v1",
+  "version": "phaseH_native_recycle_mitigation_v1",
+  "declared": "2026-10-30, WP-11 Phase H follow-up, before any recycled Native run (the v1b single-process run native_reliability_v1b_001 was in progress, unscored)",
+  "purpose": "Demonstrate the opt-in process-recycling mitigation (scripts/collect_dataset.py --recycle-every N) on Native. It is a mitigation for slow per-episode native memory growth, never a 'no leak' result, and it never sets or changes the Native POLICY_READY verdict (that is the v1b single-process run).",
+  "run": {
+    "plan": "configs/wp11/phaseG/native_reliability_trim_v1.json (the Phase G/H 4-episode Native Test F plan, fixed seed 42)",
+    "recycle_every": 2,
+    "processes": "2 child processes (episodes 0-1, 2-3) under one parent that runs the C2 preflight once and scores the dataset",
+    "runtime_profile": "full_physics_v1 (native.stage_reset = reload_in_place)",
+    "collector_flags": "--camera-every 5 --record-every 10 --profile stages --recycle-every 2",
+    "scene_goal": "--scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}'",
+    "scoring": "--reliability-config configs/wp11/phaseG_reliability_v1b.json (primary) --reliability-config configs/wp11/phaseG_reliability_v1a.json --reliability-config configs/wp11/phaseG_reliability_v1.json",
+    "output": "artifacts/wp11/phaseH/native_recycle_mitigation_001 (never overwritten)",
+    "source": "a fresh git worktree pinned at the commit that adds this file (git_dirty = false)",
+    "launch_conditions": "only after native_reliability_v1b_001 has finished (one Isaac job of this agent at a time); a GPU with <= 2 other active jobs and >= 12 GB free; >= 17.5 GB free on /mnt/data at launch (15 GB floor + ~2.5 GB expected output); otherwise NOT_RUN with the reason",
+    "failure_policy": "failed episodes and failed child processes are kept and reported; no rerun with changed settings"
+  },
+  "criteria": {
+    "MITIGATION_DEMONSTRATED": "all of: (1) both child processes ran and exited 0 with distinct pids; (2) episodes 0-3 stored with continuous ids, the plan's seeds, index rows in order, and read_dataset.py PASS on the whole dataset; (3) every per-episode v1b check passes (reset isolation, grasp re-stabilization, clocks, cameras, storage, expected outcomes); (4) the host RSS after the first episode of block 1 is within 64 MiB (one v1a per-episode allowance) of the host RSS after the first episode of block 0",
+    "otherwise": "MITIGATION_NOT_DEMONSTRATED with the failing items",
+    "memory_reporting": "per-process host RSS / GPU series and per-block slopes are reported (dataset.reliability_report memory.per_process); the whole-run slope across processes is a sawtooth by construction and is reported but not interpreted; with 2 episodes per process no within-process slope is fitted (fit_from_episode 1 leaves 1 point)",
+    "not_claimed": "no leak absence, no POLICY_READY verdict, no statement about runs longer than 4 episodes"
+  }
+}

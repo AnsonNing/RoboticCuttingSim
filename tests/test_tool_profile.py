@@ -133,6 +133,22 @@ def test_profile_sdf_reproduces_v1_wedge_function():
     assert np.array_equal(a.numpy(), b.numpy())
 
 
+def _points_in_polygon(polygon, points):
+    """Even-odd (crossing-number) point-in-polygon test, vectorised over ``points`` (N x 2).
+
+    A NumPy oracle independent of the Warp SDF under test. It replaced matplotlib.path.Path.contains_points
+    (WP-11 Phase A): matplotlib is a plotting dependency, not installed by the CPU CI. Points on an edge
+    are ambiguous in both; the test excludes them by |sdf| <= 1e-6.
+    """
+    polygon, points = np.asarray(polygon, float), np.asarray(points, float)
+    x, y = points[:, :1], points[:, 1:]
+    (x0, y0), (x1, y1) = polygon.T[:, None, :], np.roll(polygon, -1, axis=0).T[:, None, :]
+    straddles = (y0 > y) != (y1 > y)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        crossing = x < x0+(y-y0)*(x1-x0)/(y1-y0)
+    return np.count_nonzero(straddles & crossing, axis=1) % 2 == 1
+
+
 def test_profile_sdf_matches_ruler_polygon_geometry():
     wp = pytest.importorskip("warp")
     from robotic_cutting_sim import tlmpm_v2
@@ -150,8 +166,7 @@ def test_profile_sdf_matches_ruler_polygon_geometry():
     wp.launch(sdf, len(probes), [wp.array(probes, dtype=wp.vec3, device="cpu"),
               wp.array(polygon, dtype=wp.vec2, device="cpu"), len(polygon), float(half), out], device="cpu")
     values = out.numpy()
-    from matplotlib.path import Path as Polygon
-    inside = Polygon(polygon).contains_points(probes[:, [0, 2]]) & (np.abs(probes[:, 1]) < half)
+    inside = _points_in_polygon(polygon, probes[:, [0, 2]]) & (np.abs(probes[:, 1]) < half)
     certain = np.abs(values[:, 3]) > 1e-6
     assert np.array_equal(values[certain, 3] < 0, inside[certain])
     assert np.allclose(np.linalg.norm(values[:, :3], axis=1), 1, atol=1e-5)

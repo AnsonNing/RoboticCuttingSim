@@ -1,0 +1,135 @@
+{
+  "schema": "rcs_generalization_live_stage_v1",
+  "round_id": "wp11_phaseE_round1",
+  "stage_id": "wp11_phaseE_round1_live_001",
+  "status": "PREDECLARED",
+  "declared": "2026-10-30, WP-11 Phase E round 1, live stage. Committed and pushed before any live run of this stage. The round file (configs/wp11/generalization_round1.json, 4b2fe08) declares no live criteria ('no live run is part of round 1'), so this file declares them. The round file, its kinematic evidence, the goal evaluators, physics, cutting laws and v1-v4 thresholds are not changed. Any change to the rules below is a new stage file.",
+  "round_file": "configs/wp11/generalization_round1.json",
+  "round_file_sha256": "d0e6995e705b2f50ce3428a3b1fb4e61246f03b4cffc8f79960cf42f38b93bf5",
+  "kinematic": {
+    "stage1_dir": "artifacts/wp11/phaseE/round1_stage1_001",
+    "evidence": "docs/evidence/wp11/phaseE_round1_001.json",
+    "report": "docs/reports/WP11_PHASE_E_ROUND1.md",
+    "text": "The kinematic classes stay exactly as recorded (including the 5 SLICE-PUSH and the Test A s2 CUTTING_FAILUREs). Live results are reported next to them, never merged into them."
+  },
+  "scope": "LIVE Native results (runtime_source live_isaac_sim): Isaac Sim 6.2 Kit/PhysX Franka articulation with the physically grasped ruler_knife_v2_y (two-finger physical_grasp, pregrasped at HOME) + retained TLMPM material (law 8, 1 mm particles, 4 mm grid, 0.1 ms) + RTX cameras. Material parameters are provisional and uncalibrated. One seed per sample (no repeat statistics). No Lab parity.",
+  "samples": [
+    {"priority": 1, "sample_id": "E1_TRIM_s1203", "family": "TRIM", "seed": 1203, "record_every": 10, "media": false, "estimated_disk_gb": 0.7,
+     "purpose": "representative success: ellipsoid cap, rho 10 deg (kinematic 0.993)",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TRIM_s1203-E1_TRIM_s1203_trim-ae40cee7", "live_plan_end_s": 9.46, "duration_s": 11.5, "steps": 575, "history_stride": 15}},
+    {"priority": 2, "sample_id": "E1_CUT_s1101", "family": "CUT", "seed": 1101, "record_every": 10, "media": false, "estimated_disk_gb": 0.8,
+     "purpose": "representative success: vertical sever, yaw +13 deg, cut at +20 mm",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_CUT_s1101-E1_CUT_s1101_sever-85f34a04", "live_plan_end_s": 12.1, "duration_s": 14.5, "steps": 725, "history_stride": 19}},
+    {"priority": 3, "sample_id": "E1_TEST_A_s6", "family": "TEST_A", "seed": 6, "record_every": 5, "media": true, "estimated_disk_gb": 1.2,
+     "purpose": "Test A: skim along -x at rho 10 deg (edge line -y)",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TEST_A_s6-E1_TEST_A_s6_trim-433dedee", "live_plan_end_s": 10.8, "duration_s": 13.0, "steps": 650, "history_stride": 17}},
+    {"priority": 4, "sample_id": "E1_TEST_C_s1602", "family": "TEST_C", "seed": 1602, "record_every": 5, "media": true, "estimated_disk_gb": 1.7,
+     "purpose": "Test C: three protrusions removed one at a time, tlmpm_v5 (kinematic all >= 0.946)",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TEST_C_s1602-E1_TEST_C_s1602_remove3-5d2b4b78", "live_plan_end_s": 17.48, "duration_s": 20.5, "steps": 1025, "history_stride": 26}},
+    {"priority": 5, "sample_id": "E1_TEST_B_s1502", "family": "TEST_B", "seed": 1502, "record_every": 10, "media": true, "estimated_disk_gb": 1.6,
+     "purpose": "Test B: four slices, five pieces, tlmpm_v5",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TEST_B_s1502-E1_TEST_B_s1502_divide5-48298237", "live_plan_end_s": 34.54, "duration_s": 39.0, "steps": 1950, "history_stride": 49}},
+    {"priority": 6, "sample_id": "E1_CUT_s1102", "family": "CUT", "seed": 1102, "record_every": 10, "media": false, "estimated_disk_gb": 0.8,
+     "purpose": "representative success: 20 deg oblique sever",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_CUT_s1102-E1_CUT_s1102_sever-6eb4d121", "live_plan_end_s": 12.14, "duration_s": 14.5, "steps": 725, "history_stride": 19}},
+    {"priority": 7, "sample_id": "E1_TRIM_s1201", "family": "TRIM", "seed": 1201, "record_every": 10, "media": false, "estimated_disk_gb": 0.7,
+     "purpose": "lowest TRIM margin: dome, rho 10 deg (kinematic 0.936)",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TRIM_s1201-E1_TRIM_s1201_trim-0bdb4cbc", "live_plan_end_s": 9.34, "duration_s": 11.5, "steps": 575, "history_stride": 15}},
+    {"priority": 8, "sample_id": "E1_SLICE_PUSH_s1301", "family": "SLICE_PUSH", "seed": 1301, "record_every": 10, "media": "only if TASK_SUCCESS", "estimated_disk_gb": 1.2,
+     "purpose": "representative kinematic failure (cut 1 lands 1 mm short after a 1.16 mm slide); live with the plain planner (see slice_push_vision_hook)",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-90e98256", "live_plan_end_s": 25.3, "duration_s": 29.0, "steps": 1450, "history_stride": 37}},
+    {"priority": 9, "sample_id": "E1_TEST_A_s2", "family": "TEST_A", "seed": 2, "record_every": 10, "media": false, "estimated_disk_gb": 0.8,
+     "purpose": "marginal kinematic failure: -20 deg oblique sever, swept-plane location 1.02 vs 1.00 mm",
+     "declared_live_task": {"live_task_id_at_declaration_cpu": "CFG-E1_TEST_A_s2-E1_TEST_A_s2_sever-32943beb", "live_plan_end_s": 13.52, "duration_s": 16.0, "steps": 800, "history_stride": 20}}
+  ],
+  "held": {
+    "E1_TEST_D_s1701": "not run live: tlmpm_v5 slot overflow at S = 8 in the kinematic stage (needs a larger slots_per_node first)",
+    "E1_TEST_D_s1702": "not run live: sever_then_remove_all is unsatisfiable as declared under the current goals.py semantics",
+    "E1_TEST_D_s1704": "not run live: same as s1702",
+    "other_round1_seeds": "not nominated for this live stage; not run"
+  },
+  "task": {
+    "builder": "generalization.build_sample + generalization.compile_sample with the round file, unchanged (scene, solver rule tlmpm_v4 <= 2 digits else tlmpm_v5, max_cuts, dimension/cut-plane/support/sever/remove rules, goal). The kinematic task id is recompiled and must equal the stage-1 record.",
+    "live_recompile": "The same scene and goal are compiled again with the live planner overrides (controller.planner_overrides) and the live duration rule. The live goal JSON must differ from the kinematic goal JSON only in episode.duration_s (checked by run_generalization_live.py prepare). The live task id differs from the kinematic one because the planner overrides and the duration enter the config hash.",
+    "duration_rule": {
+      "probe_duration_s": 120.0,
+      "plan_end_factor": 1.1,
+      "settle_after_plan_s": 1.0,
+      "round_up_to_s": 0.5,
+      "text": "Probe-compile with the live options; plan end = first DONE knot of the ideal-integrator reference schedule of the live plan; duration = ceil((1.1 x plan end + 1.0 s) / 0.5 s) x 0.5 s. The 10% allowance covers live tracking lag (C5: ~0.2 s per two phases); the knife holds still, cutting disabled, from the controller's DONE to the time limit."
+    },
+    "history_stride": "max(5, ceil(live control steps / 40)) (round-file history rule), passed as --oracle-stride; the last control step is always recorded",
+    "seed": 42
+  },
+  "controller": {
+    "all_families": "goal_planner_v1 plan (scene + goal + tool profile + options only; no particle, label, component or oracle input) driven by WaypointPolicy, controller_profile path_v2 and cut_extent plane_section from the round goal (unchanged), per-sample rake/skew/skim direction from the round goal (unchanged).",
+    "planner_overrides": {"max_rotation_deg": 1.0, "max_translation_m": 0.001},
+    "planner_overrides_reason": "The live-validated C5 controller (docs/evidence/wp11/phaseC5_live_trim_001.json; also used by Phase G Native reliability): Phase D measured 11 mm tracking lag during the 2 deg/step REORIENT; 1 deg / 1 mm per 20 ms step lowered it to 6.1 mm. Cutting segments (cut 10 mm/s, skim 25 mm/s, push 10 mm/s) and the path_v2 20 mm/s final approach are below these limits and unchanged.",
+    "edge_feedback": "measured",
+    "edge_feedback_text": "Simulator tool-edge pose of the physically held knife (privileged tool proprioception, as C5); not material oracle state, not a policy observation.",
+    "position_tolerance": "path_v2 profile default 0.3 mm",
+    "per_family": {
+      "CUT": "path_v2 through-cut (vertical or 20 deg oblique per the round index rule)",
+      "TRIM": "path_v2 surface_trim (REORIENT -> PRE_CUT -> SKIM -> WITHDRAW), rake per the round index rule",
+      "SLICE_PUSH": "path_v2 two through-cuts then the cut-disabled blade-face push; plain planner, NO perception hook (see slice_push_vision_hook)",
+      "TEST_A": "path_v2 through-cut or surface_trim per the variant",
+      "TEST_B": "path_v2 four through-cuts (s1502), one digit each, tlmpm_v5",
+      "TEST_C": "path_v2 three surface_trim passes in +x order, one digit each, rho 10 deg, tlmpm_v5"
+    },
+    "slice_push_vision_hook": {
+      "decision": "NOT APPLIED. SLICE-PUSH s1301 runs with the plain planner.",
+      "reason": "The ADR 0009 wrist-depth relocation exists only as the registered-task path: policies.vision_policy refuses any task id other than SLICE-PUSH-01 and builds its plan with policies.slice_push_vision from the legacy slice_push plan (labels start_0 / move_1); goal_planner.planner_options rejects controller_profile path_v2_vision; run_wp10_live.py refuses --controller-profile for --scene/--goal runs. Applying it to a configured plan needs (1) a goal-planner perception hook that marks the cut-0 / cut-1 settle holds as calibration / survey points and inserts the retarget waypoint, (2) runner wiring of the depth source for configured tasks, and (3) a new validation of the end_face_plus_x survey in wp11_workcell_v1 with ruler_knife_v2_y and a yawed bar (ADR 0009 was validated in blademaster_workcell_v1 with ruler_knife_v1); the kinematic stage cannot validate it (no cameras). That is substantial new code in shared files (policies.py, goal_planner.py, run_wp10_live.py), outside this stage.",
+      "prediction": "With the plain planner the live s1301 is expected to repeat the kinematic cut-1 location failure (cut_at_declared_planes) if the bar slides about 1 mm after cut 0."
+    },
+    "grasp": "ruler_knife_v2_y, physical_grasp, pregrasped at HOME (wp11_workcell_v1 q_home), ToolGraspConfig defaults; the knife is never fixed to the hand"
+  },
+  "schedule": "Full compiled plan HOME -> operations -> planner RETURN_HOME (the schedule the kinematic stage ran and stage 1 preflighted), then hold with cutting disabled to the goal time limit (--hold-until-time-limit), then the Phase D physical return-to-home (episode_lifecycle, --return-home) scored as home_outcome. The C2 plan preflight of the full live plan runs before launch and must PASS (runner default).",
+  "runtime": {
+    "backend": "Native Isaac Sim 6.2 (scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal)",
+    "python": ".deps/isaacsim-venv/bin/python",
+    "seed": 42,
+    "tmpdir": "/mnt/data/ningan/tmp",
+    "worktree": "a fresh detached git worktree at the commit that adds this file (git_dirty = False); runtime directories linked as in earlier phases (.venv, .deps/*, artifacts/workcell_asset_cache, artifacts/wp11)",
+    "cameras": "--record-cameras --overview-camera (wrist D405 x2, global D455, presentation overview + close-up RGB); record_every per sample (5 for the short media samples, else 10)",
+    "device_policy": {
+      "devices": [0, 1],
+      "max_mine": 2,
+      "max_other_active": 2,
+      "min_free_gib": 12,
+      "settle_after_launch_s": 180,
+      "disk_floor_gb": 15,
+      "text": "Launch on a GPU only when it has <= 2 other active jobs (a compute process not started by this queue that belongs to a RoboticCuttingSim runtime or shows nonzero SM utilization in a 3-sample nvidia-smi pmon window, as round 1) and >= 12 GiB free memory, at most 2 of these runs at once, at least 180 s after this queue's previous launch on that GPU. No launch when free space on /mnt/data minus the remaining estimate of running jobs minus the next sample's estimate is below 15 GB. Non-RCS processes are never stopped. The device is recorded per sample."
+    }
+  },
+  "success_criteria": {
+    "goal": "The same goal evaluators as the kinematic stage (env.evaluate() = goals.evaluate_goal on the live recorded oracle history; integrity / outcome / quality layers), with the same goal JSON except episode.duration_s. Unchanged thresholds: sever and divide (pieces, minimum part fraction, main-parts mass fraction, 2 mm frozen location statistic or the ADR 0006 Amendment 1 swept-plane rule), remove_protrusions (removed >= 0.9 per selected protrusion, substrate share >= 0.99, detached below-plane <= 0.01, single substrate component), move_piece (>= 10 mm, others <= 2 mm, window from the task reference schedule as goals.py does).",
+    "task_success_requires": ["goal evaluator verdict PASS", "the scripted plan reached DONE within the episode", "finite recorded material state and no solver error", "no GRASP_FAILURE condition in the task phase", "no IK_FAILURE condition in the task phase"],
+    "report_only": ["measured-path C2 geometric clearance (fingers, handle, D405s, table, board, Franka 1; blade vs the declared uncut workpiece)", "native tool-contact penetration", "tau/psi/rho/mu of the measured and commanded edge on armed skim steps", "goal quality layer", "tracking error and plan lag", "material reaction"]
+  },
+  "outcome_classes": {
+    "SCENE_INFEASIBLE": {"text": "The live plan preflight (C2, run by run_wp10_live.py before launch) refuses the plan for a collision/clearance reason; no physics runs."},
+    "IK_FAILURE": {"text": "Live: the live preflight refuses for an IK reason, or during the task phase (every step before RETURN_HOME, incl. the hold) any step has ik_status other than ok or action_report.workspace_clamped = True. Per-step translation/rotation limit clamps are the declared rate limits, reported, not failures."},
+    "GRASP_FAILURE": {"text": "Live: during the task phase the GraspMonitor reports the grasp lost (LOST / grasp_lost) or the slip since settling exceeds a warning gate.",
+                      "gates": {"max_slip_m": 0.002, "max_rotation_rad": 0.05235987755982988, "source": "grasp_monitor.GraspLossConfig warning gates (translation 2 mm, rotation pi/60 rad), the same gates home_outcome uses"}},
+    "CUTTING_FAILURE": {"text": "The live episode ran, none of the above applies, and the goal verdict is FAIL or FAIL_INTEGRITY, or the recorded material state is non-finite / the solver raised (e.g. tlmpm_v5 slot overflow), or the scripted plan did not reach DONE within the episode."},
+    "TASK_SUCCESS": {"text": "All of success_criteria.task_success_requires hold. Reported as LIVE task success."},
+    "NOT_RUN": {"text": "No live result: not launched (resource or disk policy never satisfied), or the process ended without an episode result for a reason other than the above. Kept in every denominator as a non-success, with its reason."}
+  },
+  "precedence": "SCENE_INFEASIBLE / IK_FAILURE (preflight) > NOT_RUN (no episode) > IK_FAILURE (live) > GRASP_FAILURE > CUTTING_FAILURE > TASK_SUCCESS. The goal verdict is always reported next to the class.",
+  "home_outcome": "Reported separately for every sample and never part of the class: episode_lifecycle physical return-to-home (preflighted joint path executed by the robot, never a teleport) with the Phase D gates unchanged (home joint error <= 0.01 rad, tool pose vs reset <= 5 mm / 0.0524 rad, grasp slip/rotation within the warning gates, 0 label changes, 0 unintended tool contacts, measured path clearance PASS).",
+  "failure_policy": "A live episode that fails is kept and classified; the same seed is never retried with changed settings. A process that ends before its first recorded control step for an infrastructure reason (e.g. Kit startup) and was not refused by the preflight is relaunched once into run_002 of the same sample; both attempts are recorded.",
+  "outputs": {
+    "root": "artifacts/wp11/phaseE/round1_live_001/<sample_id>/ with inputs/ (scene.json, goal.json, prepare.json), run_00N/ (runner output), attempt_00N.json (command, device, wall, disk), analysis_00N/",
+    "logs": "artifacts/wp11/logs/phaseE_live_<sample_id>_00N.log, queue log artifacts/wp11/logs/phaseE_live_queue_00N.log",
+    "evidence": "docs/evidence/wp11/phaseE_round1_live_001.json",
+    "report": "docs/reports/WP11_PHASE_E_ROUND1.md, section 'Live stage' (kinematic and live columns kept separate)",
+    "media": "scripts/render_demo_episode.py (as C5) into docs/media/wp11/<name>/ (demo.gif, demo.mp4, poster.png) for Test C s1602, Test B s1502, Test A s6, and SLICE-PUSH s1301 only if TASK_SUCCESS; GIF kept to a few MB"
+  },
+  "reporting": ["task outcome (goal verdict, failed checks) and home_outcome", "outcome class and reason", "goal metrics: pieces, removal per protrusion, substrate share, location", "grasp: max slip and rotation, monitor state", "max penetration (native tool contacts; geometric blade vs declared bar)", "tau/psi/rho/mu for skims", "IK / clamp counts", "plan lag", "wall time, device, git sha, disk use"],
+  "commands": {
+    "plan": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py plan",
+    "queue": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py queue --root artifacts/wp11/phaseE/round1_live_001 --queue-log artifacts/wp11/logs/phaseE_live_queue_001.log",
+    "analyze": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py analyze --sample-dir artifacts/wp11/phaseE/round1_live_001/<sample_id> --run run_001 --out artifacts/wp11/phaseE/round1_live_001/<sample_id>/analysis_001",
+    "summarize": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_generalization_live.py summarize --root artifacts/wp11/phaseE/round1_live_001 --out docs/evidence/wp11/phaseE_round1_live_001.json"
+  }
+}

@@ -1,0 +1,3492 @@
+{
+ "evidence_id": "phaseR_negative_controls_001",
+ "protocol_id": "wp11_phaseR_negative_controls_v1",
+ "protocol_file": "configs/wp11/phaseR_negative_controls_v1.json",
+ "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+ "label_protocol_a": "POST_LIVE: protocol (a) runs after the live TRIM at rho = 10 deg already ran (Phase C5/C5b). Its results do not gate or re-score any live record; they close a material-level evidence gap only.",
+ "created": "2026-10-30T12:17:05.828481+09:00",
+ "summary_git_sha": "8ada0284d809ee44a1244d63fb88b68b7eb1d053",
+ "read_only": true,
+ "scope": "Kinematic ideal-tracking material runs, 1 mm particles, 4 mm grid, 0.1 ms material dt, law 8, seed 42; provisional uncalibrated material; no robot, IK, grasp, slip or camera evidence",
+ "verdict_counts": {
+  "PASS": 14
+ },
+ "rows": {
+  "Ra_no_contact": {
+   "dir": "artifacts/wp11/phaseR/ra_no_contact_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_contacts": true,
+    "zero_labels": true,
+    "mass_conserved": true,
+    "no_blade_contacts_during_skim_c4": true,
+    "one_component_c4": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_no_contact",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_no_contact_law8_001"
+   ],
+   "wall_s": 332.9514176380035,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.0,
+     "max_N": 0.0,
+     "mean_N_contact_steps": 0.0,
+     "contact_steps": 0,
+     "steps": 400
+    },
+    "armed_contacts": {
+     "armed_steps": 167,
+     "steps_with_blade_contacts": 0,
+     "steps_with_grip_force": 0,
+     "episode_steps_with_blade_contacts": 0
+    },
+    "plowing": {
+     "armed_steps": 167,
+     "armed_steps_with_cutting_segments": 167,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "c4_force_all_steps": {
+     "phase": "skim",
+     "steps": 167,
+     "blade_force_mean_N": 0.0,
+     "blade_force_max_N": 0.0,
+     "total_force_mean_N": 0.0,
+     "total_force_max_N": 0.0,
+     "total_force_mean_vector_world_N": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "steps_with_blade_contacts": 0,
+     "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+    }
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_no_contact_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_labels": true,
+      "no_blade_contacts_during_skim": true,
+      "one_component": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "c4_forces": {
+       "skim": {
+        "phase": "skim",
+        "steps": 167,
+        "blade_force_mean_N": 0.0,
+        "blade_force_max_N": 0.0,
+        "total_force_mean_N": 0.0,
+        "total_force_max_N": 0.0,
+        "total_force_mean_vector_world_N": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "steps_with_blade_contacts": 0,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "force": {
+        "phase": "skim",
+        "steps": 167,
+        "blade_force_mean_N": 0.0,
+        "blade_force_max_N": 0.0,
+        "total_force_mean_N": 0.0,
+        "total_force_max_N": 0.0,
+        "total_force_mean_vector_world_N": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "steps_with_blade_contacts": 0,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      }
+     }
+    },
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_no_contact_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_contacts": true,
+      "zero_labels": true,
+      "mass_conserved": true
+     },
+     "task_id": "TRIM-02-K2-R10",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.0,
+       "max_N": 0.0,
+       "mean_N_contact_steps": 0.0,
+       "contact_steps": 0,
+       "steps": 400
+      },
+      "armed_contacts": {
+       "armed_steps": 167,
+       "steps_with_blade_contacts": 0,
+       "steps_with_grip_force": 0,
+       "episode_steps_with_blade_contacts": 0
+      },
+      "plowing": {
+       "armed_steps": 167,
+       "armed_steps_with_cutting_segments": 167,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": 0.0,
+       "plowing_segment_fraction_of_cutting_segments": 0.0,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true
+     }
+    }
+   ]
+  },
+  "Ra_side_push": {
+   "dir": "artifacts/wp11/phaseR/ra_side_push_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_side_push",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_side_push_law8_001"
+   ],
+   "wall_s": 335.38668234899524,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "contact_window": {
+     "phases": [
+      "side_push"
+     ],
+     "contact_steps": 61,
+     "phase_steps": 100,
+     "mean_N": 0.3079007505917788,
+     "max_N": 0.4116687659538303,
+     "all_phase_steps_mean_N": 0.18781945786098508
+    },
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.06653559632376682,
+     "max_N": 0.4116687659538303,
+     "mean_N_contact_steps": 0.1064569541180269,
+     "contact_steps": 250,
+     "steps": 400
+    },
+    "plowing": {
+     "armed_steps": 100,
+     "armed_steps_with_cutting_segments": 0,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": null,
+     "plowing_segment_fraction_of_cutting_segments": null,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "c4_force_all_steps": {
+     "phase": "side_push",
+     "steps": 100,
+     "blade_force_mean_N": 0.18781945786098508,
+     "blade_force_max_N": 0.4116687659538303,
+     "total_force_mean_N": 0.18781945786098508,
+     "total_force_max_N": 0.4116687659538303,
+     "total_force_mean_vector_world_N": [
+      0.18541306431870908,
+      -1.1760734227594938e-06,
+      0.022024578475793533
+     ],
+     "steps_with_blade_contacts": 61,
+     "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+    }
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_side_push_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "contact_force_present": true,
+      "zero_labels": true,
+      "one_component": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "c4_forces": {
+       "side_push": {
+        "phase": "side_push",
+        "steps": 100,
+        "blade_force_mean_N": 0.22982727987816293,
+        "blade_force_max_N": 0.44479786598989896,
+        "total_force_mean_N": 0.22982727987816293,
+        "total_force_max_N": 0.44479786598989896,
+        "total_force_mean_vector_world_N": [
+         0.22923779489929075,
+         -2.2687055608455742e-07,
+         0.015712392007003473
+        ],
+        "steps_with_blade_contacts": 61,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "force": {
+        "phase": "side_push",
+        "steps": 100,
+        "blade_force_mean_N": 0.22982727987816293,
+        "blade_force_max_N": 0.44479786598989896,
+        "total_force_mean_N": 0.22982727987816293,
+        "total_force_max_N": 0.44479786598989896,
+        "total_force_mean_vector_world_N": [
+         0.22923779489929075,
+         -2.2687055608455742e-07,
+         0.015712392007003473
+        ],
+        "steps_with_blade_contacts": 61,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "phase_label_change": {
+        "phases": [
+         "side_push"
+        ],
+        "steps": 100,
+        "time_s": [
+         2.22,
+         4.22
+        ],
+        "labelled_before": 0,
+        "labelled_after": 0,
+        "labelled_max": 0,
+        "labelled_min": 0,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "force_present_level_N": 0.1
+      }
+     }
+    },
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_side_push_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_new_labels": true,
+      "one_component": true,
+      "contact_window_mean_force_gt_0_1N": true,
+      "mass_conserved": true
+     },
+     "task_id": "CUT-03-K2",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "contact_window": {
+       "phases": [
+        "side_push"
+       ],
+       "contact_steps": 64,
+       "phase_steps": 100,
+       "mean_N": 0.31807857465397776,
+       "max_N": 0.35944499576399885,
+       "all_phase_steps_mean_N": 0.20357028777854574
+      },
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.057148491735730944,
+       "max_N": 0.35944499576399885,
+       "mean_N_contact_steps": 0.1402416975109962,
+       "contact_steps": 163,
+       "steps": 400
+      },
+      "plowing": {
+       "armed_steps": 100,
+       "armed_steps_with_cutting_segments": 0,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": null,
+       "plowing_segment_fraction_of_cutting_segments": null,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true,
+      "c4_force_all_steps": {
+       "phase": "side_push",
+       "steps": 100,
+       "blade_force_mean_N": 0.20357028777854574,
+       "blade_force_max_N": 0.35944499576399885,
+       "total_force_mean_N": 0.20357028777854574,
+       "total_force_max_N": 0.35944499576399885,
+       "total_force_mean_vector_world_N": [
+        -0.20354398890049197,
+        3.4052981930793313e-08,
+        0.0010497444364077069
+       ],
+       "steps_with_blade_contacts": 64,
+       "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+      }
+     }
+    }
+   ]
+  },
+  "Ra_flat_press_normal": {
+   "dir": "artifacts/wp11/phaseR/ra_flat_press_normal_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_1N": true,
+    "mass_conserved": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_flat_press_normal",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_flat_press_normal_law8_001"
+   ],
+   "wall_s": 330.744760734,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "contact_window": {
+     "phases": [
+      "press",
+      "press_hold"
+     ],
+     "contact_steps": 55,
+     "phase_steps": 71,
+     "mean_N": 1.2121322566126864,
+     "max_N": 1.9321252848623478,
+     "all_phase_steps_mean_N": 0.938975691742222
+    },
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.16685758543269497,
+     "max_N": 1.9321252848623478,
+     "mean_N_contact_steps": 1.1709304240890877,
+     "contact_steps": 57,
+     "steps": 400
+    },
+    "plowing": {
+     "armed_steps": 71,
+     "armed_steps_with_cutting_segments": 0,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": null,
+     "plowing_segment_fraction_of_cutting_segments": null,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "c4_force_all_steps": {
+     "phase": "press",
+     "steps": 56,
+     "blade_force_mean_N": 0.7677003176335742,
+     "blade_force_max_N": 1.9321252848623478,
+     "total_force_mean_N": 0.7677003176335742,
+     "total_force_max_N": 1.9321252848623478,
+     "total_force_mean_vector_world_N": [
+      0.11896345228511304,
+      -4.738739640666337e-06,
+      0.758128682692976
+     ],
+     "steps_with_blade_contacts": 40,
+     "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+    }
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r00_nc_flat_press_law8_001",
+     "verdict": "FAIL",
+     "checks": {
+      "contact_force_present": false,
+      "zero_labels": true,
+      "one_component": true
+     },
+     "task_id": "TRIM-02-K2-R00",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "c4_forces": {
+       "press": {
+        "phase": "press",
+        "steps": 40,
+        "blade_force_mean_N": 0.9312514371027213,
+        "blade_force_max_N": 1.886295549999936,
+        "total_force_mean_N": 0.9312514371027213,
+        "total_force_max_N": 1.886295549999936,
+        "total_force_mean_vector_world_N": [
+         0.013581348502795798,
+         -3.294953254129318e-06,
+         0.9311331034678005
+        ],
+        "steps_with_blade_contacts": 25,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "force": {
+        "phase": "press",
+        "steps": 40,
+        "blade_force_mean_N": 0.9312514371027213,
+        "blade_force_max_N": 1.886295549999936,
+        "total_force_mean_N": 0.9312514371027213,
+        "total_force_max_N": 1.886295549999936,
+        "total_force_mean_vector_world_N": [
+         0.013581348502795798,
+         -3.294953254129318e-06,
+         0.9311331034678005
+        ],
+        "steps_with_blade_contacts": 25,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "phase_label_change": {
+        "phases": [
+         "press"
+        ],
+        "steps": 40,
+        "time_s": [
+         1.42,
+         2.22
+        ],
+        "labelled_before": 0,
+        "labelled_after": 0,
+        "labelled_max": 0,
+        "labelled_min": 0,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "force_present_level_N": 1.0
+      }
+     }
+    },
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_flat_press_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_new_labels": true,
+      "one_component": true,
+      "contact_window_mean_force_gt_1N": true,
+      "mass_conserved": true
+     },
+     "task_id": "TRIM-02-K2-R00",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "contact_window": {
+       "phases": [
+        "press"
+       ],
+       "contact_steps": 25,
+       "phase_steps": 40,
+       "mean_N": 1.4899927487121554,
+       "max_N": 1.8862279366696746,
+       "all_phase_steps_mean_N": 0.9312454679450969
+      },
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 1.2124774827010874,
+       "max_N": 1.8862279366696746,
+       "mean_N_contact_steps": 1.5445573028039328,
+       "contact_steps": 314,
+       "steps": 400
+      },
+      "plowing": {
+       "armed_steps": 40,
+       "armed_steps_with_cutting_segments": 0,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": null,
+       "plowing_segment_fraction_of_cutting_segments": null,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true,
+      "c4_force_all_steps": {
+       "phase": "press",
+       "steps": 40,
+       "blade_force_mean_N": 0.9312454679450969,
+       "blade_force_max_N": 1.8862279366696746,
+       "total_force_mean_N": 0.9312454679450969,
+       "total_force_max_N": 1.8862279366696746,
+       "total_force_mean_vector_world_N": [
+        0.01358264102206963,
+        -3.502313994929729e-06,
+        0.9311271055503312
+       ],
+       "steps_with_blade_contacts": 25,
+       "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+      }
+     }
+    }
+   ]
+  },
+  "Ra_blunt_handle_v2": {
+   "dir": "artifacts/wp11/phaseR/ra_blunt_handle_v2_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "grip_contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true
+   },
+   "control_validity": {
+    "zero_blade_contact_steps_episode": true,
+    "grip_footprint_inside_bar_top": true,
+    "grip_footprint_inside_support_floor_span": true,
+    "grip_footprint_outside_dome": true
+   },
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_blunt_handle_v2",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_blunt_handle_v2_law8_001"
+   ],
+   "wall_s": 327.46057516199653,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "contact_window": {
+     "phases": [
+      "handle_press",
+      "handle_hold"
+     ],
+     "contact_steps": 25,
+     "phase_steps": 40,
+     "mean_N": 0.8484333892818947,
+     "max_N": 1.0120779527567685,
+     "all_phase_steps_mean_N": 0.5302708683011842
+    },
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.05333595085085875,
+     "max_N": 1.0120781395650587,
+     "mean_N_contact_steps": 0.0,
+     "contact_steps": 0,
+     "steps": 400
+    },
+    "footprint": {
+     "footprint_local_x_m": [
+      0.04299999999999999,
+      0.06699999999999999
+     ],
+     "footprint_local_y_m": [
+      -0.010999999999999998,
+      0.011000000000000038
+     ],
+     "footprint_area_m2": 0.0005280000000000008,
+     "grip_bottom_local_z_m": 0.017999999999999974,
+     "support_floor_local_x_m": [
+      -0.09,
+      0.09
+     ],
+     "support_floor_local_y_m": [
+      -0.025,
+      0.025
+     ],
+     "inside_support_floor_span": true,
+     "inside_bar_top": true,
+     "dome_x_m": [
+      -0.012,
+      0.012
+     ],
+     "outside_dome_footprint": true,
+     "pose_source": "recorded"
+    },
+    "blade_contact_steps": {
+     "episode": 0,
+     "armed": 0,
+     "press_hold": 0
+    },
+    "workpiece_motion_hold_end_vs_pre_press": {
+     "rigid_fit_all_particles": {
+      "com_displacement_m": [
+       -0.00014210576865858736,
+       4.405320772885683e-09,
+       -0.00016461294830952787
+      ],
+      "com_displacement_norm_m": 0.00021746602552263214,
+      "rotation_deg": 0.24525065708894975,
+      "yaw_deg": -2.5525050260308435e-05,
+      "residual_rms_m": 0.000461424167789556,
+      "residual_max_m": 0.001473970115810538
+     },
+     "under_footprint": {
+      "particles": 10560,
+      "top_layer": 528,
+      "bottom_layer": 528,
+      "top_mean_dz_m": -0.0016956985716454008,
+      "top_min_dz_m": -0.001843312755227089,
+      "bottom_mean_dz_m": -5.277389914915671e-05,
+      "column_height_m": 0.01893757883226499,
+      "compression_m": 0.001642924672496244,
+      "compression_strain": 0.08675473707848563
+     },
+     "left_half_max_displacement_m": 0.0002967030770668465,
+     "compression_over_rigid_com_displacement": 7.554856757729549
+    },
+    "plowing": {
+     "armed_steps": 40,
+     "armed_steps_with_cutting_segments": 25,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_handle_law8_001",
+     "verdict": "FAIL",
+     "checks": {
+      "grip_contact_force_present": false,
+      "zero_labels": true,
+      "one_component": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "c4_forces": {
+       "handle_sweep": {
+        "phase": "handle_sweep",
+        "steps": 124,
+        "blade_force_mean_N": 0.033445835340061854,
+        "blade_force_max_N": 0.07866453935726413,
+        "total_force_mean_N": 0.033445835340061854,
+        "total_force_max_N": 0.07866453935726413,
+        "total_force_mean_vector_world_N": [
+         -0.026348252634072138,
+         9.980631032139448e-07,
+         0.012120371946619433
+        ],
+        "steps_with_blade_contacts": 0,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "handle_force": {
+        "mean_N": 0.03344583529235486,
+        "max_N": 0.07866453349120867,
+        "steps": 124,
+        "steps_with_grip_force": 95
+       },
+       "force": {
+        "phase": "handle_sweep",
+        "steps": 124,
+        "blade_force_mean_N": 0.033445835340061854,
+        "blade_force_max_N": 0.07866453935726413,
+        "total_force_mean_N": 0.033445835340061854,
+        "total_force_max_N": 0.07866453935726413,
+        "total_force_mean_vector_world_N": [
+         -0.026348252634072138,
+         9.980631032139448e-07,
+         0.012120371946619433
+        ],
+        "steps_with_blade_contacts": 0,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      }
+     }
+    },
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_new_labels": true,
+      "one_component": true,
+      "grip_contact_window_mean_force_gt_0_1N": true,
+      "mass_conserved": true
+     },
+     "task_id": "CUT-03-K2",
+     "solver": "tlmpm_v4",
+     "git_sha": "dc64f4971b18333dc3b9bc0fbf5d20c110705492",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "contact_window": {
+       "phases": [
+        "handle_press",
+        "handle_hold"
+       ],
+       "contact_steps": 25,
+       "phase_steps": 40,
+       "mean_N": 0.8549731774046357,
+       "max_N": 1.015020025036319,
+       "all_phase_steps_mean_N": 0.5343582358778973
+      },
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.053750150780625824,
+       "max_N": 1.0150203974823948,
+       "mean_N_contact_steps": 0.0,
+       "contact_steps": 0,
+       "steps": 400
+      },
+      "footprint": {
+       "footprint_local_x_m": [
+        0.04299999999999998,
+        0.06699999999999999
+       ],
+       "footprint_local_y_m": [
+        -0.011000000000000013,
+        0.011000000000000013
+       ],
+       "footprint_area_m2": 0.0005280000000000008,
+       "grip_bottom_local_z_m": 0.017999999999999947,
+       "right_pedestal_local_x_m": [
+        0.019999999999999997,
+        0.09
+       ],
+       "right_pedestal_local_y_m": [
+        -0.021,
+        0.021
+       ],
+       "inside_pedestal_span": true,
+       "inside_bar_top": true,
+       "pose_source": "recorded"
+      },
+      "blade_contact_steps": {
+       "episode": 0,
+       "armed": 0,
+       "press_hold": 0,
+       "episode_blade_force_max_N": 1.0150203974823948
+      },
+      "workpiece_motion_hold_end_vs_pre_press": {
+       "rigid_fit_all_particles": {
+        "com_displacement_m": [
+         -8.849777401530186e-05,
+         1.3066218039997997e-08,
+         -0.0001519584930637398
+        ],
+        "com_displacement_norm_m": 0.00017585004916289375,
+        "rotation_deg": 0.24351366258659557,
+        "yaw_deg": -4.3411398365864664e-05,
+        "residual_rms_m": 0.0004669233064523921,
+        "residual_max_m": 0.0015083071512231817
+       },
+       "under_footprint": {
+        "particles": 10560,
+        "top_layer": 528,
+        "bottom_layer": 528,
+        "top_mean_dz_m": -0.0017056378825200777,
+        "top_min_dz_m": -0.0018509365618228912,
+        "bottom_mean_dz_m": -5.441990266042536e-05,
+        "column_height_m": 0.018952047365019098,
+        "compression_m": 0.0016512179798596524,
+        "compression_strain": 0.08712610031290878
+       },
+       "left_half_max_displacement_m": 0.0002465529315549748,
+       "compression_over_rigid_com_displacement": 9.38992049032692
+      },
+      "plowing": {
+       "armed_steps": 40,
+       "armed_steps_with_cutting_segments": 25,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": 0.0,
+       "plowing_segment_fraction_of_cutting_segments": 0.0,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true
+     }
+    }
+   ]
+  },
+  "Ra_stop_mid": {
+   "dir": "artifacts/wp11/phaseR/ra_stop_mid_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "labels_unchanged_during_stop": true,
+    "mass_conserved": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_stop_mid",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_stop_mid_law8_001"
+   ],
+   "wall_s": 298.4746747970057,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 2,
+    "final_labelled_count": 36924,
+    "max_labelled_count": 36924,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.008444523558641073,
+     "max_N": 0.07138631756615665,
+     "mean_N_contact_steps": 0.024300787219110997,
+     "contact_steps": 139,
+     "steps": 400
+    },
+    "hold_label_change": {
+     "phases": [
+      "hold"
+     ],
+     "steps": 25,
+     "time_s": [
+      2.1,
+      2.6
+     ],
+     "labelled_before": 11338,
+     "labelled_after": 11338,
+     "labelled_max": 11338,
+     "labelled_min": 11338,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "resumed_outcome_report_only": "PASS_TRIM_SEPARATION",
+    "plowing": {
+     "armed_steps": 193,
+     "armed_steps_with_cutting_segments": 168,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "c4_force_all_steps": {
+     "skim_half": {
+      "phase": "skim_half",
+      "steps": 84,
+      "blade_force_mean_N": 0.009959448803179668,
+      "blade_force_max_N": 0.07138631756615665,
+      "total_force_mean_N": 0.009959448803179668,
+      "total_force_max_N": 0.07138631756615665,
+      "total_force_mean_vector_world_N": [
+       -0.002086430372184536,
+       -1.0588298224002403e-08,
+       -0.009733302071946951
+      ],
+      "steps_with_blade_contacts": 20,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "hold": {
+      "phase": "hold",
+      "steps": 25,
+      "blade_force_mean_N": 0.03688687615115831,
+      "blade_force_max_N": 0.04717606211263096,
+      "total_force_mean_N": 0.03688687615115831,
+      "total_force_max_N": 0.04717606211263096,
+      "total_force_mean_vector_world_N": [
+       -0.00646170912659727,
+       1.0682273948736665e-07,
+       -0.03631624160334468
+      ],
+      "steps_with_blade_contacts": 25,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "skim_resume": {
+      "phase": "skim_resume",
+      "steps": 84,
+      "blade_force_mean_N": 0.0177252569344525,
+      "blade_force_max_N": 0.0665590220036888,
+      "total_force_mean_N": 0.0177252569344525,
+      "total_force_max_N": 0.0665590220036888,
+      "total_force_mean_vector_world_N": [
+       -0.003380316534655018,
+       9.837400142007465e-07,
+       -0.010206031110252903
+      ],
+      "steps_with_blade_contacts": 84,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     }
+    },
+    "c4_control": {
+     "hold_label_change": {
+      "phases": [
+       "hold"
+      ],
+      "steps": 25,
+      "time_s": [
+       2.1,
+       2.6
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "resumed_outcome_report_only": "PASS_TRIM_SEPARATION"
+    }
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_stop_mid_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "labels_unchanged_during_stop": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 2,
+      "final_labelled_count": 36774,
+      "hold_label_change": {
+       "phases": [
+        "hold"
+       ],
+       "steps": 25,
+       "time_s": [
+        2.1,
+        2.6
+       ],
+       "labelled_before": 11196,
+       "labelled_after": 11196,
+       "labelled_max": 11196,
+       "labelled_min": 11196,
+       "change": 0,
+       "stroke_active_steps": 0
+      },
+      "resumed_outcome_report_only": "PASS_TRIM_SEPARATION",
+      "c4_forces": {
+       "skim_half": {
+        "phase": "skim_half",
+        "steps": 84,
+        "blade_force_mean_N": 0.0154281162412746,
+        "blade_force_max_N": 0.04223871715179277,
+        "total_force_mean_N": 0.0154281162412746,
+        "total_force_max_N": 0.04223871715179277,
+        "total_force_mean_vector_world_N": [
+         -0.005054853474056082,
+         3.633918417810793e-09,
+         0.00433672600939601
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "hold": {
+        "phase": "hold",
+        "steps": 25,
+        "blade_force_mean_N": 0.008469919131285607,
+        "blade_force_max_N": 0.011924720080501444,
+        "total_force_mean_N": 0.008469919131285607,
+        "total_force_max_N": 0.011924720080501444,
+        "total_force_mean_vector_world_N": [
+         -0.007086660887580365,
+         -1.0121995350220736e-07,
+         0.0038235175306908786
+        ],
+        "steps_with_blade_contacts": 25,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "skim_resume": {
+        "phase": "skim_resume",
+        "steps": 84,
+        "blade_force_mean_N": 0.02488732358290284,
+        "blade_force_max_N": 0.09357508830327933,
+        "total_force_mean_N": 0.02488732358290284,
+        "total_force_max_N": 0.09357508830327933,
+        "total_force_mean_vector_world_N": [
+         -0.0054318162020600925,
+         -5.3479963083686006e-08,
+         0.01725695526250179
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "hold_label_change": {
+        "phases": [
+         "hold"
+        ],
+        "steps": 25,
+        "time_s": [
+         2.1,
+         2.6
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "resumed_outcome_report_only": "PASS_TRIM_SEPARATION"
+      }
+     }
+    }
+   ]
+  },
+  "Ra_lift_mid": {
+   "dir": "artifacts/wp11/phaseR/ra_lift_mid_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "labels_unchanged_during_withdraw": true,
+    "far_region_stays_attached_ge_99pct": true,
+    "no_label_beyond_lead_bound": true,
+    "mass_conserved": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_lift_mid",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_lift_mid_law8_001"
+   ],
+   "wall_s": 295.35689096999704,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 11338,
+    "max_labelled_count": 11338,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.03415719414722324,
+     "max_N": 0.13386480868994258,
+     "mean_N_contact_steps": 0.04337421479012475,
+     "contact_steps": 315,
+     "steps": 400
+    },
+    "lift_or_withdraw": {
+     "withdraw_label_change": {
+      "phases": [
+       "withdraw"
+      ],
+      "steps": 150,
+      "time_s": [
+       2.1,
+       5.1
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "furthest_armed_edge_local_x_m": 0.0,
+     "far_region_particles": 340,
+     "far_region_attached_mass_fraction": 1.0,
+     "far_region_labelled_particles": 0,
+     "max_labelled_initial_local_x_m": -0.0005000000237487257,
+     "lead_bound_m": 0.008
+    },
+    "plowing": {
+     "armed_steps": 234,
+     "armed_steps_with_cutting_segments": 84,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "c4_force_all_steps": {
+     "skim_half": {
+      "phase": "skim_half",
+      "steps": 84,
+      "blade_force_mean_N": 0.009957811407983307,
+      "blade_force_max_N": 0.07137579176141347,
+      "total_force_mean_N": 0.009957811407983307,
+      "total_force_max_N": 0.07137579176141347,
+      "total_force_mean_vector_world_N": [
+       -0.0020862049501331405,
+       -1.5585316440050032e-08,
+       -0.009731677865992034
+      ],
+      "steps_with_blade_contacts": 20,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "withdraw": {
+      "phase": "withdraw",
+      "steps": 150,
+      "blade_force_mean_N": 0.06938115951589238,
+      "blade_force_max_N": 0.13386480868994258,
+      "total_force_mean_N": 0.06938115951589238,
+      "total_force_max_N": 0.13386480868994258,
+      "total_force_mean_vector_world_N": [
+       -0.015016328606482906,
+       -7.08800795765363e-07,
+       -0.06763868217240088
+      ],
+      "steps_with_blade_contacts": 150,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     }
+    },
+    "c4_control": {
+     "withdraw_label_change": {
+      "phases": [
+       "withdraw"
+      ],
+      "steps": 150,
+      "time_s": [
+       2.1,
+       5.1
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "furthest_armed_edge_local_x_m": 0.0,
+     "far_region_particles": 340,
+     "far_region_attached_mass_fraction": 1.0,
+     "far_region_labelled_particles": 0,
+     "max_labelled_initial_local_x_m": -0.0005000000237487257,
+     "lead_bound_m": 0.008
+    }
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_lift_mid_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "labels_unchanged_during_withdraw": true,
+      "far_region_stays_attached_ge_99pct": true,
+      "no_label_beyond_lead_bound": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 11196,
+      "lift_or_withdraw": {
+       "withdraw_label_change": {
+        "phases": [
+         "withdraw"
+        ],
+        "steps": 150,
+        "time_s": [
+         2.1,
+         5.1
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "furthest_armed_edge_local_x_m": 0.0,
+       "far_region_particles": 340,
+       "far_region_attached_mass_fraction": 1.0,
+       "far_region_labelled_particles": 0,
+       "max_labelled_initial_local_x_m": -0.0005000000237487257,
+       "lead_bound_m": 0.008
+      },
+      "c4_forces": {
+       "skim_half": {
+        "phase": "skim_half",
+        "steps": 84,
+        "blade_force_mean_N": 0.015428481740914615,
+        "blade_force_max_N": 0.042239654250912605,
+        "total_force_mean_N": 0.015428481740914615,
+        "total_force_max_N": 0.042239654250912605,
+        "total_force_mean_vector_world_N": [
+         -0.005054890219807497,
+         1.1440050224199432e-08,
+         0.004336515866314238
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "withdraw": {
+        "phase": "withdraw",
+        "steps": 150,
+        "blade_force_mean_N": 0.07025692723844634,
+        "blade_force_max_N": 0.12579660635599374,
+        "total_force_mean_N": 0.07025692723844634,
+        "total_force_max_N": 0.12579660635599374,
+        "total_force_mean_vector_world_N": [
+         -0.00940819275638205,
+         2.8832170107767955e-07,
+         -0.06948587586521171
+        ],
+        "steps_with_blade_contacts": 150,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "withdraw_label_change": {
+        "phases": [
+         "withdraw"
+        ],
+        "steps": 150,
+        "time_s": [
+         2.1,
+         5.1
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "furthest_armed_edge_local_x_m": 0.0,
+       "far_region_particles": 340,
+       "far_region_attached_mass_fraction": 1.0,
+       "far_region_labelled_particles": 0,
+       "max_labelled_initial_local_x_m": -0.0005000000237487257,
+       "lead_bound_m": 0.008
+      }
+     }
+    }
+   ]
+  },
+  "Ra_half_length": {
+   "dir": "artifacts/wp11/phaseR/ra_half_length_law8_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "labels_unchanged_during_hold": true,
+    "labels_unchanged_during_withdraw": true,
+    "labels_unchanged_during_lift": true,
+    "far_region_stays_attached_ge_99pct": true,
+    "no_label_beyond_lead_bound": true,
+    "mass_conserved": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Ra_half_length",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/ra_half_length_law8_001"
+   ],
+   "wall_s": 292.5057435409981,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 11338,
+    "max_labelled_count": 11338,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.0032904256075393322,
+     "max_N": 0.07136821453192804,
+     "mean_N_contact_steps": 0.035572168730154945,
+     "contact_steps": 37,
+     "steps": 400
+    },
+    "hold_label_change": {
+     "phases": [
+      "hold"
+     ],
+     "steps": 10,
+     "time_s": [
+      2.1,
+      2.3
+     ],
+     "labelled_before": 11338,
+     "labelled_after": 11338,
+     "labelled_max": 11338,
+     "labelled_min": 11338,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "lift_or_withdraw": {
+     "withdraw_label_change": {
+      "phases": [
+       "withdraw"
+      ],
+      "steps": 84,
+      "time_s": [
+       2.3,
+       3.98
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "lift_label_change": {
+      "phases": [
+       "lift"
+      ],
+      "steps": 150,
+      "time_s": [
+       3.98,
+       6.98
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "furthest_armed_edge_local_x_m": 0.0,
+     "far_region_particles": 340,
+     "far_region_attached_mass_fraction": 1.0,
+     "far_region_labelled_particles": 0,
+     "max_labelled_initial_local_x_m": -0.0005000000237487257,
+     "lead_bound_m": 0.008
+    },
+    "plowing": {
+     "armed_steps": 328,
+     "armed_steps_with_cutting_segments": 84,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "c4_force_all_steps": {
+     "skim_half": {
+      "phase": "skim_half",
+      "steps": 84,
+      "blade_force_mean_N": 0.009959869727427044,
+      "blade_force_max_N": 0.07136821453192804,
+      "total_force_mean_N": 0.009959869727427044,
+      "total_force_max_N": 0.07136821453192804,
+      "total_force_mean_vector_world_N": [
+       -0.002086734410308314,
+       -6.971439838377321e-09,
+       -0.009733659806529647
+      ],
+      "steps_with_blade_contacts": 20,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "hold": {
+      "phase": "hold",
+      "steps": 10,
+      "blade_force_mean_N": 0.038525989343974,
+      "blade_force_max_N": 0.04721004072064651,
+      "total_force_mean_N": 0.038525989343974,
+      "total_force_max_N": 0.04721004072064651,
+      "total_force_mean_vector_world_N": [
+       -0.006856848995084874,
+       1.5744793468996932e-07,
+       -0.03791052382439375
+      ],
+      "steps_with_blade_contacts": 10,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "withdraw": {
+      "phase": "withdraw",
+      "steps": 84,
+      "blade_force_mean_N": 0.0011223963389538237,
+      "blade_force_max_N": 0.03328744188805464,
+      "total_force_mean_N": 0.0011223963389538237,
+      "total_force_max_N": 0.03328744188805464,
+      "total_force_mean_vector_world_N": [
+       -1.8765186111869254e-05,
+       2.9504093514834216e-09,
+       -0.0010203097303929098
+      ],
+      "steps_with_blade_contacts": 7,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "lift": {
+      "phase": "lift",
+      "steps": 150,
+      "blade_force_mean_N": 0.0,
+      "blade_force_max_N": 0.0,
+      "total_force_mean_N": 0.0,
+      "total_force_max_N": 0.0,
+      "total_force_mean_vector_world_N": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "steps_with_blade_contacts": 0,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     }
+    },
+    "c4_control": {
+     "hold_label_change": {
+      "phases": [
+       "hold"
+      ],
+      "steps": 10,
+      "time_s": [
+       2.1,
+       2.3
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "withdraw_label_change": {
+      "phases": [
+       "withdraw"
+      ],
+      "steps": 84,
+      "time_s": [
+       2.3,
+       3.98
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "lift_label_change": {
+      "phases": [
+       "lift"
+      ],
+      "steps": 150,
+      "time_s": [
+       3.98,
+       6.98
+      ],
+      "labelled_before": 11338,
+      "labelled_after": 11338,
+      "labelled_max": 11338,
+      "labelled_min": 11338,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "furthest_armed_edge_local_x_m": 0.0,
+     "far_region_particles": 340,
+     "far_region_attached_mass_fraction": 1.0,
+     "far_region_labelled_particles": 0,
+     "max_labelled_initial_local_x_m": -0.0005000000237487257,
+     "lead_bound_m": 0.008
+    }
+   },
+   "protocol": "a",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_half_length_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "labels_unchanged_during_hold": true,
+      "labels_unchanged_during_withdraw": true,
+      "labels_unchanged_during_lift": true,
+      "far_region_stays_attached_ge_99pct": true,
+      "no_label_beyond_lead_bound": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 11196,
+      "hold_label_change": {
+       "phases": [
+        "hold"
+       ],
+       "steps": 10,
+       "time_s": [
+        2.1,
+        2.3
+       ],
+       "labelled_before": 11196,
+       "labelled_after": 11196,
+       "labelled_max": 11196,
+       "labelled_min": 11196,
+       "change": 0,
+       "stroke_active_steps": 0
+      },
+      "lift_or_withdraw": {
+       "withdraw_label_change": {
+        "phases": [
+         "withdraw"
+        ],
+        "steps": 84,
+        "time_s": [
+         2.3,
+         3.98
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "lift_label_change": {
+        "phases": [
+         "lift"
+        ],
+        "steps": 150,
+        "time_s": [
+         3.98,
+         6.98
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "furthest_armed_edge_local_x_m": 0.0,
+       "far_region_particles": 340,
+       "far_region_attached_mass_fraction": 1.0,
+       "far_region_labelled_particles": 0,
+       "max_labelled_initial_local_x_m": -0.0005000000237487257,
+       "lead_bound_m": 0.008
+      },
+      "c4_forces": {
+       "skim_half": {
+        "phase": "skim_half",
+        "steps": 84,
+        "blade_force_mean_N": 0.015427731612456677,
+        "blade_force_max_N": 0.042232435519777754,
+        "total_force_mean_N": 0.015427731612456677,
+        "total_force_max_N": 0.042232435519777754,
+        "total_force_mean_vector_world_N": [
+         -0.005054841743739893,
+         8.647630498896168e-09,
+         0.004336393010903737
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "hold": {
+        "phase": "hold",
+        "steps": 10,
+        "blade_force_mean_N": 0.008796093882490601,
+        "blade_force_max_N": 0.011914020238352096,
+        "total_force_mean_N": 0.008796093882490601,
+        "total_force_max_N": 0.011914020238352096,
+        "total_force_mean_vector_world_N": [
+         -0.007413526036543772,
+         -3.9237299298555683e-07,
+         0.002713285207391891
+        ],
+        "steps_with_blade_contacts": 10,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "withdraw": {
+        "phase": "withdraw",
+        "steps": 84,
+        "blade_force_mean_N": 0.012680197247721379,
+        "blade_force_max_N": 0.019613045571939,
+        "total_force_mean_N": 0.012680197247721379,
+        "total_force_max_N": 0.019613045571939,
+        "total_force_mean_vector_world_N": [
+         0.00375501770663721,
+         1.2797347530328331e-08,
+         0.011185550201411215
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "lift": {
+        "phase": "lift",
+        "steps": 150,
+        "blade_force_mean_N": 1.853025602888568e-05,
+        "blade_force_max_N": 0.002779538404332852,
+        "total_force_mean_N": 1.853025602888568e-05,
+        "total_force_max_N": 0.002779538404332852,
+        "total_force_mean_vector_world_N": [
+         3.540365166069629e-06,
+         2.6644288627271823e-11,
+         1.8188903292563435e-05
+        ],
+        "steps_with_blade_contacts": 1,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "hold_label_change": {
+        "phases": [
+         "hold"
+        ],
+        "steps": 10,
+        "time_s": [
+         2.1,
+         2.3
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "withdraw_label_change": {
+        "phases": [
+         "withdraw"
+        ],
+        "steps": 84,
+        "time_s": [
+         2.3,
+         3.98
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "lift_label_change": {
+        "phases": [
+         "lift"
+        ],
+        "steps": 150,
+        "time_s": [
+         3.98,
+         6.98
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "furthest_armed_edge_local_x_m": 0.0,
+       "far_region_particles": 340,
+       "far_region_attached_mass_fraction": 1.0,
+       "far_region_labelled_particles": 0,
+       "max_labelled_initial_local_x_m": -0.0005000000237487257,
+       "lead_bound_m": 0.008
+      }
+     }
+    }
+   ]
+  },
+  "Rb_side_push": {
+   "dir": "artifacts/wp11/phaseR/rb_side_push_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {},
+   "task_id": "CUT-03-K2",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_side_push",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_side_push_law8_v5_001"
+   ],
+   "wall_s": 331.9430396700045,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "contact_window": {
+     "phases": [
+      "side_push"
+     ],
+     "contact_steps": 64,
+     "phase_steps": 100,
+     "mean_N": 0.31807913161902657,
+     "max_N": 0.3594460684175308,
+     "all_phase_steps_mean_N": 0.203570644236177
+    },
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.057148703177553405,
+     "max_N": 0.3594460684175308,
+     "mean_N_contact_steps": 0.14024221638663414,
+     "contact_steps": 163,
+     "steps": 400
+    },
+    "plowing": {
+     "armed_steps": 100,
+     "armed_steps_with_cutting_segments": 0,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": null,
+     "plowing_segment_fraction_of_cutting_segments": null,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 100,
+     "stroke_values": [
+      0
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 1,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 1,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "label_records": 0,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    },
+    "c4_force_all_steps": {
+     "phase": "side_push",
+     "steps": 100,
+     "blade_force_mean_N": 0.203570644236177,
+     "blade_force_max_N": 0.3594460684175308,
+     "total_force_mean_N": 0.203570644236177,
+     "total_force_max_N": 0.3594460684175308,
+     "total_force_mean_vector_world_N": [
+      -0.2035443524364382,
+      1.370177031140285e-07,
+      0.001048818469055135
+     ],
+     "steps_with_blade_contacts": 64,
+     "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_side_push_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_new_labels": true,
+      "one_component": true,
+      "contact_window_mean_force_gt_0_1N": true,
+      "mass_conserved": true
+     },
+     "task_id": "CUT-03-K2",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "contact_window": {
+       "phases": [
+        "side_push"
+       ],
+       "contact_steps": 64,
+       "phase_steps": 100,
+       "mean_N": 0.31807857465397776,
+       "max_N": 0.35944499576399885,
+       "all_phase_steps_mean_N": 0.20357028777854574
+      },
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.057148491735730944,
+       "max_N": 0.35944499576399885,
+       "mean_N_contact_steps": 0.1402416975109962,
+       "contact_steps": 163,
+       "steps": 400
+      },
+      "plowing": {
+       "armed_steps": 100,
+       "armed_steps_with_cutting_segments": 0,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": null,
+       "plowing_segment_fraction_of_cutting_segments": null,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true,
+      "c4_force_all_steps": {
+       "phase": "side_push",
+       "steps": 100,
+       "blade_force_mean_N": 0.20357028777854574,
+       "blade_force_max_N": 0.35944499576399885,
+       "total_force_mean_N": 0.20357028777854574,
+       "total_force_max_N": 0.35944499576399885,
+       "total_force_mean_vector_world_N": [
+        -0.20354398890049197,
+        3.4052981930793313e-08,
+        0.0010497444364077069
+       ],
+       "steps_with_blade_contacts": 64,
+       "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+      }
+     }
+    }
+   ]
+  },
+  "Rb_flat_press": {
+   "dir": "artifacts/wp11/phaseR/rb_flat_press_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_1N": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R00",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_flat_press",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_flat_press_law8_v5_001"
+   ],
+   "wall_s": 339.34717236099823,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "contact_window": {
+     "phases": [
+      "press"
+     ],
+     "contact_steps": 25,
+     "phase_steps": 40,
+     "mean_N": 1.490002070842221,
+     "max_N": 1.886311186026816,
+     "all_phase_steps_mean_N": 0.9312512942763883
+    },
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 1.2124590960873567,
+     "max_N": 1.886311186026816,
+     "mean_N_contact_steps": 1.5445338803660598,
+     "contact_steps": 314,
+     "steps": 400
+    },
+    "plowing": {
+     "armed_steps": 40,
+     "armed_steps_with_cutting_segments": 0,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": null,
+     "plowing_segment_fraction_of_cutting_segments": null,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 40,
+     "stroke_values": [
+      0
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 1,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 1,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "label_records": 0,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    },
+    "c4_force_all_steps": {
+     "phase": "press",
+     "steps": 40,
+     "blade_force_mean_N": 0.9312512942763883,
+     "blade_force_max_N": 1.886311186026816,
+     "total_force_mean_N": 0.9312512942763883,
+     "total_force_max_N": 1.886311186026816,
+     "total_force_mean_vector_world_N": [
+      0.013582181622293632,
+      -3.2885673531546367e-06,
+      0.9311329479260166
+     ],
+     "steps_with_blade_contacts": 25,
+     "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_flat_press_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_new_labels": true,
+      "one_component": true,
+      "contact_window_mean_force_gt_1N": true,
+      "mass_conserved": true
+     },
+     "task_id": "TRIM-02-K2-R00",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "contact_window": {
+       "phases": [
+        "press"
+       ],
+       "contact_steps": 25,
+       "phase_steps": 40,
+       "mean_N": 1.4899927487121554,
+       "max_N": 1.8862279366696746,
+       "all_phase_steps_mean_N": 0.9312454679450969
+      },
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 1.2124774827010874,
+       "max_N": 1.8862279366696746,
+       "mean_N_contact_steps": 1.5445573028039328,
+       "contact_steps": 314,
+       "steps": 400
+      },
+      "plowing": {
+       "armed_steps": 40,
+       "armed_steps_with_cutting_segments": 0,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": null,
+       "plowing_segment_fraction_of_cutting_segments": null,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true,
+      "c4_force_all_steps": {
+       "phase": "press",
+       "steps": 40,
+       "blade_force_mean_N": 0.9312454679450969,
+       "blade_force_max_N": 1.8862279366696746,
+       "total_force_mean_N": 0.9312454679450969,
+       "total_force_max_N": 1.8862279366696746,
+       "total_force_mean_vector_world_N": [
+        0.01358264102206963,
+        -3.502313994929729e-06,
+        0.9311271055503312
+       ],
+       "steps_with_blade_contacts": 25,
+       "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+      }
+     }
+    }
+   ]
+  },
+  "Rb_no_contact": {
+   "dir": "artifacts/wp11/phaseR/rb_no_contact_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_contacts": true,
+    "zero_labels": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_no_contact",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_no_contact_law8_v5_001"
+   ],
+   "wall_s": 329.1196370120015,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.0,
+     "max_N": 0.0,
+     "mean_N_contact_steps": 0.0,
+     "contact_steps": 0,
+     "steps": 400
+    },
+    "armed_contacts": {
+     "armed_steps": 167,
+     "steps_with_blade_contacts": 0,
+     "steps_with_grip_force": 0,
+     "episode_steps_with_blade_contacts": 0
+    },
+    "plowing": {
+     "armed_steps": 167,
+     "armed_steps_with_cutting_segments": 167,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 167,
+     "stroke_values": [
+      0
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 1,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 1,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "label_records": 0,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_no_contact_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_contacts": true,
+      "zero_labels": true,
+      "mass_conserved": true
+     },
+     "task_id": "TRIM-02-K2-R10",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.0,
+       "max_N": 0.0,
+       "mean_N_contact_steps": 0.0,
+       "contact_steps": 0,
+       "steps": 400
+      },
+      "armed_contacts": {
+       "armed_steps": 167,
+       "steps_with_blade_contacts": 0,
+       "steps_with_grip_force": 0,
+       "episode_steps_with_blade_contacts": 0
+      },
+      "plowing": {
+       "armed_steps": 167,
+       "armed_steps_with_cutting_segments": 167,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": 0.0,
+       "plowing_segment_fraction_of_cutting_segments": 0.0,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true
+     }
+    }
+   ]
+  },
+  "Rb_stop_mid": {
+   "dir": "artifacts/wp11/phaseR/rb_stop_mid_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "labels_unchanged_during_stop": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {},
+   "task_id": "TRIM-02-K2-R05",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_stop_mid",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_stop_mid_law8_v5_001"
+   ],
+   "wall_s": 337.250012450997,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 2,
+    "final_labelled_count": 36758,
+    "max_labelled_count": 36758,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.009630424773091976,
+     "max_N": 0.09352681248614908,
+     "mean_N_contact_steps": 0.01817061277941882,
+     "contact_steps": 212,
+     "steps": 400
+    },
+    "hold_label_change": {
+     "phases": [
+      "hold"
+     ],
+     "steps": 25,
+     "time_s": [
+      2.1,
+      2.6
+     ],
+     "labelled_before": 11196,
+     "labelled_after": 11196,
+     "labelled_max": 11196,
+     "labelled_min": 11196,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "resumed_outcome_report_only": "PASS_TRIM_SEPARATION",
+    "plowing": {
+     "armed_steps": 193,
+     "armed_steps_with_cutting_segments": 168,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 193,
+     "stroke_values": [
+      0,
+      5
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 3,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 2,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      36758
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      36758
+     ],
+     "label_records": 36758,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    },
+    "c4_force_all_steps": {
+     "skim_half": {
+      "phase": "skim_half",
+      "steps": 84,
+      "blade_force_mean_N": 0.015427979051859917,
+      "blade_force_max_N": 0.04224165131149154,
+      "total_force_mean_N": 0.015427979051859917,
+      "total_force_max_N": 0.04224165131149154,
+      "total_force_mean_vector_world_N": [
+       -0.005054889754232829,
+       2.16475481849179e-09,
+       0.004336676320668803
+      ],
+      "steps_with_blade_contacts": 84,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "hold": {
+      "phase": "hold",
+      "steps": 25,
+      "blade_force_mean_N": 0.008470948707517629,
+      "blade_force_max_N": 0.011926913351213942,
+      "total_force_mean_N": 0.008470948707517629,
+      "total_force_max_N": 0.011926913351213942,
+      "total_force_mean_vector_world_N": [
+       -0.007086903526214883,
+       -3.397999698284693e-08,
+       0.0038247602624323918
+      ],
+      "steps_with_blade_contacts": 25,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     },
+     "skim_resume": {
+      "phase": "skim_resume",
+      "steps": 84,
+      "blade_force_mean_N": 0.024885738143599633,
+      "blade_force_max_N": 0.09352681248614908,
+      "total_force_mean_N": 0.024885738143599633,
+      "total_force_max_N": 0.09352681248614908,
+      "total_force_mean_vector_world_N": [
+       -0.00543300580624245,
+       -1.1120281752308699e-07,
+       0.01725803383849433
+      ],
+      "steps_with_blade_contacts": 84,
+      "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+     }
+    },
+    "c4_control": {
+     "hold_label_change": {
+      "phases": [
+       "hold"
+      ],
+      "steps": 25,
+      "time_s": [
+       2.1,
+       2.6
+      ],
+      "labelled_before": 11196,
+      "labelled_after": 11196,
+      "labelled_max": 11196,
+      "labelled_min": 11196,
+      "change": 0,
+      "stroke_active_steps": 0
+     },
+     "resumed_outcome_report_only": "PASS_TRIM_SEPARATION"
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseC4/k2_r05_nc_stop_mid_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "labels_unchanged_during_stop": true
+     },
+     "task_id": "TRIM-02-K2-R05",
+     "solver": "tlmpm_v4",
+     "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+     "key_metrics": {
+      "final_mechanical_components": 2,
+      "final_labelled_count": 36774,
+      "hold_label_change": {
+       "phases": [
+        "hold"
+       ],
+       "steps": 25,
+       "time_s": [
+        2.1,
+        2.6
+       ],
+       "labelled_before": 11196,
+       "labelled_after": 11196,
+       "labelled_max": 11196,
+       "labelled_min": 11196,
+       "change": 0,
+       "stroke_active_steps": 0
+      },
+      "resumed_outcome_report_only": "PASS_TRIM_SEPARATION",
+      "c4_forces": {
+       "skim_half": {
+        "phase": "skim_half",
+        "steps": 84,
+        "blade_force_mean_N": 0.0154281162412746,
+        "blade_force_max_N": 0.04223871715179277,
+        "total_force_mean_N": 0.0154281162412746,
+        "total_force_max_N": 0.04223871715179277,
+        "total_force_mean_vector_world_N": [
+         -0.005054853474056082,
+         3.633918417810793e-09,
+         0.00433672600939601
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "hold": {
+        "phase": "hold",
+        "steps": 25,
+        "blade_force_mean_N": 0.008469919131285607,
+        "blade_force_max_N": 0.011924720080501444,
+        "total_force_mean_N": 0.008469919131285607,
+        "total_force_max_N": 0.011924720080501444,
+        "total_force_mean_vector_world_N": [
+         -0.007086660887580365,
+         -1.0121995350220736e-07,
+         0.0038235175306908786
+        ],
+        "steps_with_blade_contacts": 25,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       },
+       "skim_resume": {
+        "phase": "skim_resume",
+        "steps": 84,
+        "blade_force_mean_N": 0.02488732358290284,
+        "blade_force_max_N": 0.09357508830327933,
+        "total_force_mean_N": 0.02488732358290284,
+        "total_force_max_N": 0.09357508830327933,
+        "total_force_mean_vector_world_N": [
+         -0.0054318162020600925,
+         -5.3479963083686006e-08,
+         0.01725695526250179
+        ],
+        "steps_with_blade_contacts": 84,
+        "scope": "Material reaction impulse / control dt (current step, world); provisional uncalibrated material"
+       }
+      },
+      "c4_control": {
+       "hold_label_change": {
+        "phases": [
+         "hold"
+        ],
+        "steps": 25,
+        "time_s": [
+         2.1,
+         2.6
+        ],
+        "labelled_before": 11196,
+        "labelled_after": 11196,
+        "labelled_max": 11196,
+        "labelled_min": 11196,
+        "change": 0,
+        "stroke_active_steps": 0
+       },
+       "resumed_outcome_report_only": "PASS_TRIM_SEPARATION"
+      }
+     }
+    }
+   ]
+  },
+  "Rb_withdrawal": {
+   "dir": "artifacts/wp11/phaseR/rb_withdrawal_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "one_component": true,
+    "core_band_below_stop_all_code0": true,
+    "labels_unchanged_during_withdrawal": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {},
+   "task_id": "CUT-03-K2",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_withdrawal",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_withdrawal_law8_v5_001"
+   ],
+   "wall_s": 291.87090145700495,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 13496,
+    "max_labelled_count": 13496,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.0036578241629022746,
+     "max_N": 0.057454763614645375,
+     "mean_N_contact_steps": 0.016626473467737615,
+     "contact_steps": 88,
+     "steps": 400
+    },
+    "core_band_ligament": {
+     "core_half_width_m": 0.004,
+     "plane_source": "swept_plane_fit",
+     "deepest_armed_edge_depth_m": -0.01000000000000006,
+     "core_particles_below_stop": 2400,
+     "core_code0_fraction": 1.0,
+     "core_labelled": 0
+    },
+    "withdraw_label_change": {
+     "phases": [
+      "withdraw"
+     ],
+     "steps": 90,
+     "time_s": [
+      2.18,
+      3.98
+     ],
+     "labelled_before": 13496,
+     "labelled_after": 13496,
+     "labelled_max": 13496,
+     "labelled_min": 13496,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "plowing": {
+     "armed_steps": 180,
+     "armed_steps_with_cutting_segments": 90,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 180,
+     "stroke_values": [
+      0,
+      5
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 3,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 1,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      13496
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      13496
+     ],
+     "label_records": 13496,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseF/f2_7_withdrawal_v2_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "one_component": true,
+      "core_band_below_stop_all_code0": true,
+      "labels_unchanged_during_withdrawal": true,
+      "mass_conserved": true
+     },
+     "task_id": "CUT-03-K2",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 13496,
+      "max_labelled_count": 13496,
+      "mass_check_pass": true,
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.003657792972852657,
+       "max_N": 0.057443312870198875,
+       "mean_N_contact_steps": 0.016626331694784807,
+       "contact_steps": 88,
+       "steps": 400
+      },
+      "core_band_ligament": {
+       "core_half_width_m": 0.004,
+       "plane_source": "swept_plane_fit",
+       "deepest_armed_edge_depth_m": -0.01000000000000006,
+       "core_particles_below_stop": 2400,
+       "core_code0_fraction": 1.0,
+       "core_labelled": 0
+      },
+      "withdraw_label_change": {
+       "phases": [
+        "withdraw"
+       ],
+       "steps": 90,
+       "time_s": [
+        2.18,
+        3.98
+       ],
+       "labelled_before": 13496,
+       "labelled_after": 13496,
+       "labelled_max": 13496,
+       "labelled_min": 13496,
+       "change": 0,
+       "stroke_active_steps": 0
+      },
+      "plowing": {
+       "armed_steps": 180,
+       "armed_steps_with_cutting_segments": 90,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": 0.0,
+       "plowing_segment_fraction_of_cutting_segments": 0.0,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true
+     }
+    }
+   ]
+  },
+  "Rb_half_depth_cut": {
+   "dir": "artifacts/wp11/phaseR/rb_half_depth_cut_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "one_component": true,
+    "core_band_below_stop_all_code0": true,
+    "mass_conserved": true,
+    "labels_unchanged_during_disarmed_retract": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {},
+   "task_id": "CUT-03-K2",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_half_depth_cut",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_half_depth_cut_law8_v5_001"
+   ],
+   "wall_s": 294.3193105359969,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 13496,
+    "max_labelled_count": 13496,
+    "mass_check_pass": true,
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.0036155375745003343,
+     "max_N": 0.05745430943442099,
+     "mean_N_contact_steps": 0.016434261702274248,
+     "contact_steps": 88,
+     "steps": 400
+    },
+    "core_band_ligament": {
+     "core_half_width_m": 0.004,
+     "plane_source": "swept_plane_fit",
+     "deepest_armed_edge_depth_m": -0.01000000000000006,
+     "core_particles_below_stop": 2400,
+     "core_code0_fraction": 1.0,
+     "core_labelled": 0
+    },
+    "retract_label_change": {
+     "phases": [
+      "retract"
+     ],
+     "steps": 90,
+     "time_s": [
+      2.18,
+      3.98
+     ],
+     "labelled_before": 13496,
+     "labelled_after": 13496,
+     "labelled_max": 13496,
+     "labelled_min": 13496,
+     "change": 0,
+     "stroke_active_steps": 0
+    },
+    "plowing": {
+     "armed_steps": 90,
+     "armed_steps_with_cutting_segments": 90,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 90,
+     "stroke_values": [
+      0,
+      5
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 3,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 1,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      13496
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      13496
+     ],
+     "label_records": 13496,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseF/f2_7_withdrawal_v2_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "one_component": true,
+      "core_band_below_stop_all_code0": true,
+      "labels_unchanged_during_withdrawal": true,
+      "mass_conserved": true
+     },
+     "task_id": "CUT-03-K2",
+     "solver": "tlmpm_v4",
+     "git_sha": "f2168b6f50ad41ac956dd8f68b265b14062d491b",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 13496,
+      "max_labelled_count": 13496,
+      "mass_check_pass": true,
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.003657792972852657,
+       "max_N": 0.057443312870198875,
+       "mean_N_contact_steps": 0.016626331694784807,
+       "contact_steps": 88,
+       "steps": 400
+      },
+      "core_band_ligament": {
+       "core_half_width_m": 0.004,
+       "plane_source": "swept_plane_fit",
+       "deepest_armed_edge_depth_m": -0.01000000000000006,
+       "core_particles_below_stop": 2400,
+       "core_code0_fraction": 1.0,
+       "core_labelled": 0
+      },
+      "withdraw_label_change": {
+       "phases": [
+        "withdraw"
+       ],
+       "steps": 90,
+       "time_s": [
+        2.18,
+        3.98
+       ],
+       "labelled_before": 13496,
+       "labelled_after": 13496,
+       "labelled_max": 13496,
+       "labelled_min": 13496,
+       "change": 0,
+       "stroke_active_steps": 0
+      },
+      "plowing": {
+       "armed_steps": 180,
+       "armed_steps_with_cutting_segments": 90,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": 0.0,
+       "plowing_segment_fraction_of_cutting_segments": 0.0,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true
+     }
+    }
+   ]
+  },
+  "Rb_blunt_handle_v2": {
+   "dir": "artifacts/wp11/phaseR/rb_blunt_handle_v2_law8_v5_001",
+   "verdict": "PASS",
+   "criterion_outcome": "PASS",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "grip_contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "control_validity": {
+    "zero_blade_contact_steps_episode": true,
+    "grip_footprint_inside_right_pedestal_span": true,
+    "grip_footprint_inside_bar_top": true
+   },
+   "task_id": "CUT-03-K2",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "armed_cut_index": 4,
+   "formal_resolution": true,
+   "device": "cuda:1",
+   "seed": 42,
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "git_dirty": false,
+   "runner_sha256": "8fb0ff1a9f99a69d3fd379b2d1c812bff6946b5ae7169e6f2c4eead41241ffb2",
+   "protocol_sha256": "01681f1b6446271d20b3b840b1b39108aaafab6c10f08c77772429c9534b9ea8",
+   "package_file": "/mnt/data/ningan/RoboticCuttingSim-wp11-R2-18c4301/src/robotic_cutting_sim/__init__.py",
+   "command": [
+    "scripts/run_phase_r_negative_controls.py",
+    "--row",
+    "Rb_blunt_handle_v2",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseR/rb_blunt_handle_v2_law8_v5_001"
+   ],
+   "wall_s": 287.47282947500935,
+   "steps_run": 400,
+   "error": null,
+   "key_metrics": {
+    "final_mechanical_components": 1,
+    "final_labelled_count": 0,
+    "max_labelled_count": 0,
+    "mass_check_pass": true,
+    "contact_window": {
+     "phases": [
+      "handle_press",
+      "handle_hold"
+     ],
+     "contact_steps": 25,
+     "phase_steps": 40,
+     "mean_N": 0.854977905432195,
+     "max_N": 1.0150399109346515,
+     "all_phase_steps_mean_N": 0.5343611908951219
+    },
+    "blade_reaction_episode": {
+     "mean_N_all_steps": 0.053750457368937,
+     "max_N": 1.015039724698849,
+     "mean_N_contact_steps": 0.0,
+     "contact_steps": 0,
+     "steps": 400
+    },
+    "footprint": {
+     "footprint_local_x_m": [
+      0.04299999999999998,
+      0.06699999999999999
+     ],
+     "footprint_local_y_m": [
+      -0.011000000000000013,
+      0.011000000000000013
+     ],
+     "footprint_area_m2": 0.0005280000000000008,
+     "grip_bottom_local_z_m": 0.017999999999999947,
+     "right_pedestal_local_x_m": [
+      0.019999999999999997,
+      0.09
+     ],
+     "right_pedestal_local_y_m": [
+      -0.021,
+      0.021
+     ],
+     "inside_pedestal_span": true,
+     "inside_bar_top": true,
+     "pose_source": "recorded"
+    },
+    "blade_contact_steps": {
+     "episode": 0,
+     "armed": 0,
+     "press_hold": 0,
+     "episode_blade_force_max_N": 1.015039724698849
+    },
+    "workpiece_motion_hold_end_vs_pre_press": {
+     "rigid_fit_all_particles": {
+      "com_displacement_m": [
+       -8.851527955490517e-05,
+       7.112670573527874e-09,
+       -0.00015195934611799203
+      ],
+      "com_displacement_norm_m": 0.00017585959637699843,
+      "rotation_deg": 0.24351756866170957,
+      "yaw_deg": -3.793892869423112e-05,
+      "residual_rms_m": 0.0004669252175629996,
+      "residual_max_m": 0.0015083762820125707
+     },
+     "under_footprint": {
+      "particles": 10560,
+      "top_layer": 528,
+      "bottom_layer": 528,
+      "top_mean_dz_m": -0.0017056439396445498,
+      "top_min_dz_m": -0.0018509086221456528,
+      "bottom_mean_dz_m": -5.442000805156898e-05,
+      "column_height_m": 0.018952039710711688,
+      "compression_m": 0.0016512239315929808,
+      "compression_strain": 0.08712644954303833
+     },
+     "left_half_max_displacement_m": 0.0002465869092229177,
+     "compression_over_rigid_com_displacement": 9.389444566068347
+    },
+    "plowing": {
+     "armed_steps": 40,
+     "armed_steps_with_cutting_segments": 25,
+     "armed_steps_with_plowing": 0,
+     "plowing_step_fraction_of_cutting_steps": 0.0,
+     "plowing_segment_fraction_of_cutting_segments": 0.0,
+     "edge_segments": 120,
+     "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+    },
+    "stability_stable": true,
+    "native_packed": {
+     "max_cuts": 5,
+     "armed_digit": 4,
+     "armed_steps": 40,
+     "stroke_values": [
+      0
+     ],
+     "slots": {
+      "code_encoding": "packed2",
+      "max_cuts": 5,
+      "slots_per_node": 8,
+      "max_occupied_slots": 1,
+      "overflow_entries": 0
+     },
+     "packed_graph_final_components": 1,
+     "final_digit_labelled_counts": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "max_digit_labelled_counts_over_frames": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "label_records": 0,
+     "scope": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check)."
+    }
+   },
+   "protocol": "b",
+   "counterparts": [
+    {
+     "dir": "artifacts/wp11/phaseF/f2_9_blunt_handle_v2_law8_001",
+     "verdict": "PASS",
+     "checks": {
+      "zero_new_labels": true,
+      "one_component": true,
+      "grip_contact_window_mean_force_gt_0_1N": true,
+      "mass_conserved": true
+     },
+     "task_id": "CUT-03-K2",
+     "solver": "tlmpm_v4",
+     "git_sha": "dc64f4971b18333dc3b9bc0fbf5d20c110705492",
+     "key_metrics": {
+      "final_mechanical_components": 1,
+      "final_labelled_count": 0,
+      "max_labelled_count": 0,
+      "mass_check_pass": true,
+      "contact_window": {
+       "phases": [
+        "handle_press",
+        "handle_hold"
+       ],
+       "contact_steps": 25,
+       "phase_steps": 40,
+       "mean_N": 0.8549731774046357,
+       "max_N": 1.015020025036319,
+       "all_phase_steps_mean_N": 0.5343582358778973
+      },
+      "blade_reaction_episode": {
+       "mean_N_all_steps": 0.053750150780625824,
+       "max_N": 1.0150203974823948,
+       "mean_N_contact_steps": 0.0,
+       "contact_steps": 0,
+       "steps": 400
+      },
+      "footprint": {
+       "footprint_local_x_m": [
+        0.04299999999999998,
+        0.06699999999999999
+       ],
+       "footprint_local_y_m": [
+        -0.011000000000000013,
+        0.011000000000000013
+       ],
+       "footprint_area_m2": 0.0005280000000000008,
+       "grip_bottom_local_z_m": 0.017999999999999947,
+       "right_pedestal_local_x_m": [
+        0.019999999999999997,
+        0.09
+       ],
+       "right_pedestal_local_y_m": [
+        -0.021,
+        0.021
+       ],
+       "inside_pedestal_span": true,
+       "inside_bar_top": true,
+       "pose_source": "recorded"
+      },
+      "blade_contact_steps": {
+       "episode": 0,
+       "armed": 0,
+       "press_hold": 0,
+       "episode_blade_force_max_N": 1.0150203974823948
+      },
+      "workpiece_motion_hold_end_vs_pre_press": {
+       "rigid_fit_all_particles": {
+        "com_displacement_m": [
+         -8.849777401530186e-05,
+         1.3066218039997997e-08,
+         -0.0001519584930637398
+        ],
+        "com_displacement_norm_m": 0.00017585004916289375,
+        "rotation_deg": 0.24351366258659557,
+        "yaw_deg": -4.3411398365864664e-05,
+        "residual_rms_m": 0.0004669233064523921,
+        "residual_max_m": 0.0015083071512231817
+       },
+       "under_footprint": {
+        "particles": 10560,
+        "top_layer": 528,
+        "bottom_layer": 528,
+        "top_mean_dz_m": -0.0017056378825200777,
+        "top_min_dz_m": -0.0018509365618228912,
+        "bottom_mean_dz_m": -5.441990266042536e-05,
+        "column_height_m": 0.018952047365019098,
+        "compression_m": 0.0016512179798596524,
+        "compression_strain": 0.08712610031290878
+       },
+       "left_half_max_displacement_m": 0.0002465529315549748,
+       "compression_over_rigid_com_displacement": 9.38992049032692
+      },
+      "plowing": {
+       "armed_steps": 40,
+       "armed_steps_with_cutting_segments": 25,
+       "armed_steps_with_plowing": 0,
+       "plowing_step_fraction_of_cutting_steps": 0.0,
+       "plowing_segment_fraction_of_cutting_segments": 0.0,
+       "edge_segments": 120,
+       "scope": "segment_plow / segment_ok sampled after the last substep of each control step (law 8)"
+      },
+      "stability_stable": true
+     }
+    }
+   ]
+  }
+ },
+ "smoke_nonformal": {
+  "Ra_no_contact": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_no_contact_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_contacts": true,
+    "zero_labels": true,
+    "mass_conserved": true,
+    "no_blade_contacts_during_skim_c4": true,
+    "one_component_c4": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 45.893910698010586
+  },
+  "Ra_side_push": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_side_push_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 43.64941052100039
+  },
+  "Ra_flat_press_normal": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_flat_press_normal_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_1N": true,
+    "mass_conserved": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 41.14760247799859
+  },
+  "Ra_blunt_handle_v2": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_blunt_handle_v2_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "grip_contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 44.305336320001516
+  },
+  "Ra_stop_mid": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_stop_mid_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "labels_unchanged_during_stop": true,
+    "mass_conserved": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 45.282285862005665
+  },
+  "Ra_lift_mid": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_lift_mid_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "labels_unchanged_during_withdraw": true,
+    "far_region_stays_attached_ge_99pct": true,
+    "no_label_beyond_lead_bound": true,
+    "mass_conserved": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 41.411303120010416
+  },
+  "Ra_half_length": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_ra_half_length_law8_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "labels_unchanged_during_hold": true,
+    "labels_unchanged_during_withdraw": true,
+    "labels_unchanged_during_lift": true,
+    "far_region_stays_attached_ge_99pct": true,
+    "no_label_beyond_lead_bound": true,
+    "mass_conserved": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 44.433795149001526
+  },
+  "Rb_side_push": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_side_push_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 46.136498715000926
+  },
+  "Rb_flat_press": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_flat_press_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "contact_window_mean_force_gt_1N": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 42.13567980300286
+  },
+  "Rb_no_contact": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_no_contact_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_contacts": true,
+    "zero_labels": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 41.303025851986604
+  },
+  "Rb_stop_mid": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_stop_mid_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "labels_unchanged_during_stop": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 44.32284035500197
+  },
+  "Rb_withdrawal": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_withdrawal_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "one_component": true,
+    "core_band_below_stop_all_code0": true,
+    "labels_unchanged_during_withdrawal": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 43.64441447600257
+  },
+  "Rb_half_depth_cut": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_half_depth_cut_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "one_component": true,
+    "core_band_below_stop_all_code0": true,
+    "mass_conserved": true,
+    "labels_unchanged_during_disarmed_retract": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 41.531430784001714
+  },
+  "Rb_blunt_handle_v2": {
+   "dir": "artifacts/wp11/phaseR/smoke_coarse_rb_blunt_handle_v2_law8_v5_001",
+   "verdict": "PASS_NONFORMAL",
+   "checks": {
+    "zero_new_labels": true,
+    "one_component": true,
+    "grip_contact_window_mean_force_gt_0_1N": true,
+    "mass_conserved": true,
+    "native_packed_encoding": true,
+    "native_zero_slot_overflow": true,
+    "native_single_active_digit": true,
+    "native_digit_values_valid": true,
+    "native_packed_graph_matches_view": true
+   },
+   "git_sha": "18c430186539573149ff98b91f8b40575601be33",
+   "wall_s": 44.489150480992976
+  }
+ }
+}

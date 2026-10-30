@@ -1,0 +1,130 @@
+{
+ "protocol_id": "wp11_phaseR_negative_controls_v1",
+ "declared": "2026-10-30, before any Phase R row (smoke or formal) ran. Criteria are fixed; failures are preserved and diagnosed, never re-scored. A runner bug found by a smoke run may be fixed in a new commit (recorded in the report); criteria, geometry parameters and thresholds below do not change.",
+ "reason": "WP-11 review (rcs-review, ACCEPT WITH CONDITIONS) DoD gaps: (a) Phase C4 ran its negative controls at rho = 5 deg (TRIM-02-K2-R05; flat press at R00) but the chosen live TRIM rake is 10 deg; (b) ADR 0014 validation item 4 (negative controls hold under tlmpm_v5 law 8) was shown only by CPU unit tests on a coarse block, not at formal resolution with a multi-digit packed history.",
+ "label": "POST_LIVE: protocol (a) runs after the live TRIM at rho = 10 deg already ran (Phase C5/C5b). Its results do not gate or re-score any live record; they close a material-level evidence gap only.",
+ "freeze": {
+  "existing_rows_unchanged": "scripts/run_phase_c4_trim_material.py, scripts/run_phase_f_material.py and scripts/run_phase_f_v2_material.py are loaded read-only as private module instances by scripts/run_phase_r_negative_controls.py; no file or row of phaseC4, wp11_phaseF_v1 or wp11_phaseF_v2 changes, and no recorded verdict changes.",
+  "physics": "No law parameter, threshold or solver change. tlmpm_v4 and tlmpm_v5 are used as committed."
+ },
+ "common": {
+  "resolution": "formal: 1 mm particles, 4 mm grid, 0.1 ms material dt, 20 ms control dt",
+  "seed": 42,
+  "law": 8,
+  "runtime_source": "kinematic_ideal_tracking (no robot, IK, grasp, slip or cameras)",
+  "knife": "ruler_knife_v2_y (the task's tool profile)",
+  "material": "provisional, uncalibrated task material (E = 50 kPa, nu = 0.3, von Mises yield 1 kPa, contact friction 0.3)",
+  "history_stride": 5,
+  "episode_loop": "scripts/run_phase_f_material.py run_episode (per-step forces, contact statistics, stroke, label records)",
+  "contact_window": "law8_validation.contact_window_force: mean |F| over the control steps of the named phases with tool-material contact (Phase F, replacing the C4 all-steps mean); the C4 all-steps mean is reported too",
+  "mass_conservation": "law8_validation.mass_check (frozen v1 tolerance) is a pass condition of every row",
+  "smoke": "Before the formal rows, each row may run once as a smoke validation at the F3 'coarse' variant (2 mm particles, 8 mm grid, 0.2 ms) into artifacts/wp11/phaseR/smoke_coarse_<row>_001; smoke verdicts are *_NONFORMAL, never scored, and are kept.",
+  "gpu": "kinematic jobs only, at most 2 concurrently, on a GPU with <= 2 other active jobs; >= 15 GB free on /mnt/data",
+  "outputs": "artifacts/wp11/phaseR/<row>_law8[_v5]_001 (new_output refuses to overwrite); one formal attempt per row"
+ },
+ "protocols": {
+  "a": {
+   "title": "Phase C4 negative-control set at the chosen rake rho = 10 deg (POST_LIVE)",
+   "task": "TRIM-02-K2-R10",
+   "solver": "tlmpm_v4",
+   "max_cuts": 1,
+   "armed_cut_index": 0,
+   "handle_geometry": "phaseF_v2 loaded geometry (F2.9_blunt_handle_v2 parameters unchanged: grip far face, footprint centred at local (55, 0) mm, 3 mm start gap, 2 mm press at 10 mm/s, 0.3 s hold) applied to the TRIM-02 bar, whose support_floor (x = -90..90 mm, y = -25..25 mm) is directly below the footprint; the C4 dome-sweep geometry is NOT used (its C4 R05 FAIL was a control-design flaw: the soft dome yields before the grip loads it).",
+   "flat_press_note": "C4 flat_press_plan is defined only for rho = 0 (the plan raises otherwise; it ran at TRIM-02-K2-R00 in C4 and F2.9). At rho = 10 deg the applicable flat press is a press along the blade-face normal at the task rake (the blade moves perpendicular to its own plane, so no edge-forward motion), declared here as flat_press_normal.",
+   "rows": {
+    "Ra_no_contact": {
+     "plan": "C4 no_contact_plan (armed full-length skim with the lowest blade point 3 mm above the dome top)",
+     "counterparts": ["C4 k2_r05_nc_no_contact_law8_001 (PASS)", "F2.9_no_contact f2_9_no_contact_law8_001 (TRIM-02-K2-R10, PASS)"],
+     "pass": "C4 + F2.9 criteria: zero labels at every step; zero blade contacts during the skim (C4) and zero blade contacts and zero grip force on every armed step (F2.9); one final component (C4); mass conserved"
+    },
+    "Ra_side_push": {
+     "plan": "C4 side_push_plan (armed spine-first push -x 20 mm into the +x bar end face, edge at local z = 10 mm, task rake)",
+     "counterparts": ["C4 k2_r05_nc_side_push_law8_001 (PASS)", "F2.9_side_push (CUT-03-K2, PASS)"],
+     "pass": "zero labels at every step; one component; contact-window mean |total force| over side_push steps with blade contact > 0.1 N; mass conserved"
+    },
+    "Ra_flat_press_normal": {
+     "plan": "edge at local x = 65 mm, y = 0 (blade body over x = 25..65 mm, beside the dome |x| <= 12 mm), task orientation (rho = 10 deg); approach 30 mm above the start (disarmed); start with the lowest blade point 3 mm above the bar top (disarmed); press: armed straight move along the downward blade-face normal (-n, n = edge-frame +z in world) at 10 mm/s until the lowest blade point is 8 mm below the bar top (8 mm > 40 mm * sin 10 deg = 6.9 mm, so the whole blade face is in the material at the end); press_hold: armed 0.3 s; retract: disarmed 30 mm up. WaypointPolicy position tolerance 1e-5 m.",
+     "parameters": {"edge_local_x_m": 0.065, "start_gap_m": 0.003, "end_depth_below_top_m": 0.008, "press_speed_m_s": 0.01, "hold_s": 0.3, "position_tolerance_m": 1e-05},
+     "counterparts": ["C4 k2_r00_nc_flat_press_law8_001 (rho = 0; FAIL on the C4 all-steps force mean)", "F2.9_flat_press f2_9_flat_press_law8_001 (rho = 0; PASS, contact-window mean 1.49 N)"],
+     "pass": "zero labels at every step; one component; contact-window mean |total force| over press and press_hold steps with blade contact > 1 N (the F2.9 level); mass conserved",
+     "prediction_report_only": "yield-limited, about 1-2 N once the face is in (F2.9 at rho = 0 measured 1.49 N mean over a 40 x 30 mm face, 5 mm deep); not a pass criterion"
+    },
+    "Ra_blunt_handle_v2": {
+     "plan": "run_phase_f_v2_material.blunt_handle_v2_plan on TRIM-02-K2-R10 (phaseF_v2 parameters unchanged; the initial lift uses the task's rho = 10 deg start orientation, then the disarmed reorientation to the v2 press frame)",
+     "counterparts": ["C4 k2_r05_nc_handle_law8_001 (dome sweep; FAIL, no grip force)", "F2.9_blunt_handle_v2 f2_9_blunt_handle_v2_law8_001 (CUT-03-K2; PASS, 0.855 N)"],
+     "pass": "zero labels at every step; one component; grip contact-window mean |grip obstacle force| over handle_press and handle_hold steps with grip contact > 0.1 N; mass conserved",
+     "control_validity": "zero blade contact steps over the episode; grip footprint inside the bar top; footprint inside the support_floor span; footprint outside the dome footprint (|x| > dome radius); otherwise INVALID_CONTROL (never PASS)"
+    },
+    "Ra_stop_mid": {
+     "plan": "C4 stop_mid_plan (armed skim to the dome centre, armed stop 0.5 s, armed resume to the end)",
+     "counterparts": ["C4 k2_r05_nc_stop_mid_law8_001 (PASS)"],
+     "pass": "C4 criterion: labels unchanged during the stop (hold phase); resumed separation outcome reported only; mass conserved"
+    },
+    "Ra_lift_mid": {
+     "plan": "C4 lift_mid_plan (armed skim to the dome centre, then armed lift-out +z 30 mm at 10 mm/s)",
+     "counterparts": ["C4 k2_r05_nc_lift_mid_law8_001 (PASS)"],
+     "pass": "C4 criterion: labels unchanged during the lift; >= 99% of the reference above-plane mass beyond the furthest armed edge x + 2 mm stays in the substrate; no label initially beyond that x + 2 dx (law-8 lead bound); mass conserved"
+    },
+    "Ra_half_length": {
+     "plan": "C4 half_length_plan (armed skim to the dome centre, armed stop 0.2 s, armed withdrawal backward along the path to the start, armed lift)",
+     "counterparts": ["C4 k2_r05_nc_half_length_law8_001 (PASS)"],
+     "pass": "C4 criterion: labels unchanged during the stop, the withdrawal and the lift; far-region attachment >= 99% and lead bound as Ra_lift_mid; mass conserved"
+    }
+   }
+  },
+  "b": {
+   "title": "tlmpm_v5 (packed codes, K = 5) negative controls at formal resolution, law 8",
+   "solver": "tlmpm_v5",
+   "max_cuts": 5,
+   "slots_per_node": 8,
+   "armed_cut_index": 4,
+   "armed_digit_reason": "Every armed waypoint writes digit 4 = K - 1 (packed bits 8-9), the highest digit and the boundary of the cut < K guard, so the run exercises the packed shift and not only the digit-0 values that coincide with ternary codes. Digits 0-3 stay unassigned.",
+   "evaluation": "Native packed checks on the recorded packed codes (packed stencil graph, slot overflow, digits 0-3 never nonzero in any history frame or label record, armed steps report cut_index 4). The row criteria are then computed by the unchanged v4 analysis code of the counterpart row on an exact single-digit view: codes -> digit 4 value (0/1/2), stroke 5 -> 1, cut_index 4 -> 0. The view is exact only when no other digit is ever nonzero, which is itself a check; the packed-graph component count must equal the view's ternary component count (check).",
+   "rows": {
+    "Rb_side_push": {
+     "task": "CUT-03-K2", "plan": "run_phase1_matrix side_push_plan (as F2.9_side_push)",
+     "counterparts": ["F2.9_side_push f2_9_side_push_law8_001 (tlmpm_v4, PASS, 0.318 N)"],
+     "pass": "F2.9_side_push criteria: zero labels at every step; one component; contact-window mean |total force| over side_push steps with blade contact > 0.1 N; mass conserved"
+    },
+    "Rb_flat_press": {
+     "task": "TRIM-02-K2-R00", "plan": "C4 flat_press_plan (as F2.9_flat_press)",
+     "counterparts": ["F2.9_flat_press f2_9_flat_press_law8_001 (tlmpm_v4, PASS, 1.49 N)"],
+     "pass": "F2.9_flat_press criteria: zero labels; one component; contact-window mean |total force| over press steps with blade contact > 1 N; mass conserved"
+    },
+    "Rb_no_contact": {
+     "task": "TRIM-02-K2-R10", "plan": "C4 no_contact_plan (as F2.9_no_contact)",
+     "counterparts": ["F2.9_no_contact f2_9_no_contact_law8_001 (tlmpm_v4, PASS)"],
+     "pass": "F2.9_no_contact criteria: zero blade contacts and zero grip force on every armed step; zero labels; mass conserved"
+    },
+    "Rb_stop_mid": {
+     "task": "TRIM-02-K2-R05", "plan": "C4 stop_mid_plan",
+     "counterparts": ["C4 k2_r05_nc_stop_mid_law8_001 (tlmpm_v4, PASS)"],
+     "pass": "C4 stop_mid criterion: labels unchanged during the stop; resumed outcome reported only; mass conserved"
+    },
+    "Rb_withdrawal": {
+     "task": "CUT-03-K2", "plan": "run_phase1_matrix half_depth_plan(after='withdraw') (as F2.7_withdrawal_v2), WaypointPolicy 1e-5 m",
+     "counterparts": ["F2.7_withdrawal_v2 f2_7_withdrawal_v2_law8_001 (tlmpm_v4, PASS)"],
+     "pass": "F2.7_withdrawal_v2 criteria: one component; core band (reference |s| <= grid dx about the fitted swept plane) deeper than the deepest armed edge position 100% code 0; labelled count unchanged during the withdrawal; mass conserved"
+    },
+    "Rb_half_depth_cut": {
+     "task": "CUT-03-K2", "plan": "run_phase1_matrix half_depth_plan geometry (armed descent at 10 mm/s from bar top + 8 mm to local z = 10 mm), then a DISARMED retract to the start at 10 mm/s (no armed tail), WaypointPolicy 1e-5 m",
+     "counterparts": ["F2.7_withdrawal_v2 / matrix M4 half-depth ligament criteria (tlmpm_v4, PASS)"],
+     "pass": "one component (the ligament holds); core band below the stop 100% code 0 (same definition as F2.7); labelled count unchanged during the disarmed retract; mass conserved"
+    },
+    "Rb_blunt_handle_v2": {
+     "task": "CUT-03-K2", "plan": "run_phase_f_v2_material.blunt_handle_v2_plan (phaseF_v2 parameters unchanged)",
+     "counterparts": ["F2.9_blunt_handle_v2 f2_9_blunt_handle_v2_law8_001 (tlmpm_v4, PASS, 0.855 N)"],
+     "pass": "F2.9_blunt_handle_v2 criteria: zero labels; one component; grip contact-window mean > 0.1 N; mass conserved",
+     "control_validity": "as F2.9_blunt_handle_v2: zero blade contact steps over the episode; footprint inside the right pedestal span and the bar top; otherwise INVALID_CONTROL"
+    }
+   }
+  }
+ },
+ "native_checks_b": {
+  "packed_encoding": "recorded code_encoding = packed2 and max_cuts = 5",
+  "zero_slot_overflow": "check_slots overflow_entries = 0",
+  "single_active_digit": "digits 0-3 are zero in every history frame and every per-step label record; every armed control step reports cut_index 4",
+  "packed_graph_matches_view": "packed stencil-graph final component count equals the single-digit view's ternary count"
+ },
+ "report": "docs/reports/WP11_REVIEW_NEGATIVE_CONTROLS.md; evidence docs/evidence/wp11/phaseR_negative_controls_001.json"
+}

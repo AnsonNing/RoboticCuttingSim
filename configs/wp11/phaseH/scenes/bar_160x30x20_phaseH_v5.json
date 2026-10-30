@@ -1,0 +1,53 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "bar_160x30x20_phaseH_v5",
+  "description": "CUT-01-R workpiece: 160 x 30 x 20 mm bar on two 70 mm pedestals with the frozen 40 mm relief gap at x = 0, ruler_knife_v1, identity pose. With goal sever_mid it reproduces the CUT-01-R particles, fixtures, tool mount and target. [WP-11 Phase H profiling copy of bar_160x30x20: only the solver module is changed to tlmpm_v5 (max_cuts 2); everything else is identical]",
+  "workpiece": {
+    "base_box_m": {
+      "length_m": 0.16,
+      "width_m": 0.03,
+      "height_m": 0.02
+    },
+    "protrusions": [],
+    "world_pose": {
+      "translation_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "yaw_deg": 0.0
+    },
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {
+    "kind": "slotted_board",
+    "x_range_m": [
+      -0.09,
+      0.09
+    ],
+    "half_width_y_m": 0.021,
+    "thickness_m": 0.01,
+    "slots": [
+      {
+        "x_m": 0.0,
+        "width_m": 0.04
+      }
+    ],
+    "names": [
+      "left_pedestal",
+      "right_pedestal"
+    ],
+    "workcell": null
+  },
+  "tool": {
+    "profile_id": "ruler_knife_v1",
+    "grasp_preset": "default"
+  },
+  "solver": {
+    "module": "tlmpm_v5",
+    "cutting_law": 8,
+    "max_cuts": 2,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004
+  }
+}

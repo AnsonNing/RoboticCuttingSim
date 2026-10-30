@@ -70,7 +70,14 @@ def same_partition(first, second):
     return len(pairs) == len(np.unique(a)) == len(np.unique(b))
 
 
-def cut_history_metrics(codes, cuts):
+def _packed_multi_digit(encoding, cuts):
+    """Packed tlmpm_v5 codes (ADR 0014) equal ternary codes only for one digit; these audits are ternary-only."""
+    return str(encoding) != "ternary" and int(cuts) >= 2
+
+
+def cut_history_metrics(codes, cuts, *, encoding="ternary"):
+    if _packed_multi_digit(encoding, cuts):
+        raise ValueError(f"cut_history_metrics reads ternary codes; {encoding} codes with {cuts} >= 2 digits are not supported")
     codes = np.asarray(codes)
     if codes.ndim != 2 or codes.dtype.kind not in "iu" or np.any(codes < 0) or np.any(codes >= 3**cuts):
         raise ValueError("Expected aligned recorded integer ternary cut history")
@@ -91,6 +98,14 @@ def graph_audit(physics, cuts):
     names = ("reference_stencil_nodes", "reference_stencil_weights", "reference_stencil_gradients")
     if not all(key in physics for key in names):
         return {"status": "NOT_RUN", "reason": "Actual reference nodes, weights and stress gradients are required"}, None
+    encoding = str(physics["code_encoding"]) if "code_encoding" in physics else "ternary"
+    recorded = physics["max_cuts"] if encoding != "ternary" and "max_cuts" in physics else None
+    recorded = None if recorded is None or np.asarray(recorded).dtype == object else int(recorded)
+    digits = max(int(cuts), recorded or 0)
+    if _packed_multi_digit(encoding, digits):
+        return {"status": "NOT_APPLICABLE", "code_encoding": encoding, "max_cuts": digits,
+                "reason": "The ternary mechanical-graph audit would misread packed codes with max_cuts >= 2; use the "
+                          "packed graph (cut_topology.mechanical_components_packed)"}, None
     nodes, weights, gradients = [physics[key] for key in names]
     initial_count, initial = mechanical_components(nodes, weights, physics["codes"][0], cuts, gradients=gradients)
     final_count, final = mechanical_components(nodes, weights, physics["codes"][-1], cuts, gradients=gradients)
@@ -534,7 +549,8 @@ def audit_live_episode(directory, protocol, *, protocol_path=None, contact_devic
     gates["SC-01"] = gate(checks, usd, missing, "Actual USD versus recorded articulated hand and optical camera frames")
 
     cuts = setup["material"]["cuts"]
-    history = cut_history_metrics(physics["codes"], cuts)
+    history = cut_history_metrics(physics["codes"], cuts,
+                                  encoding=physics["code_encoding"] if "code_encoding" in physics else "ternary")
     graph, labels = graph_audit(physics, cuts)
     expected, expected_mass, _ = sample_particles(Specimen(), setup["material"]["dx"]/2, setup["material"]["density"])
     recorded_initial = target.points_to_local(physics["positions"][0])

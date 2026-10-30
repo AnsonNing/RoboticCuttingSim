@@ -1,0 +1,1943 @@
+{
+ "evidence": "WP-11 Phase C5b: live Native near-horizontal TRIM with controller profile path_v3, then a cut-disabled config-planned blade sweep that clears the cut chip off the bar top, then physical RETURN_HOME (goal trim_bump_rho10_clear on trim01_wp11_workcell, ruler_knife_v2_y, rho = 10 deg)",
+ "attempts": {
+  "001": {
+   "run_dir": "artifacts/wp11/phaseC5/live_trim_rho10_clear_001",
+   "log": "artifacts/wp11/logs/phaseC5b_live_trim_rho10_clear_001.log",
+   "status": "FAIL_EXECUTION",
+   "error": "RuntimeError('Failed to create volume')",
+   "wall_s": null,
+   "launch_receipt": "waiting for GPU1 since 2026-10-30T05:48:56+09:00\nGPU1 free 29933 MiB at 2026-10-30T05:52:26+09:00; launching\ngpu_uuid, pid, used_gpu_memory [MiB]\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 940228, 5884 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1159692, 674 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1182654, 674 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1185967, 496 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 940228, 516 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 1185967, 674 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 1188138, 496 MiB\nexit 0 at 2026-10-30T05:57:05+09:00\n"
+  },
+  "002": {
+   "run_dir": "artifacts/wp11/phaseC5/live_trim_rho10_clear_002",
+   "log": "artifacts/wp11/logs/phaseC5b_live_trim_rho10_clear_002.log",
+   "status": "PASS_EXECUTION",
+   "error": null,
+   "wall_s": 1980.4124930219987,
+   "launch_receipt": "waiting for GPU1 since 2026-10-30T07:39:43+09:00\nGPU1 free 11899 MiB at 2026-10-30T07:41:13+09:00; launching\ngpu_uuid, pid, used_gpu_memory [MiB]\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1956782, 6519 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1981450, 6423 MiB\nGPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 2000860, 496 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 1956782, 516 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 1962043, 18402 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 1981450, 516 MiB\nGPU-a278df44-8db0-7770-630f-4f298a570b35, 2000860, 674 MiB\nexit 0 at 2026-10-30T08:14:16+09:00\n"
+  }
+ },
+ "attempt_notes": {
+  "001": "FAIL_EXECUTION (infrastructure, not controller/physics): Warp CUDA error 2 out of memory -> newton particle_surface 'Failed to create volume' at t = 2.5 s (REORIENT, before any cut) after an unrelated 24 GB training job (aw0 w4 train) started on GPU 1 mid-run. Launched with 29.9 GB free. Output preserved.",
+  "002": "PASS_EXECUTION; used for the evidence. Launched 07:41 after waiting for GPU 1 (aw0 training then its eval and Phase E Isaac runs held it; the waiter required >= 10 GB free for 2 min)."
+ },
+ "used_attempt": "002",
+ "verdicts": {
+  "task_goal_live": "PASS (planned-window evaluator, integrity PASS)",
+  "task_goal_measured_window_reevaluation": "PASS",
+  "trim_step": "PASS",
+  "chip_clear_step": "PASS",
+  "home_outcome": "PASS",
+  "execution": "PASS_EXECUTION (attempt 002); attempt 001 FAIL_EXECUTION (GPU OOM, infrastructure)",
+  "material_preflight_kinematic_formal": "PASS",
+  "pre_cut_geometric_clearance_audit": "PASS",
+  "measured_task_path_c2_clearance": "PASS",
+  "unit_tests": "PASS (tests/test_wp11_phase_c5b.py 21 passed; full CPU suite 991 passed, 5 xfailed)",
+  "c5b_acceptance": "PASS"
+ },
+ "acceptance": {
+  "removed_ge_90pct": "PASS (97.89%)",
+  "substrate_one_body": "PASS (below-plane share 0.99996, single substrate component, 2 mechanical components)",
+  "grasp": "PASS (HOLDING 1400/1400 task steps, max slip 0.78 um, max rotation 0.09 mrad)",
+  "contacts": "PASS (0 unintended contacts, no non-finger roles in contact)",
+  "chip_independent": "PASS (2 components after the armed skim on all 271 frames, 0 label changes after the skim, 0 code-0 bridges)",
+  "home": "PASS",
+  "pre_cut_clearance": "PASS (blade lowest point min +0.076 mm above the declared bar top; measured edge never below target, min +0.027 mm; C5: -0.167 mm, FAIL)",
+  "skim_clearance_reported": "blade lowest point min +0.013 mm above the bar top during SKIM (C5: -0.114 mm); edge height vs target -0.037..+0.035 mm",
+  "chip_moved_off": "PASS (move window displacement +109.0 mm along +x, other piece 0.36 mm, 0 label changes while disarmed; chip left the bar top and lies on the table: final centroid local (0.137, -0.001, -0.104) m)"
+ },
+ "git": {
+  "commit": "03dfd1d15b53c0454933a5e7fbb5facc58de9477",
+  "worktree": "/mnt/data/ningan/RoboticCuttingSim-wp11-c5b-03dfd1d",
+  "note": "Preflight and live ran from a clean detached worktree of the commit (.deps/.venv/asset cache symlinked)"
+ },
+ "command": "cd /mnt/data/ningan/RoboticCuttingSim-wp11-c5b-03dfd1d && OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp /home/ningan/RoboticCuttingSim/.deps/isaacsim-venv/bin/python scripts/run_wp10_live.py --runtime isaac_sim --scene trim01_wp11_workcell --goal trim_bump_rho10_clear --controller scripted --edge-feedback measured --stop-after-phase RETRACT --hold-until-time-limit --return-home --record-cameras --overview-camera --record-every 5 --steps 1400 --gpu 1 --seed 42 --out /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002",
+ "analysis_command": "cd /mnt/data/ningan/RoboticCuttingSim-wp11-c5b-03dfd1d && TMPDIR=/mnt/data/ningan/tmp /home/ningan/RoboticCuttingSim/.venv/bin/python scripts/analyze_phase_c5b_live.py /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002 --out /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002_analysis",
+ "render_command": "cd /mnt/data/ningan/RoboticCuttingSim-wp11-c5b-03dfd1d && TMPDIR=/mnt/data/ningan/tmp /home/ningan/RoboticCuttingSim/.venv/bin/python scripts/render_demo_episode.py /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002/episode_000 --out /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/render_trim_rho10_clear_002 --title '...' --label 'Goal trim_bump_rho10_clear PASS: dome 97.9% removed, chip pushed +109 mm off the bar | home_outcome PASS' --keep-frames",
+ "seed": 42,
+ "gpu": 1,
+ "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10_clear-699d8cee",
+ "goal": "configs/wp11/goals/trim_bump_rho10_clear.json",
+ "scene": "configs/wp11/scenes/trim01_wp11_workcell.json",
+ "controller": {
+  "profile": "path_v3",
+  "receipt": {
+   "name": "path_v3",
+   "path_tracking": true,
+   "approach_speed_m_s": 0.02,
+   "approach_slow_distance_m": 0.01,
+   "settle_s": 0.3,
+   "position_tolerance_m": 0.0003,
+   "command_mode": "bias_pose",
+   "bias_gain": 0.1,
+   "error_filter": 0.5,
+   "bias_deadband_m": 2e-05,
+   "bias_deadband_rad": 0.0002,
+   "stop_gain": 0.15,
+   "stop_min_step_m": 5e-06,
+   "presettle_m": 0.001,
+   "presettle_s": 0.5,
+   "planner": "goal_planner_v1",
+   "planner_options": {
+    "controller_profile": "path_v3",
+    "cut_clearance_m": 0.008,
+    "cut_speed_m_s": 0.01,
+    "hold_s": 0.3,
+    "home_height_m": 0.04,
+    "home_orientation_local_xyzw": null,
+    "home_position_local_m": null,
+    "kerf_speed_m_s": 0.02,
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "overtravel_m": 0.004,
+    "protrusion_order": "along_skim",
+    "push_release_m": 0.002,
+    "rake_deg": 10.0,
+    "safe_height_m": 0.03,
+    "saw_amplitude_m": 0.0,
+    "saw_period_s": 0.4,
+    "skew_deg": 0.0,
+    "skim_direction_local": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "skim_margin_m": 0.01,
+    "skim_speed_m_s": 0.025
+   },
+   "phases": [
+    "HOME",
+    "REORIENT:dome",
+    "PRE_CUT:dome",
+    "PRE_CUT:dome",
+    "PRE_CUT:dome",
+    "SKIM:dome",
+    "WITHDRAW:dome",
+    "APPROACH_PUSH:move1",
+    "LOWER:move1",
+    "PUSH:move1",
+    "PUSH_HOLD:move1",
+    "RELEASE:move1",
+    "RETRACT:move1",
+    "RETURN_HOME"
+   ],
+   "action_limits": {
+    "max_translation_m": 0.001,
+    "max_rotation_rad": 0.017453292519943295,
+    "workspace_min_local_m": [
+     -0.14,
+     -0.12,
+     -0.012
+    ],
+    "workspace_max_local_m": [
+     0.14,
+     0.12,
+     0.22
+    ],
+    "limit_absolute": true,
+    "version": "action_limits_v1"
+   }
+  },
+  "edge_feedback": {
+   "mode": "measured",
+   "source": "measured_tool_edge_feedback",
+   "scope": "Simulator tool-edge pose of the physically held knife (privileged tool proprioception); not material oracle state and not part of the policy observation"
+  },
+  "design": "src/robotic_cutting_sim/policies.py WaypointPolicy._bias_pose_call",
+  "tests": "tests/test_wp11_phase_c5b.py (plant tests/c5b_plant.py)"
+ },
+ "diagnosis": {
+  "data": "artifacts/wp11/phaseC5/live_trim_rho10_001/episode_000/actions.jsonl (accepted absolute target c_k vs measured edge m_k)",
+  "law": "path_v2 commands delta = target - m_{k-1} composed onto the previous command: c_k = c_{k-1} + (T - m_{k-1}), a unit-gain integrator on a lagged plant",
+  "trace": "during the 0.4 mm/step slow approach c - m = 0.49 mm (0.33 mm static sag + lag); the command stopped abruptly at 3.92 s and the measured edge undershot to -0.217 mm, then rang with ~0.17 s period (minima 3.94, 4.11, 4.28 s), ~6 Hz, +/-0.2 mm, continuing into SKIM",
+  "plant_fit": "per-axis ARX(2,3) on PRE_CUT..HOLD (2.84-14.0 s): z a=(1.513,-0.635) b=(0.406,-0.274,-0.009), residual rms 9 um; poles 0.756 +/- 0.251j; static offset command-measured (+0.06, -0.70, +0.33) mm",
+  "closed_loop": "path_v2 poles on the fitted plant |z| = 0.92 (z), 0.87 (x), 1.07 (y) at ~8.4 steps/period (~6 Hz); the plant alone undershoots ~1.2 steps of velocity on an abrupt stop"
+ },
+ "material_preflight": {
+  "formal": {
+   "run_dir": "artifacts/wp11/phaseC5/preflight_kin_clear_law8_001",
+   "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10_clear-699d8cee",
+   "verdict": "PASS",
+   "integrity": "PASS",
+   "steps": {
+    "trim_dome": {
+     "status": "PASS",
+     "checks": {
+      "selection_nonempty": true,
+      "selected_protrusions_removed": true,
+      "unselected_protrusions_retained": true,
+      "substrate_holds_below_plane_mass": true,
+      "detached_below_plane_mass_bounded": true,
+      "single_substrate_component": true
+     },
+     "metrics": {
+      "mechanical_components": 2,
+      "largest_component_below_plane_mass_share": 0.9999583333329937,
+      "detached_below_plane_mass_fraction": 4.166666666666668e-05,
+      "items": [
+       {
+        "id": "dome",
+        "selected": true,
+        "reference_particles_above_plane": 1044,
+        "reference_mass_above_plane_kg": 0.0015659999999999997,
+        "removed_mass_fraction": 0.978927203065134,
+        "pass": true,
+        "residual_substrate_height_m": 0.011163234263658523
+       }
+      ]
+     }
+    },
+    "clear_chip": {
+     "status": "PASS",
+     "checks": {
+      "piece_exists_at_move_start": true,
+      "selected_piece_identified": true,
+      "selected_piece_displaced": true,
+      "other_pieces_stationary": true,
+      "no_label_change_while_disarmed": true,
+      "components_never_merge": true
+     },
+     "metrics": {
+      "window_s": [
+       13.2,
+       18.9
+      ],
+      "window_source": "task_reference_schedule",
+      "components_at_start": 2,
+      "components_at_end": 2,
+      "selector_mass_share": 0.978927203065125,
+      "displacement_along_direction_m": 0.097757817144356,
+      "displacement_m": [
+       0.097757817144356,
+       -0.0014809698905066293,
+       -0.12916736132111425
+      ],
+      "other_piece_displacement_norm_m": [
+       0.00041703154261289976
+      ],
+      "label_changes_while_disarmed_frames": 0
+     }
+    }
+   },
+   "phases": {
+    "REORIENT:dome": {
+     "t": [
+      0.02,
+      2.64
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.03784885141897658,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.05000000000000028
+    },
+    "PRE_CUT:dome": {
+     "t": [
+      2.66,
+      5.56
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 4.885141897656431e-05,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.050000000000000044
+    },
+    "SKIM:dome": {
+     "t": [
+      5.58,
+      7.9
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 4.885141897656431e-05,
+     "blade_force_max_N": 0.07160527252020837,
+     "edge_speed_max_m_s": 0.025000000000000022
+    },
+    "WITHDRAW:dome": {
+     "t": [
+      7.92,
+      9.32
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.0010488514189765652,
+     "blade_force_max_N": 0.016612444341682648,
+     "edge_speed_max_m_s": 0.050000000000000044
+    },
+    "APPROACH_PUSH:move1": {
+     "t": [
+      9.34,
+      10.86
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.03784885141897658,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.050000000000000044
+    },
+    "LOWER:move1": {
+     "t": [
+      10.88,
+      13.2
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.0018488514189765604,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.020000000000000573
+    },
+    "PUSH:move1": {
+     "t": [
+      13.22,
+      18.56
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.0018488514189765604,
+     "blade_force_max_N": 0.03240817692441042,
+     "edge_speed_max_m_s": 0.020000000000000226
+    },
+    "PUSH_HOLD:move1": {
+     "t": [
+      18.58,
+      18.86
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.0018488514189765604,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.0
+    },
+    "RELEASE:move1": {
+     "t": [
+      18.88,
+      19.5
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.0018488514189765604,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.012750000000000261
+    },
+    "RETRACT:move1": {
+     "t": [
+      19.52,
+      20.88
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.0028488514189765612,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.050000000000000044
+    },
+    "RETURN_HOME": {
+     "t": [
+      20.9,
+      24.62
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.03868653987869662,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.05000000000000037
+    },
+    "done": {
+     "t": [
+      24.64,
+      24.64
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.1680009261997661,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.0
+    },
+    "HOLD_TO_TIME_LIMIT": {
+     "t": [
+      24.66,
+      28.0
+     ],
+     "lowest_blade_point_above_bar_top_min_m": 0.1680009261997661,
+     "blade_force_max_N": 0.0,
+     "edge_speed_max_m_s": 0.0
+    }
+   },
+   "surface_quality": {
+    "status": "MEASURED",
+    "scope": "Frozen TRIM surface metrics, reported as quality only",
+    "measurement_spacing_xy_m": [
+     0.001,
+     0.001
+    ],
+    "grid_shape_xy": [
+     160,
+     30
+    ],
+    "valid_surface_fraction": 0.9995833333333334,
+    "missing_surface_fraction": 0.0004166666666666208,
+    "maximum_substrate_surface_residual_height_m": 0.00011029048796205171,
+    "surface_p95_absolute_plane_error_m": 0.0006180383391930407,
+    "surface_rms_plane_error_m": 0.000372945604731668,
+    "maximum_gouge_depth_m": 0.02,
+    "overcut_volume_m3": 1.030465369960907e-06,
+    "overcut_volume_fraction_of_initial_base": 0.010734014270426116
+   },
+   "bridges": {
+    "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10_clear-699d8cee",
+    "scenario": null,
+    "frame": -1,
+    "components": 2,
+    "final_components": 2,
+    "final_component_mass_fractions": [
+     0.989427,
+     0.010573
+    ],
+    "cuts_in_graph": 1,
+    "code_encoding": "packed2",
+    "bridge_digit": 0,
+    "stencil_support": {
+     "source": "recorded_nodes_weights_gradients",
+     "valid_entry_rule": "weight>0 or |gradient|>0",
+     "valid_entries": 776352,
+     "total_entries": 776352
+    },
+    "code_counts": {
+     "0": 72060,
+     "1": 23958,
+     "2": 1026
+    },
+    "nodes_with_codes_0_2": 0,
+    "nodes_with_codes_0_1": 216,
+    "nodes_with_codes_1_2": 69,
+    "direct_code_zero_bridges": 0,
+    "bridge_local_xyz_mm": [],
+    "above_plane_code_counts": {
+     "1": 22,
+     "2": 1022
+    },
+    "above_plane_code_zero_local_xyz_mm": []
+   },
+   "git_sha": "03dfd1d15b53c0454933a5e7fbb5facc58de9477",
+   "git_dirty": false,
+   "wall_s": 1713.3876377179986,
+   "command": "scripts/run_phase_c5_trim_preflight.py --goal trim_bump_rho10_clear --device cuda:1 --out /home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/preflight_kin_clear_law8_001",
+   "formal_resolution": true,
+   "seed": 42,
+   "device": "cuda:1"
+  },
+  "smoke_nonformal_4mm": {
+   "run_dir": "artifacts/wp11/phaseC5/smoke_kin_clear_4mm_001",
+   "verdict": "PASS_NONFORMAL",
+   "note": "4 mm non-formal integration smoke from the uncommitted tree"
+  }
+ },
+ "live": {
+  "goal_verdict_live": "PASS",
+  "live_steps": [
+   {
+    "goal_id": "trim_dome",
+    "status": "PASS",
+    "checks": {
+     "selection_nonempty": true,
+     "selected_protrusions_removed": true,
+     "unselected_protrusions_retained": true,
+     "substrate_holds_below_plane_mass": true,
+     "detached_below_plane_mass_bounded": true,
+     "single_substrate_component": true
+    },
+    "window": null,
+    "window_source": null
+   },
+   {
+    "goal_id": "clear_chip",
+    "status": "PASS",
+    "checks": {
+     "piece_exists_at_move_start": true,
+     "selected_piece_identified": true,
+     "selected_piece_displaced": true,
+     "other_pieces_stationary": true,
+     "no_label_change_while_disarmed": true,
+     "components_never_merge": true
+    },
+    "window": [
+     13.200000000000001,
+     18.86
+    ],
+    "window_source": "task_reference_schedule"
+   }
+  ],
+  "measured_window_verdict": "PASS",
+  "measured_windows_s": {
+   "clear_chip": [
+    13.440000000000001,
+    19.1
+   ]
+  },
+  "trim_step": {
+   "status": "PASS",
+   "checks": {
+    "selection_nonempty": true,
+    "selected_protrusions_removed": true,
+    "unselected_protrusions_retained": true,
+    "substrate_holds_below_plane_mass": true,
+    "detached_below_plane_mass_bounded": true,
+    "single_substrate_component": true
+   },
+   "items": [
+    {
+     "id": "dome",
+     "selected": true,
+     "reference_particles_above_plane": 1044,
+     "reference_mass_above_plane_kg": 0.0015659999999999997,
+     "removed_mass_fraction": 0.978927203065134,
+     "pass": true,
+     "residual_substrate_height_m": 0.01212742879986763
+    }
+   ],
+   "substrate_share": 0.9999583333329937,
+   "detached_below": 4.166666666666668e-05,
+   "components": 2
+  },
+  "move_step": {
+   "status": "PASS",
+   "checks": {
+    "piece_exists_at_move_start": true,
+    "selected_piece_identified": true,
+    "selected_piece_displaced": true,
+    "other_pieces_stationary": true,
+    "no_label_change_while_disarmed": true,
+    "components_never_merge": true
+   },
+   "metrics": {
+    "window_s": [
+     13.4,
+     19.1
+    ],
+    "window_source": "declared_window",
+    "components_at_start": 2,
+    "components_at_end": 2,
+    "moved_component": 1,
+    "selector_mass_share": 0.978927203065125,
+    "displacement_along_direction_m": 0.10903332122287597,
+    "displacement_m": [
+     0.10903332122287597,
+     0.00024598508101820646,
+     -0.1292754009322476
+    ],
+    "other_piece_displacement_norm_m": [
+     0.00036405134856331005
+    ],
+    "label_changes_while_disarmed_frames": 0,
+    "label_rule": "cut_enabled per frame when recorded, else any code change in the window"
+   }
+  },
+  "clearance_audit": {
+   "status": "PASS",
+   "rule": "measured blade lowest point (tool-profile cross-section at the measured edge pose) above the declared bar top during every PRE_CUT step",
+   "pre_cut_lowest_blade_point_above_bar_top_min_m": 7.566745143368359e-05,
+   "pre_cut_measured_edge_below_target_max_m": 0.0,
+   "skim_lowest_blade_point_above_bar_top_min_m": 1.2940131170063873e-05,
+   "c2_measured_path_status": "PASS"
+  },
+  "chip": {
+   "selector_particles": 1044,
+   "selector_mass_kg": 0.0015659999999999997,
+   "initial_centroid_local_m": [
+    3.3805593361043285e-20,
+    -9.507823132793423e-21,
+    0.02233524933114822
+   ],
+   "final_centroid_local_m": [
+    0.13735375465232866,
+    -0.001390389533016037,
+    -0.10408716495469984
+   ],
+   "final_displacement_x_m": 0.13735375465232866,
+   "off_bar_top": true,
+   "bar_end_local_x_m": 0.08,
+   "bar_top_local_z_m": 0.02
+  },
+  "home_outcome": "PASS",
+  "home_failed_checks": [],
+  "episode_state_final": {
+   "state": "FINISHED",
+   "termination_reason": "TIME_LIMIT",
+   "home_outcome": "PASS",
+   "transitions": 7
+  },
+  "state_path": [
+   [
+    null,
+    "RESETTING",
+    0.0,
+    "reset"
+   ],
+   [
+    "RESETTING",
+    "READY",
+    0.0,
+    "reset_complete"
+   ],
+   [
+    "READY",
+    "RUNNING",
+    0.02,
+    "first_step"
+   ],
+   [
+    "RUNNING",
+    "TASK_COMPLETE",
+    28.0,
+    "TIME_LIMIT"
+   ],
+   [
+    "TASK_COMPLETE",
+    "RETRACTING",
+    28.0,
+    "return_home"
+   ],
+   [
+    "RETRACTING",
+    "RETURNING_HOME",
+    31.46,
+    "ROTATE_HAND_DOWN"
+   ],
+   [
+    "RETURNING_HOME",
+    "FINISHED",
+    35.160000000000004,
+    "home_PASS"
+   ]
+  ],
+  "phases": {
+   "HOME": {
+    "t_start_s": 0.02,
+    "t_end_s": 0.1,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.1671328094361218,
+     "max": 0.16775595256523795,
+     "mean": 0.16753850730492648,
+     "p95": 0.1677487689914516,
+     "samples": 5
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.16693280943612177,
+     "max": 0.16755595256523792,
+     "mean": 0.16733850730492644,
+     "p95": 0.16754876899145157,
+     "samples": 5
+    },
+    "tracking_error_m": {
+     "min": 0.0009929814493010662,
+     "max": 0.0015327707548358589,
+     "mean": 0.0011802567087017743,
+     "p95": 0.0014828924158601417,
+     "samples": 5
+    },
+    "cut_enabled_steps": 0
+   },
+   "REORIENT:dome": {
+    "t_start_s": 0.12,
+    "t_end_s": 2.74,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.03789442135410788,
+     "max": 0.16762804915476837,
+     "mean": 0.10227193948613823,
+     "p95": 0.16085414918498828,
+     "samples": 132
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.037846369909830216,
+     "max": 0.1674358398906356,
+     "mean": 0.10224251002685236,
+     "p95": 0.16071479737891423,
+     "samples": 132
+    },
+    "tracking_error_m": {
+     "min": 0.0007497665418589927,
+     "max": 0.0057663647692116436,
+     "mean": 0.001189626981163708,
+     "p95": 0.003496772091995794,
+     "samples": 132
+    },
+    "cut_enabled_steps": 0
+   },
+   "PRE_CUT:dome": {
+    "t_start_s": 2.7600000000000002,
+    "t_end_s": 5.8,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 7.566745143368359e-05,
+     "max": 0.03690332118718466,
+     "mean": 0.005692106180615836,
+     "p95": 0.029290502213051153,
+     "samples": 153
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 2.7121295713805615e-05,
+     "max": 0.03685502107783044,
+     "mean": 0.005643575418262307,
+     "p95": 0.029242257025179748,
+     "samples": 153
+    },
+    "tracking_error_m": {
+     "min": 0.0006997273053222214,
+     "max": 0.0015411251970812944,
+     "mean": 0.0008816047493975863,
+     "p95": 0.0010853758509533572,
+     "samples": 153
+    },
+    "cut_enabled_steps": 0
+   },
+   "SKIM:dome": {
+    "t_start_s": 5.82,
+    "t_end_s": 8.14,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 1.2940131170063873e-05,
+     "max": 8.339460810247168e-05,
+     "mean": 4.1960224832755764e-05,
+     "p95": 7.409904668752018e-05,
+     "samples": 117
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": -3.659793079617557e-05,
+     "max": 3.504548008520514e-05,
+     "mean": -6.733223923347676e-06,
+     "p95": 2.5655709192298722e-05,
+     "samples": 117
+    },
+    "tracking_error_m": {
+     "min": 0.0005708301742880594,
+     "max": 0.0009373780552808784,
+     "mean": 0.0007985169323151962,
+     "p95": 0.0009009059283757744,
+     "samples": 117
+    },
+    "cut_enabled_steps": 117
+   },
+   "WITHDRAW:dome": {
+    "t_start_s": 8.16,
+    "t_end_s": 9.56,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0004536052001595653,
+     "max": 0.03784469279746154,
+     "mean": 0.02801419192471733,
+     "p95": 0.03782570576694236,
+     "samples": 71
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.00040081286006653227,
+     "max": 0.037795132406019824,
+     "mean": 0.027965455618827333,
+     "p95": 0.03777603534726931,
+     "samples": 71
+    },
+    "tracking_error_m": {
+     "min": 0.00059907900804191,
+     "max": 0.0016949208048468807,
+     "mean": 0.0007962090312127714,
+     "p95": 0.0013973430111274385,
+     "samples": 71
+    },
+    "cut_enabled_steps": 0
+   },
+   "APPROACH_PUSH:move1": {
+    "t_start_s": 9.58,
+    "t_end_s": 11.1,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.03782321375334553,
+     "max": 0.03790562360399828,
+     "mean": 0.037855279628866915,
+     "p95": 0.03787840971323036,
+     "samples": 77
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.03777345682019294,
+     "max": 0.037857414946263476,
+     "mean": 0.03780622953586643,
+     "p95": 0.037830302393029806,
+     "samples": 77
+    },
+    "tracking_error_m": {
+     "min": 0.0006786463644552028,
+     "max": 0.0013650136219431072,
+     "mean": 0.0008744151778804933,
+     "p95": 0.0012465987259034292,
+     "samples": 77
+    },
+    "cut_enabled_steps": 0
+   },
+   "LOWER:move1": {
+    "t_start_s": 11.120000000000001,
+    "t_end_s": 13.44,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018622313724306339,
+     "max": 0.03767323638597052,
+     "mean": 0.015476048474599305,
+     "p95": 0.03516402142819769,
+     "samples": 117
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0018137621329573222,
+     "max": 0.037626218325473235,
+     "mean": 0.015426932596841704,
+     "p95": 0.03511600529390386,
+     "samples": 117
+    },
+    "tracking_error_m": {
+     "min": 0.0005558507052631247,
+     "max": 0.0010171550437422247,
+     "mean": 0.00084799369213894,
+     "p95": 0.000964510475266735,
+     "samples": 117
+    },
+    "cut_enabled_steps": 0
+   },
+   "PUSH:move1": {
+    "t_start_s": 13.46,
+    "t_end_s": 18.8,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018088288661630564,
+     "max": 0.0018750503081995662,
+     "mean": 0.001831097549655177,
+     "p95": 0.0018516574934944214,
+     "samples": 268
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0017594613908038653,
+     "max": 0.0018266138387022929,
+     "mean": 0.0017822716001408623,
+     "p95": 0.0018027078145185136,
+     "samples": 268
+    },
+    "tracking_error_m": {
+     "min": 0.0006073578494904541,
+     "max": 0.0008682953389900973,
+     "mean": 0.0007958671069653713,
+     "p95": 0.0008158565067774918,
+     "samples": 268
+    },
+    "cut_enabled_steps": 0
+   },
+   "PUSH_HOLD:move1": {
+    "t_start_s": 18.82,
+    "t_end_s": 19.1,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018282894864705412,
+     "max": 0.0018506675123716593,
+     "mean": 0.0018379929111621294,
+     "p95": 0.0018496241558194127,
+     "samples": 15
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0017796963164428276,
+     "max": 0.001801416448937762,
+     "mean": 0.0017890246078165416,
+     "p95": 0.0018004281593503868,
+     "samples": 15
+    },
+    "tracking_error_m": {
+     "min": 0.0007710960718591074,
+     "max": 0.0010481292598906724,
+     "mean": 0.0009017402766459045,
+     "p95": 0.0010472321815041194,
+     "samples": 15
+    },
+    "cut_enabled_steps": 0
+   },
+   "RELEASE:move1": {
+    "t_start_s": 19.12,
+    "t_end_s": 19.740000000000002,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018323508417555506,
+     "max": 0.001861841942106618,
+     "mean": 0.0018487356082589846,
+     "p95": 0.001859366592456973,
+     "samples": 32
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0017830250915500528,
+     "max": 0.0018127168400094429,
+     "mean": 0.0017995740908470698,
+     "p95": 0.001810192254900432,
+     "samples": 32
+    },
+    "tracking_error_m": {
+     "min": 0.0007746829213433644,
+     "max": 0.0009263954328842414,
+     "mean": 0.0008240993296619707,
+     "p95": 0.0009134545979999295,
+     "samples": 32
+    },
+    "cut_enabled_steps": 0
+   },
+   "RETRACT:move1": {
+    "t_start_s": 19.76,
+    "t_end_s": 21.12,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0022260684482908605,
+     "max": 0.037852757938910145,
+     "mean": 0.028674808579436606,
+     "p95": 0.037838825501848625,
+     "samples": 69
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0021731079182371327,
+     "max": 0.037803177328730134,
+     "mean": 0.028626028833358994,
+     "p95": 0.037789158435093805,
+     "samples": 69
+    },
+    "tracking_error_m": {
+     "min": 0.0006044498752141024,
+     "max": 0.0018262855327770377,
+     "mean": 0.0008177220137546222,
+     "p95": 0.001528936998363205,
+     "samples": 69
+    },
+    "cut_enabled_steps": 0
+   },
+   "HOLD_AFTER_STOP": {
+    "t_start_s": 21.14,
+    "t_end_s": 28.0,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.037857442519965825,
+     "max": 0.03786684403229339,
+     "mean": 0.03786359406824804,
+     "p95": 0.03786474214766485,
+     "samples": 344
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.037807864909438785,
+     "max": 0.03781744004295022,
+     "mean": 0.037814163566105716,
+     "p95": 0.037815308794224484,
+     "samples": 344
+    },
+    "tracking_error_m": {
+     "min": 0.0007961568257991213,
+     "max": 0.0008087389173822174,
+     "mean": 0.000798065751471155,
+     "p95": 0.0007990706048665215,
+     "samples": 344
+    },
+    "cut_enabled_steps": 0
+   },
+   "RETURN_HOME:RETRACTING": {
+    "t_start_s": 28.02,
+    "t_end_s": 31.46,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.03762674252715452,
+     "max": 0.16812464277041522,
+     "mean": 0.10314777513909436,
+     "p95": 0.16489505855651687,
+     "samples": 173
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.03757517241627413,
+     "max": 0.16807633562734464,
+     "mean": 0.10309591381562443,
+     "p95": 0.16484355171911486,
+     "samples": 173
+    },
+    "tracking_error_m": {
+     "min": 0.0007084065097886041,
+     "max": 0.000709893117269977,
+     "mean": 0.0007095642862464452,
+     "p95": 0.0007098089561827527,
+     "samples": 173
+    },
+    "cut_enabled_steps": 0
+   },
+   "RETURN_HOME:ROTATE_HAND_DOWN": {
+    "t_start_s": 31.48,
+    "t_end_s": 33.82,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.10205700547102435,
+     "max": 0.1681416819183582,
+     "mean": 0.13167011818249114,
+     "p95": 0.1673861097498994,
+     "samples": 118
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.10185700547102434,
+     "max": 0.16804399252607466,
+     "mean": 0.1314833499667892,
+     "p95": 0.16720816608734898,
+     "samples": 118
+    },
+    "tracking_error_m": {
+     "min": 0.0007073647154696422,
+     "max": 0.0007097730173095679,
+     "mean": 0.000708651145427099,
+     "p95": 0.0007095988050273133,
+     "samples": 118
+    },
+    "cut_enabled_steps": 0
+   },
+   "RETURN_HOME:MOVE_HOME": {
+    "t_start_s": 33.84,
+    "t_end_s": 34.660000000000004,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.16677366697531493,
+     "max": 0.1692686088675207,
+     "mean": 0.16801400595434934,
+     "p95": 0.1692210049966263,
+     "samples": 42
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.1665736669753149,
+     "max": 0.16907361087182138,
+     "mean": 0.16782629981049638,
+     "p95": 0.16903661058362773,
+     "samples": 42
+    },
+    "tracking_error_m": {
+     "min": 0.0007074306746370119,
+     "max": 0.0007081487253595431,
+     "mean": 0.00070778131463148,
+     "p95": 0.0007081076289930206,
+     "samples": 42
+    },
+    "cut_enabled_steps": 0
+   },
+   "RETURN_HOME:SETTLE_HOME": {
+    "t_start_s": 34.68,
+    "t_end_s": 35.160000000000004,
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.1668155605568743,
+     "max": 0.1672576888596874,
+     "mean": 0.16689660146681246,
+     "p95": 0.16719509066807206,
+     "samples": 25
+    },
+    "measured_edge_z_minus_target_m": {
+     "min": 0.16661556055687426,
+     "max": 0.16706745183642013,
+     "mean": 0.16669720948997205,
+     "p95": 0.166999393045134,
+     "samples": 25
+    },
+    "tracking_error_m": {
+     "min": 0.0007073989876667787,
+     "max": 0.0007080291527210961,
+     "mean": 0.000707664996650108,
+     "p95": 0.0007079735140637614,
+     "samples": 25
+    },
+    "cut_enabled_steps": 0
+   }
+  },
+  "controller_trace": {
+   "HOME": {
+    "steps": 5,
+    "t": [
+     0.02,
+     0.1
+    ],
+    "measured_minus_reference_m": {
+     "min": 0.0,
+     "max": 0.0008737653935910686,
+     "mean": 0.00043990344619102874,
+     "p95": 0.000822670912221776,
+     "samples": 5
+    },
+    "cross_track_error_m": {
+     "min": 0.0,
+     "max": 0.000403718573692931,
+     "mean": 0.0002392500216278333,
+     "p95": 0.00038372291433965235,
+     "samples": 5
+    },
+    "bias_position_first_m": [
+     -3.1472300171760115e-05,
+     1.4806044808876262e-06,
+     0.0007072538160085018
+    ],
+    "bias_position_last_m": [
+     2.3261269709316827e-05,
+     -9.913121603604442e-06,
+     0.0007405015589540568
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.16693280943612177,
+     "max": 0.16755595256523792,
+     "mean": 0.16733850730492644,
+     "p95": 0.16754876899145157,
+     "samples": 5
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.1671328094361218,
+     "max": 0.16775595256523795,
+     "mean": 0.16753850730492648,
+     "p95": 0.1677487689914516,
+     "samples": 5
+    }
+   },
+   "REORIENT:dome": {
+    "steps": 132,
+    "t": [
+     0.12,
+     2.74
+    ],
+    "measured_minus_reference_m": {
+     "min": 0.000161515825419645,
+     "max": 0.004794642197191261,
+     "mean": 0.0005858800575193966,
+     "p95": 0.003078112127898304,
+     "samples": 132
+    },
+    "cross_track_error_m": {
+     "min": 1.7022856889084283e-05,
+     "max": 0.0032760789860902537,
+     "mean": 0.00031281359325567235,
+     "p95": 0.001224146598680118,
+     "samples": 132
+    },
+    "bias_position_first_m": [
+     3.384616653858158e-05,
+     -1.306822482563213e-05,
+     0.0007623006471168536
+    ],
+    "bias_position_last_m": [
+     0.00016682520063634353,
+     -0.0006987606829477128,
+     0.0007649445787183733
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.037846369909830216,
+     "max": 0.1674358398906356,
+     "mean": 0.10224251002685236,
+     "p95": 0.16071479737891423,
+     "samples": 132
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.03789442135410788,
+     "max": 0.16762804915476837,
+     "mean": 0.10227193948613823,
+     "p95": 0.16085414918498828,
+     "samples": 132
+    }
+   },
+   "PRE_CUT:dome": {
+    "steps": 153,
+    "t": [
+     2.7600000000000002,
+     5.8
+    ],
+    "measured_minus_reference_m": {
+     "min": 1.0230987619737135e-05,
+     "max": 0.000520989111199744,
+     "mean": 0.0001652589213554877,
+     "p95": 0.00045937478333651867,
+     "samples": 153
+    },
+    "cross_track_error_m": {
+     "min": 8.892713183965552e-06,
+     "max": 0.0004564107680336911,
+     "mean": 7.593557520357733e-05,
+     "p95": 0.0002901251082032015,
+     "samples": 153
+    },
+    "bias_position_first_m": [
+     0.00016594553805759468,
+     -0.0006992382756442558,
+     0.0007650934518955315
+    ],
+    "bias_position_last_m": [
+     7.542336135598879e-05,
+     -0.0007125830695834654,
+     0.00033504591909808883
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 2.7121295713805615e-05,
+     "max": 0.03685502107783044,
+     "mean": 0.005643575418262307,
+     "p95": 0.029242257025179748,
+     "samples": 153
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 7.566745143368359e-05,
+     "max": 0.03690332118718466,
+     "mean": 0.005692106180615836,
+     "p95": 0.029290502213051153,
+     "samples": 153
+    }
+   },
+   "SKIM:dome": {
+    "steps": 117,
+    "t": [
+     5.82,
+     8.14
+    ],
+    "measured_minus_reference_m": {
+     "min": 2.8619280129934652e-05,
+     "max": 0.0002763885602249195,
+     "mean": 0.0001839568681746931,
+     "p95": 0.00026464491078009926,
+     "samples": 117
+    },
+    "cross_track_error_m": {
+     "min": 9.8770179755531e-06,
+     "max": 0.00026834842818242687,
+     "mean": 4.915317024718416e-05,
+     "p95": 0.00014092737685591974,
+     "samples": 117
+    },
+    "bias_position_first_m": [
+     7.525000007721974e-05,
+     -0.0007125371965732911,
+     0.000334242597129227
+    ],
+    "bias_position_last_m": [
+     7.47802507899349e-05,
+     -0.0007421659762492037,
+     0.00034102841186075714
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": -3.659793079617557e-05,
+     "max": 3.504548008520514e-05,
+     "mean": -6.733223923347676e-06,
+     "p95": 2.5655709192298722e-05,
+     "samples": 117
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 1.2940131170063873e-05,
+     "max": 8.339460810247168e-05,
+     "mean": 4.1960224832755764e-05,
+     "p95": 7.409904668752018e-05,
+     "samples": 117
+    }
+   },
+   "WITHDRAW:dome": {
+    "steps": 71,
+    "t": [
+     8.16,
+     9.56
+    ],
+    "measured_minus_reference_m": {
+     "min": 3.202564063765261e-05,
+     "max": 0.000993837308911424,
+     "mean": 0.0003751219934212492,
+     "p95": 0.0008561159898423642,
+     "samples": 71
+    },
+    "cross_track_error_m": {
+     "min": 5.544582387663071e-06,
+     "max": 0.0005656585676406315,
+     "mean": 0.0001247555804558095,
+     "p95": 0.0003338336133448984,
+     "samples": 71
+    },
+    "bias_position_first_m": [
+     7.47802507899349e-05,
+     -0.0007416067130111892,
+     0.000341237382492325
+    ],
+    "bias_position_last_m": [
+     4.4293283495719776e-05,
+     -0.0006785287743082314,
+     0.0003420507763682586
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.00040081286006653227,
+     "max": 0.037795132406019824,
+     "mean": 0.027965455618827333,
+     "p95": 0.03777603534726931,
+     "samples": 71
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0004536052001595653,
+     "max": 0.03784469279746154,
+     "mean": 0.02801419192471733,
+     "p95": 0.03782570576694236,
+     "samples": 71
+    }
+   },
+   "APPROACH_PUSH:move1": {
+    "steps": 77,
+    "t": [
+     9.58,
+     11.1
+    ],
+    "measured_minus_reference_m": {
+     "min": 3.0369093141528304e-05,
+     "max": 0.0005966954571021165,
+     "mean": 0.0003351436240886667,
+     "p95": 0.0005625603245392766,
+     "samples": 77
+    },
+    "cross_track_error_m": {
+     "min": 1.328349287283987e-05,
+     "max": 0.0005933997432642328,
+     "mean": 0.00012568031258079952,
+     "p95": 0.0003588444238867228,
+     "samples": 77
+    },
+    "bias_position_first_m": [
+     4.518703882765768e-05,
+     -0.0006793816908765525,
+     0.0003420507763682586
+    ],
+    "bias_position_last_m": [
+     4.7311696046860253e-05,
+     -0.0006673898946246099,
+     0.00031720602267151825
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.03777345682019294,
+     "max": 0.037857414946263476,
+     "mean": 0.03780622953586643,
+     "p95": 0.037830302393029806,
+     "samples": 77
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.03782321375334553,
+     "max": 0.03790562360399828,
+     "mean": 0.037855279628866915,
+     "p95": 0.03787840971323036,
+     "samples": 77
+    }
+   },
+   "LOWER:move1": {
+    "steps": 117,
+    "t": [
+     11.120000000000001,
+     13.44
+    ],
+    "measured_minus_reference_m": {
+     "min": 2.8848318188639434e-05,
+     "max": 0.0003368576919890979,
+     "mean": 0.00016209408839143553,
+     "p95": 0.000288675101993622,
+     "samples": 117
+    },
+    "cross_track_error_m": {
+     "min": 4.580631444607555e-06,
+     "max": 0.00018216140063672512,
+     "mean": 4.065691637423503e-05,
+     "p95": 0.00011367072909531554,
+     "samples": 117
+    },
+    "bias_position_first_m": [
+     4.7311696046860253e-05,
+     -0.0006690704422599143,
+     0.000317208174917515
+    ],
+    "bias_position_last_m": [
+     9.36070350563736e-05,
+     -0.0007319538161064672,
+     0.0003172108534822458
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0018137621329573222,
+     "max": 0.037626218325473235,
+     "mean": 0.015426932596841704,
+     "p95": 0.03511600529390386,
+     "samples": 117
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018622313724306339,
+     "max": 0.03767323638597052,
+     "mean": 0.015476048474599305,
+     "p95": 0.03516402142819769,
+     "samples": 117
+    }
+   },
+   "PUSH:move1": {
+    "steps": 268,
+    "t": [
+     13.46,
+     18.8
+    ],
+    "measured_minus_reference_m": {
+     "min": 4.204973760060613e-05,
+     "max": 0.00023686744937413275,
+     "mean": 0.00017827493146476537,
+     "p95": 0.0001967202682350038,
+     "samples": 268
+    },
+    "cross_track_error_m": {
+     "min": 1.542368888078136e-05,
+     "max": 0.00023377927380401634,
+     "mean": 2.9009817504420007e-05,
+     "p95": 6.46363483027796e-05,
+     "samples": 268
+    },
+    "bias_position_first_m": [
+     9.218469787373655e-05,
+     -0.0007306269791343262,
+     0.0003172108534822458
+    ],
+    "bias_position_last_m": [
+     8.987179715565986e-05,
+     -0.0007032316813975893,
+     0.0003911991634243958
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0017594613908038653,
+     "max": 0.0018266138387022929,
+     "mean": 0.0017822716001408623,
+     "p95": 0.0018027078145185136,
+     "samples": 268
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018088288661630564,
+     "max": 0.0018750503081995662,
+     "mean": 0.001831097549655177,
+     "p95": 0.0018516574934944214,
+     "samples": 268
+    }
+   },
+   "PUSH_HOLD:move1": {
+    "steps": 15,
+    "t": [
+     18.82,
+     19.1
+    ],
+    "measured_minus_reference_m": {
+     "min": 3.2723667364705705e-05,
+     "max": 0.00028413334630518147,
+     "mean": 0.00016129428874286716,
+     "p95": 0.0002774287117148974,
+     "samples": 15
+    },
+    "cross_track_error_m": {
+     "min": 3.2723667364705705e-05,
+     "max": 0.00028413334630518147,
+     "mean": 0.00015085780199863423,
+     "p95": 0.0002774287117148974,
+     "samples": 15
+    },
+    "bias_position_first_m": [
+     8.987179715565986e-05,
+     -0.0007041645303265379,
+     0.0003919654957902531
+    ],
+    "bias_position_last_m": [
+     5.3124441256740106e-05,
+     -0.0007641005979233144,
+     0.0004067665228631254
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0017796963164428276,
+     "max": 0.001801416448937762,
+     "mean": 0.0017890246078165416,
+     "p95": 0.0018004281593503868,
+     "samples": 15
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018282894864705412,
+     "max": 0.0018506675123716593,
+     "mean": 0.0018379929111621294,
+     "p95": 0.0018496241558194127,
+     "samples": 15
+    }
+   },
+   "RELEASE:move1": {
+    "steps": 32,
+    "t": [
+     19.12,
+     19.740000000000002
+    ],
+    "measured_minus_reference_m": {
+     "min": 2.24569557807475e-05,
+     "max": 0.00015784972189911248,
+     "mean": 8.887077694397997e-05,
+     "p95": 0.0001552491747937614,
+     "samples": 32
+    },
+    "cross_track_error_m": {
+     "min": 3.441431317170288e-06,
+     "max": 0.00012992462536828218,
+     "mean": 4.4064158279517094e-05,
+     "p95": 0.00010947838946580219,
+     "samples": 32
+    },
+    "bias_position_first_m": [
+     5.830369849790981e-05,
+     -0.0007538864213642584,
+     0.0004068216756289308
+    ],
+    "bias_position_last_m": [
+     6.128068265177805e-05,
+     -0.0006962226449315821,
+     0.00041310153153435795
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0017830250915500528,
+     "max": 0.0018127168400094429,
+     "mean": 0.0017995740908470698,
+     "p95": 0.001810192254900432,
+     "samples": 32
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0018323508417555506,
+     "max": 0.001861841942106618,
+     "mean": 0.0018487356082589846,
+     "p95": 0.001859366592456973,
+     "samples": 32
+    }
+   },
+   "RETRACT:move1": {
+    "steps": 69,
+    "t": [
+     19.76,
+     21.12
+    ],
+    "measured_minus_reference_m": {
+     "min": 3.523935321240839e-05,
+     "max": 0.0011298636366271456,
+     "mean": 0.0004091655566118036,
+     "p95": 0.0009407917569473852,
+     "samples": 69
+    },
+    "cross_track_error_m": {
+     "min": 5.951264130919609e-06,
+     "max": 0.0005916528481625786,
+     "mean": 0.0001286313649580746,
+     "p95": 0.00038326514126945754,
+     "samples": 69
+    },
+    "bias_position_first_m": [
+     6.128068265177805e-05,
+     -0.0006962226449315821,
+     0.00041310153153435795
+    ],
+    "bias_position_last_m": [
+     5.959095877173136e-05,
+     -0.0006751101111668964,
+     0.00041255690428642825
+    ],
+    "measured_edge_z_minus_target_m": {
+     "min": 0.0021731079182371327,
+     "max": 0.037803177328730134,
+     "mean": 0.028626028833358994,
+     "p95": 0.037789158435093805,
+     "samples": 69
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.0022260684482908605,
+     "max": 0.037852757938910145,
+     "mean": 0.028674808579436606,
+     "p95": 0.037838825501848625,
+     "samples": 69
+    }
+   },
+   "HOLD_AFTER_STOP": {
+    "steps": 344,
+    "t": [
+     21.14,
+     28.0
+    ],
+    "measured_minus_reference_m": null,
+    "cross_track_error_m": null,
+    "bias_position_first_m": null,
+    "bias_position_last_m": null,
+    "measured_edge_z_minus_target_m": {
+     "min": 0.037807864909438785,
+     "max": 0.03781744004295022,
+     "mean": 0.037814163566105716,
+     "p95": 0.037815308794224484,
+     "samples": 344
+    },
+    "lowest_blade_point_above_bar_top_m": {
+     "min": 0.037857442519965825,
+     "max": 0.03786684403229339,
+     "mean": 0.03786359406824804,
+     "p95": 0.03786474214766485,
+     "samples": 344
+    }
+   }
+  },
+  "skim": {
+   "armed_steps": 117,
+   "armed_time_s": [
+    5.82,
+    8.14
+   ],
+   "measured_edge_z_minus_target_plus_clearance_m": {
+    "min": -3.659793079617557e-05,
+    "max": 3.504548008520514e-05,
+    "mean": -6.733223923347676e-06,
+    "p95": 2.5655709192298722e-05,
+    "samples": 117
+   },
+   "measured_edge_lateral_y_m": {
+    "min": -0.00026612753944975365,
+    "max": 0.0001422703796756103,
+    "mean": 8.502380219813824e-06,
+    "p95": 0.00012419767838420804,
+    "samples": 117
+   },
+   "lowest_blade_point_above_bar_top_m": {
+    "min": 1.2940131170063873e-05,
+    "max": 8.339460810247168e-05,
+    "mean": 4.1960224832755764e-05,
+    "p95": 7.409904668752018e-05,
+    "samples": 117
+   },
+   "measured_edge_start_world_m": [
+    -0.021625722263945418,
+    -0.00012485638261869325,
+    0.1202177982924462
+   ],
+   "measured_edge_end_world_m": [
+    0.02198121687444456,
+    -2.4031846087832487e-05,
+    0.12019023750921991
+   ],
+   "target_edge_world_z_m": 0.12020000000000002,
+   "bar_top_world_z_m": 0.12000000000000001,
+   "material_reaction": {
+    "steps": 117,
+    "blade_force_norm_N": {
+     "min": 0.0,
+     "max": 0.07039136278461847,
+     "mean": 0.017704386672724216,
+     "p95": 0.06187058365352699,
+     "samples": 117
+    },
+    "blade_force_world_mean_N": [
+     -0.003261994924322118,
+     -3.9254835467843495e-05,
+     -0.012531617422361247
+    ],
+    "blade_force_z_N": {
+     "min": -0.06820131093263626,
+     "max": 0.01866142265498638,
+     "mean": -0.012531617422361247,
+     "p95": 0.012062667519785452,
+     "samples": 117
+    },
+    "total_force_norm_N": {
+     "min": 0.0,
+     "max": 0.07039136278461847,
+     "mean": 0.017704386672724216,
+     "p95": 0.06187058365352699,
+     "samples": 117
+    },
+    "steps_with_blade_force": 94
+   }
+  },
+  "skim_orientation_measured": {
+   "source": "measured tool edge (physically held knife)",
+   "poses": 117,
+   "tau_edge_tilt_deg": {
+    "mean": 0.0011223947688455103,
+    "min": 1.7678873406326378e-05,
+    "max": 0.00921387890186333,
+    "max_abs": 0.00921387890186333,
+    "samples": 117
+   },
+   "psi_edge_skew_deg": {
+    "mean": 0.008233877434721456,
+    "min": 0.00032717024987709335,
+    "max": 0.03561289973422624,
+    "max_abs": 0.03561289973422624,
+    "samples": 117
+   },
+   "rho_blade_rake_deg": {
+    "mean": 9.997385499633172,
+    "min": 9.989465916136933,
+    "max": 10.012866827165597,
+    "max_abs": 10.012866827165597,
+    "samples": 117
+   },
+   "mu_motion_elevation_deg": {
+    "mean": -0.4150460006441864,
+    "min": -64.9747860396877,
+    "max": 16.598551766785043,
+    "max_abs": 64.9747860396877,
+    "samples": 116
+   },
+   "target_normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "cutting_direction": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "convention": "docs/adr/0013 (rho > 0: blade body rises behind the edge)"
+  },
+  "grasp_task_phase": {
+   "max_slip_m": 7.770102156259238e-07,
+   "max_rotation_rad": 9.237891633585217e-05,
+   "final_slip_m": 5.164834816590529e-07,
+   "final_rotation_rad": 6.792282843332367e-05,
+   "grasp_lost": false,
+   "gates": {
+    "translation_warning_m": 0.002,
+    "rotation_warning_rad": 0.05235987755982988,
+    "translation_loss_m": 0.02,
+    "rotation_loss_rad": 0.5235987755982988
+   },
+   "within_warning_gates": true
+  },
+  "contacts_task_phase": {
+   "unintended_contact_count_max": 0,
+   "steps_with_unintended_contacts": 0,
+   "non_finger_roles_in_contact": {},
+   "tensor_contact_min_separation_m": -7.117167115211487e-06,
+   "tensor_contact_max_penetration_m": 7.117167115211487e-06,
+   "tensor_contact_worst_role": "right_finger",
+   "tensor_contact_worst_phase": "REORIENT:dome",
+   "grasp_status_steps": {
+    "HOLDING": 1400
+   },
+   "scope": "Native ContactSensor on the tool body (fingers, palm, table, fixture, other) and the tensor contact view (finger/palm pairs); robot links vs workcell are not natively sensed here"
+  },
+  "ik_rejections": 0,
+  "chip_components": {
+   "recorded_frames": 353,
+   "armed_end_time_s": 8.14,
+   "frames_after_armed_end": 271,
+   "components_after_armed_end": [
+    2
+   ],
+   "removed_fraction_after_armed_end": {
+    "min": 0.978927203065134,
+    "max": 0.978927203065134,
+    "mean": 0.978927203065134,
+    "p95": 0.978927203065134,
+    "samples": 271
+   },
+   "label_changes_after_armed_end": 0,
+   "chip_centroid_at_armed_end_local_m": [
+    0.022323217047032155,
+    -0.0004856542275944012,
+    0.025287936237474832
+   ],
+   "chip_centroid_final_local_m": [
+    0.14017400566904045,
+    -0.0014187779224291808,
+    -0.10674307793524643
+   ],
+   "chip_stays_independent": true,
+   "bridges_final": {
+    "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10_clear-699d8cee",
+    "scenario": null,
+    "frame": -1,
+    "components": 2,
+    "final_components": 2,
+    "final_component_mass_fractions": [
+     0.989427,
+     0.010573
+    ],
+    "cuts_in_graph": 1,
+    "code_encoding": "packed2",
+    "bridge_digit": 0,
+    "stencil_support": {
+     "source": "recorded_nodes_weights_gradients",
+     "valid_entry_rule": "weight>0 or |gradient|>0",
+     "valid_entries": 776352,
+     "total_entries": 776352
+    },
+    "code_counts": {
+     "0": 67820,
+     "1": 28198,
+     "2": 1026
+    },
+    "nodes_with_codes_0_2": 0,
+    "nodes_with_codes_0_1": 252,
+    "nodes_with_codes_1_2": 69,
+    "direct_code_zero_bridges": 0,
+    "bridge_local_xyz_mm": [],
+    "above_plane_code_counts": {
+     "1": 22,
+     "2": 1022
+    },
+    "above_plane_code_zero_local_xyz_mm": []
+   },
+   "scope": "Recorded frames (every --record-every steps, incl. hold and return home); actual packed-code stencil components; oracle-only"
+  },
+  "measured_task_path_clearance": {
+   "status": "PASS",
+   "failing": [],
+   "binding": "blade_collision",
+   "worst": {
+    "joint_limit_margin": {
+     "slack": 0.6976061582565307,
+     "value": 0.7476061582565308,
+     "threshold": 0.05,
+     "sample": 939,
+     "label": null,
+     "joint": 2
+    },
+    "gripper_pad_clearance": {
+     "slack": 0.026790465763917425,
+     "value": 0.031790465763917426,
+     "threshold": 0.005,
+     "sample": 409,
+     "label": null,
+     "pair": [
+      "arm0_left_finger_visual_hull",
+      "static_support_floor_board"
+     ],
+     "mode": null
+    },
+    "franka1_collision": {
+     "slack": 0.17446006999820796,
+     "value": 0.17946006999820796,
+     "threshold": 0.005,
+     "sample": 6,
+     "label": null,
+     "pair": [
+      "arm0_hand_c",
+      "arm1_link2_c"
+     ],
+     "mode": null
+    },
+    "franka_workcell_collision": {
+     "slack": 0.02845046081574378,
+     "value": 0.03345046081574378,
+     "threshold": 0.005,
+     "sample": 334,
+     "label": null,
+     "pair": [
+      "arm0_hand_c",
+      "static_table"
+     ],
+     "mode": null
+    },
+    "knife_handle_clearance": {
+     "slack": 0.011111509411596127,
+     "value": 0.016111509411596128,
+     "threshold": 0.005,
+     "sample": 377,
+     "label": null,
+     "pair": [
+      "tool_handle",
+      "static_support_floor_board"
+     ],
+     "mode": null
+    },
+    "blade_collision": {
+     "slack": 8.409505605692191e-05,
+     "value": 8.409505605692191e-05,
+     "threshold": 0.0,
+     "sample": 286,
+     "label": null,
+     "pair": [
+      "tool_blade",
+      "static_workpiece_base"
+     ],
+     "mode": "contact_free"
+    },
+    "wrist_camera_clearance": {
+     "slack": 0.0516948819115767,
+     "value": 0.0536948819115767,
+     "threshold": 0.002,
+     "sample": 0,
+     "label": null,
+     "pair": [
+      "arm0_d405_Housing",
+      "arm0_link6_c"
+     ],
+     "mode": null
+    },
+    "franka_self_collision": {
+     "slack": 0.01971857534343266,
+     "value": 0.02171857534343266,
+     "threshold": 0.002,
+     "sample": 12,
+     "label": null,
+     "pair": [
+      "arm0_link7_c",
+      "arm0_link5_c2"
+     ],
+     "mode": null
+    },
+    "joint_continuity": {
+     "slack": 0.042562407851219175,
+     "value": -0.017437592148780823,
+     "threshold": -0.06,
+     "sample": 6,
+     "label": null
+    }
+   },
+   "samples": 1400,
+   "blade_workpiece_modes": {
+    "free": 558,
+    "contact_free": 153,
+    "contact_allowed": 689
+   },
+   "scope": "Geometry only; declared (uncut) workpiece; knife at the nominal grasp; no dynamics or material",
+   "note": "Task phase only (the return-home path has its own check in home_outcome)"
+  },
+  "wall_s": 1875.7187714610045
+ },
+ "analysis": "artifacts/wp11/phaseC5/live_trim_rho10_clear_002_analysis",
+ "render_dir": "artifacts/wp11/phaseC5/render_trim_rho10_clear_002",
+ "render": {
+  "outputs": {
+   "demo.mp4": {
+    "bytes": 2701080,
+    "sha256": "44b84204b28d4cdf83f0c4f70ef4dc0ac06301a416e4d3ba9b3bbf2d972ed333"
+   },
+   "demo.gif": {
+    "bytes": 3453695,
+    "sha256": "bba09436ba0e67e66c9007a5eadc5456483860390ea78e0580c9ad77064f2726"
+   },
+   "poster.png": {
+    "bytes": 577750,
+    "sha256": "3e1b6eb1f36cb83cf745428038624874c6826ed9a859f9ce48fbf284f2afba09"
+   }
+  },
+  "frame_count": 353,
+  "measured_capture_rate": {
+   "frames": 353,
+   "rate_hz": 9.999999999999995,
+   "interval_s": {
+    "median": 0.10000000000000006,
+    "min": 0.060000000000002274,
+    "max": 0.10000000000000142
+   },
+   "span_s": 35.160000000000004,
+   "monotonic": true,
+   "source": "observations/overview_rgb physics_timestamp_s",
+   "manifest": {
+    "frames": 353,
+    "rate_hz": 9.999999999999995,
+    "interval_s": {
+     "median": 0.10000000000000006,
+     "min": 0.060000000000002274,
+     "max": 0.10000000000000142
+    },
+    "span_s": 35.160000000000004,
+    "monotonic": true
+   }
+  },
+  "video_fps": 10.0,
+  "gif": {
+   "stride": 1,
+   "fps": 19.99999999999999,
+   "width": 512,
+   "speed": 2.0,
+   "bytes": 3453695,
+   "attempt": 1,
+   "budget_bytes": 4000000,
+   "within_budget": true
+  },
+  "git": {
+   "sha": "03dfd1d15b53c0454933a5e7fbb5facc58de9477",
+   "dirty": false,
+   "branch": "HEAD"
+  },
+  "recording_modified": false,
+  "status_line": "Goal trim_bump_rho10_clear PASS: dome 97.9% removed, chip pushed +109 mm off the bar | home_outcome PASS"
+ },
+ "media": {
+  "dir": "docs/media/wp11/trim_rho10_clear",
+  "gif": {
+   "path": "docs/media/wp11/trim_rho10_clear/demo.gif",
+   "bytes": 3453695
+  },
+  "mp4": {
+   "path": "docs/media/wp11/trim_rho10_clear/demo.mp4",
+   "bytes": 2701080,
+   "note": "force-added (*.mp4 is gitignored)"
+  },
+  "poster": {
+   "path": "docs/media/wp11/trim_rho10_clear/poster.png",
+   "bytes": 577750
+  }
+ },
+ "frames_inspected": {
+  "00015 (1.5 s)": "REORIENT: wrist rotating, knife turning toward near-horizontal above the bar",
+  "00070 (7.0 s)": "SKIM armed (CUT ON idx 0): near-horizontal blade passing under the dome; the cap rides up on the blade face",
+  "00120 (12.0 s)": "cut chip lying on the bar ~30 mm ahead of the dome site; 2 mechanical components; knife lowering behind it (disarmed)",
+  "00170 (17.0 s)": "disarmed sweep: blade face pushing the chip along the bar top toward the bar end",
+  "00190 (19.0 s)": "chip off the bar end, lying on the table next to the riser; bar top clear",
+  "00218 (21.8 s)": "knife lifted (RETRACT/hold), bar top clean, trimmed site flat",
+  "00352 (35.16 s)": "RETURN_HOME complete: hand down, blade hanging, chip on the table, bar unchanged"
+ },
+ "open_issues": [
+  "SKIM lateral (y, along the edge line) excursions in the live run: min -0.27 mm at 5.86 s (SKIM start, the 0 -> 25 mm/s along-track acceleration, before any material contact) and max +0.14 mm at 7.56 s (the geometric stop at the SKIM end, after the dome); while the blade cuts dome material (6.3-7.4 s) |y| <= 0.03 mm, and over the armed contact steps |y| <= 0.14 mm. Edge height z stays within -0.037..+0.035 mm over the whole SKIM. The unit-test cross-track criterion (<= 0.1 mm on the fitted plant) is a model result; live y exceeds it at the along-track velocity transients. A ramped start (acceleration limit) would be the next refinement.",
+  "The blade lowest point clears the bar top by only +0.013 mm during SKIM (by design: edge at target + 0.2 mm with the 10 deg double bevel); a larger edge clearance or a single-bevel blade would add margin.",
+  "The goal evaluator's move window is the planned reference schedule [13.2, 18.86] s; the live controller ran ~0.24 s late ([13.44, 19.1] s measured). Both windows PASS; the live verdict uses the planned one.",
+  "path_v3 adds ~2.4 s to the plan (geometric stops, 1 mm presettle hold 0.5 s); duration 28 s.",
+  "The chip falls off the board onto the table (kinematic preflight and live): a catch tray / bin is not modelled.",
+  "Quality-only: maximum_gouge_depth_m reported 0.02 m in the kinematic preflight surface metric after the chip left (surface sampling at the bar end); not part of any verdict."
+ ],
+ "scope": "Material parameters provisional and uncalibrated. Oracle material state and privileged tool-edge feedback are evaluation/controller inputs, never policy observations. Kinematic preflight says nothing about reachability, grasp or cameras."
+}

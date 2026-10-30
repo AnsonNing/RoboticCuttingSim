@@ -1,0 +1,20 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "trim_bump_rho10_clear",
+  "type": "sequence",
+  "description": "WP-11 Phase C5b (declared before any run): trim_bump_rho10 (same remove_protrusions thresholds) with the path_v3 controller profile, then clear the cut chip off the bar top: a cut-disabled near-horizontal blade sweep (rho = 10 deg, edge 2 mm above the base top) planned from the scene config only, from 10 mm behind the dome footprint to 5 mm past the bar end along +x. The chip (selector: particles initially in the dome region above the cut) must move >= 25 mm along +x during the sweep, every other piece >= 0.5% of the mass <= 2 mm, no label change while disarmed. REORIENT/PRE_CUT/WITHDRAW/sweep step limits 1 mm and 1 deg per 20 ms step (the C5 live options), SKIM 25 mm/s.",
+  "episode": {"duration_s": 28.0, "control_dt_s": 0.02},
+  "planner": {"controller_profile": "path_v3", "rake_deg": 10.0, "max_rotation_deg": 1.0, "max_translation_m": 0.001},
+  "steps": [
+    {"type": "remove_protrusions", "goal_id": "trim_dome",
+     "description": "trim_bump_rho10 thresholds: >= 90% of the dome's above-plane mass detached, substrate keeps >= 99% of the below-plane mass, <= 1% below-plane mass detached",
+     "select": "all", "plane_local_z_m": null, "edge_clearance_m": 0.0002,
+     "minimum_removed_fraction": 0.9, "minimum_substrate_share": 0.99, "maximum_detached_below_fraction": 0.01},
+    {"type": "move_piece", "goal_id": "clear_chip",
+     "description": "Push the cut chip (particles initially in the dome region, 0.3 mm above the cut plane and up) >= 25 mm along +x with cutting disabled",
+     "selector": {"box_local_m": {"min": [-0.012, -0.012, 0.0205], "max": [0.012, 0.012, 0.029]}},
+     "direction_local": [1.0, 0.0, 0.0], "minimum_displacement_m": 0.025, "maximum_other_displacement_m": 0.002,
+     "minimum_piece_mass_fraction": 0.005, "minimum_selector_share": 0.5, "push_speed_m_s": 0.02,
+     "push_mode": "surface_sweep", "sweep_height_m": 0.002, "sweep_overtravel_m": 0.005}
+  ]
+}

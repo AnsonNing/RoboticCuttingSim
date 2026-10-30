@@ -1,0 +1,533 @@
+{
+  "schema_version": "wp11_ruler_v2_physical_controls_v2",
+  "scope": "WP-11 Phase F1: long-duration rigid physical-grasp stability of the end-held ruler_knife_v2_y in the wp11_workcell_v1 scene (Native Isaac Sim): HOME and rho = 10 deg TRIM poses, planner-rate wrist rotation, edge-frame loads, a recorded cutting-load replay and negative controls. No material advance, no cutting success, no camera acceptance, no complete physics promotion.",
+  "start_profile": "wp11_home_v1",
+  "configured_task": {
+    "scene": "configs/wp11/scenes/trim01_wp11_workcell.json",
+    "scene_sha256": "c73981032158fe11b9f925999cfef6c76856d449c59ed185fbd667a3455a3f2c",
+    "goal": "configs/wp11/goals/trim_bump_rho10.json",
+    "goal_sha256": "f26cedae612e58aa54858805d1a58f601ea26b5eb1e94b72fc4fa7493ccec431",
+    "seed": 42,
+    "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-a33f6613",
+    "config_sha256": "a33f6613126f16665b974ece868051e799a64ed65204a05231de28c14c0f263e",
+    "scenario": "configs/wp11_scenarios_v1.json:wp11_workcell_v1",
+    "scenario_sha256": "41ee52129b66c959caf77764803032dad8308f0e3b14943d131ca65ce846fa94",
+    "note": "Same compiled task as the Phase D Native smoke (docs/evidence/wp11/phaseD_home_001.json); HOME = declared q_home, Franka 1 at the shared park"
+  },
+  "tool_attachment_mode": "physical_grasp",
+  "tool_init_mode": "pregrasped",
+  "rigid_dt_s": 0.002,
+  "control_dt_s": 0.02,
+  "normal_grip": {
+    "friction": 0.6,
+    "max_finger_force_n": 20.0,
+    "initial_finger_position_m": 0.0112
+  },
+  "transfer": {
+    "world_edge_position_m": [
+      -0.2,
+      -0.15,
+      0.18
+    ],
+    "orientation": "Preserve measured initial edge orientation; nominal mount used only for IK",
+    "waypoints": "Lift at initial XY to at least target Z, then translate to target XY",
+    "joint_profile": "Quintic smoothstep, using measured starting joints and bounded actuator targets only",
+    "minimum_waypoint_duration_s": 2.0,
+    "maximum_joint_speed_rad_s": 0.25,
+    "maximum_joint_increment_rad": 0.005,
+    "maximum_ik_position_error_m": 0.001,
+    "maximum_ik_rotation_error_rad": 0.01,
+    "post_transfer_stabilization_s": 0.5,
+    "maximum_actual_edge_position_error_m": 0.01,
+    "maximum_actual_edge_rotation_error_rad": 0.05235987755982988
+  },
+  "measurement": {
+    "pose_time_step_s": 0.02,
+    "required_contact_time_step_s": 0.002,
+    "minimum_loaded_finger_force_n": 0.05,
+    "load_ramp_s": 0.1,
+    "stable_window_s": 0.5,
+    "maximum_relative_translation_m": 0.002,
+    "maximum_relative_rotation_rad": 0.05235987755982988,
+    "maximum_relative_linear_speed_m_s": 0.02,
+    "maximum_relative_angular_speed_rad_s": 0.2,
+    "minimum_bilateral_loaded_handle_fraction": 0.95,
+    "maximum_contact_penetration_m": 0.001,
+    "maximum_matched_start_tool_translation_m": 0.002,
+    "maximum_matched_start_tool_rotation_rad": 0.05235987755982988,
+    "maximum_matched_start_arm_joint_error_rad": 0.01,
+    "minimum_weak_response_translation_increase_m": 0.005,
+    "minimum_weak_response_rotation_increase_rad": 0.08726646259971647,
+    "minimum_detectable_arm_response_rad": 1e-05,
+    "minimum_detectable_contact_force_change_n": 0.05,
+    "release_minimum_relative_translation_m": 0.02,
+    "release_deadline_s": 0.5,
+    "freeflight_minimum_duration_s": 0.03,
+    "freeflight_gravity_relative_error_max": 0.2,
+    "finite_state_and_force_required": true
+  },
+  "native_contact_geometry_profile": "PRE_STEP_MEASURED_TOOL_POSE",
+  "native_handle_region_margin_m": 1e-06,
+  "wp11_motion": {
+    "reorient_source": "compile_task ideal schedule of the configured plan, knots labelled REORIENT:* (goal_planner path_v2, ActionLimits 2 mm and 2 deg per 20 ms control step); the TRIM pose is its last knot (free space, 30 mm safe height above the workpiece top, rho = 10 deg)",
+    "approach_rate_multiplier": 1,
+    "rate_multiplier_definition": "k x rate = every k-th knot of the planner schedule (last knot kept), one IK target per 20 ms control step",
+    "return_path": "round_trip cases return along the same knots in reverse, ending at the schedule start (HOME edge pose)",
+    "ik": "env.solve_edge_ik (Newton IK, 48 iterations, seeded from measured PhysX joints), as the live step",
+    "maximum_ik_position_error_m": 0.001,
+    "maximum_ik_rotation_error_rad": 0.01,
+    "maximum_joint_increment_rad": 0.15,
+    "maximum_joint_increment_reason": "Safety bound only (rejects an IK branch change). The planner rate needs larger joint steps than the v7 0.005 rad transfer bound, which is kept unchanged for the inherited transfer and not used here",
+    "home_stabilization_s": 0.5,
+    "post_motion_stabilization_s": 0.5,
+    "maximum_actual_edge_position_error_m": 0.01,
+    "maximum_actual_edge_rotation_error_rad": 0.05235987755982988,
+    "velocity_targets": "rigid_probe_step issues zero joint-velocity targets (the live runner adds velocity feedforward); the measured peak hand angular speed is reported per case",
+    "grasp_monitor": "GraspMonitor with GraspLossConfig defaults, updated every control step: one referenced at the reset pregrasp (episode) and one at the case start (case)"
+  },
+  "edge_frame_axes": "Edge frame columns: x = advance, y = edge line, z = blade normal (goal_planner.edge_rotation). For ruler_knife_v2_y the blade normal is the hand y finger closing axis and the edge line is hand +z. Constant WORLD wrenches are set from the measured edge frame at the case start and applied at the measured edge centre each 2 ms substep (ramp: inherited load_ramp_s quintic).",
+  "load_sign_choice": "Forces: -advance (material resistance; the C4 rho = 10 deg mean reaction has a negative advance component), -normal (the C4 mean reaction is mostly along -blade normal), +edge line (C4 component ~0; sign arbitrary). Torques: + about each edge axis.",
+  "cutting_load_replay_sources": {
+    "c4_k2_r10_skim_law8_001": {
+      "path": "artifacts/wp11/phaseC4/k2_r10_skim_law8_001/actions.jsonl",
+      "sha256": "75103982a09a56a87e0527fdd5b86e3ed8aad1a96cc00677d0d0d129eee01640",
+      "steps": 400,
+      "control_dt_s": 0.02,
+      "force_field": "blade_force_world_N",
+      "edge_pose_field": "edge_pose_world",
+      "meaning": "material reaction force on the blade (live_material current_material_reaction_impulse_world / dt, i.e. the wrench the live runner applies to the tool), recorded each 20 ms step of the C4 kinematic TRIM-02-K2-R10 run (ruler_knife_v2_y double bevel, rho = 10 deg, law 8, 1 mm; PASS in docs/evidence/wp11/phaseC4_trim_material_001.json)",
+      "mapping": "f_edge = R_C4_edge(k)^T f_world(k); applied f = R_F1_edge(start) f_edge at the edge centre; torque not recorded by C4 and not replayed (covered by the torque cases)",
+      "why_not_c5": "No Phase C5 live episode with a recorded reaction exists at freeze (no artifacts/wp11/phaseC5); the prompt specifies C4 then"
+    }
+  },
+  "cases": {
+    "home_hold_30s": {
+      "start": "home",
+      "gate": "hold",
+      "duration_s": 30.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "expectation": "Stationary 30 s hold at HOME (hand down, blade hanging) within the inherited holding gates"
+    },
+    "trim_hold_30s": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 30.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "expectation": "Gravity-only 30 s hold in the rho = 10 deg TRIM pose (blade near horizontal) within the inherited holding gates"
+    },
+    "reorient_round_trip_1x": {
+      "start": "home",
+      "gate": "hold",
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "motion": "round_trip",
+      "rate_multiplier": 1,
+      "hold_after_s": 1.0,
+      "expectation": "HOME -> TRIM -> HOME at 1x the planner REORIENT rate, then 1 s hold at HOME; tool-to-hand slip within the inherited holding gates over the whole motion"
+    },
+    "reorient_round_trip_2x": {
+      "start": "home",
+      "gate": "hold",
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "motion": "round_trip",
+      "rate_multiplier": 2,
+      "hold_after_s": 1.0,
+      "expectation": "HOME -> TRIM -> HOME at 2x the planner REORIENT rate, then 1 s hold at HOME; tool-to-hand slip within the inherited holding gates over the whole motion"
+    },
+    "force_advance_0p1n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        -0.1,
+        0.0,
+        0.0
+      ],
+      "expectation": "Cutting-load-scale 0.1 N edge-frame force along -advance at the edge centre in the TRIM pose; within the inherited holding gates"
+    },
+    "force_advance_0p5n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        -0.5,
+        0.0,
+        0.0
+      ],
+      "expectation": "Cutting-load-scale 0.5 N edge-frame force along -advance at the edge centre in the TRIM pose; within the inherited holding gates"
+    },
+    "force_advance_2n": {
+      "start": "trim",
+      "gate": "reported",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        -2.0,
+        0.0,
+        0.0
+      ],
+      "expectation": "Stress-scale 2.0 N edge-frame force along -advance at the edge centre in the TRIM pose; response reported, not gated"
+    },
+    "force_advance_5n": {
+      "start": "trim",
+      "gate": "reported",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        -5.0,
+        0.0,
+        0.0
+      ],
+      "expectation": "Stress-scale 5.0 N edge-frame force along -advance at the edge centre in the TRIM pose; response reported, not gated"
+    },
+    "force_normal_0p1n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.0,
+        -0.1
+      ],
+      "expectation": "Cutting-load-scale 0.1 N edge-frame force along -normal at the edge centre in the TRIM pose; within the inherited holding gates"
+    },
+    "force_normal_0p5n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.0,
+        -0.5
+      ],
+      "expectation": "Cutting-load-scale 0.5 N edge-frame force along -normal at the edge centre in the TRIM pose; within the inherited holding gates"
+    },
+    "force_normal_2n": {
+      "start": "trim",
+      "gate": "reported",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.0,
+        -2.0
+      ],
+      "expectation": "Stress-scale 2.0 N edge-frame force along -normal at the edge centre in the TRIM pose; response reported, not gated"
+    },
+    "force_normal_5n": {
+      "start": "trim",
+      "gate": "reported",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.0,
+        -5.0
+      ],
+      "expectation": "Stress-scale 5.0 N edge-frame force along -normal at the edge centre in the TRIM pose; response reported, not gated"
+    },
+    "force_edgeline_0p1n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.1,
+        0.0
+      ],
+      "expectation": "Cutting-load-scale 0.1 N edge-frame force along +edgeline at the edge centre in the TRIM pose; within the inherited holding gates"
+    },
+    "force_edgeline_0p5n": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        0.5,
+        0.0
+      ],
+      "expectation": "Cutting-load-scale 0.5 N edge-frame force along +edgeline at the edge centre in the TRIM pose; within the inherited holding gates"
+    },
+    "force_edgeline_2n": {
+      "start": "trim",
+      "gate": "reported",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        2.0,
+        0.0
+      ],
+      "expectation": "Stress-scale 2.0 N edge-frame force along +edgeline at the edge centre in the TRIM pose; response reported, not gated"
+    },
+    "force_edgeline_5n": {
+      "start": "trim",
+      "gate": "reported",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "force_edge_n": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "expectation": "Stress-scale 5.0 N edge-frame force along +edgeline at the edge centre in the TRIM pose; response reported, not gated"
+    },
+    "torque_advance_0p01nm": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "torque_edge_n_m": [
+        0.01,
+        0.0,
+        0.0
+      ],
+      "expectation": "0.01 N m edge-frame torque about +advance in the TRIM pose within the inherited holding gates"
+    },
+    "torque_advance_0p05nm": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "torque_edge_n_m": [
+        0.05,
+        0.0,
+        0.0
+      ],
+      "expectation": "0.05 N m edge-frame torque about +advance in the TRIM pose within the inherited holding gates"
+    },
+    "torque_edgeline_0p01nm": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "torque_edge_n_m": [
+        0.0,
+        0.01,
+        0.0
+      ],
+      "expectation": "0.01 N m edge-frame torque about +edgeline in the TRIM pose within the inherited holding gates"
+    },
+    "torque_edgeline_0p05nm": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "torque_edge_n_m": [
+        0.0,
+        0.05,
+        0.0
+      ],
+      "expectation": "0.05 N m edge-frame torque about +edgeline in the TRIM pose within the inherited holding gates"
+    },
+    "torque_normal_0p01nm": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "torque_edge_n_m": [
+        0.0,
+        0.0,
+        0.01
+      ],
+      "expectation": "0.01 N m edge-frame torque about +normal in the TRIM pose within the inherited holding gates"
+    },
+    "torque_normal_0p05nm": {
+      "start": "trim",
+      "gate": "hold",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "torque_edge_n_m": [
+        0.0,
+        0.0,
+        0.05
+      ],
+      "expectation": "0.05 N m edge-frame torque about +normal in the TRIM pose within the inherited holding gates"
+    },
+    "cutting_replay_c4_x1": {
+      "start": "trim",
+      "gate": "hold",
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "replay": {
+        "source": "c4_k2_r10_skim_law8_001",
+        "scale": 1.0
+      },
+      "hold_after_s": 1.0,
+      "expectation": "C4 rho = 10 deg double-bevel kinematic material reaction (force time series, 400 steps) replayed on the held tool in the TRIM pose, then 1 s hold; within the inherited holding gates"
+    },
+    "cutting_replay_c4_x10": {
+      "start": "trim",
+      "gate": "reported",
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "replay": {
+        "source": "c4_k2_r10_skim_law8_001",
+        "scale": 10.0
+      },
+      "hold_after_s": 1.0,
+      "expectation": "Same replay at 10x magnitude; response reported, not gated"
+    },
+    "weak_grip_home": {
+      "start": "home",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 0.5,
+      "friction": 0.6,
+      "comparison": "home_hold_30s",
+      "expectation": "Weak grip (0.5 N per finger) at HOME under gravity: larger slip than the matched normal grip"
+    },
+    "low_friction_home": {
+      "start": "home",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "comparison": "home_hold_30s",
+      "expectation": "Low friction (mu = 0.02) at HOME under gravity: larger slip than the matched normal friction"
+    },
+    "weak_grip_trim": {
+      "start": "trim",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 0.5,
+      "friction": 0.6,
+      "comparison": "trim_hold_30s",
+      "expectation": "Weak grip (0.5 N per finger) in the TRIM pose under gravity: the lower finger cannot carry the ~1 N weight along the closing axis, larger response than the matched normal grip"
+    },
+    "low_friction_trim": {
+      "start": "trim",
+      "gate": "diagnostic",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "comparison": "trim_hold_30s",
+      "expectation": "Low friction (mu = 0.02) in the TRIM pose, gravity only. Predicted before running: the weight acts mostly along the finger closing axis (normal force, not friction) and the in-pad-plane component is ~sin(10 deg) of it, so the tool may stay held; the comparison is reported, not gated"
+    },
+    "low_friction_trim_advance_0p1n": {
+      "start": "trim",
+      "gate": "negative_control",
+      "duration_s": 2.0,
+      "gripper": "hold",
+      "force_limit_n": 20.0,
+      "friction": 0.02,
+      "force_edge_n": [
+        -0.1,
+        0.0,
+        0.0
+      ],
+      "comparison": "force_advance_0p1n",
+      "expectation": "Low friction (mu = 0.02) with the 0.1 N -advance cutting load in the TRIM pose (in-pad-plane load and torque about the finger axis, friction-carried): larger response than the matched normal-friction case"
+    },
+    "release_home": {
+      "start": "home",
+      "gate": "release",
+      "duration_s": 0.5,
+      "gripper": "release",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "expectation": "Release at HOME: independent downward tool motion and an unsupported gravity interval"
+    },
+    "release_trim": {
+      "start": "trim",
+      "gate": "release",
+      "duration_s": 0.5,
+      "gripper": "release",
+      "force_limit_n": 20.0,
+      "friction": 0.6,
+      "expectation": "Release in the TRIM pose: independent downward tool motion and an unsupported gravity interval (material is not advanced; the PhysX board/riser are the only colliders below)"
+    }
+  },
+  "gate_groups": {
+    "hold": "Integrity (finite, complete raw sampling, valid contact samples, complete arm samples, material unchanged, grip limit <= 20 N) and the inherited holding gates: relative translation <= 2 mm, relative rotation <= pi/60 rad, last-0.5 s relative speeds <= 0.02 m/s and 0.2 rad/s, bilateral loaded handle fraction >= 0.95, penetration <= 1 mm, no unintended support, and grasp monitor never LOST",
+    "reported": "Integrity only; holding gates evaluated and reported, not gated",
+    "negative_control": "Integrity, plus a matched comparison: same start/load, start within 2 mm / pi/60 rad / 0.01 rad joints, and a response increase >= 5 mm or >= 5 deg (inherited v7 thresholds); grip-loss events reported",
+    "diagnostic": "Integrity only; matched comparison reported, not gated",
+    "release": "Integrity, plus the inherited release checks: relative translation > 20 mm, downward displacement > 20 mm, unsupported interval with |a_z + g|/g <= 0.2"
+  },
+  "suite_verdict": "PASS_F1_GATED_CASES iff every case ran and every hold/release case passes its gates and every negative_control comparison shows the larger response",
+  "export_final_control_scene": false,
+  "export_reason": "disk (the root disk and /mnt/data are >= 97% full); the raw traces, control traces and monitor traces are kept",
+  "evidence_boundaries": [
+    "Each case uses a fresh normal pregrasp and the same finite transfer controller before its perturbation",
+    "Only actuator targets and actual body wrenches are written; no tool pose correction or hidden attachment",
+    "Tool and contact traces are privileged debug and never policy observations",
+    "Failure to initialize or transfer is preserved as failure, never replaced by a welded tool",
+    "Material feedback ON/OFF must be established by separate actual material episodes; external load is not relabelled material coupling",
+    "Held versus dropped stress behavior is measured without changing these criteria after results",
+    "Material is never advanced: the workpiece particles are not a PhysX collider in these rigid probes",
+    "Velocity feedforward is not used by rigid_probe_step; the rotation rate is the planner knot rate, the actual hand rate is measured"
+  ],
+  "status_at_freeze": "NOT_RUN",
+  "parent_protocol": {
+    "path": "configs/physical_tool_controls_v7_ruler_v2_native.json",
+    "sha256": "2f5f4860a00d0ec97478853dae49854192e87c7d7abdae1a6b730195c92197dd"
+  },
+  "changes_from_parent": [
+    "Start profile wp11_home_v1: the configured trim01_wp11_workcell / trim_bump_rho10 task, HOME reset at q_home (Phase D), instead of the CUT-01-R lifted transfer",
+    "normal_grip, transfer, measurement, native contact geometry profile copied unchanged from v7 (asserted when written); v7 cases are not re-run here",
+    "New predeclared F1 cases and gate groups; wp11_motion adds only the planner-rate REORIENT motion bounds"
+  ],
+  "allowed_runtimes": [
+    "isaac_sim"
+  ],
+  "allowed_tool_profiles": [
+    "ruler_knife_v2_y"
+  ],
+  "frozen_at_utc": "2026-10-29T19:27:07.383315+00:00"
+}

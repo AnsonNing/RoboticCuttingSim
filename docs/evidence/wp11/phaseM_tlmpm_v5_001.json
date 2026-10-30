@@ -1,0 +1,1357 @@
+{
+ "evidence_id": "phaseM_tlmpm_v5_001",
+ "date": "2026-10-30",
+ "work_package": "WP-11 Phase M (ADR 0014)",
+ "adr": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
+ "code_commit": "be1d859",
+ "code_commit_note": "All GPU rows/probes and scaling_v5_002 ran at HEAD be1d859. git_dirty is true in their receipts only because other agents had uncommitted files in the shared tree (kinematic_env.py/live_env.py Phase S hunks with an inert task= passthrough, tasks.py, configs). Every Phase M file was committed and unmodified during the runs. scaling_v5_001 and the smoke_nonformal_* outputs ran before the commit on the same code, apart from the bumps3 plan fix and the walls scenarios added later.",
+ "versions": {
+  "warp": "1.17.0",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "python": "3.12.12",
+  "gpu": "NVIDIA GeForce RTX 5090 (cuda:1), driver 570.211.01"
+ },
+ "device_note": "cuda:0 was at 100% utilization (other agents' C4 TRIM jobs and an unrelated user's processes), so every Phase M GPU job ran on cuda:1, which was idle (0%, 70 MiB) before each launch. scaling_v5_002 ran alone. The formal rows and probes ran as 9 concurrent processes, so their wall_s values are contended and are not timing evidence.",
+ "seeds": "seed 42 (run_phase1_matrix SEED, kinematic reset); blade_probe probes are deterministic plans without a seed",
+ "resolution": "particle spacing 1 mm, grid dx 4 mm, material dt 1e-4 s, control dt 0.02 s, cutting law 8, ruler_knife_v1 edge",
+ "design": {
+  "packed_digits": "int32 code, d_k = (code >> 2k) & 3, 0 unassigned / 1 negative / 2 positive / 3 invalid, K <= 15. Assignment only from d_k = 0: code |= d << 2k. The kernel guards cut < K, and set_trajectory rejects cut >= K. Conflict: A1 = L & ~H and A2 = H & ~L with L = code & 0x5555..., H = (code >> 1) & 0x5555...; codes conflict iff (A1a & A2b) | (A2a & A1b) != 0.",
+  "slot_claim": "Every substep slot_code (N*S, -1 = empty) is filled with -1. Then _claim_slots runs over (particle, corner): it walks slots 0..S-1 of the node, reads a slot and CASes it from -1 to its code when empty, and takes the first slot holding its own code. Slots therefore fill as a contiguous prefix of distinct codes, and slot[p, corner] stores the slot index. P2G, G2P, MUSL and the F update address node*S + slot.",
+  "grid_update": "Launch (S, N). An occupied slot with m > 1e-15 sums total mass and the pairwise antisymmetric exchange over the other occupied slots, visiting them in ascending code order (selection over <= S slots). That is v4's field order, because ternary and packed codes order digits identically, and the exchange is v4's (m*(p_j+j_j) - m_j*raw)/M_total over compatible fields. O(S^2) work per node, independent of K.",
+  "overflow": "More than S distinct codes at a node: the entry gets slot -1, is skipped in P2G/G2P/MUSL/F (never merged), and is counted atomically in slot_overflow (cumulative). The host raises SlotOverflowError after every control step (LiveCuttingMaterial.advance) and after every blade_probe chunk. slot_max_occupied (cumulative atomic max) is the diagnostic.",
+  "determinism": "CPU: v5 equals v4 bit for bit for K <= 2 on every law-8 CPU scenario tested (tests/test_tlmpm_v5.py). Accumulation order per field is identical and the grid update uses v4's field order. GPU: the slot index of a code is race dependent, but no floating-point sum depends on slot order. v5 therefore has v4's atomic-accumulation nondeterminism and no more: final codes match exactly, and positions differ within the v4 repeat-to-repeat spread (see v5_vs_v4_comparisons).",
+  "cuda_graph": "step() is capturable (slot_code.fill_, the claim kernel and the fixed launch dims). LiveCuttingMaterial captures it at reset and blade_probe gpu_graph captures it per chunk; both were exercised on cuda:1."
+ },
+ "scaling_table": [
+  {
+   "solver": "v4",
+   "max_cuts": 1,
+   "fields_per_node": 3,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 33996788,
+   "mempool_growth_bytes": 37365371,
+   "substep_wall_mean_ms": 1.2796089249997749,
+   "control_step_wall_median_ms": 256.20552700274857,
+   "max_occupied_slots": null,
+   "overflow_entries": null,
+   "status": null,
+   "error": null
+  },
+  {
+   "solver": "v4",
+   "max_cuts": 2,
+   "fields_per_node": 9,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 35822276,
+   "mempool_growth_bytes": 39174988,
+   "substep_wall_mean_ms": 1.3063337148007121,
+   "control_step_wall_median_ms": 261.21480500296457,
+   "max_occupied_slots": null,
+   "overflow_entries": null,
+   "status": null,
+   "error": null
+  },
+  {
+   "solver": "v5",
+   "max_cuts": 1,
+   "fields_per_node": 8,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 37961668,
+   "mempool_growth_bytes": 41314380,
+   "substep_wall_mean_ms": 1.2996092305969795,
+   "control_step_wall_median_ms": 260.29398199898424,
+   "max_occupied_slots": 2,
+   "overflow_entries": 0,
+   "status": null,
+   "error": null
+  },
+  {
+   "solver": "v5",
+   "max_cuts": 2,
+   "fields_per_node": 8,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 37961668,
+   "mempool_growth_bytes": 41314380,
+   "substep_wall_mean_ms": 1.3060307384017507,
+   "control_step_wall_median_ms": 261.0806480006431,
+   "max_occupied_slots": 2,
+   "overflow_entries": 0,
+   "status": null,
+   "error": null
+  },
+  {
+   "solver": "v5",
+   "max_cuts": 3,
+   "fields_per_node": 8,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 37961668,
+   "mempool_growth_bytes": 41314380,
+   "substep_wall_mean_ms": 1.309231864796311,
+   "control_step_wall_median_ms": 261.36386999860406,
+   "max_occupied_slots": 2,
+   "overflow_entries": 0,
+   "status": null,
+   "error": null
+  },
+  {
+   "solver": "v5",
+   "max_cuts": 5,
+   "fields_per_node": 8,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 37961668,
+   "mempool_growth_bytes": 41314380,
+   "substep_wall_mean_ms": 1.3392895047989442,
+   "control_step_wall_median_ms": 269.19529199949466,
+   "max_occupied_slots": 2,
+   "overflow_entries": 0,
+   "status": null,
+   "error": null
+  },
+  {
+   "solver": "v5",
+   "max_cuts": 8,
+   "fields_per_node": 8,
+   "grid_nodes": 5850,
+   "particles": 96000,
+   "solver_device_array_bytes": 37961668,
+   "mempool_growth_bytes": 41314380,
+   "substep_wall_mean_ms": 1.307251929800259,
+   "control_step_wall_median_ms": 261.51260300684953,
+   "max_occupied_slots": 3,
+   "overflow_entries": 0,
+   "status": null,
+   "error": null
+  }
+ ],
+ "scaling_scope": "Representation cost on the 1 mm CUT-01-R bar with a preset K-cut history; edge parked, cutting disabled; GPU timings include graph launch + sync",
+ "scaling_command": [
+  "scripts/benchmark_tlmpm_v5_scaling.py",
+  "--device",
+  "cuda:1",
+  "--out",
+  "artifacts/wp11/phaseM/scaling_v5_002"
+ ],
+ "v4_projection_note": "tlmpm_v4 rejects K > 2, so its K = 3/5/8 cost is computed, not measured. On this 5850-node grid, v4's dense fields need 5850 * 3^K * 52 B: 0.91 MB (K=1), 2.74 MB (2), 8.2 MB (3), 73.9 MB (5), 2.00 GB (8). Its compatibility table needs 9^K * 4 B (172 MB at K=8), and the grid update does 9^K pair visits per node (729 at K=3, 59049 at K=5, 43046721 at K=8). v5 uses 5850 * 8 * 56 B + 96000 * 8 * 4 B = 5.69 MB for every K, with at most 64 pair visits per node. The measured v5 - v4(K=1) device-array difference, 3964880 B, matches this accounting (predicted 3965400 B). On this grid the solver memory is dominated by the 96k particle arrays (~34 MB), and the substep time (~1.3 ms) by particle kernels. So v5 costs about +12% memory and +1.6% time against v4 at K=1, and its time is flat in K (1.300-1.339 ms for K = 1..8). The scaling_v5_001 run before the commit reproduces these values to within 0.1%.",
+ "phase1_rows": {
+  "m1a_law8_v5_001": {
+   "row": "M1a",
+   "verdict": "PASS",
+   "checks": {
+    "frozen_strict_pass": true
+   },
+   "solver": "tlmpm_v5",
+   "cutting_law": 8,
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty": true,
+   "device": "cuda:1",
+   "formal_resolution": true,
+   "wall_s": 737.3750607819966,
+   "steps_run": 400,
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M1a",
+    "--cutting-law",
+    "8",
+    "--solver",
+    "v5",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/m1a_law8_v5_001"
+   ],
+   "final_mechanical_components": 2,
+   "final_component_mass_fractions": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "tlmpm_v5": {
+    "solver_module": "robotic_cutting_sim.tlmpm_v5",
+    "code_encoding": "packed2",
+    "max_cuts": 1,
+    "slots_per_node": 8,
+    "max_occupied_slots": 3,
+    "overflow_entries": 0,
+    "final_components_packed_graph": 2,
+    "final_components_ternary_graph": 2,
+    "packed_and_ternary_partitions_identical": true
+   },
+   "frozen_strict": {
+    "status": "PASS_TASK_METRICS",
+    "checks": {
+     "complete_episode": true,
+     "initial_continuous_graph": true,
+     "initial_codes_zero": true,
+     "reference_matches_single_continuous_task_sampler": true,
+     "reference_mass_budget_and_unchanged_count": true,
+     "persistent_history_no_digit_rewrites": true,
+     "postcut_disconnected_topology_persists": true,
+     "two_substantial_physical_parts": true,
+     "two_main_parts_retain_mass": true,
+     "cut_at_workpiece_local_target_plane": true
+    },
+    "metrics": {
+     "final_components": 2,
+     "substantial_parts": 2,
+     "two_main_parts_mass_fraction": 1.0,
+     "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+     "postcut_persistence_time_s": 2.4000000000000004,
+     "postcut_graph_count_minimum": 2
+    }
+   }
+  },
+  "m1a_law8_v4repeat_001": {
+   "row": "M1a",
+   "verdict": "PASS",
+   "checks": {
+    "frozen_strict_pass": true
+   },
+   "solver": null,
+   "cutting_law": 8,
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty": true,
+   "device": "cuda:1",
+   "formal_resolution": true,
+   "wall_s": 734.970965020002,
+   "steps_run": 400,
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M1a",
+    "--cutting-law",
+    "8",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/m1a_law8_v4repeat_001"
+   ],
+   "final_mechanical_components": 2,
+   "final_component_mass_fractions": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "tlmpm_v5": null,
+   "frozen_strict": {
+    "status": "PASS_TASK_METRICS",
+    "checks": {
+     "complete_episode": true,
+     "initial_continuous_graph": true,
+     "initial_codes_zero": true,
+     "reference_matches_single_continuous_task_sampler": true,
+     "reference_mass_budget_and_unchanged_count": true,
+     "persistent_history_no_digit_rewrites": true,
+     "postcut_disconnected_topology_persists": true,
+     "two_substantial_physical_parts": true,
+     "two_main_parts_retain_mass": true,
+     "cut_at_workpiece_local_target_plane": true
+    },
+    "metrics": {
+     "final_components": 2,
+     "substantial_parts": 2,
+     "two_main_parts_mass_fraction": 1.0,
+     "maximum_reference_midpoint_plane_distance_m": 0.0015000000421423465,
+     "postcut_persistence_time_s": 2.4000000000000004,
+     "postcut_graph_count_minimum": 2
+    }
+   }
+  },
+  "m8b_law8_v5_001": {
+   "row": "M8b",
+   "verdict": "PASS",
+   "checks": {
+    "slice_push_report_pass": true
+   },
+   "solver": "tlmpm_v5",
+   "cutting_law": 8,
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty": true,
+   "device": "cuda:1",
+   "formal_resolution": true,
+   "wall_s": 970.2392249629993,
+   "steps_run": 800,
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M8b",
+    "--cutting-law",
+    "8",
+    "--solver",
+    "v5",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/m8b_law8_v5_001"
+   ],
+   "final_mechanical_components": 3,
+   "final_component_mass_fractions": [
+    0.36875000000024927,
+    0.31875000000019926,
+    0.312500000000193
+   ],
+   "tlmpm_v5": {
+    "solver_module": "robotic_cutting_sim.tlmpm_v5",
+    "code_encoding": "packed2",
+    "max_cuts": 2,
+    "slots_per_node": 8,
+    "max_occupied_slots": 3,
+    "overflow_entries": 0,
+    "final_components_packed_graph": 3,
+    "final_components_ternary_graph": 3,
+    "packed_and_ternary_partitions_identical": true
+   },
+   "slice_push_report_status": "PASS_SLICE_PUSH",
+   "slice_push_report_checks": null
+  },
+  "m8b_law8_v4repeat_001": {
+   "row": "M8b",
+   "verdict": "PASS",
+   "checks": {
+    "slice_push_report_pass": true
+   },
+   "solver": null,
+   "cutting_law": 8,
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty": true,
+   "device": "cuda:1",
+   "formal_resolution": true,
+   "wall_s": 970.0219948090016,
+   "steps_run": 800,
+   "command": [
+    "scripts/run_phase1_matrix.py",
+    "--row",
+    "M8b",
+    "--cutting-law",
+    "8",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/m8b_law8_v4repeat_001"
+   ],
+   "final_mechanical_components": 3,
+   "final_component_mass_fractions": [
+    0.36875000000024927,
+    0.31875000000019926,
+    0.312500000000193
+   ],
+   "tlmpm_v5": null,
+   "slice_push_report_status": "PASS_SLICE_PUSH",
+   "slice_push_report_checks": null
+  }
+ },
+ "v5_vs_v4_comparisons": {
+  "compare_m1a_law8_v5_vs_v4_001.json": {
+   "command": [
+    "scripts/compare_v5_v4_rows.py",
+    "--v5",
+    "artifacts/wp11/phaseM/m1a_law8_v5_001",
+    "--v4",
+    "artifacts/wp10_claude/phase1_law8/k_cut01r_law8_002",
+    "--v4-repeat",
+    "artifacts/wp11/phaseM/m1a_law8_v4repeat_001",
+    "--out",
+    "artifacts/wp11/phaseM/compare_m1a_law8_v5_vs_v4_001.json"
+   ],
+   "v5": "artifacts/wp11/phaseM/m1a_law8_v5_001",
+   "v4": "artifacts/wp10_claude/phase1_law8/k_cut01r_law8_002",
+   "v5_vs_v4": {
+    "final_time_s": 8.0,
+    "particles": 96000,
+    "final_codes_differing": 0,
+    "final_labelled": [
+     28528,
+     28528
+    ],
+    "final_position_difference_max_m": 1.7483359920101022e-05,
+    "final_position_difference_p99_m": 1.0070511674215564e-05,
+    "final_position_difference_mean_m": 9.137881999977777e-07,
+    "components": [
+     2,
+     2
+    ],
+    "identical_component_partition": true,
+    "component_mass_fractions": [
+     [
+      0.5000000000003806,
+      0.5000000000003806
+     ],
+     [
+      0.5000000000003806,
+      0.5000000000003806
+     ]
+    ],
+    "verdicts": [
+     "PASS",
+     "PASS_TASK_METRICS"
+    ]
+   },
+   "v4_repeat": "artifacts/wp11/phaseM/m1a_law8_v4repeat_001",
+   "v4_repeat_vs_v4": {
+    "final_time_s": 8.0,
+    "particles": 96000,
+    "final_codes_differing": 0,
+    "final_labelled": [
+     28528,
+     28528
+    ],
+    "final_position_difference_max_m": 1.9060549225452597e-05,
+    "final_position_difference_p99_m": 7.2328562173708705e-06,
+    "final_position_difference_mean_m": 7.441229279531924e-07,
+    "components": [
+     2,
+     2
+    ],
+    "identical_component_partition": true,
+    "component_mass_fractions": [
+     [
+      0.5000000000003806,
+      0.5000000000003806
+     ],
+     [
+      0.5000000000003806,
+      0.5000000000003806
+     ]
+    ],
+    "verdicts": [
+     "PASS",
+     "PASS_TASK_METRICS"
+    ]
+   },
+   "v5_vs_v4_repeat": {
+    "final_time_s": 8.0,
+    "particles": 96000,
+    "final_codes_differing": 0,
+    "final_labelled": [
+     28528,
+     28528
+    ],
+    "final_position_difference_max_m": 2.1486110787475704e-05,
+    "final_position_difference_p99_m": 3.104182842121419e-06,
+    "final_position_difference_mean_m": 5.106346817755744e-07,
+    "components": [
+     2,
+     2
+    ],
+    "identical_component_partition": true,
+    "component_mass_fractions": [
+     [
+      0.5000000000003806,
+      0.5000000000003806
+     ],
+     [
+      0.5000000000003806,
+      0.5000000000003806
+     ]
+    ],
+    "verdicts": [
+     "PASS",
+     "PASS"
+    ]
+   }
+  },
+  "compare_m8b_law8_v5_vs_v4_001.json": {
+   "command": [
+    "scripts/compare_v5_v4_rows.py",
+    "--v5",
+    "artifacts/wp11/phaseM/m8b_law8_v5_001",
+    "--v4",
+    "artifacts/wp10_claude/phase1_law8/m8b_law8_002",
+    "--v4-repeat",
+    "artifacts/wp11/phaseM/m8b_law8_v4repeat_001",
+    "--out",
+    "artifacts/wp11/phaseM/compare_m8b_law8_v5_vs_v4_001.json"
+   ],
+   "v5": "artifacts/wp11/phaseM/m8b_law8_v5_001",
+   "v4": "artifacts/wp10_claude/phase1_law8/m8b_law8_002",
+   "v5_vs_v4": {
+    "final_time_s": 16.0,
+    "particles": 96000,
+    "final_codes_differing": 0,
+    "final_labelled": [
+     57030,
+     57030
+    ],
+    "final_position_difference_max_m": 7.020673427716453e-05,
+    "final_position_difference_p99_m": 1.7881795146927228e-05,
+    "final_position_difference_mean_m": 2.5894592501528837e-06,
+    "components": [
+     3,
+     3
+    ],
+    "identical_component_partition": true,
+    "component_mass_fractions": [
+     [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ],
+     [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ]
+    ],
+    "verdicts": [
+     "PASS",
+     "PASS"
+    ]
+   },
+   "v4_repeat": "artifacts/wp11/phaseM/m8b_law8_v4repeat_001",
+   "v4_repeat_vs_v4": {
+    "final_time_s": 16.0,
+    "particles": 96000,
+    "final_codes_differing": 0,
+    "final_labelled": [
+     57030,
+     57030
+    ],
+    "final_position_difference_max_m": 7.059481697543677e-05,
+    "final_position_difference_p99_m": 8.960015369681572e-06,
+    "final_position_difference_mean_m": 2.373514573809128e-06,
+    "components": [
+     3,
+     3
+    ],
+    "identical_component_partition": true,
+    "component_mass_fractions": [
+     [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ],
+     [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ]
+    ],
+    "verdicts": [
+     "PASS",
+     "PASS"
+    ]
+   },
+   "v5_vs_v4_repeat": {
+    "final_time_s": 16.0,
+    "particles": 96000,
+    "final_codes_differing": 0,
+    "final_labelled": [
+     57030,
+     57030
+    ],
+    "final_position_difference_max_m": 3.5918846599110264e-05,
+    "final_position_difference_p99_m": 1.7479734030105642e-05,
+    "final_position_difference_mean_m": 2.8599038583205784e-06,
+    "components": [
+     3,
+     3
+    ],
+    "identical_component_partition": true,
+    "component_mass_fractions": [
+     [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ],
+     [
+      0.36875000000024927,
+      0.31875000000019926,
+      0.312500000000193
+     ]
+    ],
+    "verdicts": [
+     "PASS",
+     "PASS"
+    ]
+   }
+  }
+ },
+ "multicut_probes": {
+  "slices3_law8_v5_001": {
+   "verdict": "FAIL",
+   "checks": {
+    "k_plus_one_pieces": true,
+    "packed_multi_cut_outcome_pass": false,
+    "components_equal_declared_slabs": false,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty_src_scripts": true,
+   "wall_s": 288.20113140799367,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "slices3",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/slices3_law8_v5_001"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 4,
+   "component_mass_fractions": [
+    0.26999995598046517,
+    0.24999995924117147,
+    0.2399999608715246,
+    0.2399999608715246
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 3,
+    "slots_per_node": 8,
+    "max_occupied_slots": 5,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "cut_0",
+     "labelled_after_own_phase": 13728,
+     "labelled_final": 13728,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "cut_1",
+     "labelled_after_own_phase": 13740,
+     "labelled_final": 13740,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "cut_2",
+     "labelled_after_own_phase": 13700,
+     "labelled_final": 13700,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lift_2": 0
+   },
+   "per_bump": null,
+   "substrate_mass_fraction_in_largest_body": null,
+   "declared_slab_mass_fractions": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+   ],
+   "plane_errors_m": [
+    2.2351741776893697e-09,
+    0.0010000000474974513,
+    0.002000001817941667
+   ],
+   "multi_cut_evaluation_status": "FAIL_MULTI_CUT_OUTCOME"
+  },
+  "slices5_law8_v5_001": {
+   "verdict": "FAIL",
+   "checks": {
+    "k_plus_one_pieces": true,
+    "packed_multi_cut_outcome_pass": false,
+    "components_equal_declared_slabs": false,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty_src_scripts": true,
+   "wall_s": 452.8490883100021,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "slices5",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/slices5_law8_v5_001"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 6,
+   "component_mass_fractions": [
+    0.1899999690232903,
+    0.1899999690232903,
+    0.1899999690232903,
+    0.1899999690232903,
+    0.13999997717505602,
+    0.09999998369646858
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 5,
+    "slots_per_node": 8,
+    "max_occupied_slots": 6,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "cut_0",
+     "labelled_after_own_phase": 9768,
+     "labelled_final": 9768,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "cut_1",
+     "labelled_after_own_phase": 13200,
+     "labelled_final": 13200,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "cut_2",
+     "labelled_after_own_phase": 13320,
+     "labelled_final": 13320,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_3": {
+     "first_labelled_phase": "cut_3",
+     "labelled_after_own_phase": 13204,
+     "labelled_final": 13204,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_4": {
+     "first_labelled_phase": "cut_4",
+     "labelled_after_own_phase": 10368,
+     "labelled_final": 10368,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lift_2": 0,
+    "move_2": 0,
+    "lift_3": 0,
+    "move_3": 0,
+    "lift_4": 0
+   },
+   "per_bump": null,
+   "substrate_mass_fraction_in_largest_body": null,
+   "declared_slab_mass_fractions": [
+    0.09999998658895493,
+    0.19999997317790985,
+    0.19999997317790985,
+    0.19999997317790985,
+    0.19999997317790985,
+    0.09999998658895493
+   ],
+   "plane_errors_m": [
+    8.940696724635266e-10,
+    0.0010000015795230861,
+    0.001999999862164259,
+    0.0029999990761280064,
+    0.004000001549720765
+   ],
+   "multi_cut_evaluation_status": "FAIL_MULTI_CUT_OUTCOME"
+  },
+  "slices3_walls_law8_v5_001": {
+   "verdict": "PASS",
+   "checks": {
+    "k_plus_one_pieces": true,
+    "packed_multi_cut_outcome_pass": true,
+    "components_equal_declared_slabs": true,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty_src_scripts": true,
+   "wall_s": 314.67521965000196,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "slices3_walls",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/slices3_walls_law8_v5_001"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 4,
+   "component_mass_fractions": [
+    0.24999999157875336,
+    0.24999999157875336,
+    0.24999999157875336,
+    0.24999999157875336
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 3,
+    "slots_per_node": 8,
+    "max_occupied_slots": 4,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "cut_0",
+     "labelled_after_own_phase": 13824,
+     "labelled_final": 13824,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "cut_1",
+     "labelled_after_own_phase": 13824,
+     "labelled_final": 13824,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "cut_2",
+     "labelled_after_own_phase": 13774,
+     "labelled_final": 13774,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lift_2": 0
+   },
+   "per_bump": null,
+   "substrate_mass_fraction_in_largest_body": null,
+   "declared_slab_mass_fractions": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+   ],
+   "plane_errors_m": [
+    1.1920928966180355e-09,
+    0.0,
+    2.5331974018438785e-09
+   ],
+   "multi_cut_evaluation_status": "PASS_MULTI_CUT_OUTCOME"
+  },
+  "slices5_walls_law8_v5_001": {
+   "verdict": "PASS",
+   "checks": {
+    "k_plus_one_pieces": true,
+    "packed_multi_cut_outcome_pass": true,
+    "components_equal_declared_slabs": true,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty_src_scripts": true,
+   "wall_s": 482.9427204610038,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "slices5_walls",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/slices5_walls_law8_v5_001"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 6,
+   "component_mass_fractions": [
+    0.16666666105250222,
+    0.16666666105250222,
+    0.16666666105250222,
+    0.16666666105250222,
+    0.16666666105250222,
+    0.16666666105250222
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 5,
+    "slots_per_node": 8,
+    "max_occupied_slots": 4,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "cut_0",
+     "labelled_after_own_phase": 12672,
+     "labelled_final": 12672,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "cut_1",
+     "labelled_after_own_phase": 13824,
+     "labelled_final": 13824,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "cut_2",
+     "labelled_after_own_phase": 13824,
+     "labelled_final": 13824,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_3": {
+     "first_labelled_phase": "cut_3",
+     "labelled_after_own_phase": 13824,
+     "labelled_final": 13824,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_4": {
+     "first_labelled_phase": "cut_4",
+     "labelled_after_own_phase": 12672,
+     "labelled_final": 12672,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lift_2": 0,
+    "move_2": 0,
+    "lift_3": 0,
+    "move_3": 0,
+    "lift_4": 0
+   },
+   "per_bump": null,
+   "substrate_mass_fraction_in_largest_body": null,
+   "declared_slab_mass_fractions": [
+    0.1666666716337204,
+    0.1666666716337204,
+    0.1666666716337204,
+    0.1666666716337204,
+    0.1666666716337204,
+    0.1666666716337204
+   ],
+   "plane_errors_m": [
+    8.940696724635266e-10,
+    4.470348362317633e-10,
+    0.0,
+    4.470348362317633e-10,
+    8.940696724635266e-10
+   ],
+   "multi_cut_evaluation_status": "PASS_MULTI_CUT_OUTCOME"
+  },
+  "bumps3_law8_v5_001": {
+   "verdict": "PASS",
+   "checks": {
+    "every_bump_removed_ge_90pct": true,
+    "substrate_one_body_ge_99pct": true,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "be1d85934ad3289d7d1b6edc97ab31a23a15fbbd",
+   "git_dirty_src_scripts": true,
+   "wall_s": 494.050118045001,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "bumps3",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp11/phaseM/bumps3_law8_v5_001"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 4,
+   "component_mass_fractions": [
+    0.9257329565500656,
+    0.04967206424497643,
+    0.024562755393632358,
+    3.215020339480675e-05
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 3,
+    "slots_per_node": 8,
+    "max_occupied_slots": 7,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "skim_0",
+     "labelled_after_own_phase": 12300,
+     "labelled_final": 12300,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "skim_1",
+     "labelled_after_own_phase": 16878,
+     "labelled_final": 16878,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "skim_2",
+     "labelled_after_own_phase": 17386,
+     "labelled_final": 17386,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lower_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lower_1": 0,
+    "lift_end": 0
+   },
+   "per_bump": [
+    {
+     "bump": 0,
+     "center_x_m": -0.032,
+     "mass_kg": 0.0011520001571625471,
+     "removed_mass_fraction": 0.9765625,
+     "own_digit_positive_fraction": 0.9765625,
+     "own_digit_unassigned": 0
+    },
+    {
+     "bump": 1,
+     "center_x_m": 0.0,
+     "mass_kg": 0.0011520001571625471,
+     "removed_mass_fraction": 0.9726561307907104,
+     "own_digit_positive_fraction": 0.97265625,
+     "own_digit_unassigned": 0
+    },
+    {
+     "bump": 2,
+     "center_x_m": 0.032,
+     "mass_kg": 0.0011520001571625471,
+     "removed_mass_fraction": 0.9765625,
+     "own_digit_positive_fraction": 0.9765625,
+     "own_digit_unassigned": 0
+    }
+   ],
+   "substrate_mass_fraction_in_largest_body": 0.9978124499320984,
+   "declared_slab_mass_fractions": null,
+   "plane_errors_m": null,
+   "multi_cut_evaluation_status": null
+  },
+  "smoke_nonformal_slices3_law8_v5_001": {
+   "verdict": "FAIL",
+   "checks": {
+    "k_plus_one_pieces": true,
+    "packed_multi_cut_outcome_pass": false,
+    "components_equal_declared_slabs": false,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "aa0dfdc4cb5d2b55a2bfa85d9a388e0c3fcc9736",
+   "git_dirty_src_scripts": true,
+   "wall_s": 33.565013462000934,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "slices3",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/tmp/claude-1004/-home-ningan-RoboticCuttingSim/e538d80f-78df-4b03-8e24-f5e0ea11b086/scratchpad/smoke_slices3_law8_v5"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 4,
+   "component_mass_fractions": [
+    0.26999995598046517,
+    0.24999995924117147,
+    0.2399999608715246,
+    0.2399999608715246
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 3,
+    "slots_per_node": 8,
+    "max_occupied_slots": 5,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "cut_0",
+     "labelled_after_own_phase": 13728,
+     "labelled_final": 13728,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "cut_1",
+     "labelled_after_own_phase": 13745,
+     "labelled_final": 13745,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "cut_2",
+     "labelled_after_own_phase": 13701,
+     "labelled_final": 13701,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lift_2": 0
+   },
+   "per_bump": null,
+   "substrate_mass_fraction_in_largest_body": null,
+   "declared_slab_mass_fractions": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+   ],
+   "plane_errors_m": [
+    2.2351741776893697e-09,
+    0.0010000000474974513,
+    0.002000001817941667
+   ],
+   "multi_cut_evaluation_status": "FAIL_MULTI_CUT_OUTCOME"
+  },
+  "smoke_nonformal_slices3_walls_law8_v5_001": {
+   "verdict": "PASS",
+   "checks": {
+    "k_plus_one_pieces": true,
+    "packed_multi_cut_outcome_pass": true,
+    "components_equal_declared_slabs": true,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "cce395edc0ae037e08d526719759fc5a2b0fdb5f",
+   "git_dirty_src_scripts": true,
+   "wall_s": 36.583153209001466,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "slices3_walls",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/tmp/claude-1004/-home-ningan-RoboticCuttingSim/e538d80f-78df-4b03-8e24-f5e0ea11b086/scratchpad/smoke_slices3_walls_law8_v5"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 4,
+   "component_mass_fractions": [
+    0.24999999157875336,
+    0.24999999157875336,
+    0.24999999157875336,
+    0.24999999157875336
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 3,
+    "slots_per_node": 8,
+    "max_occupied_slots": 4,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "cut_0",
+     "labelled_after_own_phase": 13824,
+     "labelled_final": 13824,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "cut_1",
+     "labelled_after_own_phase": 13817,
+     "labelled_final": 13817,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "cut_2",
+     "labelled_after_own_phase": 13773,
+     "labelled_final": 13773,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lift_2": 0
+   },
+   "per_bump": null,
+   "substrate_mass_fraction_in_largest_body": null,
+   "declared_slab_mass_fractions": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+   ],
+   "plane_errors_m": [
+    1.1920928966180355e-09,
+    0.0,
+    2.5331974018438785e-09
+   ],
+   "multi_cut_evaluation_status": "PASS_MULTI_CUT_OUTCOME"
+  },
+  "smoke_nonformal_bumps3_law8_v5_001": {
+   "verdict": "FAIL",
+   "checks": {
+    "every_bump_removed_ge_90pct": false,
+    "substrate_one_body_ge_99pct": true,
+    "every_cut_history_persistent": true,
+    "disarmed_phases_add_no_labels": true,
+    "no_slot_overflow": true
+   },
+   "git_sha": "cce395edc0ae037e08d526719759fc5a2b0fdb5f",
+   "git_dirty_src_scripts": true,
+   "wall_s": 57.3894684170009,
+   "command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "bumps3",
+    "--device",
+    "cuda:1",
+    "--out",
+    "/mnt/data/ningan/tmp/claude-1004/-home-ningan-RoboticCuttingSim/e538d80f-78df-4b03-8e24-f5e0ea11b086/scratchpad/smoke_bumps3_law8_v5"
+   ],
+   "device": "cuda:1",
+   "mechanical_components": 3,
+   "component_mass_fractions": [
+    0.9509065658081993,
+    0.024562755393632358,
+    0.024530605190237552
+   ],
+   "slot_diagnostics": {
+    "code_encoding": "packed2",
+    "max_cuts": 3,
+    "slots_per_node": 8,
+    "max_occupied_slots": 6,
+    "overflow_entries": 0
+   },
+   "digit_history": {
+    "digit_0": {
+     "first_labelled_phase": "skim_0",
+     "labelled_after_own_phase": 12300,
+     "labelled_final": 12300,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_1": {
+     "first_labelled_phase": "skim_1",
+     "labelled_after_own_phase": 16878,
+     "labelled_final": 16878,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    },
+    "digit_2": {
+     "first_labelled_phase": "skim_2",
+     "labelled_after_own_phase": 16936,
+     "labelled_final": 16936,
+     "zero_before_own_phase": true,
+     "persistent_after_own_phase": true
+    }
+   },
+   "disarmed_label_changes": {
+    "lift_0": 0,
+    "move_0": 0,
+    "lower_0": 0,
+    "lift_1": 0,
+    "move_1": 0,
+    "lower_1": 0,
+    "lift_end": 0
+   },
+   "per_bump": [
+    {
+     "bump": 0,
+     "center_x_m": -0.032,
+     "mass_kg": 0.0011520001571625471,
+     "removed_mass_fraction": 0.9765625,
+     "own_digit_positive_fraction": 0.9765625,
+     "own_digit_unassigned": 0
+    },
+    {
+     "bump": 1,
+     "center_x_m": 0.0,
+     "mass_kg": 0.0011520001571625471,
+     "removed_mass_fraction": 0.9726561307907104,
+     "own_digit_positive_fraction": 0.97265625,
+     "own_digit_unassigned": 0
+    },
+    {
+     "bump": 2,
+     "center_x_m": 0.032,
+     "mass_kg": 0.0011520001571625471,
+     "removed_mass_fraction": 0.0,
+     "own_digit_positive_fraction": 0.9752604166666666,
+     "own_digit_unassigned": 0
+    }
+   ],
+   "substrate_mass_fraction_in_largest_body": 0.9989582896232605,
+   "declared_slab_mass_fractions": null,
+   "plane_errors_m": null,
+   "multi_cut_evaluation_status": null
+  }
+ },
+ "commands": [
+  "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -q tests/test_tlmpm_v5.py  # 27 passed (after fixing the law-4/5 skim duration; first run: 25 passed, 2 failed, see cpu_tests)",
+  "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/benchmark_tlmpm_v5_scaling.py --device cuda:1 --out artifacts/wp11/phaseM/scaling_v5_002",
+  ".venv/bin/python scripts/run_phase1_matrix.py --row M1a --cutting-law 8 --solver v5 --device cuda:1 --out artifacts/wp11/phaseM/m1a_law8_v5_001",
+  ".venv/bin/python scripts/run_phase1_matrix.py --row M8b --cutting-law 8 --solver v5 --device cuda:1 --out artifacts/wp11/phaseM/m8b_law8_v5_001",
+  ".venv/bin/python scripts/run_phase1_matrix.py --row M1a --cutting-law 8 --device cuda:1 --out artifacts/wp11/phaseM/m1a_law8_v4repeat_001",
+  ".venv/bin/python scripts/run_phase1_matrix.py --row M8b --cutting-law 8 --device cuda:1 --out artifacts/wp11/phaseM/m8b_law8_v4repeat_001",
+  ".venv/bin/python scripts/probe_v5_multicut.py --scenario {slices3,slices5,slices3_walls,slices5_walls,bumps3} --device cuda:1 --out artifacts/wp11/phaseM/<scenario>_law8_v5_001",
+  ".venv/bin/python scripts/compare_v5_v4_rows.py --v5 artifacts/wp11/phaseM/m1a_law8_v5_001 --v4 artifacts/wp10_claude/phase1_law8/k_cut01r_law8_002 --v4-repeat artifacts/wp11/phaseM/m1a_law8_v4repeat_001 --out artifacts/wp11/phaseM/compare_m1a_law8_v5_vs_v4_001.json",
+  ".venv/bin/python scripts/compare_v5_v4_rows.py --v5 artifacts/wp11/phaseM/m8b_law8_v5_001 --v4 artifacts/wp10_claude/phase1_law8/m8b_law8_002 --v4-repeat artifacts/wp11/phaseM/m8b_law8_v4repeat_001 --out artifacts/wp11/phaseM/compare_m8b_law8_v5_vs_v4_001.json",
+  ".venv/bin/python scripts/analyze_cut_bridges.py artifacts/wp11/phaseM/m8b_law8_v5_001/physics_state.npz --task SLICE-PUSH-01 --scenario blademaster_workcell_v1 --digit {0,1}"
+ ],
+ "cpu_tests": {
+  "tests/test_tlmpm_v5.py": "27 passed (~5 min CPU). The first full run had 25 passed and 2 failed: test_v5_reference_laws_equal_v4_on_skim[4/5] used a 0.3 s skim that ended before the edge reached the dome, so nothing was labelled. That was a test-design error; the skim is now 0.5 s.",
+  "equivalence_tolerance": "Codes, decoded digits, labelled counts, severed bonds, stroke states and stencil-graph partitions must be identical. Floats need rtol 1e-5 / atol 1e-7 (forces atol 1e-6). Observed: bitwise equal on CPU (test_v5_bitwise_equals_v4_on_aligned_push asserts it).",
+  "law8_scenarios_v5_eq_v4": [
+   "aligned_push (through cut, 2 components)",
+   "two_digits_three_pieces (3 components)",
+   "skim25 (2 components, >90% of dome off base)",
+   "side_push",
+   "flat_press",
+   "blunt_handle",
+   "no_contact",
+   "armed_stop",
+   "half_depth_withdrawal"
+  ],
+  "multicut_cpu": "K=3 slices -> 4 pieces [0.278, 0.278, 0.222, 0.222]; K=5 -> 6 pieces of 0.167 each. Components equal the declared slabs, per-digit history persists, disarmed lift/move adds no labels, max occupied slots 4. Three bumps / three 25-degree skims at 2 mm: removed [0.979, 0.958, 0.969], substrate one body, 4 components, max occupied slots 5.",
+  "regression": "artifacts/wp11/logs/phaseM_regression_002a.log (laws v2-v5: 45 passed, 3 xfailed), 002b (laws v6-v8 + tool_profile: 77 passed, 2 xfailed), 002d (surface/live_env/topology/kinematic/multi-cut/demo/tasks/policy/phase2b/randomization/observation/workpieces: 199 passed). 002c is preserved: a collection ImportError while another agent was mid-edit of kinematic_env.py; it passed when rerun as 002d. 001 is preserved: an invalid -n flag (no xdist installed). The full suite was NOT_RUN."
+ },
+ "results_summary": {
+  "equivalence_gpu_1mm": "PASS. M1a (CUT-01-R) and M8b (SLICE-PUSH-01): v5 and v4 have 0 differing final codes, identical final component partitions and identical mass fractions, and the row verdicts all pass (M1a frozen strict PASS_TASK_METRICS; M8b PASS_SLICE_PUSH). Max |dx| v5 vs v4: M1a 0.0175 mm and M8b 0.0702 mm. The v4-vs-v4 repeat spread is 0.0191 and 0.0706 mm, so both are within GPU nondeterminism.",
+  "test_B_slices_1mm": "Wall-clamped block (120 mm, ends on the tray walls), PASS: 3 slices -> 4 pieces of 0.25 each, 5 slices -> 6 pieces of 0.1667 each, declared-plane errors <= 2.6e-9 m, components equal the declared slabs, every digit's history persistent, disarmed phases add no labels, max occupied slots 4, overflow 0. Free 100 mm block on the tray floor, FAIL against the declared 1.5 mm plane bound, kept as declared: the pieces are correct (3 slices -> 4, 5 slices -> 6) and the history persists, but the unclamped remaining block slides about +1.0 mm per cut (wedge displacement). Reference-plane errors are 0/1/2 mm (K=3) and 0/1/2/3/4 mm (K=5), so later pieces miss their declared slabs: masses [0.27, 0.25, 0.24, 0.24] and [0.19, 0.19, 0.19, 0.19, 0.14, 0.10]. This is the same mechanism as the M8a/M8b bar push in ADR 0012, not a v5 effect. The walls variant was added after the free-block smoke and is labelled as such.",
+  "test_C_three_bumps_1mm": "PASS on the declared checks: each dome is removed from the substrate (0.9766 / 0.9727 / 0.9766), the substrate stays 99.78% one body, the history persists, disarmed phases add no labels, max occupied slots 7 of 8, overflow 0. Reported, not a declared check: chips 1 and 2 form one mechanical body. About 49 substrate top-layer particles (reference z = 11.5 mm, x 8.5-42.5 mm) are labelled positive by skim 1 and skim 2 (codes 40/42), where skim 2's start overlaps skim 1's end, so they join the two chips. Mechanical components: substrate 0.926, chips 1+2 0.050, chip 0 0.025, and one isolated particle. Plan history: the first smoke stopped the last skim 2 mm past the bar end and dome 2 stayed attached (removed 0.0). Substrate under a raked edge reads as ahead of it until the edge has travelled about 2.1x its depth, so 271 bar-end particles kept digit 0 and bridged dome 2 to the substrate. The plan was corrected so the last skim exits the material (15 mm past the end). The law and its parameters were not changed. Smoke preserved: artifacts/wp11/phaseM/smoke_nonformal_bumps3_law8_v5_001 (with bridge_analysis.txt).",
+  "slots": "Max occupied slots per node: M1a 3, M8b 3, slices 4-6, bumps3 7 (of S = 8). Overflow 0 in every run. SlotOverflowError is exercised on CPU with S = 1 and S = 2 (codes 0/1/2 meet at the cut plane)."
+ },
+ "limitations": [
+  "tlmpm_v5 implements laws 4, 5 and 8 only. Laws 1-3, 6 and 7 stay in tlmpm_v4.",
+  "S = 8 slots: bumps3 reached 7 occupied slots. Overlapping or crossing cut histories may need larger S, and overflow raises rather than degrading.",
+  "Policy/env API: tasks.CuttingTaskSpec.validate_action still accepts cut_index 0 or 1 only, and tasks.py was not touched because other agents own it. So the kinematic/live env can drive at most two digits through actions, even with max_cuts up to 15. The K > 2 runs went through blade_probe. Widening validate_action is open.",
+  "Ternary-only consumers that were not converted: reward.py (conflicting(..., 2)), demo_evaluation/evaluation (v1 oracle), live_acceptance.cut_history_metrics. live_env.evaluate re-encodes packed codes as ternary exactly for K <= 2 and returns NOT_RUN for K > 2 unless MultiCutGoalK is declared. CurrentMechanicalPartition, evaluate_multi_cut and analyze_cut_bridges are packed-aware.",
+  "Kinematic ideal tracking only. No robot, grasp, IK or cameras. The material is provisional and uncalibrated. M3 (TRIM), M4-M6 and M9 rows were not rerun on v5 at 1 mm (NOT_RUN). The CPU negative controls under v5 law 8 pass.",
+  "Memory/time gains do not show at K <= 2 on the small CUT-01-R grid, where particle arrays dominate. v5 is about 12% larger and 0-2% slower there. Its benefit is K > 2 at flat cost, where v4 cannot run."
+ ],
+ "artifacts_root": "artifacts/wp11/phaseM (symlink to /mnt/data/ningan/RoboticCuttingSim_artifacts/wp11/phaseM); logs in artifacts/wp11/logs/phaseM_*"
+}

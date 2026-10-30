@@ -14,6 +14,9 @@ newton = ["newton==1.6.1", "warp-lang==1.17.0"]
 robot = ["newton==1.6.1", "warp-lang==1.17.0", "mujoco==3.12.0", "mujoco-warp==3.12.0", "newton-usd-schemas==0.6.0"]
 tools = ["pytest>=8", "matplotlib>=3.8", "usd-core<26.9"]
 policy = ["gymnasium==1.4.0"]
+# CPU test suite as run by .github/workflows/tests.yml (with -c requirements.lock). No matplotlib:
+# it is a plotting dependency of scripts (extra "tools"), not of the tests.
+test = ["pytest>=8", "usd-core<26.9", "warp-lang==1.17.0", "newton==1.6.1"]
 
 [project.scripts]
 robotic-cutting-sim = "robotic_cutting_sim.cli:main"

@@ -10,12 +10,14 @@ from scipy.spatial.transform import Rotation
 from robotic_cutting_sim.demo_evaluation import (fit_swept_plane, label_distance_distribution, post_cut_manipulation,
                                                  slice_push_report, swept_plane_interface, trim_separation)
 from robotic_cutting_sim.multi_cut_evaluation import MultiCutGoal
-from robotic_cutting_sim.policies import Waypoint, WaypointPolicy, skim, slice_push, through_cut
+from robotic_cutting_sim.policies import Waypoint, WaypointPolicy, controller_profile, skim, slice_push, through_cut
 from robotic_cutting_sim.scene_frames import WorkpieceTarget
 from robotic_cutting_sim.task_scenarios import (PATH, PATH_V2, PATH_V3, apply_scenario, board_particle_clearance,
                                                 fixture_materials, initial_joints, scenarios, table_material)
 from robotic_cutting_sim.tasks import (PROTOCOL_PATH, PROTOCOL_V2_PATH, PROTOCOL_V3_PATH, TASK_IDS, DemoTaskSpec,
                                        FixtureBox, MaterialFixtureBox, ProfileTaskSpec, _interface_location, make_task)
+from rollout_reference import (check_behaviour, compare_to_reference, ideal_rollout, load_reference, make_case,
+                               rollout_tolerance)
 
 SCENARIO = "blademaster_workcell_v1"
 V3_TASKS = ("CUT-01-R", "CUT-02", "TRIM-01-R", "SLICE-PUSH-01")
@@ -49,8 +51,8 @@ PLAN_SHA = {("CUT-01-R", False): "4eb88ce14bc88aedb49bf412cc28de1c6e5b3d5225a32d
             ("CUT-01", False): "e014899c6ba145d63b5b4c12f56986921345da4ddea418a13e23b8c6e1b9cb62",
             ("CUT-01", True): "dcaf4436359108b61aa3d772da0d36bfc1463654b1646ce22a7a7d313d2da25e"}
 SKIM_SHA = "46b8d1e97773d66ea4195e349d9cafbb4958004785187e297dfa4be5aea459e0"
-ROLLOUT_SHA = ("be1ed8f9da6b3c73d417000514ea797d8c77a09f3718ad2876552ae156c1e0af",
-               "6a4c5e2a900213a16fcd03d895e4e6b1076d79e965a15d22f06294e70aba7c03")
+# The two pinned v1 rollout digests (ROLLOUT_SHA before WP-11 Phase A) now pin the stored reference
+# trajectory: tests/rollout_reference.py HISTORIC_ROLLOUT_SHA256["CUT-01-R/default" | "CUT-01-R/saw3mm_tilt10"].
 
 
 def _plan_sha(plan):
@@ -91,11 +93,38 @@ def test_v1_v2_protocols_receipts_scenarios_and_plans_are_unchanged():
     assert _plan_sha(skim(make_task("TRIM-01-R"))) == SKIM_SHA
 
 
-def test_waypoint_policy_default_is_bit_identical_and_estimator_is_used():
+@pytest.mark.parametrize("case", ["CUT-01-R/default", "CUT-01-R/saw3mm_tilt10"])
+def test_waypoint_policy_default_matches_v1_reference(case):
+    """The default WaypointPolicy still produces the pinned v1 rollout (plain and sawing + 10 deg tilt).
+
+    Until WP-11 Phase A this compared the SHA-256 of the raw action bytes with a pinned digest. That digest
+    depends on the BLAS kernel (OpenBLAS SkylakeX vs Haswell differ by one ulp in 3-vector dot products), so
+    it failed on the GitHub runner with identical Python/NumPy/SciPy. The same guarantee is now: the stored
+    reference hashes to the original digest (environment independent, it is stored data); the live rollout
+    matches it with exact cut flags and waypoint sequence and continuous actions within the derived
+    float64 tolerance steps*16*eps; and its behaviour (bounds, progress, reach, trajectory error,
+    termination) is checked directly. See tests/rollout_reference.py and docs/reports/WP11_PHASE_A_CI.md.
+    """
+    reference = load_reference()[case]
+    policy, task, start, steps = make_case(case)
+    tol = rollout_tolerance(steps)
+    live = ideal_rollout(policy, task, start, steps)
+    compare_to_reference(live, reference, tol)
+    assert check_behaviour(live, policy, task, tol) == reference["done_step"]
+    # The same start and plan through _rollout (the helper the other tests here use) give the same actions.
+    actions, _ = _rollout(WaypointPolicy(task, policy.waypoints), task, steps=steps)
+    assert np.array_equal(actions, live["actions"])
+
+
+def test_waypoint_policy_default_is_bit_identical_to_v1_profile_and_estimator_is_used():
+    """Same-process, environment-independent: the default policy IS the v1 controller profile, bit for bit."""
     task = make_task("CUT-01-R")
-    for kwargs, digest in zip(({}, {"saw_amplitude_m": .003, "tilt_deg": 10.}), ROLLOUT_SHA):
-        actions, _ = _rollout(WaypointPolicy(task, through_cut(task, **kwargs)), task)
-        assert hashlib.sha256(actions.tobytes()).hexdigest() == digest
+    v1_options, _ = controller_profile("v1")
+    for kwargs in ({}, {"saw_amplitude_m": .003, "tilt_deg": 10.}):
+        plan = through_cut(task, **kwargs)
+        default, _ = _rollout(WaypointPolicy(task, plan), task)
+        explicit, _ = _rollout(WaypointPolicy(task, plan, **v1_options), task)
+        assert np.array_equal(default, explicit)
     # An explicit estimator replaces the nominal proprio edge (e.g. a measured edge 1 mm lower).
     plan = through_cut(task)
     observation = {"proprio": {"tool_pose": np.asarray(plan[0].pose, float)}, "timestamp_s": 0.}

@@ -1,0 +1,32 @@
+{
+  "schema": "rcs_reliability_v1",
+  "version": "phaseG_reliability_v1",
+  "declared": "2026-10-30, WP-11 Phase G, before any reliability run",
+  "description": "Multi-episode reliability checks of the cutting_research_v1 policy-ready env (supplement Test F). POLICY_READY is set only if every check of every episode passes and every stored episode validates with the dataset reader.",
+  "minimum_consecutive_episodes": {"kinematic": 5, "isaac_sim": 3},
+  "reset": {
+    "material_at_reference_max_m": 1e-6,
+    "material_velocity_max_m_s": 1e-6,
+    "tool_pose_repeat_translation_max_m": 1e-4,
+    "tool_pose_repeat_rotation_max_rad": 1e-3,
+    "tool_linear_speed_max_m_s": 1e-3,
+    "tool_angular_speed_max_rad_s": 1e-2,
+    "grasp_reset_status_live": "PASS_STABLE_GRASP"
+  },
+  "clock": {"tolerance_s": 1e-9, "control_rate_hz": 50},
+  "camera": {"latest_frame_max_age_steps": "camera_every - 1 (live only)"},
+  "memory": {
+    "fit_from_episode": 1,
+    "host_rss_slope_max_mib_per_episode": 64,
+    "gpu_slope_max_mib_per_episode": 32,
+    "note": "Least-squares slope of the post-episode host RSS / process GPU memory over episodes >= fit_from_episode (episode 0 includes one-time kernel compilation and caches)."
+  },
+  "determinism": {
+    "same_seed_same_controller_cpu": "final cut codes identical (sha256)",
+    "same_seed_same_controller_gpu_or_live": "verdict identical; reported metrics compared, not gated"
+  },
+  "episodes": {
+    "expected_failures_must_fail": true,
+    "failed_episodes_must_validate": true
+  }
+}

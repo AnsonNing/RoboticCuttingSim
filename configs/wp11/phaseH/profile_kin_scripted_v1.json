@@ -1,0 +1,8 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseH_profile_kin_scripted_v1",
+  "description": "WP-11 Phase H2/H4 kinematic profiling: one full scripted episode (goal planner, seed 42, hold until the time limit) per scene/solver/profile, timed with the opt-in stage profiler.",
+  "episodes": [
+    {"label": "scripted_seed42", "controller": "scripted", "seed": 42, "hold_until_time_limit": true}
+  ]
+}

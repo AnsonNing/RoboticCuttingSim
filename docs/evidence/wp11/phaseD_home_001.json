@@ -1,0 +1,826 @@
+{
+ "evidence": "WP-11 Phase D Native smoke: HOME reset -> REORIENT (rho = 10 deg TRIM pre-cut pose, free space) -> hold -> physical return-to-home, cutting disabled",
+ "run_dir": "artifacts/wp11/phaseD/smoke_home_003",
+ "log": "artifacts/wp11/logs/phaseD_smoke_home_003.log",
+ "command": "OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/python scripts/run_wp10_live.py --runtime isaac_sim --scene trim01_wp11_workcell --goal trim_bump_rho10 --controller scripted --edge-feedback measured --stop-after-phase REORIENT --hold-after-stop-s 1.0 --return-home --record-cameras --overview-camera --record-every 5 --steps 300 --gpu 1 --seed 42 --out artifacts/wp11/phaseD/smoke_home_003",
+ "git_head_at_run": "f7dfef59b2dd80216ffc10029778dfc69e96aa75",
+ "git_note": "Run from a working tree with the uncommitted Phase D changes; the commit that adds them is recorded in the final report.",
+ "seed": 42,
+ "gpu": 1,
+ "runtime": "Isaac Sim 6.2 Kit/PhysX CPU articulation + retained TLMPM (tlmpm_v5, law 8, K=1) on cuda:1 + RTX cameras",
+ "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-a33f6613",
+ "config_sha256": "a33f6613126f16665b974ece868051e799a64ed65204a05231de28c14c0f263e",
+ "scene": "configs/wp11/scenes/trim01_wp11_workcell.json",
+ "goal": "configs/wp11/goals/trim_bump_rho10.json",
+ "scenario": "configs/wp11_scenarios_v1.json:wp11_workcell_v1",
+ "tool_profile": "ruler_knife_v2_y",
+ "wall_s": {
+  "total": 273.5434266260054,
+  "episode": 244.0935604539991
+ },
+ "plan_preflight": {
+  "status": "PASS",
+  "required": "prefix",
+  "reason": null,
+  "full_plan": {
+   "status": "PASS",
+   "samples": 369,
+   "samples_by_phase": {
+    "REORIENT": 112,
+    "PRE_CUT": 39,
+    "SKIM": 88,
+    "WITHDRAW": 19,
+    "RETURN_HOME": 111
+   },
+   "ik_worst": {
+    "position_error_m": 2.949935320243254e-06,
+    "rotation_error_rad": 1.2379879573067732e-06
+   },
+   "worst": {
+    "joint_limit_margin": {
+     "value": 0.737351655960083,
+     "threshold": 0.05,
+     "label": "RETURN_HOME",
+     "pair": null
+    },
+    "gripper_pad_clearance": {
+     "value": 0.031401384874937176,
+     "threshold": 0.005,
+     "label": "SKIM:dome",
+     "pair": [
+      "arm0_left_finger_visual_hull",
+      "static_support_floor_board"
+     ]
+    },
+    "franka1_collision": {
+     "value": 0.16853232849779914,
+     "threshold": 0.005,
+     "label": "RETURN_HOME",
+     "pair": [
+      "arm0_hand_c",
+      "arm1_link2_c"
+     ]
+    },
+    "franka_workcell_collision": {
+     "value": 0.03348439060589112,
+     "threshold": 0.005,
+     "label": "PRE_CUT:dome",
+     "pair": [
+      "arm0_hand_c",
+      "static_table"
+     ]
+    },
+    "knife_handle_clearance": {
+     "value": 0.015732325409166005,
+     "threshold": 0.005,
+     "label": "SKIM:dome",
+     "pair": [
+      "tool_handle",
+      "static_support_floor_board"
+     ]
+    },
+    "blade_collision": {
+     "value": 4.900090253684232e-05,
+     "threshold": 0.0,
+     "label": "PRE_CUT:dome",
+     "pair": [
+      "tool_blade",
+      "static_workpiece_base"
+     ]
+    },
+    "wrist_camera_clearance": {
+     "value": 0.05366896641288914,
+     "threshold": 0.002,
+     "label": "RETURN_HOME",
+     "pair": [
+      "arm0_d405_Housing",
+      "arm0_link6_c"
+     ]
+    },
+    "franka_self_collision": {
+     "value": 0.021705078845841858,
+     "threshold": 0.002,
+     "label": "RETURN_HOME",
+     "pair": [
+      "arm0_link7_c",
+      "arm0_link5_c2"
+     ]
+    },
+    "joint_continuity": {
+     "value": -0.01731427013874054,
+     "threshold": -0.06,
+     "label": "RETURN_HOME",
+     "pair": null
+    }
+   }
+  },
+  "executed_prefix": {
+   "status": "PASS",
+   "samples": 112,
+   "worst": {
+    "joint_limit_margin": {
+     "value": 0.7963440418243408,
+     "threshold": 0.05,
+     "label": "REORIENT:dome",
+     "pair": null
+    },
+    "gripper_pad_clearance": {
+     "value": 0.04752511825965757,
+     "threshold": 0.005,
+     "label": "REORIENT:dome",
+     "pair": [
+      "arm0_left_finger_pad",
+      "static_support_floor_board"
+     ]
+    },
+    "franka1_collision": {
+     "value": 0.17986739364316362,
+     "threshold": 0.005,
+     "label": "REORIENT:dome",
+     "pair": [
+      "arm0_hand_c",
+      "arm1_link2_c"
+     ]
+    },
+    "franka_workcell_collision": {
+     "value": 0.07128453094103046,
+     "threshold": 0.005,
+     "label": "REORIENT:dome",
+     "pair": [
+      "arm0_hand_c",
+      "static_table"
+     ]
+    },
+    "knife_handle_clearance": {
+     "value": 0.05093697124904007,
+     "threshold": 0.005,
+     "label": "REORIENT:dome",
+     "pair": [
+      "tool_handle",
+      "static_support_floor_board"
+     ]
+    },
+    "blade_collision": {
+     "value": 0.03655956142346981,
+     "threshold": 0.002,
+     "label": "REORIENT:dome",
+     "pair": [
+      "tool_blade",
+      "static_workpiece_bump"
+     ]
+    },
+    "wrist_camera_clearance": {
+     "value": 0.05369472216999417,
+     "threshold": 0.002,
+     "label": "REORIENT:dome",
+     "pair": [
+      "arm0_d405_Housing",
+      "arm0_link6_c"
+     ]
+    },
+    "franka_self_collision": {
+     "value": 0.021725775566939564,
+     "threshold": 0.002,
+     "label": "REORIENT:dome",
+     "pair": [
+      "arm0_link7_c",
+      "arm0_link5_c2"
+     ]
+    },
+    "joint_continuity": {
+     "value": -0.015160240232944489,
+     "threshold": -0.06,
+     "label": "REORIENT:dome",
+     "pair": null
+    }
+   }
+  },
+  "wall_s": 6.351571419996617,
+  "receipt": "artifacts/wp11/phaseD/smoke_home_003/plan_preflight.json"
+ },
+ "reset": {
+  "home": {
+   "used": false,
+   "converged": true,
+   "reason": "declared home_joint_positions (no initial IK)",
+   "home_scenario": "wp11_workcell_v1",
+   "home_joint_positions": [
+    -0.0874749943614006,
+    -0.3457081913948059,
+    -0.1642773449420929,
+    -2.275455951690674,
+    -0.05930738523602486,
+    1.9334616661071777,
+    0.5642676949501038
+   ],
+   "home_source": {
+    "evidence": "docs/evidence/wp11/phaseC2_preflight_001.json (all_task_recommendation, cid TRIM_v2y_py_rho10.0_p100, run artifacts/wp11/phaseC2/c2_preflight_003)",
+    "joints": "q_home at full float precision from the evidence (ADR 0013 quotes it rounded to 4 decimals)",
+    "hand_pose": "Newton forward kinematics of q_home (DualFrankaController, official Franka USD) = panda_hand world pose; the HOME knife edge is this pose composed with the tool profile's hand_from_edge (ruler_knife_v2_y: edge (0, 0, 0.288) m world, hand pointing straight down, blade hanging below the fingers as in /home/ningan/a.png). tests/test_wp11_phase_d.py re-derives it when the Franka asset is present.",
+    "finger_position": "0.0112 m per finger is the C2 collision-check opening on the 22 mm handle; the live reset still starts from ToolGraspConfig.initial_finger_position_m and runs the unchanged physical pregrasp settle."
+   },
+   "home_edge_pose_fk_world_xyzw": [
+    1.5881717253772576e-06,
+    -6.760380595843452e-07,
+    0.28800092619976614,
+    0.7071066226739733,
+    -2.1867279895891173e-07,
+    -3.451133143458121e-07,
+    -0.7071069396989682
+   ],
+   "home_declared_hand_pose_world_xyzw": [
+    -0.027998257428407655,
+    -7.678660835716887e-07,
+    0.48165094852447504,
+    0.9999999999998914,
+    8.940694584679925e-08,
+    -3.986569838565774e-07,
+    -2.241705236994095e-07
+   ],
+   "reference_edge_pose_t0_world_xyzw": [
+    1.5881717253911354e-06,
+    -6.760380595753555e-07,
+    0.2880009261997661,
+    -0.7071066226739733,
+    2.186727989589117e-07,
+    3.4511331434581206e-07,
+    0.7071069396989682
+   ],
+   "fk_vs_reference_t0_translation_m": 5.79214719577773e-17,
+   "fk_vs_reference_t0_rotation_rad": 1.183764530776631e-22,
+   "secondary_arm": "shared normal safe park (unchanged)",
+   "measured_after_pregrasp": {
+    "q": [
+     -0.08747471868991852,
+     -0.34531980752944946,
+     -0.16429652273654938,
+     -2.2757999897003174,
+     -0.059308748692274094,
+     1.933347463607788,
+     0.5642675161361694
+    ],
+    "hand_pose_xyzw": [
+     -0.028004644438624382,
+     1.0309840945410542e-05,
+     0.48130568861961365,
+     0.9999999107556345,
+     1.1324882171657843e-06,
+     -0.000416044133491092,
+     -7.3448752670049e-05
+    ],
+    "tool_body_pose_xyzw": [
+     -0.02808850072324276,
+     2.7789981686510146e-05,
+     0.37693944573402405,
+     0.9999999616871847,
+     -7.696449461749657e-05,
+     -0.0002545118234398531,
+     -7.697939577811952e-05
+    ],
+    "tool_edge_pose_xyzw": [
+     -0.0001343157424531817,
+     3.7340883930860404e-05,
+     0.2869252054670526,
+     0.7070523214425298,
+     -0.0002343891523011008,
+     -0.00012554492019184612,
+     -0.7071611867480624
+    ],
+    "joint_error_vs_home_max_rad": 0.0003883838653564453
+   },
+   "secondary_arm_q": [
+    -1.5707963705062866,
+    -0.5,
+    9.386846855363729e-11,
+    -2.0,
+    -1.2128621024176667e-11,
+    1.5,
+    0.7853981852531433
+   ],
+   "secondary_arm_park_q": [
+    -1.5707963705062866,
+    -0.5,
+    0.0,
+    -2.0,
+    0.0,
+    1.5,
+    0.7853981852531433
+   ]
+  },
+  "pregrasp": {
+   "status": "PASS_STABLE_GRASP",
+   "checks": {
+    "sampled_final_window": true,
+    "both_fingers_contact_handle": true,
+    "relative_translation": true,
+    "relative_rotation": true,
+    "relative_linear_speed": true,
+    "relative_angular_speed": true,
+    "recorded_native_contact_separations": true,
+    "rigid_contact_penetration": true,
+    "no_unintended_support": true
+   },
+   "rigid_steps": 1000,
+   "settling_s": 2.0,
+   "max_relative_translation_m": 1.5097364678370368e-07,
+   "max_relative_rotation_rad": 2.2706551880286193e-06,
+   "max_relative_linear_speed_m_s": 6.119409989604747e-05,
+   "max_relative_angular_speed_rad_s": 0.0008476651676615225,
+   "bilateral_handle_contact_fraction": 1.0,
+   "maximum_native_rigid_contact_penetration_m": 6.373971700668335e-06
+  }
+ },
+ "task_phase": {
+  "steps": 118,
+  "end_time_s": 2.36,
+  "phase_steps": {
+   "HOME": 2,
+   "REORIENT:dome": 66,
+   "HOLD_AFTER_STOP": 50
+  },
+  "ik_rejections": 0,
+  "cut_enabled_steps": 0,
+  "reorient_steps": 66,
+  "tracking_error_max_m": 0.011340444731909483,
+  "rotation_error_max_rad": 0.0332706245798524,
+  "measured_edge_end_world_xyzw": [
+   -0.021756331303115717,
+   2.8808122522039348e-05,
+   0.15915678561509616,
+   0.00011248992872803232,
+   -0.08705961840330034,
+   -4.273690061074725e-05,
+   -0.9962030959413072
+  ],
+  "measured_orientation_metrics_end": {
+   "tau_deg": 0.012415096776288779,
+   "psi_deg": 0.013789334536443888,
+   "rho_deg": 9.988943655175362,
+   "mu_deg": 0.0,
+   "definition": "docs/adr/0013 (tau edge tilt, psi edge skew, rho blade rake, mu motion elevation)"
+  },
+  "measured_edge_height_above_bump_top_m": 0.03115678561509616,
+  "grasp_end": {
+   "status": "HOLDING",
+   "slip_since_settling_m": 5.99196879128587e-07,
+   "rotation_since_settling_rad": 7.884758821883195e-05
+  },
+  "end_reason": "STOP_AFTER_PHASE:REORIENT",
+  "task_phase_end": {
+   "state": "TASK_COMPLETE",
+   "termination_reason": "STOP_AFTER_PHASE:REORIENT",
+   "home_outcome": null,
+   "transitions": 4
+  }
+ },
+ "task_outcome": {
+  "verdict": "FAIL_INTEGRITY",
+  "success": false,
+  "integrity": {
+   "status": "FAIL",
+   "checks": {
+    "initial_codes_zero": true,
+    "initial_continuous_graph": true,
+    "persistent_history_no_digit_rewrites": true,
+    "valid_digit_values": true,
+    "reference_matches_scene_sampler": true,
+    "reference_mass_budget": true,
+    "complete_episode": false
+   }
+  },
+  "outcome": {
+   "status": "FAIL",
+   "checks": {
+    "selection_nonempty": true,
+    "selected_protrusions_removed": false,
+    "unselected_protrusions_retained": true,
+    "substrate_holds_below_plane_mass": true,
+    "detached_below_plane_mass_bounded": true,
+    "single_substrate_component": true
+   }
+  },
+  "note": "Expected FAIL: this smoke stops after REORIENT and never arms cutting; it is not a cutting run."
+ },
+ "return_home": {
+  "plan": {
+   "status": "PLANNED",
+   "variant": "rotate_then_move",
+   "retract": {
+    "lift_m": 0.12883531976316898,
+    "clear_z_world_m": 0.28800092619976614,
+    "speed_m_s": 0.04,
+    "status": "PLANNED",
+    "samples": 172,
+    "max_joint_step_rad": 0.00170820951461792,
+    "retimed": 0
+   },
+   "attempts": [
+    {
+     "variant": "rotate_then_move",
+     "status": "PLANNED",
+     "reason": null,
+     "samples": 332,
+     "duration_s": 6.640000000000001,
+     "max_joint_velocity_rad_s": 0.5986566522480308,
+     "max_joint_acceleration_rad_s2": 1.4932907803372197,
+     "max_joint_space_acceleration_rad_s2": 1.4932907803372197,
+     "min_joint_limit_margin_rad": 0.7377958297729492
+    }
+   ],
+   "preflight": {
+    "status": "PASS",
+    "worst": {
+     "joint_limit_margin": {
+      "value": 0.7377958297729492,
+      "threshold": 0.05,
+      "label": null,
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.04885805455237845,
+      "threshold": 0.005,
+      "label": null,
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_support_floor_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.17986739364316362,
+      "threshold": 0.005,
+      "label": null,
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.07246054001989286,
+      "threshold": 0.005,
+      "label": null,
+      "pair": [
+       "arm0_hand_c",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.052219049472799435,
+      "threshold": 0.005,
+      "label": null,
+      "pair": [
+       "tool_handle",
+       "static_support_floor_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 0.03744501317810947,
+      "threshold": 0.0,
+      "label": null,
+      "pair": [
+       "tool_blade",
+       "static_workpiece_bump"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05369472216999417,
+      "threshold": 0.002,
+      "label": null,
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021639824641973542,
+      "threshold": 0.002,
+      "label": null,
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.011973133044960615,
+      "threshold": -0.06,
+      "label": null,
+      "pair": null
+     }
+    }
+   }
+  },
+  "steps": 332,
+  "phase_steps": {
+   "RETURN_HOME:RETRACTING": 172,
+   "RETURN_HOME:ROTATE_HAND_DOWN": 113,
+   "RETURN_HOME:MOVE_HOME": 22,
+   "RETURN_HOME:SETTLE_HOME": 25
+  },
+  "measurement": {
+   "plan_status": "PLANNED",
+   "plan_reason": null,
+   "executed": true,
+   "aborted_reason": null,
+   "grasp_lost": false,
+   "steps": 332,
+   "start_time_s": 2.36,
+   "q_start": [
+    -0.43293827772140503,
+    0.7985193729400635,
+    -0.48406827449798584,
+    -1.761114239692688,
+    1.0041779279708862,
+    0.9117287397384644,
+    -0.30863842368125916
+   ],
+   "q_home": [
+    -0.0874749943614006,
+    -0.3457081913948059,
+    -0.1642773449420929,
+    -2.275455951690674,
+    -0.05930738523602486,
+    1.9334616661071777,
+    0.5642676949501038
+   ],
+   "end_time_s": 9.0,
+   "duration_s": 6.640000000000001,
+   "planned_steps": 332,
+   "home_joint_error_max_rad": 0.00039124488830566406,
+   "home_joint_error_rad": [
+    3.725290298461914e-08,
+    0.00039124488830566406,
+    -3.0443072319030762e-05,
+    -0.00029015541076660156,
+    -1.2293457984924316e-06,
+    -0.0001004934310913086,
+    2.8192996978759766e-05
+   ],
+   "tool_translation_error_m": 3.085139908542946e-05,
+   "tool_rotation_error_rad": 8.908950565144406e-05,
+   "edge_translation_error_m": 3.760591509293328e-05,
+   "edge_rotation_error_rad": 8.908950565150245e-05,
+   "tool_pose_reference": "tool body pose measured right after the reset pregrasp settle",
+   "grasp_slip_max_m": 7.535870551922951e-07,
+   "grasp_rotation_max_rad": 9.22216986393015e-05,
+   "grasp_slip_final_m": 3.05599071493705e-07,
+   "grasp_rotation_final_rad": 2.656746070153923e-05,
+   "unintended_tool_contacts_max": 0,
+   "max_tool_contact_penetration_m": 7.191672921180725e-06,
+   "max_material_reaction_force_n": 0.0,
+   "label_changes": 0,
+   "measured_path_clearance_status": "PASS",
+   "measured_q_final": [
+    -0.08747495710849762,
+    -0.34531694650650024,
+    -0.16430778801441193,
+    -2.2757461071014404,
+    -0.05930861458182335,
+    1.9333611726760864,
+    0.5642958879470825
+   ],
+   "secondary_arm_q_final": [
+    -1.5707963705062866,
+    -0.5,
+    7.799470097547001e-11,
+    -2.0,
+    -1.7747893432673578e-11,
+    1.5,
+    0.7853981852531433
+   ]
+  },
+  "measured_path_clearance": {
+   "status": "PASS",
+   "failing": [],
+   "worst": {
+    "joint_limit_margin": {
+     "value": 0.737351655960083,
+     "threshold": 0.05,
+     "label": null,
+     "pair": null
+    },
+    "gripper_pad_clearance": {
+     "value": 0.04874741585473241,
+     "threshold": 0.005,
+     "label": null,
+     "pair": [
+      "arm0_left_finger_pad",
+      "static_support_floor_board"
+     ]
+    },
+    "franka1_collision": {
+     "value": 0.1791391382618719,
+     "threshold": 0.005,
+     "label": null,
+     "pair": [
+      "arm0_hand_c",
+      "arm1_link2_c"
+     ]
+    },
+    "franka_workcell_collision": {
+     "value": 0.07232354619770648,
+     "threshold": 0.005,
+     "label": null,
+     "pair": [
+      "arm0_hand_c",
+      "static_table"
+     ]
+    },
+    "knife_handle_clearance": {
+     "value": 0.05206061394472685,
+     "threshold": 0.005,
+     "label": null,
+     "pair": [
+      "tool_handle",
+      "static_support_floor_board"
+     ]
+    },
+    "blade_collision": {
+     "value": 0.03732377570706022,
+     "threshold": 0.0,
+     "label": null,
+     "pair": [
+      "tool_blade",
+      "static_workpiece_bump"
+     ]
+    },
+    "wrist_camera_clearance": {
+     "value": 0.05369464724705921,
+     "threshold": 0.002,
+     "label": null,
+     "pair": [
+      "arm0_d405_Housing",
+      "arm0_link6_c"
+     ]
+    },
+    "franka_self_collision": {
+     "value": 0.021642704707924704,
+     "threshold": 0.002,
+     "label": null,
+     "pair": [
+      "arm0_link7_c",
+      "arm0_link5_c2"
+     ]
+    },
+    "joint_continuity": {
+     "value": -0.012218356132507324,
+     "threshold": -0.06,
+     "label": null,
+     "pair": null
+    }
+   }
+  }
+ },
+ "home_outcome": {
+  "status": "PASS",
+  "reason": null,
+  "checks": {
+   "plan_preflight": true,
+   "trajectory_executed": true,
+   "grasp_held": true,
+   "home_joint_error": true,
+   "tool_translation_vs_reset": true,
+   "tool_rotation_vs_reset": true,
+   "grasp_slip": true,
+   "grasp_rotation": true,
+   "no_label_changes": true,
+   "no_unintended_tool_contacts": true,
+   "measured_path_clearance": true
+  },
+  "failed_checks": [],
+  "gates": {
+   "max_home_joint_error_rad": 0.01,
+   "max_tool_translation_error_m": 0.005,
+   "max_tool_rotation_error_rad": 0.0524,
+   "max_grasp_slip_m": 0.002,
+   "max_grasp_rotation_rad": 0.0524,
+   "max_label_changes": 0,
+   "max_unintended_tool_contacts": 0,
+   "require_measured_path_clearance": true,
+   "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+  },
+  "scope": "Physical return-to-home only; reported separately from the task outcome"
+ },
+ "episode_state_final": {
+  "state": "FINISHED",
+  "termination_reason": "STOP_AFTER_PHASE:REORIENT",
+  "home_outcome": "PASS",
+  "transitions": 7
+ },
+ "episode_transitions": [
+  {
+   "from": null,
+   "to": "RESETTING",
+   "time_s": 0.0,
+   "reason": "reset"
+  },
+  {
+   "from": "RESETTING",
+   "to": "READY",
+   "time_s": 0.0,
+   "reason": "reset_complete"
+  },
+  {
+   "from": "READY",
+   "to": "RUNNING",
+   "time_s": 0.02,
+   "reason": "first_step"
+  },
+  {
+   "from": "RUNNING",
+   "to": "TASK_COMPLETE",
+   "time_s": 2.36,
+   "reason": "STOP_AFTER_PHASE:REORIENT"
+  },
+  {
+   "from": "TASK_COMPLETE",
+   "to": "RETRACTING",
+   "time_s": 2.36,
+   "reason": "return_home"
+  },
+  {
+   "from": "RETRACTING",
+   "to": "RETURNING_HOME",
+   "time_s": 5.8,
+   "reason": "ROTATE_HAND_DOWN"
+  },
+  {
+   "from": "RETURNING_HOME",
+   "to": "FINISHED",
+   "time_s": 9.0,
+   "reason": "home_PASS"
+  }
+ ],
+ "cut_labels": {
+  "nonzero_codes_final": 0,
+  "recorded_frames": 91
+ },
+ "cameras": {
+  "record_every_steps": 5,
+  "rate_hz": 10,
+  "streams": [
+   "closeup_rgb",
+   "global_d455",
+   "overview_rgb",
+   "wrist_d405_0",
+   "wrist_d405_1"
+  ],
+  "frames": 91
+ },
+ "preserved_failures": [
+  {
+   "run": "artifacts/wp11/phaseD/smoke_home_001",
+   "status": "FAIL_EXECUTION",
+   "error": "ValueError('Goal recording shapes, times, masses, codes or stencils are invalid')",
+   "cause": "end_task() force-recorded an oracle snapshot at the same timestamp as the last step (duplicate time); fixed (no duplicate snapshot) with a regression test. Reset/HOME/REORIENT/hold had run: pregrasp PASS_STABLE_GRASP, 66 REORIENT + 50 hold steps, 0 IK rejections, slip 0.6 um; return-home never ran.",
+   "log": "artifacts/wp11/logs/phaseD_smoke_home_001.log"
+  },
+  {
+   "run": "artifacts/wp11/phaseD/smoke_home_002",
+   "status": "INCOMPLETE_RECEIPT (episode completed)",
+   "cause": "Native Kit exited Python inside app.close() before the top-level result.json was written (written after the env context); results.json and episode_000/result.json are complete: home_outcome PASS (joint error 0.39 mrad, tool 0.031 mm / 0.089 mrad vs reset, slip 0.75 um, 0 label changes, measured path clearance PASS), task verdict FAIL_INTEGRITY recorded as task_status None (wrong key). Fixed: result.json written inside the context; task_status reads the goal verdict.",
+   "log": "artifacts/wp11/logs/phaseD_smoke_home_002.log"
+  }
+ ],
+ "frames_inspected": [
+  {
+   "file": "observations/global_d455_0000.npz",
+   "t_s": 0.0,
+   "seen": "HOME after pregrasp: hand pointing down, fingers pinching the dark grip, the blade hanging straight down below the fingers (as /home/ningan/a.png), ~10 cm above the raised workpiece"
+  },
+  {
+   "file": "observations/closeup_rgb_0023.npz",
+   "t_s": 2.3,
+   "seen": "After REORIENT + 1 s hold: blade near-horizontal (rho = 10 deg), grip toward -y and tip toward +y, edge above the pass start beside the dome, clear of the workpiece"
+  },
+  {
+   "file": "observations/overview_rgb_0050.npz (run 002, same motion)",
+   "t_s": 5.0,
+   "seen": "End of RETRACTING lift: blade still near-horizontal at HOME height"
+  },
+  {
+   "file": "observations/global_d455_0090.npz",
+   "t_s": 9.0,
+   "seen": "Back at HOME after the settle: visually identical to the reset frame, blade hanging, workpiece unchanged"
+  }
+ ],
+ "images": [
+  {
+   "path": "docs/media/wp11/phaseD_home_blade_hanging.png",
+   "source": "global_d455 RGB t = 0.0 s (HOME)",
+   "bytes": 100940
+  },
+  {
+   "path": "docs/media/wp11/phaseD_reoriented_rho10.png",
+   "source": "presentation close-up RGB t = 2.3 s (reoriented, rho = 10 deg), resized 960x540 -> 800x450",
+   "bytes": 161633
+  }
+ ],
+ "tests": {
+  "new": "tests/test_wp11_phase_d.py (27 tests)",
+  "quick_suite_command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -q -m \"not cpu_sim\" -p no:cacheprovider"
+ },
+ "limitations": [
+  "Geometry preflight uses the declared (uncut) workpiece and the nominal grasp; robot-link vs workcell contacts are not natively sensed in this runtime (checked geometrically on the measured joint path).",
+  "Kit exits Python with code 0 during app.close(); result.json, not the process exit code, is the run status.",
+  "Material parameters provisional and uncalibrated; no cutting was armed in this smoke."
+ ]
+}

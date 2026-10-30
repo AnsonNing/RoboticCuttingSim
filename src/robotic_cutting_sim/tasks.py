@@ -203,11 +203,15 @@ class CuttingTaskSpec:
         return {"mode": "cartesian_edge_pose_world", "target": self.reference_edge_pose_world(time_s),
                 "cut_enabled": self.active_cut_index(time_s) >= 0}
 
-    def validate_action(self, action):
+    def validate_action(self, action, *, max_cuts=None):
         """Validate edge XYZ+XYZW or active-arm7/both-arm2x7 joint positions.
 
         A 7-vector joint action explicitly leaves the second arm parked; no
         dynamics, IK, observations, forces or hidden cut schedule are added here.
+
+        ``cut_index`` accepts the legacy digits 0/1 unless ``max_cuts`` (the
+        retained material history, at most ``PACKED_MAX_CUTS`` = 15 with
+        ``tlmpm_v5``) is passed explicitly: then any integer in [0, max_cuts).
         """
         if not isinstance(action, dict) or set(action)-{"mode", "target", "cut_enabled", "cut_index"}:
             raise ValueError("Action is a mapping with mode, target and optional cut_enabled/cut_index only")
@@ -229,8 +233,17 @@ class CuttingTaskSpec:
         if "cut_index" in action:
             # Which persistent cut digit this action writes (material max_cuts bounds it).
             index = action["cut_index"]
-            if not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_)) or not 0 <= index <= 1:
-                raise ValueError("cut_index must be the integer 0 or 1")
+            if max_cuts is None:
+                if not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_)) or not 0 <= index <= 1:
+                    raise ValueError("cut_index must be the integer 0 or 1")
+            else:
+                from .cut_topology import PACKED_MAX_CUTS
+                if (isinstance(max_cuts, (bool, np.bool_)) or not isinstance(max_cuts, (int, np.integer))
+                        or not 1 <= max_cuts <= PACKED_MAX_CUTS):
+                    raise ValueError(f"max_cuts must be an integer in [1, {PACKED_MAX_CUTS}]")
+                if (not isinstance(index, (int, np.integer)) or isinstance(index, (bool, np.bool_))
+                        or not 0 <= index < max_cuts):
+                    raise ValueError(f"cut_index must be an integer in [0, {int(max_cuts)})")
             command["cut_index"] = int(index)
         return command
 
@@ -477,6 +490,106 @@ def _make_demo_task(task_id, seed, variant, world_from_workpiece_xyzw, particle_
         pushed_piece_cut_index=push["pushed_piece"]["cut_index"], goal_profile=config["goal_profile"])
 
 
+PROTOCOL_V4_PATH = PROTOCOL_PATH.with_name("cutting_tasks_v4.json")
+_V4_META_KEYS = ("base", "derived_from", "tool_profile", "blade_rake_deg", "edge_tilt_deg", "edge_skew_deg")
+
+
+def _protocol_v4():
+    return json.loads(PROTOCOL_V4_PATH.read_text())
+
+
+def rake_edge_orientation_xyzw(rake_deg, tilt_deg=0., skew_deg=0.):
+    """ADR 0013 edge orientation (workpiece local) for a declared rake with tau = psi = 0.
+
+    n_t = +z, c = +x: edge line e = +y, advance R_y(rho) x, blade normal R_y(rho) z;
+    rho > 0 raises the blade body behind the edge. Nonzero tilt/skew are not defined.
+    """
+    from scipy.spatial.transform import Rotation
+    values = np.asarray([rake_deg, tilt_deg, skew_deg], float)
+    if not np.isfinite(values).all() or not -90 < values[0] < 90:
+        raise ValueError("Declared rake must be finite and within (-90, 90) deg")
+    if values[1] != 0 or values[2] != 0:
+        raise NotImplementedError("cutting_tasks_v4 defines only tau = psi = 0 orientations")
+    return tuple(map(float, Rotation.from_euler("y", float(values[0]), degrees=True).as_quat()))
+
+
+def _v4_task_config(task_id):
+    """v1 base task entry with the v4 overrides applied (thresholds inherited unchanged)."""
+    entry = _protocol_v4()["tasks"][task_id]
+    config = deepcopy(_protocol()[entry["base"]])
+    config.update({key: deepcopy(value) for key, value in entry.items() if key not in ("base", "tool_profile")})
+    if "blade_rake_deg" in entry:
+        if "edge_orientation_local_xyzw" in entry:
+            raise ValueError("A v4 task declares either a rake or an explicit edge orientation, not both")
+        config["edge_orientation_local_xyzw"] = list(rake_edge_orientation_xyzw(
+            entry["blade_rake_deg"], entry.get("edge_tilt_deg", 0.), entry.get("edge_skew_deg", 0.)))
+    return entry["base"], entry["tool_profile"], config
+
+
+@dataclass(frozen=True)
+class ProfileTaskSpecV4(ProfileTaskSpec):
+    """A WP-11 v4 task (cutting_tasks_v4.json): a v1 base task with the end-held v2 knife.
+
+    Opt-in and versioned: thresholds come unchanged from the v1 base entry; the
+    tool and the declared edge orientation (``blade_rake_deg`` with tau = psi = 0
+    for the TRIM-02 family) are the only differences from TRIM-01-R/CUT-01-R.
+    These ids are deliberately absent from TASK_IDS/PROFILE_TASK_IDS, so live
+    runtimes reject them until a live phase adds them with the physical-grasp guard.
+    """
+
+    blade_rake_deg: float | None = None
+    TASK_IDS: ClassVar[tuple] = ("TRIM-02-K2-R00", "TRIM-02-K2-R05", "TRIM-02-K2-R10", "TRIM-02-K2-R12P5",
+                                 "TRIM-02-K2-R15", "TRIM-02-K2-R25", "TRIM-02-K2-R35",
+                                 "TRIM-02-K2C-R00", "TRIM-02-K2C-R05", "TRIM-02-K2C-R10", "CUT-03-K2")
+
+    def __post_init__(self):
+        super().__post_init__()
+        if self.blade_rake_deg is not None:
+            expected = pose_matrix((0, 0, 0, *rake_edge_orientation_xyzw(self.blade_rake_deg)))
+            if not np.allclose(pose_matrix((0, 0, 0, *self.edge_orientation_local_xyzw)), expected, atol=1e-12, rtol=0):
+                raise ValueError("Edge orientation must equal the declared rake (tau = psi = 0)")
+
+    @property
+    def protocol_path(self):
+        return PROTOCOL_V4_PATH
+
+    def protocol_document(self):
+        return {"protocol_id": _protocol_v4()["protocol_id"], "common": _protocol()["common"],
+                self.task_id: _v4_task_config(self.task_id)[2]}
+
+    def to_dict(self):
+        entry = _protocol_v4()["tasks"][self.task_id]
+        declared = None if self.blade_rake_deg is None else {
+            "blade_rake_deg": self.blade_rake_deg, "edge_tilt_deg": entry.get("edge_tilt_deg", 0.),
+            "edge_skew_deg": entry.get("edge_skew_deg", 0.), "target_normal_local": list(self.target_normal_local),
+            "cutting_direction_local": [1., 0., 0.], "convention": "docs/adr/0013 (rho > 0 raises the blade body behind the edge)"}
+        return {**super().to_dict(), "derived_from": entry["derived_from"], "declared_orientation_metrics": declared}
+
+
+def _make_v4_task(task_id, seed, variant, world_from_workpiece_xyzw, particle_spacing_m, workpiece_kind):
+    if variant != "fixed" or workpiece_kind != "rectangle":
+        raise NotImplementedError("v4 tasks are defined only as fixed rectangular workpieces")
+    from .tool_profile import PROFILES
+    v1 = _protocol()
+    base, profile_id, config = _v4_task_config(task_id)
+    profile = PROFILES[profile_id]
+    geometry, episode = config["geometry"], v1["episode"]
+    return ProfileTaskSpecV4(task_id, int(seed), variant,
+        HeightFieldSpec(geometry["length_m"], geometry["width_m"], geometry["base_height_m"],
+            tuple(Bump(**row) for row in geometry["bumps"])),
+        config["particle_spacing_m"] if particle_spacing_m is None else float(particle_spacing_m), config["grid_dx_m"],
+        tuple(FixtureBox(row["name"], tuple(row["center_m"]), tuple(row["half_extents_m"])) for row in config["fixture_boxes_local"]),
+        tuple(world_from_workpiece_xyzw), v1["common"]["table_top_world_z_m"], tuple(profile.hand_from_edge()),
+        episode["duration_s"], episode["control_dt_s"], MaterialParameters(**v1["material"]),
+        config["goal_kind"], tuple(config["target_origin_local_m"]), tuple(config["target_normal_local"]),
+        config.get("edge_clearance_m", 0.), profile.blade_depth_m, profile.thickness_m, profile.half_width_m,
+        tuple(config["edge_orientation_local_xyzw"]), tuple(tuple(row) for row in config["edge_position_knots_local_txyz"]),
+        tuple(episode["active_cut_interval_s"]), tool_profile_id=profile.profile_id, base_task_id=base,
+        blade_rake_deg=config.get("blade_rake_deg"))
+
+
+# Opt-in v4 ids (make_task only; not in TASK_IDS/PROFILE_TASK_IDS, see ProfileTaskSpecV4).
+V4_TASK_IDS = ProfileTaskSpecV4.TASK_IDS
 TASK_IDS = CuttingTaskSpec.TASK_IDS+ProfileTaskSpec.TASK_IDS+DemoTaskSpec.TASK_IDS
 # Opt-in profile-tool task IDs (v2 ProfileTaskSpec and its v3 DemoTaskSpec subclass);
 # runtimes use this for the physical-grasp/scenario/two-digit guards.
@@ -490,6 +603,8 @@ def make_task(task_id="CUT-01", seed=42, variant="fixed", *, world_from_workpiec
     if variant == "randomized" and (not isinstance(seed, (int, np.integer)) or isinstance(seed, (bool, np.bool_)) or seed < 0):
         raise ValueError("Randomized task seed must be a nonnegative integer")
     protocol = _protocol()
+    if task_id in V4_TASK_IDS:
+        return _make_v4_task(task_id, seed, variant, world_from_workpiece_xyzw, particle_spacing_m, workpiece_kind)
     if task_id not in TASK_IDS:
         raise ValueError(f"task_id must be one of {TASK_IDS}; legacy D0 is unchanged")
     if task_id in DemoTaskSpec.TASK_IDS:

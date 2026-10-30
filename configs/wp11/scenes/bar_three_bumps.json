@@ -1,0 +1,25 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "bar_three_bumps",
+  "description": "Supplement Test C workpiece: the 160 x 30 x 20 mm bar with three 8 mm domes at x = -50, 0, +50 mm, all part of one continuous heightfield sample, on a solid support floor (TRIM-01 footprint). Removing all three one per digit needs three cut digits, so the scene declares tlmpm_v5 (ADR 0014).",
+  "workpiece": {
+    "base_box_m": {"length_m": 0.16, "width_m": 0.03, "height_m": 0.02},
+    "protrusions": [
+      {"id": "p0", "family": "dome", "x_m": -0.05, "y_m": 0.0, "radius_x_m": 0.012, "radius_y_m": 0.012, "height_m": 0.008},
+      {"id": "p1", "family": "dome", "x_m": 0.0, "y_m": 0.0, "radius_x_m": 0.012, "radius_y_m": 0.012, "height_m": 0.008},
+      {"id": "p2", "family": "dome", "x_m": 0.05, "y_m": 0.0, "radius_x_m": 0.012, "radius_y_m": 0.012, "height_m": 0.008}
+    ],
+    "world_pose": {"translation_m": [0.0, 0.0, 0.0], "yaw_deg": 0.0},
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {
+    "kind": "solid_board",
+    "x_range_m": [-0.09, 0.09],
+    "half_width_y_m": 0.025,
+    "thickness_m": 0.01,
+    "names": ["support_floor"],
+    "workcell": null
+  },
+  "tool": {"profile_id": "ruler_knife_v1", "grasp_preset": "default"},
+  "solver": {"module": "tlmpm_v5", "cutting_law": 8, "max_cuts": 3, "particle_spacing_m": 0.001, "grid_dx_m": 0.004}
+}

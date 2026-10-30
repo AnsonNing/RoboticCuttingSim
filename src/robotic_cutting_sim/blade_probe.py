@@ -10,7 +10,8 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from .cut_topology import conflicting, reference_components
+from .cut_topology import (conflicting, conflicting_packed, decode_digits, reference_components,
+                           reference_components_packed)
 from .material_config import TLMPMConfig
 
 
@@ -22,10 +23,11 @@ def block(size_m=(.06, .024, .012), spacing=.004, density=1500.):
     return points, np.full(len(points), density*spacing**3, np.float32)
 
 
-def severed_bonds(lattice, codes, cuts):
+def severed_bonds(lattice, codes, cuts, *, packed=False):
     """Reference 6-neighbor bonds whose two particles carry conflicting cut sides.
 
     Labels on one side only sever nothing; this counts actual separation.
+    ``packed`` selects the tlmpm_v5 packed-code conflict test (ADR 0014).
     """
     lookup = {tuple(v): i for i, v in enumerate(lattice)}
     pairs = [(i, lookup[tuple(v+step)]) for i, v in enumerate(lattice)
@@ -33,6 +35,8 @@ def severed_bonds(lattice, codes, cuts):
     if not pairs:
         return 0
     a, b = np.asarray(pairs).T
+    if packed:
+        return int(conflicting_packed(codes[a], codes[b]).sum())
     return int(conflicting(codes[a], codes[b], cuts).sum())
 
 
@@ -47,21 +51,38 @@ class Phase:
 def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None, spacing=.004,
                 cutting_law=2, cutting_energy=5., slice_efficiency=1., cuts=1, obstacle_boxes_edge=None,
                 device="cpu", chunk=200, config_overrides=None, gpu_graph=False, record_history=False,
-                solver_version=None):
+                solver_version=None, slots_per_node=None):
     """Drive the edge frame (rotation: edge->world Rotation) through phases.
 
     ``solver_version`` None uses tlmpm_v4 for laws 4-8, tlmpm_v3 for law 3 and
     tlmpm_v2 otherwise; 3 or 4 forces that module (for equivalence checks of
-    the older laws against tlmpm_v2/tlmpm_v3).
+    the older laws against tlmpm_v2/tlmpm_v3). ``solver_version`` 5 uses tlmpm_v5
+    (ADR 0014: laws 4, 5, 8; packed codes, ``cuts`` up to 15, ``slots_per_node``
+    default 8); its codes stay packed in the result, which then also carries
+    ``code_encoding``, per-phase per-digit label counts and slot diagnostics,
+    and slot overflow raises after the chunk where it occurred.
 
     Returns per-phase label counts, final components, mean and peak tool
     reaction force (world, N) per phase, and the solver snapshot.
     """
     import warp as wp
-    if (solver_version not in (None, 2, 3, 4) or (solver_version == 2 and cutting_law in (3, 4, 5, 6, 7, 8))
-            or (solver_version == 3 and cutting_law in (4, 5, 6, 7, 8))):
-        raise ValueError('solver_version is 2, 3 or 4; law 3 needs tlmpm_v3/v4 and laws 4-8 tlmpm_v4')
-    if cutting_law in (4, 5, 6, 7, 8) or solver_version == 4:
+    if (solver_version not in (None, 2, 3, 4, 5) or (solver_version == 2 and cutting_law in (3, 4, 5, 6, 7, 8))
+            or (solver_version == 3 and cutting_law in (4, 5, 6, 7, 8))
+            or (solver_version == 5 and cutting_law not in (4, 5, 8))):
+        raise ValueError('solver_version is 2, 3, 4 or 5; law 3 needs tlmpm_v3/v4, laws 4-8 tlmpm_v4, '
+                         'and tlmpm_v5 runs laws 4, 5 and 8')
+    if slots_per_node is not None and solver_version != 5:
+        raise ValueError('slots_per_node applies to tlmpm_v5 only')
+    # Every phase digit is -1 (disarmed) or a retained digit (WP-11 review finding 7): an out-of-range digit
+    # would release contact force as if cutting but write no label.
+    for phase in phases:
+        if (isinstance(phase.cut, (bool, np.bool_)) or not isinstance(phase.cut, (int, np.integer))
+                or not -1 <= phase.cut < cuts):
+            raise ValueError(f'Phase cut index {phase.cut!r} must be -1 or an integer in [0, {cuts})')
+    packed = solver_version == 5
+    if packed:
+        from .tlmpm_v5 import TLMPM
+    elif cutting_law in (4, 5, 6, 7, 8) or solver_version == 4:
         from .tlmpm_v4 import TLMPM
     elif cutting_law == 3 or solver_version == 3:
         from .tlmpm_v3 import TLMPM
@@ -74,7 +95,8 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
     config = TLMPMConfig(cuts=cuts, blade_half_width=float(half), cutting_energy=float(cutting_energy),
                          **(config_overrides or {}))
     bed = TLMPM(points, masses, spacing, config, device, blade_profile_xz=polygon, cutting_law=cutting_law,
-                slice_efficiency=slice_efficiency, obstacle_boxes_edge=obstacle_boxes_edge)
+                slice_efficiency=slice_efficiency, obstacle_boxes_edge=obstacle_boxes_edge,
+                **({'slots_per_node': slots_per_node} if packed and slots_per_node is not None else {}))
     graphs = {}
     if gpu_graph:
         if not wp.get_device(device).is_cuda:
@@ -84,7 +106,7 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
         wp.load_module(module='robotic_cutting_sim.probe_kernels', device=device)
     quaternion = rotation.as_quat()
     position = np.asarray(start_m, float)
-    labels, forces, histories, bonds_after_phase, strokes = [], [], [], [], []
+    labels, forces, histories, bonds_after_phase, strokes, digit_labels = [], [], [], [], [], []
     for phase in phases:
         velocity = np.asarray(phase.velocity_m_s, float)
         steps = int(round(phase.duration_s/config.dt))
@@ -118,26 +140,33 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                     bed.step()
                     reaction.append(bed.reaction.numpy()[0][:3].copy()/config.dt)
             position = position+velocity*config.dt*count
+            if packed:
+                bed.check_slots()
         wp.synchronize_device(device)
         labels.append(int(np.count_nonzero(bed.code.numpy())))
+        if packed:
+            digit_labels.append(np.count_nonzero(decode_digits(bed.code.numpy(), cuts), axis=0).tolist())
         if cutting_law in (4, 5, 6, 7, 8):
             strokes.append(bed.cutting_state())
         reaction = np.asarray(reaction)
         if record_history:
             histories.append(reaction.copy())
             lattice = np.round((points-points.min(0))/spacing).astype(int)
-            bonds_after_phase.append(severed_bonds(lattice, bed.code.numpy(), cuts))
+            bonds_after_phase.append(severed_bonds(lattice, bed.code.numpy(), cuts, packed=packed))
         forces.append({"mean_N": reaction.mean(0).tolist(), "peak_abs_N": np.abs(reaction).max(0).tolist()})
     state = bed.snapshot()
     lattice = np.round((points-points.min(0))/spacing).astype(int)
-    count, component = reference_components(points, lattice, state["codes"], cuts=cuts)
+    count, component = (reference_components_packed(points, lattice, state["codes"]) if packed
+                        else reference_components(points, lattice, state["codes"], cuts=cuts))
     fractions = np.sort(np.bincount(component, weights=masses))[::-1]/masses.sum()
     return {"labelled_after_phase": labels, "components": int(count),
-            "severed_bonds": severed_bonds(lattice, state["codes"], cuts),
+            "severed_bonds": severed_bonds(lattice, state["codes"], cuts, packed=packed),
             "mass_fractions": fractions.tolist(), "forces": forces,
             "edge_position_m": position.tolist(), "state": state, "points": points,
             "component": component,
             **({"cutting_state_after_phase": strokes} if cutting_law in (4, 5, 6, 7, 8) else {}),
+            **({"code_encoding": bed.code_encoding, "digit_labelled_after_phase": digit_labels,
+                "slot_diagnostics": bed.check_slots(), "solver_module": TLMPM.__module__} if packed else {}),
             **({'force_history_N': histories, 'severed_bonds_after_phase': bonds_after_phase,
                 'reference_stencil_nodes': bed.nodes.numpy(), 'reference_stencil_weights': bed.weights.numpy(),
                 'reference_stencil_gradients': bed.gradients.numpy()} if record_history else {})}

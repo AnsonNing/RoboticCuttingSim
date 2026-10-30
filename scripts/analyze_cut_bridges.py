@@ -5,7 +5,9 @@ Reads a physics_state.npz (live, kinematic or replay) and reports the
 compatibility-graph component count (actual 8-node stencil: recorded weights
 and gradients when present, otherwise rebuilt exactly as the solver does), nodes shared by conflicting/unassigned
 fields, and the code-zero particles that touch both cut sides. Oracle-only
-diagnostic; it never changes a recording or a score.
+diagnostic; it never changes a recording or a score. A tlmpm_v5 recording
+(``code_encoding`` = 'packed2' and ``max_cuts`` in the npz, ADR 0014) is read with
+the packed-code graph; ``--digit`` selects the cut digit for the bridge counts.
 """
 import argparse
 import json
@@ -16,7 +18,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
-from robotic_cutting_sim.cut_topology import mechanical_components
+from robotic_cutting_sim.cut_topology import decode_digits, mechanical_components, mechanical_components_packed
 from robotic_cutting_sim.task_scenarios import configure_task
 from robotic_cutting_sim.tasks import make_task
 
@@ -45,7 +47,7 @@ def stencil_nodes(points, dx):
     return stencil(points, dx)[0]
 
 
-def analyze(path, task_id, scenario=None, frame=-1, limit=20):
+def analyze(path, task_id, scenario=None, frame=-1, limit=20, digit_index=0):
     data = np.load(path)
     task = configure_task(make_task(task_id), scenario=scenario)
     points, _, _ = task.sample_particles()
@@ -69,14 +71,25 @@ def analyze(path, task_id, scenario=None, frame=-1, limit=20):
     # Same validity rule as mechanical_components: weight>0 or |gradient|>0.
     valid = (np.asarray(weights) > 0) | (np.linalg.norm(np.asarray(gradients), axis=-1) > 0)
     all_codes = data['codes']
-    cuts = 2 if int(np.max(all_codes)) > 2 else 1
+    packed = 'code_encoding' in data.files and str(data['code_encoding']) == 'packed2'
+    if packed:
+        cuts = int(data['max_cuts'])
+        components = mechanical_components_packed
+    else:
+        cuts = 2 if int(np.max(all_codes)) > 2 else 1
+        components = mechanical_components
+    if not 0 <= digit_index < cuts:
+        raise ValueError(f'--digit must be in 0..{cuts - 1}')
     codes = all_codes[frame]
-    count, labels = mechanical_components(nodes, weights, codes, cuts, gradients=gradients)
+    count, labels = components(nodes, weights, codes, cuts, gradients=gradients)
     final_count, final_labels = (count, labels) if frame in (-1, len(all_codes) - 1) else \
-        mechanical_components(nodes, weights, all_codes[-1], cuts, gradients=gradients)
+        components(nodes, weights, all_codes[-1], cuts, gradients=gradients)
     masses = data['mass_kg'] if 'mass_kg' in data.files else np.ones(len(codes))
     fractions = np.sort(np.bincount(final_labels, weights=masses))[::-1] / masses.sum()
-    digit = codes % 3  # first cut digit; same as codes for one retained cut
+    if packed:
+        digit = decode_digits(codes, cuts)[:, digit_index].astype(np.int64)
+    else:
+        digit = (codes // 3 ** digit_index) % 3  # first cut digit by default; same as codes for one retained cut
     has = {k: np.zeros(nodes.max() + 1, bool) for k in (0, 1, 2)}
     for k in has:
         has[k][nodes[digit == k][valid[digit == k]]] = True
@@ -85,7 +98,8 @@ def analyze(path, task_id, scenario=None, frame=-1, limit=20):
     direct = zero[touches(2) & touches(1)]
     report = dict(source=str(path), task_id=task_id, scenario=scenario, frame=frame, components=int(count),
                   final_components=int(final_count), final_component_mass_fractions=np.round(fractions[:6], 6).tolist(),
-                  cuts_in_graph=cuts, stencil_support=dict(source=support, valid_entry_rule='weight>0 or |gradient|>0',
+                  cuts_in_graph=cuts, code_encoding='packed2' if packed else 'ternary', bridge_digit=digit_index,
+                  stencil_support=dict(source=support, valid_entry_rule='weight>0 or |gradient|>0',
                       valid_entries=int(valid.sum()), total_entries=int(valid.size)),
                   code_counts={int(k): int(v) for k, v in zip(*np.unique(codes, return_counts=True))},
                   nodes_with_codes_0_2=int((has[0] & has[2]).sum()), nodes_with_codes_0_1=int((has[0] & has[1]).sum()),
@@ -104,8 +118,9 @@ def main():
     p.add_argument('--task', required=True)
     p.add_argument('--scenario')
     p.add_argument('--frame', type=int, default=-1)
+    p.add_argument('--digit', type=int, default=0, help='Cut digit for the bridge counts (default 0)')
     a = p.parse_args()
-    print(json.dumps(analyze(a.physics_state, a.task, a.scenario, a.frame), indent=1))
+    print(json.dumps(analyze(a.physics_state, a.task, a.scenario, a.frame, digit_index=a.digit), indent=1))
 
 
 if __name__ == '__main__':

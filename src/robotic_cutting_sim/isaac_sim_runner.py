@@ -6,6 +6,7 @@ All published robot poses come from native PhysX tensors. No replay input exists
 """
 from dataclasses import asdict, dataclass, replace
 import importlib.metadata
+import json
 from pathlib import Path
 import time
 
@@ -31,6 +32,9 @@ def wait_for_workcell_stage(app, context, receipt_path, timeout_s=300.):
                 raise TimeoutError(f"Workcell loading exceeded {timeout_s}s; loading status={status}")
             return
         time.sleep(.01)
+
+
+STAGE_RESET_MODES = ("reopen", "reload_in_place")
 
 
 @dataclass(frozen=True)
@@ -73,6 +77,29 @@ class IsaacSimCuttingConfig:
     ik_iterations: int = 48
     initial_joint_positions: tuple | None = None
     cutting_law: int | None = None  # None = task default (v2 tasks: law 2); 3-8 are opt-in tlmpm_v3/tlmpm_v4
+    # Opt-in (WP-11B): carry another registered profile tool on the task's hand
+    # trajectory, translated by a world offset (tool_profile.retarget_task_tool).
+    tool_profile_id: str | None = None
+    tool_profile_hand_offset_world_m: tuple = (0., 0., 0.)
+    # Opt-in (WP-11 Phase D): a compiled scene_config.ConfiguredTaskSpec as its
+    # configured_task_payload JSON; reset() recompiles it and requires the same id.
+    # task_id must then be that CFG-... id; solver/law/K come from the scene.
+    configured_task: str | None = None
+    # Opt-in (WP-11 Phase H1): how reset() renews the USD stage after the first reset.
+    # "reopen" (default, unchanged): export/open the workcell again; Kit retains ~55-65 MiB host
+    # memory per open_stage of this workcell (docs/reports/WP11_PHASE_H_PROFILING.md).
+    # "reload_in_place": keep the open stage, release cameras/physics, clear the session layer and
+    # reload the unchanged root layer from disk, then author the reset exactly as after an open.
+    stage_reset: str = "reopen"
+    # Opt-in (WP-11 Phase H3): when the visual ContinuousSpecimen surface (no physics API) is
+    # re-extracted. "every_step" (default, unchanged) | "on_capture": only before a camera render
+    # and for evaluation, so every rendered frame still shows the surface of its own time step.
+    surface_update: str = "every_step"
+    # Versioned (WP-11 review R1): what the presentation surface does with a current mechanical component
+    # that ParticleSurface cannot mesh. None resolves to "skip_presentation_v1" for configured (WP-11) tasks,
+    # whose goal evaluators use the surface as quality evidence only, and to "raise" (the v1 behaviour, as on
+    # main) for everything else (legacy D0, CUT/TRIM and final_v4 tasks). setup.json records the resolved value.
+    surface_unmeshable: str | None = None
 
     def __post_init__(self):
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -105,17 +132,36 @@ class IsaacSimCuttingConfig:
         if self.overview_camera and (self.task_id is None or not (self.camera and self.camera_layout == "wrist_d405_global_d455")):
             raise ValueError("The presentation overview camera requires a task, live cameras and the wrist D405 / global D455 layout")
         from .tasks import PROFILE_TASK_IDS, TASK_IDS, DemoTaskSpec
-        if self.task_id not in (None, *TASK_IDS):
-            raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
-        if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
-            raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
-        if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
-            raise ValueError('One or two cut digits and positive IK iterations are required')
-        if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
-            raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
-        if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
-                or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
-            raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
+        if self.configured_task is not None:
+            _validate_configured_config(self)
+        else:
+            if self.task_id not in (None, *TASK_IDS):
+                raise ValueError(f'task_id must be one of {TASK_IDS} or None for legacy D0')
+            if self.task_id in PROFILE_TASK_IDS and self.tool_attachment_mode != 'physical_grasp':
+                raise ValueError('Ruler tasks require physical_grasp; no fixed-tool substitute is implemented')
+            if self.max_cuts not in (1, 2) or self.ik_iterations < 1:
+                raise ValueError('One or two cut digits and positive IK iterations are required')
+            if self.task_id in DemoTaskSpec.TASK_IDS and self.max_cuts != 2:
+                raise ValueError(f'{self.task_id} declares two cut digits; set max_cuts=2 explicitly')
+            if (self.scenario is not None or self.material_profile_id is not None or self.max_cuts == 2
+                    or self.cutting_law is not None) and self.task_id not in PROFILE_TASK_IDS:
+                raise ValueError('Scenarios, food profiles, cutting-law selection and two-cut history require opt-in v2 tasks')
+        if self.tool_profile_id is not None:
+            from .tasks import ProfileTaskSpec
+            from .tool_profile import PROFILES
+            if (self.tool_profile_id not in PROFILES or self.task_id not in ProfileTaskSpec.TASK_IDS
+                    or self.tool_attachment_mode != 'physical_grasp'):
+                raise ValueError('tool_profile_id needs a registered profile, a v2 ProfileTaskSpec task and physical_grasp')
+        elif any(self.tool_profile_hand_offset_world_m):
+            raise ValueError('A tool hand offset requires an explicit tool_profile_id')
+        if self.surface_update not in ("every_step", "on_capture"):
+            raise ValueError("surface_update must be every_step or on_capture")
+        if self.stage_reset not in STAGE_RESET_MODES:
+            raise ValueError(f"stage_reset must be one of {STAGE_RESET_MODES}")
+        if self.stage_reset == "reload_in_place" and not (self.camera and self.tool_attachment_mode == "physical_grasp"):
+            # Validated only with live cameras and the physical grasp (WP-11 Phase H1): with camera=False the
+            # second reset segfaults inside PhysX start_simulation in Isaac Sim 6.2 (3 of 3 probes).
+            raise ValueError("stage_reset='reload_in_place' requires camera=True and physical_grasp")
         if self.cutting_law not in (None, 1, 2, 3, 4, 5, 6, 7, 8):
             raise ValueError('cutting_law is None or 1-8')
         if self.action_mode not in ("cartesian", "joint"):
@@ -130,11 +176,118 @@ class IsaacSimCuttingConfig:
             object.__setattr__(self,"surface_profile","current_volume_v1" if self.task_id else "legacy")
         if self.surface_profile not in ("legacy","current_volume_v1"):
             raise ValueError("surface_profile must be legacy or current_volume_v1")
+        if self.surface_unmeshable is None:
+            object.__setattr__(self, "surface_unmeshable",
+                               "skip_presentation_v1" if self.configured_task is not None else "raise")
+        from .cutting_surface import UNMESHABLE_POLICIES
+        if self.surface_unmeshable not in UNMESHABLE_POLICIES:
+            raise ValueError(f"surface_unmeshable must be one of {UNMESHABLE_POLICIES}")
+        if self.surface_unmeshable == "skip_presentation_v1" and self.configured_task is None:
+            # Registered tasks score the surface on the v1 oracle path, where SurfaceNotScorable has no NOT_RUN
+            # handling (WP-11 delta review E1); the skip policy exists for configured goal evaluators only.
+            raise ValueError("surface_unmeshable='skip_presentation_v1' requires configured_task; registered and "
+                             "legacy tasks use 'raise'")
         if self.particle_spacing_m is not None:
             if self.task_id is None:
                 raise ValueError("Explicit particle spacing requires CUT/TRIM task_id; legacy D0 is unchanged")
             if not np.isfinite(self.particle_spacing_m) or self.particle_spacing_m<=0:
                 raise ValueError("Explicit task particle spacing must be finite and positive")
+
+
+def _validate_configured_config(config):
+    """Config rules for a compiled configured task (WP-11 Phase D); registered tasks never get here."""
+    import json
+    from .scene_config import SOLVERS
+    payload = json.loads(config.configured_task)
+    scene = payload.get('scene') or {}
+    solver = scene.get('solver') or {}
+    if config.task_id != payload.get('task_id') or not str(config.task_id).startswith('CFG-'):
+        raise ValueError('A configured task needs task_id equal to its compiled CFG-... id')
+    if config.tool_attachment_mode != 'physical_grasp':
+        raise ValueError('Configured ruler-tool tasks require physical_grasp; no fixed-tool substitute is implemented')
+    if any(value is not None for value in (config.scenario, config.material_profile_id, config.tool_profile_id,
+                                          config.particle_spacing_m, config.initial_joint_positions)):
+        raise ValueError('The scene declares workcell, material, tool, spacing and HOME; no runtime override is accepted')
+    if config.cutting_law not in (None, solver.get('cutting_law')):
+        raise ValueError('cutting_law must be None or the scene solver law')
+    limit = SOLVERS.get(solver.get('module'), {}).get('max_cuts', 0)
+    if config.max_cuts != solver.get('max_cuts') or not 1 <= config.max_cuts <= limit or config.ik_iterations < 1:
+        raise ValueError(f"max_cuts must equal the scene solver max_cuts {solver.get('max_cuts')} (limit {limit}) "
+                         "and IK iterations must be positive")
+
+
+def renew_stage_layers(stage):
+    """Return an open USD stage to its on-disk composition (stage_reset='reload_in_place', WP-11 Phase H1).
+
+    Clears the session layer (every reset edit is authored there) and reloads the root layer and any
+    other dirty file layer from disk. Raises if any non-session layer stays edited. Pure USD; no Kit."""
+    session = stage.GetSessionLayer()
+    dirty_before = sorted(layer.identifier for layer in stage.GetUsedLayers() if layer.dirty and layer != session)
+    session.Clear()
+    stage.GetRootLayer().Reload(force=True)
+    reloaded = [stage.GetRootLayer().identifier]
+    for layer in stage.GetUsedLayers():
+        if layer != session and layer.dirty and not layer.anonymous:
+            layer.Reload(force=True)
+            reloaded.append(layer.identifier)
+    still_dirty = sorted(layer.identifier for layer in stage.GetUsedLayers() if layer != session and layer.dirty)
+    if still_dirty or not session.empty:
+        raise RuntimeError(f"reload_in_place left edited layers: {still_dirty}")
+    return {"dirty_layers_before": dirty_before, "reloaded_layers": reloaded, "session_layer_empty": bool(session.empty)}
+
+
+class SurfaceNotScorable(RuntimeError):
+    """The current presentation surface omits a substrate component (surface_unmeshable='skip_presentation_v1'),
+    so no surface-dependent metric may be computed from it (they are NOT_RUN, never PASS)."""
+
+
+class UnmeshableSurfaceLog:
+    """Per-extraction record of surface_unmeshable='skip_presentation_v1' skips (WP-11 review R1).
+
+    ``record`` is called after every surface extraction; rows (one per extraction that skipped something, with
+    reset/step index and time) are appended to ``path`` as JSON lines and queued for the next step's
+    diagnostics. ``summary`` is the episode-level receipt for evaluation results."""
+
+    def __init__(self, policy, path=None):
+        self.policy, self.path = policy, None if path is None else Path(path)
+        self.extractions, self.rows, self.pending = 0, [], []
+
+    def record(self, info, *, reset_index, step_index, time_s):
+        self.extractions += 1
+        skipped = info.get("unmeshable_skipped")
+        if not skipped:
+            return None
+        row = {"reset_index": int(reset_index), "step_index": int(step_index), "time_s": float(time_s),
+               "fragments": int(skipped["fragments"]), "particles": int(skipped["particles"]),
+               "substrate_component_skipped": skipped.get("substrate_component_skipped"),
+               "mechanical_components": int(info["mechanical_components"]), "components": skipped["components"]}
+        self.rows.append(row)
+        self.pending.append(row)
+        if self.path is not None:
+            with open(self.path, "a") as stream:
+                stream.write(json.dumps(row, sort_keys=True) + "\n")
+        return row
+
+    def step_receipt(self):
+        """Diagnostics for one control step: cumulative counts plus the skips since the previous step."""
+        new, self.pending = self.pending, []
+        return {"policy": self.policy, "extractions": self.extractions, "extractions_with_skips": len(self.rows),
+                "new_skips": new}
+
+    def summary(self, current_info=None):
+        rows = self.rows
+        current = (current_info or {}).get("unmeshable_skipped")
+        return {"policy": self.policy, "extractions": self.extractions, "extractions_with_skips": len(rows),
+                "max_fragments": max((r["fragments"] for r in rows), default=0),
+                "max_particles": max((r["particles"] for r in rows), default=0),
+                "substrate_skipped_extractions": sum(bool(r["substrate_component_skipped"]) for r in rows),
+                "first_skip_step_index": rows[0]["step_index"] if rows else None,
+                "last_skip_step_index": rows[-1]["step_index"] if rows else None,
+                "current_surface_skipped": None if current is None else {
+                    key: current[key] for key in ("fragments", "particles", "substrate_component_skipped")},
+                "log": None if self.path is None else str(self.path),
+                "rule": "skipped components are omitted from the presentation mesh only; a surface that omits a "
+                        "substrate component is not scorable (SurfaceNotScorable -> surface metrics NOT_RUN)"}
 
 
 def runtime_versions():
@@ -209,9 +362,9 @@ class LiveIsaacSimCutting:
         self.step_index = 0
         self.reset_index = -1
         self._closed = False
+        self.home = None  # declared HOME (WP-11 Phase D), set at reset
 
     def reset(self,seed=None):
-        from argparse import Namespace
         import omni.timeline
         import omni.usd
         import warp as wp
@@ -243,28 +396,42 @@ class LiveIsaacSimCutting:
         self.reference_pose = reference_pose
         self.task=None
         self.mount=np.array([0.,0.,.18,1.,0.,0.,0.])
-        if c.task_id:
+        if c.configured_task is not None:
+            # WP-11 Phase D: the compiled scene/goal task, rebuilt from its recorded config
+            # (same id and sha256 required); fixtures, tool, material and HOME follow the scene.
+            from .scene_config import task_from_payload
+            self.task = task_from_payload(c.configured_task)
+            if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
+                raise ValueError("Native Kit control_dt/dx must match the shared task specification")
+            self.reference_pose=self.task.reference_edge_pose_world
+            self.mount=np.asarray(self.task.hand_from_edge_xyz_xyzw,float)
+        elif c.task_id:
             from .tasks import make_task
             self.task=make_task(c.task_id,seed=c.seed,variant=c.task_variant,particle_spacing_m=c.particle_spacing_m,
                                 workpiece_kind=c.workpiece_kind)
             from .task_scenarios import configure_task
             self.task = configure_task(self.task, scenario=c.scenario, material_profile_id=c.material_profile_id)
+            if c.tool_profile_id is not None:
+                from .tool_profile import retarget_task_tool
+                self.task = retarget_task_tool(self.task, c.tool_profile_id, c.tool_profile_hand_offset_world_m)
             if abs(self.task.control_dt_s-c.control_dt)>1e-12 or abs(self.task.grid_dx_m-c.dx)>1e-12:
                 raise ValueError("Native Kit control_dt/dx must match the shared task specification")
             self.reference_pose=self.task.reference_edge_pose_world
             self.mount=np.asarray(self.task.hand_from_edge_xyz_xyzw,float)
+        self.home = self._declared_home()
+        self.home_edge_pose = None
+        if self.home is not None:
+            if c.initial_joint_positions is not None or not self.physical_grasp:
+                raise ValueError("A declared HOME needs physical_grasp and no separate initial_joint_positions")
+            self.initial_joints = tuple(self.home["joint_positions"])
+            home_fk = DualFrankaController(RobotConfig(control_dt=c.control_dt, tool_shape="cut_wedge",
+                tool_offset_m=tuple(self.mount[:3]), tool_rotation_xyzw=tuple(self.mount[3:])))
+            self.home_edge_pose = np.asarray(home_fk.forward_kinematics(self.initial_joints), float)
         self.wp = wp
         omni.timeline.get_timeline_interface().stop()
         context = omni.usd.get_context()
-        if c.scene:
-            source = Path(c.scene).resolve()
-        else:
-            scene_dir = self.output/f"initial_workcell_{self.reset_index:02d}"
-            scene_dir.mkdir()
-            export(Namespace(variant="D0", family="dome", seed=c.seed, spacing=c.dx/2, asset_root=None), scene_dir)
-            source = scene_dir/"workcell.usda"
-        if not context.open_stage(str(source)):
-            raise RuntimeError("Isaac could not open the initial workcell")
+        stage_source = self._renew_stage(context, export)
+        source = stage_source["source"]
         wait_for_workcell_stage(self.app, context, self.output/f"stage_load_{self.reset_index:02d}.json")
         stage = self.stage = context.get_stage()
         stage.SetEditTarget(stage.GetSessionLayer())
@@ -319,8 +486,10 @@ class LiveIsaacSimCutting:
             self.finger_paths = [next(str(p.GetPath()) for p in Usd.PrimRange(stage.GetPrimAtPath(hand_paths[0]))
                                      if p.GetName() == name)
                                  for name in ("panda_leftfinger", "panda_rightfinger")]
+            # HOME reset (WP-11 Phase D): the knife at FK(q_home)*hand_from_tool, blade below the fingers.
+            authored_edge = self.reference_pose(0.) if self.home_edge_pose is None else self.home_edge_pose
             self.tool_path = author_tool(stage, self.tool_spec,
-                nominal_tool_pose(self.reference_pose(0.), self.tool_spec), self.grasp, self.finger_paths)
+                nominal_tool_pose(authored_edge, self.tool_spec), self.grasp, self.finger_paths)
             knife_path = self.knife_path = self.tool_path+"/CuttingEdge"
             half = np.asarray(self.tool_spec.handle_half_extents_m)
             self.tool_contacts = NativeToolContacts(stage, self.tool_path, self.finger_paths,
@@ -369,7 +538,8 @@ class LiveIsaacSimCutting:
             if self.initial_joints is not None:
                 reset_q[0, :7] = self.ik._validate_joints(self.initial_joints)
                 self.ik.state.joint_q.assign(reset_q.ravel())
-            reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
+            if self.home_edge_pose is None:
+                reset_q[0,:7],_=self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
             self.ik.state.joint_q.assign(reset_q.ravel())
             self.ik.newton.eval_fk(self.ik.model,self.ik.state.joint_q,self.ik.state.joint_qd,self.ik.state)
             body_q=self.ik.state.body_q.numpy()
@@ -427,7 +597,11 @@ class LiveIsaacSimCutting:
             seed_q = self.ik.initial_q.copy()
             seed_q[:7] = self.ik._validate_joints(self.initial_joints)
             self.ik.state.joint_q.assign(seed_q)
-        joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
+        if self.home_edge_pose is not None:
+            joints = self.ik._validate_joints(self.initial_joints)
+            ik_info = self._home_receipt()
+        else:
+            joints, ik_info = self.ik.inverse_kinematics(self.reference_pose(0.), iterations=c.ik_iterations)
         if not ik_info["converged"]:
             raise RuntimeError(f"Initial IK failed: {ik_info}")
         q = self.park_q.copy()
@@ -465,7 +639,12 @@ class LiveIsaacSimCutting:
         attachment=self._check_attachment(initial["tool_pose"])
         material_config=CouplingConfig(control_dt=c.control_dt, material_dt=c.material_dt,
                        dx=c.dx, device=c.device, feedback=c.feedback)
-        self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
+        if c.configured_task is not None:
+            # Solver, law and K from the scene (tlmpm_v5 packed history allowed up to its limit).
+            self.material = LiveCuttingMaterial(material_config, task=self.task, max_cuts=self.task.max_cuts,
+                cutting_law=self.task.cutting_law, solver="tlmpm_v5" if self.task.solver_module == "tlmpm_v5" else None)
+        else:
+            self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
         if self.pad_geometry:
             self.material.configure_pad_obstacles(self._pad_boxes(initial['tool_pose']),
                 [None] + [pad['body_path'] for pad in self.pad_geometry])
@@ -476,7 +655,15 @@ class LiveIsaacSimCutting:
                         'scope': 'Actual USD pads; conservative edge-aligned bounds at each coupling boundary; separate finger reactions'})
         spacing=self.task.particle_spacing_m if self.task else c.dx/2
         voxel=spacing/2 if c.surface_profile=="current_volume_v1" else min(spacing,.0015)
-        self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
+        if c.surface_unmeshable == "raise":
+            self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel,profile=c.surface_profile)
+            self.unmeshable_log = None
+        else:
+            from .cutting_surface import substrate_anchor_mask
+            self.surface = ComponentSurface(spacing, c.device, voxel_size=voxel, profile=c.surface_profile,
+                unmeshable=c.surface_unmeshable, substrate_anchors=substrate_anchor_mask(self.material.points))
+            self.unmeshable_log = UnmeshableSurfaceLog(c.surface_unmeshable,
+                self.output/f"surface_unmeshable_{self.reset_index:02d}.jsonl")
         self.bridge = DynamicSurfaceBridge(stage)
         self._update_surface()
         self.overview_spec,self.overview_sensor,self.overview_frame=None,None,None
@@ -510,16 +697,157 @@ class LiveIsaacSimCutting:
             "camera_layout":c.camera_layout,"camera_rig":getattr(self,"camera_rig_receipt",None),
             "observation_motion_probe":c.observation_motion_probe,
             "dof_names":self.arms.dof_names,
-            "feedback_delay_s":c.control_dt, "proprioception_source":"actual PhysX tensors"}
+            "feedback_delay_s":c.control_dt, "proprioception_source":"actual PhysX tensors",
+            "stage_reset":self.stage_reset_receipt}
+        if self.unmeshable_log is not None:
+            setup["surface_unmeshable"]={"policy":c.surface_unmeshable,"log":str(self.unmeshable_log.path),
+                "initial_surface":self.unmeshable_log.summary(self.surface_info)}
         if self.task is not None and (getattr(self,"fixture_plan",None) or {}).get("any_material_declared"):
             from .native_fixture import authored_material_receipt
             setup["task_fixture_materials"]=authored_material_receipt(stage,self.fixture_plan)
+        if self.home is not None:
+            setup["home_reset"]={**ik_info, "measured_after_pregrasp":{"q":initial["q"][0].tolist(),
+                "hand_pose_xyzw":np.asarray(initial["hand_pose"]).tolist(),
+                "tool_body_pose_xyzw":np.asarray(initial["tool_body_pose_xyzw"]).tolist(),
+                "tool_edge_pose_xyzw":np.asarray(initial["tool_pose"]).tolist(),
+                "joint_error_vs_home_max_rad":float(np.abs(initial["q"][0]-np.asarray(self.initial_joints)).max())},
+                "secondary_arm_q":initial["q"][1].tolist(), "secondary_arm_park_q":self.park_q[1,:7].tolist()}
         if self.overview_spec is not None:
             setup["presentation_overview_camera"]=self.overview_spec
         if self.closeup_spec is not None:
             setup["presentation_closeup_camera"]=self.closeup_spec
         write_json(self.output/("setup.json" if self.reset_index==0 else f"reset_setup_{self.reset_index:02d}.json"), setup)
+        # Only a completed reset makes its stage reusable by stage_reset='reload_in_place' (WP-11 review R1).
+        self._stage_source = stage_source
         return initial
+
+    def _renew_stage(self, context, export):
+        """Open (or, for stage_reset='reload_in_place', renew in place) the reset workcell.
+
+        The reusable-stage record ``_stage_source`` is cleared first and set again only at the end of a
+        successful reset(), so a failed reload or a reset that fails later never leaves the next reset retrying
+        an in-place reload on a detached or half-authored stage; it opens the workcell file afresh instead."""
+        from argparse import Namespace
+        c = self.config
+        stage_key = (str(Path(c.scene).resolve()) if c.scene else None, int(c.seed), float(c.dx))
+        previous_stage, self._stage_source = getattr(self, "_stage_source", None), None
+        if (c.stage_reset == "reload_in_place" and previous_stage is not None
+                and previous_stage["key"] == stage_key and context.get_stage() is not None):
+            # Same workcell file (same export arguments): renew the open stage in place instead of
+            # open_stage (whose Kit-side host memory is not returned). The composed stage equals a
+            # fresh open of the same file: empty session layer, root layer re-read from disk.
+            source = previous_stage["source"]
+            self.stage_reset_receipt = self._reload_stage_in_place(context, source)
+        else:
+            if c.scene:
+                source = Path(c.scene).resolve()
+            else:
+                scene_dir = self.output/f"initial_workcell_{self.reset_index:02d}"
+                scene_dir.mkdir()
+                export(Namespace(variant="D0", family="dome", seed=c.seed, spacing=c.dx/2, asset_root=None), scene_dir)
+                source = scene_dir/"workcell.usda"
+            if not context.open_stage(str(source)):
+                raise RuntimeError("Isaac could not open the initial workcell")
+            self.stage_reset_receipt = {"mode": "open_stage", "source": str(source), "reset_index": self.reset_index}
+        return {"key": stage_key, "source": source}
+
+    def _release_cameras(self):
+        """Detach every replicator annotator and destroy the render products of the previous reset."""
+        released = []
+        for group in ("camera_params", "native_rgb", "native_xyz"):
+            for name, annotator in (getattr(self, group, None) or {}).items():
+                annotator.detach()
+                released.append(f"{group}:{name}")
+        sensors = dict(getattr(self, "cameras", None) or {})
+        for kind in ("overview", "closeup"):
+            if getattr(self, f"{kind}_sensor", None) is not None:
+                sensors[kind] = getattr(self, f"{kind}_sensor")
+        for name, sensor in sensors.items():
+            # Same teardown the sensor runs when it is garbage collected (pinned Isaac Sim 6.2 API).
+            sensor._invalidate_sensor()
+            released.append(f"sensor:{name}")
+        self.cameras, self.camera_params, self.native_rgb, self.native_xyz = {}, {}, {}, {}
+        self.overview_sensor = self.closeup_sensor = None
+        return released
+
+    def _reload_stage_in_place(self, context, source):
+        """stage_reset='reload_in_place': renew the already open stage without open_stage (WP-11 Phase H1).
+
+        Releases the previous reset's cameras, contact sensor, tensor views and PhysX objects, clears the
+        session layer (every reset edit is authored there), reloads the root layer and any other dirty
+        file layer from disk, and replays the SimulationManager stage-opened reset. reset() then authors
+        the episode exactly as after open_stage."""
+        from isaacsim.core.simulation_manager import SimulationManager
+        stage = context.get_stage()
+        if Path(stage.GetRootLayer().realPath).resolve() != Path(source).resolve():
+            raise RuntimeError("reload_in_place: the open stage is not the reset workcell")
+        released = self._release_cameras()
+        for name in ("arms", "hand", "hands", "tool_body", "rigid_links", "pad_bodies",
+                     "bridge", "surface", "material", "grasp_monitor"):   # tool_contacts: closed at the top of reset
+            if getattr(self, name, None) is not None:
+                setattr(self, name, None)
+        import gc
+        gc.collect()   # finalize the old tensor views / prim wrappers while their physics objects still exist
+        SimulationManager.invalidate_physics()
+        # The interface SimulationManager started the simulation with (force_load + start_simulation):
+        # reset (releases every physics object), then detach/attach as a stage close/open does.
+        stage_update = SimulationManager._physics_stage_update_interface
+        stage_update.reset_simulation()
+        stage_update.on_detach()
+        layers = renew_stage_layers(stage)
+        stage_update.on_attach(context.get_stage_id())
+        SimulationManager._on_stage_opened(None)  # the same simulation-manager reset an OPENED event runs
+        import omni.kit.undo
+        omni.kit.undo.clear_stack()   # open_stage starts a new undo history; so does this reset
+        omni.kit.undo.clear_history()
+        return {"mode": "reload_in_place", "source": str(source), "reset_index": self.reset_index,
+                "released": released, **layers,
+                "note": "PhysX reset/detach/attach restarts the simulation clock (native_time_origin_s repeats); "
+                        "the native physics step counter keeps counting (native_step_origin grows)"}
+
+    def plan_return_home(self, q_start):
+        """Preflighted return-to-home joint plan from measured joints (separate .venv process; nothing moves)."""
+        if self.home is None:
+            raise ValueError("No HOME is declared for this scene/scenario")
+        if self.config.configured_task is None:
+            raise NotImplementedError("Return-to-home planning is implemented for configured scene tasks only")
+        from .motion_preflight import run_cli
+        receipt = run_cli("return-home", self.config.configured_task, q_start=np.asarray(q_start, float).tolist(),
+                          log_dir=self.output/"motion_preflight")
+        if receipt.get("status") == "ERROR":
+            return {**receipt, "status": "REFUSED", "reason": receipt["reason"], "q": [], "labels": []}
+        return receipt
+
+    def check_measured_path(self, qs, modes):
+        """C2 geometric clearance of an executed joint path (separate .venv process)."""
+        if self.config.configured_task is None:
+            return {"status": "NOT_RUN", "reason": "configured scene tasks only"}
+        from .motion_preflight import run_cli
+        return run_cli("check-path", self.config.configured_task, q=np.asarray(qs, float).tolist(), modes=list(modes),
+                       log_dir=self.output/"motion_preflight")
+
+    def _declared_home(self):
+        """HOME from the configured scene workcell or the scenario (wp11_scenarios_v1), else None."""
+        c=self.config
+        if c.configured_task is not None:
+            return self.task.home
+        if c.scenario is None:
+            return None
+        from .task_scenarios import scenario_home
+        return scenario_home(c.scenario)
+
+    def _home_receipt(self):
+        """Reset-at-HOME receipt: joints are set directly (no IK); FK vs the task's t = 0 reference."""
+        from .scene_frames import pose_errors
+        reference=np.asarray(self.reference_pose(0.),float)
+        translation,rotation=pose_errors(reference[None],self.home_edge_pose[None])
+        return {"used":False,"converged":True,"reason":"declared home_joint_positions (no initial IK)",
+                "home_scenario":self.home["scenario"],"home_joint_positions":list(self.home["joint_positions"]),
+                "home_source":self.home.get("source"),"home_edge_pose_fk_world_xyzw":self.home_edge_pose.tolist(),
+                "home_declared_hand_pose_world_xyzw":list(self.home["hand_pose_world_xyzw"]),
+                "reference_edge_pose_t0_world_xyzw":reference.tolist(),
+                "fk_vs_reference_t0_translation_m":float(translation[0]),"fk_vs_reference_t0_rotation_rad":float(rotation[0]),
+                "secondary_arm":"shared normal safe park (unchanged)"}
 
     def _author_task_fixture(self):
         from pxr import Gf, UsdGeom, UsdPhysics
@@ -755,15 +1083,36 @@ class LiveIsaacSimCutting:
 
     def _update_surface(self):
         vertices, faces, self.surface_info = self.surface.extract(self.material.bed)
+        if getattr(self, "unmeshable_log", None) is not None:
+            self.unmeshable_log.record(self.surface_info, reset_index=self.reset_index,
+                                       step_index=self.step_index, time_s=self.time_s)
         if self.task:
             vertices=self.task.points_to_world(vertices).astype(np.float32)
         self.surface_receipt = self.bridge.update(vertices, faces, self.time_s)
         self.surface_arrays = (vertices, faces)
         self._surface_time = self.time_s
 
+    def _refresh_surface(self):
+        """Re-extract the presentation surface unless it is already of this time step (no scorability check).
+        Used only by capture() with surface_update='on_capture'; refresh_surface_for_evaluation keeps its own copy
+        so the every_step path is byte-for-byte unchanged."""
+        if getattr(self, '_surface_time', None) != self.time_s:
+            self._update_surface()
+
     def refresh_surface_for_evaluation(self):
         if getattr(self, '_surface_time', None) != self.time_s:
             self._update_surface()
+        skipped = (getattr(self, "surface_info", None) or {}).get("unmeshable_skipped") or {}
+        if skipped and skipped.get("substrate_component_skipped") is not False:
+            # True, or None (unknown): the scored surface would omit (possibly) substrate material.
+            raise SurfaceNotScorable(f"surface_unmeshable={self.config.surface_unmeshable}: the current surface omits "
+                f"{skipped['fragments']} component(s) / {skipped['particles']} particles, substrate_component_skipped="
+                f"{skipped.get('substrate_component_skipped')}; surface-dependent metrics are NOT_RUN")
+
+    def surface_unmeshable_summary(self):
+        """Episode receipt of skip_presentation_v1 skips, or None under surface_unmeshable='raise'."""
+        log = getattr(self, "unmeshable_log", None)
+        return None if log is None else log.summary(getattr(self, "surface_info", None))
 
     def _check_attachment(self, measured_edge):
         from pxr import Usd, UsdGeom
@@ -941,7 +1290,9 @@ class LiveIsaacSimCutting:
             action=command["target"]
             cutting=bool(cutting and command["cut_enabled"])
             self._command_cut_index=command.get("cut_index",0)
-        desired = self.reference_pose(self.time_s+c.control_dt)
+        # The scripted reference is needed only without an explicit action (an explicit
+        # action may run past the task episode, e.g. the physical return-to-home).
+        desired = self.reference_pose(self.time_s+c.control_dt) if action is None else None
         # Seed IK from current PHYSX joints, without advancing Newton dynamics.
         q = numpy_data(self.arms.get_dof_positions())
         self.ik.state.joint_q.assign(q.ravel().astype(np.float32))
@@ -1023,7 +1374,7 @@ class LiveIsaacSimCutting:
         diagnostics.update(minimum_detF=float(determinant.min()),
                            maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
                            maximum_plastic_strain=float(state["plastic_strain"].max()))
-        if c.camera:
+        if c.camera and c.surface_update == "every_step":
             self._update_surface()
         if c.camera and c.camera_layout == "wrist_d405_global_d455":
             self._update_camera_extrinsics(actual["hand_pose_both_xyzw"])
@@ -1057,10 +1408,16 @@ class LiveIsaacSimCutting:
                  "native_relative_timestamp_s":native_relative,
                  "relative_native_physics_steps":manager.get_num_physics_steps()-self.native_step_origin,
                  **physical}
+        if self.unmeshable_log is not None:   # skip_presentation_v1 only; absent under "raise"
+            self.last_diagnostics["surface_unmeshable"] = self.unmeshable_log.step_receipt()
         return actual, self.last_diagnostics
 
     def capture(self):
         import omni.replicator.core as rep
+        if self.config.surface_update == "on_capture":
+            # The surface of this time step, before rendering it. Presentation only: a skipped substrate component
+            # makes the surface unscorable (refresh_surface_for_evaluation raises), never unrenderable.
+            self._refresh_surface()
         manager = self.SimulationManager
         before = (manager.get_simulation_time(),manager.get_num_physics_steps())
         robot_before=self.proprioception()

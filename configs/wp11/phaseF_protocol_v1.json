@@ -1,0 +1,30 @@
+{
+ "protocol_id": "wp11_phaseF_v1",
+ "freeze_boundary": "Declared 2026-10-30 before any Phase F row ran. Criteria are fixed for these rows; failures are preserved and diagnosed, not re-scored.",
+ "common": {
+  "resolution": "1 mm particles, 4 mm grid, 0.1 ms material dt, 20 ms control dt, seed 42, kinematic ideal tracking (no robot)",
+  "law": "cutting law 8 (tlmpm_v4; tlmpm_v5 for rows with more than 2 cuts)",
+  "knife": "ruler_knife_v2_y (tip toward +y, ADR 0013), unless the row names another",
+  "always_report": ["final mechanical components (stencil graph)", "component masses and recorded total mass vs sampler mass", "labelled count history", "label distance to the actual swept surface", "mean/max material reaction on the blade", "plowing segment fraction", "wall time"],
+  "mass_conservation": "recorded mass equals the task sampler mass within the frozen tolerance in every row (also a pass condition of every row)"
+ },
+ "rows": {
+  "F2.1_gate_14": {"setup": "TRIM-02-K2 workpiece, double bevel, rho = 14 deg skim", "pass": "above-plane removal >= 0.9 and substrate share >= 0.99 (trim_separation); report plowing fraction"},
+  "F2.1_gate_15": {"setup": "same, rho = 15 deg", "pass": "same as F2.1_gate_14"},
+  "F2.1_gate_16": {"setup": "same, rho = 16 deg", "pass": "same as F2.1_gate_14"},
+  "F2.3_inplane_v2": {"setup": "CUT-03-K2 vertical in-plane cut with the v2 knife", "pass": "frozen strict oracle PASS (two parts, mass, location <= 2 mm, persistence)"},
+  "F2.4_rocking": {"setup": "CUT-03-K2 geometry; edge rotates +/-10 deg about the blade normal (period 0.8 s) while descending through the bar", "pass": "two substantial parts (>= 40% each, >= 99% together); no particle farther than 2 particle spacings from the actual swept surface sits in the opposite-side component; report the interface statistic"},
+  "F2.5_pure_rotation": {"setup": "armed half-depth vertical cut, then 0.5 s armed rotation of the edge about its centre (+/-8 deg about the blade normal, no centre translation), then armed withdrawal", "pass": "one component (ligament kept); no label beyond 1 reference cell outside the region the moving edge segments actually swept; report stroke state during the rotation"},
+  "F2.6_saw_cut": {"setup": "CUT-03-K2 vertical cut with sawing (+/-6 mm along the edge, 0.4 s period) while descending", "pass": "frozen strict oracle PASS"},
+  "F2.6_pure_draw": {"setup": "armed half-depth vertical cut, then 0.8 s armed sawing in place (draw only, no advance), then armed withdrawal", "pass": "one component; no label more than 1 reference cell below the deepest edge position reached"},
+  "F2.7_withdrawal_v2": {"setup": "CUT-03-K2 armed half-depth cut then armed withdrawal", "pass": "one component; core band below the stop 100% code 0 (ADR 0008 ligament definition); labels unchanged during withdrawal"},
+  "F2.8_finite_edge": {"setup": "CUT-02 wide bar (60 mm) cut vertically with the edge offset along its line so only about half the bar width is under the edge", "pass": "one component (uncut side keeps it connected); no label with |l| > L (edge half-length) at assignment; severed bonds only within the edge span"},
+  "F2.9_flat_press": {"setup": "blade lying flat on the bar top, armed, pressed -z", "pass": "zero new labels; one component; mean |F| over steps with tool-material contact > 1 N (contact window, replacing the C4 all-steps mean)"},
+  "F2.9_blunt_handle": {"setup": "armed; v2 grip (blunt handle) pressed against the bar side", "pass": "zero new labels; one component; mean |F| over steps with grip-material contact > 0.1 N (contact window)"},
+  "F2.9_side_push": {"setup": "armed side push of the blade face into the bar end", "pass": "zero new labels; one component; mean |F| over contact steps > 0.1 N"},
+  "F2.9_no_contact": {"setup": "armed skim 3 mm above the dome", "pass": "zero contacts, zero labels"},
+  "F2.10_recontact": {"setup": "after a full vertical cut, the blade face (cut disabled) pushes one piece back against the other for 0.5 s", "pass": "components stay 2 (no re-merge); particle-particle contact impulses between the two pieces are nonzero; zero label changes while disarmed"},
+  "F2.11_multicut_history": {"setup": "tlmpm_v5, 3 sequential cuts on a supported (slotted) bar, then a disarmed blade push between pieces", "pass": "4 mechanical parts; every earlier digit unchanged after later cuts and after the push; zero slot overflow"},
+  "F3_resolution": {"setup": "CUT-03-K2 and TRIM-02-K2-R10 at (spacing, grid, dt) = formal (1 mm, 4 mm, 0.1 ms); coarse (2 mm, 8 mm, 0.2 ms); dt-half (1 mm, 4 mm, 0.05 ms); medium (1.5 mm, 6 mm, 0.15 ms)", "pass": "characterization only: report separation outcome, component masses, surface metrics (TRIM), mean/max contact wrench, cut location, numerical stability (no NaN/inversion), wall time; formal row must reproduce its formal PASS"}
+ }
+}

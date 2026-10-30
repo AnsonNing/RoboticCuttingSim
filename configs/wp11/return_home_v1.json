@@ -1,0 +1,39 @@
+{
+  "version": "return_home_v1",
+  "freeze_boundary": "Defined before any physical return-to-home run (WP-11 Phase D, 2026-10-30). Engineering choices, not calibrated; a change is a new version. The home outcome is reported separately from the task outcome and never changes a task verdict.",
+  "units": "m, rad, s",
+  "retract": {
+    "clear_height": "home_edge_z",
+    "speed_m_s": 0.04,
+    "acceleration_m_s2": 0.2,
+    "scope": "RETRACTING: straight Cartesian lift of the knife edge along world +z, orientation held, to the HOME edge height (FK(q_home) edge z), Newton IK chained sample to sample from the measured joints. No lift when the edge is already at or above that height."
+  },
+  "rotate": {
+    "scope": "RETURNING_HOME, part 1: joint-space move to IK(edge at the lifted xy and HOME height, HOME orientation) seeded at q_home (hand-down, blade hanging). If that IK does not converge or its path fails preflight, the direct joint-space move to q_home is tried; every attempt is recorded."
+  },
+  "joint_limits": {
+    "max_velocity_rad_s": 0.6,
+    "max_acceleration_rad_s2": 1.5,
+    "min_position_margin_rad": 0.05,
+    "max_cartesian_sample_joint_step_rad": 0.06,
+    "scope": "Synchronized trapezoidal joint profiles; Franka Panda limits are 2.175-2.61 rad/s. Commanded joint velocity <= max_velocity on every control step is a hard plan gate; acceleration is enforced for joint-space segments and reported for the Cartesian lift."
+  },
+  "ik": {"max_position_error_m": 0.001, "max_rotation_error_rad": 0.01},
+  "settle_s": 0.5,
+  "preflight": {
+    "checker": "scripts/preflight_wp11_orientations.py GeometryModel (official Franka colliders, finger visual hulls, profile handle/blade hulls, v5 wrist D405 boxes, D455, board/riser/table, workpiece base and protrusion hulls, parked Franka 1), via robotic_cutting_sim.motion_preflight",
+    "blade_workpiece": "RETRACTING samples: no penetration of the declared (uncut) workpiece geometry (clearance >= 0); every later sample: the C2 free-space clearance (2 mm). Other pairs use the C2 thresholds.",
+    "required": true
+  },
+  "outcome": {
+    "max_home_joint_error_rad": 0.01,
+    "max_tool_translation_error_m": 0.005,
+    "max_tool_rotation_error_rad": 0.0524,
+    "max_grasp_slip_m": 0.002,
+    "max_grasp_rotation_rad": 0.0524,
+    "max_label_changes": 0,
+    "max_unintended_tool_contacts": 0,
+    "require_measured_path_clearance": true,
+    "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+  }
+}

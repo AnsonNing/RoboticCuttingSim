@@ -15,6 +15,12 @@ state is evaluation-only, never an observation.
   .venv/bin/python scripts/run_phase1_matrix.py --row M4 --device cuda:1 --out <fresh dir containing law4>
   .venv/bin/python scripts/run_phase1_matrix.py --row M1a --ingest <probe_wp10_task_policy output> --out <fresh dir>
   .venv/bin/python scripts/run_phase1_matrix.py --row M7 --sources <M1a dir> <M1b dir> --out <fresh dir>
+  .venv/bin/python scripts/run_phase1_matrix.py --row M8b --cutting-law 8 --solver v5 --out <fresh dir containing law8 and v5>
+
+``--solver v5`` (opt-in, ADR 0014) runs an episode row on tlmpm_v5 (packed codes,
+sparse slots). physics_state.npz then keeps the packed codes with
+``code_encoding``/``max_cuts``; the row criteria are computed unchanged on the exact
+ternary re-encoding (K <= 2), cross-checked against the packed-code graph.
 """
 import argparse
 from dataclasses import replace
@@ -30,7 +36,8 @@ from scipy.spatial.transform import Rotation
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from robotic_cutting_sim.control import ActionLimits  # noqa: E402
-from robotic_cutting_sim.cut_topology import mechanical_components  # noqa: E402
+from robotic_cutting_sim.cut_topology import (mechanical_components, mechanical_components_packed,  # noqa: E402
+                                              packed_to_ternary)
 from robotic_cutting_sim.demo_evaluation import (fit_swept_plane, label_distance_distribution,  # noqa: E402
                                                  slice_push_report, swept_plane_interface, trim_separation_for_task)
 from robotic_cutting_sim.multi_cut_evaluation import MultiCutGoal, evaluate_multi_cut  # noqa: E402
@@ -185,7 +192,8 @@ def run_episode(row, args, out):
     env = make_kinematic_env(task_id, seed=SEED, device=args.device, particle_spacing_m=args.spacing,
                              material_dt=args.material_dt, scenario=scenario, cutting_law=args.cutting_law, max_cuts=max_cuts,
                              action_limits=ActionLimits(), ik_failure='reject', delta_frame='world',
-                             history_stride=args.history_stride)
+                             history_stride=args.history_stride,
+                             **({'solver': 'tlmpm_v5'} if args.solver == 'v5' else {}))
     observation, _ = env.reset(seed=SEED)
     plan = builder(env.task)
     policy = WaypointPolicy(env.task, plan, env.action_limits,
@@ -228,12 +236,33 @@ def run_episode(row, args, out):
         evaluations['strict'] = env.evaluate()
         if row in ('M1a', 'M1b'):
             evaluations['research'] = env.evaluate(profile='research')
-    np.savez_compressed(out / 'physics_state.npz', **recording)
+    if args.solver == 'v5':
+        slots = material.bed.check_slots()
+        packed = recording['codes']
+        np.savez_compressed(out / 'physics_state.npz', **recording, code_encoding='packed2', max_cuts=max_cuts,
+                            slot_max_occupied=slots['max_occupied_slots'], slot_overflow_entries=slots['overflow_entries'],
+                            slots_per_node=slots['slots_per_node'])
+        # Row criteria use the existing ternary evaluators on the exact re-encoding (K <= 2).
+        recording = {**recording, 'codes': packed_to_ternary(packed, max_cuts).astype(packed.dtype)}
+        stencil = [recording[k] for k in ('reference_stencil_nodes', 'reference_stencil_weights')]
+        gradients = recording['reference_stencil_gradients']
+        count_p, labels_p = mechanical_components_packed(*stencil, packed[-1], max_cuts, gradients=gradients)
+        count_t, labels_t = mechanical_components(*stencil, recording['codes'][-1], max_cuts, gradients=gradients)
+        same = count_p == count_t and len(set(zip(labels_p.tolist(), labels_t.tolist()))) == count_t
+        packed_report = {'solver_module': 'robotic_cutting_sim.tlmpm_v5', **slots,
+                         'final_components_packed_graph': int(count_p), 'final_components_ternary_graph': int(count_t),
+                         'packed_and_ternary_partitions_identical': bool(same)}
+        if not same:
+            raise RuntimeError(f'Packed/ternary component cross-check failed: {packed_report}')
+    else:
+        np.savez_compressed(out / 'physics_state.npz', **recording)
+        packed_report = None
     context = {'task': env.task, 'max_cuts': max_cuts, 'policy_done': policy.done, 'blade_half_width_m': float(
         material.bed.config.blade_half_width), 'law4_parameters': material.bed.law4_parameters,
         'material_receipt': material.parameter_receipt, 'runtime_source': env.runtime_source,
         'plan': [dict(label=w.label, pose=list(w.pose), cut=w.cut, cut_index=w.cut_index, speed_m_s=w.speed_m_s,
-                      hold_s=w.hold_s) for w in plan], 'position_tolerance_m': policy.position_tolerance_m}
+                      hold_s=w.hold_s) for w in plan], 'position_tolerance_m': policy.position_tolerance_m,
+        **({'tlmpm_v5': packed_report} if packed_report is not None else {})}
     env.close()
     return steps, recording, evaluations, context
 
@@ -575,6 +604,8 @@ def main():
                    help='Opt-in stroke-based cutting law (default 4, ADR 0006; 5 ADR 0008; 6 ADR 0010; 7 ADR 0011; 8 ADR 0012); recorded in '
                         'result.json and the output name check')
     p.add_argument('--out', type=Path, required=True)
+    p.add_argument('--solver', choices=('v4', 'v5'), default='v4',
+                   help='v4 (default) or opt-in tlmpm_v5 (ADR 0014; laws 4, 5, 8; episode rows only; --out must contain v5)')
     p.add_argument('--spacing', type=float, default=.001, help='Particle spacing (formal: 1 mm)')
     p.add_argument('--material-dt', type=float, default=1e-4, help='Material dt (formal: 1e-4 s)')
     p.add_argument('--history-stride', type=int, default=5)
@@ -584,14 +615,21 @@ def main():
     a = p.parse_args()
     if f'law{a.cutting_law}' not in a.out.name:
         p.error(f'--out name must contain law{a.cutting_law} so rows of different laws never mix')
+    if a.solver == 'v5':
+        if 'v5' not in a.out.name:
+            p.error('--solver v5 needs an --out name containing v5 so v4 and v5 rows never mix')
+        if a.cutting_law not in (4, 5, 8) or a.row not in ROW_CONFIG or a.ingest is not None:
+            p.error('--solver v5 runs laws 4, 5, 8 on episode rows only (no --ingest, M7 or M9 replays)')
     out = new_output(a.out)  # refuses to overwrite (exist_ok=False)
     start = time.monotonic()
     config = {**vars(a), 'out': str(a.out), 'ingest': None if a.ingest is None else str(a.ingest),
               'sources': None if a.sources is None else [str(s) for s in a.sources], 'seed': SEED}
-    write_json(out / 'manifest.json', manifest(config, f'phase1_matrix_law{a.cutting_law}'))
+    write_json(out / 'manifest.json', manifest(config, f'phase1_matrix_law{a.cutting_law}'
+                                               + ('_tlmpm_v5' if a.solver == 'v5' else '')))
     formal = a.spacing == .001 and a.material_dt == 1e-4 and a.steps is None
     base = {'row': a.row, 'criterion': CRITERIA[a.row], 'command': sys.argv, **git_state(), 'seed': SEED,
-            'cutting_law': a.cutting_law, 'particle_spacing_m': a.spacing, 'material_dt_s': a.material_dt, 'grid_dx_m': .004,
+            'cutting_law': a.cutting_law, **({'solver': 'tlmpm_v5'} if a.solver == 'v5' else {}),
+            'particle_spacing_m': a.spacing, 'material_dt_s': a.material_dt, 'grid_dx_m': .004,
             'history_stride': a.history_stride, 'device': a.device, 'formal_resolution': formal}
     try:
         if a.row == 'M7':

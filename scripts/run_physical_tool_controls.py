@@ -309,6 +309,12 @@ def open_backend(args, output, protocol):
     from robotic_cutting_sim.physical_tool import ToolGraspConfig
     grip=replace(ToolGraspConfig(), **protocol["normal_grip"])
     spacing=.002 if args.task_id == "TRIM-01" else .001
+    tool_override={}
+    if getattr(args,"tool_profile",None):
+        # Opt-in (protocol v7+): a declared profile tool on the declared lifted hand trajectory.
+        if args.runtime != "isaac_sim":raise NotImplementedError("--tool-profile is implemented for isaac_sim only")
+        tool_override=dict(tool_profile_id=args.tool_profile,
+            tool_profile_hand_offset_world_m=tuple(protocol["tool_profile_retarget"]["hand_offset_world_m"]))
     if args.runtime == "isaac_sim":
         # Same process-local acknowledgement as the installed native launcher;
         # the existing runtime was explicitly installed with accepted terms.
@@ -317,7 +323,7 @@ def open_backend(args, output, protocol):
         config=IsaacSimCuttingConfig(task_id=args.task_id, seed=args.seed, task_variant="fixed", gpu=args.gpu,
             device=f"cuda:{args.gpu}", particle_spacing_m=spacing, camera=False,
             camera_layout="wrist_d405_global_d455", camera_mode="native_single_view", native_noise="off",
-            tool_attachment_mode="physical_grasp", tool_init_mode="pregrasped", grasp=grip)
+            tool_attachment_mode="physical_grasp", tool_init_mode="pregrasped", grasp=grip, **tool_override)
         write_json(output/"runtime_config.json",asdict(config))
         app=launch_app(config,output)
         env=LiveIsaacSimCutting(app,config,output)
@@ -384,11 +390,11 @@ def worker(args, protocol):
     hashes={str(path.relative_to(ROOT)):sha256(path) for path in paths}
     for path in paths:(implementation/path.name).write_bytes(path.read_bytes())
     from robotic_cutting_sim.recording import manifest
-    record=manifest({"case":args.case,"task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,
+    record=manifest({"case":args.case,"task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"tool_profile":args.tool_profile,
         "protocol_sha256":sha256(args.protocol),"case_config":protocol["cases"][args.case]},"wp08_rigid_control_"+args.runtime)
     record["implementation_sha256"]=hashes
     write_json(output/"manifest.json",record)
-    result={"status":"RUNNING","case":args.case,"runtime":args.runtime,"source_sha256":hashes,
+    result={"status":"RUNNING","case":args.case,"runtime":args.runtime,"source_sha256":hashes,"tool_profile":args.tool_profile,
         "case_config":protocol["cases"][args.case],"full_physics_acceptance":False,
         "camera_scope":"NOT_RUN; control cameras explicitly disabled","material_feedback_scope":"NOT_RUN; rigid external-load control only"}
     write_json(output/"result.json",result)
@@ -550,6 +556,457 @@ def summarize_matrix(index, output, protocol):
         "full_physics_acceptance":False,"material_two_way_coupling_validated":False}
 
 
+# --------------------------------------------------------------------------
+# Opt-in WP-11 Phase F1 path (protocol "start_profile": "wp11_home_v1", v8+).
+# The configured wp11_workcell_v1 scene starts at its declared HOME; the
+# near-horizontal TRIM pose is reached with the goal planner's own REORIENT
+# schedule. Earlier protocols never reach this code; their worker, gates and
+# summary above are unchanged.
+# --------------------------------------------------------------------------
+WP11_START_PROFILE = "wp11_home_v1"
+
+
+def wp11_task(protocol):
+    """The compiled configured task declared by the protocol (same id and sha256 required)."""
+    from robotic_cutting_sim.scene_config import compile_task
+    spec = protocol["configured_task"]
+    task = compile_task(str(ROOT/spec["scene"]), str(ROOT/spec["goal"]), seed=spec["seed"])
+    if task.task_id != spec["task_id"] or task.config_sha256 != spec["config_sha256"]:
+        raise ValueError(f"Configured task {task.task_id} ({task.config_sha256[:12]}) differs from the frozen protocol")
+    return task
+
+
+def wp11_reorient_schedule(task, label_prefix="REORIENT"):
+    """(start pose, per-control-step WORLD edge targets) of the planner's ideal REORIENT schedule."""
+    labels = task.reference_phase_labels
+    times = [k[0] for k in task.edge_position_knots_local_txyz]
+    index = [i for i, label in enumerate(labels) if label.startswith(label_prefix)]
+    if not index or index != list(range(index[0], index[-1]+1)):
+        raise ValueError("The configured plan has no single contiguous REORIENT segment")
+    start = np.asarray(task.reference_edge_pose_world(times[index[0]]), float)
+    targets = np.asarray([task.reference_edge_pose_world(times[i+1]) for i in index], float)
+    return start, targets
+
+
+def wp11_rate_targets(targets, rate):
+    """Every rate-th target of the schedule (the last target always kept): rate x the planner's speed."""
+    rate = int(rate)
+    if rate < 1:
+        raise ValueError("Rate multiplier must be a positive integer")
+    chosen = list(targets[rate-1::rate])
+    if not len(chosen) or not np.array_equal(chosen[-1], targets[-1]):
+        chosen.append(targets[-1])
+    return np.asarray(chosen, float)
+
+
+def wp11_edge_wrench(cfg, edge_pose):
+    """Constant WORLD wrench at the edge origin from edge-frame axes (x advance, y edge line, z blade normal)."""
+    rotation = Rotation.from_quat(np.asarray(edge_pose, float)[3:])
+    force = np.asarray(cfg.get("force_edge_n", (0., 0., 0.)), float)
+    torque = np.asarray(cfg.get("torque_edge_n_m", (0., 0., 0.)), float)
+    return np.r_[rotation.apply(force), rotation.apply(torque)]
+
+
+def wp11_replay_wrenches(spec, scale, edge_pose):
+    """Recorded material reaction forces re-expressed in this run's measured edge frame (torque not recorded)."""
+    path = ROOT/spec["path"]
+    if sha256(path) != spec["sha256"]:
+        raise ValueError("Cutting-load replay source bytes differ from the frozen protocol")
+    target = Rotation.from_quat(np.asarray(edge_pose, float)[3:])
+    rows = [json.loads(line) for line in path.open()]
+    wrenches = []
+    for row in rows:
+        source = Rotation.from_quat(np.asarray(row[spec["edge_pose_field"]], float)[3:])
+        force = np.asarray(row[spec["force_field"]], float)
+        wrenches.append(np.r_[scale*target.apply(source.inv().apply(force)), 0., 0., 0.])
+    wrenches = np.asarray(wrenches, float)
+    if wrenches.shape != (spec["steps"], 6) or not np.isfinite(wrenches).all():
+        raise ValueError("Replay source has an unexpected length or non-finite forces")
+    return wrenches
+
+
+def wp11_grip_frame_loads(state, spec, wrench_world):
+    """Gravity and an edge wrench about the grip centre (TOOL origin), resolved in HAND axes (y = finger axis)."""
+    hand = Rotation.from_quat(np.asarray(state["hand_pose"], float)[3:])
+    tool = np.asarray(state["tool_body_pose_xyzw"], float)
+    edge = np.asarray(state["tool_pose"], float)
+    com = Rotation.from_quat(tool[3:]).apply(np.asarray(spec["com_tool_m"], float))
+    weight = np.array([0., 0., -9.81*float(spec["mass_kg"])])
+    wrench = np.asarray(wrench_world, float)
+    torque = wrench[3:]+np.cross(edge[:3]-tool[:3], wrench[:3])
+    return {"gravity_force_hand_n": hand.inv().apply(weight).tolist(),
+            "gravity_torque_about_grip_hand_n_m": hand.inv().apply(np.cross(com, weight)).tolist(),
+            "com_from_grip_centre_hand_m": hand.inv().apply(com).tolist(),
+            "edge_from_grip_centre_hand_m": hand.inv().apply(edge[:3]-tool[:3]).tolist(),
+            "applied_force_hand_n": hand.inv().apply(wrench[:3]).tolist(),
+            "applied_torque_about_grip_hand_n_m": hand.inv().apply(torque).tolist(),
+            "axes": "HAND frame: y = finger closing axis (= v2_y blade normal), z = hand approach (= edge line), x = third axis"}
+
+
+def wp11_extra_metrics(samples, initial_state, monitor_rows, protocol):
+    """Per-finger forces, contact reaction, world tool motion, hand rates and grasp-monitor events."""
+    if len(samples) < 2:
+        return {"evidence_available": False}
+    limits = protocol["measurement"]
+    times = np.array([r["time_s"] for r in samples])
+    window = times >= times[-1]-limits["stable_window_s"]-1e-7
+    left = np.array([r["left_load_n"] for r in samples]); right = np.array([r["right_load_n"] for r in samples])
+    force = np.asarray([r["contact_force"] for r in samples], float)
+    tool = np.asarray([r["tool"] for r in samples], float); hand = np.asarray([r["hand"] for r in samples], float)
+    drift, turn = pose_error(np.asarray(initial_state["tool_body_pose_xyzw"], float), tool)
+    dt = np.diff(times)
+    hand_rotation = Rotation.from_quat(hand[:, 3:])
+    hand_rate = (hand_rotation[1:]*hand_rotation[:-1].inv()).magnitude()/dt
+    initial = relative_poses(np.asarray(initial_state["hand_pose"])[None], np.asarray(initial_state["tool_body_pose_xyzw"])[None])[0]
+    relative = relative_poses(hand, tool)
+    linear = np.linalg.norm(np.diff(relative[:, :3], axis=0), axis=1)/dt
+    angular = (Rotation.from_quat(relative[1:, 3:])*Rotation.from_quat(relative[:-1, 3:]).inv()).magnitude()/dt
+    final_translation, final_rotation = pose_error(initial, relative[-1:])
+
+    def stats(values):
+        return {"mean": float(values.mean()), "min": float(values.min()), "max": float(values.max()),
+                "mean_last_window": float(values[window].mean()), "final": float(values[-1])}
+    statuses = [r["status"] for r in monitor_rows]
+    # Monitor reports carry no clock: row i is the (i+1)-th control step of the case.
+    control_dt = protocol["control_dt_s"]
+    first = lambda name: next(((i+1)*control_dt for i, r in enumerate(monitor_rows) if r["status"] == name), None)
+    return {"evidence_available": True,
+        "left_finger_force_n": stats(left), "right_finger_force_n": stats(right),
+        "finger_force_source": "sum of actual Native contact-impulse norms on the handle per finger / dt (normal + friction)",
+        "contact_force_on_tool_max_n": float(np.linalg.norm(force, axis=1).max()),
+        "contact_force_on_tool_mean_last_window_world_n": force[window].mean(0).tolist(),
+        "tool_world_translation_max_m": float(drift.max()), "tool_world_rotation_max_rad": float(turn.max()),
+        "hand_angular_speed_max_rad_s": float(hand_rate.max()),
+        "relative_linear_speed_max_m_s": float(linear.max()), "relative_angular_speed_max_rad_s": float(angular.max()),
+        "final_relative_translation_m": float(final_translation[0]), "final_relative_rotation_rad": float(final_rotation[0]),
+        "grasp_monitor": {"status_counts": {name: statuses.count(name) for name in sorted(set(statuses))},
+            "ever_lost": any(r["grasp_lost"] for r in monitor_rows), "first_lost_time_s": first("LOST"),
+            "first_slipping_time_s": first("SLIPPING"), "final_status": statuses[-1] if statuses else None,
+            "max_slip_m": max((r["slip_since_settling_m"] for r in monitor_rows), default=None),
+            "max_rotation_rad": max((r["rotation_since_settling_rad"] for r in monitor_rows), default=None),
+            "reference": "measured hand/tool at the case start; GraspLossConfig defaults (warning 2 mm / pi/60, loss 20 mm / pi/6)"}}
+
+
+def classify_wp11(cfg, metrics, extra, protocol, material_unchanged, grip_limit_ok):
+    """Predeclared gate group per case: hold, reported, negative_control, diagnostic or release."""
+    limits = protocol["measurement"]
+    if not metrics.get("evidence_available"):
+        return {"status": "NOT_RUN_MISSING_RIGID_EVIDENCE", "checks": {}}
+    integrity = {k: metrics[k] is True for k in ("finite", "raw_sampling_complete", "all_contact_samples_valid", "arm_samples_complete")}
+    integrity.update(material_unchanged=bool(material_unchanged), grip_within_configured_franka_limit=bool(grip_limit_ok))
+    stable = {"relative_translation": metrics["max_relative_translation_m"] <= limits["maximum_relative_translation_m"],
+        "relative_rotation": metrics["max_relative_rotation_rad"] <= limits["maximum_relative_rotation_rad"],
+        "relative_linear_speed": metrics["maximum_relative_linear_speed_last_window_m_s"] <= limits["maximum_relative_linear_speed_m_s"],
+        "relative_angular_speed": metrics["maximum_relative_angular_speed_last_window_rad_s"] <= limits["maximum_relative_angular_speed_rad_s"],
+        "loaded_handle_contacts": metrics["bilateral_loaded_handle_fraction"] >= limits["minimum_bilateral_loaded_handle_fraction"],
+        "bounded_penetration": metrics["maximum_contact_penetration_m"] <= limits["maximum_contact_penetration_m"],
+        "no_unintended_support": metrics["unintended_loaded_contact_steps"] == 0,
+        "grasp_monitor_never_lost": not extra["grasp_monitor"]["ever_lost"]}
+    gate = cfg["gate"]
+    checks = dict(integrity)
+    if gate == "hold":
+        checks.update(stable)
+    elif gate == "release":
+        acceleration = metrics["freeflight_vertical_acceleration_m_s2"]
+        checks.update(independent_relative_motion=metrics["max_relative_translation_m"] > limits["release_minimum_relative_translation_m"],
+            actual_downward_motion=metrics["maximum_downward_tool_displacement_m"] > limits["release_minimum_relative_translation_m"],
+            unsupported_gravity_interval=acceleration is not None and abs(acceleration+9.81)/9.81 <= limits["freeflight_gravity_relative_error_max"])
+    elif gate not in ("reported", "negative_control", "diagnostic"):
+        raise ValueError("Unknown predeclared gate group: "+str(gate))
+    passed = all(checks.values())
+    return {"gate": gate, "status": "PASS_CASE_GATES" if passed else "FAIL_CASE_GATES",
+        "checks": {k: bool(v) for k, v in checks.items()},
+        "hold_gate_evaluation": {k: bool(v) for k, v in stable.items()},
+        "hold_gates_all_pass": bool(all(stable.values())),
+        "gated": gate in ("hold", "release"),
+        "matched_comparison": "PENDING_SUMMARY" if gate in ("negative_control", "diagnostic") else "NOT_REQUIRED",
+        "full_physics_acceptance": False}
+
+
+def compare_wp11(reference, perturbed, protocol):
+    """Matched start, then a larger measured response (inherited v7 increase thresholds) and grip loss."""
+    limits = protocol["measurement"]
+    a, b = reference["initial_state"], perturbed["initial_state"]
+    distance, angle = pose_error(a["tool_body_pose_xyzw"], np.asarray(b["tool_body_pose_xyzw"])[None])
+    matched = {"same_runtime": reference["runtime"] == perturbed["runtime"],
+        "same_source_bytes": reference["source_sha256"] == perturbed["source_sha256"],
+        "same_start_pose": reference["case_config"]["start"] == perturbed["case_config"]["start"],
+        "same_external_load": all(reference["case_config"].get(k) == perturbed["case_config"].get(k)
+                                  for k in ("force_edge_n", "torque_edge_n_m", "replay")),
+        "initial_tool_translation": distance[0] <= limits["maximum_matched_start_tool_translation_m"],
+        "initial_tool_rotation": angle[0] <= limits["maximum_matched_start_tool_rotation_rad"],
+        "initial_arm_joints": np.max(np.abs(np.asarray(a["q"])[0]-np.asarray(b["q"])[0])) <= limits["maximum_matched_start_arm_joint_error_rad"]}
+    ma, mb = reference["metrics"], perturbed["metrics"]
+    translation = mb["max_relative_translation_m"]-ma["max_relative_translation_m"]
+    rotation = mb["max_relative_rotation_rad"]-ma["max_relative_rotation_rad"]
+    larger = translation >= limits["minimum_weak_response_translation_increase_m"] or rotation >= limits["minimum_weak_response_rotation_increase_rad"]
+    loss = (perturbed["extra_metrics"]["grasp_monitor"]["ever_lost"]
+            or mb["bilateral_loaded_handle_fraction"] < limits["minimum_bilateral_loaded_handle_fraction"])
+    return {"reference_case": reference["case"], "matched_start_checks": {k: bool(v) for k, v in matched.items()},
+        "matched": bool(all(matched.values())), "translation_increase_m": float(translation), "rotation_increase_rad": float(rotation),
+        "larger_response": bool(all(matched.values()) and larger), "grip_loss_event": bool(loss),
+        "reference_holds": reference["classification"]["hold_gates_all_pass"]}
+
+
+@contextmanager
+def open_backend_wp11(args, output, protocol, task):
+    from robotic_cutting_sim.physical_tool import ToolGraspConfig
+    from robotic_cutting_sim.scene_config import configured_task_payload
+    grip = replace(ToolGraspConfig(), **protocol["normal_grip"])
+    os.environ.setdefault("OMNI_KIT_ACCEPT_EULA", "YES")
+    from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig, LiveIsaacSimCutting, launch_app
+    config = IsaacSimCuttingConfig(task_id=task.task_id, seed=args.seed, gpu=args.gpu, device=f"cuda:{args.gpu}",
+        camera=False, camera_layout="wrist_d405_global_d455", camera_mode="native_single_view", native_noise="off",
+        tool_attachment_mode="physical_grasp", tool_init_mode="pregrasped", grasp=grip, max_cuts=task.max_cuts,
+        configured_task=configured_task_payload(task))
+    write_json(output/"runtime_config.json", asdict(config))
+    app = launch_app(config, output)
+    env = LiveIsaacSimCutting(app, config, output)
+    try: yield env
+    finally: env.close()
+
+
+def worker_wp11(args, protocol):
+    """One fresh-process F1 case: HOME reset, optional planner REORIENT, then the declared perturbation."""
+    from robotic_cutting_sim.grasp_monitor import GraspMonitor
+    output = args.output_dir.resolve(); output.mkdir(parents=True, exist_ok=False)
+    implementation = output/"implementation"; implementation.mkdir()
+    cfg = protocol["cases"][args.case]; motion = protocol["wp11_motion"]
+    paths = [Path(__file__)]+[ROOT/"src/robotic_cutting_sim"/name for name in (
+        "physical_tool.py", "scene_frames.py", "robot.py", "live_material.py", "isaac_sim_runner.py", "native_tool.py",
+        "physical_contacts.py", "grasp_monitor.py", "scene_config.py", "goal_planner.py", "goals.py", "policies.py",
+        "control.py", "tool_profile.py", "finger_geometry.py", "tasks.py", "task_scenarios.py", "tlmpm_v5.py")]
+    paths += [ROOT/"configs/isaac_sim_cutting.kit", ROOT/"configs/wp11_scenarios_v1.json",
+              ROOT/protocol["configured_task"]["scene"], ROOT/protocol["configured_task"]["goal"]]
+    if "replay" in cfg: paths.append(ROOT/protocol["cutting_load_replay_sources"][cfg["replay"]["source"]]["path"])
+    hashes = {str(path.relative_to(ROOT)): sha256(path) for path in paths}
+    for path in paths: (implementation/path.name).write_bytes(path.read_bytes())
+    from robotic_cutting_sim.recording import manifest
+    record = manifest({"case": args.case, "seed": args.seed, "gpu": args.gpu, "tool_profile": args.tool_profile,
+        "configured_task": protocol["configured_task"], "protocol_sha256": sha256(args.protocol), "case_config": cfg},
+        "wp11_f1_rigid_control_isaac_sim")
+    record["implementation_sha256"] = hashes
+    write_json(output/"manifest.json", record)
+    result = {"status": "RUNNING", "case": args.case, "runtime": args.runtime, "source_sha256": hashes, "tool_profile": args.tool_profile,
+        "case_config": cfg, "start_profile": WP11_START_PROFILE, "full_physics_acceptance": False,
+        "camera_scope": "NOT_RUN; control cameras explicitly disabled",
+        "material_feedback_scope": "NOT_RUN; rigid external-load control only (material never advanced)"}
+    write_json(output/"result.json", result)
+    control_rows = []; raw_path = output/"physical_grasp_trace_00.jsonl"; start_wall = time.monotonic()
+    dt = protocol["control_dt_s"]
+    try:
+        task = wp11_task(protocol)
+        if task.tool_profile_id != args.tool_profile:
+            raise ValueError("The configured scene tool differs from --tool-profile")
+        result["task_id"] = task.task_id
+        with open_backend_wp11(args, output, protocol, task) as env:
+            try:
+                env.reset(seed=args.seed)
+                result["pregrasp"] = getattr(env, "grasp_reset_receipt", None)
+                result["tool_spec"] = env.tool_spec.to_dict()
+                result["material_initial"] = material_fingerprint(env)
+                if result["pregrasp"] is None or result["pregrasp"].get("status") != "PASS_STABLE_GRASP":
+                    raise RuntimeError("Physical pregrasp evidence is missing or failed")
+                for name in ("rigid_probe_step", "solve_edge_ik", "set_gripper", "set_grip_force_limit", "set_grip_friction", "set_external_tool_wrench"):
+                    if not callable(getattr(env, name, None)): raise RuntimeError("Missing explicit physical backend API: "+name)
+                env.set_gripper("hold"); env.set_grip_force_limit(protocol["normal_grip"]["max_finger_force_n"])
+                env.set_grip_friction(protocol["normal_grip"]["friction"]); env.set_external_tool_wrench(np.zeros(6))
+                trace = output/"control_trace.jsonl"; monitor_trace = output/"grasp_monitor_trace.jsonl"
+                reset_state = measured(env)
+                episode_monitor = GraspMonitor(reset_state["hand_pose"], reset_state["tool_body_pose_xyzw"], env.tool_spec)
+                last_target = np.asarray(task.home["joint_positions"], float)
+                state_box = {"monitor": None, "steps": 0, "case_steps": 0}
+
+                def step(target, phase, wrench, desired_edge=None, subphase=None):
+                    nonlocal last_target
+                    target = np.asarray(target, float)
+                    if np.max(np.abs(target-last_target)) > motion["maximum_joint_increment_rad"]+1e-9:
+                        raise RuntimeError("Issued joint targets exceed the predeclared per-control increment (IK branch change?)")
+                    env.set_external_tool_wrench(wrench)
+                    state, diagnostics = env.rigid_probe_step(target)
+                    native, raw = clocks(env, "isaac_sim")
+                    rows = env.grasp_trace[-env.config.robot_substeps:]
+                    fraction = float(np.mean([r["contacts"]["bilateral_loaded_tool_contact"] for r in rows]))
+                    valid = all(r["contacts"]["sensor_valid"] and r["contacts"]["sensor_fresh"] for r in rows)
+                    state_box["steps"] += 1
+                    episode = episode_monitor.update(state["hand_pose"], state["tool_body_pose_xyzw"], time_s=state_box["steps"]*dt,
+                        bilateral_loaded_tool_fraction=fraction, contacts_valid=valid, gripper_command=env.gripper_command)
+                    case = None
+                    if state_box["monitor"] is not None:
+                        state_box["case_steps"] += 1
+                        case = state_box["monitor"].update(state["hand_pose"], state["tool_body_pose_xyzw"], time_s=state_box["case_steps"]*dt,
+                            bilateral_loaded_tool_fraction=fraction, contacts_valid=valid, gripper_command=env.gripper_command)
+                    row = {"phase": phase, "subphase": subphase, "native_time_s": native, "raw_trace_time_s": raw,
+                        "state": measured(env), "commanded_joint_positions_rad": target.copy(),
+                        "commanded_external_edge_wrench_world": np.asarray(wrench).copy(), "diagnostics": diagnostics}
+                    if desired_edge is not None: row["commanded_edge_pose_xyzw"] = np.asarray(desired_edge).copy()
+                    control_rows.append(row); last_target = target.copy()
+                    with trace.open("a") as stream: stream.write(json.dumps(row, default=json_default, allow_nan=False)+"\n")
+                    small = {"phase": phase, "subphase": subphase, "native_time_s": native, "bilateral_loaded_tool_fraction": fraction,
+                        "episode_monitor": {k: v for k, v in episode.items() if k != "reference_hand_from_tool_xyz_xyzw"},
+                        "case_monitor": None if case is None else {k: v for k, v in case.items() if k != "reference_hand_from_tool_xyz_xyzw"}}
+                    with monitor_trace.open("a") as stream: stream.write(json.dumps(small, default=json_default, allow_nan=False)+"\n")
+                    return row, case
+
+                def drive(poses, phase, subphase):
+                    worst = {"position_error_m": 0., "rotation_error_rad": 0., "steps": 0}
+                    rows = []
+                    for pose in poses:
+                        q, info = env.solve_edge_ik(pose)
+                        if (info.get("position_error_m", float("inf")) > motion["maximum_ik_position_error_m"]
+                                or info.get("rotation_error_rad", float("inf")) > motion["maximum_ik_rotation_error_rad"]):
+                            raise RuntimeError("REORIENT IK failed its predeclared residual bound: "+str(info))
+                        rows.append(step(q, phase, np.zeros(6), pose, subphase))
+                        worst = {"position_error_m": max(worst["position_error_m"], float(info["position_error_m"])),
+                                 "rotation_error_rad": max(worst["rotation_error_rad"], float(info["rotation_error_rad"])),
+                                 "steps": worst["steps"]+1}
+                    return worst, rows
+
+                home_target = np.asarray(task.home["joint_positions"], float)
+                for _ in range(round(motion["home_stabilization_s"]/dt)): step(home_target, "home_stabilization", np.zeros(6))
+                home_state = measured(env)
+                result["home_state"] = home_state
+                schedule_start, schedule = wp11_reorient_schedule(task)
+                result["reorient_schedule"] = {"source": motion["reorient_source"], "steps_at_planner_rate": len(schedule),
+                    "start_edge_pose_world_xyzw": schedule_start, "trim_edge_pose_world_xyzw": schedule[-1]}
+                if cfg["start"] == "trim":
+                    targets = wp11_rate_targets(schedule, motion["approach_rate_multiplier"])
+                    result["approach_ik_worst"], _ = drive(targets, "approach_reorient", "REORIENT_1x")
+                    for _ in range(round(motion["post_motion_stabilization_s"]/dt)): step(last_target, "post_motion_stabilization", np.zeros(6))
+                    state = measured(env)
+                    position_error, rotation_error = pose_error(schedule[-1], np.asarray(state["tool_pose"])[None])
+                    result["actual_trim_pose_error"] = {"position_m": float(position_error[0]), "rotation_rad": float(rotation_error[0])}
+                    from robotic_cutting_sim.goal_planner import orientation_metrics
+                    result["actual_trim_orientation_metrics"] = orientation_metrics(state["tool_pose"][3:])
+                    if (position_error[0] > motion["maximum_actual_edge_position_error_m"]
+                            or rotation_error[0] > motion["maximum_actual_edge_rotation_error_rad"]):
+                        raise RuntimeError("Measured tool did not reach the predeclared TRIM pose region")
+                    approach = relative_poses(np.asarray([home_state["hand_pose"], state["hand_pose"]]),
+                        np.asarray([home_state["tool_body_pose_xyzw"], state["tool_body_pose_xyzw"]]))
+                    t_err, r_err = pose_error(approach[0], approach[1:])
+                    result["approach_slip_vs_home"] = {"relative_translation_m": float(t_err[0]), "relative_rotation_rad": float(r_err[0])}
+                elif cfg["start"] != "home":
+                    raise ValueError("Unknown start pose: "+str(cfg["start"]))
+                state = measured(env)
+                result["initial_state"] = state
+                result["episode_monitor_before_case"] = {k: v for k, v in episode_monitor.last.items() if k != "reference_hand_from_tool_xyz_xyzw"}
+                hold_target = last_target.copy()
+                env.set_grip_force_limit(cfg["force_limit_n"]); env.set_grip_friction(cfg["friction"]); env.set_gripper(cfg["gripper"])
+                grip_limit_ok = cfg["force_limit_n"] <= protocol["normal_grip"]["max_finger_force_n"]+1e-12
+                state_box["monitor"] = GraspMonitor(state["hand_pose"], state["tool_body_pose_xyzw"], env.tool_spec)
+                base = wp11_edge_wrench(cfg, state["tool_pose"])
+                replay = None
+                if "replay" in cfg:
+                    source = protocol["cutting_load_replay_sources"][cfg["replay"]["source"]]
+                    replay = wp11_replay_wrenches(source, cfg["replay"]["scale"], state["tool_pose"])
+                    result["replay_summary"] = {"steps": len(replay), "max_force_n": float(np.linalg.norm(replay[:, :3], axis=1).max()),
+                        "mean_force_n": float(np.linalg.norm(replay[:, :3], axis=1).mean()),
+                        "mean_force_edge_frame_n": Rotation.from_quat(state["tool_pose"][3:]).inv().apply(replay[:, :3].mean(0)).tolist()}
+                    peak = replay[int(np.argmax(np.linalg.norm(replay[:, :3], axis=1)))]
+                    result["grip_frame_loads"] = wp11_grip_frame_loads(state, result["tool_spec"], peak)
+                else:
+                    result["grip_frame_loads"] = wp11_grip_frame_loads(state, result["tool_spec"], base)
+                result["applied_constant_wrench_world"] = base
+                monitor_rows = []
+                native_start, raw_start = clocks(env, "isaac_sim")
+                result["evaluation_interval"] = {"native_start_s": native_start, "raw_trace_start_s": raw_start}
+                if cfg.get("motion") == "round_trip":
+                    forward = wp11_rate_targets(schedule, cfg["rate_multiplier"])
+                    backward = wp11_rate_targets(np.vstack([schedule[::-1][1:], schedule_start[None]]), cfg["rate_multiplier"])
+                    result["round_trip"] = {"forward_steps": len(forward), "backward_steps": len(backward),
+                        "planner_rotation_limit_rad_per_step": float(np.deg2rad(task.controller["planner"]["max_rotation_deg"]))*cfg["rate_multiplier"],
+                        "planner_translation_limit_m_per_step": float(task.controller["planner"]["max_translation_m"])*cfg["rate_multiplier"]}
+                    for poses, label in ((forward, "HOME_TO_TRIM"), (backward, "TRIM_TO_HOME")):
+                        for pose in poses:
+                            q, info = env.solve_edge_ik(pose)
+                            if (info.get("position_error_m", float("inf")) > motion["maximum_ik_position_error_m"]
+                                    or info.get("rotation_error_rad", float("inf")) > motion["maximum_ik_rotation_error_rad"]):
+                                raise RuntimeError("Round-trip IK failed its predeclared residual bound: "+str(info))
+                            _, case = step(q, "perturbation", np.zeros(6), pose, label); monitor_rows.append(case)
+                    hold_target = last_target.copy()
+                    for _ in range(round(cfg["hold_after_s"]/dt)):
+                        _, case = step(hold_target, "perturbation", np.zeros(6), None, "HOLD_AT_HOME"); monitor_rows.append(case)
+                    final = measured(env)
+                    result["round_trip"]["final_joint_error_vs_home_max_rad"] = float(np.max(np.abs(final["q"][0]-home_target)))
+                    result["round_trip"]["final_tool_world_vs_home_translation_m"] = float(pose_error(home_state["tool_body_pose_xyzw"], np.asarray(final["tool_body_pose_xyzw"])[None])[0][0])
+                elif replay is not None:
+                    for wrench in replay:
+                        _, case = step(hold_target, "perturbation", wrench, None, "REPLAY"); monitor_rows.append(case)
+                    for _ in range(round(cfg.get("hold_after_s", 0.)/dt)):
+                        _, case = step(hold_target, "perturbation", np.zeros(6), None, "HOLD_AFTER_REPLAY"); monitor_rows.append(case)
+                else:
+                    for i in range(round(cfg["duration_s"]/dt)):
+                        u = min(1., (i+1)*dt/protocol["measurement"]["load_ramp_s"])
+                        ramp = 10*u**3-15*u**4+6*u**5
+                        _, case = step(hold_target, "perturbation", base*ramp, None, "LOAD"); monitor_rows.append(case)
+                duration = state_box["case_steps"]*dt
+                native_end, raw_end = clocks(env, "isaac_sim")
+                result["evaluation_interval"].update(native_end_s=native_end, raw_trace_end_s=raw_end, duration_s=duration)
+                result["material_final"] = material_fingerprint(env)
+                result["material_unchanged"] = result["material_initial"] == result["material_final"]
+                samples = native_samples(raw_path, raw_start, raw_end, result["tool_spec"], protocol["measurement"]["minimum_loaded_finger_force_n"],
+                    geometry_profile=protocol.get("native_contact_geometry_profile"), rigid_dt_s=protocol["rigid_dt_s"])
+                result["metrics"] = measure_case(samples, control_rows, state, result["tool_spec"], protocol, duration)
+                result["extra_metrics"] = wp11_extra_metrics(samples, state, monitor_rows, protocol)
+                result["episode_monitor_final"] = {k: v for k, v in episode_monitor.last.items() if k != "reference_hand_from_tool_xyz_xyzw"}
+                result["classification"] = classify_wp11(cfg, result["metrics"], result["extra_metrics"], protocol,
+                                                         result["material_unchanged"], grip_limit_ok)
+                result["status"] = "EXECUTED_RIGID_CONTROL"
+            except BaseException as error:
+                # Kit may exit Python inside env.close(); record the failure before leaving the context.
+                result.update(status="FAIL_RIGID_CONTROL", error=repr(error))
+                (output/"failure.txt").write_text(traceback.format_exc())
+                raise
+            finally:
+                if protocol.get("export_final_control_scene", True) and getattr(env, "stage", None):
+                    env.stage.Export(str(output/"final_control_scene.usda"))
+                result["source_bytes_unchanged"] = {path: sha256(ROOT/path) == digest for path, digest in hashes.items()}
+                if not all(result["source_bytes_unchanged"].values()): result["status"] = "FAIL_SOURCE_CHANGED"
+                result["wall_s"] = time.monotonic()-start_wall
+                result["raw_trace"] = raw_path.name if raw_path.exists() else None
+                result["raw_trace_sha256"] = sha256(raw_path) if raw_path.exists() else None
+                write_json(output/"result.json", result)
+    except BaseException as error:
+        result.update(status="FAIL_RIGID_CONTROL", error=result.get("error") or repr(error), wall_s=time.monotonic()-start_wall)
+        if not (output/"failure.txt").exists(): (output/"failure.txt").write_text(traceback.format_exc())
+        write_json(output/"result.json", result)
+    print(result["status"], output/"result.json", flush=True)
+    return 0 if result["status"] == "EXECUTED_RIGID_CONTROL" and result.get("material_unchanged") else 1
+
+
+def summarize_wp11(index, output, protocol):
+    """Per-case gate status, matched negative controls and the gated-suite verdict."""
+    available, cases = {}, {}
+    for key, row in index["cases"].items():
+        path = output/row["directory"]/"result.json"
+        result = read_json(path) if path.is_file() else {}
+        name = key.split("/", 1)[1]
+        ok = (row.get("status") == "EXECUTED_RIGID_CONTROL" and row.get("native_contact_view_invalidations", 0) == 0
+              and result.get("status") == "EXECUTED_RIGID_CONTROL" and result.get("metrics", {}).get("evidence_available"))
+        if ok: available[name] = result
+        cases[name] = {"gate": protocol["cases"][name]["gate"], "run_status": row.get("status"),
+                       "case_status": result.get("classification", {}).get("status") if ok else "NOT_EVALUATED"}
+    comparisons = {}
+    for name, cfg in protocol["cases"].items():
+        if "comparison" not in cfg: continue
+        reference, perturbed = available.get(cfg["comparison"]), available.get(name)
+        if reference is None or perturbed is None:
+            comparisons[name] = {"status": "NOT_RUN_MISSING_MATCHED_CASE"}; continue
+        comparison = compare_wp11(reference, perturbed, protocol)
+        comparison["status"] = "PASS_LARGER_RESPONSE" if comparison["larger_response"] else "FAIL_NO_LARGER_RESPONSE"
+        comparison["gated"] = cfg["gate"] == "negative_control"
+        comparisons[name] = comparison
+    gated = [n for n, c in protocol["cases"].items() if c["gate"] in ("hold", "release", "negative_control")]
+    failures = [n for n in gated if n not in available
+                or available[n]["classification"]["status"] != "PASS_CASE_GATES"
+                or (protocol["cases"][n]["gate"] == "negative_control" and comparisons.get(n, {}).get("status") != "PASS_LARGER_RESPONSE")]
+    complete = all(name in available for name in protocol["cases"])
+    return {"status": "PASS_F1_GATED_CASES" if complete and not failures else "FAIL_OR_INCOMPLETE_F1_GATED_CASES",
+        "cases": cases, "comparisons": comparisons, "gated_cases": gated, "gated_failures": failures,
+        "complete_case_set": complete, "independent_physical_audit": "NOT_RUN_BY_THIS_DRIVER",
+        "full_physics_acceptance": False, "material_two_way_coupling_validated": False}
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir",type=Path,required=True)
@@ -560,6 +1017,9 @@ def main():
     from robotic_cutting_sim.tasks import TASK_IDS
     parser.add_argument("--task-id",choices=TASK_IDS,default="CUT-01")
     parser.add_argument("--cases",nargs="+")
+    from robotic_cutting_sim.tool_profile import PROFILES
+    parser.add_argument("--tool-profile",choices=sorted(PROFILES),default=None,
+        help="Opt-in profile tool override; only for protocols declaring allowed_tool_profiles (default: the task's own tool)")
     parser.add_argument("--timeout",type=float,default=900.)
     parser.add_argument("--dry-run",action="store_true")
     parser.add_argument("--worker",action="store_true",help=argparse.SUPPRESS)
@@ -569,18 +1029,22 @@ def main():
     protocol=read_json(args.protocol)
     if args.task_id not in protocol.get('allowed_task_ids', (args.task_id,)):
         parser.error('The selected task is outside this frozen control protocol')
+    if (args.tool_profile is not None or "allowed_tool_profiles" in protocol) and \
+            args.tool_profile not in protocol.get("allowed_tool_profiles", ()):
+        parser.error("--tool-profile must be one of the protocol's allowed_tool_profiles (and is required by such protocols)")
     runtimes=("isaac_sim","isaac_lab") if args.runtime=="both" else (args.runtime,)
     if any(runtime not in protocol.get("allowed_runtimes",("isaac_sim","isaac_lab")) for runtime in runtimes):
         parser.error("The selected runtime is outside the frozen protocol's allowed_runtimes")
     if args.worker:
         if args.runtime=="both" or args.case not in protocol["cases"]:parser.error("Worker requires one explicit runtime and frozen case")
+        if protocol.get("start_profile")==WP11_START_PROFILE:return worker_wp11(args,protocol)
         return worker(args,protocol)
     selected=args.cases or list(protocol["cases"])
     if any(name not in protocol["cases"] for name in selected):parser.error("Unknown case; use names in the frozen protocol")
     output=args.output_dir.resolve();output.mkdir(parents=True,exist_ok=False)
     (output/"protocol.json").write_bytes(args.protocol.read_bytes())
     index={"schema_version":"wp08_physical_controls_index_v1","protocol":{"path":"protocol.json","sha256":sha256(args.protocol)},
-        "task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"cases":{},"status":"PLAN_ONLY_NOT_RUN" if args.dry_run else "RUNNING",
+        "task_id":args.task_id,"seed":args.seed,"gpu":args.gpu,"tool_profile":args.tool_profile,"cases":{},"status":"PLAN_ONLY_NOT_RUN" if args.dry_run else "RUNNING",
         "scope":"Independent fresh-process physical pregrasp/rigid controls; no material advance or task completion"}
     for runtime in runtimes:
         executable=ROOT/(".deps/isaacsim-venv/bin/python" if runtime=="isaac_sim" else ".deps/isaaclab-venv/bin/python")
@@ -588,8 +1052,12 @@ def main():
             directory=Path(runtime)/name;key=runtime+"/"+name
             command=[str(executable),str(Path(__file__).resolve()),"--worker","--runtime",runtime,"--case",name,
                 "--protocol",str(output/"protocol.json"),"--task-id",args.task_id,"--seed",str(args.seed),"--gpu",str(args.gpu),"--output-dir",str(output/directory)]
+            if args.tool_profile is not None:command+=["--tool-profile",args.tool_profile]
             index["cases"][key]={"directory":str(directory),"runtime":runtime,"config":protocol["cases"][name],"command":command,
                 "control_trace":"control_trace.jsonl","raw_trace":"physical_grasp_trace_00.jsonl" if runtime=="isaac_sim" else "tool_substeps.npz", "status":"NOT_RUN"}
+    if protocol.get("start_profile")==WP11_START_PROFILE:
+        # Opt-in v8+: the task is the protocol's configured scene/goal (--task-id is not used by the worker).
+        index.update(task_id=protocol["configured_task"]["task_id"],configured_task=protocol["configured_task"],start_profile=WP11_START_PROFILE)
     write_json(output/"index.json",index)
     if args.dry_run:
         print("PLAN_ONLY_NOT_RUN",output/"index.json");return 0
@@ -618,10 +1086,10 @@ def main():
         row.update(returncode=code,wall_s=time.monotonic()-start,status=status,source_sha256=result.get("source_sha256",{}),log=log.name)
         write_json(output/"index.json",index)
         print("DONE",key,row["status"],flush=True)
-    summary=summarize_matrix(index,output,protocol)
+    summary=(summarize_wp11 if protocol.get("start_profile")==WP11_START_PROFILE else summarize_matrix)(index,output,protocol)
     index["status"]=summary["status"];write_json(output/"index.json",index);write_json(output/"result.json",summary)
     print(summary["status"],output/"index.json",flush=True)
-    return 0 if summary["status"]=="PASS_FROZEN_RIGID_CONTROLS" else 1
+    return 0 if summary["status"] in ("PASS_FROZEN_RIGID_CONTROLS","PASS_F1_GATED_CASES") else 1
 
 
 if __name__=="__main__":

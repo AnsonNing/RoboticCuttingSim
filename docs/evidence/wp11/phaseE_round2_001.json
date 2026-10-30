@@ -1,0 +1,4104 @@
+{
+ "schema": "rcs_generalization_round_evidence_v1",
+ "round_id": "wp11_phaseE_round2",
+ "config": "/mnt/data/ningan/RoboticCuttingSim-wp11-E2-0496562/configs/wp11/generalization_round2.json",
+ "generated": "2026-10-30T10:36:17.274856+09:00",
+ "command": [
+  "scripts/run_generalization.py",
+  "--config",
+  "configs/wp11/generalization_round2.json",
+  "summarize",
+  "--stage1",
+  "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_stage1_001",
+  "--material-root",
+  "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001",
+  "--log-dir",
+  "/home/ningan/RoboticCuttingSim/artifacts/wp11/logs",
+  "--out",
+  "/home/ningan/RoboticCuttingSim/docs/evidence/wp11/phaseE_round2_001.json"
+ ],
+ "stage1_dir": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_stage1_001",
+ "material_root": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001",
+ "label": "Stage-2 classes are KINEMATIC ideal-tracking results, never live results; GRASP_FAILURE is not exercised in the kinematic stage.",
+ "tables": {
+  "TEST_D2": {
+   "stage2_selected": 6,
+   "kinematic_task_success_among_stage2": 0.5,
+   "not_run_not_selected": 0,
+   "samples": 6,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 3,
+    "TASK_SUCCESS": 3,
+    "NOT_RUN": 0
+   },
+   "preflight_feasible": 6,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 0.5,
+   "overall_kinematic_success": 0.5,
+   "not_run_among_feasible": 0,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "CUT_W": {
+   "stage2_selected": 3,
+   "kinematic_task_success_among_stage2": 1.0,
+   "not_run_not_selected": 5,
+   "samples": 10,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 2,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 0,
+    "TASK_SUCCESS": 3,
+    "NOT_RUN": 5
+   },
+   "preflight_feasible": 8,
+   "feasible_fraction": 0.8,
+   "kinematic_task_success_among_feasible": 0.375,
+   "overall_kinematic_success": 0.3,
+   "not_run_among_feasible": 5,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "OBLIQUE_W": {
+   "stage2_selected": 3,
+   "kinematic_task_success_among_stage2": 0.0,
+   "not_run_not_selected": 7,
+   "samples": 10,
+   "counts": {
+    "SCENE_INFEASIBLE": 0,
+    "IK_FAILURE": 0,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 3,
+    "TASK_SUCCESS": 0,
+    "NOT_RUN": 7
+   },
+   "preflight_feasible": 10,
+   "feasible_fraction": 1.0,
+   "kinematic_task_success_among_feasible": 0.0,
+   "overall_kinematic_success": 0.0,
+   "not_run_among_feasible": 7,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TRIM_W": {
+   "stage2_selected": 3,
+   "kinematic_task_success_among_stage2": 0.0,
+   "not_run_not_selected": 1,
+   "samples": 10,
+   "counts": {
+    "SCENE_INFEASIBLE": 3,
+    "IK_FAILURE": 3,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 3,
+    "TASK_SUCCESS": 0,
+    "NOT_RUN": 1
+   },
+   "preflight_feasible": 4,
+   "feasible_fraction": 0.4,
+   "kinematic_task_success_among_feasible": 0.0,
+   "overall_kinematic_success": 0.0,
+   "not_run_among_feasible": 1,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  },
+  "TEST_A_W": {
+   "stage2_selected": 3,
+   "kinematic_task_success_among_stage2": 0.6666666666666666,
+   "not_run_not_selected": 3,
+   "samples": 10,
+   "counts": {
+    "SCENE_INFEASIBLE": 1,
+    "IK_FAILURE": 3,
+    "GRASP_FAILURE": 0,
+    "CUTTING_FAILURE": 1,
+    "TASK_SUCCESS": 2,
+    "NOT_RUN": 3
+   },
+   "preflight_feasible": 6,
+   "feasible_fraction": 0.6,
+   "kinematic_task_success_among_feasible": 0.3333333333333333,
+   "overall_kinematic_success": 0.2,
+   "not_run_among_feasible": 3,
+   "rule": "feasible = samples - SCENE_INFEASIBLE - IK_FAILURE; NOT_RUN feasible samples stay in the feasible denominator as non-successes; nothing is excluded"
+  }
+ },
+ "samples": [
+  {
+   "family": "TEST_D2",
+   "seed": 2501,
+   "sample_id": "E2_TEST_D2_s2501",
+   "goal_id": "E2_TEST_D2_s2501_sever0_removeall",
+   "goal_type": "sequence",
+   "goal_description": "sever at local x = -44.00 mm (angle 0 deg); then remove all protrusions (rake 10 deg).",
+   "draws": {
+    "length_m": 0.1650716863637561,
+    "width_m": 0.0300662282214813,
+    "height_m": 0.02193245809542202,
+    "x_m": 0.001469519224834643,
+    "y_m": 0.01045605310373,
+    "yaw_deg": 3.578009807232405,
+    "cut_fraction": -0.2621053221846801,
+    "p0_x_fraction": 0.04219800913269009,
+    "p0_y_m": -0.0014491855796643983,
+    "p0_radius_m": 0.010522977658079857,
+    "p0_height_m": 0.007841897031519177,
+    "p1_x_fraction": 0.311861456536225,
+    "p1_y_m": 0.0004835276879645101,
+    "p1_radius_m": 0.010815117800873126,
+    "p1_height_m": 0.005706869960674049
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.166,
+     0.03,
+     0.022
+    ],
+    "step_pattern": [
+     "sever:0",
+     "remove:all"
+    ],
+    "protrusion_families": [
+     "ellipsoid_cap",
+     "dome"
+    ],
+    "rake_deg": 10.0,
+    "discrete_rng": "rng.integers after the uniform draws: the two protrusion families, in order",
+    "sever": [
+     {
+      "cut_angle_deg": 0.0,
+      "cut_x_local_m": -0.044,
+      "nominal_piece_fractions": [
+       0.2349397590361446,
+       0.7650602409638554
+      ]
+     }
+    ]
+   },
+   "task_id": "CFG-E2_TEST_D2_s2501-E2_TEST_D2_s2501_sever0_removeall-d4eb9654",
+   "particles": 111991,
+   "duration_s": 19.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 23.437349893996725,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7239202976226806,
+     "gripper_pad_clearance": 0.025951639419142653,
+     "franka1_collision": 0.13284151616344803,
+     "franka_workcell_collision": 0.03048445748033699,
+     "knife_handle_clearance": 0.011123754707750289,
+     "blade_collision": 4.914104708056457e-05,
+     "wrist_camera_clearance": 0.051656864881122845,
+     "franka_self_collision": 0.019643056418764904,
+     "joint_continuity": 0.04211264610290527
+    },
+    "ik_worst": {
+     "position_error_m": 3.1444744976411763e-06,
+     "rotation_error_rad": 1.285529210194888e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 345
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step1:remove_all:selected_protrusions_removed",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step1:remove_all:selected_protrusions_removed"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0014999995529651616,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.0,
+       "per_protrusion_removed": {
+        "p0": 0.05063291139240508,
+        "p1": 0.0
+       },
+       "separation": false,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.018581084787845613,
+       "overcut_detached_below_plane_fraction": null,
+       "substrate_share": null,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      }
+     ],
+     "cut_completion": 0.0,
+     "separation": false,
+     "cut_position_error_m": 0.018581084787845613
+    },
+    "wall_s": {
+     "setup": 1.2077901970042149,
+     "episode": 497.57750631700037,
+     "evaluation": 3.753125175004243,
+     "per_simulated_second": 26.188289806157915
+    },
+    "simulated_s": 19.0,
+    "particles": 111991,
+    "history_frames": 21,
+    "physics_state_mb": 48.039639,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 16,
+     "max_occupied_slots": 6,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.7106844473453144,
+     "max_speed_m_s_sampled": 0.5618028044700623,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2501",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_D2",
+   "seed": 2502,
+   "sample_id": "E2_TEST_D2_s2502",
+   "goal_id": "E2_TEST_D2_s2502_sever20_removeall",
+   "goal_type": "sequence",
+   "goal_description": "sever at local x = -30.78 mm (angle 20 deg); then remove all protrusions (rake 25 deg).",
+   "draws": {
+    "length_m": 0.15110806951861025,
+    "width_m": 0.030336307245018533,
+    "height_m": 0.020906541775613647,
+    "x_m": -0.002019415434388362,
+    "y_m": 0.00797034593973257,
+    "yaw_deg": -4.672796792361336,
+    "cut_fraction": -0.20248131975628297,
+    "p0_x_fraction": -0.005472335571248647,
+    "p0_y_m": 0.001435891911555761,
+    "p0_radius_m": 0.008660313914657257,
+    "p0_height_m": 0.00832850534990226,
+    "p1_x_fraction": 0.3337623448424094,
+    "p1_y_m": -8.952662937220532e-05,
+    "p1_radius_m": 0.010328795482968237,
+    "p1_height_m": 0.005736572888913244
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.152,
+     0.03,
+     0.021
+    ],
+    "step_pattern": [
+     "sever:20",
+     "remove:all"
+    ],
+    "protrusion_families": [
+     "dome",
+     "ellipsoid_cap"
+    ],
+    "rake_deg": 25.0,
+    "discrete_rng": "rng.integers after the uniform draws: the two protrusion families, in order",
+    "sever": [
+     {
+      "cut_angle_deg": 20.0,
+      "cut_x_local_m": -0.03077716060295501,
+      "nominal_piece_fractions": [
+       0.297518680243717,
+       0.7024813197562829
+      ]
+     }
+    ]
+   },
+   "task_id": "CFG-E2_TEST_D2_s2502-E2_TEST_D2_s2502_sever20_removeall-7e75ce3c",
+   "particles": 97621,
+   "duration_s": 19.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 21.62677390500903,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7266716480255127,
+     "gripper_pad_clearance": 0.025795636942251662,
+     "franka1_collision": 0.11761146404041461,
+     "franka_workcell_collision": 0.040290029185182125,
+     "knife_handle_clearance": 0.007508638860958529,
+     "blade_collision": 0.00020066396697816083,
+     "wrist_camera_clearance": 0.050882426528397445,
+     "franka_self_collision": 0.019718607628738415,
+     "joint_continuity": 0.041348752975463865
+    },
+    "ik_worst": {
+     "position_error_m": 3.0729782448497827e-06,
+     "rotation_error_rad": 1.2118130057605874e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 352
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step1:remove_all:selected_protrusions_removed",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step1:remove_all:selected_protrusions_removed"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0003420201197543689,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.0,
+       "per_protrusion_removed": {
+        "p0": 0.9810996563573884,
+        "p1": 0.0
+       },
+       "separation": false,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.021098399251699446,
+       "overcut_detached_below_plane_fraction": null,
+       "substrate_share": null,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      }
+     ],
+     "cut_completion": 0.0,
+     "separation": false,
+     "cut_position_error_m": 0.021098399251699446
+    },
+    "wall_s": {
+     "setup": 1.0539004879974527,
+     "episode": 583.0134777140047,
+     "evaluation": 3.4932653889991343,
+     "per_simulated_second": 30.684919879684458
+    },
+    "simulated_s": 19.0,
+    "particles": 97621,
+    "history_frames": 21,
+    "physics_state_mb": 42.034902,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 16,
+     "max_occupied_slots": 8,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.6135374349328345,
+     "max_speed_m_s_sampled": 0.42035719752311707,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2502",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_D2",
+   "seed": 2503,
+   "sample_id": "E2_TEST_D2_s2503",
+   "goal_id": "E2_TEST_D2_s2503_removep0_sever0",
+   "goal_type": "sequence",
+   "goal_description": "remove p0 (keep the other); then sever at local x = -48.00 mm (angle 0 deg) (rake 10 deg).",
+   "draws": {
+    "length_m": 0.1695563936836375,
+    "width_m": 0.03141975774393787,
+    "height_m": 0.01641006645766284,
+    "x_m": 0.016445560496425354,
+    "y_m": 0.011990984352320069,
+    "yaw_deg": -11.808573389212839,
+    "cut_fraction": -0.2744997379960042,
+    "p0_x_fraction": -0.0032500550351124077,
+    "p0_y_m": -0.0014504699243443348,
+    "p0_radius_m": 0.010067836263472539,
+    "p0_height_m": 0.0059671272371342125,
+    "p1_x_fraction": 0.30595658014463495,
+    "p1_y_m": -0.00025575585262641054,
+    "p1_radius_m": 0.008176502768760712,
+    "p1_height_m": 0.008984859641730411
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.17,
+     0.032,
+     0.016
+    ],
+    "step_pattern": [
+     "remove:p0",
+     "sever:0"
+    ],
+    "protrusion_families": [
+     "dome",
+     "ellipsoid_cap"
+    ],
+    "rake_deg": 10.0,
+    "discrete_rng": "rng.integers after the uniform draws: the two protrusion families, in order",
+    "sever": [
+     {
+      "cut_angle_deg": 0.0,
+      "cut_x_local_m": -0.048,
+      "nominal_piece_fractions": [
+       0.21764705882352942,
+       0.7823529411764706
+      ]
+     }
+    ]
+   },
+   "task_id": "CFG-E2_TEST_D2_s2503-E2_TEST_D2_s2503_removep0_sever0-e2ff2617",
+   "particles": 88866,
+   "duration_s": 15.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 16.43037755799014,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7404601097106933,
+     "gripper_pad_clearance": 0.027800114914022043,
+     "franka1_collision": 0.15307057183295353,
+     "franka_workcell_collision": 0.024484388823940193,
+     "knife_handle_clearance": 0.00905202988382622,
+     "blade_collision": 4.90744717476932e-05,
+     "wrist_camera_clearance": 0.051656864129510774,
+     "franka_self_collision": 0.01970232464459712,
+     "joint_continuity": 0.04190468549728393
+    },
+    "ik_worst": {
+     "position_error_m": 3.1304162641864297e-06,
+     "rotation_error_rad": 1.2388841813054983e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 342
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 0.9592198581560283,
+       "per_protrusion_removed": {
+        "p0": 0.9592198581560283,
+        "p1": 0.0
+       },
+       "separation": true,
+       "mechanical_components": 2,
+       "cut_position_error_m": 0.006019321098923683,
+       "overcut_detached_below_plane_fraction": null,
+       "substrate_share": null,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      },
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.001499999731779108,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      }
+     ],
+     "cut_completion": 0.9592198581560283,
+     "separation": true,
+     "cut_position_error_m": 0.006019321098923683
+    },
+    "wall_s": {
+     "setup": 1.2629305209993618,
+     "episode": 487.98703108400514,
+     "evaluation": 2.6096390829916345,
+     "per_simulated_second": 32.53246873893367
+    },
+    "simulated_s": 15.0,
+    "particles": 88866,
+    "history_frames": 21,
+    "physics_state_mb": 37.966196,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 2,
+     "slots_per_node": 16,
+     "max_occupied_slots": 3,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9210529671969879,
+     "max_speed_m_s_sampled": 0.10320673882961273,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2503",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_D2",
+   "seed": 2504,
+   "sample_id": "E2_TEST_D2_s2504",
+   "goal_id": "E2_TEST_D2_s2504_sever0_trimp1",
+   "goal_type": "sequence",
+   "goal_description": "sever at local x = -36.00 mm (angle 0 deg); then trim the plane z = H over local x [39.0, 58.1] mm (p1) (rake 25 deg).",
+   "draws": {
+    "length_m": 0.15769312596757182,
+    "width_m": 0.03153574414330775,
+    "height_m": 0.01890529338363744,
+    "x_m": 0.014441299924114057,
+    "y_m": -0.011600295398360232,
+    "yaw_deg": -0.8804172608572358,
+    "cut_fraction": -0.23666782508862566,
+    "p0_x_fraction": 0.046901828443098315,
+    "p0_y_m": 0.001838796578924122,
+    "p0_radius_m": 0.010857341791592612,
+    "p0_height_m": 0.007249865779987851,
+    "p1_x_fraction": 0.30732015449480304,
+    "p1_y_m": 0.0008008683117292658,
+    "p1_radius_m": 0.008064166371468742,
+    "p1_height_m": 0.006385330295092886
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.158,
+     0.032,
+     0.019
+    ],
+    "step_pattern": [
+     "sever:0",
+     "trim:p1"
+    ],
+    "protrusion_families": [
+     "dome",
+     "gaussian"
+    ],
+    "rake_deg": 25.0,
+    "discrete_rng": "rng.integers after the uniform draws: the two protrusion families, in order",
+    "sever": [
+     {
+      "cut_angle_deg": 0.0,
+      "cut_x_local_m": -0.036,
+      "nominal_piece_fractions": [
+       0.2721518987341772,
+       0.7278481012658227
+      ]
+     }
+    ]
+   },
+   "task_id": "CFG-E2_TEST_D2_s2504-E2_TEST_D2_s2504_sever0_trimp1-2861f21a",
+   "particles": 97148,
+   "duration_s": 15.0,
+   "solver_module": "tlmpm_v5",
+   "digits": 2,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 17.21743723200052,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7112614631652832,
+     "gripper_pad_clearance": 0.026932534755174407,
+     "franka1_collision": 0.13301293489236665,
+     "franka_workcell_collision": 0.03828991666135615,
+     "knife_handle_clearance": 0.011124482181149382,
+     "blade_collision": 0.000200318926139557,
+     "wrist_camera_clearance": 0.05165686398041454,
+     "franka_self_collision": 0.019639038395515278,
+     "joint_continuity": 0.042762742467457426
+    },
+    "ik_worst": {
+     "position_error_m": 3.07024594916105e-06,
+     "rotation_error_rad": 1.3631341340265956e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 359
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.001500001490116129,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.9829931972789115,
+       "separation": true,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.0,
+       "overcut_detached_below_plane_fraction": 0.00012871853546910755,
+       "definitions": {
+        "cut_completion": "removed above-plane mass fraction in the region",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the region (reported quality)"
+       }
+      }
+     ],
+     "cut_completion": 0.9829931972789115,
+     "separation": true,
+     "cut_position_error_m": 0.001500001490116129
+    },
+    "wall_s": {
+     "setup": 1.2835757919965545,
+     "episode": 532.1424800259992,
+     "evaluation": 3.468547663986101,
+     "per_simulated_second": 35.47616533506662
+    },
+    "simulated_s": 15.0,
+    "particles": 97148,
+    "history_frames": 21,
+    "physics_state_mb": 41.263859,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 2,
+     "slots_per_node": 16,
+     "max_occupied_slots": 3,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8360953585488109,
+     "max_speed_m_s_sampled": 0.0912076085805893,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2504",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_D2",
+   "seed": 2505,
+   "sample_id": "E2_TEST_D2_s2505",
+   "goal_id": "E2_TEST_D2_s2505_sever20_removep0_trimp1",
+   "goal_type": "sequence",
+   "goal_description": "sever at local x = -41.30 mm (angle 20 deg); then remove p0 (keep the other); then trim the plane z = H over local x [43.7, 65.2] mm (p1) (rake 10 deg).",
+   "draws": {
+    "length_m": 0.16453065986281973,
+    "width_m": 0.02850130784559793,
+    "height_m": 0.017071215294953195,
+    "x_m": -0.000787197423073361,
+    "y_m": 0.010011048307694143,
+    "yaw_deg": 18.722147356548327,
+    "cut_fraction": -0.2518463918147022,
+    "p0_x_fraction": 0.04633573134991559,
+    "p0_y_m": 0.001285014175390673,
+    "p0_radius_m": 0.009021180927514959,
+    "p0_height_m": 0.0082429358772622,
+    "p1_x_fraction": 0.3321415935613814,
+    "p1_y_m": 0.0014795956371798716,
+    "p1_radius_m": 0.009253220601966787,
+    "p1_height_m": 0.006298444937416469
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.164,
+     0.028,
+     0.017
+    ],
+    "step_pattern": [
+     "sever:20",
+     "remove:p0",
+     "trim:p1"
+    ],
+    "protrusion_families": [
+     "gaussian",
+     "dome"
+    ],
+    "rake_deg": 10.0,
+    "discrete_rng": "rng.integers after the uniform draws: the two protrusion families, in order",
+    "sever": [
+     {
+      "cut_angle_deg": 20.0,
+      "cut_x_local_m": -0.041302808257611165,
+      "nominal_piece_fractions": [
+       0.24815360818529777,
+       0.7518463918147023
+      ]
+     }
+    ]
+   },
+   "task_id": "CFG-E2_TEST_D2_s2505-E2_TEST_D2_s2505_sever20_removep0_trimp1-8d2511be",
+   "particles": 79039,
+   "duration_s": 18.5,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 20.956146675991477,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5170516490936279,
+     "gripper_pad_clearance": 0.025073364938703376,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.02548417519718531,
+     "knife_handle_clearance": 0.007508178103882264,
+     "blade_collision": 4.914554631877939e-05,
+     "wrist_camera_clearance": 0.04585931221019566,
+     "franka_self_collision": 0.019713548533743415,
+     "joint_continuity": 0.03999799251556396
+    },
+    "ik_worst": {
+     "position_error_m": 3.1005421620412544e-06,
+     "rotation_error_rad": 1.3221827760517817e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 353
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0006262523849360534,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.9517819706498953,
+       "per_protrusion_removed": {
+        "p0": 0.9517819706498953,
+        "p1": 0.0
+       },
+       "separation": true,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.0007687443792819965,
+       "overcut_detached_below_plane_fraction": null,
+       "substrate_share": null,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      },
+      {
+       "cut_completion": 0.9738955823293173,
+       "separation": true,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.0005012368708848941,
+       "overcut_detached_below_plane_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "removed above-plane mass fraction in the region",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the region (reported quality)"
+       }
+      }
+     ],
+     "cut_completion": 0.9517819706498953,
+     "separation": true,
+     "cut_position_error_m": 0.0007687443792819965
+    },
+    "wall_s": {
+     "setup": 1.092922900992562,
+     "episode": 549.94203826999,
+     "evaluation": 4.530239341998822,
+     "per_simulated_second": 29.726596663242702
+    },
+    "simulated_s": 18.5,
+    "particles": 79039,
+    "history_frames": 21,
+    "physics_state_mb": 33.687089,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 16,
+     "max_occupied_slots": 4,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8822842561960591,
+     "max_speed_m_s_sampled": 1.0419719219207764,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2505",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_D2",
+   "seed": 2506,
+   "sample_id": "E2_TEST_D2_s2506",
+   "goal_id": "E2_TEST_D2_s2506_trimp0_sever0_removep1",
+   "goal_type": "sequence",
+   "goal_description": "trim the plane z = H over local x [-10.9, 8.9] mm (p0); then sever at local x = -40.00 mm (angle 0 deg); then remove p1 (keep the other) (rake 25 deg).",
+   "draws": {
+    "length_m": 0.15798358370045446,
+    "width_m": 0.03350618085640614,
+    "height_m": 0.021164106385397702,
+    "x_m": 0.0018793761443263446,
+    "y_m": -0.013281031360618747,
+    "yaw_deg": 9.242382000609911,
+    "cut_fraction": -0.24804515587169118,
+    "p0_x_fraction": -0.006139415019205518,
+    "p0_y_m": 0.0002829842847039501,
+    "p0_radius_m": 0.008399301940325678,
+    "p0_height_m": 0.0050516036131387915,
+    "p1_x_fraction": 0.300432430370722,
+    "p1_y_m": -0.00016412874195957444,
+    "p1_radius_m": 0.009944179926545544,
+    "p1_height_m": 0.008557944104895106
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.158,
+     0.034,
+     0.021
+    ],
+    "step_pattern": [
+     "trim:p0",
+     "sever:0",
+     "remove:p1"
+    ],
+    "protrusion_families": [
+     "ellipsoid_cap",
+     "gaussian"
+    ],
+    "rake_deg": 25.0,
+    "discrete_rng": "rng.integers after the uniform draws: the two protrusion families, in order",
+    "sever": [
+     {
+      "cut_angle_deg": 0.0,
+      "cut_x_local_m": -0.04,
+      "nominal_piece_fractions": [
+       0.2468354430379747,
+       0.7531645569620252
+      ]
+     }
+    ]
+   },
+   "task_id": "CFG-E2_TEST_D2_s2506-E2_TEST_D2_s2506_trimp0_sever0_removep1-4fc0bf05",
+   "particles": 114161,
+   "duration_s": 19.5,
+   "solver_module": "tlmpm_v5",
+   "digits": 3,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 21.008498600000166,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6024008512496948,
+     "gripper_pad_clearance": 0.02720824195490675,
+     "franka1_collision": 0.13356244397792988,
+     "franka_workcell_collision": 0.04028986916134188,
+     "knife_handle_clearance": 0.011123565126655296,
+     "blade_collision": 0.00020015627277133856,
+     "wrist_camera_clearance": 0.05165688618677688,
+     "franka_self_collision": 0.019711089845069876,
+     "joint_continuity": 0.04192329704761505
+    },
+    "ik_worst": {
+     "position_error_m": 3.226673796222663e-06,
+     "rotation_error_rad": 1.2516005300319618e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 353
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: step0:trim_p0:material_above_plane_removed",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "step0:trim_p0:material_above_plane_removed"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "steps": [
+      {
+       "cut_completion": 0.0,
+       "separation": false,
+       "mechanical_components": 1,
+       "cut_position_error_m": 0.014241179168224333,
+       "overcut_detached_below_plane_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "removed above-plane mass fraction in the region",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the region (reported quality)"
+       }
+      },
+      {
+       "cut_completion": 1.0,
+       "separation": true,
+       "mechanical_components": 2,
+       "expected_pieces": 2,
+       "cut_position_error_m": 0.0015000002831220619,
+       "overcut_debris_mass_fraction": 0.0,
+       "definitions": {
+        "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+        "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+        "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+       }
+      },
+      {
+       "cut_completion": 0.9582637729549249,
+       "per_protrusion_removed": {
+        "p0": 0.0,
+        "p1": 0.9582637729549249
+       },
+       "separation": true,
+       "mechanical_components": 3,
+       "cut_position_error_m": 0.0012078971564769732,
+       "overcut_detached_below_plane_fraction": null,
+       "substrate_share": null,
+       "definitions": {
+        "cut_completion": "min removed mass fraction over selected protrusions",
+        "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+        "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+       }
+      }
+     ],
+     "cut_completion": 0.0,
+     "separation": false,
+     "cut_position_error_m": 0.014241179168224333
+    },
+    "wall_s": {
+     "setup": 1.199974609000492,
+     "episode": 829.9908189790003,
+     "evaluation": 4.753020160002052,
+     "per_simulated_second": 42.56363174251284
+    },
+    "simulated_s": 19.5,
+    "particles": 114161,
+    "history_frames": 21,
+    "physics_state_mb": 49.245012,
+    "slots": {
+     "code_encoding": "packed2",
+     "max_cuts": 3,
+     "slots_per_node": 16,
+     "max_occupied_slots": 6,
+     "overflow_entries": 0
+    },
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8226832824494144,
+     "max_speed_m_s_sampled": 0.16248425841331482,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2506",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2101,
+   "sample_id": "E2_CUT_W_s2101",
+   "goal_id": "E2_CUT_W_s2101_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 8.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.1572178585272466,
+    "width_m": 0.0389384612677391,
+    "height_m": 0.027937628219101663,
+    "x_m": -0.022844157434843054,
+    "y_m": -0.012821172576109124,
+    "yaw_deg": 13.849902552461018,
+    "cut_fraction": 0.059897012134149274
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.158,
+     0.038,
+     0.028
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.008,
+    "nominal_piece_fractions": [
+     0.550632911392405,
+     0.449367088607595
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2101-E2_CUT_W_s2101_sever-114b58d7",
+   "particles": 168112,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.998081313999137,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6517760276794433,
+     "gripper_pad_clearance": 0.03022217216027136,
+     "franka1_collision": 0.10089278357721848,
+     "franka_workcell_collision": 0.07115599805712228,
+     "knife_handle_clearance": 0.011124292637954985,
+     "blade_collision": 0.00800017420074011,
+     "wrist_camera_clearance": 0.05137541170520885,
+     "franka_self_collision": 0.019639847590799564,
+     "joint_continuity": 0.04618197441101074
+    },
+    "ik_worst": {
+     "position_error_m": 3.2964444574664497e-06,
+     "rotation_error_rad": 1.1134100024769116e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 330
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0014999999273568416,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.161432760010939,
+     "episode": 638.9983860419889,
+     "evaluation": 4.379304707996198,
+     "per_simulated_second": 55.56507704712946
+    },
+    "simulated_s": 11.5,
+    "particles": 168112,
+    "history_frames": 21,
+    "physics_state_mb": 72.673111,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9571147762928661,
+     "max_speed_m_s_sampled": 0.033186864107847214,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_CUT_W_s2101",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2102,
+   "sample_id": "E2_CUT_W_s2102",
+   "goal_id": "E2_CUT_W_s2102_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -28.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.10069206784615643,
+    "width_m": 0.0282187842810377,
+    "height_m": 0.030699789746294275,
+    "x_m": -0.015549557285173793,
+    "y_m": 0.0640642431917132,
+    "yaw_deg": 38.100329345837395,
+    "cut_fraction": -0.27283505764811977
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.1,
+     0.028,
+     0.031
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": -0.028,
+    "nominal_piece_fractions": [
+     0.22,
+     0.7799999999999999
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2102-E2_CUT_W_s2102_sever-eefeb5e3",
+   "particles": 86800,
+   "duration_s": 12.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.461075590996188,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5524376321583986,
+     "gripper_pad_clearance": 0.030221461080019506,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115522006457918,
+     "knife_handle_clearance": 0.01112378399623589,
+     "blade_collision": 0.00800020209098989,
+     "wrist_camera_clearance": 0.05105931754125556,
+     "franka_self_collision": 0.019631989943406,
+     "joint_continuity": 0.04323893547058105
+    },
+    "ik_worst": {
+     "position_error_m": 3.1317438374847575e-06,
+     "rotation_error_rad": 1.0171917812298603e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 354
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000003129243822,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0308075979992282,
+     "episode": 303.5744319969963,
+     "evaluation": 2.537834685004782,
+     "per_simulated_second": 25.297869333083025
+    },
+    "simulated_s": 12.0,
+    "particles": 86800,
+    "history_frames": 21,
+    "physics_state_mb": 37.368516,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9514368200540185,
+     "max_speed_m_s_sampled": 0.032956313341856,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_CUT_W_s2102",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2103,
+   "sample_id": "E2_CUT_W_s2103",
+   "goal_id": "E2_CUT_W_s2103_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 36.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.1727493638886336,
+    "width_m": 0.03019952972155911,
+    "height_m": 0.03299859769934278,
+    "x_m": -0.028784266776864034,
+    "y_m": -0.03461203546155167,
+    "yaw_deg": 13.401090312127764,
+    "cut_fraction": 0.19893870405436642
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.172,
+     0.03,
+     0.033
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.036,
+    "nominal_piece_fractions": [
+     0.7093023255813954,
+     0.29069767441860467
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2103-E2_CUT_W_s2103_sever-75b235ad",
+   "particles": 170280,
+   "duration_s": 12.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.756935691999388,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5693495988845825,
+     "gripper_pad_clearance": 0.030221721729548127,
+     "franka1_collision": 0.09520115064713808,
+     "franka_workcell_collision": 0.07115546292090968,
+     "knife_handle_clearance": 0.011123994654726601,
+     "blade_collision": 0.008000393868252555,
+     "wrist_camera_clearance": 0.049610724074786575,
+     "franka_self_collision": 0.019661801092798754,
+     "joint_continuity": 0.046126184463500974
+    },
+    "ik_worst": {
+     "position_error_m": 3.168804364282694e-06,
+     "rotation_error_rad": 1.2161805713451719e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 329
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.001500001490116129,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1598261540057138,
+     "episode": 696.9958819070016,
+     "evaluation": 4.954712229009601,
+     "per_simulated_second": 58.0829901589168
+    },
+    "simulated_s": 12.0,
+    "particles": 170280,
+    "history_frames": 21,
+    "physics_state_mb": 71.932149,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9601563965245009,
+     "max_speed_m_s_sampled": 0.027699023485183716,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_CUT_W_s2103",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2104,
+   "sample_id": "E2_CUT_W_s2104",
+   "goal_id": "E2_CUT_W_s2104_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 28.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.18734000378671326,
+    "width_m": 0.02095755368048566,
+    "height_m": 0.03269858139655709,
+    "x_m": 0.0576707682364585,
+    "y_m": 0.0708257671179045,
+    "yaw_deg": 14.880050444240965,
+    "cut_fraction": 0.1391634274028115
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.188,
+     0.02,
+     0.033
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.028,
+    "nominal_piece_fractions": [
+     0.648936170212766,
+     0.35106382978723405
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2104-E2_CUT_W_s2104_sever-30ee6bae",
+   "particles": 124080,
+   "duration_s": 13.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 13.366567610995844,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5648035526275634,
+     "gripper_pad_clearance": 0.03022172305015171,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115551907757703,
+     "knife_handle_clearance": 0.011123827564643377,
+     "blade_collision": 0.008000144125584084,
+     "wrist_camera_clearance": 0.04861315418956621,
+     "franka_self_collision": 0.01965888707080643,
+     "joint_continuity": 0.044882593154907224
+    },
+    "ik_worst": {
+     "position_error_m": 3.025167076337409e-06,
+     "rotation_error_rad": 1.1660942836891486e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 340
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2105,
+   "sample_id": "E2_CUT_W_s2105",
+   "goal_id": "E2_CUT_W_s2105_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -24.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.18303751512138083,
+    "width_m": 0.02752648105946628,
+    "height_m": 0.020571162962900846,
+    "x_m": -0.08391656021415816,
+    "y_m": 0.043543476048747476,
+    "yaw_deg": 25.447279653325083,
+    "cut_fraction": -0.13974333774733463
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.184,
+     0.028,
+     0.021
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": -0.024,
+    "nominal_piece_fractions": [
+     0.3695652173913044,
+     0.6304347826086956
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2105-E2_CUT_W_s2105_sever-8501a849",
+   "particles": 108192,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.13362354200217,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5379914760589599,
+     "gripper_pad_clearance": 0.030221080551926797,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07115463724116525,
+     "knife_handle_clearance": 0.011123736671090644,
+     "blade_collision": 0.008000122896471772,
+     "wrist_camera_clearance": 0.051656864132811196,
+     "franka_self_collision": 0.019625643941400775,
+     "joint_continuity": 0.044131932258605955
+    },
+    "ik_worst": {
+     "position_error_m": 2.6137481191305183e-06,
+     "rotation_error_rad": 9.888515002382568e-07
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 373
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2106,
+   "sample_id": "E2_CUT_W_s2106",
+   "goal_id": "E2_CUT_W_s2106_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 20.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.17414215080938084,
+    "width_m": 0.02165026248012648,
+    "height_m": 0.022593377094173417,
+    "x_m": 0.08101346394342368,
+    "y_m": 0.07821994298833318,
+    "yaw_deg": 41.34419042425519,
+    "cut_fraction": 0.11419286235867543
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.174,
+     0.022,
+     0.023
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.02,
+    "nominal_piece_fractions": [
+     0.6149425287356323,
+     0.3850574712643678
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2106-E2_CUT_W_s2106_sever-10a47b8e",
+   "particles": 88044,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 79 (APPROACH:cut0)",
+    "wall_s": 1.8947364070045296,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.0022346679230116663,
+     "rotation_error_rad": 0.00045252495443728945
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 79 (APPROACH:cut0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2107,
+   "sample_id": "E2_CUT_W_s2107",
+   "goal_id": "E2_CUT_W_s2107_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 32.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.15698439439061934,
+    "width_m": 0.025726927266701713,
+    "height_m": 0.017873884270160935,
+    "x_m": -0.07122530558211551,
+    "y_m": -0.06914977712603554,
+    "yaw_deg": 44.83693071739212,
+    "cut_fraction": 0.20248425451798113
+   },
+   "derived": {
+    "seed_index": 6,
+    "applied_dims_m": [
+     0.156,
+     0.026,
+     0.018
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.032,
+    "nominal_piece_fractions": [
+     0.7051282051282052,
+     0.2948717948717949
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2107-E2_CUT_W_s2107_sever-f13db24b",
+   "particles": 73008,
+   "duration_s": 10.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 98 (APPROACH:cut0)",
+    "wall_s": 1.8894024259934667,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.0015379373180162937,
+     "rotation_error_rad": 0.000238841992620427
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 98 (APPROACH:cut0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2108,
+   "sample_id": "E2_CUT_W_s2108",
+   "goal_id": "E2_CUT_W_s2108_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 20.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.18177624404907788,
+    "width_m": 0.02421857320324465,
+    "height_m": 0.03271493163920143,
+    "x_m": -0.001920246567868114,
+    "y_m": 0.05549618556037683,
+    "yaw_deg": 4.580614056781371,
+    "cut_fraction": 0.11446909215974455
+   },
+   "derived": {
+    "seed_index": 7,
+    "applied_dims_m": [
+     0.182,
+     0.024,
+     0.033
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": 0.02,
+    "nominal_piece_fractions": [
+     0.6098901098901099,
+     0.3901098901098901
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2108-E2_CUT_W_s2108_sever-f44185d5",
+   "particles": 144144,
+   "duration_s": 12.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.907638884993503,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7218150615692138,
+     "gripper_pad_clearance": 0.030221418516949105,
+     "franka1_collision": 0.10182554443865799,
+     "franka_workcell_collision": 0.07115500972000072,
+     "knife_handle_clearance": 0.011123772302363253,
+     "blade_collision": 0.008000182729638762,
+     "wrist_camera_clearance": 0.0516568640893454,
+     "franka_self_collision": 0.019778072179274644,
+     "joint_continuity": 0.04710477352142334
+    },
+    "ik_worst": {
+     "position_error_m": 2.8902032766177656e-06,
+     "rotation_error_rad": 1.252761009056443e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 324
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2109,
+   "sample_id": "E2_CUT_W_s2109",
+   "goal_id": "E2_CUT_W_s2109_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -16.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.19016626638449546,
+    "width_m": 0.026964619043767443,
+    "height_m": 0.022568083975176984,
+    "x_m": 0.06875438824803384,
+    "y_m": 0.07625330513058326,
+    "yaw_deg": -56.71772548516274,
+    "cut_fraction": -0.08991259367864118
+   },
+   "derived": {
+    "seed_index": 8,
+    "applied_dims_m": [
+     0.19,
+     0.026,
+     0.023
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": -0.016,
+    "nominal_piece_fractions": [
+     0.41578947368421054,
+     0.5842105263157895
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2109-E2_CUT_W_s2109_sever-b543e060",
+   "particles": 113620,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.82536747699487,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.2939042568206787,
+     "gripper_pad_clearance": 0.030222990876340377,
+     "franka1_collision": 0.15464450437565447,
+     "franka_workcell_collision": 0.0711568768705965,
+     "knife_handle_clearance": 0.011124964232629455,
+     "blade_collision": 0.00800079574422385,
+     "wrist_camera_clearance": 0.05165687469338001,
+     "franka_self_collision": 0.01985532168790391,
+     "joint_continuity": 0.04211371898651123
+    },
+    "ik_worst": {
+     "position_error_m": 3.060630622993276e-06,
+     "rotation_error_rad": 1.1534276468679125e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 407
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "CUT_W",
+   "seed": 2110,
+   "sample_id": "E2_CUT_W_s2110",
+   "goal_id": "E2_CUT_W_s2110_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -16.00 mm (mid-height), cut angle 0.0 deg about local y.",
+   "draws": {
+    "length_m": 0.1809071570435552,
+    "width_m": 0.023880124102132555,
+    "height_m": 0.01634757686071154,
+    "x_m": -0.07586560523469044,
+    "y_m": -0.015182412611016133,
+    "yaw_deg": -30.83744524044279,
+    "cut_fraction": -0.08620481118424739
+   },
+   "derived": {
+    "seed_index": 9,
+    "applied_dims_m": [
+     0.18,
+     0.024,
+     0.016
+    ],
+    "cut_angle_deg": 0.0,
+    "cut_x_local_m": -0.016,
+    "nominal_piece_fractions": [
+     0.4111111111111111,
+     0.5888888888888889
+    ]
+   },
+   "task_id": "CFG-E2_CUT_W_s2110-E2_CUT_W_s2110_sever-f798cbb5",
+   "particles": 69120,
+   "duration_s": 10.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.610035990001052,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6655694961547851,
+     "gripper_pad_clearance": 0.030222665728188203,
+     "franka1_collision": 0.1726011228083308,
+     "franka_workcell_collision": 0.07115599257152194,
+     "knife_handle_clearance": 0.011125278836906258,
+     "blade_collision": 0.00800050157934355,
+     "wrist_camera_clearance": 0.051656865221483,
+     "franka_self_collision": 0.01990755957196412,
+     "joint_continuity": 0.049971131086349485
+    },
+    "ik_worst": {
+     "position_error_m": 3.1852558297178536e-06,
+     "rotation_error_rad": 1.4754215239705171e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 369
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2201,
+   "sample_id": "E2_OBLIQUE_W_s2201",
+   "goal_id": "E2_OBLIQUE_W_s2201_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 27.41 mm (mid-height), cut angle 35.0 deg about local y.",
+   "draws": {
+    "length_m": 0.1545552860237282,
+    "width_m": 0.03382299185361259,
+    "height_m": 0.017124734439840767,
+    "x_m": 0.017757046650307445,
+    "y_m": -0.02134717232306295,
+    "yaw_deg": -27.16001707163162,
+    "cut_fraction": 0.17798186676370542
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.154,
+     0.034,
+     0.017
+    ],
+    "cut_angle_deg": 35.0,
+    "cut_x_local_m": 0.027409207481610635,
+    "nominal_piece_fractions": [
+     0.6779818667637054,
+     0.3220181332362946
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2201-E2_OBLIQUE_W_s2201_sever-9e29a817",
+   "particles": 89012,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.645478957987507,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7463440418243408,
+     "gripper_pad_clearance": 0.026447431000810272,
+     "franka1_collision": 0.1133400484533465,
+     "franka_workcell_collision": 0.050245117170962784,
+     "knife_handle_clearance": 0.005601956459937329,
+     "blade_collision": 0.006553501468808087,
+     "wrist_camera_clearance": 0.05125169891774638,
+     "franka_self_collision": 0.019109641750596068,
+     "joint_continuity": 0.04659253120422363
+    },
+    "ik_worst": {
+     "position_error_m": 2.9325601267255787e-06,
+     "rotation_error_rad": 1.4074382654347728e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 396
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "expected_substantial_pieces",
+     "every_plane_has_an_interface",
+     "cut_at_declared_planes",
+     "no_far_particle_in_another_region_piece"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.5,
+     "separation": false,
+     "mechanical_components": 1,
+     "expected_pieces": 2,
+     "cut_position_error_m": null,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.279215856004157,
+     "episode": 369.8058345439931,
+     "evaluation": 2.6053514590021223,
+     "per_simulated_second": 33.6187122312721
+    },
+    "simulated_s": 11.0,
+    "particles": 89012,
+    "history_frames": 21,
+    "physics_state_mb": 37.725104,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9389098760009822,
+     "max_speed_m_s_sampled": 0.03739016875624657,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_OBLIQUE_W_s2201",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2202,
+   "sample_id": "E2_OBLIQUE_W_s2202",
+   "goal_id": "E2_OBLIQUE_W_s2202_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -13.58 mm (mid-height), cut angle -35.0 deg about local y.",
+   "draws": {
+    "length_m": 0.14242890400968772,
+    "width_m": 0.02729160472281127,
+    "height_m": 0.01812173542701231,
+    "x_m": -0.007451793892129563,
+    "y_m": -0.006859088132802359,
+    "yaw_deg": 2.6863873889586642,
+    "cut_fraction": -0.09564614449654152
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.142,
+     0.028,
+     0.018
+    ],
+    "cut_angle_deg": -35.0,
+    "cut_x_local_m": -0.013581752518508895,
+    "nominal_piece_fractions": [
+     0.4043538555034585,
+     0.5956461444965415
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2202-E2_OBLIQUE_W_s2202_sever-50fa927e",
+   "particles": 71568,
+   "duration_s": 10.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.64922837499762,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.6557735919952392,
+     "gripper_pad_clearance": 0.026436507231671093,
+     "franka1_collision": 0.1644101390643447,
+     "franka_workcell_collision": 0.05024529413881005,
+     "knife_handle_clearance": 0.005601492110417509,
+     "blade_collision": 0.006553423806312285,
+     "wrist_camera_clearance": 0.0516644560114232,
+     "franka_self_collision": 0.019651492209763796,
+     "joint_continuity": 0.047314112484455106
+    },
+    "ik_worst": {
+     "position_error_m": 3.0919278753561015e-06,
+     "rotation_error_rad": 9.116868875911306e-07
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 341
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "expected_substantial_pieces",
+     "every_plane_has_an_interface",
+     "cut_at_declared_planes",
+     "no_far_particle_in_another_region_piece"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.5,
+     "separation": false,
+     "mechanical_components": 1,
+     "expected_pieces": 2,
+     "cut_position_error_m": null,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0343171799904667,
+     "episode": 287.72744489100296,
+     "evaluation": 2.2406536579946987,
+     "per_simulated_second": 27.40261379914314
+    },
+    "simulated_s": 10.5,
+    "particles": 71568,
+    "history_frames": 21,
+    "physics_state_mb": 30.780625,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9255095692686243,
+     "max_speed_m_s_sampled": 0.0629054382443428,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_OBLIQUE_W_s2202",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2203,
+   "sample_id": "E2_OBLIQUE_W_s2203",
+   "goal_id": "E2_OBLIQUE_W_s2203_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 19.39 mm (mid-height), cut angle 30.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16469693165811117,
+    "width_m": 0.02867015884582938,
+    "height_m": 0.01685100128513406,
+    "x_m": 0.02310726067411857,
+    "y_m": -0.008594546364954339,
+    "yaw_deg": -38.05158234284786,
+    "cut_fraction": 0.11825431251280383
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.164,
+     0.028,
+     0.017
+    ],
+    "cut_angle_deg": 30.0,
+    "cut_x_local_m": 0.01939370725209983,
+    "nominal_piece_fractions": [
+     0.6182543125128038,
+     0.3817456874871961
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2203-E2_OBLIQUE_W_s2203_sever-9d427fa9",
+   "particles": 78064,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.766844694997417,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7462865829467773,
+     "gripper_pad_clearance": 0.026625307430840957,
+     "franka1_collision": 0.13580672673882205,
+     "franka_workcell_collision": 0.05578527242143678,
+     "knife_handle_clearance": 0.00613289750070218,
+     "blade_collision": 0.006928415848491835,
+     "wrist_camera_clearance": 0.051656871731825524,
+     "franka_self_collision": 0.019906723642047527,
+     "joint_continuity": 0.04779213428497314
+    },
+    "ik_worst": {
+     "position_error_m": 3.0569776911484423e-06,
+     "rotation_error_rad": 1.2046980283085656e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 380
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "expected_substantial_pieces",
+     "every_plane_has_an_interface",
+     "cut_at_declared_planes",
+     "no_far_particle_in_another_region_piece"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.5,
+     "separation": false,
+     "mechanical_components": 1,
+     "expected_pieces": 2,
+     "cut_position_error_m": null,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0213928660086822,
+     "episode": 294.199847832002,
+     "evaluation": 2.2959754479961703,
+     "per_simulated_second": 26.74544071200018
+    },
+    "simulated_s": 11.0,
+    "particles": 78064,
+    "history_frames": 21,
+    "physics_state_mb": 32.846183,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.929293718278112,
+     "max_speed_m_s_sampled": 0.04282597079873085,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_OBLIQUE_W_s2203",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2204,
+   "sample_id": "E2_OBLIQUE_W_s2204",
+   "goal_id": "E2_OBLIQUE_W_s2204_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 3.99 mm (mid-height), cut angle -30.0 deg about local y.",
+   "draws": {
+    "length_m": 0.15047425610557022,
+    "width_m": 0.02843213777126832,
+    "height_m": 0.021591584254357057,
+    "x_m": -0.01796625533763966,
+    "y_m": -0.0030362544619852785,
+    "yaw_deg": -21.165694686134763,
+    "cut_fraction": 0.026579019054422892
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.15,
+     0.028,
+     0.022
+    ],
+    "cut_angle_deg": -30.0,
+    "cut_x_local_m": 0.0039868528581634335,
+    "nominal_piece_fractions": [
+     0.5265790190544228,
+     0.47342098094557716
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2204-E2_OBLIQUE_W_s2204_sever-5f1306ac",
+   "particles": 92400,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.03635886698612,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7070693492889404,
+     "gripper_pad_clearance": 0.02665452088435127,
+     "franka1_collision": 0.17228497868666015,
+     "franka_workcell_collision": 0.05578484290367864,
+     "knife_handle_clearance": 0.006132685725241818,
+     "blade_collision": 0.006928314819581331,
+     "wrist_camera_clearance": 0.05165687255531713,
+     "franka_self_collision": 0.019739694769097656,
+     "joint_continuity": 0.047434294074773786
+    },
+    "ik_worst": {
+     "position_error_m": 3.318312180627154e-06,
+     "rotation_error_rad": 1.5279184479005954e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 343
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2205,
+   "sample_id": "E2_OBLIQUE_W_s2205",
+   "goal_id": "E2_OBLIQUE_W_s2205_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -27.42 mm (mid-height), cut angle 25.0 deg about local y.",
+   "draws": {
+    "length_m": 0.13378383227436133,
+    "width_m": 0.03269166630309968,
+    "height_m": 0.023850551619604723,
+    "x_m": -0.023494365985888357,
+    "y_m": -0.02945903064577591,
+    "yaw_deg": 15.053675957020197,
+    "cut_fraction": -0.2046063725608645
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.134,
+     0.032,
+     0.024
+    ],
+    "cut_angle_deg": 25.0,
+    "cut_x_local_m": -0.027417253923155846,
+    "nominal_piece_fractions": [
+     0.2953936274391355,
+     0.7046063725608646
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2205-E2_OBLIQUE_W_s2205_sever-03e3a684",
+   "particles": 102912,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.503130665005301,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.6367357492446899,
+     "gripper_pad_clearance": 0.026862626574387694,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.06139469678354762,
+     "knife_handle_clearance": 0.006780737134685514,
+     "blade_collision": 0.007250726297697235,
+     "wrist_camera_clearance": 0.03972775385893831,
+     "franka_self_collision": 0.01990701485849164,
+     "joint_continuity": 0.04580503463745117
+    },
+    "ik_worst": {
+     "position_error_m": 3.243128635201737e-06,
+     "rotation_error_rad": 1.025552088108419e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 350
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2206,
+   "sample_id": "E2_OBLIQUE_W_s2206",
+   "goal_id": "E2_OBLIQUE_W_s2206_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 23.32 mm (mid-height), cut angle -25.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16035183060528363,
+    "width_m": 0.02671649105282702,
+    "height_m": 0.023670927468177474,
+    "x_m": 0.0029186149477456458,
+    "y_m": -0.015285742015562244,
+    "yaw_deg": -3.9584596336764406,
+    "cut_fraction": 0.14572918268127433
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.16,
+     0.026,
+     0.024
+    ],
+    "cut_angle_deg": -25.0,
+    "cut_x_local_m": 0.023316669229003894,
+    "nominal_piece_fractions": [
+     0.6457291826812743,
+     0.3542708173187256
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2206-E2_OBLIQUE_W_s2206_sever-4010bbc8",
+   "particles": 99840,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.270701195011497,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.7168802738189697,
+     "gripper_pad_clearance": 0.026862016549621965,
+     "franka1_collision": 0.1514738220862742,
+     "franka_workcell_collision": 0.06139468600001525,
+     "knife_handle_clearance": 0.006780194239840844,
+     "blade_collision": 0.0072507555756305235,
+     "wrist_camera_clearance": 0.05165686647483515,
+     "franka_self_collision": 0.019714818689959404,
+     "joint_continuity": 0.047746372818946836
+    },
+    "ik_worst": {
+     "position_error_m": 2.805865392732041e-06,
+     "rotation_error_rad": 9.534775138267187e-07
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 334
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2207,
+   "sample_id": "E2_OBLIQUE_W_s2207",
+   "goal_id": "E2_OBLIQUE_W_s2207_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 40.86 mm (mid-height), cut angle 20.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16795290745495628,
+    "width_m": 0.026206721453995552,
+    "height_m": 0.020360687625623243,
+    "x_m": 0.02946835794107021,
+    "y_m": 0.02106170678435,
+    "yaw_deg": 19.705427756010216,
+    "cut_fraction": 0.24323117584182324
+   },
+   "derived": {
+    "seed_index": 6,
+    "applied_dims_m": [
+     0.168,
+     0.026,
+     0.02
+    ],
+    "cut_angle_deg": 20.0,
+    "cut_x_local_m": 0.040862837541426306,
+    "nominal_piece_fractions": [
+     0.7432311758418232,
+     0.25676882415817676
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2207-E2_OBLIQUE_W_s2207_sever-4b738ba8",
+   "particles": 87360,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.077544755011331,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.3911571025848389,
+     "gripper_pad_clearance": 0.02718996972208598,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.06703207156509897,
+     "knife_handle_clearance": 0.007508222671961307,
+     "blade_collision": 0.007517748912404747,
+     "wrist_camera_clearance": 0.03141564512130902,
+     "franka_self_collision": 0.019124916290215885,
+     "joint_continuity": 0.04105764389038086
+    },
+    "ik_worst": {
+     "position_error_m": 3.6438836170388616e-06,
+     "rotation_error_rad": 1.142672307316687e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 377
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2208,
+   "sample_id": "E2_OBLIQUE_W_s2208",
+   "goal_id": "E2_OBLIQUE_W_s2208_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = 19.96 mm (mid-height), cut angle -20.0 deg about local y.",
+   "draws": {
+    "length_m": 0.14657427848431578,
+    "width_m": 0.03390733656123514,
+    "height_m": 0.02127164706633272,
+    "x_m": 0.029614504157802257,
+    "y_m": -0.008453046425116836,
+    "yaw_deg": 0.6809435343726093,
+    "cut_fraction": 0.13667960782899358
+   },
+   "derived": {
+    "seed_index": 7,
+    "applied_dims_m": [
+     0.146,
+     0.034,
+     0.021
+    ],
+    "cut_angle_deg": -20.0,
+    "cut_x_local_m": 0.01995522274303306,
+    "nominal_piece_fractions": [
+     0.6366796078289936,
+     0.3633203921710064
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2208-E2_OBLIQUE_W_s2208_sever-2a30ca84",
+   "particles": 104244,
+   "duration_s": 10.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.458504693000577,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.689311933517456,
+     "gripper_pad_clearance": 0.02719035490938446,
+     "franka1_collision": 0.12787620819244994,
+     "franka_workcell_collision": 0.06703176088662266,
+     "knife_handle_clearance": 0.0075084013198235605,
+     "blade_collision": 0.007517794390773247,
+     "wrist_camera_clearance": 0.05165690679695783,
+     "franka_self_collision": 0.01974558470865443,
+     "joint_continuity": 0.04715674877166748
+    },
+    "ik_worst": {
+     "position_error_m": 2.919168354269643e-06,
+     "rotation_error_rad": 1.1616350264135488e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 347
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2209,
+   "sample_id": "E2_OBLIQUE_W_s2209",
+   "goal_id": "E2_OBLIQUE_W_s2209_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -34.46 mm (mid-height), cut angle 15.0 deg about local y.",
+   "draws": {
+    "length_m": 0.16866904422621792,
+    "width_m": 0.030621587560905526,
+    "height_m": 0.016451684429998812,
+    "x_m": -0.03672063763860776,
+    "y_m": -0.0022310603129671036,
+    "yaw_deg": 32.34170275014219,
+    "cut_fraction": -0.20509418283408481
+   },
+   "derived": {
+    "seed_index": 8,
+    "applied_dims_m": [
+     0.168,
+     0.03,
+     0.016
+    ],
+    "cut_angle_deg": 15.0,
+    "cut_x_local_m": -0.03445582271612625,
+    "nominal_piece_fractions": [
+     0.2949058171659152,
+     0.7050941828340849
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2209-E2_OBLIQUE_W_s2209_sever-180efafb",
+   "particles": 80640,
+   "duration_s": 10.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 11.102054051996674,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5398906756192445,
+     "gripper_pad_clearance": 0.027716327292479487,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.06890477885507608,
+     "knife_handle_clearance": 0.008282293429162178,
+     "blade_collision": 0.0077277120712535485,
+     "wrist_camera_clearance": 0.037369753632068445,
+     "franka_self_collision": 0.019730569212466652,
+     "joint_continuity": 0.04411262035369873
+    },
+    "ik_worst": {
+     "position_error_m": 3.24144715692772e-06,
+     "rotation_error_rad": 1.1937055204809953e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 380
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "OBLIQUE_W",
+   "seed": 2210,
+   "sample_id": "E2_OBLIQUE_W_s2210",
+   "goal_id": "E2_OBLIQUE_W_s2210_sever",
+   "goal_type": "sever",
+   "goal_description": "Sever at local x = -0.75 mm (mid-height), cut angle -15.0 deg about local y.",
+   "draws": {
+    "length_m": 0.1315885992001923,
+    "width_m": 0.03027111085247569,
+    "height_m": 0.02358091122008172,
+    "x_m": -0.002780828867082162,
+    "y_m": 0.04584132158970902,
+    "yaw_deg": 5.995050938440286,
+    "cut_fraction": -0.005667373707752221
+   },
+   "derived": {
+    "seed_index": 9,
+    "applied_dims_m": [
+     0.132,
+     0.03,
+     0.024
+    ],
+    "cut_angle_deg": -15.0,
+    "cut_x_local_m": -0.0007480933294232932,
+    "nominal_piece_fractions": [
+     0.4943326262922477,
+     0.5056673737077523
+    ]
+   },
+   "task_id": "CFG-E2_OBLIQUE_W_s2210-E2_OBLIQUE_W_s2210_sever-f498e292",
+   "particles": 95040,
+   "duration_s": 11.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.131955437012948,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6885544776916503,
+     "gripper_pad_clearance": 0.027718615784806794,
+     "franka1_collision": 0.1306817751757816,
+     "franka_workcell_collision": 0.06890722096528601,
+     "knife_handle_clearance": 0.008283799496769911,
+     "blade_collision": 0.007727673333169021,
+     "wrist_camera_clearance": 0.05165686719586829,
+     "franka_self_collision": 0.019763960449967775,
+     "joint_continuity": 0.04762249946594238
+    },
+    "ik_worst": {
+     "position_error_m": 3.1336044608894964e-06,
+     "rotation_error_rad": 1.101793786015719e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 327
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2301,
+   "sample_id": "E2_TRIM_W_s2301",
+   "goal_id": "E2_TRIM_W_s2301_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome protrusion p0 with one surface_trim pass at rake 5.0 deg.",
+   "draws": {
+    "length_m": 0.1678158354466063,
+    "width_m": 0.03412594909268048,
+    "height_m": 0.014975486080388001,
+    "x_m": -0.029021842167510206,
+    "y_m": 0.09366894855946903,
+    "yaw_deg": 1.9811284054179694,
+    "bump_x_fraction": -0.03360156454423341,
+    "bump_y_m": 0.0030607349636428815,
+    "bump_radius_x_m": 0.01387347497003949,
+    "bump_radius_y_m": 0.007174729239084317,
+    "bump_height_m": 0.015866609979670574
+   },
+   "derived": {
+    "seed_index": 0,
+    "applied_dims_m": [
+     0.168,
+     0.034,
+     0.015
+    ],
+    "protrusion_family": "dome",
+    "rake_deg": 5.0,
+    "bump_x_local_m": -0.005645062843431213
+   },
+   "task_id": "CFG-E2_TRIM_W_s2301-E2_TRIM_W_s2301_trim-cda208cb",
+   "particles": 87144,
+   "duration_s": 8.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "SCENE_INFEASIBLE",
+    "reason": "collision/clearance: blade_collision (slack -0.25 mm/mrad at PRE_CUT:p0, pair ['tool_blade', 'static_workpiece_base'])",
+    "wall_s": 4.5509444500057725,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5963463306427002,
+     "gripper_pad_clearance": 0.023288940414801673,
+     "franka1_collision": 0.16830763638837648,
+     "franka_workcell_collision": 0.021323370656577623,
+     "knife_handle_clearance": 0.003939830102272891,
+     "blade_collision": -0.00025209802707117047,
+     "wrist_camera_clearance": 0.05165686800316093,
+     "franka_self_collision": 0.01972196011971733,
+     "joint_continuity": 0.043614198863506315
+    },
+    "ik_worst": {
+     "position_error_m": 3.0576586454391745e-06,
+     "rotation_error_rad": 1.368730509967855e-06
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "SCENE_INFEASIBLE",
+   "reason": "collision/clearance: blade_collision (slack -0.25 mm/mrad at PRE_CUT:p0, pair ['tool_blade', 'static_workpiece_base'])",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2302,
+   "sample_id": "E2_TRIM_W_s2302",
+   "goal_id": "E2_TRIM_W_s2302_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the gaussian protrusion p0 with one surface_trim pass at rake 5.0 deg.",
+   "draws": {
+    "length_m": 0.1353472817300829,
+    "width_m": 0.035035635023191215,
+    "height_m": 0.01356463684398532,
+    "x_m": -0.06973516554934714,
+    "y_m": 0.03982163769674324,
+    "yaw_deg": -41.2379622628297,
+    "bump_x_fraction": -0.1489519460849903,
+    "bump_y_m": 0.001179918623289063,
+    "bump_radius_x_m": 0.012239796285292922,
+    "bump_radius_y_m": 0.01359448060791909,
+    "bump_height_m": 0.010857664130971355
+   },
+   "derived": {
+    "seed_index": 1,
+    "applied_dims_m": [
+     0.136,
+     0.036,
+     0.014
+    ],
+    "protrusion_family": "gaussian",
+    "rake_deg": 5.0,
+    "bump_x_local_m": -0.02025746466755868
+   },
+   "task_id": "CFG-E2_TRIM_W_s2302-E2_TRIM_W_s2302_trim-49cbfa1a",
+   "particles": 69832,
+   "duration_s": 8.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "SCENE_INFEASIBLE",
+    "reason": "collision/clearance: blade_collision (slack -0.25 mm/mrad at PRE_CUT:p0, pair ['tool_blade', 'static_workpiece_base'])",
+    "wall_s": 4.406480331992498,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.2550796985626221,
+     "gripper_pad_clearance": 0.02516952864634926,
+     "franka1_collision": 0.17486739364316362,
+     "franka_workcell_collision": 0.020323646991230283,
+     "knife_handle_clearance": 0.004964643729255434,
+     "blade_collision": -0.0002498982734925789,
+     "wrist_camera_clearance": 0.051667510567905806,
+     "franka_self_collision": 0.019710535371464916,
+     "joint_continuity": 0.032601056098937986
+    },
+    "ik_worst": {
+     "position_error_m": 3.1060378483268697e-06,
+     "rotation_error_rad": 1.4552084161797945e-06
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "SCENE_INFEASIBLE",
+   "reason": "collision/clearance: blade_collision (slack -0.25 mm/mrad at PRE_CUT:p0, pair ['tool_blade', 'static_workpiece_base'])",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2303,
+   "sample_id": "E2_TRIM_W_s2303",
+   "goal_id": "E2_TRIM_W_s2303_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the ellipsoid_cap protrusion p0 with one surface_trim pass at rake 5.0 deg.",
+   "draws": {
+    "length_m": 0.1974861956627622,
+    "width_m": 0.024426849496730903,
+    "height_m": 0.023866989195977503,
+    "x_m": -0.02551048732691874,
+    "y_m": -0.08230805511824434,
+    "yaw_deg": 31.351480424535808,
+    "bump_x_fraction": -0.3088624031702068,
+    "bump_y_m": -0.0009194743552121661,
+    "bump_radius_x_m": 0.01351528479844455,
+    "bump_radius_y_m": 0.008850228098082107,
+    "bump_height_m": 0.012676936401799507
+   },
+   "derived": {
+    "seed_index": 2,
+    "applied_dims_m": [
+     0.198,
+     0.024,
+     0.024
+    ],
+    "protrusion_family": "ellipsoid_cap",
+    "rake_deg": 5.0,
+    "bump_x_local_m": -0.06115475582770095
+   },
+   "task_id": "CFG-E2_TRIM_W_s2303-E2_TRIM_W_s2303_trim-7641bf38",
+   "particles": 117227,
+   "duration_s": 8.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 202 (SKIM:p0)",
+    "wall_s": 2.4752910120005254,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.0002564871459998752,
+     "rotation_error_rad": 4.484410499891395e-05
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 202 (SKIM:p0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2304,
+   "sample_id": "E2_TRIM_W_s2304",
+   "goal_id": "E2_TRIM_W_s2304_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome protrusion p0 with one surface_trim pass at rake 35.0 deg.",
+   "draws": {
+    "length_m": 0.16231871572692122,
+    "width_m": 0.03229931057120802,
+    "height_m": 0.033336167589890636,
+    "x_m": -0.0967494688061053,
+    "y_m": 0.07607655735491037,
+    "yaw_deg": 42.85407507221035,
+    "bump_x_fraction": 0.31852416226425534,
+    "bump_y_m": 0.003803173219174366,
+    "bump_radius_x_m": 0.0061905839900457385,
+    "bump_radius_y_m": 0.010969500544581706,
+    "bump_height_m": 0.006821667033126243
+   },
+   "derived": {
+    "seed_index": 3,
+    "applied_dims_m": [
+     0.162,
+     0.032,
+     0.033
+    ],
+    "protrusion_family": "dome",
+    "rake_deg": 35.0,
+    "bump_x_local_m": 0.051600914286809366
+   },
+   "task_id": null,
+   "particles": null,
+   "duration_s": null,
+   "solver_module": null,
+   "digits": null,
+   "stage1": {
+    "class": "SCENE_INFEASIBLE",
+    "reason": "planner/compile: SceneConfigError: The planned motion does not finish within the goal duration 120.0 s; needs 6.30 s",
+    "wall_s": 1.601600378009607,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": null,
+    "return_home_lifecycle": null
+   },
+   "class": "SCENE_INFEASIBLE",
+   "reason": "planner/compile: SceneConfigError: The planned motion does not finish within the goal duration 120.0 s; needs 6.30 s",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2305,
+   "sample_id": "E2_TRIM_W_s2305",
+   "goal_id": "E2_TRIM_W_s2305_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the gaussian protrusion p0 with one surface_trim pass at rake 35.0 deg.",
+   "draws": {
+    "length_m": 0.13252428756114407,
+    "width_m": 0.03306621438234566,
+    "height_m": 0.03015111499999012,
+    "x_m": 0.06282720761990054,
+    "y_m": -0.016639966151121247,
+    "yaw_deg": 44.285094380502585,
+    "bump_x_fraction": 0.2714347811958549,
+    "bump_y_m": 0.0012144691549835964,
+    "bump_radius_x_m": 0.01313048334466117,
+    "bump_radius_y_m": 0.013396583690570271,
+    "bump_height_m": 0.01572704790583868
+   },
+   "derived": {
+    "seed_index": 4,
+    "applied_dims_m": [
+     0.132,
+     0.034,
+     0.03
+    ],
+    "protrusion_family": "gaussian",
+    "rake_deg": 35.0,
+    "bump_x_local_m": 0.03582939111785285
+   },
+   "task_id": "CFG-E2_TRIM_W_s2305-E2_TRIM_W_s2305_trim-5cdcd810",
+   "particles": 136635,
+   "duration_s": 7.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 72 (REORIENT:p0)",
+    "wall_s": 1.4449336029938422,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.0023640877394178928,
+     "rotation_error_rad": 0.0004980719948878557
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 72 (REORIENT:p0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2306,
+   "sample_id": "E2_TRIM_W_s2306",
+   "goal_id": "E2_TRIM_W_s2306_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the ellipsoid_cap protrusion p0 with one surface_trim pass at rake 35.0 deg.",
+   "draws": {
+    "length_m": 0.16192251317854975,
+    "width_m": 0.034856751103874734,
+    "height_m": 0.03197744162383821,
+    "x_m": 0.026752710203393926,
+    "y_m": -0.04982112444626672,
+    "yaw_deg": 40.89465722808073,
+    "bump_x_fraction": 0.3762288780289856,
+    "bump_y_m": -0.0029994821325564536,
+    "bump_radius_x_m": 0.013096557805092033,
+    "bump_radius_y_m": 0.01061209947718052,
+    "bump_height_m": 0.005316174843330399
+   },
+   "derived": {
+    "seed_index": 5,
+    "applied_dims_m": [
+     0.162,
+     0.034,
+     0.032
+    ],
+    "protrusion_family": "ellipsoid_cap",
+    "rake_deg": 35.0,
+    "bump_x_local_m": 0.06094907824069567
+   },
+   "task_id": "CFG-E2_TRIM_W_s2306-E2_TRIM_W_s2306_trim-c30ccaaf",
+   "particles": 177799,
+   "duration_s": 7.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 75 (REORIENT:p0)",
+    "wall_s": 1.421733701004996,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.0014902113764235165,
+     "rotation_error_rad": 0.00031172455610337725
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 75 (REORIENT:p0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2307,
+   "sample_id": "E2_TRIM_W_s2307",
+   "goal_id": "E2_TRIM_W_s2307_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome protrusion p0 with one surface_trim pass at rake 45.0 deg.",
+   "draws": {
+    "length_m": 0.14101962145505026,
+    "width_m": 0.03716619928342413,
+    "height_m": 0.012668228819121382,
+    "x_m": -0.06885649394515521,
+    "y_m": -0.04684156420053556,
+    "yaw_deg": -38.69634939041936,
+    "bump_x_fraction": 0.02746188448000847,
+    "bump_y_m": 0.004198213984164199,
+    "bump_radius_x_m": 0.0116450727868645,
+    "bump_radius_y_m": 0.006189143219624962,
+    "bump_height_m": 0.005083857684712343
+   },
+   "derived": {
+    "seed_index": 6,
+    "applied_dims_m": [
+     0.142,
+     0.038,
+     0.013
+    ],
+    "protrusion_family": "dome",
+    "rake_deg": 45.0,
+    "bump_x_local_m": 0.0038995875961612024
+   },
+   "task_id": "CFG-E2_TRIM_W_s2307-E2_TRIM_W_s2307_trim-dd1a70b7",
+   "particles": 70485,
+   "duration_s": 7.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 9.021243101989967,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5525402545928955,
+     "gripper_pad_clearance": 0.023734296645085095,
+     "franka1_collision": 0.17486739364316362,
+     "franka_workcell_collision": 0.05539992283802562,
+     "knife_handle_clearance": 0.012712921701937063,
+     "blade_collision": 0.00020035631262550386,
+     "wrist_camera_clearance": 0.05167580057758352,
+     "franka_self_collision": 0.019630791812296433,
+     "joint_continuity": 0.0462038642168045
+    },
+    "ik_worst": {
+     "position_error_m": 3.0851771349016128e-06,
+     "rotation_error_rad": 1.5066167672903778e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 371
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: selected_protrusions_removed",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "selected_protrusions_removed"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.0,
+     "per_protrusion_removed": {
+      "p0": 0.0
+     },
+     "separation": false,
+     "mechanical_components": 1,
+     "cut_position_error_m": 0.016563853517174723,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 1.0000000000008362,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.9879981870035408,
+     "episode": 201.58403024099243,
+     "evaluation": 2.836295950008207,
+     "per_simulated_second": 26.87787069879899
+    },
+    "simulated_s": 7.5,
+    "particles": 70485,
+    "history_frames": 21,
+    "physics_state_mb": 28.129595,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.6892047465528877,
+     "max_speed_m_s_sampled": 0.12792463600635529,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TRIM_W_s2307",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2308,
+   "sample_id": "E2_TRIM_W_s2308",
+   "goal_id": "E2_TRIM_W_s2308_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the gaussian protrusion p0 with one surface_trim pass at rake 45.0 deg.",
+   "draws": {
+    "length_m": 0.11731050618143611,
+    "width_m": 0.03120506559581509,
+    "height_m": 0.03452883966870339,
+    "x_m": 0.08024962906820998,
+    "y_m": 0.020323187772192955,
+    "yaw_deg": -52.296116081755244,
+    "bump_x_fraction": 0.09693422363535126,
+    "bump_y_m": -0.00014601584085504726,
+    "bump_radius_x_m": 0.009799871358868732,
+    "bump_radius_y_m": 0.008662226855132498,
+    "bump_height_m": 0.00947846180530927
+   },
+   "derived": {
+    "seed_index": 7,
+    "applied_dims_m": [
+     0.118,
+     0.032,
+     0.035
+    ],
+    "protrusion_family": "gaussian",
+    "rake_deg": 45.0,
+    "bump_x_local_m": 0.011438238388971447
+   },
+   "task_id": "CFG-E2_TRIM_W_s2308-E2_TRIM_W_s2308_trim-3fad6556",
+   "particles": 132733,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.178184838994639,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.4257683277130127,
+     "gripper_pad_clearance": 0.03889653046604482,
+     "franka1_collision": 0.15467703893909585,
+     "franka_workcell_collision": 0.06948861651840521,
+     "knife_handle_clearance": 0.03504254755952892,
+     "blade_collision": 0.00020054690927670066,
+     "wrist_camera_clearance": 0.05166617633805701,
+     "franka_self_collision": 0.019698110656677627,
+     "joint_continuity": 0.04407936096191406
+    },
+    "ik_worst": {
+     "position_error_m": 3.2050622636244963e-06,
+     "rotation_error_rad": 1.4827820290535602e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 388
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: selected_protrusions_removed",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "selected_protrusions_removed"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.0,
+     "per_protrusion_removed": {
+      "p0": 0.0
+     },
+     "separation": false,
+     "mechanical_components": 1,
+     "cut_position_error_m": 0.024293862432241436,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999974952,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0261134350002976,
+     "episode": 199.91549127599865,
+     "evaluation": 3.6795178479951574,
+     "per_simulated_second": 28.559355896571237
+    },
+    "simulated_s": 7.0,
+    "particles": 132733,
+    "history_frames": 21,
+    "physics_state_mb": 55.169629,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.7155440241742226,
+     "max_speed_m_s_sampled": 0.05669268220663071,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TRIM_W_s2308",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2309,
+   "sample_id": "E2_TRIM_W_s2309",
+   "goal_id": "E2_TRIM_W_s2309_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the ellipsoid_cap protrusion p0 with one surface_trim pass at rake 45.0 deg.",
+   "draws": {
+    "length_m": 0.1955860891034342,
+    "width_m": 0.02976702625405125,
+    "height_m": 0.03152121934081342,
+    "x_m": -0.042439217590073144,
+    "y_m": -0.06403400667606704,
+    "yaw_deg": -41.893237334714165,
+    "bump_x_fraction": -0.0920501038394328,
+    "bump_y_m": -0.0013291846714447962,
+    "bump_radius_x_m": 0.006382908501288409,
+    "bump_radius_y_m": 0.008691758161973012,
+    "bump_height_m": 0.011757675523742149
+   },
+   "derived": {
+    "seed_index": 8,
+    "applied_dims_m": [
+     0.196,
+     0.03,
+     0.032
+    ],
+    "protrusion_family": "ellipsoid_cap",
+    "rake_deg": 45.0,
+    "bump_x_local_m": -0.01804182035252883
+   },
+   "task_id": "CFG-E2_TRIM_W_s2309-E2_TRIM_W_s2309_trim-c3737490",
+   "particles": 189520,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.172054929993465,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5303761482238769,
+     "gripper_pad_clearance": 0.03779981769694751,
+     "franka1_collision": 0.17486739364316362,
+     "franka_workcell_collision": 0.07037694527583929,
+     "knife_handle_clearance": 0.03248865323734058,
+     "blade_collision": 0.00020068718769966726,
+     "wrist_camera_clearance": 0.05168125934398853,
+     "franka_self_collision": 0.019707817735718725,
+     "joint_continuity": 0.046779183149337766
+    },
+    "ik_worst": {
+     "position_error_m": 3.0947349723932173e-06,
+     "rotation_error_rad": 1.3778075607677188e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 342
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: selected_protrusions_removed",
+   "stage2": {
+    "device": "cuda:0",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "selected_protrusions_removed"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.0,
+     "per_protrusion_removed": {
+      "p0": 0.0
+     },
+     "separation": false,
+     "mechanical_components": 1,
+     "cut_position_error_m": 0.013234616845846175,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999957847,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "wall_s": {
+     "setup": 0.8209937210049247,
+     "episode": 268.1089679370052,
+     "evaluation": 5.01552292300039,
+     "per_simulated_second": 38.30128113385789
+    },
+    "simulated_s": 7.0,
+    "particles": 189520,
+    "history_frames": 21,
+    "physics_state_mb": 77.916058,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.8848719811357548,
+     "max_speed_m_s_sampled": 0.1065639853477478,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TRIM_W_s2309",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TRIM_W",
+   "seed": 2310,
+   "sample_id": "E2_TRIM_W_s2310",
+   "goal_id": "E2_TRIM_W_s2310_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome protrusion p0 with one surface_trim pass at rake 60.0 deg.",
+   "draws": {
+    "length_m": 0.10711592590680448,
+    "width_m": 0.02867284292643366,
+    "height_m": 0.032222848597155004,
+    "x_m": -0.09053639646495025,
+    "y_m": 0.04302313919247422,
+    "yaw_deg": 54.834009529111526,
+    "bump_x_fraction": 0.296573810220858,
+    "bump_y_m": -0.0017328440701334423,
+    "bump_radius_x_m": 0.008123445616406556,
+    "bump_radius_y_m": 0.009519277665964996,
+    "bump_height_m": 0.005643864690504138
+   },
+   "derived": {
+    "seed_index": 9,
+    "applied_dims_m": [
+     0.108,
+     0.028,
+     0.032
+    ],
+    "protrusion_family": "dome",
+    "rake_deg": 60.0,
+    "bump_x_local_m": 0.032029971503852665
+   },
+   "task_id": "CFG-E2_TRIM_W_s2310-E2_TRIM_W_s2310_trim-1cbc62e5",
+   "particles": 97159,
+   "duration_s": 7.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.06624484299391,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.3907577384263277,
+     "gripper_pad_clearance": 0.04392923270634122,
+     "franka1_collision": 0.095,
+     "franka_workcell_collision": 0.07337253949477393,
+     "knife_handle_clearance": 0.037219045023412424,
+     "blade_collision": 0.00020031218567841388,
+     "wrist_camera_clearance": 0.051656864075988615,
+     "franka_self_collision": 0.019648103202427408,
+     "joint_continuity": 0.04185896873474121
+    },
+    "ik_worst": {
+     "position_error_m": 3.3218637685246244e-06,
+     "rotation_error_rad": 1.156180945343971e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 366
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2401,
+   "sample_id": "E2_TEST_A_W_s2401",
+   "goal_id": "E2_TEST_A_W_s2401_sever",
+   "goal_type": "sever",
+   "goal_description": "Vertical through-cut at local x = -32 mm (advance -z, edge line +y).",
+   "draws": {
+    "x_m": 0.07603298119917928,
+    "y_m": 0.023596339517711368,
+    "yaw_deg": -35.26816512117648
+   },
+   "derived": {
+    "seed_index": 0,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 0.0,
+     "text": "Vertical through-cut at local x = -32 mm (advance -z, edge line +y)."
+    },
+    "relief_slot_x_local_m": -0.032,
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2401-E2_TEST_A_W_s2401_sever-aa1d0a36",
+   "particles": 97044,
+   "duration_s": 11.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 12.868858721994911,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.6964203834533691,
+     "gripper_pad_clearance": 0.030223270142080327,
+     "franka1_collision": 0.14775269246701545,
+     "franka_workcell_collision": 0.07115674286441041,
+     "knife_handle_clearance": 0.012117878933248054,
+     "blade_collision": 0.016000322529803955,
+     "wrist_camera_clearance": 0.05165686465547301,
+     "franka_self_collision": 0.019907142807572553,
+     "joint_continuity": 0.048149404525756834
+    },
+    "ik_worst": {
+     "position_error_m": 3.242863948080677e-06,
+     "rotation_error_rad": 1.5068405307364123e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 361
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000008344650262,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1682526219956344,
+     "episode": 408.65076409699395,
+     "evaluation": 2.714906275999965,
+     "per_simulated_second": 35.534849051912516
+    },
+    "simulated_s": 11.5,
+    "particles": 97044,
+    "history_frames": 21,
+    "physics_state_mb": 40.986612,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9370197808139736,
+     "max_speed_m_s_sampled": 0.012213185429573059,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_A_W_s2401",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2402,
+   "sample_id": "E2_TEST_A_W_s2402",
+   "goal_id": "E2_TEST_A_W_s2402_sever",
+   "goal_type": "sever",
+   "goal_description": "35 deg oblique through-cut at x = -32 mm (normal turned +35 deg about local y).",
+   "draws": {
+    "x_m": 0.0084772336024342,
+    "y_m": -0.0777329003124855,
+    "yaw_deg": 47.549694556014714
+   },
+   "derived": {
+    "seed_index": 1,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 35.0,
+     "text": "35 deg oblique through-cut at x = -32 mm (normal turned +35 deg about local y)."
+    },
+    "relief_slot_x_local_m": -0.04320332061135536,
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2402-E2_TEST_A_W_s2402_sever-65e5dc4f",
+   "particles": 97044,
+   "duration_s": 13.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 78 (APPROACH:cut0)",
+    "wall_s": 1.8429452090058476,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.001977018400710676,
+     "rotation_error_rad": 0.0003714125610214478
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 78 (APPROACH:cut0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2403,
+   "sample_id": "E2_TEST_A_W_s2403",
+   "goal_id": "E2_TEST_A_W_s2403_sever",
+   "goal_type": "sever",
+   "goal_description": "35 deg oblique through-cut at x = -32 mm, opposite inclination (normal turned -35 deg about local y).",
+   "draws": {
+    "x_m": -0.08159795616037746,
+    "y_m": -0.022052711248281384,
+    "yaw_deg": -19.037899893137848
+   },
+   "derived": {
+    "seed_index": 2,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": -35.0,
+     "text": "35 deg oblique through-cut at x = -32 mm, opposite inclination (normal turned -35 deg about local y)."
+    },
+    "relief_slot_x_local_m": -0.020796679388644646,
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2403-E2_TEST_A_W_s2403_sever-999df965",
+   "particles": 97044,
+   "duration_s": 13.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 14.033972575009102,
+    "binding": "knife_handle_clearance",
+    "worst_slack": {
+     "joint_limit_margin": 0.5279078006744384,
+     "gripper_pad_clearance": 0.026435249473664216,
+     "franka1_collision": 0.17486739364316362,
+     "franka_workcell_collision": 0.05024702446675245,
+     "knife_handle_clearance": 0.005600793796516041,
+     "blade_collision": 0.0095527303261882,
+     "wrist_camera_clearance": 0.05169472216999417,
+     "franka_self_collision": 0.01964023505259499,
+     "joint_continuity": 0.04765085637569427
+    },
+    "ik_worst": {
+     "position_error_m": 3.2598549412749857e-06,
+     "rotation_error_rad": 1.482894059506074e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 353
+    }
+   },
+   "class": "CUTTING_FAILURE",
+   "reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "FAIL",
+    "failed_checks": [
+     "expected_substantial_pieces",
+     "every_plane_has_an_interface",
+     "cut_at_declared_planes",
+     "no_far_particle_in_another_region_piece"
+    ],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 0.5,
+     "separation": false,
+     "mechanical_components": 1,
+     "expected_pieces": 2,
+     "cut_position_error_m": null,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.0194611979968613,
+     "episode": 462.61286537500564,
+     "evaluation": 2.7884568529989338,
+     "per_simulated_second": 34.26761965740783
+    },
+    "simulated_s": 13.5,
+    "particles": 97044,
+    "history_frames": 21,
+    "physics_state_mb": 41.140517,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9315907905613435,
+     "max_speed_m_s_sampled": 0.039156489074230194,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_A_W_s2403",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2404,
+   "sample_id": "E2_TEST_A_W_s2404",
+   "goal_id": "E2_TEST_A_W_s2404_sever",
+   "goal_type": "sever",
+   "goal_description": "Vertical plane at x = -32 mm cut with the advance tilted 30 deg toward -y inside the plane (slanted chop).",
+   "draws": {
+    "x_m": 0.006032069554428254,
+    "y_m": -0.06554718558675243,
+    "yaw_deg": -12.976614094960091
+   },
+   "derived": {
+    "seed_index": 3,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 0.0,
+     "approach_local": [
+      0.0,
+      -0.5,
+      -0.8660254037844386
+     ],
+     "text": "Vertical plane at x = -32 mm cut with the advance tilted 30 deg toward -y inside the plane (slanted chop)."
+    },
+    "relief_slot_x_local_m": -0.032,
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2404-E2_TEST_A_W_s2404_sever-798fe4e1",
+   "particles": 97044,
+   "duration_s": 13.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 14.074946727996576,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7155880451202392,
+     "gripper_pad_clearance": 0.049409435840488326,
+     "franka1_collision": 0.161528849544316,
+     "franka_workcell_collision": 0.08704020418567893,
+     "knife_handle_clearance": 0.03228409335460004,
+     "blade_collision": 0.01492985834403003,
+     "wrist_camera_clearance": 0.051656880337963305,
+     "franka_self_collision": 0.01980483330901648,
+     "joint_continuity": 0.05146875739097595
+    },
+    "ik_worst": {
+     "position_error_m": 3.089798586133829e-06,
+     "rotation_error_rad": 1.4474538233314664e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 323
+    }
+   },
+   "class": "TASK_SUCCESS",
+   "reason": "goal evaluator PASS (kinematic ideal tracking)",
+   "stage2": {
+    "device": "cuda:1",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "integrity": "PASS",
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.0015000008344650331,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "wall_s": {
+     "setup": 1.1463905820128275,
+     "episode": 294.3522428569995,
+     "evaluation": 2.722180839991779,
+     "per_simulated_second": 22.642480219769194
+    },
+    "simulated_s": 13.0,
+    "particles": 97044,
+    "history_frames": 21,
+    "physics_state_mb": 40.505916,
+    "slots": null,
+    "stability": {
+     "finite": true,
+     "min_det_F_sampled": 0.9521008233720836,
+     "max_speed_m_s_sampled": 0.03813987225294113,
+     "sampling": "every 10 control steps"
+    },
+    "artifact": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_A_W_s2404",
+    "git": {
+     "git_sha": "049656239ad4723f5128a9099420575606c5c1e2",
+     "git_dirty": false
+    }
+   },
+   "stage2_selected": true
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2405,
+   "sample_id": "E2_TEST_A_W_s2405",
+   "goal_id": "E2_TEST_A_W_s2405_sever",
+   "goal_type": "sever",
+   "goal_description": "Vertical plane at x = -32 mm cut with the advance tilted 30 deg toward +y inside the plane (slanted chop).",
+   "draws": {
+    "x_m": 0.0680703429884437,
+    "y_m": -0.0027115643662090905,
+    "yaw_deg": 11.996529305142417
+   },
+   "derived": {
+    "seed_index": 4,
+    "variant": {
+     "op": "sever",
+     "cut_angle_deg": 0.0,
+     "approach_local": [
+      0.0,
+      0.5,
+      -0.8660254037844386
+     ],
+     "text": "Vertical plane at x = -32 mm cut with the advance tilted 30 deg toward +y inside the plane (slanted chop)."
+    },
+    "relief_slot_x_local_m": -0.032,
+    "nominal_piece_fractions": [
+     0.3,
+     0.7
+    ]
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2405-E2_TEST_A_W_s2405_sever-cc659eb8",
+   "particles": 97044,
+   "duration_s": 13.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 104 (APPROACH:cut0)",
+    "wall_s": 2.124358635992394,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.0010667225390656799,
+     "rotation_error_rad": 0.00022644652301308149
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 104 (APPROACH:cut0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2406,
+   "sample_id": "E2_TEST_A_W_s2406",
+   "goal_id": "E2_TEST_A_W_s2406_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 5 deg.",
+   "draws": {
+    "x_m": 0.04829321760549668,
+    "y_m": 0.09372545342360072,
+    "yaw_deg": -47.98178786647407
+   },
+   "derived": {
+    "seed_index": 5,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 5.0,
+     "text": "Remove the dome with a skim along +x at rake 5 deg."
+    }
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2406-E2_TEST_A_W_s2406_trim-22180c1a",
+   "particles": 97044,
+   "duration_s": 8.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "SCENE_INFEASIBLE",
+    "reason": "collision/clearance: blade_collision (slack -0.25 mm/mrad at PRE_CUT:p0, pair ['tool_blade', 'static_workpiece_base'])",
+    "wall_s": 4.439585391999572,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.35593886375427247,
+     "gripper_pad_clearance": 0.026371221282901865,
+     "franka1_collision": 0.13154053379854014,
+     "franka_workcell_collision": 0.02632361047476917,
+     "knife_handle_clearance": 0.009599448497724376,
+     "blade_collision": -0.0002516328025992746,
+     "wrist_camera_clearance": 0.05165686615480746,
+     "franka_self_collision": 0.01970147097078443,
+     "joint_continuity": 0.0369597053527832
+    },
+    "ik_worst": {
+     "position_error_m": 3.1823744491551864e-06,
+     "rotation_error_rad": 1.3062757626863462e-06
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "SCENE_INFEASIBLE",
+   "reason": "collision/clearance: blade_collision (slack -0.25 mm/mrad at PRE_CUT:p0, pair ['tool_blade', 'static_workpiece_base'])",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2407,
+   "sample_id": "E2_TEST_A_W_s2407",
+   "goal_id": "E2_TEST_A_W_s2407_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 45 deg.",
+   "draws": {
+    "x_m": -0.06208018526623935,
+    "y_m": -0.05139434275774773,
+    "yaw_deg": 5.083757225623657
+   },
+   "derived": {
+    "seed_index": 6,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 45.0,
+     "text": "Remove the dome with a skim along +x at rake 45 deg."
+    }
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2407-E2_TEST_A_W_s2407_trim-8a841bc1",
+   "particles": 97044,
+   "duration_s": 7.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 8.522412005011574,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.6863088130950927,
+     "gripper_pad_clearance": 0.030181125335529257,
+     "franka1_collision": 0.16498121940680782,
+     "franka_workcell_collision": 0.062399696284515895,
+     "knife_handle_clearance": 0.020755770829090952,
+     "blade_collision": 0.00020024795933555587,
+     "wrist_camera_clearance": 0.05167511554256805,
+     "franka_self_collision": 0.01971203547444441,
+     "joint_continuity": 0.044942436218261717
+    },
+    "ik_worst": {
+     "position_error_m": 3.2704561482387727e-06,
+     "rotation_error_rad": 1.1348076370210098e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 344
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2408,
+   "sample_id": "E2_TEST_A_W_s2408",
+   "goal_id": "E2_TEST_A_W_s2408_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along -x at rake 25 deg (edge line -y).",
+   "draws": {
+    "x_m": 0.002937391124242697,
+    "y_m": -0.0979395499322596,
+    "yaw_deg": -24.165006889245277
+   },
+   "derived": {
+    "seed_index": 7,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 25.0,
+     "skim_direction_local": [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     "text": "Remove the dome with a skim along -x at rake 25 deg (edge line -y)."
+    }
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2408-E2_TEST_A_W_s2408_trim-e4c2dc78",
+   "particles": 97044,
+   "duration_s": 8.0,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 9.687350573993172,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.7303306579589843,
+     "gripper_pad_clearance": 0.027057778993963204,
+     "franka1_collision": 0.0009270092010476346,
+     "franka_workcell_collision": 0.0392889623636634,
+     "knife_handle_clearance": 0.014716506818981755,
+     "blade_collision": 0.00020016356517765934,
+     "wrist_camera_clearance": 0.05169472216999417,
+     "franka_self_collision": 0.019719565649853207,
+     "joint_continuity": 0.04573684692382812
+    },
+    "ik_worst": {
+     "position_error_m": 3.1536393905998396e-06,
+     "rotation_error_rad": 1.209309503247486e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 381
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2409,
+   "sample_id": "E2_TEST_A_W_s2409",
+   "goal_id": "E2_TEST_A_W_s2409_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 10 deg and edge skew 35 deg.",
+   "draws": {
+    "x_m": 0.031067574160665884,
+    "y_m": -0.046274678842271016,
+    "yaw_deg": -12.12545008725435
+   },
+   "derived": {
+    "seed_index": 8,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 10.0,
+     "skew_deg": 35.0,
+     "text": "Remove the dome with a skim along +x at rake 10 deg and edge skew 35 deg."
+    }
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2409-E2_TEST_A_W_s2409_trim-5598d60d",
+   "particles": 97044,
+   "duration_s": 7.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": "IK_FAILURE",
+    "reason": "ik_pose_error at sample 110 (REORIENT:p0)",
+    "wall_s": 1.8395218789955834,
+    "binding": null,
+    "worst_slack": {},
+    "ik_worst": {
+     "position_error_m": 0.001386855393074629,
+     "rotation_error_rad": 0.00032567516134300573
+    },
+    "return_home_lifecycle": null
+   },
+   "class": "IK_FAILURE",
+   "reason": "ik_pose_error at sample 110 (REORIENT:p0)",
+   "stage2_selected": false
+  },
+  {
+   "family": "TEST_A_W",
+   "seed": 2410,
+   "sample_id": "E2_TEST_A_W_s2410",
+   "goal_id": "E2_TEST_A_W_s2410_trim",
+   "goal_type": "remove_protrusions",
+   "goal_description": "Remove the dome with a skim along +x at rake 60 deg.",
+   "draws": {
+    "x_m": -0.03052879722519579,
+    "y_m": -0.06074347202381403,
+    "yaw_deg": 6.426815262348782
+   },
+   "derived": {
+    "seed_index": 9,
+    "variant": {
+     "op": "trim",
+     "rake_deg": 60.0,
+     "text": "Remove the dome with a skim along +x at rake 60 deg."
+    }
+   },
+   "task_id": "CFG-E2_TEST_A_W_s2410-E2_TEST_A_W_s2410_trim-0e4cb15a",
+   "particles": 97044,
+   "duration_s": 7.5,
+   "solver_module": "tlmpm_v4",
+   "digits": 1,
+   "stage1": {
+    "class": null,
+    "reason": "preflight PASS",
+    "wall_s": 9.128257982010837,
+    "binding": "blade_collision",
+    "worst_slack": {
+     "joint_limit_margin": 0.5981251716613769,
+     "gripper_pad_clearance": 0.03460821667024808,
+     "franka1_collision": 0.1343189527103663,
+     "franka_workcell_collision": 0.06956411443084748,
+     "knife_handle_clearance": 0.025256620498598423,
+     "blade_collision": 0.00020028350108666554,
+     "wrist_camera_clearance": 0.05165687620107732,
+     "franka_self_collision": 0.019624710860846648,
+     "joint_continuity": 0.04455953598022461
+    },
+    "ik_worst": {
+     "position_error_m": 2.999627184500584e-06,
+     "rotation_error_rad": 1.0024630875035663e-06
+    },
+    "return_home_lifecycle": {
+     "from_phase": "WITHDRAW",
+     "status": "PLANNED",
+     "reason": null,
+     "route": null,
+     "samples": 355
+    }
+   },
+   "class": "NOT_RUN",
+   "reason": "preflight-feasible; not in the predeclared stage-2 subset (stages.stage2_subset)",
+   "stage2_selected": false
+  }
+ ]
+}

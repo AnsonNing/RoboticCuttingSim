@@ -1,0 +1,117 @@
+{
+  "protocol_id": "cutting_tasks_v4_20261030",
+  "inherits": {
+    "material_common_episode_and_thresholds": "cutting_tasks_v1.json (each task's base entry, unchanged)",
+    "orientation_and_geometry_reference": "cutting_tasks_v2.json (TRIM-01-R, CUT-01-R)",
+    "tool_profiles": "src/robotic_cutting_sim/tool_profile.py (ToolProfile.to_dict is recorded in every task receipt)"
+  },
+  "freeze_boundary": "Defined before any v4 (TRIM-02-K2*, TRIM-02-K2C*, CUT-03-K2) episode (WP-11 Phase C4, 2026-10-30). Each task inherits its v1 base task's success thresholds unchanged; only the tool profile and the declared edge orientation differ from TRIM-01-R/CUT-01-R. The v1-v3 protocols, task IDs and thresholds are unchanged. No result-based threshold or task changes under this protocol; a change is a new protocol version.",
+  "units": "m, kg, s, deg (declared orientation metrics), xyzw quaternions",
+  "frames": "Particles sampled in WORKPIECE LOCAL; edge knots and orientation are WORKPIECE LOCAL; recorded evaluator positions are WORLD",
+  "orientation_convention": "ADR 0013 metrics with target normal n_t = +z local and cutting direction c = +x local: edge orientation = R_y(blade_rake_deg) so the edge line e = +y (tau = 0, psi = 0) and the blade normal is R_y(rho) z; rho > 0 raises the blade body behind the edge. blade_rake_deg 25 reproduces the TRIM-01-R quaternion. Nonzero edge_tilt_deg/edge_skew_deg are not defined in this protocol.",
+  "scope": "Kinematic material tasks for WP-11 Phase C4 (and later live use). The loader (tasks.ProfileTaskSpecV4) is opt-in: the ids are not in tasks.TASK_IDS/PROFILE_TASK_IDS, so live runtimes reject them until a live phase adds them with the physical-grasp guard.",
+  "tasks": {
+    "TRIM-02-K2-R00": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 0.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2-R05": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 5.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2-R10": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 10.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2-R12P5": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 12.5,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2-R15": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 15.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2-R25": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 25.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2-R35": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "blade_rake_deg": 35.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Double 25 deg bevel."
+    },
+    "TRIM-02-K2C-R00": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y_chisel",
+      "blade_rake_deg": 0.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Single (chisel) 25 deg bevel with the flat face toward the target: below rho = 12.5 deg (half the double-bevel included angle) the double bevel's lower face lies below the edge behind it (0.75 mm at rho = 0, 0.45 mm at 5 deg, 0.15 mm at 10 deg), whereas the chisel's flat face never drops below the edge for rho >= 0."
+    },
+    "TRIM-02-K2C-R05": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y_chisel",
+      "blade_rake_deg": 5.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Single (chisel) 25 deg bevel with the flat face toward the target: below rho = 12.5 deg (half the double-bevel included angle) the double bevel's lower face lies below the edge behind it (0.75 mm at rho = 0, 0.45 mm at 5 deg, 0.15 mm at 10 deg), whereas the chisel's flat face never drops below the edge for rho >= 0."
+    },
+    "TRIM-02-K2C-R10": {
+      "base": "TRIM-01",
+      "derived_from": "TRIM-01-R",
+      "tool_profile": "ruler_knife_v2_y_chisel",
+      "blade_rake_deg": 10.0,
+      "edge_tilt_deg": 0.0,
+      "edge_skew_deg": 0.0,
+      "reason": "TRIM-01 workpiece (160 x 30 x 20 mm bar, 8 mm dome), support fixture, reference path, edge clearance (edge at target + 0.2 mm) and every TRIM-01 threshold, with the end-held ruler_knife_v2 blade (ADR 0013). Edge orientation = R_y(blade_rake_deg) about the workpiece-local edge line, tau = psi = 0, cutting direction +x local. Single (chisel) 25 deg bevel with the flat face toward the target: below rho = 12.5 deg (half the double-bevel included angle) the double bevel's lower face lies below the edge behind it (0.75 mm at rho = 0, 0.45 mm at 5 deg, 0.15 mm at 10 deg), whereas the chisel's flat face never drops below the edge for rho >= 0."
+    },
+    "CUT-03-K2": {
+      "base": "CUT-01",
+      "derived_from": "CUT-01-R",
+      "tool_profile": "ruler_knife_v2_y",
+      "edge_orientation_local_xyzw": [
+        0.0,
+        0.7071067811865475,
+        0.0,
+        0.7071067811865476
+      ],
+      "reason": "CUT-01 workpiece, fixtures, path and thresholds (as CUT-01-R) with the end-held ruler_knife_v2_y held vertically: edge across the bar, vertical in-plane push cut; the grip lies beyond the bar along the edge line."
+    }
+  }
+}

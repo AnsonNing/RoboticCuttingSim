@@ -1,5 +1,151 @@
 # Progress — 2026-10-29 Asia/Seoul
 
+## 進行中：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
+
+- 計畫：[WP-11](WP11_PLAN.md)。刀具：[ADR 0013 `ruler_knife_v2`](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)。v2 改成像參考圖那樣夾住刀身一端的細握柄，刀身沿用 v1 的 120×40×1.5 mm。另外定義了削切姿態指標 τ／ψ／ρ／μ。
+- Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
+- 補充需求（Project Goal & Generalization）已整合進 [WP-11 計畫](WP11_PLAN.md)：Phase S（場景／目標分離）、Phase M（[ADR 0014](adr/0014-scalable-cut-history-sparse-logical-fields.md)：`tlmpm_v5` 打包 digit 與稀疏 slot）、Tests A–F。
+- 已 commit：Phase A 第一版（`97d56d3`：rollout pin 改為與環境無關，測試移除 matplotlib 依賴；CI 結果待確認）；Phase B 的 v2 profile（`a8e4d25`：`ruler_knife_v2_y`／`_x`，v1 pinned）與 Native grasp 工具（`c6eea75`）。
+- Phase B 完成（`2d13d30`、`712e106`）：`ruler_knife_v2_y`／`_x`，握柄縮為 60 mm（實測手掌 collider 在手 z = 0.070 m，70 mm 會頂到）。
+  - Native 7 項夾持控制兩種排列都 PASS_FROZEN_RIGID_CONTROLS（門檻同 v5；hold 時兩指各 18 N，滑移 ≤ 0.001 mm；穿透 ≤ 12 µm）。
+  - −10 N stress 下 v2 比 v1 鬆（A 268 mrad、B 35 mrad，v1 33 mrad；此項只報告）。
+  - [證據](evidence/wp11/phaseB_knife_v2_001.json)、[圖](media/wp11/knife_v2_y.png)。與參考圖相比，握柄偏大、刀身不是亮金屬色；待 C2 結果後一併定案。
+- Phase S 完成（`4aef698`，另有部分修改被併入 `98d5c3f`）：`scene_config.py`（`rcs_scene_v1`、`compile_task` → `ConfiguredTaskSpec`）、`goals.py`（sever／divide／remove_protrusions／trim_plane／move_piece／sequence，三層評估）、`goal_planner.py`（只讀設定，τ/ψ/ρ/μ）。
+  - 設定可完全重現 CUT-01-R／TRIM-01-R。
+  - 4 mm kinematic 下三凸起逐一移除（tlmpm_v5，K=3）全部 1.0。
+  - 限制：Isaac runtime 尚不接受 compiled task；`apply_scenario` 仍只接受 identity 方向。
+  - 流程注意：平行代理共用 git index，修改曾被併進別人的 commit，以及一次誤清空後已還原。之後一律用 `git commit -- <paths>`。
+- C2 預檢完成（`98d5c3f`，[證據](evidence/wp11/phaseC2_preflight_001.json)）。
+  - ρ < 12.5° 時雙斜面最低點低於刃口，0°／5° 會刮進底材 0.55／0.25 mm；10° 剛好過。
+  - 全任務共用配置：`v2_y`、刀尖 +y、工件抬高 +100 mm、TRIM ρ = 10°。決定已記入 ADR 0013。
+- Phase M 完成（`be1d859`、`b2c1d09`，[證據](evidence/wp11/phaseM_tlmpm_v5_001.json)）。
+  - `tlmpm_v5` 與 v4 law 8 等價：CPU 逐位相同，GPU M1a／M8b 在非確定性範圍內。
+  - 成本與 K 無關：K=1–8 都是 1.30–1.34 ms/substep、38 MB。
+  - 夾住的長條：3／5 刀得 4／6 塊。三凸起逐刀移除 0.98／0.97／0.98。
+  - 待處理：自由長條每刀滑約 1 mm，宣告切面超界（與 M8 同現象）；約 49 顆頂層粒子連起 chip 1、2（更正，見 [Phase C 報告](reports/WP11_PHASE_C_TRIM.md)：這些是被刀帶走約 61 mm 的撕裂頂層材料，code 是 40／32／36，不是原先寫的重疊處靜止材料）；`validate_action` 只收 `cut_index` 0/1（Phase G 要改）；reward／v1 oracle 仍是 ternary；S=8 已用到 7 個；v5 的 M3–M6、M9 未重跑。
+- Phase A（`97d56d3`、`cce395e`、`ee2a285`，[報告](reports/WP11_PHASE_A_CI.md)）。
+  - Hash 不一致的根因是 OpenBLAS 依 CPU 選 kernel（SkylakeX 與 Haswell），只差 1 ulp，不是行為改變。
+  - 改用參考軌跡＋推導出的容差 N·16·eps；matplotlib 改為 NumPy 判斷；CI 改完整 checkout（原本 26 個 skip 是歷史 law 測試沒跑）。
+  - `test_tool_profile_v2.py` 的主軸改用推導出的 ulp 容差（`f7dfef5`）。
+  - **GitHub Actions run 40934578313 PASS**：888 passed、1 skipped（需要 git-ignore 掉的 live 收據）、5 xfailed、0 failed，在 Haswell runner 上。
+- C4 完成（`aa0dfdc`、`20101c1`、`78c0641`，[證據](evidence/wp11/phaseC4_trim_material_001.json)）。
+  - 雙斜面 ρ = 5–35° 都分離（93–98%，0 橋接）；0° FAIL（下斜面壓陷）。
+  - 單斜面只有 0° 過，因為 law 8 閘門量刀身平面而不是推 chip 的面角，這是 Phase F 的發現。
+  - 負對照：平壓與鈍握柄兩項的平均力窗口含空氣段，依原門檻 FAIL，但都 0 標籤、1 component；Phase F 會先宣告接觸窗口再重跑。
+  - **定案：v2_y 雙斜面、ρ = 10°**，已記入 ADR 0013。
+- Phase D 完成（`5cf946f`，[證據](evidence/wp11/phaseD_home_001.json)）。
+  - 新增 `wp11_workcell_v1`（+100 mm）；Isaac 可接受 compiled task；HOME reset；planner 控制器；實體 Return-to-Home 與狀態機（`episode_lifecycle.py`）。
+  - Native smoke PASS：HOME 預夾、REORIENT 到 ρ = 9.99°、return home 關節誤差 0.39 mrad、刀具位姿 0.031 mm、標籤變化 0；`home_outcome` 與任務結果分開。
+- **C5 live 近水平 TRIM PASS**（`5aa0bee`，[證據](evidence/wp11/phaseC5_live_trim_001.json)，[影片](media/wp11/trim_rho10/demo.mp4)）。
+  - Native、`ruler_knife_v2_y`、ρ = 10°：凸起去除 97.9%，底材 0.99996，chip 持續獨立，夾持滑移 0.75 µm，Return-to-Home PASS。
+  - 待改進：PRE-CUT 量測回饋振盪 ±0.2 mm，刀身最低點一度進入未切頂面 0.16 mm，間隙稽核 FAIL；chip 留在長條頂面，畫面不夠清楚。由 C5b 處理（`path_v3` 控制器＋把 chip 推離）。
+- **F1 夾持壓力測試完成：v8 suite verdict FAIL（一項負對照設計錯誤），v9 修正版負對照 PASS**（`0c39b23`、`9a4cb5f`、`78e20ab`，[報告](reports/WP11_PHASE_F1_GRASP.md)，[證據](evidence/wp11/phaseF1_grasp_001.json)，Native，seed 42）。
+  - 31 項中：30 s HOME／TRIM 保持、2× REORIENT、0.1–0.5 N 外力、0.01–0.05 N·m 力矩、C4 切削反力重播（含 10×）、兩項釋放全部 PASS（滑移 ≤ 4.8 µm、≤ 0.14 mrad）。
+  - 唯一 FAIL：負對照 `low_friction_trim_advance_0p1n`。0.1 N −advance 的力矩（−0.009 N·m）幾乎抵銷重力在 ρ = 10° 的 +0.0083 N·m，是對照設計錯誤；門檻不改，v8 紀錄保留為 FAIL。
+  - 修正版負對照 protocol v9（`136b0af` 先宣告，`3478a11` 證據，[證據](evidence/wp11/phaseF1_negctrl_v9_001.json)，cuda:1）：三項全部 PASS 且都符合預先寫下的預測。TRIM +advance 0.1 N 0.28 s 掉刀；TRIM −normal 0.1 N 轉 447 mrad；HOME −advance 0.1 N 0.16 s 掉刀。對應的 μ = 0.6 參考列都保持（≤ 0.4 µm）。
+  - 弱方向是繞手指閉合軸（= 刀身法向）的力矩：0.05 N·m 保持，0.18 N·m 轉 12.5°，0.45 N·m 掉刀。切削反力在此軸只有約 0.0002 N·m。
+- **F2/F3 law 8 邊界驗證完成**（`d69f1e5`，[報告](reports/WP11_PHASE_F_LAW8.md)，[證據](evidence/wp11/phaseF_material_001.json)，protocol `phaseF_v1` 先宣告；kinematic 1 mm，cuda:0，seed 42）：17 PASS、1 FAIL、6 characterization、2 ERROR。
+  - 15° 閘門：14°／15° 完全不 plow，16° 每步都 plow；三者都分離凸起（93–94%）。
+  - 搖擺、純旋轉、鋸切、純拉鋸、撤刀、有限刃長、平壓、側推、無接觸、再接觸、`tlmpm_v5` 三刀歷史全部 PASS。
+  - **FAIL：鈍握柄負對照**（0 標籤、1 塊，但接觸平均力 0.077 N < 0.1 N）。握柄只碰到長條自由端角落，長條在摩擦支座上轉動約 1.4° 而沒有被壓縮。保留 FAIL。
+  - 修正版 `phaseF_v2`（`dc64f49` 先宣告預測，`4c7aa6e` 證據，[證據](evidence/wp11/phaseF_material_v2_001.json)）**PASS**：握柄壓在右支座正上方的頂面，接觸平均力 0.855 N（預測 0.35–1.6 N），0 標籤、1 塊，刀身接觸 0 步，壓縮 1.65 mm 是剛體位移的 9.4 倍。側推未受約束長條的情形仍未驗證。
+  - F3 解析度：正式解析度重現 PASS；2 mm 與 1.5 mm 下 TRIM 去除率掉到 0.82／0.58（底層粒子與刃口太近），接觸力在 dt 減半時約變 2.6 倍。**去除率與接觸力對解析度未收斂**，列為已知限制。宣告的 medium（0.15 ms）因不能整除 20 ms 控制步而 ERROR；另跑的 0.02/133 s 標為非 protocol 補充。
+  - F2.11 只報告的 goal 檢查：第 2、3 刀離宣告切面 4.0／4.5 mm（> 2 mm），與先前「長條每刀滑動」現象相同。
+- **Phase E 泛化第一輪（kinematic）完成**（`4b2fe08` 先宣告，`f83181d` 報告，[報告](reports/WP11_PHASE_E_ROUND1.md)，[證據](evidence/wp11/phaseE_round1_001.json)）：41 個 seed 全部預檢可行，**32／41 kinematic TASK_SUCCESS（78%）**，9 個 CUTTING_FAILURE 全部列出，沒有排除。
+  - CUT 6/6、TRIM 6/6、Test A 7/8、Test B 5/5（3／4 刀得 4／5 塊）、Test C 5/5（每個凸起 0.909–1.000）、Test D 3/6、SLICE-PUSH 0/5。
+  - SLICE-PUSH 五個都只差第二刀位置：第一刀後長條滑 1.2 mm，第二刀短 1.00 mm，凍結統計 4.0 mm > 2 mm。live Demo 3 用手腕深度重新定位（ADR 0009）處理這個問題，kinematic 階段沒有相機。
+  - Test A s2（−20° 斜切）位置超界 0.02 mm。Test D s1701 是 `tlmpm_v5` slot 溢位（S = 8 不夠）；s1702／s1704 是目標設計錯誤（sever 之後「底材單一塊」不可能成立），依預先宣告規則仍記為 CUTTING_FAILURE。
+  - 預檢沒有遇到不可行樣本，範圍要放寬才量得到可行性邊界（第二輪）。這輪是 kinematic 理想追蹤，不是 live；GRASP_FAILURE 只在 live 才可能出現。
+- **Phase G policy-ready API 完成**（`a2ee588`…`184b3b7`，[API 文件](POLICY_READY_API.md)，[證據](evidence/wp11/phaseG_policy_ready_001.json)）。
+  - `open_cutting_env(..., preset="cutting_research_v1")` → `PolicyReadyEnv`：實體夾持、預夾、HOME reset；動作逐步回報 ACCEPTED／CLAMPED／REJECTED_<原因>，被拒絕的動作不會執行；`cut_index` 可到 `max_cuts`（最多 15）。
+  - 一般觀測（腕部 D405×2、D455 RGB-D、關節、末端位姿、夾爪、目標）與 `privileged_state`（粒子、cut code、接觸力、真實刀具位姿）分開。
+  - 資料收集器 `scripts/collect_dataset.py`／`read_dataset.py`（成功與失敗 episode 都存）。
+  - **Test E PASS**：kinematic 1 mm 的 TRIM 與 sever、Native TRIM，scripted planner 與只由場景數字產生的手寫動作程式都成功（Native 手寫版 98.47%，不用 privileged 輸入）。
+  - **Test F**：kinematic **POLICY_READY**（7 episode，replay 完全重現）；**Native NOT POLICY_READY**：只有記憶體不合格（每次 reset host RSS +82 MiB，不收斂；GPU 記憶體持平）。Phase H 處理。
+  - 可靠性規則 v1a 是在 smoke 之後、正式 Native run 之前加的（夾住的刀 reset 後 PhysX 速度雜訊 3.6 mm/s），v1 不改，兩者都計分。
+  - 注意：Native run 的 manifest 是 git_dirty（當時工作樹有 C5b 未 commit 的修改），Phase H 會從乾淨 worktree 重跑。
+- **Phase E 第一輪 live 階段**（`1ecfe5e` 先宣告，`fef0e1e`／`fc8c972` 證據與報告，[證據](evidence/wp11/phaseE_round1_live_001.json)，Native，實體夾持 v2 刀）：9 個推薦 seed 中 **6 個 live TASK_SUCCESS**，2 個 CUTTING_FAILURE，1 個 SCENE_INFEASIBLE；GRASP_FAILURE、IK_FAILURE 都是 0。
+  - 成功：TRIM s1203（0.994）、s1201（0.962）、CUT s1101、20° 斜切 s1102、Test A s6（−x 方向削切 0.967）、**Test B s1502（四刀五塊）**。全部 Return-to-Home PASS，最大滑移 1.3 µm。
+  - 失敗與 kinematic 一致：SLICE-PUSH s1301 第二刀位置 4.0 mm（長條滑 1.16 mm）；Test A s2 斜切位置 1.023 mm（> 1.00 mm）。手腕深度重新定位目前綁在 SLICE-PUSH-01，configured task 還不能用。
+  - Test C s1602：live_001 預檢用單一凸包包住三個凸起，誤判碰撞而拒跑（SCENE_INFEASIBLE）；補充的 live_002 在第三次削切時因顯示用網格（`ParticleSurface`）遇到 11 顆粒子的碎片而中止（NOT_RUN）。兩筆紀錄都保留，修好後另立 live_003。
+  - 只報告的路徑檢查：三次 10° 削切在削切前穩定時刀身低於未切頂面 0.19–0.24 mm（切削關閉），與 C5 相同的未解問題。
+  - 影片：[Test A s6](media/wp11/test_a_s6/demo.gif)、[Test B s1502](media/wp11/test_b_s1502/demo.gif)。
+- 磁碟：/mnt/data 剩 17 GB，已把 10 個 WP-11 之前的舊 artifact（約 11 GB）搬到根磁碟 `/home/ningan/RoboticCuttingSim_artifacts_rootdisk/`（rsync 後比對檔名與大小，再改 symlink；紀錄在該目錄的 `MOVE_LOG.txt`），現在 /mnt/data 剩 27 GB。
+- **C5b 完成：近水平 TRIM＋把 chip 推離，live PASS**（`03dfd1d` 程式，`0b2d55b` 證據與影片，[證據](evidence/wp11/phaseC5b_live_trim_clear_001.json)，[影片](media/wp11/trim_rho10_clear/demo.mp4)）。
+  - 振盪原因：path_v2 每步把（目標 − 量測）加到上一個指令，等於在有延遲的系統上做單位增益積分器；擬合出的 z 軸極點 0.92、y 軸 1.07（不穩定）。
+  - `path_v3`（opt-in）：指令 = 規劃參考 + 緩慢調整的 bias（增益 0.1、20 µm 死區），參考軌跡不讀量測值；停止前幾何減速，切入點上方 1 mm 先停 0.5 s。
+  - 新目標 `trim_bump_rho10_clear`：削除後用刀身在頂面上方 2 mm 近水平掃過，把 chip 推離長條（disarmed）。
+  - Live attempt 002 PASS：凸起去除 97.89%、底材 0.99996、chip 被推 109 mm 掉到桌上、之後一直是 2 個 component；PRE-CUT 刀身最低點 +0.076 mm（C5 是 −0.167 mm），間隙稽核與路徑檢查都 PASS；夾持滑移 0.78 µm；Return-to-Home PASS。
+  - Attempt 001 因另一個使用者的 24 GB 訓練工作佔滿 GPU 1 而 CUDA OOM（切削前），保留為 FAIL_EXECUTION。
+  - 未解：SKIM 開始與結束時側向 y 偏差 −0.27／+0.14 mm（切到凸起期間 ≤ 0.024 mm）；SKIM 時刀身離頂面只有 0.013 mm。
+- **Phase H 完成**（`a5b05b8`…`9e84133`，[報告](reports/WP11_PHASE_H_PROFILING.md)，[證據](evidence/wp11/phaseH_profiling_001.json)）。
+  - 記憶體：每次 reset 的 host RSS 增長幾乎都來自 Kit 的 `open_stage`（Python heap 只 +0.04 MiB）。新增 opt-in `stage_reset="reload_in_place"`（保留 stage，重載 root layer），reset 結果與原本逐位相同；4 episode Test F 的 host 增長 140 → 56.5 MiB/episode（門檻 64，PASS）。
+  - Native 仍 **NOT POLICY_READY**：乾淨 worktree 重跑時 GPU 記憶體 52 MiB/episode（門檻 32），只有 3 個點且先降後升，可能是 allocator 雜訊；門檻不改，需要 ≥ 8 episode 的宣告 run 才能定論。`reload_in_place` 在相機關閉時第二次 reset 會 segfault，因此要求相機開啟。
+  - Profiling：kinematic 1 mm 每步 0.49–0.64 s，TLMPM 佔 99%；其中接觸 kernel 佔 GPU 時間 80%。Native TRIM 每步 0.67 s：TLMPM 58%、相機 12.6%、表面網格 11.8%。
+  - 最佳化：opt-in `surface_update="on_capture"`（顯示網格只在拍照與評估前重建），表面時間 49 → 8.8 ms/步，物理逐位相同。
+  - 設定檔 `runtime_profiles_v1`：`full_physics_v1`（唯一可用於驗收）與 `research_fast_v1`（每個 episode 標 `acceptance_valid: false`；kinematic TRIM 快 8×、SEVER 快 9.6× 但切面位置 FAIL；Native 快 2.3×）。
+- **Test C live PASS**（live_003，`002c95e` 先宣告，`d3f94e9`／`2b4f0a7` 修正，`ac4a3e1` 證據，[證據](evidence/wp11/phaseE_round1_live_003.json)，[影片](media/wp11/test_c_s1602/demo.gif)）：三個凸起逐一削除 0.962／0.997／0.972，底材單一 component，三個 chip 各自在自己的削切中分離並離開長條；夾持滑移 ≤ 0.83 µm；Return-to-Home PASS。
+  - 修正：顯示用網格遇到無法成網格的小碎片時跳過並記錄（物理、標籤、評估不變；可成網格時輸出逐位相同）；runner 預設預檢在 ≥ 2 個凸起時改用分段幾何（0／1 個凸起不變）。
+  - live_001（SCENE_INFEASIBLE）與 live_002（NOT_RUN）紀錄不變。
+  - 未解：PRE-CUT 時刀身低於頂面 0.23 mm（這次仍用 C5 控制器，`path_v3` 可解）；表面品質指標顯示頂面缺 0.66%、最大凹陷 22 mm（未計分）。已查明（R1）：長條沿 x 滑了 0.773 mm，heightfield 固定在初始位姿，−x 端整列 32／4864 格沒有底材而被算成 22 mm；另有真實壓痕，三個削切範圍內 400 顆頂層底材粒子平均下壓 1.42–1.47 mm，最深 3.19 mm。沒有切面以下的質量脫離，TASK_SUCCESS 不變。
+- **SLICE-PUSH 手腕深度重新定位（configured task）**（[ADR 0016](adr/0016-configured-perception-relocation.md)，`0e96f07` 程式，`c29f02a` 先宣告 live_004，`fa0eabb` 證據，[影片](media/wp11/slice_push_relocate/demo.gif)）。
+  - opt-in `planner_options.perception = "wrist_depth_relocate_v1"`：每刀之間在場景設定決定的固定位姿用腕部 D405 深度量 +x 端面位移，平移下一刀；不用 look-at、不最佳化觀測位姿、不讀粒子／標籤／刀具真值。不要求時，計畫與 task id 完全不變。
+  - Live s1301 **TASK_SUCCESS**：量到 +1.158 mm（oracle +1.149 mm），第二刀落在 +24.00 mm（live_001 是 +23.00 mm），凍結統計 1.5 mm ≤ 2 mm，三塊、推開 16.7 mm，Return-to-Home PASS。round 1 的 kinematic 與 live_001 失敗紀錄不變。
+  - s1302／s1303 第一次因 /mnt/data 降到 15 GB 下限而沒有啟動；搬了 22 個舊 artifact（約 12 GB）到根磁碟後第一次啟動（不是重試）：**live_004 三個 seed 全部 TASK_SUCCESS**（yaw −6.3°／+18.1°／−14.2°），第二刀都落在宣告切面上，位置統計 1.5 mm，推開 14–18 mm，全部 Return-to-Home PASS。
+  - 限制：s1302 的外側那塊不是剛體平移，端面量測誤差只有 −0.007 mm，但切口處材料多移了 0.28 mm；在 1 mm 粒子格子的半層餘裕內，所以這次仍切在正確位置，較大的非剛體滑動不會被完全修正。
+- CI：`beb92b5` 修正 GitHub Actions 失敗（Test C 預檢測試在沒有 newton／mujoco／Franka 資產時改標 NOT_RUN）。
+- **Phase E 第二輪**（`b624df6` 評估器 v2，`0496562` 先宣告，`67ee8c4` 報告，[報告](reports/WP11_PHASE_E_ROUND2.md)，[證據](evidence/wp11/phaseE_round2_001.json)）。
+  - `goal_eval_v2`（opt-in，[ADR 0015 Amendment 1](adr/0015-scene-goal-controller-evaluation-separation.md)）：sequence 裡每一步只用自己的 cut digit 計分（sever 的塊數、質量與位置；remove／trim 的底材以先前 sever 留下的每一塊判斷）。不指定時 v1 與 task id 完全不變。事後診斷（POST_HOC_DIAGNOSTIC）：round 1 的 s1702／s1704 在 v2 下 PASS，round 1 紀錄不變。
+  - Scene 可宣告 `slots_per_node`；S = 16 沒有溢位（最多用 8）。
+  - 放寬範圍的可行性掃描 40 個：SCENE_INFEASIBLE 4（10%）、IK_FAILURE 8（20%）、可行 28（70%）。IK 失敗在工件離中心 70–110 mm 且轉 ~40°、或 35° 的陡峭姿態；rake 5° 幾何上不可行（雙斜面刮進 0.25 mm）。
+  - Kinematic 18 個：8 成功、10 失敗，沒有一個是評估器造成的。
+    - **斜切 ±30–35° 不分離**（4 個）：底部 1–3 層粒子沒有標籤而連起兩側；20° 不會。
+    - **rake 45° 削切完全沒有標籤**（3 個）：law 4 的 θ_max = 45°，運動與刀身平面夾角達到上限，stroke 不啟動。
+    - **Test D2 三個 chip 沒脫離**：1–4 顆內部粒子沒有標籤；S = 8 與 16 結果相同，與 slot 數無關。
+  - 這些是 law 8／規劃的適用邊界，記入已知限制，不改 law。
+- **Native 可靠性 v1b**（`a65e71d` 先宣告，`1a2af70` 證據，[證據](evidence/wp11/phaseH_native_reliability_v1b_001.json)）：同一個 process 連跑 8 個完整 episode（乾淨 worktree），**v1b 與 v1a 下 Native POLICY_READY**。host 斜率 48.8 MiB/episode（≤ 64），GPU 2.0 MiB/episode（≤ 32，Phase H 的 52 MiB 是 3 點雜訊）；reset 都與 episode 0 逐位相同；v1 只有 `tool_at_rest_after_reset` FAIL（已知的 PhysX 夾持抖動）。
+  - 不是「沒有洩漏」：host 每個 episode 仍增加約 49 MiB。
+  - 選用的 process 回收（`--recycle-every`）Native run FAIL（Kit 關閉時子 process 先結束，沒寫出結果）；已修正（`16f0ffa`）但未重跑。
+  - 重複性診斷（`ce8c810`）：「scripted」與「scripted repeat」設定只差標籤；reset 狀態逐位相同，材料從第 1 步起就有約 1e-7 的差異，刀接觸後放大（97,044 個粒子中 12 個 code 不同）。兩個全新 process 的第一個 episode 也會這樣分歧，與前一個 episode 無關。原因是 `tlmpm_v5` 在 CUDA 上用 float32 atomic add 累加 grid 質量與動量，加總順序每次不同。CPU kinematic 上，接在刻意失敗之後的重複與全新 process 都和 episode 0 逐位相同。結論：不是 reset 洩漏，是 GPU 非確定性；Native 的重複性只到 verdict 層級，宣告的 gate 也只比 verdict，分不出兩者（Test F 的弱點，已記錄）。
+- 磁碟：其餘 86 個 WP-11 之前的舊 artifact 也搬到根磁碟（同樣 rsync＋比對＋symlink）；/mnt/data 25 GB、根磁碟 37 GB。
+- **Phase I 進行中**
+  - **rcs-review：ACCEPT WITH CONDITIONS**（審查到 `651fc0a`）。沒有物理竄改、沒有把幾何刪除或遮罩當成切割、沒有被重新計分或隱藏的失敗，每個 run 都在宣告之後才跑；凍結的檔案逐位不變；headline 數字從錄下的 `physics_state.npz` 重算後全部吻合；Phase A 的參考軌跡從 main 重建後與 fixture 逐位相同。
+  - 合併條件：
+    1. `cutting_surface` 碎片跳過改了凍結的預設行為，要改成版本化 opt-in；
+    2. 跳過紀錄要寫進 episode，並讓 CI 真的跑到；
+    3. `goal_eval_v2` 會忽略不屬於任何步驟的 digit（新增 `goal_eval_v2a`，v2 不改）；
+    4. final_v4 live regression PASS；
+    5. 最終 HEAD 的 CI 綠燈。
+  - 其他應修項目：path_v3 bias 沒有 anti-windup；info dict 帶出 privileged 值；被拒絕的動作仍會放開夾爪；v5 的 cut index 沒有邊界檢查；C5／C5b 有 7 顆底材邊緣粒子留在切面上方 3.6–12 mm 但沒有在報告裡揭露；Test C 的 22 mm 凹陷是 heightfield 對位假象（長條滑了 0.77 mm），背後有真實壓痕（14,638 顆頂層底材粒子中有 400 顆下壓超過 1 mm，都在削切範圍內，平均 1.42–1.47 mm、最深 3.19 mm）。
+  - **final_v4 live regression PASS**（`d57d0f2`，乾淨 worktree，GPU 0，32 min，[報告](reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)，[證據](evidence/wp11/phaseI_final_v4_regression_001.json)）：Demo 1a／1b／2／3 verdict 與 task／protocol identity 都和 `live_20261029_law8_final` 相同；已記錄的凍結 strict FAIL（1b 位置／時間窗、Demo 2 精度 5/8）照樣重現；Demo 2 去除 97.99% → 97.89%，Demo 3 推開 19.680 → 19.687 mm、手腕深度位移 1.2009 → 1.2005 mm。之後的修正 commit 有動到 final_v4 路徑的檔案，因此在 `6c36e39` 跑了 regression 002（見下方）。
+  - **R1 完成**（`d009053`、`63ad26b`）：`cutting_surface` 預設恢復為 `unmeshable="raise"`（與 main 相同）；`skip_presentation_v1` 只在 configured（WP-11）task 自動啟用，每次跳過都寫進 `runtime/surface_unmeshable_NN.jsonl`，跳過的碎片含底材時表面指標回報 NOT_RUN；CI 的 test extra 加入 `newton==1.6.1`（全新 venv 安裝 28 s 成功）；`reload_in_place` 失敗後下一次 reset 會重新開啟 stage；新增 [Phase C 報告](reports/WP11_PHASE_C_TRIM.md)，揭露 C5／C5b 的殘留粒子（C5b 有 7 顆底材邊緣粒子在切面上方 3.4–12 mm，仍連在底材上；網格殘留只有 0.105 mm，看不出來）。全套 CPU 測試 1121 passed、5 xfailed。
+  - **R3 完成**（`3a75b83`、`2e790ff`）：path_v3 原地修會改變 C5b live 的指令（replay 證明 path_v3 逐位重現 1056 個錄下的指令，而 anti-windup 凍結在 253 步會啟動），所以新增 `path_v3a`（bias 上限 3 mm／15 mrad、被限幅時凍結），path_v3 不變；opt-in 卡住逾時（`stall_timeout_s`）。privileged 的 `reset_checks`／`grasp_status` 移到 `privileged_state`；被拒絕的動作不再改夾爪；collector 明確拒絕 relocation 選項；`slots_per_node` 沒有 v5 solver 時報錯。全套 CPU 測試 1180 passed、5 xfailed。path_v3a 尚未在 Native 跑過（NOT_RUN）。
+  - **R2 完成**（`18c4301` 先宣告負對照，`46be189`…`14c1a0e`）：
+    - 新增 opt-in `goal_eval_v2a`：不屬於任何步驟的 digit 判 FAIL；remove 在 sever 之前的假 FAIL 修正；最後每個 sever 塊做全 digit 底材檢查。v2 不變並以 digest 固定；事後診斷 8 個 episode 的 verdict 與 v2 完全相同。
+    - v5 cut index 超出範圍時報錯。
+    - reward／live_acceptance 遇到 K ≥ 2 的 packed code 時報錯或回 NOT_APPLICABLE。
+    - ADR 0014 改正為 CPU 逐位相同。
+    - [負對照](reports/WP11_REVIEW_NEGATIVE_CONTROLS.md)：ρ = 10° 的 C4 組 7 列 PASS（標為 live 之後補做）；`tlmpm_v5` K = 5 的 7 列 PASS，數值與 v4 對應列相同。全套 CPU 測試 1190 passed、5 xfailed。
+- README 與文件索引加入 WP-11 章節（影片、泛化、policy API、law 8 適用範圍）。
+  - **rcs-review 第二次（delta）審查：ACCEPT WITH CONDITIONS**。
+    - 修正都正確；「configured task 預設 skip」可接受為 opt-in。
+    - 新發現 `on_capture`＋skip 模式在拍照時會中止，已修正（`b90658d`）：拍照只更新顯示網格，評估才檢查。skip 模式只允許 configured task；collector 也檢查 info 的 privileged key。
+    - README 數字修正（`cbd80d1`）：round 2 的族群、PRE-CUT 路徑稽核 FAIL、Test C 壓痕、slot 上限、v2 缺陷與 v2a、鈍握柄 v1 FAIL、只測過 rake 45°、F3 不收斂的細節。
+    - Phase R 報告措辭收窄到實際測到的範圍（`495d639`）。
+  - **final_v4 regression 002 PASS**（`6c36e39`，乾淨 worktree，GPU 1，36 min，`abde831`）：四個 demo 的 verdict、identity、已知 strict FAIL 都與參考及 001 相同。其中 Demo 1b、2 跑的時候，另一位使用者的工作佔用同一張 GPU，Demo 2 開始時只剩 8.4 GiB 可用，低於宣告的 12 GB 下限；結果沒有受影響。之後的 commit 在 final_v4 路徑上只有一行一定為 false 的設定檢查，所以最終 HEAD 沒有再跑（NOT_RUN，原因已記錄）。
+  - **rcs-review 最終簽核：ACCEPT WITH CONDITIONS**（唯一條件是 README Test C 壓痕的措辭，已修正）。確認 `6c36e39` 之後的程式變更在 final_v4 路徑上都不會執行，所以 regression 002 也涵蓋合併 HEAD。
+- 輸出位置：`artifacts/wp11/`（symlink 到 `/mnt/data`）；phaseB、phaseC4 與 WP-11 之前的舊 artifact 已搬到根磁碟 `/home/ningan/RoboticCuttingSim_artifacts_rootdisk/`，原路徑是 symlink。
+- 已知限制（整理）：
+  - 雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
+  - 斜切 30–35° 不分離；rake 45° 不啟動；sever 後接削切可能留下少數未標籤的 chip 粒子。
+  - 結果對解析度未收斂。
+  - Native host 記憶體每 episode 約 +49 MiB；Native 只在 verdict 層級可重複。
+  - 沒有 Isaac Lab parity；材料參數暫定、未校準。
+- **Phase I 驗證完成**：
+  - 本機全套 CPU 測試在 `1b78ec3` 上 1194 passed、5 xfailed、0 failed（`artifacts/wp11/logs/phaseI_cpu_full_1b78ec3_001.log`）；`ae0ac0f` 只多了文件修改。
+  - **GitHub Actions run 41003268276 在 `ae0ac0f` 上 PASS**：1190 passed、4 skipped（都有列印原因）、5 xfailed、0 failed。
+- 下一步：合併到 main 並 push → 建立 DONE。
+
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
 - **Phase 1 閘門**（計畫 §2 的整個矩陣含負對照）已由 [law 8](adr/0012-cutting-law-8-plow-gated-lead.md) 滿足：依計算式準則 M1–M9 全部 PASS（[matrix_law8_001](evidence/phase1/matrix_law8_001.json) 20:54；乾淨工作樹確認重跑 [matrix_law8_002](evidence/phase1/matrix_law8_002.json) 21:19，在 live 進行期間完成，verdict 相同）。rcs-review 判定 PASS（附條件，已處理）。

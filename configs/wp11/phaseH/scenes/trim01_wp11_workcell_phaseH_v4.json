@@ -1,0 +1,58 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "trim01_wp11_workcell_phaseH_v4",
+  "description": "TRIM-01-R workpiece (160 x 30 x 20 mm bar, one 8 mm dome at the centre) on the TRIM-01 solid support, in the WP-11 all-task workcell wp11_workcell_v1 (C2 decision): workpiece and board/riser raised +100 mm, ruler_knife_v2_y with the tip toward world +y, HOME = the declared q_home with the blade hanging below the fingers. tlmpm_v5 law 8 with one cut digit. [WP-11 Phase H profiling copy of trim01_wp11_workcell: only the solver module is changed to tlmpm_v4 (max_cuts 1); everything else is identical]",
+  "workpiece": {
+    "base_box_m": {
+      "length_m": 0.16,
+      "width_m": 0.03,
+      "height_m": 0.02
+    },
+    "protrusions": [
+      {
+        "id": "dome",
+        "family": "dome",
+        "x_m": 0.0,
+        "y_m": 0.0,
+        "radius_x_m": 0.012,
+        "radius_y_m": 0.012,
+        "height_m": 0.008
+      }
+    ],
+    "world_pose": {
+      "translation_m": [
+        0.0,
+        0.0,
+        0.1
+      ],
+      "yaw_deg": 0.0
+    },
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {
+    "kind": "solid_board",
+    "x_range_m": [
+      -0.09,
+      0.09
+    ],
+    "half_width_y_m": 0.025,
+    "thickness_m": 0.01,
+    "names": [
+      "support_floor"
+    ],
+    "workcell": {
+      "from_scenario": "wp11_workcell_v1"
+    }
+  },
+  "tool": {
+    "profile_id": "ruler_knife_v2_y",
+    "grasp_preset": "default"
+  },
+  "solver": {
+    "module": "tlmpm_v4",
+    "cutting_law": 8,
+    "max_cuts": 1,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004
+  }
+}

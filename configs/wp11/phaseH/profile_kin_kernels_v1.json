@@ -1,0 +1,8 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseH_profile_kin_kernels_v1",
+  "description": "WP-11 Phase H2 kernel split: the first 150 control steps of the scripted episode (seed 42) with every Warp kernel timed eagerly (profiler kernels mode, perturbing; used only for the per-kernel shares).",
+  "episodes": [
+    {"label": "scripted_seed42_first150", "controller": "scripted", "seed": 42, "max_steps": 150}
+  ]
+}

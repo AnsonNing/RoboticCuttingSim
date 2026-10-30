@@ -1,0 +1,8 @@
+{
+  "schema": "rcs_episode_plan_v1",
+  "plan_id": "phaseH_native_speed_trim_150_v1",
+  "description": "WP-11 Phase H4 Native speed comparison on the same task and steps: the first 150 control steps (3 s: HOME approach into the cut) of the Test F scripted episode (measured-edge feedback, seed 42), run once under full_physics_v1 and once under research_fast_v1 with the stage profiler. Short on purpose (disk floor); no expectation declared.",
+  "episodes": [
+    {"label": "scripted_measured_seed42_first150", "controller": "scripted", "seed": 42, "edge_feedback": "measured", "max_steps": 150}
+  ]
+}
