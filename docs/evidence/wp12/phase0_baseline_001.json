@@ -1,0 +1,2306 @@
+{
+ "schema": "wp12_phase0_baseline_v1",
+ "label": "kinematic ideal-tracking baselines; provisional uncalibrated material",
+ "freeze": {
+  "date_kst": "2026-10-30T23:37:39+09:00",
+  "branch": "claude/wp12-physical-cut-surfaces",
+  "head_sha_at_audit_start": "ce547f90c17d544d34af811d412d1bfcaad960d0",
+  "head_sha_during_runs": "3f1337988e63a9241ae106d15fffdb6f71737769",
+  "head_note": "1c91605 (orchestrator, 23:21 KST) changed only .claude/agents/rcs-impl.md, docs/PROGRESS.md, docs/WP12_PLAN.md relative to ce547f9; src/ and scripts/ are identical apart from this step's untracked additions",
+  "main_sha": "fbe99bd0a46daad93636c0082cd257b0b667169a",
+  "git_status_porcelain": [
+   "M scripts/preflight_wp11_orientations.py",
+   " M src/robotic_cutting_sim/isaac_sim_runner.py",
+   " M src/robotic_cutting_sim/motion_preflight.py",
+   " M src/robotic_cutting_sim/scene_config.py",
+   "?? configs/wp12/",
+   "?? configs/wp12_workcells_v1.json",
+   "?? docs/reports/WP12_BASELINE_AUDIT.md",
+   "?? scripts/preflight_wp12_flat_board.py",
+   "?? scripts/run_wp12_board_throughcut.py",
+   "?? scripts/summarize_wp12_board_throughcut.py",
+   "?? scripts/wp12_baseline_capture.py",
+   "?? scripts/wp12_baseline_extract.py",
+   "?? scripts/wp12_phase0_summarize.py",
+   "?? src/robotic_cutting_sim/flat_board_workcell.py",
+   "?? src/robotic_cutting_sim/surface_metrics_v1.py",
+   "?? tests/test_surface_metrics_v1.py",
+   "?? tests/test_wp12_board_throughcut.py"
+  ],
+  "python_runtimes": {
+   ".venv/bin/python": {
+    "python": "3.12.12",
+    "packages": {
+     "mujoco": "3.12.0",
+     "newton": "1.6.1",
+     "newton-usd-schemas": "0.6.0",
+     "numpy": "2.5.4",
+     "pytest": "9.1.1",
+     "scipy": "1.18.1",
+     "usd-core": "26.8",
+     "warp-lang": "1.17.0"
+    }
+   },
+   ".deps/isaacsim-venv/bin/python": {
+    "python": "3.12.12",
+    "packages": {
+     "isaacsim": "6.2.0.0",
+     "isaacsim-kernel": "6.2.0.0",
+     "mujoco": "3.12.0",
+     "newton": "1.6.1",
+     "newton-usd-schemas": "0.5.0",
+     "numpy": "2.3.1",
+     "scipy": "1.17.0",
+     "torch": "2.11.0+cu128",
+     "warp-lang": "1.17.0"
+    }
+   },
+   ".deps/isaaclab-venv/bin/python": {
+    "python": "3.12.12",
+    "packages": {
+     "isaaclab": "28.0.0",
+     "mujoco": "3.12.0",
+     "newton": "1.6.1",
+     "newton-usd-schemas": "0.6.0",
+     "numpy": "2.5.2",
+     "scipy": "1.18.1",
+     "torch": "2.11.0+cu128",
+     "warp-lang": "1.17.0"
+    }
+   }
+  },
+  "warp_cuda": "Warp 1.17.0, CUDA Toolkit 12.9 (Warp), driver CUDA 12.8",
+  "nvidia_driver": "570.211.01",
+  "gpus": [
+   "0, NVIDIA GeForce RTX 5090, 32607 MiB",
+   "1, NVIDIA GeForce RTX 5090, 32607 MiB"
+  ],
+  "gpu_use": "cuda:1 for scenes 1,2,3,6; cuda:0 for 4,5,7,8 (4 concurrent jobs per GPU; GPU 0 also held two idle processes of another user, GPU 1 is shared with another project)",
+  "os": "Ubuntu 22.04.5 LTS / kernel 6.8.0-138-generic",
+  "cpu_count": 64,
+  "ci_runs_gh_run_list_L5": [
+   "in_progress\t\tWP-12 plan; PROGRESS in-progress section; rcs-impl artifacts under artifacts/wp12\tCPU tests\tclaude/wp12-physical-cut-surfaces\tpush\t41071099677\t5s\t16m",
+   "in_progress\t\tPhase 0: remove the separate project's acronym from tracked text files; add CPU guard test\tCPU tests\tclaude/wp12-physical-cut-surfaces\tpush\t41070755704\t4s\t18m",
+   "in_progress\t\tWP-12: specification, unattended runner goal and rules (all work at effort high)\tCPU tests\tclaude/wp12-physical-cut-surfaces\tpush\t41070509279\t3s\t20m",
+   "completed\tsuccess\tREADME: WP-11 scene table (live Native start/end close-ups of the TRIM, Test B, Test C and SLICE-PUSH scenes); correct the Test C chip-left-the-bar statement (405 of the p1 chip's 2040 particles rest on the bar top)\tCPU tests\tmain\tpush\t41017393752\t46m16s\t7h",
+   "completed\tsuccess\tREADME: WP-11 scene table (live Native start/end close-ups of the TRIM, Test B, Test C and SLICE-PUSH scenes); correct the Test C chip-left-the-bar statement (405 of the p1 chip's 2040 particles rest on the bar top)\tCPU tests\tclaude/wp11-cutting-refinement\tpush\t41017385564\t32m41s\t7h"
+  ]
+ },
+ "cpu_suite": [
+  {
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase0_pytest_full_001.log",
+   "summary_line": "1196 passed, 5 xfailed, 185 warnings in 1508.76s (0:25:08)",
+   "failed_or_error_lines": [],
+   "wall_clock": "25:11.90",
+   "exit_code": 0
+  },
+  {
+   "log": "/home/ningan/RoboticCuttingSim/artifacts/wp12/logs/phase0_pytest_clean_worktree_3f13379_001.log",
+   "summary_line": "1 failed, 1195 passed, 5 xfailed, 185 warnings in 1515.09s (0:25:15)",
+   "failed_or_error_lines": [
+    "FAILED tests/test_blademaster_demo_runner.py::test_final_v1_dry_run_matches_the_recorded_final_runs"
+   ],
+   "wall_clock": "25:18.11",
+   "exit_code": 1
+  }
+ ],
+ "audit_files_line_counts": {
+  "README.md": 455,
+  "docs/PROGRESS.md": 602,
+  "docs/WP11_PLAN.md": 106,
+  "docs/SURFACE_GEOMETRY_VALIDATION.md": 167,
+  "docs/POLICY_READY_API.md": 510,
+  "docs/reports/WP11_PHASE_F_LAW8.md": 373,
+  "docs/reports/WP11_PHASE_E_ROUND1.md": 804,
+  "docs/reports/WP11_PHASE_E_ROUND2.md": 465,
+  "docs/reports/WP11_PHASE_H_PROFILING.md": 596,
+  "docs/adr/0012-cutting-law-8-plow-gated-lead.md": 119,
+  "docs/adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md": 167,
+  "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md": 110,
+  "docs/adr/0015-scene-goal-controller-evaluation-separation.md": 243,
+  "src/robotic_cutting_sim/cutting_surface.py": 198,
+  "src/robotic_cutting_sim/usd_surface_bridge.py": 162,
+  "src/robotic_cutting_sim/cut_topology.py": 253,
+  "src/robotic_cutting_sim/tlmpm_v4.py": 1201,
+  "src/robotic_cutting_sim/tlmpm_v5.py": 930,
+  "src/robotic_cutting_sim/scene_config.py": 954,
+  "src/robotic_cutting_sim/native_fixture.py": 89,
+  "src/robotic_cutting_sim/fixture_contacts.py": 28,
+  "src/robotic_cutting_sim/isaac_sim_runner.py": 1612,
+  "src/robotic_cutting_sim/live_env.py": 706,
+  "src/robotic_cutting_sim/live_material.py": 369,
+  "src/robotic_cutting_sim/task_scenarios.py": 171,
+  "src/robotic_cutting_sim/workcell.py": 313,
+  "configs/wp11_scenarios_v1.json": 68
+ },
+ "scenes": [
+  {
+   "scene": "1",
+   "name": "single through-cut (CUT-01-R)",
+   "run_dir": "artifacts/wp12/baseline/s1_cut01r_m1a_law8_v5_002",
+   "extract": "wp12_extract_003",
+   "frozen_dir": "artifacts/wp11/phaseM/m1a_law8_v5_001",
+   "protocol": "WP-11 Phase M row M1a, law 8, tlmpm_v5, ruler_knife_v1, seed 42",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_phase1_matrix.py --row M1a --cutting-law 8 --solver v5 --device cuda:1 --out artifacts/wp12/baseline/s1_cut01r_m1a_law8_v5_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s1_cut01r_m1a_law8_v5_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s1_cut01r_m1a_law8_v5_002.log",
+   "verdict": {
+    "verdict": "PASS",
+    "checks": {
+     "frozen_strict_pass": true
+    },
+    "metrics": {
+     "final_mechanical_components": 2,
+     "final_component_mass_fractions": [
+      0.5000000000003806,
+      0.5000000000003806
+     ],
+     "final_labelled_count": 28528
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseM/m1a_law8_v5_001",
+    "verdict": {
+     "verdict": "PASS",
+     "checks": {
+      "frozen_strict_pass": true
+     },
+     "metrics": {
+      "final_mechanical_components": 2,
+      "final_component_mass_fractions": [
+       0.5000000000003806,
+       0.5000000000003806
+      ],
+      "final_labelled_count": 28528
+     }
+    },
+    "wall_s": {
+     "total": 737.3750607819966
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "present",
+    "final_components": 2,
+    "final_component_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "final_labelled_particles": 28528,
+    "final_code_agreement_fraction": 1.0,
+    "reference_positions_identical": true
+   },
+   "wall_s": {
+    "total": 495.6717396629974
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": null,
+    "seed": 42,
+    "family": null,
+    "device": "cuda:1",
+    "material_seed": null,
+    "cutting_law": 8,
+    "solver_module": null,
+    "solver": "v5",
+    "row": "M1a",
+    "max_cuts": null,
+    "particle_spacing_m": null,
+    "grid_dx_m": null,
+    "material_dt_s": null,
+    "control_steps": null
+   },
+   "particles": 96000,
+   "final_components": 2,
+   "final_component_mass_fractions": [
+    0.5,
+    0.5
+   ],
+   "diagnostics": {
+    "control_steps": 400,
+    "armed_steps": 158,
+    "steps_with_tool_contact": 116,
+    "max_tool_penetration_m": 0.0004866633680649102,
+    "max_fixture_or_table_penetration_m": 0.0002299675834365189,
+    "max_particle_overlap_m": 0.0,
+    "armed_steps_with_law4_motion_last_substep": 158,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 96,
+    "final_labelled_particles": 28528,
+    "peak_reaction_force_N": 0.05744700878858566,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 600,
+     "midpoint_median_local_m": [
+      -3.4655677154660225e-06,
+      2.4863838916644454e-06,
+      0.008216168964281678
+     ],
+     "mean_link_direction_local": [
+      0.999999998078567,
+      -7.481490700161402e-06,
+      -2.7785142503100387e-05
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.38172406000376213,
+    "mesh_components_by_ranges": 2,
+    "validity_final": {
+     "vertices": 76422,
+     "triangles": 152836,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.2940230303922164e-14,
+     "edges": 229254,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 2,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 122870,
+     "triangles": 245736,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.0099331923216143e-09,
+     "edges": 368604,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 600,
+    "cut_face_vertices": 4801,
+    "core_cut_face_vertices": 3640,
+    "distance_plane_coverage": 0.9181420537388044,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 4408,
+     "p50": 8.550172429064328e-05,
+     "p95": 0.0004958075472252171,
+     "max": 0.0007511503731582418,
+     "mean": 0.00014219568492152508
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 3275,
+     "p50": 0.00010109742041057804,
+     "p95": 0.000493744682652806,
+     "max": 0.0006316502015721798,
+     "mean": 0.0001506441878115468
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 4801,
+     "p50": 0.0005898786688119919,
+     "p95": 0.001035275041312779,
+     "max": 0.0012404174899226822,
+     "mean": 0.0006010042964321486
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 4801,
+     "p50": 0.0016129363600656148,
+     "p95": 0.00255232986370286,
+     "max": 0.0028787475010882925,
+     "mean": 0.0017168164394633916
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 200,
+     "p50": 0.0012275306662669896,
+     "p95": 0.0012611048865115554,
+     "max": 0.0012638846041153316,
+     "mean": 0.0011904881283427173
+    },
+    "normal_deviation_deg": {
+     "count": 8774,
+     "p50": 13.297901472938719,
+     "p95": 46.70090360014411,
+     "max": 61.662593439841864,
+     "mean": 17.409721607787695
+    },
+    "normal_deviation_core_deg": {
+     "count": 6572,
+     "p50": 14.197374404553532,
+     "p95": 54.19614080007075,
+     "max": 61.662593439841864,
+     "mean": 19.819605212837338
+    },
+    "roughness_mesh_rms_m": {
+     "count": 4000,
+     "p50": 5.8152461435268706e-05,
+     "p95": 0.00019817526966685054,
+     "max": 0.00023948648743731424,
+     "mean": 7.291381470924599e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 4000,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 885,
+     "p50": 0.00013206776099478719,
+     "p95": 0.00042113935152735503,
+     "max": 0.0005109237581218798,
+     "mean": 0.00014726494790885078,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 1200,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s1_cut01r_m1a_law8_v5_002/wp12_extract_003",
+    "baseline_compact.npz": 7587389,
+    "baseline_views.png": 526999,
+    "physics_state.npz": 178957880,
+    "wp12_capture.npz": 7869387
+   }
+  },
+  {
+   "scene": "2",
+   "name": "near-horizontal TRIM rho=10 deg",
+   "run_dir": "artifacts/wp12/baseline/s2_trim_k2_r10_skim_law8_002",
+   "extract": "wp12_extract_003",
+   "frozen_dir": "artifacts/wp11/phaseC4/k2_r10_skim_law8_001",
+   "protocol": "WP-11 Phase C4 row TRIM-02-K2-R10 skim, law 8, tlmpm_v4, ruler_knife_v2_y double bevel, seed 42",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_phase_c4_trim_material.py --task TRIM-02-K2-R10 --control skim --device cuda:1 --out artifacts/wp12/baseline/s2_trim_k2_r10_skim_law8_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s2_trim_k2_r10_skim_law8_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s2_trim_k2_r10_skim_law8_002.log",
+   "verdict": {
+    "verdict": "PASS",
+    "checks": {
+     "reference_above_plane_material_removed": true,
+     "largest_component_holds_below_plane_mass": true,
+     "detached_below_plane_mass_bounded": true,
+     "single_substrate_component": true
+    },
+    "metrics": {
+     "final_mechanical_components": 2,
+     "final_component_mass_fractions": [
+      0.9897160051107431,
+      0.010283994888916272
+     ],
+     "final_labelled_count": 36984,
+     "lowest_blade_point_relative_to_edge_m": -0.0001511485810234243
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseC4/k2_r10_skim_law8_001",
+    "verdict": {
+     "verdict": "PASS",
+     "checks": {
+      "reference_above_plane_material_removed": true,
+      "largest_component_holds_below_plane_mass": true,
+      "detached_below_plane_mass_bounded": true,
+      "single_substrate_component": true
+     },
+     "metrics": {
+      "final_mechanical_components": 2,
+      "final_component_mass_fractions": [
+       0.9897057005066461,
+       0.010294299493013382
+      ],
+      "final_labelled_count": 36985,
+      "lowest_blade_point_relative_to_edge_m": -0.0001511485810234243
+     }
+    },
+    "wall_s": {
+     "total": 377.37797610100097
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "present",
+    "final_components": 2,
+    "final_component_mass_fractions": [
+     0.9897057005069831,
+     0.010294299493016888
+    ],
+    "final_labelled_particles": 36985,
+    "final_code_agreement_fraction": 0.9999793907918058,
+    "reference_positions_identical": true
+   },
+   "wall_s": {
+    "total": 485.06257324499893
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": null,
+    "seed": 42,
+    "family": null,
+    "device": "cuda:1",
+    "material_seed": null,
+    "cutting_law": 8,
+    "solver_module": null,
+    "solver": null,
+    "row": null,
+    "max_cuts": null,
+    "particle_spacing_m": null,
+    "grid_dx_m": null,
+    "material_dt_s": null,
+    "control_steps": null
+   },
+   "particles": 97044,
+   "final_components": 2,
+   "final_component_mass_fractions": [
+    0.9897160051110802,
+    0.010283994888919774
+   ],
+   "diagnostics": {
+    "control_steps": 400,
+    "armed_steps": 168,
+    "steps_with_tool_contact": 113,
+    "max_tool_penetration_m": 0.00043915558489970863,
+    "max_fixture_or_table_penetration_m": 5.540746496990323e-05,
+    "max_particle_overlap_m": 0.0008509298786520958,
+    "armed_steps_with_law4_motion_last_substep": 168,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 104,
+    "final_labelled_particles": 36984,
+    "peak_reaction_force_N": 0.08132605999708176,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 364,
+     "midpoint_median_local_m": [
+      0.02791885740498401,
+      -0.00023905221314635128,
+      0.019987059757113457
+     ],
+     "mean_link_direction_local": [
+      0.021240360013364424,
+      -0.00010425845264909027,
+      0.7917245902781626
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.7303210990066873,
+    "mesh_components_by_ranges": 2,
+    "validity_final": {
+     "vertices": 73282,
+     "triangles": 146556,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 8.992242897771343e-14,
+     "edges": 219834,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 2,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 122446,
+     "triangles": 244888,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 5.194106166035328e-12,
+     "edges": 367332,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 364,
+    "cut_face_vertices": 2330,
+    "core_cut_face_vertices": 1301,
+    "distance_plane_coverage": 0.9218884120171674,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 2148,
+     "p50": 0.00023495851039918625,
+     "p95": 0.0005871268586359153,
+     "max": 0.0011191900827880283,
+     "mean": 0.00026589847048932023
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 1294,
+     "p50": 0.0002826164387523107,
+     "p95": 0.000568365180740304,
+     "max": 0.0007466172688214678,
+     "mean": 0.00028668655006202796
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 2330,
+     "p50": 0.0005779518908149593,
+     "p95": 0.0010247738206880855,
+     "max": 0.001703353787955905,
+     "mean": 0.0006039707351440592
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 2330,
+     "p50": 0.018050180592302886,
+     "p95": 0.025904107716580933,
+     "max": 0.03048428904663176,
+     "mean": 0.018520009717334
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 0,
+     "p50": null,
+     "p95": null,
+     "max": null,
+     "mean": null
+    },
+    "normal_deviation_deg": {
+     "count": 3688,
+     "p50": 18.1082187094916,
+     "p95": 53.71493165282919,
+     "max": 89.28906401832096,
+     "mean": 21.369070461327595
+    },
+    "normal_deviation_core_deg": {
+     "count": 2036,
+     "p50": 20.26877825786682,
+     "p95": 38.739131608759294,
+     "max": 46.35993692785244,
+     "mean": 20.31922301834857
+    },
+    "roughness_mesh_rms_m": {
+     "count": 2324,
+     "p50": 7.995336570341355e-05,
+     "p95": 0.00023749033330496761,
+     "max": 0.0003948090636005535,
+     "mean": 9.886307954292867e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 2330,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 416,
+     "p50": 0.00021367589971790286,
+     "p95": 0.0003486256416530585,
+     "max": 0.0004374729916055092,
+     "mean": 0.00018350563196588938,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 728,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s2_trim_k2_r10_skim_law8_002/wp12_extract_003",
+    "baseline_compact.npz": 7449619,
+    "baseline_views.png": 485147,
+    "physics_state.npz": 175431408,
+    "wp12_capture.npz": 7276985
+   }
+  },
+  {
+   "scene": "3",
+   "name": "four-slice Test B (s1502)",
+   "run_dir": "artifacts/wp12/baseline/s3_testb_s1502_002",
+   "extract": "wp12_extract_001",
+   "frozen_dir": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1502",
+   "protocol": "Phase E round 1 (configs/wp11/generalization_round1.json), tlmpm_v5, material seed 42",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_generalization.py --config configs/wp11/generalization_round1.json material --family TEST_B --seed 1502 --device cuda:1 --expect-task-id CFG-E1_TEST_B_s1502-E1_TEST_B_s1502_divide5-2f8b9754 --out artifacts/wp12/baseline/s3_testb_s1502_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s3_testb_s1502_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s3_testb_s1502_002.log",
+   "verdict": {
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "status": "COMPLETE",
+    "evaluation_verdict": "PASS",
+    "evaluator_version": null,
+    "evaluation_outcome_checks": {
+     "expected_substantial_pieces": true,
+     "main_pieces_retain_mass": true
+    },
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 5,
+     "expected_pieces": 5,
+     "cut_position_error_m": 0.005425938295910031,
+     "overcut_debris_mass_fraction": 0.0
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_B_s1502",
+    "verdict": {
+     "class": "TASK_SUCCESS",
+     "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+     "status": "COMPLETE",
+     "evaluation_verdict": "PASS",
+     "evaluator_version": null,
+     "evaluation_outcome_checks": {
+      "expected_substantial_pieces": true,
+      "main_pieces_retain_mass": true
+     },
+     "metrics": {
+      "cut_completion": 1.0,
+      "separation": true,
+      "mechanical_components": 5,
+      "expected_pieces": 5,
+      "cut_position_error_m": 0.005425938295910031,
+      "overcut_debris_mass_fraction": 0.0
+     }
+    },
+    "wall_s": {
+     "setup": 0.8528253130061785,
+     "episode": 966.6292258309986,
+     "evaluation": 2.0747483800005284,
+     "per_simulated_second": 32.22097419436662
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "MISSING (only result.json/manifest.json/actions.jsonl remain); comparison is verdict-level"
+   },
+   "wall_s": {
+    "setup": 2.173803436002345,
+    "episode": 744.5323648140038,
+    "evaluation": 1.0127957189979497,
+    "per_simulated_second": 24.81774549380013
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": "CFG-E1_TEST_B_s1502-E1_TEST_B_s1502_divide5-2f8b9754",
+    "seed": 1502,
+    "family": "TEST_B",
+    "device": "cuda:1",
+    "material_seed": 42,
+    "cutting_law": 8,
+    "solver_module": "tlmpm_v5",
+    "solver": null,
+    "row": null,
+    "max_cuts": 4,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_steps": 1500
+   },
+   "particles": 87248,
+   "final_components": 5,
+   "final_component_mass_fractions": [
+    0.20731707317073653,
+    0.20731707317073653,
+    0.20731707317073653,
+    0.20731707317073653,
+    0.17073170731705392
+   ],
+   "diagnostics": {
+    "control_steps": 1500,
+    "armed_steps": 616,
+    "steps_with_tool_contact": 558,
+    "max_tool_penetration_m": 0.0005069283652119339,
+    "max_fixture_or_table_penetration_m": 0.00013954873429611325,
+    "max_particle_overlap_m": 0.00010157516226172447,
+    "armed_steps_with_law4_motion_last_substep": 616,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 359,
+    "final_labelled_particles": 76384,
+    "peak_reaction_force_N": 0.05896979942917824,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 532,
+     "midpoint_median_local_m": [
+      -0.0489223962649703,
+      6.487623249995522e-05,
+      0.008816789370030165
+     ],
+     "mean_link_direction_local": [
+      0.9999561541196624,
+      0.00707919315850897,
+      0.002269326725034382
+     ]
+    },
+    "1": {
+     "cut_links": 532,
+     "midpoint_median_local_m": [
+      -0.019622132182121277,
+      6.111829134169966e-05,
+      0.008858014829456806
+     ],
+     "mean_link_direction_local": [
+      0.9998711961863561,
+      0.003238422563183224,
+      -0.008160953708498
+     ]
+    },
+    "2": {
+     "cut_links": 532,
+     "midpoint_median_local_m": [
+      0.01589836971834302,
+      -1.1472729966044426e-06,
+      0.009025545325130224
+     ],
+     "mean_link_direction_local": [
+      0.999978987392044,
+      0.0001003774047581246,
+      -0.004064905897073029
+     ]
+    },
+    "3": {
+     "cut_links": 532,
+     "midpoint_median_local_m": [
+      0.0519878976047039,
+      5.77711034566164e-07,
+      0.008811712032184005
+     ],
+     "mean_link_direction_local": [
+      0.9999895687377203,
+      5.671850252314541e-05,
+      -0.0017974534179229162
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.28277914399222936,
+    "mesh_components_by_ranges": 5,
+    "validity_final": {
+     "vertices": 89072,
+     "triangles": 178124,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.1819465428349476e-14,
+     "edges": 267186,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 5,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 117038,
+     "triangles": 234072,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.0165992350414579e-09,
+     "edges": 351108,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 2128,
+    "cut_face_vertices": 16312,
+    "core_cut_face_vertices": 11782,
+    "distance_plane_coverage": 0.9753555664541442,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 15910,
+     "p50": 0.00015622925519317039,
+     "p95": 0.0005830464439819931,
+     "max": 0.0011992640959149837,
+     "mean": 0.00020902938049261016
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 11434,
+     "p50": 0.00017931768145113512,
+     "p95": 0.0005995556097106005,
+     "max": 0.0011992640959149837,
+     "mean": 0.00023012541924111852
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 16312,
+     "p50": 0.0006280548987073733,
+     "p95": 0.0009851637359791173,
+     "max": 0.0013464580797521802,
+     "mean": 0.000625866907398468
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 16312,
+     "p50": 0.0013262797761789589,
+     "p95": 0.0020919700956504653,
+     "max": 0.0026241130422594017,
+     "mean": 0.0013810173406327896
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 5991,
+     "p50": 0.0009344916105700024,
+     "p95": 0.0011573229582087664,
+     "max": 0.001269003481463306,
+     "mean": 0.0009102131027577862
+    },
+    "normal_deviation_deg": {
+     "count": 29890,
+     "p50": 15.565686862080891,
+     "p95": 37.27524284646502,
+     "max": 66.26042087072283,
+     "mean": 16.95402891427161
+    },
+    "normal_deviation_core_deg": {
+     "count": 21174,
+     "p50": 18.03777502711195,
+     "p95": 41.00312327630018,
+     "max": 66.26042087072283,
+     "mean": 18.82386408286332
+    },
+    "roughness_mesh_rms_m": {
+     "count": 3929,
+     "p50": 6.780435814954332e-05,
+     "p95": 0.0001667137638432542,
+     "max": 0.0002503915993513721,
+     "mean": 7.390356150465718e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 3929,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 2501,
+     "p50": 1.3829944601574376e-05,
+     "p95": 0.00033802267164356547,
+     "max": 0.00045928778617630506,
+     "mean": 8.732336825658719e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 4016,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s3_testb_s1502_002/wp12_extract_001",
+    "baseline_compact.npz": 7809926,
+    "baseline_views.png": 549412,
+    "physics_state.npz": 73584817,
+    "wp12_capture.npz": 8468676
+   }
+  },
+  {
+   "scene": "4",
+   "name": "three-protrusion Test C (s1602)",
+   "run_dir": "artifacts/wp12/baseline/s4_testc_s1602_002",
+   "extract": "wp12_extract_001",
+   "frozen_dir": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1602",
+   "protocol": "Phase E round 1, tlmpm_v5, rho 10 deg",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_generalization.py --config configs/wp11/generalization_round1.json material --family TEST_C --seed 1602 --device cuda:0 --expect-task-id CFG-E1_TEST_C_s1602-E1_TEST_C_s1602_remove3-0090491e --out artifacts/wp12/baseline/s4_testc_s1602_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s4_testc_s1602_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s4_testc_s1602_002.log",
+   "verdict": {
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "status": "COMPLETE",
+    "evaluation_verdict": "PASS",
+    "evaluator_version": null,
+    "evaluation_outcome_checks": {
+     "selection_nonempty": true,
+     "selected_protrusions_removed": true,
+     "unselected_protrusions_retained": true,
+     "substrate_holds_below_plane_mass": true,
+     "detached_below_plane_mass_bounded": true,
+     "single_substrate_component": true
+    },
+    "metrics": {
+     "cut_completion": 0.9511873350923481,
+     "separation": true,
+     "mechanical_components": 4,
+     "cut_position_error_m": 0.00013135734200477728,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999988459
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseE/round1_kinematic_001/E1_TEST_C_s1602",
+    "verdict": {
+     "class": "TASK_SUCCESS",
+     "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+     "status": "COMPLETE",
+     "evaluation_verdict": "PASS",
+     "evaluator_version": null,
+     "evaluation_outcome_checks": {
+      "selection_nonempty": true,
+      "selected_protrusions_removed": true,
+      "unselected_protrusions_retained": true,
+      "substrate_holds_below_plane_mass": true,
+      "detached_below_plane_mass_bounded": true,
+      "single_substrate_component": true
+     },
+     "metrics": {
+      "cut_completion": 0.9459102902374671,
+      "separation": true,
+      "mechanical_components": 4,
+      "cut_position_error_m": 0.00013525027036666998,
+      "overcut_detached_below_plane_fraction": 0.0,
+      "substrate_share": 0.9999999999988459
+     }
+    },
+    "wall_s": {
+     "setup": 1.0313980069986428,
+     "episode": 545.547010798,
+     "evaluation": 3.1540128519991413,
+     "per_simulated_second": 38.96764362842857
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "MISSING (only result.json/manifest.json/actions.jsonl remain); comparison is verdict-level"
+   },
+   "wall_s": {
+    "setup": 2.2675938430038514,
+    "episode": 909.6469573280046,
+    "evaluation": 3.8544145970081445,
+    "per_simulated_second": 64.97478266628605
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": "CFG-E1_TEST_C_s1602-E1_TEST_C_s1602_remove3-0090491e",
+    "seed": 1602,
+    "family": "TEST_C",
+    "device": "cuda:0",
+    "material_seed": 42,
+    "cutting_law": 8,
+    "solver_module": "tlmpm_v5",
+    "solver": null,
+    "row": null,
+    "max_cuts": 3,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_steps": 700
+   },
+   "particles": 110286,
+   "final_components": 4,
+   "final_component_mass_fractions": [
+    0.9708485211177876,
+    0.018497361405821026,
+    0.006537547830194262,
+    0.004116569646197226
+   ],
+   "diagnostics": {
+    "control_steps": 700,
+    "armed_steps": 251,
+    "steps_with_tool_contact": 402,
+    "max_tool_penetration_m": 0.0011999851558357477,
+    "max_fixture_or_table_penetration_m": 0.002867720788344741,
+    "max_particle_overlap_m": 0.0008943231659941375,
+    "armed_steps_with_law4_motion_last_substep": 251,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 166,
+    "final_labelled_particles": 86990,
+    "peak_reaction_force_N": 0.09719203412532806,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 222,
+     "midpoint_median_local_m": [
+      -0.0050124963745474815,
+      0.062475855607772246,
+      -0.04339472483843565
+     ],
+     "mean_link_direction_local": [
+      -0.005074422871138743,
+      0.0017918334997676314,
+      0.840969901599824
+     ]
+    },
+    "1": {
+     "cut_links": 362,
+     "midpoint_median_local_m": [
+      0.0581465314317029,
+      0.00020624652461265214,
+      -0.04148820787668228
+     ],
+     "mean_link_direction_local": [
+      0.10505257079861917,
+      0.17389092713512747,
+      0.9322730755043733
+     ]
+    },
+    "2": {
+     "cut_links": 275,
+     "midpoint_median_local_m": [
+      0.07741250656545162,
+      -0.0004302208690205589,
+      -0.04318244010210037
+     ],
+     "mean_link_direction_local": [
+      0.23434212655760964,
+      0.04817702273257525,
+      0.7472389316835186
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.7252958640019642,
+    "mesh_components_by_ranges": 4,
+    "validity_final": {
+     "vertices": 82718,
+     "triangles": 165420,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 3.7335726971580366e-14,
+     "edges": 248130,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 4,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 127688,
+     "triangles": 255372,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 6.805558757456427e-14,
+     "edges": 383058,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 859,
+    "cut_face_vertices": 5064,
+    "core_cut_face_vertices": 3086,
+    "distance_plane_coverage": 0.8499210110584519,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 4304,
+     "p50": 0.0002516429224941771,
+     "p95": 0.0006798549137977279,
+     "max": 0.0011387410407890169,
+     "mean": 0.0002888483902759495
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 2729,
+     "p50": 0.0002653941096204775,
+     "p95": 0.000678382864238053,
+     "max": 0.0010931696264260102,
+     "mean": 0.000295971123938084
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 5064,
+     "p50": 0.000621919778929564,
+     "p95": 0.0011070628664690166,
+     "max": 0.0016900217394201318,
+     "mean": 0.0006444682625776952
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 5064,
+     "p50": 0.05945523777755477,
+     "p95": 0.0894036904231353,
+     "max": 0.09486899947477599,
+     "mean": 0.05236745243130806
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 0,
+     "p50": null,
+     "p95": null,
+     "max": null,
+     "mean": null
+    },
+    "normal_deviation_deg": {
+     "count": 7650,
+     "p50": 24.469293807293163,
+     "p95": 65.14979260003973,
+     "max": 89.99370213798717,
+     "mean": 28.30355341301708
+    },
+    "normal_deviation_core_deg": {
+     "count": 4471,
+     "p50": 25.84423929634093,
+     "p95": 58.335885849608204,
+     "max": 89.7299921755111,
+     "mean": 28.219514553319993
+    },
+    "roughness_mesh_rms_m": {
+     "count": 3972,
+     "p50": 7.39173925482884e-05,
+     "p95": 0.000245005893236958,
+     "max": 0.0004802370843031677,
+     "mean": 9.601189530151114e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 3979,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 747,
+     "p50": 0.000185365976792525,
+     "p95": 0.00035582648060288584,
+     "max": 0.000539688427869401,
+     "mean": 0.00016498925317264256,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 1718,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s4_testc_s1602_002/wp12_extract_001",
+    "baseline_compact.npz": 8708736,
+    "baseline_views.png": 384785,
+    "physics_state.npz": 90148305,
+    "wp12_capture.npz": 8557313
+   }
+  },
+  {
+   "scene": "5",
+   "name": "SLICE-PUSH (s1301), kinematic; wrist-depth relocation is live-only",
+   "run_dir": "artifacts/wp12/baseline/s5_slicepush_s1301_002",
+   "extract": "wp12_extract_001",
+   "frozen_dir": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1301",
+   "protocol": "Phase E round 1; the ADR 0016 relocation needs the Native wrist D405 and is not exercised kinematically",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_generalization.py --config configs/wp11/generalization_round1.json material --family SLICE_PUSH --seed 1301 --device cuda:0 --expect-task-id CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-db93fecd --out artifacts/wp12/baseline/s5_slicepush_s1301_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s5_slicepush_s1301_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s5_slicepush_s1301_002.log",
+   "verdict": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: step0:slice_two:cut_at_declared_planes",
+    "status": "COMPLETE",
+    "evaluation_verdict": "FAIL",
+    "evaluator_version": null,
+    "evaluation_outcome_checks": {
+     "step_0_slice_two": false,
+     "step_1_push_right": true
+    },
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "cut_position_error_m": 0.00400000044703484
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseE/round1_kinematic_001/E1_SLICE_PUSH_s1301",
+    "verdict": {
+     "class": "CUTTING_FAILURE",
+     "class_reason": "outcome: step0:slice_two:cut_at_declared_planes",
+     "status": "COMPLETE",
+     "evaluation_verdict": "FAIL",
+     "evaluator_version": null,
+     "evaluation_outcome_checks": {
+      "step_0_slice_two": false,
+      "step_1_push_right": true
+     },
+     "metrics": {
+      "cut_completion": 1.0,
+      "separation": true,
+      "cut_position_error_m": 0.00400000044703484
+     }
+    },
+    "wall_s": {
+     "setup": 0.7408558040042408,
+     "episode": 499.5826955260054,
+     "evaluation": 2.7990875950054033,
+     "per_simulated_second": 23.23640444307002
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "MISSING (only result.json/manifest.json/actions.jsonl remain); comparison is verdict-level"
+   },
+   "wall_s": {
+    "setup": 2.2862632329924963,
+    "episode": 1030.9256792649976,
+    "evaluation": 1.8784275349898962,
+    "per_simulated_second": 47.950031593720816
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": "CFG-E1_SLICE_PUSH_s1301-E1_SLICE_PUSH_s1301_slice_push-db93fecd",
+    "seed": 1301,
+    "family": "SLICE_PUSH",
+    "device": "cuda:0",
+    "material_seed": 42,
+    "cutting_law": 8,
+    "solver_module": "tlmpm_v4",
+    "solver": null,
+    "row": null,
+    "max_cuts": 2,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_steps": 1075
+   },
+   "particles": 74256,
+   "final_components": 3,
+   "final_component_mass_fractions": [
+    0.35256410256411147,
+    0.32692307692307393,
+    0.32051282051281454
+   ],
+   "diagnostics": {
+    "control_steps": 1075,
+    "armed_steps": 288,
+    "steps_with_tool_contact": 386,
+    "max_tool_penetration_m": 0.00047757121501490474,
+    "max_fixture_or_table_penetration_m": 0.00013037846656516194,
+    "max_particle_overlap_m": 6.223598029464483e-05,
+    "armed_steps_with_law4_motion_last_substep": 288,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 167,
+    "final_labelled_particles": 45248,
+    "peak_reaction_force_N": 0.11493327468633652,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 476,
+     "midpoint_median_local_m": [
+      -0.02866040775552392,
+      4.496891051530838e-06,
+      0.007861226797103882
+     ],
+     "mean_link_direction_local": [
+      0.9999980033962986,
+      0.0001450719726315065,
+      -3.8059217199560044e-05
+     ]
+    },
+    "1": {
+     "cut_links": 476,
+     "midpoint_median_local_m": [
+      0.034052577801048756,
+      -5.626789061352611e-07,
+      0.00761361513286829
+     ],
+     "mean_link_direction_local": [
+      0.9999072306566725,
+      8.801792344800714e-05,
+      0.005396062094774969
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.6983740180003224,
+    "mesh_components_by_ranges": 3,
+    "validity_final": {
+     "vertices": 71538,
+     "triangles": 143064,
+     "degenerate_triangles": 1,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.0547118733938987e-15,
+     "edges": 214596,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 3,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 105854,
+     "triangles": 211704,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.0132267884042704e-09,
+     "edges": 317556,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 952,
+    "cut_face_vertices": 7129,
+    "core_cut_face_vertices": 5101,
+    "distance_plane_coverage": 0.9471174077710759,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 6752,
+     "p50": 0.0001678445921767158,
+     "p95": 0.0005544834276968002,
+     "max": 0.001150692624209117,
+     "mean": 0.00022188560165110468
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 4807,
+     "p50": 0.00016951928102404423,
+     "p95": 0.0005620243645716208,
+     "max": 0.001054583855422091,
+     "mean": 0.00023055490018526772
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 7129,
+     "p50": 0.0006438993776868465,
+     "p95": 0.0010410972398351727,
+     "max": 0.001409730365097706,
+     "mean": 0.0006534911145420499
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 7129,
+     "p50": 0.001669352085151304,
+     "p95": 0.011678008929552567,
+     "max": 0.013412768347149627,
+     "mean": 0.005965493934799642
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 2396,
+     "p50": 0.0008425427384696827,
+     "p95": 0.0011049890922828162,
+     "max": 0.001266875728089347,
+     "mean": 0.0008405563348446526
+    },
+    "normal_deviation_deg": {
+     "count": 12869,
+     "p50": 12.40937347066149,
+     "p95": 40.80026553666487,
+     "max": 87.21453110084882,
+     "mean": 15.861133548876275
+    },
+    "normal_deviation_core_deg": {
+     "count": 9164,
+     "p50": 13.091079999688462,
+     "p95": 42.140655008660666,
+     "max": 51.850650048183695,
+     "mean": 17.218301486638573
+    },
+    "roughness_mesh_rms_m": {
+     "count": 3986,
+     "p50": 5.972543303220313e-05,
+     "p95": 0.00016502979476550023,
+     "max": 0.000219177304863883,
+     "mean": 6.750286901308875e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 4007,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 1129,
+     "p50": 9.073859773596157e-06,
+     "p95": 0.0002271241850951777,
+     "max": 0.000475778551679565,
+     "mean": 5.33358587463717e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 1904,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s5_slicepush_s1301_002/wp12_extract_001",
+    "baseline_compact.npz": 6489724,
+    "baseline_views.png": 508274,
+    "physics_state.npz": 61985601,
+    "wp12_capture.npz": 6655044
+   }
+  },
+  {
+   "scene": "6",
+   "name": "failed oblique cut +35 deg (s2201)",
+   "run_dir": "artifacts/wp12/baseline/s6_oblique35_s2201_002",
+   "extract": "wp12_extract_002",
+   "frozen_dir": "artifacts/wp11/phaseE/round2_kinematic_001/E2_OBLIQUE_W_s2201",
+   "protocol": "Phase E round 2 (configs/wp11/generalization_round2.json), tlmpm_v4",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_generalization.py --config configs/wp11/generalization_round2.json material --family OBLIQUE_W --seed 2201 --device cuda:1 --expect-task-id CFG-E2_OBLIQUE_W_s2201-E2_OBLIQUE_W_s2201_sever-9e29a817 --out artifacts/wp12/baseline/s6_oblique35_s2201_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s6_oblique35_s2201_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s6_oblique35_s2201_002.log",
+   "verdict": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+    "status": "COMPLETE",
+    "evaluation_verdict": "FAIL",
+    "evaluator_version": null,
+    "evaluation_outcome_checks": {
+     "expected_substantial_pieces": false,
+     "main_pieces_retain_mass": true,
+     "every_plane_has_an_interface": false,
+     "cut_at_declared_planes": false,
+     "no_far_particle_in_another_region_piece": false
+    },
+    "metrics": {
+     "cut_completion": 0.5,
+     "separation": false,
+     "mechanical_components": 1,
+     "expected_pieces": 2,
+     "cut_position_error_m": null,
+     "overcut_debris_mass_fraction": 0.0
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseE/round2_kinematic_001/E2_OBLIQUE_W_s2201",
+    "verdict": {
+     "class": "CUTTING_FAILURE",
+     "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+     "status": "COMPLETE",
+     "evaluation_verdict": "FAIL",
+     "evaluator_version": null,
+     "evaluation_outcome_checks": {
+      "expected_substantial_pieces": false,
+      "main_pieces_retain_mass": true,
+      "every_plane_has_an_interface": false,
+      "cut_at_declared_planes": false,
+      "no_far_particle_in_another_region_piece": false
+     },
+     "metrics": {
+      "cut_completion": 0.5,
+      "separation": false,
+      "mechanical_components": 1,
+      "expected_pieces": 2,
+      "cut_position_error_m": null,
+      "overcut_debris_mass_fraction": 0.0
+     }
+    },
+    "wall_s": {
+     "setup": 1.279215856004157,
+     "episode": 369.8058345439931,
+     "evaluation": 2.6053514590021223,
+     "per_simulated_second": 33.6187122312721
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "MISSING (only result.json/manifest.json/actions.jsonl remain); comparison is verdict-level"
+   },
+   "wall_s": {
+    "setup": 2.5629135589988437,
+    "episode": 503.81559224899684,
+    "evaluation": 1.817728142006672,
+    "per_simulated_second": 45.80141747718153
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": "CFG-E2_OBLIQUE_W_s2201-E2_OBLIQUE_W_s2201_sever-9e29a817",
+    "seed": 2201,
+    "family": "OBLIQUE_W",
+    "device": "cuda:1",
+    "material_seed": 42,
+    "cutting_law": 8,
+    "solver_module": "tlmpm_v4",
+    "solver": null,
+    "row": null,
+    "max_cuts": 1,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_steps": 550
+   },
+   "particles": 89012,
+   "final_components": 1,
+   "final_component_mass_fractions": [
+    1.0
+   ],
+   "diagnostics": {
+    "control_steps": 550,
+    "armed_steps": 163,
+    "steps_with_tool_contact": 192,
+    "max_tool_penetration_m": 0.0004738999414257705,
+    "max_fixture_or_table_penetration_m": 0.0002159241703338921,
+    "max_particle_overlap_m": 0.0,
+    "armed_steps_with_law4_motion_last_substep": 163,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 105,
+    "final_labelled_particles": 26788,
+    "peak_reaction_force_N": 0.07788285613059998,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 990,
+     "midpoint_median_local_m": [
+      0.026881498750299215,
+      -2.5895133148878813e-07,
+      0.006026408169418573
+     ],
+     "mean_link_direction_local": [
+      0.5597072121226493,
+      -6.789152530505043e-05,
+      -0.425051220149304
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.6058726589981234,
+    "mesh_components_by_ranges": 1,
+    "validity_final": {
+     "vertices": 77328,
+     "triangles": 154652,
+     "degenerate_triangles": 1,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 5.864855861156105e-15,
+     "edges": 231978,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 120542,
+     "triangles": 241080,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.0001610318469314e-09,
+     "edges": 361620,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 990,
+    "cut_face_vertices": 4605,
+    "core_cut_face_vertices": 2475,
+    "distance_plane_coverage": 0.9750271444082519,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 4490,
+     "p50": 0.00023036652131888666,
+     "p95": 0.0007797293701373294,
+     "max": 0.0011600676337490368,
+     "mean": 0.00028436292177111996
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 2368,
+     "p50": 0.00021193640074593538,
+     "p95": 0.0007499441930067689,
+     "max": 0.0009160700078890683,
+     "mean": 0.0002709594582480248
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 4605,
+     "p50": 0.0005352899942951678,
+     "p95": 0.0008940584553663989,
+     "max": 0.0011164759134688921,
+     "mean": 0.0005294057676596067
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 4605,
+     "p50": 0.0009550233698051798,
+     "p95": 0.002904206270214221,
+     "max": 0.004049396490366296,
+     "mean": 0.0011459481245931725
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 2647,
+     "p50": 0.00038828970787749436,
+     "p95": 0.0010789361565698538,
+     "max": 0.0012448801984801768,
+     "mean": 0.00046899325449227476
+    },
+    "normal_deviation_deg": {
+     "count": 7384,
+     "p50": 16.83458437536372,
+     "p95": 72.99919955832854,
+     "max": 89.99738129014156,
+     "mean": 21.536502903064626
+    },
+    "normal_deviation_core_deg": {
+     "count": 3795,
+     "p50": 19.26364992872142,
+     "p95": 38.39651821870767,
+     "max": 79.55349058169783,
+     "mean": 18.94435627356087
+    },
+    "roughness_mesh_rms_m": {
+     "count": 4023,
+     "p50": 9.986532462464595e-05,
+     "p95": 0.0003968435022908118,
+     "max": 0.0005542713779815362,
+     "mean": 0.00014686151282940457,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 4025,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 1822,
+     "p50": 0.00023728059354257038,
+     "p95": 0.0004586436334919003,
+     "max": 0.0005581211668235172,
+     "mean": 0.00022622988200335202,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 1980,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s6_oblique35_s2201_002/wp12_extract_002",
+    "baseline_compact.npz": 7430233,
+    "baseline_views.png": 522267,
+    "physics_state.npz": 37719676,
+    "wp12_capture.npz": 7451469
+   }
+  },
+  {
+   "scene": "7",
+   "name": "failed high-rake 45 deg skim (s2307)",
+   "run_dir": "artifacts/wp12/baseline/s7_rake45_s2307_002",
+   "extract": "wp12_extract_002",
+   "frozen_dir": "artifacts/wp11/phaseE/round2_kinematic_001/E2_TRIM_W_s2307",
+   "protocol": "Phase E round 2, tlmpm_v4",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_generalization.py --config configs/wp11/generalization_round2.json material --family TRIM_W --seed 2307 --device cuda:0 --expect-task-id CFG-E2_TRIM_W_s2307-E2_TRIM_W_s2307_trim-dd1a70b7 --out artifacts/wp12/baseline/s7_rake45_s2307_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s7_rake45_s2307_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s7_rake45_s2307_002.log",
+   "verdict": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: selected_protrusions_removed",
+    "status": "COMPLETE",
+    "evaluation_verdict": "FAIL",
+    "evaluator_version": null,
+    "evaluation_outcome_checks": {
+     "selection_nonempty": true,
+     "selected_protrusions_removed": false,
+     "unselected_protrusions_retained": true,
+     "substrate_holds_below_plane_mass": true,
+     "detached_below_plane_mass_bounded": true,
+     "single_substrate_component": true
+    },
+    "metrics": {
+     "cut_completion": 0.0,
+     "separation": false,
+     "mechanical_components": 1,
+     "cut_position_error_m": 0.016569085687398913,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 1.0000000000008362
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseE/round2_kinematic_001/E2_TRIM_W_s2307",
+    "verdict": {
+     "class": "CUTTING_FAILURE",
+     "class_reason": "outcome: selected_protrusions_removed",
+     "status": "COMPLETE",
+     "evaluation_verdict": "FAIL",
+     "evaluator_version": null,
+     "evaluation_outcome_checks": {
+      "selection_nonempty": true,
+      "selected_protrusions_removed": false,
+      "unselected_protrusions_retained": true,
+      "substrate_holds_below_plane_mass": true,
+      "detached_below_plane_mass_bounded": true,
+      "single_substrate_component": true
+     },
+     "metrics": {
+      "cut_completion": 0.0,
+      "separation": false,
+      "mechanical_components": 1,
+      "cut_position_error_m": 0.016563853517174723,
+      "overcut_detached_below_plane_fraction": 0.0,
+      "substrate_share": 1.0000000000008362
+     }
+    },
+    "wall_s": {
+     "setup": 0.9879981870035408,
+     "episode": 201.58403024099243,
+     "evaluation": 2.836295950008207,
+     "per_simulated_second": 26.87787069879899
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "MISSING (only result.json/manifest.json/actions.jsonl remain); comparison is verdict-level"
+   },
+   "wall_s": {
+    "setup": 2.230848043996957,
+    "episode": 301.1205810149986,
+    "evaluation": 2.29037992299709,
+    "per_simulated_second": 40.149410801999814
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": "CFG-E2_TRIM_W_s2307-E2_TRIM_W_s2307_trim-dd1a70b7",
+    "seed": 2307,
+    "family": "TRIM_W",
+    "device": "cuda:0",
+    "material_seed": 42,
+    "cutting_law": 8,
+    "solver_module": "tlmpm_v4",
+    "solver": null,
+    "row": null,
+    "max_cuts": 1,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_steps": 375
+   },
+   "particles": 70485,
+   "final_components": 1,
+   "final_component_mass_fractions": [
+    1.0
+   ],
+   "diagnostics": {
+    "control_steps": 375,
+    "armed_steps": 86,
+    "steps_with_tool_contact": 70,
+    "max_tool_penetration_m": 0.0011998808477073908,
+    "max_fixture_or_table_penetration_m": 0.0007789463852532208,
+    "max_particle_overlap_m": 0.0008152752416208386,
+    "armed_steps_with_law4_motion_last_substep": 0,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 0,
+    "final_labelled_particles": 0,
+    "peak_reaction_force_N": 0.18472471833229065,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {},
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.5259274069976527,
+    "mesh_components_by_ranges": 1,
+    "validity_final": {
+     "vertices": 64716,
+     "triangles": 129424,
+     "degenerate_triangles": 1,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 5.332505790542791e-16,
+     "edges": 194136,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 2,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 109902,
+     "triangles": 219800,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.1179699118527405e-13,
+     "edges": 329700,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 0,
+    "status": "NO_CUT_LINKS",
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s7_rake45_s2307_002/wp12_extract_002",
+    "baseline_compact.npz": 5949484,
+    "baseline_views.png": 294079,
+    "physics_state.npz": 28144370,
+    "wp12_capture.npz": 5823167
+   }
+  },
+  {
+   "scene": "8",
+   "name": "mixed sequence Test D2 (s2505: sever 20 deg, remove p0, trim p1)",
+   "run_dir": "artifacts/wp12/baseline/s8_testd2_s2505_002",
+   "extract": "wp12_extract_001",
+   "frozen_dir": "artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2505",
+   "protocol": "Phase E round 2, tlmpm_v5 S16 K3, goal_eval_v2 (round declaration)",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/wp12_baseline_capture.py -- scripts/run_generalization.py --config configs/wp11/generalization_round2.json material --family TEST_D2 --seed 2505 --device cuda:0 --expect-task-id CFG-E2_TEST_D2_s2505-E2_TEST_D2_s2505_sever20_removep0_trimp1-8d2511be --out artifacts/wp12/baseline/s8_testd2_s2505_002",
+   "aborted_first_attempt": "artifacts/wp12/baseline/s8_testd2_s2505_001 (stopped by operator after ~4 min to add the capture wrapper; partial, not a result)",
+   "log": "artifacts/wp12/logs/s8_testd2_s2505_002.log",
+   "verdict": {
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+    "status": "COMPLETE",
+    "evaluation_verdict": "PASS",
+    "evaluator_version": "goal_eval_v2",
+    "evaluation_outcome_checks": {
+     "step_0_sever": true,
+     "step_1_remove_p0": true,
+     "step_2_trim_p1": true
+    },
+    "metrics": {
+     "cut_completion": 0.9517819706498953,
+     "separation": true,
+     "cut_position_error_m": 0.0007941955626010883
+    }
+   },
+   "frozen": {
+    "dir": "artifacts/wp11/phaseE/round2_kinematic_001/E2_TEST_D2_s2505",
+    "verdict": {
+     "class": "TASK_SUCCESS",
+     "class_reason": "goal evaluator PASS (kinematic ideal tracking)",
+     "status": "COMPLETE",
+     "evaluation_verdict": "PASS",
+     "evaluator_version": "goal_eval_v2",
+     "evaluation_outcome_checks": {
+      "step_0_sever": true,
+      "step_1_remove_p0": true,
+      "step_2_trim_p1": true
+     },
+     "metrics": {
+      "cut_completion": 0.9517819706498953,
+      "separation": true,
+      "cut_position_error_m": 0.0007687443792819965
+     }
+    },
+    "wall_s": {
+     "setup": 1.092922900992562,
+     "episode": 549.94203826999,
+     "evaluation": 4.530239341998822,
+     "per_simulated_second": 29.726596663242702
+    },
+    "note": "GPU float32 atomic accumulation is nondeterministic (Phase H); verdict-level reproduction is the criterion",
+    "physics_state": "MISSING (only result.json/manifest.json/actions.jsonl remain); comparison is verdict-level"
+   },
+   "wall_s": {
+    "setup": 2.332027051001205,
+    "episode": 889.4745114639954,
+    "evaluation": 4.671239389004768,
+    "per_simulated_second": 48.07970332237813
+   },
+   "git": {
+    "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+    "git_dirty": true
+   },
+   "config": {
+    "task_id": "CFG-E2_TEST_D2_s2505-E2_TEST_D2_s2505_sever20_removep0_trimp1-8d2511be",
+    "seed": 2505,
+    "family": "TEST_D2",
+    "device": "cuda:0",
+    "material_seed": 42,
+    "cutting_law": 8,
+    "solver_module": "tlmpm_v5",
+    "solver": null,
+    "row": null,
+    "max_cuts": 3,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_steps": 925
+   },
+   "particles": 79039,
+   "final_components": 4,
+   "final_component_mass_fractions": [
+    0.7433798504536532,
+    0.2447399385112966,
+    0.00613621123748603,
+    0.005743999797564244
+   ],
+   "diagnostics": {
+    "control_steps": 925,
+    "armed_steps": 352,
+    "steps_with_tool_contact": 397,
+    "max_tool_penetration_m": 0.0008373802411369979,
+    "max_fixture_or_table_penetration_m": 0.002279869979247451,
+    "max_particle_overlap_m": 0.0008311231504194438,
+    "armed_steps_with_law4_motion_last_substep": 352,
+    "armed_steps_with_law8_plow_last_substep": 0,
+    "armed_steps_engaged_last_substep": 221,
+    "final_labelled_particles": 61724,
+    "peak_reaction_force_N": 0.15203164517879486,
+    "per_substep_pose_rule": "coupled_robot.interpolate_measured_poses(pose_start_local, pose_end_local, 200, 0.02) (linear position, slerp rotation)"
+   },
+   "cut_locus_per_digit": {
+    "0": {
+     "cut_links": 650,
+     "midpoint_median_local_m": [
+      -0.04062171094119549,
+      0.000131357490317896,
+      0.004845430317800492
+     ],
+     "mean_link_direction_local": [
+      0.6949309521543804,
+      0.0006650580554699494,
+      -0.3347990411904155
+     ]
+    },
+    "1": {
+     "cut_links": 193,
+     "midpoint_median_local_m": [
+      0.037800957914441824,
+      0.010150015936233103,
+      0.009430940728634596
+     ],
+     "mean_link_direction_local": [
+      -0.0058436506901255285,
+      0.04423349083443403,
+      0.7774537448253773
+     ]
+    },
+    "2": {
+     "cut_links": 322,
+     "midpoint_median_local_m": [
+      0.09032261744141579,
+      0.005207782727666199,
+      -0.04511274350807071
+     ],
+     "mean_link_direction_local": [
+      0.12499059061821625,
+      0.013296131481075526,
+      0.5132259133822631
+     ]
+    }
+   },
+   "surface": {
+    "profile": "current_volume_v1",
+    "policy": "raise",
+    "raise_error": null,
+    "extract_wall_s": 0.9233132469962584,
+    "mesh_components_by_ranges": 4,
+    "validity_final": {
+     "vertices": 74332,
+     "triangles": 148648,
+     "degenerate_triangles": 1,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 4.390469970575382e-17,
+     "edges": 222972,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 4,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    },
+    "validity_initial": {
+     "vertices": 110584,
+     "triangles": 221164,
+     "degenerate_triangles": 0,
+     "repeated_index_triangles": 0,
+     "min_triangle_area_m2": 1.2731310997281704e-13,
+     "edges": 331746,
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "connected_components": 1,
+     "unreferenced_vertices": 0,
+     "watertight": true
+    }
+   },
+   "surface_metrics_v1": {
+    "cut_links": 1165,
+    "cut_face_vertices": 4843,
+    "core_cut_face_vertices": 2520,
+    "distance_plane_coverage": 0.821598182944456,
+    "status": "MEASURED",
+    "distance_to_side_locus_plane_m": {
+     "count": 3979,
+     "p50": 0.00024947203967018244,
+     "p95": 0.0006927579653802224,
+     "max": 0.0013282399549105605,
+     "mean": 0.0002959455890376654
+    },
+    "distance_to_side_locus_plane_core_m": {
+     "count": 2094,
+     "p50": 0.00024982532734221417,
+     "p95": 0.0006565741924853828,
+     "max": 0.0009456258627589248,
+     "mean": 0.0002788351001667522
+    },
+    "distance_to_side_locus_sample_m": {
+     "count": 4843,
+     "p50": 0.000579197548544247,
+     "p95": 0.0011352992910725113,
+     "max": 0.0016294689576446361,
+     "mean": 0.0006134056544124274
+    },
+    "distance_to_link_midpoint_sample_m": {
+     "count": 4843,
+     "p50": 0.0022908962826363043,
+     "p95": 0.07006256320339908,
+     "max": 0.07148011807722286,
+     "mean": 0.01298325151805496
+    },
+    "distance_to_link_midpoint_plane_m": {
+     "count": 1213,
+     "p50": 0.0003180217854220769,
+     "p95": 0.0009101773411105928,
+     "max": 0.0012657587219250057,
+     "mean": 0.00037624996739098643
+    },
+    "normal_deviation_deg": {
+     "count": 7445,
+     "p50": 19.67890967794359,
+     "p95": 65.2608803023964,
+     "max": 89.97705315019324,
+     "mean": 24.523136887953164
+    },
+    "normal_deviation_core_deg": {
+     "count": 3911,
+     "p50": 17.068376530734497,
+     "p95": 45.738530980860574,
+     "max": 88.21234440816025,
+     "mean": 19.05521546373734
+    },
+    "roughness_mesh_rms_m": {
+     "count": 3974,
+     "p50": 6.311667002549233e-05,
+     "p95": 0.00017880880900874647,
+     "max": 0.00047864704740648234,
+     "mean": 7.3203550207865e-05,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 4002,
+     "grouped": true
+    },
+    "roughness_side_locus_rms_m": {
+     "count": 1397,
+     "p50": 0.0001222488073848687,
+     "p95": 0.00038621231577160893,
+     "max": 0.000519048877971519,
+     "mean": 0.00015347068358288342,
+     "radius_m": 0.0015,
+     "min_points": 6,
+     "centres_sampled": 2330,
+     "grouped": true
+    },
+    "patch_radius_m": 0.0015,
+    "normal_radius_m": 0.003,
+    "core_exclusion_layers": 3,
+    "deformation_map": "F"
+   },
+   "files": {
+    "extract": "artifacts/wp12/baseline/s8_testd2_s2505_002/wp12_extract_001",
+    "baseline_compact.npz": 6945041,
+    "baseline_views.png": 426370,
+    "physics_state.npz": 33676578,
+    "wp12_capture.npz": 6986619
+   }
+  }
+ ],
+ "existing_failures": [
+  {
+   "id": "E1_SLICE_PUSH x5 (s1301-s1305)",
+   "class": "CUTTING_FAILURE (kinematic)",
+   "cause": "bar slides +1.16..+1.25 mm after cut 0; cut 1 one particle layer short; frozen 2 mm location statistic 4.0 mm",
+   "status": "corrected live by opt-in wrist_depth_relocate_v1 (ADR 0016, live_004 3/3 TASK_SUCCESS); kinematic record unchanged",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round1_001.json",
+    "docs/evidence/wp11/phaseE_round1_live_004.json",
+    "docs/reports/WP11_PHASE_E_ROUND1.md"
+   ]
+  },
+  {
+   "id": "E1_TEST_A_s2 (-20 deg oblique)",
+   "class": "CUTTING_FAILURE (kinematic and live)",
+   "cause": "swept-plane location 1.02 mm kinematic / 1.023 mm live vs 1.00 mm bound",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round1_001.json",
+    "docs/evidence/wp11/phaseE_round1_live_001.json"
+   ]
+  },
+  {
+   "id": "E1_TEST_D_s1701",
+   "class": "CUTTING_FAILURE (solver limit)",
+   "cause": "tlmpm_v5 slot overflow at S=8 (318 entries) during the second skim after an oblique sever; scenes may now declare slots_per_node (S=16 max used 8)",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round1_001.json",
+    "docs/evidence/wp11/phaseE_round2_001.json"
+   ]
+  },
+  {
+   "id": "E1_TEST_D_s1702, s1704",
+   "class": "CUTTING_FAILURE under goal_eval_v1 (evaluator composition)",
+   "cause": "sever-then-remove unsatisfiable under v1 semantics; PASS under goal_eval_v2/v2a as POST_HOC_DIAGNOSTIC, round record unchanged",
+   "evidence": [
+    "docs/reports/WP11_PHASE_E_ROUND2.md",
+    "artifacts/wp11/phaseE/review_posthoc_v2a_001"
+   ]
+  },
+  {
+   "id": "E2_OBLIQUE_W s2201 (+35), s2202 (-35), s2203 (+30); E2_TEST_A_W s2403 (-35)",
+   "class": "CUTTING_FAILURE (kinematic)",
+   "cause": "one component: 90-302 unassigned particles in the bottom 1-3 layers 4-8 mm from the plane bridge the sides on the 4 mm stencil (plane_section extent + 4 mm overtravel); 20 deg separates",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round2_001.json",
+    "docs/evidence/wp11/phaseE_round2_diagnostics_001.json"
+   ],
+   "reproduced_here": "scene 6 (s2201)"
+  },
+  {
+   "id": "E2_TRIM_W s2307, s2308, s2309 (rho 45 deg)",
+   "class": "CUTTING_FAILURE (kinematic)",
+   "cause": "no label ever written: segment motion at the law-4 theta_max = 45 deg limit, M_k never true, stroke never starts",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round2_001.json"
+   ],
+   "reproduced_here": "scene 7 (s2307)"
+  },
+  {
+   "id": "E2_TEST_D2 s2501, s2502, s2506",
+   "class": "CUTTING_FAILURE (kinematic)",
+   "cause": "chip not separated: 1-4 interior code-zero particles bridge (reproducible, independent of S)",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round2_001.json",
+    "docs/reports/WP11_PHASE_E_ROUND2.md"
+   ]
+  },
+  {
+   "id": "Round 2 feasibility",
+   "class": "4 SCENE_INFEASIBLE, 8 IK_FAILURE of 40",
+   "cause": "rho 5 deg double bevel gouges 0.25 mm; IK reach at |xy| 70-110 mm with yaw ~40 deg and steep orientations",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round2_001.json"
+   ]
+  },
+  {
+   "id": "Test C live_001 / live_002",
+   "class": "SCENE_INFEASIBLE / NOT_RUN",
+   "cause": "single convex hull preflight over three protrusions; ParticleSurface unmeshable 11-particle fragment (fixed opt-in skip_presentation_v1, live_003 PASS)",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round1_live_001.json",
+    "docs/evidence/wp11/phaseE_round1_live_003.json"
+   ]
+  },
+  {
+   "id": "Test C live_003 indentation",
+   "class": "reported, unscored",
+   "cause": "400 top-layer substrate particles depressed > 1 mm (mean 1.42-1.47 mm, max 3.19 mm) inside the skim ranges; 22 mm 'dent' was a heightfield registration artefact",
+   "evidence": [
+    "docs/evidence/wp11/phaseE_round1_live_003.json",
+    "docs/reports/WP11_PHASE_E_ROUND1.md"
+   ]
+  },
+  {
+   "id": "Phase F F2.9 blunt-handle negative control (v1)",
+   "class": "FAIL (control design)",
+   "cause": "handle hit a free corner; bar rotated 1.4 deg; contact mean force 0.077 N < 0.1 N; v2 control PASS",
+   "evidence": [
+    "docs/evidence/wp11/phaseF_material_001.json",
+    "docs/evidence/wp11/phaseF_material_v2_001.json"
+   ]
+  },
+  {
+   "id": "Phase F3 resolution",
+   "class": "characterization: not converged; medium variant ERROR",
+   "cause": "TRIM removal 0.82 / 0.58 at 2 / 1.5 mm; contact force ~2.6x with dt halved; 0.15 ms does not divide 20 ms",
+   "evidence": [
+    "docs/evidence/wp11/phaseF_material_001.json",
+    "docs/reports/WP11_PHASE_F_LAW8.md"
+   ]
+  },
+  {
+   "id": "Phase F F2.11 (report-only)",
+   "class": "goal location FAIL (report-only)",
+   "cause": "cuts 2 and 3 land 4.0 / 4.5 mm from declared planes (bar slides each cut)",
+   "evidence": [
+    "docs/evidence/wp11/phaseF_material_001.json"
+   ]
+  },
+  {
+   "id": "Phase C4 single bevel and rho 0",
+   "class": "FAIL rows",
+   "cause": "single bevel passes only at 0 deg (law-8 gate measures blade-plane motion, not face angle); double bevel 0 deg presses down; flat_press / handle negative controls FAIL by the all-step force window",
+   "evidence": [
+    "docs/evidence/wp11/phaseC4_trim_material_001.json"
+   ]
+  },
+  {
+   "id": "Phase F1 v8 negative control low_friction_trim_advance_0p1n",
+   "class": "FAIL (control design), v9 PASS",
+   "evidence": [
+    "docs/evidence/wp11/phaseF1_grasp_001.json",
+    "docs/evidence/wp11/phaseF1_negctrl_v9_001.json"
+   ]
+  },
+  {
+   "id": "C5 live TRIM clearance",
+   "class": "clearance audit FAIL (task PASS)",
+   "cause": "path_v2 measured-feedback oscillation; blade 0.16 mm into the uncut top; fixed by opt-in path_v3 in C5b",
+   "evidence": [
+    "docs/evidence/wp11/phaseC5_live_trim_001.json",
+    "docs/evidence/wp11/phaseC5b_live_trim_clear_001.json"
+   ]
+  },
+  {
+   "id": "C5b attempt 001",
+   "class": "FAIL_EXECUTION",
+   "cause": "CUDA OOM from another user's job on GPU 1",
+   "evidence": [
+    "docs/evidence/wp11/phaseC5b_live_trim_clear_001.json"
+   ]
+  },
+  {
+   "id": "Native reliability",
+   "class": "v1 tool_at_rest_after_reset FAIL; --recycle-every Native FAIL (fixed, not rerun); host RSS +49 MiB/episode; GPU nondeterminism (float32 atomics)",
+   "evidence": [
+    "docs/evidence/wp11/phaseH_native_reliability_v1b_001.json",
+    "docs/reports/WP11_PHASE_H_PROFILING.md"
+   ]
+  },
+  {
+   "id": "final_v4 frozen strict FAILs",
+   "class": "documented frozen FAILs reproduced",
+   "cause": "Demo 1b location/time window; Demo 2 precision 5/8",
+   "evidence": [
+    "docs/evidence/wp11/phaseI_final_v4_regression_001.json",
+    "docs/evidence/wp11/phaseI_final_v4_regression_002.json"
+   ]
+  },
+  {
+   "id": "research_fast_v1 profile",
+   "class": "acceptance_valid false; SEVER location FAIL",
+   "evidence": [
+    "docs/evidence/wp11/phaseH_profiling_001.json"
+   ]
+  }
+ ],
+ "metric_module": "src/robotic_cutting_sim/surface_metrics_v1.py (tests/test_surface_metrics_v1.py)",
+ "tools": [
+  "scripts/wp12_baseline_capture.py",
+  "scripts/wp12_baseline_extract.py",
+  "scripts/wp12_phase0_summarize.py"
+ ]
+}
