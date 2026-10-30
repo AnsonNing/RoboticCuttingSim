@@ -8,8 +8,10 @@
 - Phase 3 Layer 2 完成（`403870f`）：`cut_events_v1` 唯讀 recorder，物理不變，開銷約 0.8%。
 - Phase 1 完成（`b31553d`，[報告](reports/WP12_SURFACE_DIAGNOSIS.md)）：切面不平整主要來自切後刀身楔形推擠的材料變形（P95 0.6–2.0 mm），solver 在參考空間的切口是平的；1 mm 格子造成最多 0.4 s 的階梯；ParticleSurface 加上 0.36–0.77 s 偏移、法向 P95 19–51°、圓角邊、部分切口與薄屑幾乎不畫。G1、G3–G8 PASS；G2 一個 1e-9 m 子項 FAIL（float32），保留。Phase 3 門檻已凍結於 `configs/wp12/surface_protocol_v1.json`。
 - Phase 3 核心完成（`89b289d`）：`cut_aware_surface_v1` Layers 3–6，40 個單元測試，CPU 全套 1290 passed。
-- 執行中（背景 agent）：Phase 2b Native 驗收（cuda:0，`artifacts/wp12/workcell_live_*`）；Phase 3 S0–S9 量測（cuda:1，`artifacts/wp12/phase3_s*`，報告 `docs/reports/WP12_SURFACE_RECONSTRUCTION.md`）；Phase 4a law 8 失敗根因診斷（cuda:1，`artifacts/wp12/phase4a_*`，報告 `docs/reports/WP12_CUTTING_PHYSICS.md`）。
-- 下一步：2b 完成後把 cut-aware surface 接進 live／Native（USD、metadata、效能）；4a 結果決定是否做 law 9。
+- Phase 2b 完成（`2f299cc`）：平板上 live Native CUT、partial、TRIM、Test B（5 塊）、Test C 全部 PASS 並回 HOME；刀停在板面不穿透。長條每刀仍滑約 1 mm（PARTIAL）。
+- Phase 3 量測（`bdc5da0`）：凍結 protocol v1 下比較 gate **FAIL**（保留）；cut-aware 在參考空間、覆蓋率、拓撲、邊緣、體積勝出，法向與部分最大值不過。審查（`b67e80c`）確認 FAIL 成立並找出 S6 指標缺陷與 v1 自相矛盾的門檻列，建議 v2 方法＋獨立理由的 protocol v2。
+- Phase 4a 根因草稿（`b012902`）：(a) 斜切出口面未指派、(b) 45° rake 剛好卡在 θ_max、(c) core band 被刀帶走的粒子、(d) 楔形下壓、(e) swept normal fallback 潛在問題；建議 law 9 只處理 (a)。
+- 執行中（背景 agent）：Phase 3 Native 整合（cuda:0，`artifacts/wp12/surface_live_*`）；Phase 3 addendum＋protocol v2 草稿；Phase 4a 的 xhigh 審查（`docs/reports/WP12_PHASE4_XHIGH_REVIEW.md`，law 9 實作在其後）；Phase 4c 工件／材料泛化（cuda:1，`artifacts/wp12/phase4c_*`）；解析度研究（cuda:1，protocol 先 commit 再正式跑）。
 - 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
