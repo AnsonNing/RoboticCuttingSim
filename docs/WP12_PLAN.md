@@ -86,10 +86,10 @@ and opt-in. Material parameters remain provisional and uncalibrated.
 | 1 | done (`b31553d`): attribution, G1–G8, debug viewer; surface protocol v1 frozen | [diagnosis](reports/WP12_SURFACE_DIAGNOSIS.md) |
 | 2 | 2a done (`ec3e8a7`): profile, single-source geometry, through-cut study (A+B), Native settle and knife-on-board; 2b in progress: live Native cutting acceptance on the board, old-vs-new comparison | [workcell report](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md) |
 | 3 | CLOSED by xhigh decision (`a94bd9f`): recorder (`403870f`), v1 core (`89b289d`), live/Native integration (`9fde661`); comparison gate FAIL under frozen protocol v1 (`bdc5da0`) and v2 (`dc210ff`), both kept; `cut_aware_surface_v1` ships opt-in, `particle_surface_v1` stays default, v2 experimental; near-face x/F mismatch and chip tearing without codes handed to Phase 4 | [reconstruction](reports/WP12_SURFACE_RECONSTRUCTION.md), [live](reports/WP12_SURFACE_LIVE.md), [decision](reports/WP12_PHASE3_XHIGH_DECISION.md) |
-| 4 | 4a root causes (`b012902`); xhigh REJECTED the proposed law 9 (`81a9626`); 4c geometry/material (`05b31c5`); E1 oblique-on-board and resolution matrix running; final xhigh Phase 4 decision pending (envelope, law, convergence, F3/F7) | [physics](reports/WP12_CUTTING_PHYSICS.md), [xhigh review](reports/WP12_PHASE4_XHIGH_REVIEW.md) |
-| 5 | infrastructure DRAFT (`94c7602`); freeze after the Phase 4 envelope | [generalization](reports/WP12_GENERALIZATION.md) |
-| 6 | running | |
-| 7 | not started | |
+| 4 | DONE (studied and bounded): 4a root causes (`b012902`); proposed law 9 REJECTED (`81a9626`); E1 (`15e5ec1`); resolution study (`77fd033`, erratum `1876424`); 4c geometry/material (`05b31c5`); methods review (`5ccfa96`); V1–V4 (`71a0822`); D1–D5 + envelope v1 (`1876424`); E2 + envelope v2 (`1f9d441`, `722468c`); tlmpm_v6 candidate REJECTED at S1 (`99ae6ae`); law 8 / tlmpm_v5 unchanged | [physics](reports/WP12_CUTTING_PHYSICS.md), [resolution](reports/WP12_RESOLUTION_STUDY.md), [decision](reports/WP12_PHASE4_XHIGH_DECISION.md), [prototypes](reports/WP12_PHASE4_PROTOTYPE_DECISION.md) |
+| 5 | FROZEN (`722468c`), tooling (`177faae`); kinematic benchmark running; Native sub-sample next | [generalization](reports/WP12_GENERALIZATION.md), [freeze](reports/WP12_PHASE5_FREEZE_DECISION.md) |
+| 6 | DONE (`73c6e43`): §6.7 checklist PASS; kinematic memory check FAIL kept | [readiness](reports/WP12_AGENTIC_READINESS.md), [performance](reports/WP12_PERFORMANCE.md) |
+| 7 | Native Demos 1–6 running (configs/wp12/phase7_demos_v1.json); Demo 7 after the held-out selection | |
 
 **Phase 0 gate decision (2026-10-31).** Architecture: Approach B on the 1 mm particle
 lattice (review §6), links cut iff endpoint codes conflict, Hermite data from
