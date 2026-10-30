@@ -22,7 +22,7 @@ quaternions XYZW; unknown keys are errors)::
         "material_profile": "cutting_tasks_v1"  # v1 provisional material, or a food_profiles_v1 id
       },
       "supports": {                             # local support footprint, top at workpiece z = 0
-        "kind": "solid_board" | "slotted_board" | "boxes",
+        "kind": "solid_board" | "slotted_board" | "boxes" | "flat_board",   # flat_board: see below
         "x_range_m": [-.09, .09], "half_width_y_m": .021, "thickness_m": .01,   # solid/slotted
         "slots": [{"x_m": 0., "width_m": .04}],                               # slotted only
         "names": ["left_pedestal", "right_pedestal"],                         # optional, per segment
@@ -46,6 +46,13 @@ the table with exactly the ``wp10_scenarios_v3`` ``cutting_board_v1`` code
 Without a workcell the raw support boxes are used (v2-task semantics). Slotted
 segment coordinates are rounded to 1e-12 m so that equal configs give bitwise
 equal boxes.
+
+WP-12 (ADR 0017): ``"supports": {"kind": "flat_board", "workcell": {"profile":
+"blade_master_flat_board_v1", "overrides": {...}}}`` takes the table and ONE
+continuous cutting board lying on it from ``configs/wp12_workcells_v1.json``
+(``flat_board_workcell``): no riser, the board box(es) are the TLMPM fixture,
+PhysX collider and visual box, the workpiece z must equal the board top and the
+table top comes from the record. HOME and action workspace come from the record.
 
 Randomization draws ``uniform(low, high)`` with ``numpy.random.default_rng(seed)``
 in declared order (a ``*`` path expands over list items in order); ``mode``
@@ -90,7 +97,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SCENE_DIR = ROOT/"configs/wp11/scenes"
 GOAL_DIR = ROOT/"configs/wp11/goals"
 V1_MATERIAL_PROFILE = "cutting_tasks_v1"
-SUPPORT_KINDS = ("solid_board", "slotted_board", "boxes")
+SUPPORT_KINDS = ("solid_board", "slotted_board", "boxes", "flat_board")   # flat_board: WP-12 (ADR 0017)
 SOLVERS = {"tlmpm_v4": {"laws": (4, 5, 6, 7, 8), "max_cuts": 2},
            "tlmpm_v5": {"laws": (4, 5, 8), "max_cuts": 15}}
 _ID = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -239,6 +246,12 @@ def validate_scene(source):
         out["solver"]["slots_per_node"] = _integer(solver["slots_per_node"], "solver.slots_per_node", 1, 64)
     out["table_top_world_z_m"] = _number(doc.get("table_top_world_z_m", _protocol()["common"]["table_top_world_z_m"]),
                                          "table_top_world_z_m")
+    if out["supports"]["kind"] == "flat_board":   # the workcell record is the single source of the table top
+        top = flat_board_record(out)["table"]["top_world_z_m"]
+        if "table_top_world_z_m" in doc and abs(out["table_top_world_z_m"]-top) > 1e-12:
+            raise SceneConfigError(f"table_top_world_z_m {out['table_top_world_z_m']} differs from the flat-board "
+                                   f"workcell table top {top}; omit it (the workcell record is the single source)")
+        out["table_top_world_z_m"] = float(top)
     out["randomization"] = _validate_randomization(doc.get("randomization"))
     _check_geometry(out)
     return out
@@ -250,6 +263,15 @@ def _validate_supports(supports):
     if kind not in SUPPORT_KINDS:
         raise SceneConfigError(f"supports.kind must be one of {SUPPORT_KINDS}")
     out = {"kind": kind}
+    if kind == "flat_board":
+        # WP-12 blade_master_flat_board_v1 (ADR 0017): the board comes only from the workcell record.
+        _keys(supports, "supports", ("kind", "workcell"))
+        from .flat_board_workcell import FlatBoardError, validate_spec
+        try:
+            out["workcell"] = validate_spec(supports["workcell"])
+        except FlatBoardError as error:
+            raise SceneConfigError(f"supports.workcell: {error}") from None
+        return out
     if kind == "boxes":
         if any(key in supports for key in ("x_range_m", "half_width_y_m", "thickness_m", "slots", "names")):
             raise SceneConfigError("supports.kind 'boxes' takes explicit boxes only")
@@ -351,7 +373,12 @@ def _check_geometry(scene):
     if not scene["solver"]["particle_spacing_m"] <= base["height_m"]/2:
         raise SceneInfeasible("spacing_too_coarse", "particle spacing must give at least two base layers")
     supports = scene["supports"]
-    if supports["kind"] != "boxes":
+    if supports["kind"] == "flat_board":
+        from .flat_board_workcell import check_placement
+        problems = check_placement(flat_board_record(scene), _pose_xyz_yaw(scene), _footprint_local_xy(scene))
+        if problems:
+            raise SceneInfeasible(*problems[0])
+    elif supports["kind"] != "boxes":
         lo, hi = supports["x_range_m"]
         if lo > -base["length_m"]/2 or hi < base["length_m"]/2:
             raise SceneInfeasible("supports_shorter_than_workpiece", f"x range {supports['x_range_m']}")
@@ -429,9 +456,40 @@ def scene_top_m(scene):
     return scene["workpiece"]["base_box_m"]["height_m"]+max((row["height_m"] for row in rows), default=0.)
 
 
+def flat_board_record(scene):
+    """Resolved ``blade_master_flat_board_v1``-style workcell record of a flat-board scene, else None."""
+    if scene["supports"]["kind"] != "flat_board":
+        return None
+    from .flat_board_workcell import resolve
+    return resolve(scene["supports"]["workcell"])
+
+
+def _pose_xyz_yaw(scene):
+    pose = scene["workpiece"]["world_pose"]
+    return (*map(float, pose["translation_m"]), float(pose["yaw_deg"]))
+
+
+def _footprint_local_xy(scene):
+    """Local xy outline of the material: base box corners and protrusion bounding rectangles."""
+    base = scene["workpiece"]["base_box_m"]
+    hx, hy = base["length_m"]/2, base["width_m"]/2
+    points = [(sx*hx, sy*hy) for sx in (-1, 1) for sy in (-1, 1)]
+    for row in scene["workpiece"]["protrusions"]:
+        points += [(row["x_m"]+sx*row["radius_x_m"], row["y_m"]+sy*row["radius_y_m"]) for sx in (-1, 1) for sy in (-1, 1)]
+    return np.asarray(points, float)
+
+
 def raw_support_boxes(scene):
-    """Local support FixtureBoxes before any workcell (top at workpiece z = 0)."""
+    """Local support FixtureBoxes before any workcell (top at workpiece z = 0).
+
+    A ``flat_board`` scene returns the board's ``MaterialFixtureBox`` es from its
+    workcell record (the same boxes the TLMPM fixture, the PhysX collider and the
+    visual use; no riser).
+    """
     supports = scene["supports"]
+    if supports["kind"] == "flat_board":
+        from .flat_board_workcell import fixture_boxes_local
+        return tuple(fixture_boxes_local(flat_board_record(scene), _pose_xyz_yaw(scene), scene_material(scene).friction))
     if supports["kind"] == "boxes":
         return tuple(FixtureBox(row["name"], tuple(row["center_m"]), tuple(row["half_extents_m"])) for row in supports["boxes"])
     segments = support_segments(supports)
@@ -444,7 +502,7 @@ def raw_support_boxes(scene):
 def workcell_config(scene):
     """The cutting_board_v1 config dict of the scene workcell (None without one)."""
     workcell = scene["supports"]["workcell"]
-    if workcell is None:
+    if workcell is None or scene["supports"]["kind"] == "flat_board":
         return None
     if "from_scenario" in workcell:
         from .task_scenarios import scenarios
@@ -460,6 +518,8 @@ def workcell_config(scene):
 def workcell_scenario(scene):
     """Name of the scenario a scene's workcell comes from (``supports.workcell.from_scenario``), else None."""
     workcell = scene["supports"]["workcell"]
+    if scene["supports"]["kind"] == "flat_board":
+        return None
     return workcell.get("from_scenario") if isinstance(workcell, dict) else None
 
 
@@ -469,12 +529,18 @@ def workcell_home(scene):
     Only ``from_scenario`` workcells can declare a HOME (wp11_scenarios_v1); an
     inline workcell and every v1-v3 scenario keep the planner default home.
     """
+    if scene["supports"]["kind"] == "flat_board":
+        from .flat_board_workcell import home
+        return home(flat_board_record(scene))
     from .task_scenarios import scenario_home
     return scenario_home(workcell_scenario(scene))
 
 
 def workcell_action_workspace(scene):
     """(min, max) local edge workspace declared by the scene's workcell scenario, else None."""
+    if scene["supports"]["kind"] == "flat_board":
+        from .flat_board_workcell import action_workspace
+        return action_workspace(flat_board_record(scene))
     from .task_scenarios import action_workspace
     return action_workspace(workcell_scenario(scene))
 
@@ -556,7 +622,33 @@ class ConfiguredTaskSpec(ProfileTaskSpec):
         return fixture_materials(self)
 
     @property
+    def flat_board_record(self):
+        """Resolved flat-board workcell record (WP-12, ADR 0017) or None."""
+        return flat_board_record(self.scene)
+
+    @property
+    def table_box_world(self):
+        """(center, half extents) WORLD table box declared by a flat-board workcell, else None (runtime default)."""
+        record = self.flat_board_record
+        if record is None:
+            return None
+        from .flat_board_workcell import table_box_world
+        return table_box_world(record)
+
+    def workcell_geometry(self):
+        """Single-source geometry receipt of a flat-board workcell, else None."""
+        record = self.flat_board_record
+        if record is None:
+            return None
+        from .flat_board_workcell import geometry_receipt
+        return geometry_receipt(record, _pose_xyz_yaw(self.scene), self.material.friction)
+
+    @property
     def table_contact_material(self):
+        record = self.flat_board_record
+        if record is not None:
+            from .flat_board_workcell import table_contact_material
+            return table_contact_material(record, self.material.friction)
         config = workcell_config(self.scene)
         if not config or "table" not in config:
             return None
@@ -644,7 +736,9 @@ class ConfiguredTaskSpec(ProfileTaskSpec):
                 "fixture_materials": list(self.fixture_materials), "frozen_two_part_oracle": "NOT_APPLICABLE",
                 "numerical_overrides": ({"particle_spacing_m": {"scene": self.scene["solver"]["particle_spacing_m"],
                                                                  "actual": self.particle_spacing_m}}
-                                        if self.particle_spacing_m != self.scene["solver"]["particle_spacing_m"] else {})}
+                                        if self.particle_spacing_m != self.scene["solver"]["particle_spacing_m"] else {}),
+                # WP-12 flat-board workcell only (absent for every other scene, so their receipts are unchanged)
+                **({"workcell_geometry": self.workcell_geometry()} if self.flat_board_record is not None else {})}
 
     # -- runtime support (WP-11 Phase D)
     @property
@@ -738,7 +832,7 @@ def compile_task(scene, goal, *, particle_spacing_m=None, planner_options=None, 
                                      edge_position_knots_local_txyz=((0., *home_local[:3]), (duration, *home_local[:3])),
                                      reference_orientations_local_xyzw=(tuple(home_local[3:]),)*2,
                                      reference_cut_indices=(-1, -1), reference_phase_labels=("HOME", "HOME"), **common)
-    if scene["supports"]["workcell"] is not None:
+    if scene["supports"]["workcell"] is not None and scene["supports"]["kind"] != "flat_board":
         from .task_scenarios import _cutting_board_boxes
         boxes = _cutting_board_boxes(provisional, workcell_config(scene), world[2])
         provisional = replace(provisional, fixture_boxes_local=tuple(boxes))

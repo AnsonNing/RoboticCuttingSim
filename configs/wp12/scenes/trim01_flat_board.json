@@ -1,0 +1,16 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "trim01_flat_board",
+  "description": "TRIM-01-R workpiece (160 x 30 x 20 mm bar, one 8 mm dome at the centre) lying directly on the solid cutting board of blade_master_flat_board_v1, ruler_knife_v2_y tip toward world +y, HOME from the workcell record. tlmpm_v5 law 8 with one cut digit.",
+  "workpiece": {
+    "base_box_m": {"length_m": 0.16, "width_m": 0.03, "height_m": 0.02},
+    "protrusions": [
+      {"id": "dome", "family": "dome", "x_m": 0.0, "y_m": 0.0, "radius_x_m": 0.012, "radius_y_m": 0.012, "height_m": 0.008}
+    ],
+    "world_pose": {"translation_m": [0.0, 0.0, 0.01], "yaw_deg": 0.0},
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {"kind": "flat_board", "workcell": {"profile": "blade_master_flat_board_v1"}},
+  "tool": {"profile_id": "ruler_knife_v2_y", "grasp_preset": "default"},
+  "solver": {"module": "tlmpm_v5", "cutting_law": 8, "max_cuts": 1, "particle_spacing_m": 0.001, "grid_dx_m": 0.004}
+}

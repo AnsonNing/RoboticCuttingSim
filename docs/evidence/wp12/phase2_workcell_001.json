@@ -1,0 +1,1977 @@
+{
+ "evidence": "WP-12 Phase 2: blade_master_flat_board_v1 workcell (geometry, layout/preflight, Native checks)",
+ "decision": "docs/adr/0017-blade-master-flat-board-workcell.md",
+ "report": "docs/reports/WP12_WORKCELL.md",
+ "record": {
+  "path": "configs/wp12_workcells_v1.json",
+  "sha256": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
+ },
+ "layout_preflight": {
+  "run": "artifacts/wp12/workcell_002",
+  "superseded_run": {
+   "run": "artifacts/wp12/workcell_001",
+   "note": "same checks, but Test C used the single C2 hull over three bumps (known WP-11 artefact: blade vs bump -7.95 mm at PRE_CUT:p1); workcell_002 uses generalization.staged_preflight(geometry=\"staged_v2\") for >= 2 protrusions"
+  },
+  "command": ".venv/bin/python scripts/preflight_wp12_flat_board.py --out artifacts/wp12/workcell_002",
+  "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+  "git_dirty": true,
+  "seed": "deterministic (no RNG)",
+  "process": {
+   "returncode": 0,
+   "wall_s": 249.8
+  },
+  "rows": [
+   {
+    "task": "CUT",
+    "variant": "default",
+    "task_id": "CFG-bar_flat_board-sever_mid-74cbdae6",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 489,
+    "ik_worst": {
+     "position_error_m": 3.091669152817516e-06,
+     "rotation_error_rad": 1.1872395923901964e-06
+    },
+    "min_reference_edge_local_z_m": 0.0,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.6179924011230469,
+      "threshold": 0.05,
+      "label": "RETURN_HOME",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.025517218527694237,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.13140517876011415,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.060810580798603936,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.016000611011853773,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 5.474258511460606e-07,
+      "threshold": 0.0,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05365687311406708,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021675237585174558,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.013031601905822754,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": {
+     "pad": {
+      "z": 0.01925,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.0982,
+       -0.0817
+      ]
+     },
+     "hand": {
+      "z": -0.012,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.2036,
+       -0.1236
+      ]
+     },
+     "link": {
+      "z": -0.01619,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.3823,
+       -0.2493
+      ]
+     },
+     "handle": {
+      "z": 0.016,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.12,
+       -0.06
+      ]
+     },
+     "blade": {
+      "z": 0.0,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.06,
+       0.06
+      ]
+     },
+     "finger": {
+      "z": 0.0175,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.1351,
+       -0.0813
+      ]
+     },
+     "camera": {
+      "z": 0.06221,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.1978,
+       -0.1865
+      ]
+     }
+    },
+    "wall_s": 11.7
+   },
+   {
+    "task": "TRIM_rho10",
+    "variant": "default",
+    "task_id": "CFG-trim01_flat_board-trim_bump_rho10-ec69e5d0",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 369,
+    "ik_worst": {
+     "position_error_m": 3.02494446002315e-06,
+     "rotation_error_rad": 1.1743131632415947e-06
+    },
+    "min_reference_edge_local_z_m": 0.020199999999999996,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.6008024215698242,
+      "threshold": 0.05,
+      "label": "RETURN_HOME",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.01640235383969095,
+      "threshold": 0.005,
+      "label": "SKIM:dome",
+      "pair": [
+       "arm0_left_finger_visual_hull",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.17107563165940476,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.048648021484166665,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.01214586553063008,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.922601763986105e-05,
+      "threshold": 0.0,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "tool_blade",
+       "static_workpiece_base"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05367107761737364,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.02171315856155547,
+      "threshold": 0.002,
+      "label": "REORIENT:dome",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.02212505415081978,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": {
+     "pad": {
+      "z": -0.00244,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.0982,
+       -0.0817
+      ]
+     },
+     "hand": {
+      "z": -0.08036,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.2036,
+       -0.1236
+      ]
+     },
+     "link": {
+      "z": -0.06432,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.2487,
+       -0.1938
+      ]
+     },
+     "handle": {
+      "z": 0.01215,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.12,
+       -0.06
+      ]
+     },
+     "blade": {
+      "z": 0.02005,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.06,
+       0.06
+      ]
+     },
+     "finger": {
+      "z": -0.01365,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.1351,
+       -0.0813
+      ]
+     },
+     "camera": {
+      "z": -0.03038,
+      "phase": "PRE_CUT:dome",
+      "y_range_world_m": [
+       -0.1968,
+       -0.1738
+      ]
+     }
+    },
+    "wall_s": 7.2
+   },
+   {
+    "task": "TESTB_4slices_solid",
+    "variant": "default",
+    "task_id": "CFG-bar_flat_board-divide_5_slices-010a4bf7",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 1261,
+    "ik_worst": {
+     "position_error_m": 3.2897865586224637e-06,
+     "rotation_error_rad": 1.203954234516459e-06
+    },
+    "min_reference_edge_local_z_m": 0.0,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.557843804359436,
+      "threshold": 0.05,
+      "label": "HOLD:cut3",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.025516986184233977,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.10922675795182263,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.06081014640499001,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.01600031661407983,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 3.0303584126756267e-07,
+      "threshold": 0.0,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.053656876832077795,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021647835222539758,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.014082193374633789,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": {
+     "pad": {
+      "z": 0.01925,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.0982,
+       -0.0817
+      ]
+     },
+     "hand": {
+      "z": -0.012,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.2036,
+       -0.1236
+      ]
+     },
+     "link": {
+      "z": -0.01617,
+      "phase": "HOLD:cut2",
+      "y_range_world_m": [
+       -0.3823,
+       -0.2493
+      ]
+     },
+     "handle": {
+      "z": 0.016,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.12,
+       -0.06
+      ]
+     },
+     "blade": {
+      "z": 0.0,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.06,
+       0.06
+      ]
+     },
+     "finger": {
+      "z": 0.0175,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.1351,
+       -0.0813
+      ]
+     },
+     "camera": {
+      "z": 0.06221,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.1978,
+       -0.1865
+      ]
+     }
+    },
+    "wall_s": 24.4
+   },
+   {
+    "task": "TESTB_4slices_slotted",
+    "variant": "default",
+    "task_id": "CFG-bar_flat_board_slotted-divide_5_slices-46a0b06d",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 1381,
+    "ik_worst": {
+     "position_error_m": 3.2897865586224637e-06,
+     "rotation_error_rad": 1.1480661612571258e-06
+    },
+    "min_reference_edge_local_z_m": -0.003999999999999997,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.5471751689910889,
+      "threshold": 0.05,
+      "label": "HOLD:cut3",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.022651909579779708,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board_segment_3"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.1092266783745044,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.058968001511343626,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.0120004845711951,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board_segment_0"
+      ]
+     },
+     "blade_collision": {
+      "value": 0.003248083216666231,
+      "threshold": 0.0,
+      "label": "HOLD:cut3",
+      "pair": [
+       "tool_blade",
+       "static_flat_board_segment_3"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.053656876832077795,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021647835222539758,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.014081954956054688,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": {
+     "pad": {
+      "z": 0.01525,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.0982,
+       -0.0817
+      ]
+     },
+     "hand": {
+      "z": -0.016,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.2036,
+       -0.1236
+      ]
+     },
+     "link": {
+      "z": -0.02017,
+      "phase": "HOLD:cut2",
+      "y_range_world_m": [
+       -0.3823,
+       -0.2493
+      ]
+     },
+     "handle": {
+      "z": 0.012,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.12,
+       -0.06
+      ]
+     },
+     "blade": {
+      "z": -0.004,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.06,
+       0.06
+      ]
+     },
+     "finger": {
+      "z": 0.0135,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.1351,
+       -0.0813
+      ]
+     },
+     "camera": {
+      "z": 0.05821,
+      "phase": "HOLD:cut0",
+      "y_range_world_m": [
+       -0.1978,
+       -0.1865
+      ]
+     }
+    },
+    "wall_s": 26.4
+   },
+   {
+    "task": "TESTC_3bumps_rho10",
+    "variant": "default",
+    "task_id": "CFG-bar_three_bumps_flat_board-remove_all_protrusions_rho10-0b0cc635",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "staged_v2: declared workpiece minus protrusions removed by earlier remove/trim operations; union of per-protrusion C2 hulls",
+    "samples": 685,
+    "ik_worst": {
+     "position_error_m": 3.0379034502194004e-06,
+     "rotation_error_rad": 1.2818466533947261e-06
+    },
+    "min_reference_edge_local_z_m": 0.020199999999999996,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.5596151351928711,
+      "threshold": 0.05,
+      "label": "SKIM:p2",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.016401893947217146,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "arm0_left_finger_visual_hull",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.15172419258478148,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.04864794284561283,
+      "threshold": 0.005,
+      "label": "PRE_CUT:p1",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.012145487534893341,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.9245935783698726e-05,
+      "threshold": 0.0,
+      "label": "PRE_CUT:p1",
+      "pair": [
+       "tool_blade",
+       "static_workpiece_base"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05365810857750025,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021709029628603816,
+      "threshold": 0.002,
+      "label": "REORIENT:p0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.024831974878907204,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": {
+     "pad": {
+      "z": -0.00244,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.0983,
+       -0.0818
+      ]
+     },
+     "hand": {
+      "z": -0.08036,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.2037,
+       -0.1237
+      ]
+     },
+     "link": {
+      "z": -0.06432,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.2487,
+       -0.1938
+      ]
+     },
+     "handle": {
+      "z": 0.01215,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.12,
+       -0.06
+      ]
+     },
+     "blade": {
+      "z": 0.02005,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.06,
+       0.06
+      ]
+     },
+     "finger": {
+      "z": -0.01365,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.1351,
+       -0.0814
+      ]
+     },
+     "camera": {
+      "z": -0.03038,
+      "phase": "SKIM:p2",
+      "y_range_world_m": [
+       -0.1969,
+       -0.1739
+      ]
+     }
+    },
+    "wall_s": 15.5
+   },
+   {
+    "task": "CUT",
+    "variant": "table_full",
+    "task_id": "CFG-bar_flat_board_table-sever_mid-ee04e8d7",
+    "status": "FAIL",
+    "failing": [
+     "franka_workcell_collision"
+    ],
+    "preflight_geometry": "declared",
+    "samples": 489,
+    "ik_worst": {
+     "position_error_m": 3.091669152817516e-06,
+     "rotation_error_rad": 1.1872395923901964e-06
+    },
+    "min_reference_edge_local_z_m": 0.0,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.6179924011230469,
+      "threshold": 0.05,
+      "label": "RETURN_HOME",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.025517218527694237,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.13140517876011415,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.0038083439171436436,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "arm0_link6_c",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.016000611011853773,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 5.474258511460606e-07,
+      "threshold": 0.0,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05365687311406708,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021675237585174558,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.013031601905822754,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 8.8
+   },
+   {
+    "task": "TRIM_rho10",
+    "variant": "table_full",
+    "task_id": "CFG-trim01_flat_board_table-trim_bump_rho10-e6e0de84",
+    "status": "FAIL",
+    "failing": [
+     "franka_workcell_collision",
+     "wrist_camera_clearance"
+    ],
+    "preflight_geometry": "declared",
+    "samples": 369,
+    "ik_worst": {
+     "position_error_m": 3.02494446002315e-06,
+     "rotation_error_rad": 1.1743131632415947e-06
+    },
+    "min_reference_edge_local_z_m": 0.020199999999999996,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.6008024215698242,
+      "threshold": 0.05,
+      "label": "RETURN_HOME",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.006347907940060342,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "arm0_left_finger_visual_hull",
+       "static_table"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.17107563165940476,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": -0.05651541513836326,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "arm0_hand_c",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.01214586553063008,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.922601763986105e-05,
+      "threshold": 0.0,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "tool_blade",
+       "static_workpiece_base"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": -0.010384121615974823,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "arm0_d405_Housing",
+       "static_table"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.02171315856155547,
+      "threshold": 0.002,
+      "label": "REORIENT:dome",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.02212505415081978,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 7.2
+   },
+   {
+    "task": "TESTB_4slices_solid",
+    "variant": "table_full",
+    "task_id": "CFG-bar_flat_board_table-divide_5_slices-e01c3804",
+    "status": "FAIL",
+    "failing": [
+     "franka_workcell_collision"
+    ],
+    "preflight_geometry": "declared",
+    "samples": 1261,
+    "ik_worst": {
+     "position_error_m": 3.2897865586224637e-06,
+     "rotation_error_rad": 1.203954234516459e-06
+    },
+    "min_reference_edge_local_z_m": 0.0,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.557843804359436,
+      "threshold": 0.05,
+      "label": "HOLD:cut3",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.025516986184233977,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.10922675795182263,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.0038289215737482146,
+      "threshold": 0.005,
+      "label": "HOLD:cut2",
+      "pair": [
+       "arm0_link6_c",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.01600031661407983,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 3.0303584126756267e-07,
+      "threshold": 0.0,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.053656876832077795,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021647835222539758,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.014082193374633789,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 23.7
+   },
+   {
+    "task": "TESTB_4slices_slotted",
+    "variant": "table_full",
+    "task_id": "CFG-bar_flat_board_slotted_table-divide_5_slices-64027416",
+    "status": "FAIL",
+    "failing": [
+     "franka_workcell_collision"
+    ],
+    "preflight_geometry": "declared",
+    "samples": 1381,
+    "ik_worst": {
+     "position_error_m": 3.2897865586224637e-06,
+     "rotation_error_rad": 1.1480661612571258e-06
+    },
+    "min_reference_edge_local_z_m": -0.003999999999999997,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.5471751689910889,
+      "threshold": 0.05,
+      "label": "HOLD:cut3",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.022651909579779708,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board_segment_3"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.1092266783745044,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": -0.00017272818673268187,
+      "threshold": 0.005,
+      "label": "HOLD:cut2",
+      "pair": [
+       "arm0_link6_c",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.0120004845711951,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board_segment_0"
+      ]
+     },
+     "blade_collision": {
+      "value": 0.003248083216666231,
+      "threshold": 0.0,
+      "label": "HOLD:cut3",
+      "pair": [
+       "tool_blade",
+       "static_flat_board_segment_3"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.053656876832077795,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021647835222539758,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.014081954956054688,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 26.2
+   },
+   {
+    "task": "TESTC_3bumps_rho10",
+    "variant": "table_full",
+    "task_id": "CFG-bar_three_bumps_flat_board_table-remove_all_protrusions_rho10-f1583326",
+    "status": "FAIL",
+    "failing": [
+     "franka_workcell_collision",
+     "wrist_camera_clearance"
+    ],
+    "preflight_geometry": "staged_v2: declared workpiece minus protrusions removed by earlier remove/trim operations; union of per-protrusion C2 hulls",
+    "samples": 685,
+    "ik_worst": {
+     "position_error_m": 3.0379034502194004e-06,
+     "rotation_error_rad": 1.2818466533947261e-06
+    },
+    "min_reference_edge_local_z_m": 0.020199999999999996,
+    "workpiece_world_z_m": 0.01,
+    "board_top_world_z_m": 0.01,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.5596151351928711,
+      "threshold": 0.05,
+      "label": "SKIM:p2",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.006347529812721397,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "arm0_left_finger_visual_hull",
+       "static_table"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.15172419258478148,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": -0.05651579408705548,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "arm0_hand_c",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.012145487534893341,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.9245935783698726e-05,
+      "threshold": 0.0,
+      "label": "PRE_CUT:p1",
+      "pair": [
+       "tool_blade",
+       "static_workpiece_base"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": -0.010384512636229422,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "arm0_d405_Housing",
+       "static_table"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021709029628603816,
+      "threshold": 0.002,
+      "label": "REORIENT:p0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.024831974878907204,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 15.1
+   },
+   {
+    "task": "CUT",
+    "variant": "board_thick_30mm",
+    "task_id": "CFG-bar_flat_board_cutting_board-sever_mid-bec78657",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 479,
+    "ik_worst": {
+     "position_error_m": 3.0734416639499353e-06,
+     "rotation_error_rad": 1.289445079964767e-06
+    },
+    "min_reference_edge_local_z_m": 0.0,
+    "workpiece_world_z_m": 0.019999999999999997,
+    "board_top_world_z_m": 0.019999999999999997,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.6324427127838135,
+      "threshold": 0.05,
+      "label": "RETURN_HOME",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.025517193624216866,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.13404978633169462,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.06254629799556312,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_flat_board"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.016000538489533738,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 5.110200885644067e-07,
+      "threshold": 0.0,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05365687815766403,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021683971179562726,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.01290583610534668,
+      "threshold": -0.06,
+      "label": "APPROACH:cut0",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 9.1
+   },
+   {
+    "task": "TRIM_rho10",
+    "variant": "board_thick_30mm",
+    "task_id": "CFG-trim01_flat_board_cutting_board-trim_bump_rho10-1dbfa12e",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 359,
+    "ik_worst": {
+     "position_error_m": 3.009534462861555e-06,
+     "rotation_error_rad": 1.3107236925194931e-06
+    },
+    "min_reference_edge_local_z_m": 0.020200000000000003,
+    "workpiece_world_z_m": 0.019999999999999997,
+    "board_top_world_z_m": 0.019999999999999997,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.608898401260376,
+      "threshold": 0.05,
+      "label": "RETURN_HOME",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.016402480411122796,
+      "threshold": 0.005,
+      "label": "SKIM:dome",
+      "pair": [
+       "arm0_left_finger_visual_hull",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.1711726244912486,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.048648670420495754,
+      "threshold": 0.005,
+      "label": "SKIM:dome",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.012145994887612359,
+      "threshold": 0.005,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.935543796191493e-05,
+      "threshold": 0.0,
+      "label": "PRE_CUT:dome",
+      "pair": [
+       "tool_blade",
+       "static_workpiece_base"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05367555283385536,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021713383007603317,
+      "threshold": 0.002,
+      "label": "REORIENT:dome",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.02119968831539154,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 7.3
+   },
+   {
+    "task": "TESTB_4slices_solid",
+    "variant": "board_thick_30mm",
+    "task_id": "CFG-bar_flat_board_cutting_board-divide_5_slices-7174175d",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 1251,
+    "ik_worst": {
+     "position_error_m": 3.3232676862667018e-06,
+     "rotation_error_rad": 1.2545318607226273e-06
+    },
+    "min_reference_edge_local_z_m": 0.0,
+    "workpiece_world_z_m": 0.019999999999999997,
+    "board_top_world_z_m": 0.019999999999999997,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.5836352109909058,
+      "threshold": 0.05,
+      "label": "HOLD:cut3",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.025516977765012945,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.11275160353051011,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.06254586516287727,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_flat_board"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.016000446403590083,
+      "threshold": 0.005,
+      "label": "HOLD:cut1",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.292036191004544e-07,
+      "threshold": 0.0,
+      "label": "HOLD:cut1",
+      "pair": [
+       "tool_blade",
+       "static_flat_board"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.053656871691620776,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.02164628621204969,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.013872027397155762,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 24.3
+   },
+   {
+    "task": "TESTB_4slices_slotted",
+    "variant": "board_thick_30mm",
+    "task_id": "CFG-bar_flat_board_slotted_cutting_board-divide_5_slices-0fa5f67e",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "declared",
+    "samples": 1371,
+    "ik_worst": {
+     "position_error_m": 3.3232676862667018e-06,
+     "rotation_error_rad": 1.4404106393923117e-06
+    },
+    "min_reference_edge_local_z_m": -0.003999999999999997,
+    "workpiece_world_z_m": 0.019999999999999997,
+    "board_top_world_z_m": 0.019999999999999997,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.573215126991272,
+      "threshold": 0.05,
+      "label": "HOLD:cut3",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.02265185925713728,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_left_finger_pad",
+       "static_flat_board_segment_3"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.11275176830851041,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_link5_c2",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.06152639763122503,
+      "threshold": 0.005,
+      "label": "HOLD:cut3",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_flat_board_segment_2"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.012000373147892556,
+      "threshold": 0.005,
+      "label": "HOLD:cut0",
+      "pair": [
+       "tool_handle",
+       "static_flat_board_segment_0"
+      ]
+     },
+     "blade_collision": {
+      "value": 0.0032484064672214795,
+      "threshold": 0.0,
+      "label": "HOLD:cut3",
+      "pair": [
+       "tool_blade",
+       "static_flat_board_segment_3"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05365687168385127,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.02164628621204969,
+      "threshold": 0.002,
+      "label": "APPROACH:cut0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.013872265815734863,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 25.9
+   },
+   {
+    "task": "TESTC_3bumps_rho10",
+    "variant": "board_thick_30mm",
+    "task_id": "CFG-bar_three_bumps_flat_board_cutting_board-remove_all_protrusions_rho10-1f8cccb3",
+    "status": "PASS",
+    "failing": [],
+    "preflight_geometry": "staged_v2: declared workpiece minus protrusions removed by earlier remove/trim operations; union of per-protrusion C2 hulls",
+    "samples": 675,
+    "ik_worst": {
+     "position_error_m": 3.155320548926104e-06,
+     "rotation_error_rad": 1.301168909262262e-06
+    },
+    "min_reference_edge_local_z_m": 0.020200000000000003,
+    "workpiece_world_z_m": 0.019999999999999997,
+    "board_top_world_z_m": 0.019999999999999997,
+    "worst_m_or_rad": {
+     "joint_limit_margin": {
+      "value": 0.5853251218795776,
+      "threshold": 0.05,
+      "label": "SKIM:p2",
+      "pair": null
+     },
+     "gripper_pad_clearance": {
+      "value": 0.01640186513835384,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "arm0_left_finger_visual_hull",
+       "static_flat_board"
+      ]
+     },
+     "franka1_collision": {
+      "value": 0.15304985582470465,
+      "threshold": 0.005,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_hand_c",
+       "arm1_link2_c"
+      ]
+     },
+     "franka_workcell_collision": {
+      "value": 0.048648058552296355,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "arm0_hand_capsule",
+       "static_table"
+      ]
+     },
+     "knife_handle_clearance": {
+      "value": 0.012145523332197239,
+      "threshold": 0.005,
+      "label": "SKIM:p2",
+      "pair": [
+       "tool_handle",
+       "static_flat_board"
+      ]
+     },
+     "blade_collision": {
+      "value": 4.9200801094702615e-05,
+      "threshold": 0.0,
+      "label": "PRE_CUT:p1",
+      "pair": [
+       "tool_blade",
+       "static_workpiece_base"
+      ]
+     },
+     "wrist_camera_clearance": {
+      "value": 0.05365966428039016,
+      "threshold": 0.002,
+      "label": "RETURN_HOME",
+      "pair": [
+       "arm0_d405_Housing",
+       "arm0_link6_c"
+      ]
+     },
+     "franka_self_collision": {
+      "value": 0.021704217261959136,
+      "threshold": 0.002,
+      "label": "REORIENT:p0",
+      "pair": [
+       "arm0_link7_c",
+       "arm0_link5_c2"
+      ]
+     },
+     "joint_continuity": {
+      "value": -0.023933352902531624,
+      "threshold": -0.06,
+      "label": "RETURN_HOME",
+      "pair": null
+     }
+    },
+    "lowest_point_above_board_top_m": null,
+    "wall_s": 14.5
+   }
+  ]
+ },
+ "native": {
+  "workcell_003": {
+   "status": "FAIL",
+   "error": "RuntimeError('Runtime camera pose does not match its own optical prim: wrist_d405_0; runtime=[ 0.07487077 -0.17361817  0.13188371] expected=[-0.11307343 -0.04497887  0.37138966]')",
+   "task_id": "CFG-bar_flat_board-sever_mid-74cbdae6",
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "command": ".deps/isaacsim-venv/bin/python scripts/run_wp12_flat_board_native.py --out artifacts/wp12/workcell_003 --gpu 0",
+   "seed": 42,
+   "device": "cuda:0",
+   "process": {
+    "returncode": 0,
+    "wall_s": 273.7
+   },
+   "wall_s": 271.2,
+   "pregrasp": {
+    "status": "PASS_STABLE_GRASP"
+   },
+   "settle": {
+    "steps": 100,
+    "wall_s": 189.86634349300584,
+    "centroid_drift_norm_m": 0.00011177761981192152,
+    "horizontal_drift_norm_m": 3.683067318766462e-08,
+    "max_particle_displacement_m": 0.00014638955017444802,
+    "bottom_layer_z_change_m": -6.96200272674711e-05,
+    "labels_changed": false,
+    "initial": {
+     "time_s": 0.0,
+     "particles": 96000,
+     "centroid_local_m": [
+      0.0,
+      0.0,
+      0.010000000018044375
+     ],
+     "min_z_local_m": 0.0005000000237487257,
+     "particles_below_board_top": 0,
+     "max_speed_m_s": 0.0,
+     "mean_speed_m_s": 0.0,
+     "min_det_F": 1.0
+    },
+    "final": {
+     "time_s": 2.0,
+     "particles": 96000,
+     "centroid_local_m": [
+      2.5570102782997613e-08,
+      2.6507891864942698e-08,
+      0.009888222404300298
+     ],
+     "min_z_local_m": 0.0004293412494007498,
+     "particles_below_board_top": 0,
+     "max_speed_m_s": 2.9831758639703236e-06,
+     "mean_speed_m_s": 1.1028714357591428e-06,
+     "min_det_F": 0.9977335042048164
+    }
+   },
+   "coupled_approach": null,
+   "knife_board_probe": {
+    "probe_x_local_m": 0.12,
+    "press_depth_commanded_m": 0.002,
+    "descent_speed_m_s": 0.002,
+    "board_top_world_z_m": 0.01,
+    "steps": 634,
+    "wall_s": 45.16374042000098,
+    "first_contact_commanded_edge_local_z_m": 0.00035999999999997666,
+    "first_contact_knife_lowest_minus_board_top_m": 2.3348482348917177e-10,
+    "min_knife_lowest_minus_board_top_m": -8.327159303246623e-08,
+    "max_knife_penetration_into_board_m": 8.327159303246623e-08,
+    "min_fixture_contact_separation_m": null,
+    "max_fixture_contact_force_n": 0.0,
+    "hold_mean_fixture_contact_force_n": 0.0,
+    "max_table_contact_force_n": 0.0,
+    "max_grasp_slip_translation_m": 2.382267202552654e-05,
+    "max_grasp_slip_rotation_rad": 0.0016186412769069105,
+    "final_grasp_slip_translation_m": 2.3462162100657617e-05,
+    "final_grasp_slip_rotation_rad": 0.001609083922629025,
+    "max_joint_tracking_error_rad": 0.05516982078552246,
+    "min_bilateral_loaded_tool_fraction": 1.0,
+    "trace": "knife_board_probe.jsonl"
+   },
+   "images": [
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/start_wrist_d405_0_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/start_wrist_d405_1_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/start_global_d455_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/start_presentation_overview_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/start_presentation_closeup_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/after_settle_wrist_d405_0_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/after_settle_wrist_d405_1_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/after_settle_global_d455_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/after_settle_presentation_overview_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_003/after_settle_presentation_closeup_rgb.png"
+   ],
+   "end_cameras": null,
+   "notes": [
+    "Run FAIL (kept): the end-of-run capture() after rigid-only controls failed the runner's own wrist-camera extrinsic check (the runner refreshes camera extrinsics only in coupled steps). All earlier measurements are valid and recorded; the script was changed to render after a coupled approach instead (workcell_004).",
+    "In this run the knife went HOME -> above the board by rigid-only IK interpolation; hold board reaction inferred post hoc from the finger tensor forces (free hover vs hold): [-0.99, 0.16, 4.97] N on the tool; grasp slip max 23.8 um / 1.62 mrad.",
+    "Kit exits through app.close(); the process return code 0 is not task success (status in result.json).",
+    "physical_grasp_trace_00.jsonl was gzip-compressed after the run (lossless; 178 MB -> .gz) because the disk is tight."
+   ]
+  },
+  "workcell_004": {
+   "status": "EXECUTED",
+   "error": null,
+   "task_id": "CFG-bar_flat_board-sever_mid-74cbdae6",
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "command": ".deps/isaacsim-venv/bin/python scripts/run_wp12_flat_board_native.py --out artifacts/wp12/workcell_004 --gpu 0",
+   "seed": 42,
+   "device": "cuda:0",
+   "process": {
+    "returncode": 0,
+    "wall_s": 793.6
+   },
+   "wall_s": 792.3,
+   "pregrasp": {
+    "status": "PASS_STABLE_GRASP"
+   },
+   "settle": {
+    "steps": 100,
+    "wall_s": 151.38774099999864,
+    "centroid_drift_norm_m": 0.00011178446796645458,
+    "horizontal_drift_norm_m": 4.234118831014265e-08,
+    "max_particle_displacement_m": 0.00014641859204207554,
+    "bottom_layer_z_change_m": -6.962002572133012e-05,
+    "labels_changed": false,
+    "initial": {
+     "time_s": 0.0,
+     "particles": 96000,
+     "centroid_local_m": [
+      0.0,
+      0.0,
+      0.010000000018044375
+     ],
+     "min_z_local_m": 0.0005000000237487257,
+     "particles_below_board_top": 0,
+     "max_speed_m_s": 0.0,
+     "mean_speed_m_s": 0.0,
+     "min_det_F": 1.0
+    },
+    "final": {
+     "time_s": 2.0,
+     "particles": 96000,
+     "centroid_local_m": [
+      -4.223860984590525e-08,
+      -2.9455162196730574e-09,
+      0.009888215558096818
+     ],
+     "min_z_local_m": 0.0004293428501114249,
+     "particles_below_board_top": 0,
+     "max_speed_m_s": 3.387391916265782e-06,
+     "mean_speed_m_s": 1.744648494015223e-06,
+     "min_det_F": 0.9977355229014985
+    }
+   },
+   "coupled_approach": {
+    "steps": 400,
+    "wall_s": 581.2457180299971,
+    "final_position_error_m": 0.00257576088123258,
+    "final_rotation_error_rad": 0.0155437127667009,
+    "material_labels_changed": false
+   },
+   "knife_board_probe": {
+    "probe_x_local_m": 0.12,
+    "press_depth_commanded_m": 0.002,
+    "descent_speed_m_s": 0.002,
+    "board_top_world_z_m": 0.01,
+    "steps": 435,
+    "wall_s": 30.43371835599828,
+    "first_contact_commanded_edge_local_z_m": -0.0007600000000000234,
+    "first_contact_knife_lowest_minus_board_top_m": -2.2768611789361626e-08,
+    "min_knife_lowest_minus_board_top_m": -5.6830892167583635e-08,
+    "max_knife_penetration_into_board_m": 5.6830892167583635e-08,
+    "min_fixture_contact_separation_m": null,
+    "max_fixture_contact_force_n": 0.0,
+    "hold_mean_fixture_contact_force_n": 0.0,
+    "max_table_contact_force_n": 0.0,
+    "free_hover_finger_force_on_tool_world_n": [
+     -0.00019873606964580402,
+     -0.0003414268109434726,
+     0.8700072952565764
+    ],
+    "tool_weight_n": 0.8694908284533833,
+    "hold_mean_inferred_board_force_on_tool_world_n": [
+     -0.43276541625893505,
+     -0.01938266032617686,
+     3.0278445527481206
+    ],
+    "max_inferred_board_normal_force_n": 3.446463841201833,
+    "fixture_sensor_contact_pairs_total": 1098,
+    "force_scope": "max_fixture_contact_force_n reads the native tensor view, which is filtered to fingers/palm (so 0 by construction); the board reaction is the quasi-static inference above.",
+    "max_grasp_slip_translation_m": 1.6010801679006702e-06,
+    "max_grasp_slip_rotation_rad": 8.467279695462026e-05,
+    "final_grasp_slip_translation_m": 1.0539752445034188e-06,
+    "final_grasp_slip_rotation_rad": 5.761085362528393e-05,
+    "max_joint_tracking_error_rad": 0.05215919017791748,
+    "min_bilateral_loaded_tool_fraction": 1.0,
+    "trace": "knife_board_probe.jsonl"
+   },
+   "images": [
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/start_wrist_d405_0_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/start_wrist_d405_1_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/start_global_d455_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/start_presentation_overview_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/start_presentation_closeup_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/after_settle_wrist_d405_0_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/after_settle_wrist_d405_1_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/after_settle_global_d455_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/after_settle_presentation_overview_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/after_settle_presentation_closeup_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/knife_over_board_wrist_d405_0_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/knife_over_board_wrist_d405_1_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/knife_over_board_global_d455_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/knife_over_board_presentation_overview_rgb.png",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_004/knife_over_board_presentation_closeup_rgb.png"
+   ],
+   "end_cameras": "NOT_RUN: the runner refreshes wrist-camera extrinsics only in coupled steps, so capture() after rigid-only controls fails its own extrinsic check (workcell_003)",
+   "notes": [
+    "Coupled approach (cutting disabled) did not reach the 0.5 mm / 0.5 deg stop rule within 400 steps: final error 2.58 mm / 15.5 mrad (runner controller tracking residual); the rigid-only descent therefore started from that pose, which is why first contact happened at commanded edge z -0.76 mm. Reported, not a workcell failure.",
+    "Board force: the native tool tensor view is filtered to fingers/palm, so max_fixture_contact_force_n is 0 by construction; the contact sensor lists 1098 tool-board pair reports; the board reaction is inferred quasi-statically from the finger forces (free-hover finger force 0.870 N = tool weight 0.869 N).",
+    "physical_grasp_trace_00.jsonl gzip-compressed after the run (lossless)."
+   ]
+  }
+ },
+ "native_verdicts": {
+  "start_render": "PASS (global D455, both wrist D405 and presentation overview/close-up PNGs; presentation never an observation)",
+  "gravity_settle": "PASS: 2.0 s coupled, horizontal centroid drift 4.2e-8 m, vertical settle -0.112 mm (elastic), max particle displacement 0.146 mm, 0 particles below the board top, min det F 0.9977, no labels",
+  "knife_board_no_penetration": "PASS: commanded edge 2 mm below the board top; knife lowest point stays at the board top (max penetration 5.7e-8 m), board reaction about 3.0 N (hold mean, inferred), max 3.4 N",
+  "grasp_slip_during_press": "PASS: max 1.6 um / 0.085 mrad (workcell_004); 23.8 um / 1.62 mrad at 5.0 N (workcell_003)",
+  "end_render_after_rigid_controls": "NOT_RUN (runner limitation, see notes)"
+ }
+}

@@ -877,9 +877,46 @@ class LiveIsaacSimCutting:
         if plan["table"] is not None:
             bind_physics_material(stage,stage.GetPrimAtPath("/World/Table"),plan["table"]["physics_material"])
         table=UsdGeom.Xformable(stage.GetPrimAtPath("/World/Table"))
+        table_box=getattr(task,"table_box_world",None)
         for op in table.GetOrderedXformOps():
             if op.GetOpType()==UsdGeom.XformOp.TypeTranslate:
-                op.Set(Gf.Vec3d(0,0,task.table_top_world_z_m-.025))
+                op.Set(Gf.Vec3d(0,0,task.table_top_world_z_m-.025) if table_box is None else Gf.Vec3d(*table_box[0]))
+            elif op.GetOpType()==UsdGeom.XformOp.TypeScale and table_box is not None:
+                op.Set(Gf.Vec3f(*table_box[1]))
+        if table_box is not None:
+            # WP-12 flat-board workcell (ADR 0017): the table box (visual = PhysX collider) comes from the same
+            # workcell record as the board; appearance only below (no geometry/physics change).
+            self._author_flat_board_appearance(task)
+
+    def _author_flat_board_appearance(self, task):
+        """Preview-surface looks for the flat-board workcell (wood board, light table, steel blade); visual only."""
+        from pxr import Gf, Sdf, UsdGeom, UsdShade
+        stage=self.stage
+        record=task.flat_board_record
+
+        def surface(name, color, roughness, metallic=0.):
+            material=UsdShade.Material.Define(stage,"/World/FlatBoardLooks/"+name)
+            shader=UsdShade.Shader.Define(stage,str(material.GetPath())+"/Surface")
+            shader.CreateIdAttr("UsdPreviewSurface")
+            shader.CreateInput("diffuseColor",Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*map(float,color)))
+            shader.CreateInput("roughness",Sdf.ValueTypeNames.Float).Set(float(roughness))
+            shader.CreateInput("metallic",Sdf.ValueTypeNames.Float).Set(float(metallic))
+            material.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(),"surface")
+            return material
+        board=surface("BambooBoard",record["cutting_board"]["display_color_rgb"],.55)
+        for index,_ in enumerate(task.fixture_boxes_local):
+            UsdShade.MaterialBindingAPI.Apply(stage.GetPrimAtPath(f"/World/TaskFixture/Box_{index}")).Bind(board)
+        table_prim=stage.GetPrimAtPath("/World/Table")
+        UsdGeom.Gprim(table_prim).CreateDisplayColorAttr([Gf.Vec3f(*map(float,record["table"]["display_color_rgb"]))]) \
+            if table_prim.IsA(UsdGeom.Gprim) else None
+        UsdShade.MaterialBindingAPI.Apply(table_prim).Bind(surface("Table",record["table"]["display_color_rgb"],.7),
+                                                           UsdShade.Tokens.strongerThanDescendants)
+        if getattr(self,"tool_path",None):
+            steel=surface("SteelBlade",(.86,.88,.9),.22,.85)
+            for prim in stage.Traverse():
+                path=str(prim.GetPath())
+                if path.startswith(self.tool_path+"/") and "blade" in prim.GetName().lower() and prim.IsA(UsdGeom.Mesh):
+                    UsdShade.MaterialBindingAPI.Apply(prim).Bind(steel)
 
     def body_poses(self):
         positions,orientations=self.rigid_links.get_world_poses()

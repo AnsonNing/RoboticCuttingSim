@@ -260,7 +260,14 @@ class GeometryModel:
             dims = g['physical_dimensions_m']
             add(-1, box=(dims['width']/2, dims['height']/2, dims['depth']/2), xform=tf(np.asarray(g['T_world_camera'])),
                 label='static_global_d455', group='static', role='global_camera')
-            add(-1, box=(.9, .6, .025), xform=wp.transform(wp.vec3(0, 0, -.035)), label='static_table', group='static', role='table')
+            # WP-12 (ADR 0017): a task whose workcell declares its table box (flat-board workcell) uses it;
+            # every other task keeps the historical 1.8 x 1.2 m table with its top at z = -0.01.
+            table_box = getattr(task, 'table_box_world', None)
+            if table_box is None:
+                add(-1, box=(.9, .6, .025), xform=wp.transform(wp.vec3(0, 0, -.035)), label='static_table', group='static', role='table')
+            else:
+                add(-1, box=tuple(map(float, table_box[1])), xform=wp.transform(wp.vec3(*map(float, table_box[0])), wp.quat_identity()),
+                    label='static_table', group='static', role='table')
             T = task.T_world_workpiece
             for fx in task.fixture_boxes_local:
                 Tb = T.copy()

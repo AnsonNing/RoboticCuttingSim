@@ -103,6 +103,10 @@ class MotionChecker:
         labels = list(labels) if labels is not None else [None]*len(qs)
         lower, upper = self.kin.lower, self.kin.upper
         worst = {}
+        # WP-12 flat-board workcell (ADR 0017): while the blade may touch material (contact_free/contact_allowed)
+        # it may reach the rigid board top but never enter it; free-space samples keep the C2 1 mm clearance.
+        record = getattr(self.task, "flat_board_record", None)
+        board_contact = None if record is None else float(record["preflight"]["blade_board_contact_min_distance_m"])
 
         def note(check, value, threshold, sample, **extra):
             slack = value-threshold
@@ -120,6 +124,8 @@ class MotionChecker:
             for (subject, target), (dist, g, h) in self.geo.evaluate().items():
                 if subject == "blade" and target == "workpiece":
                     threshold = blade_workpiece_threshold(mode)
+                elif subject == "blade" and target == "board" and board_contact is not None and mode != "free":
+                    threshold = board_contact
                 else:
                     threshold = c2.pair_threshold(subject, target, False)
                 if threshold is None:
