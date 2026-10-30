@@ -3,11 +3,12 @@
 ## 進行中：WP-12（2026-10-30，分支 `claude/wp12-physical-cut-surfaces`，起點 main `fbe99bd`）
 
 - 規格：[WP-12 規格](WP12_SPECIFICATION.md)；計畫：[WP-12 計畫](WP12_PLAN.md)。
-- 目前：Phase 0。已完成：移除另一專案縮寫並加 CPU 守門測試（`ce547f9`，`tests/test_repo_naming.py`）。
-- 已完成：切面技術研究（`3f13379`，[報告](reports/WP12_SURFACE_TECH_REVIEW.md)）：建議 `cut_aware_surface_v1`，以 1 mm 粒子格為 reference grid，link 是否切斷完全由兩端 side code 是否衝突決定，Hermite 資料由唯讀 recorder `cut_events_v1` 取得。
-- 執行中（背景 agent）：baseline freeze（`artifacts/wp12/baseline/`，`docs/reports/WP12_BASELINE_AUDIT.md`，cuda:1）；Phase 2a 平板工作台（`artifacts/wp12/workcell_*`，`docs/reports/WP12_WORKCELL.md`，ADR 0017，cuda:0）；Phase 3 Layer 2 `cut_events_v1` recorder（`src/robotic_cutting_sim/cut_events.py`，`artifacts/wp12/cut_events_001/`）。
-- 下一步：兩份報告完成後定案 Phase 1 指標方法與 Phase 3 架構，開始 Phase 1 診斷與 Phase 2 工作台（可平行）。
-
+- Phase 0 完成：縮寫移除＋守門測試（`ce547f9`）、計畫（`1c91605`）、技術研究（`3f13379`）、baseline audit（`2df1e13`：8 個場景全部重現凍結結果；CPU 1196 passed／5 xfail）。
+- Phase 2a 完成（`ec3e8a7`，[報告](reports/WP12_WORKCELL.md)，ADR 0017）：`blade_master_flat_board_v1` 一塊完整木板直接放桌面、無墊高；刀刃停在板面 +0～+0.375 mm 可完全切斷，PhysX 擋住刀不穿板。
+- Phase 3 Layer 2 完成（`403870f`）：`cut_events_v1` 唯讀 recorder，物理不變，開銷約 0.8%。
+- 執行中（背景 agent）：Phase 1 切面診斷（cuda:1，`artifacts/wp12/phase1_*`，報告 `docs/reports/WP12_SURFACE_DIAGNOSIS.md`，門檻 `configs/wp12/surface_protocol_v1.json`）；Phase 2b Native 驗收（cuda:0，`artifacts/wp12/workcell_live_*`）。
+- 下一步：Phase 1 完成後先 commit 凍結門檻，再做 Phase 3 Layers 3–6。
+- 事件紀錄：2026-10-30 23:26 KST，`artifacts/wp11/phaseE/` 下的 `physics_state.npz`（約 18 GB）被刪除以釋放磁碟，留下清單 `artifacts/wp11/phaseE/DELETED_NPZ_20261030.txt`；三個 WP-12 agent 都表示不是自己刪的，來源不明。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只能比 verdict 與指標，不能逐粒子比。已要求所有 agent 只刪自己建立的輸出。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
 

@@ -82,5 +82,16 @@ and opt-in. Material parameters remain provisional and uncalibrated.
 
 | Phase | State | Commits / evidence |
 | --- | --- | --- |
-| 0 | in progress: acronym removal and guard test done (`ce547f9`); baseline freeze and technology review running | |
-| 1–7 | not started | |
+| 0 | done: acronym removal + guard (`ce547f9`), plan (`1c91605`), technology review (`3f13379`), baseline audit: 8/8 scenes reproduce frozen verdicts, CPU 1196 passed (`2df1e13`) | [audit](reports/WP12_BASELINE_AUDIT.md), [review](reports/WP12_SURFACE_TECH_REVIEW.md) |
+| 1 | in progress: surface diagnosis, G1–G8, debug viewer, frozen surface protocol | |
+| 2 | 2a done (`ec3e8a7`): profile, single-source geometry, through-cut study (A+B), Native settle and knife-on-board; 2b in progress: live Native cutting acceptance on the board, old-vs-new comparison | [workcell report](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md) |
+| 3 | Layer 2 `cut_events_v1` recorder done (`403870f`); Layers 3–6 after the Phase 1 gate | |
+| 4–7 | not started | |
+
+**Phase 0 gate decision (2026-10-31).** Architecture: Approach B on the 1 mm particle
+lattice (review §6), links cut iff endpoint codes conflict, Hermite data from
+`cut_events_v1`, per-side representatives, F-corrected same-side embedding;
+`particle_surface_v1` kept as baseline and fallback; hybrid only if Phase 1/3 data
+require it. Metric method: review §7 (reference, assignment-instant and current
+space; never the target plane alone). Thresholds frozen in
+`configs/wp12/surface_protocol_v1.json` before any Phase 3 measurement.
