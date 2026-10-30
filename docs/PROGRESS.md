@@ -108,7 +108,16 @@
   - 選用的 process 回收（`--recycle-every`）Native run FAIL（Kit 關閉時子 process 先結束，沒寫出結果）；已修正（`16f0ffa`）但未重跑。
   - 重複性診斷（`ce8c810`）：「scripted」與「scripted repeat」設定只差標籤；reset 狀態逐位相同，材料從第 1 步起就有約 1e-7 的差異，刀接觸後放大（97,044 個粒子中 12 個 code 不同）。兩個全新 process 的第一個 episode 也會這樣分歧，與前一個 episode 無關。原因是 `tlmpm_v5` 在 CUDA 上用 float32 atomic add 累加 grid 質量與動量，加總順序每次不同。CPU kinematic 上，接在刻意失敗之後的重複與全新 process 都和 episode 0 逐位相同。結論：不是 reset 洩漏，是 GPU 非確定性；Native 的重複性只到 verdict 層級，宣告的 gate 也只比 verdict，分不出兩者（Test F 的弱點，已記錄）。
 - 磁碟：其餘 86 個 WP-11 之前的舊 artifact 也搬到根磁碟（同樣 rsync＋比對＋symlink）；/mnt/data 25 GB、根磁碟 37 GB。
-- **Phase I 進行中**：rcs-review 審查整個分支；final_v4 live regression（乾淨 worktree，新 run id）。
+- **Phase I 進行中**
+  - **rcs-review：ACCEPT WITH CONDITIONS**（審查到 `651fc0a`）。沒有物理竄改、沒有把幾何刪除或遮罩當成切割、沒有被重新計分或隱藏的失敗，每個 run 都在宣告之後才跑；凍結的檔案逐位不變；headline 數字從錄下的 `physics_state.npz` 重算後全部吻合；Phase A 的參考軌跡從 main 重建後與 fixture 逐位相同。
+  - 合併條件：
+    1. `cutting_surface` 碎片跳過改了凍結的預設行為，要改成版本化 opt-in；
+    2. 跳過紀錄要寫進 episode，並讓 CI 真的跑到；
+    3. `goal_eval_v2` 會忽略不屬於任何步驟的 digit（新增 `goal_eval_v2a`，v2 不改）；
+    4. final_v4 live regression PASS；
+    5. 最終 HEAD 的 CI 綠燈。
+  - 其他應修項目：path_v3 bias 沒有 anti-windup；info dict 帶出 privileged 值；被拒絕的動作仍會放開夾爪；v5 的 cut index 沒有邊界檢查；C5／C5b 有 7 顆底材邊緣粒子留在切面上方 3.6–12 mm 但沒有在報告裡揭露；Test C 的 22 mm 凹陷是 heightfield 對位假象（長條滑了 0.77 mm），背後有平均 1.4 mm、最深 3.2 mm 的真實壓痕。
+  - 三個修正代理（R1 表面／揭露、R2 評估器 v2a＋邊界檢查＋ρ = 10° 與 v5 K = 5 負對照、R3 控制器／API）正在進行；final_v4 regression 進行中。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
