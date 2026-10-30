@@ -222,11 +222,18 @@ Known limits, reported and not hidden:
 
 ### Frozen baseline still reproduces
 
-The `final_v4` BladeMaster set below was rerun live after the WP-11 changes
+The `final_v4` BladeMaster set below was rerun live twice after the WP-11
+changes, each time from a clean checkout
 ([regression report](docs/reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)):
-- Every verdict is unchanged, and so is the task and protocol identity.
-- The documented strict FAILs (Demo 1b location and window, Demo 2 precision 5/8) repeat.
-- Metrics stay within GPU nondeterminism.
+- **Runs:** 001 at `d57d0f2`, and 002 at `6c36e39`, after the review fixes.
+- **Results:** in both runs, all four demos match `live_20261029_law8_final`
+  in verdicts and in task, protocol and plan identity. The documented strict
+  FAILs repeat (Demo 1b location and window, Demo 2 precision 5/8). Metrics
+  stay within GPU nondeterminism.
+- **Merge commit:** final_v4 was not rerun at the merge commit itself. The
+  only later code change on the final_v4 path is a config guard that is
+  always false for these registered tasks; the other changed lines sit behind
+  options final_v4 does not use (`on_capture`, skip mode).
 
 ## Three BladeMaster-style demos (frozen baseline, live Native Isaac Sim)
 

@@ -127,6 +127,12 @@
     - ADR 0014 改正為 CPU 逐位相同。
     - [負對照](reports/WP11_REVIEW_NEGATIVE_CONTROLS.md)：ρ = 10° 的 C4 組 7 列 PASS（標為 live 之後補做）；`tlmpm_v5` K = 5 的 7 列 PASS，數值與 v4 對應列相同。全套 CPU 測試 1190 passed、5 xfailed。
 - README 與文件索引加入 WP-11 章節（影片、泛化、policy API、law 8 適用範圍）。
+  - **rcs-review 第二次（delta）審查：ACCEPT WITH CONDITIONS**。
+    - 修正都正確；「configured task 預設 skip」可接受為 opt-in。
+    - 新發現 `on_capture`＋skip 模式在拍照時會中止，已修正（`b90658d`）：拍照只更新顯示網格，評估才檢查。skip 模式只允許 configured task；collector 也檢查 info 的 privileged key。
+    - README 數字修正（`cbd80d1`）：round 2 的族群、PRE-CUT 路徑稽核 FAIL、Test C 壓痕、slot 上限、v2 缺陷與 v2a、鈍握柄 v1 FAIL、只測過 rake 45°、F3 不收斂的細節。
+    - Phase R 報告措辭收窄到實際測到的範圍（`495d639`）。
+  - **final_v4 regression 002 PASS**（`6c36e39`，乾淨 worktree，GPU 1，36 min，`abde831`）：四個 demo 的 verdict、identity、已知 strict FAIL 都與參考及 001 相同。其中 Demo 1b、2 跑的時候，另一位使用者的工作佔用同一張 GPU，Demo 2 開始時只剩 8.4 GiB 可用，低於宣告的 12 GB 下限；結果沒有受影響。之後的 commit 在 final_v4 路徑上只有一行一定為 false 的設定檢查，所以最終 HEAD 沒有再跑（NOT_RUN，原因已記錄）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
