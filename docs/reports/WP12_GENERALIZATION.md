@@ -4,12 +4,17 @@ Date: 2026-10-31 (KST). Branch `claude/wp12-physical-cut-surfaces` (HEAD `a348b2
 other agents). Spec: [WP12_SPECIFICATION.md](../WP12_SPECIFICATION.md) Phase 5 (§5.1–5.8).
 
 > **Status: DRAFT infrastructure. No formal benchmark result exists.** The benchmark file
-> [`configs/wp12/benchmark_v1_DRAFT.json`](../../configs/wp12/benchmark_v1_DRAFT.json) is **not frozen**. The supported
-> envelope [`configs/wp12/supported_envelope_v1.json`](../../configs/wp12/supported_envelope_v1.json) is a **TEMPLATE**:
-> it has fields and no bounds. The orchestrator fills the bounds after the Phase 4 xhigh envelope decision. Every run
-> below is **DEV**: development seeds only, under `artifacts/wp12/phase5_dev_NNN`. No benchmark or held-out seed was
-> preflighted or run. Kinematic results are **kinematic ideal tracking**, never live results. Material parameters are
-> provisional and uncalibrated.
+> [`configs/wp12/benchmark_v1_DRAFT.json`](../../configs/wp12/benchmark_v1_DRAFT.json) is **not frozen**.
+>
+> **Update 2026-10-31.** The supported envelope
+> [`configs/wp12/supported_envelope_v1.json`](../../configs/wp12/supported_envelope_v1.json) is **DECLARED** by the
+> Phase 4 xhigh decision ([D2](WP12_PHASE4_XHIGH_DECISION.md)). The DRAFT was re-declared per decision D5 (§5 below).
+> It stays a DRAFT until the E2 envelope confirmation ([`phase4_e2_protocol_v1.json`](../../configs/wp12/phase4_e2_protocol_v1.json))
+> and the envelope version that follows from it.
+>
+> Every run below is **DEV**: development seeds only, under `artifacts/wp12/phase5_dev_NNN`. No benchmark or held-out
+> seed was preflighted or run. Kinematic results are **kinematic ideal tracking**, never live results. Material
+> parameters are provisional and uncalibrated.
 
 Nothing in `tlmpm*.py`, law 8, any goal threshold, `goal_eval_v1/v2/v2a`, `blade_master_flat_board_v1`, `final_v4` or
 the WP-11 records was changed. The benchmark builds every task from scene and goal configs using the existing goal types.
@@ -21,9 +26,9 @@ The solver has no task-specific branch.
 | --- | --- | --- |
 | Generators, feasibility classifier, execution classes, summarizer, Native sub-sampler, freeze check, quality blocks | `src/robotic_cutting_sim/generalization_wp12.py` | `generalization.py` (WP-11 Phase E): plane helpers, `compile_sample` (solver and duration rules), `staged_preflight` (`staged_v2`), `classify_material`, `episode_metrics`, `history_stride` |
 | Benchmark definition (DRAFT) | `configs/wp12/benchmark_v1_DRAFT.json` | WP-11 Phase E dimension, cut-plane, sever and duration rules |
-| Envelope (TEMPLATE) | `configs/wp12/supported_envelope_v1.json` | Pending statements of `WP12_CUTTING_PHYSICS.md` C6 and E1, as notes |
+| Envelope (DECLARED, xhigh D2) | `configs/wp12/supported_envelope_v1.json` | `WP12_PHASE4_XHIGH_DECISION.md` D2: admissible bounds per rule; the notes split each range into VALIDATED / PARTIALLY_VALIDATED / NOT_RUN / KNOWN_FAILURE parts |
 | Runner | `scripts/run_wp12_phase5.py` | `scripts/run_generalization.py` (episode loop, queue, GPU check), `scripts/run_wp12_workcell_live.py` (Native launch pattern) |
-| CPU tests | `tests/test_wp12_generalization.py` (31 tests) | — |
+| CPU tests | `tests/test_wp12_generalization.py` (38 tests) | — |
 
 ### 1.1 Task families A–H (spec §5.1) on `blade_master_flat_board_v1`
 
@@ -34,13 +39,13 @@ The solver is `tlmpm_v5`, law 8, S = 16 and `max_cuts` = planned digits. The pla
 | Family | Builder | Variants (goal types) |
 | --- | --- | --- |
 | A single straight cut | `single_cut` | `vertical` (sever, node-plane snapped) |
-| B oblique and direction-varied | `oblique_cut` | `tilt` (normal tilted about local y), `plane_yaw` (normal yawed about z), `advance_tilt` (slanted advance in a vertical plane); sever |
-| C near-horizontal trim | `trim` | `skim_protrusion` (remove_protrusions), `trim_plane_protrusion` (trim_plane at z = H over the bump), `trim_layer` (trim_plane over the full length at z = H − depth) |
+| B oblique and direction-varied | `oblique_cut` | `tilt` (normal tilted about local y), `plane_yaw` (normal yawed about z), `advance_tilt` (slanted advance in a vertical plane); sever. Since D5 the DRAFT uses `tilt_slotted` (tilt on the explicit Option D slotted variant, board fixed by the variant) and `tilt_solid` (tilt on the solid board, own dimension `cut_tilt_solid_deg`) instead of `tilt`, and B has **no ID stratum** (§5) |
+| C near-horizontal trim | `trim` | `skim_protrusion` (remove_protrusions), `trim_plane_protrusion` (trim_plane at z = H over the bump), `trim_layer` (trim_plane over the full length at z = H − depth; removed from the DRAFT by D5, a known failure) |
 | D multiple sequential slices | `multi_slice` | `multi_plane_sever` (K planes in the declared `cut_order`), `cut_cut` (sequence[sever, sever]) |
 | E multiple protrusion removal | `multi_protrusion` | `remove_all`, `remove_selected`, `bumps_sequential` (sequence of remove_protrusions [p_i]), `trim_trim` (sequence of two trim_plane) |
 | F mixed sever + trim | `sever_trim` | `sever_then_trim`, `trim_then_sever` (sequences) |
 | G cut + push / relocation | `cut_push` | `cut_push` (sequence[sever, move_piece kerf_face]), `trim_clear_chip` (sequence[remove [p0], move_piece surface_sweep over the chip box]) |
-| H shape / pose / support | `shape_pose_support` | `sever`, `trim`. This is the only family that declares `board_kind` (solid or the explicit 8 mm slotted variant, one groove under the cut plane) and board dimensions. |
+| H shape / pose / support | `shape_pose_support` | `sever`, `trim`. This is the only family that randomizes `board_kind` (solid or the explicit 8 mm slotted variant, one groove under the cut plane) and board dimensions. B `tilt_slotted` fixes the slotted variant by its name. |
 
 **Board rule.** `flat_board_v1` has no oriented TLMPM fixture boxes, so the board is co-rotated with the workpiece
 (`cutting_board.yaw_deg = workpiece yaw`). Its centre stays at the record value, and the workpiece z is the board top.
@@ -262,13 +267,13 @@ CPU tests: `.venv/bin/python -m pytest tests/test_wp12_generalization.py` → **
 
 ## 3. What waits for the Phase 4 envelope (and before freezing)
 
-1. **Fill `supported_envelope_v1.json`** (status `DECLARED`, every bound, evidence references) after the Phase 4 xhigh
-   decision. Inputs: the ρ envelope (C6: ρ ≤ 44° declared for law 8), the oblique-on-flat-board E1 decision (solid and
-   slotted), material admission and support (Phase 4c), the resolution study (workpiece height), the digit limit, and
-   the supported operation patterns (class (c) residual chips in sequential cuts).
-2. **Re-declare the ID ranges inside that envelope** (`freeze_problems` flags every ID range that reaches outside a
-   mapped rule; e.g. a rake ceiling below 35° flags C/E/F/G/H). Revisit the B tilt ID range (±20°) against the E1
-   result.
+1. ~~Fill `supported_envelope_v1.json`~~ **Done** (xhigh decision D2, 2026-10-31).
+2. ~~Re-declare the ID ranges inside that envelope~~ **Done** per D5 (§5). `freeze_problems` returns no problem for the
+   re-declared DRAFT and the declared envelope.
+2a. **Run E2** ([`phase4_e2_protocol_v1.json`](../../configs/wp12/phase4_e2_protocol_v1.json), committed before any
+   formal row). Record the outcome as a new envelope version (v1 untouched). Then re-declare: only cells whose E2 rows
+   pass may move into ID (B slotted θ ≤ 20°, φ ≤ 15°, β ≤ 15°; speeds 8–12 / 20–30 mm/s; C `trim_plane_protrusion`,
+   E `trim_trim`, G `cut_push`).
 3. **Confirm the Native result mapping** (`native_execution`) against the Phase 2b analysis, including grasp failures.
 4. **Decide the budget options** (`budget.if_over_budget`) before the freeze, never after results.
 5. **Freeze**: copy to `configs/wp12_benchmark_v1.json` with status FROZEN and a non-DRAFT id. `freeze_problems` must be
@@ -288,3 +293,82 @@ CPU tests: `.venv/bin/python -m pytest tests/test_wp12_generalization.py` → **
 - **Dependency.** The module depends on the Phase 4c files that are still uncommitted (`materials_wp12.py`,
   `configs/materials/materials_wp12_v1.json`, and the `scene_config.py` changes that import `geometry_providers.py`).
   The DRAFT's OOD material ids, and the CFL test, need them. Commit those before or together with these files.
+
+## 5. Re-declaration per the xhigh decision D5 (2026-10-31)
+
+Source: [WP12_PHASE4_XHIGH_DECISION.md](WP12_PHASE4_XHIGH_DECISION.md) D5, with D1 and D2. The envelope is
+[`supported_envelope_v1.json`](../../configs/wp12/supported_envelope_v1.json) (DECLARED). The file stays a **DRAFT**.
+The change is recorded in its `redeclaration_d5` block.
+
+**Rule.** ID uses only VALIDATED cells of the envelope: flat board, `path_v2`, `cutting_tasks_v1`, 1 mm particles,
+4 mm grid, 0.1 ms. "Inside a bound" means admissible for execution, not validated. A family or variant without a
+validated cell is handled in one of two ways:
+- it is absent from ID (B);
+- or it is declared **ID-unconfirmed**: run as declared and reported in full, but outside the §5.7 targets.
+
+### 5.1 Changes
+
+| Item | Before | Now (D5) |
+| --- | --- | --- |
+| Cut / skim speed (ID) | 8–12 / 20–30 mm/s | fixed at **10 / 25 mm/s**, the only validated speeds. OOD shells 4–30 / 10–60 mm/s around them. 8–12 and 20–30 mm/s are E2 rows |
+| Family B | ID + OOD; `tilt` ±20° on the solid board (2 of 10 ID benchmark samples above the 9.9° solid-board bound) | **OOD only.** `tilt_slotted`: explicit Option D slotted variant, OOD θ (20, 34.9]°. `tilt_solid`: new OOD dimension, 0 < \|θ\| ≤ 9.9° on the solid board. `plane_yaw`: OOD (15, 35]°. `advance_tilt`: OOD (15, 30]°. The B ID ranges kept in the file (slotted θ ≤ 20°, φ ≤ 15°, β ≤ 15°) are post-E2 candidates and the base draws of the OOD samples; they are no ID claim |
+| Family C | `skim_protrusion`, `trim_plane_protrusion`, `trim_layer`; OOD includes trim depth | `trim_layer` removed (known failure: the continuous chip never separates). The trim-depth dimension is removed from C, and skim speed is added as a C OOD dimension. `trim_plane_protrusion` is ID-unconfirmed until E2 |
+| Targets (§5.7) | over all ID samples | over population **ID_validated**. `target_scope.id_unconfirmed`: F (all), G (all), C `trim_plane_protrusion`, E `trim_trim`. These are reported separately (`by_id_population`) with their own Wilson intervals |
+| Materials (OOD) | ten profiles | same list. Notes: G_c and friction variants are force-only / weak-effect variants, never counted as generalization of separation. `wp12_stiff_v1` stays and is classified physically_unsupported |
+| Demos | — | `phase7_demos`: Demo 2 = slotted 20° with the planner's 4 mm overtravel (E2 + Native first). Demo 6 = cut → push → trim in one episode (E2 + Native first). Demo 7 = one ID sample of a validated stratum, chosen by the Native rule after the freeze |
+| Strata | 16 (160 benchmark candidates) | **15** (150; held-out 75, dev 30) |
+
+ID_validated cells are: A `vertical`; C `skim_protrusion`; D `multi_plane_sever`, `cut_cut`; E `remove_all`,
+`remove_selected`, `bumps_sequential`; H `sever`, `trim`. B has no ID samples.
+
+### 5.2 Code changes
+
+All in `generalization_wp12.py` and the Phase 5 runner. Physics, goals, thresholds and the planner are unchanged.
+
+- **`freeze_problems` now evaluates rules with a `when` condition.** Finding 2 of the decision: before, it skipped them.
+  - A conditioned rule is checked against a family's ID range when at least one declared ID sample of the family,
+    whose variant reads that dimension, satisfies the condition. A family without an ID stratum is judged on probe
+    builds of its ID seeds.
+  - New: every declared ID sample of every split is evaluated against the envelope. An UNSUPPORTED or PENDING sample is
+    a freeze problem.
+  - On the pre-D5 DRAFT (kept as `tests/fixtures/wp12_benchmark_v1_DRAFT_pre_d5.json`) it now flags:
+    - the B tilt range against `sever_tilt_solid_board`;
+    - exactly the two B ID benchmark samples above 9.9° (`P5_B_ID_benchmark_s52006`, `s52009`), plus `held_out` /
+      `dev` ones;
+    - C `trim_depth_m` and the three C `trim_layer` benchmark samples.
+
+    On the re-declared DRAFT it returns no problem.
+- **New `oblique_cut` variants `tilt_slotted` and `tilt_solid`** (`VARIANT_BOARD_KIND`). `tilt` is kept unchanged for
+  older files.
+- **`target_scope` and `id_population()`**; `summarize(..., population=)` adds `by_id_population` and computes a target
+  that declares `population` over that population only.
+- **The Phase 5 runner's** `declared()` records each declared sample's variant. Its kinematic episode is factored into
+  `kinematic_episode()`, which E2 reuses; behaviour is unchanged.
+- **`tests/test_goal_step_planner_fields.py`** builds its phase5 pin from the pre-D5 snapshot. The pin keeps testing the
+  opt-in step fields, not the DRAFT content.
+
+### 5.3 DEV feasibility on the re-declared DRAFT (`artifacts/wp12/phase5_dev_003`)
+
+```
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase5.py feasibility --split dev \
+    --out artifacts/wp12/phase5_dev_003/feasibility                      # CPU, 3:21 wall, max RSS 654 MB
+.venv/bin/python scripts/run_wp12_phase5.py summarize --split dev \
+    --feasibility artifacts/wp12/phase5_dev_003/feasibility --out artifacts/wp12/phase5_dev_003/summary_dev.json
+```
+
+DEV only, dev seeds, development check of the re-declaration (not a result). 30 / 30 samples classified,
+**26 valid_feasible**. Every ID dev sample is valid_feasible and SUPPORTED by the envelope (`envelope_pending` false
+everywhere). The four infeasible samples are all OOD:
+
+| Sample | Variant | Class | Reason |
+| --- | --- | --- | --- |
+| `P5_B_OOD_dev_s53100` | `tilt_slotted`, θ 32.1° | collision_constrained | knife handle 0.68 mm into the board at HOLD (the planner's 4 mm overtravel). This matches E1: the groove-limit overtravel is unreachable at 20–35°. E2 measures the handle slack at 20° and 25° |
+| `P5_C_OOD_dev_s54101` | `trim_plane_protrusion`, ρ 47.25° | physically_unsupported | `trim_rake_deg` (ρ > 44°) |
+| `P5_G_OOD_dev_s58101` | `trim_clear_chip`, −x sweep | ik_unreachable | APPROACH_PUSH (as in dev_002) |
+| `P5_H_OOD_dev_s59101` | `trim`, yaw beyond 3.2° | scene_geometrically_infeasible | board corner past the table edge (as in dev_002) |
+
+The summary splits the 14 ID dev samples into 9 ID_validated and 5 ID_unconfirmed. The kinematic target is computed
+over the 9 (0 / 9: nothing was executed, all `not_run`).
+
+CPU tests: `tests/test_wp12_generalization.py` **38 passed**. With `test_goal_step_planner_fields`, `test_repo_naming`,
+`test_generalization_round1/2` and `test_wp12_flat_board_workcell`: 139 passed.

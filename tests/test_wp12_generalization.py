@@ -10,6 +10,8 @@ from robotic_cutting_sim import generalization_wp12 as W
 from robotic_cutting_sim.goals import GOAL_TYPES, _TYPE_FIELDS, validate_goal
 from robotic_cutting_sim.scene_config import SceneInfeasible, resolve_scene
 
+PRE_D5_DRAFT = W.ROOT/"tests/fixtures/wp12_benchmark_v1_DRAFT_pre_d5.json"   # the DRAFT as committed in 73c6e43
+
 
 @pytest.fixture(scope="module")
 def config():
@@ -17,8 +19,25 @@ def config():
 
 
 @pytest.fixture(scope="module")
-def template():
+def envelope():
+    """The DECLARED envelope (xhigh decision D2)."""
     return W.load_envelope()
+
+
+def _template_of(envelope):
+    """A synthetic TEMPLATE built from the declared rules: same rules, every bound null (the pre-declaration state)."""
+    env = deepcopy(envelope)
+    env["status"] = "TEMPLATE"
+    for rule in env["rules"]:
+        for key in ("min", "max", "values"):
+            if key in rule:
+                rule[key] = None
+    return env
+
+
+@pytest.fixture(scope="module")
+def template(envelope):
+    return _template_of(envelope)
 
 
 def _declared_envelope(**bounds):
@@ -39,8 +58,40 @@ def test_draft_is_marked_and_thresholds_are_the_goal_defaults(config):
     assert snapshot == current
 
 
-def test_envelope_template_has_fields_only(template):
+def test_declared_envelope_invariants(envelope):
+    """The file is the xhigh D2 declaration: DECLARED, every bound set, every rule with evidence and a note."""
+    assert envelope["status"] == "DECLARED" and envelope["schema"] == W.ENVELOPE_SCHEMA
+    assert "WP12_PHASE4_XHIGH_DECISION" in envelope["decision_ref"]
+    ids = [r["id"] for r in envelope["rules"]]
+    assert len(ids) == len(set(ids))
+    for rule in envelope["rules"]:
+        for key in W._NEEDED[rule["kind"]]:
+            assert rule.get(key) is not None, (rule["id"], key)
+        if rule["kind"] == "range":
+            assert rule["min"] <= rule["max"], rule["id"]
+        assert rule.get("evidence") and rule.get("note"), rule["id"]
+    rules = {r["id"]: r for r in envelope["rules"]}
+    kinds = set(rules["board_kinds"]["values"])
+    assert kinds == {"solid", "slotted"}
+    for rule in envelope["rules"]:
+        for key, value in (rule.get("when") or {}).items():
+            assert key == "board_kind" and value in kinds, rule["id"]
+    # the decision's bounds (D2 table and the paragraph under it)
+    assert rules["trim_rake_deg"]["max"] == 44.0 and rules["trim_rake_deg_min"]["min"] == 9.2
+    assert rules["sever_tilt_solid_board"]["max"] == 9.9 and rules["sever_tilt_solid_board"]["when"] == {"board_kind": "solid"}
+    assert rules["sever_tilt_slotted_board"]["max"] == 34.9 and rules["sever_tilt_slotted_board"]["when"] == {"board_kind": "slotted"}
+    assert rules["trim_skew_abs_deg"]["max"] == 30.0 and rules["sever_plane_yaw_abs_deg"]["max"] == 35.0
+    assert rules["sever_advance_tilt_abs_deg"]["max"] == 30.0 and rules["cut_digits_max"]["max"] == 5
+    assert (rules["workpiece_height_m"]["min"], rules["workpiece_height_m"]["max"]) == (0.004, 0.035)
+    assert (rules["trim_depth_m"]["min"], rules["trim_depth_m"]["max"]) == (0.0, 0.0)   # trim_layer: known failure
+    assert "wp12_stiff_v1" not in rules["material_profiles"]["values"]
+    assert "cutting_tasks_v1" in rules["material_profiles"]["values"]
+
+
+def test_synthetic_template_has_fields_only(template, envelope):
+    """The pre-declaration TEMPLATE state is still representable (built in-test from the declared rules)."""
     assert template["status"] == "TEMPLATE"
+    assert [r["id"] for r in template["rules"]] == [r["id"] for r in envelope["rules"]]
     for rule in template["rules"]:
         for key in ("min", "max", "values"):
             if key in rule:
@@ -179,7 +230,8 @@ def test_slotted_variant_only_where_declared_and_groove_under_the_plane(config):
         sample = W.build_sample(config, family, rs, seed)
         board = sample["scene"]["supports"]["workcell"]["overrides"]["cutting_board"]
         if board.get("kind") == "slotted":
-            assert "board_kind" in config["families"][family]["randomize"], family
+            fixed = W.VARIANT_BOARD_KIND.get((config["families"][family]["builder"], sample["variant"]))
+            assert fixed == "slotted" or "board_kind" in config["families"][family]["randomize"], family
             if sample["variant"] == "sever":
                 x = sample["derived"]["cut_x_local_m"]
                 pose = sample["scene"]["workpiece"]["world_pose"]
@@ -283,12 +335,33 @@ def _sample(config, family="C", rs="ID"):
 PASS = {"status": "PASS"}
 
 
-def test_classifier_valid_feasible_and_pending_envelope(config, template):
+def test_classifier_valid_feasible_and_pending_envelope(config, envelope, template):
+    row = W.classify_feasibility(_sample(config), envelope, compile_fn=lambda s: (_Task(), {"digits_used": 1}),
+                                 preflight_fn=lambda t: PASS, common=config["common"])
+    assert row["feasibility_class"] == "valid_feasible"
+    assert row["envelope_pending"] is False and row["checks"]["envelope"]["status"] == "SUPPORTED"
+    statuses = {r["id"]: r["status"] for r in row["checks"]["envelope"]["rules"]}
+    assert statuses["trim_rake_deg"] == "PASS" and statuses["board_kinds"] == "PASS"
+    assert statuses["sever_tilt_solid_board"] == "NOT_APPLICABLE"   # a skim carries no sever tilt
+    # the synthetic TEMPLATE (null bounds): nothing is evaluated and the sample is pending, never silently supported
     row = W.classify_feasibility(_sample(config), template, compile_fn=lambda s: (_Task(), {"digits_used": 1}),
                                  preflight_fn=lambda t: PASS, common=config["common"])
     assert row["feasibility_class"] == "valid_feasible"
     assert row["envelope_pending"] is True
     assert all(r["status"] in ("NOT_EVALUATED", "NOT_APPLICABLE") for r in row["checks"]["envelope"]["rules"])
+
+
+def test_classifier_declared_envelope_board_dependent_tilt(config, envelope):
+    """sever_tilt_* rules apply by board kind: 9.9 deg on the solid board, 34.9 deg on the explicit slotted variant."""
+    sample = deepcopy(W.build_sample(config, "B", "OOD", W.seed_list(config, "B", "dev", "OOD")[0], split="dev"))
+    for board, tilt, expected in (("solid", 5., "SUPPORTED"), ("solid", 12., "UNSUPPORTED"), ("slotted", 25., "SUPPORTED"),
+                                  ("slotted", 35., "UNSUPPORTED")):
+        params = {**sample["envelope_parameters"], "board_kind": board, "sever_tilt_abs_deg_max": tilt}
+        env = W.evaluate_envelope(envelope, params)
+        assert env["status"] == expected, (board, tilt, env["unsupported_rules"])
+        rows = {r["id"]: r["status"] for r in env["rules"]}
+        other = "sever_tilt_slotted_board" if board == "solid" else "sever_tilt_solid_board"
+        assert rows[other] == "NOT_APPLICABLE"
 
 
 def test_classifier_scene_geometrically_infeasible(config, template):
@@ -392,22 +465,106 @@ def test_envelope_rule_kinds():
     assert pending["status"] == "PENDING" and pending["pending_rules"] == ["h"]
 
 
-def test_freeze_problems(config, template):
-    assert any("TEMPLATE" in p for p in W.freeze_problems(config, template))
-    env = deepcopy(template)
-    env["status"] = "DECLARED"
-    for rule in env["rules"]:
-        for key in ("min", "max"):
-            if key in rule:
-                rule[key] = {"max": 1e9, "min": -1e9}[key]
-        if "values" in rule:
-            rule["values"] = ["cutting_tasks_v1", "solid", "slotted", "dome", "gaussian", "ellipsoid_cap", "ridge"]
-    env["rules"] = [r for r in env["rules"] if r["parameter"] != "operation_pattern"]
-    assert W.freeze_problems(config, env) == []
-    tight = deepcopy(env)
+def test_freeze_problems(config, envelope, template):
+    problems = W.freeze_problems(config, template)
+    assert any("TEMPLATE" in p for p in problems)
+    assert sum("undeclared bound" in p for p in problems) == len(template["rules"])
+    # the re-declared DRAFT (decision D5) is inside the declared envelope: no range or sample problem
+    assert W.freeze_problems(config, envelope) == []
+    tight = deepcopy(envelope)
     next(r for r in tight["rules"] if r["id"] == "trim_rake_deg")["max"] = 30.0
     problems = W.freeze_problems(config, tight)
     assert any("rake_deg" in p and "trim_rake_deg" in p for p in problems)
+    assert any(p.startswith("ID sample P5_C_ID_") and "trim_rake_deg" in p for p in problems)
+
+
+def test_freeze_problems_checks_when_rules(config, envelope):
+    """Rules with a 'when' condition were skipped before (finding 2 of the xhigh decision); they are checked now."""
+    cfg = deepcopy(config)
+    cfg["families"]["H"]["ranges"] = {"ID": {"board_kind": {"choice": ["slotted"]}}}
+    assert W.freeze_problems(cfg, envelope) == []
+    tight = deepcopy(envelope)
+    next(r for r in tight["rules"] if r["id"] == "sever_tilt_slotted_board")["max"] = 15.0
+    problems = W.freeze_problems(config, tight)   # B tilt_slotted ID base reaches 20 deg on the slotted board
+    assert any("family B: ID range of cut_tilt_deg" in p and "sever_tilt_slotted_board" in p for p in problems)
+    assert not any("sever_tilt_solid_board" in p for p in problems)   # tilt_slotted never runs on the solid board
+    loose = deepcopy(config)
+    loose["range_sets"]["ID"]["cut_tilt_solid_deg"] = {"uniform": [-12.0, 12.0]}
+    loose["range_sets"]["OOD"]["cut_tilt_solid_deg"] = {"uniform_outside": {"outer": [-20.0, 20.0], "inner": [-12.0, 12.0]}}
+    problems = W.freeze_problems(loose, envelope)
+    assert any("cut_tilt_solid_deg" in p and "sever_tilt_solid_board" in p for p in problems)
+
+
+def test_freeze_problems_flag_pre_d5_draft(envelope):
+    """The DRAFT before the D5 re-declaration: B 'tilt' ran on the solid board up to 20 deg and C had trim_layer. With
+    'when' rules evaluated, the B range and exactly the B ID samples with |tilt| > 9.9 deg are flagged."""
+    old = W.load_benchmark(PRE_D5_DRAFT)
+    problems = W.freeze_problems(old, envelope)
+    assert any("family B: ID range of cut_tilt_deg" in p and "sever_tilt_solid_board" in p for p in problems)
+    assert any("family C: ID range of trim_depth_m" in p for p in problems)
+    flagged_b = sorted(p.split()[2] for p in problems if p.startswith("ID sample P5_B_ID_benchmark"))
+    expected = []
+    for seed in W.seed_list(old, "B", "benchmark", "ID"):
+        sample = W.build_sample(old, "B", "ID", seed)
+        if sample["variant"] == "tilt" and abs(sample["derived"]["applied_tilt_deg"]) > 9.9:
+            assert sample["envelope_parameters"]["board_kind"] == "solid"
+            expected.append(sample["sample_id"])
+    assert flagged_b == sorted(expected) and len(expected) == 2   # 2 of 10 B ID benchmark samples (decision finding 2)
+    assert all("sever_tilt_solid_board" in p for p in problems if p.startswith("ID sample P5_B_"))
+    assert sum(p.startswith("ID sample P5_C_ID_benchmark") for p in problems) == 3   # the trim_layer samples
+    # without the sample check only the range problems remain
+    assert not any(p.startswith("ID sample") for p in W.freeze_problems(old, envelope, check_samples=False))
+
+
+def test_d5_redeclaration(config, envelope):
+    """Decision D5: B has no ID stratum; tilt goes to the slotted variant; trim_layer is gone; speeds are fixed in ID;
+    F and G (and the E2-dependent variants) are ID-unconfirmed and outside the 5.7 targets."""
+    assert config["status"] == "DRAFT" and "redeclaration_d5" in config
+    assert config["families"]["B"]["range_sets"] == ["OOD"]
+    assert "B_ID" not in {s["id"] for s in W.strata(config)}
+    assert all(f != "B" or rs == "OOD" for f, rs, _, _ in W.sample_ids(config, "benchmark"))
+    assert "trim_layer" not in config["families"]["C"]["variants"]
+    assert "trim_depth_m" not in config["families"]["C"]["randomize"]
+    ident = config["range_sets"]["ID"]
+    assert ident["cut_speed_m_s"]["uniform"] == [0.01, 0.01] and ident["skim_speed_m_s"]["uniform"] == [0.025, 0.025]
+    for split in W.SPLITS:
+        for family, rs, seed, _ in W.sample_ids(config, split):
+            sample = W.build_sample(config, family, rs, seed, split=split)
+            params = sample["envelope_parameters"]
+            board = sample["scene"]["supports"]["workcell"]["overrides"]["cutting_board"]
+            if sample["variant"] == "tilt_slotted":
+                assert board["kind"] == "slotted" and params["board_kind"] == "slotted"
+                x0 = W._plane_x_at(sample["geometry"]["planes"][0], 0.)
+                pose = sample["scene"]["workpiece"]["world_pose"]
+                expected = W._board_frame_x(config["common"], (*pose["translation_m"][:2], pose["yaw_deg"]), x0)
+                assert abs(board["slots"][0]["x_board_m"]-expected) < 1e-6
+            if sample["variant"] in ("tilt_solid", "plane_yaw", "advance_tilt"):
+                assert board.get("kind", "solid") == "solid" and params["board_kind"] == "solid"
+            if sample["variant"] == "tilt_solid":
+                assert 0. < params["sever_tilt_abs_deg_max"] <= 9.9+1e-9
+            if sample["variant"] == "tilt_slotted":
+                assert 20. < params["sever_tilt_abs_deg_max"] <= 34.9+1e-9
+            if rs == "ID":
+                if "cut_speed_m_s" in params:
+                    assert params["cut_speed_m_s"] == 0.01
+                if "skim_speed_m_s" in params:
+                    assert params["skim_speed_m_s"] == 0.025
+                assert W.evaluate_envelope(envelope, params)["status"] == "SUPPORTED", sample["sample_id"]
+    population = {(f, v): W.id_population(config, f, v) for f, fam in config["families"].items() for v in fam["variants"]}
+    assert population[("F", "sever_then_trim")] == population[("F", "trim_then_sever")] == "ID_unconfirmed"
+    assert all(population[("G", v)] == "ID_unconfirmed" for v in config["families"]["G"]["variants"])
+    assert population[("C", "trim_plane_protrusion")] == population[("E", "trim_trim")] == "ID_unconfirmed"
+    validated = {k for k, v in population.items() if v == "ID_validated"}
+    assert validated == {("A", "vertical"), ("C", "skim_protrusion"), ("D", "multi_plane_sever"), ("D", "cut_cut"),
+                         ("E", "remove_all"), ("E", "remove_selected"), ("E", "bumps_sequential"), ("H", "sever"),
+                         ("H", "trim"), ("B", "tilt_slotted"), ("B", "tilt_solid"), ("B", "plane_yaw"),
+                         ("B", "advance_tilt")}   # B has no ID samples at all
+    for name in ("kinematic_ID", "native_ID"):
+        assert config["targets"][name]["population"] == "ID_validated"
+    bad = deepcopy(config)
+    bad["target_scope"]["id_unconfirmed"]["G"] = ["no_such_variant"]
+    with pytest.raises(W.BenchmarkConfigError, match="target_scope"):
+        W.validate_benchmark(bad)
 
 
 # ----------------------------------------------------------------------------- execution / summary
@@ -470,6 +627,20 @@ def test_summary_denominators_and_no_sample_dropped():
         W.summarize([{**rows[0], "class": "mystery"}])
     with pytest.raises(AssertionError, match="undeclared"):
         W.summarize(rows, declared[:2])
+
+
+def test_summary_target_population():
+    rows = [_row("v1", "A", "ID", "valid_feasible", "task_success"), _row("v2", "A", "ID", "valid_feasible", "task_success"),
+            _row("u1", "F", "ID", "valid_feasible", "execution_failure"), _row("o1", "A", "OOD", "valid_feasible", "task_success")]
+    pop = (lambda r: "ID_unconfirmed" if r["family"] == "F" else "ID_validated")
+    target = {"k": {"range_set": "ID", "population": "ID_validated", "metric": "success_among_feasible", "value": .9}}
+    out = W.summarize(rows, targets=target, population=pop)
+    assert out["by_id_population"]["ID_validated"]["samples"] == 2 and out["by_id_population"]["ID_unconfirmed"]["samples"] == 1
+    assert out["targets"]["k"]["estimate"]["k"] == 2 and out["targets"]["k"]["estimate"]["n"] == 2
+    assert out["targets"]["k"]["met_point"] is True
+    assert out["by_range_set"]["ID"]["success_among_feasible"]["n"] == 3   # the unconfirmed row is still reported
+    with pytest.raises(AssertionError, match="population"):
+        W.summarize(rows, targets=target)
 
 
 def test_final_row_keeps_infeasible_class():

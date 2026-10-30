@@ -61,8 +61,9 @@ def next_free(path):
 
 def declared(config, split):
     return [(W.make_sample_id(config, f, rs, split, s), {'family': f, 'range_set': rs, 'split': split, 'stratum': f'{f}_{rs}',
-                                                          'seed': s, 'variant': None, 'ood_dimensions': None})
-            for f, rs, s, _ in W.sample_ids(config, split)]
+                                                          'seed': s, 'variant': W.variant_of(config, f, i),
+                                                          'ood_dimensions': None})
+            for f, rs, s, i in W.sample_ids(config, split)]
 
 
 def selected_ids(config, split, only):
@@ -160,13 +161,20 @@ def _gpu_memory():
 
 
 def cmd_kinematic(args):
+    config = W.load_benchmark(args.config)
+    return kinematic_episode(config, W.sample_by_id(config, args.sample_id), args)
+
+
+def kinematic_episode(config, sample, args, extra=None):
+    """One kinematic ideal-tracking episode of a built sample (also used by scripts/run_wp12_phase4_e2.py).
+
+    ``args`` needs out, device, steps, expect_task_id, feasibility_class, surface_profile, geometry_level and
+    no_geometry; ``extra`` (dict) is recorded in the manifest config and in result.json (it may set 'label')."""
     from robotic_cutting_sim import goal_planner
     from robotic_cutting_sim.policies import WaypointPolicy
     from robotic_cutting_sim.recording import manifest, new_output
     from robotic_cutting_sim.scene_config import make_configured_kinematic_env
-    config = W.load_benchmark(args.config)
     common = config['common']
-    sample = W.sample_by_id(config, args.sample_id)
     task, info = W.compile_sample(config, sample)
     task_id = task.task_id
     if args.expect_task_id and task_id != args.expect_task_id:
@@ -188,13 +196,13 @@ def cmd_kinematic(args):
                   'runtime_source': 'kinematic_ideal_tracking', 'scene': info['scene'], 'goal': info['goal'],
                   'planner_options': options, 'draws': sample['draws'], 'derived': sample['derived'],
                   'envelope_parameters': sample['envelope_parameters'], 'ood_dimensions': sample['ood_dimensions'],
-                  'label': 'DEV' if sample['split'] == 'dev' or args.steps is not None else None}
+                  'label': 'DEV' if sample['split'] == 'dev' or args.steps is not None else None, **(extra or {})}
     (out/'manifest.json').write_text(json.dumps(jsonable(manifest(run_config, 'kinematic_ideal_tracking')), indent=1))
     result = {'status': 'RUNNING', **{k: run_config[k] for k in ('benchmark_id', 'sample_id', 'family', 'range_set', 'split',
                                                                  'seed', 'variant', 'task_id', 'config_sha256', 'device',
                                                                  'feasibility_class', 'solver_module', 'max_cuts',
                                                                  'surface_profile', 'history_stride', 'control_steps',
-                                                                 'runtime_source', 'label')}}
+                                                                 'runtime_source', 'label')}, **(extra or {})}
     start = time.monotonic()
     reset_ok, reset_error = True, None
     try:
@@ -531,7 +539,9 @@ def cmd_summarize(args):
             row = W.final_row({**metadata, **feas_row}, execution)
             final.append(row)
         targets = {k: v for k, v in config['targets'].items() if isinstance(v, dict) and v.get('runtime') == runtime}
-        out[runtime] = {'tables': W.summarize(final, decl, targets), 'samples': final}
+        population = (lambda r: W.id_population(config, r['family'], r.get('variant'))) \
+            if config.get('target_scope') else None
+        out[runtime] = {'tables': W.summarize(final, decl, targets, population), 'samples': final}
     write_new(args.out, out)
     t = out['kinematic']['tables']['overall']
     print(json.dumps({k: t[k] for k in ('samples', 'counts', 'feasibility_rate', 'success_among_feasible', 'overall_success')}))

@@ -25,6 +25,9 @@ from robotic_cutting_sim.scene_config import SceneConfigError  # noqa: E402
 from robotic_cutting_sim.tool_profile import PROFILES  # noqa: E402
 
 PIN = ROOT/"tests/fixtures/wp12_goal_step_fields_pin.json"
+# The phase5 pin sections were computed from the DRAFT benchmark as committed in 73c6e43; the DRAFT itself is
+# re-declared later (xhigh decision D5), so the pin reads that exact snapshot, not the live DRAFT.
+PIN_DRAFT = ROOT/"tests/fixtures/wp12_benchmark_v1_DRAFT_pre_d5.json"
 WP11_SCENES, WP11_GOALS = ROOT/"configs/wp11/scenes", ROOT/"configs/wp11/goals"
 WP12_SCENES, WP12_GOALS = ROOT/"configs/wp12/scenes", ROOT/"configs/wp12/goals"
 PIN_PAIRS = [
@@ -79,7 +82,7 @@ def pin_row(scene, goal):
 def pin_phase5_rows():
     """Compiled ids of the first dev sample of every Phase 5 family/variant reached by dev seeds 0, 1."""
     from robotic_cutting_sim import generalization_wp12 as W
-    config = W.load_benchmark()
+    config = W.load_benchmark(PIN_DRAFT)
     out = {}
     for family in sorted(config["families"]):
         for seed in W.seed_list(config, family, "dev", "ID")[:2]:
@@ -96,7 +99,7 @@ def pin_phase5_rows():
 def pin_phase5_goals(families=("A", "B", "C", "D", "E", "F", "H")):
     """Normalized-goal sha256 of every declared sample of the families whose variants did not change (no compile)."""
     from robotic_cutting_sim import generalization_wp12 as W
-    config = W.load_benchmark()
+    config = W.load_benchmark(PIN_DRAFT)
     out = {}
     for family in families:
         for split in W.SPLITS:

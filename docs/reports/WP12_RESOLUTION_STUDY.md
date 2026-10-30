@@ -511,3 +511,71 @@ TMPDIR=/mnt/data/ningan/tmp nohup .venv/bin/python scripts/run_wp12_resolution_q
 
 The exact command of every row is in `rows[].command` of the evidence, and its GNU-time record is in
 `rows[].gnu_time`.
+
+## Erratum (xhigh decision), 2026-10-31 (KST)
+
+Source: [WP12_PHASE4_XHIGH_DECISION.md](WP12_PHASE4_XHIGH_DECISION.md) D3. Label: **POST_HOC_DIAGNOSTIC**. The frozen
+protocol, the 110 rows and [`phase4_resolution_001.json`](../evidence/wp12/phase4_resolution_001.json) are unchanged.
+The corrected summary is a new file,
+[`phase4_resolution_002.json`](../evidence/wp12/phase4_resolution_002.json) (same rows, same run directory):
+
+```
+.venv/bin/python scripts/summarize_wp12_resolution.py --run artifacts/wp12/resolution_002 \
+    --evidence docs/evidence/wp12/phase4_resolution_002.json --compare docs/evidence/wp12/phase4_resolution_001.json
+```
+
+The xhigh decision recomputed every verdict independently from the protocol text. All 66 headline verdicts reproduce,
+and 513 of the 528 path verdicts. The decision confirms the following defects.
+
+| # | Defect | Effect | Status in `_002` |
+| --- | --- | --- | --- |
+| 1 | **Zero-limit rule on the dt paths.** The protocol applies the zero-limit rule ("must vanish") to the surface P95 metrics on every path. At a fixed spacing a surface error need not vanish as dt → 0. On the spacing paths the board overlap has the same problem: the per-particle penalty overlap scales with s³/Δt², and at 0.05 ms it stays at 14–65 µm, bounded but not vanishing. | Re-reading these metrics with the continuous rule (tol 0.1, not declared by the protocol) changes some path verdicts but **no headline**. | v1 verdicts kept. The re-reads are in `post_hoc_diagnostic.dt_path_surface_continuous_reread` and `…spacing_path_overlap_continuous_reread` |
+| 2 | **The headline rule ignores the formal-dt and fixed-grid paths.** The headline uses only P_s_primary (dt 0.05 ms) and P_dt_s100. | It hides the TRIM flip below, the OBL20 board metrics (centres below the board: NOT_CONVERGED on P_ratio; overlap NOT_CONVERGED on P_s_formal_dt and P_ratio), MULTI2 centres below the board (NOT_CONVERGED on P_ratio), and CUT det F (NOT_CONVERGED on P_s_formal_dt, P_ratio, P_dt_s150, P_dt_s075). | v1 headline kept. The all-path reading is in `post_hoc_diagnostic.all_path_reading`: NOT_CONVERGED if any path is, CONVERGED only if every path with points is |
+| 3 | **The F7 stability probe was inside a fit path** (new, found by the decision). `path_rows` built P_dt at s 0.5 mm from dt 0.2 / 0.1 / 0.05 ms and picked up `CUT_s050_g4s_dt0200`. The protocol says that row is "never in a fit" (s 0.5 mm, dx 2 mm, dt 0.2 ms, grid CFL 0.67). | **15 path verdicts** change, all CUT `P_dt_s050`, to INCONCLUSIVE (2 points), from 7 CONVERGED and 8 NOT_CONVERGED. **No headline is affected.** | **Fixed** in `scripts/summarize_wp12_resolution.py`: rows of family `F7_stability_probe` are excluded from every path (`excluded_from_fits`, `excluded_rows` per path). The list of changed verdicts is in `changed_vs_previous` |
+
+**The hidden TRIM failure (0.5 mm / 0.1 ms).** Row `TRIM_s050_g4s_dt0100` leaves **one part**:
+- removal 0.000, 4 direct code-0 bridges, WP-11 criterion false;
+- all 1804 particles of the lowest dome layer stay attached to the substrate;
+- with the edge fixed in metres (18.2 mm), the edge is only **0.05 mm (0.1 s) below the lowest dome layer**.
+
+This is the formal material dt (0.1 ms). The v1 headline reports TRIM components, criterion, bridges and removal as
+CONVERGED because neither headline path contains this row. On P_s_formal_dt they are NOT_CONVERGED.
+
+The all-path reading for TRIM is therefore:
+- components, criterion and bridges = 0: **NOT_CONVERGED**;
+- removal fraction: **NOT_CONVERGED** (P_s_formal_dt and P_dt_s200);
+- severed lines: **NOT_CONVERGED**.
+
+Removal passes on the headline paths only through the insensitivity band (0.9975 → 0.9968 → 0.9838). The criterion
+holds in 22 of 23 TRIM rows. It is controlled by the edge-to-lowest-layer gap (§4.2), not by refinement. The edge
+clearance must be declared in lattice units.
+
+**Other qualifications from the decision:**
+- **OBL20 discrete CONVERGED means only "fails identically".** It is a resolution-stable known failure. The bridge
+  count oscillates: 38–292, and 650 / 944 on the fixed 4 mm grid.
+- **CUT near-cut deformation.** The spacing "CONVERGED" has observed order 2.88 against an expected 1. It is
+  pre-asymptotic and not citable.
+- **Every discrete outcome of CUT, OBL20 and MULTI2 is identical on every declared path with three valid points.**
+  Since the probe was removed, P_dt_s050 has only two points (INCONCLUSIVE). That is the only reason the all-path
+  reading of those metrics is INCONCLUSIVE rather than CONVERGED. The exception is OBL20 / MULTI2 centres below the
+  board on P_ratio; MULTI2 at 0.2 ms reaches 2.8 mm overlap.
+- **Figure.** [`resolution_force_vs_dt.png`](../media/wp12/resolution/resolution_force_vs_dt.png) still plots the
+  probe point (CUT, s 0.5 mm, dt 0.2 ms) as a data point. The figure fits nothing, so it was not regenerated.
+
+**Allowed claim wording** (README, PROGRESS, acceptance §7.4):
+
+> The cut/no-cut outcome does not change with resolution for the vertical cut and the two-cut case.
+
+In full: "For a vertical through-cut and a two-cut sequence on the flat board, with the armed edge ending on the
+board top, the separation outcome did not change between 2 and 0.5 mm particles, dt 0.2–0.025 ms and a fixed 4 mm
+grid. TRIM removal met the WP-11 criterion at every row except 0.5 mm / 0.1 ms, where the edge was 0.05 mm below the
+lowest dome layer. The 20° flat-board oblique fails at every resolution. Contact forces, near-cut deformation, det F
+and surface errors are not resolution-converged; every force number is a dt-dependent diagnostic."
+
+**Never write "converged" or "numerically converged"** for any outcome, force, deformation or surface metric of this
+study. "CONVERGED" appears only as the name of a protocol verdict, with its path and rule.
+
+**For a future protocol v2:**
+- exclude declared probes from every path;
+- use the continuous rule for surfaces on dt paths and for board overlap on spacing paths;
+- state the headline over every declared path.

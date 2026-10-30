@@ -7,6 +7,18 @@ evidence JSON and the figures. Never writes into the run directory.
 
   .venv/bin/python scripts/summarize_wp12_resolution.py --run artifacts/wp12/resolution_002 \\
       --evidence docs/evidence/wp12/phase4_resolution_001.json --media docs/media/wp12/resolution
+
+Erratum (2026-10-31, xhigh decision D3, defect 3): the declared F7 stability probe (protocol family
+``F7_stability_probe``, "never in a fit") was picked up by the P_dt path at s 0.5 mm. It is now excluded from every
+convergence path; the evidence records the excluded rows. Re-run (new evidence file; an existing one is never
+overwritten):
+
+  .venv/bin/python scripts/summarize_wp12_resolution.py --run artifacts/wp12/resolution_002 \\
+      --evidence docs/evidence/wp12/phase4_resolution_002.json --compare docs/evidence/wp12/phase4_resolution_001.json
+
+The v1 verdict rules (headline over P_s_primary and P_dt_s100, zero-limit rule on every path) are unchanged. The
+``post_hoc_diagnostic`` block adds, labelled POST_HOC_DIAGNOSTIC and never a verdict: the all-path reading of each
+metric (defect 2) and the continuous-rule re-read of the zero-limit metrics on the dt paths (defect 1).
 """
 import argparse
 import hashlib
@@ -234,8 +246,15 @@ def noise(flats, case, metric, nu0):
     return max([nu0]+[2*d for d in diffs]), diffs
 
 
-def verdicts(flats, protocol):
+def probe_rows(protocol):
+    """Row ids the protocol declares 'never in a fit' (F7 stability probe)."""
+    return sorted(rid for rid, row in protocol['rows'].items() if row.get('family') == 'F7_stability_probe')
+
+
+def verdicts(flats, protocol, exclude=()):
+    """Protocol verdicts per case, metric and path; rows in ``exclude`` (the F7 probe) never enter a path."""
     tols = protocol['convergence']['tolerances']
+    exclude = set(exclude)
     out = {}
     for case in CASES:
         out[case] = {}
@@ -249,7 +268,7 @@ def verdicts(flats, protocol):
             nu, diffs = noise(flats, case, metric, tk.get('nu0', 0.))
             for pname, pr in paths.items():
                 pts = [(h, flats[r][metric]) for h, r in pr
-                       if r in flats and flats[r].get('status') == 'COMPLETED' and flats[r].get('stable')
+                       if r in flats and r not in exclude and flats[r].get('status') == 'COMPLETED' and flats[r].get('stable')
                        and flats[r].get(metric) is not None]
                 if not pts:
                     continue
@@ -263,6 +282,7 @@ def verdicts(flats, protocol):
                     v = continuous_verdict(h, [float(x) for x in q], tk.get('tol', tk.get('tol_abs', .1)), nu, rel)
                 v['noise_band'] = nu
                 v['repeat_differences'] = diffs
+                v['excluded_rows'] = [r for _, r in pr if r in exclude]
                 res[pname] = v
             if not res:
                 continue
@@ -271,6 +291,75 @@ def verdicts(flats, protocol):
                     else 'INCONCLUSIVE')
             res['headline'] = {'verdict': head, 'P_s_primary': a, 'P_dt_s100': b}
             out[case][metric] = res
+    return out
+
+
+def post_hoc(conv, flats, protocol, exclude=()):
+    """POST_HOC_DIAGNOSTIC (xhigh decision D3), never a verdict: (a) all-path reading per case and metric (NOT_CONVERGED
+    if any declared path is, CONVERGED only if every path with points is, else INCONCLUSIVE; defect 2: the v1 headline
+    ignores P_s_formal_dt, P_ratio and the other dt paths); (b) the surface P95 metrics re-read on the dt paths with
+    the continuous rule (tol 0.1 relative; not declared by the protocol; defect 1: a surface error at a fixed spacing
+    need not vanish as dt -> 0); (c) the board overlap re-read on the spacing paths with the same continuous rule (the
+    per-particle penalty overlap scales with s^3/dt^2 and need not vanish with s at a fixed dt)."""
+    all_path = {}
+    for case, metrics in conv.items():
+        all_path[case] = {}
+        for metric, res in metrics.items():
+            per = {k: v['verdict'] for k, v in res.items() if k != 'headline'}
+            vals = list(per.values())
+            reading = ('NOT_CONVERGED' if 'NOT_CONVERGED' in vals else 'CONVERGED' if all(v == 'CONVERGED' for v in vals)
+                       else 'INCONCLUSIVE')
+            all_path[case][metric] = {'all_path_reading': reading, 'headline_v1': res['headline']['verdict'],
+                                      'differs_from_headline': reading != res['headline']['verdict'],
+                                      'not_converged_paths': [k for k, v in per.items() if v == 'NOT_CONVERGED'],
+                                      'inconclusive_paths': [k for k, v in per.items() if v == 'INCONCLUSIVE']}
+    tols = protocol['convergence']['tolerances']
+    exclude = set(exclude)
+
+    def reread(metrics, kinds):
+        out = {}
+        for case in CASES:
+            out[case] = {}
+            for metric in metrics:
+                tk = tols.get(TOLKEY.get(metric, metric), {})
+                nu, _ = noise(flats, case, metric, tk.get('nu0', 0.))
+                for pname, rows in kinds(case):
+                    pts = [(h, flats[r][metric]) for h, r in rows
+                           if r in flats and r not in exclude and flats[r].get('status') == 'COMPLETED'
+                           and flats[r].get('stable') and flats[r].get(metric) is not None]
+                    if not pts:
+                        continue
+                    v = continuous_verdict([p[0] for p in pts], [float(p[1]) for p in pts], .1, nu, True)
+                    v1 = (conv.get(case, {}).get(metric, {}).get(pname) or {}).get('verdict')
+                    out[case].setdefault(metric, {})[pname] = {'continuous_rule_verdict': v['verdict'], 'reason': v['reason'],
+                                                               'Q': v['Q'], 'zero_limit_verdict_v1': v1}
+        return out
+
+    def dt_paths(case):
+        return [(f'P_dt_s{int(round(sp*1e5)):03d}', path_rows(flats, case, 'P_dt', sp)) for sp in SPACINGS]
+
+    def spacing_paths(case):
+        return [(k, path_rows(flats, case, k)) for k in ('P_s_primary', 'P_s_formal_dt', 'P_ratio')]
+
+    rule = 'continuous rule of the protocol with tol 0.1 relative (not declared) and the protocol noise band'
+    return {'label': 'POST_HOC_DIAGNOSTIC (xhigh decision D3, 2026-10-31); not a protocol verdict; the v1 verdicts above '
+                     'stay as frozen',
+            'all_path_reading': all_path,
+            'dt_path_surface_continuous_reread': {'rule': rule, 'by_case': reread([m for m in ZERO if m.startswith('surface')],
+                                                                                  dt_paths)},
+            'spacing_path_overlap_continuous_reread': {'rule': rule, 'by_case': reread(['max_fixture_overlap_m'], spacing_paths)}}
+
+
+def compare(conv, previous):
+    """Path verdicts that differ from a previous evidence file."""
+    out = []
+    for case, metrics in conv.items():
+        for metric, res in metrics.items():
+            for pname, v in res.items():
+                old = ((previous.get('convergence') or {}).get(case, {}).get(metric, {}).get(pname) or {}).get('verdict')
+                if old is not None and old != v['verdict']:
+                    out.append({'case': case, 'metric': metric, 'path': pname, 'previous': old, 'now': v['verdict'],
+                                'reason': v.get('reason'), 'excluded_rows': v.get('excluded_rows')})
     return out
 
 
@@ -442,7 +531,10 @@ def main():
     ap.add_argument('--run', type=Path, required=True)
     ap.add_argument('--evidence', type=Path, required=True)
     ap.add_argument('--media', type=Path)
+    ap.add_argument('--compare', type=Path, help='previous evidence file: list the path verdicts that changed')
     a = ap.parse_args()
+    if a.evidence.exists():
+        raise SystemExit(f'{a.evidence} exists; evidence is never overwritten (write a new file)')
     protocol = json.loads(PROTOCOL.read_text())
     psha = hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
     results, flats, rows = {}, {}, {}
@@ -471,7 +563,8 @@ def main():
     if q.exists():
         queue = [{k: v for k, v in json.loads(line).items() if k != 'command'}   # the command is in rows[].command
                  for line in q.read_text().splitlines() if line.strip()]
-    conv = verdicts(flats, protocol)
+    probes = probe_rows(protocol)
+    conv = verdicts(flats, protocol, exclude=probes)
     head = {case: {m: v['headline'] for m, v in d.items()} for case, d in conv.items()}
     status_counts = {}
     for r in rows.values():
@@ -486,9 +579,19 @@ def main():
                       'runner_sha256': sorted({r.get('runner_sha256') for r in rows.values() if r.get('runner_sha256')}),
                       'nonzero_exit_rows': [k for k, r in rows.items() if (r.get('gnu_time') or {}).get('exit_status') not in (0, None)],
                       'unstable_rows': [k for k, r in rows.items() if r.get('status') == 'UNSTABLE' or r.get('stable') is False]},
-        'convergence_headline': head, 'convergence': conv, 'runtime_memory_scaling': scaling(flats, protocol),
+        'convergence_headline': head, 'convergence': conv,
+        'excluded_from_fits': {'rows': probes, 'rule': "protocol families.F7_stability_probe: 'never in a fit'"},
+        'post_hoc_diagnostic': post_hoc(conv, flats, protocol, probes),
+        'runtime_memory_scaling': scaling(flats, protocol),
         'rows': rows, 'queue': queue,
         'scope': protocol['scope']}
+    if a.compare:
+        previous = json.loads(a.compare.read_text())
+        changed = compare(conv, previous)
+        heads = [{'case': c, 'metric': m, 'previous': ((previous.get('convergence_headline') or {}).get(c, {}).get(m) or {})
+                  .get('verdict'), 'now': v['verdict']} for c, d in head.items() for m, v in d.items()
+                 if ((previous.get('convergence_headline') or {}).get(c, {}).get(m) or {}).get('verdict') not in (None, v['verdict'])]
+        evidence['changed_vs_previous'] = {'previous': str(a.compare), 'path_verdicts': changed, 'headlines': heads}
     if a.media:
         evidence['figures'] = figures(flats, a.media)
     a.evidence.parent.mkdir(parents=True, exist_ok=True)

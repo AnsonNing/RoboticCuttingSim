@@ -63,6 +63,9 @@ REPORT_CLASSES = INFEASIBLE_CLASSES+EXECUTION_CLASSES
 DEFAULT_PRECEDENCE = ("scene_geometrically_infeasible", "physically_unsupported", "ik_unreachable", "collision_constrained")
 EXECUTION_FAILURE_KINDS = ("solver_invalid", "plan_not_finished", "integrity", "outcome", "crash", "grasp", "other")
 WILSON_Z = 1.959963984540054
+# Decision D5 (WP12_PHASE4_XHIGH_DECISION.md): ID samples of declared "ID-unconfirmed" families/variants are run and
+# reported in full but are outside the spec 5.7 targets; the split is declared in the benchmark file before the freeze.
+ID_POPULATIONS = ("ID_validated", "ID_unconfirmed")
 
 # Spec 5.8 mixed-operation tasks -> family / variant and the existing goal types that express them.
 MIXED_OPERATIONS = {
@@ -293,7 +296,21 @@ def validate_benchmark(doc):
     for value in _choice_values(doc, "material_profile"):
         if not _material_known(value):
             raise BenchmarkConfigError(f"material_profile {value!r} is not a known profile")
+    for family, scope in (doc.get("target_scope", {}).get("id_unconfirmed") or {}).items():
+        if family not in doc["families"]:
+            raise BenchmarkConfigError(f"target_scope.id_unconfirmed names unknown family {family}")
+        if scope != "all" and (not isinstance(scope, list) or set(scope)-set(doc["families"][family]["variants"])):
+            raise BenchmarkConfigError(f"target_scope.id_unconfirmed.{family} must be 'all' or a list of its variants")
+    for name, target in doc.get("targets", {}).items():
+        if isinstance(target, dict) and target.get("population") not in (None, *ID_POPULATIONS):
+            raise BenchmarkConfigError(f"target {name}: population must be one of {ID_POPULATIONS}")
     return doc
+
+
+def id_population(config, family, variant):
+    """'ID_validated' or 'ID_unconfirmed' for an ID sample (``target_scope.id_unconfirmed``: family -> 'all' | [variants])."""
+    scope = (config.get("target_scope", {}).get("id_unconfirmed") or {}).get(family)
+    return "ID_unconfirmed" if scope == "all" or (isinstance(scope, list) and variant in scope) else "ID_validated"
 
 
 def _choice_values(doc, name):
@@ -366,9 +383,11 @@ _SKIM_DIMS = ("rake_deg", "skew_deg", "skim_direction", "skim_speed_m_s")
 # Dimensions a builder variant does NOT read (they are still drawn, so the other streams never shift, and recorded with
 # applied = False). An OOD sample's OOD dimension is chosen only among the dimensions its variant reads.
 UNUSED_DIMENSIONS = {
-    ("oblique_cut", "tilt"): ("cut_plane_yaw_deg", "advance_tilt_deg"),
-    ("oblique_cut", "plane_yaw"): ("cut_tilt_deg", "advance_tilt_deg"),
-    ("oblique_cut", "advance_tilt"): ("cut_tilt_deg", "cut_plane_yaw_deg"),
+    ("oblique_cut", "tilt"): ("cut_plane_yaw_deg", "advance_tilt_deg", "cut_tilt_solid_deg"),
+    ("oblique_cut", "plane_yaw"): ("cut_tilt_deg", "advance_tilt_deg", "cut_tilt_solid_deg"),
+    ("oblique_cut", "advance_tilt"): ("cut_tilt_deg", "cut_plane_yaw_deg", "cut_tilt_solid_deg"),
+    ("oblique_cut", "tilt_slotted"): ("cut_plane_yaw_deg", "advance_tilt_deg", "cut_tilt_solid_deg", "board_kind"),
+    ("oblique_cut", "tilt_solid"): ("cut_tilt_deg", "cut_plane_yaw_deg", "advance_tilt_deg", "board_kind"),
     ("trim", "skim_protrusion"): ("trim_depth_m",),
     ("trim", "trim_plane_protrusion"): ("trim_depth_m",),
     ("trim", "trim_layer"): _PROTRUSION_DIMS,
@@ -622,10 +641,19 @@ def build_single_cut(config, family, v, variant, sample_id):
     return scene, goal, {"cut_x_local_m": x, "nominal_piece_fractions": fractions}, params, {"planes": [plane]}
 
 
+# Variants that fix the board kind (decision D5 of WP12_PHASE4_XHIGH_DECISION.md): a sever-plane tilt goes to the explicit
+# Option D slotted variant (tilt_slotted, dimension cut_tilt_deg); tilt_solid measures the flat-board boundary with its
+# own dimension cut_tilt_solid_deg. The original variant "tilt" keeps reading board_kind (unchanged for older files).
+VARIANT_BOARD_KIND = {("oblique_cut", "tilt_slotted"): "slotted", ("oblique_cut", "tilt_solid"): "solid"}
+
+
 def build_oblique_cut(config, family, v, variant, sample_id):
     common = config["common"]
     L, W, H = _dims(common, v)
-    tilt = float(v["cut_tilt_deg"]) if variant == "tilt" else 0.
+    if ("oblique_cut", variant) in VARIANT_BOARD_KIND:
+        v = {**v, "board_kind": VARIANT_BOARD_KIND[("oblique_cut", variant)]}
+    tilt = float(v["cut_tilt_deg"]) if variant in ("tilt", "tilt_slotted") else \
+        float(v["cut_tilt_solid_deg"]) if variant == "tilt_solid" else 0.
     yaw = float(v["cut_plane_yaw_deg"]) if variant == "plane_yaw" else 0.
     adv = float(v["advance_tilt_deg"]) if variant == "advance_tilt" else 0.
     x = float(v["cut_fraction"])*L
@@ -641,6 +669,8 @@ def build_oblique_cut(config, family, v, variant, sample_id):
     params = {**_base_params(v, dims, []), **_sever_params([plane], v), "cut_digits": 1, "operation_pattern": "sever"}
     derived = {"cut_x_local_m": x, "applied_tilt_deg": tilt, "applied_plane_yaw_deg": yaw, "applied_advance_tilt_deg": adv,
                "nominal_piece_fractions": fractions}
+    if ("oblique_cut", variant) in VARIANT_BOARD_KIND:
+        derived["board_kind_fixed_by_variant"] = v["board_kind"]
     return scene, goal, derived, params, {"planes": [plane]}
 
 
@@ -858,7 +888,7 @@ def build_shape_pose_support(config, family, v, variant, sample_id):
 
 BUILDERS = {
     "single_cut": (build_single_cut, ("vertical",)),
-    "oblique_cut": (build_oblique_cut, ("tilt", "plane_yaw", "advance_tilt")),
+    "oblique_cut": (build_oblique_cut, ("tilt", "plane_yaw", "advance_tilt", "tilt_slotted", "tilt_solid")),
     "trim": (build_trim, ("skim_protrusion", "trim_plane_protrusion", "trim_layer")),
     "multi_slice": (build_multi_slice, ("multi_plane_sever", "cut_cut")),
     "multi_protrusion": (build_multi_protrusion, ("remove_all", "remove_selected", "bumps_sequential", "trim_trim")),
@@ -1196,9 +1226,11 @@ def _group(rows):
             "success_among_executed": wilson(success, executed), "overall_success": wilson(success, n)}
 
 
-def summarize(rows, declared_ids=None, targets=None):
+def summarize(rows, declared_ids=None, targets=None, population=None):
     """Tables per stratum, family, range set and overall. ``declared_ids``: every declared sample id; an id without a
-    row is added as not_run ('no record'), so no sample can disappear from a denominator."""
+    row is added as not_run ('no record'), so no sample can disappear from a denominator. ``population(row)`` (optional)
+    labels each ID row ID_validated / ID_unconfirmed: the tables gain ``by_id_population`` and a target that declares
+    ``population`` is computed over that population only (the others stay reported, never dropped)."""
     rows = list(rows)
     ids = [r["sample_id"] for r in rows]
     if len(ids) != len(set(ids)):
@@ -1230,10 +1262,22 @@ def summarize(rows, declared_ids=None, targets=None):
     if ood:
         dims = sorted({d for r in ood for d in r["ood_dimensions"]})
         out["ood_boundary_by_dimension"] = {d: _group([r for r in ood if d in r["ood_dimensions"]]) for d in dims}
+    if population is not None:
+        labels = {r["sample_id"]: population(r) for r in rows if r["range_set"] == "ID"}
+        if set(labels.values())-set(ID_POPULATIONS):
+            raise AssertionError(f"Unknown ID population labels {set(labels.values())-set(ID_POPULATIONS)}")
+        out["by_id_population"] = {p: _group([r for r in rows if labels.get(r["sample_id"]) == p]) for p in ID_POPULATIONS}
+        if sum(g["samples"] for g in out["by_id_population"].values()) != len(labels):
+            raise AssertionError("ID populations do not partition the ID samples")
     if targets:
         out["targets"] = {}
         for name, target in targets.items():
-            group = out["by_range_set"].get(target["range_set"], {})
+            if target.get("population"):
+                if population is None:
+                    raise AssertionError(f"target {name} declares a population; pass population=")
+                group = out["by_id_population"][target["population"]]
+            else:
+                group = out["by_range_set"].get(target["range_set"], {})
             stat = group.get(target["metric"]) if group else None
             p = None if stat is None else stat["p"]
             out["targets"][name] = {**target, "estimate": stat,
@@ -1304,45 +1348,97 @@ def coverage(config, split="benchmark"):
 
 
 ENVELOPE_DIMENSIONS = {"rake_deg": ("rake_deg_max", "rake_deg_min"), "cut_tilt_deg": ("sever_tilt_abs_deg_max",),
+                       "cut_tilt_solid_deg": ("sever_tilt_abs_deg_max",),
                        "cut_plane_yaw_deg": ("sever_plane_yaw_abs_deg_max",), "advance_tilt_deg": ("advance_tilt_abs_deg_max",),
                        "skew_deg": ("skew_abs_deg_max",), "cut_speed_m_s": ("cut_speed_m_s",),
                        "skim_speed_m_s": ("skim_speed_m_s",), "trim_depth_m": ("trim_depth_m",),
                        "height_m": ("workpiece_height_m",), "material_profile": ("material_profile",)}
 
 
-def freeze_problems(config, envelope):
+_NEEDED = {"max": ("max",), "min": ("min",), "range": ("min", "max"), "in_set": ("values",), "subset": ("values",)}
+
+
+def _id_samples(config, splits=SPLITS):
+    """Every declared ID sample of the given splits (built, not compiled); families without an ID stratum have none."""
+    out = []
+    for split in splits:
+        for family, range_set, seed, _ in sample_ids(config, split):
+            if range_set == "ID":
+                out.append(build_sample(config, family, range_set, seed, split=split))
+    return out
+
+
+def _range_values(config, family, dim, param):
+    kind, support = _support(family_spec(config, family, dim, "ID"))
+    if kind == "intervals":
+        values = [v for iv in support for v in iv]
+        return [abs(v) for v in values] if param.endswith("abs_deg_max") else values
+    return support
+
+
+def _bad_values(rule, values):
+    bad = []
+    for value in values:
+        if rule["kind"] == "in_set" and rule.get("values") is not None and value not in rule["values"]:
+            bad.append(value)
+        if rule["kind"] in ("max", "range") and rule.get("max") is not None and isinstance(value, (int, float)) \
+                and value > rule["max"]+1e-12:
+            bad.append(value)
+        if rule["kind"] in ("min", "range") and rule.get("min") is not None and isinstance(value, (int, float)) \
+                and value < rule["min"]-1e-12:
+            bad.append(value)
+    return bad
+
+
+def freeze_problems(config, envelope, *, check_samples=True):
     """Why the benchmark cannot be frozen yet (empty list = ready): envelope declared and complete, every family's ID
-    range inside the envelope where a rule maps a dimension, DRAFT marker present."""
+    range inside the envelope where a rule maps a dimension, every declared ID sample inside the envelope, DRAFT marker.
+
+    Range check: a rule with a ``when`` condition (e.g. the solid- and slotted-board tilt bounds) is checked for a
+    family's dimension if at least one declared ID sample of that family whose variant READS the dimension satisfies
+    the condition (the condition value comes from the built sample's envelope parameters, so variants that fix the
+    board kind are handled exactly). A family without an ID stratum is judged on probe builds of its ID benchmark
+    seeds (its ID ranges are the base of its OOD samples). Sample check
+    (``check_samples``): every declared ID sample of every split is evaluated by ``evaluate_envelope``; an UNSUPPORTED
+    or PENDING sample is a problem. The ID-inside-VALIDATED-cells rule (decision D5) is not machine-checkable from the
+    envelope (its notes carry it) and stays the orchestrator's check."""
     problems = []
     if envelope.get("status") != "DECLARED":
         problems.append(f"envelope status {envelope.get('status')} (needs DECLARED after the Phase 4 xhigh decision)")
     for rule in envelope.get("rules", []):
-        needed = {"max": ("max",), "min": ("min",), "range": ("min", "max"), "in_set": ("values",), "subset": ("values",)}[rule["kind"]]
-        if any(rule.get(k) is None for k in needed):
+        if any(rule.get(k) is None for k in _NEEDED[rule["kind"]]):
             problems.append(f"envelope rule {rule['id']} has an undeclared bound")
     rules = {}
     for rule in envelope.get("rules", []):
-        if not rule.get("when"):
-            rules.setdefault(rule["parameter"], []).append(rule)
+        rules.setdefault(rule["parameter"], []).append(rule)
+    samples = _id_samples(config)
+    by_family = {}
+    for sample in samples:
+        by_family.setdefault(sample["family"], []).append(sample)
     for family, fam in config["families"].items():
+        # A family without an ID stratum (e.g. B after decision D5) has no ID claim, but its ID ranges are the base draws
+        # of its OOD samples: the conditions are judged on probe builds of its ID seeds (one per variant cycle).
+        built = by_family.get(family) or [build_sample(config, family, "ID", seed, split="benchmark")
+                                          for seed in seed_list(config, family, "benchmark", "ID")]
         for dim in fam["randomize"]:
+            readers = [s["envelope_parameters"] for s in built if any(r["name"] == dim and r["applied"] for r in s["draws"])]
             for param in ENVELOPE_DIMENSIONS.get(dim, ()):
                 for rule in rules.get(param, []):
-                    kind, support = _support(family_spec(config, family, dim, "ID"))
-                    values = [abs(v) for iv in support for v in iv] if kind == "intervals" and param.endswith("abs_deg_max") \
-                        else ([v for iv in support for v in iv] if kind == "intervals" else support)
-                    bad = []
-                    for value in values:
-                        if rule["kind"] == "in_set" and rule.get("values") is not None and value not in rule["values"]:
-                            bad.append(value)
-                        if rule["kind"] in ("max", "range") and rule.get("max") is not None and isinstance(value, (int, float)) \
-                                and value > rule["max"]+1e-12:
-                            bad.append(value)
-                        if rule["kind"] in ("min", "range") and rule.get("min") is not None and isinstance(value, (int, float)) \
-                                and value < rule["min"]-1e-12:
-                            bad.append(value)
+                    if rule.get("when") and not any(_rule_applies(rule, params) for params in readers):
+                        continue
+                    bad = _bad_values(rule, _range_values(config, family, dim, param))
                     if bad:
-                        problems.append(f"family {family}: ID range of {dim} reaches {bad} outside envelope rule {rule['id']}")
+                        where = f" (when {rule['when']})" if rule.get("when") else ""
+                        problems.append(f"family {family}: ID range of {dim} reaches {bad} outside envelope rule "
+                                        f"{rule['id']}{where}")
+    if check_samples:
+        for sample in samples:
+            env = evaluate_envelope(envelope, sample["envelope_parameters"])
+            if env["status"] == "UNSUPPORTED":
+                problems.append(f"ID sample {sample['sample_id']} ({sample['variant']}) is physically_unsupported: "
+                                f"{', '.join(env['unsupported_rules'])}")
+            elif env["status"] == "PENDING" and envelope.get("status") == "DECLARED":
+                problems.append(f"ID sample {sample['sample_id']} is envelope_pending: {', '.join(env['pending_rules'])}")
     for family, row in coverage(config).items():
         if row["variants_never_reached"] or row["ood_dimensions_never_reached"]:
             problems.append(f"family {family}: benchmark seeds never reach variants {row['variants_never_reached']} / OOD "
