@@ -98,8 +98,9 @@ with at most 8 slots in use.
 - **Test C:** 96.2%, 99.7% and 97.2% of the three protrusions are removed.
   The substrate remains one component, each chip separates during its own
   skim, and the return home passes.
-- **Test C residual:** the skims press the remaining substrate top down by
-  1.4–1.5 mm on average (3.19 mm at most) inside their footprints.
+- **Test C residual:** 400 of the 14,638 top-layer substrate particles were
+  pressed down by more than 1 mm, all inside the skim footprints. Those
+  particles moved 1.42–1.47 mm on average and 3.19 mm at most.
 
 | Slice, then push, with wrist-depth relocation | Test A: skim along −x |
 | --- | --- |
@@ -213,7 +214,8 @@ Known limits, reported and not hidden:
 - Skims at a rake of 45° never engage the law. Higher rakes were not run.
 - A few chip particles can stay unlabelled after a sever followed by skims.
 - Results are not converged with resolution:
-  - Contact forces change 2.6× when the time step is halved, even at 1 mm.
+  - Halving the time step changes contact forces even at 1 mm: up to 2.6×
+    for CUT and 1.8× for TRIM.
   - TRIM removal drops to 0.82 at 2 mm, and to 0.58 in a non-protocol 1.5 mm
     supplementary row. The declared 1.5 mm row could not run.
   - CUT location fails the 2 mm limit on coarser lattices, so a
@@ -230,10 +232,12 @@ changes, each time from a clean checkout
   in verdicts and in task, protocol and plan identity. The documented strict
   FAILs repeat (Demo 1b location and window, Demo 2 precision 5/8). Metrics
   stay within GPU nondeterminism.
-- **Merge commit:** final_v4 was not rerun at the merge commit itself. The
-  only later code change on the final_v4 path is a config guard that is
-  always false for these registered tasks; the other changed lines sit behind
-  options final_v4 does not use (`on_capture`, skip mode).
+- **Final branch HEAD:** final_v4 was not rerun at `1b78ec3` or later. Code
+  changed after `6c36e39` in only one commit, `b90658d`.
+  - The only line of it that final_v4 executes is a config guard, which is
+    always false for these registered tasks.
+  - Every other changed line sits behind options that final_v4 does not use
+    (`on_capture`, skip mode).
 
 ## Three BladeMaster-style demos (frozen baseline, live Native Isaac Sim)
 

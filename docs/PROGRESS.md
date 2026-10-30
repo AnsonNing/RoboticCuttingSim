@@ -116,8 +116,8 @@
     3. `goal_eval_v2` 會忽略不屬於任何步驟的 digit（新增 `goal_eval_v2a`，v2 不改）；
     4. final_v4 live regression PASS；
     5. 最終 HEAD 的 CI 綠燈。
-  - 其他應修項目：path_v3 bias 沒有 anti-windup；info dict 帶出 privileged 值；被拒絕的動作仍會放開夾爪；v5 的 cut index 沒有邊界檢查；C5／C5b 有 7 顆底材邊緣粒子留在切面上方 3.6–12 mm 但沒有在報告裡揭露；Test C 的 22 mm 凹陷是 heightfield 對位假象（長條滑了 0.77 mm），背後有平均 1.4 mm、最深 3.2 mm 的真實壓痕。
-  - **final_v4 live regression PASS**（`d57d0f2`，乾淨 worktree，GPU 0，32 min，[報告](reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)，[證據](evidence/wp11/phaseI_final_v4_regression_001.json)）：Demo 1a／1b／2／3 verdict 與 task／protocol identity 都和 `live_20261029_law8_final` 相同；已記錄的凍結 strict FAIL（1b 位置／時間窗、Demo 2 精度 5/8）照樣重現；Demo 2 去除 97.99% → 97.89%，Demo 3 推開 19.680 → 19.687 mm、手腕深度位移 1.2009 → 1.2005 mm。之後的修正 commit 有動到 final_v4 路徑的檔案，所以修正完成後會在最終 HEAD 再跑一次。
+  - 其他應修項目：path_v3 bias 沒有 anti-windup；info dict 帶出 privileged 值；被拒絕的動作仍會放開夾爪；v5 的 cut index 沒有邊界檢查；C5／C5b 有 7 顆底材邊緣粒子留在切面上方 3.6–12 mm 但沒有在報告裡揭露；Test C 的 22 mm 凹陷是 heightfield 對位假象（長條滑了 0.77 mm），背後有真實壓痕（14,638 顆頂層底材粒子中有 400 顆下壓超過 1 mm，都在削切範圍內，平均 1.42–1.47 mm、最深 3.19 mm）。
+  - **final_v4 live regression PASS**（`d57d0f2`，乾淨 worktree，GPU 0，32 min，[報告](reports/WP11_PHASE_I_FINAL_V4_REGRESSION.md)，[證據](evidence/wp11/phaseI_final_v4_regression_001.json)）：Demo 1a／1b／2／3 verdict 與 task／protocol identity 都和 `live_20261029_law8_final` 相同；已記錄的凍結 strict FAIL（1b 位置／時間窗、Demo 2 精度 5/8）照樣重現；Demo 2 去除 97.99% → 97.89%，Demo 3 推開 19.680 → 19.687 mm、手腕深度位移 1.2009 → 1.2005 mm。之後的修正 commit 有動到 final_v4 路徑的檔案，因此在 `6c36e39` 跑了 regression 002（見下方）。
   - **R1 完成**（`d009053`、`63ad26b`）：`cutting_surface` 預設恢復為 `unmeshable="raise"`（與 main 相同）；`skip_presentation_v1` 只在 configured（WP-11）task 自動啟用，每次跳過都寫進 `runtime/surface_unmeshable_NN.jsonl`，跳過的碎片含底材時表面指標回報 NOT_RUN；CI 的 test extra 加入 `newton==1.6.1`（全新 venv 安裝 28 s 成功）；`reload_in_place` 失敗後下一次 reset 會重新開啟 stage；新增 [Phase C 報告](reports/WP11_PHASE_C_TRIM.md)，揭露 C5／C5b 的殘留粒子（C5b 有 7 顆底材邊緣粒子在切面上方 3.4–12 mm，仍連在底材上；網格殘留只有 0.105 mm，看不出來）。全套 CPU 測試 1121 passed、5 xfailed。
   - **R3 完成**（`3a75b83`、`2e790ff`）：path_v3 原地修會改變 C5b live 的指令（replay 證明 path_v3 逐位重現 1056 個錄下的指令，而 anti-windup 凍結在 253 步會啟動），所以新增 `path_v3a`（bias 上限 3 mm／15 mrad、被限幅時凍結），path_v3 不變；opt-in 卡住逾時（`stall_timeout_s`）。privileged 的 `reset_checks`／`grasp_status` 移到 `privileged_state`；被拒絕的動作不再改夾爪；collector 明確拒絕 relocation 選項；`slots_per_node` 沒有 v5 solver 時報錯。全套 CPU 測試 1180 passed、5 xfailed。path_v3a 尚未在 Native 跑過（NOT_RUN）。
   - **R2 完成**（`18c4301` 先宣告負對照，`46be189`…`14c1a0e`）：
@@ -133,10 +133,15 @@
     - README 數字修正（`cbd80d1`）：round 2 的族群、PRE-CUT 路徑稽核 FAIL、Test C 壓痕、slot 上限、v2 缺陷與 v2a、鈍握柄 v1 FAIL、只測過 rake 45°、F3 不收斂的細節。
     - Phase R 報告措辭收窄到實際測到的範圍（`495d639`）。
   - **final_v4 regression 002 PASS**（`6c36e39`，乾淨 worktree，GPU 1，36 min，`abde831`）：四個 demo 的 verdict、identity、已知 strict FAIL 都與參考及 001 相同。其中 Demo 1b、2 跑的時候，另一位使用者的工作佔用同一張 GPU，Demo 2 開始時只剩 8.4 GiB 可用，低於宣告的 12 GB 下限；結果沒有受影響。之後的 commit 在 final_v4 路徑上只有一行一定為 false 的設定檢查，所以最終 HEAD 沒有再跑（NOT_RUN，原因已記錄）。
-- 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
-  - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
-- 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
-- 下一步：D 完成後跑 C5 live 近水平 TRIM（ρ = 10°）→ F1 Native 長時間夾持壓力測試 → E 泛化（Tests A–D）→ G policy API／資料收集器（Tests E/F）→ H profiling → I。
+  - **rcs-review 最終簽核：ACCEPT WITH CONDITIONS**（唯一條件是 README Test C 壓痕的措辭，已修正）。確認 `6c36e39` 之後的程式變更在 final_v4 路徑上都不會執行，所以 regression 002 也涵蓋合併 HEAD。
+- 輸出位置：`artifacts/wp11/`（symlink 到 `/mnt/data`）；phaseB、phaseC4 與 WP-11 之前的舊 artifact 已搬到根磁碟 `/home/ningan/RoboticCuttingSim_artifacts_rootdisk/`，原路徑是 symlink。
+- 已知限制（整理）：
+  - 雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
+  - 斜切 30–35° 不分離；rake 45° 不啟動；sever 後接削切可能留下少數未標籤的 chip 粒子。
+  - 結果對解析度未收斂。
+  - Native host 記憶體每 episode 約 +49 MiB；Native 只在 verdict 層級可重複。
+  - 沒有 Isaac Lab parity；材料參數暫定、未校準。
+- 下一步：最終 HEAD 的 CPU 測試與 CI 綠燈 → 合併到 main 並 push → 建立 DONE。
 
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
