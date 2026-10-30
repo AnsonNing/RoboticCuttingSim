@@ -16,11 +16,15 @@ Layers (``LAYERS``):
   contact           particles with solver cutting progress > 0 or contact work > 0
   particle_surface  ParticleSurface mesh (``--profile`` legacy / current_volume_v1)
   cut_aware         pluggable (``CUT_AWARE_PROVIDERS``); Phase 1 default ``hermite_side_points_v0`` = the final side
-                    locus of the recorded Hermite points (a point cloud). Phase 3 registers its surface here.
+                    locus of the recorded Hermite points (a point cloud). Phase 3 registers ``cut_aware_surface_v1``:
+                    the package's ``mesh_cut_aware_surface_v1_*`` mesh (scripts/run_wp12_phase3_surface.py).
   rendered          the surface the live path renders: current_volume_v1 for every configured/registered task
                     (isaac_sim_runner / kinematic_env defaults); legacy only for the legacy D0 path
 Views (``VIEWS``): top (x-y), side (x-z), blade (blade plane coordinates of the selected digit), section
 (arbitrary plane point + normal, slab thickness), closeup (3-D window around the cut face).
+Comparison figures (WP-12 Phase 3): ``render_comparison`` (one row per surface profile: section through the cut with
+the particles by side digit, and a 3-D close-up) and ``render_reconstruction_vs_particles`` (section lines of several
+profiles over the particles and the Hermite side locus).
 """
 import struct
 from pathlib import Path
@@ -52,7 +56,19 @@ def hermite_side_points_v0(pkg, digit=None):
             else "cut-aware hook: link-midpoint side locus (fallback)"}
 
 
-CUT_AWARE_PROVIDERS = {"hermite_side_points_v0": hermite_side_points_v0}
+CUT_AWARE_PROFILE = "cut_aware_surface_v1"
+
+
+def cut_aware_surface_v1(pkg, digit=None):
+    """Phase 3 cut-aware hook: the cut_aware_surface_v1 mesh stored in the package (empty mesh when absent)."""
+    if CUT_AWARE_PROFILE not in pkg.get("meshes", {}):
+        return {"kind": "mesh", "vertices": np.zeros((0, 3)), "faces": np.zeros((0, 3), int),
+                "label": f"{CUT_AWARE_PROFILE} missing"}
+    v, f = pkg["meshes"][CUT_AWARE_PROFILE]
+    return {"kind": "mesh", "vertices": np.asarray(v, float), "faces": np.asarray(f, np.int64), "label": CUT_AWARE_PROFILE}
+
+
+CUT_AWARE_PROVIDERS = {"hermite_side_points_v0": hermite_side_points_v0, CUT_AWARE_PROFILE: cut_aware_surface_v1}
 
 
 def load(path):
@@ -63,8 +79,8 @@ def load(path):
     if "schema" in f:
         for k in z.files:
             pkg[k] = z[k]
-        pkg["meshes"] = {p: (z[f"mesh_{p}_vertices"], z[f"mesh_{p}_faces"]) for p in ("legacy", "current_volume_v1")
-                         if f"mesh_{p}_vertices" in f}
+        names = [k[len("mesh_"):-len("_vertices")] for k in z.files if k.startswith("mesh_") and k.endswith("_vertices")]
+        pkg["meshes"] = {p: (z[f"mesh_{p}_vertices"], z[f"mesh_{p}_faces"]) for p in names if f"mesh_{p}_faces" in f}
         pkg["hermite_recorded"] = bool(np.all(z["hermite_is_recorded"])) if "hermite_is_recorded" in f and len(z["hermite_is_recorded"]) else False
         pkg["spacing_m"] = float(z["spacing_m"])
         pkg["cuts"] = int(z["cuts"])
@@ -382,3 +398,127 @@ def export_ply(pkg, out_dir, *, layers=LAYERS, digit=0, profile=RENDERED_PROFILE
             write_ply_points(path, pts, np.tile(_hex("#eda100"), (len(pts), 1)))
         written[name] = str(path)
     return written
+
+
+# ----------------------------------------------------------------------------- Phase 3 comparison figures
+
+def _section_panel(ax, pkg, origin, u, v, w, *, digit, slab_m, window_m, meshes, side_points=True, centre=(0., 0.)):
+    """Particles inside the slab coloured by side digit, mesh section lines per (label, vertices, faces, colour)."""
+    from matplotlib.collections import LineCollection
+    p = np.asarray(pkg["positions"], float)
+    keep = np.abs((p-origin)@w) <= slab_m/2
+    d = digits(pkg, digit)[keep]
+    qp = p[keep]-origin
+    cols = np.array([_hex(DIGIT[int(k)]) for k in range(3)])[d]
+    ax.scatter(qp@u*1e3, qp@v*1e3, s=10, c=cols, linewidths=0, alpha=.55, zorder=1)
+    if side_points and pkg.get("side_points") is not None and len(pkg["side_points"]):
+        sp = np.asarray(pkg["side_points"], float).reshape(-1, 3)
+        k = np.abs((sp-origin)@w) <= slab_m/2
+        qs = sp[k]-origin
+        ax.scatter(qs@u*1e3, qs@v*1e3, s=7, marker="x", c="#6250d6", linewidths=.6, zorder=3)
+    for label, vertices, faces, colour in meshes:
+        seg = section_segments(np.asarray(vertices, float), np.asarray(faces, np.int64), origin, w)
+        if len(seg):
+            qq = seg-origin
+            ax.add_collection(LineCollection(np.stack([qq@u, qq@v], -1)*1e3, colors=colour, linewidths=1.1, zorder=2,
+                                             label=label))
+    ax.set_xlim((centre[0]-window_m)*1e3, (centre[0]+window_m)*1e3)
+    ax.set_ylim((centre[1]-window_m)*1e3, (centre[1]+window_m)*1e3)
+    ax.set_aspect("equal")
+    ax.tick_params(labelsize=6)
+
+
+def _closeup_panel(ax, vertices, faces, origin, w, window_m, rng, face_colour):
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    vertices, faces = np.asarray(vertices, float), np.asarray(faces, np.int64)
+    if len(faces):
+        c = vertices[faces].mean(1)
+        f = faces[np.all(np.abs(c-origin) <= window_m, 1)]
+        if len(f) > 25000:
+            f = f[rng.choice(len(f), 25000, replace=False)]
+        tri = vertices[f]*1e3
+        n = np.cross(tri[:, 1]-tri[:, 0], tri[:, 2]-tri[:, 0])
+        n /= np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-30)
+        light = np.array([.35, -.45, .82])/np.linalg.norm([.35, -.45, .82])
+        shade = .35+.65*np.abs(n@light)
+        base = _hex(face_colour)
+        ax.add_collection3d(Poly3DCollection(tri, facecolors=np.c_[shade[:, None]*base[None], np.ones(len(tri))],
+                                             edgecolors=(0, 0, 0, .15), linewidths=.1))
+    lo, hi = (origin-window_m)*1e3, (origin+window_m)*1e3
+    ax.set_xlim(lo[0], hi[0]); ax.set_ylim(lo[1], hi[1]); ax.set_zlim(lo[2], hi[2])
+    ax.set_box_aspect((1, 1, 1))
+    nn = w if abs(w[2]) < .99 else np.array([1., 0, 0])
+    ax.view_init(elev=22, azim=float(np.degrees(np.arctan2(nn[1], nn[0])))+60)
+    ax.tick_params(labelsize=5)
+
+
+def render_comparison(pkg, out_png, *, profiles=("current_volume_v1", CUT_AWARE_PROFILE), digit=0, window_m=.006,
+                      plane_point=None, plane_normal=None, slab_m=None, title=None, dpi=80, seed=0):
+    """One row per surface profile: section through the cut face (particles by side digit, Hermite side locus as x,
+    the profile's section lines) and a 3-D close-up of the profile's mesh around the cut face."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    s = float(pkg.get("spacing_m", .001))
+    slab_m = 1.*s if slab_m is None else slab_m
+    rng = np.random.default_rng(seed)
+    origin, u, v, w = view_basis("section", pkg, digit, plane_point, plane_normal)
+    colours = {"current_volume_v1": "#eb6834", "legacy": "#e87ba4", CUT_AWARE_PROFILE: "#2a78d6"}
+    fig = plt.figure(figsize=(7.6, 3.6*len(profiles)), dpi=dpi, facecolor="#fcfcfb")
+    for i, profile in enumerate(profiles):
+        vertices, faces = pkg["meshes"].get(profile, (np.zeros((0, 3)), np.zeros((0, 3), int)))
+        ax = fig.add_subplot(len(profiles), 2, 2*i+1)
+        _section_panel(ax, pkg, origin, u, v, w, digit=digit, slab_m=slab_m, window_m=window_m,
+                       meshes=[(profile, vertices, faces, "#0b0b0b")])
+        ax.set_title(f"{profile}: section (mm), slab {slab_m*1e3:.1f} mm", fontsize=8)
+        ax3 = fig.add_subplot(len(profiles), 2, 2*i+2, projection="3d")
+        _closeup_panel(ax3, vertices, faces, origin, w, window_m, rng, colours.get(profile, "#9a9a96"))
+        ax3.set_title(f"{profile}: close-up {2*window_m*1e3:.0f} mm (mm)", fontsize=8)
+    import matplotlib.lines as mlines
+    handles = [mlines.Line2D([], [], color=DIGIT[k], marker="o", ls="", markersize=4, label=f"particle digit {k}")
+               for k in range(3)]
+    handles += [mlines.Line2D([], [], color="#6250d6", marker="x", ls="", markersize=4, label="Hermite side locus"),
+                mlines.Line2D([], [], color="#0b0b0b", label="mesh section")]
+    fig.legend(handles=handles, loc="lower center", ncol=5, fontsize=7, frameon=False)
+    fig.suptitle(title or Path(pkg["path"]).name, fontsize=8)
+    fig.tight_layout(rect=(0, .04, 1, .97))
+    fig.savefig(out_png)
+    plt.close(fig)
+    return out_png
+
+
+def render_reconstruction_vs_particles(pkg, out_png, *, profiles=("current_volume_v1", CUT_AWARE_PROFILE), digit=0,
+                                       window_m=.006, plane_point=None, plane_normal=None, slab_m=None, title=None, dpi=80):
+    """Section through the cut: actual particles (by side digit) and Hermite side locus, with the section lines of
+    every profile overlaid (wide window and a 3x zoom)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    s = float(pkg.get("spacing_m", .001))
+    slab_m = 1.*s if slab_m is None else slab_m
+    origin, u, v, w = view_basis("section", pkg, digit, plane_point, plane_normal)
+    colours = {"current_volume_v1": "#eb6834", "legacy": "#e87ba4", CUT_AWARE_PROFILE: "#0b0b0b"}
+    meshes = [(p, *pkg["meshes"][p], colours.get(p, "#1baf7a")) for p in profiles if p in pkg["meshes"]]
+    centre = (0., 0.)
+    sp = pkg.get("side_points")
+    if sp is not None and len(sp):       # zoom on the side-1 face (median side-1 locus point inside the slab)
+        side1 = np.asarray(sp, float)[np.asarray(pkg["hermite_cut"]) == digit][:, 0]
+        side1 = side1[np.abs((side1-origin)@w) <= slab_m/2]
+        if len(side1):
+            c = np.median(side1-origin, 0)
+            centre = (float(c@u), float(c@v))
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 4.2), dpi=dpi, facecolor="#fcfcfb")
+    for ax, win, ctr in zip(axes, (window_m, window_m/3), ((0., 0.), centre)):
+        _section_panel(ax, pkg, origin, u, v, w, digit=digit, slab_m=slab_m, window_m=win, meshes=meshes, centre=ctr)
+        ax.set_title(f"section (mm), window {2*win*1e3:.1f} mm" + (", side-1 face" if ctr != (0., 0.) else ""), fontsize=8)
+    import matplotlib.lines as mlines
+    handles = [mlines.Line2D([], [], color=DIGIT[k], marker="o", ls="", markersize=4, label=f"particle digit {k}")
+               for k in range(3)]
+    handles += [mlines.Line2D([], [], color="#6250d6", marker="x", ls="", markersize=4, label="Hermite side locus")]
+    handles += [mlines.Line2D([], [], color=c, label=p) for p, _, _, c in meshes]
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False)
+    fig.suptitle(title or Path(pkg["path"]).name, fontsize=8)
+    fig.tight_layout(rect=(0, .08, 1, .96))
+    fig.savefig(out_png)
+    plt.close(fig)
+    return out_png

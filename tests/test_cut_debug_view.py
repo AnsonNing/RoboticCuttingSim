@@ -62,3 +62,21 @@ def test_views_and_render_and_ply(tmp_path):
     header = V.read_ply_header(written["components"])
     assert "element vertex 360" in header
     assert any(line.startswith("element face 4") for line in V.read_ply_header(written["particle_surface"]))
+
+
+def test_cut_aware_hook_and_phase3_comparison_figures(tmp_path):
+    path = package(tmp_path)
+    z = dict(np.load(path))
+    v, f = z["mesh_current_volume_v1_vertices"], z["mesh_current_volume_v1_faces"]
+    np.savez_compressed(tmp_path/"pkg3.npz", **z, mesh_cut_aware_surface_v1_vertices=v+.0001,
+                        mesh_cut_aware_surface_v1_faces=f)
+    pkg = V.load(tmp_path/"pkg3.npz")
+    assert set(pkg["meshes"]) == {"legacy", "current_volume_v1", "cut_aware_surface_v1"}
+    g = V.layer(pkg, "cut_aware", provider="cut_aware_surface_v1")
+    assert g["kind"] == "mesh" and np.allclose(g["vertices"], v+.0001) and len(g["faces"]) == 4
+    missing = V.layer(V.load(path), "cut_aware", provider="cut_aware_surface_v1")
+    assert missing["kind"] == "mesh" and not len(missing["faces"])
+    out = V.render_comparison(pkg, tmp_path/"cmp.png", dpi=40)
+    assert out.stat().st_size > 1000
+    out = V.render_reconstruction_vs_particles(pkg, tmp_path/"rvp.png", dpi=40)
+    assert out.stat().st_size > 1000

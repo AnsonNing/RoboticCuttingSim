@@ -82,3 +82,36 @@ def test_numpy_stencil_equals_tlmpm_v5():
     nodes, weights, gradients = A.stencil(points, bed.config.dx)
     assert np.array_equal(nodes, bed.nodes.numpy()) and np.array_equal(weights, bed.weights.numpy())
     assert np.array_equal(gradients, bed.gradients.numpy())
+
+
+def test_rotating_phase_trajectory_is_continuous_and_carries_the_angular_twist():
+    from robotic_cutting_sim.sequence_blade_probe import phase_trajectory
+    omega = (0., 0., np.radians(25.))
+    phase = OrientedPhase((0, 0, -.02), .05, 0, tuple(ROT.as_quat()), omega)
+    assert phase.rotating and not OrientedPhase((0, 0, -.02), .05, 0, tuple(ROT.as_quat())).rotating
+    dt, position = 1e-4, np.array(START, float)
+    a, ta = phase_trajectory(position, phase, dt, 0, 200)
+    b, tb = phase_trajectory(position+np.array([0, 0, -.02])*dt*200, phase, dt, 200, 300)
+    assert np.allclose(a[-1], b[0], atol=1e-7)                              # chunk boundary: same pose
+    assert np.allclose(ta[:, 3:], omega) and np.allclose(tb[:, :3], [0, 0, -.02])
+    end = Rotation.from_quat(b[-1, 3:])
+    assert np.allclose((end*Rotation.from_quat(phase.end_rotation_xyzw(dt)).inv()).magnitude(), 0, atol=1e-6)
+    yaw = (end*ROT.inv()).as_rotvec()
+    assert np.allclose(yaw, np.array(omega)*.05, atol=1e-6)               # rotation about world z only
+    # a zero angular velocity keeps the constant-rotation path (bit-identical to drive_blade, tested above)
+    still = OrientedPhase((0, 0, -.02), .05, 0, tuple(ROT.as_quat()))
+    p0, t0 = phase_trajectory(position, still, dt, 0, 200)
+    assert np.array_equal(p0[:, 3:], np.tile(ROT.as_quat().astype(np.float32), (201, 1))) and np.all(t0[:, 3:] == 0)
+
+
+def test_rotating_cut_on_cpu_logs_every_conflicting_link():
+    rate = np.radians(25.)
+    r0 = Rotation.from_euler("z", -10., degrees=True)*VERTICAL_CUT
+    cut = OrientedPhase((0, 0, -.02), .9, 0, tuple(r0.as_quat()), (0., 0., float(rate)))
+    phases = [cut, OrientedPhase((0, 0, .05), .2, -1, cut.end_rotation_xyzw(1e-4))]
+    run = drive_blade_sequence(RULER_KNIFE_V1, START, phases, device="cpu", cut_events="cut_events_v1")
+    log = run["cut_events"]["log"]
+    lattice = np.round((run["points"]-run["points"].min(0))/SPACING).astype(int)
+    conflicting = ce.links_conflicting_in_cut(run["state"]["codes"], ce.lattice_neighbours(lattice), 0)
+    assert len(log) > 0 and conflicting == ce.log_links(log, 0)
+    assert np.count_nonzero(log["flags"] & 1) == 0

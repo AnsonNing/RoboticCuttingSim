@@ -1,0 +1,14 @@
+{
+ "source_run": "artifacts/wp12/phase3_surface_001",
+ "figures": {
+  "S1_G3b_oblique": "docs/media/wp12/phase3/phase3_S1_G3b_oblique_A_vs_B.png",
+  "S1_G3a_cut01r": "docs/media/wp12/phase3/phase3_S1_G3a_cut01r_A_vs_B.png",
+  "S4_partial": "docs/media/wp12/phase3/phase3_S4_partial_A_vs_B.png",
+  "S6_slices": "docs/media/wp12/phase3/phase3_S6_slices_A_vs_B.png",
+  "S7_chip": "docs/media/wp12/phase3/phase3_S7_chip_A_vs_B.png",
+  "S8_recontact": "docs/media/wp12/phase3/phase3_S8_recontact_A_vs_B.png",
+  "S3_curved": "docs/media/wp12/phase3/phase3_S3_curved_A_vs_B.png",
+  "S2_compress_cut": "docs/media/wp12/phase3/phase3_S2_compress_cut_A_vs_B.png",
+  "reconstruction_vs_particles": "docs/media/wp12/phase3/phase3_reconstruction_vs_particles_S1_G3b.png"
+ }
+}

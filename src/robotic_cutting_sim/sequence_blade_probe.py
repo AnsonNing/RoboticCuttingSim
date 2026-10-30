@@ -5,7 +5,14 @@ rotation, applied as a pose jump at the phase boundary (use it only while the bl
 e.g. in a disarmed reorientation phase). Within a phase the motion is the same constant-velocity, zero-angular
 twist trajectory in 200-substep chunks, the same tlmpm_v5 construction (``TLMPMConfig(cuts, blade_half_width,
 cutting_energy)``), the same optional cut_events_v1 bracketing and CUDA-graph replay. With one constant rotation it
-reproduces ``drive_blade`` (tests/test_sequence_blade_probe.py, CPU, bit for bit). Physics is not changed.
+reproduces ``drive_blade`` (tests/test_cut_event_snapshots.py, CPU, bit for bit). Physics is not changed.
+
+WP-12 Phase 3 (S3 curved trajectory, opt-in): a phase may carry a constant world angular velocity
+``angular_velocity_rad_s`` about the edge-frame origin. The edge rotation is then integrated per substep,
+R(i dt) = exp([omega] i dt) R0 with R0 = ``rotation_xyzw`` at the phase start, and the angular part of every twist
+is omega (the solver's contact and law-8 sweep use it, ``tlmpm_v5`` twist convention [linear, angular]). A phase
+with zero angular velocity takes the original constant-rotation code path unchanged. ``phase_trajectory`` is the
+host generator shared with diagnosis drivers that rebuild the poses.
 """
 from dataclasses import dataclass
 
@@ -24,6 +31,36 @@ class OrientedPhase:
     duration_s: float
     cut: int = 0
     rotation_xyzw: tuple = (0., 0., 0., 1.)
+    angular_velocity_rad_s: tuple = (0., 0., 0.)
+
+    @property
+    def rotating(self):
+        return bool(np.any(np.asarray(self.angular_velocity_rad_s, float) != 0))
+
+    def end_rotation_xyzw(self, dt=1e-4):
+        """Edge rotation after the phase (equal to ``rotation_xyzw`` for a non-rotating phase)."""
+        if not self.rotating:
+            return tuple(self.rotation_xyzw)
+        steps = int(round(self.duration_s/dt))
+        omega = np.asarray(self.angular_velocity_rad_s, float)
+        return tuple((Rotation.from_rotvec(omega*dt*steps)*Rotation.from_quat(self.rotation_xyzw)).as_quat())
+
+
+def phase_trajectory(position, phase, dt, first, count):
+    """(poses (count+1, 7) float32, twists (count+1, 6) float32) of substeps first..first+count of ``phase``,
+    starting at the chunk's edge-origin ``position``."""
+    velocity = np.asarray(phase.velocity_m_s, float)
+    if not phase.rotating:
+        quaternion = Rotation.from_quat(phase.rotation_xyzw).as_quat()
+        poses = np.array([np.r_[position+velocity*dt*i, quaternion] for i in range(count+1)], np.float32)
+        twists = np.tile(np.r_[velocity, 0., 0., 0.], (count+1, 1)).astype(np.float32)
+        return poses, twists
+    omega = np.asarray(phase.angular_velocity_rad_s, float)
+    base = Rotation.from_quat(phase.rotation_xyzw)
+    quats = (Rotation.from_rotvec(np.outer(dt*(first+np.arange(count+1)), omega))*base).as_quat()
+    poses = np.array([np.r_[position+velocity*dt*i, quats[i]] for i in range(count+1)], np.float32)
+    twists = np.tile(np.r_[velocity, omega], (count+1, 1)).astype(np.float32)
+    return poses, twists
 
 
 def drive_blade_sequence(profile, start_m, phases, *, points=None, masses=None, spacing=.004, cutting_energy=5.,
@@ -58,13 +95,11 @@ def drive_blade_sequence(profile, start_m, phases, *, points=None, masses=None, 
     position = np.asarray(start_m, float)
     labels, digit_labels = [], []
     for phase in phases:
-        quaternion = Rotation.from_quat(phase.rotation_xyzw).as_quat()
         velocity = np.asarray(phase.velocity_m_s, float)
         steps = int(round(phase.duration_s/config.dt))
         for first in range(0, steps, chunk):
             count = min(chunk, steps-first)
-            poses = np.array([np.r_[position+velocity*config.dt*i, quaternion] for i in range(count+1)], np.float32)
-            twists = np.tile(np.r_[velocity, 0., 0., 0.], (count+1, 1)).astype(np.float32)
+            poses, twists = phase_trajectory(position, phase, config.dt, first, count)
             digits = np.full(count+1, phase.cut, np.int32)
             if gpu_graph:
                 if count not in graphs:
