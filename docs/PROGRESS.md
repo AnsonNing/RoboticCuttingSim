@@ -141,7 +141,10 @@
   - 結果對解析度未收斂。
   - Native host 記憶體每 episode 約 +49 MiB；Native 只在 verdict 層級可重複。
   - 沒有 Isaac Lab parity；材料參數暫定、未校準。
-- 下一步：最終 HEAD 的 CPU 測試與 CI 綠燈 → 合併到 main 並 push → 建立 DONE。
+- **Phase I 驗證完成**：
+  - 本機全套 CPU 測試在 `1b78ec3` 上 1194 passed、5 xfailed、0 failed（`artifacts/wp11/logs/phaseI_cpu_full_1b78ec3_001.log`）；`ae0ac0f` 只多了文件修改。
+  - **GitHub Actions run 41003268276 在 `ae0ac0f` 上 PASS**：1190 passed、4 skipped（都有列印原因）、5 xfailed、0 failed。
+- 下一步：合併到 main 並 push → 建立 DONE。
 
 ## 完成：BladeMaster 風格三個 Demo，最終組合 law 8（2026-10-29）
 
