@@ -689,3 +689,99 @@ return codes 0). The run used 3.6 of the 12 GPU-h budget and 1.8 of the 10 h wal
 - The candidate columns are shadow predictions on the law-8 trajectory, not simulations of a law. ADR, CPU
   acceptance and dynamics measurements (review §6, acceptance items 1–9) would be needed before any law. D1 is
   decided at xhigh.
+
+## Root-cause verification (V1–V4)
+
+Date 2026-10-31 (KST). This section is the formal run of the methods review's verification plan
+([WP12_PHASE4_METHODS_REVIEW.md](WP12_PHASE4_METHODS_REVIEW.md) §5). The protocol is
+`configs/wp12/phase4_verification_protocol_v1.json`, committed in `ecfa8c6` before any formal row (sha256 `cc9ced0b…`).
+The evidence is [`docs/evidence/wp12/phase4_verification_001.json`](../evidence/wp12/phase4_verification_001.json).
+The runs are `artifacts/wp12/phase4_verify_001/<row>` (76/76 rows COMPLETED, every return code 0).
+
+- **Unchanged.** `tlmpm_v5.py` (sha256 `a7a05b2f…`), law 8 and every record and threshold.
+- **Not a gate.** Rows labelled COUNTERFACTUAL_NOT_A_GATE use `tlmpm_v5_counterfactual.CounterfactualTLMPM`. It is a v5
+  subclass that is bitwise equal to v5 with default options (CPU test) and is not reachable from any production path.
+  These rows measure a mechanism. They are not acceptance results, laws or profiles.
+- **Neutral recorders.** All three are bitwise neutral on CPU: `flip_drift_v1`, `tool_contact_split_v1` and
+  `tensile_energy_max_v1` (`root_cause_recorders.py`).
+- **Scope.** Kinematic ideal tracking. The material is provisional and uncalibrated.
+- **Not fracture evidence.** A link-length or distance threshold only locates drift.
+
+### Verdicts against the declared predictions
+
+| Row | Verdict | What was measured (key numbers) |
+| --- | --- | --- |
+| V1.1 P1 concentrated at cut faces (READ_ONLY, resolution_002) | INCONCLUSIVE (declared rule) | **Cut rows:** all 199 cut-row states have a first-band/far-field P99 ratio of 7.5–66 (≥ 5). All 16 declared §2.1 values reproduce within tolerance. **Timing rows:** the 40 failing states are the 20 `*_timing` rows (60 control steps, the blade never reached the material, 0 labels). The declared input set ("every row") included them. Without them the verdict would be CONFIRMED |
+| V1.2 P1 = integrated FLIP null-space drift | INCONCLUSIVE | **First band:** the drift explains 0.958–0.996 of the error in all 8 rows (prediction ≥ 0.95: met). **Far field (> 6 s):** explained 0.970–0.9999. Only CUT and TRIM at 0.1 ms reach ≥ 0.999. **Integrity:** the far-field residual P99 is 0.002–0.02 s against a far-field P99 of 0.04–0.17 s. The declared identity bound max\|x − X − u_grid − drift\| ≤ 1e-5 m is exceeded in 5/8 rows (up to 1.2e-4 m, MULTI2 0.05 ms). This is consistent with float32 accumulation of x over 80–160 k substeps and limits the far-field comparison. **Refute criterion:** no row has a first-band fraction < 0.8 |
+| V1.3 drift = dt(1−α)/α part + α-independent part (COUNTERFACTUAL) | INCONCLUSIVE | **(a) α = 1:** first-band P99 / P99 at α = 0.05 is 0.42 (CUT), 0.29 (TRIM), 0.23 (OBL20); all CONFIRMED. S7 is 0.11, a larger drop than the predicted 2–5×, so INCONCLUSIVE. **(b) α fixed per unit time:** the dt trend mostly vanishes for TRIM 0.05 and OBL20 0.025 ms (CONFIRMED). It persists for CUT (0.34 vs 0.40 s; 0.88 vs 0.93 s) and OBL20 0.05 ms (INCONCLUSIVE). TRIM at 0.025 ms with α = 0.0127 degraded: P99 25 s, max speed 3.3 m/s, min det F 0.37, dome not removed (REFUTED case) |
+| V1.4 grid-velocity positions remove P1 (COUNTERFACTUAL) | INCONCLUSIVE (9 / 10 cases CONFIRMED) | **First band:** P50 falls 3.9–159× and P99 4.6–34× (CUT, TRIM, OBL20, MULTI2, S7, G3b at 1 mm; TRIM, OBL20, MULTI2 at 0.5 mm). **No lost separation:** component counts are unchanged everywhere and TRIM still removes the dome. **Exception, CUT 0.5 mm:** P99 falls 5.4× but P50 rises 0.056 → 0.068 s (q50 0.83, REFUTED case). **Assignment history:** links whose endpoints got their labels in the same substep sit at 0.0002–0.011 s; links labelled at different substeps keep 0.26–0.69 s, the label-timing remainder the review expected. Tool force changes (e.g. CUT 1 mm 0.0145 → 0.0240 N) |
+| V2.1 chip "tears" are kinematic (READ_ONLY) | INCONCLUSIVE | **TRIM rows:** in 22 of 25 rows with long links, ≥ 95 % of long links have \|F̄dX\| < 1.25 s (CONFIRMED). TRIM s 1.5 mm gap_s is 0.93. **S7 (Phase 3) r0 / r1:** 0.78, endpoint F stretch up to 1.77. No case is a majority F-consistent, so none is refuted |
+| V2.2 no fracture criterion reached in chips | **REFUTED** | **Gating set** (thin chip particles not on a cut face, t < 6 mm): in all 5 rows, 36–230 particles have ψ⁺_max·t ≥ 0.05 J/m² (max 0.26–0.63 J/m²). ψ⁺_max reaches 65–156 J/m³ at 1.5–4.5 s from the locus. **Cause:** ψ_dev stays ≤ 8.67 J/m³ (the J2 bound holds); the excess is dilatational energy K/2 tr², which the review's bound does not limit. Under the declared rule a fracture model becomes a physics question. **Caveats:** this is a Griffith energy estimate with a history maximum (it may include contact transients), and G_c is provisional. It is not observed tearing |
+| V2.3 the P1 fix removes chip scatter (COUNTERFACTUAL) | CONFIRMED | Long chip links (\|dx\| > 2 s) fall from 268 / 139 / 228 to 0 in TRIM 1 mm / S7 / TRIM 0.5 mm |
+| V3.1 two bridge mechanisms (READ_ONLY) | INCONCLUSIVE (33 / 34 CONFIRMED) | **Reproduced:** A_p10 and A_m10 96 / 96 P3b; A_±15/20/25/35 0 P3b; A_p30 228 / 380; OBL20 s 0.75 dx 4 mm 450 / 650. **Not reproduced:** the review's "every OBL20 g4s row 0 P3b" fails for `OBL20_s075_g4s_dt0100`, where all 262 / 262 bridges need a mis-sided label |
+| V3.2 onset and split depend on lattice phase | CONFIRMED (split only) | **Outcome:** at plane_x0 0.5 / 1 / 2 mm every tilt stays CONNECTED, so the onset does not move within 10–30°. **Split:** P3b is 0 in all 9 rows, against shares of 1.0 / 0 / 0.6 at x0 = 0. P3b is specific to the phase in which the plane contains a node line; at other phases all bridges are in-core wedges (P3a): 2–338 bridges |
+| V3.3 CRAMP-style visibility (STATIC) | REFUTED (declared rule) | **Trigger:** the "> 1000 labels" criterion fires only on the 5 OBL20 `*_timing` rows (uncut, 1644–25632 labels). The static rule assumes the whole plane above h was swept, which is false for an uncut bar. This shows the rule needs the recorded edge history. **Other rows:** on every cut row the STATIC part matches the prediction: 19 / 19 declared E1 cases, h ≥ 0.75 mm rows stay CONNECTED, ≤ 300 labels. **NOT_RUN:** the per-substep evaluator and N1–N9 |
+| V3.4 P3b caused by displacement ahead of the edge | INCONCLUSIVE (no prediction declared) | **Measured:** P3b VANISHES (0) for A_p10 and A_p30 under each variant: 0.05 ms, COUNTERFACTUAL k 0.4, COUNTERFACTUAL grid positions. All rows stay CONNECTED through P3a bridges (16–175). **Reading:** P3b is not a law-input problem by the declared rule |
+| V4.1 dt dependence = series penalty compliance (READ_ONLY fit) | CONFIRMED | **Fits:** CUT dt₀ 0.0502 ms, F∞ 0.0651 N; OBL20 0.0689 ms, 0.0906 N; MULTI2 0.0525 ms, 0.0640 N (reported) |
+| V4.2 same K_p gives the same force (COUNTERFACTUAL) | INCONCLUSIVE | **CUT:** k 0.4 gives 0.0239 N vs the predicted 0.0327 N (−27 %, REFUTED case); k 0.2 is −27 % (REFUTED). **OBL20:** −25 % and −18 % (INCONCLUSIVE). **TRIM:** 0.093–0.094 N. Equal K_p does not give equal force; a further dt effect exists |
+| V4.3 fixed physical stiffness makes force dt-invariant (COUNTERFACTUAL) | INCONCLUSIVE (3 REFUTED, 1 INCONCLUSIVE) | **CUT:** 0.0261 / 0.0299 N vs 0.0145 N (+80 %, +106 %). **OBL20:** 0.0340 / 0.0544 N vs 0.0275 N. Force still rises as dt falls at fixed physical stiffness, so compliance is not the only dt effect |
+| V4.4 frozen formula pre-asymptotic | INCONCLUSIVE | **CUT at 0.0125 ms:** 0.0881 N, above F∞ = 0.065 N (REFUTED; force keeps rising beyond the series fit). **OBL20:** 0.0886 N, in [0.080, 0.091] (CONFIRMED) |
+| V4.5 coarse-spacing force collapse = cutting zone \|z\| ≤ s | CONFIRMED | **Unchanged rows:** at s 1.5 / 2 mm the out-of-zone contacts carry 0.0003 / 0 N (limit 0.0033 N), while the in-zone advance force is released (0.058 / 0.079 N). At s = 1 mm almost all of the steady force (0.0325 of 0.0327 N) is carried by out-of-zone contacts. **COUNTERFACTUAL zone = 1 mm:** the force recovers to 0.056 / 0.082 N at s 1.5 / 2 mm and is identical at s = 1 mm |
+| V4.6 TRIM has a second dt mechanism | CONFIRMED | **Reproduced:** resolution_002 ratios 1.50 / 1.16 / 1.32; the CUT-type fit misses 0.1 ms by 41 %. **Attribution:** TRIM force is almost entirely blade-normal. The out-of-zone normal reaction grows from 0.006 to 0.059 N between 0.2 and 0.05 ms; the in-zone normal reaction is 0.045–0.085 N. Fixing α per unit time at 0.05 ms changes little (0.101 vs 0.105 N) |
+
+### Reading
+
+1. **P1 (x vs F at the cut face).** It is the FLIP null-space drift.
+   - The drift explains ≥ 96 % of the first-band inconsistency (V1.2).
+   - Advecting positions with the MUSL grid velocity removes it by 4–159× in 9 of 10 cases without losing separation (V1.4).
+   - The remainder is label timing: links whose ends were labelled at different substeps.
+   - The CUT 0.5 mm P50 exception and the force changes mean a supported grid-position option still needs the full
+     law-8 acceptance (review §6 step 3). Nothing here reopens Phase 3, because these are counterfactual states.
+2. **P2 (chips).** Chip scatter is kinematic.
+   - Most long links are F-inconsistent (V2.1), and grid positions remove all of them (V2.3).
+   - However, the tensile Griffith estimate is reached in thin chip material off the cut face (V2.2, dilatational
+     energy). The review's argument that "no fracture is possible below 6 mm" does not hold under this material.
+   - Whether chips should break is now a physics and calibration question. It is not evidence that they do.
+3. **P3 (oblique exit).** The mis-sided P3b mechanism is a lattice-phase artefact.
+   - It exists only at plane_x0 = 0 (V3.2) and vanishes under smaller dt, stiffer contact or grid positions (V3.4).
+   - The in-core wedge (P3a) is what keeps every tested oblique row ≥ 10° connected.
+   - The static visibility rule cannot be evaluated without edge history (V3.3).
+4. **P4 (force).** Series penalty compliance fits the dt series (V4.1) but is not the whole effect: equal K_p is
+   −18 to −27 % off (V4.2), and force still rises at fixed physical stiffness (V4.3) and beyond F∞ (V4.4, CUT).
+   The coarse-spacing collapse is fully the cutting-zone width (V4.5). TRIM's force is blade-normal and has its own
+   dt trend (V4.6). Contact force remains NOT_CONVERGED.
+
+### Commands, timing, deviations
+
+```
+# formal queue (cuda:0 x2 + cuda:1 x2): 76 rows, 05:59:05-06:54:54 KST, 3.62 GPU-h summed process walls (cap 8)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4_verification_queue.py --out artifacts/wp12/phase4_verify_001
+# read-only rows + verdicts (CPU)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/summarize_wp12_phase4_verification.py \
+    --runs artifacts/wp12/phase4_verify_001 --out docs/evidence/wp12/phase4_verification_001.json
+# tests
+.venv/bin/python -m pytest tests/test_root_cause_recorders.py tests/test_root_cause_diagnostics.py \
+    tests/test_wp12_phase4_verification_protocol.py tests/test_repo_naming.py   # 25 passed
+```
+
+- **Logs.** Per row in `artifacts/wp12/logs/phase4_verify_001_<row>.log` (GNU time) and in `queue.jsonl`. The
+  read-only caches are `readonly_resolution_002.json` and `readonly_phase4_e1_001.json` in the run directory.
+- **Seed and walls.** Seed 42. Rows took 18–736 s each, far below the estimates; those came from resolution_002 walls
+  measured under contention.
+- **Summarizer change after the commit.** The summarizer was edited after `ecfa8c6` to add the reporting fields
+  `identity_integrity_le_1e5_m`, `far_residual_p99` and `far_p99` to the V1.2 cases. No verdict logic changed.
+- **DEV smokes.** `artifacts/wp12/phase4_verify_dev_001` holds DEV smokes only; they are not evidence.
+- **Deviations declared in the protocol.**
+  - S7 and G3b ran at 1 mm only.
+  - The 0.5 mm baselines come from resolution_002.
+  - V3.3 is STATIC only; N1–N9 are NOT_RUN.
+  - P5 (the Phase 3 surface) was not re-measured.
+
+### Limits
+
+- **Coverage.** Kinematic tracking, one provisional material, one seed. No Native or Lab run.
+- **Verdict rules.** The literal hypothesis rule (all cases must agree) turns any mixed result into INCONCLUSIVE; the
+  per-case lists in the evidence carry the detail. V1.1 and V3.3 are dominated by the resolution_002 timing rows that
+  the declared input set included.
+- **V2.2.** The Griffith number uses the history maximum of the tensile energy and a provisional G_c. It shows that
+  the material model does not exclude tearing; it does not show tearing.

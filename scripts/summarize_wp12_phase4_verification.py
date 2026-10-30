@@ -247,7 +247,9 @@ def v12(P, runs):
         cases.append(case(rid, v, e1=e1, e2=L['1-3s']['identity']['explained_fraction'],
                           e3=L['3-6s']['identity']['explained_fraction'], e4=e4,
                           residual_p99_first=L[FIRST]['identity']['residual_p99'], first_p50=L[FIRST]['p50'],
-                          first_p99=L[FIRST]['p99'], identity_position_residual_m=d['analysis']['drift_identity_position_residual_m']))
+                          first_p99=L[FIRST]['p99'], identity_position_residual_m=d['analysis']['drift_identity_position_residual_m'],
+                          identity_integrity_le_1e5_m=d['analysis']['drift_identity_position_residual_m'] <= 1e-5,
+                          far_residual_p99=L[FAR]['identity']['residual_p99'], far_p99=L[FAR]['p99']))
     verdict, counts = combine(cases)
     return {'verdict': verdict, 'counts': counts, 'cases': cases}
 
