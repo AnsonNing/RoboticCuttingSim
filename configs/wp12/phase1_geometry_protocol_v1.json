@@ -1,0 +1,39 @@
+{
+ "schema": "wp12_phase1_geometry_protocol_v1",
+ "solver": "tlmpm_v5",
+ "cutting_law": 8,
+ "particle_spacing_m": 0.001,
+ "grid_dx_m": 0.004,
+ "material_dt_s": 0.0001,
+ "recorder": "cut_events_v1 + cut_event_snapshots_v1 (read-only)",
+ "tool_profile": "ruler_knife_v1",
+ "probe_material": "TLMPMConfig defaults (density 1500, E 50 kPa, nu 0.3, yield 1 kPa), cutting_energy 5 J/m^2, legacy tray floor/walls (blade_probe); CUT-01-R uses its task recipe. Uncalibrated.",
+ "cut_speed_m_s": 0.02,
+ "move_speed_m_s": 0.05,
+ "seeds": {
+  "G3a_CUT-01-R": [
+   42,
+   42
+  ],
+  "probes": "deterministic sampling (no RNG); GPU repeats measure run-to-run nondeterminism",
+  "G3b_repeats": 2,
+  "metric_sampling_seed": 0
+ },
+ "surface_profiles": {
+  "legacy": "ParticleSurface voxel 1 mm (min(s, 1.5 mm)), radius s/2, Newton defaults (threshold 0.25), smooth 0",
+  "current_volume_v1": "voxel s/2, kernel 3 s, threshold 0.5, radius (s/2) cbrt(det F), smooth 0 (used by every configured/registered task)"
+ },
+ "unmeshable_policy": "skip_presentation_v1 (skips are recorded; outputs identical to 'raise' when none)",
+ "metrics": "surface_metrics_v1 (region_rule_v1, patch radius 2 mm, normal radius 3 mm, coverage radius 1 s, core margin 3 s) and surface_attribution_v1",
+ "criteria": {
+  "G1": "PASS iff current_volume_v1 on the static box is a closed oriented manifold (0 boundary/non-manifold/inconsistent edges), 1 shell, Euler 2, |dV|/V <= 5 %, area-weighted whole-surface P95 to the analytic box <= 0.5 s (SURFACE_GEOMETRY_VALIDATION promotion criteria), and the 0.2 s rest run writes 0 digits and 0 events and stays one closed shell. legacy: MEASURED.",
+  "G2": "PASS iff (metric self-check) the synthetic Hermite locus lies on the analytic plane (max <= 1e-9 m), an exact planar mesh scores distance max <= 1e-9 m and normal error max <= 1e-3 deg, and the link-midpoint staircase stays within s/2 of the plane. ParticleSurface numbers: MEASURED (zero-physics floor).",
+  "G3": "PASS iff mechanical components == 2, every conflicting link is logged exactly once, 0 sign-inconsistent events, assignment substeps match the log, and the current_volume_v1 mesh has shells == components, closed. All geometry: MEASURED.",
+  "G4": "PASS iff mechanical components == 1 and lattice components == 1 (no false full separation), logged == conflicting, and every assignment-instant Hermite point lies within 1 s of the commanded sweep and no lower than the lowest edge position - 1 s. Kerf/crack-front geometry: MEASURED.",
+  "G5": "PASS iff logged == conflicting, 0 mesh shells built from two mechanical components (provenance), and every skipped fragment is recorded. Chip detachment, chip volume and fragments: MEASURED.",
+  "G6": "PASS iff mechanical components == 6 and logged == conflicting for each of the 3 digits. Run with slots_per_node 8 first; a SlotOverflowError is recorded (solver limit, never merged) and the case reruns with 16. Intersections: MEASURED.",
+  "G7": "PASS iff the disarmed push/hold/withdraw phases write 0 digits and 0 events, the mechanical component count after the cut equals the final count (2), and no mesh shell is built from two components (extractor provenance) in any snapshot. Interpenetration, gaps and temporal residuals: MEASURED.",
+  "G8": "PASS iff each control writes 0 digits, 0 events, 0 unexpected code changes, keeps 1 mechanical component and a single closed current_volume_v1 shell."
+ },
+ "attribution": "surface_attribution_v1 layers L1-L7 on the same core links (>= 3 lattice layers from the exterior)"
+}

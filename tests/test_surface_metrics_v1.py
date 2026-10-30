@@ -209,3 +209,202 @@ def test_exterior_layers_grow_inward():
     assert int((~M.exterior_mask(lattice, 1)).sum()) == 8*6*6
     assert int((~M.exterior_mask(lattice, 2)).sum()) == 6*4*4
     assert int((~M.exterior_mask(lattice, 3)).sum()) == 4*2*2
+
+
+# ------------------------------------------------------------------ Phase 1 (final surface_metrics_v1)
+
+def grid_box_mesh(lo, hi, h=.0005):
+    """Closed, outward-wound, subdivided box surface (each face an (n x m) grid; shared corner/edge vertices)."""
+    lo, hi = np.asarray(lo, float), np.asarray(hi, float)
+    n = np.maximum(np.round((hi-lo)/h).astype(int), 1)
+    xs, ys, zs = (np.linspace(lo[i], hi[i], n[i]+1) for i in range(3))
+    verts, index, faces = [], {}, []
+
+    def vid(p):
+        key = tuple(np.round(p, 12))
+        if key not in index:
+            index[key] = len(verts)
+            verts.append(p)
+        return index[key]
+    for axis in range(3):
+        u, v = [a for a in range(3) if a != axis]
+        gu, gv = (xs, ys, zs)[u], (xs, ys, zs)[v]
+        for side, value in ((0, lo[axis]), (1, hi[axis])):
+            for i in range(len(gu)-1):
+                for j in range(len(gv)-1):
+                    q = []
+                    for a, b in ((i, j), (i+1, j), (i+1, j+1), (i, j+1)):
+                        p = np.zeros(3)
+                        p[axis], p[u], p[v] = value, gu[a], gv[b]
+                        q.append(vid(p))
+                    t1, t2 = (q[0], q[1], q[2]), (q[0], q[2], q[3])
+                    tri = np.array([verts[k] for k in t1])
+                    nrm = np.cross(tri[1]-tri[0], tri[2]-tri[0])
+                    outward = nrm[axis]*(1 if side else -1) > 0
+                    faces += [t1, t2] if outward else [t1[::-1], t2[::-1]]
+    return np.asarray(verts), np.asarray(faces)
+
+
+def two_pieces(gap=.002, nx=12):
+    lattice, reference = box(nx, 6, 6)
+    codes = ternary_to_packed(x_cut(lattice, at=nx//2-1), 1)
+    positions = reference+np.where(lattice[:, :1] >= nx//2, [[gap, 0, 0]], 0.)
+    labels = (lattice[:, 0] >= nx//2).astype(int)
+    lo, hi = reference.min(0)-H/2, reference.max(0)+H/2
+    cut_x = (nx//2-.5)*H
+    v1, f1 = grid_box_mesh(lo, [cut_x, hi[1], hi[2]])
+    v2, f2 = grid_box_mesh([cut_x+gap, lo[1], lo[2]], hi+[gap, 0, 0])
+    return lattice, reference, codes, positions, labels, np.r_[v1, v2], np.r_[f1, f2+len(v1)], cut_x
+
+
+def test_material_locus_hermite_and_midpoint_sources():
+    lattice, reference = box(10, 6, 6)
+    n = np.array([np.cos(np.radians(30)), 0, np.sin(np.radians(30))])
+    origin = reference.mean(0)+.0002
+    d = (reference-origin)@n
+    codes = np.where(d >= 0, 2, 1)
+    pairs, cut = M.conflicting_links_per_cut(lattice, codes, cuts=1)
+    a, b = pairs.T
+    assert np.all(codes[a] == 1) and np.all(codes[b] == 2)
+    from robotic_cutting_sim.cut_events import LOG_DTYPE
+    t = d[a]/(d[a]-d[b])
+    log = np.zeros(len(a), LOG_DTYPE)
+    log["p"], log["q"], log["t"] = b, a, 1-t            # recorded from the other endpoint: matching is symmetric
+    log["hermite_reference"] = reference[a]+t[:, None]*(reference[b]-reference[a])
+    log["normal_reference"] = n
+    hl = M.material_locus(reference, lattice, reference, codes, cuts=1, events=log)
+    ml = M.material_locus(reference, lattice, reference, codes, cuts=1)
+    assert hl["source"] == M.LOCUS_HERMITE and ml["source"] == M.LOCUS_MIDPOINT
+    assert np.abs((hl["P"]-origin)@n).max() < 1e-9      # float32 log storage
+    assert np.abs((ml["P"]-origin)@n).max() <= .5*H+1e-12
+    assert np.allclose(hl["N"], n) and hl["normal_against_link"] == 0
+    assert np.all(ml["N"]@n > .9)                                       # staircase normal estimate
+    assert np.allclose(hl["side_points"][:, 0], hl["P"]) and np.allclose(hl["side_normals"][:, 0], n)
+
+
+def test_material_locus_maps_points_and_normals_by_F():
+    lattice, reference, codes, _, _, _, _, _ = two_pieces()
+    r = Rotation.from_euler("xyz", [10, 20, -30], degrees=True)
+    shear = np.array([[1, .2, 0], [0, 1, 0], [0, 0, 1.]])
+    A = r.as_matrix()@shear
+    positions = reference@A.T
+    F = np.tile(A, (len(reference), 1, 1))
+    loc = M.material_locus(reference, lattice, positions, codes, cuts=1, F=F)
+    assert np.allclose(loc["side_points"][:, 0], loc["P"]@A.T) and np.allclose(loc["side_points"][:, 1], loc["P"]@A.T)
+    expected = np.linalg.inv(A).T@np.array([1., 0, 0])
+    assert np.allclose(loc["side_normals"][:, 0], expected/np.linalg.norm(expected))
+    assert np.allclose(loc["side_normals"][:, 1], -loc["side_normals"][:, 0])
+
+
+def test_region_rule_and_exact_two_piece_report():
+    lattice, reference, codes, positions, labels, v, f, cut_x = two_pieces()
+    loc = M.material_locus(reference, lattice, positions, codes, cuts=1)
+    ext = M.exterior_samples(lattice, positions, H)
+    cls = M.classify_mesh_vertices(v, positions, labels, loc, ext, spacing=H, core_margin_m=1.5*H)
+    on_face = np.isclose(v[:, 0], cut_x) | np.isclose(v[:, 0], cut_x+.002)
+    interior = (v[:, 1] > reference[:, 1].min()) & (v[:, 1] < reference[:, 1].max()) & \
+               (v[:, 2] > reference[:, 2].min()) & (v[:, 2] < reference[:, 2].max())
+    assert np.all(cls["kind"][on_face & interior] == 2)
+    assert np.all(cls["kind"][~on_face] == 1) and cls["counts"]["unmatched"] == 0
+    rep = M.surface_report(reference, lattice, positions, codes, v, f, spacing=H, labels=labels,
+                           masses=np.full(len(reference), 1500*H**3), density=1500., cuts=1, F=None, locus=loc,
+                           core_margin_m=1.5*H)
+    assert rep["status"] == "MEASURED"
+    assert rep["distance_to_side_locus_plane"]["max"] < 1e-12
+    assert abs(rep["signed_bias"]["bias_toward_side2_m"]) < 1e-12 and abs(rep["signed_bias"]["thickness_bias_m"]) < 1e-12
+    assert rep["coverage"] == 1. and rep["locus_to_mesh_distance"]["max"] < 1e-12
+    assert rep["normal_error_deg_core"]["max"] < 1e-6 and rep["normal_outward_fraction_core"] == 1.
+    assert rep["topology"]["shells_equal_components"] and rep["mesh_validity"]["watertight"]
+    assert rep["mesh_validity"]["shells_negative_volume"] == 0 and rep["mesh_validity"]["shells_euler_not_2"] == 0
+    assert rep["mesh_validity"]["self_intersection"]["intersecting_pairs_sampled"] == 0
+    assert abs(rep["volume"]["total_relative_error_reference"]) < 1e-9
+    assert rep["rim"]["corner_to_mesh_distance"]["max"] < 1e-12 and rep["rim"]["open_edges_near_junction"] == 0
+    assert rep["per_cut"]["0"]["distance_to_side_locus_plane"]["max"] < 1e-12
+
+
+@pytest.mark.parametrize("shift,thick", [(.0002, 0.), (0., .0003)])
+def test_signed_bias_separates_shift_and_thickening(shift, thick):
+    lattice, reference, codes, positions, labels, v, f, cut_x = two_pieces()
+    moved = v.copy()
+    face1 = np.isclose(v[:, 0], cut_x)
+    face2 = np.isclose(v[:, 0], cut_x+.002)
+    moved[face1, 0] += shift+thick/2       # side 1 face (outward +x)
+    moved[face2, 0] += shift-thick/2       # side 2 face (outward -x)
+    loc = M.material_locus(reference, lattice, positions, codes, cuts=1)
+    rep = M.surface_report(reference, lattice, positions, codes, moved, f, spacing=H, labels=labels, cuts=1, locus=loc,
+                           validity=False, core_margin_m=1.5*H)
+    bias = rep["signed_bias"]
+    assert bias["bias_toward_side2_m"] == pytest.approx(shift, abs=2e-5)
+    assert bias["thickness_bias_m"] == pytest.approx(thick, abs=3e-5)
+
+
+def test_point_triangle_distance_matches_dense_sampling():
+    rng = np.random.default_rng(3)
+    a, b, c = rng.normal(size=(3, 3))
+    uv = rng.random((40000, 2))
+    uv = np.where(uv.sum(1, keepdims=True) > 1, 1-uv, uv)
+    samples = a+uv[:, :1]*(b-a)+uv[:, 1:]*(c-a)
+    q = rng.normal(size=(30, 3))*2
+    d, closest = M.point_triangle_distance(q, *(np.tile(x, (30, 1)) for x in (a, b, c)))
+    brute = np.linalg.norm(q[:, None]-samples[None], axis=2).min(1)
+    assert np.all(d <= brute+1e-12) and np.allclose(d, brute, atol=2e-2)
+    assert np.allclose(np.linalg.norm(q-closest, axis=1), d)
+
+
+def test_self_intersections_and_shells():
+    v, f = grid_box_mesh([0, 0, 0], [.002, .002, .002], h=.001)
+    clean = M.mesh_validity_v1(v, f)
+    assert clean["self_intersection"]["intersecting_pairs_sampled"] == 0 and clean["shells"] == 1
+    assert clean["shell_rows"][0]["euler_characteristic"] == 2 and clean["shell_rows"][0]["signed_volume_m3"] > 0
+    v2 = v+[.0007, .0006, .0005]                           # an interpenetrating second shell (generic offset)
+    both = M.mesh_validity_v1(np.r_[v, v2], np.r_[f, f+len(v)])
+    assert both["shells"] == 2 and both["self_intersection"]["inter_shell_pairs_sampled"] > 0
+    flipped = M.mesh_validity_v1(v, f[:, ::-1])
+    assert flipped["shells_negative_volume"] == 1
+    # one crossing pair of single triangles
+    tri = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [.2, .2, -.5], [.2, .2, .5], [.9, .9, 0.]])
+    assert M.self_intersections(tri, np.array([[0, 1, 2], [3, 4, 5]]))["intersecting_pairs_sampled"] == 1
+
+
+def test_topology_consistency_uses_provenance_over_proximity():
+    lattice, reference, codes, positions, labels, v, f, _ = two_pieces()
+    topo = M.topology_consistency(v, f, positions, labels)
+    assert topo["shells_equal_components"] and topo["faces_nearer_other_component"] == 0
+    count, shell = M.shells(v, f)
+    face_component = shell.copy()
+    # an extractor that built a shell from two components is caught by provenance
+    bad = face_component.copy()
+    bad[:5] = 1-bad[:5]
+    assert M.topology_consistency(v, f, positions, labels, face_component=bad)["shells_spanning_components"] >= 1
+    assert M.topology_consistency(v, f, positions, labels, face_component=face_component)["shells_spanning_components"] == 0
+
+
+def test_temporal_stability_separates_motion_from_remeshing():
+    lattice, reference, codes, positions, labels, v, f, _ = two_pieces()
+    same = M.temporal_stability(v, f, v.copy(), f.copy(), positions, positions, spacing=H)
+    assert same["same_topology"] and same["residual_after_transport"]["max"] == 0. and same["vertexwise_max_m"] == 0.
+    step = np.array([.0007, 0, 0])
+    moved = M.temporal_stability(v, f, v+step, f, positions, positions+step, spacing=H)
+    assert moved["residual_after_transport"]["max"] < 1e-12 and moved["raw_jump"]["max"] > .0006
+    assert moved["material_displacement"]["p50"] == pytest.approx(.0007)
+
+
+def test_volume_report_reference_and_current():
+    lattice, reference, codes, positions, labels, v, f, _ = two_pieces()
+    F = np.tile(np.eye(3)*1.1, (len(reference), 1, 1))
+    rep = M.volume_report(v, f, positions, labels, H**3, F)
+    assert abs(rep["total_relative_error_reference"]) < 1e-9
+    assert rep["total_relative_error_current"] == pytest.approx(1/1.331-1, rel=1e-9)
+
+
+def test_local_plane_ignores_collinear_patches():
+    line = np.c_[np.linspace(0, .003, 7), np.zeros(7), np.zeros(7)]
+    d, n = M.local_plane_signed(np.array([[.0015, .0005, .0005]]), line, np.tile([0, 0, 1.], (7, 1)), .003)
+    assert np.isnan(d[0]) and np.isnan(n[0]).all()
+
+
+def test_patch_roughness_reports_quadratic_mean():
+    rng = np.random.default_rng(1)
+    points = np.c_[rng.uniform(0, .01, 400), rng.uniform(0, .01, 400), rng.normal(0, 1e-4, 400)]
+    r = M.patch_roughness(points, .002)
+    assert r["quadratic_mean"] == pytest.approx(1e-4, rel=.4)
