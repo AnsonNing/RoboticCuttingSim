@@ -85,9 +85,11 @@ and opt-in. Material parameters remain provisional and uncalibrated.
 | 0 | done: acronym removal + guard (`ce547f9`), plan (`1c91605`), technology review (`3f13379`), baseline audit: 8/8 scenes reproduce frozen verdicts, CPU 1196 passed (`2df1e13`) | [audit](reports/WP12_BASELINE_AUDIT.md), [review](reports/WP12_SURFACE_TECH_REVIEW.md) |
 | 1 | done (`b31553d`): attribution, G1–G8, debug viewer; surface protocol v1 frozen | [diagnosis](reports/WP12_SURFACE_DIAGNOSIS.md) |
 | 2 | 2a done (`ec3e8a7`): profile, single-source geometry, through-cut study (A+B), Native settle and knife-on-board; 2b in progress: live Native cutting acceptance on the board, old-vs-new comparison | [workcell report](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md) |
-| 3 | recorder (`403870f`) and Layers 3–6 core (`89b289d`) done; S0–S9 measurement running; live/Native integration next | |
-| 4 | 4a root-cause diagnosis running | |
-| 5–7 | not started | |
+| 3 | CLOSED by xhigh decision (`a94bd9f`): recorder (`403870f`), v1 core (`89b289d`), live/Native integration (`9fde661`); comparison gate FAIL under frozen protocol v1 (`bdc5da0`) and v2 (`dc210ff`), both kept; `cut_aware_surface_v1` ships opt-in, `particle_surface_v1` stays default, v2 experimental; near-face x/F mismatch and chip tearing without codes handed to Phase 4 | [reconstruction](reports/WP12_SURFACE_RECONSTRUCTION.md), [live](reports/WP12_SURFACE_LIVE.md), [decision](reports/WP12_PHASE3_XHIGH_DECISION.md) |
+| 4 | 4a root causes (`b012902`); xhigh REJECTED the proposed law 9 (`81a9626`); 4c geometry/material (`05b31c5`); E1 oblique-on-board and resolution matrix running; final xhigh Phase 4 decision pending (envelope, law, convergence, F3/F7) | [physics](reports/WP12_CUTTING_PHYSICS.md), [xhigh review](reports/WP12_PHASE4_XHIGH_REVIEW.md) |
+| 5 | infrastructure DRAFT (`94c7602`); freeze after the Phase 4 envelope | [generalization](reports/WP12_GENERALIZATION.md) |
+| 6 | running | |
+| 7 | not started | |
 
 **Phase 0 gate decision (2026-10-31).** Architecture: Approach B on the 1 mm particle
 lattice (review §6), links cut iff endpoint codes conflict, Hermite data from
