@@ -132,6 +132,13 @@ s1702, s1704):
 3. **Scoped components.** For a set of digits *D*, the scoped components are the mechanical components
    (the same eight-node compatibility graph, packed or ternary) of the final codes with every digit outside
    *D* set to 0. This is exactly the history those digits alone would have written.
+   *Correction (2026-10-30, WP-11 review finding 3):* the last sentence is wrong when a later step's digits
+   are scored after an earlier step removed material. A sever that follows a remove never meets the removed
+   chip, so the chip carries 0 in the sever digit; with the remove digit set to 0 too, the chip becomes a
+   code-0 bridge between the sever pieces, which the sever alone would never have written had the chip still
+   been there (it would have been cut). The masked codes are the history of *D* only for digits written before
+   any material was detached; `goal_eval_v2` itself is unchanged (round 2 was declared and scored with it),
+   and Amendment 2 (`goal_eval_v2a`) states the corrected rule.
 4. **`sever` / `divide` step.** Every sever check (expected substantial pieces, main-piece mass, plane
    location, far-particle rule) is computed on the components of the step's **own** digits. Location
    therefore comes only from the separation interfaces of its own cut digits.
@@ -159,3 +166,78 @@ s1702, s1704):
   must be scored with v1, or the convention must be declared.
 - Round-1 verdicts and evidence are not changed. Their v2 rescoring is a read-only `POST_HOC_DIAGNOSTIC`
   (round-2 report).
+
+## Amendment 2 (2026-10-30): `goal_eval_v2a` (WP-11 review finding 3)
+
+**Context.** The WP-11 review (rcs-review, ACCEPT WITH CONDITIONS) found three defects in `goal_eval_v2`:
+
+1. **Unowned digits are ignored.** v2 checks only that the recording keeps enough digits. Digits outside the
+   step allocation are masked out of every scope, so an extra through-cut on a digit no step owns scores PASS
+   (v1 says FAIL). `PolicyReadyEnv` lets an external controller use any `cut_index` below `max_cuts` (up to 15).
+2. **No combined check.** Each remove/trim step is checked only with its own digits plus the earlier sever
+   digits. Two remove steps that only together detach substrate below the plane both pass.
+3. **Remove before sever.** A sever after a remove is scored on its own digit with the remove digit set to 0.
+   The removed chip, which the later sever never met, then bridges the sever pieces (Amendment 1 rule 3 and the
+   correction above). Reproduced on a synthetic fixture: v2 FAILs `expected_substantial_pieces` with one
+   component when the sever does not label the removed chip, and PASSes when it does.
+
+**Decision.** `goal_eval_v2` is not changed: round 2 was declared and scored with it, and its evaluations are
+pinned (`tests/test_goal_eval_v2a.py::V2_PINS`, computed with the goals.py of `b624df6`). A new opt-in version,
+`goal_eval_v2a` (`"evaluator_version": "goal_eval_v2a"`), keeps v2 rules 1, 2 and 4–7 and changes or adds:
+
+1. **Every labelled digit must be owned.** After the v2 allocation (declared convention, plan cross-check), a
+   digit below the recording's K that no step owns and that is nonzero in any recorded frame makes the sequence
+   **FAIL** (check `no_unowned_digit_labels`), with the digits and labelled-particle counts as the reason. When
+   the allocation cannot be determined (plan `MISMATCH`, or the recording keeps fewer digits than the sequence
+   needs) the sequence stays **NOT_RUN**, as in v2, and the unowned check is not scored.
+2. **A step is scored on the workpiece it acted on** (replaces Amendment 1 rule 3 for v2a). Let *E(S)* be the
+   particles outside every anchored (bottom-layer) component of the codes of all digits allocated to the steps
+   before *S*: the material earlier steps detached. Digits are written in step order, so earlier digits are
+   never affected by later ones; later digits are still masked, exactly as in v2. For step *S*:
+   - *E(S)* is removed from the stencil graph (no stencil support), from the mass base and from the location
+     statistic. A removed chip therefore cannot bridge a later sever, and its interfaces are not attributed to
+     the sever plane.
+   - Sever/divide: the v2 piece and location checks on the step's own digits, over the remaining material.
+   - Remove/trim: the v2 per-prior-piece substrate checks over the remaining material. For removal of selected
+     protrusions (and trim's above-plane removal), material in *E(S)* counts as removed: the end state is what
+     the goal asks for. Retention of an unselected protrusion is measured on the part of it that remained at the
+     start of *S*; when an earlier step removed all of it, retention is not applicable to *S* (reported as
+     `retention_not_applicable_removed_earlier`, the item passes).
+   - When nothing was detached earlier (for example a sever first), every step result equals v2's.
+   The rule is principled because detachment is decided only by digits that were already written when *S*
+   began, with the same anchored-component definition the substrate checks use.
+3. **Final all-digit substrate integrity** (new sequence check `final_all_digit_substrate_integrity`). When the
+   sequence has remove/trim steps (all with horizontal planes; otherwise NOT_RUN as v2 rule 5):
+   - *pieces* are the anchored components of all sever/divide digits, computed without the material that is
+     detached under all allocated digits (so removed chips cannot bridge them);
+   - each detached particle is attributed to the piece of its nearest non-detached reference particle;
+   - per piece, under all allocated digits, the material below the **lowest** remove/trim plane must have one
+     anchored component, its largest component must hold ≥ the strictest declared `minimum_substrate_share`,
+     and ≤ the strictest declared `maximum_detached_below_fraction` may be detached.
+   - The lowest plane is used because material between two removal planes may legitimately be removed by the
+     step with the lower plane. Without remove/trim steps the check is `NOT_APPLICABLE`.
+4. **Thresholds are unchanged.** Every threshold is the v1 threshold (the strictest declared one for the final
+   check). move_piece steps and non-sequence goals are scored exactly as v1, and the integrity layer is
+   unchanged.
+
+**Tests** (`tests/test_goal_eval_v2a.py`, CPU, synthetic packed fixtures):
+
+- an unowned through-cut on digit 4 is a v2a FAIL with an explicit reason (v2 PASS, v1 FAIL);
+- an allocation that cannot be determined is NOT_RUN;
+- two remove steps that each leave a below-plane block attached but together detach it (4.5% of the below-plane
+  mass) are a v2a FAIL in the final check, with both steps passing (v2 PASS, v1 FAIL);
+- remove before sever through the removed protrusion is a v2a PASS whether or not the sever labelled the chip
+  (v2 FAIL when it did not);
+- the v2 negatives (a remove digit that splits a piece, a sever 8 mm off) still FAIL;
+- retention is not scored for a protrusion an earlier step removed;
+- v1 digests (`V1_PINS`) and v2 digests (`V2_PINS`) are unchanged.
+
+**Consequences.**
+
+- Recorded round-2 verdicts stay as recorded (v2). Their v2a rescoring, and that of round-1 s1702/s1704, is a
+  read-only `POST_HOC_DIAGNOSTIC` in `docs/reports/WP11_PHASE_E_ROUND2.md`.
+- New sequence declarations should use `goal_eval_v2a`. An external controller that labels a digit outside the
+  declared convention now fails instead of being ignored.
+- The nearest-particle attribution of detached material in the final check is a geometric bookkeeping rule; it
+  affects only the per-piece detached fraction, and the total detached fraction is reported too.
+

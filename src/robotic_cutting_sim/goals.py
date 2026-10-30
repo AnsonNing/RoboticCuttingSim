@@ -68,6 +68,19 @@ component holding its below-plane mass), and removal/retention use that scoped
 substrate. move_piece steps and non-sequence goals are scored exactly as v1. Every
 threshold is the v1 threshold.
 
+``goal_eval_v2a`` (ADR 0015 Amendment 2; opt-in, versioned; v1 and v2 are unchanged) keeps the
+v2 allocation and step scopes and adds three rules: (1) a nonzero digit that no step owns makes
+the sequence FAIL with an explicit reason (NOT_RUN when the allocation cannot be determined);
+(2) a step is scored on the workpiece it acted on: material that EARLIER steps' digits detached
+from the substrate (particles outside every anchored component of those digits) is removed from
+the step's stencil graph, mass base and location statistic, counts as removed for selected
+removal measures and is not scored for unselected retention (a sever after a remove no longer
+sees the removed chip as an uncut code-0 bridge); (3) a final all-digit substrate check: within
+every final sever/divide piece, the material below the lowest remove/trim plane must stay in one
+anchored component holding >= the strictest declared minimum_substrate_share, with <= the
+strictest maximum_detached_below_fraction detached (two steps that only together detach
+substrate fail).
+
 Evaluation output (``evaluate_goal``) keeps three layers separate:
 ``integrity`` (recording/history validity: initial state, digit persistence,
 sampler/mass match, completeness), ``outcome`` (the goal verdict and per-item
@@ -86,7 +99,7 @@ GOAL_SCHEMA = "rcs_goal_v1"
 EVALUATION_SCHEMA = "rcs_goal_evaluation_v1"
 GOAL_TYPES = ("sever", "divide", "remove_protrusions", "trim_plane", "move_piece", "sequence")
 ENCODINGS = ("ternary", "packed2")
-EVALUATOR_VERSIONS = ("goal_eval_v1", "goal_eval_v2")
+EVALUATOR_VERSIONS = ("goal_eval_v1", "goal_eval_v2", "goal_eval_v2a")
 _ENCODING_ALIASES = {"packed_2bit": "packed2"}
 PROVENANCE = "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges"
 _STEP_TYPES = GOAL_TYPES[:-1]
@@ -1052,6 +1065,298 @@ def _finish(checks, metrics, quality, missing):
     return {"status": status, "checks": checks, "metrics": metrics, "missing_evidence": missing}, quality
 
 
+# ---------------------------------------------------------------- goal_eval_v2a (ADR 0015 Amendment 2)
+
+V2A_SCOPE = ("goal_eval_v2a: the goal_eval_v2 allocation and step scopes; every nonzero digit must be owned by a step; "
+             "each step is scored on the workpiece it acted on (material earlier steps detached is out of its graph, "
+             "mass base and location statistic, counts as removed for selected removal, and is not scored for "
+             "unselected retention); a final all-digit check keeps the material below the lowest remove/trim plane "
+             "in one anchored component per final sever piece; every threshold is the v1 threshold")
+
+
+def _anchors(rec):
+    reference = rec.local(rec.reference)
+    return reference[:, 2] <= reference[:, 2].min()+1e-7
+
+
+def _detached_by(rec, digits):
+    """Particles outside every anchored (bottom-layer) component of the codes of ``digits`` (none for no digits)."""
+    if not digits:
+        return np.zeros(len(rec.masses), bool)
+    _, labels = rec.components_of(mask_digits(rec.codes[-1], digits, rec.encoding))
+    return ~np.isin(labels, np.unique(labels[_anchors(rec)]))
+
+
+class _Restricted:
+    """``_Recording`` without ``excluded`` particles: no stencil support (graph, location statistic) and no mass.
+
+    Excluded particles share one extra zero-mass component label, so component counts and piece fractions refer
+    to the remaining material only; reported counts subtract that label."""
+
+    def __init__(self, rec, excluded):
+        self.base, self.excluded = rec, np.asarray(excluded, bool)
+        for name in ("data", "task", "time", "positions", "codes", "reference", "nodes", "encoding", "cuts", "spacing"):
+            setattr(self, name, getattr(rec, name))
+        keep = ~self.excluded
+        self.weights = rec.weights*keep[:, None]
+        self.gradients = rec.gradients*keep[:, None, None]
+        self.masses = rec.masses*keep
+        self._cache = {}
+
+    def local(self, points):
+        return self.base.local(points)
+
+    def components(self, frame=-1):
+        return self.components_of(self.codes[frame])
+
+    def components_of(self, codes):
+        codes = np.asarray(codes)
+        key = codes.tobytes()
+        if key not in self._cache:
+            if self.encoding == "ternary":
+                count, labels = mechanical_components(self.nodes, self.weights, codes, self.cuts, gradients=self.gradients)
+            else:
+                count, labels = packed_components(self.nodes, self.weights, codes, gradients=self.gradients)
+            if self.excluded.any():
+                kept, labels = np.unique(labels[~self.excluded], return_inverse=True)[0], labels.copy()
+                remap = np.full(int(count), len(kept), np.int64)
+                remap[kept] = np.arange(len(kept))
+                labels = remap[labels]
+                count = len(kept)+1
+            self._cache[key] = (int(count), labels)
+        return self._cache[key]
+
+
+def _remaining_count(view, count):
+    return int(count)-int(isinstance(view, _Restricted) and view.excluded.any())
+
+
+def _remove_outcome_v2a(goal, rec, view, scene, pre, post):
+    """v2 remove step on ``view``: removal counts earlier-detached material as removed; retention is measured on the
+    material remaining at the step start (not applicable when an earlier step removed all of it)."""
+    task = rec.task
+    if task is None or not hasattr(task, "protrusion_ids"):
+        return {}, {}, {}, ["A configured task (scene protrusions and pose) is required for remove_protrusions"]
+    plane_z = scene["workpiece"]["base_box_m"]["height_m"] if goal["plane_local_z_m"] is None else goal["plane_local_z_m"]
+    reference, substrate, substrate_ids, substrate_checks, pieces = _scoped_substrate(view, pre, post, plane_z, goal)
+    excluded = view.excluded
+    owner = protrusion_ownership(task, reference, plane_z)
+    selected = selected_protrusions(goal, task)
+    items, checks = [], {}
+    for i, pid in enumerate(task.protrusion_ids):
+        member = owner == i
+        mass = float(rec.masses[member].sum())
+        remaining = float(rec.masses[member & ~excluded].sum())
+        removed = None if mass <= 0 else float(rec.masses[member & ~substrate].sum()/mass)
+        earlier = None if mass <= 0 else float(rec.masses[member & excluded].sum()/mass)
+        chosen = i in selected
+        retained = None
+        if chosen:
+            passed = removed is not None and removed >= goal["minimum_removed_fraction"]
+        elif goal["minimum_unselected_retained_fraction"] is None:
+            passed = True
+        elif mass > 0 and remaining <= 0:
+            passed = True                                  # an earlier step removed all of it: not this step's result
+        else:
+            retained = None if remaining <= 0 else float(rec.masses[member & substrate].sum()/remaining)
+            passed = retained is not None and retained >= goal["minimum_unselected_retained_fraction"]
+        items.append({"id": pid, "selected": chosen, "reference_particles_above_plane": int(member.sum()),
+                      "reference_mass_above_plane_kg": mass, "removed_mass_fraction": removed,
+                      "removed_by_earlier_steps_mass_fraction": earlier,
+                      "retained_fraction_of_remaining": retained,
+                      "retention_not_applicable_removed_earlier": bool(not chosen and mass > 0 and remaining <= 0),
+                      "pass": bool(passed),
+                      "residual_substrate_height_m": _residual(rec, substrate, member | _footprint(task, i, reference), plane_z)})
+    checks["selection_nonempty"] = bool(selected)
+    checks["selected_protrusions_removed"] = bool(selected) and all(row["pass"] for row in items if row["selected"])
+    if goal["minimum_unselected_retained_fraction"] is not None:
+        checks["unselected_protrusions_retained"] = all(row["pass"] for row in items if not row["selected"])
+    checks.update(substrate_checks)
+    metrics = {"mechanical_components": _remaining_count(view, post[0]), "plane_local_z_m": float(plane_z),
+               "prior_pieces": pieces, "reference_substrate_component_ids": substrate_ids.tolist(), "items": items,
+               "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"}
+    quality = {"residual_substrate_height_m": {row["id"]: row["residual_substrate_height_m"] for row in items},
+               "surface": _surface_quality(rec, task, plane_z, substrate_ids)}
+    return checks, metrics, quality, []
+
+
+def _trim_outcome_v2a(goal, rec, view, scene, pre, post):
+    """v2 trim step on ``view``; above-plane material that earlier steps detached counts as removed."""
+    origin, normal = np.asarray(goal["plane"]["origin_local_m"]), np.asarray(goal["plane"]["normal_local"])
+    if not (_grid_aligned(normal) and abs(normal[2]) > .5):
+        return {}, {}, {}, ["goal_eval_v2a scopes trim_plane steps with a horizontal plane only"]
+    plane_z = float(origin[2])
+    reference, substrate, substrate_ids, substrate_checks, pieces = _scoped_substrate(view, pre, post, plane_z, goal)
+    signed = (reference-origin)@normal
+    region = _region_mask(reference, goal["region_local_m"])
+    above = (signed > 1e-7) & region
+    above_mass = float(rec.masses[above].sum())
+    removed = None if above_mass <= 0 else float(rec.masses[above & ~substrate].sum()/above_mass)
+    checks = {"material_above_plane_present": above_mass > 0,
+              "material_above_plane_removed": removed is not None and removed >= goal["minimum_removed_fraction"],
+              **substrate_checks}
+    final = rec.local(rec.positions[-1])
+    residual = (float(np.maximum((final[substrate & region]-origin)@normal, 0).max()) if (substrate & region).any() else None)
+    metrics = {"mechanical_components": _remaining_count(view, post[0]), "removed_above_plane_mass_fraction": removed,
+               "removed_by_earlier_steps_above_plane_mass_fraction":
+                   None if above_mass <= 0 else float(rec.masses[above & view.excluded].sum()/above_mass),
+               "reference_above_plane_mass_kg": above_mass, "prior_pieces": pieces,
+               "reference_substrate_component_ids": substrate_ids.tolist()}
+    quality = {"current_substrate_particle_center_max_residual_m": residual,
+               "surface": _surface_quality(rec, rec.task, plane_z, substrate_ids)}
+    return checks, metrics, quality, []
+
+
+def _removal_plane_z(step, scene):
+    if step["type"] == "remove_protrusions":
+        return float(scene["workpiece"]["base_box_m"]["height_m"] if step["plane_local_z_m"] is None
+                     else step["plane_local_z_m"])
+    normal = np.asarray(step["plane"]["normal_local"], float)
+    return float(step["plane"]["origin_local_m"][2]) if _grid_aligned(normal) and abs(normal[2]) > .5 else None
+
+
+def _final_substrate_check(goal, rec, scene, declared):
+    """All-digit substrate integrity per final sever/divide piece below the lowest remove/trim plane.
+
+    Pieces are the anchored components of the sever/divide digits on the material that is NOT detached under all
+    allocated digits (so a removed chip, which a later sever never met, cannot bridge them). Detached particles are
+    attributed to the piece of their nearest non-detached reference particle. Per piece, under all digits: the largest
+    component holds >= the strictest minimum_substrate_share of its below-plane mass, <= the strictest
+    maximum_detached_below_fraction is detached, and exactly one anchored component remains."""
+    removal = [step for step in goal["steps"] if step["type"] in ("remove_protrusions", "trim_plane")]
+    if not removal:
+        return {"status": "NOT_APPLICABLE", "reason": "No remove_protrusions/trim_plane step defines a substrate plane"}
+    planes = [_removal_plane_z(step, scene) for step in removal]
+    if any(z is None for z in planes):
+        return {"status": "NOT_RUN", "reason": "A trim_plane step has a non-horizontal plane"}
+    plane_z = min(planes)
+    sever = [d for step, row in zip(goal["steps"], declared) if step["type"] in ("sever", "divide") for d in row]
+    every = sorted({d for row in declared for d in row})
+    share_min = max(step["minimum_substrate_share"] for step in removal)
+    detached_max = min(step["maximum_detached_below_fraction"] for step in removal)
+    anchors = _anchors(rec)
+    all_count, all_labels = rec.components_of(mask_digits(rec.codes[-1], every, rec.encoding))
+    detached = ~np.isin(all_labels, np.unique(all_labels[anchors]))
+    _, piece_labels = _Restricted(rec, detached).components_of(mask_digits(rec.codes[-1], sever, rec.encoding))
+    reference = rec.local(rec.reference)
+    owner = piece_labels.copy()
+    if detached.any() and (~detached).any():
+        from scipy.spatial import cKDTree
+        kept = np.flatnonzero(~detached)
+        _, nearest = cKDTree(reference[kept]).query(reference[detached])
+        owner[detached] = piece_labels[kept[nearest]]
+    below = reference[:, 2] <= plane_z+1e-7
+    pieces = []
+    for piece in np.unique(piece_labels[anchors]):
+        member = owner == piece
+        part = member & below
+        mass = float(rec.masses[part].sum())
+        per = np.bincount(all_labels[part], weights=rec.masses[part], minlength=all_count)
+        share = None if mass <= 0 else float(per.max()/mass)
+        lost = None if mass <= 0 else float(rec.masses[part & detached].sum()/mass)
+        anchored = int(len(np.unique(all_labels[anchors & member])))
+        pieces.append({"piece": int(piece), "mass_fraction": float(rec.masses[member].sum()/rec.masses.sum()),
+                       "below_plane_mass_kg": mass, "largest_component_below_plane_mass_share": share,
+                       "detached_below_plane_mass_fraction": lost, "anchored_components": anchored,
+                       "pass": bool(share is not None and share >= share_min and lost is not None
+                                    and lost <= detached_max and anchored == 1)})
+    checks = {"final_pieces_present": bool(pieces),
+              "final_substrate_holds_below_plane_mass_per_piece":
+                  bool(pieces) and all(r["largest_component_below_plane_mass_share"] is not None
+                                       and r["largest_component_below_plane_mass_share"] >= share_min for r in pieces),
+              "final_detached_below_plane_mass_bounded_per_piece":
+                  bool(pieces) and all(r["detached_below_plane_mass_fraction"] is not None
+                                       and r["detached_below_plane_mass_fraction"] <= detached_max for r in pieces),
+              "final_single_anchored_component_per_piece": bool(pieces) and all(r["anchored_components"] == 1 for r in pieces)}
+    total_below = float(rec.masses[below].sum())
+    return {"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks, "plane_local_z_m": plane_z,
+            "pieces_from_digits": sever, "after_digits": every,
+            "thresholds": {"minimum_substrate_share": share_min, "maximum_detached_below_fraction": detached_max},
+            "pieces": pieces, "detached_below_plane_mass_fraction_total":
+                None if total_below <= 0 else float(rec.masses[below & detached].sum()/total_below),
+            "rule": "pieces = anchored components of the sever/divide digits on the material not detached under all "
+                    "allocated digits; detached particles attributed to the nearest non-detached reference particle's "
+                    "piece; per piece below the lowest remove/trim plane: largest all-digit component share >= the "
+                    "strictest minimum_substrate_share, detached <= the strictest maximum_detached_below_fraction, one "
+                    "anchored component"}
+
+
+def _sequence_v2a(goal, rec, scene, windows, task):
+    declared = step_digit_allocation(goal, scene)
+    planned = _plan_digit_allocation(goal, scene, task)
+    allocation = {"rule": "declared convention (steps in order; sever one per plane, divide pieces - 1, "
+                          "remove_protrusions one per selected protrusion, trim_plane one, move_piece none)",
+                  "declared": declared, "plan_report": planned,
+                  "plan_cross_check": "NOT_AVAILABLE" if planned is None else "MATCH" if planned == declared else "MISMATCH"}
+    owned = sorted({d for row in declared for d in row})
+    needed = max(owned, default=-1)+1
+    problem = None
+    if allocation["plan_cross_check"] == "MISMATCH":
+        problem = "The declared step digit allocation differs from the planner report"
+    elif needed > rec.cuts:
+        problem = f"The sequence needs {needed} cut digits; the recording keeps {rec.cuts}"
+    unowned = {}
+    for k in range(rec.cuts):
+        if k not in owned:
+            labelled = int(np.count_nonzero(decode_digit(rec.codes, k, rec.encoding).max(axis=0)))
+            if labelled:
+                unowned[k] = labelled
+    allocation["unowned_digits_labelled_particles"] = {str(k): v for k, v in unowned.items()}
+    final = rec.codes[-1]
+    steps, quality, prior, earlier = [], {}, [], []
+    for index, step in enumerate(goal["steps"]):
+        own = declared[index]
+        scope = {"own_digits": own, "prior_sever_digits": list(prior), "earlier_digits": list(earlier)}
+        if problem is not None:
+            outcome, step_quality = {"status": "NOT_RUN", "checks": {}, "metrics": {}, "missing_evidence": [problem]}, {}
+        elif step["type"] in ("sever", "divide", "remove_protrusions", "trim_plane"):
+            excluded = _detached_by(rec, earlier)
+            view = _Restricted(rec, excluded)
+            scope["detached_by_earlier_steps"] = {"particles": int(excluded.sum()),
+                                                  "mass_fraction": float(rec.masses[excluded].sum()/rec.masses.sum())}
+            if step["type"] in ("sever", "divide"):
+                components = view.components_of(mask_digits(final, own, rec.encoding))
+                outcome, step_quality = _finish(*_sever_outcome(step, view, scene, components))
+                outcome["metrics"]["mechanical_components"] = _remaining_count(view, components[0])
+                scope["components_from"] = "own digits, on the material not detached by earlier steps"
+            else:
+                pre = view.components_of(mask_digits(final, prior, rec.encoding))
+                post = view.components_of(mask_digits(final, prior+own, rec.encoding))
+                function = _remove_outcome_v2a if step["type"] == "remove_protrusions" else _trim_outcome_v2a
+                outcome, step_quality = _finish(*function(step, rec, view, scene, pre, post))
+                scope["components_from"] = ("prior sever digits (pieces before the step) and prior sever + own digits "
+                                            "(after), on the material not detached by earlier steps")
+        else:
+            outcome, step_quality = _outcome(step, rec, scene, windows, index)
+            scope["components_from"] = "goal_eval_v1 (move window state; unchanged)"
+        outcome["digit_scope"] = scope
+        steps.append({"index": index, "goal_id": step["goal_id"], "type": step["type"], "outcome": outcome})
+        quality[f"{index}:{step['goal_id']}"] = step_quality
+        if step["type"] in ("sever", "divide"):
+            prior += own
+        earlier += own
+    statuses = [row["outcome"]["status"] for row in steps]
+    checks = {f"step_{row['index']}_{row['goal_id']}": row["outcome"]["status"] == "PASS" for row in steps}
+    reasons, final_check = [], None
+    if problem is None:
+        checks["no_unowned_digit_labels"] = not unowned
+        if unowned:
+            reasons.append(f"Digits {sorted(unowned)} carry labels but no step owns them "
+                           f"(labelled particles {dict(sorted(unowned.items()))}; owned digits {owned})")
+        final_check = _final_substrate_check(goal, rec, scene, declared)
+        if final_check["status"] in ("PASS", "FAIL"):
+            checks["final_all_digit_substrate_integrity"] = final_check["status"] == "PASS"
+        elif final_check["status"] == "NOT_RUN":
+            statuses.append("NOT_RUN")
+    status = ("NOT_RUN" if "NOT_RUN" in statuses else
+              "PASS" if all(s == "PASS" for s in statuses) and all(checks.values()) else "FAIL")
+    outcome = {"status": status, "checks": checks, "steps": steps,
+               "rule": "every step must hold at the end of the episode; no unowned digit; final all-digit substrate "
+                       "integrity", "evaluator_version": "goal_eval_v2a", "scope": V2A_SCOPE,
+               "digit_allocation": allocation, "final_all_digit_substrate": final_check, "fail_reasons": reasons}
+    return outcome, quality
+
+
 def evaluate_goal(goal, recording, *, task=None, scene=None, encoding=None, cuts=None, windows=None):
     """Score a recorded WORLD episode against a goal (read-only; three layers).
 
@@ -1081,6 +1386,8 @@ def evaluate_goal(goal, recording, *, task=None, scene=None, encoding=None, cuts
     version = goal.get("evaluator_version", "goal_eval_v1")
     if goal["type"] == "sequence" and version == "goal_eval_v2":
         outcome, quality = _sequence_v2(goal, rec, scene, windows, task)
+    elif goal["type"] == "sequence" and version == "goal_eval_v2a":
+        outcome, quality = _sequence_v2a(goal, rec, scene, windows, task)
     elif goal["type"] == "sequence":
         steps, quality = [], {}
         for index, step in enumerate(goal["steps"]):
