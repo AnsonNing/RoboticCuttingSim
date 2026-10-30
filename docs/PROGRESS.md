@@ -94,6 +94,15 @@
   - s1302／s1303 第一次因 /mnt/data 降到 15 GB 下限而沒有啟動；搬了 22 個舊 artifact（約 12 GB）到根磁碟後第一次啟動（不是重試）：**live_004 三個 seed 全部 TASK_SUCCESS**（yaw −6.3°／+18.1°／−14.2°），第二刀都落在宣告切面上，位置統計 1.5 mm，推開 14–18 mm，全部 Return-to-Home PASS。
   - 限制：s1302 的外側那塊不是剛體平移，端面量測誤差只有 −0.007 mm，但切口處材料多移了 0.28 mm；在 1 mm 粒子格子的半層餘裕內，所以這次仍切在正確位置，較大的非剛體滑動不會被完全修正。
 - CI：`beb92b5` 修正 GitHub Actions 失敗（Test C 預檢測試在沒有 newton／mujoco／Franka 資產時改標 NOT_RUN）。
+- **Phase E 第二輪**（`b624df6` 評估器 v2，`0496562` 先宣告，`67ee8c4` 報告，[報告](reports/WP11_PHASE_E_ROUND2.md)，[證據](evidence/wp11/phaseE_round2_001.json)）。
+  - `goal_eval_v2`（opt-in，[ADR 0015 Amendment 1](adr/0015-scene-goal-controller-evaluation-separation.md)）：sequence 裡每一步只用自己的 cut digit 計分（sever 的塊數、質量與位置；remove／trim 的底材以先前 sever 留下的每一塊判斷）。不指定時 v1 與 task id 完全不變。事後診斷（POST_HOC_DIAGNOSTIC）：round 1 的 s1702／s1704 在 v2 下 PASS，round 1 紀錄不變。
+  - Scene 可宣告 `slots_per_node`；S = 16 沒有溢位（最多用 8）。
+  - 放寬範圍的可行性掃描 40 個：SCENE_INFEASIBLE 4（10%）、IK_FAILURE 8（20%）、可行 28（70%）。IK 失敗在工件離中心 70–110 mm 且轉 ~40°、或 35° 的陡峭姿態；rake 5° 幾何上不可行（雙斜面刮進 0.25 mm）。
+  - Kinematic 18 個：8 成功、10 失敗，沒有一個是評估器造成的。
+    - **斜切 ±30–35° 不分離**（4 個）：底部 1–3 層粒子沒有標籤而連起兩側；20° 不會。
+    - **rake 45° 削切完全沒有標籤**（3 個）：law 4 的 θ_max = 45°，運動與刀身平面夾角達到上限，stroke 不啟動。
+    - **Test D2 三個 chip 沒脫離**：1–4 顆內部粒子沒有標籤；S = 8 與 16 結果相同，與 slot 數無關。
+  - 這些是 law 8／規劃的適用邊界，記入已知限制，不改 law。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
   - C4：1 mm 近水平削切材料測試（`artifacts/wp11/phaseC4/`）。
 - 已知風險（C4）：雙斜面在 ρ < 12.5° 時下斜面低於刃口；law 8 在 < 15° 等同 law 4。
