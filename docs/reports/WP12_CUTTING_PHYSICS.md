@@ -497,3 +497,195 @@ studied only after (c), with face-first controls at α = 80/85/90° and a 70° w
 - (b), (c) and (d) stand as written, with the (d) remark that "planner clearance relative to the lattice" can at
   most be a declared, resolution-specific planner rule, never a physics fix.
 - No solver, law, threshold, frozen record or WP-11 evidence was changed by these corrections.
+
+## E1 results (2026-10-31)
+
+**What ran.** The frozen protocol [`configs/wp12/phase4_e1_protocol_v1.json`](../../configs/wp12/phase4_e1_protocol_v1.json)
+(committed `3dd3848`, sha256 `d372184a…`), all 47 rows, nothing added or dropped. Evidence:
+[`docs/evidence/wp12/phase4_e1_001.json`](../evidence/wp12/phase4_e1_001.json). Runs: `artifacts/wp12/phase4_e1_001/`.
+
+**Setup.**
+- Law 8 on `tlmpm_v5`, unchanged.
+- The CUT-01-R bar (160 × 30 × 20 mm, 96,000 particles) on `blade_master_flat_board_v1` or its 8 mm slotted variant.
+- 1 mm / 4 mm / 0.1 ms, seed 42, kinematic ideal tracking, `ruler_knife_v2_y`.
+
+**Recorders.** Both are read-only:
+- `cut_diagnostics_v1` records the solver's own decisions.
+- `exit_candidates_v1` is an offline shadow. Its candidate columns are **predictions on the law-8 trajectory**.
+  They are not runs of a law, and they include no dynamics from real labels.
+
+**This section reports data only.** D1 (review §6) is decided at xhigh.
+
+**Integrity: all 47 rows PASS.**
+- Every row ran to completion, and every process exited with status 0.
+- No recorder, evaluator or slot overflowed.
+- No blade–board overlap occurred.
+- The lowest blade point was the edge vertex in every row.
+- Every slotted row kept ≥ 1.0 mm of swept-blade clearance.
+- No particle centre ever entered a board box. The smallest particle–board signed distance was 0.32 mm, and the
+  solver's maximum fixture penetration statistic was 0.17 mm.
+- min det F ≥ 0.925, and the maximum tool penetration was 0.81 mm.
+- The relative swept-normal fallback never differed from the solver's.
+
+**Comparability.** Git HEAD moved during the run because other agents committed. The sha256 of every E1-relevant
+source is identical in all 47 rows: `tlmpm_v5.py`, `cut_diagnostics.py`, `exit_candidates.py`, `live_material.py`,
+`fixture_contacts.py`, `scene_config.py`, `coupled_robot.py`, both scenes, the workcell record, the protocol and the
+runner. Devices were cuda:0 (24 rows) and cuda:1 (23 rows), both shared.
+
+**Repeat band.** Two repeats measure GPU nondeterminism. For A_p20 vs A_p20_rep2 and A_p35 vs A_p35_rep2, the law-8
+components, bridges, label counts and unassigned counts are identical. The L9-EL shadow labels agree within 2
+(5490 vs 5492 at 35°).
+
+### Results
+
+**Columns.**
+- *Law 8*: the law-8 outcome at the final state, with the component count.
+- *Unassigned*: digit-0 particles with |s_ref| ≤ 12 mm. The number in brackets is how many are in the core
+  (|s| ≤ 4 mm).
+- *Layer-0 digit-0*: the bottom layer, by side.
+- *Proposed*: the rejected breakthrough-gated lead. The bracket is the fraction of material segments with B_k = 0
+  at the last armed moving control step.
+- *L9-EL*: the exit-ligament candidate. The bracket is the number of shadow labels.
+- *Reach*: E1.3, kinematically reachable or not, never validated cutting.
+
+| Row | τ (°) | Edge end z (mm) | Law 8 | Bridges | Unassigned (core) | Layer-0 digit-0 s<0 / s≥0 | Proposed (B=0 at end) | L9-EL (labels) | Reach (binding, slack mm) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A_p00 | 0 | 0 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED (0.00) | SEPARATED (1212) | PASS (blade-board, +0.0003) |
+| A_p01 | 1 | 0 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED (0.00) | SEPARATED (1265) | PASS (+0.0003) |
+| A_p02 | 2 | 0 | SEPARATED (2) | 0 | 60 (0) | 60 / 0 | SEPARATED (0.00) | SEPARATED (1535) | PASS (+0.0003) |
+| A_p03 | 3 | 0 | SEPARATED (2) | 0 | 160 (0) | 160 / 0 | SEPARATED (0.00) | SEPARATED (1476) | PASS (+0.0002) |
+| A_p05 | 5 | 0 | SEPARATED (2) | 0 | 214 (0) | 214 / 0 | SEPARATED (0.00) | SEPARATED (1600) | PASS (+0.0002) |
+| A_p10 | 10 | 0 | **CONNECTED (1)** | 96 | 336 (0) | 212 / 0 | CONNECTED (0.06) | SEPARATED (2521) | PASS (+0.0003) |
+| A_p15 | 15 | 0 | CONNECTED (1) | 6 | 568 (6) | 246 / 0 | CONNECTED (0.12) | SEPARATED (3542) | PASS (+0.0014) |
+| A_p20 | 20 | 0 | CONNECTED (1) | 36 | 790 (36) | 304 / 0 | CONNECTED (0.82) | SEPARATED (4574) | PASS (+0.0012) |
+| A_p25 | 25 | 0 | CONNECTED (1) | 92 | 1112 (92) | 332 / 0 | CONNECTED (0.82) | SEPARATED (5110) | PASS (+0.0006) |
+| A_p30 | 30 | 0 | CONNECTED (1) | 380 | 1386 (122) | 362 / 0 | CONNECTED (0.82) | SEPARATED (5480) | PASS (+0.0004) |
+| A_p35 | 35 | 0 | CONNECTED (1) | 180 | 1650 (180) | 390 / 0 | CONNECTED (0.88) | SEPARATED (5490) | FAIL, TIE_AT_CONTACT (blade-board, −0.0002) |
+| A_m01 … A_m35 | −1 … −35 | 0 | exact mirrors: SEPARATED at −1…−5, CONNECTED at −10…−35 | same as +τ | same as +τ | mirrored (s ≥ 0 side) | same as +τ | SEPARATED at every tilt (labels within 4 of +τ) | all PASS (+0.0001…+0.0004) |
+| R_p05_h0250 | 5 | 0.25 | CONNECTED (1) | 20 | 260 (20) | 260 / 0 | CONNECTED (0.12) | SEPARATED (1601) | PASS |
+| R_p05_h0375 | 5 | 0.375 | CONNECTED (1) | 42 | 342 (42) | 282 / 0 | CONNECTED (0.12) | SEPARATED (1602) | PASS |
+| R_p05_h0500 | 5 | 0.5 | CONNECTED (1) | 60 | 390 (60) | 298 / 2 | CONNECTED (0.59) | CONNECTED (1524; 12 bridges left) | PASS |
+| R_p05_h0750 | 5 | 0.75 | CONNECTED (1) | 106 | 526 (106) | 336 / 10 | CONNECTED (0.82) | CONNECTED (1438) | PASS |
+| R_p05_h1000 | 5 | 1.0 | CONNECTED (1) | 150 | 630 (146) | 360 / 24 | CONNECTED (0.88) | CONNECTED (1436; 50 left) | PASS |
+| R_p20_h0250 | 20 | 0.25 | CONNECTED (1) | 56 | 896 (56) | 322 / 0 | CONNECTED (0.82) | SEPARATED (4544) | PASS |
+| R_p20_h0375 | 20 | 0.375 | CONNECTED (1) | 80 | 952 (80) | 334 / 0 | CONNECTED (0.82) | SEPARATED (4544) | PASS |
+| R_p20_h0500 | 20 | 0.5 | CONNECTED (1) | 98 | 974 (98) | 336 / 0 | CONNECTED (0.82) | SEPARATED (4514) | PASS |
+| R_p20_h0750 | 20 | 0.75 | CONNECTED (1) | 122 | 1082 (120) | 354 / 0 | CONNECTED (0.82) | SEPARATED (4514) | PASS |
+| R_p20_h1000 | 20 | 1.0 | CONNECTED (1) | 188 | 1208 (158) | 364 / 0 | CONNECTED (0.82) | SEPARATED (4454) | PASS |
+| R_p35_h0250 | 35 | 0.25 | CONNECTED (1) | 272 | 1772 (242) | 392 / 0 | CONNECTED (0.88) | SEPARATED (5390) | PASS |
+| R_p35_h0375 | 35 | 0.375 | CONNECTED (1) | 274 | 1774 (244) | 394 / 0 | CONNECTED (0.88) | SEPARATED (5360) | PASS |
+| R_p35_h0500 | 35 | 0.5 | CONNECTED (1) | 300 | 1860 (270) | 420 / 0 | CONNECTED (0.88) | SEPARATED (5282) | PASS |
+| R_p35_h0750 | 35 | 0.75 | CONNECTED (1) | 362 | 1982 (302) | 420 / 0 | CONNECTED (0.88) | SEPARATED (5172) | PASS |
+| R_p35_h1000 | 35 | 1.0 | CONNECTED (1) | 424 | 2074 (334) | 420 / 4 | CONNECTED (0.88) | CONNECTED (4432; 66 left) | PASS |
+| D_p00 (ot 7.00, groove = reach) | 0 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (1234) | PASS (blade-board, +1.0014) |
+| D_p20 (ot 7.45, groove limit) | 20 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (4436) | FAIL (knife_handle_clearance, −0.727) |
+| D_p20_reach (ot 6.67) | 20 | −6.27 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (4436) | PASS (handle, +0.007) |
+| D_p25 (ot 7.72, groove limit) | 25 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (5126) | FAIL (handle, −2.146) |
+| D_p25_reach (ot 5.35) | 25 | −4.85 | SEPARATED (2) | 0 | 30 (0) | 30 / 0 | SEPARATED | SEPARATED (5126) | PASS (handle, +0.004) |
+| D_p30 (ot 8.08, groove limit) | 30 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (6092) | FAIL (handle, −3.643) |
+| D_p30_reach (ot 3.87) | 30 | −3.35 | SEPARATED (2) | 0 | 330 (0) | 180 / 0 | SEPARATED | SEPARATED (6002) | PASS (handle, +0.007) |
+| D_p35 (ot 8.46, groove limit) | 35 | −6.93 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (7083) | FAIL (handle, −5.129) |
+| D_p35_reach (ot 2.19) | 35 | −1.79 | **CONNECTED (1)** | 90 | 930 (30) | 300 / 0 | CONNECTED (0.06) | SEPARATED (6154) | PASS (handle, +0.003) |
+| A_p20_rep2 | 20 | 0 | CONNECTED (1) | 36 | 790 (36) | 304 / 0 | CONNECTED (0.82) | SEPARATED (4574) | PASS (+0.0012) |
+| A_p35_rep2 | 35 | 0 | CONNECTED (1) | 180 | 1650 (180) | 390 / 0 | CONNECTED (0.88) | SEPARATED (5492) | FAIL, TIE_AT_CONTACT (−0.0002) |
+
+Per-row details are in the evidence file: bridge s ranges and layers, unassigned classes and layers, exit-face tables
+for layers 0–3, edge-to-board clearance, board penetration, the dynamics context and the candidate segment counts.
+
+### Findings (data)
+
+**1. Onset on the flat board (Option A, h = 0).**
+- Law 8 separates at |τ| ≤ 5° and stays connected at every |τ| ≥ 10°, for both signs.
+- So the onset lies between 5° and 10°. Nothing was run between them.
+- Unassigned uphill bottom-layer particles appear from 2° (60) and 3° (160), but do not bridge until 10°.
+- Bridge counts are not monotonic: 96 / 6 / 36 / 92 / 380 / 180 at 10 / 15 / 20 / 25 / 30 / 35°.
+- Every unassigned particle within 12 mm is class `edge_never_passed_while_stroke_on`, and its only failing law-4
+  condition is `ahead_of_edge` (f > 0).
+- The core count grows with the tilt: 0 core particles at 10°, 6 at 15°, 180 at 35°.
+- No support sag is involved: the bottom-layer mean Δz is −0.03 to −0.07 mm on both sides.
+- Bridges sit in layers 0–1 at 10–25°, layers 0–4 at 30° and layers 0–2 at 35°.
+
+**2. Raised edge.**
+- At 5°, raising the edge 0.25 mm already leaves the bar connected (20 bridges), while h = 0 separates. Phase 2
+  found that at 0°, h ≤ 0.375 mm separates.
+- At 20° and 35°, the bar is connected at h = 0 already, and bridges rise with h: 36 → 188 at 20°, 180 → 424 at 35°.
+
+**3. Slotted variant (Option D).**
+- At the groove limit (overtravel 7.0–8.5 mm) law 8 separates at 0, 20, 25, 30 and 35°, with 0 bridges.
+- The groove-limit rows at 20–35° are not reachable: the knife handle comes within 5 mm of the board top.
+  - The handle-clearance slack is −0.73 / −2.15 / −3.64 / −5.13 mm.
+  - At 35° the handle would be 0.13 mm inside the board top segment.
+- At the largest reachable overtravel (6.67 / 5.35 / 3.87 / 2.19 mm), law 8 separates at 20, 25 and 30°.
+- At 35° it does not separate: 2.19 mm leaves 90 bridges.
+- The 0° slotted control separates and is reachable.
+
+**4. Reachability on Option A.**
+- Every Option-A and raised-edge row is reachable except one: A_p35 (and its repeat) fails blade–board by
+  −0.23 µm. That is the declared TIE_AT_CONTACT, an IK residual on a distance ≥ 0 rule with the edge planned exactly
+  on the board top. −35° passes at +0.2 µm.
+- The binding check is blade–board in every Option-A row. Raised rows pass with slack h.
+- `knife_handle_clearance` slack at ±35° is 1.8 mm on the flat board, i.e. the handle is 6.8 mm from the board.
+
+**5. The proposed breakthrough mask (offline).**
+- It never changes the law-8 outcome on any of the 47 rows.
+- At the end of the stroke, B_k = 0 on 6–12% of material segments at 10–15°, 82% at 20–30° and 88% at 35°.
+- Its lead labels on B_k-only segments are blocked exactly where the uphill wedge sits:
+  - "blocked by B" counts 60–1530 particles within 12 mm on Option A (2–35°);
+  - its own shadow labels number 276–2,164 per Option-A row (0 at ±35°), without topological effect.
+- It never labelled a particle on a side the later law-8 band contradicted.
+
+**6. L9-EL (offline).**
+- Its predicted topology separates every Option-A row at h = 0 (all tilts 0–35°, both signs).
+- It separates the raised rows at h ≤ 0.375 mm (5°), h ≤ 1.0 mm (20°) and h ≤ 0.75 mm (35°).
+- It does not separate R_p05_h0500 / h0750 / h1000 or R_p35_h1000 (12–66 bridges left, layers 0–4).
+- It separates every slotted row, including D_p35_reach.
+- It equals law 8 wherever law 8 separates.
+- Its labels:
+  - 1,212–7,083 shadow labels per row, with f at assignment 0–8 mm and |s| up to 24 mm, mostly on the uphill side;
+  - at 0°, 1,212 labels on both sides (602 / 610), ahead of the edge by ≤ 1.64 mm, all of them the side the law-8
+    band gave later;
+  - per row, at most 8 shadow labels contradict the side the later law-8 band gave;
+  - up to 4,428 shadow-labelled particles stay unassigned under law 8 (A_p35), i.e. labels law 8 never writes.
+- **The dynamics of writing those labels (field split, FLIP transfer, review §3.2 item 3) are not part of this
+  prediction.**
+
+**7. The reviewer's predictions, as measured.**
+
+| Prediction | Measured |
+| --- | --- |
+| P1: fails from 5–10° (margin), robustly from 15–20° | separates at ≤ 5°, connected at every \|τ\| ≥ 10° (both signs) |
+| P2: B_k = 0 on ≥ 40% of material segments at the end for τ ≥ 20°, ≥ 75% at 30–35° | 82–88% at \|τ\| ≥ 20°: holds |
+| P3: Option D at the largest groove overtravel separates at 20–35° | separates at all four tilts; those overtravels are not reachable (handle) |
+| P4: mirror | the same outcome, bridges, unassigned and label counts at every ± pair |
+| P5: static probe, proposed → 2 components only at 5°; exit-ligament → 2 except 25° | full bar, per-substep: proposed equals law 8 everywhere (2 at 0–5°, 1 at ≥ 10°); L9-EL gives 2 at every tilt, including 25° |
+| P6: τ = 0 separates and both candidates equal law 8 | holds |
+
+**8. Reduced bar vs full bar.**
+- The DEV rows (40 × 12 × 12 mm bar, not evidence) were connected at 5° with 2 bridges, as the reviewer's probe was.
+- The full 160 × 30 × 20 mm bar separates at 5°.
+- So the low-angle margin depends on the bar.
+
+### Commands, timing
+
+```
+# reachability (CPU, .venv): 47 rows, 90 s wall, exit 0
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/preflight_wp12_phase4_e1.py --out artifacts/wp12/phase4_e1_001/reachability
+# physics (2 lanes, cuda:0 + cuda:1 shared; 03:29:27-05:19:43 KST, 1 h 50 min wall, 3.58 GPU-h summed, 147-407 s per row)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4_e1_queue.py --out artifacts/wp12/phase4_e1_001 --devices cuda:0 cuda:1
+# summary (read-only)
+.venv/bin/python scripts/summarize_wp12_phase4_e1.py --runs artifacts/wp12/phase4_e1_001 \
+    --reach artifacts/wp12/phase4_e1_001/reachability --out docs/evidence/wp12/phase4_e1_001.json --markdown <table.md>
+```
+
+Logs are `artifacts/wp12/logs/phase4_e1_001_*.log` (GNU time: every row exit status 0) and `queue.jsonl` (47
+return codes 0). The run used 3.6 of the 12 GPU-h budget and 1.8 of the 10 h wall budget.
+
+### Limits
+
+- Kinematic ideal tracking only: there is no Native or Lab run and no live tracking noise. The raised-edge rows
+  show how sensitive the result is to a sub-millimetre edge offset.
+- One bar, one material (provisional, uncalibrated), 1 mm resolution only. Nothing was sampled between 5° and 10°.
+- Reachability is geometric (IK plus C2 preflight), from the workcell HOME with the nominal grasp.
+- The candidate columns are shadow predictions on the law-8 trajectory, not simulations of a law. ADR, CPU
+  acceptance and dynamics measurements (review §6, acceptance items 1–9) would be needed before any law. D1 is
+  decided at xhigh.

@@ -143,6 +143,38 @@ def main():
             repeats[r['id']]['unassigned_within_12mm'] = [b['unassigned_within_12mm']['count'], r['unassigned_within_12mm']['count']]
             repeats[r['id']]['L9-EL_shadow_labels'] = [b['candidates']['exit_ligament']['shadow_labels'],
                                                        r['candidates']['exit_ligament']['shadow_labels']]
+    def outcome(rid, key=None):
+        r = by.get(rid) or {}
+        if key is None:
+            return (r.get('law8') or {}).get('outcome', r.get('row_status'))
+        return ((r.get('candidates') or {}).get(key) or {}).get('outcome')
+    a_rows = [r for r in rows if r['family'] == 'E1.1_option_A' and 'repeat_of' not in r['spec']]
+    frac = {r['id']: (r.get('candidate_segments') or {}).get('proposed_B_zero_fraction_of_material_at_end') for r in a_rows}
+    mirror = {}
+    for r in a_rows:
+        if r['tau_deg'] > 0:
+            m = by.get(f"A_m{int(r['tau_deg']):02d}")
+            if m and m.get('law8') and r.get('law8'):
+                mirror[r['id']] = {'same_outcome': r['law8']['outcome'] == m['law8']['outcome'],
+                                   'bridges': [r['law8']['direct_bridges'], m['law8']['direct_bridges']],
+                                   'unassigned_within_12mm': [r['unassigned_within_12mm']['count'], m['unassigned_within_12mm']['count']],
+                                   'labelled': [r['law8']['labelled'], m['law8']['labelled']]}
+    predictions = {
+        'P1_E1.1_onset': {'measured': {r['id']: outcome(r['id']) for r in a_rows},
+                          'note': 'prediction: fails from 5-10 deg (margin) and robustly from 15-20 deg'},
+        'P2_E1.1_proposed_B_k': {'B_zero_fraction_of_material_segments_at_end': frac,
+                                 'ge_0.40_for_all_abs_tau_ge_20': all((frac[k] or 0) >= .40 for k in frac
+                                                                      if abs(by[k]['tau_deg']) >= 20),
+                                 'ge_0.75_for_all_abs_tau_30_35': all((frac[k] or 0) >= .75 for k in frac
+                                                                      if abs(by[k]['tau_deg']) >= 30)},
+        'P3_E1.2_slotted_groove_limit': {rid: outcome(rid) for rid in ('D_p20', 'D_p25', 'D_p30', 'D_p35')},
+        'P3_reach_limited_not_predicted': {rid: outcome(rid) for rid in ('D_p20_reach', 'D_p25_reach', 'D_p30_reach',
+                                                                         'D_p35_reach')},
+        'P4_mirror': mirror,
+        'P5_candidates_on_option_A_h0': {r['id']: {'law8': outcome(r['id']), 'proposed': outcome(r['id'], 'proposed'),
+                                                   'exit_ligament': outcome(r['id'], 'exit_ligament')} for r in a_rows},
+        'P6_tau0': {'law8': outcome('A_p00'), 'proposed': outcome('A_p00', 'proposed'),
+                    'exit_ligament': outcome('A_p00', 'exit_ligament')}}
     reach_summary = load(a.reach/'summary.json')
     evidence = {
         'evidence_id': 'wp12_phase4_e1_001', 'protocol': str(PROTOCOL.relative_to(ROOT)),
@@ -152,7 +184,7 @@ def main():
         'commits': sorted({r.get('git_sha') for r in rows if r.get('git_sha')}),
         'row_status_counts': {s: sum(1 for r in rows if r['row_status'] == s) for s in sorted({r['row_status'] for r in rows})},
         'onset_flat_board_h0': {'positive_tau': onset(rows, 1), 'negative_tau': onset(rows, -1)},
-        'raised_edge': raised, 'slotted': slotted, 'repeat_band': repeats,
+        'raised_edge': raised, 'slotted': slotted, 'repeat_band': repeats, 'declared_predictions_measured': predictions,
         'reachability_wall_s': (reach_summary or {}).get('wall_s'),
         'gpu_wall_s_total': sum(r.get('wall_s') or 0 for r in rows),
         'rows': {r['id']: {k: v for k, v in r.items() if k != 'spec'} for r in rows}}
