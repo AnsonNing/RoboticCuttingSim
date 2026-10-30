@@ -4,7 +4,8 @@
 
 - 規格：[WP-12 規格](WP12_SPECIFICATION.md)；計畫：[WP-12 計畫](WP12_PLAN.md)。
 - 目前：Phase 0。已完成：移除另一專案縮寫並加 CPU 守門測試（`ce547f9`，`tests/test_repo_naming.py`）。
-- 執行中：baseline freeze（rcs-impl，輸出 `artifacts/wp12/baseline/`，報告 `docs/reports/WP12_BASELINE_AUDIT.md`）；切面技術研究（rcs-review，`docs/reports/WP12_SURFACE_TECH_REVIEW.md`）。
+- 已完成：切面技術研究（`3f13379`，[報告](reports/WP12_SURFACE_TECH_REVIEW.md)）：建議 `cut_aware_surface_v1`，以 1 mm 粒子格為 reference grid，link 是否切斷完全由兩端 side code 是否衝突決定，Hermite 資料由唯讀 recorder `cut_events_v1` 取得。
+- 執行中（背景 agent）：baseline freeze（`artifacts/wp12/baseline/`，`docs/reports/WP12_BASELINE_AUDIT.md`，cuda:1）；Phase 2a 平板工作台（`artifacts/wp12/workcell_*`，`docs/reports/WP12_WORKCELL.md`，ADR 0017，cuda:0）；Phase 3 Layer 2 `cut_events_v1` recorder（`src/robotic_cutting_sim/cut_events.py`，`artifacts/wp12/cut_events_001/`）。
 - 下一步：兩份報告完成後定案 Phase 1 指標方法與 Phase 3 架構，開始 Phase 1 診斷與 Phase 2 工作台（可平行）。
 
 
