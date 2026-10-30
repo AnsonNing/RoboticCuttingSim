@@ -16,6 +16,7 @@ law 8, ruler_knife_v1):
 """
 from pathlib import Path
 import hashlib
+import json
 
 import numpy as np
 import pytest
@@ -259,8 +260,15 @@ def test_v6_is_never_a_default():
     with pytest.raises(ValueError):
         LiveCuttingMaterial(tool_profile=profile, cutting_law=7, solver="tlmpm_v6")
     # No config (scene, goal, preset, benchmark, envelope) names it, except the gridpos protocol that tests it.
+    # A selection is a JSON string value equal to "tlmpm_v6"; prose that mentions it (provenance) is allowed.
+    def selects_v6(node):
+        if isinstance(node, dict):
+            return any(selects_v6(value) for value in node.values())
+        if isinstance(node, list):
+            return any(selects_v6(value) for value in node)
+        return node == "tlmpm_v6"
     named = [str(p.relative_to(ROOT)) for p in (ROOT/"configs").rglob("*.json")
-             if "tlmpm_v6" in p.read_text() and p.name != "phase4_gridpos_protocol_v1.json"]
+             if p.name != "phase4_gridpos_protocol_v1.json" and selects_v6(json.loads(p.read_text()))]
     assert named == []
     # Only the solver itself, the helper and the opt-in plumbing name it in src/.
     src = ROOT/"src"/"robotic_cutting_sim"
