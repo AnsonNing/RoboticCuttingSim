@@ -56,6 +56,23 @@ Grasp stress tests, all Native:
   v8 run is still recorded as FAIL because one of its negative controls was
   designed wrongly.
 
+### Scenes (configured `wp11_workcell_v1` scenes, live Native frames)
+
+| Scene | Start | End of episode |
+| --- | --- | --- |
+| Near-horizontal TRIM: bar with one dome (`trim01_wp11_workcell`) | ![TRIM start](docs/media/wp11/scenes/trim_rho10_clear_start.png) | ![TRIM end](docs/media/wp11/scenes/trim_rho10_clear_end.png) |
+| Test B: bar on a slotted board, four slices | ![Test B start](docs/media/wp11/scenes/test_b_s1502_start.png) | ![Test B end](docs/media/wp11/scenes/test_b_s1502_end.png) |
+| Test C: three protrusions (seeded layout) | ![Test C start](docs/media/wp11/scenes/test_c_s1602_start.png) | ![Test C end](docs/media/wp11/scenes/test_c_s1602_end.png) |
+| SLICE-PUSH with relocation: two cuts, then a disarmed push | ![SLICE-PUSH start](docs/media/wp11/scenes/slice_push_relocate_s1301_start.png) | ![SLICE-PUSH end](docs/media/wp11/scenes/slice_push_relocate_s1301_end.png) |
+
+All four scenes are defined only by scene and goal configuration. The frames
+are the first and last close-ups of each recorded episode, taken by the
+presentation camera. That camera is not one of the policy's observations.
+
+In the Test C end frame, the piece on the bar top is part of the second chip.
+It is a separate body from the substrate, as the note under Test C below explains.
+[Frame provenance](docs/media/wp11/scenes/provenance.json).
+
 ### Near-horizontal trimming, then clearing the chip
 
 ![Near-horizontal TRIM at rho = 10 deg, then a disarmed sweep pushes the chip off the bar](docs/media/wp11/trim_rho10_clear/demo.gif)
@@ -101,6 +118,10 @@ with at most 8 slots in use.
 - **Test C residual:** 400 of the 14,638 top-layer substrate particles were
   pressed down by more than 1 mm, all inside the skim footprints. Those
   particles moved 1.42–1.47 mm on average and 3.19 mm at most.
+- **Test C chip on the bar:** most chip material ends on the table beyond the
+  bar end, but not all of it. 405 of the second chip's 2040 particles (about
+  20%) end lying on the bar top, 3–13 mm above it. They belong to the chip
+  component, not the substrate.
 
 | Slice, then push, with wrist-depth relocation | Test A: skim along −x |
 | --- | --- |

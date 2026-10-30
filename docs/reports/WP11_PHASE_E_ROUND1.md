@@ -559,6 +559,12 @@ evaluator's to all digits.
 - They separated one at a time, each during its own skim: p0 at 5.60 s (SKIM:p0), p1 at 10.40 s (SKIM:p1) and p2
   at 14.30 s (SKIM:p2).
 - By 21.76 s all three chips had left the bar, ending 85–122 mm below its top beyond the +x end.
+  *Correction (2026-10-30, main, read-only recheck of the final frame):* this statement is based on chip centroids
+  and is too strong. The final mechanical components are 455 / 737 / 2040 / 107054 particles. 405 of the p1 chip's
+  2040 particles (component 2) lie on the bar top at world x ≈ 0.031–0.046 m, 3–13 mm above the substrate top, while
+  the rest of that chip is on the table beyond the +x end. They are in the chip component, not the substrate, so the
+  separation verdict and TASK_SUCCESS are unchanged. The README scene table shows this in the Test C end frame
+  (`docs/media/wp11/scenes/test_c_s1602_end.png`).
 - No recorded frame has a component under 100 particles (`diagnostics_001/component_sizes.json`). The runner does
   not persist `surface_info`, so whether the extractor skipped a transient fragment between recorded frames is
   **not measured**. At the final, evaluated frame nothing was skipped. (After review R1 the runner records every

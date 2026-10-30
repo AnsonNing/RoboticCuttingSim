@@ -84,7 +84,7 @@
   - Profiling：kinematic 1 mm 每步 0.49–0.64 s，TLMPM 佔 99%；其中接觸 kernel 佔 GPU 時間 80%。Native TRIM 每步 0.67 s：TLMPM 58%、相機 12.6%、表面網格 11.8%。
   - 最佳化：opt-in `surface_update="on_capture"`（顯示網格只在拍照與評估前重建），表面時間 49 → 8.8 ms/步，物理逐位相同。
   - 設定檔 `runtime_profiles_v1`：`full_physics_v1`（唯一可用於驗收）與 `research_fast_v1`（每個 episode 標 `acceptance_valid: false`；kinematic TRIM 快 8×、SEVER 快 9.6× 但切面位置 FAIL；Native 快 2.3×）。
-- **Test C live PASS**（live_003，`002c95e` 先宣告，`d3f94e9`／`2b4f0a7` 修正，`ac4a3e1` 證據，[證據](evidence/wp11/phaseE_round1_live_003.json)，[影片](media/wp11/test_c_s1602/demo.gif)）：三個凸起逐一削除 0.962／0.997／0.972，底材單一 component，三個 chip 各自在自己的削切中分離並離開長條；夾持滑移 ≤ 0.83 µm；Return-to-Home PASS。
+- **Test C live PASS**（live_003，`002c95e` 先宣告，`d3f94e9`／`2b4f0a7` 修正，`ac4a3e1` 證據，[證據](evidence/wp11/phaseE_round1_live_003.json)，[影片](media/wp11/test_c_s1602/demo.gif)）：三個凸起逐一削除 0.962／0.997／0.972，底材單一 component，三個 chip 各自在自己的削切中分離（更正：大部分 chip 掉到長條末端外，但第二個 chip 2040 顆粒子中有 405 顆仍躺在長條頂面上，屬於 chip，不屬於底材）；夾持滑移 ≤ 0.83 µm；Return-to-Home PASS。
   - 修正：顯示用網格遇到無法成網格的小碎片時跳過並記錄（物理、標籤、評估不變；可成網格時輸出逐位相同）；runner 預設預檢在 ≥ 2 個凸起時改用分段幾何（0／1 個凸起不變）。
   - live_001（SCENE_INFEASIBLE）與 live_002（NOT_RUN）紀錄不變。
   - 未解：PRE-CUT 時刀身低於頂面 0.23 mm（這次仍用 C5 控制器，`path_v3` 可解）；表面品質指標顯示頂面缺 0.66%、最大凹陷 22 mm（未計分）。已查明（R1）：長條沿 x 滑了 0.773 mm，heightfield 固定在初始位姿，−x 端整列 32／4864 格沒有底材而被算成 22 mm；另有真實壓痕，三個削切範圍內 400 顆頂層底材粒子平均下壓 1.42–1.47 mm，最深 3.19 mm。沒有切面以下的質量脫離，TASK_SUCCESS 不變。
