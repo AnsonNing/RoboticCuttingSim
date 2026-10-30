@@ -13,7 +13,7 @@ repo 內（程式、文件、commit 訊息、README）完全不要出現使用�
 - git status；
 - docs/PROGRESS.md 最上方「進行中」；
 - docs/WP12_PLAN.md。
-確認背景工作狀態後，從停下的地方接著做，不重做已完成的部分。所有工作都用 effort high（你自己、rcs-impl、rcs-review 皆是）。每完成一個小步驟就 commit 並 push 到 claude/wp12-physical-cut-surfaces，然後直接接下一步，不要停下來等人。全部 Phase 完成並經 rcs-review 審查後，依序：
+確認背景工作狀態後，從停下的地方接著做，不重做已完成的部分。所有工作都用 effort high（你自己、rcs-impl、rcs-review 皆是），唯一例外：Phase 4（物理引擎與切割規則）的決策、根因分析與審查交給 xhigh 子代理 rcs-xhigh（或以 effort xhigh 啟動的 rcs-review），包括是否做 law 9、law 9 設計、驗收判定；Phase 4 的程式實作與實跑仍交給 rcs-impl（high）。每完成一個小步驟就 commit 並 push 到 claude/wp12-physical-cut-surfaces，然後直接接下一步，不要停下來等人。全部 Phase 完成並經 rcs-review 審查後，依序：
 1. 更新 README（新工作台場景影像、Demo 1–7 影片、ParticleSurface 與 Cut-aware 對照）與 PROGRESS；
 2. 合併到 main 並 push；
 3. 最後才建立 /mnt/data/ningan/lab_records/rcs_demo_runner/DONE。

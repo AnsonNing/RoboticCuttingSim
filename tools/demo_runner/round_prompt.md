@@ -25,7 +25,11 @@ when you are idle or after a usage limit.
 
 - Effort: everything runs at high, per the user's 2026-10-30 instruction
   (usage budget): you, `rcs-impl` (implementation, tests, probes, Isaac runs)
-  and `rcs-review` (design review, acceptance decisions, final review). Give
+  and `rcs-review` (design review, acceptance decisions, final review).
+  Exception (user, 2026-10-31): Phase 4 (cutting physics, law 8 failure
+  regions, law 9, orientation envelope, resolution study) decisions, root-cause
+  analysis and reviews go to `rcs-xhigh` (or `rcs-review` spawned with effort
+  xhigh); Phase 4 implementation and runs still go to `rcs-impl` at high. Give
   subagents a precise brief. Run independent subagents in parallel when they
   don't share GPUs or files.
 - Don't ask the user questions. Make the decision, record it in
