@@ -1,0 +1,12 @@
+{
+  "amends": "wp12_resolution_protocol_v1 (configs/wp12/resolution_protocol_v1.json, frozen at 5efbfa0)",
+  "date": "2026-10-31 (KST)",
+  "scope": "execution budget and devices only; cases, rows, row order, resolutions, dt values, controlled variables, metrics, convergence definitions and every threshold are unchanged",
+  "reason": "cuda:1 is shared with concurrent WP-12 agents (Phase 4c geometry/material and Phase 3 surface runs), so formal rows run about 3.6x slower than the DEV estimate (1 mm CUT 128 s vs 35 s) and the declared cap would drop late rows as NOT_RUN for resource contention, not for any property of the rows. No formal result was inspected to make this change; it is decided from wall-time contention alone.",
+  "changes": {
+    "devices": "rows may run on cuda:0 and cuda:1, at most 2 concurrent per device; every result.json records the device; device is not a controlled scientific variable for kinematic rows (GPU float32 atomics nondeterminism band applies, ADR 0012)",
+    "budget_gpu_hours": 24,
+    "queue_wall_hours": 18,
+    "rule_unchanged": "rows not started when the amended cap is reached are NOT_RUN (budget) and reported"
+  }
+}
