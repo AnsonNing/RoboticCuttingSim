@@ -11,10 +11,11 @@
 - Phase 2b 完成（`2f299cc`）：平板上 live Native CUT、partial、TRIM、Test B（5 塊）、Test C 全部 PASS 並回 HOME；刀停在板面不穿透。長條每刀仍滑約 1 mm（PARTIAL）。
 - Phase 3 量測（`bdc5da0`）：凍結 protocol v1 下比較 gate **FAIL**（保留）；cut-aware 在參考空間、覆蓋率、拓撲、邊緣、體積勝出，法向與部分最大值不過。審查（`b67e80c`）確認 FAIL 成立並找出 S6 指標缺陷與 v1 自相矛盾的門檻列，建議 v2 方法＋獨立理由的 protocol v2。
 - Phase 4a 根因草稿（`b012902`）：(a) 斜切出口面未指派、(b) 45° rake 剛好卡在 θ_max、(c) core band 被刀帶走的粒子、(d) 楔形下壓、(e) swept normal fallback 潛在問題；建議 law 9 只處理 (a)。
-- Phase 3 protocol v2 已凍結（`9157725`）；cut-aware surface 已接進 live／Native（`9fde661`）：4 個 Native episode 物理與 Phase 2b 相同，partial kerf 可見；TRIM 出現 solver 撕裂 chip 但未給 cut code 的拉長三角形（交 Phase 4）。
-- Phase 4：xhigh 審查（`81a9626`）**否決**原 law 9；平板上 law 8 斜切 5–35° 全部不分離（CPU probe）。E1 protocol 已凍結（`3dd3848`）並開始正式跑。解析度 protocol 已凍結（`5efbfa0`，預算修正 `cce4944`）；初步：力對 dt 不收斂，機制候選為 penalty contact 有效剛度 ∝ m/dt²。
-- 執行中（背景 agent）：E1（`artifacts/wp12/phase4_e1_001`）；解析度矩陣（`artifacts/wp12/resolution_002`）；Phase 4c 工件／材料（`artifacts/wp12/phase4c_002`）；cut_aware_surface_v2 與 v2 矩陣（`artifacts/wp12/phase3_surface_002`）；Phase 5 基礎設施（草稿，envelope 待 Phase 4 決定）。
-- 決策層級：Phase 4 與複雜的 Phase 3 審查／分析／決策用 xhigh（使用者 2026-10-31）。
+- Phase 3 **關閉**（xhigh，`a94bd9f`）：比較 gate 在凍結 protocol v1（`bdc5da0`）與 v2（`dc210ff`）下都 FAIL，全部保留；`cut_aware_surface_v1` 作為 opt-in profile 提供，預設仍是 `particle_surface_v1`；已接進 live／Native（`9fde661`，物理與 Phase 2b 相同）。closure 診斷 `b0a3fb8`。
+- Phase 4：原 law 9 被 xhigh 否決（`81a9626`）。E1（`15e5ec1`）：平板上 law 8 斜切只到 5° 會分離，≥10° 全部不分離；8 mm 開槽板可分離 20–30°。解析度研究 110 列（`77fd033`）：分離結果收斂，接觸力、近切面變形、TRIM 壓陷不收斂。4c 工件／材料（`05b31c5`）。方法研究（xhigh，`5ccfa96`）：粒子位置用 FLIP 速度、F 用網格速度梯度 → 切面附近不一致；薄屑「撕裂」是同一漂移不是斷裂；接觸力 ∝ m/dt²。
+- Phase 5 基礎設施 DRAFT（`94c7602`）；Phase 6 完成（`73c6e43`：§6.7 全 PASS；Native 單一 process CUT→TRIM→CUT PASS；kinematic 記憶體檢查 FAIL 保留）。
+- 執行中：V1–V4 根因驗證（protocol `ecfa8c6`，`artifacts/wp12/phase4_verify_001`）；Phase 4 xhigh 決策 D1–D5（斜切處理、支援角度範圍、解析度與 4c 結論、Phase 5 ID 範圍、Phase 7 Demo 配置）。
+- 下一步：依 D1–D5 凍結 Phase 5 benchmark 並執行；V1–V4 結果決定是否做 opt-in 原型（網格一致位置更新、與 dt 無關的接觸剛度）；Phase 7 Native Demo 1–7。
 - 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
