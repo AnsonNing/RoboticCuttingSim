@@ -1,0 +1,284 @@
+{
+  "schema": "demo_render_receipt_v1",
+  "episode_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000",
+  "output_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/render_001",
+  "command": [
+    "scripts/render_packed_episode.py",
+    "artifacts/wp12/workcell_live_002/run/episode_000",
+    "--out",
+    "artifacts/wp12/workcell_live_002/render_001",
+    "--title",
+    "WP-12 Phase 2b live: partial cut to mid-depth on blade_master_flat_board_v1 (Isaac Sim Native, tlmpm_v5 law 8)",
+    "--label",
+    "PARTIAL_CUT_ACCEPTED: kerf to 10 mm, one piece (no false separation) | home_outcome PASS"
+  ],
+  "inputs": {
+    "result.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000/result.json",
+      "sha256": "c223a287f81edcdb6393c59477429d0d22d41194cd273fa3b2dc9b0394e3b1a9"
+    },
+    "physics_state.npz": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000/physics_state.npz",
+      "sha256": "3062cbfd432dce8a66feb8e8cb6c100e1694990ee5e2f5c763f183bbc86f1873"
+    },
+    "frame_manifest.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000/frame_manifest.json",
+      "sha256": "c4d58d0c56363765e43a4235088d410770067ca13be60457fd31874217c0f246"
+    },
+    "actions.jsonl": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000/actions.jsonl",
+      "sha256": "e080544c365f9af5c44c3d4237ab7cee2c3158b90fd17de9786922f54792b58e"
+    },
+    "manifest.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000/manifest.json",
+      "sha256": "75fb5e2c380f7e32bd418b429a5d025f3d5b214d79b5cad5b703d693469d5feb"
+    },
+    "task.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_002/run/episode_000/task.json",
+      "sha256": "40254704e601e7bfee3924063b7bdbf75b9947d72b1c80b7e33b81a55babed35"
+    }
+  },
+  "frame_count": 66,
+  "measured_capture_rate": {
+    "frames": 66,
+    "rate_hz": 4.999999999999996,
+    "interval_s": {
+      "median": 0.20000000000000018,
+      "min": 0.03999999999999915,
+      "max": 0.20000000000000107
+    },
+    "span_s": 12.84,
+    "monotonic": true,
+    "source": "observations/overview_rgb physics_timestamp_s",
+    "manifest": {
+      "frames": 66,
+      "rate_hz": 4.999999999999996,
+      "interval_s": {
+        "median": 0.20000000000000018,
+        "min": 0.03999999999999915,
+        "max": 0.20000000000000107
+      },
+      "span_s": 12.84,
+      "monotonic": true
+    }
+  },
+  "video_fps": 5.0,
+  "gif": {
+    "stride": 1,
+    "fps": 9.999999999999991,
+    "width": 640,
+    "speed": 2.0,
+    "bytes": 1041893,
+    "attempt": 0,
+    "budget_bytes": 4000000,
+    "within_budget": true
+  },
+  "panels": {
+    "assignment": {
+      "large": "overview_rgb",
+      "secondary": "closeup_rgb",
+      "wrist_rgb": "wrist_d405_0",
+      "wrist_depth": "wrist_d405_0",
+      "overview": "overview_rgb",
+      "closeup": "closeup_rgb"
+    },
+    "overview_present": true,
+    "closeup_present": true,
+    "secondary_title": "Close-up (presentation camera, not an observation)",
+    "streams": {
+      "closeup_rgb": 66,
+      "global_d455": 66,
+      "overview_rgb": 66,
+      "wrist_d405_0": 66,
+      "wrist_d405_1": 66
+    },
+    "missing_frames": {},
+    "particle_debug": true,
+    "diagnostics_strip": true,
+    "layout": "large=overview or Global D455; secondary=presentation close-up (closeup_*)",
+    "poster_frame": 65,
+    "edge_half_length_m": 0.06
+  },
+  "particle_view": {
+    "label": "oracle debug view (not an observation)",
+    "stride": 3,
+    "cuts": 1,
+    "component_function": "robotic_cutting_sim.cut_topology.mechanical_components (nodes, weights, codes, cuts, gradients=...)",
+    "component_count_per_frame": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "force_definition": "|F| = ||current_material_reaction_impulse_world[:3]|| / control_dt: mean material reaction force on the blade over one control step (finger-box reactions excluded)",
+  "status_line": "PARTIAL_CUT_ACCEPTED: kerf to 10 mm, one piece (no false separation) | home_outcome PASS",
+  "status_source": "--label",
+  "runtime_label": {
+    "runtime_source": "live_isaac_sim",
+    "display": "Live Isaac Sim Native",
+    "controller": "scripted",
+    "task_id": "CFG-bar_flat_board-partial_cut_mid_depth-c393ad75"
+  },
+  "git": {
+    "sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "dirty": true,
+    "branch": "claude/wp12-physical-cut-surfaces"
+  },
+  "wall_time_s": 22.352460691996384,
+  "outputs": {
+    "demo.mp4": {
+      "bytes": 997412,
+      "sha256": "1f8331004e2b77773eb6385ed66e89340ba586bd75d7083ba3b1a996a1c993c2"
+    },
+    "demo.gif": {
+      "bytes": 1041893,
+      "sha256": "df8380f3db8490cb2e7062b4eee95c85f4552b7734f244bebd84c7f7c5a828e3"
+    },
+    "poster.png": {
+      "bytes": 503680,
+      "sha256": "2d55674106c1df87f66205d8ae476615315e13e2fe4319d2ffe72324b65b73d1"
+    }
+  },
+  "versions": {
+    "python": "3.12.12",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2",
+    "ffmpeg": "ffmpeg version 4.4.2-0ubuntu0.22.04.1+esm17 Copyright (c) 2000-2021 the FFmpeg developers"
+  },
+  "recording_modified": false,
+  "component_cache": {
+    "unique_code_vectors": 7,
+    "calls": 7
+  },
+  "labelled_particles_per_frame": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1440,
+    4320,
+    7200,
+    10080,
+    12960,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400,
+    14400
+  ]
+}

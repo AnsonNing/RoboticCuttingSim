@@ -1,0 +1,284 @@
+{
+  "schema": "demo_render_receipt_v1",
+  "episode_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000",
+  "output_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/render_001",
+  "command": [
+    "scripts/render_packed_episode.py",
+    "artifacts/wp12/workcell_live_003/run/episode_000",
+    "--out",
+    "artifacts/wp12/workcell_live_003/render_001",
+    "--title",
+    "WP-12 Phase 2b live: TRIM rho = 10 deg on blade_master_flat_board_v1 (Isaac Sim Native, tlmpm_v5 law 8)",
+    "--label",
+    "trim_bump_rho10 PASS: dome removed 0.977, substrate 0.99998 | home_outcome PASS"
+  ],
+  "inputs": {
+    "result.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000/result.json",
+      "sha256": "07d4106a40ccec1a8dd19f6d0286bbb60ac65886dea89a2c778e892a7c414b32"
+    },
+    "physics_state.npz": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000/physics_state.npz",
+      "sha256": "4fdaf51be5b4a8f22950cece1e898474bc92a9d8d3e76c58696cabc3cc695229"
+    },
+    "frame_manifest.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000/frame_manifest.json",
+      "sha256": "75b6e76488d55c88fde952adfd2a730cc4a7e42898e33d1add1221a7ea8bcdf2"
+    },
+    "actions.jsonl": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000/actions.jsonl",
+      "sha256": "cbd3fd3de83b4e5b28104d5626146043956ffc366bf94908e65a4af2a84d23de"
+    },
+    "manifest.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000/manifest.json",
+      "sha256": "f01d5232c5205169e73ca94a983db3cc6fd9ec0885b1011faf1675bb1957a30c"
+    },
+    "task.json": {
+      "path": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/workcell_live_003/run/episode_000/task.json",
+      "sha256": "9f78ef427ca97a24f0f7890888bc7b909e76dbaad4a6f48cbed427414f04b9ba"
+    }
+  },
+  "frame_count": 66,
+  "measured_capture_rate": {
+    "frames": 66,
+    "rate_hz": 4.999999999999998,
+    "interval_s": {
+      "median": 0.20000000000000007,
+      "min": 0.09999999999999964,
+      "max": 0.20000000000000107
+    },
+    "span_s": 12.74,
+    "monotonic": true,
+    "source": "observations/overview_rgb physics_timestamp_s",
+    "manifest": {
+      "frames": 66,
+      "rate_hz": 4.999999999999998,
+      "interval_s": {
+        "median": 0.20000000000000007,
+        "min": 0.09999999999999964,
+        "max": 0.20000000000000107
+      },
+      "span_s": 12.74,
+      "monotonic": true
+    }
+  },
+  "video_fps": 5.0,
+  "gif": {
+    "stride": 1,
+    "fps": 9.999999999999996,
+    "width": 640,
+    "speed": 2.0,
+    "bytes": 903733,
+    "attempt": 0,
+    "budget_bytes": 4000000,
+    "within_budget": true
+  },
+  "panels": {
+    "assignment": {
+      "large": "overview_rgb",
+      "secondary": "closeup_rgb",
+      "wrist_rgb": "wrist_d405_0",
+      "wrist_depth": "wrist_d405_0",
+      "overview": "overview_rgb",
+      "closeup": "closeup_rgb"
+    },
+    "overview_present": true,
+    "closeup_present": true,
+    "secondary_title": "Close-up (presentation camera, not an observation)",
+    "streams": {
+      "closeup_rgb": 66,
+      "global_d455": 66,
+      "overview_rgb": 66,
+      "wrist_d405_0": 66,
+      "wrist_d405_1": 66
+    },
+    "missing_frames": {},
+    "particle_debug": true,
+    "diagnostics_strip": true,
+    "layout": "large=overview or Global D455; secondary=presentation close-up (closeup_*)",
+    "poster_frame": 65,
+    "edge_half_length_m": 0.06
+  },
+  "particle_view": {
+    "label": "oracle debug view (not an observation)",
+    "stride": 3,
+    "cuts": 1,
+    "component_function": "robotic_cutting_sim.cut_topology.mechanical_components (nodes, weights, codes, cuts, gradients=...)",
+    "component_count_per_frame": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ]
+  },
+  "force_definition": "|F| = ||current_material_reaction_impulse_world[:3]|| / control_dt: mean material reaction force on the blade over one control step (finger-box reactions excluded)",
+  "status_line": "trim_bump_rho10 PASS: dome removed 0.977, substrate 0.99998 | home_outcome PASS",
+  "status_source": "--label",
+  "runtime_label": {
+    "runtime_source": "live_isaac_sim",
+    "display": "Live Isaac Sim Native",
+    "controller": "scripted",
+    "task_id": "CFG-trim01_flat_board-trim_bump_rho10-13827418"
+  },
+  "git": {
+    "sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "dirty": true,
+    "branch": "claude/wp12-physical-cut-surfaces"
+  },
+  "wall_time_s": 23.40869005100103,
+  "outputs": {
+    "demo.mp4": {
+      "bytes": 990317,
+      "sha256": "911cbec78d69b68b9bc08897e717a2d8c47cb5c3da0ce5aa46d471d63eaaa5db"
+    },
+    "demo.gif": {
+      "bytes": 903733,
+      "sha256": "2905f03c528860bd30c22321d38c6bf50fbbb933b4aa1097fa6a9258440dadd9"
+    },
+    "poster.png": {
+      "bytes": 495558,
+      "sha256": "51b5207f15e2381487bfe1316aa9dba8ffce21d51c4774c08b1c81ae0f18d13d"
+    }
+  },
+  "versions": {
+    "python": "3.12.12",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2",
+    "ffmpeg": "ffmpeg version 4.4.2-0ubuntu0.22.04.1+esm17 Copyright (c) 2000-2021 the FFmpeg developers"
+  },
+  "recording_modified": false,
+  "component_cache": {
+    "unique_code_vectors": 9,
+    "calls": 9
+  },
+  "labelled_particles_per_frame": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4950,
+    8084,
+    11464,
+    14796,
+    17922,
+    20924,
+    23928,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014,
+    25014
+  ]
+}

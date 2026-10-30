@@ -17,9 +17,11 @@ then, in this order:
    the knife's lowest point (blade hull vertices on the measured tool body
    pose) vs the board top, native tool-board contact force, grasp slip (hand-to-
    tool relative pose vs the probe start) and joint tracking error;
-4. no end render: capture() after rigid-only controls fails the runner's wrist-camera extrinsic check
-   (first run workcell_003); the knife-over-board render is taken after a coupled (cutting disabled)
-   approach instead.
+4. end render: by default none, because capture() after rigid-only controls fails the runner's wrist-camera
+   extrinsic check (first run workcell_003); the knife-over-board render is taken after a coupled (cutting
+   disabled) approach instead. ``--end-render`` (opt-in, WP-12 Phase 2b) passes
+   ``refresh_camera_extrinsics=True`` to every rigid probe step and renders ``after_probe`` (RGB PNG, depth
+   validity and the runner's own extrinsic checks).
 
 The runner itself is unchanged except the opt-in flat-board table/appearance
 authoring (``isaac_sim_runner._author_flat_board_appearance``).
@@ -106,9 +108,17 @@ def slerp_path(a, b, max_translation, max_rotation_deg):
     return [np.r_[a[:3]+(b[:3]-a[:3])*u, s(u).as_quat()] for u in np.arange(1, n+1)/n]
 
 
-def capture_png(env, output, tag, images):
+def capture_png(env, output, tag, images, depth_stats=None):
     frames, _ = env.capture()
     for name, frame in frames.items():
+        if depth_stats is not None:
+            valid = np.asarray(frame["valid_mask"], bool)
+            depth = np.asarray(frame["depth_m"], float)
+            depth_stats[name] = {"valid_fraction": float(valid.mean()),
+                                 "depth_valid_min_m": float(depth[valid].min()) if valid.any() else None,
+                                 "depth_valid_median_m": float(np.median(depth[valid])) if valid.any() else None,
+                                 "T_world_camera_translation_m": np.asarray(frame.get("T_world_camera", np.eye(4)))[:3, 3].tolist()
+                                 if frame.get("T_world_camera") is not None else None}
         path = output/f"{tag}_{name}_rgb.png"
         save_png(path, frame["rgb"])
         images.append(str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path))
@@ -151,6 +161,8 @@ def main():
     p.add_argument("--descent-speed", type=float, default=0.002)
     p.add_argument("--hold-s", type=float, default=1.0)
     p.add_argument("--skip-settle", action="store_true")
+    p.add_argument("--end-render", action="store_true",
+                   help="opt-in: refresh wrist-camera extrinsics in every rigid probe step and render after the probe")
     a = p.parse_args()
     output = a.out.resolve()
     output.mkdir(parents=True, exist_ok=False)
@@ -193,7 +205,8 @@ def main():
             raise RuntimeError("Physical pregrasp failed: "+str(getattr(env, "grasp_reset_receipt", None)))
         result["fixture_plan"] = env.fixture_plan
         result["home_edge_pose_world"] = np.asarray(env.home_edge_pose).tolist()
-        result["start_cameras"] = capture_png(env, output, "start", result["images"])
+        result["start_camera_depth"] = {}
+        result["start_cameras"] = capture_png(env, output, "start", result["images"], result["start_camera_depth"])
         write_json(output/"result.json", result)
 
         # ---- 2. gravity settle (coupled, cutting disabled, knife at HOME)
@@ -259,7 +272,8 @@ def main():
 
         def probe(pose, phase, commanded_local_z=None):
             q, info = env.solve_edge_ik(pose)
-            state, _ = env.rigid_probe_step(np.asarray(q, float))
+            state, _ = (env.rigid_probe_step(np.asarray(q, float), refresh_camera_extrinsics=True) if a.end_render
+                        else env.rigid_probe_step(np.asarray(q, float)))
             trace = env.grasp_trace[-env.config.robot_substeps:]
             fixture_n, table_n, separations, sensor_fixture = [], [], [], []
             for row in trace:
@@ -349,8 +363,21 @@ def main():
             "scope": "Rigid-only PhysX controls (material not advanced). Commanded edge targets go below the rigid board top on "
                      "purpose; the measured knife must stay on the board. Lowest point = blade hull vertices on the measured "
                      "tool body pose (PhysX tool meshes: contact offset 0.2 mm, rest offset 0)."}
-        result["end_cameras"] = ("NOT_RUN: the runner refreshes wrist-camera extrinsics only in coupled steps, so capture() after "
-                                 "rigid-only controls fails its own extrinsic check (workcell_003)")
+        if a.end_render:
+            write_json(output/"result.json", result)
+            depth = {}
+            result["end_cameras"] = capture_png(env, output, "after_probe", result["images"], depth)
+            result["end_camera_depth"] = depth
+            result["start_vs_end_camera_translation_m"] = {
+                name: float(np.linalg.norm(np.asarray(depth[name]["T_world_camera_translation_m"])
+                                           - np.asarray(result["start_camera_depth"][name]["T_world_camera_translation_m"])))
+                for name in depth if name in result["start_camera_depth"]}
+            result["end_camera_runtime_extrinsic_checks"] = getattr(env, "camera_runtime_extrinsic_checks", None)
+            result["end_cameras_scope"] = ("rigid_probe_step(refresh_camera_extrinsics=True) recomposed the wrist extrinsics "
+                                           "from the measured hands after every rigid step; capture() ran its own checks")
+        else:
+            result["end_cameras"] = ("NOT_RUN: the runner refreshes wrist-camera extrinsics only in coupled steps, so capture() after "
+                                     "rigid-only controls fails its own extrinsic check (workcell_003)")
         result["status"] = "EXECUTED"
     except BaseException as error:
         result.update(status="FAIL", error=repr(error))

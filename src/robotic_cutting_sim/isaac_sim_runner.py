@@ -956,11 +956,17 @@ class LiveIsaacSimCutting:
         self.ik.state.joint_q.assign(measured.ravel().astype(np.float32))
         return self.ik.inverse_kinematics(edge_pose)
 
-    def rigid_probe_step(self, joint_targets=None):
+    def rigid_probe_step(self, joint_targets=None, *, refresh_camera_extrinsics=False):
         """Same rigid bodies/contact controller, no material solve or Task claim.
 
         A subsequent cutting step requires reset, because its material clock
         has deliberately not advanced during these independent grasp controls.
+
+        ``refresh_camera_extrinsics`` (opt-in, WP-12 Phase 2b; default False keeps
+        the historical behaviour): after the step, recompose the wrist-camera
+        optical extrinsics from the measured hands exactly as a coupled ``step``
+        does, so a later ``capture()`` passes its extrinsic check. Without it,
+        ``capture()`` after rigid-only controls raises (extrinsics stale).
         """
         if not self.physical_grasp:
             raise ValueError("Rigid tool controls require physical_grasp")
@@ -983,6 +989,9 @@ class LiveIsaacSimCutting:
         self.step_index += 1
         self.time_s=self.step_index*self.config.control_dt
         self.physx.update_transformations(False,True,True)
+        if (refresh_camera_extrinsics and self.config.camera and self.config.camera_layout == "wrist_d405_global_d455"
+                and getattr(self,"camera_specs",None)):
+            self._update_camera_extrinsics(self.proprioception()["hand_pose_both_xyzw"])
         return self.proprioception(),self.grasp_trace[-1]
 
     def _grasp_sample(self, phase, applied_edge_wrench=None, application_state=None):

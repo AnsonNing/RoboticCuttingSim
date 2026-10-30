@@ -1,0 +1,138 @@
+{
+  "schema": "rcs_wp12_workcell_live_v1",
+  "stage_id": "wp12_phase2b_workcell_live_v1",
+  "status": "PREDECLARED",
+  "declared": "2026-10-31, WP-12 Phase 2b, written before any workcell_live_NNN Native episode of this stage. Physics (tlmpm_v5 law 8, final_v4), the goal evaluators, every v1-v4 and goal threshold, the blade_master_flat_board_v1 record and the WP-11 records are unchanged. Any change to these rules is a new stage file; failed runs are kept.",
+  "scope": "LIVE Native results only (runtime_source live_isaac_sim): Isaac Sim 6.2 Kit/PhysX Franka articulation with the physically grasped ruler_knife_v2_y (two-finger physical_grasp, pregrasped at the workcell HOME) + retained TLMPM material (tlmpm_v5, law 8, 1 mm particles, 4 mm grid, 0.1 ms) + RTX cameras, on blade_master_flat_board_v1 (one solid board on the table, no risers). Material parameters are provisional and uncalibrated. One seed per episode, no repeat statistics, no Lab parity, never kinematic replay.",
+  "runtime": {
+    "backend": "scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal (unchanged runner path of WP-11 Phase E live)",
+    "python": ".deps/isaacsim-venv/bin/python",
+    "gpu": 0,
+    "seed": 42,
+    "tmpdir": "/mnt/data/ningan/tmp",
+    "one_native_run_at_a_time": true,
+    "flags": [
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera"
+    ],
+    "record_every": 10,
+    "history_stride": "max(5, ceil(live control steps / 40)), passed as --oracle-stride (WP-11 round-1 rule)",
+    "plan_preflight": "runner default C2 plan preflight of the full plan must PASS before launch (staged per-protrusion geometry for >= 2 protrusions, runner default)"
+  },
+  "controller": {
+    "planner": "goal_planner_v1 (scene + goal + tool profile + options only; no particle, label, component or oracle input), WaypointPolicy",
+    "planner_overrides": {
+      "max_rotation_deg": 1.0,
+      "max_translation_m": 0.001,
+      "controller_profile": "path_v2"
+    },
+    "planner_overrides_reason": "The WP-11 Phase E live controller (1 deg / 1 mm per 20 ms step, path_v2, measured edge feedback), so the old/new comparison differs only in the workcell. sever_mid and divide_5_slices declare no planner block (v1 profile by default); path_v2 is applied as an override, which enters the task id.",
+    "duration_rule": {
+      "probe_duration_s": 120.0,
+      "plan_end_factor": 1.1,
+      "settle_after_plan_s": 1.0,
+      "round_up_to_s": 0.5,
+      "text": "As WP-11 Phase E live: probe-compile with the live options; plan end = first DONE knot of the ideal reference schedule; duration = ceil((1.1 x plan end + 1.0 s) / 0.5 s) x 0.5 s. The live goal JSON differs from the source goal JSON only in episode.duration_s."
+    }
+  },
+  "episodes": [
+    {
+      "id": "CUT",
+      "spec_item": "Complete through-cut",
+      "scene": "configs/wp12/scenes/bar_flat_board.json",
+      "goal": "configs/wp11/goals/sever_mid.json",
+      "success": "goal evaluator verdict PASS and the WP-11 live task_success_requires list"
+    },
+    {
+      "id": "PARTIAL",
+      "spec_item": "Partial cut",
+      "scene": "configs/wp12/scenes/bar_flat_board.json",
+      "goal": "configs/wp12/goals/partial_cut_mid_depth.json",
+      "success": "PARTIAL_CUT_ACCEPTED when ALL hold at the end of the episode: (1) the sever evaluator's integrity layer PASS; (2) exactly one mechanical component (the evaluator's outcome metric mechanical_components == 1, i.e. no false separation; the sever verdict itself is expected FAIL); (3) a kerf exists: >= 1 particle carries a nonzero cut-0 digit; (4) no particle with a nonzero cut-0 digit has a reference (initial lattice) local z below 0.010 - 0.004 m (one grid cell of slack under the commanded stop depth, so labelling stops near the declared depth); (5) the plan finished, no grasp/IK failure. Anything else is PARTIAL_CUT_FAIL with the failed condition named."
+    },
+    {
+      "id": "TRIM",
+      "spec_item": "TRIM",
+      "scene": "configs/wp12/scenes/trim01_flat_board.json",
+      "goal": "configs/wp11/goals/trim_bump_rho10.json",
+      "success": "goal evaluator verdict PASS and the WP-11 live task_success_requires list"
+    },
+    {
+      "id": "TESTB",
+      "spec_item": "Multiple slices",
+      "scene": "configs/wp12/scenes/bar_flat_board.json",
+      "goal": "configs/wp12/goals/divide_5_slices.json",
+      "success": "goal evaluator verdict PASS (five pieces) and the WP-11 live task_success_requires list"
+    },
+    {
+      "id": "TESTC",
+      "spec_item": "Multiple protrusions",
+      "scene": "configs/wp12/scenes/bar_three_bumps_flat_board.json",
+      "goal": "configs/wp12/goals/remove_all_protrusions_rho10.json",
+      "success": "goal evaluator verdict PASS (each protrusion >= 0.9 removed, substrate share >= 0.99, detached below <= 0.01, single substrate component) and the WP-11 live task_success_requires list"
+    },
+    {
+      "id": "WP11_CUT_REPRO",
+      "spec_item": "old workcell reproduction",
+      "scene": "artifacts/wp11/phaseE/round1_live_001/E1_CUT_s1101/inputs/scene.json",
+      "goal": "artifacts/wp11/phaseE/round1_live_001/E1_CUT_s1101/inputs/goal.json",
+      "planner_overrides": {
+        "max_rotation_deg": 1.0,
+        "max_translation_m": 0.001
+      },
+      "duration_rule": "none: the recorded live goal JSON (duration 14.5 s, 725 steps) and history stride 19 are used as-is, so the task id must equal the WP-11 record CFG-E1_CUT_s1101-E1_CUT_s1101_sever-85f34a04",
+      "success": "verdict and outcome class equal to the WP-11 record (TASK_SUCCESS); metric differences are reported, not scored (GPU float32 atomics make Native repeatable at verdict level only)"
+    },
+    {
+      "id": "TRIM_PATH_V3",
+      "spec_item": "TRIM (controller variant)",
+      "scene": "configs/wp12/scenes/trim01_flat_board.json",
+      "goal": "configs/wp11/goals/trim_bump_rho10.json",
+      "planner_overrides": {
+        "max_rotation_deg": 1.0,
+        "max_translation_m": 0.001,
+        "controller_profile": "path_v3"
+      },
+      "success": "goal evaluator verdict PASS and the WP-11 live task_success_requires list; additionally reported: the measured-path C2 blade clearance during PRE_CUT (report-only)",
+      "reason": "Declared after TRIM (workcell_live_003) passed the goal but, like WP-11 C5 (path_v2), its measured task path failed the report-only C2 blade clearance at PRE_CUT (blade 0.18 mm below the uncut bar top, cutting disabled). WP-11 C5b showed the cause is the path_v2 measured-feedback integrator and that path_v3 (live-validated in C5b) removes it. Controller variant only: same scene, goal, evaluator and thresholds; TRIM (path_v2) stays the primary record."
+    }
+  ],
+  "task_success_requires": [
+    "goal evaluator verdict PASS (env.evaluate() = goals.evaluate_goal on the live recorded oracle history; for these non-sequence goals goal_eval_v1 and goal_eval_v2a dispatch to the same evaluator)",
+    "the scripted plan reached DONE within the episode",
+    "finite recorded material state and no solver error",
+    "no GRASP_FAILURE condition in the task phase (grasp lost, slip > 0.002 m or rotation > 0.05236 rad: the WP-11 live gates, grasp_monitor.GraspLossConfig warning gates)",
+    "no IK_FAILURE condition in the task phase (IK not ok or a workspace-clamped command)"
+  ],
+  "home_outcome": "Reported separately from the task outcome: HOME reset at the start (pregrasp PASS_STABLE_GRASP) and the Phase D physical return-to-home at the end (episode_lifecycle home_outcome).",
+  "measurements_report_only": {
+    "knife_vs_board": "Per control step: lowest blade-hull vertex (tool_profile blade shapes on the measured tool body pose) minus the board top (world z 0.010 m); min over the task phase, and the value at the end of each armed through-cut (HOLD), compared with the kinematic clean-cut window h in [0, +0.375] mm of Phase 2a.",
+    "material_into_board": "Lowest recorded particle centre minus the board top and the count of particle centres below the board top over every recorded frame (privileged, evaluation only).",
+    "blade_reaction": "TLMPM material reaction on the knife per step (current_material_reaction_impulse_world / dt).",
+    "board_reaction_inferred": "Quasi-static, as Phase 2a: F_board = -(F_fingers - F_fingers,free) - F_material, with F_fingers from the native tensor contact view (finger/palm filters) and F_fingers,free the mean over the last 20 APPROACH/REORIENT steps of the first operation (no material contact). Inertia is neglected; the free-hover check against the tool weight is reported.",
+    "object_displacement": "Mass-weighted centroid drift of the whole workpiece and of each final mechanical component between recorded frames, horizontal and vertical; per-cut drift for multi-cut episodes (frame before each CUT/SKIM starts vs frame after its WITHDRAW). WP-11 reference: ~1 mm per cut on separate supports.",
+    "bridges": "Per through-cut plane: reference x-links crossing the plane with conflicting digits, and direct code-0 bridges (scripts/analyze_cut_bridges.py rule) at the end of the episode.",
+    "grasp": "Task-phase and whole-episode max slip / rotation since settling (grasp monitor), grasp_lost.",
+    "ik_preflight": "Plan preflight status, task steps with IK not ok, workspace / translation / rotation clamps, measured-path C2 check.",
+    "cameras": "First and last recorded frames of the global D455 and both wrist D405: RGB, depth valid fraction and median, T_world_camera translation change (wrist cameras must move with the arm, the D455 must not).",
+    "performance": "Process / episode wall time, mean step wall time (ms/step), material wall time per step."
+  },
+  "amendments": [
+    {
+      "date": "2026-10-31",
+      "when": "while workcell_live_001 (CUT) was running, before any analysis of it",
+      "change": "task_success_requires GRASP_FAILURE gates corrected from the grasp-LOSS gates (0.02 m / 0.5236 rad, a transcription error) to the WP-11 live warning gates (0.002 m / 0.05236 rad) that configs/wp11/generalization_round1_live.json declares. Stricter, not looser. workcell_live_001/inputs/prepare.json records the sha256 of the file before this amendment."
+    },
+    {
+      "date": "2026-10-31",
+      "when": "after workcell_live_003 (TRIM) and before any TRIM_PATH_V3 run",
+      "change": "added episode TRIM_PATH_V3 (controller variant, see its reason). No existing episode, rule or threshold changed."
+    }
+  ]
+}

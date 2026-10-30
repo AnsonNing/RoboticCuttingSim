@@ -314,3 +314,322 @@ contact happened at commanded edge z = −0.76 mm. This is a controller tracking
   computed. The board colour is a flat PreviewSurface; there is no bamboo texture.
 - The compiled task id hashes the profile name and overrides, not the resolved record (same practice as
   `from_scenario`). Record changes need a new record version.
+
+## 9. Phase 2b — Native acceptance (live episodes on the flat board)
+
+Date: 2026-10-31. Protocol (declared before the first episode, two dated amendments, neither loosens a rule):
+[`configs/wp12/workcell_live_v1.json`](../../configs/wp12/workcell_live_v1.json). Evidence:
+[`phase2b_native_001.json`](../evidence/wp12/phase2b_native_001.json). Media:
+[`docs/media/wp12/workcell_live/`](../media/wp12/workcell_live/). Material parameters remain provisional and
+uncalibrated. No physics, evaluator, threshold, `final_v4`, law 8 or WP-11 record was changed.
+
+**How the episodes ran.** Every episode is a live Native Isaac Sim 6.2 run (`runtime_source = live_isaac_sim`) of the
+unchanged WP-11 live path `scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal`, launched by
+`scripts/run_wp12_workcell_live.py launch`. It uses:
+
+- `ruler_knife_v2_y` held by the physical two-finger grasp, pregrasped at the workcell HOME (`PASS_STABLE_GRASP` in
+  every episode);
+- `tlmpm_v5`, law 8, 1 mm particles, 4 mm grid, 0.1 ms; seed 42; cuda:0, one Native process at a time;
+- the WP-11 Phase E live controller: goal planner, `path_v2`, 1 mm / 1° per 20 ms step, measured edge feedback,
+  the same duration rule (⌈(1.1 × plan end + 1 s) / 0.5 s⌉ × 0.5 s); `path_v2` is applied as a planner override, so
+  the old/new comparison differs only in the workcell;
+- the runner's C2 plan preflight before launch (PASS in every episode), hold with cutting disabled to the time limit,
+  then the Phase D physical return-to-home (`home_outcome`, scored separately);
+- cameras recorded every 10 control steps (global D455 and both wrist D405 RGB-D, presentation overview and close-up).
+
+The goal evaluator is `env.evaluate()` = `goals.evaluate_goal` with each goal's declared thresholds. None of these
+goals is a `sequence`, so `goal_eval_v1` and `goal_eval_v2a` run the same code path. The outcome class uses the WP-11
+live precedence and gates (IK not ok or workspace clamp → IK_FAILURE; slip > 2 mm or rotation > π/60 → GRASP_FAILURE).
+
+Analysis: `scripts/run_wp12_workcell_live_analysis.py` (read-only; oracle material and privileged tool state are used
+for evaluation only). Definitions:
+
+- *Knife − board*: the lowest blade-hull vertex on the measured tool body pose, minus the board top (world z = 0.010 m).
+- *Blade reaction*: the TLMPM material reaction on the knife.
+- *Board reaction (inferred)*: quasi-static, as §6: −(F_fingers − F_fingers,free) − F_material,applied. It includes
+  inertia, so the first-contact step shows an impact transient.
+- *Bridges*: reference x-links across the kerf with conflicting digits, and direct code-0 bridges
+  (`scripts/analyze_cut_bridges.py` rule). The kerf is located as the lattice column pair with the most conflicting
+  links for that digit, and its offset from the declared plane is reported.
+
+Commands (TMPDIR=/mnt/data/ningan/tmp, `.venv/bin/python`):
+
+```
+scripts/run_wp12_workcell_live.py launch --episode <ID> --out artifacts/wp12/workcell_live_NNN
+scripts/run_wp12_workcell_live_analysis.py --root artifacts/wp12/workcell_live_NNN [--out .../analysis_002]
+scripts/export_wp12_workcell_media.py --root artifacts/wp12/workcell_live_NNN --media docs/media/wp12/workcell_live/<name>
+scripts/render_packed_episode.py artifacts/wp12/workcell_live_NNN/run/episode_000 --out .../render_001 [--wide-piece-palette]
+scripts/summarize_wp12_workcell_live.py --out docs/evidence/wp12/phase2b_native_001.json
+```
+
+### 9.1 Episodes
+
+| Run | Episode | Task id | Class / verdict | Key result | home_outcome | Wall (process) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `workcell_live_001` | CUT (`sever_mid`) | `CFG-bar_flat_board-sever_mid-c32f94a4` | **TASK_SUCCESS** / PASS | 2 pieces 0.500 / 0.500; 600/600 cross-plane links conflicting; 0 bridges; frozen location statistic 1.5 mm ≤ 2 mm | PASS | 385 s |
+| `workcell_live_002` | PARTIAL (`partial_cut_mid_depth`) | `CFG-bar_flat_board-partial_cut_mid_depth-c393ad75` | **PARTIAL_CUT_ACCEPTED** (declared rule); sever verdict FAIL as expected | 1 component; 14 400 particles labelled, the lowest at reference z = 10.5 mm (floor 6 mm); layers 10–19 conflicting, layers 0–9 intact | PASS | 331 s |
+| `workcell_live_003` | TRIM ρ = 10° (`trim_bump_rho10`) | `CFG-trim01_flat_board-trim_bump_rho10-13827418` | **TASK_SUCCESS** / PASS | dome removed 0.977; substrate share 0.99998; measured ρ 10.000° | PASS | 351 s |
+| `workcell_live_004` | Test B (`divide_5_slices`) | `CFG-bar_flat_board-divide_5_slices-c19e742e` | **TASK_SUCCESS** / PASS | 5 pieces (0.219 / 0.200 / 0.194 / 0.194 / 0.194); every kerf 600/600 conflicting; 0 bridges | PASS | 995 s |
+| `workcell_live_005` | Test C (`remove_all_protrusions_rho10`) | `CFG-bar_three_bumps_flat_board-remove_all_protrusions_rho10-e0441d65` | **TASK_SUCCESS** / PASS | p0 0.958, p1 0.979, p2 0.960; substrate share 0.99996; one substrate component | PASS | 645 s |
+| `workcell_live_006` | WP-11 CUT reproduction (`wp11_workcell_v1`, E1_CUT_s1101 inputs) | `CFG-E1_CUT_s1101-E1_CUT_s1101_sever-85f34a04` (= WP-11 record) | **TASK_SUCCESS** / PASS (WP-11: TASK_SUCCESS / PASS) | 2 pieces 0.639 / 0.361 and location 1.5 mm, both identical to the WP-11 record; 612/612 links conflicting; 0 bridges | PASS | 394 s (WP-11: 575 s) |
+| `workcell_live_007` | TRIM, `path_v3` variant | `CFG-trim01_flat_board-trim_bump_rho10-4f7c00e6` | **TASK_SUCCESS** / PASS | dome removed 0.979; lowest blade point at PRE_CUT −0.022 mm vs the bar top (path_v2: −0.165 mm); measured-path C2 PASS (+0.076 mm) | PASS | 426 s |
+
+Every episode had 0 IK failures, 0 workspace clamps and no grasp loss. The plan finished (`CONTROLLER_DONE`) in
+every episode, and the task id recompiled on CPU equals the recorded one.
+
+**Close-ups (presentation camera, never an observation) and MP4s** (`docs/media/wp12/workcell_live/<episode>/`,
+`demo.mp4` 1.0–2.6 MB each, rendered by `scripts/render_packed_episode.py` from the recorded frames):
+
+| | Start | Progress (last armed frame of the first operation) | Final |
+| --- | --- | --- | --- |
+| CUT | ![](../media/wp12/workcell_live/cut/start_closeup.png) | ![](../media/wp12/workcell_live/cut/progress_closeup.png) | ![](../media/wp12/workcell_live/cut/final_closeup.png) |
+| PARTIAL | ![](../media/wp12/workcell_live/partial/start_closeup.png) | ![](../media/wp12/workcell_live/partial/progress_closeup.png) | ![](../media/wp12/workcell_live/partial/final_closeup.png) |
+| TRIM | ![](../media/wp12/workcell_live/trim/start_closeup.png) | ![](../media/wp12/workcell_live/trim/progress_closeup.png) | ![](../media/wp12/workcell_live/trim/final_closeup.png) |
+| Test B | ![](../media/wp12/workcell_live/test_b/start_closeup.png) | ![](../media/wp12/workcell_live/test_b/progress_closeup.png) | ![](../media/wp12/workcell_live/test_b/final_closeup.png) |
+| Test C | ![](../media/wp12/workcell_live/test_c/start_closeup.png) | ![](../media/wp12/workcell_live/test_c/progress_closeup.png) | ![](../media/wp12/workcell_live/test_c/final_closeup.png) |
+
+Each episode directory also holds the global D455 and both wrist D405 RGB and depth stills at the start and the end
+(`start_/final_<camera>_{rgb,depth}.png`) and a `media_receipt.json`.
+
+### 9.2 Physical measurements on the flat board
+
+| Measurement | CUT | PARTIAL | TRIM | Test B (4 cuts) | Test C (3 skims) |
+| --- | --- | --- | --- | --- | --- |
+| Knife − board, min over the task phase | −0.04 µm | +9.85 mm | +19.80 mm | −0.03 µm | +19.73 mm |
+| Knife − board at the end of the armed descent | +0.276 mm | +10.28 mm | — | +0.276 / +0.163 / +0.240 / +0.208 mm | — |
+| Knife − board during HOLD (mean) | +0.012 mm | +9.99 mm | — | +0.009 / +0.007 / +0.009 / +0.012 mm | — |
+| Control steps with knife–board contact pairs (native sensor) | 19 | 0 | 0 | 77 | 0 |
+| Blade reaction, armed (mean / max) | 0.009 / 0.040 N | 0.004 / 0.034 N | 0.022 / 0.070 N | 0.010–0.018 / 0.039–0.057 N | 0.022–0.034 / 0.067–0.089 N |
+| Board reaction, inferred, HOLD mean z | 0.63 N | — | — | 0.77 / 1.45 / 0.35 / 0.47 N | — |
+| Board reaction, inferred, max (first-contact transient) | 2.1 N | — | — | 12.7 N (one step at cut 1) | — |
+| Lowest particle centre − board top (all frames) | +0.377 mm | +0.417 mm | +0.423 mm | +0.305 mm | **−0.597 mm** (2 chip particles, see below) |
+| Workpiece centroid drift (horizontal) | 0.08 mm | 0.08 mm | 0.46 mm | 0.92 mm | 3.04 mm (chips leaving) |
+| Pieces / kerf | halves −1.32 / +1.17 mm in x (wedge spread) | — | chip carried 32 mm along +x; it stays on the bar top | kerf offsets 0 / −1 / −2 / −3 mm from the declared planes | chips p0 and p2 pushed past the +x bar end onto the board; chip p1 on the bar top at x ≈ +52 mm; 4 fragments (59 particles) on the bar top |
+| Grasp slip / rotation, task phase | 2.7 µm / 0.30 mrad | 1.4 µm / 0.13 mrad | 0.7 µm / 0.09 mrad | 15.2 µm / 0.45 mrad | 0.8 µm / 0.09 mrad |
+| Measured-path C2 check (report-only) | PASS | PASS | FAIL (blade 0.177 mm below the bar top at PRE_CUT) | FAIL (blade −12.5 µm into the board, C2 nominal grasp) | FAIL (staged: blade 0.209 mm below the bar top at PRE_CUT:p2) |
+| ms per control step (material part) | 404 (270) | 392 (270) | 424 (273) | 428 (269) | 471 (281) |
+
+**Findings.**
+
+- **Knife–board contact is real and clean.**
+  - In every through-cut, PhysX stopped the knife on the board. The deepest measured point of the blade hull is 0.04 µm
+    below the board top, at the solver's contact tolerance.
+  - The live edge finished each armed descent 0.16–0.28 mm above the board, inside the kinematic clean-cut window
+    [0, +0.375] mm of §5. It then settled onto the board during HOLD (mean 0.007–0.012 mm).
+  - All five live through-cuts severed every cross-plane link of the bottom layers with 0 bridges. So the Option-B
+    risk of §5 (a live edge ≥ 0.5 mm above the board) did not occur with this controller.
+  - The commanded edge during HOLD was 0.17–0.44 mm *above* the board (the path_v2 target sits at the board top plus
+    the tracking bias). The knife sank onto the board under gravity and the joint-PD sag. No action was clamped by the
+    board-level workspace floor.
+- **Board reaction.**
+  - The settled hold force is 0.35–1.45 N.
+  - At first contact the knife arrives at the cut speed (10–20 mm/s). The quasi-static inference then shows an impact
+    transient for one control step: 2.1 N in CUT, 12.7 N in Test B cut 1 (finger z force −11.6 N in that step).
+  - The free-hover reference reads 0.90 N in CUT (tool weight 0.87 N) but 1.08 N in Test B, so Test B's hold values
+    carry about 0.2 N of bias. These are inferred values, not a direct sensor reading (§8).
+- **Material–board contact.**
+  - In CUT, PARTIAL, TRIM and Test B no particle centre ever went below the board top (lowest +0.31 to +0.42 mm, the
+    contact shell).
+  - **Test C** recorded two particle centres down to −0.597 mm below the board top (frames at 14.0–14.8 s).
+    - They are chip-p1 particles (reference z 24.5 mm, digit 1 = side 2). The p1 skim carried them along +x, and
+      they passed *through* the already-cut substrate down to the board. TLMPM decouples particles with conflicting
+      digits, so the separated chip and the substrate do not collide.
+    - The board penalty held them within 0.6 mm. They end the episode embedded inside the substrate volume
+      (local z ≈ 7 mm).
+    - Two chip-p0 particles touched the board past the +x bar end: −0.08 mm transiently, and −0.05 mm at the end
+      (resting on it).
+    - This is a cut-topology/contact property of the material model (no contact between separated sides), not a board
+      collider problem. It is listed for Phase 4. It cannot be compared with WP-11 Test C, whose `physics_state.npz`
+      was deleted on 2026-10-30.
+- **Partial cut (no false separation).**
+  - The edge stopped at local z = 10.28 mm (HOLD 9.99 mm). Labelling stopped at reference z = 10.5 mm: the ten upper
+    layers conflict across the plane and the ten lower ones are untouched.
+  - The material stays one mechanical component. The 1 440 "direct code-0 bridges" are the intact lower half of the
+    bar, which is the intended uncut ligament.
+  - The presentation mesh (`ParticleSurface`) closes the 1.5 mm kerf almost completely (a small hole artefact in
+    `partial/final_closeup.png`). Only the physics shows the slit. This is a Phase 3 (cut-aware surface) issue, not a
+    physics one.
+- **TRIM / Test C clearance at PRE_CUT.** On the flat board the blade dips 0.09–0.25 mm below the uncut bar top at
+  PRE_CUT (cutting disabled), the same as WP-11 C5 (−0.11 mm) and Test C live_003 (−0.11 / −0.18 / −0.21 mm). This
+  is the `path_v2` measured-feedback integrator (WP-11 C5b), not the workcell. The declared `path_v3` variant
+  (`workcell_live_007`, same scene, goal and thresholds) confirms it on the flat board: dome removed 0.979, lowest blade
+  point at PRE_CUT −0.022 mm, measured-path C2 PASS (+0.076 mm). The cost is 221 translation-clamped steps (geometric
+  slow-down) and 785 instead of 637 control steps.
+- **Test B C2 path check FAIL (−12.5 µm, report-only).** The C2 model places the knife at the *nominal* grasp on the
+  measured joints. The real knife had slipped 15 µm in the hand while pressing on the board (gates: 2 mm). The
+  measured knife never entered the board (−0.03 µm). The FAIL is therefore the nominal-grasp model meeting a
+  knife that really rests on the board. A contact-allowed check with a 0 mm threshold cannot absorb 15 µm of in-hand
+  slip.
+- **Native "unintended contact" flag.** The tool contact sensor counts knife–board contact (role `fixture`) as an
+  unintended tool contact: 19 steps in CUT, 77 in Test B. On the flat board, edge–board contact at the end of a
+  through-cut is the intended Option A+B behaviour. The task outcome does not use this count. `home_outcome` requires
+  0 such contacts only during the return-home path, and it passed.
+
+### 9.3 Friction and sliding (spec §2.6)
+
+Same friction as WP-11 (task material μ = 0.3 for material–board and PhysX board). The bar is not clamped:
+
+- **CUT.** The two halves were pushed apart symmetrically by the 1.5 mm blade wedge (−1.32 / +1.17 mm in x). The whole
+  workpiece moved 0.08 mm.
+- **Test B.** In every cut the block on the +x side moved +0.94 to +1.13 mm and the −x side −0.43 to −1.39 mm. The
+  remaining bar therefore *slides about 1 mm per cut*.
+  - Each later cut lands 1 mm further from its declared plane in reference coordinates: kerf offsets 0 / −1 / −2 /
+    −3 mm. The +x end piece ends 4.23 mm from its start.
+  - The goal still passes (five pieces), and its quality-layer location statistic is 5.0 mm. WP-11 Test B s1502 on
+    the risers had 4.93 mm, and WP-11 Phase M reported "about +1.0 mm per cut" on separate supports.
+- **Conclusion.** The flat board does **not** change the sliding. The full-width solid board offers the same
+  Coulomb friction as the WP-11 board segments, and the wedge displacement of an unclamped bar is the same about
+  1 mm per cut. The next step would be a clamp, a fence or the ADR 0016 wrist-depth relocation, not a different board.
+
+### 9.3a Runner fix: render after rigid-only controls (Phase 2a limitation)
+
+**Change.** `LiveIsaacSimCutting.rigid_probe_step(joint_targets, *, refresh_camera_extrinsics=False)` gains an
+opt-in, keyword-only flag. When it is True (and the wrist D405 / global D455 rig exists), the step recomposes the
+camera extrinsics from the measured hands after the rigid step, exactly as a coupled `step()` does. The default is
+False, which keeps the historical behaviour and every existing caller byte-for-byte on the same path.
+
+- CPU test `tests/test_wp12_rigid_probe_camera_refresh.py`: the default does not refresh; the opt-in refreshes once
+  per step with the measured hands and issues the same joint targets and physics steps; it is a no-op without the
+  wrist rig.
+- `scripts/run_wp12_flat_board_native.py --end-render` (opt-in) uses it and renders `after_probe`.
+
+**Native check** `artifacts/wp12/workcell_005`:
+
+```
+.venv/bin/python scripts/run_logged.py artifacts/wp12/logs/workcell_005_native.log -- \
+  .deps/isaacsim-venv/bin/python scripts/run_wp12_flat_board_native.py --out artifacts/wp12/workcell_005 --gpu 0 \
+  --skip-settle --end-render
+```
+
+HEAD `f53dc78` (dirty tree), seed 42, cuda:0, 62 s. The run used the rigid IK transfer from HOME (as `workcell_003`),
+the descent to 2 mm below the board top, a hold and a lift, then `capture()`. Status EXECUTED:
+
+- `capture()` passed its own checks: runtime vs current USD prim ≤ 1.4e-16 m; runtime vs measured-hand composition
+  9.9e-9 m / 1.1e-7 rad for wrist D405 0; physics not advanced by rendering.
+- Wrist D405 0 moved 0.331 m between the start and the after-probe render. The D455 and wrist D405 1 did not move.
+- Depth valid fractions after the probe: wrist 0 0.350 (median 0.17 m, the knife and board seen from close), D455
+  0.156, wrist 1 0.103.
+- The probe numbers repeat `workcell_003`: penetration 6.4e-8 m (003: 8.3e-8); inferred hold reaction
+  (−1.02, 0.18, 5.01) N (003: 4.97 N); slip 21 µm / 1.44 mrad (003: 23.8 µm / 1.62 mrad).
+- Stills: `docs/media/wp12/workcell_live/probe_end_render/`.
+
+**Verdict: PASS.** The limitation is fixed opt-in, with the default unchanged.
+
+### 9.4 Cameras
+
+In every episode, between the first and the last recorded frame:
+
+- The wrist D405 of Franka 0 followed the hand: its optical centre moved up to 0.28–0.40 m during the episode. It
+  returned to within 0.09 mm after return-to-home.
+- The recomposed extrinsics matched the moving USD prim to ≤ 2.2e-8 m.
+- The D455 and the parked Franka 1 wrist camera did not move (0.0 m).
+- Depth was valid in every frame: D455 valid fraction 0.210, median 0.789 m; wrist D405 0 0.573, median 0.361 m;
+  wrist D405 1 0.103.
+- Start/end RGB and depth stills are in `docs/media/wp12/workcell_live/<episode>/`.
+- Presentation views are never observations.
+
+### 9.5 Old versus new workcell (spec §2.6 comparison)
+
+Old = `wp11_workcell_v1` (separate boards on grey risers, workpiece +100 mm, 40 mm relief gap under each through-cut).
+The old values come from the preserved WP-11 live records, re-analysed read-only with the same script
+(`artifacts/wp12/wp11_reference_002/`):
+
+| Task | Old record | New record |
+| --- | --- | --- |
+| CUT | Phase E `E1_CUT_s1101` (yaw +13°, cut at +20 mm) and its reproduction `workcell_live_006` | `workcell_live_001` (`sever_mid`) |
+| TRIM | C5 `live_trim_rho10_001` (`trim01_wp11_workcell` + `trim_bump_rho10`; C5 stopped after WITHDRAW, so its class is not comparable, verdict PASS) | `workcell_live_003` |
+| Test B | Phase E `E1_TEST_B_s1502` | `workcell_live_004` |
+| Test C | Phase E live_003 `E1_TEST_C_s1602` | `workcell_live_005` |
+
+The WP-11 `physics_state.npz` files were deleted on 2026-10-30 (`artifacts/wp11/phaseE/DELETED_NPZ_20261030.txt`).
+For WP-11 Test B, Test C and TRIM, the material-side rows therefore come from the evaluator results only. The CUT
+reproduction recorded a fresh state.
+
+| Metric | Old: wp11_workcell_v1 | New: blade_master_flat_board_v1 |
+| --- | --- | --- |
+| Knife vs support | The edge goes 3.75–4.20 mm *below* the workpiece bottom, into the open 40 mm relief gap. It never touches a support (0 knife–support contact steps). | The edge stops *on* the board: lowest blade point −0.03 to −0.04 µm (solver tolerance), end of descent +0.16 to +0.28 mm, HOLD ≈ +0.01 mm |
+| Material vs support | CUT reproduction: 0 particles inside a support box. 150 particles sag up to 0.28 mm below the support plane into the relief gap (x = 9–31 mm), where nothing supports them. | 0 particles below the board top in CUT, PARTIAL, TRIM and Test B (lowest +0.31 mm). Test C: 2 chip particles to −0.60 mm, which passed through the cut substrate (§9.2) |
+| Blade reaction (max, armed) | CUT 0.055 N; TRIM 0.071 N; Test B 0.032–0.052 N; Test C 0.040 / 0.099 / 0.154 N | CUT 0.040 N; TRIM 0.070 N; Test B 0.039–0.057 N; Test C 0.067 / 0.084 / 0.089 N |
+| Support reaction on the knife | None: the knife never touches a support. The inferred value is noise (HOLD \|mean\| ≤ 0.20 N). | Board hold 0.35–1.45 N; first-contact transient 2.1 N (CUT) and 12.7 N (Test B, one step) |
+| Object displacement | Test B location statistic 4.93 mm; the bar slides about 1 mm per cut (Phase M). Test C: the bar slid 0.77 mm in x (live_003 R1). CUT reproduction: halves −0.84 / +0.74 mm. | Test B 5.0 mm; kerf offsets 0 / −1 / −2 / −3 mm, i.e. about 1 mm per cut. Test C substrate +0.80 mm in x. CUT halves −1.32 / +1.17 mm (no gap, both halves on the board) |
+| Cutting success | CUT, TRIM (0.979), Test B (5 pieces), Test C (0.962 / 0.997 / 0.972): all PASS | CUT, TRIM (0.977), Test B (5 pieces), Test C (0.958 / 0.979 / 0.960): all PASS; partial cut accepted |
+| Remaining bridges | CUT reproduction: 612/612 conflicting, 0 bridges. Others: separation PASS per the evaluator; bridges NOT_AVAILABLE (state deleted) | CUT 600/600 and 0 bridges; Test B 4 × 600/600 and 0 bridges |
+| Grasp stability (task phase) | Slip ≤ 0.9 µm, rotation ≤ 0.10 mrad | Slip ≤ 2.7 µm (≤ 15.2 µm in Test B, from pressing on the board), rotation ≤ 0.45 mrad; gates 2 mm / 52 mrad; never lost |
+| IK / preflight failures | 0 IK not ok, 0 workspace clamps; plan preflight PASS. Measured-path C2 (report-only): CUT, Test B PASS; TRIM, Test C FAIL (PRE_CUT dip 0.11–0.23 mm) | 0 / 0; plan preflight PASS. Measured-path C2: CUT, PARTIAL PASS; TRIM, Test C FAIL (same PRE_CUT dip); Test B FAIL (−12.5 µm nominal-grasp model at the board, §9.2) |
+| HOME / return-home | All PASS | All PASS (joint error ≤ 0.49 mrad, tool ≤ 0.12 mm) |
+| Performance (ms per control step) | Recorded: CUT 559, TRIM 453, Test B 607, Test C 657 (cuda:0 or cuda:1; the CUT, Test B and Test C launches recorded another active GPU job). CUT reproduction on cuda:0 in this session: **398 ms** (material 235), 394 s | CUT **404** (material 270), TRIM 424, Test B 428, Test C 471 ms; 331–995 s per episode |
+
+Performance is comparable only within one session and device. The old/new CUT pair here (398 vs 404 ms/step) shows
+no workcell cost. The older recorded numbers are higher, probably because the GPU was shared at the time (not measured). The flat-board tasks
+use `tlmpm_v5` with K = 4/3/1 digits; the reproduction uses `tlmpm_v4`.
+
+### 9.6 Spec §2.6 acceptance list
+
+| Item | Verdict | Evidence |
+| --- | --- | --- |
+| Static material-on-board stability | **PASS** | §6 (2.0 s coupled settle: drift 4.2e-8 m, 0 particles below the board); live, from reset to the first armed step (4.0–4.4 s) in all five episodes: horizontal centroid drift ≤ 0.13 µm, vertical −0.112 to −0.116 mm (elastic settle, as §6), 0 particles below the board top |
+| Gravity settling | **PASS** | §6 |
+| Board collision | **PASS** | §6 rigid probe (−0.06 µm); live cuts −0.03 to −0.04 µm with PhysX contact pairs on the knife; no particle centre enters the board except the Test C chip-through-substrate case (−0.60 mm, a material-model property, §9.2) |
+| Friction and sliding | **PARTIAL** | Measured (§9.3): the unclamped bar slides about 1 mm per cut on the flat board, the same as WP-11; Test B kerfs land 0 / −1 / −2 / −3 mm from the declared planes. The goal passes, but the location is not held; no clamp/fence exists |
+| Knife–board contact | **PASS** | §6 probe; live HOLD on the board in 5 through-cuts; settled reaction 0.35–1.45 N; first-contact transient up to 12.7 N (reported) |
+| Partial cut | **PASS** | `workcell_live_002`: PARTIAL_CUT_ACCEPTED, one component, labels stop at 10.5 mm |
+| Complete through-cut | **PASS** | `workcell_live_001`: TASK_SUCCESS, 0 bridges, edge end +0.28 mm inside the clean-cut window |
+| TRIM | **PASS** | `workcell_live_003`: TASK_SUCCESS 0.977. The PRE_CUT dip (0.165 mm, report-only path FAIL) is inherited from WP-11 `path_v2`; the `path_v3` variant (`workcell_live_007`) passes the goal (0.979) and the path check (dip −0.022 mm) |
+| Multiple slices | **PASS** | `workcell_live_004`: five pieces, 0 bridges (sliding, see Friction) |
+| Multiple protrusions | **PASS** | `workcell_live_005`: 0.958 / 0.979 / 0.960 |
+| Arm return-home | **PASS** | Every live episode: `home_outcome` PASS (the HOME reset pregrasp is `PASS_STABLE_GRASP` in every episode) |
+| Wrist cameras follow the arm; RGB and depth usable | **PASS** | §9.4 |
+| Render after rigid-only controls (Phase 2a runner limitation) | **PASS** (opt-in fix) | §9.3a, `workcell_005` |
+| Old vs new comparison | **PASS** (reported) | §9.5; WP-11 CUT reproduced in this checkout (`workcell_live_006`, identical verdict and pieces) |
+
+### 9.7 Failures and limitations kept
+
+- **No failed episode** in this stage. Report-only FAILs are kept as recorded:
+  - measured-path C2 FAIL for TRIM, Test B and Test C (§9.2);
+  - the PARTIAL episode's sever verdict FAIL (expected for a partial cut);
+  - the Test C chip particles below the board top.
+- **Analysis reruns.** `analysis_002` of `workcell_live_001`, `002` and `004` adds the kerf locator; `004` also skips
+  the path check, which is taken from `analysis_001`. Every `analysis_001` is kept.
+- **Protocol amendments** (both recorded in the protocol file):
+  - the GRASP_FAILURE gates were corrected to the stricter WP-11 warning gates while `workcell_live_001` was running;
+  - `TRIM_PATH_V3` was added after `workcell_live_003`.
+- **Git state.** `workcell_live_001`–`005` ran at HEAD `30e4193`, `006`–`007` and `workcell_005` at `f53dc78`, all
+  with a dirty tree. Each `attempt.json` records `git status --porcelain`. The tree held:
+  - this stage's opt-in `rigid_probe_step` change, which is not called by the live runner;
+  - another agent's uncommitted Phase 1/3 work: `surface_metrics_v1.py` and `sequence_blade_probe.py`, which the live
+    runner does not import.
+  - **`usd_surface_bridge.py`**, which the runner does import (camera calibration, surface USD), modified while
+    `003`–`005` were launched. It was committed in `89b289d` as 43 added lines and 0 removed lines (an additive USD
+    method). The modified file was not snapshotted at launch, so this is recorded as a provenance caveat for `003`–`005`.
+  - The WP-11 reproduction `006` at `f53dc78` reproduced its record exactly.
+- **Not measured directly.** The board force is inferred, not read: the native tensor view is filtered to the fingers
+  and palm. TLMPM still has no blade–board interaction. The guards remain planning, the workspace floor, the
+  preflight and PhysX.
+- **CPU tests.** `.venv/bin/python -m pytest -q -x` on the working tree after all runs: 1327 passed, 5 xfailed,
+  0 failed (1566 s). The tree included the other agent's uncommitted files. New tests:
+  `tests/test_wp12_rigid_probe_camera_refresh.py` and `tests/test_wp12_workcell_live_protocol.py`.
+- **One seed per task.** There are no repeat statistics. Native is repeatable only at verdict level (WP-11 Phase H:
+  float32 atomics).
+
+### 9.8 Default workcell recommendation
+
+**Recommend `blade_master_flat_board_v1` as the default workcell for new WP-12 scenes**, with `wp11_workcell_v1` kept
+selectable and unchanged. The reasons:
+
+- every §2.6 cutting task passes live on it with the same controller, success level and grasp stability as the
+  old workcell;
+- the knife really rests on a rigid board (PhysX, ≤ 0.04 µm) instead of plunging 4 mm into an open gap;
+- through-cuts end inside the clean-cut window with 0 bridges;
+- no hidden supports, risers or slots;
+- no measurable performance cost.
+
+Conditions:
+
+1. A through-cut controller must keep the end of the armed descent within h ≤ 0.375 mm (here 0.16–0.28 mm with
+   `path_v2`). Re-verify this for other controllers, materials or resolutions.
+2. Multi-cut tasks on an unclamped bar keep the about 1 mm per cut slide. Use a clamp/fence (new physics fixture,
+   future work) or the ADR 0016 wrist-depth relocation when location matters.
+3. Report knife–board contact as intended contact (not "unintended tool contact") in flat-board analyses, and keep
+   the first-contact transient in view: a slower final approach (`path_v3`) would reduce it.
+4. TLMPM chip-through-substrate interpenetration (Test C) and the presentation mesh closing a partial kerf are
+   Phase 4 and Phase 3 items.
