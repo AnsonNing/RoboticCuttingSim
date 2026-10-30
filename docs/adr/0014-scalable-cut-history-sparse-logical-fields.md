@@ -93,6 +93,12 @@ change.
 4. **Negative controls.** All of them (side push, flat press, no contact,
    stop, armed withdrawal, half-depth cut, blunt handle) hold under `tlmpm_v5`
    law 8.
+   *Status (2026-10-30, WP-11 review, Phase R):* shown at formal resolution
+   (1 mm, 4 mm, 0.1 ms; kinematic, seed 42) with a packed K = 5 history and
+   the top digit (4) armed: 7 / 7 rows PASS on the tasks, plans and criteria of
+   their tlmpm_v4 counterparts (`docs/reports/WP11_REVIEW_NEGATIVE_CONTROLS.md`,
+   `docs/evidence/wp11/phaseR_negative_controls_001.json`). Before this only
+   the CPU unit tests on a coarse block covered the item.
 
 ## Consequences
 
