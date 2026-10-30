@@ -500,6 +500,26 @@ live_003 is a separate, labelled result. No threshold was changed and nothing wa
     fragment plus a single loose particle are skipped and recorded, and the meshable components are unchanged. For
     all-meshable input, the output (vertices, faces and the diagnostics dict) is byte-identical to the pre-fix
     sha256 for both profiles.
+  - **Review R1 erratum (after the run).** `d3f94e9` changed the extractor's default for every caller, including
+    the frozen v1 TRIM oracle path, where main raised. The skip is now a versioned option:
+    `CuttingSurface/ComponentSurface(unmeshable="raise")` is the default and raises exactly as on main, and
+    `unmeshable="skip_presentation_v1"` is the `d3f94e9` behaviour. The Isaac Sim runner selects it through
+    `IsaacSimCuttingConfig.surface_unmeshable`. Its default (`None`) resolves to `skip_presentation_v1` only for
+    configured (WP-11) tasks (`configured_task` set), whose goal evaluators use the surface as quality evidence
+    only. Legacy D0, the registered CUT/TRIM tasks and the final_v4 tasks keep `raise`. The resolved value is in
+    the runtime `setup.json` (`config.surface_unmeshable`, plus a `surface_unmeshable` receipt in skip mode).
+  - Skip mode is now recorded. Every extraction that skips something is written with its reset index, step
+    index and time to `runtime/surface_unmeshable_NN.jsonl`. Every step's `privileged_diagnostics.surface_unmeshable`
+    carries the cumulative counts and the skips since the previous step. `backend.surface_unmeshable_summary()` is
+    the episode summary, which evaluation results carry as `surface_unmeshable` (the `live_env.py` hook is a
+    separate review-R3 change). A skipped component that holds a lowest-layer anchor particle is a substrate
+    component; then `refresh_surface_for_evaluation()` raises `SurfaceNotScorable`, so surface-dependent metrics
+    are NOT_RUN (configured goals) or unscored (v1 oracle), never PASS.
+  - **Reproducing live_003 at the new HEAD:** the same declaration and runner argv
+    (`run_wp10_live.py --runtime isaac_sim --scene … --goal …`) compile a configured task, so the runner resolves
+    `surface_unmeshable="skip_presentation_v1"` without any new flag. To get main's behaviour instead (which aborts
+    as live_002 did if a fragment cannot be meshed), pass `surface_unmeshable="raise"` through `open_cutting_env`
+    backend options. live_003 evidence is unchanged; it ran at `002c95e`, where the skip was unconditional.
 - `2b4f0a7`, runner default plan preflight (`scripts/wp11_motion_preflight.py plan`, which `run_wp10_live.py` calls
   before any Isaac launch):
   - Scenes with two or more protrusions use `generalization.staged_preflight`, the round-1 helper, with an additive
@@ -541,7 +561,8 @@ evaluator's to all digits.
 - By 21.76 s all three chips had left the bar, ending 85–122 mm below its top beyond the +x end.
 - No recorded frame has a component under 100 particles (`diagnostics_001/component_sizes.json`). The runner does
   not persist `surface_info`, so whether the extractor skipped a transient fragment between recorded frames is
-  **not measured**. At the final, evaluated frame nothing was skipped.
+  **not measured**. At the final, evaluated frame nothing was skipped. (After review R1 the runner records every
+  skip in skip mode, as described under the code changes above; live_003 predates that.)
 
 **Skim orientation of the measured edge on armed steps** (mean / max |·|, degrees; ρ declared 10):
 
@@ -568,8 +589,32 @@ motion elevation. The peak material reaction on the blade was 0.04, 0.10 and 0.1
 **Surface quality (reported, not scored).** 0.66 % of the substrate heightfield cells have no surface, and
 `maximum_gouge_depth_m` reads 0.022 (the full bar height, so those cells have no substrate surface). The close-up RGB
 shows a round patch on the bar top near p1's footprint. The three live_001 skims had 0 % missing and ≤ 1.9 mm. This
-does not come from the unmeshable skip: at the final frame there are 4 components and none was skipped. It is not
-investigated here.
+does not come from the unmeshable skip: at the final frame there are 4 components and none was skipped.
+
+*Diagnosis (review R1; read-only, final recorded frame of `run_001/episode_000/physics_state.npz`).* The 22 mm
+maximum gouge and the 0.66 % missing are a heightfield-registration artefact, not material loss:
+- The bar slid during the episode. The substrate's median displacement is +0.767 mm in x (mean +0.773 mm), and its
+  yaw change is 0.0067°. The frozen heightfield (`scene_validation.mesh_heightfield_metrics`) is fixed to the
+  initial workpiece pose. Its 152 × 32 = 4864 one-millimetre cells therefore no longer cover the bar's current
+  footprint.
+- Exactly 32 of the 4864 cells (32/4864 = 0.658 %) contain no substrate particle centre. They form the whole −x end
+  column (ix = 0, all 32 iy): the bar's −x end moved from −75.5 to −74.83 mm. The metric charges a missing cell the
+  full target height (`deficit = height − 0` for invalid cells), so each one reads 22 mm.
+- Behind the artefact there is a smaller real dent. After the median displacement is removed, 400 of the 14638
+  top-layer substrate particles (reference z ≥ 19.5 mm) moved by more than 1 mm. All of them lie in the three skim
+  footprints (reference x −70…−25, −25…15 and 15…60 mm: 74, 223 and 103 particles). They were pressed down by
+  1.42–1.47 mm on average (mean relative z per footprint), with a maximum of 2.01 / 2.63 / 3.19 mm.
+- Two one-cell-deep spots stand out in the current-pose cell grid. At the p1 exit (reference x ≈ +11.5 mm, cells
+  (iy, ix) = (14, 88) and (17, 88)) the top substrate particle centre is at 18.47 / 18.48 mm, 3.0 mm below the
+  21.5 mm top-layer centre. At the p2 exit (x ≈ +54.5 mm, cells (15, 131) and (16, 131)) it is at 19.41 mm, 2.1 mm
+  below. Only 6 covered cells have a top particle centre below 20 mm.
+- No below-plane particle detached (0 below-plane particles outside the substrate component; mass fraction 0.0).
+  Each chip holds 0 below-plane particles (`chip_independence.json`). TASK_SUCCESS therefore stands under the
+  declared, separation-based goal. The dent is a quality observation; no threshold or score changed.
+- Commands (read-only, main-repo `.venv`): the reviewer's script
+  `/mnt/data/ningan/tmp/claude-1004/-home-ningan-RoboticCuttingSim/e538d80f-78df-4b03-8e24-f5e0ea11b086/scratchpad/surface_check.py`,
+  run as `.venv/bin/python -I <script>` (2.2 s); it is not committed. A heightfield registered to the current
+  substrate pose (a new, quality-only metric) was **NOT_RUN**; the frozen v1 metric is unchanged.
 
 **Media** (rendered with `render_packed_episode.py --wide-piece-palette` at `74aafb0`, clean worktree):
 [demo.gif](../media/wp11/test_c_s1602/demo.gif) (3.6 MB), demo.mp4 (local only; `*.mp4` is gitignored) and
@@ -601,8 +646,10 @@ oracle diagnostics with the main-repo `.venv`, read-only):
 **live_003 totals (Test C only):** TASK_SUCCESS 1. Open items 1 (surface abort) and 2 (staged default preflight) from
 the list above are addressed by `d3f94e9` and `2b4f0a7`. Remaining:
 - the PRE_CUT blade dip (item 4);
-- the Test C missing-surface quality anomaly;
-- persisting `surface_info` skip counts in the recording;
+- the Test C missing-surface quality anomaly (diagnosed in review R1 as a registration artefact over a smaller
+  real dent; a current-pose heightfield metric is not implemented);
+- persisting `surface_info` skip counts in the recording (done in review R1 for skip mode; the evaluation-result
+  summary depends on the R3 `live_env.py` hook);
 - repeated seeds.
 
 ### SLICE-PUSH live_004 (supplementary controller variant, ADR 0016 wrist-depth relocation)
