@@ -10,4 +10,4 @@ does not block delivery of these independent tools.
 
 Keep capability flags honest: a static arm is not articulated control, ideal RGB-D
 is not RTX D455, deformation is not permanent separation. Force/oracle observations
-remain excluded. No policy training or changes to existing RSI projects.
+remain excluded. No policy training or changes to other existing projects.

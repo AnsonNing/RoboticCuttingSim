@@ -58,5 +58,5 @@ The README image and videos are produced only from actual camera captures;
 old media remain at their original paths. Public compact receipts
 link each run to its original local data and hashes. This completes the stated
 camera/evaluation delivery, while full WP-08 scientific physics acceptance
-remains false. No RSI, policy training, system driver or unrelated project was
+remains false. No policy training, system driver or unrelated project was
 changed.

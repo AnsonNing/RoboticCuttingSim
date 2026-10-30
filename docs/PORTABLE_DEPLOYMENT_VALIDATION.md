@@ -195,4 +195,4 @@ Fresh native [CUT views](media/deployment_cut01/synchronized_multiview.mp4) /
 [Global RGB](media/deployment_trim01/global_d455.mp4) include paired depth,
 transforms and provenance. All 14 public videos passed full decoding. Large
 raw artifacts, official assets, venvs and wheels remain ignored. No driver,
-RSI repository or other project changed, and no policy training was performed.
+other repository or project changed, and no policy training was performed.

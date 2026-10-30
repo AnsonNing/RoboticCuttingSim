@@ -11,5 +11,5 @@ Every physics/backend change needs a fresh output directory, manifest, trace and
 exit receipt. Preserve failed experiments. Do not commit binary dependencies,
 videos, raw states or vendor assets. Add source/license references for dependencies.
 Do not use particle deletion or presegmented material as physical cutting, broaden
-scope into policy training, or touch RSI. Public dissemination does not waive asset
+scope into policy training, or touch other projects. Public dissemination does not waive asset
 licenses or physics/vision acceptance gates.

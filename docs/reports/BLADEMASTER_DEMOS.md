@@ -159,7 +159,7 @@
   - 這些項目依計畫獨立報告，不影響分離判定。
 - **Demo 1b 的凍結切口位置對斜面不適用**：照實列為 FAIL。
 - **Lab 端**：Isaac Lab parity（P1）未做。Lab 量測軌跡重播會分成兩塊，但實測刃口偏 −0.54 mm，所以切口位置是 4 mm、FAIL。
-- **其他未做項目**：cut-aware surface（P1）、BC／PPO／LLM／RSI（P2）、多材料標定（P2）。
+- **其他未做項目**：cut-aware surface（P1）、BC／PPO／LLM／agentic control（P2）、多材料標定（P2）。
 
 ## 完整性聲明
 

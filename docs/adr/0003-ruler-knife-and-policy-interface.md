@@ -7,7 +7,7 @@ GPU and live runtimes NOT_RUN).
 
 The user wants Franka 0 to physically hold a ruler-like straight knife and use
 it to complete cutting tasks (severing, removing bumps) with any knife motion a
-policy, RL agent or RSI/LLM agent chooses, with state and image observations,
+policy, RL agent or agentic-control/LLM agent chooses, with state and image observations,
 and later actual videos of those controllers. The retained tool is a 50 mm
 wide, 35 mm (CUT) / 12 mm (TRIM) deep wedge on a short shaft; the action API
 raised on unreachable targets, had no per-step bounds and a zero reward. The

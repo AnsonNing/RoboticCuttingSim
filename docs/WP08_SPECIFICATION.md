@@ -23,7 +23,7 @@ The following requirements are fixed.
 9. Preserve the existing fixed-tool implementation under an explicitly named legacy mode for scientific comparison.
 10. Support new cuttable-object geometry and material backends without rewriting the entire robot/tool system. Do not claim physically valid cutting of arbitrary materials without an appropriate solver and validation.
 
-Do not modify the RSI repository, unrelated projects, system drivers, or validated installations.
+Do not modify unrelated projects, system drivers, or validated installations.
 
 ## 1. Audit and preserve the existing baseline
 
@@ -706,7 +706,7 @@ Negative results must remain available. Do not silently replace failed runs or c
 - Reuse the existing PhysX, Newton, Warp, TLMPM, Task and Recording infrastructure.
 - Avoid unnecessary new frameworks, services, or registries.
 - No system driver upgrades.
-- No modification to RSI or unrelated Python environments.
+- No modification to unrelated Python environments.
 - No physical cheating to make a test pass.
 - No hard-coded tool-pose synchronization during an episode.
 - No force injection directly into the hand in the new mode.

@@ -142,7 +142,7 @@ workpiece-local goals. A rounded capsule footprint is sampled into the same
 continuous TLMPM pipeline. Unsupported shapes/material laws fail explicitly;
 importing a mesh visually does not make it physically cuttable. Arbitrary CAD
 sampling, wood/metal/fabric fracture, moving held workpieces and general repeated
-cut planes remain unsupported. No policy, VLA, RL or RSI training is included.
+cut planes remain unsupported. No policy, VLA, RL or agentic-control training is included.
 
 Both wrist streams remain `ideal_d405_prototype`; Global is provisional native
 D455 in Sim and explicitly ideal Warp RGB-D in kit-less Lab. Stereo noise and

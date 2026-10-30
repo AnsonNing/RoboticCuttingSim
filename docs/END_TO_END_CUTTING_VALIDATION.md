@@ -4,7 +4,7 @@ Both requested actual runtimes now execute an 8 s D0 task with actual dual
 Franka articulations, a hand-mounted wedge, retained Warp TLMPM, persistent
 mechanical separation and reaction feedback. Lab uses the actual GA task and
 scene APIs; Sim6.2 uses actual Kit/PhysX and native camera sensors. Neither
-runner consumes offline robot/material animation. No driver upgrade, RSI
+runner consumes offline robot/material animation. No driver upgrade, other-project
 modification or policy training was performed.
 
 The independent [18-gate report](reports/ISAAC_LIVE_ACCEPTANCE.md) contains exact

@@ -50,7 +50,8 @@ when you are idle or after a usage limit.
 ## Naming rule
 
 The repository (code, docs, configs, commit messages, README) must not contain
-the string "RSI". When a document needs to mention future users of the
+the acronym of the user's separate research project (guarded by
+`tests/test_repo_naming.py`). When a document needs to mention future users of the
 environment, call them agentic control (or policies / learning systems). Phase 0
 removes existing mentions from tracked text files and adds a CPU test that
 guards against new ones.

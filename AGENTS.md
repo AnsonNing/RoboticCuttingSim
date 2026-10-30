@@ -1,7 +1,7 @@
 # RoboticCuttingSim
 
 Read `RoboticCuttingSim_Implementation_Plan.md` and `docs/PROGRESS.md` first.
-Keep work inside this independent repository. Do not modify RSI or other projects,
+Keep work inside this independent repository. Do not modify other projects,
 upgrade system drivers, train policies, or push without an explicit user request.
 Implement a small, executable physics testbed before integrating robot arms.
 Never call geometric deletion, presegmented bumps, or renderer masks physical cutting.

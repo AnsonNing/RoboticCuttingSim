@@ -109,7 +109,7 @@ ENV-02's available material screens pass: finite states, minimum detF≥0.906, s
 
 The first CPU contact-audit attempt is preserved in `artifacts/isaac_lab_d0_audit_001/FAILED.json`: Warp 1.17 whole-module CPU compilation emits an unrelated C++ member called `new`, rejected by Clang. An isolated unchanged-function CPU diagnostic was preserved in `_002`, but the reported final attribution uses the original unchanged CUDA kernel. Administrative reader/source-provenance corrections and all intermediate audit directories remain available; none changes physical data or thresholds.
 
-Machine-readable checkpoint: [`isaac_live_acceptance.json`](../evidence/isaac_live_acceptance.json). Full per-episode hashes, missing-evidence lists, detailed contact samples, plots and source snapshots are retained in the artifact paths above. No policy or RSI training was run.
+Machine-readable checkpoint: [`isaac_live_acceptance.json`](../evidence/isaac_live_acceptance.json). Full per-episode hashes, missing-evidence lists, detailed contact samples, plots and source snapshots are retained in the artifact paths above. No policy or agentic-control training was run.
 
 ## Later native-contact, repeat and live-camera receipts
 

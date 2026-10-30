@@ -35,7 +35,7 @@ are not fabricated as measured state. Default is vision_only.
 
 Reward is0, terminated=false, truncated follows max_steps. These are research-loop
 semantics, not a task score. Info reports timings and supported capabilities.
-There are no training, RSI, checkpoint or autonomous-agent paths.
+There are no training, agentic-control, checkpoint or autonomous-agent paths.
 
 ```bash
 CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=4 .venv/bin/python -m robotic_cutting_sim.cli env-demo --steps 120 --output-dir artifacts/live_fresh

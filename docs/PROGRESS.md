@@ -387,7 +387,7 @@ preserved, together with exact native camera-reset and other known limitations.
 See [deployment workflow](PORTABLE_DEPLOYMENT.md),
 [actual validation report](PORTABLE_DEPLOYMENT_VALIDATION.md) and
 [machine-readable receipt](evidence/portable_deployment_validation.json).
-No drivers, RSI, other projects or policies were changed.
+No drivers, other projects or policies were changed.
 
 Final local streamed-input proof passed14GUI transactions, including typed
 Cartesian/joint actions and coupled material steps. The active same-instance
@@ -434,7 +434,7 @@ Final raw episodes: `artifacts/isaac_lab_wrist_cut01_002`,
 `isaacsim_wrist_trim01_001`. Motion proof: `isaacsim_wrist_motion_probe_001`.
 Earlier far-Global wrist runs, source-race trial, rejected geometry, VGA optics
 trial and all original D0–D3 / fixed-camera evidence are preserved separately.
-No training, real-robot operation, RSI changes, driver changes or reboot occurred.
+No training, real-robot operation, other-project changes, driver changes or reboot occurred.
 
 The first public CI run for this camera delivery failed during collection:
 the new CPU reference-ray test imports Warp, absent from the workflow's old
@@ -450,7 +450,7 @@ Fixed CUT-01 and TRIM-01 have each run in **Isaac Lab 3.0 GA and Isaac Sim 6.2**
 completing 400 control steps / 8 seconds. An actual Franka holds the fixed blade, the measured edge contacts material, and TLMPM produces
 persistent separation with material reaction fed back to the arm. The second arm remains parked. Both tasks share the
 `reset/step/observe/render/evaluate/close` interface and independent Task evaluator;
-no models were trained and no RSI, other environments or drivers were modified.
+no models were trained and no other projects, other environments or drivers were modified.
 
 | Delivery this round | Actual result | Status and boundaries |
 | --- | --- | --- |
@@ -486,7 +486,7 @@ Videos are linked from [README](../README.md). Local raw data is retained; large
 This round actually executed Isaac Lab 3.0 GA and
 Isaac Sim 6.2 / Kit110.4 on the original machine and driver 570.211.01, using officially supported isolated Torch2.11/cu128 environments.
 Measurements supersede the earlier blanket CUDA13 BLOCKED classification for the complete runtime.
-No driver upgrade, reboot, RSI/other-project environment modification or model training occurred.
+No driver upgrade, reboot, other-project environment modification or model training occurred.
 
 | Actual path | Completed work | Acceptance boundary |
 |---|---|---|
@@ -539,7 +539,7 @@ Trajectory, full-geometry and timestamp audits pass, without promotion to comple
 This round actually executed and integrated Physical Cutting → Franka Control → RGB-D → Simulation Benchmark,
 delivering a standalone environment for continued research. The user authorized public
 GitHub, ongoing commits/pushes, agents and reasonable adjustments to the original report's stage gates. Numerical results and
-capability statuses are not rewritten when gates change; no RSI, other projects or drivers were modified, and no Policy was trained.
+capability statuses are not rewritten when gates change; no other projects or drivers were modified, and no Policy was trained.
 
 | Package | Delivered/measured | Remaining validation |
 |---|---|---|

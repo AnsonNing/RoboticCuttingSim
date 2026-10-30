@@ -50,7 +50,7 @@
 
 - C：法則 3 的 1 mm 驗證通過後，在 Native／Lab 實跑 `ruler_workcell_v2` TRIM（含 Lab pregrasp 角速度失敗診斷：舊收據沒有 settling trace，需重跑取得）、Lab CUT 重跑；README 換上新的 ruler 場景影像（使用者要求）。
 - D：法則 3 GPU 負對照矩陣（含帶電後撤）、法則 1 矩陣、刀柄力量級說明。
-- E：完整機器人動作／角度矩陣與可達性地圖。F：RL 速度表。G：腳本／BC／PPO／實際 LLM agent 控制、每種控制方式的實際機器人 RGB-D 影片、RSI `run(env, ctx)`。
+- E：完整機器人動作／角度矩陣與可達性地圖。F：RL 速度表。G：腳本／BC／PPO／實際 LLM agent 控制、每種控制方式的實際機器人 RGB-D 影片、agentic control `run(env, ctx)`。
 - 最後整理 GitHub（README、PROGRESS、報告連結），合併 main 並 push（使用者已明確要求）。
 
 ## 5. 環境注意
