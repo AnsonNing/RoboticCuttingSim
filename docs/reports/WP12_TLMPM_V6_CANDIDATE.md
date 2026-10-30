@@ -3,10 +3,9 @@
 Date 2026-10-31 (KST). Branch `claude/wp12-physical-cut-surfaces`. Decision:
 [`WP12_PHASE4_PROTOTYPE_DECISION.md`](WP12_PHASE4_PROTOTYPE_DECISION.md) P-A (commit `b05c7f0`). ADR:
 [0020 (proposed)](../adr/0020-tlmpm-v6-grid-consistent-position-update.md). Protocol:
-`configs/wp12/phase4_gridpos_protocol_v1.json`. Evidence: `docs/evidence/wp12/phase4_gridpos_001.json` (written when
-the stages are summarized).
+`configs/wp12/phase4_gridpos_protocol_v1.json`. Evidence: `docs/evidence/wp12/phase4_gridpos_001.json`.
 
-**Status: CANDIDATE, not adopted.** Building is not adopting. Nothing in production selects `tlmpm_v6`; E2, Phase 5,
+**Status: REJECTED at S1 (kill set) on 2026-10-31; kept as a recorded negative result.** Building was not adopting. Nothing in production selects `tlmpm_v6`; E2, Phase 5,
 the envelope, the benchmark and Demos 1–7 stay on `tlmpm_v5` law 8.
 
 ## 1. What was built (Stage 0)
@@ -135,7 +134,80 @@ dt = 0.1 ms) never moves while the recorder still integrates its grid displaceme
 
 ## 4. Stage results
 
-<!-- STAGE_RESULTS -->
+Protocol committed at `28c8379` (guard-test follow-up `c279a4d`). Seed 42, kinematic ideal tracking, 1 mm / 4 mm /
+0.1 ms, two lanes (cuda:0, cuda:1), runs `artifacts/wp12/gridpos_001/<arm>/<row>`, ledger
+`artifacts/wp12/gridpos_001/queue_ledger.jsonl`, logs `artifacts/wp12/logs/gridpos_001_<arm>_<row>.log`.
+
+```
+TMPDIR=/mnt/data/ningan/tmp nohup .venv/bin/python scripts/run_wp12_gridpos.py queue --stage S1 \
+    --out-root artifacts/wp12/gridpos_001 >> artifacts/wp12/logs/gridpos_001_queue.log 2>&1 &
+.venv/bin/python scripts/summarize_wp12_gridpos.py --root artifacts/wp12/gridpos_001 \
+    --evidence docs/evidence/wp12/phase4_gridpos_001.json --extra <notes + FB_CUT diagnosis>
+```
+
+| Stage | Verdict |
+| --- | --- |
+| S0 (CPU) | PASS |
+| S1 (kill set) | **FAIL** (FB_CUT) → **v6 REJECTED** |
+| S2, S3 | NOT_RUN (the protocol stops on any S1 FAIL) |
+| S4 Native | NOT_RUN (not scheduled) |
+| Phase 3 reopen measure | NOT_ELIGIBLE (not computed) |
+
+GPU time: 0.93 GPU-h in the S1 queue (ledger walls, 30 s polling resolution) + 0.29 GPU-h of DEV smokes before the
+commit. Cap 18 GPU-h.
+
+### S1 rows (V6 vs V5 at the same commit)
+
+| Row | V6 | V5 | Components V6 / V5 | Blade force mean \|F\| (N) V6 / V5 | Tool work (mJ) V6 / V5 | Max blade overlap (mm) V6 / V5 | Gate |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| M1a | PASS | PASS | 2 / 2 | 0.027 / 0.016 | 0.66 / 0.41 | 0.27 / 0.49 | ok |
+| M3b | PASS | PASS | 2 / 2 | 0.040 / 0.034 | 1.52 / 1.27 | 0.37 / 1.20 | ok (removal 1.00 / 0.97, substrate 1.00) |
+| M4 | PASS | PASS | 1 / 1 | 0.014 / 0.017 | 0.22 / 0.29 | 0.27 / 0.25 | ok |
+| M5a | PASS | PASS | 1 / 1 | 0.21 / 0.14 | 4.0 / 4.1 | 0.21 / 0.20 | ok (0 labels) |
+| M5b | PASS | PASS | 1 / 1 | 3.17 / 2.94 | 14.8 / 14.1 | 0.72 / 0.62 | ok (0 labels) |
+| M8b (risk row) | PASS | PASS | 3 / 3 | 0.050 / 0.037 | 3.7 / 2.9 | 0.25 / 0.54 | ok |
+| F2.7_withdrawal_v2 | PASS | PASS | 1 / 1 | 0.014 / 0.017 | 0.22 / 0.29 | 0.27 / 0.25 | ok |
+| F2.9_blunt_handle_v2 | PASS | PASS | 1 / 1 | — (no blade contact) | 0 / 0 | 0 / 0 | ok (0 labels) |
+| **FB_CUT** | **FAIL** | PASS | **1 / 2** | 0.025 / 0.010 | 0.54 / 0.25 | 0.25 / 0.48 | **KILL** |
+| FB_TRIM_r10 | NOT_RUN | NOT_RUN | | | | | stopped |
+| M1a_r2, M3b_r2, FB_CUT_r2 | NOT_RUN | NOT_RUN | | | | | stopped |
+
+Integrity passed on every completed row in both arms: finite states, min det F 0.85–0.97, slot overflow 0, solver
+selection verified, and on FB_CUT no particle centre below the board top (min 0.36 mm V6, 0.37 mm V5). The
+V5 arm also fills in law-8 rows on tlmpm_v5 that had never been rerun (M3b, M4, M5a, M5b, and the Phase F rows
+F2.7_withdrawal_v2 and F2.9_blunt_handle_v2, all PASS). This is new v5 evidence; the frozen v4 records are unchanged.
+
+**The kill row, FB_CUT.** This is the Phase 2b CUT episode (`CFG-bar_flat_board-sever_mid-c32f94a4`, path_v2) on the
+kinematic backend. On V6 the plan finished and the evaluator's integrity layer passed, but the outcome failed:
+`expected_substantial_pieces`, `every_plane_has_an_interface` and `cut_at_declared_planes`, with 1 mechanical
+component. The class is `execution_failure` (outcome). On V5 the same episode is `task_success` with 2 components.
+A read-only diagnosis (`artifacts/wp12/gridpos_001/FB_CUT_bridge_diagnosis.json`; reference stencil plus
+`cut_diagnostics.direct_bridges` on the FINAL packed codes) gives:
+
+- V6 leaves **12** particles unassigned. They are in the bottom layer (reference z = 0.5 mm), within ±1.5 mm of the
+  plane, at the two side faces (y = ±14.5 mm). These particles are direct code-0 bridges between the two sides.
+- V5 labels every particle within 4 mm of the plane and has 0 bridges.
+- V6 labels more of the bottom layer overall (1368 vs 1272 particles) but misses these side-face corner particles.
+
+This is the bottom-layer exit region of a flat-board through-cut where the edge ends on the board top. That is the
+same region as the known law-4-front difficulty at the board. Here it becomes a failure on an in-plane vertical cut
+that v5 separates.
+
+**Reading.**
+- The kill rule is applied as declared: one S1 row FAILs, so v6 is REJECTED. Nothing was tuned or re-run, and every
+  output is kept.
+- The other 8 kill rows behave as predicted. Topology is unchanged. Blade force and work are mostly higher (M1a +64 %
+  force, ×1.6 work), and blade overlap is lower on the cutting rows (M1a 0.49 → 0.27 mm, M3b 1.20 → 0.37 mm).
+- FB_CUT was not one of the declared risk rows (M8b, M2, E1_A_p05). M8b passed.
+- The declared repeat band was never measured because the repeats were stopped. So whether V5 could also leave a
+  corner bridge on another GPU run of FB_CUT is unknown. The kill rule does not depend on this, but a reviewer may
+  weigh it.
+
+**Wording.** "tlmpm_v6 (grid-consistent position update) was built and rejected at its kill stage: on the flat-board
+CUT it left 12 bottom-corner particles unassigned and the bar did not separate, where tlmpm_v5 separates." Do not
+claim a cutting improvement or regression beyond this row. Completion Criterion 4 stays bounded (decision P-A: "If v6
+is rejected … report criterion 4 as bounded"). Production, E2, Phase 5 and the demos are unaffected; they never
+used v6.
 
 ## 5. What must not be claimed
 

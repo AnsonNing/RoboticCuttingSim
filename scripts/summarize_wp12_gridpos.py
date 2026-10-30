@@ -278,8 +278,11 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--root', required=True)
     p.add_argument('--evidence')
+    p.add_argument('--extra', help='JSON file embedded verbatim under "extra" (read-only diagnoses, notes)')
     a = p.parse_args()
     summary = summarize(a.root)
+    if a.extra:
+        summary['extra'] = json.loads(Path(a.extra).read_text())
     head = {'evidence': 'WP-12 Phase 4: tlmpm_v6 CANDIDATE staged acceptance (grid-consistent position update)',
             'protocol': str(PROTOCOL.relative_to(ROOT)), 'protocol_sha256': hashlib.sha256(PROTOCOL.read_bytes()).hexdigest(),
             'root': a.root, 'summarizer_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),

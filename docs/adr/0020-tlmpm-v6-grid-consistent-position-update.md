@@ -1,6 +1,6 @@
 # ADR 0020 — Candidate solver `tlmpm_v6`: grid-consistent position update
 
-Date: 2026-10-31. **Status: proposed (candidate, not adopted).** Source: WP-12 Phase 4 prototype decision P-A
+Date: 2026-10-31. **Status: proposed (candidate, not adopted); S1 kill stage FAILED on 2026-10-31 (flat-board CUT did not separate on v6, 1 vs 2 components on v5), so the protocol outcome is REJECTED — see [`WP12_TLMPM_V6_CANDIDATE.md`](../reports/WP12_TLMPM_V6_CANDIDATE.md); the xhigh reviewer records the decision.** Source: WP-12 Phase 4 prototype decision P-A
 ([`WP12_PHASE4_PROTOTYPE_DECISION.md`](../reports/WP12_PHASE4_PROTOTYPE_DECISION.md), commit `b05c7f0`). ADR numbers
 0018 and 0019 stay reserved for the cut-aware surface and for any exit law. Acceptance or rejection is an xhigh
 decision on the staged protocol `configs/wp12/phase4_gridpos_protocol_v1.json`; until then nothing uses this solver.
