@@ -24,6 +24,14 @@ Operations:
 * move_piece -> blade-face push with cutting disabled: APPROACH_PUSH -> LOWER
   (into the kerf) -> PUSH -> PUSH_HOLD -> RELEASE -> RETRACT.
 * sequence -> the steps in order; cut digits are numbered across the episode.
+  Opt-in step fields (WP-12 Phase 6; absent unless declared, so other plans are
+  unchanged): ``planner`` (``STEP_PLANNER_OPTIONS`` only) is merged over the goal's
+  options for that step's operations, and ``planner_offset_local_m`` plans the step
+  from its DECLARED geometry and then rigidly translates every waypoint of the step
+  by the offset in the workpiece frame (a shifted ``_Frame``: t' = t + R offset), e.g.
+  the second sever of cut -> push by d -> cut with [d, 0, 0] (open loop, declared push
+  distance). Report rows of such a step carry ``step_planner_options`` /
+  ``planner_offset_local_m``; the report geometry (start/end/plane) stays declared.
 
 Every plan starts at HOME and ends with RETURN_HOME (the declared home edge pose).
 A scene whose workcell scenario declares ``home_joint_positions`` (wp11_workcell_v1)
@@ -79,6 +87,16 @@ OPT_IN_OPTIONS = {
 }
 
 
+# Per-operation options a sequence STEP may override (goals ``planner`` step field, WP-12 Phase 6). Goal-wide options
+# (controller_profile, home_*, max_translation_m, max_rotation_deg, perception) stay goal-level.
+STEP_PLANNER_OPTIONS = ("rake_deg", "skew_deg", "skim_speed_m_s", "skim_margin_m", "skim_direction_local",
+                        "protrusion_order", "cut_speed_m_s", "cut_clearance_m", "overtravel_m", "hold_s",
+                        "kerf_speed_m_s", "saw_amplitude_m", "saw_period_s", "safe_height_m", "push_release_m",
+                        "cut_extent")
+_STEP_POSITIVE = ("skim_speed_m_s", "cut_speed_m_s", "kerf_speed_m_s", "saw_period_s", "safe_height_m")
+_STEP_NONNEGATIVE = ("skim_margin_m", "cut_clearance_m", "hold_s", "saw_amplitude_m", "push_release_m")
+
+
 def planner_options(goal, overrides=None):
     """Defaults <- goal["planner"] <- overrides, validated (unknown keys are errors)."""
     merged = dict(DEFAULT_OPTIONS)
@@ -88,6 +106,42 @@ def planner_options(goal, overrides=None):
             from .scene_config import SceneConfigError
             raise SceneConfigError(f"Unknown planner options {sorted(unknown)}")
         merged.update(source)
+    return _check_options(merged)
+
+
+def validate_step_planner(value, where="step.planner"):
+    """Normalized per-step planner options (``STEP_PLANNER_OPTIONS`` only; goal-wide and unknown keys are errors)."""
+    from .scene_config import SceneConfigError, _number, _vector
+    if not isinstance(value, dict) or not value:
+        raise SceneConfigError(f"{where} must be a nonempty object")
+    unknown = sorted(set(value)-set(STEP_PLANNER_OPTIONS))
+    if unknown:
+        wide = [k for k in unknown if k in DEFAULT_OPTIONS or k in OPT_IN_OPTIONS]
+        raise SceneConfigError(f"{where}: goal-wide planner options {wide} cannot be set per step" if wide
+                               else f"{where}: unknown planner options {unknown}")
+    out = {}
+    for key, item in value.items():
+        if key == "skim_direction_local":
+            vector = _vector(item, f"{where}.{key}")
+            if np.hypot(vector[0], vector[1]) < 1e-9:
+                raise SceneConfigError(f"{where}.{key} needs a nonzero horizontal component")
+            out[key] = vector
+        elif key in ("protrusion_order", "cut_extent"):
+            out[key] = item
+        else:
+            out[key] = _number(item, f"{where}.{key}", positive=key in _STEP_POSITIVE, nonnegative=key in _STEP_NONNEGATIVE)
+    _check_options({**DEFAULT_OPTIONS, **out})
+    return out
+
+
+def step_options(options, step):
+    """The options a sequence step's operations use: ``options`` with the step's opt-in ``planner`` merged over them."""
+    if "planner" not in step:
+        return options
+    return _check_options({**options, **validate_step_planner(step["planner"])})
+
+
+def _check_options(merged):
     if merged["controller_profile"] not in CONTROLLER_PROFILES or merged["controller_profile"] == "path_v2_vision":
         from .scene_config import SceneConfigError
         raise SceneConfigError("planner controller_profile must be v1, path_v2, path_v3 or path_v3a")
@@ -219,6 +273,12 @@ class _Frame:
 
     def pose(self, position_local, rotation_local):
         return tuple(map(float, np.r_[self.R.apply(position_local)+self.t, (self.R*rotation_local).as_quat()]))
+
+    def shifted(self, offset_local):
+        """This frame translated by a workpiece-local offset (opt-in step planner_offset_local_m)."""
+        out = object.__new__(_Frame)
+        out.R, out.t = self.R, self.t+self.R.apply(np.asarray(offset_local, float))
+        return out
 
 
 def _bbox_corners(scene):
@@ -555,9 +615,16 @@ def _operations(scene, goal, profile, options, frame, digit=0, step_index=0):
         return plan, reports, digit
     plan, reports = [], []
     for index, step in enumerate(goal["steps"]):
-        steps, step_reports, digit = _operations(scene, step, profile, options, frame, digit, index)
+        extra = {}
+        step_frame = frame
+        if "planner_offset_local_m" in step:  # opt-in: plan on the declared geometry, translate rigidly
+            step_frame = frame.shifted(step["planner_offset_local_m"])
+            extra["planner_offset_local_m"] = list(map(float, step["planner_offset_local_m"]))
+        if "planner" in step:  # opt-in per-step options for this step's operations only
+            extra["step_planner_options"] = dict(step["planner"])
+        steps, step_reports, digit = _operations(scene, step, profile, step_options(options, step), step_frame, digit, index)
         plan += steps
-        reports += [{**row, "step": index, "step_goal_id": step["goal_id"]} for row in step_reports]
+        reports += [{**row, "step": index, "step_goal_id": step["goal_id"], **extra} for row in step_reports]
     return plan, reports, digit
 
 

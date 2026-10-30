@@ -1,0 +1,47 @@
+{
+ "schema": "rcs_wp12_phase6_plan_v1",
+ "plan_id": "wp12_phase6_kinematic_full_physics_cut_v1",
+ "declared": "2026-10-31, WP-12 Phase 6, before any phase6 run. Spec 6.1 API call with runtime_profile=full_physics_v1 (acceptance profile), seed 42, on the kinematic backend (ideal tracking, no robot): one CUT episode then one TRIM episode in one process (task switch), cut_aware_surface_v1, stage profiling on.",
+ "runtime": "kinematic",
+ "runtime_profile": "full_physics_v1",
+ "surface_profile": "cut_aware_surface_v1",
+ "record_every": 10,
+ "seed": 42,
+ "tasks": {
+  "CUT": {
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/sever_mid_live_14s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v2"
+   },
+   "source": "Phase 2b CUT inputs (artifacts/wp12/surface_live_002/inputs, live duration 14 s)"
+  },
+  "TRIM": {
+   "scene": "configs/wp12/scenes/trim01_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/trim_bump_rho10_live_14p5s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v3"
+   },
+   "source": "Phase 2b TRIM_PATH_V3 inputs (artifacts/wp12/surface_live_005/inputs, 14.5 s)"
+  }
+ },
+ "episodes": [
+  {
+   "task": "CUT",
+   "controller": "scripted",
+   "label": "cut_scripted_full_physics"
+  },
+  {
+   "task": "TRIM",
+   "controller": "scripted",
+   "label": "trim_scripted_full_physics"
+  }
+ ],
+ "limits": {
+  "memory_fit_from_episode": 1
+ }
+}

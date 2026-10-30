@@ -216,8 +216,8 @@
                    "OOD": {"cut_fraction": {"uniform_outside": {"outer": [-0.25, 0.25], "inner": [-0.08, 0.08]}},
                            "protrusion_count": {"integer_outside": {"outer": [1, 3], "inner": [1, 2]}}}},
         "ood_dimensions": ["cut_fraction", "rake_deg", "protrusion_height_m", "protrusion_count"]},
-  "G": {"name": "cut_push_relocation", "spec": "5.1 G, 5.8 cut->push and trim->clear chip (cut->reposition->cut is NOT_EXPRESSIBLE)",
-        "builder": "cut_push", "variants": ["cut_push", "trim_clear_chip"], "seed_base": 57000, "salt": 5107,
+  "G": {"name": "cut_push_relocation", "spec": "5.1 G, 5.8 cut->push, trim->clear chip and cut->reposition->cut (sever x1, kerf_face push by d, sever reference x2 = midpoint(x1, L/2) with the opt-in step field planner_offset_local_m [d, 0, 0]; WP-12 Phase 6)",
+        "builder": "cut_push", "variants": ["cut_push", "trim_clear_chip", "cut_reposition_cut"], "seed_base": 57000, "salt": 5107,
         "randomize": ["length_m", "width_m", "height_m", "workpiece_x_m", "workpiece_y_m", "workpiece_yaw_deg", "cut_fraction",
                       "push_distance_m", "cut_speed_m_s", "protrusion_family", "protrusion_x_fraction", "protrusion_y_m",
                       "protrusion_radius_x_m", "protrusion_radius_y_m", "protrusion_height_m", "rake_deg", "skim_speed_m_s",
@@ -316,7 +316,7 @@
  "mixed_operations": {
   "cut_cut": "D cut_cut", "cut_push": "G cut_push", "trim_trim": "E trim_trim", "trim_clear_chip": "G trim_clear_chip",
   "sever_trim": "F sever_then_trim", "trim_sever": "F trim_then_sever", "bumps_sequential": "E bumps_sequential",
-  "cut_reposition_cut": "NOT_EXPRESSIBLE: needs the proposed opt-in planner_offset_local_m (generalization_wp12.MISSING_FEATURES)",
+  "cut_reposition_cut": "G cut_reposition_cut (sequence[sever, move_piece kerf_face, sever with the opt-in step field planner_offset_local_m = declared push]; generalization_wp12.IMPLEMENTED_FEATURES, WP-12 Phase 6)",
   "checks": "cut history persists and earlier cuts stay valid (goal_eval_v2a per-step scopes + final all-digit substrate check), cut indices = goal_planner digit allocation cross-checked with goals.step_digit_allocation, no accidental reconnection (final components >= components after each step, read from the recorded history), evaluator scopes each operation (v2a), robot and tool valid (preflight + workspace clamp counts; Native grasp monitor)"
  }
 }

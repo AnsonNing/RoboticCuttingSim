@@ -51,7 +51,17 @@ Types and fields (defaults in brackets):
   ``sweep_height_m`` [0.002] above it, from behind the selector box to
   ``sweep_overtravel_m`` [0.005] past the base end; ``distance_m`` is not used).
 * ``sequence``: ``steps`` [inline step goals without schema/episode, or {"ref": "file.json"}];
-  every step must hold at the end; per-step results are reported.
+  every step must hold at the end; per-step results are reported. Opt-in STEP fields (WP-12
+  Phase 6; inline steps of any type, absent unless declared, so goals without them keep their
+  normalized form and compiled task ids; refused at the top level and dropped with the
+  referenced file's ``planner`` block for ``{"ref": ...}`` steps), read by ``goal_planner``
+  only and ignored by every evaluator (the step is still scored on its declared reference-space
+  planes/regions): ``planner_offset_local_m`` (finite 3-vector, workpiece-local metres, norm
+  <= 0.2 m: every waypoint of the step is planned from the declared geometry and then rigidly
+  translated by it, e.g. sever -> move_piece by d along +x -> sever with [d, 0, 0] cuts where the
+  pushed piece is, open loop from the declared push distance) and ``planner`` (an object of
+  per-operation planner options, ``goal_planner.STEP_PLANNER_OPTIONS``, merged over the goal's
+  planner options for that step's operations only; goal-wide options and unknown keys are errors).
 
 Evaluator version (opt-in, top-level ``evaluator_version``; absent = ``goal_eval_v1``,
 so the normalized form, compiled task ids and verdicts of goals that do not declare it
@@ -121,6 +131,9 @@ _TYPE_FIELDS = {
 # Opt-in fields: validated and kept only when declared (no defaults are filled in), so the normalized
 # form and compiled task ids of goals that do not declare them are unchanged.
 _OPT_IN_FIELDS = {"move_piece": ("push_mode", "sweep_height_m", "sweep_overtravel_m")}
+# Opt-in fields of an inline SEQUENCE STEP (any step type; WP-12 Phase 6): planner-only, kept only when declared.
+_STEP_OPT_IN_FIELDS = ("planner_offset_local_m", "planner")
+MAX_PLANNER_OFFSET_M = .2
 PUSH_MODES = ("kerf_face", "surface_sweep")
 _REQUIRED = {"sever": ("planes",), "divide": ("pieces",), "trim_plane": ("plane",),
              "move_piece": ("selector", "direction_local"), "sequence": ("steps",)}
@@ -275,11 +288,27 @@ def _validate_step(step, where, directory):
     if not isinstance(step, dict) or step.get("type") not in _STEP_TYPES:
         raise _error(f"{where}.type must be one of {_STEP_TYPES} (sequences do not nest)")
     kind = step["type"]
-    _keys(step, where, ("type",), ("goal_id", "description", *_TYPE_FIELDS[kind], *_OPT_IN_FIELDS.get(kind, ())))
+    _keys(step, where, ("type",), ("goal_id", "description", *_TYPE_FIELDS[kind], *_OPT_IN_FIELDS.get(kind, ()),
+                                   *_STEP_OPT_IN_FIELDS))
     out = {"type": kind, "goal_id": _identifier(step.get("goal_id", f"step_{kind}"), f"{where}.goal_id"),
            "description": str(step.get("description", ""))}
     out.update(_validate_fields(step, kind, where, directory))
+    if "planner_offset_local_m" in step:  # opt-in (WP-12 Phase 6): planner only, every evaluator ignores it
+        out["planner_offset_local_m"] = _planner_offset(step["planner_offset_local_m"], f"{where}.planner_offset_local_m")
+    if "planner" in step:  # opt-in per-step planner options (WP-12 Phase 6)
+        from .goal_planner import validate_step_planner
+        out["planner"] = validate_step_planner(step["planner"], f"{where}.planner")
     return out
+
+
+def _planner_offset(value, where):
+    from .scene_config import _vector
+    vector = _vector(value, where, 3)
+    if not np.all(np.isfinite(vector)):
+        raise _error(f"{where} must be finite")
+    if np.linalg.norm(vector) > MAX_PLANNER_OFFSET_M+1e-12:
+        raise _error(f"{where} must have norm <= {MAX_PLANNER_OFFSET_M} m")
+    return [float(v) for v in vector]
 
 
 def validate_goal(source, directory=None):
@@ -316,6 +345,11 @@ def validate_goal(source, directory=None):
     if planner:
         from .goal_planner import planner_options
         planner_options(out)  # unknown planner options are schema errors too
+    if kind == "sequence":
+        from .goal_planner import planner_options, step_options
+        for step in out["steps"]:
+            if "planner" in step:  # the merged per-step options must pass the goal planner rules too
+                step_options(planner_options(out), step)
     return out
 
 

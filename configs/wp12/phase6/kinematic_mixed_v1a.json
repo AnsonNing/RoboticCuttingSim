@@ -1,0 +1,135 @@
+{
+ "schema": "rcs_wp12_phase6_plan_v1",
+ "plan_id": "wp12_phase6_kinematic_mixed_v1a",
+ "declared": "2026-10-31, WP-12 Phase 6, before any phase6 run. DEVELOPMENT profile: research_fast_v1 (2 mm / 8 mm / 0.2 ms, acceptance_valid=false). Its verdicts are not acceptance results (the frozen 2 mm sever location bound cannot pass at an 8 mm grid, runtime_profiles_v1 fidelity_limits). Purpose: spec 6.5 consecutive resets, repeated cuts, mixed tasks, failure followed by reset, failed action followed by valid action, state leakage and memory over >= 10 episodes in one process. v1a (2026-10-31, before any v1a run): identical to v1 except every episode declares hold_until_time_limit=true (v1 runs phase6_001/phase6_002 were stopped: scripted episodes ended at CONTROLLER_DONE before the time limit, which the goal evaluator scores FAIL_INTEGRITY by design). v1a adds one cut -> reposition -> cut episode (REPOS, goal_eval_v2a sequence) at the end.",
+ "runtime": "kinematic",
+ "runtime_profile": "research_fast_v1",
+ "surface_profile": "cut_aware_surface_v1",
+ "record_every": 25,
+ "seed": 42,
+ "tasks": {
+  "CUT": {
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/sever_mid_live_14s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v2"
+   },
+   "source": "Phase 2b CUT inputs (artifacts/wp12/surface_live_002/inputs, live duration 14 s)"
+  },
+  "TRIM": {
+   "scene": "configs/wp12/scenes/trim01_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/trim_bump_rho10_live_14p5s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v3"
+   },
+   "source": "Phase 2b TRIM_PATH_V3 inputs (artifacts/wp12/surface_live_005/inputs, 14.5 s)"
+  },
+  "MULTI": {
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/divide_5_slices_live_37s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v2"
+   },
+   "source": "Phase 2b TESTB inputs (artifacts/wp12/surface_live_007/inputs, 37 s, 4 digits)"
+  },
+  "REPOS": {
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/cut_reposition_cut_21p5s.json",
+   "source": "WP-12 Phase 6 goal feature planner_offset_local_m (artifacts/wp12/phase6_goalfeat_001): sever -> push +x piece 20 mm -> sever at reference x=40 mm planned at 60 mm"
+  }
+ },
+ "episodes": [
+  {
+   "task": "CUT",
+   "controller": "scripted",
+   "label": "cut_scripted",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "CUT",
+   "controller": "independent_sequence",
+   "label": "cut_independent_sequence",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "TRIM",
+   "controller": "scripted",
+   "label": "trim_scripted",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "CUT",
+   "controller": "scripted",
+   "label": "cut_deliberate_fail_stop_after_pre_cut",
+   "stop_after_phase": "PRE_CUT",
+   "hold_until_time_limit": true,
+   "expect": "FAIL"
+  },
+  {
+   "task": "CUT",
+   "controller": "scripted",
+   "label": "cut_after_failure",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "TRIM",
+   "controller": "probe_then_scripted",
+   "label": "trim_probe_then_scripted",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "MULTI",
+   "controller": "scripted",
+   "label": "multi_slice_scripted",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "CUT",
+   "controller": "probe_then_scripted",
+   "label": "cut_probe_then_scripted",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "TRIM",
+   "controller": "scripted",
+   "label": "trim_scripted_repeat",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "CUT",
+   "controller": "scripted",
+   "label": "cut_scripted_repeat",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "CUT",
+   "controller": "independent_sequence",
+   "label": "cut_independent_sequence_repeat",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "MULTI",
+   "controller": "scripted",
+   "label": "multi_slice_scripted_repeat",
+   "hold_until_time_limit": true
+  },
+  {
+   "task": "REPOS",
+   "controller": "scripted",
+   "label": "cut_reposition_cut_scripted",
+   "hold_until_time_limit": true
+  }
+ ],
+ "limits": {
+  "memory_fit_from_episode": 1,
+  "host_rss_slope_max_mib_per_episode": 64.0,
+  "gpu_slope_max_mib_per_episode": 32.0,
+  "source": "configs/wp11/phaseG_reliability_v1b.json memory gates"
+ }
+}

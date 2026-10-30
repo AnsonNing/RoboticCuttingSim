@@ -123,7 +123,10 @@ class KinematicCuttingBackend:
         receipt = self.material.reset(self.edge, seed=int(seed))
         self.last_diagnostics = {"material_reset": receipt}
         self.stroke_history = []
-        self._surface = None
+        # WP-12 Phase 6 fix: the cache time is cleared with the cache. Before, a reset after an episode whose last
+        # extraction was at t = 0 kept _surface_time == 0, so the first post-reset extraction returned the cleared
+        # cache (None) instead of extracting the new episode's surface.
+        self._surface, self._surface_time = None, None
         if self.cut_aware:
             # A new extractor per reset: no topology cache (incremental state) survives into the next episode.
             from .surface_runtime import LiveCutAwareSurface

@@ -39,6 +39,23 @@ with open_cutting_env(runtime="kinematic",            # or "isaac_sim" (Native);
 A compiled `scene_config.ConfiguredTaskSpec` may be passed as `task=` instead of
 `scene=`/`goal=`.
 
+### Task switch between episodes (WP-12 Phase 6, `task_switch_v1`, opt-in)
+
+```python
+env.switch_task(scene="configs/wp12/scenes/trim01_flat_board.json", goal="trim_bump_rho10",
+                planner_options={"max_rotation_deg": 1.0, "max_translation_m": 0.001})   # or task=<compiled>
+observation, info = env.reset(seed=42)   # required before the next step; info["task_switch"] is the receipt
+```
+
+Mixed tasks in one process (kinematic and Native). The new task is compiled exactly as at open time, with the
+env's runtime profile applied and checked (`particle_spacing_m=` must be passed again for a coarse override).
+Only the backend's task configuration changes; the runtime builds material, labels, contacts, the cut-event
+recorder, the render surface and the grasp afresh at the next `reset()`. Same control dt required; Native also
+the same material grid dx and tool profile (the held knife is not exchanged). Without a switch the reset info has
+no `task_switch` key and nothing changes. Harness-side readiness helpers (never policy inputs) are in
+`robotic_cutting_sim.agentic_readiness`; the Phase 6 runner is `scripts/run_wp12_phase6.py`
+(docs/reports/WP12_AGENTIC_READINESS.md).
+
 ### Preset `cutting_research_v1` (`policy_env.ResearchPreset`)
 
 | Field | Default | Meaning |

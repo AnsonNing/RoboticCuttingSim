@@ -210,7 +210,7 @@ def test_mixed_operations_map_to_existing_goal_types(config):
             index = 0
             cfg = deepcopy(config)
             cfg["families"][family]["variants"] = [row["variant"]]
-            with pytest.raises(W.NotExpressible, match="reposition"):
+            with pytest.raises(W.NotExpressible):
                 W.build_sample(cfg, family, "ID", 999999, split="dev", index=index)
             continue
         assert row["variant"] in variants, name
@@ -221,6 +221,43 @@ def test_mixed_operations_map_to_existing_goal_types(config):
         assert goal["type"] == "sequence" or name in ("bumps_sequential",)
         for step in goal.get("steps", []):
             assert step["type"] in GOAL_TYPES[:-1]
+
+
+def test_cut_reposition_cut_is_expressible_with_the_step_offset(config):
+    """WP-12 Phase 6: sever x1 -> kerf_face push by d -> sever reference x2 with planner_offset_local_m [d, 0, 0]."""
+    assert "planner_offset_local_m" in W.IMPLEMENTED_FEATURES and "planner_offset_local_m" not in W.MISSING_FEATURES
+    assert "per_step_planner_options" in W.IMPLEMENTED_FEATURES and "per_step_planner_options" not in W.MISSING_FEATURES
+    assert set(W.MISSING_FEATURES) == {"continuous_physics_overrides", "edge_lateral_offset"}
+    assert W.MIXED_OPERATIONS["cut_reposition_cut"].get("status") != "NOT_EXPRESSIBLE"
+    assert ("cut_push", "cut_reposition_cut") in W.UNUSED_DIMENSIONS
+    variants = config["families"]["G"]["variants"]
+    index = variants.index("cut_reposition_cut")
+    dx = config["common"]["solver"]["grid_dx_m"]
+    seeds = [s for i, s in enumerate(W.seed_list(config, "G", "benchmark", "ID")) if i % len(variants) == index]
+    assert seeds
+    for seed in seeds:
+        sample = W.build_sample(config, "G", "ID", seed)
+        assert sample["variant"] == "cut_reposition_cut" and not W.geometry_checks(sample, config["common"])
+        goal = validate_goal(sample["goal"])
+        assert [s["type"] for s in goal["steps"]] == ["sever", "move_piece", "sever"]
+        first, push, second = goal["steps"]
+        x1, x2 = first["planes"][0]["origin_local_m"][0], second["planes"][0]["origin_local_m"][0]
+        L = sample["scene"]["workpiece"]["base_box_m"]["length_m"]
+        assert x1 < x2 < L/2 and abs(x2-W._node_x(config["common"], (x1+L/2)/2)) < 1e-12
+        assert abs(x2/dx-round(x2/dx)) < 1e-9 and abs(x1/dx-round(x1/dx)) < 1e-9
+        assert second["planner_offset_local_m"] == [push["distance_m"], 0., 0.]
+        assert push.get("push_mode", "kerf_face") == "kerf_face" and push["direction_local"] == [1., 0., 0.]
+        assert "planner_offset_local_m" not in first and "planner_offset_local_m" not in push
+        fractions = sample["derived"]["second_cut_nominal_piece_fractions"]
+        assert second["minimum_part_mass_fraction"] == W._min_part(config["common"], fractions)
+        params = sample["envelope_parameters"]
+        assert params["cut_digits"] == 2 and params["operation_pattern"] == "sequence:sever>move_piece>sever"
+        unused = {r["name"] for r in sample["draws"] if not r["applied"]}
+        assert "push_distance_m" not in unused and "cut_fraction" not in unused and "rake_deg" in unused
+    task, info = W.compile_sample(config, W.build_sample(config, "G", "ID", seeds[0]))
+    assert info["digits_used"] == 2
+    ops = info["plan_report_operations"]
+    assert [op.get("planner_offset_local_m") is not None for op in ops] == [False, False, True]
 
 
 def test_one_dev_sample_per_family_compiles(config):

@@ -31,7 +31,9 @@ explicit denominators, per stratum, family, range set and overall, and assert th
 The generators read the scene CONFIG only (never particles or oracle state); the solver has no task-specific branch:
 every family is a scene + an ``rcs_goal_v1`` goal of the existing types (sever, divide, remove_protrusions, trim_plane,
 move_piece, sequence). Patterns that need a missing goal feature raise ``NotExpressible`` with the proposal
-(``MIXED_OPERATIONS``, ``MISSING_FEATURES``).
+(``MIXED_OPERATIONS``, ``MISSING_FEATURES``); features added since are listed in ``IMPLEMENTED_FEATURES`` (WP-12
+Phase 6: the opt-in sequence-step fields ``planner_offset_local_m`` and ``planner``, which make cut -> reposition ->
+cut expressible).
 """
 from copy import deepcopy
 import hashlib
@@ -72,21 +74,44 @@ MIXED_OPERATIONS = {
     "sever_trim": {"family": "F", "variant": "sever_then_trim", "goal": "sequence[sever, remove_protrusions all]"},
     "trim_sever": {"family": "F", "variant": "trim_then_sever", "goal": "sequence[remove_protrusions all, sever]"},
     "bumps_sequential": {"family": "E", "variant": "bumps_sequential", "goal": "sequence[remove_protrusions [p_i] ...]"},
-    "cut_reposition_cut": {"family": "G", "variant": "cut_reposition_cut", "goal": None, "status": "NOT_EXPRESSIBLE",
-                           "missing": "planner_offset_local_m"},
+    "cut_reposition_cut": {"family": "G", "variant": "cut_reposition_cut",
+                           "goal": "sequence[sever x1, move_piece kerf_face +x side by d, sever reference x2 with step "
+                                   "planner_offset_local_m [d, 0, 0]]",
+                           "uses": "planner_offset_local_m"},
+}
+# Formerly missing features, now implemented as versioned opt-in goal fields (status, implementation, was_missing).
+IMPLEMENTED_FEATURES = {
+    "planner_offset_local_m": {
+        "status": "IMPLEMENTED (WP-12 Phase 6, opt-in sequence-step field)",
+        "implementation": (
+            "goals: inline sequence steps of any type may declare planner_offset_local_m (finite 3-vector, workpiece "
+            "local, norm <= 0.2 m); goal_planner plans the step from its declared geometry and translates every "
+            "waypoint of the step rigidly by the offset (shifted _Frame); every evaluator ignores it (the step is "
+            "scored on its declared reference-space plane). Open loop from the declared push distance; the measured "
+            "relocation stays ADR 0016 wrist_depth_relocate_v1 (live only). Tests: tests/test_goal_step_planner_fields.py"),
+        "was_missing": (
+            "cut -> reposition -> cut needs the second cut planned where the moved piece IS (declared push displacement) while "
+            "the evaluator keeps the plane in reference coordinates. Today a sever plane is both the planner target and the "
+            "evaluator plane. Minimal versioned addition: an opt-in sever/divide STEP field 'planner_offset_local_m' "
+            "(goals._OPT_IN_FIELDS, ignored by every evaluator) that goal_planner adds to the plane origin when planning, "
+            "or an opt-in planner option 'follow_declared_moves' that offsets later steps by the earlier move_piece "
+            "distance_m * direction_local. Open loop; the measured relocation is ADR 0016 wrist_depth_relocate_v1 (live only)."),
+    },
+    "per_step_planner_options": {
+        "status": "IMPLEMENTED (WP-12 Phase 6, opt-in sequence-step field)",
+        "implementation": (
+            "goals: inline sequence steps may declare 'planner' with per-operation options only "
+            "(goal_planner.STEP_PLANNER_OPTIONS; goal-wide and unknown keys are SceneConfigError), merged over the "
+            "goal's planner options for that step's operations only; report rows carry step_planner_options. Not used "
+            "by the DRAFT families (E trim_trim keeps one goal-wide rake so existing samples are unchanged). "
+            "Tests: tests/test_goal_step_planner_fields.py"),
+        "was_missing": (
+            "goal_planner options (rake_deg, skew_deg, skim_direction_local, speeds) are goal-wide, so a sequence cannot "
+            "use two rakes or two skim directions (e.g. trim -> trim at different rho). Minimal addition: an opt-in step "
+            "field 'planner' merged over the goal's planner block for that step's operations only."),
+    },
 }
 MISSING_FEATURES = {
-    "planner_offset_local_m": (
-        "cut -> reposition -> cut needs the second cut planned where the moved piece IS (declared push displacement) while "
-        "the evaluator keeps the plane in reference coordinates. Today a sever plane is both the planner target and the "
-        "evaluator plane. Minimal versioned addition: an opt-in sever/divide STEP field 'planner_offset_local_m' "
-        "(goals._OPT_IN_FIELDS, ignored by every evaluator) that goal_planner adds to the plane origin when planning, "
-        "or an opt-in planner option 'follow_declared_moves' that offsets later steps by the earlier move_piece "
-        "distance_m * direction_local. Open loop; the measured relocation is ADR 0016 wrist_depth_relocate_v1 (live only)."),
-    "per_step_planner_options": (
-        "goal_planner options (rake_deg, skew_deg, skim_direction_local, speeds) are goal-wide, so a sequence cannot use "
-        "two rakes or two skim directions (e.g. trim -> trim at different rho). Minimal addition: an opt-in step field "
-        "'planner' merged over the goal's planner block for that step's operations only."),
     "continuous_physics_overrides": (
         "rcs_scene_v1 selects a material only by profile id, so friction, density, contact stiffness and cutting "
         "resistance can be varied only as the discrete materials_wp12_v1 profiles. Minimal addition: an opt-in "
@@ -353,6 +378,7 @@ UNUSED_DIMENSIONS = {
     ("multi_protrusion", "trim_trim"): ("protrusion_count", "selected_protrusion_key"),
     ("cut_push", "cut_push"): _PROTRUSION_DIMS+_SKIM_DIMS+("clear_direction",),
     ("cut_push", "trim_clear_chip"): ("cut_fraction", "push_distance_m", "cut_speed_m_s", "cut_clearance_m"),
+    ("cut_push", "cut_reposition_cut"): _PROTRUSION_DIMS+_SKIM_DIMS+("clear_direction",),
     ("shape_pose_support", "sever"): _PROTRUSION_DIMS+_SKIM_DIMS,
     ("shape_pose_support", "trim"): ("cut_speed_m_s", "cut_clearance_m"),
 }
@@ -742,9 +768,9 @@ def build_sever_trim(config, family, v, variant, sample_id):
 
 def build_cut_push(config, family, v, variant, sample_id):
     common = config["common"]
-    if variant == "cut_reposition_cut":
-        raise NotExpressible("cut -> reposition -> cut: " + MISSING_FEATURES["planner_offset_local_m"])
     L, W, H = _dims(common, v)
+    if variant == "cut_reposition_cut":
+        return _cut_reposition_cut(config, family, v, sample_id, L, H)
     if variant == "cut_push":
         x = _node_x(common, float(v["cut_fraction"])*L)
         plane = _plane(x, H)
@@ -775,6 +801,35 @@ def build_cut_push(config, family, v, variant, sample_id):
     params = {**_base_params(v, dims, protrusions), **_skim_params(v), "cut_digits": 1,
               "operation_pattern": "sequence:remove_protrusions>move_piece"}
     return scene, goal, {"clear_direction": direction}, params, {"protrusions": protrusions}
+
+
+def _cut_reposition_cut(config, family, v, sample_id, L, H):
+    """Cut -> reposition -> cut (spec 5.8): sever at node-snapped x1, kerf_face push of the +x piece by d along +x, then
+    sever the pushed piece at node-snapped reference x2 = midpoint(x1, L/2) with the opt-in step field
+    planner_offset_local_m = [d, 0, 0] (the knife goes where the piece is after a push of the DECLARED distance; open
+    loop). The evaluator scores the second cut on its reference-space plane x2 (goal_eval_v2a step scope)."""
+    common = config["common"]
+    d = float(v["push_distance_m"])
+    x1 = _node_x(common, float(v["cut_fraction"])*L)
+    x2 = _node_x(common, (x1+L/2)/2)
+    first, second = _plane(x1, H), _plane(x2, H)
+    # Slots (slotted boards only) under the board positions the knife actually reaches: x1 and the shifted x2 + d.
+    scene, dims, pose = _common_scene(config, v, sample_id, [], [x1, x2+d], f"WP-12 Phase 5 {family} cut -> reposition -> cut")
+    fields1, fractions1 = _sever_fields(common, [first], L)
+    fields2, fractions2 = _sever_fields(common, [second], L)
+    push = {"type": "move_piece", "goal_id": "push", "direction_local": [1., 0., 0.], "distance_m": d,
+            "selector": {"side_of_plane": {"origin_local_m": [x1, 0., 0.], "normal_local": [1., 0., 0.], "side": "positive"}}}
+    steps = [{"type": "sever", "goal_id": "sever1", **fields1}, push,
+             {"type": "sever", "goal_id": "sever2", **fields2, "planner_offset_local_m": [d, 0., 0.]}]
+    goal = _goal(common, f"{sample_id}_cut_repos_cut", "sequence",
+                 f"Sever at x = {x1*1e3:.1f} mm, push the +x piece {d*1e3:.1f} mm along +x (cut disabled), then sever "
+                 f"the pushed piece at reference x = {x2*1e3:.1f} mm, planned at x = {(x2+d)*1e3:.1f} mm "
+                 f"(planner_offset_local_m, declared push distance, open loop).", {"steps": steps}, _cut_planner(v))
+    params = {**_base_params(v, dims, []), **_sever_params([first, second], v), "cut_digits": 2,
+              "operation_pattern": "sequence:sever>move_piece>sever"}
+    derived = {"cut_x_local_m": [x1, x2], "second_cut_planned_x_local_m": x2+d, "push_distance_m": d,
+               "nominal_piece_fractions": fractions1, "second_cut_nominal_piece_fractions": fractions2}
+    return scene, goal, derived, params, {"planes": [first, second]}
 
 
 def build_shape_pose_support(config, family, v, variant, sample_id):

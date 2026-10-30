@@ -56,7 +56,7 @@ At about |yaw| > 3.2° a board corner passes the table edge. Such samples are `s
 | trim → clear chip | G `trim_clear_chip` |
 | sever → trim / trim → sever | F `sever_then_trim` / `trim_then_sever` |
 | bumps removed sequentially | E `bumps_sequential` |
-| **cut → reposition → cut** | **NOT_EXPRESSIBLE.** The builder raises `NotExpressible`; this is a missing feature, never a sample class |
+| cut → reposition → cut | G `cut_reposition_cut` (WP-12 Phase 6, formerly NOT_EXPRESSIBLE): sever at node-snapped x1, `kerf_face` push of the +x piece by d, sever at node-snapped reference x2 = midpoint(x1, L/2) with the opt-in step field `planner_offset_local_m = [d, 0, 0]` (open loop, declared push distance). Added to the DRAFT G variants (G samples with index ≥ 2 change; dev seeds 0, 1 do not) |
 
 The §5.8 checks map to existing machinery:
 - cut history persists and earlier cuts stay valid: goal_eval_v2a per-step scopes plus its final all-digit substrate
@@ -67,17 +67,36 @@ The §5.8 checks map to existing machinery:
 "No accidental reconnection" (components never decrease between steps) is declared in the benchmark file, but no code
 computes it yet (§4).
 
-**Missing goal features and proposed minimal versioned additions** (`generalization_wp12.MISSING_FEATURES`):
+**Missing goal features and proposed minimal versioned additions** (`generalization_wp12.MISSING_FEATURES`; items 1
+and 2 are now implemented and listed in `generalization_wp12.IMPLEMENTED_FEATURES`):
 
-1. **`planner_offset_local_m`** (needed for cut → reposition → cut). A sever plane is both the planner target and the
-   evaluator's reference-space plane. The second cut must be planned where the pushed piece now is. Proposal: an opt-in
-   sever/divide step field `planner_offset_local_m`, which only `goal_planner` reads (added to the plane origin) and
-   every evaluator ignores. Alternative: an opt-in planner option `follow_declared_moves`, which offsets later steps by
-   the earlier `move_piece` `distance_m × direction_local`. Both are open loop. The measured relocation is ADR 0016
-   `wrist_depth_relocate_v1` (live only). This needs `goals.py` (`_OPT_IN_FIELDS`) and `goal_planner.py`; they are not
-   edited here.
-2. **Per-step planner options.** Rake, skew, skim direction and speeds are goal-wide, so trim → trim cannot use two
-   rakes. Proposal: an opt-in step field `planner`, merged over the goal's block for that step only.
+1. **`planner_offset_local_m`: IMPLEMENTED (WP-12 Phase 6)** as an opt-in field of an inline sequence step of any
+   type (finite 3-vector, workpiece-local metres, norm ≤ 0.2 m). Only `goal_planner` reads it: the step is planned
+   from its declared geometry and every waypoint of the step is translated rigidly by the offset (a shifted `_Frame`,
+   t' = t + R·offset); plan-report rows of the step carry `planner_offset_local_m`. Every evaluator ignores it, so the
+   step is scored on its declared reference-space plane. It is open loop (the declared push distance); the measured
+   relocation stays ADR 0016 `wrist_depth_relocate_v1` (live only).
+2. **Per-step planner options: IMPLEMENTED (WP-12 Phase 6)** as an opt-in step field `planner` holding per-operation
+   options only (`goal_planner.STEP_PLANNER_OPTIONS`: rake, skew, skim speed/margin/direction, protrusion order, cut
+   speed/clearance, overtravel, hold, kerf speed, saw amplitude/period, safe height, push release, cut extent), merged
+   over the goal's options for that step's operations. Goal-wide options (controller profile, home, action limits,
+   perception) and unknown keys are `SceneConfigError`; plan-report rows carry `step_planner_options`. The DRAFT does
+   not use it: E `trim_trim` keeps one goal-wide rake, so its samples are unchanged.
+
+   Both fields are absent unless declared. The normalized goals, compiled task ids, plan reports and waypoints of 18
+   existing scene/goal pairs, the first two ID dev samples of every Phase 5 family and the goals of all 238 declared A–F/H samples are pinned
+   against the pre-change tree (`tests/fixtures/wp12_goal_step_fields_pin.json`). Tests:
+   `tests/test_goal_step_planner_fields.py` (validation, exact rigid translation of only the offset step at yaw 0° and
+   1.5° for v1 and path_v2, a per-step ρ of 10° / 30° in `orientation_metrics`, and `evaluate_goal` output that is
+   identical with and without the fields under v1 / v2 / v2a) and
+   `tests/test_wp12_generalization.py::test_cut_reposition_cut_is_expressible_with_the_step_offset`.
+   Kinematic DEV run (`scripts/run_wp12_cut_reposition_cut.py`; `bar_flat_board`, x1 = 0, d = 20 mm, x2 = 40 mm planned
+   at 60 mm; coarse 4 mm particles, material dt 0.5 ms, Warp CPU, seed 42; development resolution only):
+   `artifacts/wp12/phase6_goalfeat_001/result.json`. goal_eval_v2a verdict **PASS**, with sever1 PASS (0.50 / 0.50),
+   push PASS (19.95 mm in the push window, other piece 3.5e-8 m) and sever2 PASS (0.75 / 0.25, plane statistic about
+   0 at x2). The pushed side is +20.61 mm from reference at the start of cut 2; this includes about 0.65 mm of kerf
+   opening by cut 1. A sub-millimetre location error is below the 4 mm grid's resolution. The episode took 84 s wall
+   for 21.5 s simulated.
 3. **Continuous physics overrides.** `rcs_scene_v1` selects a material only by profile id. Friction, density and
    cutting resistance can therefore vary only as the discrete `materials_wp12_v1` profiles. Proposal: an opt-in
    `workpiece.material_overrides`, validated by `materials_wp12.admit`. This is a `scene_config.py` change; the
@@ -258,8 +277,8 @@ CPU tests: `.venv/bin/python -m pytest tests/test_wp12_generalization.py` → **
 ## 4. Known limitations
 
 - **Board friction** has no kinematic effect (PhysX only).
-- **Continuous physics, contact parameters, edge-line approach position and cut → reposition → cut** are not
-  expressible (§1.2).
+- **Continuous physics, contact parameters and edge-line approach position** are not expressible (§1.2). Cut →
+  reposition → cut has been expressible since WP-12 Phase 6, open loop only.
 - **Workpiece yaw** is limited to about ±3.2° by the co-rotated board and the table edge. That is a workcell boundary,
   measured as scene-infeasible.
 - **"No accidental reconnection" between steps** is declared but not yet computed by the runner. The final-state
