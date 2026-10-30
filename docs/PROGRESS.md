@@ -1,6 +1,14 @@
 # Progress — 2026-10-29 Asia/Seoul
 
-## 進行中：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
+## 進行中：WP-12（2026-10-30，分支 `claude/wp12-physical-cut-surfaces`，起點 main `fbe99bd`）
+
+- 規格：[WP-12 規格](WP12_SPECIFICATION.md)；計畫：[WP-12 計畫](WP12_PLAN.md)。
+- 目前：Phase 0。已完成：移除另一專案縮寫並加 CPU 守門測試（`ce547f9`，`tests/test_repo_naming.py`）。
+- 執行中：baseline freeze（rcs-impl，輸出 `artifacts/wp12/baseline/`，報告 `docs/reports/WP12_BASELINE_AUDIT.md`）；切面技術研究（rcs-review，`docs/reports/WP12_SURFACE_TECH_REVIEW.md`）。
+- 下一步：兩份報告完成後定案 Phase 1 指標方法與 Phase 3 架構，開始 Phase 1 診斷與 Phase 2 工作台（可平行）。
+
+
+## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
 
 - 計畫：[WP-11](WP11_PLAN.md)。刀具：[ADR 0013 `ruler_knife_v2`](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)。v2 改成像參考圖那樣夾住刀身一端的細握柄，刀身沿用 v1 的 120×40×1.5 mm。另外定義了削切姿態指標 τ／ψ／ρ／μ。
 - Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
