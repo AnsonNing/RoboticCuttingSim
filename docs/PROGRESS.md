@@ -106,7 +106,7 @@
 - **Native 可靠性 v1b**（`a65e71d` 先宣告，`1a2af70` 證據，[證據](evidence/wp11/phaseH_native_reliability_v1b_001.json)）：同一個 process 連跑 8 個完整 episode（乾淨 worktree），**v1b 與 v1a 下 Native POLICY_READY**。host 斜率 48.8 MiB/episode（≤ 64），GPU 2.0 MiB/episode（≤ 32，Phase H 的 52 MiB 是 3 點雜訊）；reset 都與 episode 0 逐位相同；v1 只有 `tool_at_rest_after_reset` FAIL（已知的 PhysX 夾持抖動）。
   - 不是「沒有洩漏」：host 每個 episode 仍增加約 49 MiB。
   - 選用的 process 回收（`--recycle-every`）Native run FAIL（Kit 關閉時子 process 先結束，沒寫出結果）；已修正（`16f0ffa`）但未重跑。
-  - 待確認：同一 seed 的 scripted episode，接在刻意失敗 episode 之後的結果是 0.9770，其他是 0.9789。正在診斷是否有 reset 沒清掉的狀態。
+  - 重複性診斷（`ce8c810`）：「scripted」與「scripted repeat」設定只差標籤；reset 狀態逐位相同，材料從第 1 步起就有約 1e-7 的差異，刀接觸後放大（97,044 個粒子中 12 個 code 不同）。兩個全新 process 的第一個 episode 也會這樣分歧，與前一個 episode 無關。原因是 `tlmpm_v5` 在 CUDA 上用 float32 atomic add 累加 grid 質量與動量，加總順序每次不同。CPU kinematic 上，接在刻意失敗之後的重複與全新 process 都和 episode 0 逐位相同。結論：不是 reset 洩漏，是 GPU 非確定性；Native 的重複性只到 verdict 層級，宣告的 gate 也只比 verdict，分不出兩者（Test F 的弱點，已記錄）。
 - 磁碟：其餘 86 個 WP-11 之前的舊 artifact 也搬到根磁碟（同樣 rsync＋比對＋symlink）；/mnt/data 25 GB、根磁碟 37 GB。
 - **Phase I 進行中**：rcs-review 審查整個分支；final_v4 live regression（乾淨 worktree，新 run id）。
 - 背景工作（rcs-impl，輸出在 `artifacts/wp11/`，symlink 到 `/mnt/data`）：
