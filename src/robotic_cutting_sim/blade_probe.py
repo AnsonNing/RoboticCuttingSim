@@ -73,6 +73,12 @@ def drive_blade(profile, rotation, start_m, phases, *, points=None, masses=None,
                          'and tlmpm_v5 runs laws 4, 5 and 8')
     if slots_per_node is not None and solver_version != 5:
         raise ValueError('slots_per_node applies to tlmpm_v5 only')
+    # Every phase digit is -1 (disarmed) or a retained digit (WP-11 review finding 7): an out-of-range digit
+    # would release contact force as if cutting but write no label.
+    for phase in phases:
+        if (isinstance(phase.cut, (bool, np.bool_)) or not isinstance(phase.cut, (int, np.integer))
+                or not -1 <= phase.cut < cuts):
+            raise ValueError(f'Phase cut index {phase.cut!r} must be -1 or an integer in [0, {cuts})')
     packed = solver_version == 5
     if packed:
         from .tlmpm_v5 import TLMPM

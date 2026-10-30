@@ -62,6 +62,11 @@ class LiveCuttingMaterial:
             if slots_per_node is not None and (not isinstance(slots_per_node, (int, np.integer))
                                                or not 1 <= slots_per_node <= 64):
                 raise ValueError("slots_per_node must be an integer in 1..64")
+            # A task that declares more cut digits than this material keeps would schedule digits the v5 kernels
+            # cannot label (contact would still be released as if cutting). Reject it (WP-11 review finding 7).
+            task_cuts = getattr(task, 'max_cuts', None)
+            if task_cuts is not None and int(task_cuts) > int(max_cuts):
+                raise ValueError(f"The task declares max_cuts {task_cuts}; this tlmpm_v5 material keeps {max_cuts}")
         elif slots_per_node is not None:
             raise ValueError("slots_per_node applies to solver='tlmpm_v5' only")
         elif max_cuts not in (1, 2) or (max_cuts == 2 and tool_profile is None):
@@ -250,6 +255,11 @@ class LiveCuttingMaterial:
             cut = int(cut_index) if cutting else -1
         else:
             cut = self.task.active_cut_index(self.time_s) if self.task and cutting else active_cut_index(self.time_s, cutting)
+            # Scheduled digits are bounded like explicit ones (WP-11 review finding 7): an out-of-range digit would
+            # release contact force as if cutting but write no label. Valid schedules are unaffected.
+            if cut >= self.material_config.cuts:
+                raise ValueError(f"Scheduled cut index {cut} exceeds the retained material history "
+                                 f"({self.material_config.cuts} digits)")
         poses, twists = interpolate_measured_poses(self._pose_local(self.last_pose), self._pose_local(actual),
             self.substeps, c.control_dt)
         self.bed.poses.assign(poses)
