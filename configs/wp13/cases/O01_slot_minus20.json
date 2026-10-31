@@ -1,0 +1,23 @@
+{
+  "id": "O01_slot_minus20",
+  "episode": "CUT",
+  "seed": 13051,
+  "scene": "configs/wp12/phase7/demo2_slot_p20_scene.json",
+  "goal": "configs/wp12/phase7/demo2_slot_p20_goal.json",
+  "goal_options": {
+    "planes": [
+      {
+        "origin_local_m": [
+          -0.0036397023426620236,
+          0.0,
+          0.01
+        ],
+        "normal_local": [
+          0.9396926207859084,
+          0.0,
+          0.3420201433256687
+        ]
+      }
+    ]
+  }
+}

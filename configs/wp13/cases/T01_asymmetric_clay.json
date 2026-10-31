@@ -1,0 +1,19 @@
+{
+  "id": "T01_asymmetric_clay",
+  "episode": "TRIM",
+  "seed": 13023,
+  "workpiece": {
+    "material_profile": "wp12_clay_plastic_v1",
+    "protrusions": [
+      {
+        "id": "dome",
+        "family": "gaussian",
+        "x_m": 0.015,
+        "y_m": 0.002,
+        "radius_x_m": 0.014,
+        "radius_y_m": 0.008,
+        "height_m": 0.006
+      }
+    ]
+  }
+}

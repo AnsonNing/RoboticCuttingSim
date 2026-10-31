@@ -1,0 +1,32 @@
+{
+  "id": "C02_yaw_slippery",
+  "episode": "CUT",
+  "seed": 13017,
+  "workpiece": {
+    "world_pose": {
+      "translation_m": [
+        0.0,
+        0.0,
+        0.01
+      ],
+      "yaw_deg": 8.0
+    },
+    "base_box_m": {
+      "length_m": 0.18,
+      "width_m": 0.036,
+      "height_m": 0.02
+    },
+    "material_profile": "wp12_low_friction_v1"
+  },
+  "supports": {
+    "kind": "flat_board",
+    "workcell": {
+      "profile": "blade_master_flat_board_v1",
+      "overrides": {
+        "cutting_board": {
+          "yaw_deg": 8.0
+        }
+      }
+    }
+  }
+}
