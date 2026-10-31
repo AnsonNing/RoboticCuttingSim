@@ -124,3 +124,35 @@ def test_public_task_switch_preserves_the_explicit_candidate(tmp_path):
         assert type(env.backend.material.bed) is V.TLMPM
         assert not env.backend.material.bed.code.numpy().any()
         assert observation['task']['goal']['type'] == 'sever'
+
+
+@pytest.mark.cpu_sim
+def test_cut_event_provenance_and_disarmed_recontact_do_not_weld():
+    from scipy.spatial import cKDTree
+    from robotic_cutting_sim.blade_probe import drive_blade, Phase, VERTICAL_CUT
+    from robotic_cutting_sim.tool_profile import RULER_KNIFE_V2_Y
+    from robotic_cutting_sim.cut_topology import mechanical_components_packed
+    points, masses = block(size_m=(.024, .012, .012), spacing=.002)
+    phases = [Phase((0., 0., -.05), .32, 0), Phase((0., 0., .05), .4, -1),
+              Phase((.05, 0., 0.), .4, -1), Phase((0., 0., -.05), .36, -1),
+              Phase((-.02, 0., 0.), .5, -1)]
+    result = drive_blade(RULER_KNIFE_V2_Y, VERTICAL_CUT, [0., 0., .016], phases,
+                         points=points, masses=masses, spacing=.002, solver_version=7,
+                         cutting_law=8, cutting_energy=.05, record_history=True,
+                         cut_events='cut_events_v1', device='cpu')
+    assert result['labelled_after_phase'][0] > 0
+    assert len(set(result['labelled_after_phase'])) == 1
+    assert len(set(result['severed_bonds_after_phase'])) == 1
+    count, labels = mechanical_components_packed(result['reference_stencil_nodes'], result['reference_stencil_weights'],
+        result['state']['codes'], 1, gradients=result['reference_stencil_gradients'])
+    if count == 1:
+        pytest.xfail('Recorded WP-13 2 mm small-block first cut stays connected; recontact precondition FAIL, not PASS')
+    assert count == 2
+    assert max(result['forces'][-1]['peak_abs_N']) > 1e-5
+    x = result['state']['positions']
+    gap = cKDTree(x[labels == 0]).query(x[labels == 1])[0].min()
+    assert gap <= 2*.0009+.0002  # actual face contact at the unchanged particle contact radius
+    events = result['cut_events']['log']
+    assert len(events) > 0 and set(events['cut']) == {0}
+    assert np.isfinite(events['hermite_reference']).all()
+    assert not (events['flags'] & 1).any()
