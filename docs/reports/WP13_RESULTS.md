@@ -1,6 +1,6 @@
 # WP-13 integrated cutting experiment
 
-Status: candidate **REJECTED FOR PROMOTION**; engineering publication IN_PROGRESS,
+Status: candidate **REJECTED FOR PROMOTION**; research payload complete; engineering release gates below,
 2026-11-01 KST. Baseline `11895016b34ed821be2bdecbc5351667fb62d47d`.
 The production default remains TLMPM v5, Law 8, `particle_surface_v1`.
 Material parameters are provisional and uncalibrated.
@@ -28,7 +28,7 @@ modified. The trace observes every substep through a CUDA graph; it writes no
 physical state. The original recorded scene/goal, planner and evaluator run
 through the existing WP-12 driver.
 
-## B/C — Experimental candidate
+## B — Experimental candidate
 
 `tlmpm_v7` is opt-in. It integrates x and F from the same MUSL field, evaluates
 blade and board contact with a velocity-level normal constraint and a fixed
@@ -97,6 +97,77 @@ The initial incorrect diagnostic
 cast edit failed CPU compilation and was preserved, then corrected before the
 next candidate episode. No physical parameter or cutting criterion was tuned.
 
+## C — Contact sensitivity, not convergence
+
+The unchanged physical geometry CUT pair at 0.1/0.05 ms passes in both arms.
+Recorded reaction is averaged over a 20 ms control interval; the peak below is
+not an instantaneous substep force.
+
+| CUT solver / dt (ms) | Peak reaction norm (N) | Mean norm on contact controls (N) | Blade overlap max (mm) | Support overlap max (mm) | Tool work (mJ) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| v5 / 0.10 | 0.0446 | 0.0102 | 0.4831 | 0.0810 | 0.2547 |
+| v5 / 0.05 | 0.1216 | 0.0336 | 0.1213 | 0.0340 | 0.7792 |
+| v7 / 0.10 | 0.1341 | 0.0627 | 0.1243 | 0.0308 | 1.3757 |
+| v7 / 0.05 | 0.1675 | 0.0831 | 0.0748 | 0.0212 | 1.8030 |
+
+On this pair v7 peak force changes about 25% and work 31%, versus about 173%
+and 206% on v5. This is **less sensitive in this CUT spot check**, not converged
+or calibrated. Only two dt values were measured, and final-state/force agreement
+is not a general convergence proof. The nominal fixed blade release geometry is
+0.5 mm depth / 0.25 mm half-thickness; particle contact radius still follows
+spacing, which remains a discretization dependence.
+
+At 0.1 ms, TRIM v7's support overlap is 0.4578 mm versus v5's 0.0554 mm,
+although blade overlap falls from 0.6038 to 0.1515 mm. The candidate therefore
+does not uniformly improve contact. Later float64 receipts separately report
+normal/tangent impulse sums, bevel/flank partitions, consumed cutting work,
+fixture impulse and pretransfer impulse-energy expressions. Those expressions
+exclude grid transfer and material contacts: **total-system energy balance is
+NOT_RUN**. Fixture reaction for v5 was not recorded; support overlap is not a
+substitute for that missing force measurement.
+
+
+TRIM at 0.05 ms still fails to detach on v7, while v5 passes. Its reaction peak,
+contact-control mean, blade/support overlap and work are respectively:
+v5 0.1637 N / 0.0395 N / 0.4391 mm / 0.0151 mm / 0.6804 mJ;
+v7 0.1046 N / 0.0361 N / 0.1194 mm / 0.3640 mm / 2.0687 mJ.
+v7's corresponding 0.1 ms values are 0.0890 N / 0.0321 N / 0.1515 mm /
+0.4578 mm / 1.8397 mJ. The persistent topology failure and worse support overlap
+remain decisive limitations even where reaction varies less with dt.
+
+## D — Unchanged surface profiles
+
+Both unchanged v1 profiles were extracted on 15 saved states across CUT,
+PARTIAL, TRIM and four-slice episodes, including during-cut frames. The baseline
+C00 during-state has no recorded F and is NOT_RUN; completed physics was not
+repeated. Midpoint-fallback provenance is explicit; no Hermite data is invented.
+No renderer change or surface promotion follows a failed primary physical TRIM.
+[Surface measurements](../evidence/wp13/surfaces_001.json).
+
+| Final state / unchanged profile | v5 mesh roughness RMS (mm) | v7 (mm) | v5/v7 normal P95 (degrees) | v5/v7 locus coverage |
+| --- | ---: | ---: | ---: | ---: |
+| CUT / particle surface | 0.1556 | 0.0123 | 26.96 / 2.32 | 0.953 / 1.000 |
+| CUT / cut-aware v1 | 0.2523 | 0.0312 | 29.65 / 5.57 | 1.000 / 1.000 |
+| Four slices / particle surface | 0.1390 | 0.0131 | 29.82 / 2.55 | 0.815 / 1.000 |
+| Four slices / cut-aware v1 | 0.3053 | 0.0333 | 38.17 / 5.58 | 1.000 / 1.000 |
+
+These mesh metrics use the existing core-region and 2 mm local-patch rules on
+the actual saved x/F/codes, not distance to an ideal flat cut. Straight CUT's
+rigid-aligned actual face-locus whole-plane P95 falls from about 1.234 mm to
+0.255 mm, RMS 0.683 to 0.125 mm. Bias is deformation relative to its own reference
+midpoints, not calibrated cut-position accuracy. A curled TRIM shaving is not
+penalized for failing a global plane fit.
+
+The partial slit retains one body. Its default-profile locus coverage falls
+from 0.537 to 0.430 despite lower local roughness; cut-aware v1 reaches 1.000.
+TRIM's v7 mesh metrics improve locally while the chip remains attached, so they
+do not pass physical correctness. Basic mesh reports include degenerates
+(e.g. two in each CUT particle surface, one in each four-slice surface), even
+where topology is watertight and non-manifold edges are zero. Self intersections
+are NOT_RUN; no claim of fully valid or universally spike-free meshes follows.
+During-state timestamps differ across arms; those frames show slit evolution,
+not matched-time quantitative A/B. No surface v2 or smoothing was introduced.
+
 ## E — Frozen representative cohort
 
 **Decisive rejection:** the primary frozen T00 TRIM succeeds on v5 (two
@@ -105,7 +176,7 @@ components), but v7 remains one component and fails
 roughness do not establish chip detachment. The one focused physical alternative
 has already been exercised; no further solver tuning follows this failure.
 The candidate stays explicitly experimental and the production default remains
-v5. The remaining predeclared matrix and Native episodes characterize its limits
+v5. The completed predeclared matrix and Native episodes characterize its limits
 and support the authorized rejection-publication path.
 
 **Native is separate:** fresh Native v7 T00 TRIM passes its task evaluator and
@@ -140,38 +211,53 @@ The rotated-board configuration initially failed compile-time footprint checks;
 its board centre was moved 25 mm inward before any formal physics outcome.
 The two-bump draft needed two retained digits, also corrected before outcomes.
 
-## D — Unchanged surface profiles
+The final recorded batch is **32/32 completed**, 16 paired configurations.
+Observed task/control-rule results are **v5 14/16, v7 9/16**. These counts include
+two PARTIAL controls; P01 duplicates P00's executed depth. All 16 pairs have
+identical recorded time/phase/cut-id/edge-pose paths across solver arms, but
+**0/32 match all compiled planner settings**. This is descriptive paired evidence
+under actual legacy paths, not a success rate for the requested protocol.
+[All completed rows, source hashes, commands and deviations](../evidence/wp13/focused_001.json).
 
-Both unchanged v1 profiles were extracted on 15 saved states across CUT,
-PARTIAL, TRIM and four-slice episodes, including during-cut frames. The baseline
-C00 during-state has no recorded F and is NOT_RUN; completed physics was not
-repeated. Midpoint-fallback provenance is explicit; no Hermite data is invented.
-No renderer change or surface promotion follows a failed primary physical TRIM.
-[Surface measurements](../evidence/wp13/surfaces_001.json).
+| Recorded case | v5 | v7 | Boundary |
+| --- | --- | --- | --- |
+| C00 standard CUT | PASS | PASS | Two pieces |
+| C01 shorter/firmer CUT | PASS | FAIL | v7 remains one body |
+| C02 larger/yawed/low-friction CUT | PASS | PASS | Held-out geometry/material |
+| C03 offset CUT | FAIL | FAIL | Both remain one body |
+| T00 dome TRIM | PASS | FAIL | v7 chip attached |
+| T01 asymmetric Gaussian/clay TRIM | PASS | FAIL | v7 chip attached |
+| T02 two-bump TRIM | PASS | FAIL | v5 four components; v7 one |
+| P00 PARTIAL | Control PASS | Control PASS | One body with slit and intact ligament |
+| P01 requested shallower PARTIAL | DUPLICATE | DUPLICATE | Actual control passes; requested depth NOT_RUN |
+| M00 four slices | PASS | PASS | Five pieces; placement quality separate |
+| M01 two cuts | PASS | PASS | Three pieces |
+| O00 plus-20-degree groove | PASS | PASS | Explicit 8 mm slotted board |
+| O01 minus-20-degree groove | PASS | PASS | Explicit 8 mm slotted board |
+| D00 CUT at 0.05 ms | PASS | PASS | Two pieces |
+| D01 TRIM at 0.05 ms | PASS | FAIL | v7 remains one body |
+| R00 CUT at 0.75 mm | FAIL | FAIL | Both remain one body |
 
-| Final state / unchanged profile | v5 mesh roughness RMS (mm) | v7 (mm) | v5/v7 normal P95 (degrees) | v5/v7 locus coverage |
-| --- | ---: | ---: | ---: | ---: |
-| CUT / particle surface | 0.1556 | 0.0123 | 26.96 / 2.32 | 0.953 / 1.000 |
-| CUT / cut-aware v1 | 0.2523 | 0.0312 | 29.65 / 5.57 | 1.000 / 1.000 |
-| Four slices / particle surface | 0.1390 | 0.0131 | 29.82 / 2.55 | 0.815 / 1.000 |
-| Four slices / cut-aware v1 | 0.3053 | 0.0333 | 38.17 / 5.58 | 1.000 / 1.000 |
+The original sever evaluator intentionally fails both PARTIAL cases; the separate
+predeclared partial-control rule checks the connected ligament and real kerf.
+Its observed passes do not validate P01's missed requested depth. No failures or
+protocol deviations are dropped from the denominator.
 
-These mesh metrics use the existing core-region and 2 mm local-patch rules on
-the actual saved x/F/codes, not distance to an ideal flat cut. Straight CUT's
-rigid-aligned actual face-locus whole-plane P95 falls from about 1.234 mm to
-0.255 mm, RMS 0.683 to 0.125 mm. Bias is deformation relative to its own reference
-midpoints, not calibrated cut-position accuracy. A curled TRIM shaving is not
-penalized for failing a global plane fit.
+For the seven actual cutting pairs that succeed in both arms, near-cut x/F P95
+improves by 4.25–6.95× and local locus roughness falls 38.8–86.4%. Examples beyond
+C00 include C02 (5.89× / 86.4%), four slices (6.53× / 85.9%) and minus-20-degree
+slot (6.21× / 38.8%). The same metrics also improve on several failed cuts;
+quality gain does not imply successful separation. All final states are finite;
+minimum final det(F) is 0.869, sampled minimum 0.757 (every ten controls, not all
+substeps). Maximum relative mass bookkeeping error is 1.22e-12; no particles are
+deleted. No sparse-slot overflow is reported.
 
-The partial slit retains one body. Its default-profile locus coverage falls
-from 0.537 to 0.430 despite lower local roughness; cut-aware v1 reaches 1.000.
-TRIM's v7 mesh metrics improve locally while the chip remains attached, so they
-do not pass physical correctness. Basic mesh reports include degenerates
-(e.g. two in each CUT particle surface, one in each four-slice surface), even
-where topology is watertight and non-manifold edges are zero. Self intersections
-are NOT_RUN; no claim of fully valid or universally spike-free meshes follows.
-During-state timestamps differ across arms; those frames show slit evolution,
-not matched-time quantitative A/B. No surface v2 or smoothing was introduced.
+Median paired episode-wall ratio v7/v5 is 1.007; maximum is 1.743 for the preserved
+first diagnostic-heavy CUT. Reported process GPU memory peaks at 1,254 MiB. These
+are instrumented, single-episode measurements, not universal performance bounds.
+The one 0.75 mm spot check fails in both arms and samples about 145.57 g rather
+than the 1 mm lattice's 144 g; particle radius and discrete mass change with
+sampling. TRIM at 0.75 mm is NOT_RUN. No resolution-convergence claim follows.
 
 ## Native integration and media
 
@@ -213,8 +299,9 @@ The gallery uses genuine recorded RGB only: six full clips, a matched-time CUT
 comparison and five looping GIF previews. Capture timestamps and hashes are in
 [media provenance](../evidence/wp13/media_001.json). Full videos retain all frames
 at nominal 5 fps; presentation speed and crops are labelled. Local full decode,
-links and 178 protected Git blobs PASS. Rendered remote main playback, exact-main
-CI, independent review and final matrix aggregation are still pending.
+links and 178 protected Git blobs pass. Exact-head CI is required before merge;
+exact-main CI and rendered GitHub animation/full playback are verified after
+merge, with receipts recorded in the PR. Filesystem presence alone is insufficient.
 
 
 ## Independent review and execution-integrity deviation
@@ -231,10 +318,14 @@ identity alone is insufficient proof of execution.
 All paired arms use the same actual legacy options. Their observed outcomes and
 quality differences are real under those paths, but the batch's requested-planner
 integrity gate FAILS. Native launches explicitly pass the compiled options and
-are separate. The running frozen batch retains its original driver until the dt
-pairs finish, so contact comparisons do not mix control paths. Completed episodes
-are not repeated. The driver repair and regression check follow batch completion;
-no corrected-depth outcome is claimed. [Original review](../evidence/wp13/review_001.json).
+are separate. The entire frozen batch retained its original driver until all 32 episodes
+finished, so dt comparisons do not mix control paths. Completed episodes were
+not repeated. The corrected driver now consumes compiled options by default;
+two integration regression tests inspect the real historical driver's manifest
+and action limits before intentionally stopping before physics. They pass and
+verify restoration of scoped overrides. `--planner-source legacy_goal_v1`
+explicitly replays the recorded deviation. No corrected-depth physical outcome
+is claimed; that requested depth remains NOT_RUN. [Original review](../evidence/wp13/review_001.json).
 
 
 ## Reproducibility and scope
@@ -260,3 +351,36 @@ force prediction, no stress-driven fracture, no arbitrary solid-board oblique
 cutting, no general Native robustness rate, and no accepted replacement for v5.
 Vision-only observations still exclude force and oracle material state. Camera
 v5, goals, frozen v1 evaluation and the prior v6 rejection remain unchanged.
+
+
+## Verification and release gates
+
+The full collected local CPU suite recorded 1647 passed, 12 skipped/NOT_RUN and
+five expected failures in 1912 s. Collection began at `c82b07c` and the workspace
+evolved, so this is not an exact-final-head claim. After the driver fix, focused
+checks record **52 passed, one known expected failure** in 26.54 s. The latter is
+the preserved 2 mm severing-precondition failure, not a successful recontact test.
+[Verification receipts](../evidence/wp13/local_verification_002.json).
+
+The scientific acceptance result is **REJECTED**: primary CUT/TRIM correctness
+is not retained across the recorded paired set, and requested-planner integrity
+fails. Contact/material validity remains PARTIAL/uncalibrated. Engineering
+publication keeps v5/default surface and frozen evidence, supplies functioning
+Native media and repairs the future execution path. Independent review and
+protected-file/media checks precede the PR; green exact-commit CPU CI and real
+remote main playback are mandatory release checks, recorded in the PR and the
+local runner's post-merge receipt. They do not promote the scientific candidate.
+
+To reproduce a recorded legacy-path CUT in a **new** output directory:
+
+```bash
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+.venv/bin/python scripts/run_wp13.py --case configs/wp13/cases/C00_cut.json \
+  --solver tlmpm_v7 --planner-source legacy_goal_v1 --device cuda:1 \
+  --out artifacts/wp13/my_legacy_cut_001
+```
+
+Omit the legacy flag for the corrected compiled-planner execution; its outcomes
+are not substituted for this batch. Native commands and actual versions, seeds,
+source/result hashes and timing are preserved in the compact receipts. Rebuild
+media only into fresh staging/output paths using `scripts/encode_wp13_media.py`.

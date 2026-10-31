@@ -1,25 +1,29 @@
 # Progress — 2026-11-01 Asia/Seoul
 
-## WP-13 — rejection publication in progress
+## WP-13 — experimental rejection and engineering payload
 
-- Worktree `/home/ningan/RoboticCuttingSim-wp13`, branch `codex/wp13-integrated-cutting`, baseline `11895016`.
-- Opt-in v7 couples MUSL position/F updates, velocity-level contact and finite relative-sweep history.
-  Production v5 / Law 8, camera rig v5, goals and frozen historical records remain unchanged.
-- First candidate CUT failed; its one focused alternative passes the standard CUT. Formal matched CUT
-  improves near-plane x/F P95 6.06x and locus patch roughness 85.96%, scoped to that configuration.
-- Promotion **REJECTED**: primary TRIM stays one component with 216 direct code-0 bridges and zero
-  detached above-plane mass, where v5 separates. A shorter/firmer held-out cut also fails on v7.
-  No more physical tuning. The frozen 32 kinematic and six Native episodes continue for honest denominators.
-- Six Native launch attempts stopped before physics due to the worktree asset path; failures retained.
-  Existing assets linked read-only. Fresh full Native preflight passes; real C00 v5/v7 both task-success/HOME PASS.
-- Full collected CPU suite: 1647 passed, 12 skipped/NOT_RUN, 5 xfailed in 1912 s. Later focused changes and
-  exact-final-commit CI remain separate checks. One 2 mm small-block recontact precondition fails;
-  a 1 mm GPU recontact control passes with actual face contact, persistent codes and 144 valid Hermite events.
-- Cumulative float32 contact diagnostics from early runs are invalid; later float64 sums are explicit.
-  Zero-atomic and diagnostic-precision fixes preserve physical state/reactions bitwise on focused CPU controls.
+- Baseline `11895016`; worktree `/home/ningan/RoboticCuttingSim-wp13`, branch `codex/wp13-integrated-cutting`.
+- v7 remains opt-in, **REJECTED FOR PROMOTION**. Production v5 / Law 8, default surface, goals,
+  camera rig v5 and historical evidence remain unchanged. No more physical tuning after one alternative.
+- Recorded kinematic cohort **32/32 complete**: observed task/control rules v5 **14/16**, v7 **9/16**.
+  All paired actual paths match, but **0/32 match compiled planner settings**: legacy-driver overrides
+  were lost and P01 duplicates P00 depth. Requested P01 depth NOT_RUN; no completed case repeated.
+  The future driver now consumes compiled options; integration regression checks pass before physics.
+- Standard CUT consistency P95 improves 6.06x, locus roughness 85.96%; gains extend to several held-out
+  successful pairs. Primary TRIM, asymmetric/two-bump TRIM and shorter/firmer CUT regress on v7.
+  Both versions fail the offset and 0.75 mm CUT. Half-dt CUT passes both; half-dt TRIM still fails v7.
+- Six fresh Native episodes: **6/6 TASK_SUCCESS, 6/6 HOME PASS**. Native v7 TRIM removes 100% above-plane
+  mass (v5 97.51%); cross-runtime discrepancy is not causally isolated. Six pre-physics setup failures retained.
+- Unchanged surfaces measured on 15 saved states x two profiles; one missing-F during-state NOT_RUN.
+  Partial default-profile coverage worsens; degenerates remain and self intersections NOT_RUN.
+- Local full collected CPU: 1647 passed, 12 skipped/NOT_RUN, 5 xfailed; not exact final head.
+  Final focused checks: **52 passed, 1 known xfailed**. The 2 mm sever control fails its precondition;
+  separate 1 mm GPU recontact passes. Early float32 cumulative diagnostics invalid, later float64 explicit.
+- Five real looping Native GIFs and seven full MP4s, source hashes/timestamps and rejection disclosure
+  are published in the payload. Independent xhigh review found the driver bug; its repair and retained
+  protocol deviation are explicit. PR/exact-main CI and rendered remote playback are external release gates.
 - [Single results report](reports/WP13_RESULTS.md), [phase checklist](WP13_PLAN.md),
-  [precommitted cohort](../configs/wp13/focused_v1.json). Native animated gallery, reviewed PR merge,
-  exact remote main CI/media and DONE-last verification are pending.
+  [completed cohort](evidence/wp13/focused_001.json), [Native receipts](evidence/wp13/native_001.json).
 
 # Progress — 2026-10-31 Asia/Seoul
 

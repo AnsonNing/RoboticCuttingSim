@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import numpy as np
 
@@ -90,12 +91,36 @@ def measures(material, task):
             'slot_diagnostics': bed.slot_diagnostics()}
 
 
+
+def execute_episode(task, info, config, sample, args, extra, *, planner_source="compiled"):
+    """Reuse the historical driver with the exact already-compiled options.
+
+    Keep the frozen driver unchanged. Its goal-only option lookup is intercepted
+    only for a goal equal to this compiled task goal, within this synchronous invocation. Other
+    goals and all subsequent invocations retain the original planner function.
+    """
+    if planner_source not in ("compiled", "legacy_goal_v1"):
+        raise ValueError(planner_source)
+    from robotic_cutting_sim import goal_planner
+    original_options = goal_planner.planner_options
+
+    def compiled_options(goal, overrides=None):
+        if goal == task.goal:
+            overrides = {**deepcopy(task.controller['planner']), **(overrides or {})}
+        return original_options(goal, overrides)
+
+    with patch.object(P5.W, 'compile_sample', return_value=(task, info)):
+        if planner_source == 'legacy_goal_v1':
+            return P5.kinematic_episode(config, sample, args, extra=extra)
+        with patch.object(goal_planner, 'planner_options', side_effect=compiled_options):
+            return P5.kinematic_episode(config, sample, args, extra=extra)
+
+
 def run(a):
     row = json.loads(a.case.read_text()) if a.case else {'id': a.episode, 'episode': a.episode, 'seed': 42}
     task, info = build(row, a.solver)
     config = E2.pseudo_config(E2.load_protocol())
     config['common']['material_dt_s'] = a.dt or row.get('dt_s', .0001)
-    P5.W.compile_sample = lambda config, sample: (task, info)
     sample = {'sample_id': row.get('id', row['episode']), 'family': row['episode'], 'range_set': 'wp13',
               'split': 'wp13', 'seed': row.get('seed', 42), 'variant': row['episode'], 'draws': [],
               'derived': {}, 'envelope_parameters': {}, 'ood_dimensions': []}
@@ -128,7 +153,8 @@ def run(a):
     ns = SimpleNamespace(out=a.out, device=a.device, steps=None, expect_task_id=None, feasibility_class=None,
                          surface_profile=a.surface, geometry_level=None, no_geometry=True)
     started = time.monotonic()
-    P5.kinematic_episode(config, sample, ns, extra={'label': a.label, 'wp13_case': row,
+    execute_episode(task, info, config, sample, ns, planner_source=a.planner_source, extra={
+        'planner_source': a.planner_source, 'label': a.label, 'wp13_case': row,
         'candidate_source_sha256': hashlib.sha256((ROOT/'src/robotic_cutting_sim/tlmpm_v7.py').read_bytes()).hexdigest(),
         'argv': sys.argv})
     result = json.loads((a.out/'result.json').read_text())
@@ -169,6 +195,8 @@ def main():
     p.add_argument('--dt', type=float)
     p.add_argument('--surface', default='particle_surface_v1')
     p.add_argument('--label', default='DEVELOPMENT_NOT_ACCEPTANCE')
+    p.add_argument('--planner-source', choices=('compiled', 'legacy_goal_v1'), default='compiled',
+                   help='compiled is correct execution; legacy_goal_v1 explicitly replays the rejected batch deviation')
     return run(p.parse_args())
 
 

@@ -85,6 +85,8 @@ def main():
             mismatch = {k: {'compiled': v, 'executed': actual_options.get(k)}
                         for k, v in expected_options.items() if actual_options.get(k) != v}
             row = {'case': name, 'family': case['episode'], 'solver': solver, 'outcome_pass': passed,
+                   'scene_seed': case.get('seed', 42), 'material_seed': manifest['config']['material_seed'],
+                   'case_sha256': G.sha(ROOT/case_path), 'device': manifest['config']['device'],
                    'original_class': summary['class'], 'partial_cut_rule': summary.get('partial_cut_rule'),
                    'metrics': summary['metrics'], 'supplemental': extra,
                    'roughness_rms_m': roughness(summary), 'runtime': runtime,
@@ -132,7 +134,9 @@ def main():
     counts = {s: {'completed': sum(r['solver'] == s for r in rows),
                   'outcome_pass': sum(r['solver'] == s and r['outcome_pass'] for r in rows),
                   'compiled_planner_integrity_pass': sum(r['solver'] == s and r['execution_integrity']['status'] == 'PASS' for r in rows)} for s in protocol['arms']}
-    output = {'protocol': 'configs/wp13/focused_v1.json', 'planned_episodes': 32, 'counts': counts,
+    output = {'protocol': 'configs/wp13/focused_v1.json',
+              'protocol_sha256': G.sha(ROOT/'configs/wp13/focused_v1.json'),
+              'planned_episodes': 32, 'counts': counts,
               'candidate_status': a.candidate_status, 'rows': rows, 'pairs': pairs, 'pending': pending,
               'scope': 'Deterministic frozen scenes and provisional uncalibrated materials. '
                        'Outcome success, kinematic consistency, cut-face roughness and contact validity remain separate. '

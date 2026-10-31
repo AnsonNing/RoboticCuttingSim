@@ -20,7 +20,9 @@
 - `tlmpm_v7` remains an explicit experimental opt-in. Primary TRIM fails to detach;
   v5 / Law 8 and `particle_surface_v1` remain the production defaults.
 - [Frozen 32-episode paired cohort and six Native episodes](../configs/wp13/focused_v1.json).
-  Material parameters remain provisional and uncalibrated; publication is still in progress.
+  Recorded outcomes: v5 14/16, v7 9/16; all kinematic planner-integrity checks fail, with duplicate P01 depth.
+  [Actual cohort/deviations](evidence/wp13/focused_001.json), [six Native task/HOME passes](evidence/wp13/native_001.json).
+  [Animated Native gallery](../README.md#native-cutting-gallery). Materials remain uncalibrated.
 
 ## WP-12: retained flat-board workcell (2026-10-31)
 
