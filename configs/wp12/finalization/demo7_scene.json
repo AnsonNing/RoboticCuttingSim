@@ -1,0 +1,45 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "P5_D_ID_held_out_s54501",
+  "description": "WP-12 Phase 5 D cut_cut",
+  "workpiece": {
+    "base_box_m": {
+      "length_m": 0.146,
+      "width_m": 0.028,
+      "height_m": 0.017
+    },
+    "protrusions": [],
+    "world_pose": {
+      "translation_m": [
+        0.00939105595272417,
+        -0.009987695143802386,
+        0.01
+      ],
+      "yaw_deg": -1.5092544214922494
+    },
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {
+    "kind": "flat_board",
+    "workcell": {
+      "profile": "blade_master_flat_board_v1",
+      "overrides": {
+        "cutting_board": {
+          "yaw_deg": -1.5092544214922494
+        }
+      }
+    }
+  },
+  "tool": {
+    "profile_id": "ruler_knife_v2_y",
+    "grasp_preset": "default"
+  },
+  "solver": {
+    "module": "tlmpm_v5",
+    "cutting_law": 8,
+    "max_cuts": 1,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "slots_per_node": 16
+  }
+}

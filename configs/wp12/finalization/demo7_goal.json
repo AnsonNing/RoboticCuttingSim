@@ -1,0 +1,59 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "P5_D_ID_held_out_s54501_cut_cut",
+  "type": "sequence",
+  "description": "Cut -> cut: sever at x = 24.0 mm, then at -28.0 mm.",
+  "episode": {
+    "duration_s": 120.0,
+    "control_dt_s": 0.02
+  },
+  "planner": {
+    "controller_profile": "path_v2",
+    "cut_extent": "plane_section",
+    "cut_speed_m_s": 0.011735498853654724,
+    "cut_clearance_m": 0.008
+  },
+  "evaluator_version": "goal_eval_v2a",
+  "steps": [
+    {
+      "type": "sever",
+      "goal_id": "cut0",
+      "planes": [
+        {
+          "origin_local_m": [
+            0.024,
+            0.0,
+            0.0
+          ],
+          "normal_local": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "expected_pieces": 2,
+      "minimum_part_mass_fraction": 0.167808
+    },
+    {
+      "type": "sever",
+      "goal_id": "cut1",
+      "planes": [
+        {
+          "origin_local_m": [
+            -0.028,
+            0.0,
+            0.0
+          ],
+          "normal_local": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "expected_pieces": 2,
+      "minimum_part_mass_fraction": 0.15411
+    }
+  ]
+}
