@@ -65,6 +65,10 @@ def main():
                 pending.append({'case': name, 'solver': solver, 'status': 'NOT_RUN_OR_INCOMPLETE'})
                 continue
             summary = json.loads(path.read_text())
+            result = json.loads((out/'result.json').read_text())
+            actions = [json.loads(line) for line in (out/'actions.jsonl').read_text().splitlines()]
+            force = np.linalg.norm(np.asarray([r['blade_force_world_N'] for r in actions]), axis=1)
+            contact_force = force[force > 1.e-12]
             extra = supplemental(out/'final_state.npz', case, solver)
             is_partial = case['episode'] == 'PARTIAL'
             passed = bool((summary.get('partial_cut_rule') or {}).get('accepted')) if is_partial else summary['class'] == 'task_success'
@@ -82,6 +86,15 @@ def main():
                    'roughness_rms_m': roughness(summary), 'runtime': runtime,
                    'episode_ms_per_control_step': 1000*runtime['episode_wall_s']/(runtime['simulated_s']/.02),
                    'summary_path': str(path), 'source_manifest': summary['source_manifest'],
+                   'class_reason': result['class_reason'],
+                   'sampled_stability': result['stability'],
+                   'recorded_goal_evaluation': {k: result['evaluation'][k] for k in
+                        ('verdict', 'integrity', 'outcome')},
+                   'blade_reaction_N': {'control_average_peak_norm': float(force.max()),
+                        'contact_controls_mean_norm': float(contact_force.mean()) if len(contact_force) else 0.,
+                        'contact_controls': int(len(contact_force)),
+                        'scope': 'Norm of recorded reaction averaged over each control interval; '
+                                 'not an instantaneous substep peak. Fixture v5 reaction not recorded.'},
                    'summary_sha256': G.sha(path), 'manifest_sha256': G.sha(manifest_path),
                    'provenance': {k: manifest[k] for k in ('timestamp', 'command', 'python', 'backend',
                         'git_sha', 'git_dirty', 'packages', 'source_checkouts')},

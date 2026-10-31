@@ -39,6 +39,15 @@ The shared blade SDF, physical interaction interval and work-engaged directional
 stroke feed contact and front assignment. The existing read-only cut-event
 recorder supplies link intersections and Hermite provenance downstream.
 
+The assignment remains particle-layer based with the inherited 6-grid-cell
+side-code support band and blade-wide stroke persistence. It is **not** a
+complete per-reference-link intersection/engagement solve. A real leading-plane
+crossing is stored, then accepted while that layer remains in the physical
+bevel and the stroke has work engagement. The failed TRIM demonstrates that this
+still does not guarantee closure of all mechanical interfaces. Handle/obstacle
+and separated-particle contacts retain the baseline law; velocity projection
+replaces only the candidate blade/support paths. This is partial integration.
+
 This is a numerical cutting experiment, not a calibrated fracture model. It
 does not add stress-driven damage, remove particles, smooth meshes or promote
 the rejected v6. Physical outcomes, contact stability, quality and generalization
@@ -140,6 +149,30 @@ repeated. Midpoint-fallback provenance is explicit; no Hermite data is invented.
 No renderer change or surface promotion follows a failed primary physical TRIM.
 [Surface measurements](../evidence/wp13/surfaces_001.json).
 
+| Final state / unchanged profile | v5 mesh roughness RMS (mm) | v7 (mm) | v5/v7 normal P95 (degrees) | v5/v7 locus coverage |
+| --- | ---: | ---: | ---: | ---: |
+| CUT / particle surface | 0.1556 | 0.0123 | 26.96 / 2.32 | 0.953 / 1.000 |
+| CUT / cut-aware v1 | 0.2523 | 0.0312 | 29.65 / 5.57 | 1.000 / 1.000 |
+| Four slices / particle surface | 0.1390 | 0.0131 | 29.82 / 2.55 | 0.815 / 1.000 |
+| Four slices / cut-aware v1 | 0.3053 | 0.0333 | 38.17 / 5.58 | 1.000 / 1.000 |
+
+These mesh metrics use the existing core-region and 2 mm local-patch rules on
+the actual saved x/F/codes, not distance to an ideal flat cut. Straight CUT's
+rigid-aligned actual face-locus whole-plane P95 falls from about 1.234 mm to
+0.255 mm, RMS 0.683 to 0.125 mm. Bias is deformation relative to its own reference
+midpoints, not calibrated cut-position accuracy. A curled TRIM shaving is not
+penalized for failing a global plane fit.
+
+The partial slit retains one body. Its default-profile locus coverage falls
+from 0.537 to 0.430 despite lower local roughness; cut-aware v1 reaches 1.000.
+TRIM's v7 mesh metrics improve locally while the chip remains attached, so they
+do not pass physical correctness. Basic mesh reports include degenerates
+(e.g. two in each CUT particle surface, one in each four-slice surface), even
+where topology is watertight and non-manifold edges are zero. Self intersections
+are NOT_RUN; no claim of fully valid or universally spike-free meshes follows.
+During-state timestamps differ across arms; those frames show slit evolution,
+not matched-time quantitative A/B. No surface v2 or smoothing was introduced.
+
 ## Native integration and media
 
 Six fresh paired Native episodes completed: **6/6 TASK_SUCCESS, 6/6 HOME PASS**.
@@ -149,6 +182,14 @@ predeclared demonstration scenes, not random generalization. Legacy v1 precision
 metrics remain frozen and separate from task outcome; a successful divide task
 can still have shifted cut locations. Native F was not recorded, so Native x/F
 consistency is NOT_RUN. [Complete compact receipts](../evidence/wp13/native_001.json).
+
+Native CUT position-only midpoint geometry also improves: whole-face plane P95
+is about 1.210 mm on v5 versus 0.235 mm on v7; local locus roughness is about
+0.296 mm versus 0.037 mm. This uses translation-only midpoint reconstruction
+because Native F is absent, and is distinct from the F-aware kinematic metric.
+Four-slice legacy v1 precision remains 5.0 mm in both arms even though the
+independent task evaluator passes: open-loop placement/sliding remains visible.
+No frozen v1 threshold or result has been changed.
 
 Six initial setup attempts failed before physics due to the isolated worktree's
 missing asset-cache path. Existing assets were linked read-only; a fresh full
