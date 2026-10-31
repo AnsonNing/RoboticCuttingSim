@@ -372,3 +372,31 @@ over the 9 (0 / 9: nothing was executed, all `not_run`).
 
 CPU tests: `tests/test_wp12_generalization.py` **38 passed**. With `test_goal_step_planner_fields`, `test_repo_naming`,
 `test_generalization_round1/2` and `test_wp12_flat_board_workcell`: 139 passed.
+
+## Benchmark results (kinematic, benchmark split) — 2026-10-31
+
+Frozen `configs/wp12/benchmark_v1.json` (`722468c`) with envelope v2; tooling `177faae`; kinematic, law 8 /
+`tlmpm_v5`, 1 mm / 4 mm / 0.1 ms, both GPUs shared; 170 samples, 16.28 job-hours, 0 not_run, 0 missing records.
+Evidence: [`phase5_benchmark_kinematic_001.json`](../evidence/wp12/phase5_benchmark_kinematic_001.json).
+Run outputs: `artifacts/wp12/phase5_001/`. Wilson 95 % intervals; every declared sample counted once.
+
+| Group | Feasible | Success among feasible | 95 % CI |
+| --- | --- | --- | --- |
+| All 170 | 151/170 | 93/151 (overall 93/170) | [0.54, 0.69] |
+| ID (all) | 77/80 | 53/77 | [0.58, 0.78] |
+| **ID_validated (spec §5.7 target population)** | 61/64 | **47/61 = 0.77** | **[0.65, 0.86]** |
+| ID_unconfirmed | 16/16 | 6/16 | [0.18, 0.61] |
+| OOD | 74/90 | 40/74 | [0.43, 0.65] |
+
+Per family (ID / OOD, success among feasible): A 10/10, 9/9; B 10/10, 5/7; BF (OOD only, solid-board tilt
+0–9.9°) 2/10; C 8/9, 5/5; **D 0/10, 0/10**; E 5/8, 3/10; F 6/10, 4/7; G 4/10, 4/8; H 10/10, 8/8.
+Infeasible classes: 5 scene-infeasible, 3 IK-unreachable, 7 collision-constrained, 4 physically unsupported.
+All 58 execution failures are outcome failures (no solver, integrity, crash or plan failures).
+
+- **§5.7 kinematic target (≥ 0.9 among feasible ID): NOT MET** (point 0.77, lower bound 0.65). Not redefined.
+- **Family D (multiple sequential slices) fails every sample in ID and OOD.** Root cause not yet analysed; the
+  hypothesis to test first is the known ~1 mm bar slide per cut accumulating into the frozen cut-location
+  criterion (WP-11 SLICE-PUSH, Phase 2b Test B), which would make D an evaluation-vs-workcell mismatch rather
+  than a separation failure. Until analysed it is reported as FAIL.
+- Not yet run: held-out split, Demo 7 selection, reproducibility repeats; Native sub-sample in progress
+  (`artifacts/wp12/phase5_native_001/`).

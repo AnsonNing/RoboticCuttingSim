@@ -17,8 +17,16 @@
 - V1–V4 根因驗證（`71a0822`）：x 與 F 不一致確認為 FLIP 漂移；網格速度位置更新可大幅降低（counterfactual）；斜切 ≥10° 由 in-core wedge 維持連接；接觸力 dt 依賴無法只用 penalty compliance 解釋；薄屑是否應斷裂是材料校準問題。
 - Phase 4 決策（xhigh）：D1–D5 與 envelope v1（`1876424`）；不改 contact、斷裂列 future work；`tlmpm_v6`（網格一致位置更新）作為 opt-in 候選，不在關鍵路徑（`28c8379`，Stage 0 PASS，Stage 1 kill set 進行中）。E2（`1f9d441`）：17 CONFIRMED，平板經 planner 的界線在 2°–5° 之間；Demo 2 用開槽板 20°；Demo 6 cut→push→trim 可行。
 - **Phase 5 已凍結**（`722468c`）：envelope v2 與 `benchmark_v1`（170＋85 held-out，Native 27 集）。
-- 執行中：`tlmpm_v6` 驗收（`artifacts/wp12/gridpos_001`）；Phase 5 工具（Native 判定、hash pin、Demo 7 selector、`phase7_demos_v1.json`），之後跑 kinematic benchmark。
-- 下一步：Phase 5 kinematic → held-out → Native 子樣本 27 集；Phase 7 Native Demo 1–7（兩種 surface profile 成對）；最終 regression、rcs-review、README、合併。
+- `tlmpm_v6` 候選在 S1 被淘汰（`99ae6ae`）；Phase 4 結論：已研究並明確界定，law 8／`tlmpm_v5` 不變。
+- Phase 7 Native Demo 1–6（`77689b5`）：兩種 surface profile 12/12 成功並回 HOME；Demo 5 兩 profile 碎塊數不同（5 vs 9），未解決。
+- Phase 5 kinematic benchmark split 完成：ID_validated 成功率 47/61 = 0.77 [0.65, 0.86]，**未達** ≥0.9 目標；family D 全部失敗（待分析，假設：長條每刀滑動累積造成切位超標）。
+
+### 接續點（2026-10-31，使用者額度將到上限，收尾）
+1. Phase 5 Native 子樣本 27 集仍在背景跑（driver 在 `artifacts/wp12/phase5_native_001/`，log `artifacts/wp12/logs/phase5_native_001_driver.log`）。結束後執行 `run_wp12_phase5.py summarize --split benchmark --native-root artifacts/wp12/phase5_native_001 ...`，把結果附加到 `docs/reports/WP12_GENERALIZATION.md`，evidence 寫 `docs/evidence/wp12/phase5_native_001.json`。
+2. 分析 family D 0/20 的根因（只診斷，不改門檻）。
+3. held-out 可行性 → `run_wp12_phase5.py demo7-select`（先 commit 抽籤結果）→ held-out episodes → Native Demo 7（兩種 profile）。
+4. 完整 CPU regression＋CI；rcs-review 最終審查與 acceptance matrix（`docs/reports/WP12_FINAL_VALIDATION.md`）。
+5. README（新工作台影像、Demo 1–7、ParticleSurface vs cut-aware 對照）與 PROGRESS → 合併 main → 最後才 `touch /mnt/data/ningan/lab_records/rcs_demo_runner/DONE`。
 - 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
 
 ## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
