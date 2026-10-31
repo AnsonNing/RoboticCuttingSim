@@ -16,6 +16,7 @@ Oracle material state and privileged tool state are used for evaluation only, ne
   .venv/bin/python scripts/run_wp12_workcell_live_analysis.py --root artifacts/wp12/workcell_live_001
 """
 import argparse
+import gzip
 import importlib.util
 import json
 import math
@@ -308,24 +309,60 @@ def live_classification(run):
     run = Path(run)
     top, failure = read_json(run/'result.json'), read_json(run/'failure.json')
     episode = read_json(run/'episode_000'/'result.json')
-    rows = []
-    if (run/'episode_000'/'actions.jsonl').exists():
-        rows = [json.loads(line) for line in (run/'episode_000'/'actions.jsonl').open() if line.strip()]
+    rows, evidence_errors = [], []
+    actions = run/'episode_000'/'actions.jsonl'
+    if not actions.is_file():
+        actions = actions.with_suffix('.jsonl.gz')
+    try:
+        opener = gzip.open if actions.suffix == '.gz' else open
+        with opener(actions, 'rt') as stream:
+            rows = [json.loads(line) for line in stream if line.strip()]
+        if not all(isinstance(r, dict) for r in rows):
+            raise ValueError('action rows must be mappings')
+    except (OSError, ValueError, EOFError) as error:
+        rows = []
+        evidence_errors.append(f'actions unavailable: {type(error).__name__}')
     task_rows = [r for r in rows if not GL.is_lifecycle_home(r)]
+    if not task_rows:
+        evidence_errors.append('no recorded task-phase actions')
+    for row in task_rows:
+        grasp = row.get('grasp_status')
+        info = row.get('info') or {}
+        try:
+            complete = (isinstance(grasp, dict) and 'grasp_lost' in grasp
+                        and all(np.isfinite(float(grasp[k])) for k in
+                                ('slip_since_settling_m', 'rotation_since_settling_rad'))
+                        and 'ik_status' in info and info['ik_status'] is not None
+                        and 'workspace_clamped' in (info.get('action_report') or {}))
+        except (KeyError, TypeError, ValueError):
+            complete = False
+        if not complete:
+            evidence_errors.append('incomplete/non-finite task-phase grasp or control measurements')
+            break
     ik = {'task_steps_ik_not_ok': int(sum((r.get('info') or {}).get('ik_status') not in (None, 'ok') for r in task_rows)),
           **{f'task_steps_{k}': int(sum(bool(((r.get('info') or {}).get('action_report') or {}).get(k)) for r in task_rows))
              for k in ('workspace_clamped', 'translation_clamped', 'rotation_clamped')}}
     grasp_task = C5.grasp_audit(task_rows)
-    finite, physics = True, run/'episode_000'/'physics_state.npz'
-    if physics.exists():
+    finite, physics = None, run/'episode_000'/'physics_state.npz'
+    try:
         with np.load(physics) as data:
-            finite = bool(np.isfinite(data['positions']).all() and np.isfinite(data['velocities']).all())
+            positions, velocities = data['positions'], data['velocities']
+            if positions.ndim != 3 or positions.shape[-1] != 3 or not positions.size or velocities.shape != positions.shape:
+                raise ValueError('empty or inconsistent recorded state')
+            finite = bool(np.isfinite(positions).all() and np.isfinite(velocities).all())
+    except (OSError, ValueError, KeyError, EOFError) as error:
+        evidence_errors.append(f'physics state unavailable: {type(error).__name__}')
     live = {'outcome_classes': {'GRASP_FAILURE': {'gates': GRASP_GATES}}}
-    cls, reason = GL.classify_live(live, top, episode, rows, failure, finite, grasp_task, ik)
+    cls, reason = GL.classify_live(live, top, episode, rows, failure, finite is not False, grasp_task, ik)
+    # Preserve the frozen classifier's failure precedence and numerical gates.
+    # Missing receipts are unknown evidence, never measured zero slip or finite state.
+    if cls == 'TASK_SUCCESS' and evidence_errors:
+        cls, reason = 'CUTTING_FAILURE', 'integrity: '+ '; '.join(evidence_errors)
     evaluation = (episode or {}).get('task_outcome') or {}
     return {'class': cls, 'reason': reason, 'ik': ik, 'grasp_gates': GRASP_GATES,
             'grasp_task_phase': {k: grasp_task.get(k) for k in ('grasp_lost', 'max_slip_m', 'max_rotation_rad')},
             'finite_recorded_state': finite, 'physics_state_present': physics.exists(),
+            'recorded_evidence_errors': evidence_errors, 'actions_source': str(actions),
             'result_present': top is not None, 'refused_before_launch': bool((top or {}).get('refused_before_launch')),
             'run_status': (top or {}).get('status'), 'episode_result_present': episode is not None,
             'failure_error': ((failure or {}).get('error') or '')[:500] or None,

@@ -2,6 +2,7 @@
 finding 1) in run_wp12_phase5.native_execution. CPU only: synthetic attempt directories for every class, and the
 stored Phase 2b records workcell_live_001-007 (artifacts; the test skips that part if they are absent)."""
 import importlib.util
+import gzip
 import json
 import math
 from pathlib import Path
@@ -111,6 +112,38 @@ def test_native_classes(P5, tmp_path, case, expected):
 def test_absent_attempt_is_not_run(P5, tmp_path):
     assert P5.native_execution(tmp_path, 'missing') is None
     assert W.final_row({'sample_id': 'x', 'feasibility_class': 'valid_feasible'}, None)['class'] == 'not_run'
+
+
+@pytest.mark.parametrize('missing', ['actions', 'physics', 'empty_actions', 'empty_state', 'grasp', 'grasp_nan', 'control'])
+def test_missing_recorded_evidence_never_becomes_success(P5, tmp_path, missing):
+    sid = _attempt(tmp_path, top=TOP, episode=GOOD_EPISODE)
+    episode = tmp_path/sid/'run/episode_000'
+    if missing in ('actions', 'physics'):
+        (episode/('actions.jsonl' if missing == 'actions' else 'physics_state.npz')).unlink()
+    elif missing == 'empty_actions':
+        (episode/'actions.jsonl').write_text('')
+    elif missing == 'empty_state':
+        np.savez(episode/'physics_state.npz', positions=np.empty((0, 0, 3)), velocities=np.empty((0, 0, 3)))
+    else:
+        row = _row()
+        if missing == 'grasp':
+            row.pop('grasp_status')
+        elif missing == 'grasp_nan':
+            row['grasp_status']['slip_since_settling_m'] = float('nan')
+        else:
+            row.pop('info')
+        (episode/'actions.jsonl').write_text(json.dumps(row)+'\n')
+    assert _cls(P5, tmp_path, sid)[:2] == ('execution_failure', 'integrity')
+    assert P5.native_execution(tmp_path, sid)['live']['recorded_evidence_errors']
+
+
+def test_gzipped_native_actions_retain_measured_grasp_and_ik(P5, tmp_path):
+    sid = _attempt(tmp_path, top=TOP, episode=GOOD_EPISODE, rows=[_row(slip=.0021)])
+    actions = tmp_path/sid/'run/episode_000/actions.jsonl'
+    with gzip.open(str(actions)+'.gz', 'wb') as stream:
+        stream.write(actions.read_bytes())
+    actions.unlink()
+    assert _cls(P5, tmp_path, sid)[:2] == ('execution_failure', 'grasp')
 
 
 def test_grasp_gates_are_the_declared_warning_gates():
