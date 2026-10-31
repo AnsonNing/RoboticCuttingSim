@@ -1,0 +1,1410 @@
+{
+  "schema": "rcs_wp12_family_d_diagnostic_v1",
+  "created": "2026-10-31T14:42:32.316666+09:00",
+  "command": [
+    "scripts/diagnose_wp12_family_d.py",
+    "--out",
+    "docs/evidence/wp12/finalize_family_d_001.json"
+  ],
+  "scope": "READ_ONLY_DIAGNOSTIC; original benchmark verdicts unchanged",
+  "selection": "first ID + first OOD saved sample in declared seed order; census over all 20",
+  "census": [
+    {
+      "sample_id": "P5_D_ID_benchmark_s54000",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 3,
+        "expected_pieces": 3,
+        "cut_position_error_m": 0.003999999791383746,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54001",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.001500000312924384,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.004000000447034838,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.004000000447034838
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54002",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 4,
+        "expected_pieces": 4,
+        "cut_position_error_m": 0.004500000424683105,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54003",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.0015000003129243857,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.004000000447034843,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.004000000447034843
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54004",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 4,
+        "expected_pieces": 4,
+        "cut_position_error_m": 0.0039999994114041405,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54005",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.0015000003129243891,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.004000000447034836,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.004000000447034836
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54006",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 3,
+        "expected_pieces": 3,
+        "cut_position_error_m": 0.00399999979138374,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54007",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.0015000000372529087,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.00400000044703484,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.00400000044703484
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54008",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 4,
+        "expected_pieces": 4,
+        "cut_position_error_m": 0.0045000004246831034,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_ID_benchmark_s54009",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.001500000312924384,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.003999999791383742,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.003999999791383742
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54200",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 5,
+        "expected_pieces": 5,
+        "cut_position_error_m": 0.005000000402331357,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54201",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.001500001490116122,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.003999999411404135,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.003999999411404135
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54202",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 4,
+        "expected_pieces": 4,
+        "cut_position_error_m": 0.004499999389052392,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54203",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.0015000003129243926,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.003999999791383744,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.003999999791383744
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54204",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 3,
+        "expected_pieces": 3,
+        "cut_position_error_m": 0.004000000447034847,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54205",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.001500000312924384,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.004000000447034836,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.004000000447034836
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54206",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 4,
+        "expected_pieces": 4,
+        "cut_position_error_m": 0.004500000424683091,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54207",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.00150000083446504,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.003999999411404127,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.003999999411404127
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54208",
+      "class": "execution_failure",
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 6,
+        "expected_pieces": 6,
+        "cut_position_error_m": 0.005499999552965172,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "cut_at_declared_planes"
+        ],
+        "steps": []
+      }
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54209",
+      "class": "execution_failure",
+      "metrics": {
+        "steps": [
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.0015000000372529104,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          },
+          {
+            "cut_completion": 1.0,
+            "separation": true,
+            "mechanical_components": 2,
+            "expected_pieces": 2,
+            "cut_position_error_m": 0.004000000447034847,
+            "overcut_debris_mass_fraction": 0.0,
+            "definitions": {
+              "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+              "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+              "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+            }
+          }
+        ],
+        "cut_completion": 1.0,
+        "separation": true,
+        "cut_position_error_m": 0.004000000447034847
+      },
+      "integrity": "PASS",
+      "outcome": {
+        "failed_checks": [
+          "step_1_cut1"
+        ],
+        "steps": [
+          {
+            "failed_checks": [],
+            "steps": []
+          },
+          {
+            "failed_checks": [
+              "cut_at_declared_planes"
+            ],
+            "steps": []
+          }
+        ]
+      }
+    }
+  ],
+  "representatives": [
+    {
+      "sample_id": "P5_D_ID_benchmark_s54000",
+      "seed": 54000,
+      "variant": "multi_plane_sever",
+      "source_dir": "artifacts/wp12/phase5_001/kinematic_benchmark/P5_D_ID_benchmark_s54000",
+      "sources_sha256": {
+        "result.json": "0a47ceef7aae57206c0369347bf8e1af286f6b9f1714cf45a3e7800fa48d6302",
+        "manifest.json": "0015f1d73effea44daf120b2fdb49471300832e7a30d54207531f70344d9e569",
+        "actions.jsonl": "8141ba01e26f9d27c66a93751ff7a9775f2ebaa427896f7c4952366f894888fc",
+        "physics_state.npz": "dff8cedbc77361afcf1c1950d5ad70b29dde588bd35f55937722596f6bf138f9"
+      },
+      "runtime_source": "kinematic_ideal_tracking",
+      "material_seed": 42,
+      "original_class": "execution_failure",
+      "original_evaluation": {
+        "schema": "rcs_goal_evaluation_v1",
+        "goal_id": "P5_D_ID_benchmark_s54000_sever2",
+        "goal_type": "sever",
+        "task_id": "CFG-P5_D_ID_benchmark_s54000-P5_D_ID_benchmark_s54000_sever2-4ebee415",
+        "scene_id": "P5_D_ID_benchmark_s54000",
+        "policy_observation": false,
+        "full_simulation_acceptance": false,
+        "scope": "Read-only goal evaluation of recorded oracle material state; separate from the frozen v1 oracle",
+        "verdict": "FAIL",
+        "success": false,
+        "integrity": {
+          "status": "PASS",
+          "checks": {
+            "initial_codes_zero": true,
+            "initial_continuous_graph": true,
+            "persistent_history_no_digit_rewrites": true,
+            "valid_digit_values": true,
+            "reference_matches_scene_sampler": true,
+            "reference_mass_budget": true,
+            "complete_episode": true
+          },
+          "metrics": {
+            "initial_components": 1,
+            "nonzero_digit_rewrites": 0,
+            "code_encoding": "packed2",
+            "cuts": 2,
+            "frames": 41,
+            "particles": 95312,
+            "recorded_mass_kg": 0.14296799999999996,
+            "reference_mass_absolute_error_kg": 0.0
+          },
+          "scope": "Recording and persistent-history validity only; not the goal outcome"
+        },
+        "outcome": {
+          "status": "FAIL",
+          "checks": {
+            "expected_substantial_pieces": true,
+            "main_pieces_retain_mass": true,
+            "every_plane_has_an_interface": true,
+            "cut_at_declared_planes": false
+          },
+          "metrics": {
+            "mechanical_components": 3,
+            "piece_mass_fractions": [
+              0.34459459459481884,
+              0.3378378378380553,
+              0.3175675675677648
+            ],
+            "substantial_pieces": 3,
+            "main_pieces_mass_fraction": 1.0000000000006388,
+            "minor_pieces_mass_fraction": 0.0
+          },
+          "missing_evidence": []
+        },
+        "quality": {
+          "status": "REPORTED_NOT_SCORED",
+          "plane_location": [
+            {
+              "plane": 0,
+              "origin_local_m": [
+                0.024,
+                0.0,
+                0.0
+              ],
+              "normal_local": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "grid_aligned": true,
+              "actual": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2112000,
+                "maximum_reference_midpoint_plane_distance_m": 0.0015000000372529052
+              },
+              "ideal_geometric_label": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2112000,
+                "maximum_reference_midpoint_plane_distance_m": 0.0015000000372529052
+              },
+              "frozen_2mm_statistic_m": 0.0015000000372529052,
+              "frozen_bound_m": 0.002,
+              "rule": "frozen midpoint statistic <= plane_error_bound_m",
+              "pass": true
+            },
+            {
+              "plane": 1,
+              "origin_local_m": [
+                -0.028,
+                0.0,
+                0.0
+              ],
+              "normal_local": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "grid_aligned": true,
+              "actual": {
+                "cross_component_reference_node_count": 126,
+                "severed_particle_pair_node_incidences": 2904000,
+                "maximum_reference_midpoint_plane_distance_m": 0.003999999791383746
+              },
+              "ideal_geometric_label": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2112000,
+                "maximum_reference_midpoint_plane_distance_m": 0.0015000003129243891
+              },
+              "frozen_2mm_statistic_m": 0.003999999791383746,
+              "frozen_bound_m": 0.002,
+              "rule": "frozen midpoint statistic <= plane_error_bound_m",
+              "pass": false
+            }
+          ]
+        },
+        "code_encoding": "packed2",
+        "cuts": 2,
+        "provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+        "evaluator_version": "goal_eval_v2a",
+        "surface_extraction": "MEASURED",
+        "runtime_source": "kinematic_ideal_tracking",
+        "episode_complete": true
+      },
+      "physical_quality": {
+        "substrate_retention": null,
+        "material_loss": 0.0,
+        "contact_stability": {
+          "finite": true,
+          "min_det_F_sampled": 0.948968668300634,
+          "max_speed_m_s_sampled": 0.041611555963754654,
+          "sampling": "every 10 control steps"
+        },
+        "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+        "physical_cutting_validity": {
+          "integrity": "PASS",
+          "failed_integrity_checks": []
+        },
+        "penetration": {
+          "min_particle_z_local_m": 0.0003770744369830936,
+          "particles_below_board_top": 0,
+          "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+          "particle_spacing_m": 0.001
+        },
+        "remaining_unwanted_bridges": null,
+        "mechanical_components": 3,
+        "workspace_clamped_steps": 0
+      },
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 3,
+        "expected_pieces": 3,
+        "cut_position_error_m": 0.003999999791383746,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "policy_done": true,
+      "original_episode_wall_s": 605.0638403460034,
+      "diagnostic_per_cut": [
+        {
+          "digit": 0,
+          "declared_x_local_m": 0.024,
+          "armed_time_s": [
+            2.32,
+            5.64
+          ],
+          "max_commanded_plane_error_m": 1.3877787807814457e-17,
+          "near_plane_reference_region_m": [
+            0.014,
+            0.034
+          ],
+          "before_armed_sample_time_s": 2.2,
+          "before_armed_displacement_x_p05_p50_p95_m": [
+            1.476204884094496e-05,
+            2.3331659913744876e-05,
+            3.207962998027497e-05
+          ],
+          "after_armed_sample_time_s": 5.72,
+          "after_armed_displacement_x_p05_p50_p95_m": [
+            -0.0013975083471038747,
+            2.293007739806452e-05,
+            0.001440448532795162
+          ],
+          "final_opposing_digit_x_neighbour_links": 644,
+          "interface_reference_midpoint_x_range_m": [
+            0.023999999277293682,
+            0.023999999277293686
+          ],
+          "interface_reference_midpoint_offset_median_m": -7.227063184012117e-10
+        },
+        {
+          "digit": 1,
+          "declared_x_local_m": -0.028,
+          "armed_time_s": [
+            9.32,
+            12.64
+          ],
+          "max_commanded_plane_error_m": 1.3877787807814457e-17,
+          "near_plane_reference_region_m": [
+            -0.038,
+            -0.018000000000000002
+          ],
+          "before_armed_sample_time_s": 9.24,
+          "before_armed_displacement_x_p05_p50_p95_m": [
+            -0.0011995097644991917,
+            -0.0011914422573130693,
+            -0.001181771331353025
+          ],
+          "after_armed_sample_time_s": 12.76,
+          "after_armed_displacement_x_p05_p50_p95_m": [
+            -0.002275907976843207,
+            -0.0020334457680170823,
+            0.00028408786598230586
+          ],
+          "final_opposing_digit_x_neighbour_links": 644,
+          "interface_reference_midpoint_x_range_m": [
+            -0.026999999769032005,
+            -0.026999999769032
+          ],
+          "interface_reference_midpoint_offset_median_m": 0.001000000230967999
+        }
+      ]
+    },
+    {
+      "sample_id": "P5_D_OOD_benchmark_s54200",
+      "seed": 54200,
+      "variant": "multi_plane_sever",
+      "source_dir": "artifacts/wp12/phase5_001/kinematic_benchmark/P5_D_OOD_benchmark_s54200",
+      "sources_sha256": {
+        "result.json": "9bfa9c4405893f8f83d8b61f678a94ccca3616d8d86751a137b3a193b9142eeb",
+        "manifest.json": "674094a8b95d66de5b5602d13e98791b49deb3e60da5501600f9634a1cae2394",
+        "actions.jsonl": "2995f0c521b840b42b4af4947a99a1ea81a26ae80542523e6e092f56c003fbe3",
+        "physics_state.npz": "b3d7fdec340e000fa02c75b2b43a516e82a4b9734e3f434196a77658a753c535"
+      },
+      "runtime_source": "kinematic_ideal_tracking",
+      "material_seed": 42,
+      "original_class": "execution_failure",
+      "original_evaluation": {
+        "schema": "rcs_goal_evaluation_v1",
+        "goal_id": "P5_D_OOD_benchmark_s54200_sever4",
+        "goal_type": "sever",
+        "task_id": "CFG-P5_D_OOD_benchmark_s54200-P5_D_OOD_benchmark_s54200_sever4-70af5ce2",
+        "scene_id": "P5_D_OOD_benchmark_s54200",
+        "policy_observation": false,
+        "full_simulation_acceptance": false,
+        "scope": "Read-only goal evaluation of recorded oracle material state; separate from the frozen v1 oracle",
+        "verdict": "FAIL",
+        "success": false,
+        "integrity": {
+          "status": "PASS",
+          "checks": {
+            "initial_codes_zero": true,
+            "initial_continuous_graph": true,
+            "persistent_history_no_digit_rewrites": true,
+            "valid_digit_values": true,
+            "reference_matches_scene_sampler": true,
+            "reference_mass_budget": true,
+            "complete_episode": true
+          },
+          "metrics": {
+            "initial_components": 1,
+            "nonzero_digit_rewrites": 0,
+            "code_encoding": "packed2",
+            "cuts": 4,
+            "frames": 41,
+            "particles": 107640,
+            "recorded_mass_kg": 0.16146,
+            "reference_mass_absolute_error_kg": 0.0
+          },
+          "scope": "Recording and persistent-history validity only; not the goal outcome"
+        },
+        "outcome": {
+          "status": "FAIL",
+          "checks": {
+            "expected_substantial_pieces": true,
+            "main_pieces_retain_mass": true,
+            "every_plane_has_an_interface": true,
+            "cut_at_declared_planes": false
+          },
+          "metrics": {
+            "mechanical_components": 5,
+            "piece_mass_fractions": [
+              0.21794871794882925,
+              0.21153846153856645,
+              0.1987179487180408,
+              0.1987179487180408,
+              0.17307692307698952
+            ],
+            "substantial_pieces": 5,
+            "main_pieces_mass_fraction": 1.0000000000004667,
+            "minor_pieces_mass_fraction": 0.0
+          },
+          "missing_evidence": []
+        },
+        "quality": {
+          "status": "REPORTED_NOT_SCORED",
+          "plane_location": [
+            {
+              "plane": 0,
+              "origin_local_m": [
+                -0.044,
+                0.0,
+                0.0
+              ],
+              "normal_local": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "grid_aligned": true,
+              "actual": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2302080,
+                "maximum_reference_midpoint_plane_distance_m": 0.0014999995529651616
+              },
+              "ideal_geometric_label": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2302080,
+                "maximum_reference_midpoint_plane_distance_m": 0.0014999995529651616
+              },
+              "frozen_2mm_statistic_m": 0.0014999995529651616,
+              "frozen_bound_m": 0.002,
+              "rule": "frozen midpoint statistic <= plane_error_bound_m",
+              "pass": true
+            },
+            {
+              "plane": 1,
+              "origin_local_m": [
+                -0.016,
+                0.0,
+                0.0
+              ],
+              "normal_local": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "grid_aligned": true,
+              "actual": {
+                "cross_component_reference_node_count": 126,
+                "severed_particle_pair_node_incidences": 3165360,
+                "maximum_reference_midpoint_plane_distance_m": 0.003999999552965171
+              },
+              "ideal_geometric_label": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2302080,
+                "maximum_reference_midpoint_plane_distance_m": 0.0015000000745058126
+              },
+              "frozen_2mm_statistic_m": 0.003999999552965171,
+              "frozen_bound_m": 0.002,
+              "rule": "frozen midpoint statistic <= plane_error_bound_m",
+              "pass": false
+            },
+            {
+              "plane": 2,
+              "origin_local_m": [
+                0.016,
+                0.0,
+                0.0
+              ],
+              "normal_local": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "grid_aligned": true,
+              "actual": {
+                "cross_component_reference_node_count": 126,
+                "severed_particle_pair_node_incidences": 3453120,
+                "maximum_reference_midpoint_plane_distance_m": 0.004499999977648264
+              },
+              "ideal_geometric_label": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2302080,
+                "maximum_reference_midpoint_plane_distance_m": 0.0015000000745058126
+              },
+              "frozen_2mm_statistic_m": 0.004499999977648264,
+              "frozen_bound_m": 0.002,
+              "rule": "frozen midpoint statistic <= plane_error_bound_m",
+              "pass": false
+            },
+            {
+              "plane": 3,
+              "origin_local_m": [
+                0.048,
+                0.0,
+                0.0
+              ],
+              "normal_local": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "grid_aligned": true,
+              "actual": {
+                "cross_component_reference_node_count": 126,
+                "severed_particle_pair_node_incidences": 3165360,
+                "maximum_reference_midpoint_plane_distance_m": 0.005000000402331357
+              },
+              "ideal_geometric_label": {
+                "cross_component_reference_node_count": 63,
+                "severed_particle_pair_node_incidences": 2302080,
+                "maximum_reference_midpoint_plane_distance_m": 0.0014999997317791114
+              },
+              "frozen_2mm_statistic_m": 0.005000000402331357,
+              "frozen_bound_m": 0.002,
+              "rule": "frozen midpoint statistic <= plane_error_bound_m",
+              "pass": false
+            }
+          ]
+        },
+        "code_encoding": "packed2",
+        "cuts": 4,
+        "provenance": "Recomputed actual eight-node compatibility graph including positive weights, stress gradients and code-zero bridges",
+        "evaluator_version": "goal_eval_v2a",
+        "surface_extraction": "MEASURED",
+        "runtime_source": "kinematic_ideal_tracking",
+        "episode_complete": true
+      },
+      "physical_quality": {
+        "substrate_retention": null,
+        "material_loss": 0.0,
+        "contact_stability": {
+          "finite": true,
+          "min_det_F_sampled": 0.9381191602531471,
+          "max_speed_m_s_sampled": 0.06110329553484917,
+          "sampling": "every 10 control steps"
+        },
+        "knife_grasp_stability": "NOT_APPLICABLE (kinematic ideal tracking: no grasp)",
+        "physical_cutting_validity": {
+          "integrity": "PASS",
+          "failed_integrity_checks": []
+        },
+        "penetration": {
+          "min_particle_z_local_m": 0.00032020729850046337,
+          "particles_below_board_top": 0,
+          "rule": "workpiece-local z < 0 is below the rigid board top (TLMPM fixture contact)",
+          "particle_spacing_m": 0.001
+        },
+        "remaining_unwanted_bridges": null,
+        "mechanical_components": 5,
+        "workspace_clamped_steps": 0
+      },
+      "metrics": {
+        "cut_completion": 1.0,
+        "separation": true,
+        "mechanical_components": 5,
+        "expected_pieces": 5,
+        "cut_position_error_m": 0.005000000402331357,
+        "overcut_debris_mass_fraction": 0.0,
+        "definitions": {
+          "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+          "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+          "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+        }
+      },
+      "policy_done": true,
+      "original_episode_wall_s": 1157.746646101994,
+      "diagnostic_per_cut": [
+        {
+          "digit": 0,
+          "declared_x_local_m": -0.044,
+          "armed_time_s": [
+            2.32,
+            5.68
+          ],
+          "max_commanded_plane_error_m": 0.0,
+          "near_plane_reference_region_m": [
+            -0.054,
+            -0.033999999999999996
+          ],
+          "before_armed_sample_time_s": 1.56,
+          "before_armed_displacement_x_p05_p50_p95_m": [
+            -5.162186086702068e-05,
+            -4.2654034900498766e-05,
+            -3.403788283257408e-05
+          ],
+          "after_armed_sample_time_s": 6.24,
+          "after_armed_displacement_x_p05_p50_p95_m": [
+            -0.0015493986301124193,
+            -5.619569501707361e-05,
+            0.0014842156699620085
+          ],
+          "final_opposing_digit_x_neighbour_links": 690,
+          "interface_reference_midpoint_x_range_m": [
+            -0.043999999761581435,
+            -0.04399999976158142
+          ],
+          "interface_reference_midpoint_offset_median_m": 2.3841856960915564e-10
+        },
+        {
+          "digit": 1,
+          "declared_x_local_m": -0.016,
+          "armed_time_s": [
+            9.12,
+            12.48
+          ],
+          "max_commanded_plane_error_m": 3.469446951953614e-18,
+          "near_plane_reference_region_m": [
+            -0.026000000000000002,
+            -0.006
+          ],
+          "before_armed_sample_time_s": 8.58,
+          "before_armed_displacement_x_p05_p50_p95_m": [
+            0.0011583657182728403,
+            0.00119462238633153,
+            0.0012091539519880892
+          ],
+          "after_armed_sample_time_s": 12.48,
+          "after_armed_displacement_x_p05_p50_p95_m": [
+            -0.0013747913842677888,
+            0.0018899435139303278,
+            0.002158802573157117
+          ],
+          "final_opposing_digit_x_neighbour_links": 690,
+          "interface_reference_midpoint_x_range_m": [
+            -0.016999999992549423,
+            -0.01699999999254942
+          ],
+          "interface_reference_midpoint_offset_median_m": -0.0009999999925494225
+        },
+        {
+          "digit": 2,
+          "declared_x_local_m": 0.016,
+          "armed_time_s": [
+            15.96,
+            19.32
+          ],
+          "max_commanded_plane_error_m": 3.469446951953614e-18,
+          "near_plane_reference_region_m": [
+            0.006,
+            0.026000000000000002
+          ],
+          "before_armed_sample_time_s": 15.6,
+          "before_armed_displacement_x_p05_p50_p95_m": [
+            0.002157148131558742,
+            0.0021885537925534077,
+            0.002202641415074229
+          ],
+          "after_armed_sample_time_s": 19.5,
+          "after_armed_displacement_x_p05_p50_p95_m": [
+            0.0005325649571970588,
+            0.00317966525770798,
+            0.0034604440901992947
+          ],
+          "final_opposing_digit_x_neighbour_links": 690,
+          "interface_reference_midpoint_x_range_m": [
+            0.013999999966472387,
+            0.013999999966472394
+          ],
+          "interface_reference_midpoint_offset_median_m": -0.0020000000335276095
+        },
+        {
+          "digit": 3,
+          "declared_x_local_m": 0.048,
+          "armed_time_s": [
+            22.8,
+            26.16
+          ],
+          "max_commanded_plane_error_m": 1.3877787807814457e-17,
+          "near_plane_reference_region_m": [
+            0.038,
+            0.058
+          ],
+          "before_armed_sample_time_s": 22.62,
+          "before_armed_displacement_x_p05_p50_p95_m": [
+            0.0033178695844617583,
+            0.003343633822721022,
+            0.0033591286022263875
+          ],
+          "after_armed_sample_time_s": 26.52,
+          "after_armed_displacement_x_p05_p50_p95_m": [
+            0.0015629291309742395,
+            0.004243910954201874,
+            0.004574683885410896
+          ],
+          "final_opposing_digit_x_neighbour_links": 690,
+          "interface_reference_midpoint_x_range_m": [
+            0.044999999925494194,
+            0.04499999992549421
+          ],
+          "interface_reference_midpoint_offset_median_m": -0.003000000074505793
+        }
+      ]
+    }
+  ],
+  "diagnostic_wall_s": 0.5130400109919719
+}

@@ -114,7 +114,8 @@ def test_absent_attempt_is_not_run(P5, tmp_path):
     assert W.final_row({'sample_id': 'x', 'feasibility_class': 'valid_feasible'}, None)['class'] == 'not_run'
 
 
-@pytest.mark.parametrize('missing', ['actions', 'physics', 'empty_actions', 'empty_state', 'grasp', 'grasp_nan', 'control'])
+@pytest.mark.parametrize('missing', ['actions', 'physics', 'empty_actions', 'empty_state', 'grasp', 'grasp_nan', 'grasp_null',
+                                    'grasp_lost_null', 'clamp_null', 'control'])
 def test_missing_recorded_evidence_never_becomes_success(P5, tmp_path, missing):
     sid = _attempt(tmp_path, top=TOP, episode=GOOD_EPISODE)
     episode = tmp_path/sid/'run/episode_000'
@@ -130,6 +131,12 @@ def test_missing_recorded_evidence_never_becomes_success(P5, tmp_path, missing):
             row.pop('grasp_status')
         elif missing == 'grasp_nan':
             row['grasp_status']['slip_since_settling_m'] = float('nan')
+        elif missing == 'grasp_null':
+            row['grasp_status']['slip_since_settling_m'] = None
+        elif missing == 'grasp_lost_null':
+            row['grasp_status']['grasp_lost'] = None
+        elif missing == 'clamp_null':
+            row['info']['action_report']['workspace_clamped'] = None
         else:
             row.pop('info')
         (episode/'actions.jsonl').write_text(json.dumps(row)+'\n')

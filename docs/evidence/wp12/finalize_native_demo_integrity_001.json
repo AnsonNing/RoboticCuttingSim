@@ -1,0 +1,488 @@
+{
+  "scope": "Read-only complete-receipt audit of existing 12 Native demos, no simulation or rescore",
+  "tool_sha256": "9115564b6b3dab847fde56c3c36c8be659ed910f0582f3dee4b07f8ca8c42ed2",
+  "verdict": "PASS",
+  "wall_s": 17.816872211988084,
+  "samples": [
+    {
+      "demo": 1,
+      "profile": "A",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 31,
+          "task_steps_rotation_clamped": 238
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 2.9429135268069255e-06,
+          "max_rotation_rad": 0.00029164792605150585
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO1_A/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 740
+      }
+    },
+    {
+      "demo": 1,
+      "profile": "B",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 38,
+          "task_steps_rotation_clamped": 238
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 3.430076573423644e-06,
+          "max_rotation_rad": 0.0002941466362024488
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO1_B/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 740
+      }
+    },
+    {
+      "demo": 2,
+      "profile": "A",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 31,
+          "task_steps_rotation_clamped": 262
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 1.2971452572145865e-06,
+          "max_rotation_rad": 0.0001433323418109464
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO2_A/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-E2_SLOT_p20-E2_SLOT_p20_sever_tilt_slotted-3adcacbb",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 794
+      }
+    },
+    {
+      "demo": 2,
+      "profile": "B",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 48,
+          "task_steps_rotation_clamped": 262
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 1.3362153466969006e-06,
+          "max_rotation_rad": 0.0001433323418109464
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO2_B/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-E2_SLOT_p20-E2_SLOT_p20_sever_tilt_slotted-3adcacbb",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 794
+      }
+    },
+    {
+      "demo": 3,
+      "profile": "A",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 27,
+          "task_steps_rotation_clamped": 179
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 6.885274226189528e-07,
+          "max_rotation_rad": 8.671212798717295e-05
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO3_A/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-trim01_flat_board-trim_bump_rho10-13827418",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 637
+      }
+    },
+    {
+      "demo": 3,
+      "profile": "B",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 22,
+          "task_steps_rotation_clamped": 179
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 7.123036225493333e-07,
+          "max_rotation_rad": 8.676883156661612e-05
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO3_B/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-trim01_flat_board-trim_bump_rho10-13827418",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 637
+      }
+    },
+    {
+      "demo": 4,
+      "profile": "A",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 43,
+          "task_steps_rotation_clamped": 238
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 1.1236929937559609e-05,
+          "max_rotation_rad": 0.0008238734515493844
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO4_A/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-bar_flat_board-divide_5_slices-c19e742e",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 1897
+      }
+    },
+    {
+      "demo": 4,
+      "profile": "B",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 60,
+          "task_steps_rotation_clamped": 238
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 9.477764545732936e-06,
+          "max_rotation_rad": 0.0008002588760037901
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO4_B/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-bar_flat_board-divide_5_slices-c19e742e",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 1897
+      }
+    },
+    {
+      "demo": 5,
+      "profile": "A",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 46,
+          "task_steps_rotation_clamped": 180
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 8.151981103222637e-07,
+          "max_rotation_rad": 8.58777327796099e-05
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO5_A/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-bar_three_bumps_flat_board-remove_all_protrusions_rho10-e0441d65",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 1115
+      }
+    },
+    {
+      "demo": 5,
+      "profile": "B",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 46,
+          "task_steps_rotation_clamped": 180
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 8.151981103222637e-07,
+          "max_rotation_rad": 8.54135080286816e-05
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO5_B/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-bar_three_bumps_flat_board-remove_all_protrusions_rho10-e0441d65",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 1115
+      }
+    },
+    {
+      "demo": 6,
+      "profile": "A",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 74,
+          "task_steps_rotation_clamped": 288
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 2.0774604358482744e-06,
+          "max_rotation_rad": 0.0002718686619546109
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO6_A/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-E2_CUT_PUSH_TRIM-E2_CUT_PUSH_TRIM_cut_push_trim-e795ea65",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 1496
+      }
+    },
+    {
+      "demo": 6,
+      "profile": "B",
+      "classification": {
+        "class": "TASK_SUCCESS",
+        "reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+        "ik": {
+          "task_steps_ik_not_ok": 0,
+          "task_steps_workspace_clamped": 0,
+          "task_steps_translation_clamped": 85,
+          "task_steps_rotation_clamped": 288
+        },
+        "grasp_gates": {
+          "max_slip_m": 0.002,
+          "max_rotation_rad": 0.05235987755982988,
+          "source": "configs/wp11/generalization_round1_live.json outcome_classes.GRASP_FAILURE.gates"
+        },
+        "grasp_task_phase": {
+          "grasp_lost": false,
+          "max_slip_m": 5.133210341062485e-06,
+          "max_rotation_rad": 0.00017823661594478735
+        },
+        "finite_recorded_state": true,
+        "physics_state_present": true,
+        "recorded_evidence_errors": [],
+        "actions_source": "/home/ningan/RoboticCuttingSim-wp12-finalize/artifacts/wp12/demos_001/DEMO6_B/run/episode_000/actions.jsonl.gz",
+        "result_present": true,
+        "refused_before_launch": false,
+        "run_status": "PASS_EXECUTION",
+        "episode_result_present": true,
+        "failure_error": null,
+        "task_end_reason": "CONTROLLER_DONE",
+        "policy_final_phase": "done",
+        "verdict": "PASS",
+        "task_id": "CFG-E2_CUT_PUSH_TRIM-E2_CUT_PUSH_TRIM_cut_push_trim-e795ea65",
+        "runtime_source": "live_isaac_sim",
+        "home_outcome": "PASS",
+        "control_rows": 1496
+      }
+    }
+  ]
+}

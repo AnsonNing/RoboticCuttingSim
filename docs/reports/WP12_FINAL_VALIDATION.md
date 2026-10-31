@@ -1,7 +1,86 @@
-# WP-12 final validation (DRAFT)
+# WP-12 final validation — engineering delivery and scientific limits
 
-Branch `claude/wp12-physical-cut-surfaces`. Material parameters are provisional and uncalibrated. Further sections
-(regression, acceptance matrix, Demo 7) are added by other steps; this draft holds only the Native demonstrations.
+Date: 2026-10-31 (KST). Finalization branch `codex/wp12-finalize`, inherited WP-12 baseline `1344688`.
+This release delivers the current flat-board workcell, supported Native demonstrations, API, evidence and documentation.
+It does **not** turn the original scientific failures into passes. Material parameters remain provisional and uncalibrated.
+The authorized finish plan reduces additional experiments; the frozen physics, protocols, thresholds and verdicts stay intact.
+
+## Acceptance matrix (spec §7.4)
+
+| Area | Verdict | Evidence and limit |
+| --- | --- | --- |
+| Workcell | **PASS (scoped)** | One board directly on the table, no risers/hidden supports; Native Demos 1–6; [workcell report](WP12_WORKCELL.md) |
+| Board physics | **PARTIAL** | Actual tool/board contact, edge stops at the board; transient material-centre penetrations in Demo 5 remain disclosed below |
+| Grasp | **PASS (scoped)** | 12 existing Native demo episodes with physical friction grasp, 0 task-phase IK failures/workspace clamps, return HOME PASS |
+| Straight cut | **PASS (scoped)** | Demo 1 A/B: two equal mechanical components, 600/600 conflicting links, no direct bridges; surface fidelity assessed separately |
+| Oblique cut | **PARTIAL** | Demo 2 +20° only on the explicit 8 mm slotted board; arbitrary solid-board oblique cutting unsupported |
+| TRIM | **PASS (scoped)** | Demo 3 A/B removes 0.979/0.977 of the dome; geometric precision/spikes are separate limitations |
+| Multi-cut | **PARTIAL** | Demo 4 has five pieces with persistent history; randomized Family D is 0/20 due to later cut locations |
+| Surface | **PARTIAL** | Cut-aware v1 is opt-in, event-consistent but folds/spans tears at inconsistent solver states; comparison gates **FAIL** under both frozen protocols |
+| Deformation | **PASS (scoped)** | No target-plane flattening/smoothing in cut-aware v1; pressed zones and curved cuts retained in S1–S8 + four Native episodes; not a certificate of near-face physical fidelity |
+| Negative controls | **PARTIAL** | Frozen law-8 controls retained; controls after prior real cuts not exhaustively rerun; no new controls invented for finalization |
+| Generalization | **FAIL / original target NOT MET** | Reused 170 kinematic runs; ID_validated feasible 47/61 = 0.77 [0.65, 0.86], original ≥0.90 target retained; Native sample reported separately |
+| Evaluation | **PASS (scoped)** | Independent integrity/outcome/quality, frozen v1 unaffected; missing Native receipts now prevent a success certificate |
+| API | **PASS (scoped)** | Phase 6 reset/step/evaluate/task-switch and observation isolation evidence reused, focused local regression below |
+| Recording | **PASS (scoped)** | Saved Native camera/oracle separation and manifests; 12/12 existing demos pass the new [complete-receipt audit](../evidence/wp12/finalize_native_demo_integrity_001.json); held-out inputs committed before outcomes |
+| Reliability | **PARTIAL** | State-isolation checks and Native CUT→TRIM→CUT pass; kinematic host-RSS gate **FAIL** retained, GPU debris repeatability OPEN |
+| Performance | **PARTIAL** | [Measured breakdown](WP12_PERFORMANCE.md), shared-GPU limits and lost per-step profiler stages disclosed; no fresh quiet-GPU study |
+| Regression | **NOT_RUN (final CI pending)** | Targeted local checks pass; GitHub full CPU regression is the release gate, no duplicate local full suite |
+| Reproducibility | **PARTIAL** | Frozen commands/hashes/seeds and tracked media, genuine artifact checks skip explicitly when absent; no independent-host WP-12 Native rerun |
+
+Completion criterion 4 (no major physics/surface contradiction) remains **OPEN**: near-face particle positions and
+F disagree, and thin chips can tear without cut codes. Contact force is **NOT CONVERGED** with timestep/resolution.
+Law 8 / `tlmpm_v5` stays unchanged; the rejected `tlmpm_v6` candidate is not promoted.
+[Surface decision](WP12_PHASE3_XHIGH_DECISION.md) · [physics](WP12_CUTTING_PHYSICS.md) ·
+[resolution](WP12_RESOLUTION_STUDY.md).
+
+## Finalization validation and provenance
+
+Existing evidence reused without reruns: 170 kinematic benchmark episodes (16.28 job-hours), Native Demo 1–6
+A/B pairs (12/12 task success), Phase 0–4 studies, Phase 6 API/reset/recording studies. These are distinct from
+new finalization work. [Generalization, Native coverage and Family D cause](WP12_GENERALIZATION.md).
+
+New checks use `.venv/bin/python`, Python 3.12.12, worktree `src` first in `PYTHONPATH`,
+`TMPDIR=/mnt/data/ningan/tmp`; exact commands/timing/logs are retained under
+`/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/commands.jsonl`.
+
+| New execution | Verdict | Timing / scope |
+| --- | --- | --- |
+| Debug-viewer, gridpos metadata/genuine receipts, naming tests | **PASS** | 18 passed, 1.10 s pytest; actual matplotlib installed through locked test extra |
+| Core API/scene/goal/step fields/generalization/flat-board/cut events/topology/naming | **PASS** | 166 passed, 18 `cpu_sim` deselected, 37.60 s; deselected simulations **NOT_RUN** |
+| Native receipt-completeness and gzip tests | **PASS** | 37 passed, 8.75 s pytest; includes genuine historical Phase 2b comparison |
+| README prepare + API compile | **PASS** | CPU-only exact CUT inputs compiled; launch CLI help verified; no cosmetic Native rerun |
+| Family D read-only diagnosis | **PASS (diagnostic execution)** | 0.73 s process; first ID+OOD saved histories, census of all 20; benchmark remains 0/20 FAIL |
+| Held-out ID feasibility and outcome-blind selection | **PASS (classification/selection)** | 40 configurations, 268.50 s; 38 feasible, 2 collision-constrained; 45 OOD feasibility rows **NOT_RUN** |
+| Selected Demo 7 kinematic seed 54501, material seed 42 | **FAIL (outcome)** | 150.66 s process, 142.88 s episode, cuda:1; second cut 4.0 mm > frozen 2.0 mm; preserved without redraw |
+| Selected Demo 7 Native default profile | **NOT_RUN (scheduled)** | Waits for original Native driver; same selected sample, no concurrent Native process |
+| Extra Demo 7 Native surface profile / full 85 held-out episodes / reproducibility repeats | **NOT_RUN (scope reduced)** | Authorized lightweight finalization; no claim of held-out success/generalization |
+| README/docs/media links and protected identity | **PASS (initial check)** | 179 local links; renderable PNG/MP4; 92/92 protected Git blobs unchanged; final check follows final report update |
+| Full CPU regression | **NOT_RUN (final CI pending)** | Runs on GitHub Actions; no repeated one-hour local full suite |
+
+One initial smoke invocation referenced nonexistent `tests/test_cut_events_v1.py` and collected no tests (exit 4).
+It was corrected to `tests/test_cut_events.py`; the failed command/log is preserved. No test result was fabricated.
+The original failed CI run [41146127558](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41146127558)
+had 3 failures (2 matplotlib dependency errors, 1 local artifact assumption); both causes are fixed.
+
+The independent xhigh review found a missing-evidence false-success path in the Native adapter.
+The release guard requires recorded actions (plain/gzip), nonempty finite positions/velocities and task-phase
+grasp/control measurements before certifying success. Missing evidence gives an integrity failure; frozen numerical
+classification gates/failure precedence and historical results remain unchanged. Synthetic negative tests and genuine
+Phase 2b receipts validate the guard. No controller, simulation physics, evaluator or threshold changed.
+
+## Open items and research backlog
+
+- Surface comparison gates FAIL; first-layer position/F inconsistency, crack-front folds and thin-chip tears remain.
+- Force/timestep/grid non-convergence and provisional uncalibrated material prevent real-material fidelity claims.
+- Solid-board oblique capability is limited; the successful 20° Native example requires its explicit slot.
+- Family D open-loop sliding breaks later cut locations; future work can evaluate wrist-depth relocation/replanning.
+- Demo 5 debris mismatch (5 vs 9 components) remains **OPEN**; neither GPU nondeterminism nor a profile effect is isolated.
+- Kinematic host-memory gate FAIL; short Native mixed-task sequences do not establish a memory bound.
+- Demo 6 push reaches about 15 mm of 20 mm commanded; passes its 10 mm goal minimum, cause not isolated.
+- Larger held-out coverage, independent-host Native reproduction and post-cut negative controls remain future research.
+
+No new law, solver replacement, surface v3, training, threshold adjustment or large rerun is part of this release.
 
 ## Native demonstrations
 
@@ -218,8 +297,10 @@ Per demo directory (`demo1_clean_cut`, `demo2_oblique_slot_p20`, `demo3_trim_rho
 - **Per profile** (`particle_surface_v1/`, `cut_aware_surface_v1/`):
   - start / progress / final presentation close-ups and overviews;
   - start/final global D455 and both wrist D405 RGB + depth;
-  - `demo.mp4`, 0.98–2.55 MB, rendered by `scripts/render_packed_episode.py` from the recorded frames, with a
-    particle debug panel coloured by mechanical component.
+  - Local `demo.mp4` recordings rendered by `scripts/render_packed_episode.py` from the recorded frames, with a
+    particle debug panel coloured by mechanical component. Finalization publishes the existing default-profile
+    clips for Demos 1, 3 and 4 (0.98–2.55 MB each); the other local MP4s are not Git-tracked.
+    [Published video hashes/provenance](../evidence/wp12/finalize_media_publication_001.json).
 - **A | B, same view and frame:** `ab_start_closeup.png`, `ab_progress_closeup.png`, `ab_final_closeup.png`,
   `ab_final_overview.png`.
 - **`ab_cutface_closeup.png`:** an offline close-up of the final staged mesh around cut 0, A | B. Only one piece is
@@ -242,7 +323,7 @@ The presentation close-up and overview cameras are never observations.
 
 ### Open items
 
-- **Demo 7:** NOT_RUN (Phase 5 held-out selection first).
+- **Demo 7:** the frozen selection is committed; kinematic outcome FAIL retained, Native scheduled; see finalization above.
 - **Demo 5 A vs B piece-count mismatch** (above): cause not isolated. A same-input repeat (A and B) would separate GPU
   nondeterminism from a profile effect. It needs a declared rerun.
 - **Optional Demo 2 still** of the E2 `SOLID_p05` KNOWN FAILURE: not produced.

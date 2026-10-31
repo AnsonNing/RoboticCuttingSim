@@ -304,7 +304,8 @@ def live_classification(run):
     """Phase 2b class (``GL.classify_live`` with ``GRASP_GATES`` and the task-phase IK / workspace-clamp counts) of one
     ``scripts/run_wp10_live.py`` output directory, computed exactly as ``main`` does but without compiling the task
     (the class needs no task geometry). Read-only. Used by ``run_wp12_phase5.native_execution`` (the declared Phase 5
-    Native success definition); ``tests/test_wp12_phase5_native_success.py`` checks it reproduces the stored
+    Native success definition), with a receipt-completeness guard before success; the numerical gates are unchanged.
+    ``tests/test_wp12_phase5_native_success.py`` checks it reproduces the stored
     ``analysis.json`` class of every Phase 2b record ``workcell_live_001-007``."""
     run = Path(run)
     top, failure = read_json(run/'result.json'), read_json(run/'failure.json')
@@ -329,11 +330,11 @@ def live_classification(run):
         grasp = row.get('grasp_status')
         info = row.get('info') or {}
         try:
-            complete = (isinstance(grasp, dict) and 'grasp_lost' in grasp
-                        and all(np.isfinite(float(grasp[k])) for k in
+            complete = (isinstance(grasp, dict) and isinstance(grasp.get('grasp_lost'), bool)
+                        and all(not isinstance(grasp[k], bool) and np.isfinite(float(grasp[k])) and float(grasp[k]) >= 0 for k in
                                 ('slip_since_settling_m', 'rotation_since_settling_rad'))
                         and 'ik_status' in info and info['ik_status'] is not None
-                        and 'workspace_clamped' in (info.get('action_report') or {}))
+                        and isinstance((info.get('action_report') or {}).get('workspace_clamped'), bool))
         except (KeyError, TypeError, ValueError):
             complete = False
         if not complete:
@@ -342,7 +343,11 @@ def live_classification(run):
     ik = {'task_steps_ik_not_ok': int(sum((r.get('info') or {}).get('ik_status') not in (None, 'ok') for r in task_rows)),
           **{f'task_steps_{k}': int(sum(bool(((r.get('info') or {}).get('action_report') or {}).get(k)) for r in task_rows))
              for k in ('workspace_clamped', 'translation_clamped', 'rotation_clamped')}}
-    grasp_task = C5.grasp_audit(task_rows)
+    try:
+        grasp_task = C5.grasp_audit(task_rows)
+    except (TypeError, ValueError):
+        grasp_task = {'grasp_lost': False, 'max_slip_m': None, 'max_rotation_rad': None}
+        evidence_errors.append('unreadable task-phase grasp measurements')
     finite, physics = None, run/'episode_000'/'physics_state.npz'
     try:
         with np.load(physics) as data:
@@ -415,8 +420,13 @@ def main(argv=None):
     top, failure = read_json(run/'result.json'), read_json(run/'failure.json')
     episode = read_json(run/'episode_000'/'result.json')
     rows = []
-    if (run/'episode_000'/'actions.jsonl').exists():
-        rows = [json.loads(line) for line in (run/'episode_000'/'actions.jsonl').open() if line.strip()]
+    actions = run/'episode_000'/'actions.jsonl'
+    if not actions.is_file():
+        actions = actions.with_suffix('.jsonl.gz')
+    if actions.is_file():
+        opener = gzip.open if actions.suffix == '.gz' else open
+        with opener(actions, 'rt') as stream:
+            rows = [json.loads(line) for line in stream if line.strip()]
     task = compile_task(str(inputs/'scene.json'), str(inputs/'goal.json'),
                         planner_options=prep['planner_overrides'], seed=42)
     geometry = task.workcell_geometry()
@@ -431,14 +441,15 @@ def main(argv=None):
     if physics.exists():
         d = load_physics(physics, task)
         finite = bool(np.isfinite(d['positions']).all() and np.isfinite(d['velocities']).all())
-    live = {'outcome_classes': {'GRASP_FAILURE': {'gates': GRASP_GATES}}}
-    cls, reason = GL.classify_live(live, top, episode, rows, failure, finite, grasp_task, ik)
+    validation = live_classification(run)
+    cls, reason = validation['class'], validation['reason']
     evaluation = (episode or {}).get('task_outcome') or {}
     analysis = {'root': str(root.relative_to(ROOT)), 'run': str(run), 'episode': prep['episode'], 'class': cls, 'class_reason': reason,
                 'runtime_source': (episode or {}).get('runtime_source'), 'attempt': attempt,
                 'task_id_recorded': (episode or {}).get('task_id'), 'task_id_recompiled_cpu': task.task_id,
                 'task_id_match': (episode or {}).get('task_id') == task.task_id,
                 'board_top_world_z_m': board_top, 'workcell_geometry_present': geometry is not None}
+    analysis['recorded_evidence_errors'] = validation['recorded_evidence_errors']
     analysis['task_outcome'] = {'verdict': evaluation.get('verdict'),
                                 'evaluator_version': evaluation.get('evaluator_version', 'goal_eval_v1 (non-sequence goal: same evaluator as goal_eval_v2a)'),
                                 'integrity_checks': (evaluation.get('integrity') or {}).get('checks'),
@@ -450,7 +461,7 @@ def main(argv=None):
         analysis['metrics'] = GL.G.episode_metrics(json.loads((inputs/'goal.json').read_text()), evaluation) if evaluation else None
     except Exception as error:  # report-only
         analysis['metrics'] = {'error': repr(error)}
-    finished = (episode or {}).get('task_end_reason') == 'CONTROLLER_DONE'
+    finished = (episode or {}).get('task_end_reason') == 'CONTROLLER_DONE' and not validation['recorded_evidence_errors']
     if prep['episode'] == 'PARTIAL' and d is not None and evaluation:
         analysis['partial_cut'] = partial_rule(evaluation, d, task, finished,
                                                not cls.startswith('GRASP'), not cls.startswith('IK'))

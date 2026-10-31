@@ -6,13 +6,22 @@ The authorized finish plan narrows delivery to evidence, CI, documentation and r
 All reasoning/review uses xhigh. The original worktree and frozen physics/configuration/evidence remain unchanged.
 
 - Existing Native driver PID 917765 continues independently: `artifacts/wp12/phase5_native_001/`, log
-  `artifacts/wp12/logs/phase5_native_001_driver.log` (12/27 complete at takeover; episode 13 running).
-- Reuse all 170 benchmark runs and 12 Native Demo 1–6 runs. ID feasible 47/61 = 0.77 [0.65, 0.86]; target ≥0.9 NOT MET.
-- Running only held-out ID feasibility needed by the frozen outcome-blind Demo 7 draw:
-  `artifacts/wp12/finalize_001/feasibility_held_out`; selection/config must be committed before a held-out outcome.
-- Confirmed prior CI failures (run 41146127558): 2 missing-matplotlib errors and 1 ignored-artifact assumption.
-  Minimal repair in progress; full CPU regression runs on GitHub, with targeted local checks.
-- Next: read-only Family D diagnosis; freeze Demo 7; WP-12 README/media/index; Native summary; final review/main/CI.
+  `artifacts/wp12/logs/phase5_native_001_driver.log`; no batch restart or job interruption.
+- Reused all 170 benchmark runs: ID_validated 47/61 = 0.77 [0.65, 0.86], original ≥0.9 NOT MET.
+  Family D 0/20 diagnosed from saved evidence: open-loop planes miss sliding material; no rerun/rescore.
+- Existing Native Demo 1–6 pairs remain 12/12 TASK_SUCCESS; read-only complete-receipt audit PASS 12/12.
+- Held-out ID-only feasibility 38/40 feasible (268.50 s); frozen outcome-blind pool 30.
+  Selected Family D seed 54501, scene/goal committed at `ab1ec8f` before outcomes.
+  One kinematic episode FAIL (150.66 s; second cut location 4.0 mm > 2.0 mm); preserved, no redraw.
+- Durable waiter PID 970042 schedules exactly one default-profile Native Demo 7 after the original driver finishes.
+  Outputs: `artifacts/wp12/finalize_001/native_held_out/P5_D_ID_held_out_s54501`.
+  Extra profile/full held-out matrix/repeats NOT_RUN (authorized scope reduction).
+- CI dependency/artifact fixes plus reviewed Native receipt-completeness guard: targeted checks PASS
+  (18 CI cases, 37 Native evidence cases, 166 core smokes; 18 expensive CPU simulations deselected/NOT_RUN).
+- README now uses WP-12 flat-board Native frames, six demos and honest A/B comparison. Three existing MP4s copied
+  unchanged for publication. Link/media/protected check PASS (92/92 protected blobs); final recheck pending.
+- [Acceptance matrix and limits](reports/WP12_FINAL_VALIDATION.md), [generalization](reports/WP12_GENERALIZATION.md).
+- Next: finish Native summary/Demo 7; verify GitHub full CPU CI; independent xhigh final review; main merge/push/media.
 - Runtime receipts/status: `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`.
   No DONE marker is written until remote main, media and final CI are verified.
 

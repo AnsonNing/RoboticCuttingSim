@@ -17,6 +17,15 @@ and opt-in. Material parameters remain provisional and uncalibrated.
 **Naming:** the repository does not name the user's separate project
 (`tests/test_repo_naming.py`); future users are called agentic control.
 
+## Finalization addendum — 2026-10-31
+
+The user's authorized finish plan supersedes historical runner effort/branch/full-rerun requirements:
+all current work and reviews use **xhigh**, in `codex/wp12-finalize`, with reviewed merge/push to main.
+Reuse the 170 benchmark runs and 12 Native Demo 1–6 records; run only selected Demo 7 and focused local checks,
+with GitHub full CPU CI as regression. Scientific gates stay unchanged, including Surface PARTIAL / gate FAIL,
+Generalization ≥0.90 NOT MET, force NOT CONVERGED, uncalibrated material and memory failure.
+[Final acceptance matrix](reports/WP12_FINAL_VALIDATION.md) · [current progress](PROGRESS.md).
+
 ## Guiding rules (from the specification's Engineering Principles)
 
 1. Physics first. A visible cut face may exist only where the solver has
@@ -84,12 +93,12 @@ and opt-in. Material parameters remain provisional and uncalibrated.
 | --- | --- | --- |
 | 0 | done: acronym removal + guard (`ce547f9`), plan (`1c91605`), technology review (`3f13379`), baseline audit: 8/8 scenes reproduce frozen verdicts, CPU 1196 passed (`2df1e13`) | [audit](reports/WP12_BASELINE_AUDIT.md), [review](reports/WP12_SURFACE_TECH_REVIEW.md) |
 | 1 | done (`b31553d`): attribution, G1–G8, debug viewer; surface protocol v1 frozen | [diagnosis](reports/WP12_SURFACE_DIAGNOSIS.md) |
-| 2 | 2a done (`ec3e8a7`): profile, single-source geometry, through-cut study (A+B), Native settle and knife-on-board; 2b in progress: live Native cutting acceptance on the board, old-vs-new comparison | [workcell report](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md) |
+| 2 | 2a done (`ec3e8a7`): profile, single-source geometry, through-cut study (A+B), Native settle and knife-on-board; 2b done (`2f299cc`): live Native cutting acceptance and old-vs-new comparison; open-loop bar sliding remains PARTIAL | [workcell report](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md) |
 | 3 | CLOSED by xhigh decision (`a94bd9f`): recorder (`403870f`), v1 core (`89b289d`), live/Native integration (`9fde661`); comparison gate FAIL under frozen protocol v1 (`bdc5da0`) and v2 (`dc210ff`), both kept; `cut_aware_surface_v1` ships opt-in, `particle_surface_v1` stays default, v2 experimental; near-face x/F mismatch and chip tearing without codes handed to Phase 4 | [reconstruction](reports/WP12_SURFACE_RECONSTRUCTION.md), [live](reports/WP12_SURFACE_LIVE.md), [decision](reports/WP12_PHASE3_XHIGH_DECISION.md) |
 | 4 | DONE (studied and bounded): 4a root causes (`b012902`); proposed law 9 REJECTED (`81a9626`); E1 (`15e5ec1`); resolution study (`77fd033`, erratum `1876424`); 4c geometry/material (`05b31c5`); methods review (`5ccfa96`); V1–V4 (`71a0822`); D1–D5 + envelope v1 (`1876424`); E2 + envelope v2 (`1f9d441`, `722468c`); tlmpm_v6 candidate REJECTED at S1 (`99ae6ae`); law 8 / tlmpm_v5 unchanged | [physics](reports/WP12_CUTTING_PHYSICS.md), [resolution](reports/WP12_RESOLUTION_STUDY.md), [decision](reports/WP12_PHASE4_XHIGH_DECISION.md), [prototypes](reports/WP12_PHASE4_PROTOTYPE_DECISION.md) |
-| 5 | FROZEN (`722468c`), tooling (`177faae`); kinematic benchmark running; Native sub-sample next | [generalization](reports/WP12_GENERALIZATION.md), [freeze](reports/WP12_PHASE5_FREEZE_DECISION.md) |
-| 6 | DONE (`73c6e43`): §6.7 checklist PASS; kinematic memory check FAIL kept | [readiness](reports/WP12_AGENTIC_READINESS.md), [performance](reports/WP12_PERFORMANCE.md) |
-| 7 | Native Demos 1–6 running (configs/wp12/phase7_demos_v1.json); Demo 7 after the held-out selection | |
+| 5 | FROZEN (`722468c`); 170 kinematic runs complete, ID_validated 47/61 = 0.77 [0.65, 0.86], target NOT MET; Family D diagnosed; Native sub-sample completing; minimal Demo 7 selected before outcomes | [generalization](reports/WP12_GENERALIZATION.md), [freeze](reports/WP12_PHASE5_FREEZE_DECISION.md) |
+| 6 | IMPLEMENTED (`73c6e43`): §6.7 has 7 PASS / 1 PARTIAL; kinematic host-memory gate FAIL and profiling limits kept | [readiness](reports/WP12_AGENTIC_READINESS.md), [performance](reports/WP12_PERFORMANCE.md) |
+| 7 | Native Demos 1–6 complete, 12/12 task success; Demo 5 A/B debris mismatch OPEN. Demo 7 seed 54501 drawn/committed at `ab1ec8f`, kinematic FAIL retained; final CI/review/main publication in progress | |
 
 **Phase 0 gate decision (2026-10-31).** Architecture: Approach B on the 1 mm particle
 lattice (review §6), links cut iff endpoint codes conflict, Hermite data from
