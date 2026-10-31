@@ -1,0 +1,45 @@
+{
+ "root": "artifacts/wp12/demos_001/DEMO4_B",
+ "frames": {
+  "start": {
+   "index": 0,
+   "time_s": 0.0
+  },
+  "progress": {
+   "index": 34,
+   "time_s": 6.8
+  },
+  "final": {
+   "index": 190,
+   "time_s": 37.94
+  }
+ },
+ "written": {
+  "start_closeup_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_closeup.png",
+  "start_overview_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_overview.png",
+  "progress_closeup_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/progress_closeup.png",
+  "progress_overview_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/progress_overview.png",
+  "final_closeup_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_closeup.png",
+  "final_overview_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_overview.png",
+  "start_global_d455_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_global_d455_rgb.png",
+  "start_global_d455_depth": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_global_d455_depth.png",
+  "start_wrist_d405_0_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_wrist_d405_0_rgb.png",
+  "start_wrist_d405_0_depth": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_wrist_d405_0_depth.png",
+  "start_wrist_d405_1_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_wrist_d405_1_rgb.png",
+  "start_wrist_d405_1_depth": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/start_wrist_d405_1_depth.png",
+  "final_global_d455_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_global_d455_rgb.png",
+  "final_global_d455_depth": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_global_d455_depth.png",
+  "final_wrist_d405_0_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_wrist_d405_0_rgb.png",
+  "final_wrist_d405_0_depth": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_wrist_d405_0_depth.png",
+  "final_wrist_d405_1_rgb": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_wrist_d405_1_rgb.png",
+  "final_wrist_d405_1_depth": "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1/final_wrist_d405_1_depth.png"
+ },
+ "command": [
+  "scripts/export_wp12_workcell_media.py",
+  "--root",
+  "artifacts/wp12/demos_001/DEMO4_B",
+  "--media",
+  "docs/media/wp12/demos/demo4_four_slices/cut_aware_surface_v1"
+ ],
+ "scope": "Recorded live Native frames (presentation close-up/overview are presentation-only, never observations)"
+}

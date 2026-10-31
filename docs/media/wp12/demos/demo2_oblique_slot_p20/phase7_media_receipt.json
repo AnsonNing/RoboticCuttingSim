@@ -1,0 +1,151 @@
+{
+ "demo": "DEMO2",
+ "root": "artifacts/wp12/demos_001",
+ "command": [
+  "scripts/report_wp12_phase7_demos.py",
+  "media",
+  "--root",
+  "artifacts/wp12/demos_001",
+  "--demo",
+  "DEMO2",
+  "--media",
+  "docs/media/wp12/demos/demo2_oblique_slot_p20"
+ ],
+ "created": "2026-10-31T08:59:10.651745+09:00",
+ "scope": "Recorded live Native frames and the final staged mesh/particle state; presentation only. The presentation close-up and overview cameras are never observations.",
+ "runs": {
+  "A": {
+   "run": "artifacts/wp12/demos_001/DEMO2_A",
+   "mp4": {
+    "path": "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/demo.mp4",
+    "bytes": 1256653,
+    "source": "artifacts/wp12/demos_001/DEMO2_A/render_001/demo.mp4"
+   },
+   "status": "EXPORTED"
+  },
+  "B": {
+   "run": "artifacts/wp12/demos_001/DEMO2_B",
+   "mp4": {
+    "path": "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/demo.mp4",
+    "bytes": 1252780,
+    "source": "artifacts/wp12/demos_001/DEMO2_B/render_001/demo.mp4"
+   },
+   "status": "EXPORTED"
+  }
+ },
+ "ab": {
+  "start_closeup": "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_start_closeup.png",
+  "progress_closeup": "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_progress_closeup.png",
+  "final_closeup": "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_final_closeup.png",
+  "final_overview": "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_final_overview.png"
+ },
+ "cutface_closeup": {
+  "path": "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_cutface_closeup.png",
+  "info": {
+   "A": {
+    "centre_world_m": [
+     0.001109486707719043,
+     4.958419594913721e-06,
+     0.019896926116198303
+    ],
+    "normal_reference": [
+     0.9381705867262163,
+     0.0,
+     -0.3461732950442406
+    ],
+    "triangles_shown": 25392,
+    "view_direction": [
+     0.9561771628960095,
+     0.2910563461666512,
+     0.0318030896652601
+    ]
+   },
+   "B": {
+    "centre_world_m": [
+     0.001109486707719043,
+     4.958419594913721e-06,
+     0.019896926116198303
+    ],
+    "normal_reference": [
+     0.9381705867262163,
+     0.0,
+     -0.3461732950442406
+    ],
+    "triangles_shown": 6054,
+    "view_direction": [
+     0.9561771628960095,
+     0.2910563461666512,
+     0.0318030896652601
+    ]
+   }
+  }
+ },
+ "reconstruction_vs_particles": {
+  "path": "docs/media/wp12/demos/demo2_oblique_slot_p20/reconstruction_vs_particles.png",
+  "info": {
+   "A": {
+    "y0_m": 0.0005,
+    "particles_in_slab": 3200,
+    "mesh_section_segments": 1672,
+    "components": 2,
+    "final_frame_time_s": 15.88
+   },
+   "B": {
+    "y0_m": 0.0005,
+    "particles_in_slab": 3200,
+    "mesh_section_segments": 828,
+    "components": 2,
+    "final_frame_time_s": 15.88
+   }
+  }
+ },
+ "files": {
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_cutface_closeup.png": 317901,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_final_closeup.png": 229917,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_final_overview.png": 105812,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_progress_closeup.png": 239909,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/ab_start_closeup.png": 224828,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/demo.mp4": 1252780,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_closeup.png": 112743,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_global_d455_depth.png": 8071,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_global_d455_rgb.png": 26372,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_overview.png": 52046,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_wrist_d405_0_depth.png": 2038,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_wrist_d405_0_rgb.png": 16477,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/final_wrist_d405_1_rgb.png": 14650,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/media_receipt.json": 2730,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/progress_closeup.png": 119181,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/progress_overview.png": 67218,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_closeup.png": 110125,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_global_d455_depth.png": 8054,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_global_d455_rgb.png": 26231,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_overview.png": 51423,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_wrist_d405_0_depth.png": 2014,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_wrist_d405_0_rgb.png": 16498,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/cut_aware_surface_v1/start_wrist_d405_1_rgb.png": 14520,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/demo.mp4": 1256653,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_closeup.png": 112642,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_global_d455_depth.png": 8060,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_global_d455_rgb.png": 26657,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_overview.png": 52524,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_wrist_d405_0_depth.png": 2045,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_wrist_d405_0_rgb.png": 16740,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_wrist_d405_1_rgb.png": 14783,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/media_receipt.json": 2711,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/progress_closeup.png": 119668,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/progress_overview.png": 66560,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_closeup.png": 111091,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_global_d455_depth.png": 8054,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_global_d455_rgb.png": 26172,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_overview.png": 51527,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_wrist_d405_0_depth.png": 2017,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_wrist_d405_0_rgb.png": 16463,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/start_wrist_d405_1_rgb.png": 14505,
+  "docs/media/wp12/demos/demo2_oblique_slot_p20/reconstruction_vs_particles.png": 304659
+ },
+ "total_bytes": 5244409
+}
