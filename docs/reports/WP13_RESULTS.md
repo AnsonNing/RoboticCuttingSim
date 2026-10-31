@@ -81,7 +81,9 @@ the fixture sum can stagnate at 1 N·s while tiny increments continue. Those new
 cumulative partitions in the early CUT/PARTIAL records are **INVALID** and are
 not used as force evidence. Existing per-control reaction/work/penetration
 records are separate and remain available. Later diagnostics sum in float64;
-this changes no physical state or reaction. The initial incorrect diagnostic
+CPU physical state and reactions remain bitwise identical in the focused check.
+No physical update formula changes; GPU bitwise identity is not claimed.
+The initial incorrect diagnostic
 cast edit failed CPU compilation and was preserved, then corrected before the
 next candidate episode. No physical parameter or cutting criterion was tuned.
 
@@ -95,6 +97,12 @@ has already been exercised; no further solver tuning follows this failure.
 The candidate stays explicitly experimental and the production default remains
 v5. The remaining predeclared matrix and Native episodes characterize its limits
 and support the authorized rejection-publication path.
+
+**Native is separate:** fresh Native v7 T00 TRIM passes its task evaluator and
+returns HOME, with actual `tlmpm_v7` selection verified in its material receipt.
+This does not erase the failed ideal-tracking episode. The real measured tool
+path, coupling and GPU nondeterminism differ; their causal contributions have
+not been isolated. Both outcomes and denominators remain in the report.
 
 Read-only final-stencil diagnosis finds **216 direct code-0 bridges** on v7
 TRIM versus zero on v5. Although 1,044 particles have the positive-side digit,

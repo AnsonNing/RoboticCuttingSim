@@ -67,7 +67,8 @@ def main():
             rec = encode_frames(files, a.stage/name, title)
             captures[name] = {**rec, 'source_episode': str(episode), 'runtime_source': result['runtime_source'],
                 'task_id': result['task_id'], 'task_status': result['task_status'], 'seed': 42,
-                'solver': solver, 'surface_profile': 'particle_surface_v1', 'source_result_sha256': G.sha(episode/'result.json')}
+                'solver': solver, 'surface_profile': 'particle_surface_v1', 'source_result_sha256': G.sha(episode/'result.json'),
+                'mp4_sha256': G.sha(a.stage/name)}
             close = sorted(obs.glob('closeup_rgb_*.npz'))
             close_name = f'{short}_{label}_closeup.mp4'
             rec_close = encode_frames(close, a.stage/close_name, title, view='closeup_rgb')
@@ -99,7 +100,7 @@ def main():
         0., duration, 480, 3., sources[('v5', 'multicut')][2])
     add('cut_v5_v7_preview.gif', ab_name, ab_name, 'C00_cut', 3., 7., 960, 1.,
         {'left': left[2], 'right': right[2], 'matched_capture_times': True,
-         'candidate_status': 'REJECTED_FOR_PROMOTION: primary TRIM fails; localized CUT improvement only'})
+         'candidate_status': 'REJECTED_FOR_PROMOTION: primary kinematic TRIM fails; Native outcomes reported separately'})
     # Publish only full clips and previews, not redundant temporary close-up clips.
     a.publish.mkdir(parents=True, exist_ok=False)
     keep = [*captures, ab_name, *[Path(row['gif']).name for row in media]]

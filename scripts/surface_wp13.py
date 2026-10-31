@@ -10,12 +10,51 @@ import numpy as np
 from run_wp13 import G, ROOT, build
 
 
+def physical_faces(X, x, F, codes, lattice, labels, goal_type, cuts, spacing):
+    """Rigid alignment is analysis only; no position or surface is modified."""
+    from robotic_cutting_sim import surface_metrics_v1 as S
+    locus = S.material_locus(X, lattice, x, codes, F=F, encoding='packed2', cuts=cuts, spacing=spacing)
+    rows = []
+    for cut in np.unique(locus['cut']):
+        for side in (0, 1):
+            own = locus['cut'] == cut
+            for label in np.unique(labels[locus['pairs'][own, side]]):
+                selected = own & (labels[locus['pairs'][:, side]] == label)
+                q = locus['side_points'][selected, side]
+                if len(q) < 4:
+                    continue
+                body = labels == label
+                A, B = X[body].mean(0), x[body].mean(0)
+                u, _, vt = np.linalg.svd((X[body]-A).T@(x[body]-B))
+                d = np.eye(3); d[-1, -1] = np.linalg.det(vt.T@u.T)
+                rotation = vt.T@d@u.T
+                aligned = (q-B)@rotation+A
+                _, _, axes = np.linalg.svd(aligned-aligned.mean(0), full_matrices=False)
+                residual = (aligned-aligned.mean(0))@axes[-1]
+                bias = np.einsum('ij,ij->i', aligned-locus['P'][selected], locus['N'][selected])
+                row = {'cut': int(cut), 'side': side+1, 'component': int(label), 'samples': len(q),
+                       'rigid_aligned_deformation_bias_along_reference_normal_m': float(bias.mean()),
+                       'local_patch_roughness': S.patch_roughness(q, .002)}
+                if goal_type in ('sever', 'divide'):
+                    row['whole_face_plane_residual_m'] = {
+                        'p50': float(np.percentile(abs(residual), 50)), 'p95': float(np.percentile(abs(residual), 95)),
+                        'rms': float(np.sqrt(np.mean(residual**2)))}
+                else:
+                    row['whole_face_plane_residual_m'] = {'status': 'NOT_APPLICABLE',
+                        'reason': 'curled shaving/trim geometry; local patch roughness reported without a global plane penalty'}
+                rows.append(row)
+    return {'rows': rows, 'locus_source': locus['source'],
+            'scope': 'Actual conflicting-link side locus, rigid-aligned per mechanical component. '
+                     'Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy.'}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--run', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--state', default='final_state.npz')
     p.add_argument('--device', default='cuda:0')
+    p.add_argument('--physical-only', action='store_true', help='new physical face statistics without repeating surface extraction')
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=False)
     summary = json.loads((a.run/'summary.json').read_text())
@@ -39,6 +78,11 @@ def main():
     partition = CurrentMechanicalPartition(bed.nodes.numpy(), bed.weights.numpy(), bed.gradients.numpy(),
                                           task.max_cuts, encoding='packed2')
     count, labels, _ = partition.partition(codes)
+    physical = physical_faces(X, x, F, codes, lattice, labels, task.goal['type'], task.max_cuts, s)
+    if a.physical_only:
+        G.write_new(a.out/'summary.json', {'physics_run': str(a.run), 'state': a.state,
+            'state_sha256': G.sha(state_path), 'physical_faces': physical})
+        return
     profiles = {
         'particle_surface_v1': CuttingSurface(partition, s, s/2, a.device, profile='current_volume_v1',
                                  unmeshable='skip_presentation_v1', substrate_anchors=substrate_anchor_mask(X)),
@@ -64,7 +108,7 @@ def main():
         G.write_new(a.out/f'{name}.json', row)
     G.write_new(a.out/'summary.json', {'physics_run': str(a.run), 'state': a.state,
         'state_sha256': G.sha(state_path), 'case': summary['case'], 'solver': summary['solver'],
-        'mechanical_components': count, 'profiles': rows,
+        'mechanical_components': count, 'physical_faces': physical, 'profiles': rows,
         'scope': 'Unchanged one-way v1 profiles on saved x/F/codes. No physics updates, renderer optimization, '
                  'plane flattening, distance-based tearing or invented Hermite record.'})
 

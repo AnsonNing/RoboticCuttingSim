@@ -1,0 +1,37 @@
+{
+  "full_cpu": {
+    "command": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-rsx",
+      "--junitxml=artifacts/wp13/cpu_full_001.xml"
+    ],
+    "sha": "c82b07cb141dd8747db3d942f768f31340f54dc6",
+    "returncode": 0,
+    "wall_s": 1914.3112633089768,
+    "python": "3.12.12",
+    "CUDA_VISIBLE_DEVICES": "",
+    "passed": 1647,
+    "skipped_not_run": 12,
+    "expected_failures": 5,
+    "scope": "Full suite collection began before later focused changes. Workspace evolved during execution; not an exact-final-head claim. Exact remote publication CI is mandatory."
+  },
+  "later_focused": {
+    "command": ".venv/bin/python -m pytest -q tests/test_tlmpm_v7.py tests/test_wp13_media_checker.py tests/test_live_env.py tests/test_wrist_camera_clearance.py tests/test_wrist_camera_audit.py tests/test_research_observation.py tests/test_repo_naming.py -rsx --junitxml=artifacts/wp13/final_focused_cpu_001.xml",
+    "passed": 50,
+    "expected_failures": 1,
+    "wall_s": 26.08,
+    "log": "artifacts/wp13/final_focused_cpu_001.log",
+    "expected_failure": "2 mm small-block full-cut precondition remains connected; not a recontact pass."
+  },
+  "candidate_source_sha256": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+  "gpu_recontact": "docs/evidence/wp13/recontact_s1_v7_001.json",
+  "protected_baseline": {
+    "sha": "11895016b34ed821be2bdecbc5351667fb62d47d",
+    "checked": 178,
+    "changed": 0,
+    "scope": "Frozen solver files, goals/planner, prior configs/reports/evidence and camera configs."
+  }
+}

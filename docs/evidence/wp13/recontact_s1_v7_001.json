@@ -1,0 +1,99 @@
+{
+  "solver_version": 7,
+  "spacing_m": 0.001,
+  "device": "cuda:0",
+  "components": 2,
+  "cross_component_min_particle_distance_m": 0.0006885248918184517,
+  "checks": {
+    "separated_first": true,
+    "disarmed_labels_unchanged": true,
+    "disarmed_bonds_unchanged": true,
+    "push_contact_measured": true,
+    "faces_recontacted": true,
+    "finite_Hermite_events": true,
+    "no_sign_inconsistent_events": true
+  },
+  "status": "PASS",
+  "forces": [
+    {
+      "mean_N": [
+        -1.4429046757413744e-07,
+        7.995705431085298e-08,
+        0.032289884984493256
+      ],
+      "peak_abs_N": [
+        0.0001188210808322765,
+        4.7071742301341146e-05,
+        0.0744767114520073
+      ]
+    },
+    {
+      "mean_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "peak_abs_N": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "mean_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "peak_abs_N": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "mean_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "peak_abs_N": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "mean_N": [
+        0.00400620698928833,
+        -1.4650782986791455e-06,
+        6.851452781120315e-05
+      ],
+      "peak_abs_N": [
+        0.013468612916767597,
+        2.3166483515524305e-05,
+        0.0034406387712806463
+      ]
+    }
+  ],
+  "labels_after_phase": [
+    3456,
+    3456,
+    3456,
+    3456,
+    3456
+  ],
+  "events": 144,
+  "scope": "Kinematic control only, not Native or calibrated material. Failure of the first cut blocks a non-welding claim; topology alone is not evidence of actual face contact.",
+  "command": [
+    "scripts/wp13_recontact_probe.py",
+    "--out",
+    "artifacts/wp13/recontact_s1_v7_001",
+    "--spacing",
+    ".001",
+    "--solver",
+    "7",
+    "--device",
+    "cuda:0"
+  ]
+}

@@ -1,3 +1,26 @@
+# Progress — 2026-11-01 Asia/Seoul
+
+## WP-13 — rejection publication in progress
+
+- Worktree `/home/ningan/RoboticCuttingSim-wp13`, branch `codex/wp13-integrated-cutting`, baseline `11895016`.
+- Opt-in v7 couples MUSL position/F updates, velocity-level contact and finite relative-sweep history.
+  Production v5 / Law 8, camera rig v5, goals and frozen historical records remain unchanged.
+- First candidate CUT failed; its one focused alternative passes the standard CUT. Formal matched CUT
+  improves near-plane x/F P95 6.06x and locus patch roughness 85.96%, scoped to that configuration.
+- Promotion **REJECTED**: primary TRIM stays one component with 216 direct code-0 bridges and zero
+  detached above-plane mass, where v5 separates. A shorter/firmer held-out cut also fails on v7.
+  No more physical tuning. The frozen 32 kinematic and six Native episodes continue for honest denominators.
+- Six Native launch attempts stopped before physics due to the worktree asset path; failures retained.
+  Existing assets linked read-only. Fresh full Native preflight passes; real C00 v5/v7 both task-success/HOME PASS.
+- Full collected CPU suite: 1647 passed, 12 skipped/NOT_RUN, 5 xfailed in 1912 s. Later focused changes and
+  exact-final-commit CI remain separate checks. One 2 mm small-block recontact precondition fails;
+  a 1 mm GPU recontact control passes with actual face contact, persistent codes and 144 valid Hermite events.
+- Cumulative float32 contact diagnostics from early runs are invalid; later float64 sums are explicit.
+  Zero-atomic and diagnostic-precision fixes preserve physical state/reactions bitwise on focused CPU controls.
+- [Single results report](reports/WP13_RESULTS.md), [phase checklist](WP13_PLAN.md),
+  [precommitted cohort](../configs/wp13/focused_v1.json). Native animated gallery, reviewed PR merge,
+  exact remote main CI/media and DONE-last verification are pending.
+
 # Progress — 2026-10-31 Asia/Seoul
 
 ## WP-12 finalization — delivery and retained limits
