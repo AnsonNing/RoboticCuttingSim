@@ -1,0 +1,193 @@
+{
+  "schema": "rcs_wp12_finalize_cpu_blas_diagnosis_v1",
+  "scope": "Test portability only; production compiler/planner/physics and frozen fixture unchanged",
+  "failed_ci": {
+    "scope": "ACTUAL_COMPLETED_GITHUB_CPU_CI",
+    "id": 41174474111,
+    "head_sha": "0a5a8fd20cc0fbcd215a01d837d78e5a2227c8eb",
+    "head_branch": "codex/wp12-finalize",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174474111",
+    "created_at": "2026-10-31T05:55:14Z",
+    "updated_at": "2026-10-31T07:17:37Z",
+    "jobs": [
+      {
+        "id": 124459056272,
+        "name": "cpu",
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-10-31T05:55:17Z",
+            "completed_at": "2026-10-31T05:55:18Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-10-31T05:55:18Z",
+            "completed_at": "2026-10-31T05:55:26Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-10-31T05:55:26Z",
+            "completed_at": "2026-10-31T05:55:31Z"
+          },
+          {
+            "name": "Run python -m pip install -c requirements.lock -e '.[policy,test]'",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-10-31T05:55:31Z",
+            "completed_at": "2026-10-31T05:55:57Z"
+          },
+          {
+            "name": "Record environment",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-10-31T05:55:57Z",
+            "completed_at": "2026-10-31T05:55:58Z"
+          },
+          {
+            "name": "Run python -m pytest -q -rsx",
+            "status": "completed",
+            "conclusion": "failure",
+            "number": 6,
+            "started_at": "2026-10-31T05:55:58Z",
+            "completed_at": "2026-10-31T07:17:33Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11,
+            "started_at": "2026-10-31T07:17:33Z",
+            "completed_at": "2026-10-31T07:17:33Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12,
+            "started_at": "2026-10-31T07:17:33Z",
+            "completed_at": "2026-10-31T07:17:33Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13,
+            "started_at": "2026-10-31T07:17:33Z",
+            "completed_at": "2026-10-31T07:17:33Z"
+          }
+        ],
+        "log": "/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/ci_push_0a5a8fd_job_124459056272.log",
+        "pytest_summary": "2026-10-31T07:17:31.3345215Z 1 failed, 1633 passed, 12 skipped, 5 xfailed, 5 warnings in 4891.71s (1:21:31)"
+      }
+    ],
+    "collected_at": "2026-10-31T16:18:41+0900"
+  },
+  "same_code_pass_ci": 41174478144,
+  "case": "P5_B_ID_dev_s52901",
+  "goal_sha256": "3931018258bbb4683801139155aa11c11e6b36aa9f0e9835801637c9f75e4289",
+  "reproduction": {
+    "Haswell": "329cc1ee",
+    "SkylakeX": "d2886677",
+    "Zen": "329cc1ee",
+    "Sandybridge": "329cc1ee",
+    "maximum_observed_float_difference": 1.3877787807814457e-17,
+    "differences": "Two plan-report components and seven waypoint quaternion components; scene and normalized goal identical",
+    "pre_feature_commit": "77fd0334d3892626ebf238da1a90b9d071b8e1c5",
+    "pre_feature_matches_current_on_each_host": true
+  },
+  "fix": "Exact same-host current versus full historical source-package comparison; stable normalized goals, variants and errors retain frozen fixture pins. Missing history is an error. No tolerance, skipped case or forced BLAS in the test.",
+  "source_sha256": {
+    "tests/test_goal_step_planner_fields.py": "f8fcbe840ad2f3aff57d956f2f0efa08009a27eb0fb77d11f54ce7f914f2a3e6",
+    "tests/fixtures/wp12_goal_step_fields_pin.json": "23f1154db52fabca0fe14c515475fab4980e8971e1ee83177e6f9e016c19b00d",
+    "src/robotic_cutting_sim/goal_planner.py": "7a49e255cedd1ab8bc0914df251f8c7cbe14db6dbb5145f7cd253964ca3e077d",
+    "src/robotic_cutting_sim/goals.py": "c2cb544a0dee129d71054c0df3266601fbc6e75b41e94c6a00a735812bba8602",
+    "src/robotic_cutting_sim/scene_config.py": "c43d90a773e7cd1cddad46001a6b8839336bfbe39cd15820a938994ecfc3bd54",
+    "src/robotic_cutting_sim/generalization_wp12.py": "dcf587c3e10234dbe099bd3298e2c7a88510050f8271e5d7df592537dc3faadb"
+  },
+  "targeted_checks": [
+    {
+      "tag": "goal_pin_same_host",
+      "started": "2026-10-31T16:23:36.313002+09:00",
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_goal_step_planner_fields.py"
+      ],
+      "shell_display": ".venv/bin/python -m pytest -q tests/test_goal_step_planner_fields.py",
+      "cwd": "/home/ningan/RoboticCuttingSim-wp12-finalize",
+      "PYTHONPATH": "/home/ningan/RoboticCuttingSim-wp12-finalize/src:/home/ningan/RoboticCuttingSim-wp12-finalize/src",
+      "TMPDIR": "/mnt/data/ningan/tmp",
+      "effort": "xhigh",
+      "log": "/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/20261031T162336+0900_goal_pin_same_host.log",
+      "returncode": 0,
+      "wall_s": 26.055319786071777,
+      "finished": "2026-10-31T16:24:02.368275+09:00",
+      "pytest_summary": "42 passed in 25.95s"
+    },
+    {
+      "tag": "goal_pin_Haswell",
+      "started": "2026-10-31T16:24:13.872797+09:00",
+      "command": [
+        "env",
+        "OPENBLAS_CORETYPE=Haswell",
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_goal_step_planner_fields.py"
+      ],
+      "shell_display": "env OPENBLAS_CORETYPE=Haswell .venv/bin/python -m pytest -q tests/test_goal_step_planner_fields.py",
+      "cwd": "/home/ningan/RoboticCuttingSim-wp12-finalize",
+      "PYTHONPATH": "/home/ningan/RoboticCuttingSim-wp12-finalize/src:/home/ningan/RoboticCuttingSim-wp12-finalize/src",
+      "TMPDIR": "/mnt/data/ningan/tmp",
+      "effort": "xhigh",
+      "log": "/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/20261031T162413+0900_goal_pin_Haswell.log",
+      "returncode": 0,
+      "wall_s": 26.207916021347046,
+      "finished": "2026-10-31T16:24:40.080671+09:00",
+      "pytest_summary": "42 passed in 26.09s"
+    },
+    {
+      "tag": "goal_pin_SkylakeX",
+      "started": "2026-10-31T16:24:13.874675+09:00",
+      "command": [
+        "env",
+        "OPENBLAS_CORETYPE=SkylakeX",
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_goal_step_planner_fields.py"
+      ],
+      "shell_display": "env OPENBLAS_CORETYPE=SkylakeX .venv/bin/python -m pytest -q tests/test_goal_step_planner_fields.py",
+      "cwd": "/home/ningan/RoboticCuttingSim-wp12-finalize",
+      "PYTHONPATH": "/home/ningan/RoboticCuttingSim-wp12-finalize/src:/home/ningan/RoboticCuttingSim-wp12-finalize/src",
+      "TMPDIR": "/mnt/data/ningan/tmp",
+      "effort": "xhigh",
+      "log": "/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/20261031T162413+0900_goal_pin_SkylakeX.log",
+      "returncode": 0,
+      "wall_s": 26.298226833343506,
+      "finished": "2026-10-31T16:24:40.172856+09:00",
+      "pytest_summary": "42 passed in 26.18s"
+    }
+  ],
+  "independent_xhigh_review": "PASS; full historical package isolation and complete Native cohort independently checked"
+}

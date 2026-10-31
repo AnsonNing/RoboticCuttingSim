@@ -1,15 +1,19 @@
 """WP-12 Phase 6 part A: opt-in sequence-step fields ``planner_offset_local_m`` and ``planner`` (per-step options).
 
 Both are read by goal_planner only; every evaluator ignores them. Goals that do not declare them keep their
-normalized form, compiled task ids, plan reports and waypoints byte-identical (pinned against the tree before the
-change in ``tests/fixtures/wp12_goal_step_fields_pin.json``; regenerate ONLY from an unmodified checkout with
+normalized form, compiled task ids, plan reports and waypoints byte-identical on the same numerical host (compared
+against the pre-change source; stable goal fields also use ``tests/fixtures/wp12_goal_step_fields_pin.json``).
+Regenerate that historical fixture ONLY from an unmodified checkout with
 ``python tests/test_goal_step_planner_fields.py --write-pin``).
 """
 from copy import deepcopy
 from dataclasses import asdict
+import io
 import json
 from pathlib import Path
+import subprocess
 import sys
+import zipfile
 
 import numpy as np
 import pytest
@@ -28,6 +32,8 @@ PIN = ROOT/"tests/fixtures/wp12_goal_step_fields_pin.json"
 # The phase5 pin sections were computed from the DRAFT benchmark as committed in 73c6e43; the DRAFT itself is
 # re-declared later (xhigh decision D5), so the pin reads that exact snapshot, not the live DRAFT.
 PIN_DRAFT = ROOT/"tests/fixtures/wp12_benchmark_v1_DRAFT_pre_d5.json"
+# Exact parent of the opt-in step-field change (73c6e43). Full history is required by CPU CI.
+PRE_STEP_COMMIT = "77fd0334d3892626ebf238da1a90b9d071b8e1c5"
 WP11_SCENES, WP11_GOALS = ROOT/"configs/wp11/scenes", ROOT/"configs/wp11/goals"
 WP12_SCENES, WP12_GOALS = ROOT/"configs/wp12/scenes", ROOT/"configs/wp12/goals"
 PIN_PAIRS = [
@@ -147,14 +153,49 @@ def _plan(scene, goal):
     return gp.plan_with_report(scene_doc, goal, PROFILES[scene_doc["tool"]["profile_id"]])
 
 
-def test_pin_existing_goals_unchanged():
-    """Normalized goals, plan reports, waypoints and compiled ids of goals without the new fields equal the pre-change tree."""
+def _pre_step_pin(tmp_path):
+    """Run the untouched pre-feature package in a fresh process on this same BLAS/CPU.
+
+    Exact float hashes are not portable across BLAS cores: Haswell and SkylakeX differ by one ulp for a yawed plan.
+    Archive the entire historical package, including its generator and scene compiler, so neither comparison side
+    shares a changed generator/compiler. Inputs remain the declared scene files and frozen pre-D5 benchmark.
+    Missing Git history is an error, never a skipped regression check.
+    """
+    archive = subprocess.run(["git", "archive", "--format=zip", PRE_STEP_COMMIT, "src"], cwd=ROOT,
+                             capture_output=True, check=True).stdout
+    reference = tmp_path/"pre_step"
+    with zipfile.ZipFile(io.BytesIO(archive)) as source:
+        source.extractall(reference)
+    (reference/"configs").symlink_to(ROOT/"configs", target_is_directory=True)
+    runner = """
+import json, runpy, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+import robotic_cutting_sim
+assert Path(robotic_cutting_sim.__file__).resolve().is_relative_to(Path(sys.argv[1]).resolve())
+test = runpy.run_path(sys.argv[2])
+print(json.dumps(test['compute_pin'](), sort_keys=True))
+"""
+    result = subprocess.run([sys.executable, "-c", runner, str(reference/"src"), str(Path(__file__).resolve())],
+                            cwd=ROOT, capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
+
+def test_pin_existing_goals_unchanged(tmp_path):
+    """Exact same-host before/after plans and ids; stable normalized goals retain their historical fixture pins."""
     pin = json.loads(PIN.read_text())
     now = compute_pin()
+    before = _pre_step_pin(tmp_path)
+    assert now == before
     for section in ("pairs", "phase5_dev", "phase5_goals"):
         assert set(now[section]) == set(pin[section]), section
         for key, row in pin[section].items():
-            assert now[section][key] == row, (section, key)
+            if isinstance(row, dict):
+                stable = {k: v for k, v in row.items()
+                          if k not in {"task_id", "waypoints_sha256", "plan_report_sha256"}}
+                assert {k: now[section][key][k] for k in stable} == stable, (section, key)
+            else:
+                assert now[section][key] == row, (section, key)
 
 
 def test_fields_are_opt_in_and_kept_only_when_declared():
