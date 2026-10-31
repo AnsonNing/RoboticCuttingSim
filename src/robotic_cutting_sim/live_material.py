@@ -17,6 +17,9 @@ from .scene_frames import (WorkpieceTarget, pose_matrix, invert_transform, trans
     transform_poses, rotate_wrench_at_same_point)
 
 
+from .packed_solvers import is_packed_solver as is_packed_solver_name
+
+
 class LiveCuttingMaterial:
     def __init__(self, config=None, target=None, *, task=None, tool_profile=None, cutting_law=None,
                  slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1, solver=None, slots_per_node=None,
@@ -158,6 +161,8 @@ class LiveCuttingMaterial:
                 from .tlmpm_v5 import TLMPM
             elif self.solver == 'tlmpm_v6':
                 from .tlmpm_v6 import TLMPM   # opt-in CANDIDATE (ADR 0020 proposed)
+            elif self.solver == 'tlmpm_v7':
+                from .tlmpm_v7 import TLMPM   # WP-13 opt-in experiment
             elif self.cutting_law in (4, 5, 6, 7, 8):
                 from .tlmpm_v4 import TLMPM
             elif self.cutting_law == 3:
@@ -168,7 +173,7 @@ class LiveCuttingMaterial:
             solver_module, solver_kwargs = TLMPM.__module__, {"blade_profile_xz": polygon,
                 "cutting_law": self.cutting_law, "slice_efficiency": self.slice_efficiency,
                 "obstacle_boxes_edge": self.obstacle_boxes_edge}
-            if self.solver in ('tlmpm_v5', 'tlmpm_v6'):
+            if is_packed_solver_name(self.solver):
                 solver_kwargs["slots_per_node"] = self.slots_per_node
 
         start = time.perf_counter()
@@ -238,13 +243,13 @@ class LiveCuttingMaterial:
                                       "slots_per_node": self.slots_per_node,
                                       "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md"}
-        elif self.solver == 'tlmpm_v6':
+        elif self.solver in ('tlmpm_v6', 'tlmpm_v7'):
             self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
                                       "code_encoding": self.code_encoding, "max_cuts": self.max_cuts,
                                       "slots_per_node": self.slots_per_node,
                                       "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
-                                      "tlmpm_v6": self.bed.solver_receipt()}
+                                      self.solver: self.bed.solver_receipt()}
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
         recorder = self.cut_event_recorder = None
@@ -325,7 +330,7 @@ class LiveCuttingMaterial:
         else:
             wp.capture_launch(self.graph)
         wp.synchronize_device(c.device)
-        if self.solver in ('tlmpm_v5', 'tlmpm_v6'):
+        if is_packed_solver_name(self.solver):
             self.bed.check_slots()  # overflow is an error, never a silent merge (ADR 0014)
         cut_event_counters = recorder.check() if recorder is not None else None  # overflow raises (WP-12)
         impulse = self.bed.reaction.numpy()[0].astype(float)

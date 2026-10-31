@@ -1,0 +1,7 @@
+{
+  "id": "O00_slot20",
+  "episode": "CUT",
+  "seed": 13049,
+  "scene": "configs/wp12/phase7/demo2_slot_p20_scene.json",
+  "goal": "configs/wp12/phase7/demo2_slot_p20_goal.json"
+}

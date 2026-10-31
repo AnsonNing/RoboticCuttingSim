@@ -1,0 +1,20 @@
+{
+  "checks": {
+    "positions": true,
+    "velocities": true,
+    "codes": true,
+    "F": true,
+    "Fpi": true,
+    "plastic_strain": true,
+    "cut_progress": true,
+    "contact_work_j": true,
+    "reaction": true,
+    "stats": true,
+    "contact_totals": true
+  },
+  "wall_s": 5.655408190010348,
+  "device": "cpu",
+  "substeps": 300,
+  "old_source": "artifacts/wp13/focused_001/tlmpm_v7/C00_cut/tlmpm_v7_source.py",
+  "scope": "Same physical state, reactions and diagnostic sums after suppressing zero-valued atomics."
+}

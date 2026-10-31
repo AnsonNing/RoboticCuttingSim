@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "positions": true,
+    "velocities": true,
+    "codes": true,
+    "F": true,
+    "Fpi": true,
+    "plastic_strain": true,
+    "cut_progress": true,
+    "contact_work_j": true,
+    "reaction": true,
+    "stats": true
+  },
+  "wall_s": 5.755109904013807,
+  "device": "cpu",
+  "substeps": 300,
+  "old_source": "artifacts/wp13/tlmpm_v7_before_float64_diagnostics.py",
+  "scope": "Physical state and reactions unchanged after float64 diagnostic accumulation; diagnostic rounding intentionally differs."
+}

@@ -43,7 +43,7 @@ class KinematicConfig:
             from .surface_runtime import CUT_AWARE, check_surface_profile
             check_surface_profile(self.surface_profile)
             if self.surface_profile == CUT_AWARE:
-                if self.solver != "tlmpm_v5":
+                if self.solver not in ("tlmpm_v5", "tlmpm_v7"):
                     raise ValueError("surface_profile='cut_aware_surface_v1' needs solver='tlmpm_v5' (packed codes and "
                                      "the cut_events_v1 recorder)")
                 object.__setattr__(self, "cut_events", "cut_events_v1")   # recorder-quality Hermite data (recorded)

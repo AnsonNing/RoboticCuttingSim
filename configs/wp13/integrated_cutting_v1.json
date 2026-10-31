@@ -1,0 +1,15 @@
+{
+  "profile": "integrated_cutting_v1",
+  "status": "EXPERIMENTAL_NOT_ACCEPTED",
+  "solver_module": "tlmpm_v7",
+  "cutting_law": 8,
+  "position_update": "MUSL displacement for x and F",
+  "front": "finite relative sweep, retained until physical bevel work confirms engagement",
+  "contact_relaxation_s": 0.0002,
+  "edge_release_depth_m": 0.0005,
+  "edge_release_half_thickness_m": 0.00025,
+  "work_region": "actual blade-profile bevel depth and half thickness",
+  "surface_profile": "particle_surface_v1",
+  "material_calibration": "PROVISIONAL_UNCALIBRATED",
+  "default_changed": false
+}

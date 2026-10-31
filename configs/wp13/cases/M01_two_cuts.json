@@ -1,0 +1,8 @@
+{
+  "id": "M01_two_cuts",
+  "episode": "TESTB",
+  "seed": 13043,
+  "goal_options": {
+    "pieces": 3
+  }
+}

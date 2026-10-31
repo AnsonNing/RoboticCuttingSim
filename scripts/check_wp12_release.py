@@ -21,6 +21,26 @@ PAGES = ['README.md', 'docs/README.md', 'docs/WP12_PLAN.md',
          'docs/reports/WP12_GENERALIZATION.md', 'docs/reports/WP12_FINAL_VALIDATION.md']
 
 
+def animated_gif_metadata(data):
+    """Decode every frame: multiple frame headers alone do not prove motion."""
+    from PIL import Image
+    with Image.open(io.BytesIO(data)) as im:
+        count = getattr(im, 'n_frames', 1)
+        loop = im.info.get('loop')
+        width, height = im.size
+        frames = set()
+        for frame in range(count):
+            im.seek(frame)
+            frames.add(hashlib.sha256(im.convert('RGBA').tobytes()).hexdigest())
+    if count < 2 or len(frames) < 2:
+        raise ValueError('GIF has no decoded pixel motion')
+    if loop != 0:
+        raise ValueError('GIF does not loop indefinitely')
+    return {'format': 'GIF', 'width': width, 'height': height, 'frames': count,
+            'distinct_decoded_frames': len(frames), 'loop': loop,
+            'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
+
+
 def git(*args):
     return subprocess.check_output(['git', *args], cwd=ROOT)
 
@@ -41,6 +61,7 @@ def main():
     parser.add_argument('--ref', help='committed Git tree, e.g. origin/main')
     parser.add_argument('--protected-inventory', type=Path, help='baseline_protected_blobs.json from takeover')
     parser.add_argument('--out', type=Path, required=True, help='new JSON receipt (never overwritten)')
+    parser.add_argument('--wp13', action='store_true', help='also check WP-13 report, animated GIFs and full MP4 decode')
     args = parser.parse_args()
     if args.out.exists():
         raise FileExistsError(args.out)
@@ -52,7 +73,9 @@ def main():
 
     errors, links, media = [], [], {}
     sources = {}
-    for page in PAGES+['docs/PROGRESS.md']:
+    pages = PAGES+(['docs/WP13_PLAN.md', 'docs/reports/WP13_RESULTS.md'] if args.wp13 else [])
+    gif_references = []
+    for page in pages+['docs/PROGRESS.md']:
         data = content(page)
         sources[page] = hashlib.sha256(data).hexdigest()
         text = data.decode()
@@ -60,7 +83,8 @@ def main():
             text = text.split('## Preserved handoff and history')[0]
         # Ignore fenced shell/Python examples when inspecting Markdown links.
         text = re.sub(r'^```.*?^```\s*$', '', text, flags=re.M | re.S)
-        for target in re.findall(r'\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)', text):
+        # Also find the outer MP4 link of [![preview](preview.gif)](full.mp4).
+        for target in re.findall(r'\]\(([^\s)]+)(?:\s+"[^"]*")?\)', text):
             url = urlsplit(target.strip('<>'))
             if url.scheme or url.netloc:
                 continue
@@ -77,6 +101,14 @@ def main():
                 continue
             if path not in tracked:
                 continue
+            if path.endswith('.gif') and args.wp13:
+                if page == 'README.md':
+                    gif_references.append(path)
+                if path not in media:
+                    try:
+                        media[path] = animated_gif_metadata(content(path))
+                    except Exception as error:
+                        errors.append({**edge, 'error': f'GIF decode/motion: {error}'})
             if url.fragment and path.endswith('.md') and unquote(url.fragment) not in headings(content(path).decode()):
                 errors.append({**edge, 'error': 'Markdown heading anchor absent'})
             if path.endswith('.png') and path not in media:
@@ -105,6 +137,29 @@ def main():
                 else:
                     media[path] = {'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data),
                                    'ffprobe': json.loads(probe.stdout)}
+                    if args.wp13:
+                        decode = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(ROOT/path), '-f', 'null', '-'],
+                                                capture_output=True, text=True)
+                        media[path]['full_decode'] = 'PASS' if decode.returncode == 0 else 'FAIL'
+                        if decode.returncode:
+                            errors.append({**edge, 'error': 'MP4 full decode failed: '+decode.stderr[-500:]})
+    if args.wp13:
+        if len(gif_references) < 4 or len(set(gif_references)) < 3:
+            errors.append({'error': 'README needs a hero and at least three visible animated gallery previews'})
+        provenance_path = 'docs/evidence/wp13/media_001.json'
+        try:
+            provenance = json.loads(content(provenance_path))
+            by_gif = {row['gif']: row for row in provenance['media']}
+            for path in set(gif_references):
+                row = by_gif[path]
+                if row['runtime_source'] != 'live_isaac_sim':
+                    raise ValueError(f'{path} is not labelled Live Native')
+                if hashlib.sha256(content(row['mp4'])).hexdigest() != row['mp4_sha256']:
+                    raise ValueError(f'{path} full MP4 hash differs from provenance')
+                if hashlib.sha256(content(path)).hexdigest() != row['gif_sha256']:
+                    raise ValueError(f'{path} GIF hash differs from provenance')
+        except Exception as error:
+            errors.append({'error': 'WP-13 Native media provenance: '+str(error)})
     protected = {'status': 'NOT_RUN', 'reason': 'no protected inventory supplied'}
     if args.protected_inventory:
         baseline = json.loads(args.protected_inventory.read_text())

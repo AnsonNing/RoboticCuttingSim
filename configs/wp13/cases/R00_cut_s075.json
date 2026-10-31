@@ -1,0 +1,8 @@
+{
+  "id": "R00_cut_s075",
+  "episode": "CUT",
+  "seed": 13057,
+  "solver_options": {
+    "particle_spacing_m": 0.00075
+  }
+}

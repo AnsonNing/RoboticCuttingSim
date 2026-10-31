@@ -1,0 +1,22 @@
+{
+  "id": "C03_offset",
+  "episode": "CUT",
+  "seed": 13019,
+  "goal_options": {
+    "planes": [
+      {
+        "origin_local_m": [
+          0.008,
+          0.0,
+          0.0
+        ],
+        "normal_local": [
+          1.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "minimum_part_mass_fraction": 0.35
+  }
+}

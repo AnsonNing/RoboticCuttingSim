@@ -1,0 +1,6 @@
+{
+  "id": "D00_cut_dt50us",
+  "episode": "CUT",
+  "seed": 42,
+  "dt_s": 5e-05
+}
