@@ -1,0 +1,151 @@
+{
+ "demo": "DEMO3",
+ "root": "artifacts/wp12/demos_001",
+ "command": [
+  "scripts/report_wp12_phase7_demos.py",
+  "media",
+  "--root",
+  "artifacts/wp12/demos_001",
+  "--demo",
+  "DEMO3",
+  "--media",
+  "docs/media/wp12/demos/demo3_trim_rho10"
+ ],
+ "created": "2026-10-31T11:06:49.773043+09:00",
+ "scope": "Recorded live Native frames and the final staged mesh/particle state; presentation only. The presentation close-up and overview cameras are never observations.",
+ "runs": {
+  "A": {
+   "run": "artifacts/wp12/demos_001/DEMO3_A",
+   "mp4": {
+    "path": "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4",
+    "bytes": 984171,
+    "source": "artifacts/wp12/demos_001/DEMO3_A/render_001/demo.mp4"
+   },
+   "status": "EXPORTED"
+  },
+  "B": {
+   "run": "artifacts/wp12/demos_001/DEMO3_B",
+   "mp4": {
+    "path": "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/demo.mp4",
+    "bytes": 989274,
+    "source": "artifacts/wp12/demos_001/DEMO3_B/render_001/demo.mp4"
+   },
+   "status": "EXPORTED"
+  }
+ },
+ "ab": {
+  "start_closeup": "docs/media/wp12/demos/demo3_trim_rho10/ab_start_closeup.png",
+  "progress_closeup": "docs/media/wp12/demos/demo3_trim_rho10/ab_progress_closeup.png",
+  "final_closeup": "docs/media/wp12/demos/demo3_trim_rho10/ab_final_closeup.png",
+  "final_overview": "docs/media/wp12/demos/demo3_trim_rho10/ab_final_overview.png"
+ },
+ "cutface_closeup": {
+  "path": "docs/media/wp12/demos/demo3_trim_rho10/ab_cutface_closeup.png",
+  "info": {
+   "A": {
+    "centre_world_m": [
+     0.0006489456864073873,
+     8.084010914899409e-06,
+     0.029292624667286875
+    ],
+    "normal_reference": [
+     -0.06572496048822501,
+     1.633061117280735e-19,
+     0.9978377771806504
+    ],
+    "triangles_shown": 26564,
+    "view_direction": [
+     0.28758741340270405,
+     -0.26352374877290496,
+     0.9207870076651913
+    ]
+   },
+   "B": {
+    "centre_world_m": [
+     0.0006489456864073873,
+     8.084010914899409e-06,
+     0.029292624667286875
+    ],
+    "normal_reference": [
+     -0.06572496048822501,
+     1.633061117280735e-19,
+     0.9978377771806504
+    ],
+    "triangles_shown": 6379,
+    "view_direction": [
+     0.28758741340270405,
+     -0.26352374877290496,
+     0.9207870076651913
+    ]
+   }
+  }
+ },
+ "reconstruction_vs_particles": {
+  "path": "docs/media/wp12/demos/demo3_trim_rho10/reconstruction_vs_particles.png",
+  "info": {
+   "A": {
+    "y0_m": 0.0005,
+    "particles_in_slab": 3289,
+    "mesh_section_segments": 1671,
+    "components": 2,
+    "final_frame_time_s": 12.74
+   },
+   "B": {
+    "y0_m": 0.0005,
+    "particles_in_slab": 3286,
+    "mesh_section_segments": 873,
+    "components": 2,
+    "final_frame_time_s": 12.74
+   }
+  }
+ },
+ "files": {
+  "docs/media/wp12/demos/demo3_trim_rho10/ab_cutface_closeup.png": 462872,
+  "docs/media/wp12/demos/demo3_trim_rho10/ab_final_closeup.png": 226485,
+  "docs/media/wp12/demos/demo3_trim_rho10/ab_final_overview.png": 102055,
+  "docs/media/wp12/demos/demo3_trim_rho10/ab_progress_closeup.png": 231671,
+  "docs/media/wp12/demos/demo3_trim_rho10/ab_start_closeup.png": 222935,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/demo.mp4": 989274,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_closeup.png": 110786,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_global_d455_depth.png": 7943,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_global_d455_rgb.png": 26320,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_overview.png": 51493,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_wrist_d405_0_depth.png": 2096,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_wrist_d405_0_rgb.png": 16678,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/final_wrist_d405_1_rgb.png": 14614,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/media_receipt.json": 2616,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/progress_closeup.png": 115749,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/progress_overview.png": 65447,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_closeup.png": 109785,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_global_d455_depth.png": 7942,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_global_d455_rgb.png": 25986,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_overview.png": 50765,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_wrist_d405_0_depth.png": 2019,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_wrist_d405_0_rgb.png": 15976,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo3_trim_rho10/cut_aware_surface_v1/start_wrist_d405_1_rgb.png": 14581,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4": 984171,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_closeup.png": 110580,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_global_d455_depth.png": 7931,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_global_d455_rgb.png": 26194,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_overview.png": 51543,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_wrist_d405_0_depth.png": 2009,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_wrist_d405_0_rgb.png": 16275,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_wrist_d405_1_rgb.png": 14588,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/media_receipt.json": 2597,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/progress_closeup.png": 116503,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/progress_overview.png": 65459,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_closeup.png": 108254,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_global_d455_depth.png": 7944,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_global_d455_rgb.png": 26007,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_overview.png": 51199,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_wrist_d405_0_depth.png": 2023,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_wrist_d405_0_rgb.png": 16024,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_wrist_d405_1_depth.png": 2335,
+  "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/start_wrist_d405_1_rgb.png": 14600,
+  "docs/media/wp12/demos/demo3_trim_rho10/reconstruction_vs_particles.png": 263972
+ },
+ "total_bytes": 4773301
+}

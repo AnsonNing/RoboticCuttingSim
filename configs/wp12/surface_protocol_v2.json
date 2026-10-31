@@ -1,0 +1,171 @@
+{
+  "schema": "wp12_surface_protocol_v2",
+  "status": "PROPOSAL for freeze. Freeze = the commit that adds this file; it must precede every measurement of cut_aware_surface_v2 on physical states and every v2-protocol evaluation of physical states (saved or held-out). Any change after that is surface_protocol_v3 with the reason recorded.",
+  "supersedes": "nothing: configs/wp12/surface_protocol_v1.json (frozen by b31553d, SHA256 afc30c75...) stays frozen and is applied unchanged beside v2 forever",
+  "source": {
+    "decision_review": "docs/reports/WP12_PHASE3_DECISION_REVIEW.md (commit b67e80c), section 3 (P1-P7, unchanged rows, held-out rule)",
+    "diagnostics": "artifacts/wp12/phase3_surface_001/diagnostics_003.json (scripts/diagnose_wp12_phase3_surface.py; reproduces the review's F1-F11 numbers)",
+    "v1_result_kept": "artifacts/wp12/phase3_surface_001: Phase 3 comparison gate FAIL under surface_protocol_v1 (B FAIL on G2, S1-S3, S5-S8); kept and printed beside every v2 result forever",
+    "addendum": "docs/reports/WP12_SURFACE_RECONSTRUCTION.md, Addendum (2026-10-31, after the decision review)"
+  },
+  "threshold_sources": "Every v2 threshold comes only from (i) the spec, (ii) tech review section 7.2, (iii) the Phase 1 A controls and G2, or (iv) a per-state material-floor procedure declared here. No v2 threshold is derived from a cut_aware_surface_v1 (B v1) number.",
+  "rules": [
+    "v1 verdicts (B v1 FAIL, Phase 3 gate FAIL) are kept and reported beside every v2 result forever.",
+    "This file is committed, with these reasons, before any v2-method measurement on physical states. v2 method development before the freeze may use only G2, zero-physics and affine controls.",
+    "Every v2 metric is applied identically to A, to B v1 and to B v2.",
+    "The full matrix {A, B v1, B v2} x {protocol v1, protocol v2} is reported on the saved states and on the held-out states, so metric relief (B v1 under v2 vs v1) is separated from method improvement (B v2 vs B v1 under the same protocol).",
+    "The saved phase3_surface_001 states were inspected while designing v2, so v2 is also decided on fresh held-out states declared below (new seeds; a new geometry per S-case where applicable; S8 with dense frames).",
+    "Smoothness and roughness are never success criteria (unchanged from v1)."
+  ],
+  "resolution": {"particle_spacing_s_m": 0.001, "grid_dx_m": 0.004, "material_dt_s": 1e-4, "solver": "tlmpm_v5", "cutting_law": 8,
+                 "note": "as v1: thresholds in spacings s; another resolution needs its own G2/affine controls first"},
+  "methods": {
+    "A": "particle_surface_v1 = CuttingSurface current_volume_v1 (voxel s/2, kernel 3 s, threshold 0.5, radius (s/2) cbrt(det F), unmeshable skip_presentation_v1), as in phase3_surface_001",
+    "B_v1": "cut_aware_surface_v1 (byte-identical to commit 89b289d), cut_events_v1 recorder Hermite log, total-F embedding, cell_face_v1 boundary; stays the default for existing records",
+    "B_v2": "cut_aware_surface_v2 (to be implemented after this freeze; opt-in, v1 byte-identical): review section 2 fixes M1 constrained crease QEF, M2 crack-front hinge placement, M3 fold guard (report first), M4 unlabelled-separation detector with labelled particle-cell fallback (unlabelled_separation_v1); M5 position-consistent embedding only as a separately labelled variant. Render geometry only: no target plane, no blade pose beyond the recorder Hermite data, no particle edit, no cut face on a non-conflicting link. Required before any physical run: G2, affine and zero-physics unit tests, S0 exactness, S9 bit-identity, bitwise CPU physics check",
+    "labelled_reported_only": "B_v1 and B_v2 with the R4 link_midpoint_fallback (no log): reported beside, never recorder quality, only the G2 midpoint thresholds apply; any row the driver does not evaluate for them reads NOT_RUN"
+  },
+  "metrics": {
+    "implementation_unchanged_rows": "src/robotic_cutting_sim/surface_metrics_v1.py (unchanged; surface_report, mesh_validity_v1, rim_continuity, topology_consistency, volume rows, temporal_stability for fixed states)",
+    "implementation_changed_rows": "src/robotic_cutting_sim/surface_metrics_v2.py (P1-P7 below; CPU tests tests/test_surface_metrics_v2.py)",
+    "patch_radius_m": 0.002, "normal_radius_m": 0.003, "coverage_radius_m": 0.001, "core_margin_m": 0.003
+  },
+  "changes": {
+    "P1_region_rule_v2": {
+      "definition": "A mesh vertex's mechanical component is taken from the extractor's own provenance, which both methods provide: CuttingSurface component_ranges (A) and CutAwareSurface component_ranges / vertex_component (B v1, B v2), mapped to the mass-ranked labels. Cut-face vs exterior, the cut row and the side then come from the nearest same-component boundary sample, exactly as region_rule_v1 (region_max 1.5 s; core = >= 3 s from the component's exterior samples). Every vertex gets a classification margin = (distance to the nearest sample of the next sample set) - (distance to the chosen set), the sets being {exterior, cut digit 0, cut digit 1, ...} of its component. MAX rows (current max, reference max) use only vertices with margin >= 0.5 s; P95/P50 rows and the bias/thickness means use all cut-face vertices; ambiguous vertices are counted and reported.",
+      "implementation": "surface_metrics_v2.vertex_component_from_ranges, classify_mesh_vertices_v2, cut_face_signed_distances, distance_rows, reference_distance_rows",
+      "parameters": {"margin_s": 0.5, "region_max_s": 1.5, "core_margin_s": 3.0},
+      "justification": "Inferring a vertex's component from its nearest particle is ill-posed whenever two pieces are closer than the drawing offset. The protocol itself places the material boundary at s/2 outside the particles (exterior samples x_p + F_p (s/2 e), surface_metrics_v1.exterior_samples), so any method that draws at that boundary has, between pieces less than 1 s apart, vertices nearer the other piece's particles; they are then measured against the opposite face's locus (review F1: 492 of 2,194 cut-face vertices in S6). Both extractors record the component of every vertex, so the metric need not guess. A nearest-sample classifier is undefined within s/2 of a rim or a junction of sets (review F6: every S5 vertex with reference error > 0.5 s is an exterior representative or a wrong-digit junction vertex); the rim is measured by the rim rows, so the max rows exclude only vertices whose class is not decided by at least s/2, while P95 rows keep every vertex. This holds for any method and does not use a B number."
+    },
+    "P2_matched_scale_normal": {
+      "definition": "Decision normal row: for every core cut-face triangle (all three vertices core under P1; key = component, cut and side of its first vertex, as v1), the unsigned angle between the least-squares plane of the mesh's own cut-face vertices of the same key within 3 mm of the triangle centroid and the least-squares plane of the same-key locus side samples within 3 mm. Threshold per state: P95 over the core locus samples of the angle between the 3 mm planes fitted to two disjoint random halves of each side group's locus samples (numpy default_rng(20261031), groups in ascending key order), plus the 1 deg comparison band. S5 per-cut rows use the floor of that cut's samples. The v1 triangle-normal row (core triangles vs the 3 mm locus plane, 10 deg) stays reported, with its v1 value, as a shading/roughness diagnostic; it is not a v2 decision row.",
+      "implementation": "surface_metrics_v2.matched_scale_normal, normal_floor_split_halves, normal_row",
+      "parameters": {"normal_radius_m": 0.003, "floor_seed": 20261031, "band_deg": 1.0, "floor_quantile": 95},
+      "justification": "The reference is rough at about 0.3 s on 2 mm patches (the locus itself, review F4), and the protocol requires that physical roughness survive in current space and never be smoothed. A triangle-scale normal row compares a 1 mm facet with a 3 mm plane: a mesh built exactly through the locus samples scores 32-61 deg P95 against the 10 deg limit (review F4), so the v1 rows (distance rows that require following the locus, a normal row that only a smoothed mesh meets) are mutually unsatisfiable, contradicting smoothness_is_never_a_success_criterion and spec section 3.6. Comparing planes at the same 3 mm scale on both sides, against the locus's own split-half noise at that scale, measures orientation and not facet roughness. B-independent: the floor is a property of the state's locus only."
+    },
+    "P3_current_distance_floor": {
+      "definition": "Current-space cut-face P95 row, per state and side group g = (component, cut, side): mesh P95_g (all P1 cut-face vertices of g) <= floor_g + 0.10 s, with floor_g = P95 over g's side samples of the leave-one-out residual |q_i - plane(other samples of g within 2 mm)| (min 4 neighbours, nearly collinear patches excluded as in local_plane_signed). Groups with < 20 cut-face vertices are pooled into one remainder group judged against the P95 of their samples' residuals. The row passes when every evaluated group passes; the pooled all-vertex P95 vs the pooled floor is reported. S5 per-cut rows use that cut's groups. Max limits unchanged: 1.5 s (S2 2.0 s), over P1-unambiguous vertices.",
+      "implementation": "surface_metrics_v2.current_distance_floor, current_p95_rows",
+      "parameters": {"patch_radius_m": 0.002, "offset_s": 0.10, "min_group_vertices": 20, "max_s": 1.5, "S2_max_s": 2.0},
+      "offset_justification": "0.10 s = 2 x the tech review section 7.2 expectation for B with exact Hermite data (P95 <= 0.05 s); stated before any v2 measurement",
+      "justification": "The reference's own residual against its own 2 mm plane reaches P95 0.51 s with the sample inside the fit (review F4: G3b 0.512, S2 0.402, S6 0.437, S8 0.315), so a fixed 0.5 s P95 limit tests the material, not the mesh. A per-state floor from the locus alone (leave-one-out, so the sample is not in its own fit), plus a margin from the analytic expectation, keeps the row a test of the reconstruction. B-independent."
+    },
+    "P4_current_volume_reference_precondition": {
+      "definition": "The 2 % current-volume row is kept. Before it decides, the reference sum (m/rho) det F is checked against the particle positions: fully linked cells = complete reference-lattice cells none of whose 12 edges is a conflicting link (any cut); per cell r = V(6 tetrahedra on the current positions) / (s^3 x mean corner det F); per mechanical component (>= 8 cells) CONSISTENT when |mean r - 1| <= 1 % and <= 5 % of its cells have r < 0.9, otherwise INCONSISTENT; components with < 8 cells are UNVERIFIED. The state's total row reads INCONCLUSIVE_REFERENCE (never PASS) when any verified component is INCONSISTENT or the UNVERIFIED components hold > 1 % of the reference volume (half the 2 % tolerance). The exact reference-volume rows (B: pre-embedding mesh vs sum m/rho) stay decisive and unchanged.",
+      "implementation": "surface_metrics_v2.lattice_cells, reference_consistency, component_status, volume_current_row",
+      "parameters": {"mean_tolerance": 0.01, "low_ratio": 0.9, "low_fraction": 0.05, "min_cells": 8, "unverified_volume_fraction": 0.01},
+      "justification": "The current-volume reference contradicts the positions near the cut: the cell volumes from the particle positions fall to mean 0.77 (P5 0.15) within 1.5 mm of the Hermite locus while the solver's own F keeps det F ~ 0.999, and 87 % of the deficit lies within 3 mm (review F3, S5). A judge that contradicts the state cannot pass or fail a mesh that follows the state; it must report that the reference is inconsistent. The check uses only the state (positions, F, codes) and applies to every method."
+    },
+    "P5_slow_motion_made_slow": {
+      "definition": "Slow-motion residual row on consecutive frame pairs without a code change whose material displacement P95 <= 0.10 s only (held-out S8 runs with dense snapshots, see held_out_states). Transport: each vertex of frame a moves by the inverse-distance-weighted (weights 1 / max(d, 1e-6 m)^2) displacement of its k = 8 nearest particles of its own provenance component at frame a. Residual = symmetric exact point-triangle distance between the transported mesh a and mesh b, P95, max over eligible pairs. Threshold 0.05 s unchanged. Topology-hash constancy over the frames stays the jump detector. With no eligible pair the row is NOT_RUN (premise unmet), never PASS.",
+      "implementation": "surface_metrics_v2.slow_frame_pairs, transport_idw, temporal_stability_v2",
+      "parameters": {"max_material_displacement_p95_s": 0.10, "idw_k": 8, "idw_power": 2.0, "threshold_p95_s": 0.05},
+      "justification": "The v1 premise ('slow motion') was not met: the S8 snapshots are 40 ms apart and the material moves up to P95 0.46-0.48 s between them (review F10). Nearest-particle transport is a piecewise-constant displacement field whose own error grows with the strain increment, so it is not bounded below the 0.05 s threshold, which also lies below the protocol's declared 0.06 s uncertainty band. Making the frames slow and the transport interpolating restores the row's meaning (re-meshing jumps) without changing its threshold. Method-independent."
+    },
+    "P6_intersection_attribution": {
+      "definition": "Intersecting triangle pairs (the v1 test and v1 sample bound: 20,000 triangles, seed 0) are split into PHYSICAL and UNEXPLAINED. Candidate physical: triangles of different mechanical components (provenance), or P1 cut-face triangles (>= 2 cut-face vertices) of opposite sides of the same cut digit in one component. A candidate is physical when, at the pair midpoint, the particle gap between the two sides' particle sets is < 1 s (min over both directions of the distance from the set's particle nearest the midpoint to the other set) or a locus row joining the two sides within 2 s has crossed sides ((q2 - q1) . N < 0). Every other pair, including every other intra-component (intra-shell) pair such as a fold, is unexplained. Likewise faces_nearer_other_component counts as unexplained only where the particle gap between the face's component and that other component near the face is >= 1 s. Only unexplained pairs and unexplained faces_nearer_other_component enter thresholds and the gate; physical pairs are reported as Phase 4 contact data.",
+      "implementation": "surface_metrics_v2.intersecting_pairs, attribute_intersections, faces_nearer_other_component_v2",
+      "parameters": {"gap_s": 1.0, "crossing_radius_s": 2.0, "max_triangles": 20000, "sample_seed": 0},
+      "justification": "The protocol places the material boundary at s/2 outside each piece (exterior samples x_p + F_p (s/2 e)), so represented volumes of pieces whose particles are closer than 1 s, or of slit sides that interpenetrate, physically overlap in the protocol's own convention (review F9). Drawing a physical overlap of represented volumes is fidelity, not a mesh defect; a method that shrinks pieces to avoid it hides the contact. Folds and any intersection without such proximity remain defects. Method-independent."
+    },
+    "P7_S7_chip_accounting": {
+      "definition": "The S7 chip current-volume row (5 %) is evaluated on the lattice-faced part of the chip only: mesh volume of chip faces not produced by a particle-cell fallback vs sum (m/rho) det F of the chip particles not in that fallback, with the P4 precondition on the chip components (INCONCLUSIVE_REFERENCE when they are INCONSISTENT or UNVERIFIED). The particle-cell fallback part (M4 unlabelled_separation_v1) is reported separately as 'volume by construction', never as reconstruction quality and never in a cut-face metric. Methods without a fallback (A, B v1) have an empty fallback part. skipped_fragments = 0 unchanged.",
+      "implementation": "surface_metrics_v2.chip_volume_v2",
+      "parameters": {"limit_rel": 0.05},
+      "justification": "A particle-cell fallback has the volume sum (m/rho) det F by construction, so counting it in the chip volume row would be a tautological PASS. Separating it keeps the row a test of the lattice-faced reconstruction and keeps any fallback visible. Method-independent (A and B v1 report an empty fallback part)."
+    }
+  },
+  "unchanged_from_v1": {
+    "rule": "These rows keep the v1 definition and threshold exactly (thresholds_for_candidate_B below repeats the v1 values); the only change is that region-rule-dependent rows use P1 (component from provenance; max over unambiguous vertices).",
+    "S0": "all rows",
+    "G2": "Hermite cut-face P95 0.05 s / max 0.25 s / non-crease normal P95 2 deg / 0 non-manifold edges and the midpoint-fallback rows (P95 0.45 s, max 0.5 s), numeric tolerance 1e-8 m; G2 is analytic, its region rule is not changed. n123 must be passed by the method (M1), not by the threshold",
+    "reference_space": "P95 0.1 s / max 0.5 s, only the P1 margin applied to max",
+    "current_space": ["|bias toward side 2| <= 0.1 s", "|thickness bias| <= 0.1 s (means over hundreds of vertices, not noise-limited)", "coverage >= 0.99", "rim corner P95 <= 0.5 s", "closed", "shells = components"],
+    "S2": "S1 current-space rows with current max 2.0 s",
+    "S3": "S1 reference-space rows decide; single-plane residual reported",
+    "S4": "all provenance rows: 0 cut faces on non-conflicting links, coverage of conflicting links >= 0.99, 1 mechanical component, slit extent = conflicting extent, tip_representatives_shared",
+    "S5": "slots_per_node 16; per-cut S1 rows (with the P1-P3 readings)",
+    "S6": "mechanical components >= 5, shells per component >= 1, per-component reference-volume error <= 0.5 s A_cut,component / V_component + 1e-4",
+    "S7": "skipped_fragments 0",
+    "S8": "vertices shared across conflicting codes 0; shell set unchanged since separation",
+    "S9": "all rows: 0 events, 0 cut faces, mesh equals the S0 mesh embedded, 0 Hermite points outside the finite swept region",
+    "volume_and_temporal": "'all' reference-volume row |V_mesh - sum m/rho| <= 0.5 s A_cut + 1e-4 V; fixed-state temporal rows (topology hash constant, vertex residual <= 1e-3 s)",
+    "comparison": "bands 0.06 s / 1 deg / 0.5 %; B worse when beyond the band in ANY repeat, better when beyond the band in EVERY repeat; required: better on current-space cut-face P95 in every case where both draw a cut face, better coverage (S4, S7), better topology and never worse",
+    "never_criteria": "smoothness and roughness stay non-criteria"
+  },
+  "measurement_uncertainty": {"gpu_nondeterminism_band_m": 6e-5, "rule": "as v1: a B vs A difference is decided only beyond 0.06 s (1 deg for normals, 0.5 % for volume); >= 2 repeats per state, spread reported"},
+  "thresholds_for_candidate_B": {
+    "S0_uncut_box": {"whole_surface_p95_s": 0.02, "whole_surface_max_s": 0.05, "volume_rel_error": 1e-4, "closed_oriented_manifold": true, "shells": 1, "euler": 2},
+    "G2_static_unit_test": {"hermite": {"cut_face_p95_s": 0.05, "cut_face_max_s": 0.25, "non_crease_normal_p95_deg": 2.0, "non_manifold_edges": 0},
+                            "midpoint_fallback": {"cut_face_p95_s": 0.45, "cut_face_max_s": 0.5},
+                            "numeric_tolerance_m": 1e-8},
+    "S1_flat_cut": {"reference_p95_s": 0.1, "reference_max_s": 0.5, "reference_max_over": "P1 unambiguous vertices",
+                    "current_p95": "P3: per side group <= locus leave-one-out floor P95 + 0.10 s", "current_max_s": 1.5, "current_max_over": "P1 unambiguous vertices",
+                    "abs_bias_toward_side2_s": 0.1, "abs_thickness_bias_s": 0.1,
+                    "normal": "P2: matched-scale 3 mm plane angle P95 <= split-half floor P95 + 1 deg",
+                    "coverage_min": 0.99, "rim_corner_p95_s": 0.5, "closed": true, "shells_equal_components": true,
+                    "report_only": ["v1 triangle normal P95 (10 deg in v1)", "roughness", "pooled current P95 vs pooled floor", "ambiguous vertex count"]},
+    "S2_deformed_cut": {"as": "S1 in current space", "current_max_s": 2.0, "report": "embedding estimator and det F fallback counts"},
+    "S3_curved_trajectory": {"as": "S1 reference space", "report": "single-plane residual (must not be forced to 0)"},
+    "S4_partial_cut": {"cut_faces_on_non_conflicting_links": 0, "coverage_of_conflicting_links_min": 0.99, "mechanical_components": 1,
+                       "slit_extent_equals_conflicting_extent": true, "tip_representatives_shared": true,
+                       "report": "current P95/normal rows (P1-P3) and P6 slit-crossing attribution; the faithful notch walls are about 60 deg from the locus plane (review M2) and are reported, not excused"},
+    "S5_intersecting_cuts": {"per_cut": "as S1 (P1-P3 per cut)", "slots_per_node": 16, "quasi_manifold_violations": "report only"},
+    "S6_four_slices": {"mechanical_components_min": 5, "shells_per_component_min": 1,
+                       "per_component_reference_volume_error": "<= 0.5 s * A_cut,component / V_component + 1e-4"},
+    "S7_thin_chip": {"skipped_fragments": 0, "chip_current_volume_rel_error": 0.05, "chip_volume_reading": "P7 (lattice-faced part, P4 precondition)",
+                     "non_manifold_edges": "report only", "fallback_activations": "report (count, particles, solver-state anomaly for Phase 4)"},
+    "S8_recontact": {"vertices_shared_across_conflicting_codes": 0, "shell_set_unchanged_since_separation": true,
+                     "slow_motion": "P5", "report": "P6 physical pairs, particle gap; contact-stat penetration NOT_AVAILABLE unless recorded"},
+    "S9_negative_controls": {"events": 0, "cut_faces": 0, "mesh": "equals the S0 mesh embedded", "hermite_points_outside_swept_region": 0},
+    "all": {"volume_reference": "|V_mesh - sum m/rho| <= 0.5 s * A_cut + 1e-4 V",
+            "volume_current_rel": 0.02, "volume_current_reading": "P4 (INCONCLUSIVE_REFERENCE when the precondition fails)",
+            "temporal_fixed_state": "topology hash constant and vertex residual <= 1e-3 s",
+            "temporal_slow_motion_residual_p95_s": 0.05, "temporal_slow_motion_reading": "P5",
+            "self_intersections": "P6: unexplained pairs reported per case and compared in the gate (no absolute threshold, as v1)"}
+  },
+  "phase3_comparison_gate_v2": {
+    "compared": "B_v2 vs A under protocol v2 decides; B_v1 vs A under v2 is reported beside (metric relief), and both under v1 are printed beside (the v1 FAIL stands)",
+    "metrics": "surface_metrics_v2.GATE_METRICS_V2: the v1 GATE_METRICS with these replacements: current_max_s -> current_max_unambiguous_s (P1); reference_max_s -> reference_max_unambiguous_s (P1); normal_p50/p95_deg -> matched_normal_p50/p95_deg (P2); self_intersections_sampled -> unexplained_intersections_sampled (P6); faces_nearer_other_component -> faces_nearer_other_component_unexplained (P6); volume_current_abs_rel -> volume_current_abs_rel_if_consistent (P4: NOT_COMPARABLE when the state's precondition is not CONSISTENT); slow motion -> slow_motion_residual_p95_s_eligible_pairs (P5: NOT_COMPARABLE without eligible pairs). Reported only, never compared: surface_metrics_v2.REPORT_ONLY_V2 (v1 triangle normals, raw intersection counts, raw faces_nearer_other_component, raw current volume, roughness, max over all vertices)",
+    "bands": {"distance_s": 0.06, "normal_deg": 1.0, "volume_rel": 0.005, "counts_booleans_coverage": "larger repeat spread of A and B, same sign in every repeat (as v1)"},
+    "rule": "B worse on a metric when the difference beyond the band holds in ANY repeat; better when it holds in EVERY repeat (as v1)",
+    "required": ["not worse than A on any GATE_METRICS_V2 metric in any case", "better on current-space cut-face P95 (P1 reading) in every case where both draw a cut face", "better coverage in S4 and S7", "better topology (shells = components, no skipped fragments) in at least one case and never worse"],
+    "decision": "PASS only if the rule holds on the held-out states (every H1 and H2 case) AND on the saved phase3_surface_001 states; otherwise FAIL. Threshold verdicts per case (thresholds_for_candidate_B) are reported separately, as in v1",
+    "smoothness_is_never_a_success_criterion": true,
+    "physical_indentation_and_deformation_must_survive_in_current_space": true
+  },
+  "required_matrix": {
+    "methods": ["A", "B_v1", "B_v2"],
+    "protocols": ["surface_protocol_v1 (frozen file, unchanged readings of scripts/run_wp12_phase3_surface.py)", "surface_protocol_v2 (this file)"],
+    "state_sets": ["saved: artifacts/wp12/phase3_surface_001 <case>_r0/_r1_states.npz (every frame), read-only", "held_out: fresh states of held_out_states below, written to a new run directory (artifacts/wp12/phase3_surface_002 or the next free number)"],
+    "cells": "every (method, protocol, state set, case, repeat): threshold rows and verdicts, comparison decisions vs A, plus B_v1 -> B_v2 deltas under each protocol",
+    "repeats": "saved: the stored r0 and r1 states (2 repeats); held-out: 2 GPU repeats per (case, variant) with the same seed",
+    "output": "a new run directory; protocol_record.json (this file's SHA256 and freeze commit, the v1 SHA256, the case list) written before the first held-out case runs; never overwrite"
+  },
+  "held_out_states": {
+    "rule": "Declared before any v2 measurement. Each S-case has H1 (v1 geometry, new placement seed) and H2 (new geometry inside the law-8 envelope where applicable, another new seed). For the drive_blade cases the 'seed' fixes the blade start offset inside the lattice cell: (u_x, u_y) = 0.15 + 0.7 * numpy.random.default_rng(seed).random(2), in spacings from the nearest lower cell face (cell faces at integer mm), replacing the v1 offsets (+0.3 / +0.2 mm). Values below are those offsets. Runner parameters otherwise as v1 (scripts/run_wp12_phase1_geometry.py PROTOCOL: 1 mm, 4 mm grid, 0.1 ms, law 8, tlmpm_v5, ruler_knife_v1, cutting energy 5 J/m^2, recorder on). Law-8 supported orientations (WP12_CUTTING_PHYSICS.md section 8, diagnostic, not a validated envelope): oblique through-cuts separate at theta <= 20 deg (known failure 25-45 deg), raked dome skims at rho 10-44 deg (known failure >= 45 deg). Every held-out cut below is vertical (theta = 0; yaw about z only) or a skim with rho inside 10-44 deg.",
+    "S1_G3a": {"H1": {"seed": 43, "geometry": "registered CUT-01-R scripted edge (kinematic_env), seed 43"},
+               "H2": {"seed": 44, "geometry": "registered CUT-01-R, seed 44 (a registered task: a new geometry is not applicable)"}},
+    "S1_G3b": {"H1": {"seed": 3101, "offset_s": [0.6, 0.336], "geometry": "80 x 30 x 12 mm block, vertical cut yawed 20 deg (v1)"},
+               "H2": {"seed": 3201, "offset_s": [0.175, 0.356], "geometry": "80 x 30 x 12 mm block, vertical cut yawed 35 deg (new yaw)"}},
+    "S2": {"H1": {"seed": 3102, "offset_s": [0.726, 0.684], "geometry": "v1: disarmed flat press 2 mm, vertical cut through the pressed zone; the cut x offset from the seed"},
+           "H2": {"seed": 3202, "offset_s": [0.33, 0.586], "geometry": "disarmed flat press 1.5 mm, then a vertical cut at x = -5 mm (+ offset) through the pressed zone"}},
+    "S3": {"H1": {"seed": 3103, "offset_s": [0.324, 0.629], "geometry": "v1: vertical cut yawing +25 deg/s during the 1 s stroke"},
+           "H2": {"seed": 3203, "offset_s": [0.589, 0.526], "geometry": "vertical cut yawing -30 deg/s (opposite sense; 18 deg while inside the 12 mm block, >= 15 deg as the spec requires)"}},
+    "S4": {"H1": {"seed": 3104, "offset_s": [0.482, 0.774], "geometry": "v1: partial cut 6 of 12 mm, hold armed, withdraw disarmed"},
+           "H2": {"seed": 3204, "offset_s": [0.311, 0.286], "geometry": "partial cut 4 of 12 mm, vertical edge yawed 10 deg, hold armed, withdraw disarmed"}},
+    "S5": {"H1": {"seed": 3105, "offset_s": [0.508, 0.425], "geometry": "v1: two parallel cuts 24 mm apart + one at 90 deg, slots_per_node 16"},
+           "H2": {"seed": 3205, "offset_s": [0.482, 0.815], "geometry": "two parallel cuts 20 mm apart + one crossing cut yawed 75 deg, slots_per_node 16 (new S5 geometry)"}},
+    "S6": {"H1": {"seed": 3106, "offset_s": [0.349, 0.466], "geometry": "v1: four parallel slices at 24 mm pitch, 120 mm block at the tray walls"},
+           "H2": {"seed": 3206, "offset_s": [0.226, 0.549], "geometry": "four parallel slices at 20 mm pitch (x = -30, -10, 10, 30 mm + offset), 120 mm block at the tray walls (new S6 geometry)"}},
+    "S7": {"H1": {"seed": 3107, "offset_s": [0.448, 0.421], "geometry": "v1: dome 4 mm, edge 2 mm above the substrate, rake 25 deg"},
+           "H2": {"seed": 3207, "offset_s": [0.215, 0.738], "geometry": "dome 5 mm, edge 2.5 mm above the substrate, rake 35 deg (inside rho 10-44 deg)"}},
+    "S8": {"H1": {"seed": 3108, "offset_s": [0.621, 0.341], "geometry": "v1 cut / disarmed side push 6 mm / hold / withdraw, DENSE snapshots: every 40 substeps (4 ms) from the push start to the hold end"},
+           "H2": {"seed": 3208, "offset_s": [0.531, 0.248], "geometry": "as H1 with a 5 mm push (0.5 s at 10 mm/s), dense snapshots every 40 substeps"},
+           "note": "4 ms at the 10 mm/s push is about 0.04 s of material motion, below the P5 0.10 s eligibility limit; eligibility is still measured per pair"},
+    "S9": {"H1": {"seed": 3109, "offset_s": [0.575, 0.827], "geometry": "the five v1 controls (armed approach, armed flat press, armed side push, disarmed slide, disarmed plunge) at the new offsets, plus the G4 hold of S4 H1/H2"},
+           "H2": {"seed": 3209, "offset_s": [0.444, 0.742], "geometry": "the five controls at these offsets (new geometry not applicable)"}},
+    "S0": "not applicable (analytic box, deterministic)",
+    "G2": "v1 planes plus held-out analytic planes n213 = (2, -1, 3)/sqrt(14) and n60_xz = (cos 60, 0, sin 60); thresholds unchanged"
+  }
+}

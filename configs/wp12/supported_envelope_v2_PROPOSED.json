@@ -1,0 +1,232 @@
+{
+ "schema": "rcs_wp12_supported_envelope_v1",
+ "envelope_id": "wp12_supported_envelope_v2_PROPOSED",
+ "status": "PROPOSED",
+ "status_values": "TEMPLATE (fields only, every bound null; the feasibility classifier evaluates no rule and marks every sample envelope_pending) | DECLARED (the orchestrator filled every bound after the Phase 4 xhigh decision and committed the file before any formal Phase 5 run; a change afterwards is a new envelope version) | PROPOSED (written by rcs-impl from E2 evidence; NOT in force: generalization_wp12.evaluate_envelope marks every sample PENDING for a non-DECLARED file; the xhigh reviewer decides and a DECLARED v2 is a new file)",
+ "filled_by": "rcs-impl (high), from docs/evidence/wp12/phase4_e2_001.json under configs/wp12/phase4_e2_protocol_v1.json (commit 1876424) verdict_rules.envelope_v2; the xhigh reviewer decides",
+ "decision_ref": "docs/reports/WP12_PHASE4_E2.md (E2 results) and docs/reports/WP12_PHASE4_XHIGH_DECISION.md D2/D5; supersedes nothing until DECLARED",
+ "declared": {
+  "date": "2026-10-31 (KST)",
+  "head_at_declaration": "ecfa8c6",
+  "law": "law 8 (ADR 0012), tlmpm_v5, ruler_knife_v2_y, 1 mm particles, 4 mm grid, 0.1 ms material dt, seed 42",
+  "source_commits": {
+   "phase4a_root_causes": "b012902 (docs/reports/WP12_CUTTING_PHYSICS.md sections 1-10, docs/evidence/wp12/phase4a_law8_rootcause_001.json)",
+   "xhigh_review_and_rake_envelope_C6": "81a9626 (docs/reports/WP12_PHASE4_XHIGH_REVIEW.md section 5)",
+   "e1_protocol": "3dd3848 (configs/wp12/phase4_e1_protocol_v1.json)",
+   "e1_results": "15e5ec1 (docs/evidence/wp12/phase4_e1_001.json, WP12_CUTTING_PHYSICS.md 'E1 results')",
+   "resolution_protocol_and_study": "5efbfa0, cce4944, 77fd033 (docs/evidence/wp12/phase4_resolution_001.json)",
+   "phase4c_geometry_material": "05b31c5 (docs/evidence/wp12/phase4c_geometry_material_001.json)",
+   "phase2a_throughcut_window": "ec3e8a7 (docs/evidence/wp12/phase2_throughcut_001.json, WP12_WORKCELL.md section 5)",
+   "phase2b_native": "2f299cc (docs/evidence/wp12/phase2b_native_001.json)",
+   "methods_review": "5ccfa96 (docs/reports/WP12_PHASE4_METHODS_REVIEW.md section 2.4)",
+   "phase5_dev_feasibility": "94c7602 (artifacts/wp12/phase5_dev_002, DEV only)",
+   "wp11_records": "docs/reports/WP11_PHASE_F_LAW8.md, WP11_PHASE_E_ROUND1.md, WP11_PHASE_E_ROUND2.md (frozen, read only)"
+  },
+  "not_dependent_on": "the running V1-V4 root-cause verification (configs/wp12/phase4_verification_protocol_v1.json, ecfa8c6): it tests causes and COUNTERFACTUAL variants, not law 8 at the formal resolution. A law or profile adopted after it gets a NEW envelope version."
+ },
+ "scope": "Physical admissibility for the WP-12 Phase 5 benchmark (spec 5.3 class 'physically_unsupported') of law 8, tlmpm_v5, ruler_knife_v2_y at 1 mm / 4 mm / 0.1 ms, kinematic ideal tracking unless a note says Native, with the WP-12 goal planner and controller_profile path_v2 (armed through-cut end 0.1-0.3 mm above the board top; the frozen v1 controller ends it 0.3-0.5 mm above and is a KNOWN FAILURE for pieces <= 10 mm on the flat board). INSIDE a bound means 'not declared physically unsupported, admissible for execution', NOT 'validated': each rule's note splits its admissible range into VALIDATED, PARTIALLY_VALIDATED and NOT_RUN parts and names the excluded KNOWN_FAILURE / UNSUPPORTED_BY_LAW / PHYSICALLY_INFEASIBLE parts. A bound is set at the edge of the first known failure or physical limit, or at the outermost value reviewed (the DRAFT OOD outer range); nothing beyond a bound is declared. Phase 5 ID ranges must lie inside the VALIDATED parts (decision report D5); generalization_wp12.freeze_problems checks only the admissible bounds and skips rules with a 'when' condition, so the ID check is the orchestrator's. Samples outside a bound are counted as physically_unsupported, never dropped and never counted as controller failures. Material parameters are provisional and uncalibrated; forces are not resolution-converged.",
+ "rule_semantics": {
+  "parameter": "a key of the sample's envelope_parameters (generalization_wp12.envelope_parameters); a rule whose parameter the sample does not carry is NOT_APPLICABLE",
+  "when": "optional {parameter: value} conditions; the rule applies only if every condition equals the sample's value",
+  "kind": "max: value <= max | min: value >= min | range: min <= value <= max | in_set: value in values | subset: every element of the value list is in values",
+  "null_bound": "a null bound is UNDECLARED: the rule is NOT_EVALUATED and the sample is marked envelope_pending (never silently supported or unsupported)",
+  "evidence": "the record that justifies the bound (report section, evidence file, commit)"
+ },
+ "rules": [
+  {
+   "id": "trim_rake_deg",
+   "parameter": "rake_deg_max",
+   "kind": "max",
+   "max": 44.0,
+   "evidence": "WP12_CUTTING_PHYSICS.md section 7.2 and C6; WP12_PHASE4_XHIGH_REVIEW.md section 5; phase4a_law8_rootcause_001.json (dome rake sweep, s2307); WP11_PHASE_F_LAW8.md (F2.1, M3a-c); phase2b_native_001.json (TRIM rho 10); docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "Blade rake rho (ADR 0013), skims at motion elevation mu = 0 only. VALIDATED: rho 10 (Native flat-board TRIM and Test C, C4, resolution TRIM at all spacings), 14/15/16 (F2.1), 25 (M3a), 35 (M3b/M3c). PARTIALLY_VALIDATED: 10-44 (dome sweep, diagnostic, kinematic). KNOWN_FAILURE: 45 (motion on theta_max, float32 tie, 0 labels; s2307 frozen FAIL). UNSUPPORTED_BY_LAW: > 45 (motion gate closed by design). Live out-of-plane tracking margin: NOT_RUN. E2: rho 35 CONFIRMED on the flat board through the planner (dome removal 0.952)."
+  },
+  {
+   "id": "trim_rake_deg_min",
+   "parameter": "rake_deg_min",
+   "kind": "min",
+   "min": 9.2,
+   "evidence": "ruler_knife_v2_y geometry (tool_profile.RULER_KNIFE_V2_Y: 1.5 mm, 25 deg double bevel, bevel face 3.465 mm): lower-bevel heel drop 3.465 mm x sin(12.5 deg - rho) = 0.151 mm at rho 10, 0.200 mm at 9.19, 0.452 mm at 5; goal/planner edge clearance 0.2 mm (goals.py remove_protrusions/trim_plane edge_clearance_m); WP11_PHASE_E_ROUND2.md TEST_A_W s2406 (rho 5) SCENE_INFEASIBLE by -0.25 mm",
+   "note": "PHYSICALLY_INFEASIBLE below 9.2 deg at the declared 0.2 mm clearance: the blade heel goes below the trim plane into the substrate. NOT_RUN: 9.2-10. VALIDATED minimum: 10."
+  },
+  {
+   "id": "trim_skew_abs_deg",
+   "parameter": "skew_abs_deg_max",
+   "kind": "max",
+   "max": 30.0,
+   "evidence": "WP11_PHASE_E_ROUND1.md E1_TEST_A_s7 (psi 20, rho 10, kinematic TASK_SUCCESS, wp11_workcell_v1); WP11_PHASE_E_ROUND2.md TEST_A_W s2409 (psi 35 IK_FAILURE); benchmark_v1_DRAFT OOD outer 30; docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "Edge skew psi (ADR 0013). VALIDATED: 0-20 (psi 20 on the WP-11 workcell; skim physics does not involve the board). NOT_RUN: 20-30 on any workcell, psi != 0 on the flat board. Nothing beyond 30 is declared; near-pure draws (psi > ~89.4 deg) hit the latent swept-normal defect (e) and are UNSUPPORTED until the fallback-v2 variant ships. E2: psi +10 and -10 CONFIRMED on the flat board (removal 0.973 both) -> VALIDATED on the flat board 0-10."
+  },
+  {
+   "id": "sever_tilt_solid_board",
+   "parameter": "sever_tilt_abs_deg_max",
+   "when": {
+    "board_kind": "solid"
+   },
+   "kind": "max",
+   "max": 9.9,
+   "evidence": "phase4_e1_001.json (A_p00..A_p35, A_m01..A_m35, R_p05/R_p20/R_p35 rows, repeats); WP12_CUTTING_PHYSICS.md 'E1 results'; WP12_PHASE4_METHODS_REVIEW.md section 2.4; WP12_RESOLUTION_STUDY.md OBL20; WP12_WORKCELL.md 9.2 (live armed end 0.16-0.28 mm); docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "Sever-plane tilt theta about the edge line (E1 and Phase 5 call it 'tau'; it is NOT the ADR 0013 edge tilt tau, which stays 0 here). Flat board, Option A (edge ends on the board top). PARTIALLY_VALIDATED: |theta| <= 5 with the armed edge driven exactly to h = 0 (scripted E1, one 160x30x20 bar, one lattice phase; a 40x12x12 DEV bar stayed connected at 5). NOT_RUN: 5 < |theta| < 10 at h = 0, and every |theta| > 0 with the planner (path_v2 armed end 0.1-0.3 mm). KNOWN_FAILURE: |theta| >= 10 at h = 0 (both signs, 6-380 bridges, every resolution for 20 deg), and theta = 5 at h >= 0.25 mm. Hence no flat-board tilt is validated for the planner or Native pipeline; Phase 5 ID uses theta = 0 on the solid board. E2 (planner path_v2, phase4_e2_001): theta 2 deg CONFIRMED (2 parts, 0 bridges, armed end 0.212 mm above the board top) -> VALIDATED point (planner, one run); theta 5 deg FAIL as predicted (1 part, 26 direct bridges, armed end 0.275 mm, inside the 1 mm window [0, 0.375]) -> KNOWN_FAILURE in the planner pipeline; this supports the decision D1 armed-end argument. Still NOT_RUN in the planner: 2-5 deg, negative tilts, 5-10 deg."
+  },
+  {
+   "id": "sever_tilt_slotted_board",
+   "parameter": "sever_tilt_abs_deg_max",
+   "when": {
+    "board_kind": "slotted"
+   },
+   "kind": "max",
+   "max": 34.9,
+   "evidence": "phase4_e1_001.json slotted rows D_p00, D_p20(_reach), D_p25(_reach), D_p30(_reach), D_p35(_reach) and reachability; WP12_WORKCELL.md section 5 (D8 rows); docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "Explicit Option D, one 8 mm wide, 8 mm deep groove under the plane. VALIDATED (scripted, kinematic): theta 0, 20, 25, 30 at the reach-limited overtravel 6.67 / 5.35 / 3.87 mm (0 bridges). KNOWN_FAILURE: 35 (reachable overtravel 2.19 mm, 90 bridges). KINEMATICALLY_UNREACHABLE: groove-limit overtravel at 20-35 (knife_handle_clearance -0.73 to -5.13 mm); the reach-limit rows have only 3-7 um handle slack. NOT_RUN: the planner's 4 mm overtravel (plane_section) at any tilt, negative tilts on the slotted board, 30-35, any Native slotted run. E2 (planner 4 mm overtravel, plane_section): theta +20, -20, +25 CONFIRMED (2 parts, 0 bridges; armed lowest edge point -3.49 / -3.49 / -3.38 mm, in the groove; knife-handle slack 2.516 / 2.515 / 1.228 mm) -> VALIDATED points for the planner; DEV phase5_dev_003: 32.1 deg collision_constrained (handle -0.68 mm at HOLD). NOT_RUN: 25-34.9 except +25, -25 and beyond, Native."
+  },
+  {
+   "id": "sever_plane_yaw_abs_deg",
+   "parameter": "sever_plane_yaw_abs_deg_max",
+   "kind": "max",
+   "max": 35.0,
+   "evidence": "no cutting run with a plane yawed relative to the workpiece lattice exists; artifacts/wp12/phase5_dev_002 feasibility (P5_B_ID_dev_s52901 13.0 deg valid_feasible, P5_B_OOD_dev_s53101 32.9 deg ik_unreachable at APPROACH, DEV); benchmark_v1_DRAFT OOD outer 35; docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "Vertical plane yawed about local z (advance -z), the edge stays parallel to the board. PHYSICALLY_FEASIBLE (no tilted exit front: the class (a) mechanism does not apply); KINEMATICALLY_REACHABLE at 13 deg and IK-unreachable at 32.9 deg (one DEV sample each); NOT_RUN everywhere; no known failure. Not validated: Phase 5 ID may use it only after a declared confirmation row passes (decision report, next steps). E2: +15 and -15 deg on the solid board CONFIRMED (2 parts, 0 bridges, armed end 0.20 mm) -> VALIDATED 0-15 (both ends). NOT_RUN 15-35."
+  },
+  {
+   "id": "sever_advance_tilt_abs_deg",
+   "parameter": "advance_tilt_abs_deg_max",
+   "kind": "max",
+   "max": 30.0,
+   "evidence": "WP11_PHASE_E_ROUND1.md E1_TEST_A_s3 (15 deg, TASK_SUCCESS); WP11_PHASE_E_ROUND2.md E2_TEST_A_W_s2404 (30 deg, TASK_SUCCESS); both kinematic on wp11_workcell_v1; docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "Slanted chop: the advance tilted inside a vertical blade plane toward the edge line (motion elevation stays below horizontal). PARTIALLY_VALIDATED: 15 and 30 on the WP-11 relief-slot support. NOT_RUN on blade_master_flat_board_v1. No known failure. Phase 5 ID only after a flat-board confirmation row. E2: +15 and -15 deg NOT_EXECUTABLE_BOARD_COLLISION on the solid board: the planner tilts the edge with the advance and stops the edge centre on the board top, so the low end of the 120 mm edge is 15.5 mm inside the board (blade_collision -15.53 mm; -15 also knife_handle_clearance negative) -> KINEMATICALLY_INFEASIBLE on blade_master_flat_board_v1 with the current planner (a planner change would be needed: stop at the lowest edge point). Physically admissible bound kept."
+  },
+  {
+   "id": "board_kinds",
+   "parameter": "board_kind",
+   "kind": "in_set",
+   "values": [
+    "solid",
+    "slotted"
+   ],
+   "evidence": "ADR 0017; WP12_WORKCELL.md sections 5 and 9; phase4_e1_001.json",
+   "note": "solid = blade_master_flat_board_v1 (default; Native VALIDATED for vertical CUT, partial cut, TRIM, Test B, Test C). slotted = the explicit Option D variant, only where a family declares it (kinematic VALIDATED for the E1 rows; Native NOT_RUN). Never a hidden default."
+  },
+  {
+   "id": "material_profiles",
+   "parameter": "material_profile",
+   "kind": "in_set",
+   "values": [
+    "cutting_tasks_v1",
+    "wp12_reference_v1",
+    "wp12_soft_elastic_v1",
+    "wp12_clay_plastic_v1",
+    "wp12_firm_v1",
+    "wp12_low_friction_v1",
+    "wp12_high_friction_v1",
+    "wp12_low_cut_resistance_v1",
+    "wp12_high_cut_resistance_v1",
+    "wp12_light_v1",
+    "wp12_dense_v1"
+   ],
+   "evidence": "phase4c_geometry_material_001.json (M01-M11 on G01 CUT and G11 TRIM); WP12_GENERALIZATION_GEOMETRY_MATERIAL.md section 5; materials_wp12.admit",
+   "note": "All PROVISIONAL_UNCALIBRATED. VALIDATED: cutting_tasks_v1 (every Phase 2-4 record). PARTIALLY_VALIDATED (one CUT and one TRIM run each, kinematic): the other ten. Distinct mechanics: soft_elastic, clay_plastic, firm, light, dense. low/high_cut_resistance give codes and positions identical to the reference under law 8 (G_c changes only the blade force): force-only variants, not distinct separation behaviour. low/high_friction: weak effect in edge-normal CUT/TRIM (0 codes differ at mu 0.8), friction-dominated tasks NOT_RUN. EXCLUDED: wp12_stiff_v1 (grid CFL 0.290 at 0.1 ms, refused by the admission rule; it ran only at 50 us, outside the formal resolution) and every profile not listed."
+  },
+  {
+   "id": "cut_digits_max",
+   "parameter": "cut_digits",
+   "kind": "max",
+   "max": 5,
+   "evidence": "phase2b_native_001.json (Test B, 4 digits, 5 pieces, Native); WP12_AGENTIC_READINESS.md (MULTI 5 slices, 4 digits); WP11_PHASE_E_ROUND2.md (S = 16, max occupancy 8)",
+   "note": "VALIDATED: <= 4 digits. NOT_RUN: 5 (DRAFT OOD outer). Slot overflow raises SlotOverflowError and is an execution failure (solver_invalid), never hidden; G15 overflowed S = 8 with overlapping bumps, Phase 5 uses S = 16."
+  },
+  {
+   "id": "workpiece_height_m",
+   "parameter": "workpiece_height_m",
+   "kind": "range",
+   "min": 0.004,
+   "max": 0.035,
+   "evidence": "phase4c_geometry_material_001.json (G01-G22, *_pathv2_DIAG); phase2b_native_001.json (20 mm bar); WP12_RESOLUTION_STUDY.md (18 mm)",
+   "note": "VALIDATED: 12-32 mm (Phase 4c, kinematic, one run per geometry), 20 mm Native. PARTIALLY_VALIDATED: 4-10 mm with path_v2 only (G07/G09/G10/G21 diagnostic controller variant, declared after the v1 failures). KNOWN_FAILURE: <= 10 mm with the frozen v1 controller (armed end 0.4 mm). NOT_RUN: 32-35 mm (the 40 mm blade depth and the 5 mm handle clearance rule bind; the preflight classifies it)."
+  },
+  {
+   "id": "protrusion_families",
+   "parameter": "protrusion_families",
+   "kind": "subset",
+   "values": [
+    "dome",
+    "gaussian",
+    "ellipsoid_cap",
+    "ridge",
+    "irregular"
+   ],
+   "evidence": "phase2b_native_001.json (Test C); phase4c_geometry_material_001.json (G11-G18); WP11_PHASE_E_ROUND1.md (Test C)",
+   "note": "VALIDATED (TRIM and CUT): dome, gaussian, ellipsoid_cap; irregular (heightfield_v2, G17, one run). NOT_RUN: ridge. Overlapping footprints are not a family: per-protrusion TRIM of overlapping bumps is UNSUPPORTED by the planner (G15/G15b) and the generator refuses them (protrusions_overlap)."
+  },
+  {
+   "id": "cut_speed_m_s",
+   "parameter": "cut_speed_m_s",
+   "kind": "range",
+   "min": 0.004,
+   "max": 0.03,
+   "evidence": "every validated through-cut used 10 mm/s (goal_planner DEFAULT_OPTIONS cut_speed_m_s); benchmark_v1_DRAFT OOD outer 4-30 mm/s; docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "VALIDATED: 0.010 m/s only. NOT_RUN: every other speed (spec: an unvalidated speed range is never claimed). No known failure: the material is quasi-static at these speeds and path_v2 never overshoots the armed target. E2: 0.008 and 0.012 m/s CONFIRMED (armed end 0.16 mm both) -> VALIDATED 0.008-0.012 (with 0.010). NOT_RUN: 0.004-0.008 and 0.012-0.030."
+  },
+  {
+   "id": "skim_speed_m_s",
+   "parameter": "skim_speed_m_s",
+   "kind": "range",
+   "min": 0.01,
+   "max": 0.06,
+   "evidence": "every validated skim used 25 mm/s (goal_planner DEFAULT_OPTIONS skim_speed_m_s; dome sweep; Native TRIM/Test C); benchmark_v1_DRAFT OOD outer 10-60 mm/s; docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "VALIDATED: 0.025 m/s only. NOT_RUN: every other speed. E2: 0.020 and 0.030 m/s CONFIRMED (dome removal 0.975 / 0.961) -> VALIDATED 0.020-0.030 (with 0.025). NOT_RUN: 0.010-0.020 and 0.030-0.060."
+  },
+  {
+   "id": "trim_depth_m",
+   "parameter": "trim_depth_m",
+   "kind": "range",
+   "min": 0.0,
+   "max": 0.0,
+   "evidence": "WP12_CUTTING_PHYSICS.md section 7.2 (slab rows: an 80 mm continuous 2.8 mm chip piles up ahead of the edge and never separates at any rake; the unrestrained slab also slides off at rho >= 30)",
+   "note": "Applies only to full-length layer trims (Phase 5 C trim_layer). KNOWN_FAILURE (diagnostic, kinematic): a continuous full-length chip is carried ahead of the edge (class (c)) and never separates. Every trim_layer sample is physically_unsupported until a dedicated study. Region trims over a protrusion (trim_plane_protrusion) do not carry this parameter."
+  },
+  {
+   "id": "operation_patterns",
+   "parameter": "operation_pattern",
+   "kind": "in_set",
+   "values": [
+    "sever",
+    "remove_protrusions",
+    "trim_plane",
+    "sequence:sever>sever",
+    "sequence:remove_protrusions>remove_protrusions",
+    "sequence:remove_protrusions>remove_protrusions>remove_protrusions",
+    "sequence:remove_protrusions>remove_protrusions>remove_protrusions>remove_protrusions",
+    "sequence:trim_plane>trim_plane",
+    "sequence:sever>remove_protrusions",
+    "sequence:remove_protrusions>sever",
+    "sequence:sever>move_piece",
+    "sequence:remove_protrusions>move_piece",
+    "sequence:sever>move_piece>sever"
+   ],
+   "evidence": "phase2b_native_001.json (sever, divide, remove_protrusions x3); WP11_PHASE_E_ROUND2.md TEST_D2 (s2503/s2504/s2505 PASS, s2501/s2502/s2506 FAIL by class (c)); WP11_PHASE_E_ROUND1.md SLICE-PUSH (pushes PASS, second-cut location FAIL); WP12_AGENTIC_READINESS.md and artifacts/wp12/phase6_goalfeat_001 (cut>push>cut, DEV coarse); phase4c G15_overlapping_TRIMPLANE_DIAG; docs/evidence/wp12/phase4_e2_001.json (E2)",
+   "note": "VALIDATED: sever (incl. multi-plane), remove_protrusions (1-3), sequence:sever>sever and sequence:remove_protrusions>... (same physics and planner passes as Native Test B / Test C; goal_eval_v2a step scoping from WP-11 round 2). PARTIALLY_VALIDATED: sequence:sever>remove_protrusions and sequence:remove_protrusions>sever (3 of 6 WP-11 TEST_D2 samples failed by class (c) core-band carry, a KNOWN failure mode), trim_plane over a region (one diagnostic run), sequence:sever>move_piece (pushes validated on wp11_workcell_v1). NOT_RUN at the formal resolution: sequence:trim_plane>trim_plane, sequence:remove_protrusions>move_piece, sequence:sever>move_piece>sever (DEV at 4 mm particles only), four sequential removals. E2: trim_plane over a protrusion region CONFIRMED (TRIM_PLANE, removed 0.959) -> VALIDATED; sequence:trim_plane>trim_plane CONFIRMED (TRIM_TRIM, 0.970 per step) -> VALIDATED; sequence:sever>move_piece CONFIRMED on the flat board (CUT_PUSH, push 19.90 mm, other piece 0.3 um) -> VALIDATED; sequence:sever>move_piece>remove_protrusions CONFIRMED once (CUT_PUSH_TRIM: 3 parts, push 19.91 mm, trim removal 0.968) but NOT added (widening, see proposal.widening_candidates_not_applied)."
+  }
+ ],
+ "proposal": {
+  "date": "2026-10-31 (KST)",
+  "base": "configs/wp12/supported_envelope_v1.json (DECLARED, unchanged)",
+  "evidence": "docs/evidence/wp12/phase4_e2_001.json (18 executed rows, 2 not executable; artifacts/wp12/phase4_e2_001)",
+  "rules_applied": "protocol verdict_rules.envelope_v2: CONFIRMED -> the tested point VALIDATED (kinematic, planner path_v2, 160 x 30 x 20 mm bar, seed 42, one run); FAIL -> KNOWN_FAILURE; NOT_EXECUTABLE_BOARD_COLLISION -> KINEMATICALLY_INFEASIBLE on this workcell with this planner; no bound widened beyond v1; a range enters the Phase 5 ID only if both tested ends are CONFIRMED",
+  "bounds_changed": "none (every v1 bound kept; only the VALIDATED / KNOWN_FAILURE / NOT_RUN split in the notes changes)",
+  "phase5_id_candidates": {
+   "B": "slotted Option D tilt |theta| <= 20 deg with the planner 4 mm overtravel (SLOT_p20, SLOT_m20 CONFIRMED; +25 one CONFIRMED point, handle slack 1.23 mm); plane yaw |phi| <= 15 deg on the solid board (YAW_p15, YAW_m15 CONFIRMED); advance tilt: none (not executable); solid-board tilt: none (2 deg CONFIRMED, 5 deg FAIL: no range with both ends confirmed)",
+   "speeds": "cut 8-12 mm/s (CUT_v08, CUT_v12 CONFIRMED with 10 already validated); skim 20-30 mm/s (SKIM_v20, SKIM_v30 CONFIRMED with 25)",
+   "C": "trim_plane_protrusion (TRIM_PLANE CONFIRMED); rho up to 35 and psi +-10 were already in ID (now also confirmed through the flat-board planner)",
+   "E": "trim_trim (TRIM_TRIM CONFIRMED)",
+   "G": "cut_push (CUT_PUSH CONFIRMED); trim_clear_chip and cut_reposition_cut still not validated",
+   "demos": "Demo 2 (slotted 20 deg, planner 4 mm) and Demo 6 (cut -> push -> trim on the stationary piece, one episode) passed their kinematic E2 rows; Native runs are next (NOT_RUN)"
+  },
+  "widening_candidates_not_applied": [
+   "operation pattern sequence:sever>move_piece>remove_protrusions (CUT_PUSH_TRIM CONFIRMED, one point): not in the v1 in_set; adding it widens the admissible set, which the E2 protocol does not allow; the xhigh reviewer may add it in a DECLARED v2"
+  ],
+  "tightening_candidates_not_applied": [
+   "sever_tilt_solid_board max 9.9: the planner-pipeline 5 deg row FAILED (1 part, 26 bridges, armed end 0.275 mm). v1 already listed theta = 5 at h >= 0.25 mm as KNOWN_FAILURE inside the bound, and D5 uses 0 < |theta| <= 9.9 as the OOD boundary dimension, so the bound is kept; tightening to < 5 would reclassify those OOD samples as physically_unsupported instead of measuring them (reviewer decision)"
+  ],
+  "not_covered": "one run per point; one workpiece; kinematic only (no Native); forces not converged; material provisional and uncalibrated"
+ }
+}

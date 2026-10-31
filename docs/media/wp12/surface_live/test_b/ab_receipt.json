@@ -1,0 +1,25 @@
+{
+ "written": {
+  "start_closeup": {
+   "a": "docs/media/wp12/workcell_live/test_b/start_closeup.png",
+   "b": "docs/media/wp12/surface_live/test_b/start_closeup.png",
+   "out": "docs/media/wp12/surface_live/test_b/ab_start_closeup.png"
+  },
+  "progress_closeup": {
+   "a": "docs/media/wp12/workcell_live/test_b/progress_closeup.png",
+   "b": "docs/media/wp12/surface_live/test_b/progress_closeup.png",
+   "out": "docs/media/wp12/surface_live/test_b/ab_progress_closeup.png"
+  },
+  "final_closeup": {
+   "a": "docs/media/wp12/workcell_live/test_b/final_closeup.png",
+   "b": "docs/media/wp12/surface_live/test_b/final_closeup.png",
+   "out": "docs/media/wp12/surface_live/test_b/ab_final_closeup.png"
+  },
+  "final_overview": {
+   "a": "docs/media/wp12/workcell_live/test_b/final_overview.png",
+   "b": "docs/media/wp12/surface_live/test_b/final_overview.png",
+   "out": "docs/media/wp12/surface_live/test_b/ab_final_overview.png"
+  }
+ },
+ "scope": "presentation only; same task, view and frame index"
+}

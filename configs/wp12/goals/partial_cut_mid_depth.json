@@ -1,0 +1,13 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "partial_cut_mid_depth",
+  "type": "sever",
+  "description": "WP-12 Phase 2b partial cut (negative control for false separation): the sever_mid plane (local x = 0) cut only to mid-depth. The goal planner's declared overtravel_m = -0.010 m ends the armed descent 10 mm above the board top (edge at local z = 0.010 m of the 20 mm bar), then HOLD and WITHDRAW as usual. Same sever evaluator and thresholds as sever_mid; for this deliberate partial cut the expected sever verdict is FAIL with exactly ONE mechanical component (no false separation). The partial-cut acceptance rule is declared in configs/wp12/workcell_live_v1.json (episode PARTIAL).",
+  "episode": {"duration_s": 8.0, "control_dt_s": 0.02},
+  "planner": {"overtravel_m": -0.010},
+  "planes": [{"origin_local_m": [0.0, 0.0, 0.0], "normal_local": [1.0, 0.0, 0.0]}],
+  "expected_pieces": 2,
+  "minimum_part_mass_fraction": 0.4,
+  "minimum_main_parts_mass_fraction": 0.99,
+  "plane_error_bound_m": 0.002
+}

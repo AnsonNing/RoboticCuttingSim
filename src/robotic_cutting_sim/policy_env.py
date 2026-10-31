@@ -38,6 +38,7 @@ from .tasks import ACTION_MODES
 ROOT = Path(__file__).resolve().parents[2]
 PRESET_ID = "cutting_research_v1"
 POLICY_ENV_VERSION = "policy_ready_env_v1"
+TASK_SWITCH_VERSION = "task_switch_v1"   # PolicyReadyEnv.switch_task (WP-12 Phase 6, opt-in)
 PRESETS = (PRESET_ID,)
 ACTION_TYPES = {"edge_pose": ACTION_MODES[0], "edge_delta": DELTA_MODE, "joint_position": ACTION_MODES[1]}
 ACTION_KEYS = frozenset({"type", "mode", "target", "frame", "cut_enabled", "cut_index", "gripper"})
@@ -58,7 +59,9 @@ PRIVILEGED_KEYS = frozenset({
     "reference_positions", "reference_positions_world", "reference_indices", "mass_kg", "oracle_geometry",
     "contact_wrench_world", "next_material_wrench_world", "force", "wrench", "tool_truth",
     "tool_body_pose_xyzw", "tool_linear_velocity_world_m_s", "tool_angular_velocity_world_rad_s",
-    "grasp_status", "privileged", "material", "oracle"})
+    "grasp_status", "privileged", "material", "oracle",
+    # WP-12 Layer 6: render-surface provenance and the Hermite cut-event record are oracle/debug data
+    "surface_provenance", "hermite", "cut_events"})
 # Reset-check fields that are bookkeeping of the env itself (clocks, counters, logs, lifecycle) or deployable
 # measurements (joint encoders, camera timestamps). Every other reset_checks field (material state, cut codes,
 # simulator tool/edge pose and speeds, the grasp re-stabilization receipt) is privileged and appears in reset
@@ -300,6 +303,7 @@ class PolicyReadyEnv:
         self.reset_info = None
         self.last_reset_checks = None
         self.runtime_profile = runtime_profile   # WP-11 Phase H4 receipt (None: no profile requested)
+        self._pending_switch, self.task_switches = None, []   # WP-12 Phase 6 switch_task receipts (opt-in)
 
     # -- delegated views
     @property
@@ -349,6 +353,21 @@ class PolicyReadyEnv:
     def recorder(self):
         return self._recorder
 
+    @property
+    def surface_profile(self):
+        """Rendered surface profile: ``particle_surface_v1`` (default) or ``cut_aware_surface_v1`` (opt-in)."""
+        selection = getattr(self.backend, "surface_selection", None)
+        selection = selection() if callable(selection) else None
+        return "particle_surface_v1" if selection is None else selection["surface_profile"]
+
+    def surface_provenance(self):
+        """Privileged per-extraction surface provenance (cut-aware only; None by default). Debug/oracle data:
+        needs observation_profile='privileged_state' and never enters observe() or step info."""
+        if self.observation_profile != "privileged_state":
+            raise PermissionError("Surface provenance is privileged; use observation_profile='privileged_state'")
+        provenance = getattr(self.backend, "surface_provenance", None)
+        return provenance() if callable(provenance) else None
+
     # -- lifecycle
     def reset(self, seed=None, *, controller=None):
         """Direct simulator reset (robot, knife, grasp, material, labels, clocks); never a physical motion."""
@@ -375,12 +394,97 @@ class PolicyReadyEnv:
         if self.runtime_profile is not None:
             self.reset_info.update(runtime_profile=copy.deepcopy(self.runtime_profile),
                                    acceptance_valid=bool(self.runtime_profile["acceptance_valid"]))
+        if self.surface_profile != "particle_surface_v1":
+            # WP-12 Layer 6 (opt-in): the profile NAME is configuration, not oracle state; the default info is unchanged.
+            self.reset_info["surface_profile"] = self.surface_profile
+        if self._pending_switch is not None:   # WP-12 Phase 6 task_switch_v1 (opt-in): absent without a switch
+            self.reset_info["task_switch"] = {**self._pending_switch, "applied_at_episode_index": self._episode_index}
+            self._pending_switch = None
         if self.recording is not None:
             self._open_recorder(controller or self.recording.get("controller", "external"))
         info = copy.deepcopy(self.reset_info)
         if self.observation_profile == "privileged_state":
             info["privileged"] = {**self.privileged(), "reset_checks": copy.deepcopy(checks)}
         return self.observe(), info
+
+    def switch_task(self, task=None, *, scene=None, goal=None, planner_options=None, tool_profile=None,
+                    particle_spacing_m=None, seed=None):
+        """Opt-in (WP-12 Phase 6, ``task_switch_v1``): replace the compiled task between episodes in one process.
+
+        Pass a compiled ``ConfiguredTaskSpec`` or ``scene=`` + ``goal=`` (compiled exactly as ``open_policy_env``
+        does, with the env's runtime profile applied and checked). The switch only rewrites the backend's task
+        configuration (kinematic: the configured task and the solver fields it declares; Isaac Sim: ``task_id``,
+        ``configured_task`` and ``max_cuts``); the runtime builds material, labels, surface, contacts and the
+        grasp afresh at the next ``reset()``, which is required before any step. Compatibility rules: same
+        control dt; Isaac Sim also the same grid dx and tool profile (the held knife is not exchanged).
+        The next reset info carries the receipt under ``"task_switch"``; without a switch nothing changes.
+        """
+        from .scene_config import ConfiguredTaskSpec
+        if (scene is None) != (goal is None) or (task is None) == (scene is None):
+            raise ValueError("switch_task needs a compiled task or scene+goal (one of them)")
+        self._close_recorder({"status": "ABANDONED_BY_TASK_SWITCH"})
+        profile = None
+        if self.runtime_profile is not None:
+            from . import runtime_profiles as rp
+            profile = rp.runtime_profile(self.runtime_profile["profile_id"])
+            if particle_spacing_m is not None:
+                rp.check_caller_overrides(profile, particle_spacing_m=particle_spacing_m)
+            if scene is not None:
+                scene = rp.profile_scene(scene, profile)
+        if task is None:
+            task = compile_policy_task(scene, goal, tool_profile=tool_profile, planner_options=planner_options,
+                                       particle_spacing_m=particle_spacing_m,
+                                       seed=int(getattr(self.task, "seed", 42) if seed is None else seed))
+        if not isinstance(task, ConfiguredTaskSpec):
+            raise TypeError("switch_task expects a compiled scene_config.ConfiguredTaskSpec")
+        old, backend = self.task, self.backend
+        if abs(float(task.control_dt_s)-float(old.control_dt_s)) > 1e-12:
+            raise ValueError("switch_task keeps the control dt of the open env")
+        receipt = {"version": TASK_SWITCH_VERSION, "from_task_id": old.task_id, "to_task_id": task.task_id,
+                   "to_config_sha256": getattr(task, "config_sha256", None), "runtime_source": self.runtime_source,
+                   "requested_at_episode_index": self._episode_index}
+        if profile is not None:
+            from . import runtime_profiles as rp
+            material_dt = float(getattr(backend.config, "material_dt"))
+            self.runtime_profile = rp.profile_receipt(profile, rp.check_task(profile, task, material_dt))
+            receipt["runtime_profile"] = self.runtime_profile["profile_id"]
+        if self.runtime_source == "kinematic_ideal_tracking":
+            config = backend.config
+            changes = dict(task_id=task.task_id, max_cuts=int(task.max_cuts), cutting_law=task.cutting_law,
+                           solver="tlmpm_v5" if task.solver_module == "tlmpm_v5" else None,
+                           slots_per_node=task.scene["solver"].get("slots_per_node"))
+            if changes["solver"] is None:
+                changes["cut_events"] = None
+                if config.surface_profile is not None and config.surface_profile != "particle_surface_v1":
+                    raise ValueError("The env's cut-aware surface needs a tlmpm_v5 task")
+            from .materials_wp12 import admit, is_profile
+            if is_profile(task.scene["workpiece"]["material_profile"]):
+                admit(task.scene["workpiece"]["material_profile"], task.grid_dx_m, config.material_dt,
+                      task.particle_spacing_m)
+            new = replace(config, **changes)
+            backend.config = backend.options = new
+            backend.configured_task = task
+            backend.task = backend._task(int(task.seed))
+            backend.material = None   # the next reset builds the material of the new task
+        else:
+            config = backend.config
+            if abs(float(task.grid_dx_m)-float(config.dx)) > 1e-12:
+                raise ValueError(f"Isaac Sim switch_task keeps the material grid dx {config.dx}")
+            if task.tool_profile_id != old.tool_profile_id:
+                raise ValueError("Isaac Sim switch_task keeps the held tool profile")
+            from .scene_config import configured_task_payload
+            backend.config = replace(config, task_id=task.task_id, configured_task=configured_task_payload(task),
+                                     max_cuts=int(task.max_cuts))
+            backend.task = task
+        inner = self.inner
+        inner.task = backend.task
+        if hasattr(task, "action_limits"):
+            inner.action_limits = task.action_limits()
+        inner._ready, self._ready = False, False
+        self._points_edge = None
+        self._pending_switch = receipt
+        self.task_switches.append(receipt)
+        return copy.deepcopy(receipt)
 
     def _open_recorder(self, controller):
         if self._recorder_class is None:

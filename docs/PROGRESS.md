@@ -1,6 +1,72 @@
+# Progress — 2026-10-31 Asia/Seoul
+
+## WP-12 finalization — delivery and retained limits
+
+The authorized finish plan narrows delivery to evidence, CI, documentation and reviewed main publication.
+All reasoning/review uses xhigh. The original worktree and frozen physics/configuration/evidence remain unchanged.
+
+- Reused all 170 kinematic benchmark runs: ID_validated 47/61 = 0.77 [0.65, 0.86], original ≥0.90 NOT MET.
+  Family D 0/20 diagnosed from saved evidence: open-loop planes miss sliding material; no rerun/rescore.
+- The original Native driver finished its frozen 27-episode selection without restart/interruption.
+  Native task success 18/27; ID_validated 14/19 = 0.737 [0.512, 0.882], original ≥0.80 NOT MET.
+  All nine failures are outcomes, complete receipts 27/27, HOME PASS 27/27; Native/kinematic labels agree 26/27.
+  This cohort covers 24 ID + 3 A OOD only; 124 other feasible Native benchmark rows remain NOT_RUN.
+- Existing Native Demo 1–6 pairs remain 12/12 TASK_SUCCESS; read-only complete-receipt audit PASS 12/12.
+- Held-out ID-only feasibility 38/40 feasible (268.50 s); frozen outcome-blind pool 30.
+  Family D seed 54501, scene/goal committed at `ab1ec8f` before outcomes; material seed 42.
+  Exactly one kinematic episode FAIL (150.66 s) and one Native default-profile episode FAIL (344.43 s):
+  second cut location 4.0 mm > 2.0 mm in both. Integrity PASS; Native HOME PASS; no redraw.
+  Outputs: `artifacts/wp12/finalize_001/{kinematic_held_out,native_held_out}/P5_D_ID_held_out_s54501`.
+  Extra profile/full held-out matrix/repeats/Demo 7 camera recording NOT_RUN (authorized reduced scope).
+- CI dependency/artifact fixes, Native receipt-completeness guard and portable fresh-log launcher are reviewed.
+  Focused checks PASS: 18 CI cases, 37 Native evidence cases, 166 core smokes, 5 launcher cases.
+  18 expensive local CPU simulations deselected/NOT_RUN; full GitHub CPU CI is the regression gate.
+- Same code `0a5a8fd`: PR CI passed 1634 tests, but push CI failed one CPU-dependent float hash.
+  Test-only exact same-host historical reference fixes this without changing source/physics/frozen pins;
+  42 tests PASS each on default/Haswell/SkylakeX. Both original CI receipts/failure are preserved.
+- README uses real WP-12 flat-board Native frames, six demos, three existing byte-identical MP4s and honest A/B
+  comparison. Protected identity checks retain all 92 blobs. Surface PARTIAL / frozen gates FAIL, force NOT
+  CONVERGED, uncalibrated materials, Demo 5 fragments 5 vs 9 OPEN and host-memory FAIL remain explicit.
+- [Acceptance matrix](reports/WP12_FINAL_VALIDATION.md), [generalization and Native cohort](reports/WP12_GENERALIZATION.md).
+- Publication and exact-commit checks: [PR #3](https://github.com/AnsonNing/RoboticCuttingSim/pull/3) and
+  [CPU workflows](https://github.com/AnsonNing/RoboticCuttingSim/actions/workflows/tests.yml).
+  Runtime commands, independent review, final main SHA/CI/media receipts and completion markers:
+  `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`. DONE is written only after remote main verification.
+
+## Preserved handoff and history
+
 # Progress — 2026-10-29 Asia/Seoul
 
-## 進行中：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
+## 進行中：WP-12（2026-10-30，分支 `claude/wp12-physical-cut-surfaces`，起點 main `fbe99bd`）
+
+- 規格：[WP-12 規格](WP12_SPECIFICATION.md)；計畫：[WP-12 計畫](WP12_PLAN.md)。
+- Phase 0 完成：縮寫移除＋守門測試（`ce547f9`）、計畫（`1c91605`）、技術研究（`3f13379`）、baseline audit（`2df1e13`：8 個場景全部重現凍結結果；CPU 1196 passed／5 xfail）。
+- Phase 2a 完成（`ec3e8a7`，[報告](reports/WP12_WORKCELL.md)，ADR 0017）：`blade_master_flat_board_v1` 一塊完整木板直接放桌面、無墊高；刀刃停在板面 +0～+0.375 mm 可完全切斷，PhysX 擋住刀不穿板。
+- Phase 3 Layer 2 完成（`403870f`）：`cut_events_v1` 唯讀 recorder，物理不變，開銷約 0.8%。
+- Phase 1 完成（`b31553d`，[報告](reports/WP12_SURFACE_DIAGNOSIS.md)）：切面不平整主要來自切後刀身楔形推擠的材料變形（P95 0.6–2.0 mm），solver 在參考空間的切口是平的；1 mm 格子造成最多 0.4 s 的階梯；ParticleSurface 加上 0.36–0.77 s 偏移、法向 P95 19–51°、圓角邊、部分切口與薄屑幾乎不畫。G1、G3–G8 PASS；G2 一個 1e-9 m 子項 FAIL（float32），保留。Phase 3 門檻已凍結於 `configs/wp12/surface_protocol_v1.json`。
+- Phase 3 核心完成（`89b289d`）：`cut_aware_surface_v1` Layers 3–6，40 個單元測試，CPU 全套 1290 passed。
+- Phase 2b 完成（`2f299cc`）：平板上 live Native CUT、partial、TRIM、Test B（5 塊）、Test C 全部 PASS 並回 HOME；刀停在板面不穿透。長條每刀仍滑約 1 mm（PARTIAL）。
+- Phase 3 量測（`bdc5da0`）：凍結 protocol v1 下比較 gate **FAIL**（保留）；cut-aware 在參考空間、覆蓋率、拓撲、邊緣、體積勝出，法向與部分最大值不過。審查（`b67e80c`）確認 FAIL 成立並找出 S6 指標缺陷與 v1 自相矛盾的門檻列，建議 v2 方法＋獨立理由的 protocol v2。
+- Phase 4a 根因草稿（`b012902`）：(a) 斜切出口面未指派、(b) 45° rake 剛好卡在 θ_max、(c) core band 被刀帶走的粒子、(d) 楔形下壓、(e) swept normal fallback 潛在問題；建議 law 9 只處理 (a)。
+- Phase 3 **關閉**（xhigh，`a94bd9f`）：比較 gate 在凍結 protocol v1（`bdc5da0`）與 v2（`dc210ff`）下都 FAIL，全部保留；`cut_aware_surface_v1` 作為 opt-in profile 提供，預設仍是 `particle_surface_v1`；已接進 live／Native（`9fde661`，物理與 Phase 2b 相同）。closure 診斷 `b0a3fb8`。
+- Phase 4：原 law 9 被 xhigh 否決（`81a9626`）。E1（`15e5ec1`）：平板上 law 8 斜切只到 5° 會分離，≥10° 全部不分離；8 mm 開槽板可分離 20–30°。解析度研究 110 列（`77fd033`）：垂直切與兩刀切在各解析度下分離與否的結果不變（不宣稱數值收斂）；斜切 20° 在各解析度都不分離；接觸力、近切面變形、TRIM 壓陷不收斂。4c 工件／材料（`05b31c5`）。方法研究（xhigh，`5ccfa96`）：粒子位置用 FLIP 速度、F 用網格速度梯度 → 切面附近不一致；薄屑「撕裂」是同一漂移不是斷裂；接觸力 ∝ m/dt²。
+- Phase 5 基礎設施 DRAFT（`94c7602`）；Phase 6 完成（`73c6e43`：§6.7 全 PASS；Native 單一 process CUT→TRIM→CUT PASS；kinematic 記憶體檢查 FAIL 保留）。
+- V1–V4 根因驗證（`71a0822`）：x 與 F 不一致確認為 FLIP 漂移；網格速度位置更新可大幅降低（counterfactual）；斜切 ≥10° 由 in-core wedge 維持連接；接觸力 dt 依賴無法只用 penalty compliance 解釋；薄屑是否應斷裂是材料校準問題。
+- Phase 4 決策（xhigh）：D1–D5 與 envelope v1（`1876424`）；不改 contact、斷裂列 future work；`tlmpm_v6`（網格一致位置更新）作為 opt-in 候選，不在關鍵路徑（`28c8379`，Stage 0 PASS，Stage 1 kill set 進行中）。E2（`1f9d441`）：17 CONFIRMED，平板經 planner 的界線在 2°–5° 之間；Demo 2 用開槽板 20°；Demo 6 cut→push→trim 可行。
+- **Phase 5 已凍結**（`722468c`）：envelope v2 與 `benchmark_v1`（170＋85 held-out，Native 27 集）。
+- `tlmpm_v6` 候選在 S1 被淘汰（`99ae6ae`）；Phase 4 結論：已研究並明確界定，law 8／`tlmpm_v5` 不變。
+- Phase 7 Native Demo 1–6（`77689b5`）：兩種 surface profile 12/12 成功並回 HOME；Demo 5 兩 profile 碎塊數不同（5 vs 9），未解決。
+- Phase 5 kinematic benchmark split 完成：ID_validated 成功率 47/61 = 0.77 [0.65, 0.86]，**未達** ≥0.9 目標；family D 全部失敗（待分析，假設：長條每刀滑動累積造成切位超標）。
+
+### 接續點（2026-10-31，使用者額度將到上限，收尾）
+1. Phase 5 Native 子樣本 27 集仍在背景跑（driver 在 `artifacts/wp12/phase5_native_001/`，log `artifacts/wp12/logs/phase5_native_001_driver.log`）。結束後執行 `run_wp12_phase5.py summarize --split benchmark --native-root artifacts/wp12/phase5_native_001 ...`，把結果附加到 `docs/reports/WP12_GENERALIZATION.md`，evidence 寫 `docs/evidence/wp12/phase5_native_001.json`。
+2. 分析 family D 0/20 的根因（只診斷，不改門檻）。
+3. held-out 可行性 → `run_wp12_phase5.py demo7-select`（先 commit 抽籤結果）→ held-out episodes → Native Demo 7（兩種 profile）。
+4. 完整 CPU regression＋CI；rcs-review 最終審查與 acceptance matrix（`docs/reports/WP12_FINAL_VALIDATION.md`）。
+5. README（新工作台影像、Demo 1–7、ParticleSurface vs cut-aware 對照）與 PROGRESS → 合併 main → 最後才 `touch /mnt/data/ningan/lab_records/rcs_demo_runner/DONE`。
+- 清理紀錄（2026-10-31 依使用者說明更正）：2026-10-30 23:26 KST 刪除 `artifacts/wp11/phaseE`、`artifacts/wp11/phaseH` 與 `artifacts/wp10_claude/phase1_law4–7` 下的大型 `physics_state.npz`，是使用者要求、由使用者另一個輔助 session 執行的有意清理，不是 WP-12 agent 造成。只刪未被 docs 引用的 npz，被引用的 12 個保留；每個資料夾留有 `DELETED_NPZ_20261030.txt` 清單。result／manifest／actions 與 docs 內 evidence 都還在；之後與這些 run 比較只比 verdict 與指標，不逐粒子比。
+
+## 已完成：WP-11（2026-10-30，分支 `claude/wp11-cutting-refinement`）
 
 - 計畫：[WP-11](WP11_PLAN.md)。刀具：[ADR 0013 `ruler_knife_v2`](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md)。v2 改成像參考圖那樣夾住刀身一端的細握柄，刀身沿用 v1 的 120×40×1.5 mm。另外定義了削切姿態指標 τ／ψ／ρ／μ。
 - Baseline：main `3e26d6b`；本機 780 passed／5 xfail；CI 5 failed（4 個 hash、1 個 matplotlib）。`final_v4` 不動。
@@ -387,7 +453,7 @@ preserved, together with exact native camera-reset and other known limitations.
 See [deployment workflow](PORTABLE_DEPLOYMENT.md),
 [actual validation report](PORTABLE_DEPLOYMENT_VALIDATION.md) and
 [machine-readable receipt](evidence/portable_deployment_validation.json).
-No drivers, RSI, other projects or policies were changed.
+No drivers, other projects or policies were changed.
 
 Final local streamed-input proof passed14GUI transactions, including typed
 Cartesian/joint actions and coupled material steps. The active same-instance
@@ -434,7 +500,7 @@ Final raw episodes: `artifacts/isaac_lab_wrist_cut01_002`,
 `isaacsim_wrist_trim01_001`. Motion proof: `isaacsim_wrist_motion_probe_001`.
 Earlier far-Global wrist runs, source-race trial, rejected geometry, VGA optics
 trial and all original D0–D3 / fixed-camera evidence are preserved separately.
-No training, real-robot operation, RSI changes, driver changes or reboot occurred.
+No training, real-robot operation, other-project changes, driver changes or reboot occurred.
 
 The first public CI run for this camera delivery failed during collection:
 the new CPU reference-ray test imports Warp, absent from the workflow's old
@@ -450,7 +516,7 @@ Fixed CUT-01 and TRIM-01 have each run in **Isaac Lab 3.0 GA and Isaac Sim 6.2**
 completing 400 control steps / 8 seconds. An actual Franka holds the fixed blade, the measured edge contacts material, and TLMPM produces
 persistent separation with material reaction fed back to the arm. The second arm remains parked. Both tasks share the
 `reset/step/observe/render/evaluate/close` interface and independent Task evaluator;
-no models were trained and no RSI, other environments or drivers were modified.
+no models were trained and no other projects, other environments or drivers were modified.
 
 | Delivery this round | Actual result | Status and boundaries |
 | --- | --- | --- |
@@ -486,7 +552,7 @@ Videos are linked from [README](../README.md). Local raw data is retained; large
 This round actually executed Isaac Lab 3.0 GA and
 Isaac Sim 6.2 / Kit110.4 on the original machine and driver 570.211.01, using officially supported isolated Torch2.11/cu128 environments.
 Measurements supersede the earlier blanket CUDA13 BLOCKED classification for the complete runtime.
-No driver upgrade, reboot, RSI/other-project environment modification or model training occurred.
+No driver upgrade, reboot, other-project environment modification or model training occurred.
 
 | Actual path | Completed work | Acceptance boundary |
 |---|---|---|
@@ -539,7 +605,7 @@ Trajectory, full-geometry and timestamp audits pass, without promotion to comple
 This round actually executed and integrated Physical Cutting → Franka Control → RGB-D → Simulation Benchmark,
 delivering a standalone environment for continued research. The user authorized public
 GitHub, ongoing commits/pushes, agents and reasonable adjustments to the original report's stage gates. Numerical results and
-capability statuses are not rewritten when gates change; no RSI, other projects or drivers were modified, and no Policy was trained.
+capability statuses are not rewritten when gates change; no other projects or drivers were modified, and no Policy was trained.
 
 | Package | Delivered/measured | Remaining validation |
 |---|---|---|

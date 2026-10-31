@@ -1,0 +1,68 @@
+{
+  "scope": "Publication copies of existing Native recordings; no simulation or re-encoding",
+  "files": [
+    {
+      "path": "docs/media/wp12/demos/demo1_clean_cut/particle_surface_v1/demo.mp4",
+      "source": "/home/ningan/RoboticCuttingSim/docs/media/wp12/demos/demo1_clean_cut/particle_surface_v1/demo.mp4",
+      "sha256": "792dcbd47112104a72f1657caed068a37fedef068ca32fba024996fb88f83aca",
+      "bytes": 1075953,
+      "ffprobe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_frames": "75"
+          }
+        ],
+        "format": {
+          "duration": "15.000000",
+          "size": "1075953"
+        }
+      }
+    },
+    {
+      "path": "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4",
+      "source": "/home/ningan/RoboticCuttingSim/docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4",
+      "sha256": "1e659ac05d91a3fe1d98caea56214a23eaf7d98c77a5f6064aef35010c7a7301",
+      "bytes": 984171,
+      "ffprobe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_frames": "66"
+          }
+        ],
+        "format": {
+          "duration": "13.200000",
+          "size": "984171"
+        }
+      }
+    },
+    {
+      "path": "docs/media/wp12/demos/demo4_four_slices/particle_surface_v1/demo.mp4",
+      "source": "/home/ningan/RoboticCuttingSim/docs/media/wp12/demos/demo4_four_slices/particle_surface_v1/demo.mp4",
+      "sha256": "055cce9a8d8f1675ba696c4b3944fd98f7e44985857211599213771dee961934",
+      "bytes": 2554814,
+      "ffprobe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_frames": "191"
+          }
+        ],
+        "format": {
+          "duration": "38.200000",
+          "size": "2554814"
+        }
+      }
+    }
+  ]
+}

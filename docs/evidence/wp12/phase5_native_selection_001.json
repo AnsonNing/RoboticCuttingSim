@@ -1,0 +1,233 @@
+{
+ "meta": {
+  "command": [
+   "scripts/run_wp12_phase5.py",
+   "native-select",
+   "--feasibility",
+   "artifacts/wp12/phase5_001/feasibility_benchmark",
+   "--out",
+   "docs/evidence/wp12/phase5_native_selection_001.json"
+  ],
+  "config": "/home/ningan/RoboticCuttingSim/configs/wp12/benchmark_v1.json",
+  "config_sha256": "915a2a8f44af80b5b5115598bd5561ec82f77a214233d30cef35549962809c37",
+  "envelope_sha256": "040e7b96fa8c9e266f9e255a77f37c3fefe1540d836c3c6daa827d3ec18aa83f",
+  "module_sha256": "dcf587c3e10234dbe099bd3298e2c7a88510050f8271e5d7df592537dc3faadb",
+  "runner_sha256": "a2b2b60859b3d9a7bd57d49649e2493cc507870a9c3d9fe4ea7f7ea775cc0828",
+  "benchmark_id": "wp12_benchmark_v1",
+  "benchmark_status": "FROZEN",
+  "envelope": "/home/ningan/RoboticCuttingSim/configs/wp12/supported_envelope_v2.json",
+  "started": "2026-10-31T13:24:27.856131+09:00",
+  "tmpdir": "/mnt/data/ningan/tmp",
+  "python": "/home/ningan/RoboticCuttingSim/.venv/bin/python",
+  "git_sha": "77689b53f8c42dd54cf1b7d48a9e26f0c8a5e0bc",
+  "git_dirty": true,
+  "root": "/home/ningan/RoboticCuttingSim",
+  "provenance": {
+   "config": "configs/wp12/benchmark_v1.json",
+   "config_status": "FROZEN",
+   "config_sha256": "915a2a8f44af80b5b5115598bd5561ec82f77a214233d30cef35549962809c37",
+   "envelope": "configs/wp12/supported_envelope_v2.json",
+   "envelope_sha256": "040e7b96fa8c9e266f9e255a77f37c3fefe1540d836c3c6daa827d3ec18aa83f",
+   "frozen_hashes_verified": true,
+   "dev": false,
+   "dev_reasons": []
+  },
+  "label": null
+ },
+ "rule": {
+  "rule": "first_k_valid_feasible",
+  "k": 3,
+  "min_k": 3,
+  "salt": 1295,
+  "strata": [
+   "A_ID",
+   "B_ID",
+   "C_ID",
+   "D_ID",
+   "E_ID",
+   "F_ID",
+   "G_ID",
+   "H_ID",
+   "A_OOD"
+  ],
+  "text": "Declared before any run: per listed stratum, the first 3 valid_feasible benchmark samples in declared seed order (feasibility classes only, never kinematic outcomes): 8 ID strata (24 episodes) and A_OOD (3: pose/size OOD, where Native-specific reach, tracking and grasp effects concentrate). A stratum with fewer than 3 valid_feasible samples runs what it has and records the shortfall; every unselected sample keeps its reason.",
+  "not_selected_strata": {
+   "strata": [
+    "B_OOD",
+    "BF_OOD",
+    "C_OOD",
+    "D_OOD",
+    "E_OOD",
+    "F_OOD",
+    "G_OOD",
+    "H_OOD"
+   ],
+   "status": "NOT_RUN in Native by declared budget (decided before the freeze)",
+   "reason": "OOD has no target; the kinematic run measures every OOD dimension on all 10 samples per stratum, while 3 Native samples (one per dimension at best) cannot locate a boundary; BF is a known-failure-dominated boundary study; Native cost is 6-17 min per episode on the single Native GPU, shared with the 14 Phase 7 demo runs."
+  }
+ },
+ "strata": {
+  "A_ID": {
+   "selected": [
+    "P5_A_ID_benchmark_s51000",
+    "P5_A_ID_benchmark_s51001",
+    "P5_A_ID_benchmark_s51002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_A_ID_benchmark_s51003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_ID_benchmark_s51004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_ID_benchmark_s51005": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_ID_benchmark_s51006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_ID_benchmark_s51007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_ID_benchmark_s51008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_ID_benchmark_s51009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "A_OOD": {
+   "selected": [
+    "P5_A_OOD_benchmark_s51200",
+    "P5_A_OOD_benchmark_s51201",
+    "P5_A_OOD_benchmark_s51203"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_A_OOD_benchmark_s51202": "not valid_feasible (scene_geometrically_infeasible)",
+    "P5_A_OOD_benchmark_s51204": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_OOD_benchmark_s51205": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_OOD_benchmark_s51206": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_OOD_benchmark_s51207": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_OOD_benchmark_s51208": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_A_OOD_benchmark_s51209": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "B_ID": {
+   "selected": [
+    "P5_B_ID_benchmark_s52000",
+    "P5_B_ID_benchmark_s52001",
+    "P5_B_ID_benchmark_s52002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_B_ID_benchmark_s52003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_B_ID_benchmark_s52004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_B_ID_benchmark_s52005": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_B_ID_benchmark_s52006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_B_ID_benchmark_s52007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_B_ID_benchmark_s52008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_B_ID_benchmark_s52009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "C_ID": {
+   "selected": [
+    "P5_C_ID_benchmark_s53000",
+    "P5_C_ID_benchmark_s53001",
+    "P5_C_ID_benchmark_s53002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_C_ID_benchmark_s53003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_C_ID_benchmark_s53004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_C_ID_benchmark_s53005": "not valid_feasible (collision_constrained)",
+    "P5_C_ID_benchmark_s53006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_C_ID_benchmark_s53007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_C_ID_benchmark_s53008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_C_ID_benchmark_s53009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "D_ID": {
+   "selected": [
+    "P5_D_ID_benchmark_s54000",
+    "P5_D_ID_benchmark_s54001",
+    "P5_D_ID_benchmark_s54002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_D_ID_benchmark_s54003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_D_ID_benchmark_s54004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_D_ID_benchmark_s54005": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_D_ID_benchmark_s54006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_D_ID_benchmark_s54007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_D_ID_benchmark_s54008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_D_ID_benchmark_s54009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "E_ID": {
+   "selected": [
+    "P5_E_ID_benchmark_s55000",
+    "P5_E_ID_benchmark_s55001",
+    "P5_E_ID_benchmark_s55002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_E_ID_benchmark_s55003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_E_ID_benchmark_s55004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_E_ID_benchmark_s55005": "not valid_feasible (collision_constrained)",
+    "P5_E_ID_benchmark_s55006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_E_ID_benchmark_s55007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_E_ID_benchmark_s55008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_E_ID_benchmark_s55009": "not valid_feasible (collision_constrained)"
+   }
+  },
+  "F_ID": {
+   "selected": [
+    "P5_F_ID_benchmark_s56000",
+    "P5_F_ID_benchmark_s56001",
+    "P5_F_ID_benchmark_s56002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_F_ID_benchmark_s56003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_F_ID_benchmark_s56004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_F_ID_benchmark_s56005": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_F_ID_benchmark_s56006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_F_ID_benchmark_s56007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_F_ID_benchmark_s56008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_F_ID_benchmark_s56009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "G_ID": {
+   "selected": [
+    "P5_G_ID_benchmark_s57000",
+    "P5_G_ID_benchmark_s57001",
+    "P5_G_ID_benchmark_s57002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_G_ID_benchmark_s57003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_G_ID_benchmark_s57004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_G_ID_benchmark_s57005": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_G_ID_benchmark_s57006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_G_ID_benchmark_s57007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_G_ID_benchmark_s57008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_G_ID_benchmark_s57009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  },
+  "H_ID": {
+   "selected": [
+    "P5_H_ID_benchmark_s58000",
+    "P5_H_ID_benchmark_s58001",
+    "P5_H_ID_benchmark_s58002"
+   ],
+   "shortfall": 0,
+   "shortfall_reason": null,
+   "not_selected": {
+    "P5_H_ID_benchmark_s58003": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_H_ID_benchmark_s58004": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_H_ID_benchmark_s58005": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_H_ID_benchmark_s58006": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_H_ID_benchmark_s58007": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_H_ID_benchmark_s58008": "valid_feasible, not among the first 3 by rule first_k_valid_feasible",
+    "P5_H_ID_benchmark_s58009": "valid_feasible, not among the first 3 by rule first_k_valid_feasible"
+   }
+  }
+ }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "bar_flat_board_slotted",
+  "description": "Explicit slotted variant (spec 2.4 option D, never a hidden default): the CUT-01-R bar on the blade_master_flat_board_v1 board with four 8 mm wide, 8 mm deep through-width grooves at board x = -48, -16, +16, +48 mm (the Test B four-slice planes of divide_5_slices); the board stays one continuous body (base slab + top segments).",
+  "workpiece": {
+    "base_box_m": {"length_m": 0.16, "width_m": 0.03, "height_m": 0.02},
+    "protrusions": [],
+    "world_pose": {"translation_m": [0.0, 0.0, 0.01], "yaw_deg": 0.0},
+    "material_profile": "cutting_tasks_v1"
+  },
+  "supports": {"kind": "flat_board", "workcell": {"profile": "blade_master_flat_board_v1", "overrides": {"cutting_board": {
+    "kind": "slotted", "slot_depth_m": 0.008,
+    "slots": [{"x_board_m": -0.048, "width_m": 0.008}, {"x_board_m": -0.016, "width_m": 0.008},
+              {"x_board_m": 0.016, "width_m": 0.008}, {"x_board_m": 0.048, "width_m": 0.008}]}}}},
+  "tool": {"profile_id": "ruler_knife_v2_y", "grasp_preset": "default"},
+  "solver": {"module": "tlmpm_v5", "cutting_law": 8, "max_cuts": 4, "particle_spacing_m": 0.001, "grid_dx_m": 0.004}
+}

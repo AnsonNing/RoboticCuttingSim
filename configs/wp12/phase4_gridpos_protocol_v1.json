@@ -1,0 +1,1610 @@
+{
+ "protocol_id": "wp12_phase4_gridpos_protocol_v1",
+ "spec": "docs/reports/WP12_PHASE4_PROTOTYPE_DECISION.md P-A (commit b05c7f0); WP-12 spec 4.3 items 1-9; Phase 3 decision 3.3",
+ "declared": "2026-10-31, before any formal GPU row. The runner (scripts/run_wp12_gridpos.py) refuses formal rows unless this file is committed and unmodified (git). Failures are kept and never rescored; no parameter of the candidate is tuned. Building is not adopting.",
+ "candidate": {
+  "module": "src/robotic_cutting_sim/tlmpm_v6.py",
+  "solver": "tlmpm_v6",
+  "position_update": "grid_musl_v1",
+  "identity_option": "flip_v5 (tests only)",
+  "adr": "docs/adr/0020-tlmpm-v6-grid-consistent-position-update.md (proposed)",
+  "rule": "tlmpm_v5 step launch for launch; x_start <- x before _start_cut; after _deformation and before _update_stroke/_assign_band/_assign_lead: x_p <- x_start_p + dt sum_c w_pc new_v[node*S + slot] (MUSL grid velocity, same field/slots/weights as F); v_p (FLIP/PIC blend, alpha = config.pic) unchanged; _assign_band keeps v_p in its rear tolerance (declared, unchanged)",
+  "selection": "explicit opt-in only: LiveCuttingMaterial/KinematicConfig solver=\"tlmpm_v6\", blade_probe solver_version=6; no default, preset, scene, task, envelope, benchmark, E2 or Phase 5 row selects it (tests/test_tlmpm_v6.py)"
+ },
+ "frozen_and_unchanged": [
+  "tlmpm_v4.py (cb8985eb...), tlmpm_v5.py (a7a05b2f...), the WP-12 V1-V4 COUNTERFACTUAL variant module (sha256 c24f8f91...), byte for byte",
+  "laws 4/5/8 and their parameters",
+  "material config (alpha 0.05, k 0.1, zone = s, G_c, mu)",
+  "defaults, presets, final_v4, task identities",
+  "matrix_law8_001/002, Phase F/R and WP-11 records",
+  "resolution_002, phase4_e1_001, phase4_verify_001 runs and protocols",
+  "surface protocols v1/v2 and verdicts, supported_envelope_v1, benchmark_v1, the E2 protocol",
+  "frozen runners are executed read-only as private module instances (run_phase1_matrix, run_phase_f_material (CPU hash pin), run_phase_f_v2_material, run_phase_r_negative_controls, run_wp12_workcell_live (compile only), run_wp12_phase5 (kinematic_episode), run_wp12_phase4_e2 (pseudo_config), run_wp12_phase4_verification (drivers and analysers), run_wp12_phase4c, run_generalization, replay_measured_edge)"
+ ],
+ "arms": {
+  "V6": "tlmpm_v6 grid_musl_v1, law 8",
+  "V5": "tlmpm_v5 law 8 at the same commit (an existing record stands in only with identical solver, driver and config sha256: declared per row as v5_standin)",
+  "REPEAT": "rows with repeat = 2 (M1a, M3b, FB_CUT) run twice per arm (<row>_r2); |r1 - r2| per reported metric is the GPU nondeterminism band"
+ },
+ "solver_selection": {
+  "material_rows": "kinds matrix, matrix_m7, phase_f, phase_f_v2, phase_r, workcell, postcut, phase4c, generalization and verify/e1: the runner wraps LiveCuttingMaterial.__init__ in its own process so that the material is built with solver = the arm solver (the frozen driver requested None (tlmpm_v4 by law) or \"tlmpm_v5\"); every redirect is recorded (requested -> effective) and the row is INVALID unless every material of the row was built with the arm solver and, for V6, position_update grid_musl_v1",
+  "direct_rows": "verify/res and verify/probe build tlmpm_v5.TLMPM directly in the frozen drivers: the runner substitutes the arm class for that name inside its own process (the WP-12 V1-V4 verification mechanism), recorded as direct_import_substitution",
+  "labels": "a frozen runner writes its own hard-coded solver label into its subdirectory result.json (e.g. \"tlmpm_v5\" or \"tlmpm_v4\"); the effective solver is the material receipt / bed module recorded in gridpos_result.json, which is authoritative",
+  "consequence": "the V5 arm of the Phase F, matrix M9 and Phase R (a) style rows that WP-11 ran on tlmpm_v4 is a NEW tlmpm_v5 record (K = 1 packed codes equal ternary codes); the v4 records stand unchanged"
+ },
+ "setup": {
+  "resolution": "1 mm particles / 4 mm grid / 0.1 ms material dt / 20 ms control dt unless a row states otherwise",
+  "seed": 42,
+  "runtime_source": "kinematic_ideal_tracking (measured_trajectory_material_replay for M9); no robot, grasp, slip, dynamics or cameras",
+  "cut_diagnostics_v1": "not attached (deviation from the decision skeleton): its step bracket wraps tlmpm_v5.TLMPM.step, which tlmpm_v6 overrides, so it would observe only the V5 arm; the per-control-step gridpos monitor below records the integrity and reported quantities for both arms alike",
+  "monitor": "gridpos_monitor_v1 (read-only, host copies after every control step of every LiveCuttingMaterial): finite x/v/F, min det F, max speed, labelled count per digit, blade/total reaction, tool work (stats[2]), blade overlap (stats[3]), fixture overlap (stats[0]), particle KE, grid KE (MUSL field), null-space KE (1/2 sum m |v_p - sum w v^MUSL|^2), min particle-centre local z on solid flat-board scenes; elastic energy (Hencky, F Fpi) every 10 control steps and at FINAL; FINAL piece (component) COM velocities; flip_drift_v1 grid-position residual |x - X - u_grid| (V6 expected < 1e-6 m at float32 rounding, reported)",
+  "gpu": "cuda:0 / cuda:1 shared with E2 and later Phase 5/7 runs: at most 2 jobs of this protocol at a time, one per GPU, a lane with < 6000 MiB free waits; other processes are never touched",
+  "tmpdir": "/mnt/data/ningan/tmp"
+ },
+ "stages": {
+  "S0_cpu": {
+   "tests": "tests/test_tlmpm_v6.py plus the full CPU suite (.venv/bin/python -m pytest)",
+   "checks": [
+    "flip_v5 bitwise == tlmpm_v5 (x, v, F, Fpi, plastic, progress, work, codes, reactions, stats, slot diagnostics), legacy tray and board fixture",
+    "grid_musl_v1 bitwise == the V1-V4 COUNTERFACTUAL grid_musl (same kernel), legacy tray and board fixture",
+    "|x - X - u_grid| < 1e-6 m (flip_drift_v1) on a law-8 CPU cut",
+    "CPU controls under grid_musl_v1: side push, flat press, blunt handle, no contact -> 0 labels, 1 component; armed stop and armed withdrawal -> labels unchanged, 1 component; half cut -> code-0 ligament below the stop",
+    "free block (no supports, no gravity, 2 mm lattice off the 4 mm node planes): per substep |Delta sum(m v) - blade impulse| < 1e-6 x total blade impulse, v5 and v6",
+    "v4/v5 law tests and the full CPU suite pass; frozen solver files unchanged (sha256)"
+   ],
+   "finding": "the 4 mm CPU test block (blade_probe.block, s = dx) puts particles on node planes; zero-mass corners receive the stress-gradient term and the grid update drops it, so momentum is not conserved on that lattice in v4/v5 alike (pre-existing, not a v6 effect; formal 1 mm lattices sit at node fractions 1/8, 3/8, ... with no zero-weight corner). The momentum check therefore uses a 2 mm lattice"
+  },
+  "S1_kill": {
+   "rows": [
+    "M1a",
+    "M3b",
+    "M4",
+    "M5a",
+    "M5b",
+    "M8b",
+    "F2.7_withdrawal_v2",
+    "F2.9_blunt_handle_v2",
+    "FB_CUT",
+    "FB_TRIM_r10"
+   ],
+   "estimate_gpu_h": 2.3,
+   "rule": "Any S1 row FAIL -> v6 REJECTED: stop launching, keep every output, no tuning, write it up. A S1 row FAILs iff its V6 arm (either repeat) (a) does not PASS its frozen criterion, or (b) fails integrity, or (c) on a separating row has a different FINAL mechanical component count than the V5 arm, or (d) on a TRIM row has removal < 0.9 or substrate < 0.99, or (e) is INVALID/ERROR (solver selection not verified, crash). A V5-arm failure is recorded as a v5 finding and never excuses a V6 failure. The queue stops launching new rows on the first S1 FAIL (rows in flight finish and are kept); if the V5 arm of a failing row also fails, the report flags the row as not discriminating, but the S1 verdict is still FAIL."
+  },
+  "S2_law8": {
+   "rows": [
+    "M1b",
+    "M2",
+    "M3a",
+    "M3c",
+    "M5c",
+    "M6",
+    "M8a",
+    "M9a",
+    "M9b",
+    "M9c",
+    "M9d",
+    "M7",
+    "F2.1_gate_14",
+    "F2.1_gate_15",
+    "F2.1_gate_16",
+    "F2.3_inplane_v2",
+    "F2.4_rocking",
+    "F2.5_pure_rotation",
+    "F2.6_saw_cut",
+    "F2.6_pure_draw",
+    "F2.8_finite_edge",
+    "F2.9_flat_press",
+    "F2.9_side_push",
+    "F2.9_no_contact",
+    "F2.9_blunt_handle",
+    "F2.10_recontact",
+    "F2.11_multicut_history",
+    "F3_cut",
+    "F3_trim",
+    "F3_cut_dt_half",
+    "F3_trim_dt_half",
+    "PhaseR_Rb_side_push",
+    "PhaseR_Rb_flat_press",
+    "PhaseR_Rb_no_contact",
+    "PhaseR_Rb_stop_mid",
+    "PhaseR_Rb_withdrawal",
+    "PhaseR_Rb_half_depth_cut",
+    "PhaseR_Rb_blunt_handle_v2",
+    "POSTCUT_press",
+    "POSTCUT_push",
+    "POSTCUT_stop_withdraw"
+   ],
+   "estimate_gpu_h": 8.9
+  },
+  "S3_wp12": {
+   "rows": [
+    "FB_partial",
+    "FB_TestB",
+    "FB_TestC",
+    "4c_G01",
+    "4c_G07",
+    "E1_A_p00",
+    "E1_A_p05",
+    "E1_A_p10",
+    "E1_A_p20",
+    "E1_R_p05_h0250",
+    "E1_D_p20_reach",
+    "E1_D_p25_reach",
+    "E1_D_p30_reach",
+    "TEST_D2_s2501",
+    "TRIM_W_s2307",
+    "EFF_CUT",
+    "EFF_TRIM",
+    "EFF_OBL20",
+    "EFF_MULTI2",
+    "EFF_S7",
+    "EFF_G3b",
+    "RES_CUT_s075_dt0050",
+    "RES_TRIM_s075_dt0050",
+    "RES_MULTI2_s075_dt0050",
+    "RES_CUT_s050_dt0050",
+    "RES_TRIM_s050_dt0050",
+    "RES_MULTI2_s050_dt0050",
+    "DT_CUT_dt0050",
+    "DT_TRIM_dt0050"
+   ],
+   "estimate_gpu_h": 5.1
+  },
+  "S4_native": {
+   "rows": [
+    "NAT_FB_CUT",
+    "NAT_FB_TRIM_r10"
+   ],
+   "scheduled": false,
+   "native_wall_h": 1,
+   "rule": "needed only before any Native use of v6; not scheduled in this protocol execution (NOT_RUN unless a later decision schedules it). Criteria: Phase 2b criteria (workcell_live_v1), HOME return, per-step wall <= 1.2x the Phase 2b per-step wall"
+  }
+ },
+ "gates": {
+  "integrity": [
+   "every x, v, F finite at every monitored control step",
+   "det F > 0 and min det F > 0.5 over the episode",
+   "slot overflow 0",
+   "no particle centre below the board top (solid flat-board scenes: workcell FB_*, E1 A/R rows, phase4c; not slotted D rows, legacy trays or segment boards)",
+   "solver selection verified (every material/bed of the row is the arm solver; V6: position_update grid_musl_v1)"
+  ],
+  "S1": "see stages.S1_kill.rule",
+  "S2_S3": [
+   "frozen criteria PASS on acceptance rows (V6)",
+   "no verdict worse than the V5 arm on criterion rows (acceptance, known_failure, effect)",
+   "equal FINAL mechanical component count to the V5 arm on separating rows",
+   "TRIM rows: removal >= 0.9 and substrate >= 0.99",
+   "integrity",
+   "an S2/S3 acceptance row whose frozen criterion FAILs on V6 AND on the V5 arm at the same commit is not attributable to v6: it is reported as PASS_V5_ALSO_FAILS (never hidden), the stage verdict becomes PASS_WITH_V5_FAILURES and the reviewer decides; this does not apply to S1 (every S1 failure kills)"
+  ],
+  "verdict_order": "PASS > PASS_NONFORMAL > FAIL > ERROR/INVALID; for E1 outcome labels SEPARATED > CONNECTED; known-failure rows compare their class",
+  "not_gated_reported": [
+   "blade force (steady mean, window), tool work, blade/fixture overlap",
+   "particle / grid / null-space KE, elastic energy",
+   "piece COM velocities at FINAL",
+   "label count deltas",
+   "known-failure and partially validated rows (TEST_D2 s2501, TRIM_W s2307, 4c G07, E1 A_p05/A_p10/A_p20/R_p05_h0250 outcomes vs v5)",
+   "characterization rows (F3 dt_half, RES_*, DT_*)",
+   "M8a (diagnostic), M9c/M9d (report only), F2.9_blunt_handle v1 (report)"
+  ],
+  "envelope_note": "a change in a reported quantity is a question for a new envelope version, never a re-score of envelope v1",
+  "decision": "ACCEPTED iff S0-S3 gates pass (decision_by_gates ACCEPTED_BY_GATES, or ACCEPTED_BY_GATES_V5_FAILURES_TO_REVIEW when only non-attributable rows failed); otherwise REJECTED (kept). The xhigh reviewer accepts or rejects; this protocol only computes the gates.",
+  "trim_numbers": "TRIM rows read removal / substrate from the FINAL-state values of their own evaluator (minimum over the selected items and over equivalent keys; mid-episode END_* states and unselected protrusions excluded); a TRIM row without such numbers falls back to its frozen verdict"
+ },
+ "repeats": {
+  "rows": [
+   "M1a",
+   "M3b",
+   "FB_CUT"
+  ],
+  "band": "per reported metric, |r1 - r2| within each arm; a V6-V5 difference inside max(band_V5, band_V6) is reported as within GPU nondeterminism"
+ },
+ "predictions": {
+  "acceptance": "acceptance rows and controls PASS on V6 (V1.4: components unchanged in 10/10, TRIM removal >= 0.95); the gates read only the tool twist and topology",
+  "reopen_measure": "q50 >= 2 and q99 >= 2 (first-band |dx - F dX| P50 and P99, V5 / V6) on EFF_CUT, EFF_TRIM, EFF_MULTI2, EFF_S7, EFF_G3b; at 0.5 mm CUT q50 < 2",
+  "force_work": "steady blade force and tool work: CUT and MULTI2 above V5 (V1.4: +66 % / +49 %, work x2.04 / x1.82), OBL20 below (-21 %); TRIM +24 % force, work x1.43",
+  "overlap": "blade overlap lower on V6 (V1.4: 0.37-0.70 -> 0.24-0.42 mm)",
+  "known_failures": "known-failure rows unchanged (TEST_D2 s2501 CUTTING_FAILURE, TRIM_W s2307 0 labels, 4c G07 FAIL)",
+  "risk_rows_no_confident_prediction": [
+   "M8b (law 5 failed its slice push; CUT work x2)",
+   "M2 (OBL20 bridges x2)",
+   "E1_A_p05"
+  ],
+  "dt_pair": "no prediction (V1.3(b): CUT force 0.0328 vs 0.0327 N)"
+ },
+ "reopen_measure": {
+  "rows": [
+   "EFF_CUT",
+   "EFF_TRIM",
+   "EFF_MULTI2",
+   "EFF_S7",
+   "EFF_G3b"
+  ],
+  "band": "<= 1 s (first-band 0-1 s links, root_cause_diagnostics.link_consistency, as phase4_verify_001)",
+  "rule": "q50 = P50_V5 / P50_V6 >= 2 and q99 = P99_V5 / P99_V6 >= 2 on each row; computed only if v6 is ACCEPTED (else reported as NOT_ELIGIBLE)",
+  "reported": [
+   "EFF_OBL20",
+   "RES_CUT_s050_dt0050",
+   "RES_TRIM_s050_dt0050",
+   "RES_MULTI2_s050_dt0050"
+  ],
+  "eligible_is_not_reopened": "Phase 3 v3 needs its own xhigh decision and a committed surface_protocol_v3; v6 is never selected, accepted or tuned on a surface metric"
+ },
+ "must_not_be_claimed": [
+  "better or cleaner cutting",
+  "a fixed law-8 failure region or an oblique gain",
+  "force convergence",
+  "fracture",
+  "calibration",
+  "\"the standard TLMPM update\"",
+  "full x/F consistency (label timing and the CUT 0.5 mm P50 remain)",
+  "a surface gain or \"Phase 3 passed\" before a v3 protocol",
+  "any V1.4 (counterfactual) number as v6 evidence"
+ ],
+ "budget": {
+  "estimate_gpu_h": {
+   "S1": 2.3,
+   "S2": 8.9,
+   "S3": 5.1,
+   "total": 16.3
+  },
+  "cap_gpu_h": 18.0,
+  "native_wall_h": 1,
+  "accounting": "GPU-h = sum of job wall times (both arms, repeats and DEV smokes after commit included); a row that would start beyond the cap is NOT_RUN (budget)",
+  "v5_standins": "RES_* V5 arm: artifacts/wp12/resolution_002/<case>_<s>_g4s_dt0050 (tlmpm_v5.py a7a05b2f..., run_wp12_resolution.py a7e34259..., identical case/spacing/grid/dt); the summarizer checks the hashes and computes the same link metrics from its state.npz; a failed check runs the V5 row fresh"
+ },
+ "execution_order": "S1 (V6 and V5 arms interleaved per row, repeats last) -> stop on any S1 FAIL -> S2 -> S3, declared order, two lanes",
+ "outputs": {
+  "runs": "artifacts/wp12/gridpos_NNN/<arm>/<row>/ (gridpos_result.json, monitor.npz, the frozen runner subdirectory run_*); DEV smokes under artifacts/wp12/gridpos_dev_NNN/",
+  "logs": "artifacts/wp12/logs/gridpos_NNN_<arm>_<row>.log",
+  "evidence": "docs/evidence/wp12/phase4_gridpos_001.json",
+  "report": "docs/reports/WP12_TLMPM_V6_CANDIDATE.md (the decision skeleton named WP12_PHASE4_GRIDPOS.md; the orchestrator renamed it)"
+ },
+ "rows": [
+  {
+   "id": "M1a",
+   "stage": "S1",
+   "kind": "matrix",
+   "args": {
+    "row": "M1a"
+   },
+   "criterion": "frozen strict oracle PASS",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 300,
+   "separating": true,
+   "trim": false,
+   "repeat": 2,
+   "risk": false
+  },
+  {
+   "id": "M3b",
+   "stage": "S1",
+   "kind": "matrix",
+   "args": {
+    "row": "M3b"
+   },
+   "criterion": "as M3a (ruler_workcell_v2, 35 deg)",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 250,
+   "separating": true,
+   "trim": true,
+   "repeat": 2,
+   "risk": false
+  },
+  {
+   "id": "M4",
+   "stage": "S1",
+   "kind": "matrix",
+   "args": {
+    "row": "M4"
+   },
+   "criterion": "one component, labels unchanged during armed withdrawal, code-0 ligament below the stop",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 250,
+   "separating": false,
+   "trim": false,
+   "repeat": 1,
+   "risk": false
+  },
+  {
+   "id": "M5a",
+   "stage": "S1",
+   "kind": "matrix",
+   "args": {
+    "row": "M5a"
+   },
+   "criterion": "force present (> 0.1 N), zero labels, one component",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 200,
+   "separating": false,
+   "trim": false,
+   "repeat": 1,
+   "risk": false
+  },
+  {
+   "id": "M5b",
+   "stage": "S1",
+   "kind": "matrix",
+   "args": {
+    "row": "M5b"
+   },
+   "criterion": "force present (> 1 N), zero labels, one component",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 250,
+   "separating": false,
+   "trim": false,
+   "repeat": 1,
+   "risk": false
+  },
+  {
+   "id": "M8b",
+   "stage": "S1",
+   "kind": "matrix",
+   "args": {
+    "row": "M8b"
+   },
+   "criterion": "slice_push_report PASS",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": false,
+   "repeat": 1,
+   "risk": true
+  },
+  {
+   "id": "F2.7_withdrawal_v2",
+   "stage": "S1",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.7_withdrawal_v2",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.7 (withdrawal_v2): one component, code-0 core band deeper than the deepest armed edge, labels unchanged during withdraw, mass check",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 380
+  },
+  {
+   "id": "F2.9_blunt_handle_v2",
+   "stage": "S1",
+   "kind": "phase_f_v2",
+   "args": {},
+   "criterion": "phaseF_v2 F2.9_blunt_handle_v2: zero labels, one component, grip force > 0.1 N, mass check, zero blade contact steps",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 450
+  },
+  {
+   "id": "FB_CUT",
+   "stage": "S1",
+   "kind": "workcell",
+   "args": {
+    "episode": "CUT"
+   },
+   "criterion": "Phase 2b CUT on the kinematic backend: goal evaluator PASS, plan finished (class task_success)",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 420,
+   "separating": true,
+   "board": true,
+   "repeat": 2
+  },
+  {
+   "id": "FB_TRIM_r10",
+   "stage": "S1",
+   "kind": "workcell",
+   "args": {
+    "episode": "TRIM"
+   },
+   "criterion": "Phase 2b TRIM rho 10 on the kinematic backend: goal evaluator PASS (removal >= 0.9, substrate >= 0.99), plan finished",
+   "gate": "kill",
+   "estimated_wall_s_per_arm": 350,
+   "separating": true,
+   "trim": true,
+   "board": true
+  },
+  {
+   "id": "M1b",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M1b"
+   },
+   "criterion": "frozen strict oracle PASS",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 600,
+   "separating": true,
+   "trim": false,
+   "risk": false
+  },
+  {
+   "id": "M2",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M2"
+   },
+   "criterion": "ADR 0006 Amendment 1, the law-8 matrix adjudication (scripts/rescore_phase1_oblique.py run read-only on the row directory): two substantial parts (>= 40 % each, >= 99 % together), actual interface <= ideal-label interface + one spacing, no far particle in the opposite-side component; the runner's original <= 2 mm verdict is reported (FAIL on the v4 law-8 record)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 300,
+   "separating": true,
+   "trim": false,
+   "risk": true
+  },
+  {
+   "id": "M3a",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M3a"
+   },
+   "criterion": "reference above-plane material removed AND largest component >= 99 % of below-plane mass",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 250,
+   "separating": true,
+   "trim": true,
+   "risk": false
+  },
+  {
+   "id": "M3c",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M3c"
+   },
+   "criterion": "as M3a (blademaster_workcell_v1, 35 deg)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 250,
+   "separating": true,
+   "trim": true,
+   "risk": false
+  },
+  {
+   "id": "M5c",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M5c"
+   },
+   "criterion": "labels unchanged during the armed blade-normal move",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": false,
+   "trim": false,
+   "risk": false
+  },
+  {
+   "id": "M6",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M6"
+   },
+   "criterion": "labels unchanged during armed stop and withdrawal, one component, ligament",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 250,
+   "separating": false,
+   "trim": false,
+   "risk": false
+  },
+  {
+   "id": "M8a",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M8a"
+   },
+   "criterion": ">= 3 substantial parts (diagnostic; law-8 v4 record FAIL)",
+   "gate": "diagnostic",
+   "estimated_wall_s_per_arm": 300,
+   "separating": true,
+   "trim": false,
+   "risk": false
+  },
+  {
+   "id": "M9a",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M9a"
+   },
+   "criterion": "frozen strict PASS on the Native CUT-01-R measured-trajectory replay",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "trim": false,
+   "risk": false,
+   "note": "measured-trajectory replay (replay_measured_edge.py run in-process so the solver selection applies)"
+  },
+  {
+   "id": "M9b",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M9b"
+   },
+   "criterion": "frozen strict PASS on the Native CUT-02 replay",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 520,
+   "separating": true,
+   "trim": false,
+   "risk": false,
+   "note": "measured-trajectory replay (replay_measured_edge.py run in-process so the solver selection applies)"
+  },
+  {
+   "id": "M9c",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M9c"
+   },
+   "criterion": "report only (Lab)",
+   "gate": "report",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "trim": false,
+   "risk": false,
+   "note": "measured-trajectory replay (replay_measured_edge.py run in-process so the solver selection applies)"
+  },
+  {
+   "id": "M9d",
+   "stage": "S2",
+   "kind": "matrix",
+   "args": {
+    "row": "M9d"
+   },
+   "criterion": "report only (Lab)",
+   "gate": "report",
+   "estimated_wall_s_per_arm": 330,
+   "separating": true,
+   "trim": false,
+   "risk": false,
+   "note": "measured-trajectory replay (replay_measured_edge.py run in-process so the solver selection applies)"
+  },
+  {
+   "id": "M7",
+   "stage": "S2",
+   "kind": "matrix_m7",
+   "args": {
+    "sources": [
+     "M1a",
+     "M1b"
+    ]
+   },
+   "criterion": "separated topology persists >= 0.5 s, count never drops (from this arm's M1a and M1b)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 30,
+   "depends_on": [
+    "M1a",
+    "M1b"
+   ],
+   "gpu": false
+  },
+  {
+   "id": "F2.1_gate_14",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.1_gate_14",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.1_gate_14 frozen criterion (trim_skim; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": true
+  },
+  {
+   "id": "F2.1_gate_15",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.1_gate_15",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.1_gate_15 frozen criterion (trim_skim; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": true
+  },
+  {
+   "id": "F2.1_gate_16",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.1_gate_16",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.1_gate_16 frozen criterion (trim_skim; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": true
+  },
+  {
+   "id": "F2.3_inplane_v2",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.3_inplane_v2",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.3_inplane_v2 frozen criterion (through_cut; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "F2.4_rocking",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.4_rocking",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.4_rocking frozen criterion (rocking; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "F2.5_pure_rotation",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.5_pure_rotation",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.5_pure_rotation frozen criterion (pure_rotation; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": false,
+   "trim": false
+  },
+  {
+   "id": "F2.6_saw_cut",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.6_saw_cut",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.6_saw_cut frozen criterion (saw_cut; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "F2.6_pure_draw",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.6_pure_draw",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.6_pure_draw frozen criterion (pure_draw; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": false,
+   "trim": false
+  },
+  {
+   "id": "F2.8_finite_edge",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.8_finite_edge",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.8_finite_edge frozen criterion (finite_edge; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 800,
+   "separating": false,
+   "trim": false
+  },
+  {
+   "id": "F2.9_flat_press",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.9_flat_press",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.9_flat_press frozen criterion (flat_press; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": false,
+   "trim": false
+  },
+  {
+   "id": "F2.9_side_push",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.9_side_push",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.9_side_push frozen criterion (side_push; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": false,
+   "trim": false
+  },
+  {
+   "id": "F2.9_no_contact",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.9_no_contact",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.9_no_contact frozen criterion (no_contact; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": false,
+   "trim": false
+  },
+  {
+   "id": "F2.9_blunt_handle",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.9_blunt_handle",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.9_blunt_handle frozen criterion (blunt_handle; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "report",
+   "estimated_wall_s_per_arm": 380,
+   "separating": false,
+   "trim": false,
+   "note": "v1 FAIL record stands (v4); reported, never a gate"
+  },
+  {
+   "id": "F2.10_recontact",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.10_recontact",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.10_recontact frozen criterion (recontact; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "F2.11_multicut_history",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F2.11_multicut_history",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F2.11_multicut_history frozen criterion (multicut; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 600,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "F3_cut",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F3_cut",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F3_cut frozen criterion (through_cut; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "F3_trim",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F3_trim",
+    "variant": "formal"
+   },
+   "criterion": "phaseF_v1 F3_trim frozen criterion (trim_skim; scripts/run_phase_f_material.py ROW_INTERPRETATION)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 380,
+   "separating": true,
+   "trim": true
+  },
+  {
+   "id": "F3_cut_dt_half",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F3_cut",
+    "variant": "dt_half"
+   },
+   "criterion": "F3 dt_half (1 mm / 4 mm / 0.05 ms) characterization",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 720,
+   "trim": false
+  },
+  {
+   "id": "F3_trim_dt_half",
+   "stage": "S2",
+   "kind": "phase_f",
+   "args": {
+    "row": "F3_trim",
+    "variant": "dt_half"
+   },
+   "criterion": "F3 dt_half (1 mm / 4 mm / 0.05 ms) characterization",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 720,
+   "trim": true
+  },
+  {
+   "id": "PhaseR_Rb_side_push",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_side_push"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_side_push: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "PhaseR_Rb_flat_press",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_flat_press"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_flat_press: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "PhaseR_Rb_no_contact",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_no_contact"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_no_contact: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "PhaseR_Rb_stop_mid",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_stop_mid"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_stop_mid: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "PhaseR_Rb_withdrawal",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_withdrawal"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_withdrawal: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "PhaseR_Rb_half_depth_cut",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_half_depth_cut"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_half_depth_cut: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "PhaseR_Rb_blunt_handle_v2",
+   "stage": "S2",
+   "kind": "phase_r",
+   "args": {
+    "row": "Rb_blunt_handle_v2"
+   },
+   "criterion": "phaseR_negative_controls_v1 (b) Rb_blunt_handle_v2: K = 5 packed, every armed step writes digit 4; frozen checks",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 400
+  },
+  {
+   "id": "POSTCUT_press",
+   "stage": "S2",
+   "kind": "postcut",
+   "args": {
+    "control": "press"
+   },
+   "criterion": "CUT-01-R, K = 2: one full through-cut writing digit 0 (matrix M1 plan), then digit 1 armed for a flat press (blade face +z onto the +x piece top, 5 mm in). PASS iff 0 digit-1 labels at the end, the digit-0 array at the end equals the digit-0 array before the first digit-1 step, the stencil-graph component count is unchanged across the digit-1 segment, and the through-cut separated (>= 2 components; otherwise INVALID)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 420,
+   "new_control": true
+  },
+  {
+   "id": "POSTCUT_push",
+   "stage": "S2",
+   "kind": "postcut",
+   "args": {
+    "control": "push"
+   },
+   "criterion": "CUT-01-R, K = 2: one full through-cut writing digit 0 (matrix M1 plan), then digit 1 armed for a side push (blade face +x into the -x end face, edge at local z = 10 mm). PASS iff 0 digit-1 labels at the end, the digit-0 array at the end equals the digit-0 array before the first digit-1 step, the stencil-graph component count is unchanged across the digit-1 segment, and the through-cut separated (>= 2 components; otherwise INVALID)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 420,
+   "new_control": true
+  },
+  {
+   "id": "POSTCUT_stop_withdraw",
+   "stage": "S2",
+   "kind": "postcut",
+   "args": {
+    "control": "stop_withdraw"
+   },
+   "criterion": "CUT-01-R, K = 2: one full through-cut writing digit 0 (matrix M1 plan), then digit 1 armed for a armed stop 0.5 s with the edge at the bottom of the kerf, then armed withdrawal along the kerf. PASS iff 0 digit-1 labels at the end, the digit-0 array at the end equals the digit-0 array before the first digit-1 step, the stencil-graph component count is unchanged across the digit-1 segment, and the through-cut separated (>= 2 components; otherwise INVALID)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 420,
+   "new_control": true
+  },
+  {
+   "id": "FB_partial",
+   "stage": "S3",
+   "kind": "workcell",
+   "args": {
+    "episode": "PARTIAL"
+   },
+   "criterion": "Phase 2b PARTIAL_CUT_ACCEPTED rule (workcell_live_v1): sever integrity PASS, exactly 1 component, >= 1 cut-0 label, no cut-0 label below reference z 0.006 m, plan finished",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 360,
+   "separating": false,
+   "trim": false,
+   "board": true
+  },
+  {
+   "id": "FB_TestB",
+   "stage": "S3",
+   "kind": "workcell",
+   "args": {
+    "episode": "TESTB"
+   },
+   "criterion": "Phase 2b TESTB on the kinematic backend: goal evaluator PASS, plan finished (class task_success)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 900,
+   "separating": true,
+   "trim": false,
+   "board": true
+  },
+  {
+   "id": "FB_TestC",
+   "stage": "S3",
+   "kind": "workcell",
+   "args": {
+    "episode": "TESTC"
+   },
+   "criterion": "Phase 2b TESTC on the kinematic backend: goal evaluator PASS, plan finished (class task_success)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 600,
+   "separating": true,
+   "trim": true,
+   "board": true
+  },
+  {
+   "id": "4c_G01",
+   "stage": "S3",
+   "kind": "phase4c",
+   "args": {
+    "case": "G01_bar_ref_CUT"
+   },
+   "criterion": "phase4c G01_bar_ref_CUT: goal evaluator verdict (v5 record: PASS)",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 150,
+   "separating": true,
+   "board": true
+  },
+  {
+   "id": "4c_G07",
+   "stage": "S3",
+   "kind": "phase4c",
+   "args": {
+    "case": "G07_bar_low_CUT"
+   },
+   "criterion": "phase4c G07_bar_low_CUT goal evaluator verdict (v5 record phase4c_002: FAIL, known); reported, not worse than V5",
+   "gate": "known_failure",
+   "estimated_wall_s_per_arm": 80,
+   "separating": true,
+   "board": true
+  },
+  {
+   "id": "E1_A_p00",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "A_p00",
+      "family": "E1.1_option_A",
+      "scene": "bar_flat_board",
+      "tau_deg": 0.0,
+      "plane_x0_mm": 0.0,
+      "edge_end_z_mm": 0.0,
+      "note": "edge lowest point ends on the board top (h = 0)"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": true,
+   "risk": false
+  },
+  {
+   "id": "E1_A_p05",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "A_p05",
+      "family": "E1.1_option_A",
+      "scene": "bar_flat_board",
+      "tau_deg": 5.0,
+      "plane_x0_mm": 0.0,
+      "edge_end_z_mm": 0.0,
+      "note": "edge lowest point ends on the board top (h = 0)"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": true,
+   "risk": true
+  },
+  {
+   "id": "E1_A_p10",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "A_p10",
+      "family": "E1.1_option_A",
+      "scene": "bar_flat_board",
+      "tau_deg": 10.0,
+      "plane_x0_mm": 0.0,
+      "edge_end_z_mm": 0.0,
+      "note": "edge lowest point ends on the board top (h = 0)"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": true,
+   "risk": false
+  },
+  {
+   "id": "E1_A_p20",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "A_p20",
+      "family": "E1.1_option_A",
+      "scene": "bar_flat_board",
+      "tau_deg": 20.0,
+      "plane_x0_mm": 0.0,
+      "edge_end_z_mm": 0.0,
+      "note": "edge lowest point ends on the board top (h = 0)"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": true,
+   "risk": false
+  },
+  {
+   "id": "E1_R_p05_h0250",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "R_p05_h0250",
+      "family": "E1.1_option_A_raised",
+      "scene": "bar_flat_board",
+      "tau_deg": 5.0,
+      "plane_x0_mm": 0.0,
+      "edge_end_z_mm": 0.25,
+      "note": "edge stops h = 0.25 mm above the board top"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": true,
+   "risk": false
+  },
+  {
+   "id": "E1_D_p20_reach",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "D_p20_reach",
+      "family": "E1.2_option_D_slotted",
+      "scene": "bar_flat_board_slotted",
+      "tau_deg": 20.0,
+      "plane_x0_mm": 16.8,
+      "overtravel_mm": 6.67,
+      "edge_end_z_mm": -6.2677,
+      "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+      "overtravel_rule": "reach_limit"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": false,
+   "risk": false
+  },
+  {
+   "id": "E1_D_p25_reach",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "D_p25_reach",
+      "family": "E1.2_option_D_slotted",
+      "scene": "bar_flat_board_slotted",
+      "tau_deg": 25.0,
+      "plane_x0_mm": 17.1,
+      "overtravel_mm": 5.35,
+      "edge_end_z_mm": -4.8487,
+      "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+      "overtravel_rule": "reach_limit"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": false,
+   "risk": false
+  },
+  {
+   "id": "E1_D_p30_reach",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "e1",
+     "e1_spec": {
+      "id": "D_p30_reach",
+      "family": "E1.2_option_D_slotted",
+      "scene": "bar_flat_board_slotted",
+      "tau_deg": 30.0,
+      "plane_x0_mm": 17.5,
+      "overtravel_mm": 3.87,
+      "edge_end_z_mm": -3.3515,
+      "note": "largest overtravel (floored to 0.01 mm) for which the full E1.3 motion preflight passes, same plane x0; binding: knife_handle_clearance (5 mm) against the board top",
+      "overtravel_rule": "reach_limit"
+     },
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001
+    }
+   },
+   "criterion": "E1 outcome label (phase4_e1_protocol_v1 outcome_labels); gate: not worse than the V5 arm",
+   "gate": "acceptance",
+   "estimated_wall_s_per_arm": 200,
+   "separating": true,
+   "board": false,
+   "risk": false
+  },
+  {
+   "id": "TEST_D2_s2501",
+   "stage": "S3",
+   "kind": "generalization",
+   "args": {
+    "config": "configs/wp11/generalization_round2.json",
+    "family": "TEST_D2",
+    "seed": 2501,
+    "expect_task_id": "CFG-E2_TEST_D2_s2501-E2_TEST_D2_s2501_sever0_removeall-d4eb9654"
+   },
+   "criterion": "WP-11 round 2 TEST_D2 s2501 class (KNOWN FAILURE class (c) on v5: CUTTING_FAILURE); reported, not worse than V5",
+   "gate": "known_failure",
+   "estimated_wall_s_per_arm": 900
+  },
+  {
+   "id": "TRIM_W_s2307",
+   "stage": "S3",
+   "kind": "generalization",
+   "args": {
+    "config": "configs/wp11/generalization_round2.json",
+    "family": "TRIM_W",
+    "seed": 2307,
+    "expect_task_id": "CFG-E2_TRIM_W_s2307-E2_TRIM_W_s2307_trim-dd1a70b7"
+   },
+   "criterion": "WP-11 round 2 TRIM_W s2307 (rake 45 deg, KNOWN FAILURE: 0 labels on v5); reported, 0 labels expected",
+   "gate": "known_failure",
+   "estimated_wall_s_per_arm": 220
+  },
+  {
+   "id": "EFF_CUT",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "CUT",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 0.0001,
+     "variant": "formal"
+    }
+   },
+   "criterion": "resolution-study CUT at 1 mm / 4 mm / 0.1 ms (run_wp12_resolution.py driver): outcome not worse than V5; reopen-measure row",
+   "gate": "effect",
+   "estimated_wall_s_per_arm": 130,
+   "separating": true,
+   "trim": false,
+   "risk": false
+  },
+  {
+   "id": "EFF_TRIM",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "TRIM",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 0.0001,
+     "variant": "formal"
+    }
+   },
+   "criterion": "resolution-study TRIM at 1 mm / 4 mm / 0.1 ms (run_wp12_resolution.py driver): outcome not worse than V5; reopen-measure row",
+   "gate": "effect",
+   "estimated_wall_s_per_arm": 100,
+   "separating": true,
+   "trim": true,
+   "risk": false
+  },
+  {
+   "id": "EFF_OBL20",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "OBL20",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 0.0001,
+     "variant": "formal"
+    }
+   },
+   "criterion": "resolution-study OBL20 at 1 mm / 4 mm / 0.1 ms (run_wp12_resolution.py driver): outcome not worse than V5; reopen-measure row (reported only)",
+   "gate": "effect",
+   "estimated_wall_s_per_arm": 140,
+   "separating": false,
+   "trim": false,
+   "risk": true
+  },
+  {
+   "id": "EFF_MULTI2",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "MULTI2",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 0.0001,
+     "variant": "formal"
+    }
+   },
+   "criterion": "resolution-study MULTI2 at 1 mm / 4 mm / 0.1 ms (run_wp12_resolution.py driver): outcome not worse than V5; reopen-measure row",
+   "gate": "effect",
+   "estimated_wall_s_per_arm": 240,
+   "separating": true,
+   "trim": false,
+   "risk": false
+  },
+  {
+   "id": "EFF_S7",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "probe",
+     "case": "S7",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 0.0001
+    }
+   },
+   "criterion": "Phase 3 S7 raked thin-chip skim (blade_probe driver): outcome not worse than V5; reopen-measure row",
+   "gate": "effect",
+   "estimated_wall_s_per_arm": 90,
+   "separating": true,
+   "trim": false,
+   "note": "raked thin-chip skim: removal / substrate reported (v5 B_S7_dt0100 removal 0.172 by design), the TRIM removal threshold does not apply"
+  },
+  {
+   "id": "EFF_G3b",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "probe",
+     "case": "G3b",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 0.0001
+    }
+   },
+   "criterion": "Phase 1 G3b 20 deg yawed cut (blade_probe driver): outcome not worse than V5; reopen-measure row",
+   "gate": "effect",
+   "estimated_wall_s_per_arm": 60,
+   "separating": true,
+   "trim": false
+  },
+  {
+   "id": "RES_CUT_s075_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "CUT",
+     "spacing_m": 0.00075,
+     "grid_dx_m": 0.003,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "characterization at s = 0.75 mm, dx = 4 s, 0.05 ms",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 490,
+   "trim": false,
+   "v5_standin": "artifacts/wp12/resolution_002/CUT_s075_g4s_dt0050"
+  },
+  {
+   "id": "RES_TRIM_s075_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "TRIM",
+     "spacing_m": 0.00075,
+     "grid_dx_m": 0.003,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "characterization at s = 0.75 mm, dx = 4 s, 0.05 ms",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 420,
+   "trim": true,
+   "v5_standin": "artifacts/wp12/resolution_002/TRIM_s075_g4s_dt0050"
+  },
+  {
+   "id": "RES_MULTI2_s075_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "MULTI2",
+     "spacing_m": 0.00075,
+     "grid_dx_m": 0.003,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "characterization at s = 0.75 mm, dx = 4 s, 0.05 ms",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 900,
+   "trim": false,
+   "v5_standin": "artifacts/wp12/resolution_002/MULTI2_s075_g4s_dt0050"
+  },
+  {
+   "id": "RES_CUT_s050_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "CUT",
+     "spacing_m": 0.0005,
+     "grid_dx_m": 0.002,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "characterization at s = 0.5 mm, dx = 4 s, 0.05 ms",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 1200,
+   "trim": false,
+   "v5_standin": "artifacts/wp12/resolution_002/CUT_s050_g4s_dt0050"
+  },
+  {
+   "id": "RES_TRIM_s050_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "TRIM",
+     "spacing_m": 0.0005,
+     "grid_dx_m": 0.002,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "characterization at s = 0.5 mm, dx = 4 s, 0.05 ms",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 1100,
+   "trim": true,
+   "v5_standin": "artifacts/wp12/resolution_002/TRIM_s050_g4s_dt0050"
+  },
+  {
+   "id": "RES_MULTI2_s050_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "MULTI2",
+     "spacing_m": 0.0005,
+     "grid_dx_m": 0.002,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "characterization at s = 0.5 mm, dx = 4 s, 0.05 ms",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 2100,
+   "trim": false,
+   "v5_standin": "artifacts/wp12/resolution_002/MULTI2_s050_g4s_dt0050"
+  },
+  {
+   "id": "DT_CUT_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "CUT",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "force dt pair at 1 mm (with EFF at 0.1 ms): no prediction",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 240,
+   "trim": false
+  },
+  {
+   "id": "DT_TRIM_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "args": {
+    "row": {
+     "kind": "res",
+     "case": "TRIM",
+     "spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "dt_s": 5e-05,
+     "variant": "formal"
+    }
+   },
+   "criterion": "force dt pair at 1 mm (with EFF at 0.1 ms): no prediction",
+   "gate": "characterization",
+   "estimated_wall_s_per_arm": 190,
+   "trim": true
+  },
+  {
+   "id": "NAT_FB_CUT",
+   "stage": "S4",
+   "kind": "native",
+   "args": {
+    "episode": "CUT"
+   },
+   "criterion": "Phase 2b criteria (workcell_live_v1), HOME return, per-step wall <= 1.2x the Phase 2b record",
+   "gate": "native",
+   "estimated_wall_s_per_arm": 3600,
+   "arms": [
+    "V6"
+   ],
+   "scheduled": false
+  },
+  {
+   "id": "NAT_FB_TRIM_r10",
+   "stage": "S4",
+   "kind": "native",
+   "args": {
+    "episode": "TRIM"
+   },
+   "criterion": "Phase 2b criteria (workcell_live_v1), HOME return, per-step wall <= 1.2x the Phase 2b record",
+   "gate": "native",
+   "estimated_wall_s_per_arm": 3600,
+   "arms": [
+    "V6"
+   ],
+   "scheduled": false
+  }
+ ],
+ "dev_runs_before_commit": {
+  "dirs": [
+   "artifacts/wp12/gridpos_dev_001",
+   "artifacts/wp12/gridpos_dev_002"
+  ],
+  "runs": 28,
+  "gpu_h": 0.29,
+  "label": "DEV, never evidence; outside the protocol budget",
+  "purpose": "every driver kind end to end with the solver selection verified (most capped with --dev-max-steps); full-length POSTCUT_press and POSTCUT_stop_withdraw (V6) and M9a (V6)",
+  "kept_failures": [
+   "gridpos_dev_001/V6/POSTCUT_stop_withdraw ERROR (task duration change needed the scripted knots extended; fixed before commit)",
+   "gridpos_dev_002/V6/F2.11_multicut_history ERROR inside the frozen Phase F evaluator on a 20-step cap (no label records yet); a DEV-cap artefact"
+  ]
+ }
+}

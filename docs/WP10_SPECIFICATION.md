@@ -9,10 +9,10 @@ Franka 夾著刀具切割物體，完成任務（切斷、切除凸起物等）�
 
 1. 刀具要像尺：長而扁平的直刃，由 Franka 0 兩指**物理夾持**（不是固定連接）。尺寸與次要目標由實作者判斷。
 2. 機器人要能用刀具完成**各種動作**：不同角度切入、下切、推切、拉切、來回鋸切、沿表面削、斜切、用刀面推擠等。物理上做不到的動作（例如側推）要正確地「沒切開」，或出現滑刀、掉刀，而不是照樣切開。
-3. 後續會用 policy、RL、RSI agent 輸出動作，狀態觀察與影像觀察都會用到。場景要可執行、不崩潰、有安全限制、失敗有回報，速度要足以做 RL。
+3. 後續會用 policy、RL、agentic control 輸出動作，狀態觀察與影像觀察都會用到。場景要可執行、不崩潰、有安全限制、失敗有回報，速度要足以做 RL。
 4. 最後要有**實際的影片**：腳本 policy、學習型 policy、RL、LLM agent 實際輸出動作控制機器人、完成任務。
 
-共通規則照 `AGENTS.md`：v1 的物理、門檻與紀錄不改；新東西版本化並可選；PASS／FAIL／BLOCKED／NOT_RUN 分開；失敗保留；不覆寫輸出；記錄指令、commit、seed、版本、wall time 與 artifact 路徑；不改驅動、不改 RSI。
+共通規則照 `AGENTS.md`：v1 的物理、門檻與紀錄不改；新東西版本化並可選；PASS／FAIL／BLOCKED／NOT_RUN 分開；失敗保留；不覆寫輸出；記錄指令、commit、seed、版本、wall time 與 artifact 路徑；不改驅動、不改其他專案。
 
 ## 1. 診斷（2026-10-28，更正版）
 
@@ -112,7 +112,7 @@ Franka 夾著刀具切割物體，完成任務（切斷、切除凸起物等）�
 4. **RL**：PPO 先在 kinematic backend 預訓練（state），再到 live runtime 跑幾集；確認 reward 有變化、不崩潰、episode 正常結束。不宣稱學會。
 5. **LLM agent**：`agent_api.CuttingAgentAPI` 的工具交給 agent（Claude 或 Codex），只靠觀察（影像與本體感測）和 `describe_task` 決定動作，CUT-01-R、TRIM-01-R 各至少 3 集；記錄每集的工具呼叫序列、是否完成、失敗原因。如果需要跨行程呼叫，就做一個薄的 CLI 或服務，和 Gym 共用後端。
 6. **影片（必交）**：上面每種控制方式 × 每個任務至少一集**實際機器人**的影片（Global D455 與兩個腕部 D405 同步 RGB-D，沿用現有錄影流程），畫面上標示控制方式、時間、切削開關與最終評估結果；放在 `docs/media/wp10/`，在 README 與報告中連結。kinematic 的粒子影片只能當補充，不能取代。
-7. **RSI 相容**：用 RSI 的 `run(env, ctx)` 控制程式形式跑一集（在本 repo 內模擬那個呼叫方式），寫 RSI 對接說明（`lab/sim/envs/rcs_cut01_{lab,sim}.yaml` 要改什麼；不改 RSI）。
+7. **agentic control 相容**：用 agentic control 的 `run(env, ctx)` 控制程式形式跑一集（在本 repo 內模擬那個呼叫方式），寫 agentic control 對接說明（`lab/sim/envs/rcs_cut01_{lab,sim}.yaml` 要改什麼；不改其他專案）。
 
 完成條件：一張總表，列出控制方式 × 任務 × runtime 的「動作正確性」與「任務完成」結果（PASS／FAIL／BLOCKED／NOT_RUN 與數字），附所有原始紀錄與影片路徑。
 

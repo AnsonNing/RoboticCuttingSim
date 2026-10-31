@@ -61,9 +61,16 @@ class EpisodeRecorder:
         self.steps = 0
         self.phases = []  # (input time_s, scripted policy phase label) per control step
         self.stream = (self.output / 'actions.jsonl').open('w')
-        config = getattr(env.backend, 'options', getattr(env.backend, 'config', None))
+        # WP-12 Layer 6 (opt-in): a backend with a non-default surface (cut_aware_surface_v1) reports its selection;
+        # the frames' surface provenance goes to surface_provenance.json. None (default): nothing new is written.
+        selection = getattr(env.backend, 'surface_selection', None)
+        self.surface_selection = selection() if callable(selection) else None
+        self.surface_frames = []
+        config = asdict(getattr(env.backend, 'options', getattr(env.backend, 'config', None)))
+        if 'surface_profile' in config and config['surface_profile'] is None:
+            del config['surface_profile']   # KinematicConfig default: the manifest keeps its pre-Layer-6 keys
         write_json(self.output / 'manifest.json', manifest(jsonable(dict(
-            controller=controller, runtime_source=env.runtime_source, config=asdict(config),
+            controller=controller, runtime_source=env.runtime_source, config=config,
             task_id=env.task.task_id, seed=env.task.seed)), 'wp10_actual_live_episode'))
         self.capture()
 
@@ -113,6 +120,10 @@ class EpisodeRecorder:
         state = backend.material.history_state()
         self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
         self.states.append(jsonable(self.measured()))
+        if getattr(self, "surface_selection", None) is not None:
+            row = backend.surface_frame()
+            self.surface_frames.append(dict(frame=index, time_s=env.time_s, extraction=row['extraction'],
+                                            codes_sha256=row['codes_sha256']))
         write_json(self.output / 'frame_manifest.json', self.rows)
 
     def step(self, action, result, before_observation=None, step_wall_s=None, policy_phase=None,
@@ -222,6 +233,8 @@ class EpisodeRecorder:
             write_json(self.output / 'setup.json', dict(body_labels=body_paths))
         write_json(self.output / 'task.json', env.task.to_dict())
         write_json(self.output / 'material.json', material.parameter_receipt)
+        if getattr(self, "surface_selection", None) is not None:
+            self.write_surface_provenance(material)
         metrics = dict(steps=self.steps, events=self.events,
                        tracking_error_m={key: float(value) for key, value in zip(
                            ('p50', 'p95', 'max'), np.percentile(self.errors or [0.], [50, 95, 100]))},
@@ -229,6 +242,33 @@ class EpisodeRecorder:
                            ('p50', 'p95', 'max'), np.percentile(self.rotation_errors or [0.], [50, 95, 100]))})
         write_json(self.output / 'result.json', {**result, **metrics})
         return metrics
+
+
+def _write_surface_provenance(self, material):
+    """surface_provenance.json (surface_provenance_v1) + cut_events_log.npy for a non-default surface profile.
+
+    The final cut_events_v1 log is cumulative and append-only (codes are monotone), so the Hermite data of any
+    recorded frame are the rows with ``substep`` <= that frame's last substep; with the recorded codes
+    (physics_state.npz) and the reference lattice the frame's surface is reproducible."""
+    provenance = self.env.backend.surface_provenance()
+    recorder = getattr(material, 'cut_event_recorder', None)
+    log_file = None
+    if recorder is not None:
+        log = recorder.log()
+        log_file = 'cut_events_log.npy'
+        np.save(self.output / log_file, log, allow_pickle=False)
+    codes_by_extraction = {row['extraction']: row['codes_sha256'] for row in provenance['rows']}
+    frames = [dict(frame, codes_match_extraction=codes_by_extraction.get(frame['extraction']) == frame['codes_sha256'])
+              for frame in self.surface_frames]
+    write_json(self.output / 'surface_provenance.json', jsonable(dict(
+        version=provenance['summary']['version'], selection=provenance['selection'],
+        cut_events=provenance['cut_events'], cut_events_log=log_file, summary=provenance['summary'],
+        frames=frames, rows=provenance['rows'],
+        scope='Render-surface provenance (oracle/debug data, never an observation); the surface is one-way render '
+              'geometry, not the contact surface')))
+
+
+EpisodeRecorder.write_surface_provenance = _write_surface_provenance
 
 
 def fuzz_action(step, rng, pattern='balanced'):
@@ -297,6 +337,8 @@ def validate_configured(p, a):
 def validate_arguments(p, a):
     if a.scene or a.goal:
         return validate_configured(p, a)
+    if hasattr(a, 'surface_profile') or hasattr(a, 'surface_timing_log'):
+        p.error('--surface-profile/--surface-timing-log apply to --scene/--goal runs')
     if a.stop_after_phase is not None or a.return_home or a.planner_options or a.hold_after_stop_s \
             or a.hold_until_time_limit:
         p.error('--stop-after-phase/--hold-after-stop-s/--hold-until-time-limit/--return-home/--planner-options apply '
@@ -536,6 +578,13 @@ def main(argv=None):
                    help='After the task phase: the physical, preflighted return-to-home (separate home_outcome)')
     p.add_argument('--skip-plan-preflight', action='store_true',
                    help='Do not run the C2 plan preflight before a configured run (recorded; default: run and require PASS)')
+    # WP-12 Layer 6 (opt-in; absent from the recorded arguments unless given, so default runs are unchanged)
+    p.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'), default=argparse.SUPPRESS,
+                   help='Configured runs: the rendered specimen surface (default particle_surface_v1); cut_aware_surface_v1 '
+                        'needs tlmpm_v5 and turns the cut_events_v1 recorder on')
+    p.add_argument('--surface-timing-log', action='store_true', default=argparse.SUPPRESS,
+                   help='Configured runs: write the in-memory per-step physics/surface/camera timings to '
+                        'episode_###/runtime_timing_trace.json (profiling; both surface profiles)')
     a = p.parse_args(argv)
     validate_arguments(p, a)
     out = new_output(a.out)
@@ -657,6 +706,11 @@ def main(argv=None):
     return 0 if status == 'PASS_EXECUTION' else 1
 
 
+def gpu_memory_now():
+    from robotic_cutting_sim.surface_runtime import gpu_process_memory_mib
+    return gpu_process_memory_mib()
+
+
 def plan_preflight(a, out, task):
     """C2 plan preflight in the CPU .venv before any Isaac launch; None when skipped."""
     from robotic_cutting_sim.motion_preflight import run_cli
@@ -685,6 +739,8 @@ def run_configured(a, out, task):
                    action_limits=task.action_limits())
     if a.overview_camera:
         options['overview_camera'] = True
+    if getattr(a, 'surface_profile', None) is not None:
+        options['surface_profile'] = a.surface_profile
     grip_overrides = {key: value for key, value in dict(max_finger_force_n=a.grip_force,
         settle_s=a.settle_seconds, friction=a.grip_friction).items() if value is not None}
     if grip_overrides:
@@ -776,6 +832,12 @@ def run_configured(a, out, task):
                                home_plan={key: value for key, value in plan.items() if key != 'q'})
                 row.update(episode_state_final=env.lifecycle.snapshot(), episode_transitions=env.lifecycle.history,
                            wall_s=time.monotonic() - episode_start)
+                if getattr(a, 'surface_timing_log', False):
+                    write_json(recorder.output / 'runtime_timing_trace.json', jsonable(dict(
+                        version='runtime_timing_trace_v1', surface_selection=recorder.surface_selection,
+                        surface_profile=env.backend.config.surface_profile, **env.backend.runtime_timing_trace(),
+                        gpu_process_memory_mib=gpu_memory_now(),
+                        scope='perf_counter wall times inside the Native runner (in-memory trace since reset)')))
                 row.update(recorder.finish(jsonable(row)))
                 results.append(row)
                 write_json(out / 'results.json', jsonable(results))

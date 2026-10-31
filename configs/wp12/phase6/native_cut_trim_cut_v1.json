@@ -1,0 +1,57 @@
+{
+ "schema": "rcs_wp12_phase6_plan_v1",
+ "plan_id": "wp12_phase6_native_cut_trim_cut_v1",
+ "declared": "2026-10-31, WP-12 Phase 6, before any phase6 run. Native Isaac Sim 6.2, full_physics_v1 (the acceptance profile: 1 mm / 4 mm / 0.1 ms, stage_reset reload_in_place), cut_aware_surface_v1, three episodes in ONE process with task switches (CUT -> TRIM -> CUT). Scripted goal planner with NOMINAL edge feedback (deployable inputs only; Phase 2b used measured edge feedback, a privileged controller input), no return home. Episode 0 starts with the invalid-action probe. No expect is declared for the task verdicts (reported as measured).",
+ "runtime": "isaac_sim",
+ "runtime_profile": "full_physics_v1",
+ "surface_profile": "cut_aware_surface_v1",
+ "record_every": 10,
+ "preset_overrides": {
+  "camera_every": 5
+ },
+ "seed": 42,
+ "tasks": {
+  "CUT": {
+   "scene": "configs/wp12/scenes/bar_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/sever_mid_live_14s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v2"
+   },
+   "source": "Phase 2b CUT inputs (artifacts/wp12/surface_live_002/inputs, live duration 14 s)"
+  },
+  "TRIM": {
+   "scene": "configs/wp12/scenes/trim01_flat_board.json",
+   "goal": "configs/wp12/phase6/goals/trim_bump_rho10_live_14p5s.json",
+   "planner_options": {
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "controller_profile": "path_v3"
+   },
+   "source": "Phase 2b TRIM_PATH_V3 inputs (artifacts/wp12/surface_live_005/inputs, 14.5 s)"
+  }
+ },
+ "episodes": [
+  {
+   "task": "CUT",
+   "controller": "probe_then_scripted",
+   "label": "cut_probe_then_scripted"
+  },
+  {
+   "task": "TRIM",
+   "controller": "scripted",
+   "label": "trim_scripted"
+  },
+  {
+   "task": "CUT",
+   "controller": "scripted",
+   "label": "cut_scripted_again"
+  }
+ ],
+ "limits": {
+  "memory_fit_from_episode": 1,
+  "tool_in_hand_drift_max_m": 0.002,
+  "note": "3 episodes: memory slopes are reported, not gated (2 fitted points)"
+ }
+}

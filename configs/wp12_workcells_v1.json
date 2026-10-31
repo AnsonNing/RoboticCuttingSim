@@ -1,0 +1,72 @@
+{
+  "version": "wp12_workcells_v1",
+  "freeze_boundary": "Defined in WP-12 Phase 2 (2026-10-30) before any blade_master_flat_board_v1 episode. wp10_scenarios_v1-v3, wp11_scenarios_v1 (wp11_workcell_v1) and every v1-v4 task, threshold and record are unchanged; a change here is a new workcell version.",
+  "workcells": {
+    "blade_master_flat_board_v1": {
+      "fixture_mode": "flat_board_v1",
+      "decision": "docs/adr/0017-blade-master-flat-board-workcell.md",
+      "description": "BladeMaster-style workcell: a normal table whose top is the Franka mounting plane, ONE continuous wooden cutting board lying directly on the table top, and the workpiece directly on the board top. No risers or pedestals: the board is the only support, in the visual mesh, the PhysX collider and the TLMPM fixture contact. The board's front (-y) edge sits 5 mm inside the table's front edge so that, during a near-horizontal skim with the end-held ruler_knife_v2_y (tip toward world +y), the Franka hand hangs past the table edge (docs/reports/WP12_WORKCELL.md, layout study).",
+      "table": {
+        "top_world_z_m": -0.01,
+        "center_xy_world_m": [0.0, 0.2625],
+        "half_extents_xy_m": [0.9, 0.3375],
+        "thickness_m": 0.05,
+        "friction": "task_material",
+        "restitution": 0.0,
+        "display_color_rgb": [0.80, 0.81, 0.83],
+        "scope": "Table top = the Franka base mounting plane (robot.py / workcell.py bases at z = -0.01, unchanged). Front edge at world y = -0.075, back edge at +0.6; x from -0.9 to +0.9 (both robot bases stand on it)."
+      },
+      "cutting_board": {
+        "kind": "solid",
+        "center_xy_world_m": [0.0, 0.03],
+        "yaw_deg": 0.0,
+        "length_x_m": 0.36,
+        "width_y_m": 0.19,
+        "thickness_m": 0.02,
+        "slots": [],
+        "slot_depth_m": 0.0,
+        "friction": "task_material",
+        "restitution": 0.0,
+        "display_color_rgb": [0.80, 0.60, 0.36],
+        "appearance": "bamboo_wood_v1",
+        "min_workpiece_margin_m": 0.005,
+        "scope": "Board bottom rests on the table top; board top = table top + thickness is the workpiece support plane (workpiece-local z = 0). kind 'solid' (default) or 'slotted': slots are through-width grooves at board-frame x positions (slot x measured from the board centre along the board x axis), slot_depth_m deep, so the board stays one continuous body (a base slab plus top segments)."
+      },
+      "friction_scope": "'task_material' resolves to task.material.friction (0.3 for cutting_tasks_v1). TLMPM material-board contact always uses the task material friction; the PhysX board/table material uses the declared value, so with 'task_material' both agree. A numeric value only changes the PhysX knife/robot-board contact and is reported as such.",
+      "home_joint_positions": [
+        -0.08763138204813004,
+        -0.26645010709762573,
+        -0.1775343418121338,
+        -2.438784122467041,
+        -0.05655788630247116,
+        2.175581216812134,
+        0.5585541129112244
+      ],
+      "home_finger_position_m": 0.0112,
+      "home_hand_pose_world_xyzw": [
+        -0.027999047189950943,
+        -3.764618838970797e-07,
+        0.3916512727737427,
+        0.999999999999845,
+        8.940694584679506e-08,
+        -5.087271043886678e-07,
+        -2.0792474958456371e-07
+      ],
+      "home_source": {
+        "rule": "Same HOME relative to the workpiece as wp11_workcell_v1: knife edge centre at workpiece-local (0, 0, 0.188) m with the hand pointing straight down and the blade hanging below the fingers (/home/ningan/a.png). The workpiece sits on the board 90 mm lower in world than in wp11 (board top z = 0.01 m vs 0.10 m), so the HOME edge is world (0, 0, 0.198) m.",
+        "joints": "Runtime Newton IK (DualFrankaController via scripts/preflight_wp11_orientations.Kinematics, ruler_knife_v2_y hand_from_edge), strict tolerance, seeded with the wp11 q_home; position error 0.97 um, rotation error 0.22 urad; min joint-limit margin 0.633 rad.",
+        "hand_pose": "Edge FK of q_home composed with the inverse of ruler_knife_v2_y hand_from_edge (= panda_hand world pose).",
+        "finger_position": "As wp11_workcell_v1: 0.0112 m per finger on the 22 mm handle (collision-check opening)."
+      },
+      "preflight": {
+        "blade_board_contact_min_distance_m": 0.0,
+        "scope": "Collision preflight (motion_preflight / C2 checker): in contact_free and contact_allowed samples the blade may reach the rigid board top (signed distance >= this value, 0 = touching, never inside); free-space samples keep the C2 blade-fixture clearance of 1 mm. Every other pair keeps its C2 threshold."
+      },
+      "action_workspace_local_m": {
+        "min_xy": [-0.14, -0.12],
+        "max": [0.14, 0.12, 0.22],
+        "scope": "Edge-centre safety envelope (control.ActionLimits workspace box), x/y/z-max as wp11_workcell_v1. The z minimum is derived from the board: 0 (the board top) for a solid board, -slot_depth_m for a slotted one, so a commanded edge centre below the rigid board top is CLAMPED and reported, never executed silently."
+      }
+    }
+  }
+}

@@ -220,7 +220,7 @@ Goal Type 可以涵蓋：
 
 - 比較不同切削策略。
 - Policy Evaluation。
-- RSI 自主研究。
+- agentic control 自主研究。
 - 大量隨機化場景測試。
 
 門檻可以透過設定指定，不必只有唯一的硬性精度標準。
@@ -483,7 +483,7 @@ Evaluation 的可擴充性不代表目前已經能真實切割所有材料。
 
 如果 GPU 環境可用，請在保留原始實驗的前提下，執行必要的實際 Isaac Sim / Isaac Lab 端到端測試。
 
-不需要為了這次工作重新訓練 Policy，也不需要改動 RSI。
+不需要為了這次工作重新訓練 Policy，也不需要改動其他專案。
 
 ## 最終成功定義
 
@@ -502,4 +502,4 @@ Evaluation 的可擴充性不代表目前已經能真實切割所有材料。
 - 哪些誤差來自 Surface Reconstruction。
 - 哪些項目仍無法可靠測量。
 
-這套系統應該成為未來不同物體、不同刀具、不同 Policy，以及 RSI Autonomous Research 共用的 Evaluation Foundation。
+這套系統應該成為未來不同物體、不同刀具、不同 Policy，以及 agentic control 共用的 Evaluation Foundation。

@@ -1,0 +1,682 @@
+{
+ "protocol_id": "wp12_phase4_e2_protocol_v1",
+ "decision_ref": "docs/reports/WP12_PHASE4_XHIGH_DECISION.md, Next steps item 3 (E2 row list), D1 item 3, D2, D5 (2026-10-31)",
+ "spec": "docs/WP12_SPECIFICATION.md Phase 4 (4.4 orientation envelope) and Phase 5 (5.3, 5.4); the decision names this file configs/wp12/phase4_e2_envelope_confirmation_protocol_v1.json, the user instruction of 2026-10-31 names it phase4_e2_protocol_v1.json (same content)",
+ "declared": "2026-10-31 (KST). Written before any formal E2 row. Only DEV smokes ran before the commit (dev_runs_before_commit); they are never evidence. The orchestrator commits this file before the formal rows; a change afterwards is a new protocol version. Failed, crashed and budget-stopped rows are kept and reported, never rescored or silently rerun.",
+ "purpose": "Envelope confirmation through the REAL pipeline. Every validated cell of supported_envelope_v1 so far came from scripted or partial runs; the Phase 5 ID may use a cell only if it is validated (decision D5). E2 runs one declared row per candidate cell through the goal planner, controller_profile path_v2, WaypointPolicy and goal_eval_v2a, and records the outcome as a proposed envelope v2 (a new version; v1 stays untouched; the xhigh reviewer decides). Two flat-board rows (theta 2 and 5 deg) are a falsification test of the decision D1 armed-end argument.",
+ "frozen_and_unchanged": [
+  "tlmpm*.py and law 8 (no parameter overridden: cut_diagnostics_v1 is read-only)",
+  "goal_planner.py, policies.py (path_v2 as committed), goals.py thresholds and goal_eval_v1/v2/v2a",
+  "blade_master_flat_board_v1 and its slotted variant rule",
+  "configs/wp12/supported_envelope_v1.json (DECLARED) and every frozen record, WP-11 evidence and earlier run directory"
+ ],
+ "runner": {
+  "rows": "scripts/run_wp12_phase4_e2.py (feasibility / run / queue / summarize; refuses undeclared row ids unless --dev; never overwrites an output directory)",
+  "episode": "scripts/run_wp12_phase5.py kinematic_episode (the Phase 5 kinematic episode: goal planner WaypointPolicy, goal_eval_v2a, physical and geometry quality, runtime)",
+  "diagnostics": "scripts/run_wp12_phase4a_diagnose.py wrapping each run (cut_diagnostics_v1 recorder, read-only; no --counterfactual)",
+  "python": ".venv/bin/python (Warp, CUDA graph per control step); TMPDIR=/mnt/data/ningan/tmp",
+  "commands": [
+   "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4_e2.py feasibility --out artifacts/wp12/phase4_e2_001/feasibility",
+   "TMPDIR=/mnt/data/ningan/tmp nohup .venv/bin/python scripts/run_wp12_phase4_e2.py queue --out-root artifacts/wp12/phase4_e2_001 --feasibility artifacts/wp12/phase4_e2_001/feasibility --devices cuda:1 cuda:0 >> artifacts/wp12/logs/phase4_e2_001_queue.log 2>&1 &",
+   ".venv/bin/python scripts/run_wp12_phase4_e2.py summarize --out-root artifacts/wp12/phase4_e2_001 --feasibility artifacts/wp12/phase4_e2_001/feasibility --evidence docs/evidence/wp12/phase4_e2_001.json"
+  ]
+ },
+ "scope": "Kinematic ideal tracking (no robot dynamics, PhysX, grasp or cameras); the motion preflight is geometric (Newton IK + C2 MuJoCo distances, flat-board blade/board rule). Law 8, tlmpm_v5, ruler_knife_v2_y, 1 mm particles, 4 mm grid, material dt 0.1 ms, control dt 20 ms, seed 42, cutting_tasks_v1 (provisional, uncalibrated). One run per row: a CONFIRMED row validates one point of a cell, never a range by itself. No Native row: decision D5 runs Demos 2 and 6 in Native only after their E2 rows.",
+ "envelope": "configs/wp12/supported_envelope_v1.json",
+ "common": {
+  "workcell_profile": "blade_master_flat_board_v1",
+  "board_rule": "Every scene is one continuous cutting board on the table (supports.kind flat_board). The board is CO-ROTATED with the workpiece (cutting_board.yaw_deg = workpiece yaw: flat_board_v1 has no oriented TLMPM fixture boxes) and its centre stays at the record value, so a yaw that turns a board corner past the table edge is scene_geometrically_infeasible. The workpiece z is the board top (flat_board_workcell.place_on_board). Slotted boards only where a family declares board_kind.",
+  "slotted_rule": {
+   "slot_width_m": 0.008,
+   "slot_depth_m": 0.008,
+   "text": "Explicit Option D (ADR 0017, E1): one 8 mm wide, 8 mm deep through-width groove under each declared cut plane (its x at the board top), board stays one body."
+  },
+  "tool": {
+   "profile_id": "ruler_knife_v2_y",
+   "grasp_preset": "default"
+  },
+  "solver": {
+   "module": "tlmpm_v5",
+   "cutting_law": 8,
+   "slots_per_node": 16,
+   "particle_spacing_m": 0.001,
+   "grid_dx_m": 0.004,
+   "rule": "tlmpm_v5 law 8 for every digit count (packed codes; needed by cut_aware_surface_v1), max_cuts = goal_planner digits_used, slots_per_node 16 (WP-11 round 2: no overflow, max occupancy 8)"
+  },
+  "material_dt_s": 0.0001,
+  "control_dt_s": 0.02,
+  "material_seed": 42,
+  "planner": {
+   "controller_profile": "path_v2",
+   "cut_extent": "plane_section"
+  },
+  "evaluator_version": "goal_eval_v2a",
+  "surface_profile": "particle_surface_v1",
+  "surface_profile_options": [
+   "particle_surface_v1",
+   "cut_aware_surface_v1"
+  ],
+  "geometry_quality_level": "basic",
+  "preflight_geometry": "staged_v2",
+  "trim_region_margin_m": 0.003,
+  "chip_selector_clearance_m": 0.0002,
+  "duration_rule": {
+   "probe_duration_s": 120.0,
+   "settle_after_plan_s": 1.0,
+   "round_up_to_s": 0.5,
+   "text": "WP-11 Phase E rule: probe compile, plan end = first DONE knot of the ideal reference schedule, duration = ceil((plan end + 1 s) / 0.5 s) * 0.5 s"
+  },
+  "dimension_rule": {
+   "length_step_m": 0.002,
+   "width_step_m": 0.002,
+   "height_step_m": 0.001,
+   "text": "WP-11 Phase E rule: lengths and widths to even millimetres, heights (and trim depths) to whole millimetres; raw draws and applied values are both recorded"
+  },
+  "cut_plane_rule": "WP-11 Phase E rule: vertical, unyawed sever planes are snapped to solver node planes (multiples of grid_dx_m in the workpiece frame); tilted or yawed planes are not snapped",
+  "sever_rule": {
+   "minimum_part_fraction_of_smallest_nominal": 0.5,
+   "text": "WP-11 Phase E rule: minimum_part_mass_fraction = 0.5 x the smallest nominal piece fraction; every other sever threshold is the goals.py default"
+  },
+  "history": {
+   "minimum_stride": 5,
+   "target_frames": 40
+  },
+  "nominal": {
+   "length_m": 0.16,
+   "width_m": 0.03,
+   "height_m": 0.02,
+   "workpiece_x_m": 0.0,
+   "workpiece_y_m": 0.0,
+   "workpiece_yaw_deg": 0.0,
+   "protrusion_family": [
+    "dome",
+    "dome",
+    "dome",
+    "dome"
+   ],
+   "protrusion_count": 1,
+   "protrusion_spread_fraction": 0.3125,
+   "protrusion_x_fraction": 0.28,
+   "protrusion_x_jitter_m": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "protrusion_y_m": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "protrusion_radius_x_m": [
+    0.012,
+    0.012,
+    0.012,
+    0.012
+   ],
+   "protrusion_radius_y_m": [
+    0.01,
+    0.01,
+    0.01,
+    0.01
+   ],
+   "protrusion_height_m": [
+    0.008,
+    0.008,
+    0.008,
+    0.008
+   ],
+   "board_kind": "solid",
+   "cut_fraction": 0.0,
+   "cut_count": 2,
+   "cut_order": "ascending",
+   "cut_order_key": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "slice_jitter_m": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "cut_tilt_deg": 0.0,
+   "cut_tilt_solid_deg": 0.0,
+   "cut_plane_yaw_deg": 0.0,
+   "advance_tilt_deg": 0.0,
+   "rake_deg": 10.0,
+   "skew_deg": 0.0,
+   "skim_direction": "+x",
+   "clear_direction": "+x",
+   "cut_speed_m_s": 0.01,
+   "skim_speed_m_s": 0.025,
+   "cut_clearance_m": 0.008,
+   "trim_depth_m": 0.002,
+   "push_distance_m": 0.02,
+   "selected_protrusion_key": 0.0,
+   "material_profile": "cutting_tasks_v1"
+  },
+  "note": "Copied verbatim from configs/wp12/benchmark_v1_DRAFT.json common (D5 re-declaration, 2026-10-31) so that this protocol does not change when the DRAFT does. Rows override only the listed nominal values."
+ },
+ "row_rules": {
+  "workpiece": "common.nominal: bar 160 x 30 x 20 mm at the board centre, yaw 0, cutting_tasks_v1; dome p0 (rx 12, ry 10, h 8 mm) at x = 0.28 L = 44.8 mm for skims; trim_trim domes at +-50 mm (spread 0.3125 L)",
+  "planes": "vertical untilted planes on node planes (x = 0); tilted planes through local x = plane_x_at_board_top_m (0, a node line, as in E1) at z = 0, i.e. cut_fraction = (x0 + H/2 tan theta)/L (recorded as a derived draw); the slotted variant puts one 8 mm wide, 8 mm deep groove under the plane at the board top",
+  "planner": "common.planner (controller_profile path_v2, cut_extent plane_section) and the DEFAULT_OPTIONS of goal_planner (overtravel 4 mm, cut clearance 8 mm, cut 10 mm/s, skim 25 mm/s, rake 10 deg) unless a row value overrides one",
+  "duration": "common.duration_rule (plan end + 1 s, rounded up to 0.5 s)"
+ },
+ "rows": [
+  {
+   "id": "SLOT_p20",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "tilt_slotted",
+   "values": {
+    "cut_tilt_deg": 20.0,
+    "plane_x_at_board_top_m": 0.0
+   },
+   "tests": "slotted theta +20 deg with the planner 4 mm overtravel (Demo 2 configuration); handle slack measured by the preflight",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "E1 D_p20_reach separated at 6.67 mm overtravel; 4 mm still passes the whole section; decision D5 estimates a handle slack of about 2.5 mm",
+    "confidence": "moderate"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 10.5,
+   "estimate_gpu_s": 471
+  },
+  {
+   "id": "SLOT_m20",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "tilt_slotted",
+   "values": {
+    "cut_tilt_deg": -20.0,
+    "plane_x_at_board_top_m": 0.0
+   },
+   "tests": "slotted theta -20 deg (negative tilts NOT_RUN on the slotted board)",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "E1 flat-board A_m rows behaved like A_p rows (sign symmetry); same groove geometry mirrored",
+    "confidence": "moderate"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 10.5,
+   "estimate_gpu_s": 471
+  },
+  {
+   "id": "SLOT_p25",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "tilt_slotted",
+   "values": {
+    "cut_tilt_deg": 25.0,
+    "plane_x_at_board_top_m": 0.0
+   },
+   "tests": "slotted theta +25 deg with the planner 4 mm overtravel",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "E1 D_p25_reach separated at 5.35 mm; handle slack smaller than at 20 deg (the DEV sample at 32.1 deg collides by 0.68 mm), so reachability is the main risk",
+    "confidence": "low"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 10.5,
+   "estimate_gpu_s": 471
+  },
+  {
+   "id": "SOLID_p05",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "tilt_solid",
+   "values": {
+    "cut_tilt_solid_deg": 5.0,
+    "plane_x_at_board_top_m": 0.0
+   },
+   "tests": "solid flat board theta 5 deg through the real planner: falsification test of the armed-end argument (decision D1)",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "FAIL",
+    "basis": "decision D1/D5: the path_v2 armed end (0.1-0.3 mm) lies outside the 5 deg window E1 measured (R_p05_h0250 connected with 20 bridges): predicted CONNECTED (one part or direct bridges > 0)",
+    "confidence": "moderate"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 9.5,
+   "estimate_gpu_s": 429
+  },
+  {
+   "id": "SOLID_p02",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "tilt_solid",
+   "values": {
+    "cut_tilt_solid_deg": 2.0,
+    "plane_x_at_board_top_m": 0.0
+   },
+   "tests": "solid flat board theta 2 deg through the real planner (armed end 0.1-0.3 mm above the board top)",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "NO_DIRECTIONAL_PREDICTION",
+    "basis": "E1 measured 2 deg only at h = 0 (separated); no row between h = 0 and the planner armed end exists at 2 deg",
+    "confidence": "none"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 9.5,
+   "estimate_gpu_s": 429
+  },
+  {
+   "id": "CUT_PUSH_TRIM",
+   "phase5_family": "G",
+   "builder": "cut_push_trim",
+   "variant": "cut_push_trim",
+   "values": {
+    "protrusion_x_fraction": -0.28
+   },
+   "tests": "Demo 6 candidate: sever at x = 0, push the +x piece 20 mm (kerf_face), then remove the dome on the STATIONARY -x piece (x = -44.8 mm, one surface_trim pass, rho 10, 25 mm/s) in ONE episode on the flat board",
+   "kind": "sequence_with_sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "each step is validated alone (sever, kerf_face push on wp11_workcell_v1, dome skim); risk: class (c) core-band carry seen in 3/6 WP-11 TEST_D2 sever/trim sequences",
+    "confidence": "low"
+   },
+   "expected_pieces": 3,
+   "bridge_digits": [
+    0
+   ],
+   "dev_change": "DEV feasibility (artifacts/wp12/phase4_e2_dev_001) of the first draft (dome on the pushed piece, trim planned with planner_offset_local_m [0.02, 0, 0]) failed the static motion preflight: blade_collision -4.85 mm at PRE_CUT:p0 with static_workpiece_bump, because the static preflight checks the unmoved reference bump. The dome was moved to the stationary piece so the preflight sees the true geometry; no outcome was run.",
+   "episode_duration_s_dev": 21.0,
+   "estimate_gpu_s": 912
+  },
+  {
+   "id": "CUT_PUSH",
+   "phase5_family": "G",
+   "builder": "cut_push",
+   "variant": "cut_push",
+   "values": {},
+   "tests": "cut -> push: sever at x = 0, kerf_face push of the +x piece by 20 mm on the flat board",
+   "kind": "sequence_with_sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "pushes passed on wp11_workcell_v1 (SLICE-PUSH); flat-board friction is the material friction (TLMPM)",
+    "confidence": "moderate"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 15.0,
+   "estimate_gpu_s": 660
+  },
+  {
+   "id": "TRIM_PLANE",
+   "phase5_family": "C",
+   "builder": "trim",
+   "variant": "trim_plane_protrusion",
+   "values": {},
+   "tests": "trim_plane over the dome region (C trim_plane_protrusion)",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "phase4c G15_overlapping_TRIMPLANE_DIAG region trim passed (one diagnostic run)",
+    "confidence": "moderate"
+   },
+   "episode_duration_s_dev": 7.5,
+   "estimate_gpu_s": 345
+  },
+  {
+   "id": "TRIM_TRIM",
+   "phase5_family": "E",
+   "builder": "multi_protrusion",
+   "variant": "trim_trim",
+   "values": {},
+   "tests": "trim -> trim: two trim_plane steps over two separate domes (E trim_trim)",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "each step is a region trim over a separate footprint; goal_eval_v2a scopes each step",
+    "confidence": "moderate"
+   },
+   "episode_duration_s_dev": 11.5,
+   "estimate_gpu_s": 513
+  },
+  {
+   "id": "YAW_p15",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "plane_yaw",
+   "values": {
+    "cut_plane_yaw_deg": 15.0
+   },
+   "tests": "vertical plane yawed +15 deg about z on the solid board (no tilted exit front)",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "no class (a) mechanism (vertical exit at the board top); the plane crosses the lattice obliquely; reachable at 13 deg in DEV",
+    "confidence": "moderate"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 9.5,
+   "estimate_gpu_s": 429
+  },
+  {
+   "id": "YAW_m15",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "plane_yaw",
+   "values": {
+    "cut_plane_yaw_deg": -15.0
+   },
+   "tests": "vertical plane yawed -15 deg on the solid board",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as YAW_p15",
+    "confidence": "moderate"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 9.5,
+   "estimate_gpu_s": 429
+  },
+  {
+   "id": "CUT_v08",
+   "phase5_family": "A",
+   "builder": "single_cut",
+   "variant": "vertical",
+   "values": {
+    "cut_speed_m_s": 0.008
+   },
+   "tests": "vertical CUT at 8 mm/s (ID 10 mm/s only)",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "quasi-static material; path_v2 armed end within [0, 0.3] mm at 0.16 mm per control step",
+    "confidence": "high"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 10.5,
+   "estimate_gpu_s": 471
+  },
+  {
+   "id": "CUT_v12",
+   "phase5_family": "A",
+   "builder": "single_cut",
+   "variant": "vertical",
+   "values": {
+    "cut_speed_m_s": 0.012
+   },
+   "tests": "vertical CUT at 12 mm/s",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as CUT_v08 (0.24 mm per control step)",
+    "confidence": "high"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 9.0,
+   "estimate_gpu_s": 408
+  },
+  {
+   "id": "SKIM_v20",
+   "phase5_family": "C",
+   "builder": "trim",
+   "variant": "skim_protrusion",
+   "values": {
+    "skim_speed_m_s": 0.02
+   },
+   "tests": "dome skim at 20 mm/s (ID 25 mm/s only), rho 10",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "the dome skim passes at 25 mm/s (Native Test C, resolution TRIM); speed effect expected small",
+    "confidence": "high"
+   },
+   "episode_duration_s_dev": 7.5,
+   "estimate_gpu_s": 345
+  },
+  {
+   "id": "SKIM_v30",
+   "phase5_family": "C",
+   "builder": "trim",
+   "variant": "skim_protrusion",
+   "values": {
+    "skim_speed_m_s": 0.03
+   },
+   "tests": "dome skim at 30 mm/s, rho 10",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as SKIM_v20",
+    "confidence": "high"
+   },
+   "episode_duration_s_dev": 7.0,
+   "estimate_gpu_s": 324
+  },
+  {
+   "id": "SKIM_r35",
+   "phase5_family": "C",
+   "builder": "trim",
+   "variant": "skim_protrusion",
+   "values": {
+    "rake_deg": 35.0
+   },
+   "tests": "dome skim at rho 35 deg on the flat board through the planner",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "law-8 acceptance M3b/M3c at rho 35 and the 10-44 dome sweep (diagnostic) separated",
+    "confidence": "moderate"
+   },
+   "episode_duration_s_dev": 7.0,
+   "estimate_gpu_s": 324
+  },
+  {
+   "id": "SKIM_psi_p10",
+   "phase5_family": "C",
+   "builder": "trim",
+   "variant": "skim_protrusion",
+   "values": {
+    "skew_deg": 10.0
+   },
+   "tests": "dome skim with edge skew psi +10 deg on the flat board",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "psi 20 passed on the WP-11 workcell (E1_TEST_A_s7); skim physics does not involve the board",
+    "confidence": "moderate"
+   },
+   "episode_duration_s_dev": 7.0,
+   "estimate_gpu_s": 324
+  },
+  {
+   "id": "SKIM_psi_m10",
+   "phase5_family": "C",
+   "builder": "trim",
+   "variant": "skim_protrusion",
+   "values": {
+    "skew_deg": -10.0
+   },
+   "tests": "dome skim with edge skew psi -10 deg",
+   "kind": "trim",
+   "prediction": {
+    "verdict": "CONFIRMED",
+    "basis": "as SKIM_psi_p10",
+    "confidence": "moderate"
+   },
+   "episode_duration_s_dev": 7.0,
+   "estimate_gpu_s": 324
+  },
+  {
+   "id": "ADV_p15",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "advance_tilt",
+   "values": {
+    "advance_tilt_deg": 15.0
+   },
+   "tests": "slanted chop: advance tilted +15 deg inside a vertical blade plane on the solid board",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "NOT_EXECUTABLE_BOARD_COLLISION",
+    "basis": "DEV feasibility (CPU geometry only, artifacts/wp12/phase4_e2_dev_001): the planner tilts the edge line with the advance (through_cut_rotation keeps the edge perpendicular to the advance) and ends the stroke with the edge CENTRE on the board top (_relief_end), so the low end of the 120 mm edge is 60 mm x sin 15 deg = 15.5 mm inside the solid board (blade_collision -15.53 mm at HOLD:cut0; ADV_m15 also knife_handle_clearance -6.5 mm). The prediction before that check was CONFIRMED. A valid flat-board slanted chop needs a planner change (stop at the lowest edge point), which is out of scope",
+    "confidence": "high (deterministic geometry)"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 10.0,
+   "estimate_gpu_s": 0
+  },
+  {
+   "id": "ADV_m15",
+   "phase5_family": "B",
+   "builder": "oblique_cut",
+   "variant": "advance_tilt",
+   "values": {
+    "advance_tilt_deg": -15.0
+   },
+   "tests": "slanted chop -15 deg on the solid board",
+   "kind": "sever",
+   "prediction": {
+    "verdict": "NOT_EXECUTABLE_BOARD_COLLISION",
+    "basis": "DEV feasibility (CPU geometry only, artifacts/wp12/phase4_e2_dev_001): the planner tilts the edge line with the advance (through_cut_rotation keeps the edge perpendicular to the advance) and ends the stroke with the edge CENTRE on the board top (_relief_end), so the low end of the 120 mm edge is 60 mm x sin 15 deg = 15.5 mm inside the solid board (blade_collision -15.53 mm at HOLD:cut0; ADV_m15 also knife_handle_clearance -6.5 mm). The prediction before that check was CONFIRMED. A valid flat-board slanted chop needs a planner change (stop at the lowest edge point), which is out of scope",
+    "confidence": "high (deterministic geometry)"
+   },
+   "expected_pieces": 2,
+   "bridge_digits": [
+    0
+   ],
+   "episode_duration_s_dev": 10.0,
+   "estimate_gpu_s": 0
+  }
+ ],
+ "metrics": {
+  "outcome": "goal_eval_v2a verdict and per-step verdicts (integrity / outcome layers)",
+  "separation": "mechanical_components of the final packed codes (cut_topology, actual stencil graph) and direct code-0 bridges per cut digit (cut_diagnostics.direct_bridges, the law8_validation bridge rule) from the wrapper snapshot",
+  "armed_end": "per armed segment: height of the lowest edge point above the workpiece-local board top (z = 0) at the last armed control step (solver-local end pose of cut_diagnostics_v1); compared with the 1 mm clean-cut window [0, 0.375] mm (WP12_WORKCELL.md section 5); on the slotted board it is negative (groove)",
+  "reachability": "staged_v2 motion preflight receipt (status and the worst slack of every check, incl. knife_handle_clearance)",
+  "reported_only": "physical_quality (substrate retention, material loss, penetration: particles below the board top), stability, runtime, geometry quality (particle_surface_v1, basic)"
+ },
+ "verdict_rules": {
+  "CONFIRMED": "formal run (label E2_FORMAL, not partial), status COMPLETE, policy_done, solver valid (no slot overflow, finite state), goal_eval_v2a verdict PASS, and for kind sever / sequence_with_sever: mechanical_components >= expected_pieces and 0 direct code-0 bridges on the bridge_digits; and the motion preflight PASS",
+  "PASS_KINEMATIC_PREFLIGHT_FAIL": "every outcome check above passes but the motion preflight fails (ik_unreachable or collision_constrained): physically separable, not executable on this workcell",
+  "FAIL": "a formal complete run where any outcome check fails (kept; a KNOWN_FAILURE candidate)",
+  "ERROR": "crash or an output directory without result.json (kept, never rerun silently)",
+  "NOT_RUN": "not executed (budget cap, infeasible before execution, or only DEV/partial output)",
+  "infeasible_rows": "a row whose feasibility class is not valid_feasible is still run (kinematic outcome and reachability are separate questions) unless it is scene_geometrically_infeasible, a classification_error or NOT_EXECUTABLE_BOARD_COLLISION; such a run can at best be PASS_KINEMATIC_PREFLIGHT_FAIL. physically_unsupported by envelope v1 (e.g. an operation pattern v1 does not list) does not stop a row: E2 exists to measure such cells",
+  "prediction_met": "verdict equals prediction.verdict; None for NO_DIRECTIONAL_PREDICTION, NOT_RUN and ERROR",
+  "armed_end_falsification": "SOLID_p05: FAIL with a measured armed end in (0, 0.375] mm supports the decision D1 argument; CONFIRMED falsifies it (then flat-board <= 5 deg in the planner becomes a PARTIALLY_VALIDATED candidate, decided by the xhigh reviewer); SOLID_p02 is reported with its armed end either way",
+  "envelope_v2": "proposal only (configs/wp12/supported_envelope_v2_PROPOSED.json; the xhigh reviewer decides): CONFIRMED moves the tested point of its cell to VALIDATED (kinematic, planner path_v2, this workpiece); FAIL makes it a KNOWN_FAILURE; PASS_KINEMATIC_PREFLIGHT_FAIL makes it KINEMATICALLY_UNREACHABLE on this workcell; NOT_RUN / ERROR leave v1 unchanged. No bound is widened beyond v1. A range enters the Phase 5 ID only if both of its tested ends are CONFIRMED (e.g. cut speed 8-12 mm/s needs CUT_v08 and CUT_v12; plane yaw +-15 needs YAW_p15 and YAW_m15)",
+  "NOT_EXECUTABLE_BOARD_COLLISION": "the formal motion preflight fails with a negative slack against a board body (tool_blade or tool_handle vs static_flat_board / board segments): the kinematic blade does not see the rigid board (WP12_WORKCELL.md section 5), so an episode would cut with the blade inside the board. The row is not executed; its cell is KINEMATICALLY_INFEASIBLE on this workcell with this planner",
+  "zero_direct_bridges": "checked on the row bridge_digits only (the sever digit); trim digits are judged by goal_eval_v2a (WP-11 trim criterion), their bridges are reported"
+ },
+ "declared_predictions": {
+  "SLOT_p20": "CONFIRMED",
+  "SLOT_m20": "CONFIRMED",
+  "SLOT_p25": "CONFIRMED",
+  "SOLID_p05": "FAIL",
+  "SOLID_p02": "NO_DIRECTIONAL_PREDICTION",
+  "CUT_PUSH_TRIM": "CONFIRMED",
+  "CUT_PUSH": "CONFIRMED",
+  "TRIM_PLANE": "CONFIRMED",
+  "TRIM_TRIM": "CONFIRMED",
+  "YAW_p15": "CONFIRMED",
+  "YAW_m15": "CONFIRMED",
+  "CUT_v08": "CONFIRMED",
+  "CUT_v12": "CONFIRMED",
+  "SKIM_v20": "CONFIRMED",
+  "SKIM_v30": "CONFIRMED",
+  "SKIM_r35": "CONFIRMED",
+  "SKIM_psi_p10": "CONFIRMED",
+  "SKIM_psi_m10": "CONFIRMED",
+  "ADV_p15": "NOT_EXECUTABLE_BOARD_COLLISION",
+  "ADV_m15": "NOT_EXECUTABLE_BOARD_COLLISION"
+ },
+ "budget": {
+  "gpu_hours_cap": 3.0,
+  "max_concurrent_jobs": 2,
+  "devices": [
+   "cuda:1",
+   "cuda:0"
+  ],
+  "default_row_estimate_gpu_s": 600,
+  "rule": "GPU hours = summed wall time of E2 jobs (GPUs shared with the V1-V4 verification queue and other users; nvidia-smi checked before each launch; a lane with < 4000 MiB free waits; other processes are never touched). No row starts when finished + running + its estimate would exceed the cap; rows not started are NOT_RUN (budget). Rows run in the declared order (the decision-critical rows first).",
+  "estimates": "estimate_gpu_s = 42 wall-s per simulated s x the compiled episode duration + 30 s, from the DEV control row (0.832 s wall per 20 ms control step on a GPU shared at 100 % utilization). ADV rows are 0 (not executed: board collision).",
+  "estimated_total_gpu_h": 2.24,
+  "order_and_cap": "Estimated total 2.24 GPU-h at the measured shared-GPU throughput. The orchestrator raised the cap from 2.0 to 3.0 GPU-h before the commit and before any formal row ran (no result seen), so all 18 runnable rows fit. Rows run in the declared priority order (Demo 2 slotted rows, the D1 falsification rows, the Demo 6 candidate and the mixed-operation rows, plane yaw, the speed rows, then rho 35 and psi +-10). Rows that the cap stops are NOT_RUN (budget); the cap is never raised after a result is seen."
+ },
+ "outputs": {
+  "runs": "artifacts/wp12/phase4_e2_001/<row>/ (manifest.json, result.json, actions.jsonl, physics_state.npz, reliability.json, wp12_phase4a_diag.npz/json), queue.jsonl; logs artifacts/wp12/logs/phase4_e2_001_<row>.log (GNU time)",
+  "feasibility": "artifacts/wp12/phase4_e2_001/feasibility/<row>.json, summary.json",
+  "evidence": "docs/evidence/wp12/phase4_e2_001.json",
+  "report": "docs/reports/WP12_PHASE4_E2.md",
+  "envelope_proposal": "configs/wp12/supported_envelope_v2_PROPOSED.json"
+ },
+ "not_in_scope": [
+  "any law, law parameter, threshold or controller change",
+  "Native or Lab runs (Demos 2 and 6 run in Native only after their E2 rows, separately)",
+  "flat-board 6-9 deg rows (decision D1 item 3)",
+  "more than one seed, workpiece or resolution per cell",
+  "the opt-in armed_end controller option (deferred, D4)"
+ ],
+ "dev_runs_before_commit": [
+  {
+   "run": "artifacts/wp12/phase4_e2_dev_001/feasibility",
+   "command": "TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4_e2.py feasibility --out artifacts/wp12/phase4_e2_dev_001/feasibility",
+   "kind": "DEV, CPU only (generator, envelope v1, compile, staged_v2 motion preflight, plan facts); no physics",
+   "findings": [
+    "slotted knife-handle slack at the planner 4 mm overtravel: 2.516 mm (+20 deg), 2.515 mm (-20 deg), 1.228 mm (+25 deg); planned lowest edge point -3.76 / -3.76 / -3.63 mm (in the groove)",
+    "solid board rows plan the armed end at h = 0 (lowest edge point 0.0 mm); the armed end is then set by the path_v2 position tolerance (measured in the formal rows)",
+    "ADV_p15 / ADV_m15: blade_collision -15.53 mm at HOLD:cut0 against static_flat_board (tilted edge, centre on the board top); ADV_m15 also knife_handle_clearance negative: predictions changed to NOT_EXECUTABLE_BOARD_COLLISION and the board-collision rule added",
+    "CUT_PUSH_TRIM first draft (dome on the pushed piece, planner_offset_local_m) failed the static preflight against the unmoved bump: dome moved to the stationary piece",
+    "CUT_PUSH_TRIM is physically_unsupported by envelope v1 (operation pattern sequence:sever>move_piece>remove_protrusions not listed): run anyway (verdict_rules.infeasible_rows)"
+   ]
+  },
+  {
+   "run": "artifacts/wp12/phase4_e2_dev_001/DEV_CUT_v10 (log artifacts/wp12/logs/phase4_e2_dev_001_DEV_CUT_v10.log)",
+   "command": "TMPDIR=/mnt/data/ningan/tmp /usr/bin/time -v .venv/bin/python scripts/run_wp12_phase4a_diagnose.py -- scripts/run_wp12_phase4_e2.py run --row DEV_CUT_v10 --dev --dev-row-json <vertical CUT, nominal values, 10 mm/s> --device cuda:1 --out artifacts/wp12/phase4_e2_dev_001/DEV_CUT_v10",
+   "kind": "DEV control row, NOT a protocol row: the already validated vertical CUT at 10 mm/s, through the full runner, wrapper and summarizer",
+   "findings": [
+    "exit 0; GNU time 6:43 wall, max RSS 1.26 GB; episode 395 s for 9.5 s simulated (475 control steps, 0.832 s/step, 0.024 sim-s per wall-s) on cuda:1 shared at 100 % utilization",
+    "goal_eval_v2a PASS, 2 mechanical components, 0 direct code-0 bridges (digit 0), armed segment steps 116-254, armed end: lowest edge point 0.20 mm above the board top (path_v2), min particle z +0.38 mm",
+    "outputs: result.json, manifest.json, actions.jsonl, physics_state.npz (35 MB), wp12_phase4a_diag.npz/json (6.9 MB); analyze_row reads them",
+    "timing sets the per-row estimates and the declared priority order (budget)"
+   ]
+  }
+ ]
+}

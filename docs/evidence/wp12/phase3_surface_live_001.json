@@ -1,0 +1,3515 @@
+{
+ "schema": "rcs_wp12_surface_live_evidence_v1",
+ "protocol": "configs/wp12/surface_live_v1.json",
+ "protocol_sha256": "57b2d60182e79a2ba13ce9b4187db44c6bb2b3659aa04f345528254275bff99e",
+ "created": "2026-10-31T03:41:00.484244+09:00",
+ "git_sha": "3dd384828b00341a80294d2d52acea8a27e28d20",
+ "git_dirty": true,
+ "command": [
+  "scripts/summarize_wp12_surface_live.py",
+  "--run",
+  "B_CUT=artifacts/wp12/surface_live_002",
+  "--run",
+  "B_PARTIAL=artifacts/wp12/surface_live_003",
+  "--run",
+  "B_TESTB=artifacts/wp12/surface_live_007",
+  "--run",
+  "B_TRIM_PATH_V3=artifacts/wp12/surface_live_005",
+  "--run",
+  "A_CUT_PROFILE=artifacts/wp12/surface_live_006",
+  "--failed",
+  "B_CUT=artifacts/wp12/surface_live_001",
+  "--failed",
+  "B_TESTB=artifacts/wp12/surface_live_004",
+  "--out",
+  "docs/evidence/wp12/phase3_surface_live_001.json"
+ ],
+ "episodes": {
+  "B_CUT": {
+   "root": "artifacts/wp12/surface_live_002",
+   "spec": {
+    "id": "B_CUT",
+    "phase2b_episode": "CUT",
+    "phase2b_record": "artifacts/wp12/workcell_live_001",
+    "surface_profile": "cut_aware_surface_v1",
+    "media": "cut"
+   },
+   "attempt": {
+    "returncode": 0,
+    "wall_s": 518.3547179820016,
+    "result_status": "PASS_EXECUTION",
+    "live_task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "phase2b_task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "git_sha": "95de714cb6b1d4a939ed836f947ddb6b51f8bcc1",
+    "git_dirty": true,
+    "started": "2026-10-31T02:02:27.414426+09:00",
+    "ended": "2026-10-31T02:11:05.842749+09:00",
+    "run_dir_bytes": 520592803,
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/surface_live_002/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/surface_live_002/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "18",
+     "--steps",
+     "700",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/surface_live_002/run",
+     "--surface-profile",
+     "cut_aware_surface_v1",
+     "--surface-timing-log"
+    ]
+   },
+   "physics_vs_phase2b": {
+    "analysis_b": "artifacts/wp12/surface_live_002/analysis_001/analysis.json",
+    "analysis_phase2b": "artifacts/wp12/workcell_live_001/analysis_002/analysis.json",
+    "status": "PASS",
+    "checks": {
+     "task_id_equal": true,
+     "class_equal": true,
+     "verdict_equal": true,
+     "piece_counts_equal": true,
+     "fractions_within_tolerance": true
+    },
+    "class_b": "TASK_SUCCESS",
+    "class_phase2b": "TASK_SUCCESS",
+    "class_declared_rule_b": null,
+    "class_declared_rule_phase2b": null,
+    "verdict_b": "PASS",
+    "verdict_phase2b": "PASS",
+    "task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "outcome_metrics_b": {
+     "mechanical_components": 2.0,
+     "piece_mass_fractions[0]": 0.5000000000003806,
+     "piece_mass_fractions[1]": 0.5000000000003806,
+     "substantial_pieces": 2.0,
+     "main_pieces_mass_fraction": 1.0000000000007612,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 1.0,
+     "analysis.mechanical_components": 2.0,
+     "analysis.expected_pieces": 2.0,
+     "analysis.cut_position_error_m": 0.0015000000421423465,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "outcome_metrics_phase2b": {
+     "mechanical_components": 2.0,
+     "piece_mass_fractions[0]": 0.5000000000003806,
+     "piece_mass_fractions[1]": 0.5000000000003806,
+     "substantial_pieces": 2.0,
+     "main_pieces_mass_fraction": 1.0000000000007612,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 1.0,
+     "analysis.mechanical_components": 2.0,
+     "analysis.expected_pieces": 2.0,
+     "analysis.cut_position_error_m": 0.0015000000421423465,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "max_fraction_abs_diff": 0.0,
+    "fraction_keys_compared": [
+     "analysis.cut_completion",
+     "analysis.overcut_debris_mass_fraction",
+     "main_pieces_mass_fraction",
+     "minor_pieces_mass_fraction",
+     "piece_mass_fractions[0]",
+     "piece_mass_fractions[1]"
+    ],
+    "surface_dependent_quality": {
+     "b": {},
+     "phase2b": {}
+    },
+    "labelled_particles": {
+     "b": 28500,
+     "phase2b": 28500
+    },
+    "conflicting_links": {
+     "b": 600,
+     "phase2b": 600
+    },
+    "final_codes_identical": true,
+    "bridges_b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": 0.0,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     }
+    ],
+    "bridges_phase2b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": 0.0,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     }
+    ],
+    "home_outcome": {
+     "b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     },
+     "phase2b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     }
+    },
+    "knife_vs_board_min_m": {
+     "b": -2.6529238543807065e-08,
+     "phase2b": -4.071210650720414e-08
+    },
+    "performance": {
+     "b": {
+      "control_steps": 740,
+      "step_wall_ms_mean": 584.5488077854886,
+      "step_wall_ms_p95": 799.3276348526706,
+      "material_wall_ms_mean": 270.42048472169364,
+      "episode_wall_s": 490.1172863219981,
+      "run_total_wall_s": 517.0509512459976,
+      "process_wall_s": 518.3547179820016,
+      "run_dir_bytes": 520592803
+     },
+     "phase2b": {
+      "control_steps": 740,
+      "step_wall_ms_mean": 403.76564934843503,
+      "step_wall_ms_p95": 606.7237452531117,
+      "material_wall_ms_mean": 269.9815823674136,
+      "episode_wall_s": 357.3797114719928,
+      "run_total_wall_s": 383.8488887440035,
+      "process_wall_s": 385.2798789040098,
+      "run_dir_bytes": 516666388
+     }
+    }
+   },
+   "surface": {
+    "extractions": 741,
+    "audit_error_extractions": 0,
+    "audit_errors_first": null,
+    "max_mesh_shells": 2,
+    "max_visually_separated_mechanically_bridged": 0,
+    "max_shell_component_violations": 0,
+    "mesh_size": {
+     "vertices": {
+      "n": 741,
+      "mean": 17924.780026990553,
+      "p50": 18404.0,
+      "p95": 18404.0,
+      "max": 18404.0,
+      "sum": 13282262.0
+     },
+     "triangles": {
+      "n": 741,
+      "mean": 35843.43319838057,
+      "p50": 36800.0,
+      "p95": 36800.0,
+      "max": 36800.0,
+      "sum": 26559984.0
+     },
+     "cut_triangles": {
+      "n": 741,
+      "mean": 1443.4331983805669,
+      "p50": 2400.0,
+      "p95": 2400.0,
+      "max": 2400.0,
+      "sum": 1069584.0
+     }
+    },
+    "mesh_defects_max": {
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "degenerate_triangles": 0
+    },
+    "degenerate_normal_corners_max": 0,
+    "degenerate_normal_triangles_max": 0,
+    "update_modes": {
+     "full": 1,
+     "incremental": 740
+    },
+    "dirty_cells": {
+     "n": 740,
+     "mean": 1.7513513513513514,
+     "p50": 0.0,
+     "p95": 0.0,
+     "max": 62.0,
+     "sum": 1296.0
+    },
+    "temporal_unchanged_codes": {
+     "frames": 702,
+     "topology_unchanged": 702,
+     "vertex_step_max_m": {
+      "n": 702,
+      "mean": 9.748808043008182e-06,
+      "p50": 3.776527533815803e-07,
+      "p95": 6.740201899602324e-05,
+      "max": 0.0003411461933075873,
+      "sum": 0.006843663246191744
+     },
+     "particle_step_max_m": {
+      "n": 702,
+      "mean": 1.2462392427719452e-05,
+      "p50": 3.6995635063049803e-07,
+      "p95": 7.866300144922869e-05,
+      "max": 0.0004386232361705731,
+      "sum": 0.008748599484259056
+     },
+     "vertex_minus_particle_step_max_m": 2.897044923323243e-06,
+     "rule": "codes unchanged since the previous extraction; flicker would be vertex motion beyond the material's own motion"
+    },
+    "final": {
+     "time_s": 14.8,
+     "codes_sha256": "7dd406ed3f888461289f86547598ff00dd1fb5ed57649278486fecb0daacaa1f",
+     "cut_events": {
+      "entries": 600,
+      "log_sha256": "e8790699f4876933db270b3caf509af1f4a1c8f1290a8241c4e469733029477e",
+      "max_substep": 68440
+     },
+     "hermite": {
+      "source": "cut_events_v1",
+      "crossings_by_source": {
+       "recorder": 600,
+       "recorder_sign_inconsistent_midpoint": 0,
+       "recorder_point_fallback_normal": 0,
+       "midpoint_fallback": 0
+      },
+      "cut_links": 600,
+      "multi_crossing_links": 0,
+      "near_coincident_crossings": 0,
+      "fallback_normal_incoherent_links": 0,
+      "log_entries_not_links": 0,
+      "log_entries_not_conflicting": 0,
+      "log_duplicate_entries": 0
+     },
+     "audit": {
+      "ok": true,
+      "errors": [],
+      "mechanical_components": 2,
+      "lattice_pieces": 2,
+      "mesh_shells": 2,
+      "piece_component_violations": 0,
+      "shell_component_violations": 0,
+      "visually_separated_mechanically_bridged": 0
+     },
+     "mesh": {
+      "vertices": 18404,
+      "triangles": 36800,
+      "cut_triangles": 2400,
+      "boundary_triangles": 34400,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "non_manifold_vertices": 0,
+      "degenerate_triangles": 0,
+      "euler_characteristic": 4
+     },
+     "embedding": {
+      "estimator": "total_F",
+      "representatives": 18404,
+      "zero_weight_uniform_fallback": 0,
+      "det_F_nonpositive_particle_terms": 0,
+      "det_F_nonpositive_particles": 0,
+      "translation_only_representatives": 0
+     }
+    },
+    "max_crossings_by_source": {
+     "recorder": 600,
+     "recorder_sign_inconsistent_midpoint": 0,
+     "recorder_point_fallback_normal": 0,
+     "midpoint_fallback": 0
+    },
+    "selection": {
+     "surface_profile": "cut_aware_surface_v1",
+     "cut_events": "cut_events_v1",
+     "options": {
+      "boundary_profile": "cell_face_v1",
+      "crease_angle_deg": 30.0,
+      "fallback_normal_radius_spacings": 3.0,
+      "incremental": true,
+      "qef_truncation": 0.1,
+      "strict_audit": false
+     },
+     "bridge_method": "DynamicSurfaceBridge.update_face_varying_v1 (faceVarying normals, doubleSided)",
+     "runtime_version": "surface_runtime_v1",
+     "source_sha256": {
+      "cut_aware_surface.py": "0ea8961015abee3daa34ae5ab4fcc71db5c63707886574d9d0ac1a834ad473c6",
+      "cut_events.py": "1b9bfd37c233be79e49b65101e3c360d7ebafff4100b03a2d1f3dfe5bb5ac49a",
+      "surface_runtime.py": "2296229d645b1d67bf584e7d75b45c9919c65ac38067fea2c392c7611fae0498",
+      "usd_surface_bridge.py": "a33b1859c30d8aca403e0f1debac505c5e0899d5195e057c6caa99dcff315f86",
+      "cutting_surface.py": "fa40f10c9f3da0626c83b0461afd3f3a2462cc5a12786197c8d223c2ec223838",
+      "cut_topology.py": "2beb01ee520f2d43e86a9291cfa04dd47a933be80f7c2e4d9b388bdbec67d4d4"
+     }
+    },
+    "cut_events": {
+     "events_logged": 600,
+     "event_overflow": 0,
+     "substeps": 148000,
+     "sign_inconsistent_links": 0,
+     "lead_links": 0,
+     "unexpected_code_changes": 0,
+     "log_sha256": "e8790699f4876933db270b3caf509af1f4a1c8f1290a8241c4e469733029477e",
+     "device_bytes": 21902368
+    },
+    "frames_codes_match": true,
+    "file": "artifacts/wp12/surface_live_002/run/episode_000/surface_provenance.json",
+    "sha256": "b9157118a9ef64e6eebf6cf049ad38a8d9a3699431eed8c103fa25f202ce64b0"
+   },
+   "profiling": {
+    "status": "MEASURED",
+    "surface_profile": "cut_aware_surface_v1",
+    "kernel_or_profile": "cut_aware_surface_v1",
+    "gpu_process_memory_mib_end": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 6113.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "per_step_ms": {
+     "tlmpm_material_incl_recorder": {
+      "n": 740,
+      "mean": 270.42048472169364,
+      "p50": 273.2324740063632,
+      "p95": 274.119317959412,
+      "max": 295.58868100866675,
+      "sum": 200111.1586940533
+     },
+     "runner_robot_physics_wall_field": {
+      "n": 740,
+      "mean": 567.9363321891681,
+      "p50": 557.8745760140009,
+      "p95": 780.6448806586559,
+      "max": 1329.3041709985118,
+      "sum": 420272.88581998437
+     },
+     "surface_update": {
+      "n": 740,
+      "mean": 229.72078031854,
+      "p50": 220.20635000080802,
+      "p95": 442.15133020625217,
+      "max": 472.98416899866425,
+      "sum": 169993.3774357196
+     },
+     "runner_step_total": {
+      "n": 740,
+      "mean": 582.042602721973,
+      "p50": 572.0918665028876,
+      "p95": 795.4481093387585,
+      "max": 1344.0139520098455,
+      "sum": 430711.52601426
+     }
+    },
+    "robot_and_other_ms_derived": {
+     "n": 740,
+     "mean": 81.90133768173935,
+     "p50": 78.89818548574112,
+     "p95": 86.5221105326782,
+     "max": 845.687473018188,
+     "sum": 60606.98988448712
+    },
+    "note": "robot_physics_wall_s of the runner spans the PhysX substeps through the end of step() (material and surface included); robot_and_other_ms_derived = step - material - surface_update",
+    "env_step_wall_ms": {
+     "n": 700,
+     "mean": 584.5488077854887,
+     "p50": 573.715369013371,
+     "p95": 799.3276348526706,
+     "max": 1345.3425829939079,
+     "sum": 409184.1654498421
+    },
+    "camera_capture_ms": {
+     "n": 75,
+     "mean": 367.7486616004414,
+     "p50": 351.53005801839754,
+     "p95": 379.1239648038754,
+     "max": 1025.0392209854908,
+     "sum": 27581.149620033102
+    },
+    "surface_ms": {
+     "audit": {
+      "n": 741,
+      "mean": 38.12202115800997,
+      "p50": 38.22480299277231,
+      "p95": 39.45862399996258,
+      "max": 60.1038430177141,
+      "sum": 28248.41767808539
+     },
+     "cut_events_log_fetch": {
+      "n": 741,
+      "mean": 0.7960449015927802,
+      "p50": 0.8038240193855017,
+      "p95": 0.849837000714615,
+      "max": 1.8063389870803803,
+      "sum": 589.8692720802501
+     },
+     "embedding": {
+      "n": 741,
+      "mean": 21.66109764928849,
+      "p50": 21.934796997811645,
+      "p95": 22.49306600424461,
+      "max": 28.341427008854225,
+      "sum": 16050.873358122772
+     },
+     "extract_total": {
+      "n": 741,
+      "mean": 192.0441720861638,
+      "p50": 182.1521149831824,
+      "p95": 396.67917499900796,
+      "max": 508.33843799773604,
+      "sum": 142304.73151584738
+     },
+     "mechanical_partition": {
+      "n": 741,
+      "mean": 12.609166676896862,
+      "p50": 0.7429219840560108,
+      "p95": 221.6723860183265,
+      "max": 246.38638098258525,
+      "sum": 9343.392507580575
+     },
+     "normals": {
+      "n": 741,
+      "mean": 30.154329854418435,
+      "p50": 29.351273988140747,
+      "p95": 39.22415099805221,
+      "max": 44.82035600813106,
+      "sum": 22344.35842212406
+     },
+     "quads": {
+      "n": 741,
+      "mean": 2.6973019908314293,
+      "p50": 2.675595984328538,
+      "p95": 2.9828010010533035,
+      "max": 3.887945000315085,
+      "sum": 1998.700775206089
+     },
+     "state_readback": {
+      "n": 741,
+      "mean": 0.4171611392881857,
+      "p50": 0.4333319957368076,
+      "p95": 0.45713098370470107,
+      "max": 1.384164992487058,
+      "sum": 309.1164042125456
+     },
+     "surface_and_upload_total": {
+      "n": 741,
+      "mean": 229.99149376376283,
+      "p50": 220.0609149876982,
+      "p95": 442.13853901601397,
+      "max": 542.2138450085185,
+      "sum": 170423.69687894825
+     },
+     "surface_total": {
+      "n": 741,
+      "mean": 225.64850049407576,
+      "p50": 215.63910800614394,
+      "p95": 437.9334690165706,
+      "max": 537.940462003462,
+      "sum": 167205.53886611015
+     },
+     "topology_and_qef": {
+      "n": 741,
+      "mean": 18.505565412549927,
+      "p50": 18.53555699926801,
+      "p95": 19.76398899569176,
+      "max": 102.32022701529786,
+      "sum": 13712.623970699497
+     },
+     "usd_upload": {
+      "n": 741,
+      "mean": 4.342993269687049,
+      "p50": 4.409460991155356,
+      "p95": 4.471825988730416,
+      "max": 5.516199016710743,
+      "sum": 3218.158012838103
+     },
+     "validity_and_metadata": {
+      "n": 741,
+      "mean": 98.44901919858712,
+      "p50": 99.67724396847188,
+      "p95": 102.1988699794747,
+      "max": 135.06270092329942,
+      "sum": 72950.72322615306
+     },
+     "world_transform": {
+      "n": 741,
+      "mean": 0.36127566652625104,
+      "p50": 0.3606959944590926,
+      "p95": 0.3795060038100928,
+      "max": 0.47655898379161954,
+      "sum": 267.70526889595203
+     }
+    },
+    "mesh": {
+     "vertices": {
+      "n": 741,
+      "mean": 17924.780026990553,
+      "p50": 18404.0,
+      "p95": 18404.0,
+      "max": 18404.0,
+      "sum": 13282262.0
+     },
+     "triangles": {
+      "n": 741,
+      "mean": 35843.43319838057,
+      "p50": 36800.0,
+      "p95": 36800.0,
+      "max": 36800.0,
+      "sum": 26559984.0
+     }
+    },
+    "extractions": 741,
+    "control_steps_traced": 740,
+    "captures": 75,
+    "unchanged_codes_extractions": 702,
+    "unchanged_codes_extractions_with_mesh_size_change": 0
+   }
+  },
+  "B_PARTIAL": {
+   "root": "artifacts/wp12/surface_live_003",
+   "spec": {
+    "id": "B_PARTIAL",
+    "phase2b_episode": "PARTIAL",
+    "phase2b_record": "artifacts/wp12/workcell_live_002",
+    "surface_profile": "cut_aware_surface_v1",
+    "media": "partial"
+   },
+   "attempt": {
+    "returncode": 0,
+    "wall_s": 450.33152298399364,
+    "result_status": "PASS_EXECUTION",
+    "live_task_id": "CFG-bar_flat_board-partial_cut_mid_depth-c393ad75",
+    "phase2b_task_id": "CFG-bar_flat_board-partial_cut_mid_depth-c393ad75",
+    "git_sha": "bdc5da0795bf72154b6bbd8adc700ed8fb416e63",
+    "git_dirty": true,
+    "started": "2026-10-31T02:11:17.850857+09:00",
+    "ended": "2026-10-31T02:18:48.255362+09:00",
+    "run_dir_bytes": 462569199,
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/surface_live_003/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/surface_live_003/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "15",
+     "--steps",
+     "600",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/surface_live_003/run",
+     "--surface-profile",
+     "cut_aware_surface_v1",
+     "--surface-timing-log"
+    ]
+   },
+   "physics_vs_phase2b": {
+    "analysis_b": "artifacts/wp12/surface_live_003/analysis_001/analysis.json",
+    "analysis_phase2b": "artifacts/wp12/workcell_live_002/analysis_002/analysis.json",
+    "status": "PASS",
+    "checks": {
+     "task_id_equal": true,
+     "class_equal": true,
+     "verdict_equal": true,
+     "piece_counts_equal": true,
+     "fractions_within_tolerance": true
+    },
+    "class_b": "CUTTING_FAILURE",
+    "class_phase2b": "CUTTING_FAILURE",
+    "class_declared_rule_b": "PARTIAL_CUT_ACCEPTED",
+    "class_declared_rule_phase2b": "PARTIAL_CUT_ACCEPTED",
+    "verdict_b": "FAIL",
+    "verdict_phase2b": "FAIL",
+    "task_id": "CFG-bar_flat_board-partial_cut_mid_depth-c393ad75",
+    "outcome_metrics_b": {
+     "mechanical_components": 1.0,
+     "piece_mass_fractions[0]": 0.9999999999996599,
+     "substantial_pieces": 1.0,
+     "main_pieces_mass_fraction": 0.9999999999996599,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 0.5,
+     "analysis.mechanical_components": 1.0,
+     "analysis.expected_pieces": 2.0,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "outcome_metrics_phase2b": {
+     "mechanical_components": 1.0,
+     "piece_mass_fractions[0]": 0.9999999999996599,
+     "substantial_pieces": 1.0,
+     "main_pieces_mass_fraction": 0.9999999999996599,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 0.5,
+     "analysis.mechanical_components": 1.0,
+     "analysis.expected_pieces": 2.0,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "max_fraction_abs_diff": 0.0,
+    "fraction_keys_compared": [
+     "analysis.cut_completion",
+     "analysis.overcut_debris_mass_fraction",
+     "main_pieces_mass_fraction",
+     "minor_pieces_mass_fraction",
+     "piece_mass_fractions[0]"
+    ],
+    "surface_dependent_quality": {
+     "b": {},
+     "phase2b": {}
+    },
+    "labelled_particles": {
+     "b": 14400,
+     "phase2b": 14400
+    },
+    "conflicting_links": {
+     "b": 300,
+     "phase2b": 300
+    },
+    "final_codes_identical": true,
+    "bridges_b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": 0.0,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 300,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+       ]
+      }
+     }
+    ],
+    "bridges_phase2b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": 0.0,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 300,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 0,
+         "unconflicted": 30,
+         "both_unassigned": 30,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+       ]
+      }
+     }
+    ],
+    "home_outcome": {
+     "b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     },
+     "phase2b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     }
+    },
+    "knife_vs_board_min_m": {
+     "b": 0.009828834559291516,
+     "phase2b": 0.00984641356914412
+    },
+    "performance": {
+     "b": {
+      "control_steps": 642,
+      "step_wall_ms_mean": 579.5170813604879,
+      "step_wall_ms_p95": 589.7300614582491,
+      "material_wall_ms_mean": 270.04777576502,
+      "episode_wall_s": 423.921433274023,
+      "run_total_wall_s": 448.9088055540051,
+      "process_wall_s": 450.33152298399364,
+      "run_dir_bytes": 462569199
+     },
+     "phase2b": {
+      "control_steps": 642,
+      "step_wall_ms_mean": 392.46341772050073,
+      "step_wall_ms_p95": 400.02580010550446,
+      "material_wall_ms_mean": 269.62805601260555,
+      "episode_wall_s": 305.3725562370091,
+      "run_total_wall_s": 330.02609790900897,
+      "process_wall_s": 331.4008830879902,
+      "run_dir_bytes": 459330853
+     }
+    }
+   },
+   "surface": {
+    "extractions": 643,
+    "audit_error_extractions": 0,
+    "audit_errors_first": null,
+    "max_mesh_shells": 1,
+    "max_visually_separated_mechanically_bridged": 0,
+    "max_shell_component_violations": 0,
+    "mesh_size": {
+     "vertices": {
+      "n": 643,
+      "mean": 17549.657853810266,
+      "p50": 17802.0,
+      "p95": 17802.0,
+      "max": 17802.0,
+      "sum": 11284430.0
+     },
+     "triangles": {
+      "n": 643,
+      "mean": 35095.31570762053,
+      "p50": 35600.0,
+      "p95": 35600.0,
+      "max": 35600.0,
+      "sum": 22566288.0
+     },
+     "cut_triangles": {
+      "n": 643,
+      "mean": 695.3157076205288,
+      "p50": 1200.0,
+      "p95": 1200.0,
+      "max": 1200.0,
+      "sum": 447088.0
+     }
+    },
+    "mesh_defects_max": {
+     "boundary_edges": 0,
+     "non_manifold_edges": 0,
+     "inconsistently_oriented_edges": 0,
+     "degenerate_triangles": 0
+    },
+    "degenerate_normal_corners_max": 0,
+    "degenerate_normal_triangles_max": 0,
+    "update_modes": {
+     "full": 1,
+     "incremental": 642
+    },
+    "dirty_cells": {
+     "n": 642,
+     "mean": 0.9781931464174455,
+     "p50": 0.0,
+     "p95": 0.0,
+     "max": 62.0,
+     "sum": 628.0
+    },
+    "temporal_unchanged_codes": {
+     "frames": 630,
+     "topology_unchanged": 630,
+     "vertex_step_max_m": {
+      "n": 630,
+      "mean": 1.1099617866478905e-05,
+      "p50": 7.683335291606297e-07,
+      "p95": 9.104371588780836e-05,
+      "max": 0.00026367749863213876,
+      "sum": 0.00699275925588171
+     },
+     "particle_step_max_m": {
+      "n": 630,
+      "mean": 1.431626372277905e-05,
+      "p50": 8.124492744839407e-07,
+      "p95": 9.757216272891634e-05,
+      "max": 0.0003325019991280616,
+      "sum": 0.0090192461453508
+     },
+     "vertex_minus_particle_step_max_m": 7.202843201106651e-06,
+     "rule": "codes unchanged since the previous extraction; flicker would be vertex motion beyond the material's own motion"
+    },
+    "final": {
+     "time_s": 12.84,
+     "codes_sha256": "b4d8a5ee5c7ffd6a1360d61a70d5c4593b149a272a783cafb61fa1ee6be70061",
+     "cut_events": {
+      "entries": 300,
+      "log_sha256": "eec3b328ab183d9a6e9153ec1467ec6d1e0ae99b2cf87d7f5d97da8cd372591d",
+      "max_substep": 58528
+     },
+     "hermite": {
+      "source": "cut_events_v1",
+      "crossings_by_source": {
+       "recorder": 300,
+       "recorder_sign_inconsistent_midpoint": 0,
+       "recorder_point_fallback_normal": 0,
+       "midpoint_fallback": 0
+      },
+      "cut_links": 300,
+      "multi_crossing_links": 0,
+      "near_coincident_crossings": 0,
+      "fallback_normal_incoherent_links": 0,
+      "log_entries_not_links": 0,
+      "log_entries_not_conflicting": 0,
+      "log_duplicate_entries": 0
+     },
+     "audit": {
+      "ok": true,
+      "errors": [],
+      "mechanical_components": 1,
+      "lattice_pieces": 1,
+      "mesh_shells": 1,
+      "piece_component_violations": 0,
+      "shell_component_violations": 0,
+      "visually_separated_mechanically_bridged": 0
+     },
+     "mesh": {
+      "vertices": 17802,
+      "triangles": 35600,
+      "cut_triangles": 1200,
+      "boundary_triangles": 34400,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "non_manifold_vertices": 0,
+      "degenerate_triangles": 0,
+      "euler_characteristic": 2
+     },
+     "embedding": {
+      "estimator": "total_F",
+      "representatives": 17802,
+      "zero_weight_uniform_fallback": 0,
+      "det_F_nonpositive_particle_terms": 0,
+      "det_F_nonpositive_particles": 0,
+      "translation_only_representatives": 0
+     }
+    },
+    "max_crossings_by_source": {
+     "recorder": 300,
+     "recorder_sign_inconsistent_midpoint": 0,
+     "recorder_point_fallback_normal": 0,
+     "midpoint_fallback": 0
+    },
+    "selection": {
+     "surface_profile": "cut_aware_surface_v1",
+     "cut_events": "cut_events_v1",
+     "options": {
+      "boundary_profile": "cell_face_v1",
+      "crease_angle_deg": 30.0,
+      "fallback_normal_radius_spacings": 3.0,
+      "incremental": true,
+      "qef_truncation": 0.1,
+      "strict_audit": false
+     },
+     "bridge_method": "DynamicSurfaceBridge.update_face_varying_v1 (faceVarying normals, doubleSided)",
+     "runtime_version": "surface_runtime_v1",
+     "source_sha256": {
+      "cut_aware_surface.py": "0ea8961015abee3daa34ae5ab4fcc71db5c63707886574d9d0ac1a834ad473c6",
+      "cut_events.py": "1b9bfd37c233be79e49b65101e3c360d7ebafff4100b03a2d1f3dfe5bb5ac49a",
+      "surface_runtime.py": "2296229d645b1d67bf584e7d75b45c9919c65ac38067fea2c392c7611fae0498",
+      "usd_surface_bridge.py": "a33b1859c30d8aca403e0f1debac505c5e0899d5195e057c6caa99dcff315f86",
+      "cutting_surface.py": "fa40f10c9f3da0626c83b0461afd3f3a2462cc5a12786197c8d223c2ec223838",
+      "cut_topology.py": "2beb01ee520f2d43e86a9291cfa04dd47a933be80f7c2e4d9b388bdbec67d4d4"
+     }
+    },
+    "cut_events": {
+     "events_logged": 300,
+     "event_overflow": 0,
+     "substeps": 128400,
+     "sign_inconsistent_links": 0,
+     "lead_links": 0,
+     "unexpected_code_changes": 0,
+     "log_sha256": "eec3b328ab183d9a6e9153ec1467ec6d1e0ae99b2cf87d7f5d97da8cd372591d",
+     "device_bytes": 21902368
+    },
+    "frames_codes_match": true,
+    "file": "artifacts/wp12/surface_live_003/run/episode_000/surface_provenance.json",
+    "sha256": "b204075d2a8d208f507af260ed132700dd1cf59ddb49b3dc4f07b9158e5c02c1"
+   },
+   "profiling": {
+    "status": "MEASURED",
+    "surface_profile": "cut_aware_surface_v1",
+    "kernel_or_profile": "cut_aware_surface_v1",
+    "gpu_process_memory_mib_end": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 6049.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "per_step_ms": {
+     "tlmpm_material_incl_recorder": {
+      "n": 642,
+      "mean": 270.04777576502,
+      "p50": 273.2520069985185,
+      "p95": 274.5346299794619,
+      "max": 287.5258929852862,
+      "sum": 173370.67204114283
+     },
+     "runner_robot_physics_wall_field": {
+      "n": 642,
+      "mean": 563.3806875429347,
+      "p50": 562.8138155007036,
+      "p95": 572.4385434848955,
+      "max": 1192.2318220022134,
+      "sum": 361690.401402564
+     },
+     "surface_update": {
+      "n": 642,
+      "mean": 225.3100482865822,
+      "p50": 225.4195925052045,
+      "p95": 230.6429774573189,
+      "max": 476.83493202202953,
+      "sum": 144649.05099998577
+     },
+     "runner_step_total": {
+      "n": 642,
+      "mean": 577.3612369134144,
+      "p50": 576.372594005079,
+      "p95": 587.447632405383,
+      "max": 1207.2963920072652,
+      "sum": 370665.91409841203
+     }
+    },
+    "robot_and_other_ms_derived": {
+     "n": 642,
+     "mean": 82.0034128618122,
+     "p50": 79.82553950569127,
+     "p95": 89.00759317912161,
+     "max": 707.8565880074166,
+     "sum": 52646.19105728343
+    },
+    "note": "robot_physics_wall_s of the runner spans the PhysX substeps through the end of step() (material and surface included); robot_and_other_ms_derived = step - material - surface_update",
+    "env_step_wall_ms": {
+     "n": 600,
+     "mean": 579.5170813604879,
+     "p50": 578.4236829931615,
+     "p95": 589.7300614582491,
+     "max": 1208.4743050218094,
+     "sum": 347710.24881629273
+    },
+    "camera_capture_ms": {
+     "n": 65,
+     "mean": 367.370913936667,
+     "p50": 349.45941899786703,
+     "p95": 377.3720627883449,
+     "max": 1024.9643409915734,
+     "sum": 23879.109405883355
+    },
+    "surface_ms": {
+     "audit": {
+      "n": 643,
+      "mean": 38.69986099444118,
+      "p50": 38.642477011308074,
+      "p95": 39.56594390620012,
+      "max": 46.51272599585354,
+      "sum": 24884.01061942568
+     },
+     "cut_events_log_fetch": {
+      "n": 643,
+      "mean": 0.7760801090399734,
+      "p50": 0.7686979952268302,
+      "p95": 0.8408182911807671,
+      "max": 2.6618409901857376,
+      "sum": 499.01951011270285
+     },
+     "embedding": {
+      "n": 643,
+      "mean": 21.35195192543451,
+      "p50": 21.408061002148315,
+      "p95": 21.817969711264595,
+      "max": 30.829308001557365,
+      "sum": 13729.305088054389
+     },
+     "extract_total": {
+      "n": 643,
+      "mean": 183.53733247582161,
+      "p50": 179.1628149803728,
+      "p95": 183.88987520593219,
+      "max": 493.1464550027158,
+      "sum": 118014.50478195329
+     },
+     "mechanical_partition": {
+      "n": 643,
+      "mean": 5.400888844227351,
+      "p50": 0.7510140130762011,
+      "p95": 0.9648640960222109,
+      "max": 253.74372099759057,
+      "sum": 3472.771526838187
+     },
+     "normals": {
+      "n": 643,
+      "mean": 34.39417763114009,
+      "p50": 38.2044349971693,
+      "p95": 39.35192258795723,
+      "max": 43.76583901466802,
+      "sum": 22115.456216823077
+     },
+     "quads": {
+      "n": 643,
+      "mean": 2.758418382799056,
+      "p50": 2.7330559969414026,
+      "p95": 3.0807834962615743,
+      "max": 3.914221015293151,
+      "sum": 1773.663020139793
+     },
+     "state_readback": {
+      "n": 643,
+      "mean": 0.4151222290808674,
+      "p50": 0.4341899766586721,
+      "p95": 0.45512600627262145,
+      "max": 0.5135780083946884,
+      "sum": 266.92359329899773
+     },
+     "surface_and_upload_total": {
+      "n": 643,
+      "mean": 225.62612673573878,
+      "p50": 225.27071999502368,
+      "p95": 230.82720229867846,
+      "max": 526.346287020715,
+      "sum": 145077.59949108004
+     },
+     "surface_total": {
+      "n": 643,
+      "mean": 221.35283182589495,
+      "p50": 220.9553489810787,
+      "p95": 226.48567561700474,
+      "max": 522.096942004282,
+      "sum": 142329.87086405046
+     },
+     "topology_and_qef": {
+      "n": 643,
+      "mean": 18.333107016828205,
+      "p50": 18.25875698705204,
+      "p95": 19.639747907058336,
+      "max": 101.91009499249049,
+      "sum": 11788.187811820535
+     },
+     "usd_upload": {
+      "n": 643,
+      "mean": 4.273294909843816,
+      "p50": 4.3024710030294955,
+      "p95": 4.3570011999690905,
+      "max": 4.965202999301255,
+      "sum": 2747.7286270295735
+     },
+     "validity_and_metadata": {
+      "n": 643,
+      "mean": 96.9931053120913,
+      "p50": 97.04098000656813,
+      "p95": 99.47223001217935,
+      "max": 128.71099397307262,
+      "sum": 62366.56671567471
+     },
+     "world_transform": {
+      "n": 643,
+      "mean": 0.35770652793249347,
+      "p50": 0.3560819895938039,
+      "p95": 0.3750638017663732,
+      "max": 0.6585459923371673,
+      "sum": 230.00529746059328
+     }
+    },
+    "mesh": {
+     "vertices": {
+      "n": 643,
+      "mean": 17549.657853810266,
+      "p50": 17802.0,
+      "p95": 17802.0,
+      "max": 17802.0,
+      "sum": 11284430.0
+     },
+     "triangles": {
+      "n": 643,
+      "mean": 35095.31570762053,
+      "p50": 35600.0,
+      "p95": 35600.0,
+      "max": 35600.0,
+      "sum": 22566288.0
+     }
+    },
+    "extractions": 643,
+    "control_steps_traced": 642,
+    "captures": 65,
+    "unchanged_codes_extractions": 630,
+    "unchanged_codes_extractions_with_mesh_size_change": 0
+   }
+  },
+  "B_TESTB": {
+   "root": "artifacts/wp12/surface_live_007",
+   "spec": {
+    "id": "B_TESTB",
+    "phase2b_episode": "TESTB",
+    "phase2b_record": "artifacts/wp12/workcell_live_004",
+    "surface_profile": "cut_aware_surface_v1",
+    "media": "test_b"
+   },
+   "attempt": {
+    "returncode": 0,
+    "wall_s": 2869.1973992509884,
+    "result_status": "PASS_EXECUTION",
+    "live_task_id": "CFG-bar_flat_board-divide_5_slices-c19e742e",
+    "phase2b_task_id": "CFG-bar_flat_board-divide_5_slices-c19e742e",
+    "git_sha": "bbd7b60296d855f0731f8de023f8ecc6eb366d5e",
+    "git_dirty": true,
+    "started": "2026-10-31T02:50:54.843945+09:00",
+    "ended": "2026-10-31T03:38:44.097132+09:00",
+    "run_dir_bytes": 1225800446,
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/surface_live_007/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/surface_live_007/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "47",
+     "--steps",
+     "1850",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/surface_live_007/run",
+     "--surface-profile",
+     "cut_aware_surface_v1",
+     "--surface-timing-log"
+    ]
+   },
+   "physics_vs_phase2b": {
+    "analysis_b": "artifacts/wp12/surface_live_007/analysis_001/analysis.json",
+    "analysis_phase2b": "artifacts/wp12/workcell_live_004/analysis_002/analysis.json",
+    "status": "PASS",
+    "checks": {
+     "task_id_equal": true,
+     "class_equal": true,
+     "verdict_equal": true,
+     "piece_counts_equal": true,
+     "fractions_within_tolerance": true
+    },
+    "class_b": "TASK_SUCCESS",
+    "class_phase2b": "TASK_SUCCESS",
+    "class_declared_rule_b": null,
+    "class_declared_rule_phase2b": null,
+    "verdict_b": "PASS",
+    "verdict_phase2b": "PASS",
+    "task_id": "CFG-bar_flat_board-divide_5_slices-c19e742e",
+    "outcome_metrics_b": {
+     "mechanical_components": 5.0,
+     "piece_mass_fractions[0]": 0.21875000000009923,
+     "piece_mass_fractions[1]": 0.2000000000000805,
+     "piece_mass_fractions[2]": 0.19375000000007425,
+     "piece_mass_fractions[3]": 0.19375000000007425,
+     "piece_mass_fractions[4]": 0.19375000000007425,
+     "substantial_pieces": 5.0,
+     "main_pieces_mass_fraction": 1.0000000000004023,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 1.0,
+     "analysis.mechanical_components": 5.0,
+     "analysis.expected_pieces": 5.0,
+     "analysis.cut_position_error_m": 0.005000000402331353,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "outcome_metrics_phase2b": {
+     "mechanical_components": 5.0,
+     "piece_mass_fractions[0]": 0.21875000000009923,
+     "piece_mass_fractions[1]": 0.2000000000000805,
+     "piece_mass_fractions[2]": 0.19375000000007425,
+     "piece_mass_fractions[3]": 0.19375000000007425,
+     "piece_mass_fractions[4]": 0.19375000000007425,
+     "substantial_pieces": 5.0,
+     "main_pieces_mass_fraction": 1.0000000000004023,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 1.0,
+     "analysis.mechanical_components": 5.0,
+     "analysis.expected_pieces": 5.0,
+     "analysis.cut_position_error_m": 0.005000000402331353,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "max_fraction_abs_diff": 0.0,
+    "fraction_keys_compared": [
+     "analysis.cut_completion",
+     "analysis.overcut_debris_mass_fraction",
+     "main_pieces_mass_fraction",
+     "minor_pieces_mass_fraction",
+     "piece_mass_fractions[0]",
+     "piece_mass_fractions[1]",
+     "piece_mass_fractions[2]",
+     "piece_mass_fractions[3]",
+     "piece_mass_fractions[4]"
+    ],
+    "surface_dependent_quality": {
+     "b": {},
+     "phase2b": {}
+    },
+    "labelled_particles": {
+     "b": 84300,
+     "phase2b": 84300
+    },
+    "conflicting_links": {
+     "b": 2400,
+     "phase2b": 2400
+    },
+    "final_codes_identical": false,
+    "bridges_b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": -4.1723251242853365e-10,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     },
+     {
+      "op": "cut1",
+      "digit": 1,
+      "kerf_offset_from_declared_m": -0.000999999992549419,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     },
+     {
+      "op": "cut2",
+      "digit": 2,
+      "kerf_offset_from_declared_m": -0.002000000033527613,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     },
+     {
+      "op": "cut3",
+      "digit": 3,
+      "kerf_offset_from_declared_m": -0.003000000074505807,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     }
+    ],
+    "bridges_phase2b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": -4.1723251242853365e-10,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     },
+     {
+      "op": "cut1",
+      "digit": 1,
+      "kerf_offset_from_declared_m": -0.000999999992549419,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     },
+     {
+      "op": "cut2",
+      "digit": 2,
+      "kerf_offset_from_declared_m": -0.002000000033527613,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     },
+     {
+      "op": "cut3",
+      "digit": 3,
+      "kerf_offset_from_declared_m": -0.003000000074505807,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     }
+    ],
+    "home_outcome": {
+     "b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     },
+     "phase2b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     }
+    },
+    "knife_vs_board_min_m": {
+     "b": -5.322120674895736e-08,
+     "phase2b": -2.5801548829765264e-08
+    },
+    "performance": {
+     "b": {
+      "control_steps": 1897,
+      "step_wall_ms_mean": 1198.1324260122917,
+      "step_wall_ms_p95": 1961.4820837567092,
+      "material_wall_ms_mean": 843.2748643985639,
+      "episode_wall_s": 2797.7665828379977,
+      "run_total_wall_s": 2866.9856708649895,
+      "process_wall_s": 2869.1973992509884,
+      "run_dir_bytes": 1225800446
+     },
+     "phase2b": {
+      "control_steps": 1897,
+      "step_wall_ms_mean": 427.58042763552874,
+      "step_wall_ms_p95": 635.0941021926701,
+      "material_wall_ms_mean": 269.1585239870065,
+      "episode_wall_s": 933.8700890190084,
+      "run_total_wall_s": 992.3818882020132,
+      "process_wall_s": 994.8048989750096,
+      "run_dir_bytes": 1217578264
+     }
+    }
+   },
+   "surface": {
+    "extractions": 1898,
+    "audit_error_extractions": 0,
+    "audit_errors_first": null,
+    "max_mesh_shells": 5,
+    "max_visually_separated_mechanically_bridged": 1,
+    "max_shell_component_violations": 0,
+    "mesh_size": {
+     "vertices": {
+      "n": 1898,
+      "mean": 19946.659641728136,
+      "p50": 19756.0,
+      "p95": 22010.0,
+      "max": 22010.0,
+      "sum": 37858760.0
+     },
+     "triangles": {
+      "n": 1898,
+      "mean": 39880.6195995785,
+      "p50": 39500.0,
+      "p95": 44000.0,
+      "max": 44000.0,
+      "sum": 75693416.0
+     },
+     "cut_triangles": {
+      "n": 1898,
+      "mean": 5480.619599578504,
+      "p50": 5100.0,
+      "p95": 9600.0,
+      "max": 9600.0,
+      "sum": 10402216.0
+     }
+    },
+    "mesh_defects_max": {
+     "boundary_edges": 0,
+     "non_manifold_edges": 2,
+     "inconsistently_oriented_edges": 4,
+     "degenerate_triangles": 4
+    },
+    "degenerate_normal_corners_max": 12,
+    "degenerate_normal_triangles_max": 4,
+    "update_modes": {
+     "full": 1,
+     "incremental": 1897
+    },
+    "dirty_cells": {
+     "n": 1897,
+     "mean": 2.731681602530311,
+     "p50": 0.0,
+     "p95": 8.799999999999272,
+     "max": 62.0,
+     "sum": 5182.0
+    },
+    "temporal_unchanged_codes": {
+     "frames": 1684,
+     "topology_unchanged": 1684,
+     "vertex_step_max_m": {
+      "n": 1684,
+      "mean": 1.4193375613172262e-05,
+      "p50": 9.347967833171093e-07,
+      "p95": 0.00010045204182074124,
+      "max": 0.0004160755752075544,
+      "sum": 0.02390164453258209
+     },
+     "particle_step_max_m": {
+      "n": 1684,
+      "mean": 1.794370018395037e-05,
+      "p50": 9.323948409513691e-07,
+      "p95": 0.00012871342856400492,
+      "max": 0.0007533579067485398,
+      "sum": 0.030217191109772425
+     },
+     "vertex_minus_particle_step_max_m": 5.507778772078536e-06,
+     "rule": "codes unchanged since the previous extraction; flicker would be vertex motion beyond the material's own motion"
+    },
+    "final": {
+     "time_s": 37.94,
+     "codes_sha256": "bcd53a8efe749b2d400aadd3384a667da895037a2cd0a7124a6d9a84550043e9",
+     "cut_events": {
+      "entries": 2400,
+      "log_sha256": "11f485dcee0dbb7bfd0a29bd90d8ffa59df7ac818d43bf8f60d81548bcd3ad48",
+      "max_substep": 276996
+     },
+     "hermite": {
+      "source": "cut_events_v1",
+      "crossings_by_source": {
+       "recorder": 2400,
+       "recorder_sign_inconsistent_midpoint": 0,
+       "recorder_point_fallback_normal": 0,
+       "midpoint_fallback": 0
+      },
+      "cut_links": 2400,
+      "multi_crossing_links": 0,
+      "near_coincident_crossings": 0,
+      "fallback_normal_incoherent_links": 0,
+      "log_entries_not_links": 0,
+      "log_entries_not_conflicting": 0,
+      "log_duplicate_entries": 0
+     },
+     "audit": {
+      "ok": true,
+      "errors": [],
+      "mechanical_components": 5,
+      "lattice_pieces": 5,
+      "mesh_shells": 5,
+      "piece_component_violations": 0,
+      "shell_component_violations": 0,
+      "visually_separated_mechanically_bridged": 0
+     },
+     "mesh": {
+      "vertices": 22010,
+      "triangles": 44000,
+      "cut_triangles": 9600,
+      "boundary_triangles": 34400,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "non_manifold_vertices": 0,
+      "degenerate_triangles": 0,
+      "euler_characteristic": 10
+     },
+     "embedding": {
+      "estimator": "total_F",
+      "representatives": 22010,
+      "zero_weight_uniform_fallback": 0,
+      "det_F_nonpositive_particle_terms": 0,
+      "det_F_nonpositive_particles": 0,
+      "translation_only_representatives": 0
+     }
+    },
+    "max_crossings_by_source": {
+     "recorder": 2400,
+     "recorder_sign_inconsistent_midpoint": 0,
+     "recorder_point_fallback_normal": 0,
+     "midpoint_fallback": 0
+    },
+    "selection": {
+     "surface_profile": "cut_aware_surface_v1",
+     "cut_events": "cut_events_v1",
+     "options": {
+      "boundary_profile": "cell_face_v1",
+      "crease_angle_deg": 30.0,
+      "fallback_normal_radius_spacings": 3.0,
+      "incremental": true,
+      "qef_truncation": 0.1,
+      "strict_audit": false
+     },
+     "bridge_method": "DynamicSurfaceBridge.update_face_varying_v1 (faceVarying normals, doubleSided)",
+     "runtime_version": "surface_runtime_v1",
+     "source_sha256": {
+      "cut_aware_surface.py": "0ea8961015abee3daa34ae5ab4fcc71db5c63707886574d9d0ac1a834ad473c6",
+      "cut_events.py": "1b9bfd37c233be79e49b65101e3c360d7ebafff4100b03a2d1f3dfe5bb5ac49a",
+      "surface_runtime.py": "166cc3d086882d192ea48122fd36dfb5be745fd05725f90b8f83c6298313e8f9",
+      "usd_surface_bridge.py": "a33b1859c30d8aca403e0f1debac505c5e0899d5195e057c6caa99dcff315f86",
+      "cutting_surface.py": "fa40f10c9f3da0626c83b0461afd3f3a2462cc5a12786197c8d223c2ec223838",
+      "cut_topology.py": "2beb01ee520f2d43e86a9291cfa04dd47a933be80f7c2e4d9b388bdbec67d4d4"
+     }
+    },
+    "cut_events": {
+     "events_logged": 2400,
+     "event_overflow": 0,
+     "substeps": 379400,
+     "sign_inconsistent_links": 0,
+     "lead_links": 0,
+     "unexpected_code_changes": 0,
+     "log_sha256": "11f485dcee0dbb7bfd0a29bd90d8ffa59df7ac818d43bf8f60d81548bcd3ad48",
+     "device_bytes": 35448032
+    },
+    "frames_codes_match": true,
+    "file": "artifacts/wp12/surface_live_007/run/episode_000/surface_provenance.json",
+    "sha256": "7e94f1be0a1723bfae03ba5dbfa3301e995c303181602335b63a6c8fd02cdaf1"
+   },
+   "profiling": {
+    "status": "MEASURED",
+    "surface_profile": "cut_aware_surface_v1",
+    "kernel_or_profile": "cut_aware_surface_v1",
+    "gpu_process_memory_mib_end": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 6145.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "per_step_ms": {
+     "tlmpm_material_incl_recorder": {
+      "n": 1897,
+      "mean": 843.274864398564,
+      "p50": 1054.8658330226317,
+      "p95": 1452.44062198326,
+      "max": 1707.1766840235796,
+      "sum": 1599692.4177640758
+     },
+     "runner_robot_physics_wall_field": {
+      "n": 1897,
+      "mean": 1194.7132028082954,
+      "p50": 1386.2593330268282,
+      "p95": 1939.4985241990069,
+      "max": 2639.53008397948,
+      "sum": 2266370.945727336
+     },
+     "surface_update": {
+      "n": 1897,
+      "mean": 278.7700840217852,
+      "p50": 256.46838400280103,
+      "p95": 513.8219251995906,
+      "max": 595.70979399723,
+      "sum": 528826.8493893265
+     },
+     "runner_step_total": {
+      "n": 1897,
+      "mean": 1210.241214709282,
+      "p50": 1402.0163929963019,
+      "p95": 1955.5292397853916,
+      "max": 2655.5617180129047,
+      "sum": 2295827.584303508
+     }
+    },
+    "robot_and_other_ms_derived": {
+     "n": 1897,
+     "mean": 88.1962662889329,
+     "p50": 85.71179397404194,
+     "p95": 96.81812157505189,
+     "max": 1086.6324490052648,
+     "sum": 167308.31715010572
+    },
+    "note": "robot_physics_wall_s of the runner spans the PhysX substeps through the end of step() (material and surface included); robot_and_other_ms_derived = step - material - surface_update",
+    "env_step_wall_ms": {
+     "n": 1850,
+     "mean": 1198.1324260122917,
+     "p50": 1398.8488704926567,
+     "p95": 1961.4820837567092,
+     "max": 2656.842409982346,
+     "sum": 2216544.98812274
+    },
+    "camera_capture_ms": {
+     "n": 190,
+     "mean": 2316.873109495684,
+     "p50": 2989.2864245193778,
+     "p95": 4918.6866629694105,
+     "max": 5096.296870004153,
+     "sum": 440205.89080417994
+    },
+    "surface_ms": {
+     "audit": {
+      "n": 1898,
+      "mean": 42.00935592265268,
+      "p50": 41.898124996805564,
+      "p95": 44.54363700497197,
+      "max": 106.73448801389895,
+      "sum": 79733.75754119479
+     },
+     "cut_events_log_fetch": {
+      "n": 1898,
+      "mean": 1.00482066114518,
+      "p50": 1.0146260174224153,
+      "p95": 1.2036710890242828,
+      "max": 4.1012220026459545,
+      "sum": 1907.1496148535516
+     },
+     "embedding": {
+      "n": 1898,
+      "mean": 25.425298221198204,
+      "p50": 25.869001503451727,
+      "p95": 28.585608740104362,
+      "max": 40.015906997723505,
+      "sum": 48257.21602383419
+     },
+     "extract_total": {
+      "n": 1898,
+      "mean": 233.80214544735986,
+      "p50": 211.56467399850953,
+      "p95": 458.8500421101344,
+      "max": 549.1268039913848,
+      "sum": 443756.472059089
+     },
+     "mechanical_partition": {
+      "n": 1898,
+      "mean": 28.192628543249608,
+      "p50": 0.8300315093947574,
+      "p95": 245.37273164023645,
+      "max": 302.00605699792504,
+      "sum": 53509.60897508776
+     },
+     "normals": {
+      "n": 1898,
+      "mean": 35.912864177499564,
+      "p50": 35.359645989956334,
+      "p95": 47.86533534206683,
+      "max": 102.23721200600266,
+      "sum": 68162.61620889418
+     },
+     "quads": {
+      "n": 1898,
+      "mean": 2.9763218163220935,
+      "p50": 2.9470024892361835,
+      "p95": 3.403943953162525,
+      "max": 5.055118992459029,
+      "sum": 5649.058807379333
+     },
+     "state_readback": {
+      "n": 1898,
+      "mean": 0.4387202489450358,
+      "p50": 0.43836400436703116,
+      "p95": 0.49198050546692684,
+      "max": 0.6500429881270975,
+      "sum": 832.691032497678
+     },
+     "surface_and_upload_total": {
+      "n": 1898,
+      "mean": 278.70858280538414,
+      "p50": 256.265007017646,
+      "p95": 513.742452157021,
+      "max": 595.4532790055964,
+      "sum": 528988.8901646191
+     },
+     "surface_total": {
+      "n": 1898,
+      "mean": 273.6398759741638,
+      "p50": 251.00837151694577,
+      "p95": 508.49875418643927,
+      "max": 589.8270210018381,
+      "sum": 519368.4845989628
+     },
+     "topology_and_qef": {
+      "n": 1898,
+      "mean": 20.971438853339773,
+      "p50": 21.09907049452886,
+      "p95": 23.718946610460986,
+      "max": 104.22372398898005,
+      "sum": 39803.79094363889
+     },
+     "usd_upload": {
+      "n": 1898,
+      "mean": 5.068706831220367,
+      "p50": 5.14937900879886,
+      "p95": 5.660987946612295,
+      "max": 12.434802018105984,
+      "sum": 9620.405565656256
+     },
+     "validity_and_metadata": {
+      "n": 1898,
+      "mean": 114.22710209059748,
+      "p50": 116.28713400568813,
+      "p95": 128.67834558273898,
+      "max": 193.36183002451435,
+      "sum": 216803.03976795403
+     },
+     "world_transform": {
+      "n": 1898,
+      "mean": 0.39730592706491946,
+      "p50": 0.3947935038013384,
+      "p95": 0.44970204471610487,
+      "max": 0.873339013196528,
+      "sum": 754.0866495692171
+     }
+    },
+    "mesh": {
+     "vertices": {
+      "n": 1898,
+      "mean": 19946.659641728136,
+      "p50": 19756.0,
+      "p95": 22010.0,
+      "max": 22010.0,
+      "sum": 37858760.0
+     },
+     "triangles": {
+      "n": 1898,
+      "mean": 39880.6195995785,
+      "p50": 39500.0,
+      "p95": 44000.0,
+      "max": 44000.0,
+      "sum": 75693416.0
+     }
+    },
+    "extractions": 1898,
+    "control_steps_traced": 1897,
+    "captures": 190,
+    "unchanged_codes_extractions": 1684,
+    "unchanged_codes_extractions_with_mesh_size_change": 0
+   }
+  },
+  "B_TRIM_PATH_V3": {
+   "root": "artifacts/wp12/surface_live_005",
+   "spec": {
+    "id": "B_TRIM_PATH_V3",
+    "phase2b_episode": "TRIM_PATH_V3",
+    "phase2b_record": "artifacts/wp12/workcell_live_007",
+    "surface_profile": "cut_aware_surface_v1",
+    "media": "trim_path_v3"
+   },
+   "attempt": {
+    "returncode": 0,
+    "wall_s": 606.7620838730072,
+    "result_status": "PASS_EXECUTION",
+    "live_task_id": "CFG-trim01_flat_board-trim_bump_rho10-4f7c00e6",
+    "phase2b_task_id": "CFG-trim01_flat_board-trim_bump_rho10-4f7c00e6",
+    "git_sha": "5e448ae49dc504fa4051c644e345eaf544836842",
+    "git_dirty": true,
+    "started": "2026-10-31T02:33:56.072996+09:00",
+    "ended": "2026-10-31T02:44:02.888184+09:00",
+    "run_dir_bytes": 565031188,
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/surface_live_005/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/surface_live_005/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v3\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "19",
+     "--steps",
+     "725",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/surface_live_005/run",
+     "--surface-profile",
+     "cut_aware_surface_v1",
+     "--surface-timing-log"
+    ]
+   },
+   "physics_vs_phase2b": {
+    "analysis_b": "artifacts/wp12/surface_live_005/analysis_001/analysis.json",
+    "analysis_phase2b": "artifacts/wp12/workcell_live_007/analysis_001/analysis.json",
+    "status": "PASS",
+    "checks": {
+     "task_id_equal": true,
+     "class_equal": true,
+     "verdict_equal": true,
+     "piece_counts_equal": true,
+     "fractions_within_tolerance": true
+    },
+    "class_b": "TASK_SUCCESS",
+    "class_phase2b": "TASK_SUCCESS",
+    "class_declared_rule_b": null,
+    "class_declared_rule_phase2b": null,
+    "verdict_b": "PASS",
+    "verdict_phase2b": "PASS",
+    "task_id": "CFG-trim01_flat_board-trim_bump_rho10-4f7c00e6",
+    "outcome_metrics_b": {
+     "mechanical_components": 2.0,
+     "plane_local_z_m": 0.02,
+     "largest_component_below_plane_mass_share": 0.9999583333329937,
+     "detached_below_plane_mass_fraction": 4.166666666666668e-05,
+     "reference_substrate_component_ids[0]": 0.0,
+     "analysis.cut_completion": 0.978927203065134,
+     "analysis.per_protrusion_removed.dome": 0.978927203065134,
+     "analysis.mechanical_components": 2.0,
+     "analysis.cut_position_error_m": 0.009884280636906623,
+     "analysis.overcut_detached_below_plane_fraction": 4.166666666666668e-05,
+     "analysis.substrate_share": 0.9999583333329937
+    },
+    "outcome_metrics_phase2b": {
+     "mechanical_components": 2.0,
+     "plane_local_z_m": 0.02,
+     "largest_component_below_plane_mass_share": 0.9999583333329937,
+     "detached_below_plane_mass_fraction": 4.166666666666668e-05,
+     "reference_substrate_component_ids[0]": 0.0,
+     "analysis.cut_completion": 0.978927203065134,
+     "analysis.per_protrusion_removed.dome": 0.978927203065134,
+     "analysis.mechanical_components": 2.0,
+     "analysis.cut_position_error_m": 0.010307015404105186,
+     "analysis.overcut_detached_below_plane_fraction": 4.166666666666668e-05,
+     "analysis.substrate_share": 0.9999583333329937
+    },
+    "max_fraction_abs_diff": 0.0,
+    "fraction_keys_compared": [
+     "analysis.cut_completion",
+     "analysis.overcut_detached_below_plane_fraction",
+     "analysis.per_protrusion_removed.dome",
+     "analysis.substrate_share",
+     "detached_below_plane_mass_fraction",
+     "largest_component_below_plane_mass_share"
+    ],
+    "surface_dependent_quality": {
+     "b": {
+      "status": "MEASURED",
+      "scope": "Frozen TRIM surface metrics, reported as quality only",
+      "measurement_spacing_xy_m": [
+       0.001,
+       0.001
+      ],
+      "grid_shape_xy": [
+       160,
+       30
+      ],
+      "valid_surface_fraction": 1.0,
+      "missing_surface_fraction": 0.0,
+      "maximum_substrate_surface_residual_height_m": 0.0054544529892217,
+      "surface_p95_absolute_plane_error_m": 0.0004292111187219207,
+      "surface_rms_plane_error_m": 0.0003267173362180417,
+      "maximum_gouge_depth_m": 0.003291197810205808,
+      "overcut_volume_m3": 8.601845661323655e-07,
+      "overcut_volume_fraction_of_initial_base": 0.008960255897212142
+     },
+     "phase2b": {
+      "status": "MEASURED",
+      "scope": "Frozen TRIM surface metrics, reported as quality only",
+      "measurement_spacing_xy_m": [
+       0.001,
+       0.001
+      ],
+      "grid_shape_xy": [
+       160,
+       30
+      ],
+      "valid_surface_fraction": 1.0,
+      "missing_surface_fraction": 0.0,
+      "maximum_substrate_surface_residual_height_m": 0.000174394978596875,
+      "surface_p95_absolute_plane_error_m": 0.0005439516683725603,
+      "surface_rms_plane_error_m": 0.00025101683748069553,
+      "maximum_gouge_depth_m": 0.0016057763315353406,
+      "overcut_volume_m3": 9.483213041010123e-07,
+      "overcut_volume_fraction_of_initial_base": 0.009878346917718878
+     }
+    },
+    "labelled_particles": {
+     "b": 29298,
+     "phase2b": 29340
+    },
+    "conflicting_links": {
+     "b": 402,
+     "phase2b": 393
+    },
+    "final_codes_identical": false,
+    "bridges_b": [],
+    "bridges_phase2b": [],
+    "home_outcome": {
+     "b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     },
+     "phase2b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     }
+    },
+    "knife_vs_board_min_m": {
+     "b": 0.019970331732859475,
+     "phase2b": 0.019970331732859475
+    },
+    "performance": {
+     "b": {
+      "control_steps": 785,
+      "step_wall_ms_mean": 651.5963772743748,
+      "step_wall_ms_p95": 873.4543925907927,
+      "material_wall_ms_mean": 274.15975166357174,
+      "episode_wall_s": 574.6604849090218,
+      "run_total_wall_s": 605.1670522339991,
+      "process_wall_s": 606.7620838730072,
+      "run_dir_bytes": 565031188
+     },
+     "phase2b": {
+      "control_steps": 785,
+      "step_wall_ms_mean": 422.52447345245884,
+      "step_wall_ms_p95": 620.6183412054088,
+      "material_wall_ms_mean": 272.91340229129656,
+      "episode_wall_s": 394.49947884099674,
+      "run_total_wall_s": 424.16295971302316,
+      "process_wall_s": 425.6912225529959,
+      "run_dir_bytes": 561449229
+     }
+    }
+   },
+   "surface": {
+    "extractions": 786,
+    "audit_error_extractions": 0,
+    "audit_errors_first": null,
+    "max_mesh_shells": 3,
+    "max_visually_separated_mechanically_bridged": 1,
+    "max_shell_component_violations": 0,
+    "mesh_size": {
+     "vertices": {
+      "n": 786,
+      "mean": 18031.58778625954,
+      "p50": 18268.0,
+      "p95": 18382.0,
+      "max": 18382.0,
+      "sum": 14172828.0
+     },
+     "triangles": {
+      "n": 786,
+      "mean": 36058.982188295166,
+      "p50": 36528.0,
+      "p95": 36760.0,
+      "max": 36760.0,
+      "sum": 28342360.0
+     },
+     "cut_triangles": {
+      "n": 786,
+      "mean": 906.9821882951654,
+      "p50": 1376.0,
+      "p95": 1608.0,
+      "max": 1608.0,
+      "sum": 712888.0
+     }
+    },
+    "mesh_defects_max": {
+     "boundary_edges": 0,
+     "non_manifold_edges": 4,
+     "inconsistently_oriented_edges": 8,
+     "degenerate_triangles": 2
+    },
+    "degenerate_normal_corners_max": 6,
+    "degenerate_normal_triangles_max": 2,
+    "update_modes": {
+     "full": 1,
+     "incremental": 785
+    },
+    "dirty_cells": {
+     "n": 785,
+     "mean": 1.1452229299363057,
+     "p50": 0.0,
+     "p95": 4.799999999999727,
+     "max": 85.0,
+     "sum": 899.0
+    },
+    "temporal_unchanged_codes": {
+     "frames": 699,
+     "topology_unchanged": 699,
+     "vertex_step_max_m": {
+      "n": 699,
+      "mean": 7.956871470139151e-05,
+      "p50": 1.034534500288572e-05,
+      "p95": 0.0001094857923380982,
+      "max": 0.004187212824524509,
+      "sum": 0.05561853157627267
+     },
+     "particle_step_max_m": {
+      "n": 699,
+      "mean": 7.814179681321707e-05,
+      "p50": 1.0279698784292567e-05,
+      "p95": 0.00010911556329632525,
+      "max": 0.004158454325812456,
+      "sum": 0.05462111597243874
+     },
+     "vertex_minus_particle_step_max_m": 8.060229452272341e-05,
+     "rule": "codes unchanged since the previous extraction; flicker would be vertex motion beyond the material's own motion"
+    },
+    "final": {
+     "time_s": 15.700000000000001,
+     "codes_sha256": "ca51ef39b3dc093ea45371e889d7c50a7b57e07767c479f61b9a75747825090f",
+     "cut_events": {
+      "entries": 402,
+      "log_sha256": "f00501c198252196bfceb419ecacfeab45c6c988472f70ec730c335a9475488a",
+      "max_substep": 79000
+     },
+     "hermite": {
+      "source": "cut_events_v1",
+      "crossings_by_source": {
+       "recorder": 344,
+       "recorder_sign_inconsistent_midpoint": 58,
+       "recorder_point_fallback_normal": 0,
+       "midpoint_fallback": 0
+      },
+      "cut_links": 402,
+      "multi_crossing_links": 0,
+      "near_coincident_crossings": 0,
+      "fallback_normal_incoherent_links": 26,
+      "log_entries_not_links": 0,
+      "log_entries_not_conflicting": 0,
+      "log_duplicate_entries": 0
+     },
+     "audit": {
+      "ok": true,
+      "errors": [],
+      "mechanical_components": 2,
+      "lattice_pieces": 3,
+      "mesh_shells": 3,
+      "piece_component_violations": 0,
+      "shell_component_violations": 0,
+      "visually_separated_mechanically_bridged": 1
+     },
+     "mesh": {
+      "vertices": 18382,
+      "triangles": 36760,
+      "cut_triangles": 1608,
+      "boundary_triangles": 35152,
+      "boundary_edges": 0,
+      "non_manifold_edges": 4,
+      "inconsistently_oriented_edges": 8,
+      "non_manifold_vertices": 8,
+      "degenerate_triangles": 0,
+      "euler_characteristic": 6
+     },
+     "embedding": {
+      "estimator": "total_F",
+      "representatives": 18382,
+      "zero_weight_uniform_fallback": 0,
+      "det_F_nonpositive_particle_terms": 0,
+      "det_F_nonpositive_particles": 0,
+      "translation_only_representatives": 0
+     }
+    },
+    "max_crossings_by_source": {
+     "recorder": 344,
+     "recorder_sign_inconsistent_midpoint": 58,
+     "recorder_point_fallback_normal": 0,
+     "midpoint_fallback": 0
+    },
+    "selection": {
+     "surface_profile": "cut_aware_surface_v1",
+     "cut_events": "cut_events_v1",
+     "options": {
+      "boundary_profile": "cell_face_v1",
+      "crease_angle_deg": 30.0,
+      "fallback_normal_radius_spacings": 3.0,
+      "incremental": true,
+      "qef_truncation": 0.1,
+      "strict_audit": false
+     },
+     "bridge_method": "DynamicSurfaceBridge.update_face_varying_v1 (faceVarying normals, doubleSided)",
+     "runtime_version": "surface_runtime_v1",
+     "source_sha256": {
+      "cut_aware_surface.py": "0ea8961015abee3daa34ae5ab4fcc71db5c63707886574d9d0ac1a834ad473c6",
+      "cut_events.py": "1b9bfd37c233be79e49b65101e3c360d7ebafff4100b03a2d1f3dfe5bb5ac49a",
+      "surface_runtime.py": "166cc3d086882d192ea48122fd36dfb5be745fd05725f90b8f83c6298313e8f9",
+      "usd_surface_bridge.py": "a33b1859c30d8aca403e0f1debac505c5e0899d5195e057c6caa99dcff315f86",
+      "cutting_surface.py": "fa40f10c9f3da0626c83b0461afd3f3a2462cc5a12786197c8d223c2ec223838",
+      "cut_topology.py": "2beb01ee520f2d43e86a9291cfa04dd47a933be80f7c2e4d9b388bdbec67d4d4"
+     }
+    },
+    "cut_events": {
+     "events_logged": 402,
+     "event_overflow": 0,
+     "substeps": 157000,
+     "sign_inconsistent_links": 58,
+     "lead_links": 58,
+     "unexpected_code_changes": 0,
+     "log_sha256": "f00501c198252196bfceb419ecacfeab45c6c988472f70ec730c335a9475488a",
+     "device_bytes": 22015120
+    },
+    "frames_codes_match": true,
+    "file": "artifacts/wp12/surface_live_005/run/episode_000/surface_provenance.json",
+    "sha256": "036a1ec3db34700c7c6b6e03bc2c288c9aeb4129ac19c1702955122246ec1080"
+   },
+   "profiling": {
+    "status": "MEASURED",
+    "surface_profile": "cut_aware_surface_v1",
+    "kernel_or_profile": "cut_aware_surface_v1",
+    "gpu_process_memory_mib_end": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 6049.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "per_step_ms": {
+     "tlmpm_material_incl_recorder": {
+      "n": 785,
+      "mean": 274.15975166357174,
+      "p50": 276.04465099284425,
+      "p95": 277.3757264018059,
+      "max": 292.1976479992736,
+      "sum": 215215.40505590383
+     },
+     "runner_robot_physics_wall_field": {
+      "n": 785,
+      "mean": 632.5943753999735,
+      "p50": 604.2529060214292,
+      "p95": 851.7842732195277,
+      "max": 1458.7655130017083,
+      "sum": 496586.5846889792
+     },
+     "surface_update": {
+      "n": 785,
+      "mean": 284.9261651897453,
+      "p50": 260.1277759822551,
+      "p95": 502.40039979689755,
+      "max": 600.9053180168848,
+      "sum": 223667.03967395006
+     },
+     "runner_step_total": {
+      "n": 785,
+      "mean": 647.1856255733088,
+      "p50": 618.7976929941215,
+      "p95": 868.0886075948364,
+      "max": 1473.7793110252824,
+      "sum": 508040.7160750474
+     }
+    },
+    "robot_and_other_ms_derived": {
+     "n": 785,
+     "mean": 88.09970871999171,
+     "p50": 85.0125259894412,
+     "p95": 97.37622021930292,
+     "max": 856.8206339841709,
+     "sum": 69158.2713451935
+    },
+    "note": "robot_physics_wall_s of the runner spans the PhysX substeps through the end of step() (material and surface included); robot_and_other_ms_derived = step - material - surface_update",
+    "env_step_wall_ms": {
+     "n": 725,
+     "mean": 651.5963772743747,
+     "p50": 620.6752840080298,
+     "p95": 873.4543925907927,
+     "max": 1474.9588800186757,
+     "sum": 472407.3735239217
+    },
+    "camera_capture_ms": {
+     "n": 80,
+     "mean": 371.29986319960153,
+     "p50": 358.5903474886436,
+     "p95": 385.98628765612375,
+     "max": 1023.9544429932721,
+     "sum": 29703.989055968123
+    },
+    "surface_ms": {
+     "audit": {
+      "n": 786,
+      "mean": 48.612797050996036,
+      "p50": 53.25598901254125,
+      "p95": 56.48583399306517,
+      "max": 137.87708399468102,
+      "sum": 38209.65848208289
+     },
+     "cut_events_log_fetch": {
+      "n": 786,
+      "mean": 0.8263566649951984,
+      "p50": 0.8097345125861466,
+      "p95": 0.913186748221051,
+      "max": 2.162771997973323,
+      "sum": 649.5163386862259
+     },
+     "embedding": {
+      "n": 786,
+      "mean": 22.702760837029288,
+      "p50": 22.41394000884611,
+      "p95": 23.95541476289509,
+      "max": 35.804433980956674,
+      "sum": 17844.37001790502
+     },
+     "extract_total": {
+      "n": 786,
+      "mean": 225.9286804398052,
+      "p50": 201.05873249121942,
+      "p95": 441.93482797709294,
+      "max": 531.6415920096915,
+      "sum": 177579.94282568689
+     },
+     "mechanical_partition": {
+      "n": 786,
+      "mean": 27.80438067692032,
+      "p50": 0.8180644945241511,
+      "p95": 243.04727952403482,
+      "max": 287.1498499880545,
+      "sum": 21854.243212059373
+     },
+     "normals": {
+      "n": 786,
+      "mean": 50.99450939995653,
+      "p50": 50.41728749347385,
+      "p95": 54.5174067519838,
+      "max": 74.91620199289173,
+      "sum": 40081.68438836583
+     },
+     "quads": {
+      "n": 786,
+      "mean": 2.9989903760969083,
+      "p50": 2.9840924980817363,
+      "p95": 3.325827987282537,
+      "max": 4.205570992780849,
+      "sum": 2357.20643561217
+     },
+     "state_readback": {
+      "n": 786,
+      "mean": 0.44060516345632234,
+      "p50": 0.4521830123849213,
+      "p95": 0.4732907473226078,
+      "max": 0.6085729983169585,
+      "sum": 346.31565847666934
+     },
+     "surface_and_upload_total": {
+      "n": 786,
+      "mean": 285.1333105907024,
+      "p50": 259.95792950561736,
+      "p95": 502.40352102264296,
+      "max": 600.7232299889438,
+      "sum": 224114.7821242921
+     },
+     "surface_total": {
+      "n": 786,
+      "mean": 280.5709340016055,
+      "p50": 255.42189749830868,
+      "p95": 497.8124270128319,
+      "max": 596.1233190027997,
+      "sum": 220528.7541252619
+     },
+     "topology_and_qef": {
+      "n": 786,
+      "mean": 19.21755778138187,
+      "p50": 18.777555495034903,
+      "p95": 21.048145754321013,
+      "max": 110.59804901015013,
+      "sum": 15105.000416166149
+     },
+     "usd_upload": {
+      "n": 786,
+      "mean": 4.562376589096938,
+      "p50": 4.525779499090277,
+      "p95": 4.857391482801177,
+      "max": 5.816894001327455,
+      "sum": 3586.0279990301933
+     },
+     "validity_and_metadata": {
+      "n": 786,
+      "mean": 104.59219371738077,
+      "p50": 102.91205598332454,
+      "p95": 111.96367152297171,
+      "max": 256.4729800214991,
+      "sum": 82209.46426186129
+     },
+     "world_transform": {
+      "n": 786,
+      "mean": 0.38070030156143825,
+      "p50": 0.3742745175259188,
+      "p95": 0.4178505114396103,
+      "max": 0.5908400053158402,
+      "sum": 299.23043702729046
+     }
+    },
+    "mesh": {
+     "vertices": {
+      "n": 786,
+      "mean": 18031.58778625954,
+      "p50": 18268.0,
+      "p95": 18382.0,
+      "max": 18382.0,
+      "sum": 14172828.0
+     },
+     "triangles": {
+      "n": 786,
+      "mean": 36058.982188295166,
+      "p50": 36528.0,
+      "p95": 36760.0,
+      "max": 36760.0,
+      "sum": 28342360.0
+     }
+    },
+    "extractions": 786,
+    "control_steps_traced": 785,
+    "captures": 80,
+    "unchanged_codes_extractions": 699,
+    "unchanged_codes_extractions_with_mesh_size_change": 0
+   }
+  },
+  "A_CUT_PROFILE": {
+   "root": "artifacts/wp12/surface_live_006",
+   "spec": {
+    "id": "A_CUT_PROFILE",
+    "phase2b_episode": "CUT",
+    "phase2b_record": "artifacts/wp12/workcell_live_001",
+    "surface_profile": "particle_surface_v1",
+    "media": null,
+    "reason": "A vs B profiling on the same task: the default surface with the in-memory timing trace written (--surface-timing-log); the profile flag particle_surface_v1 resolves to the recorded default kernel current_volume_v1"
+   },
+   "attempt": {
+    "returncode": 0,
+    "wall_s": 393.2656291000021,
+    "result_status": "PASS_EXECUTION",
+    "live_task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "phase2b_task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "git_sha": "915772514819417dcfdb908cd04797da3075c087",
+    "git_dirty": true,
+    "started": "2026-10-31T02:44:03.669778+09:00",
+    "ended": "2026-10-31T02:50:36.996771+09:00",
+    "run_dir_bytes": 517879799,
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/surface_live_006/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/surface_live_006/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "18",
+     "--steps",
+     "700",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/surface_live_006/run",
+     "--surface-profile",
+     "particle_surface_v1",
+     "--surface-timing-log"
+    ]
+   },
+   "physics_vs_phase2b": {
+    "analysis_b": "artifacts/wp12/surface_live_006/analysis_001/analysis.json",
+    "analysis_phase2b": "artifacts/wp12/workcell_live_001/analysis_002/analysis.json",
+    "status": "PASS",
+    "checks": {
+     "task_id_equal": true,
+     "class_equal": true,
+     "verdict_equal": true,
+     "piece_counts_equal": true,
+     "fractions_within_tolerance": true
+    },
+    "class_b": "TASK_SUCCESS",
+    "class_phase2b": "TASK_SUCCESS",
+    "class_declared_rule_b": null,
+    "class_declared_rule_phase2b": null,
+    "verdict_b": "PASS",
+    "verdict_phase2b": "PASS",
+    "task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "outcome_metrics_b": {
+     "mechanical_components": 2.0,
+     "piece_mass_fractions[0]": 0.5000000000003806,
+     "piece_mass_fractions[1]": 0.5000000000003806,
+     "substantial_pieces": 2.0,
+     "main_pieces_mass_fraction": 1.0000000000007612,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 1.0,
+     "analysis.mechanical_components": 2.0,
+     "analysis.expected_pieces": 2.0,
+     "analysis.cut_position_error_m": 0.0015000000421423465,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "outcome_metrics_phase2b": {
+     "mechanical_components": 2.0,
+     "piece_mass_fractions[0]": 0.5000000000003806,
+     "piece_mass_fractions[1]": 0.5000000000003806,
+     "substantial_pieces": 2.0,
+     "main_pieces_mass_fraction": 1.0000000000007612,
+     "minor_pieces_mass_fraction": 0.0,
+     "analysis.cut_completion": 1.0,
+     "analysis.mechanical_components": 2.0,
+     "analysis.expected_pieces": 2.0,
+     "analysis.cut_position_error_m": 0.0015000000421423465,
+     "analysis.overcut_debris_mass_fraction": 0.0
+    },
+    "max_fraction_abs_diff": 0.0,
+    "fraction_keys_compared": [
+     "analysis.cut_completion",
+     "analysis.overcut_debris_mass_fraction",
+     "main_pieces_mass_fraction",
+     "minor_pieces_mass_fraction",
+     "piece_mass_fractions[0]",
+     "piece_mass_fractions[1]"
+    ],
+    "surface_dependent_quality": {
+     "b": {},
+     "phase2b": {}
+    },
+    "labelled_particles": {
+     "b": 28501,
+     "phase2b": 28500
+    },
+    "conflicting_links": {
+     "b": 600,
+     "phase2b": 600
+    },
+    "final_codes_identical": false,
+    "bridges_b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": 0.0,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     }
+    ],
+    "bridges_phase2b": [
+     {
+      "op": "cut0",
+      "digit": 0,
+      "kerf_offset_from_declared_m": 0.0,
+      "crossing_links": {
+       "links": 600,
+       "conflicting": 600,
+       "by_layer_first4": {
+        "0": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "1": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "2": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        },
+        "3": {
+         "links": 30,
+         "conflicting": 30,
+         "unconflicted": 0,
+         "both_unassigned": 0,
+         "one_unassigned": 0,
+         "same_side": 0
+        }
+       },
+       "layers_with_unconflicted": []
+      }
+     }
+    ],
+    "home_outcome": {
+     "b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     },
+     "phase2b": {
+      "status": "PASS",
+      "reason": null,
+      "checks": {
+       "plan_preflight": true,
+       "trajectory_executed": true,
+       "grasp_held": true,
+       "home_joint_error": true,
+       "tool_translation_vs_reset": true,
+       "tool_rotation_vs_reset": true,
+       "grasp_slip": true,
+       "grasp_rotation": true,
+       "no_label_changes": true,
+       "no_unintended_tool_contacts": true,
+       "measured_path_clearance": true
+      },
+      "failed_checks": [],
+      "gates": {
+       "max_home_joint_error_rad": 0.01,
+       "max_tool_translation_error_m": 0.005,
+       "max_tool_rotation_error_rad": 0.0524,
+       "max_grasp_slip_m": 0.002,
+       "max_grasp_rotation_rad": 0.0524,
+       "max_label_changes": 0,
+       "max_unintended_tool_contacts": 0,
+       "require_measured_path_clearance": true,
+       "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+      },
+      "scope": "Physical return-to-home only; reported separately from the task outcome"
+     }
+    },
+    "knife_vs_board_min_m": {
+     "b": -2.0320301176088296e-08,
+     "phase2b": -4.071210650720414e-08
+    },
+    "performance": {
+     "b": {
+      "control_steps": 740,
+      "step_wall_ms_mean": 408.5073798457077,
+      "step_wall_ms_p95": 616.3979653094428,
+      "material_wall_ms_mean": 269.65380264642783,
+      "episode_wall_s": 362.9355149990006,
+      "run_total_wall_s": 391.8937509369862,
+      "process_wall_s": 393.2656291000021,
+      "run_dir_bytes": 517879799
+     },
+     "phase2b": {
+      "control_steps": 740,
+      "step_wall_ms_mean": 403.76564934843503,
+      "step_wall_ms_p95": 606.7237452531117,
+      "material_wall_ms_mean": 269.9815823674136,
+      "episode_wall_s": 357.3797114719928,
+      "run_total_wall_s": 383.8488887440035,
+      "process_wall_s": 385.2798789040098,
+      "run_dir_bytes": 516666388
+     }
+    }
+   },
+   "surface": null,
+   "profiling": {
+    "status": "MEASURED",
+    "surface_profile": "current_volume_v1",
+    "kernel_or_profile": "current_volume_v1",
+    "gpu_process_memory_mib_end": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 6459.0,
+     "GPU-a278df44-8db0-7770-630f-4f298a570b35": 516.0
+    },
+    "per_step_ms": {
+     "tlmpm_material_incl_recorder": {
+      "n": 740,
+      "mean": 269.6538026464279,
+      "p50": 272.38529550959356,
+      "p95": 274.721072606917,
+      "max": 328.2426430087071,
+      "sum": 199543.81395835662
+     },
+     "runner_robot_physics_wall_field": {
+      "n": 740,
+      "mean": 391.34222208207626,
+      "p50": 379.0799039998092,
+      "p95": 597.2170525899854,
+      "max": 1220.1459969801363,
+      "sum": 289593.2443407364
+     },
+     "surface_update": {
+      "n": 740,
+      "mean": 52.343386577716025,
+      "p50": 40.8566955011338,
+      "p95": 261.56857922469493,
+      "max": 528.3289159997366,
+      "sum": 38734.106067509856
+     },
+     "runner_step_total": {
+      "n": 740,
+      "mean": 406.1290896719485,
+      "p50": 393.7266184948385,
+      "p95": 612.4829523876541,
+      "max": 1235.5778319761157,
+      "sum": 300535.5263572419
+     }
+    },
+    "robot_and_other_ms_derived": {
+     "n": 740,
+     "mean": 84.13190044780463,
+     "p50": 82.25683549244422,
+     "p95": 91.3877970946487,
+     "max": 921.9659499649424,
+     "sum": 62257.60633137543
+    },
+    "note": "robot_physics_wall_s of the runner spans the PhysX substeps through the end of step() (material and surface included); robot_and_other_ms_derived = step - material - surface_update",
+    "env_step_wall_ms": {
+     "n": 700,
+     "mean": 408.50737984570776,
+     "p50": 395.2712760074064,
+     "p95": 616.3979653094428,
+     "max": 1236.8568589736242,
+     "sum": 285955.1658919954
+    },
+    "camera_capture_ms": {
+     "n": 75,
+     "mean": 384.30364029520814,
+     "p50": 376.3861169863958,
+     "p95": 406.06495691172313,
+     "max": 1066.9872760190628,
+     "sum": 28822.77302214061
+    },
+    "surface_ms": {
+     "extract_total": {
+      "n": 741,
+      "mean": 44.83685600227273,
+      "p50": 32.98899400397204,
+      "p95": 255.464051006129,
+      "max": 520.7973929936998,
+      "sum": 33224.11029768409
+     },
+     "surface_and_upload_total": {
+      "n": 741,
+      "mean": 52.73891946128205,
+      "p50": 40.850527002476156,
+      "p95": 263.020943995798,
+      "max": 528.3175079966895,
+      "sum": 39079.53932081
+     },
+     "usd_upload": {
+      "n": 741,
+      "mean": 7.039838595653277,
+      "p50": 6.977428012760356,
+      "p95": 7.878842996433377,
+      "max": 13.878905010642484,
+      "sum": 5216.520399379078
+     },
+     "world_transform": {
+      "n": 741,
+      "mean": 0.8622248633560446,
+      "p50": 0.7915500027593225,
+      "p95": 1.0082669905386865,
+      "max": 23.05235300445929,
+      "sum": 638.9086237468291
+     }
+    },
+    "mesh": {
+     "vertices": {
+      "n": 741,
+      "mean": 73477.9730094467,
+      "p50": 75828.0,
+      "p95": 75996.0,
+      "max": 122870.0,
+      "sum": 54447178.0
+     },
+     "triangles": {
+      "n": 741,
+      "mean": 146949.78137651822,
+      "p50": 151648.0,
+      "p95": 151984.0,
+      "max": 245736.0,
+      "sum": 108889788.0
+     }
+    },
+    "extractions": 741,
+    "control_steps_traced": 740,
+    "captures": 75,
+    "unchanged_codes_extractions": 702,
+    "unchanged_codes_extractions_with_mesh_size_change": 338
+   }
+  }
+ },
+ "failed_attempts_kept": {
+  "B_CUT@surface_live_001": {
+   "root": "artifacts/wp12/surface_live_001",
+   "status": "FAIL_EXECUTION",
+   "error": "ValueError('face_varying_normals must be unit vectors')",
+   "wall_s": 238.25531235800008,
+   "git_sha": "402759032fc10211a1b5ba328ca8dc3a60325814",
+   "last_recorded_step": {
+    "steps": 328,
+    "time_s": 6.5600000000000005,
+    "policy_phase": "CUT:cut0",
+    "surface": {
+     "surface_profile": "cut_aware_surface_v1",
+     "extraction": 328,
+     "time_s": 6.5600000000000005,
+     "codes_sha256": "2384b549e65f4a925fd34d4d6aaa763a0f03929ee92794d15e485ba2ee976f3f",
+     "cut_events_entries": 480,
+     "crossings_by_source": {
+      "recorder": 480,
+      "recorder_sign_inconsistent_midpoint": 0,
+      "recorder_point_fallback_normal": 0,
+      "midpoint_fallback": 0
+     },
+     "audit_ok": true,
+     "mesh_shells": 1,
+     "triangles": 36320,
+     "update": "incremental",
+     "timings_ms": {
+      "cut_events_log_fetch": 0.8177599811460823,
+      "state_readback": 0.4503010131884366,
+      "extract_total": 421.15018400363624,
+      "mechanical_partition": 234.85561899724416,
+      "topology_and_qef": 18.466970010194927,
+      "quads": 3.185275010764599,
+      "embedding": 22.3873530048877,
+      "audit": 40.11801001615822,
+      "validity_and_metadata": 102.13695696438663,
+      "world_transform": 0.3685409901663661,
+      "normals": 37.759622995508835,
+      "surface_total": 462.5463539850898,
+      "usd_upload": 4.41582000348717,
+      "surface_and_upload_total": 466.962173988577
+     }
+    }
+   }
+  },
+  "B_TESTB@surface_live_004": {
+   "root": "artifacts/wp12/surface_live_004",
+   "status": "FAIL_EXECUTION",
+   "error": "CutEventOverflowError('cut_events_v1 overflow: 0 events beyond capacity 96000, 56 substeps beyond summary capacity 262144; the log is incomplete. Rerun with a larger capacity.')",
+   "wall_s": 905.527272065985,
+   "git_sha": "b012902d3fc82a3a5019b1600453140f9b64c4cc",
+   "last_recorded_step": {
+    "steps": 1310,
+    "time_s": 26.2,
+    "policy_phase": "CUT:cut3",
+    "surface": {
+     "surface_profile": "cut_aware_surface_v1",
+     "extraction": 1310,
+     "time_s": 26.2,
+     "codes_sha256": "1b53d62f097fac7d7699e189dad1b246d49e6e57ebd13b6cb01a5c6099ccae08",
+     "cut_events_entries": 1920,
+     "crossings_by_source": {
+      "recorder": 1920,
+      "recorder_sign_inconsistent_midpoint": 0,
+      "recorder_point_fallback_normal": 0,
+      "midpoint_fallback": 0
+     },
+     "audit_ok": true,
+     "mesh_shells": 4,
+     "triangles": 42080,
+     "update": "incremental",
+     "timings_ms": {
+      "cut_events_log_fetch": 0.9939869923982769,
+      "state_readback": 0.3865739854518324,
+      "extract_total": 211.16874599829316,
+      "mechanical_partition": 0.7148889999371022,
+      "topology_and_qef": 22.995053994236514,
+      "quads": 2.89271300425753,
+      "embedding": 27.230030013015494,
+      "audit": 41.962930001318455,
+      "validity_and_metadata": 115.37312998552807,
+      "world_transform": 0.39562801248393953,
+      "normals": 47.123378986725584,
+      "surface_total": 262.14472198626027,
+      "usd_upload": 5.15429800725542,
+      "surface_and_upload_total": 267.2990199935157
+     }
+    }
+   }
+  }
+ },
+ "scope": "Native Isaac Sim 6.2 live runs, seed 42, one run per episode; material parameters provisional and uncalibrated; the surface is render geometry only"
+}

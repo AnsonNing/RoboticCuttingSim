@@ -1,0 +1,16 @@
+{
+  "schema": "rcs_wp12_finalize_demo7_execution_v1",
+  "sample_id": "P5_D_ID_held_out_s54501",
+  "sample_seed": 54501,
+  "material_seed": 42,
+  "selection": "docs/evidence/wp12/finalize_demo7_selection_001.json",
+  "inputs": {
+    "configs/wp12/finalization/demo7_goal.json": "d98af7133767253fec07c99e890fe8ca8c5dcd73327a7d0b332b9f1a59634df1",
+    "configs/wp12/finalization/demo7_scene.json": "b26005072aef09b0d5eac85927a561bf5b650e5cf30787bb5902073944078cef"
+  },
+  "scope": "one selected held-out kinematic episode; one Native default-profile episode after existing Native driver finishes; no full held-out matrix",
+  "surface_profile": "particle_surface_v1",
+  "extra_native_profile": "NOT_RUN (scope reduced: no additional Native profile required)",
+  "alternates": "Only frozen permuted_pool order; every failed chosen run is retained. No manual reselection.",
+  "note": "Committed before any held-out outcome; generated inputs match frozen benchmark sample. Numerical gates unchanged."
+}

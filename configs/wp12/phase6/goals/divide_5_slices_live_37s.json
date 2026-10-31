@@ -1,0 +1,16 @@
+{
+ "schema": "rcs_goal_v1",
+ "goal_id": "divide_5_slices",
+ "type": "divide",
+ "description": "Test B four slices: divide the workpiece into five equal-length pieces along local x (four through-cuts, four digits, tlmpm_v5). Verdict as divide (goals.py defaults).",
+ "episode": {
+  "duration_s": 37.0,
+  "control_dt_s": 0.02
+ },
+ "pieces": 5,
+ "axis_local": [
+  1.0,
+  0.0,
+  0.0
+ ]
+}

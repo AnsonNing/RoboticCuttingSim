@@ -31,7 +31,7 @@ Kit episodes then executed successfully. The default cu130 stack still has a
 different driver requirement; 595.58.03 is the Sim tested recommendation, not
 proof of the lowest runnable driver. A DLSS recommendation/preset fallback
 warning did not block native Kit capture. No driver verification was disabled.
-No system driver, OS, existing venv, RSI directory, or other research project changed.
+No system driver, OS, existing venv, or other research project changed.
 
 Source SHAs: [source_refs.json](../configs/source_refs.json). Installed standalone
 versions: [requirements.lock](../requirements.lock). Machine-readable raw audit:

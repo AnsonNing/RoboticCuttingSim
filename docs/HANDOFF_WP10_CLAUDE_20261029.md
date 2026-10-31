@@ -40,7 +40,7 @@ CPU-physics regression. All source parses and the v3 Warp CPU kernels compile,
 to the starting commit `1fedbadd3798572769f57dd8c4f85215f686e33d`.
 No old experiment directory was overwritten. No policy has been trained.
 `gymnasium==1.4.0` was installed locally in `.venv` and the Sim environment;
-no drivers or RSI files were modified. Use the correct isolated runtimes:
+no drivers or other-project files were modified. Use the correct isolated runtimes:
 `.venv/bin/python`, `.deps/isaacsim-venv/bin/python`, `.deps/isaaclab-venv/bin/python`.
 
 ## Critical findings to preserve
@@ -137,7 +137,7 @@ original, more limited receipts. `--oracle-stride 10` samples oracle history at
 
 Continue C → D → E → F → G in specification order. G requires script through
 Gym, state BC plus image training/inference, PPO, **actual** observation-driven
-LLM tool calls (the old agent-API macro is only a script), and the RSI-style
+LLM tool calls (the old agent-API macro is only a script), and the agentic-control-style
 `run(env, ctx)` demonstration within this repo. Every controller/task needs an
 actual-robot synchronized RGB-D movie annotated with controller/time/cut/result
 in `docs/media/wp10/`. These movies have **not** been delivered. Existing

@@ -1,0 +1,331 @@
+{
+ "schema": "rcs_wp12_phase7_demo7_selection_v1",
+ "label": null,
+ "meta": {
+  "command": [
+   "scripts/run_wp12_phase5.py",
+   "demo7-select",
+   "--feasibility",
+   "artifacts/wp12/finalize_001/feasibility_held_out",
+   "--evidence-copy",
+   "docs/evidence/wp12/finalize_demo7_selection_001.json"
+  ],
+  "config": "/home/ningan/RoboticCuttingSim-wp12-finalize/configs/wp12/benchmark_v1.json",
+  "config_sha256": "915a2a8f44af80b5b5115598bd5561ec82f77a214233d30cef35549962809c37",
+  "envelope_sha256": "040e7b96fa8c9e266f9e255a77f37c3fefe1540d836c3c6daa827d3ec18aa83f",
+  "module_sha256": "dcf587c3e10234dbe099bd3298e2c7a88510050f8271e5d7df592537dc3faadb",
+  "runner_sha256": "a2b2b60859b3d9a7bd57d49649e2493cc507870a9c3d9fe4ea7f7ea775cc0828",
+  "benchmark_id": "wp12_benchmark_v1",
+  "benchmark_status": "FROZEN",
+  "envelope": "/home/ningan/RoboticCuttingSim-wp12-finalize/configs/wp12/supported_envelope_v2.json",
+  "started": "2026-10-31T14:45:06.932605+09:00",
+  "tmpdir": "/mnt/data/ningan/tmp",
+  "python": "/home/ningan/RoboticCuttingSim-wp12-finalize/.venv/bin/python",
+  "git_sha": "7680fa3017e4c18e2022386a3fc81b35e4e455eb",
+  "git_dirty": true,
+  "root": "/home/ningan/RoboticCuttingSim-wp12-finalize",
+  "provenance": {
+   "config": "configs/wp12/benchmark_v1.json",
+   "config_status": "FROZEN",
+   "config_sha256": "915a2a8f44af80b5b5115598bd5561ec82f77a214233d30cef35549962809c37",
+   "envelope": "configs/wp12/supported_envelope_v2.json",
+   "envelope_sha256": "040e7b96fa8c9e266f9e255a77f37c3fefe1540d836c3c6daa827d3ec18aa83f",
+   "frozen_hashes_verified": true,
+   "dev": false,
+   "dev_reasons": []
+  },
+  "label": null
+ },
+ "drawn": "2026-10-31T14:45:06.937352+09:00",
+ "feasibility_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/finalize_001/feasibility_held_out",
+ "held_out_declared": 85,
+ "held_out_feasibility_rows": 40,
+ "held_out_feasibility_classes": {
+  "valid_feasible": 38,
+  "scene_geometrically_infeasible": 0,
+  "ik_unreachable": 0,
+  "collision_constrained": 2,
+  "physically_unsupported": 0,
+  "null": 45
+ },
+ "held_out_episode_outputs_at_draw": [],
+ "refusal_overridden_by_dev": [],
+ "rule": {
+  "pool": "held_out split, range set ID, population ID_validated (target_scope), feasibility class valid_feasible under this file and envelope v2",
+  "order": "the pool in declared order (strata order, then seed); permutation numpy.random.default_rng([1205, 7]).permutation(len(pool)); the first sample of the permuted pool is Demo 7",
+  "when": "immediately after the held-out feasibility classification and before any held-out kinematic episode; the pool, permutation and chosen sample id are written to artifacts/wp12/phase7_demo7_selection_001.json (new file, never overwritten) and committed before the Native run",
+  "never": "never re-drawn after any outcome (kinematic or Native); a failed Native Demo 7 is reported as the Demo 7 result; one rerun of the same sample only if the process dies before the first armed control step (infrastructure), recorded with both attempts",
+  "runs": "Native (native.runner, native.planner_overrides, flags plus --record-cameras --overview-camera): particle_surface_v1 (regression record) then cut_aware_surface_v1 on identical inputs"
+ },
+ "rng_seed": [
+  1205,
+  7
+ ],
+ "pool_size": 30,
+ "pool": [
+  {
+   "sample_id": "P5_A_ID_held_out_s51500",
+   "family": "A",
+   "variant": "vertical",
+   "seed": 51500
+  },
+  {
+   "sample_id": "P5_A_ID_held_out_s51501",
+   "family": "A",
+   "variant": "vertical",
+   "seed": 51501
+  },
+  {
+   "sample_id": "P5_A_ID_held_out_s51502",
+   "family": "A",
+   "variant": "vertical",
+   "seed": 51502
+  },
+  {
+   "sample_id": "P5_A_ID_held_out_s51503",
+   "family": "A",
+   "variant": "vertical",
+   "seed": 51503
+  },
+  {
+   "sample_id": "P5_A_ID_held_out_s51504",
+   "family": "A",
+   "variant": "vertical",
+   "seed": 51504
+  },
+  {
+   "sample_id": "P5_B_ID_held_out_s52500",
+   "family": "B",
+   "variant": "tilt_slotted",
+   "seed": 52500
+  },
+  {
+   "sample_id": "P5_B_ID_held_out_s52501",
+   "family": "B",
+   "variant": "plane_yaw",
+   "seed": 52501
+  },
+  {
+   "sample_id": "P5_B_ID_held_out_s52502",
+   "family": "B",
+   "variant": "tilt_slotted",
+   "seed": 52502
+  },
+  {
+   "sample_id": "P5_B_ID_held_out_s52503",
+   "family": "B",
+   "variant": "plane_yaw",
+   "seed": 52503
+  },
+  {
+   "sample_id": "P5_B_ID_held_out_s52504",
+   "family": "B",
+   "variant": "tilt_slotted",
+   "seed": 52504
+  },
+  {
+   "sample_id": "P5_C_ID_held_out_s53500",
+   "family": "C",
+   "variant": "skim_protrusion",
+   "seed": 53500
+  },
+  {
+   "sample_id": "P5_C_ID_held_out_s53502",
+   "family": "C",
+   "variant": "skim_protrusion",
+   "seed": 53502
+  },
+  {
+   "sample_id": "P5_C_ID_held_out_s53503",
+   "family": "C",
+   "variant": "trim_plane_protrusion",
+   "seed": 53503
+  },
+  {
+   "sample_id": "P5_D_ID_held_out_s54500",
+   "family": "D",
+   "variant": "multi_plane_sever",
+   "seed": 54500
+  },
+  {
+   "sample_id": "P5_D_ID_held_out_s54501",
+   "family": "D",
+   "variant": "cut_cut",
+   "seed": 54501
+  },
+  {
+   "sample_id": "P5_D_ID_held_out_s54502",
+   "family": "D",
+   "variant": "multi_plane_sever",
+   "seed": 54502
+  },
+  {
+   "sample_id": "P5_D_ID_held_out_s54503",
+   "family": "D",
+   "variant": "cut_cut",
+   "seed": 54503
+  },
+  {
+   "sample_id": "P5_D_ID_held_out_s54504",
+   "family": "D",
+   "variant": "multi_plane_sever",
+   "seed": 54504
+  },
+  {
+   "sample_id": "P5_E_ID_held_out_s55500",
+   "family": "E",
+   "variant": "remove_all",
+   "seed": 55500
+  },
+  {
+   "sample_id": "P5_E_ID_held_out_s55501",
+   "family": "E",
+   "variant": "remove_selected",
+   "seed": 55501
+  },
+  {
+   "sample_id": "P5_E_ID_held_out_s55502",
+   "family": "E",
+   "variant": "bumps_sequential",
+   "seed": 55502
+  },
+  {
+   "sample_id": "P5_E_ID_held_out_s55503",
+   "family": "E",
+   "variant": "trim_trim",
+   "seed": 55503
+  },
+  {
+   "sample_id": "P5_E_ID_held_out_s55504",
+   "family": "E",
+   "variant": "remove_all",
+   "seed": 55504
+  },
+  {
+   "sample_id": "P5_G_ID_held_out_s57500",
+   "family": "G",
+   "variant": "cut_push",
+   "seed": 57500
+  },
+  {
+   "sample_id": "P5_G_ID_held_out_s57503",
+   "family": "G",
+   "variant": "cut_push",
+   "seed": 57503
+  },
+  {
+   "sample_id": "P5_H_ID_held_out_s58500",
+   "family": "H",
+   "variant": "sever",
+   "seed": 58500
+  },
+  {
+   "sample_id": "P5_H_ID_held_out_s58501",
+   "family": "H",
+   "variant": "trim",
+   "seed": 58501
+  },
+  {
+   "sample_id": "P5_H_ID_held_out_s58502",
+   "family": "H",
+   "variant": "sever",
+   "seed": 58502
+  },
+  {
+   "sample_id": "P5_H_ID_held_out_s58503",
+   "family": "H",
+   "variant": "trim",
+   "seed": 58503
+  },
+  {
+   "sample_id": "P5_H_ID_held_out_s58504",
+   "family": "H",
+   "variant": "sever",
+   "seed": 58504
+  }
+ ],
+ "excluded_id_samples": {
+  "P5_C_ID_held_out_s53501": "not valid_feasible (collision_constrained: collision/clearance: gripper_pad_clearance (slack -1.68 mm at SKIM:trim0, pair ['arm0_left_finger_pad', 'static_flat_board']))",
+  "P5_C_ID_held_out_s53504": "not valid_feasible (collision_constrained: collision/clearance: gripper_pad_clearance (slack -1.57 mm at SKIM:p0, pair ['arm0_left_finger_pad', 'static_flat_board']))",
+  "P5_F_ID_held_out_s56500": "population ID_unconfirmed",
+  "P5_F_ID_held_out_s56501": "population ID_unconfirmed",
+  "P5_F_ID_held_out_s56502": "population ID_unconfirmed",
+  "P5_F_ID_held_out_s56503": "population ID_unconfirmed",
+  "P5_F_ID_held_out_s56504": "population ID_unconfirmed",
+  "P5_G_ID_held_out_s57501": "population ID_unconfirmed",
+  "P5_G_ID_held_out_s57502": "population ID_unconfirmed",
+  "P5_G_ID_held_out_s57504": "population ID_unconfirmed"
+ },
+ "permutation": [
+  14,
+  0,
+  17,
+  9,
+  6,
+  18,
+  28,
+  15,
+  1,
+  26,
+  8,
+  19,
+  24,
+  21,
+  10,
+  4,
+  7,
+  2,
+  16,
+  11,
+  5,
+  20,
+  25,
+  29,
+  12,
+  22,
+  13,
+  23,
+  3,
+  27
+ ],
+ "permuted_pool": [
+  "P5_D_ID_held_out_s54501",
+  "P5_A_ID_held_out_s51500",
+  "P5_D_ID_held_out_s54504",
+  "P5_B_ID_held_out_s52504",
+  "P5_B_ID_held_out_s52501",
+  "P5_E_ID_held_out_s55500",
+  "P5_H_ID_held_out_s58503",
+  "P5_D_ID_held_out_s54502",
+  "P5_A_ID_held_out_s51501",
+  "P5_H_ID_held_out_s58501",
+  "P5_B_ID_held_out_s52503",
+  "P5_E_ID_held_out_s55501",
+  "P5_G_ID_held_out_s57503",
+  "P5_E_ID_held_out_s55503",
+  "P5_C_ID_held_out_s53500",
+  "P5_A_ID_held_out_s51504",
+  "P5_B_ID_held_out_s52502",
+  "P5_A_ID_held_out_s51502",
+  "P5_D_ID_held_out_s54503",
+  "P5_C_ID_held_out_s53502",
+  "P5_B_ID_held_out_s52500",
+  "P5_E_ID_held_out_s55502",
+  "P5_H_ID_held_out_s58500",
+  "P5_H_ID_held_out_s58504",
+  "P5_C_ID_held_out_s53503",
+  "P5_E_ID_held_out_s55504",
+  "P5_D_ID_held_out_s54500",
+  "P5_G_ID_held_out_s57500",
+  "P5_A_ID_held_out_s51503",
+  "P5_H_ID_held_out_s58502"
+ ],
+ "demo_7_sample_id": "P5_D_ID_held_out_s54501",
+ "demo_7": {
+  "sample_id": "P5_D_ID_held_out_s54501",
+  "family": "D",
+  "variant": "cut_cut",
+  "seed": 54501
+ },
+ "next": "commit this file before any held-out kinematic episode; Native Demo 7 runs this sample with particle_surface_v1 then cut_aware_surface_v1 (configs/wp12/phase7_demos_v1.json); never redrawn"
+}

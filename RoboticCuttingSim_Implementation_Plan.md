@@ -22,7 +22,7 @@ fixed-camera experiments and failed results remain in the historical record.
 0. Execution instructions for Codex (read first)
 Build a new independent repository, provisionally named RoboticCuttingSim, for a physical simulation environment in which a robot uses a knife to remove irregular bumps from soft/plastic material fixed to a table, bringing its surface close to a target plane.
 
-This phase implements only the simulation environment and verifiable research tools, without implementing or training RSI, RL, VLA, Diffusion Policy or Agent manipulation policies. The scene must retain standard interfaces for future algorithms. Do not modify AnsonNing/RSI, any existing RSI working directory, or its environment.
+This phase implements only the simulation environment and verifiable research tools, without implementing or training agentic control, RL, VLA, Diffusion Policy or Agent manipulation policies. The scene must retain standard interfaces for future algorithms. Do not modify other repositories, their working directories, or their environments.
 
 Execution rules:
 1. Read official version-compatibility documentation before changing code. Pin versions, dependencies, GPU/driver requirements, asset sources and usable APIs; do not mix examples from older Isaac Lab 2.x / Isaac Sim 4.x releases.
@@ -44,7 +44,7 @@ The workstation contains a table, a fixed soft-material specimen, two Franka Pan
 - Cameras: fixed D455 × 2 + global camera × 1. Global defaults to recording/debug only; implement ideal D455 depth first, then noisy depth consistent with the sensor model.
 - Experiment modes: physics_only (kinematic blade without a robot), workcell (complete dual-arm scene), benchmark (unified step/reset/observation/metrics).
 1.2 Out of scope this phase
-- No RSI repository integration, autonomous agents, RL/imitation-learning/VLA training or algorithm-performance comparisons.
+- No agentic-control integration, autonomous agents, RL/imitation-learning/VLA training or algorithm-performance comparisons.
 - No tactile sensors, policy-input force sensing, real-robot deployment, ROS 2 network control or simultaneous coordinated dual-arm cutting.
 - Visual realism does not replace verifiable physics; an animation that deletes predefined material is not a material-separation result.
 - Do not assume thousand-environment parallelism, real-time FPS or established sim-to-real transfer; prioritize single-environment physics quality, reproducibility and evaluation.
@@ -360,7 +360,7 @@ python -m robotic_cutting_sim.cli benchmark --variant D0 --seed 42 --trajectory 
 The full CLI need not exist initially; add subcommands with real end-to-end tests as each package is completed. Every command needs --help, nonzero error exit codes, machine-readable JSON and an explicit --output-dir.
 11. Codex work packages and implementation order (follow dependencies)
 WP-00 — Repo / hardware / compatibility (first priority)
-- [ ] Create an independent Git repo, README, AGENTS and basic config/test structure; do not touch RSI.
+- [ ] Create an independent Git repo, README, AGENTS and basic config/test structure; do not touch other projects.
 - [ ] Machine diagnostics and an Isaac Lab 3.0 GA / Isaac Sim 6.2 compatible environment.
 - [ ] Run official MPM smoke demos; record actual versions, commands, GPU memory and video.
 - [ ] Confirm available D455/Franka assets, licenses and download strategy.
@@ -457,7 +457,7 @@ Official versions/architecture
 1. Isaac Lab 3.0 GA release:https://github.com/isaac-sim/IsaacLab/releases/tag/v3.0.0
 2. Isaac Lab 3.0 Implicit MPM:https://docs.nvidia.com/isaaclab/3.0/concepts/implicit-mpm
 3. Isaac Lab Coupled Solvers:https://docs.nvidia.com/isaaclab/3.0/concepts/coupled-solvers
-4. Isaac Lab Agent Skills (for Codex developing Isaac Lab, not RSI in this phase): https://docs.nvidia.com/isaaclab/3.0/developer-tools/agent-skills
+4. Isaac Lab Agent Skills (for Codex developing Isaac Lab, not agentic control in this phase): https://docs.nvidia.com/isaaclab/3.0/developer-tools/agent-skills
 5. Isaac Sim 6.2 release notes:https://docs.isaacsim.omniverse.nvidia.com/6.2.0/overview/release_notes.html
 6. Isaac Sim 6.2 requirements:https://docs.isaacsim.omniverse.nvidia.com/6.2.0/installation/requirements.html
 7. Isaac Sim 6.2 D455 assets:https://docs.isaacsim.omniverse.nvidia.com/6.2.0/assets/usd_assets_depth_sensors.html
@@ -484,4 +484,4 @@ Call the first version a research-ready cutting simulation environment if and on
 - [ ] Clear installation, versions, GPU requirements, reproduction scripts, tests and contribution instructions.
 If some conditions remain unmet, still deliver usable physics testbeds, camera workcells or APIs, marked accurately PARTIAL / BLOCKED; do not lower the conditions to fake cutting and declare completion.
 Ready-to-use Codex startup instruction
-Use RoboticCuttingSim_Implementation_Plan.md as the execution plan for a new independent repository. Read sections 0, 2, 9, 11, 14 and 16 first, create the local Git repo and complete WP-00; then implement WP-01 and begin WP-02 Newton/CRESSim cutting-prototype comparisons and WP-03 ParticleSurface-to-RGB-D feasibility tests. Independently consult official documentation/source, implement and test in small steps, produce reports per package and update PROGRESS. Do not modify RSI, train Policy/RL/Agent models, substitute geometry deletion for real cutting, or claim completion without test evidence. If GPUs/assets are unavailable, report exact blockers, retain executable independent work and propose the next minimal verifiable action.
+Use RoboticCuttingSim_Implementation_Plan.md as the execution plan for a new independent repository. Read sections 0, 2, 9, 11, 14 and 16 first, create the local Git repo and complete WP-00; then implement WP-01 and begin WP-02 Newton/CRESSim cutting-prototype comparisons and WP-03 ParticleSurface-to-RGB-D feasibility tests. Independently consult official documentation/source, implement and test in small steps, produce reports per package and update PROGRESS. Do not modify other projects, train Policy/RL/Agent models, substitute geometry deletion for real cutting, or claim completion without test evidence. If GPUs/assets are unavailable, report exact blockers, retain executable independent work and propose the next minimal verifiable action.

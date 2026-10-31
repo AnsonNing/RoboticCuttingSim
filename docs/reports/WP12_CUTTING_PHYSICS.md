@@ -1,0 +1,820 @@
+# WP-12 Phase 4a — law-8 failure regions: root cause (draft)
+
+Date: 2026-10-31 (KST). Branch `claude/wp12-physical-cut-surfaces`, runs at `f53dc78` with this step's untracked
+tools (`git_dirty`: other agents' Native files plus this step's new files; no solver or law file changed). Spec:
+[WP12_SPECIFICATION.md](../WP12_SPECIFICATION.md) §4.1–4.3. Evidence:
+[`docs/evidence/wp12/phase4a_law8_rootcause_001.json`](../evidence/wp12/phase4a_law8_rootcause_001.json).
+Figures: [`docs/media/wp12/phase4/`](../media/wp12/phase4/).
+
+**Scope.** This step only diagnoses. There is no new law and no threshold change. `tlmpm*.py`, the law-8 records,
+`final_v4` and the WP-11 evidence are unchanged. Every run is **kinematic ideal tracking** at the formal resolution
+(1 mm particles, 4 mm grid, 0.1 ms) with the provisional, uncalibrated WP-11 material (E 50 kPa, ν 0.3, yield
+1 kPa, ρ 1500 kg/m³, μ 0.3, G_c 0.05 J/m²) and `ruler_knife_v2_y` (double bevel 25°, 1.5 mm thick), seed 42.
+Rows marked **COUNTERFACTUAL** override one law parameter on the solver instance to test what that condition
+decides. They are never law-8 or acceptance results.
+
+> **Read with the corrections.** The xhigh review ([WP12_PHASE4_XHIGH_REVIEW.md](WP12_PHASE4_XHIGH_REVIEW.md),
+> `81a9626`) corrected parts of this draft. The original text below is unchanged. The dated section
+> [Corrections after the xhigh review (2026-10-31)](#corrections-after-the-xhigh-review-2026-10-31) at the end
+> supersedes it where they differ. In particular, the §8 law-9 recommendation is withdrawn.
+
+## Result at a glance
+
+| Class (task item) | Reproduced | Root cause (spec §4.2 class) | Decisive evidence |
+| --- | --- | --- | --- |
+| (a) oblique ±30–35° through-cut, bottom layers connected | yes: s2201, s2202, s2203 stay 1 component (frozen: same) | **Missing side assignment** at the exit face. Contributing: **support** (the overhang over the 30 mm relief slot sags about 1.1 mm and moves about 2 mm along d) and **tool trajectory** (4 mm overtravel along d) | every unassigned particle within 12 mm (684 / 616 / 314) is on the uphill side, 4–12 mm off the plane, and failed **only** "ahead of the edge (f > 0)"; the decisive direct code-0 bridges (2 / 84 / 6) were behind the final edge in their reference positions and ahead only after sagging 2.1–2.4 mm along d; giving only those particles their plane side separates all three (2 components) |
+| (b) ρ = 45° rake, 0 labels | yes: s2307, 0 labels | **Unsupported cutting orientation**: the motion is 45.0000006° out of the blade plane, on θ_max = 45° (float32 decides); the law-4 motion gate is closed on 120/120 segments for all 17,200 armed substeps, so the stroke never starts. Behind it, a second mechanism (class c) | 13,406 particle-substeps of directional cutting work and 1.2 mm penetration with the gate closed. COUNTERFACTUAL θ_max = 60°: gate open, plowing, 24,563 labels, but still 1 component because **one** dome-apex particle rode 0.75 mm ahead of the edge in the core band and was carried 30 mm; relabelling it separates |
+| (c) residual particles inside sequential cuts | yes: TEST_D2 s2501 (frozen FAIL reproduced, 3 components) | **Contact: core-band carry.** 2 (p0) and 1 (p1) chip particles 2.5 mm above the plane (inside the core \|s\| ≤ Δx) stayed 0.10–0.43 mm ahead of the edge for the whole skim, were carried 40–80 mm and ejected; neither the band (needs f ≤ 0) nor the lead rule (needs \|s\| > Δx, and plowing) can label them | relabelling those 3 particles as chip gives 4 components (p0 and p1 separate). Test B s1502: 0 code-0 particles within 4 mm of any of its 4 planes (no residual). Phase M bumps3 chip merge: 49 substrate top-layer particles **lifted** 0.9–1.05 mm by the 25° rake before the edge passed (assigned on the chip side), then carried 52 mm; the chips merge because chips cut by different digits carry compatible codes |
+| (d) TRIM thin-chip residue, local depression | yes: TRIM-02-K2-R10 removal 0.957 (frozen 0.957) | **Contact (wedge depression) at a lattice-phase margin** (numerical resolution) | 45 of 316 lowest-layer chip particles (0.3 mm above the edge) were pushed 0.47 mm down (median) before the edge passed, so they were 0.30 mm below the swept plane at assignment and took the substrate digit; the substrate top layer under the dome ends 0.36 mm lower (P05 1.73 mm, min 2.1 mm) versus 0.13 mm elsewhere |
+| (e) swept-normal float32 fallback | checked in every run | **Numerical, latent**: 0 affected digits in every reproduced run; it bites only for a pure draw at a generic orientation | see §6 |
+
+**Recommendation.** A versioned **law 9 is warranted for class (a) only**, as *law 8 plus a breakthrough-gated lead
+rule* (§8). Classes (b) and (c) need separate candidate studies; (d) is contact and resolution, not a labelling
+fault; (e) needs a corrected fallback whenever the law is next versioned, but it changes no current result.
+
+## 1. Diagnostics tool: `cut_diagnostics_v1`
+
+[`src/robotic_cutting_sim/cut_diagnostics.py`](../../src/robotic_cutting_sim/cut_diagnostics.py) is a read-only,
+opt-in recorder for `tlmpm_v4` (ternary codes, K ≤ 2) and `tlmpm_v5` (packed codes), laws 4, 5 and 8. It brackets
+the unchanged `bed.step()` with `before_step()` (four device copies: code, contact work, x, v) and `after_step()`
+(three read-only kernels). Everything is on the device, so it runs inside the runtime's CUDA graph. It writes no
+solver array and changes no solver module. The CPU test `tests/test_cut_diagnostics.py` checks this: a law-8
+through-cut with the recorder on equals the run with it off **bit for bit** (every snapshot array, reaction and
+stroke state) on both `tlmpm_v5` and `tlmpm_v4`.
+
+What it records (spec §4.2):
+
+| Level | Quantities |
+| --- | --- |
+| per edge segment and control step (`SEGMENT_COLUMNS`) | armed substeps; law-4 motion gate `seg_ok` (moving or drawing, within θ_max of the blade plane); law-8 plow mask; segment motion along d (advance), e (edge tangent) and n (blade normal); blade-contact particles and their normal impulse (`_contact_impulse` recomputed at the pre-step x and v, before the cutting release); directional cutting work (the solver's own `contact_work` increment); work done while the gate was closed; contact particles with complete progress; new digits by rule (band / lead) and side (1 / 2); swept-normal conditioning |
+| per substep (`SUBSTEP_COLUMNS`) | trajectory index, cut digit, stroke S, engagement W, any_motion, travel, gate / plow counts, new band and lead digits, contact particles, impulse, work, edge-centre motion (d, e, n), swept-normal flags, digits a corrected fallback would flip |
+| per particle and digit | for every armed substep in which the digit is still 0 after the step: the **first failing** law-4 band condition in the solver's own order (`stroke_off`, `outside_edge_width`, `ahead_of_edge` f > 0, `beyond_rear_limit`, `segment_gate_closed`, `outside_band` \|s\| > h) and the substeps in which it was the **only** failing condition; substeps in which the law-5 lead rule held except for the law-8 plow mask; the closest approach min f (with the stroke on, and while armed); for each new digit its substep, rule, s, f, position and swept-normal flags |
+
+Host helpers: `classify_unassigned` (the decisive class of an unassigned particle), `direct_bridges` (the
+`law8_validation.bridge_report` rule returning particle indices). Runners and analyses (all read-only):
+
+- `scripts/run_wp12_phase4a_diagnose.py -- <unchanged WP-11 runner …>` attaches the recorder to every
+  `tlmpm_v4`/`tlmpm_v5` the runner builds. `--counterfactual KEY=VALUE` overrides one law parameter on the
+  instance; such a run is labelled COUNTERFACTUAL.
+- `scripts/run_wp12_phase4a_sweep.py` runs the controlled sweeps (§7).
+- `scripts/analyze_wp12_phase4a.py`, `analyze_wp12_phase4a_chips.py` and `analyze_wp12_phase4a_contact.py` do the
+  per-digit, chip-region and contact analyses. `plot_wp12_phase4a.py` draws the figures and
+  `summarize_wp12_phase4a.py` writes the evidence.
+- **Relabel tests** give chosen digit-0 particles their side and recount the components. They are diagnostics that
+  identify the *decisive* particles, never results.
+
+## 2. Reproductions (original WP-11 configs and seeds, kinematic, law 8)
+
+All runs used `cuda:1`, two at a time, `TMPDIR=/mnt/data/ningan/tmp`. Every run's exit status is 0 (GNU time).
+Verdicts equal the frozen WP-11 verdicts.
+
+| Run (`artifacts/wp12/…`) | Runner and solver | Verdict now (frozen) | Key numbers | Wall |
+| --- | --- | --- | --- | --- |
+| `phase4a_002/s2201` | round 2 OBLIQUE_W s2201, +35°, `tlmpm_v4` | CUTTING_FAILURE, 1 component (same) | 26,788 labels (frozen 26,788) | 6:20 |
+| `phase4a_002/s2202` | s2202, −35° | CUTTING_FAILURE (same) | 23,744 labels | 5:35 |
+| `phase4a_002/s2203` | s2203, +30° | CUTTING_FAILURE (same) | 22,338 labels | 5:58 |
+| `phase4a_002/s2307` | TRIM_W s2307, dome, ρ 45° | CUTTING_FAILURE, 0 labels (same) | gate closed throughout | 3:19 |
+| `phase4a_002/s2307_cf_thetamax60` | same, **COUNTERFACTUAL θ_max = 60°** | CUTTING_FAILURE | 24,563 labels, 1 component | 3:55 |
+| `phase4a_002/s2501` | TEST_D2 s2501, sever 0° → remove all, `tlmpm_v5` S16 K3 | CUTTING_FAILURE `step1:remove_all` (same) | 3 components 0.769 / 0.230 / 0.0009 | 13:41 |
+| `phase4a_004/trim_k2_r10_law8_001` | C4 TRIM-02-K2-R10 skim | PASS, removal 0.957 (frozen 0.957) | 45 / 316 lowest-layer particles left | 6:04 |
+| `phase4a_004/bumps3_law8_v5_001` | Phase M `probe_v5_multicut.py --scenario bumps3` | PASS (same) | chips 1+2 one body with 49 substrate particles (frozen 49) | 2:52 |
+| `phase4a_005/f2_6_pure_draw_law8_001`, `f2_6_saw_cut_…`, `f2_4_rocking_…`, `f2_5_pure_rotation_…` | Phase F rows, formal | PASS ×4 (same) | swept-normal check (§6) | 5:38 / 5:34 / 4:55 / 4:09 |
+
+Failed launch attempts are preserved and listed in the evidence. The first TRIM and Phase F launches went to
+directories without `law8`; their runners refuse such names (exit 2 in 0.4 s), and they were rerun under the names
+above. `phase4a_002/queue.log` prints the exit code of `$(date)`, so it always shows 0; the logs' GNU-time
+`Exit status` lines are authoritative.
+
+## 3. Class (a): oblique ±30–35° through-cuts — missing side assignment at the exit face
+
+![s–f map of s2201](../media/wp12/phase4/phase4a_oblique_s2201_sf_map.png)
+
+**What blocks separation.** Law 4 labels a particle only behind the edge: f = (x − o)·d ≤ 0, the half-space bounded
+by the plane through the edge **perpendicular to the advance d**. In a vertical cut that plane is parallel to the
+bar bottom, so an edge that ends below the bottom has passed every bottom particle. In an oblique cut the plane is
+tilted by θ against the bottom. On the uphill side (s < 0 for +θ), a bottom particle at distance |s| from the cut
+plane is passed only after the edge travels about |s|·tanθ − z_b/cosθ beyond the section bottom. Code 0 is
+compatible with both sides, so any such particle that still shares a 4 mm stencil node with both sides is a bridge.
+
+| Seed | Unassigned within 12 mm | Class (all of them) | Ahead of the final edge: in reference / final positions | Decisive direct bridges | Bridge displacement along d | Relabel bridges only → components |
+| --- | --- | --- | --- | --- | --- | --- |
+| s2201 (+35°) | 684, s −4…−12 mm, z 0.5–3.5 mm | `edge_never_passed_while_stroke_on`; the **only** failing condition at every armed substep is f > 0 | 408 / 684 | 2 (z 0.5, y ±16.5, s ≈ −5 mm) | 2.4 mm (reference f < 0, final f = +1.0 mm) | **2** |
+| s2202 (−35°) | 616, s +4…+12 mm | same | 308 / 616 | 84 (z 0.5–1.5, s 4–8 mm) | 2.3 mm | **2** |
+| s2203 (+30°) | 314, s −6…−12 mm | same | 112 / 314 | 6 (z 0.5, s −6…−8 mm) | 2.1 mm | **2** |
+
+- **Not insufficient cutting depth.** The edge ends 3.15–3.27 mm below the bar bottom (4 mm overtravel along d). No
+  unassigned particle lies within |s| ≤ 4 mm of the plane: the swept surface spans the whole section.
+- **Not orientation, gate or band.** The gate is open on 100% of the armed segment-substeps. The plow mask is never
+  on (0°). No particle fails on `outside_band`, `beyond_rear_limit`, `segment_gate_closed` or `stroke_off` alone.
+- **Support and trajectory decide the margin.** The bridges were *behind* the final edge in their reference positions
+  and ended ahead only because the side over the 30 mm relief slot sags (bottom layer −1.1 mm in z, about +2 mm along
+  d). Every unassigned particle met the law-5 lead conditions (0 < f ≤ 2Δx, Δx < |s| ≤ 6Δx, stroke on) at some
+  substep: `lead_rule_blocked_by_plow_gate` = 684 / 616 / 314. Law 5 would have labelled them; law 8 gates the lead
+  rule to plowing strokes.
+- **Lattice phase.** It matters only at the margin. s2201 hangs on 2 corner particles, s2202 on 84.
+
+## 4. Class (b): ρ = 45° rake — unsupported orientation at the θ_max boundary, then core carry
+
+- **s2307 law 8.** The dome skim moves horizontally at 25 mm/s with the blade raked 45°. The segment motion is
+  45.0000006° out of the blade plane, against θ_max = 45°. The gate test
+  (v·n)² ≤ tan²θ_max[(v·d)² + (v·e)²] fails in float32 on all 120 segments for all 17,200 armed substeps, so W is
+  never set and the stroke never starts: 0 labels.
+- **Contact without labels.** The blade still contacts, penetrates 1.2 mm and does directional cutting work (13,406
+  particle-substeps of work with the gate closed). The progress release lets it plough through, and the material
+  closes behind it.
+- **Classification.** Unsupported cutting orientation: the declared θ_max boundary, decided by float32 rounding at
+  exactly 45°.
+- **COUNTERFACTUAL θ_max = 60° (not law 8).**
+  - The gate opens and the plow mask is on everywhere: 10,298 band and 14,265 lead labels.
+  - The bar still stays 1 component, because of **one** dome-apex particle at reference (7.5, 5.5, 16.5) mm. It sat
+    inside the core band (\|s\| ≤ Δx) and came no closer than f = +0.75 mm to the edge. It was carried 29.8 mm and
+    ended at f = 8.07 mm, just beyond b_lead.
+  - Relabelling it separates the bar (2 components). The second blocker is class (c).
+- **The controlled dome sweep isolates the gate (§7.2).** ρ = 10–44° separates (removal 0.963–0.995). ρ = 45, 46 and
+  50° give 0 labels. COUNTERFACTUAL θ_max = 60° separates ρ = 45° and 50° (0.993, 0.996) on that dome, with no
+  carried particle.
+
+## 5. Class (c): residual particles inside sequential cuts — core-band carry and chip re-merge
+
+- **TEST_D2 s2501 (sever 0° → remove both caps, ρ = 10°, no plowing).**
+  - The sever (digit 0) is clean: 0 unassigned within 12 mm, 0 bridges.
+  - **Digit 1 (cap p0).** Of 1,817 chip particles, 1,812 are on the chip side, 3 took the substrate side, and
+    **2 stayed 0**. The 2 are at reference (16.5, 0.5 / 1.5, 24.5) mm, 2.5 mm above the plane, inside the core.
+  - **Digit 2 (cap p1).** Of 614 chip particles, 558 are on the chip side, 55 took the substrate side, and **1
+    stayed 0**: (57.5, 1.5, 24.5) mm.
+  - **Mechanism.** All three rode ahead of the edge for the whole skim (closest approach f = +0.10, +0.15 and
+    +0.43 mm; class `edge_never_passed_while_stroke_on`). They were carried 39–80 mm and ejected with the chip, and
+    they bridge where the chip lands.
+  - Neither rule can reach them. The band needs f ≤ 0. The lead rule needs \|s\| > Δx and, under law 8, a plowing
+    segment.
+  - **Relabel test.** Giving the 3 particles the chip digit gives 4 components (p0 and p1 both separate).
+  - The 3 and 55 chip particles on the substrate side are class (d): they were pushed 0.41–0.68 mm down before the
+    edge passed.
+- **Test B s1502 (baseline extract).** 0 code-0 particles within 4 mm of any of its 4 planes, so there is no
+  residual.
+- **Phase M bumps3 (rerun, PASS).**
+  - The chips 1+2 body holds exactly 49 substrate top-layer particles (reference z = 11.5 mm; codes 32 / 36 / 40),
+    carried 52 mm.
+  - **Assignment.** The 25° raked edge **lifted** them 0.92–1.05 mm (median) before passing under them. So they were
+    0.2–0.35 mm above the swept plane at assignment and correctly took the chip side of the current geometry.
+  - **Why the chips merge.** The chips themselves carry codes 42 / 40 / 32: every later skim labels the chips it
+    pushes ahead as positive. Chips cut by different digits therefore never conflict, and they merge where they touch
+    (minimum gap 0.30–0.39 mm).
+  - **Classification.** Contact (carry and lift) plus a representation limit (code compatibility of separately
+    removed chips), not a separation failure of the target.
+
+## 6. Classes (d) and (e)
+
+**(d) TRIM thin-chip residue and local depression (TRIM-02-K2-R10, PASS, removal 0.957).**
+
+- **Residue.** The edge runs at 20.2 mm, 0.3 mm below the lowest chip layer (20.5 mm). 45 of 316 particles in that
+  layer took the substrate digit.
+  - At assignment they were 0.47 mm (median) below their reference height, at s = −0.30 mm.
+  - The 271 that took the chip digit were +0.10 mm above their reference height, at s = +0.28 mm.
+  - All 45 lie under the loaded centre of the dome (x −4.5…+9.5 mm). They end as a one-layer residue at z = 19.5 mm.
+- **Depression.** The substrate top layer under the dome ends 0.36 mm lower (median; P05 1.73 mm, min 2.12 mm). The
+  same layer elsewhere ends 0.13 mm lower. The next layer down, under the dome, ends 0.19 mm lower.
+- **Classification.** Contact: the wedge and the chip reaction depress the soft material before the edge passes, and
+  the band labels where material *is*, which is physically consistent. Numerical resolution: whether the depressed
+  layer falls below the edge depends on the 0.3 mm lattice-phase gap (§7.3).
+
+**(e) Swept-normal float32 fallback.** The solver uses n_s ∝ m × e and falls back to the blade normal only if
+|m × e|² ≤ 1e-20 (absolute). The diagnostic flags new digits with |m × e| ≤ 1e-5 |m| (`ill_float`) or ≤ 1e-2 |m|
+(`ill_geom`, motion within 0.57° of the edge line) and recomputes the side with the blade-normal fallback.
+
+| Run | New digits | Flagged `ill_float` / `ill_geom` | Digits a corrected fallback would flip |
+| --- | --- | --- | --- |
+| s2201, s2202, s2203, s2307 (and its COUNTERFACTUAL), s2501, TRIM, F2.4 rocking, F2.5 rotation, F2.6 saw | all | 0 / 0 | **0** |
+| F2.6 pure draw (axis-aligned) | 14,400 (904 during the draw) | 904 / 904, all with the solver's own exact fallback (m × e = 0) | **0** |
+| CPU test, pure draw at a generic 97° yaw (`test_pure_draw_flags_swept_normal_conditioning`) | 28 during the draw | 28 / 28 | **15 of 28** |
+
+- **Classification.** Numerical, latent. It corrupts digits only in a pure draw whose edge is not axis-aligned. In
+  that case m × e is float32 noise just above the 1e-20 threshold, and the side is decided by a random plane through
+  the edge.
+- **No recorded run is affected.** F2.6 saw has 72,000 `ill_geom` segment-substeps (direction reversals), but no
+  digit was written in them.
+
+## 7. Controlled sweeps (diagnostics, not acceptance runs)
+
+The sweeps use `scripts/run_wp12_phase4a_sweep.py` on `cuda:1`, `tlmpm_v5`, law 8, with the same kinematic
+interpolation as `LiveCuttingMaterial`. The support is a 10 mm board on risers. The output is
+`artifacts/wp12/phase4a_003/sweep/summary.json` (36 rows plus 15 dome rows); the wall times were 32:44 and 7:45. A
+dome family was added after the slab rows (the reason is under §7.2). The slab and oblique rows ran from the script
+version before that addition; the addition changed no existing row.
+
+### 7.1 Oblique angle, overtravel, support and lattice phase
+
+The bar is 80 × 24 × 16 mm, with a 30 mm relief slot centred where the plane meets z = −6 mm (round-2 rule). The
+armed cut runs at 10 mm/s from 8 mm before the section top to 4 mm past the section bottom, measured along d.
+
+![oblique sweep](../media/wp12/phase4/phase4a_oblique_sweep.png)
+
+| Row | Components | Mass fractions | Labels | Unassigned within 12 mm | …ahead of final edge (reference / final) | Direct bridges | Bottom-layer Δz, s < 0 / s ≥ 0 (mm) | Wall (s) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| obl_00 | 2 | 0.500 / 0.500 | 18240 | 0 | 0 / 0 | 0 | −0.12 / −0.12 | 71 |
+| obl_05 | 2 | 0.512 / 0.488 | 18120 | 0 | 0 / 0 | 0 | −0.15 / −0.06 | 67 |
+| obl_10 | 2 | 0.506 / 0.494 | 18408 | 0 | 0 / 0 | 0 | −0.02 / −0.00 | 76 |
+| obl_15 | 2 | 0.504 / 0.496 | 18288 | 0 | 0 / 0 | 0 | −0.05 / 0.02 | 76 |
+| obl_20 | 2 | 0.505 / 0.495 | 18336 | 96 | 0 / 96 | 0 | −0.25 / 0.02 | 70 |
+| obl_25 | **1** | 1.000 | 18192 | 216 | 72 / 216 | 24 | −0.15 / −0.05 | 62 |
+| obl_30 | **1** | 1.000 | 17702 | 480 | 192 / 480 | 72 | −0.29 / −0.07 | 68 |
+| obl_35 | **1** | 1.000 | 17402 | 742 | 336 / 700 | 72 | −0.39 / −0.07 | 72 |
+| obl_40 | **1** | 1.000 | 17250 | 1014 | 504 / 893 | 48 | −0.47 / −0.04 | 75 |
+| obl_45 | **1** | 1.000 | 16632 | 1536 | 720 / 1320 | 48 | −0.51 / −0.04 | 82 |
+| obl_m35 (−35°) | **1** | 1.000 | 17402 | 742 | 336 / 700 | 72 | −0.07 / −0.39 | 77 |
+| obl_35_ot06 (overtravel 6 mm) | 2 | 0.513 / 0.487 | 18334 | 362 | 96 / 336 | 0 | −0.39 / −0.07 | 81 |
+| obl_35_ot08 | 2 | 0.513 / 0.487 | 19104 | 96 | 0 / 72 | 0 | −0.39 / −0.07 | 69 |
+| obl_35_ot10 | 2 | 0.513 / 0.487 | 19132 | 96 | 0 / 0 | 0 | −0.39 / −0.07 | 92 |
+| obl_35_nograv (gravity off) | 2 | 0.514 / 0.486 | 19200 | 48 | 48 / 48 | 0 | +2.38 / +1.24 (the unweighted bar lifts) | 72 |
+| obl_35_slot12 (12 mm slot) | 2 | 0.513 / 0.487 | 18168 | 432 | 336 / 432 | 0 | −0.12 / −0.04 | 66 |
+| obl_35_phase025 (plane +0.25 mm) | **1** | 1.000 | 17598 | 690 | 360 / 676 | 72 | −0.39 / −0.07 | 49 |
+| obl_35_phase050 | **1** | 1.000 | 17496 | 720 | 312 / 704 | 96 | −0.34 / −0.05 | 56 |
+| obl_35_phase075 | **1** | 1.000 | 17496 | 696 | 312 / 654 | 96 | −0.34 / −0.05 | 64 |
+
+- **Angle.** With the planner's 4 mm overtravel, unassigned bottom material appears from 20° and the bar stays
+  connected from **25°**. The ±35° rows are exact mirrors.
+- **Not lattice phase.** Shifting the plane by 0.25–0.75 mm does not rescue 35°: 72–96 bridges in every phase.
+- **It is the exit-face coverage.** 6 mm of overtravel, a 12 mm slot (overhang sag 0.12 instead of 0.39 mm) or no
+  gravity each separate 35° **with law 8 unchanged**. Unassigned particles remain, but none bridges. The bridges need
+  code-0 bottom particles within about 6 mm of the plane, and the margin is a few tenths of a millimetre of sag or
+  overtravel.
+
+### 7.2 Rake (motion gate) and the dome chip
+
+The **slab** rows (80 × 24 × 12 mm, a 2.8 mm chip along the whole length) isolate the gate. The removal outcome is not
+meaningful there:
+
+- The 80 mm continuous chip piles up ahead of the edge (class c) and never separates (removal 0 at every ρ).
+- At ρ ≥ 30° the unrestrained slab is pushed off the board: substrate Δz −78 to −109 mm.
+
+The **dome** rows (r 12 mm, h 8 mm, 563 particles on a 100 × 30 × 20 mm bar, skim x = −30…+30 mm at 25 mm/s,
+edge 0.2 mm above the base top) were added to give the outcome.
+
+![rake sweep](../media/wp12/phase4/phase4a_rake_sweep.png)
+
+| Dome row | Gate open | Plow | Stroke-on substeps | Band / lead labels | Work with gate closed (particle-substeps) | Components | Removal | Substrate | Max penetration (mm) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ρ 10 | 1.000 | 0.000 | 16772 | 30473 / 0 | 0 | 2 | 0.975 | 1.00000 | 0.43 |
+| ρ 25 | 1.000 | 1.000 | 16772 | 10654 / 24349 | 0 | 2 | 0.963 | 1.00000 | 0.43 |
+| ρ 35 | 1.000 | 1.000 | 16772 | 11192 / 24659 | 0 | 2 | 0.989 | 1.00000 | 1.05 |
+| ρ 40 | 1.000 | 1.000 | 16772 | 11588 / 24945 | 0 | 2 | 0.995 | 1.00000 | 1.19 |
+| ρ 44 | 1.000 | 1.000 | 16772 | 11964 / 25229 | 0 | 2 | 0.993 | 1.00000 | 1.11 |
+| **ρ 45** | **0.000** | 0.000 | 0 | 0 / 0 | 26177 | 1 | **0.000** | 1.00000 | 0.74 |
+| ρ 46 | 0.000 | 0.000 | 0 | 0 / 0 | 27245 | 1 | 0.000 | 1.00000 | 0.71 |
+| ρ 50 | 0.000 | 0.000 | 0 | 0 / 0 | 28986 | 1 | 0.000 | 1.00000 | 0.69 |
+| ρ 45 COUNTERFACTUAL θ_max 60° | 1.000 | 1.000 | 16772 | 11867 / 25472 | 0 | 2 | 0.993 | 1.00000 | 1.11 |
+| ρ 50 COUNTERFACTUAL θ_max 60° | 1.000 | 1.000 | 16772 | 12712 / 25714 | 0 | 2 | 0.996 | 1.00000 | 1.08 |
+
+The slab rows give the same gate cliff: gate open fraction 1.000 at ρ = 10–44°, 0.000 at 45, 46 and 50°. Work with
+the gate closed is 119,312, 21,428 and 12,113 particle-substeps at 45, 46 and 50°.
+
+### 7.3 Lattice phase of the lowest chip layer (dome, ρ = 10°)
+
+![trim phase sweep](../media/wp12/phase4/phase4a_trim_phase_sweep.png)
+
+| Edge above the base top (gap to the 20.5 mm layer) | Lowest layer left on the substrate | Its Δz at assignment (median) | Removal | Substrate min Δz (mm) |
+| --- | --- | --- | --- | --- |
+| 0.0 mm (0.5) | 2 / 192 | −0.04 | 0.996 | −0.91 |
+| 0.1 mm (0.4) | 7 / 192 | −0.02 | 0.988 | −0.96 |
+| 0.2 mm (0.3), the planner default | 14 / 192 | +0.02 | 0.975 | −1.08 |
+| 0.3 mm (0.2) | 36 / 192 | 0.00 | 0.931 | −1.59 |
+| 0.4 mm (0.1) | 189 / 192 | −0.28 | **0.664** | −0.28 |
+| 0.5 mm (0.0) | 190 / 192 | −0.24 | **0.663** | −0.30 |
+
+The residue is a lattice-phase effect. At a 0.3 mm gap (the 0.2 mm planner clearance on a 1 mm lattice), 7% of the
+lowest layer stays here and 14% on TRIM-02-K2. At a gap of 0.1 mm or less, the whole layer stays and the 0.9 removal
+criterion fails.
+
+## 8. Candidate remedies and the law-9 recommendation
+
+| Class | Candidate | Physical assumption | Predicted effect | Must still hold (negative controls) | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| (a) | Planner: overtravel ≥ \|s_reach\|·tanθ − z_b/cosθ + sag margin (≥ 6 mm at 35°) | the edge must pass the stencil reach on the uphill side | 35° separates at 6–10 mm (§7.1) | unchanged law | Opt-in for slotted boards only. **Impossible on the flat board**: Phase 2 Option A ends the cut on the board top, so overtravel is 0, and ±30–35° obliques already bind on handle clearance |
+| (a) | Support: narrower relief slot | less overhang sag | 12 mm slot separates 35° | unchanged law | scene-dependent, not general |
+| (a) | Law 5 (lead always) | carried or ejected material is pre-assigned | labels all 684 / 616 / 314 | — | already rejected (M8b: the bar pushed 2.3 mm) |
+| (a) | Wider band h or rear b_back | — | **none**: no particle fails on \|s\| > h or the rear limit | — | rejected (threshold change with no effect) |
+| (a) | **Law 9: breakthrough-gated lead** (rule below) | once no unseparated material remains in a cutting segment's process zone ahead (the edge broke through the free surface or reached the support), the section along that segment is severed and the nearby material belongs to its side | s2201 / s2202 / s2203: the relabel tests on exactly these particles give 2 components; obliques ending on a solid board; bumps3-style bar-end exits | flat press, side push, blunt handle v2, no contact, withdrawal (no stroke, unchanged); M4 half-depth ligament (core ahead not empty); F2.8 finite edge (\|l\| ≤ L kept); M8a sagging cantilever stays connected (sagged bottom layer in the core) | **recommended** |
+| (b) | Declare the envelope: law 8 supports ρ ≤ 44° | — | — | — | **do now** (reporting) |
+| (b) | Motion gate from tool clearance: M_k iff the edge leads the cross-section, m⊥·(p_j − edge) < 0 for every profile vertex (\|α\| < 77.5° for the 25° double bevel; asymmetric for the chisel) | a blade cuts whenever its edge, not a face, meets material first | dome ρ 45/50° separate (as the COUNTERFACTUAL); s2307 still blocked by one carried apex particle | flat press and side push (α = 90°) stay closed; a new face-first control at α ≈ 80° must stay closed | candidate for a later variant, after (c) |
+| (b) | θ_max 45 → 60° | — | same as the COUNTERFACTUAL | — | rejected: a threshold relaxation without a physical rule |
+| (c) | Carried-material rule: a code-0 particle in the core ahead of a cutting segment that has travelled ≥ 2Δx with the edge (relative to the substrate) takes the side of its s | a ligament cannot travel with the tool; carried material is detached chip | s2501: the 3 decisive particles (4 components); s2307 COUNTERFACTUAL apex | M4 ligament (does not travel); an unclamped bar sliding with the blade must not be split (requires motion *relative* to the substrate) | study as a separate variant; **not** in law 9 |
+| (c) | Chip re-merge across digits (bumps3) | — | — | — | representation / evaluation topic (chips of different digits never conflict); not a law change |
+| (d) | none in the law; planner clearance relative to the lattice; resolution study (§4.7); material calibration | the band labels material where it is when the edge passes (consistent) | — | — | report as a resolution limit |
+| (e) | Relative fallback: blade normal when \|m × e\|² ≤ max(1e-20, (1e-5 \|m\|)²) | a pure draw has no swept-surface normal of its own | 0 changes in every recorded run; fixes generic-yaw draws (15 / 28 flips in the CPU case) | all rows | include in law 9 as a numerical correction |
+
+**Recommendation.** A versioned **law 9** is warranted, because a diagnosed mechanism, not a threshold, blocks
+valid cuts:
+
+- The band front is the plane through the edge perpendicular to d. For obliques ending on a solid board (the Phase 2
+  workcell) no planner overtravel is available.
+- **Law 9 = law 8 (ADR 0012) with exactly two changes**; laws 4, 5 and 8 stay bitwise unchanged:
+  1. **Breakthrough mask B_k.** After the deformation update (before assignment), for each edge segment k with M_k
+     while S = c + 1: B_k = 1 iff no particle whose digit c is 0 lies in that segment's strip ahead of the edge,
+     {l in segment k, 0 < f ≤ b_lead = 2Δx, \|s\| ≤ s_core = Δx} (s from `_swept_side`). This needs one counting launch
+     and one segment pass.
+  2. **The lead pre-assignment** (law-5 rule, unchanged parameters b_lead = 2Δx, s_core = Δx, h = 6Δx) runs on
+     segments with **plow_k OR B_k**. The swept-normal fallback becomes relative (table, row e). No new physical
+     parameter is added.
+- **Expected behaviour (to be verified, not assumed).**
+  - In-plane vertical cuts, and skims inside a bar (substrate in the core), are unchanged until breakthrough.
+  - Vertical through-cuts gain nothing at the exit, because no material lies ahead of the edge beyond the bottom.
+  - Obliques and bar-end exits gain the uphill bottom labels.
+  - (b), (c) and (d) are not addressed by law 9.
+- **Acceptance before use.**
+  - The full ADR 0006 / Amendment 1 matrix M1–M9.
+  - The Phase F boundary and negative-control rows, including F2.9 v2 (blunt handle), M4 and F2.8.
+  - New declared rows: oblique 20/25/30/35/45° on the slotted board and on the solid flat board; bumps3; the
+    breakthrough-specific negative control, an armed edge whose stroke persists into air beside material
+    (B_k true while particles lie in the lead region of an empty segment).
+  - Energy, contact reaction and momentum checks, in-plane CUT and TRIM non-regression, and a fair comparison against
+    law 8 on every row.
+
+**Supported orientation (diagnostic, 1 mm kinematic, these geometries only).**
+
+- **Oblique through-cuts with law 8 and the planner's 4 mm overtravel over a 30 mm relief slot:** separate at
+  θ ≤ 20°; known failure at 25–45°.
+- **Raked skims of a dome:** separate at ρ = 10–44°; known failure at ρ ≥ 45° (gate).
+- **Neither result is a validated envelope.** The envelope study (§4.4) remains.
+
+## 9. Commands
+
+```
+# reproductions (cuda:1, two lanes; queue scripts artifacts/wp12/phase4a_00{2,4,5}/queue.sh)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4a_diagnose.py -- scripts/run_generalization.py \
+    --config configs/wp11/generalization_round2.json material --family OBLIQUE_W --seed 2201 --device cuda:1 \
+    --expect-task-id CFG-E2_OBLIQUE_W_s2201-E2_OBLIQUE_W_s2201_sever-9e29a817 --out artifacts/wp12/phase4a_002/s2201
+#   same for OBLIQUE_W 2202 / 2203, TRIM_W 2307 (+ --counterfactual theta_max_deg=60 before --), TEST_D2 2501,
+#   run_phase_c4_trim_material.py --task TRIM-02-K2-R10 --control skim, probe_v5_multicut.py --scenario bumps3,
+#   run_phase_f_material.py --row F2.6_pure_draw | F2.6_saw_cut | F2.4_rocking | F2.5_pure_rotation --variant formal
+# sweeps
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4a_sweep.py --rows oblique rake phase --device cuda:1 \
+    --out artifacts/wp12/phase4a_003/sweep
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4a_sweep.py --rows dome --device cuda:1 \
+    --out artifacts/wp12/phase4a_003/sweep
+# analyses, figures, evidence (CPU)
+.venv/bin/python scripts/analyze_wp12_phase4a.py artifacts/wp12/phase4a_002/s2201 …
+.venv/bin/python scripts/analyze_wp12_phase4a_chips.py artifacts/wp12/phase4a_002/s2501
+.venv/bin/python scripts/analyze_wp12_phase4a_contact.py trim artifacts/wp12/phase4a_004/trim_k2_r10_law8_001
+.venv/bin/python scripts/analyze_wp12_phase4a_contact.py bumps3 artifacts/wp12/phase4a_004/bumps3_law8_v5_001
+.venv/bin/python scripts/plot_wp12_phase4a.py --runs artifacts/wp12/phase4a_002 --sweep artifacts/wp12/phase4a_003/sweep \
+    --out docs/media/wp12/phase4
+.venv/bin/python scripts/summarize_wp12_phase4a.py --notes <notes.json> --out docs/evidence/wp12/phase4a_law8_rootcause_001.json
+# tests
+.venv/bin/python -m pytest -q tests/test_cut_diagnostics.py tests/test_cut_events.py tests/test_repo_naming.py
+```
+
+## 10. Limits of this diagnosis
+
+- **Kinematic ideal tracking only.** There is no Native, Lab or live tracking noise. The swept-normal result in
+  particular may differ under tracking noise.
+- **Material.** It is provisional, at the formal resolution only. Forces are not converged (WP-11 F3).
+- **The sweep geometries are simplified.** The dome is an ellipsoidal cap of 563 particles; TRIM-02-K2's dome has
+  1,044.
+- **The slab rows' outcome is confounded.** Its chip piles up, and at ρ ≥ 30° the slab slides off the board. It is
+  reported, not used for removal claims.
+- **Relabel tests and COUNTERFACTUAL rows only point at the decisive condition.** They do not simulate law 9's
+  dynamics after the extra labels. Law 9's effect must be measured, never inferred from them.
+- **The breakthrough condition was checked at the final armed pose only.** There, no unassigned particle lay within
+  \|s\| ≤ 4 mm and every unassigned particle had f ≤ 5.05 mm. It was not checked per segment at every substep.
+
+## Corrections after the xhigh review (2026-10-31)
+
+Added 2026-10-31 (KST) after the `rcs-xhigh` review [WP12_PHASE4_XHIGH_REVIEW.md](WP12_PHASE4_XHIGH_REVIEW.md)
+(`81a9626`, verdict **REJECT law 9 as proposed**). Sections 1–10 above stay as written. Where they differ from
+this section, this section applies.
+
+The review re-ran the draft's numbers from the saved runs (its §1). The (a) counts and bridges, the static B_k at
+the final pose, the (b) gate tie, the θ_max = 60° counterfactual and the (e) zero-flip result all reproduce. One
+claim does not: "unchanged until breakthrough" (C4 below).
+
+### C1. Class (a): root cause restated
+
+**Root cause.** The law-4 front f = (x − o)·d ≤ 0 (`tlmpm_v5.py:630`) is the plane through the edge, normal to
+the advance d. At a tilted exit face, the uphill material beside the swept surface is never behind the edge when
+the edge leaves the bar.
+
+**What sets the margin.** Sag and overtravel. With overtravel t along d, a bottom-layer particle at height z_b is
+passed only if |s| ≤ z_b/sinθ + t/tanθ:
+- **Overtravel.** The WP-11 4 mm came from the action workspace (`cut_extent = plane_section`), not from physics.
+- **Sag.** The overhang over the 30 mm relief slot sags. That decided the reproduced bridges, which had
+  f_reference < 0. This support does not exist on `blade_master_flat_board_v1`.
+
+**The law-8 plow gate is not a root cause.**
+- It matters only once overtravel moves the wedge outside the core (|s| > Δx).
+- So "law 5 would have labelled them" (§3, `lead_rule_blocked_by_plow_gate` = 684 / 616 / 314) holds only on
+  the slotted/relief-slot support.
+- The "Root cause" cell of the at-a-glance table for (a) should read: missing side assignment because the f ≤ 0
+  front meets a tilted exit face, with the margin set by support sag and overtravel.
+
+### C2. The handle-clearance claim was a misreading
+
+- **Withdrawn.** The §8 table says ±30–35° obliques "already bind on handle clearance" and calls planner
+  overtravel "Impossible on the flat board".
+- **What the source says.** WP11_PHASE_E_ROUND2.md:237 names `knife_handle_clearance` as the *binding* (active)
+  constraint, with 5.6–6.1 mm of margin. That is a margin, not a failure.
+- **Flat-board reachability is unmeasured.** E1.3 measures it.
+- **The slotted variant was never tested.** ADR 0017:121 and WP12_WORKCELL.md:193 keep oblique planes on the
+  explicit slotted variant (Option D), so overtravel is not impossible in the WP-12 workcell. No oblique has yet run
+  on its 8 mm grooves.
+
+### C3. (a) on the flat board is undemonstrated until E1
+
+- **Status: NOT_RUN.** The draft ran no oblique on `blade_master_flat_board_v1`, so (a) on that board is NOT_RUN.
+- **The reviewer's CPU probe is only a prediction.** It is `artifacts/wp12/phase4_xhigh_review_001/cpu_flat_oblique.py`:
+  a 40 × 12 × 12 mm bar on a solid box, law 8, edge ending on the board top. It predicts:
+  - failure from 5–10° by a margin (two bottom-layer particles 0.01–0.05 mm ahead of the edge);
+  - robust failure from 15–20° to 35°, where the unassigned wedge lies inside the core strip.
+- **Withdrawn from §8.** Obliques "ending on a solid board" are no longer claimed as an effect of the proposed
+  law 9.
+- **Scope of the §3 and §7.1 diagnosis.** It stands for the WP-11 relief-slot support only.
+
+### C4. Law 9 as proposed (breakthrough-gated lead + relative fallback): REJECTED
+
+The §8 recommendation is withdrawn. The review's reasons (its §3):
+
+1. **Wrong test.** "No digit-0 particle in {0 < f ≤ 2Δx, |s| ≤ Δx}" asks whether there is *material* in the core
+   ahead. The question that matters is whether a *ligament straddles* the swept surface.
+2. **It blocks itself at a supported oblique exit.**
+   - The one-sided uphill wedge, which holds the very particles that need labels, sits in the core strip.
+   - The reused law-5 rule excludes |s| ≤ Δx anyway.
+3. **It still needs overtravel.** About Δx·tanθ − z_b/cosθ (≈ 1.3–2.2 mm at 25–35°), which Option A does not
+   provide. Its only proven gain is cutting the slotted-board overtravel from about 6–10 mm to about 2–4 mm.
+4. **"Unchanged until breakthrough" is refuted.** On snapshots, B_k = 1 fires mid-cut on 2–4 material segments with
+   an empty core, and lags the exit by about 1–3 mm. The draft checked the breakthrough condition at the final pose
+   only (§10).
+5. **Not safe:**
+   - **Empty space beside material.** S persists for 2Δx, so any moving segment with an empty core gets B_k = 1.
+     The lead rule then labels material the edge never reached, which voids ADR 0008's safety argument.
+   - **Digit-0 counting.** Re-entered kerfs, labelled chips and the rule's own labels all count as "empty".
+   - **Unmeasured field-split dynamics.** About 2.4–3.7 thousand particles would be labelled at once at the exit,
+     with untested effects on the FLIP transfer (law 5 failed M8b this way).
+   - **Strip sampling.** One stray particle blocks the mask, and one void opens it.
+   - **Multi-cut and intersecting cuts.** Labels can land on separate bodies.
+6. **No new press-versus-directional distinction.** The rule inherits law 4's S/M_k gate.
+
+**Next.** No law code until D1 is decided at xhigh.
+- E1 (`configs/wp12/phase4_e1_protocol_v1.json`) runs law 8 unchanged, with a read-only offline evaluator.
+- The evaluator scores the rejected breakthrough mask and the two-sided exit-ligament rule L9-EL (review §3.3) on
+  the recorded per-substep states.
+- It never writes a label into the physics run.
+- L9-EL is a candidate under evaluation, not an approved law.
+
+### C5. (e) ships as its own variant
+
+- **Withdrawn.** The §8 row (e) wording "include in law 9 as a numerical correction".
+- **The relative fallback ships alone.** |m×e|² ≤ max(1e-20, (1e-5|m|)²) becomes its own opt-in numerical variant,
+  "law 8 + swept-normal fallback v2".
+- **Acceptance:**
+  - CPU bitwise equality with law 8 wherever no `ill_float` digit exists;
+  - the generic-yaw pure-draw test;
+  - a recorder matrix rerun, predicted equal within GPU nondeterminism.
+- **Scope limit.** It repairs float noise (`ill_float`) only. Near-pure draws under tracking noise (`ill_geom`; in
+  Phase F, 0.3 mm/s turns n_s by about 45°) need their own study.
+- **Not bundled.** It is not part of any (a) law. A later exit law builds on it with an ablation row.
+
+### C6. (b): envelope wording (replaces the §8 "Supported orientation" paragraph)
+
+Scope: law 8, `ruler_knife_v2_y`, kinematic ideal tracking, 1 mm. ρ ≤ 44° is declared now, and the motion gate
+is unchanged.
+
+| Status | Rake |
+| --- | --- |
+| Validated cutting | ρ = 10° (F3/C4); 14, 15, 16° (F2.1); 25° (M3a); 35° (M3b/M3c) |
+| Partially validated | ρ = 10–44° (dome sweep, diagnostic) |
+| Known failure / unsupported | ρ = 45°. The motion lies on θ_max and float32 decides the gate (s2307, 0 labels; the frozen FAIL stands) |
+| Unsupported by law | ρ > 45°. The gate is closed by design: contact and directional work, no labels |
+| Physically infeasible | ρ ≈ 5° at 0.2 mm clearance |
+| Physically feasible, not validated | edge-first contact up to 77.5° |
+
+**Sampling rule.** Generators and planners sample ρ ≤ 44°. Live tracking needs an extra margin equal to the
+measured out-of-plane motion noise (NOT_RUN).
+
+**The bevel-derived gate** (|α| < 77.5°) is only a necessary condition, and it would not rescue s2307. It is
+studied only after (c), with face-first controls at α = 80/85/90° and a 70° wedge press without draw.
+
+### C7. Unchanged
+
+- (b), (c) and (d) stand as written, with the (d) remark that "planner clearance relative to the lattice" can at
+  most be a declared, resolution-specific planner rule, never a physics fix.
+- No solver, law, threshold, frozen record or WP-11 evidence was changed by these corrections.
+
+## E1 results (2026-10-31)
+
+**What ran.** The frozen protocol [`configs/wp12/phase4_e1_protocol_v1.json`](../../configs/wp12/phase4_e1_protocol_v1.json)
+(committed `3dd3848`, sha256 `d372184a…`), all 47 rows, nothing added or dropped. Evidence:
+[`docs/evidence/wp12/phase4_e1_001.json`](../evidence/wp12/phase4_e1_001.json). Runs: `artifacts/wp12/phase4_e1_001/`.
+
+**Setup.**
+- Law 8 on `tlmpm_v5`, unchanged.
+- The CUT-01-R bar (160 × 30 × 20 mm, 96,000 particles) on `blade_master_flat_board_v1` or its 8 mm slotted variant.
+- 1 mm / 4 mm / 0.1 ms, seed 42, kinematic ideal tracking, `ruler_knife_v2_y`.
+
+**Recorders.** Both are read-only:
+- `cut_diagnostics_v1` records the solver's own decisions.
+- `exit_candidates_v1` is an offline shadow. Its candidate columns are **predictions on the law-8 trajectory**.
+  They are not runs of a law, and they include no dynamics from real labels.
+
+**This section reports data only.** D1 (review §6) is decided at xhigh.
+
+**Integrity: all 47 rows PASS.**
+- Every row ran to completion, and every process exited with status 0.
+- No recorder, evaluator or slot overflowed.
+- No blade–board overlap occurred.
+- The lowest blade point was the edge vertex in every row.
+- Every slotted row kept ≥ 1.0 mm of swept-blade clearance.
+- No particle centre ever entered a board box. The smallest particle–board signed distance was 0.32 mm, and the
+  solver's maximum fixture penetration statistic was 0.17 mm.
+- min det F ≥ 0.925, and the maximum tool penetration was 0.81 mm.
+- The relative swept-normal fallback never differed from the solver's.
+
+**Comparability.** Git HEAD moved during the run because other agents committed. The sha256 of every E1-relevant
+source is identical in all 47 rows: `tlmpm_v5.py`, `cut_diagnostics.py`, `exit_candidates.py`, `live_material.py`,
+`fixture_contacts.py`, `scene_config.py`, `coupled_robot.py`, both scenes, the workcell record, the protocol and the
+runner. Devices were cuda:0 (24 rows) and cuda:1 (23 rows), both shared.
+
+**Repeat band.** Two repeats measure GPU nondeterminism. For A_p20 vs A_p20_rep2 and A_p35 vs A_p35_rep2, the law-8
+components, bridges, label counts and unassigned counts are identical. The L9-EL shadow labels agree within 2
+(5490 vs 5492 at 35°).
+
+### Results
+
+**Columns.**
+- *Law 8*: the law-8 outcome at the final state, with the component count.
+- *Unassigned*: digit-0 particles with |s_ref| ≤ 12 mm. The number in brackets is how many are in the core
+  (|s| ≤ 4 mm).
+- *Layer-0 digit-0*: the bottom layer, by side.
+- *Proposed*: the rejected breakthrough-gated lead. The bracket is the fraction of material segments with B_k = 0
+  at the last armed moving control step.
+- *L9-EL*: the exit-ligament candidate. The bracket is the number of shadow labels.
+- *Reach*: E1.3, kinematically reachable or not, never validated cutting.
+
+| Row | τ (°) | Edge end z (mm) | Law 8 | Bridges | Unassigned (core) | Layer-0 digit-0 s<0 / s≥0 | Proposed (B=0 at end) | L9-EL (labels) | Reach (binding, slack mm) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| A_p00 | 0 | 0 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED (0.00) | SEPARATED (1212) | PASS (blade-board, +0.0003) |
+| A_p01 | 1 | 0 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED (0.00) | SEPARATED (1265) | PASS (+0.0003) |
+| A_p02 | 2 | 0 | SEPARATED (2) | 0 | 60 (0) | 60 / 0 | SEPARATED (0.00) | SEPARATED (1535) | PASS (+0.0003) |
+| A_p03 | 3 | 0 | SEPARATED (2) | 0 | 160 (0) | 160 / 0 | SEPARATED (0.00) | SEPARATED (1476) | PASS (+0.0002) |
+| A_p05 | 5 | 0 | SEPARATED (2) | 0 | 214 (0) | 214 / 0 | SEPARATED (0.00) | SEPARATED (1600) | PASS (+0.0002) |
+| A_p10 | 10 | 0 | **CONNECTED (1)** | 96 | 336 (0) | 212 / 0 | CONNECTED (0.06) | SEPARATED (2521) | PASS (+0.0003) |
+| A_p15 | 15 | 0 | CONNECTED (1) | 6 | 568 (6) | 246 / 0 | CONNECTED (0.12) | SEPARATED (3542) | PASS (+0.0014) |
+| A_p20 | 20 | 0 | CONNECTED (1) | 36 | 790 (36) | 304 / 0 | CONNECTED (0.82) | SEPARATED (4574) | PASS (+0.0012) |
+| A_p25 | 25 | 0 | CONNECTED (1) | 92 | 1112 (92) | 332 / 0 | CONNECTED (0.82) | SEPARATED (5110) | PASS (+0.0006) |
+| A_p30 | 30 | 0 | CONNECTED (1) | 380 | 1386 (122) | 362 / 0 | CONNECTED (0.82) | SEPARATED (5480) | PASS (+0.0004) |
+| A_p35 | 35 | 0 | CONNECTED (1) | 180 | 1650 (180) | 390 / 0 | CONNECTED (0.88) | SEPARATED (5490) | FAIL, TIE_AT_CONTACT (blade-board, −0.0002) |
+| A_m01 … A_m35 | −1 … −35 | 0 | exact mirrors: SEPARATED at −1…−5, CONNECTED at −10…−35 | same as +τ | same as +τ | mirrored (s ≥ 0 side) | same as +τ | SEPARATED at every tilt (labels within 4 of +τ) | all PASS (+0.0001…+0.0004) |
+| R_p05_h0250 | 5 | 0.25 | CONNECTED (1) | 20 | 260 (20) | 260 / 0 | CONNECTED (0.12) | SEPARATED (1601) | PASS |
+| R_p05_h0375 | 5 | 0.375 | CONNECTED (1) | 42 | 342 (42) | 282 / 0 | CONNECTED (0.12) | SEPARATED (1602) | PASS |
+| R_p05_h0500 | 5 | 0.5 | CONNECTED (1) | 60 | 390 (60) | 298 / 2 | CONNECTED (0.59) | CONNECTED (1524; 12 bridges left) | PASS |
+| R_p05_h0750 | 5 | 0.75 | CONNECTED (1) | 106 | 526 (106) | 336 / 10 | CONNECTED (0.82) | CONNECTED (1438) | PASS |
+| R_p05_h1000 | 5 | 1.0 | CONNECTED (1) | 150 | 630 (146) | 360 / 24 | CONNECTED (0.88) | CONNECTED (1436; 50 left) | PASS |
+| R_p20_h0250 | 20 | 0.25 | CONNECTED (1) | 56 | 896 (56) | 322 / 0 | CONNECTED (0.82) | SEPARATED (4544) | PASS |
+| R_p20_h0375 | 20 | 0.375 | CONNECTED (1) | 80 | 952 (80) | 334 / 0 | CONNECTED (0.82) | SEPARATED (4544) | PASS |
+| R_p20_h0500 | 20 | 0.5 | CONNECTED (1) | 98 | 974 (98) | 336 / 0 | CONNECTED (0.82) | SEPARATED (4514) | PASS |
+| R_p20_h0750 | 20 | 0.75 | CONNECTED (1) | 122 | 1082 (120) | 354 / 0 | CONNECTED (0.82) | SEPARATED (4514) | PASS |
+| R_p20_h1000 | 20 | 1.0 | CONNECTED (1) | 188 | 1208 (158) | 364 / 0 | CONNECTED (0.82) | SEPARATED (4454) | PASS |
+| R_p35_h0250 | 35 | 0.25 | CONNECTED (1) | 272 | 1772 (242) | 392 / 0 | CONNECTED (0.88) | SEPARATED (5390) | PASS |
+| R_p35_h0375 | 35 | 0.375 | CONNECTED (1) | 274 | 1774 (244) | 394 / 0 | CONNECTED (0.88) | SEPARATED (5360) | PASS |
+| R_p35_h0500 | 35 | 0.5 | CONNECTED (1) | 300 | 1860 (270) | 420 / 0 | CONNECTED (0.88) | SEPARATED (5282) | PASS |
+| R_p35_h0750 | 35 | 0.75 | CONNECTED (1) | 362 | 1982 (302) | 420 / 0 | CONNECTED (0.88) | SEPARATED (5172) | PASS |
+| R_p35_h1000 | 35 | 1.0 | CONNECTED (1) | 424 | 2074 (334) | 420 / 4 | CONNECTED (0.88) | CONNECTED (4432; 66 left) | PASS |
+| D_p00 (ot 7.00, groove = reach) | 0 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (1234) | PASS (blade-board, +1.0014) |
+| D_p20 (ot 7.45, groove limit) | 20 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (4436) | FAIL (knife_handle_clearance, −0.727) |
+| D_p20_reach (ot 6.67) | 20 | −6.27 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (4436) | PASS (handle, +0.007) |
+| D_p25 (ot 7.72, groove limit) | 25 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (5126) | FAIL (handle, −2.146) |
+| D_p25_reach (ot 5.35) | 25 | −4.85 | SEPARATED (2) | 0 | 30 (0) | 30 / 0 | SEPARATED | SEPARATED (5126) | PASS (handle, +0.004) |
+| D_p30 (ot 8.08, groove limit) | 30 | −7.00 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (6092) | FAIL (handle, −3.643) |
+| D_p30_reach (ot 3.87) | 30 | −3.35 | SEPARATED (2) | 0 | 330 (0) | 180 / 0 | SEPARATED | SEPARATED (6002) | PASS (handle, +0.007) |
+| D_p35 (ot 8.46, groove limit) | 35 | −6.93 | SEPARATED (2) | 0 | 0 (0) | 0 / 0 | SEPARATED | SEPARATED (7083) | FAIL (handle, −5.129) |
+| D_p35_reach (ot 2.19) | 35 | −1.79 | **CONNECTED (1)** | 90 | 930 (30) | 300 / 0 | CONNECTED (0.06) | SEPARATED (6154) | PASS (handle, +0.003) |
+| A_p20_rep2 | 20 | 0 | CONNECTED (1) | 36 | 790 (36) | 304 / 0 | CONNECTED (0.82) | SEPARATED (4574) | PASS (+0.0012) |
+| A_p35_rep2 | 35 | 0 | CONNECTED (1) | 180 | 1650 (180) | 390 / 0 | CONNECTED (0.88) | SEPARATED (5492) | FAIL, TIE_AT_CONTACT (−0.0002) |
+
+Per-row details are in the evidence file: bridge s ranges and layers, unassigned classes and layers, exit-face tables
+for layers 0–3, edge-to-board clearance, board penetration, the dynamics context and the candidate segment counts.
+
+### Findings (data)
+
+**1. Onset on the flat board (Option A, h = 0).**
+- Law 8 separates at |τ| ≤ 5° and stays connected at every |τ| ≥ 10°, for both signs.
+- So the onset lies between 5° and 10°. Nothing was run between them.
+- Unassigned uphill bottom-layer particles appear from 2° (60) and 3° (160), but do not bridge until 10°.
+- Bridge counts are not monotonic: 96 / 6 / 36 / 92 / 380 / 180 at 10 / 15 / 20 / 25 / 30 / 35°.
+- Every unassigned particle within 12 mm is class `edge_never_passed_while_stroke_on`, and its only failing law-4
+  condition is `ahead_of_edge` (f > 0).
+- The core count grows with the tilt: 0 core particles at 10°, 6 at 15°, 180 at 35°.
+- No support sag is involved: the bottom-layer mean Δz is −0.03 to −0.07 mm on both sides.
+- Bridges sit in layers 0–1 at 10–25°, layers 0–4 at 30° and layers 0–2 at 35°.
+
+**2. Raised edge.**
+- At 5°, raising the edge 0.25 mm already leaves the bar connected (20 bridges), while h = 0 separates. Phase 2
+  found that at 0°, h ≤ 0.375 mm separates.
+- At 20° and 35°, the bar is connected at h = 0 already, and bridges rise with h: 36 → 188 at 20°, 180 → 424 at 35°.
+
+**3. Slotted variant (Option D).**
+- At the groove limit (overtravel 7.0–8.5 mm) law 8 separates at 0, 20, 25, 30 and 35°, with 0 bridges.
+- The groove-limit rows at 20–35° are not reachable: the knife handle comes within 5 mm of the board top.
+  - The handle-clearance slack is −0.73 / −2.15 / −3.64 / −5.13 mm.
+  - At 35° the handle would be 0.13 mm inside the board top segment.
+- At the largest reachable overtravel (6.67 / 5.35 / 3.87 / 2.19 mm), law 8 separates at 20, 25 and 30°.
+- At 35° it does not separate: 2.19 mm leaves 90 bridges.
+- The 0° slotted control separates and is reachable.
+
+**4. Reachability on Option A.**
+- Every Option-A and raised-edge row is reachable except one: A_p35 (and its repeat) fails blade–board by
+  −0.23 µm. That is the declared TIE_AT_CONTACT, an IK residual on a distance ≥ 0 rule with the edge planned exactly
+  on the board top. −35° passes at +0.2 µm.
+- The binding check is blade–board in every Option-A row. Raised rows pass with slack h.
+- `knife_handle_clearance` slack at ±35° is 1.8 mm on the flat board, i.e. the handle is 6.8 mm from the board.
+
+**5. The proposed breakthrough mask (offline).**
+- It never changes the law-8 outcome on any of the 47 rows.
+- At the end of the stroke, B_k = 0 on 6–12% of material segments at 10–15°, 82% at 20–30° and 88% at 35°.
+- Its lead labels on B_k-only segments are blocked exactly where the uphill wedge sits:
+  - "blocked by B" counts 60–1530 particles within 12 mm on Option A (2–35°);
+  - its own shadow labels number 276–2,164 per Option-A row (0 at ±35°), without topological effect.
+- It never labelled a particle on a side the later law-8 band contradicted.
+
+**6. L9-EL (offline).**
+- Its predicted topology separates every Option-A row at h = 0 (all tilts 0–35°, both signs).
+- It separates the raised rows at h ≤ 0.375 mm (5°), h ≤ 1.0 mm (20°) and h ≤ 0.75 mm (35°).
+- It does not separate R_p05_h0500 / h0750 / h1000 or R_p35_h1000 (12–66 bridges left, layers 0–4).
+- It separates every slotted row, including D_p35_reach.
+- It equals law 8 wherever law 8 separates.
+- Its labels:
+  - 1,212–7,083 shadow labels per row, with f at assignment 0–8 mm and |s| up to 24 mm, mostly on the uphill side;
+  - at 0°, 1,212 labels on both sides (602 / 610), ahead of the edge by ≤ 1.64 mm, all of them the side the law-8
+    band gave later;
+  - per row, at most 8 shadow labels contradict the side the later law-8 band gave;
+  - up to 4,428 shadow-labelled particles stay unassigned under law 8 (A_p35), i.e. labels law 8 never writes.
+- **The dynamics of writing those labels (field split, FLIP transfer, review §3.2 item 3) are not part of this
+  prediction.**
+
+**7. The reviewer's predictions, as measured.**
+
+| Prediction | Measured |
+| --- | --- |
+| P1: fails from 5–10° (margin), robustly from 15–20° | separates at ≤ 5°, connected at every \|τ\| ≥ 10° (both signs) |
+| P2: B_k = 0 on ≥ 40% of material segments at the end for τ ≥ 20°, ≥ 75% at 30–35° | 82–88% at \|τ\| ≥ 20°: holds |
+| P3: Option D at the largest groove overtravel separates at 20–35° | separates at all four tilts; those overtravels are not reachable (handle) |
+| P4: mirror | the same outcome, bridges, unassigned and label counts at every ± pair |
+| P5: static probe, proposed → 2 components only at 5°; exit-ligament → 2 except 25° | full bar, per-substep: proposed equals law 8 everywhere (2 at 0–5°, 1 at ≥ 10°); L9-EL gives 2 at every tilt, including 25° |
+| P6: τ = 0 separates and both candidates equal law 8 | holds |
+
+**8. Reduced bar vs full bar.**
+- The DEV rows (40 × 12 × 12 mm bar, not evidence) were connected at 5° with 2 bridges, as the reviewer's probe was.
+- The full 160 × 30 × 20 mm bar separates at 5°.
+- So the low-angle margin depends on the bar.
+
+### Commands, timing
+
+```
+# reachability (CPU, .venv): 47 rows, 90 s wall, exit 0
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/preflight_wp12_phase4_e1.py --out artifacts/wp12/phase4_e1_001/reachability
+# physics (2 lanes, cuda:0 + cuda:1 shared; 03:29:27-05:19:43 KST, 1 h 50 min wall, 3.58 GPU-h summed, 147-407 s per row)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4_e1_queue.py --out artifacts/wp12/phase4_e1_001 --devices cuda:0 cuda:1
+# summary (read-only)
+.venv/bin/python scripts/summarize_wp12_phase4_e1.py --runs artifacts/wp12/phase4_e1_001 \
+    --reach artifacts/wp12/phase4_e1_001/reachability --out docs/evidence/wp12/phase4_e1_001.json --markdown <table.md>
+```
+
+Logs are `artifacts/wp12/logs/phase4_e1_001_*.log` (GNU time: every row exit status 0) and `queue.jsonl` (47
+return codes 0). The run used 3.6 of the 12 GPU-h budget and 1.8 of the 10 h wall budget.
+
+### Limits
+
+- Kinematic ideal tracking only: there is no Native or Lab run and no live tracking noise. The raised-edge rows
+  show how sensitive the result is to a sub-millimetre edge offset.
+- One bar, one material (provisional, uncalibrated), 1 mm resolution only. Nothing was sampled between 5° and 10°.
+- Reachability is geometric (IK plus C2 preflight), from the workcell HOME with the nominal grasp.
+- The candidate columns are shadow predictions on the law-8 trajectory, not simulations of a law. ADR, CPU
+  acceptance and dynamics measurements (review §6, acceptance items 1–9) would be needed before any law. D1 is
+  decided at xhigh.
+
+## Root-cause verification (V1–V4)
+
+Date 2026-10-31 (KST). This section is the formal run of the methods review's verification plan
+([WP12_PHASE4_METHODS_REVIEW.md](WP12_PHASE4_METHODS_REVIEW.md) §5). The protocol is
+`configs/wp12/phase4_verification_protocol_v1.json`, committed in `ecfa8c6` before any formal row (sha256 `cc9ced0b…`).
+The evidence is [`docs/evidence/wp12/phase4_verification_001.json`](../evidence/wp12/phase4_verification_001.json).
+The runs are `artifacts/wp12/phase4_verify_001/<row>` (76/76 rows COMPLETED, every return code 0).
+
+- **Unchanged.** `tlmpm_v5.py` (sha256 `a7a05b2f…`), law 8 and every record and threshold.
+- **Not a gate.** Rows labelled COUNTERFACTUAL_NOT_A_GATE use `tlmpm_v5_counterfactual.CounterfactualTLMPM`. It is a v5
+  subclass that is bitwise equal to v5 with default options (CPU test) and is not reachable from any production path.
+  These rows measure a mechanism. They are not acceptance results, laws or profiles.
+- **Neutral recorders.** All three are bitwise neutral on CPU: `flip_drift_v1`, `tool_contact_split_v1` and
+  `tensile_energy_max_v1` (`root_cause_recorders.py`).
+- **Scope.** Kinematic ideal tracking. The material is provisional and uncalibrated.
+- **Not fracture evidence.** A link-length or distance threshold only locates drift.
+
+### Verdicts against the declared predictions
+
+| Row | Verdict | What was measured (key numbers) |
+| --- | --- | --- |
+| V1.1 P1 concentrated at cut faces (READ_ONLY, resolution_002) | INCONCLUSIVE (declared rule) | **Cut rows:** all 199 cut-row states have a first-band/far-field P99 ratio of 7.5–66 (≥ 5). All 16 declared §2.1 values reproduce within tolerance. **Timing rows:** the 40 failing states are the 20 `*_timing` rows (60 control steps, the blade never reached the material, 0 labels). The declared input set ("every row") included them. Without them the verdict would be CONFIRMED |
+| V1.2 P1 = integrated FLIP null-space drift | INCONCLUSIVE | **First band:** the drift explains 0.958–0.996 of the error in all 8 rows (prediction ≥ 0.95: met). **Far field (> 6 s):** explained 0.970–0.9999. Only CUT and TRIM at 0.1 ms reach ≥ 0.999. **Integrity:** the far-field residual P99 is 0.002–0.02 s against a far-field P99 of 0.04–0.17 s. The declared identity bound max\|x − X − u_grid − drift\| ≤ 1e-5 m is exceeded in 5/8 rows (up to 1.2e-4 m, MULTI2 0.05 ms). This is consistent with float32 accumulation of x over 80–160 k substeps and limits the far-field comparison. **Refute criterion:** no row has a first-band fraction < 0.8 |
+| V1.3 drift = dt(1−α)/α part + α-independent part (COUNTERFACTUAL) | INCONCLUSIVE | **(a) α = 1:** first-band P99 / P99 at α = 0.05 is 0.42 (CUT), 0.29 (TRIM), 0.23 (OBL20); all CONFIRMED. S7 is 0.11, a larger drop than the predicted 2–5×, so INCONCLUSIVE. **(b) α fixed per unit time:** the dt trend mostly vanishes for TRIM 0.05 and OBL20 0.025 ms (CONFIRMED). It persists for CUT (0.34 vs 0.40 s; 0.88 vs 0.93 s) and OBL20 0.05 ms (INCONCLUSIVE). TRIM at 0.025 ms with α = 0.0127 degraded: P99 25 s, max speed 3.3 m/s, min det F 0.37, dome not removed (REFUTED case) |
+| V1.4 grid-velocity positions remove P1 (COUNTERFACTUAL) | INCONCLUSIVE (9 / 10 cases CONFIRMED) | **First band:** P50 falls 3.9–159× and P99 4.6–34× (CUT, TRIM, OBL20, MULTI2, S7, G3b at 1 mm; TRIM, OBL20, MULTI2 at 0.5 mm). **No lost separation:** component counts are unchanged everywhere and TRIM still removes the dome. **Exception, CUT 0.5 mm:** P99 falls 5.4× but P50 rises 0.056 → 0.068 s (q50 0.83, REFUTED case). **Assignment history:** links whose endpoints got their labels in the same substep sit at 0.0002–0.011 s; links labelled at different substeps keep 0.26–0.69 s, the label-timing remainder the review expected. Tool force changes (e.g. CUT 1 mm 0.0145 → 0.0240 N) |
+| V2.1 chip "tears" are kinematic (READ_ONLY) | INCONCLUSIVE | **TRIM rows:** in 22 of 25 rows with long links, ≥ 95 % of long links have \|F̄dX\| < 1.25 s (CONFIRMED). TRIM s 1.5 mm gap_s is 0.93. **S7 (Phase 3) r0 / r1:** 0.78, endpoint F stretch up to 1.77. No case is a majority F-consistent, so none is refuted |
+| V2.2 no fracture criterion reached in chips | **REFUTED** | **Gating set** (thin chip particles not on a cut face, t < 6 mm): in all 5 rows, 36–230 particles have ψ⁺_max·t ≥ 0.05 J/m² (max 0.26–0.63 J/m²). ψ⁺_max reaches 65–156 J/m³ at 1.5–4.5 s from the locus. **Cause:** ψ_dev stays ≤ 8.67 J/m³ (the J2 bound holds); the excess is dilatational energy K/2 tr², which the review's bound does not limit. Under the declared rule a fracture model becomes a physics question. **Caveats:** this is a Griffith energy estimate with a history maximum (it may include contact transients), and G_c is provisional. It is not observed tearing |
+| V2.3 the P1 fix removes chip scatter (COUNTERFACTUAL) | CONFIRMED | Long chip links (\|dx\| > 2 s) fall from 268 / 139 / 228 to 0 in TRIM 1 mm / S7 / TRIM 0.5 mm |
+| V3.1 two bridge mechanisms (READ_ONLY) | INCONCLUSIVE (33 / 34 CONFIRMED) | **Reproduced:** A_p10 and A_m10 96 / 96 P3b; A_±15/20/25/35 0 P3b; A_p30 228 / 380; OBL20 s 0.75 dx 4 mm 450 / 650. **Not reproduced:** the review's "every OBL20 g4s row 0 P3b" fails for `OBL20_s075_g4s_dt0100`, where all 262 / 262 bridges need a mis-sided label |
+| V3.2 onset and split depend on lattice phase | CONFIRMED (split only) | **Outcome:** at plane_x0 0.5 / 1 / 2 mm every tilt stays CONNECTED, so the onset does not move within 10–30°. **Split:** P3b is 0 in all 9 rows, against shares of 1.0 / 0 / 0.6 at x0 = 0. P3b is specific to the phase in which the plane contains a node line; at other phases all bridges are in-core wedges (P3a): 2–338 bridges |
+| V3.3 CRAMP-style visibility (STATIC) | REFUTED (declared rule) | **Trigger:** the "> 1000 labels" criterion fires only on the 5 OBL20 `*_timing` rows (uncut, 1644–25632 labels). The static rule assumes the whole plane above h was swept, which is false for an uncut bar. This shows the rule needs the recorded edge history. **Other rows:** on every cut row the STATIC part matches the prediction: 19 / 19 declared E1 cases, h ≥ 0.75 mm rows stay CONNECTED, ≤ 300 labels. **NOT_RUN:** the per-substep evaluator and N1–N9 |
+| V3.4 P3b caused by displacement ahead of the edge | INCONCLUSIVE (no prediction declared) | **Measured:** P3b VANISHES (0) for A_p10 and A_p30 under each variant: 0.05 ms, COUNTERFACTUAL k 0.4, COUNTERFACTUAL grid positions. All rows stay CONNECTED through P3a bridges (16–175). **Reading:** P3b is not a law-input problem by the declared rule |
+| V4.1 dt dependence = series penalty compliance (READ_ONLY fit) | CONFIRMED | **Fits:** CUT dt₀ 0.0502 ms, F∞ 0.0651 N; OBL20 0.0689 ms, 0.0906 N; MULTI2 0.0525 ms, 0.0640 N (reported) |
+| V4.2 same K_p gives the same force (COUNTERFACTUAL) | INCONCLUSIVE | **CUT:** k 0.4 gives 0.0239 N vs the predicted 0.0327 N (−27 %, REFUTED case); k 0.2 is −27 % (REFUTED). **OBL20:** −25 % and −18 % (INCONCLUSIVE). **TRIM:** 0.093–0.094 N. Equal K_p does not give equal force; a further dt effect exists |
+| V4.3 fixed physical stiffness makes force dt-invariant (COUNTERFACTUAL) | INCONCLUSIVE (3 REFUTED, 1 INCONCLUSIVE) | **CUT:** 0.0261 / 0.0299 N vs 0.0145 N (+80 %, +106 %). **OBL20:** 0.0340 / 0.0544 N vs 0.0275 N. Force still rises as dt falls at fixed physical stiffness, so compliance is not the only dt effect |
+| V4.4 frozen formula pre-asymptotic | INCONCLUSIVE | **CUT at 0.0125 ms:** 0.0881 N, above F∞ = 0.065 N (REFUTED; force keeps rising beyond the series fit). **OBL20:** 0.0886 N, in [0.080, 0.091] (CONFIRMED) |
+| V4.5 coarse-spacing force collapse = cutting zone \|z\| ≤ s | CONFIRMED | **Unchanged rows:** at s 1.5 / 2 mm the out-of-zone contacts carry 0.0003 / 0 N (limit 0.0033 N), while the in-zone advance force is released (0.058 / 0.079 N). At s = 1 mm almost all of the steady force (0.0325 of 0.0327 N) is carried by out-of-zone contacts. **COUNTERFACTUAL zone = 1 mm:** the force recovers to 0.056 / 0.082 N at s 1.5 / 2 mm and is identical at s = 1 mm |
+| V4.6 TRIM has a second dt mechanism | CONFIRMED | **Reproduced:** resolution_002 ratios 1.50 / 1.16 / 1.32; the CUT-type fit misses 0.1 ms by 41 %. **Attribution:** TRIM force is almost entirely blade-normal. The out-of-zone normal reaction grows from 0.006 to 0.059 N between 0.2 and 0.05 ms; the in-zone normal reaction is 0.045–0.085 N. Fixing α per unit time at 0.05 ms changes little (0.101 vs 0.105 N) |
+
+### Reading
+
+1. **P1 (x vs F at the cut face).** It is the FLIP null-space drift.
+   - The drift explains ≥ 96 % of the first-band inconsistency (V1.2).
+   - Advecting positions with the MUSL grid velocity removes it by 4–159× in 9 of 10 cases without losing separation (V1.4).
+   - The remainder is label timing: links whose ends were labelled at different substeps.
+   - The CUT 0.5 mm P50 exception and the force changes mean a supported grid-position option still needs the full
+     law-8 acceptance (review §6 step 3). Nothing here reopens Phase 3, because these are counterfactual states.
+2. **P2 (chips).** Chip scatter is kinematic.
+   - Most long links are F-inconsistent (V2.1), and grid positions remove all of them (V2.3).
+   - However, the tensile Griffith estimate is reached in thin chip material off the cut face (V2.2, dilatational
+     energy). The review's argument that "no fracture is possible below 6 mm" does not hold under this material.
+   - Whether chips should break is now a physics and calibration question. It is not evidence that they do.
+3. **P3 (oblique exit).** The mis-sided P3b mechanism is a lattice-phase artefact.
+   - It exists only at plane_x0 = 0 (V3.2) and vanishes under smaller dt, stiffer contact or grid positions (V3.4).
+   - The in-core wedge (P3a) is what keeps every tested oblique row ≥ 10° connected.
+   - The static visibility rule cannot be evaluated without edge history (V3.3).
+4. **P4 (force).** Series penalty compliance fits the dt series (V4.1) but is not the whole effect: equal K_p is
+   −18 to −27 % off (V4.2), and force still rises at fixed physical stiffness (V4.3) and beyond F∞ (V4.4, CUT).
+   The coarse-spacing collapse is fully the cutting-zone width (V4.5). TRIM's force is blade-normal and has its own
+   dt trend (V4.6). Contact force remains NOT_CONVERGED.
+
+### Commands, timing, deviations
+
+```
+# formal queue (cuda:0 x2 + cuda:1 x2): 76 rows, 05:59:05-06:54:54 KST, 3.62 GPU-h summed process walls (cap 8)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase4_verification_queue.py --out artifacts/wp12/phase4_verify_001
+# read-only rows + verdicts (CPU)
+TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/summarize_wp12_phase4_verification.py \
+    --runs artifacts/wp12/phase4_verify_001 --out docs/evidence/wp12/phase4_verification_001.json
+# tests
+.venv/bin/python -m pytest tests/test_root_cause_recorders.py tests/test_root_cause_diagnostics.py \
+    tests/test_wp12_phase4_verification_protocol.py tests/test_repo_naming.py   # 25 passed
+```
+
+- **Logs.** Per row in `artifacts/wp12/logs/phase4_verify_001_<row>.log` (GNU time) and in `queue.jsonl`. The
+  read-only caches are `readonly_resolution_002.json` and `readonly_phase4_e1_001.json` in the run directory.
+- **Seed and walls.** Seed 42. Rows took 18–736 s each, far below the estimates; those came from resolution_002 walls
+  measured under contention.
+- **Summarizer change after the commit.** The summarizer was edited after `ecfa8c6` to add the reporting fields
+  `identity_integrity_le_1e5_m`, `far_residual_p99` and `far_p99` to the V1.2 cases. No verdict logic changed.
+- **DEV smokes.** `artifacts/wp12/phase4_verify_dev_001` holds DEV smokes only; they are not evidence.
+- **Deviations declared in the protocol.**
+  - S7 and G3b ran at 1 mm only.
+  - The 0.5 mm baselines come from resolution_002.
+  - V3.3 is STATIC only; N1–N9 are NOT_RUN.
+  - P5 (the Phase 3 surface) was not re-measured.
+
+### Limits
+
+- **Coverage.** Kinematic tracking, one provisional material, one seed. No Native or Lab run.
+- **Verdict rules.** The literal hypothesis rule (all cases must agree) turns any mixed result into INCONCLUSIVE; the
+  per-case lists in the evidence carry the detail. V1.1 and V3.3 are dominated by the resolution_002 timing rows that
+  the declared input set included.
+- **V2.2.** The Griffith number uses the history maximum of the tensile energy and a provisional G_c. It shows that
+  the material model does not exclude tearing; it does not show tearing.
+
+## Omissions in the V1–V4 reading (per prototype decision findings 1 and 3) — note dated 2026-10-31
+
+Added after the [prototype decision](WP12_PHASE4_PROTOTYPE_DECISION.md) (`b05c7f0`, findings 1 and 3). The
+"Reading" above reports the counterfactual grid-position rows (V1.4) only through link scatter and component counts.
+The same row files also record physics changes that the Reading omits. All numbers below are
+**COUNTERFACTUAL_NOT_A_GATE** measurements from `artifacts/wp12/phase4_verify_001` (1 mm, 4 mm grid, 0.1 ms unless
+stated; V12_* unchanged solver vs V14_* `position_update='grid_musl'`). Force, work, bridges, labels and the TRIM
+kinetic energy were re-read from the row files for this note; overlap, unassigned counts, det F, the 0.5 mm removal
+and wall times are quoted from the decision. They are not evidence for or against the
+candidate `tlmpm_v6`, which is judged only by its own protocol (`configs/wp12/phase4_gridpos_protocol_v1.json`).
+
+**Finding 1 (high): the grid-position update is a physics change, not a visual one.**
+
+| Quantity | CUT | MULTI2 | TRIM | OBL20 |
+| --- | --- | --- | --- | --- |
+| Steady blade force (mean \|F\|) | 0.0145 → 0.0240 N (+66 %) | 0.0165 → 0.0247 N (+49 %) | 0.0905 → 0.1123 N (+24 %) | 0.0275 → 0.0218 N (−21 %) |
+| Tool work | ×2.04 | ×1.81 (decision: ×1.82) | ×1.43 | ×0.94 |
+
+- Blade overlap (max penetration): 0.37–0.70 mm → 0.24–0.42 mm.
+- OBL20: direct code-0 bridges 54 → 110, and 0 → 38 unassigned particles within 3 mm; the row stays CONNECTED.
+- TRIM: labels 29 112 → 26 562; final kinetic energy 1.7e-9 → 5.9e-8 J (×36); min det F 0.856 → 0.837; at 0.5 mm the
+  removal falls 0.984 → 0.952 (the ≥ 0.9 criterion still holds).
+- Wall time −4 to +15 %.
+
+**Finding 3 (medium): V4.5 omitted the s = 0.75 mm, 1 mm-zone row, which refutes the "zone in metres" remedy.** At
+0.05 ms a fixed 1 mm cutting zone still depends on the particle spacing: steady force 0.082 / 0.056 / 0.033 /
+0.015 N at s = 2 / 1.5 / 1 / 0.75 mm (`V45_CUT_s*_dt0050_zone1mm`); at s = 0.75 mm it moves 0.048 → 0.015 N against
+the unchanged zone = s. The force counts flank contacts outside the zone (geometry, not material), so no contact
+change is made in WP-12 (decision P-B) and tool force stays NOT_CONVERGED in dt and s.
+
+These omissions change no verdict of V1–V4. They are why the decision classifies `tlmpm_v6` as a physics change that
+needs the full law-8 acceptance, and why forces, work, overlap and kinetic energy are reported (never gated) there.

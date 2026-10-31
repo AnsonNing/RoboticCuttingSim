@@ -1,0 +1,7100 @@
+{
+ "schema": "wp12_phase4a_law8_rootcause_v1",
+ "scope": "Diagnosis only: kinematic ideal tracking, formal resolution (1 mm particles, 4 mm grid, 0.1 ms), provisional uncalibrated material, cutting law 8 unchanged (tlmpm_v4 / tlmpm_v5). No new law, no threshold change. COUNTERFACTUAL rows override one law parameter on the solver instance and are never law-8 or acceptance results.",
+ "tools": {
+  "src/robotic_cutting_sim/cut_diagnostics.py": "851d10d0257aedb1c11d85c646e90aed6f702887bc25aadd3270969575a33964",
+  "scripts/run_wp12_phase4a_diagnose.py": "89b5916e63492609fd0c277ff154e73e3a54a351db051ae569288717ebe81e6a",
+  "scripts/run_wp12_phase4a_sweep.py": "04f2d0bdee5477b2c9f0aeab7d22da806bc2bc60960f9fbccf7b9c023528f052",
+  "scripts/analyze_wp12_phase4a.py": "19cbf05f1ec2dfb6e286d9705c4b42a62d9350722469cedc091baeaace7d8ccf",
+  "scripts/analyze_wp12_phase4a_chips.py": "abb29c610316a02c11c4bab3238489d894e7cd9972dc140c589ef37bc6eb16ca",
+  "scripts/plot_wp12_phase4a.py": "459f20d3679ff7ed5ef641e63f8169ec6e96303ea0f020a19a5558eb149d5f5b",
+  "tests/test_cut_diagnostics.py": "77232a13d68f5d8640464e598060be653de587a30d748e9bd7df3cb522ba5677"
+ },
+ "runs": {
+  "oblique_s2201": {
+   "run_dir": "artifacts/wp12/phase4a_002/s2201",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_002_s2201.log",
+   "exit_status": 0,
+   "wall_clock": "6:19.87",
+   "wrapped_command": [
+    "scripts/run_generalization.py",
+    "--config",
+    "configs/wp11/generalization_round2.json",
+    "material",
+    "--family",
+    "OBLIQUE_W",
+    "--seed",
+    "2201",
+    "--device",
+    "cuda:1",
+    "--expect-task-id",
+    "CFG-E2_OBLIQUE_W_s2201-E2_OBLIQUE_W_s2201_sever-9e29a817",
+    "--out",
+    "artifacts/wp12/phase4a_002/s2201"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 24,
+   "wall_s": 378.17627033701865,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 110000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+    "evaluation_verdict": "FAIL",
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 26788,
+    "max_tool_penetration_mm": 0.47338584065437317,
+    "max_fixture_penetration_mm": 0.21612906455993652,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 32600,
+      "stroke_on_substeps": 23977,
+      "engaged_substeps": 21095,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 2.1771099909528857e-06,
+      "cutting_work_J": 8.910856195143424e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 26788,
+      "lead_new": 0,
+      "direct_code0_bridges": 2,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 2,
+        "components": 2
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 684,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 684,
+        "components": 2
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 684,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 684
+       },
+       "reference_z_layers_mm": {
+        "0.5": 274,
+        "1.5": 204,
+        "2.5": 138,
+        "3.5": 68
+       },
+       "s_final_mm": {
+        "-12..-10": 340,
+        "-10..-8": 172,
+        "-8..-6": 137,
+        "-6..-4": 35
+       },
+       "f_final_mm": {
+        "min": 0.5896933860892878,
+        "max": 5.0500184331148485
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 408,
+        "final_f_gt_0": 684
+       },
+       "displacement_mm": {
+        "median_d": 1.9143254510067333,
+        "median_n": -0.7723013888831652,
+        "median_z": -1.124394271755591,
+        "max_norm": 2.7105068316735146
+       },
+       "min_f_stroke_mm": {
+        "min": 0.007226131856441498,
+        "median": 1.6230461597442627
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 684,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 16400268,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         8.5,
+         -16.5,
+         0.5
+        ],
+        [
+         8.5,
+         -15.5,
+         0.5
+        ],
+        [
+         8.5,
+         -14.5,
+         0.5
+        ],
+        [
+         8.5,
+         -13.5,
+         0.5
+        ],
+        [
+         8.5,
+         -12.5,
+         0.5
+        ],
+        [
+         8.5,
+         -11.5,
+         0.5
+        ],
+        [
+         8.5,
+         -10.5,
+         0.5
+        ],
+        [
+         8.5,
+         -9.5,
+         0.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 2,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 2
+       },
+       "reference_z_layers_mm": {
+        "0.5": 2
+       },
+       "s_final_mm": {
+        "-6..-4": 2
+       },
+       "f_final_mm": {
+        "min": 1.024989131022902,
+        "max": 1.0311532383233288
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 0,
+        "final_f_gt_0": 2
+       },
+       "displacement_mm": {
+        "median_d": 2.441006559114472,
+        "median_n": -0.3435779165645214,
+        "median_z": -1.8024796154350042,
+        "max_norm": 2.5068845023879978
+       },
+       "min_f_stroke_mm": {
+        "min": 0.11759717017412186,
+        "median": 0.11941511183977127
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 2,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 47954,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         16.5,
+         -16.5,
+         0.5
+        ],
+        [
+         16.5,
+         16.5,
+         0.5
+        ]
+       ]
+      }
+     }
+    }
+   }
+  },
+  "oblique_s2202": {
+   "run_dir": "artifacts/wp12/phase4a_002/s2202",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_002_s2202.log",
+   "exit_status": 0,
+   "wall_clock": "5:34.90",
+   "wrapped_command": [
+    "scripts/run_generalization.py",
+    "--config",
+    "configs/wp11/generalization_round2.json",
+    "material",
+    "--family",
+    "OBLIQUE_W",
+    "--seed",
+    "2202",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_002/s2202"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 27,
+   "wall_s": 333.3709280269977,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 105000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+    "evaluation_verdict": "FAIL",
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 23744,
+    "max_tool_penetration_mm": 0.5782989263534546,
+    "max_fixture_penetration_mm": 0.28846022486686707,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 33800,
+      "stroke_on_substeps": 25370,
+      "engaged_substeps": 24312,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 6.203691214068385e-07,
+      "cutting_work_J": 9.49368313740706e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 23744,
+      "lead_new": 0,
+      "direct_code0_bridges": 84,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 84,
+        "components": 2
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 616,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 616,
+        "components": 2
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 616,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 616
+       },
+       "reference_z_layers_mm": {
+        "0.5": 224,
+        "1.5": 168,
+        "2.5": 140,
+        "3.5": 56,
+        "4.5": 28
+       },
+       "s_final_mm": {
+        "4..6": 28,
+        "6..8": 112,
+        "8..10": 168,
+        "10..12": 308
+       },
+       "f_final_mm": {
+        "min": 0.36442391585820527,
+        "max": 4.937445053490272
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 308,
+        "final_f_gt_0": 616
+       },
+       "displacement_mm": {
+        "median_d": 1.9941034797768455,
+        "median_n": 0.8329512338634311,
+        "median_z": -1.170890056528151,
+        "max_norm": 2.690883372122141
+       },
+       "min_f_stroke_mm": {
+        "min": 0.03643753007054329,
+        "median": 1.6951911449432373
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 616,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 15627920,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -1.5,
+         -13.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -12.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -11.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -10.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -9.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -8.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -7.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -6.5,
+         0.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 84,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 84
+       },
+       "reference_z_layers_mm": {
+        "0.5": 56,
+        "1.5": 28
+       },
+       "s_final_mm": {
+        "4..6": 28,
+        "6..8": 56
+       },
+       "f_final_mm": {
+        "min": 1.0696833649588247,
+        "max": 2.074275098523782
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 0,
+        "final_f_gt_0": 84
+       },
+       "displacement_mm": {
+        "median_d": 2.2652062496011225,
+        "median_n": 0.8331470245266266,
+        "median_z": -1.4772425056435168,
+        "max_norm": 2.5919296650727897
+       },
+       "min_f_stroke_mm": {
+        "min": 0.5241687893867493,
+        "median": 0.5903747081756592
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 84,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 2131080,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -1.5,
+         -13.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -12.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -11.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -10.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -9.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -8.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -7.5,
+         0.5
+        ],
+        [
+         -1.5,
+         -6.5,
+         0.5
+        ]
+       ]
+      }
+     }
+    }
+   }
+  },
+  "oblique_s2203": {
+   "run_dir": "artifacts/wp12/phase4a_002/s2203",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_002_s2203.log",
+   "exit_status": 0,
+   "wall_clock": "5:58.42",
+   "wrapped_command": [
+    "scripts/run_generalization.py",
+    "--config",
+    "configs/wp11/generalization_round2.json",
+    "material",
+    "--family",
+    "OBLIQUE_W",
+    "--seed",
+    "2203",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_002/s2203"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 27,
+   "wall_s": 356.8663785009994,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 110000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes, no_far_particle_in_another_region_piece",
+    "evaluation_verdict": "FAIL",
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 22338,
+    "max_tool_penetration_mm": 0.53232741355896,
+    "max_fixture_penetration_mm": 0.23671221733093262,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 31400,
+      "stroke_on_substeps": 22793,
+      "engaged_substeps": 18969,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 0.0,
+      "cutting_work_J": 7.797136277076788e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 22338,
+      "lead_new": 0,
+      "direct_code0_bridges": 6,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 6,
+        "components": 2
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 314,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 314,
+        "components": 2
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 314,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 314
+       },
+       "reference_z_layers_mm": {
+        "0.5": 146,
+        "1.5": 112,
+        "2.5": 56
+       },
+       "s_final_mm": {
+        "-12..-10": 168,
+        "-10..-8": 112,
+        "-8..-6": 34
+       },
+       "f_final_mm": {
+        "min": 0.6949409109877607,
+        "max": 3.039478811516008
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 112,
+        "final_f_gt_0": 314
+       },
+       "displacement_mm": {
+        "median_d": 1.7989117303565167,
+        "median_n": -1.2407918341550175,
+        "median_z": -0.9281174861826003,
+        "max_norm": 2.574692783924418
+       },
+       "min_f_stroke_mm": {
+        "min": 0.0010242220014333725,
+        "median": 0.9869290590286255
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 314,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 7157002,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         3.5,
+         -13.5,
+         0.5
+        ],
+        [
+         3.5,
+         -13.5,
+         1.5
+        ],
+        [
+         3.5,
+         -13.5,
+         2.5
+        ],
+        [
+         3.5,
+         -12.5,
+         0.5
+        ],
+        [
+         3.5,
+         -12.5,
+         1.5
+        ],
+        [
+         3.5,
+         -12.5,
+         2.5
+        ],
+        [
+         3.5,
+         -11.5,
+         0.5
+        ],
+        [
+         3.5,
+         -11.5,
+         1.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 6,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 6
+       },
+       "reference_z_layers_mm": {
+        "0.5": 6
+       },
+       "s_final_mm": {
+        "-8..-6": 6
+       },
+       "f_final_mm": {
+        "min": 0.8811396106939705,
+        "max": 0.9521295481272365
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 0,
+        "final_f_gt_0": 6
+       },
+       "displacement_mm": {
+        "median_d": 2.110475334088256,
+        "median_n": -1.0908287000254506,
+        "median_z": -1.2823115976061672,
+        "max_norm": 2.4061602950334993
+       },
+       "min_f_stroke_mm": {
+        "min": 0.0010242220014333725,
+        "median": 0.029677757993340492
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 6,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 136758,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         8.5,
+         -13.5,
+         0.5
+        ],
+        [
+         8.5,
+         -12.5,
+         0.5
+        ],
+        [
+         8.5,
+         -11.5,
+         0.5
+        ],
+        [
+         8.5,
+         11.5,
+         0.5
+        ],
+        [
+         8.5,
+         12.5,
+         0.5
+        ],
+        [
+         8.5,
+         13.5,
+         0.5
+        ]
+       ]
+      }
+     }
+    }
+   }
+  },
+  "rake45_s2307": {
+   "run_dir": "artifacts/wp12/phase4a_002/s2307",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_002_s2307.log",
+   "exit_status": 0,
+   "wall_clock": "3:18.98",
+   "wrapped_command": [
+    "scripts/run_generalization.py",
+    "--config",
+    "configs/wp11/generalization_round2.json",
+    "material",
+    "--family",
+    "TRIM_W",
+    "--seed",
+    "2307",
+    "--device",
+    "cuda:1",
+    "--expect-task-id",
+    "CFG-E2_TRIM_W_s2307-E2_TRIM_W_s2307_trim-dd1a70b7",
+    "--out",
+    "artifacts/wp12/phase4a_002/s2307"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 24,
+   "wall_s": 197.51884536500438,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 75000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: selected_protrusions_removed",
+    "evaluation_verdict": "FAIL",
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 0,
+    "max_tool_penetration_mm": 1.199962854385376,
+    "max_fixture_penetration_mm": 0.7852067351341248,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 17200,
+      "stroke_on_substeps": 0,
+      "engaged_substeps": 0,
+      "seg_ok_fraction": 0.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 44.999996185302734,
+      "cutting_work_J": 3.0808682822680566e-06,
+      "work_with_gate_closed_particle_substeps": 13406.0,
+      "band_new": 0,
+      "lead_new": 0,
+      "direct_code0_bridges": 0,
+      "relabel_tests_diagnostic_only": {
+       "all_unassigned_within_12mm": {
+        "relabelled": 65081,
+        "components": 1
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 0,
+        "components": 1
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 65081,
+       "by_class": {
+        "within_band_only_while_stroke_off": 65081
+       },
+       "reference_z_layers_mm": {
+        "1.5": 5396,
+        "2.5": 5396,
+        "3.5": 5396,
+        "4.5": 5396,
+        "5.5": 5396,
+        "6.5": 5396,
+        "7.5": 5396,
+        "8.5": 5396,
+        "9.5": 5396,
+        "10.5": 5396,
+        "11.5": 5396,
+        "12.5": 5396,
+        "13.5": 145,
+        "14.5": 91,
+        "15.5": 58,
+        "16.5": 31,
+        "17.5": 4
+       },
+       "s_final_mm": {
+        "-12..-10": 10794,
+        "-10..-8": 10793,
+        "-8..-6": 10843,
+        "-6..-4": 10785,
+        "-4..-2": 10940,
+        "-2..0": 10612,
+        "0..2": 159,
+        "2..4": 73,
+        "4..6": 51,
+        "6..8": 20,
+        "8..10": 6,
+        "10..12": 5
+       },
+       "f_final_mm": {
+        "min": -66.21893013286349,
+        "max": 41.39365287776001
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 23484,
+        "final_f_gt_0": 24526
+       },
+       "displacement_mm": {
+        "median_d": 1.0580119986908545,
+        "median_n": -0.08390285074710847,
+        "median_z": -0.08390285074710846,
+        "max_norm": 47.64622634244359
+       },
+       "min_f_stroke_mm": {
+        "min": 999999995904.0,
+        "median": 999999995904.0
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 0,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -70.5,
+         -18.5,
+         1.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         2.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         3.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         4.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         5.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         6.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         7.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         8.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 0
+      }
+     }
+    }
+   },
+   "chips": {
+    "run": "artifacts/wp12/phase4a_002/s2307",
+    "components": 1,
+    "fractions": [
+     1.0
+    ],
+    "digits": {
+     "0": {
+      "plane_z_mm": 13.0,
+      "span_x_mm": [
+       -17.75,
+       25.25
+      ],
+      "rake_deg": 45.00000058248967,
+      "chip_particles": 337,
+      "chip_digit_counts": {
+       "0": 337
+      },
+      "unassigned_chip": 337,
+      "direct_bridges": {
+       "total": 0,
+       "in_chip_region": 0
+      },
+      "unassigned_by_class": {
+       "within_band_only_while_stroke_off": 337
+      },
+      "unassigned_detail": [
+       {
+        "reference_mm": [
+         -4.5,
+         2.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -16.242361068725586,
+        "carry_mm": 5.3473919369313725,
+        "final_f_mm": -16.1464140180195,
+        "final_z_mm": 10.487710125744343,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -4.5,
+         3.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -12.679274559020996,
+        "carry_mm": 8.890972765304227,
+        "final_f_mm": -12.74026409827351,
+        "final_z_mm": 9.298459626734257,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -4.5,
+         4.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -12.422586441040039,
+        "carry_mm": 9.055933361411002,
+        "final_f_mm": -12.496355507407346,
+        "final_z_mm": 8.841798640787601,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -4.5,
+         5.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -15.472390174865723,
+        "carry_mm": 5.9655896320300155,
+        "final_f_mm": -15.41450107472789,
+        "final_z_mm": 9.117856621742249,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -3.5,
+         1.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -19.193927764892578,
+        "carry_mm": 3.775390222511756,
+        "final_f_mm": -18.92621250421321,
+        "final_z_mm": 11.420509777963161,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -3.5,
+         2.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -15.964038848876953,
+        "carry_mm": 5.046912504184506,
+        "final_f_mm": -15.873277444497434,
+        "final_z_mm": 10.91640442609787,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -3.5,
+         3.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -12.734173774719238,
+        "carry_mm": 8.422752233710805,
+        "final_f_mm": -12.820222282717765,
+        "final_z_mm": 10.411570779979229,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -3.5,
+         4.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -12.381121635437012,
+        "carry_mm": 8.69091659193944,
+        "final_f_mm": -12.478982955393016,
+        "final_z_mm": 9.994006715714931,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -3.5,
+         5.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -14.904829025268555,
+        "carry_mm": 5.864609687776783,
+        "final_f_mm": -14.850234717598763,
+        "final_z_mm": 9.664238430559635,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -3.5,
+         6.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -17.42858123779297,
+        "carry_mm": 4.58804913966207,
+        "final_f_mm": -17.221521958883535,
+        "final_z_mm": 9.334053844213486,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -2.5,
+         1.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -18.579526901245117,
+        "carry_mm": 3.4990575521887757,
+        "final_f_mm": -18.389065084534504,
+        "final_z_mm": 11.450061574578285,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         -2.5,
+         2.5,
+         13.5
+        ],
+        "min_f_stroke_mm": 999999995904.0,
+        "min_f_armed_mm": -15.422052383422852,
+        "carry_mm": 5.199091194067239,
+        "final_f_mm": -15.289773730088948,
+        "final_z_mm": 11.708534322679043,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": false,
+        "first_fail": {
+         "stroke_off": 17200,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 0,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       }
+      ],
+      "unassigned_carry_mm_median": 18.10215090716335,
+      "relabel_unassigned_chip_as_chip_diagnostic_only": {
+       "components": 1
+      }
+     }
+    }
+   }
+  },
+  "rake45_s2307_COUNTERFACTUAL_theta_max_60": {
+   "run_dir": "artifacts/wp12/phase4a_002/s2307_cf_thetamax60",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_002_s2307_cf_thetamax60.log",
+   "exit_status": 0,
+   "wall_clock": "3:54.62",
+   "wrapped_command": [
+    "scripts/run_generalization.py",
+    "--config",
+    "configs/wp11/generalization_round2.json",
+    "material",
+    "--family",
+    "TRIM_W",
+    "--seed",
+    "2307",
+    "--device",
+    "cuda:1",
+    "--expect-task-id",
+    "CFG-E2_TRIM_W_s2307-E2_TRIM_W_s2307_trim-dd1a70b7",
+    "--out",
+    "artifacts/wp12/phase4a_002/s2307_cf_thetamax60"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 26,
+   "wall_s": 233.14662207302172,
+   "counterfactual": {
+    "theta_max_deg": 60.0
+   },
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 75000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: selected_protrusions_removed",
+    "evaluation_verdict": "FAIL",
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 24563,
+    "max_tool_penetration_mm": 0.5980203747749329,
+    "max_fixture_penetration_mm": 0.03852025792002678,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": {
+     "theta_max_deg": 60.0
+    },
+    "digits": {
+     "0": {
+      "armed_substeps": 17200,
+      "stroke_on_substeps": 12062,
+      "engaged_substeps": 10470,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 1.0,
+      "mean_segment_motion_offplane_deg": 44.999996185302734,
+      "cutting_work_J": 2.07308039534837e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 10298,
+      "lead_new": 14265,
+      "direct_code0_bridges": 1,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 1,
+        "components": 2
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 42540,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 0,
+        "components": 1
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 14265,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 24563
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 42540,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 20424,
+        "passed_but_beyond_rear_limit": 22116
+       },
+       "reference_z_layers_mm": {
+        "1.5": 3382,
+        "2.5": 3389,
+        "3.5": 3396,
+        "4.5": 3401,
+        "5.5": 3403,
+        "6.5": 3403,
+        "7.5": 3406,
+        "8.5": 3407,
+        "9.5": 3838,
+        "10.5": 3838,
+        "11.5": 3838,
+        "12.5": 3838,
+        "16.5": 1
+       },
+       "s_final_mm": {
+        "-12..-10": 6771,
+        "-10..-8": 6797,
+        "-8..-6": 6806,
+        "-6..-4": 6813,
+        "-4..-2": 7676,
+        "-2..0": 7676,
+        "0..2": 1
+       },
+       "f_final_mm": {
+        "min": -67.01775053983255,
+        "max": 40.551503864628046
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 20271,
+        "final_f_gt_0": 20424
+       },
+       "displacement_mm": {
+        "median_d": 0.21582314429727376,
+        "median_n": -0.0848167110234499,
+        "median_z": -0.0848167110234499,
+        "max_norm": 29.819372741031476
+       },
+       "min_f_stroke_mm": {
+        "min": -67.01966094970703,
+        "median": -30.243976593017578
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 14821107,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 246354288,
+        "beyond_rear_limit": 266763192,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -70.5,
+         -18.5,
+         1.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         2.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         3.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         4.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         5.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         6.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         7.5
+        ],
+        [
+         -70.5,
+         -18.5,
+         8.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 1,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 1
+       },
+       "reference_z_layers_mm": {
+        "16.5": 1
+       },
+       "s_final_mm": {
+        "0..2": 1
+       },
+       "f_final_mm": {
+        "min": 8.07360806488851,
+        "max": 8.07360806488851
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 0,
+        "final_f_gt_0": 1
+       },
+       "displacement_mm": {
+        "median_d": 22.961397739201775,
+        "median_n": -2.8179511427879333,
+        "median_z": -2.8179511427879333,
+        "max_norm": 29.819372741031476
+       },
+       "min_f_stroke_mm": {
+        "min": 0.7545706033706665,
+        "median": 0.7545706033706665
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 12062,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         7.5,
+         5.5,
+         16.5
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "chips": {
+    "run": "artifacts/wp12/phase4a_002/s2307_cf_thetamax60",
+    "components": 1,
+    "fractions": [
+     1.0
+    ],
+    "digits": {
+     "0": {
+      "plane_z_mm": 13.0,
+      "span_x_mm": [
+       -17.75,
+       25.25
+      ],
+      "rake_deg": 45.00000058248967,
+      "chip_particles": 337,
+      "chip_digit_counts": {
+       "0": 1,
+       "1": 8,
+       "2": 328
+      },
+      "unassigned_chip": 1,
+      "direct_bridges": {
+       "total": 1,
+       "in_chip_region": 1
+      },
+      "unassigned_by_class": {
+       "edge_never_passed_while_stroke_on": 1
+      },
+      "unassigned_detail": [
+       {
+        "reference_mm": [
+         7.5,
+         5.5,
+         16.5
+        ],
+        "min_f_stroke_mm": 0.7545706033706665,
+        "min_f_armed_mm": 0.7545706033706665,
+        "carry_mm": 29.819372741031476,
+        "final_f_mm": 8.073608064888509,
+        "final_z_mm": 13.6820487678051,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": true,
+        "first_fail": {
+         "stroke_off": 5138,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 12062,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       }
+      ],
+      "unassigned_carry_mm_median": 29.819372741031476,
+      "relabel_unassigned_chip_as_chip_diagnostic_only": {
+       "components": 2
+      },
+      "chip_with_substrate_digit": {
+       "count": 8,
+       "median_assign_z_minus_reference_mm": -0.6000110879540443,
+       "median_assign_s_mm": -0.30001068115234375,
+       "reference_layers_mm": {
+        "13.5": 8
+       }
+      }
+     }
+    }
+   }
+  },
+  "test_d2_s2501": {
+   "run_dir": "artifacts/wp12/phase4a_002/s2501",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_002_s2501.log",
+   "exit_status": 0,
+   "wall_clock": "13:40.89",
+   "wrapped_command": [
+    "scripts/run_generalization.py",
+    "--config",
+    "configs/wp11/generalization_round2.json",
+    "material",
+    "--family",
+    "TEST_D2",
+    "--seed",
+    "2501",
+    "--device",
+    "cuda:1",
+    "--expect-task-id",
+    "CFG-E2_TEST_D2_s2501-E2_TEST_D2_s2501_sever0_removeall-d4eb9654",
+    "--out",
+    "artifacts/wp12/phase4a_002/s2501"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 26,
+   "wall_s": 818.9864949150069,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v5",
+   "diag_substeps": 190000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": "CUTTING_FAILURE",
+    "class_reason": "outcome: step1:remove_all:selected_protrusions_removed",
+    "evaluation_verdict": "FAIL",
+    "mechanical_components": 3,
+    "component_mass_fractions": [
+     0.7692,
+     0.2298,
+     0.0009
+    ],
+    "labelled_any_digit": 88404,
+    "max_tool_penetration_mm": 0.7531959414482117,
+    "max_fixture_penetration_mm": 3.109658718109131,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 41600,
+      "stroke_on_substeps": 24686,
+      "engaged_substeps": 22754,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 1.9611534298746847e-06,
+      "cutting_work_J": 5.170029908185825e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 31380,
+      "lead_new": 0,
+      "direct_code0_bridges": 0,
+      "relabel_tests_diagnostic_only": {},
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 0
+      },
+      "bridges": {
+       "count": 0
+      }
+     },
+     "1": {
+      "armed_substeps": 16400,
+      "stroke_on_substeps": 11807,
+      "engaged_substeps": 9905,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 9.999981880187988,
+      "cutting_work_J": 3.0269302442320623e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 26644,
+      "lead_new": 0,
+      "direct_code0_bridges": 2,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 2,
+        "components": 4
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 45391,
+        "components": 3
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 1955,
+        "components": 3
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 45391,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 20788,
+        "passed_but_beyond_rear_limit": 24603
+       },
+       "reference_z_layers_mm": {
+        "10.5": 2972,
+        "11.5": 3838,
+        "12.5": 3840,
+        "13.5": 3840,
+        "14.5": 3870,
+        "15.5": 3870,
+        "16.5": 3845,
+        "17.5": 3840,
+        "18.5": 3840,
+        "19.5": 3843,
+        "20.5": 3870,
+        "21.5": 3861,
+        "22.5": 53,
+        "23.5": 9
+       },
+       "s_final_mm": {
+        "-12..-10": 7718,
+        "-10..-8": 7730,
+        "-8..-6": 7755,
+        "-6..-4": 7730,
+        "-4..-2": 7838,
+        "-2..0": 6614,
+        "0..2": 6
+       },
+       "f_final_mm": {
+        "min": -109.41477975890038,
+        "max": 72.93090737789056
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 20453,
+        "final_f_gt_0": 20775
+       },
+       "displacement_mm": {
+        "median_d": 0.8406112243531741,
+        "median_n": -0.1601874828338623,
+        "median_z": -0.1601874828338623,
+        "max_norm": 56.45972846687113
+       },
+       "min_f_stroke_mm": {
+        "min": -109.4123306274414,
+        "median": -42.265594482421875
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 1955,
+       "only_fail_totals": {
+        "stroke_off": 8639342,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 245443916,
+        "beyond_rear_limit": 290487621,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -82.5,
+         -14.5,
+         10.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         11.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         12.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         13.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         14.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         15.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         16.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         17.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 2,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 2
+       },
+       "reference_z_layers_mm": {
+        "24.5": 2
+       },
+       "s_final_mm": {
+        "-22..-20": 1,
+        "-14..-12": 1
+       },
+       "f_final_mm": {
+        "min": 23.892349986667067,
+        "max": 68.78149635863262
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 0,
+        "final_f_gt_0": 2
+       },
+       "displacement_mm": {
+        "median_d": 57.55136564870124,
+        "median_n": -19.129589549265802,
+        "median_z": -19.129589549265802,
+        "max_norm": 80.00156122404154
+       },
+       "min_f_stroke_mm": {
+        "min": 0.10088086128234863,
+        "median": 0.1256680190563202
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 23614,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         16.5,
+         0.5,
+         24.5
+        ],
+        [
+         16.5,
+         1.5,
+         24.5
+        ]
+       ]
+      }
+     },
+     "2": {
+      "armed_substeps": 16600,
+      "stroke_on_substeps": 16600,
+      "engaged_substeps": 15601,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 9.999980926513672,
+      "cutting_work_J": 4.161642209510319e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 35243,
+      "lead_new": 0,
+      "direct_code0_bridges": 3878,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 3878,
+        "components": 4
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 40983,
+        "components": 3
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 1950,
+        "components": 3
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 37,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 40983,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 4500,
+        "passed_but_beyond_rear_limit": 36483
+       },
+       "reference_z_layers_mm": {
+        "10.5": 2582,
+        "11.5": 3478,
+        "12.5": 3480,
+        "13.5": 3480,
+        "14.5": 3510,
+        "15.5": 3510,
+        "16.5": 3480,
+        "17.5": 3480,
+        "18.5": 3480,
+        "19.5": 3480,
+        "20.5": 3510,
+        "21.5": 3510,
+        "22.5": 3
+       },
+       "s_final_mm": {
+        "-12..-10": 6966,
+        "-10..-8": 7008,
+        "-8..-6": 7032,
+        "-6..-4": 7044,
+        "-4..-2": 7173,
+        "-2..0": 5758,
+        "0..2": 2
+       },
+       "f_final_mm": {
+        "min": -153.7035491621153,
+        "max": 12.785256883533089
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 4200,
+        "final_f_gt_0": 4500
+       },
+       "displacement_mm": {
+        "median_d": 0.8443781423530345,
+        "median_n": -0.1659039407968521,
+        "median_z": -0.1659039407968521,
+        "max_norm": 3.8722347606019603
+       },
+       "min_f_stroke_mm": {
+        "min": -153.7010955810547,
+        "median": -92.60218048095703
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 1950,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 74700000,
+        "beyond_rear_limit": 605617800,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -82.5,
+         -14.5,
+         10.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         11.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         12.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         13.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         14.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         15.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         16.5
+        ],
+        [
+         -82.5,
+         -14.5,
+         17.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 3878,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 5,
+        "passed_but_beyond_rear_limit": 3873
+       },
+       "reference_z_layers_mm": {
+        "16.5": 612,
+        "17.5": 612,
+        "18.5": 612,
+        "19.5": 612,
+        "20.5": 712,
+        "21.5": 712,
+        "22.5": 2,
+        "24.5": 4
+       },
+       "s_final_mm": {
+        "-6..-4": 1262,
+        "-4..-2": 1371,
+        "-2..0": 1238,
+        "0..2": 2
+       },
+       "f_final_mm": {
+        "min": -77.69593291702442,
+        "max": 67.41122443127014
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 0,
+        "final_f_gt_0": 5
+       },
+       "displacement_mm": {
+        "median_d": 0.9479182247693306,
+        "median_n": -0.13518612831830978,
+        "median_z": -0.13518612831830978,
+        "max_norm": 125.06603323228696
+       },
+       "min_f_stroke_mm": {
+        "min": -77.68476867675781,
+        "median": -66.30522155761719
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 83000,
+        "beyond_rear_limit": 64291800,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -7.5,
+         -14.5,
+         16.5
+        ],
+        [
+         -7.5,
+         -14.5,
+         17.5
+        ],
+        [
+         -7.5,
+         -14.5,
+         18.5
+        ],
+        [
+         -7.5,
+         -14.5,
+         19.5
+        ],
+        [
+         -7.5,
+         -14.5,
+         20.5
+        ],
+        [
+         -7.5,
+         -14.5,
+         21.5
+        ],
+        [
+         -7.5,
+         -13.5,
+         16.5
+        ],
+        [
+         -7.5,
+         -13.5,
+         17.5
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "chips": {
+    "run": "artifacts/wp12/phase4a_002/s2501",
+    "components": 3,
+    "fractions": [
+     0.7692,
+     0.2298,
+     0.0009
+    ],
+    "digits": {
+     "1": {
+      "plane_z_mm": 22.0,
+      "span_x_mm": [
+       -13.520000457763672,
+       27.479999542236328
+      ],
+      "rake_deg": 9.99999997095338,
+      "chip_particles": 1817,
+      "chip_digit_counts": {
+       "0": 2,
+       "1": 3,
+       "2": 1812
+      },
+      "unassigned_chip": 2,
+      "direct_bridges": {
+       "total": 2,
+       "in_chip_region": 2
+      },
+      "unassigned_by_class": {
+       "edge_never_passed_while_stroke_on": 2
+      },
+      "unassigned_detail": [
+       {
+        "reference_mm": [
+         16.5,
+         0.5,
+         24.5
+        ],
+        "min_f_stroke_mm": 0.15045516192913055,
+        "min_f_armed_mm": 0.15045516192913055,
+        "carry_mm": 80.00156122404154,
+        "final_f_mm": 68.78149635863262,
+        "final_z_mm": 9.803379885852337,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": true,
+        "first_fail": {
+         "stroke_off": 4593,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 11807,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       },
+       {
+        "reference_mm": [
+         16.5,
+         1.5,
+         24.5
+        ],
+        "min_f_stroke_mm": 0.10088086128234863,
+        "min_f_armed_mm": 0.10088086128234863,
+        "carry_mm": 39.487839619865305,
+        "final_f_mm": 23.892349986667067,
+        "final_z_mm": 0.9374397341161966,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": true,
+        "first_fail": {
+         "stroke_off": 4593,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 11807,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       }
+      ],
+      "unassigned_carry_mm_median": 59.74470042195342,
+      "relabel_unassigned_chip_as_chip_diagnostic_only": {
+       "components": 4
+      },
+      "chip_with_substrate_digit": {
+       "count": 3,
+       "median_assign_z_minus_reference_mm": -0.40979497134685516,
+       "median_assign_s_mm": -0.10979361832141876,
+       "reference_layers_mm": {
+        "22.5": 3
+       }
+      }
+     },
+     "2": {
+      "plane_z_mm": 22.0,
+      "span_x_mm": [
+       30.950000762939453,
+       72.44999694824219
+      ],
+      "rake_deg": 9.99999997095338,
+      "chip_particles": 614,
+      "chip_digit_counts": {
+       "0": 1,
+       "1": 55,
+       "2": 558
+      },
+      "unassigned_chip": 1,
+      "direct_bridges": {
+       "total": 3878,
+       "in_chip_region": 1
+      },
+      "unassigned_by_class": {
+       "edge_never_passed_while_stroke_on": 1
+      },
+      "unassigned_detail": [
+       {
+        "reference_mm": [
+         57.5,
+         1.5,
+         24.5
+        ],
+        "min_f_stroke_mm": 0.43076276779174805,
+        "min_f_armed_mm": 0.43076276779174805,
+        "carry_mm": 47.70929758446334,
+        "final_f_mm": 28.02053691493073,
+        "final_z_mm": -3.0425763688981533,
+        "lead_rule_blocked_by_plow_substeps": 0,
+        "is_direct_bridge": true,
+        "first_fail": {
+         "stroke_off": 0,
+         "outside_edge_width": 0,
+         "ahead_of_edge": 16600,
+         "beyond_rear_limit": 0,
+         "segment_gate_closed": 0,
+         "outside_band": 0
+        }
+       }
+      ],
+      "unassigned_carry_mm_median": 47.70929758446334,
+      "relabel_unassigned_chip_as_chip_diagnostic_only": {
+       "components": 4
+      },
+      "chip_with_substrate_digit": {
+       "count": 55,
+       "median_assign_z_minus_reference_mm": -0.6778314709663391,
+       "median_assign_s_mm": -0.3576017916202545,
+       "reference_layers_mm": {
+        "22.5": 46,
+        "23.5": 9
+       }
+      }
+     }
+    }
+   }
+  },
+  "trim_k2_r10": {
+   "run_dir": "artifacts/wp12/phase4a_004/trim_k2_r10_law8_001",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_004_trim_k2_r10_law8.log",
+   "exit_status": 0,
+   "wall_clock": "6:03.59",
+   "wrapped_command": [
+    "scripts/run_phase_c4_trim_material.py",
+    "--task",
+    "TRIM-02-K2-R10",
+    "--control",
+    "skim",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_004/trim_k2_r10_law8_001"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 30,
+   "wall_s": 361.8921473409864,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 80000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": null,
+    "class_reason": null,
+    "evaluation_verdict": null,
+    "mechanical_components": 2,
+    "component_mass_fractions": [
+     0.9897,
+     0.0103
+    ],
+    "labelled_any_digit": 36984,
+    "max_tool_penetration_mm": 0.7229363918304443,
+    "max_fixture_penetration_mm": 0.05540793016552925,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 33600,
+      "stroke_on_substeps": 20783,
+      "engaged_substeps": 20783,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 9.837580680847168,
+      "cutting_work_J": 3.974310857302044e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 36984,
+      "lead_new": 0,
+      "direct_code0_bridges": 0,
+      "relabel_tests_diagnostic_only": {
+       "all_unassigned_within_12mm": {
+        "relabelled": 34429,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 1950,
+        "components": 2
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 34429,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 14160,
+        "passed_but_beyond_rear_limit": 20269
+       },
+       "reference_z_layers_mm": {
+        "8.5": 1369,
+        "9.5": 3000,
+        "10.5": 3000,
+        "11.5": 3000,
+        "12.5": 3030,
+        "13.5": 3000,
+        "14.5": 3000,
+        "15.5": 3000,
+        "16.5": 3000,
+        "17.5": 3000,
+        "18.5": 3030,
+        "19.5": 3000
+       },
+       "s_final_mm": {
+        "-12..-10": 6075,
+        "-10..-8": 6070,
+        "-8..-6": 6051,
+        "-6..-4": 6015,
+        "-4..-2": 6028,
+        "-2..0": 4190
+       },
+       "f_final_mm": {
+        "min": -119.42724931805539,
+        "max": 39.19486365547854
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 14070,
+        "final_f_gt_0": 14148
+       },
+       "displacement_mm": {
+        "median_d": 0.13483513125271854,
+        "median_n": -0.12682647895611923,
+        "median_z": -0.12717954814434052,
+        "max_norm": 0.2829715352525659
+       },
+       "min_f_stroke_mm": {
+        "min": -119.42827606201172,
+        "median": -67.6629409790039
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 1950,
+       "only_fail_totals": {
+        "stroke_off": 30570209,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 294287280,
+        "beyond_rear_limit": 421250627,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -79.5,
+         -14.5,
+         9.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         10.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         11.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         12.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         13.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         14.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         15.5
+        ],
+        [
+         -79.5,
+         -14.5,
+         16.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 0
+      }
+     }
+    }
+   },
+   "chips": {
+    "run": "artifacts/wp12/phase4a_004/trim_k2_r10_law8_001",
+    "components": 2,
+    "fractions": [
+     0.9897,
+     0.0103
+    ],
+    "digits": {
+     "0": {
+      "plane_z_mm": 20.0,
+      "span_x_mm": [
+       -42.0,
+       42.0
+      ],
+      "rake_deg": 9.99999997095338,
+      "chip_particles": 1044,
+      "chip_digit_counts": {
+       "1": 45,
+       "2": 999
+      },
+      "unassigned_chip": 0,
+      "direct_bridges": {
+       "total": 0,
+       "in_chip_region": 0
+      },
+      "chip_with_substrate_digit": {
+       "count": 45,
+       "median_assign_z_minus_reference_mm": -0.4717875272035599,
+       "median_assign_s_mm": -0.3005290925502777,
+       "reference_layers_mm": {
+        "20.5": 45
+       }
+      }
+     }
+    }
+   },
+   "contact": {
+    "substrate_top_layer_19.5mm_under_dome": {
+     "count": 448,
+     "final_dz_median_mm": -0.35706348717212677,
+     "final_dz_p05_mm": -1.7317785881459713,
+     "final_dz_min_mm": -2.1246355026960373
+    },
+    "substrate_top_layer_19.5mm_elsewhere_abs_x_lt_40mm": {
+     "count": 1952,
+     "final_dz_median_mm": -0.13400055468082428,
+     "final_dz_p05_mm": -0.16294391825795174,
+     "final_dz_min_mm": -0.48206187784671783
+    },
+    "substrate_layer_18.5mm_under_dome": {
+     "count": 448,
+     "final_dz_median_mm": -0.18517393618822098,
+     "final_dz_p05_mm": -0.8916519582271576,
+     "final_dz_min_mm": -1.0470710694789886
+    },
+    "lowest_chip_layer_20.5mm": {
+     "count": 316,
+     "substrate_digit": 45,
+     "chip_digit": 271,
+     "unassigned": 0,
+     "assign_s_median_mm": {
+      "substrate_digit": -0.3005290925502777,
+      "chip_digit": 0.28020375967025757
+     },
+     "assign_dz_median_mm": {
+      "substrate_digit": -0.4717875272035599,
+      "chip_digit": 0.10071136057376862
+     },
+     "substrate_digit_x_range_mm": [
+      -4.4999998062849045,
+      9.499999694526196
+     ],
+     "substrate_digit_final_z_median_mm": 19.528549164533615
+    },
+    "max_tool_penetration_mm": 0.7229363918304443
+   }
+  },
+  "phaseM_bumps3": {
+   "run_dir": "artifacts/wp12/phase4a_004/bumps3_law8_v5_001",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_004_bumps3_law8.log",
+   "exit_status": 0,
+   "wall_clock": "2:51.71",
+   "wrapped_command": [
+    "scripts/probe_v5_multicut.py",
+    "--scenario",
+    "bumps3",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_004/bumps3_law8_v5_001"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty_paths": 31,
+   "wall_s": 170.87595344299916,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v5",
+   "diag_substeps": 94500,
+   "diag_overflow": 0,
+   "analysis": null,
+   "contact": {
+    "components": 5,
+    "mass_fractions": [
+     0.9256,
+     0.0498,
+     0.0232,
+     0.0012,
+     0.0002
+    ],
+    "bodies": [
+     {
+      "particles": 28791,
+      "bump_particles": 53,
+      "non_bump_particles": 28738
+     },
+     {
+      "particles": 1550,
+      "bump_particles": 1501,
+      "non_bump_particles": 49,
+      "non_bump_reference_z_mm": [
+       11.5
+      ],
+      "non_bump_codes": {
+       "32": 20,
+       "36": 13,
+       "40": 16
+      },
+      "non_bump_carry_median_mm": 52.01316931023704,
+      "assignment": {
+       "1": {
+        "count": 29,
+        "digits": {
+         "1": 13,
+         "2": 16
+        },
+        "s_median_mm": 0.21622143685817719,
+        "f_median_mm": -0.0005513429641723633,
+        "lift_at_assignment_median_mm": 0.9162211790680885,
+        "lead_rule": 0
+       },
+       "2": {
+        "count": 49,
+        "digits": {
+         "2": 49
+        },
+        "s_median_mm": 0.354178249835968,
+        "f_median_mm": -0.0005271285772323608,
+        "lift_at_assignment_median_mm": 1.0541779920458794,
+        "lead_rule": 14
+       }
+      }
+     },
+     {
+      "particles": 721,
+      "bump_particles": 713,
+      "non_bump_particles": 8,
+      "non_bump_reference_z_mm": [
+       11.5
+      ],
+      "non_bump_codes": {
+       "42": 8
+      },
+      "non_bump_carry_median_mm": 97.04969128739793,
+      "assignment": {
+       "0": {
+        "count": 8,
+        "digits": {
+         "2": 8
+        },
+        "s_median_mm": 0.20489050447940826,
+        "f_median_mm": -0.0006323680281639099,
+        "lift_at_assignment_median_mm": 0.9048902429640293,
+        "lead_rule": 0
+       },
+       "1": {
+        "count": 8,
+        "digits": {
+         "2": 8
+        },
+        "s_median_mm": 2.443693161010742,
+        "f_median_mm": -0.0008095521479845047,
+        "lift_at_assignment_median_mm": 3.1436928547918797,
+        "lead_rule": 0
+       },
+       "2": {
+        "count": 8,
+        "digits": {
+         "2": 8
+        },
+        "s_median_mm": 4.078737258911133,
+        "f_median_mm": 0.2152062952518463,
+        "lift_at_assignment_median_mm": 4.77873720228672,
+        "lead_rule": 4
+       }
+      }
+     },
+     {
+      "particles": 37,
+      "bump_particles": 37,
+      "non_bump_particles": 0
+     },
+     {
+      "particles": 5,
+      "bump_particles": 0,
+      "non_bump_particles": 5,
+      "non_bump_reference_z_mm": [
+       11.5
+      ],
+      "non_bump_codes": {
+       "26": 5
+      },
+      "non_bump_carry_median_mm": 51.03474365846556,
+      "assignment": {
+       "0": {
+        "count": 5,
+        "digits": {
+         "2": 5
+        },
+        "s_median_mm": 0.4929071366786957,
+        "f_median_mm": -0.0008512288331985474,
+        "lift_at_assignment_median_mm": 1.1929068714380264,
+        "lead_rule": 0
+       },
+       "1": {
+        "count": 5,
+        "digits": {
+         "2": 5
+        },
+        "s_median_mm": 0.9888503551483154,
+        "f_median_mm": -0.0012796372175216675,
+        "lift_at_assignment_median_mm": 1.688850112259388,
+        "lead_rule": 0
+       },
+       "2": {
+        "count": 5,
+        "digits": {
+         "1": 5
+        },
+        "s_median_mm": -1.9494705200195312,
+        "f_median_mm": -0.0010486692190170288,
+        "lift_at_assignment_median_mm": -1.2494707480072975,
+        "lead_rule": 2
+       }
+      }
+     }
+    ],
+    "bump_codes_ge_10": {
+     "bump0": {
+      "5": 10,
+      "26": 37,
+      "42": 713
+     },
+     "bump1": {
+      "40": 734,
+      "42": 16
+     },
+     "bump2": {
+      "16": 17,
+      "32": 751
+     }
+    }
+   }
+  },
+  "f26_pure_draw": {
+   "run_dir": "artifacts/wp12/phase4a_005/f2_6_pure_draw_law8_001",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_005_f2_6_pure_draw.log",
+   "exit_status": 0,
+   "wall_clock": "5:38.35",
+   "wrapped_command": [
+    "scripts/run_phase_f_material.py",
+    "--row",
+    "F2.6_pure_draw",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_005/f2_6_pure_draw_law8_001"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "2f299cc80761f324224fea2163eb2de33c8ab9dc",
+   "git_dirty_paths": 18,
+   "wall_s": 336.8316957259958,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 80000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": null,
+    "class_reason": null,
+    "evaluation_verdict": null,
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 14400,
+    "max_tool_penetration_mm": 0.47147488594055176,
+    "max_fixture_penetration_mm": 0.1607973277568817,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 44000,
+      "stroke_on_substeps": 16621,
+      "engaged_substeps": 16523,
+      "seg_ok_fraction": 0.5909090638160706,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 0.0,
+      "cutting_work_J": 3.577142251742771e-06,
+      "work_with_gate_closed_particle_substeps": 2561.0,
+      "band_new": 14400,
+      "lead_new": 0,
+      "direct_code0_bridges": 1440,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 1440,
+        "components": 1
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 7200,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 3840,
+        "components": 1
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 904,
+       "ill_float": 904,
+       "ill_geom": 904,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 960000.0,
+       "geom": 960000.0
+      },
+      "unassigned_within_12mm": {
+       "count": 7200,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 7200
+       },
+       "reference_z_layers_mm": {
+        "0.5": 720,
+        "1.5": 720,
+        "2.5": 720,
+        "3.5": 720,
+        "4.5": 720,
+        "5.5": 720,
+        "6.5": 720,
+        "7.5": 720,
+        "8.5": 720,
+        "9.5": 720
+       },
+       "s_final_mm": {
+        "-12..-10": 600,
+        "-10..-8": 600,
+        "-8..-6": 600,
+        "-6..-4": 600,
+        "-4..-2": 600,
+        "-2..0": 600,
+        "0..2": 600,
+        "2..4": 600,
+        "4..6": 600,
+        "6..8": 600,
+        "8..10": 600,
+        "10..12": 600
+       },
+       "f_final_mm": {
+        "min": 19.230040721595284,
+        "max": 28.59467867529019
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 7200,
+        "final_f_gt_0": 7200
+       },
+       "displacement_mm": {
+        "median_d": 0.9392914362251756,
+        "median_n": 0.0005853362381458282,
+        "median_z": -0.9392914362251759,
+        "max_norm": 1.314202067007326
+       },
+       "min_f_stroke_mm": {
+        "min": 0.8419109582901001,
+        "median": 5.394646644592285
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 3840,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 119671200,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -11.5,
+         -14.5,
+         0.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         1.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         2.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         3.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         4.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         5.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         6.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         7.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 1440,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 1440
+       },
+       "reference_z_layers_mm": {
+        "4.5": 240,
+        "5.5": 240,
+        "6.5": 240,
+        "7.5": 240,
+        "8.5": 240,
+        "9.5": 240
+       },
+       "s_final_mm": {
+        "-4..-2": 360,
+        "-2..0": 360,
+        "0..2": 360,
+        "2..4": 360
+       },
+       "f_final_mm": {
+        "min": 19.43254470825195,
+        "max": 24.637932190671556
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 1440,
+        "final_f_gt_0": 1440
+       },
+       "displacement_mm": {
+        "median_d": 1.0580078233033416,
+        "median_n": 0.0017093552742153406,
+        "median_z": -1.0580078233033419,
+        "max_norm": 1.314202067007326
+       },
+       "min_f_stroke_mm": {
+        "min": 0.8419109582901001,
+        "median": 3.380340099334717
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 23934240,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -3.5,
+         -14.5,
+         4.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         5.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         6.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         7.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         8.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         9.5
+        ],
+        [
+         -3.5,
+         -13.5,
+         4.5
+        ],
+        [
+         -3.5,
+         -13.5,
+         5.5
+        ]
+       ]
+      }
+     }
+    }
+   }
+  },
+  "f26_saw_cut": {
+   "run_dir": "artifacts/wp12/phase4a_005/f2_6_saw_cut_law8_001",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_005_f2_6_saw_cut.log",
+   "exit_status": 0,
+   "wall_clock": "5:34.06",
+   "wrapped_command": [
+    "scripts/run_phase_f_material.py",
+    "--row",
+    "F2.6_saw_cut",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_005/f2_6_saw_cut_law8_001"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "2f299cc80761f324224fea2163eb2de33c8ab9dc",
+   "git_dirty_paths": 26,
+   "wall_s": 332.1171037610038,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 80000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": null,
+    "class_reason": null,
+    "evaluation_verdict": null,
+    "mechanical_components": 2,
+    "component_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "labelled_any_digit": 28540,
+    "max_tool_penetration_mm": 0.5288296937942505,
+    "max_fixture_penetration_mm": 0.22685196995735168,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 34200,
+      "stroke_on_substeps": 24014,
+      "engaged_substeps": 21411,
+      "seg_ok_fraction": 1.0,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 1.9611513835116057e-06,
+      "cutting_work_J": 5.051941116107628e-06,
+      "work_with_gate_closed_particle_substeps": 0.0,
+      "band_new": 28540,
+      "lead_new": 0,
+      "direct_code0_bridges": 0,
+      "relabel_tests_diagnostic_only": {},
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 72000.0
+      },
+      "unassigned_within_12mm": {
+       "count": 0
+      },
+      "bridges": {
+       "count": 0
+      }
+     }
+    }
+   }
+  },
+  "f24_rocking": {
+   "run_dir": "artifacts/wp12/phase4a_005/f2_4_rocking_law8_001",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_005_f2_4_rocking.log",
+   "exit_status": 0,
+   "wall_clock": "4:55.00",
+   "wrapped_command": [
+    "scripts/run_phase_f_material.py",
+    "--row",
+    "F2.4_rocking",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_005/f2_4_rocking_law8_001"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "402759032fc10211a1b5ba328ca8dc3a60325814",
+   "git_dirty_paths": 32,
+   "wall_s": 293.247014055989,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 80000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": null,
+    "class_reason": null,
+    "evaluation_verdict": null,
+    "mechanical_components": 2,
+    "component_mass_fractions": [
+     0.5,
+     0.5
+    ],
+    "labelled_any_digit": 28494,
+    "max_tool_penetration_mm": 0.6253703236579895,
+    "max_fixture_penetration_mm": 0.22746093571186066,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 32000,
+      "stroke_on_substeps": 23495,
+      "engaged_substeps": 21330,
+      "seg_ok_fraction": 0.6474999785423279,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 2.0893338614769164e-08,
+      "cutting_work_J": 5.3602352636517026e-06,
+      "work_with_gate_closed_particle_substeps": 22849.0,
+      "band_new": 28494,
+      "lead_new": 0,
+      "direct_code0_bridges": 0,
+      "relabel_tests_diagnostic_only": {},
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 1320.0
+      },
+      "unassigned_within_12mm": {
+       "count": 0
+      },
+      "bridges": {
+       "count": 0
+      }
+     }
+    }
+   }
+  },
+  "f25_pure_rotation": {
+   "run_dir": "artifacts/wp12/phase4a_005/f2_5_pure_rotation_law8_001",
+   "present": true,
+   "log": "artifacts/wp12/logs/phase4a_005_f2_5_pure_rotation.log",
+   "exit_status": 0,
+   "wall_clock": "4:08.55",
+   "wrapped_command": [
+    "scripts/run_phase_f_material.py",
+    "--row",
+    "F2.5_pure_rotation",
+    "--variant",
+    "formal",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp12/phase4a_005/f2_5_pure_rotation_law8_001"
+   ],
+   "wrapped_exit": 0,
+   "git_sha": "95de714cb6b1d4a939ed836f947ddb6b51f8bcc1",
+   "git_dirty_paths": 32,
+   "wall_s": 246.87439352899673,
+   "counterfactual": null,
+   "solver_module": "robotic_cutting_sim.tlmpm_v4",
+   "diag_substeps": 80000,
+   "diag_overflow": 0,
+   "analysis": {
+    "class": null,
+    "class_reason": null,
+    "evaluation_verdict": null,
+    "mechanical_components": 1,
+    "component_mass_fractions": [
+     1.0
+    ],
+    "labelled_any_digit": 15238,
+    "max_tool_penetration_mm": 0.4518897533416748,
+    "max_fixture_penetration_mm": 0.16079360246658325,
+    "flipped_by_float_fallback_total": 0,
+    "flipped_by_geom_fallback_total": 0,
+    "counterfactual": null,
+    "digits": {
+     "0": {
+      "armed_substeps": 41000,
+      "stroke_on_substeps": 13622,
+      "engaged_substeps": 13521,
+      "seg_ok_fraction": 0.5,
+      "seg_plow_fraction": 0.0,
+      "mean_segment_motion_offplane_deg": 1.707547198748216e-06,
+      "cutting_work_J": 3.6249655295250705e-06,
+      "work_with_gate_closed_particle_substeps": 13462.0,
+      "band_new": 15238,
+      "lead_new": 0,
+      "direct_code0_bridges": 1316,
+      "relabel_tests_diagnostic_only": {
+       "direct_bridges_only": {
+        "relabelled": 1316,
+        "components": 1
+       },
+       "all_unassigned_within_12mm": {
+        "relabelled": 6820,
+        "components": 2
+       },
+       "lead_rule_blocked_by_plow_gate": {
+        "relabelled": 3840,
+        "components": 1
+       }
+      },
+      "labels_against_final_plane_sign_beyond_2_spacings": 0,
+      "new_digit_flags": {
+       "lead_rule": 0,
+       "solver_blade_normal_fallback": 0,
+       "ill_float": 0,
+       "ill_geom": 0,
+       "flipped_by_float_fallback": 0,
+       "flipped_by_geom_fallback": 0,
+       "swept_normal_over_10deg": 0
+      },
+      "ill_conditioned_segment_substeps": {
+       "float": 0.0,
+       "geom": 0.0
+      },
+      "unassigned_within_12mm": {
+       "count": 6820,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 6820
+       },
+       "reference_z_layers_mm": {
+        "0.5": 720,
+        "1.5": 720,
+        "2.5": 720,
+        "3.5": 720,
+        "4.5": 720,
+        "5.5": 720,
+        "6.5": 720,
+        "7.5": 720,
+        "8.5": 720,
+        "9.5": 340
+       },
+       "s_final_mm": {
+        "-12..-10": 568,
+        "-10..-8": 568,
+        "-8..-6": 568,
+        "-6..-4": 568,
+        "-4..-2": 568,
+        "-2..0": 570,
+        "0..2": 570,
+        "2..4": 568,
+        "4..6": 568,
+        "6..8": 568,
+        "8..10": 568,
+        "10..12": 568
+       },
+       "f_final_mm": {
+        "min": 19.23439465463161,
+        "max": 28.615281684324138
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 6820,
+        "final_f_gt_0": 6820
+       },
+       "displacement_mm": {
+        "median_d": 0.9463465539738534,
+        "median_n": 0.0003497116267681122,
+        "median_z": -0.9463465539738536,
+        "max_norm": 1.267083624801865
+       },
+       "min_f_stroke_mm": {
+        "min": 0.0002738088369369507,
+        "median": 4.681394577026367
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 3840,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 75846313,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -11.5,
+         -14.5,
+         0.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         1.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         2.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         3.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         4.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         5.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         6.5
+        ],
+        [
+         -11.5,
+         -14.5,
+         7.5
+        ]
+       ]
+      },
+      "bridges": {
+       "count": 1316,
+       "by_class": {
+        "edge_never_passed_while_stroke_on": 1316
+       },
+       "reference_z_layers_mm": {
+        "4.5": 240,
+        "5.5": 240,
+        "6.5": 240,
+        "7.5": 240,
+        "8.5": 240,
+        "9.5": 116
+       },
+       "s_final_mm": {
+        "-4..-2": 328,
+        "-2..0": 330,
+        "0..2": 330,
+        "2..4": 328
+       },
+       "f_final_mm": {
+        "min": 19.440041854977604,
+        "max": 24.659687420353286
+       },
+       "ahead_of_final_edge": {
+        "reference_f_gt_0": 1316,
+        "final_f_gt_0": 1316
+       },
+       "displacement_mm": {
+        "median_d": 1.0663740104064343,
+        "median_n": 0.0006340851541608572,
+        "median_z": -1.0663740104064345,
+        "max_norm": 1.267083624801865
+       },
+       "min_f_stroke_mm": {
+        "min": 0.0002738088369369507,
+        "median": 2.6762101650238037
+       },
+       "lead_rule_blocked_by_plow_gate_particles": 0,
+       "only_fail_totals": {
+        "stroke_off": 0,
+        "outside_edge_width": 0,
+        "ahead_of_edge": 14636707,
+        "beyond_rear_limit": 0,
+        "segment_gate_closed": 0,
+        "outside_band": 0
+       },
+       "sample_reference_mm": [
+        [
+         -3.5,
+         -14.5,
+         4.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         5.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         6.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         7.5
+        ],
+        [
+         -3.5,
+         -14.5,
+         8.5
+        ],
+        [
+         -3.5,
+         -13.5,
+         4.5
+        ],
+        [
+         -3.5,
+         -13.5,
+         5.5
+        ],
+        [
+         -3.5,
+         -13.5,
+         6.5
+        ]
+       ]
+      }
+     }
+    }
+   }
+  }
+ },
+ "preserved_failed_attempts": {
+  "artifacts/wp12/phase4a_002/trim_k2_r10": "not created: run_phase_c4_trim_material.py rejected --out without \"law8\" (exit 2, 0.4 s); rerun as phase4a_004/trim_k2_r10_law8_001",
+  "artifacts/wp12/phase4a_002/f26_pure_draw": "not created: run_phase_f_material.py rejected --out without \"law8\" (exit 2); rerun in phase4a_005",
+  "artifacts/wp12/phase4a_002/f26_saw_cut": "same as f26_pure_draw",
+  "queue_rc_note": "phase4a_002/queue.log prints rc of $(date) (always 0); the exit status is the GNU time \"Exit status\" line of each log"
+ },
+ "sweep": {
+  "summary": "artifacts/wp12/phase4a_003/sweep/summary.json",
+  "device": "cuda:1",
+  "rows": {
+   "obl_00": {
+    "row": "obl_00",
+    "spec": {
+     "family": "oblique",
+     "angle": 0.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.4999999292615357,
+     0.4999999292615357
+    ],
+    "labelled": 18240,
+    "digit_counts": {
+     "0": 12480,
+     "1": 9120,
+     "2": 9120
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.46976783871650696,
+    "max_fixture_penetration_mm": 0.1404167264699936,
+    "peak_reaction_N": 0.041704896837472916,
+    "segment_summary": {
+     "armed_segment_substeps": 3360000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 3.3468431865912862e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2226689.0,
+     "band_new": 18240.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 18926,
+    "engaged_substeps": 13999,
+    "unassigned_within_12mm": 0,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "unassigned_layers_z_mm": {},
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 0
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.11891452968120575,
+     "s_ge_0": -0.11886896938085556
+    },
+    "wall_s": 71.10037162899971
+   },
+   "obl_05": {
+    "row": "obl_05",
+    "spec": {
+     "family": "oblique",
+     "angle": 5.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5117186776036029,
+     0.4882811809194685
+    ],
+    "labelled": 18120,
+    "digit_counts": {
+     "0": 12600,
+     "1": 9072,
+     "2": 9048
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.5629622936248779,
+    "max_fixture_penetration_mm": 0.16827258467674255,
+    "peak_reaction_N": 0.047292329370975494,
+    "segment_summary": {
+     "armed_segment_substeps": 3384000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.299997039604932e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2222166.0,
+     "band_new": 18120.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 19502,
+    "engaged_substeps": 17733,
+    "unassigned_within_12mm": 0,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "unassigned_layers_z_mm": {},
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 0
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.1458134800195694,
+     "s_ge_0": -0.05530041828751564
+    },
+    "wall_s": 66.93390105999424
+   },
+   "obl_10": {
+    "row": "obl_10",
+    "spec": {
+     "family": "oblique",
+     "angle": 10.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5055988868027456,
+     0.4944009717203258
+    ],
+    "labelled": 18408,
+    "digit_counts": {
+     "0": 12312,
+     "1": 9020,
+     "2": 9388
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.7483136057853699,
+    "max_fixture_penetration_mm": 0.17926359176635742,
+    "peak_reaction_N": 0.08259689807891846,
+    "segment_summary": {
+     "armed_segment_substeps": 3408000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 5.170871190784965e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1591518.0,
+     "band_new": 18408.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 19948,
+    "engaged_substeps": 15148,
+    "unassigned_within_12mm": 0,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "unassigned_layers_z_mm": {},
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 0
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.02412979118525982,
+     "s_ge_0": -0.0007377286092378199
+    },
+    "wall_s": 76.24196119900444
+   },
+   "obl_15": {
+    "row": "obl_15",
+    "spec": {
+     "family": "oblique",
+     "angle": 15.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5041014911812592,
+     0.4958983673418122
+    ],
+    "labelled": 18288,
+    "digit_counts": {
+     "0": 12432,
+     "1": 8682,
+     "2": 9606
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.8515676856040955,
+    "max_fixture_penetration_mm": 0.17384643852710724,
+    "peak_reaction_N": 0.07588682323694229,
+    "segment_summary": {
+     "armed_segment_substeps": 3432000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 5.0652133722906e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1989373.0,
+     "band_new": 18288.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 19983,
+    "engaged_substeps": 16311,
+    "unassigned_within_12mm": 0,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "unassigned_layers_z_mm": {},
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 0
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.051817554980516434,
+     "s_ge_0": 0.021076614037156105
+    },
+    "wall_s": 76.29771875601728
+   },
+   "obl_20": {
+    "row": "obl_20",
+    "spec": {
+     "family": "oblique",
+     "angle": 20.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5050780535430982,
+     0.49492180497997323
+    ],
+    "labelled": 18336,
+    "digit_counts": {
+     "0": 12384,
+     "1": 8436,
+     "2": 9900
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.6620848178863525,
+    "max_fixture_penetration_mm": 0.2201947569847107,
+    "peak_reaction_N": 0.0841844230890274,
+    "segment_summary": {
+     "armed_segment_substeps": 3504000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 5.220416369411396e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2044828.0,
+     "band_new": 18336.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 20534,
+    "engaged_substeps": 17555,
+    "unassigned_within_12mm": 96,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 96,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.060391542505386,
+     "max": -8.24131409322174
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 96
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 96
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.24681180715560913,
+     "s_ge_0": 0.015041389502584934
+    },
+    "wall_s": 70.24316396200447
+   },
+   "obl_25": {
+    "row": "obl_25",
+    "spec": {
+     "family": "oblique",
+     "angle": 25.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 18192,
+    "digit_counts": {
+     "0": 12528,
+     "1": 8088,
+     "2": 10104
+    },
+    "direct_code0_bridges": 24,
+    "max_tool_penetration_mm": 0.603930652141571,
+    "max_fixture_penetration_mm": 0.18560682237148285,
+    "peak_reaction_N": 0.08289279788732529,
+    "segment_summary": {
+     "armed_segment_substeps": 3576000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 5.49841797692352e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2368095.0,
+     "band_new": 18192.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 21352,
+    "engaged_substeps": 17848,
+    "unassigned_within_12mm": 216,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 216,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.784443140185695,
+     "max": -7.252902618160432
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 144,
+     "1.5": 72
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 72,
+     "final_f_gt_0": 216
+    },
+    "bridges_s_mm": {
+     "min": -7.252902618160432,
+     "max": -7.252902618160432
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 24,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.14983612298965454,
+     "s_ge_0": -0.04672827944159508
+    },
+    "wall_s": 62.39429514002404
+   },
+   "obl_30": {
+    "row": "obl_30",
+    "spec": {
+     "family": "oblique",
+     "angle": 30.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17702,
+    "digit_counts": {
+     "0": 13018,
+     "1": 7574,
+     "2": 10128
+    },
+    "direct_code0_bridges": 72,
+    "max_tool_penetration_mm": 0.43238455057144165,
+    "max_fixture_penetration_mm": 0.25170278549194336,
+    "peak_reaction_N": 0.08456629514694214,
+    "segment_summary": {
+     "armed_segment_substeps": 3672000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 5.924996912654024e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2500292.0,
+     "band_new": 17702.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 22161,
+    "engaged_substeps": 19928,
+    "unassigned_within_12mm": 480,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 480,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.905444637270856,
+     "max": -5.3432666290155195
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 192,
+     "1.5": 168,
+     "2.5": 96,
+     "3.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 192,
+     "final_f_gt_0": 480
+    },
+    "bridges_s_mm": {
+     "min": -6.709292169397479,
+     "max": -5.3432666290155195
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.2924875020980835,
+     "s_ge_0": -0.06637685745954514
+    },
+    "wall_s": 67.7985592019977
+   },
+   "obl_35": {
+    "row": "obl_35",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17402,
+    "digit_counts": {
+     "0": 13318,
+     "1": 7298,
+     "2": 10104
+    },
+    "direct_code0_bridges": 72,
+    "max_tool_penetration_mm": 0.3771723210811615,
+    "max_fixture_penetration_mm": 0.19432540237903595,
+    "peak_reaction_N": 0.08273269236087799,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.559325811394956e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3313411.0,
+     "band_new": 17402.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23120,
+    "engaged_substeps": 19172,
+    "unassigned_within_12mm": 742,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 718,
+     "passed_but_beyond_rear_limit": 24,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.999642716211751,
+     "max": 11.671640540081695
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 240,
+     "1.5": 192,
+     "2.5": 166,
+     "3.5": 96,
+     "4.5": 24,
+     "15.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 336,
+     "final_f_gt_0": 700
+    },
+    "bridges_s_mm": {
+     "min": -5.692001698829667,
+     "max": -4.299273090063269
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.3896982669830322,
+     "s_ge_0": -0.06822773814201355
+    },
+    "wall_s": 71.96318425497157
+   },
+   "obl_40": {
+    "row": "obl_40",
+    "spec": {
+     "family": "oblique",
+     "angle": 40.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17250,
+    "digit_counts": {
+     "0": 13470,
+     "1": 7140,
+     "2": 10110
+    },
+    "direct_code0_bridges": 48,
+    "max_tool_penetration_mm": 0.42752504348754883,
+    "max_fixture_penetration_mm": 0.23893249034881592,
+    "peak_reaction_N": 0.07263816148042679,
+    "segment_summary": {
+     "armed_segment_substeps": 3960000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.486649908765685e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3559367.0,
+     "band_new": 17250.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 24606,
+    "engaged_substeps": 21862,
+    "unassigned_within_12mm": 1014,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 918,
+     "passed_but_beyond_rear_limit": 96,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.922065921241076,
+     "max": 11.649047749703442
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 264,
+     "1.5": 240,
+     "2.5": 174,
+     "3.5": 120,
+     "4.5": 96,
+     "5.5": 24,
+     "14.5": 24,
+     "15.5": 72
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 504,
+     "final_f_gt_0": 893
+    },
+    "bridges_s_mm": {
+     "min": -4.631391658409166,
+     "max": -3.988604055607017
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 48,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.46588239073753357,
+     "s_ge_0": -0.044714171439409256
+    },
+    "wall_s": 75.49282887700247
+   },
+   "obl_45": {
+    "row": "obl_45",
+    "spec": {
+     "family": "oblique",
+     "angle": 45.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 16632,
+    "digit_counts": {
+     "0": 14088,
+     "1": 6744,
+     "2": 9888
+    },
+    "direct_code0_bridges": 48,
+    "max_tool_penetration_mm": 0.2957758903503418,
+    "max_fixture_penetration_mm": 0.2362535446882248,
+    "peak_reaction_N": 0.0730084627866745,
+    "segment_summary": {
+     "armed_segment_substeps": 4176000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 8.226271347666625e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 4418093.0,
+     "band_new": 16632.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 26386,
+    "engaged_substeps": 24499,
+    "unassigned_within_12mm": 1536,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 1320,
+     "passed_but_beyond_rear_limit": 216,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.313709263884208,
+     "max": 11.313708109126411
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 312,
+     "1.5": 288,
+     "2.5": 240,
+     "3.5": 192,
+     "4.5": 144,
+     "5.5": 96,
+     "6.5": 48,
+     "13.5": 24,
+     "14.5": 72,
+     "15.5": 120
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 720,
+     "final_f_gt_0": 1320
+    },
+    "bridges_s_mm": {
+     "min": -3.535533930957429,
+     "max": -2.8284271573441435
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 48,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.5070137977600098,
+     "s_ge_0": -0.03745643422007561
+    },
+    "wall_s": 82.16902693000156
+   },
+   "obl_m35": {
+    "row": "obl_m35",
+    "spec": {
+     "family": "oblique",
+     "angle": -35.0
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17402,
+    "digit_counts": {
+     "0": 13318,
+     "1": 10104,
+     "2": 7298
+    },
+    "direct_code0_bridges": 72,
+    "max_tool_penetration_mm": 0.372539222240448,
+    "max_fixture_penetration_mm": 0.194269061088562,
+    "peak_reaction_N": 0.08273672312498093,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.5538365561224055e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3315631.0,
+     "band_new": 17402.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23120,
+    "engaged_substeps": 19169,
+    "unassigned_within_12mm": 742,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 718,
+     "passed_but_beyond_rear_limit": 24,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.67164206587128,
+     "max": 11.99964119042217
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 240,
+     "1.5": 192,
+     "2.5": 166,
+     "3.5": 96,
+     "4.5": 24,
+     "15.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 336,
+     "final_f_gt_0": 700
+    },
+    "bridges_s_mm": {
+     "min": 4.299273090063269,
+     "max": 5.692001698829667
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.06813327968120575,
+     "s_ge_0": -0.3893539011478424
+    },
+    "wall_s": 76.70134530201904
+   },
+   "obl_35_ot06": {
+    "row": "obl_35_ot06",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "overtravel": 0.006
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5132811773825452,
+     0.4867186811405262
+    ],
+    "labelled": 18334,
+    "digit_counts": {
+     "0": 12386,
+     "1": 8230,
+     "2": 10104
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.3711492121219635,
+    "max_fixture_penetration_mm": 0.19428442418575287,
+    "peak_reaction_N": 0.08272083848714828,
+    "segment_summary": {
+     "armed_segment_substeps": 4032000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.565791863977211e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3488823.0,
+     "band_new": 18334.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 25120,
+    "engaged_substeps": 19167,
+    "unassigned_within_12mm": 362,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 338,
+     "passed_but_beyond_rear_limit": 24,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.999642716211751,
+     "max": 11.671640540081695
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 170,
+     "1.5": 96,
+     "2.5": 72,
+     "15.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 96,
+     "final_f_gt_0": 336
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.39330706000328064,
+     "s_ge_0": -0.06818372756242752
+    },
+    "wall_s": 80.84116906899726
+   },
+   "obl_35_ot08": {
+    "row": "obl_35_ot08",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "overtravel": 0.008
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5132811773825452,
+     0.4867186811405262
+    ],
+    "labelled": 19104,
+    "digit_counts": {
+     "0": 11616,
+     "1": 9000,
+     "2": 10104
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.3755774199962616,
+    "max_fixture_penetration_mm": 0.1943049132823944,
+    "peak_reaction_N": 0.08271527290344238,
+    "segment_summary": {
+     "armed_segment_substeps": 4272000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.565650437551085e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3647445.0,
+     "band_new": 19104.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 27120,
+    "engaged_substeps": 19170,
+    "unassigned_within_12mm": 96,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 24,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.671641934194756,
+     "max": 11.671640540081695
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 72,
+     "15.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 72
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.3931815028190613,
+     "s_ge_0": -0.06772480905056
+    },
+    "wall_s": 68.78312441700837
+   },
+   "obl_35_ot10": {
+    "row": "obl_35_ot10",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "overtravel": 0.01
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5132811773825452,
+     0.4867186811405262
+    ],
+    "labelled": 19132,
+    "digit_counts": {
+     "0": 11588,
+     "1": 9028,
+     "2": 10104
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.37148284912109375,
+    "max_fixture_penetration_mm": 0.19428536295890808,
+    "peak_reaction_N": 0.08273504674434662,
+    "segment_summary": {
+     "armed_segment_substeps": 4512000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.569619472429622e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3806415.0,
+     "band_new": 19132.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 27188,
+    "engaged_substeps": 19167,
+    "unassigned_within_12mm": 96,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 24,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.671641934194756,
+     "max": 11.671640540081695
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 72,
+     "15.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 0,
+     "final_f_gt_0": 0
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.3930390775203705,
+     "s_ge_0": -0.06740444898605347
+    },
+    "wall_s": 92.1621023210173
+   },
+   "obl_35_nograv": {
+    "row": "obl_35_nograv",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "gravity": false
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5140624272720163,
+     0.48593743125105504
+    ],
+    "labelled": 19200,
+    "digit_counts": {
+     "0": 11520,
+     "1": 8904,
+     "2": 10296
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.30353450775146484,
+    "max_fixture_penetration_mm": 0.06364548206329346,
+    "peak_reaction_N": 0.06395181268453598,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.3249967752199154e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1755211.0,
+     "band_new": 19200.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23534,
+    "engaged_substeps": 17177,
+    "unassigned_within_12mm": 48,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 48,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.671641934194756,
+     "max": -10.85248975563628
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 48
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 48,
+     "final_f_gt_0": 48
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": 2.376920223236084,
+     "s_ge_0": 1.2432925701141357
+    },
+    "wall_s": 72.1388723399723
+   },
+   "obl_35_slot12": {
+    "row": "obl_35_slot12",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "slot": 0.012
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.5132811773825452,
+     0.4867186811405262
+    ],
+    "labelled": 18168,
+    "digit_counts": {
+     "0": 12552,
+     "1": 7896,
+     "2": 10272
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.4048791527748108,
+    "max_fixture_penetration_mm": 0.10815245658159256,
+    "peak_reaction_N": 0.12599122524261475,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.216800102265552e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2790385.0,
+     "band_new": 18168.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23401,
+    "engaged_substeps": 19255,
+    "unassigned_within_12mm": 432,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 432,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.999642716211751,
+     "max": -5.93757744718022
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 192,
+     "1.5": 120,
+     "2.5": 96,
+     "3.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 336,
+     "final_f_gt_0": 432
+    },
+    "bridges_s_mm": {
+     "min": null,
+     "max": null
+    },
+    "bridges_by_class": {},
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.11516111344099045,
+     "s_ge_0": -0.03598232567310333
+    },
+    "wall_s": 65.64265640298254
+   },
+   "obl_35_phase025": {
+    "row": "obl_35_phase025",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "x_shift": 0.00025
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17598,
+    "digit_counts": {
+     "0": 13122,
+     "1": 7302,
+     "2": 10296
+    },
+    "direct_code0_bridges": 72,
+    "max_tool_penetration_mm": 0.3739911615848541,
+    "max_fixture_penetration_mm": 0.19425928592681885,
+    "peak_reaction_N": 0.09660651534795761,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.518717327708146e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3133824.0,
+     "band_new": 17598.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23162,
+    "engaged_substeps": 19211,
+    "unassigned_within_12mm": 690,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 690,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.958854945546902,
+     "max": -4.504061101135518
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 240,
+     "1.5": 192,
+     "2.5": 138,
+     "3.5": 96,
+     "4.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 360,
+     "final_f_gt_0": 676
+    },
+    "bridges_s_mm": {
+     "min": -5.896789709901915,
+     "max": -4.504061101135518
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.3904784023761749,
+     "s_ge_0": -0.06775018572807312
+    },
+    "wall_s": 48.919398949015886
+   },
+   "obl_35_phase050": {
+    "row": "obl_35_phase050",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "x_shift": 0.0005
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17496,
+    "digit_counts": {
+     "0": 13224,
+     "1": 7392,
+     "2": 10104
+    },
+    "direct_code0_bridges": 96,
+    "max_tool_penetration_mm": 0.4920164942741394,
+    "max_fixture_penetration_mm": 0.23694877326488495,
+    "peak_reaction_N": 0.10020484775304794,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.839873094577342e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3291125.0,
+     "band_new": 17496.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23151,
+    "engaged_substeps": 20067,
+    "unassigned_within_12mm": 720,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 720,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.91806883421781,
+     "max": -4.708849112207766
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 216,
+     "1.5": 216,
+     "2.5": 144,
+     "3.5": 96,
+     "4.5": 48
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 312,
+     "final_f_gt_0": 704
+    },
+    "bridges_s_mm": {
+     "min": -6.101577720974164,
+     "max": -4.708849112207766
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 96,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.33702796697616577,
+     "s_ge_0": -0.05431614816188812
+    },
+    "wall_s": 56.418093375017634
+   },
+   "obl_35_phase075": {
+    "row": "obl_35_phase075",
+    "spec": {
+     "family": "oblique",
+     "angle": 35.0,
+     "x_shift": 0.00075
+    },
+    "particles": 30720,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998585230714
+    ],
+    "labelled": 17496,
+    "digit_counts": {
+     "0": 13224,
+     "1": 7392,
+     "2": 10104
+    },
+    "direct_code0_bridges": 96,
+    "max_tool_penetration_mm": 0.494585782289505,
+    "max_fixture_penetration_mm": 0.23658369481563568,
+    "peak_reaction_N": 0.10014408081769943,
+    "segment_summary": {
+     "armed_segment_substeps": 3792000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 6.841260073997546e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3304498.0,
+     "band_new": 17496.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 23149,
+    "engaged_substeps": 20021,
+    "unassigned_within_12mm": 696,
+    "unassigned_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 672,
+     "passed_but_beyond_rear_limit": 24,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "unassigned_s_mm": {
+     "min": -11.79485457087002,
+     "max": 11.876428685423427
+    },
+    "unassigned_layers_z_mm": {
+     "0.5": 216,
+     "1.5": 192,
+     "2.5": 144,
+     "3.5": 96,
+     "4.5": 24,
+     "15.5": 24
+    },
+    "unassigned_ahead_of_final_edge_ref_vs_final": {
+     "reference_f_gt_0": 312,
+     "final_f_gt_0": 654
+    },
+    "bridges_s_mm": {
+     "min": -6.3063657320464115,
+     "max": -4.913637123280014
+    },
+    "bridges_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 96,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "label_vs_plane_sign_disagreements": 0,
+    "bottom_layer_mean_dz_mm": {
+     "s_lt_0": -0.3364991843700409,
+     "s_ge_0": -0.05400799587368965
+    },
+    "wall_s": 63.594611117005115
+   },
+   "rake_10": {
+    "row": "rake_10",
+    "spec": {
+     "family": "rake",
+     "rake": 10.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22584,
+    "digit_counts": {
+     "0": 456,
+     "1": 16944,
+     "2": 5640
+    },
+    "direct_code0_bridges": 264,
+    "max_tool_penetration_mm": 0.24221202731132507,
+    "max_fixture_penetration_mm": 0.09448669105768204,
+    "peak_reaction_N": 0.12305964529514313,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 7.846858352422714e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2839776.0,
+     "band_new": 22584.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33965,
+    "engaged_substeps": 33235,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 24,
+      "2": 1896
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.53434818983078,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.23434869945049286,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.4228539764881134,
+     "min": -1.8987464904785156
+    },
+    "unassigned_above_plane": 120,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 120,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18633600,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 97118583,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 69.0891080199799
+   },
+   "rake_20": {
+    "row": "rake_20",
+    "spec": {
+     "family": "rake",
+     "rake": 20.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 21480,
+    "digit_counts": {
+     "0": 1560,
+     "1": 16296,
+     "2": 5184
+    },
+    "direct_code0_bridges": 720,
+    "max_tool_penetration_mm": 0.32392337918281555,
+    "max_fixture_penetration_mm": 0.12877705693244934,
+    "peak_reaction_N": 0.12395155429840088,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.3855194740463048e-05,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 4274518.0,
+     "band_new": 12048.0,
+     "lead_new": 9432.0
+    },
+    "stroke_on_substeps": 33965,
+    "engaged_substeps": 33615,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 192,
+      "2": 1728
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.6802054047584534,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.3802059218287468,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.2857469916343689,
+     "min": -2.1387083530426025
+    },
+    "unassigned_above_plane": 576,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 576,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18633600,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 102530902,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 52.50846580599318
+   },
+   "rake_30": {
+    "row": "rake_30",
+    "spec": {
+     "family": "rake",
+     "rake": 30.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 7294,
+    "digit_counts": {
+     "0": 15746,
+     "1": 5136,
+     "2": 2158
+    },
+    "direct_code0_bridges": 866,
+    "max_tool_penetration_mm": 0.38763514161109924,
+    "max_fixture_penetration_mm": 1.056931734085083,
+    "peak_reaction_N": 0.14141064882278442,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 8.120467100525275e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2606590.0,
+     "band_new": 3770.0,
+     "lead_new": 3524.0
+    },
+    "stroke_on_substeps": 33520,
+    "engaged_substeps": 28369,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1368,
+      "2": 552
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 1.4094551801681519,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 1.1094557121396065,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -87.18376159667969,
+     "min": -118.11279296875
+    },
+    "unassigned_above_plane": 4058,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 4058,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 20439410,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 146977019,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 36.87125064598513
+   },
+   "rake_35": {
+    "row": "rake_35",
+    "spec": {
+     "family": "rake",
+     "rake": 35.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 3701,
+    "digit_counts": {
+     "0": 19339,
+     "1": 2657,
+     "2": 1044
+    },
+    "direct_code0_bridges": 1675,
+    "max_tool_penetration_mm": 0.5375775098800659,
+    "max_fixture_penetration_mm": 0.7938629388809204,
+    "peak_reaction_N": 0.13452620804309845,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 3.8946495806158055e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1670110.0,
+     "band_new": 1634.0,
+     "lead_new": 2067.0
+    },
+    "stroke_on_substeps": 30425,
+    "engaged_substeps": 24790,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1656,
+      "2": 264
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 1.49997878074646,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 1.1999793350696564,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -77.74552917480469,
+     "min": -118.0724105834961
+    },
+    "unassigned_above_plane": 4932,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 4932,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 36092880,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 151903149,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 24.798947414994473
+   },
+   "rake_40": {
+    "row": "rake_40",
+    "spec": {
+     "family": "rake",
+     "rake": 40.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 2903,
+    "digit_counts": {
+     "0": 20137,
+     "1": 1975,
+     "2": 928
+    },
+    "direct_code0_bridges": 1369,
+    "max_tool_penetration_mm": 0.47508031129837036,
+    "max_fixture_penetration_mm": 0.7930061221122742,
+    "peak_reaction_N": 0.12386135011911392,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.6666466510505415e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1524306.0,
+     "band_new": 1118.0,
+     "lead_new": 1785.0
+    },
+    "stroke_on_substeps": 33965,
+    "engaged_substeps": 29155,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1728,
+      "2": 192
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 1.8047666549682617,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 1.504767220467329,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -77.86711120605469,
+     "min": -118.08179473876953
+    },
+    "unassigned_above_plane": 5096,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 5096,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18633600,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 174112359,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 51.466236511972966
+   },
+   "rake_44": {
+    "row": "rake_44",
+    "spec": {
+     "family": "rake",
+     "rake": 44.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 2708,
+    "digit_counts": {
+     "0": 20332,
+     "1": 1878,
+     "2": 830
+    },
+    "direct_code0_bridges": 1540,
+    "max_tool_penetration_mm": 0.45595884323120117,
+    "max_fixture_penetration_mm": 0.7807610630989075,
+    "peak_reaction_N": 0.11960818618535995,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.5213755634467816e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1443609.0,
+     "band_new": 1054.0,
+     "lead_new": 1654.0
+    },
+    "stroke_on_substeps": 33965,
+    "engaged_substeps": 27725,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1752,
+      "2": 168
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 1.629684567451477,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 1.3296850956976414,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -77.79505920410156,
+     "min": -118.08030700683594
+    },
+    "unassigned_above_plane": 5146,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 5146,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18633600,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 175594145,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 51.855462345003616
+   },
+   "rake_45": {
+    "row": "rake_45",
+    "spec": {
+     "family": "rake",
+     "rake": 45.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 0,
+    "digit_counts": {
+     "0": 23040
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.9519813060760498,
+    "max_fixture_penetration_mm": 1.137830138206482,
+    "peak_reaction_N": 0.12069173902273178,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 0.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.3843836061132606e-06,
+     "work_with_gate_closed_particle_substeps": 119312.0,
+     "contact_particle_substeps": 2742311.0,
+     "band_new": 0.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 0,
+    "engaged_substeps": 0,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1920
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": null,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": null,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -109.08644104003906,
+     "min": -112.46367645263672
+    },
+    "unassigned_above_plane": 5760,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 5760,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 214272000,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 0,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 48.470106173015665
+   },
+   "rake_46": {
+    "row": "rake_46",
+    "spec": {
+     "family": "rake",
+     "rake": 46.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 0,
+    "digit_counts": {
+     "0": 23040
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.9438948035240173,
+    "max_fixture_penetration_mm": 1.1381951570510864,
+    "peak_reaction_N": 0.11656376719474792,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 0.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.161016709578689e-06,
+     "work_with_gate_closed_particle_substeps": 21428.0,
+     "contact_particle_substeps": 1995114.0,
+     "band_new": 0.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 0,
+    "engaged_substeps": 0,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1920
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": null,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": null,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -109.13932800292969,
+     "min": -112.56559753417969
+    },
+    "unassigned_above_plane": 5760,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 5760,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 214272000,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 0,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 48.291420346999075
+   },
+   "rake_50": {
+    "row": "rake_50",
+    "spec": {
+     "family": "rake",
+     "rake": 50.0
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 0,
+    "digit_counts": {
+     "0": 23040
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.9058889746665955,
+    "max_fixture_penetration_mm": 1.1375246047973633,
+    "peak_reaction_N": 0.11789065599441528,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 0.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 1.897820311569376e-06,
+     "work_with_gate_closed_particle_substeps": 12113.0,
+     "contact_particle_substeps": 1863967.0,
+     "band_new": 0.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 0,
+    "engaged_substeps": 0,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1920
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": null,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": null,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -109.10287475585938,
+     "min": -112.4840316772461
+    },
+    "unassigned_above_plane": 5760,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 5760,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 214272000,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 0,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 32.19745028199395
+   },
+   "rake_45_cf60": {
+    "row": "rake_45_cf60",
+    "spec": {
+     "family": "rake",
+     "rake": 45.0,
+     "counterfactual": {
+      "theta_max_deg": 60.0
+     }
+    },
+    "particles": 23040,
+    "counterfactual": [
+     {
+      "key": "theta_max_deg",
+      "frozen_value": 45.0,
+      "counterfactual_value": 60.0
+     }
+    ],
+    "label": "COUNTERFACTUAL diagnostic (law parameter overridden on the solver instance; not law 8)",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 2636,
+    "digit_counts": {
+     "0": 20404,
+     "1": 1708,
+     "2": 928
+    },
+    "direct_code0_bridges": 1604,
+    "max_tool_penetration_mm": 0.45237696170806885,
+    "max_fixture_penetration_mm": 1.124843716621399,
+    "peak_reaction_N": 0.11905553936958313,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.805052645271644e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1747595.0,
+     "band_new": 1006.0,
+     "lead_new": 1630.0
+    },
+    "stroke_on_substeps": 29082,
+    "engaged_substeps": 23535,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1746,
+      "2": 174
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 1.620729923248291,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 1.3207304291427135,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -108.2040786743164,
+     "min": -112.46903991699219
+    },
+    "unassigned_above_plane": 5106,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 5106,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 43566198,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 151707167,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 23.44291672599502
+   },
+   "rake_50_cf60": {
+    "row": "rake_50_cf60",
+    "spec": {
+     "family": "rake",
+     "rake": 50.0,
+     "counterfactual": {
+      "theta_max_deg": 60.0
+     }
+    },
+    "particles": 23040,
+    "counterfactual": [
+     {
+      "key": "theta_max_deg",
+      "frozen_value": 45.0,
+      "counterfactual_value": 60.0
+     }
+    ],
+    "label": "COUNTERFACTUAL diagnostic (law parameter overridden on the solver instance; not law 8)",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 2311,
+    "digit_counts": {
+     "0": 20729,
+     "1": 1290,
+     "2": 1021
+    },
+    "direct_code0_bridges": 1913,
+    "max_tool_penetration_mm": 0.4197413921356201,
+    "max_fixture_penetration_mm": 1.1361463069915771,
+    "peak_reaction_N": 0.11921977996826172,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 1.4581551113224123e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 1055778.0,
+     "band_new": 696.0,
+     "lead_new": 1615.0
+    },
+    "stroke_on_substeps": 28425,
+    "engaged_substeps": 23912,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 1728,
+      "2": 192
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 1.7469390630722046,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 1.4469395391643047,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -109.29705810546875,
+     "min": -112.96778869628906
+    },
+    "unassigned_above_plane": 5088,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 5088,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 46821120,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 151132472,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 23.373053288989468
+   },
+   "phase_d000": {
+    "row": "phase_d000",
+    "spec": {
+     "family": "phase",
+     "rake": 10.0,
+     "edge_z": 0.009
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22816,
+    "digit_counts": {
+     "0": 224,
+     "1": 17128,
+     "2": 5688
+    },
+    "direct_code0_bridges": 128,
+    "max_tool_penetration_mm": 0.23385746777057648,
+    "max_fixture_penetration_mm": 0.10029534995555878,
+    "peak_reaction_N": 0.11359109729528427,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.503682662791107e-05,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3554599.0,
+     "band_new": 22816.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33874,
+    "engaged_substeps": 30049,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 24,
+      "2": 1896
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.6571332812309265,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.15713321045041084,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.37937238812446594,
+     "min": -1.7465423345565796
+    },
+    "unassigned_above_plane": 72,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 72,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 19157760,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 95975905,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 25.37783803298953
+   },
+   "phase_d010": {
+    "row": "phase_d010",
+    "spec": {
+     "family": "phase",
+     "rake": 10.0,
+     "edge_z": 0.009099999999999999
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22656,
+    "digit_counts": {
+     "0": 384,
+     "1": 16992,
+     "2": 5664
+    },
+    "direct_code0_bridges": 216,
+    "max_tool_penetration_mm": 0.2343561351299286,
+    "max_fixture_penetration_mm": 0.09945715963840485,
+    "peak_reaction_N": 0.11805524677038193,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 1.4475097486865707e-05,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3177710.0,
+     "band_new": 22656.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33935,
+    "engaged_substeps": 32357,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 24,
+      "2": 1896
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.6050775051116943,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.20507816225290298,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.3605307936668396,
+     "min": -1.833627462387085
+    },
+    "unassigned_above_plane": 96,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 96,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18806400,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 96649011,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 25.42168241998297
+   },
+   "phase_d020": {
+    "row": "phase_d020",
+    "spec": {
+     "family": "phase",
+     "rake": 10.0,
+     "edge_z": 0.0092
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22584,
+    "digit_counts": {
+     "0": 456,
+     "1": 16944,
+     "2": 5640
+    },
+    "direct_code0_bridges": 264,
+    "max_tool_penetration_mm": 0.24220769107341766,
+    "max_fixture_penetration_mm": 0.09448389708995819,
+    "peak_reaction_N": 0.12306483089923859,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 7.846858352422714e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2836009.0,
+     "band_new": 22584.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33965,
+    "engaged_substeps": 33233,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 24,
+      "2": 1896
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.5347011685371399,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.23470167070627213,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.42301464080810547,
+     "min": -1.8989536762237549
+    },
+    "unassigned_above_plane": 120,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 120,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18633600,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 97118823,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 25.445350483991206
+   },
+   "phase_d030": {
+    "row": "phase_d030",
+    "spec": {
+     "family": "phase",
+     "rake": 10.0,
+     "edge_z": 0.0093
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22444,
+    "digit_counts": {
+     "0": 596,
+     "1": 16848,
+     "2": 5596
+    },
+    "direct_code0_bridges": 380,
+    "max_tool_penetration_mm": 0.24703456461429596,
+    "max_fixture_penetration_mm": 0.08683308213949203,
+    "peak_reaction_N": 0.12989476323127747,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 1.5822022760403343e-05,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2850622.0,
+     "band_new": 22444.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33981,
+    "engaged_substeps": 33630,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 48,
+      "2": 1872
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.45315736532211304,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.25315769016742706,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.431287556886673,
+     "min": -3.2418932914733887
+    },
+    "unassigned_above_plane": 164,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 164,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18541440,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 97645867,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 25.45379284201772
+   },
+   "phase_d040": {
+    "row": "phase_d040",
+    "spec": {
+     "family": "phase",
+     "rake": 10.0,
+     "edge_z": 0.009399999999999999
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22248,
+    "digit_counts": {
+     "0": 792,
+     "1": 16704,
+     "2": 5544
+    },
+    "direct_code0_bridges": 504,
+    "max_tool_penetration_mm": 0.3944578468799591,
+    "max_fixture_penetration_mm": 0.07815129309892654,
+    "peak_reaction_N": 0.13900664448738098,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 1.779399644874502e-05,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 2789781.0,
+     "band_new": 22248.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33987,
+    "engaged_substeps": 33952,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 72,
+      "2": 1848
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.4081651568412781,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": 0.3081653267145157,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.38789305090904236,
+     "min": -2.2134716510772705
+    },
+    "unassigned_above_plane": 216,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 216,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18506880,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 98249908,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 25.57054417100153
+   },
+   "phase_d050": {
+    "row": "phase_d050",
+    "spec": {
+     "family": "phase",
+     "rake": 10.0,
+     "edge_z": 0.0095
+    },
+    "particles": 23040,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999999663150134
+    ],
+    "labelled": 22296,
+    "digit_counts": {
+     "0": 744,
+     "1": 16872,
+     "2": 5424
+    },
+    "direct_code0_bridges": 456,
+    "max_tool_penetration_mm": 0.5392820239067078,
+    "max_fixture_penetration_mm": 0.088046133518219,
+    "peak_reaction_N": 0.14418798685073853,
+    "segment_summary": {
+     "armed_segment_substeps": 4464000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.4271288566524163e-05,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 3168509.0,
+     "band_new": 22296.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 33985,
+    "engaged_substeps": 33985,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 9.499999694526196,
+     "count": 1920,
+     "attached": 1920,
+     "digit_counts": {
+      "0": 48,
+      "1": 144,
+      "2": 1728
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.33245283365249634,
+     "digit1_count": 144
+    },
+    "assign_dz_lowest_layer_mm": 0.33245282247662544,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.5015442371368408,
+     "min": -2.9806723594665527
+    },
+    "unassigned_above_plane": 192,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 0,
+     "edge_never_passed_while_stroke_on": 192,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 18518400,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 97734148,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 25.67071030900115
+   },
+   "dome_r10": {
+    "row": "dome_r10",
+    "spec": {
+     "family": "dome",
+     "rake": 10.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.990934882397429,
+     0.009064939021498125
+    ],
+    "labelled": 30473,
+    "digit_counts": {
+     "0": 30090,
+     "1": 29924,
+     "2": 549
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.4330868124961853,
+    "max_fixture_penetration_mm": 0.058244738727808,
+    "peak_reaction_N": 0.04280064254999161,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.4271157599287108e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 300947.0,
+     "band_new": 30473.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 14803,
+    "removal": 0.9751332402229309,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 14,
+     "digit_counts": {
+      "1": 14,
+      "2": 178
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.31598564982414246,
+     "digit1_count": 14
+    },
+    "assign_dz_lowest_layer_mm": 0.015984289348125458,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13710278272628784,
+     "min": -1.084145188331604
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 2685843,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 31.229803749010898
+   },
+   "dome_r25": {
+    "row": "dome_r25",
+    "spec": {
+     "family": "dome",
+     "rake": 25.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9910504644978853,
+     0.008949356921041866
+    ],
+    "labelled": 35003,
+    "digit_counts": {
+     "0": 25560,
+     "1": 34461,
+     "2": 542
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.4250025749206543,
+    "max_fixture_penetration_mm": 0.058243341743946075,
+    "peak_reaction_N": 0.04630204662680626,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.178520844609011e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 285889.0,
+     "band_new": 10654.0,
+     "lead_new": 24349.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 15606,
+    "removal": 0.962699830532074,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 21,
+     "digit_counts": {
+      "1": 21,
+      "2": 171
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.34796446561813354,
+     "digit1_count": 21
+    },
+    "assign_dz_lowest_layer_mm": 0.047963112592697144,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13943202793598175,
+     "min": -1.5534143447875977
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 1935968,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.795364991005044
+   },
+   "dome_r35": {
+    "row": "dome_r35",
+    "spec": {
+     "family": "dome",
+     "rake": 35.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9908027885683361,
+     0.009197032850590994
+    ],
+    "labelled": 35851,
+    "digit_counts": {
+     "0": 24712,
+     "1": 35294,
+     "2": 557
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 1.0541977882385254,
+    "max_fixture_penetration_mm": 0.05824194476008415,
+    "peak_reaction_N": 0.06224093586206436,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.3238301309902454e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 728932.0,
+     "band_new": 11192.0,
+     "lead_new": 24659.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 16772,
+    "removal": 0.9893428087234497,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 6,
+     "digit_counts": {
+      "1": 6,
+      "2": 186
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.37139561772346497,
+     "digit1_count": 6
+    },
+    "assign_dz_lowest_layer_mm": 0.07139425724744797,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.1428769826889038,
+     "min": -1.976607322692871
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 1875380,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.856380031997105
+   },
+   "dome_r40": {
+    "row": "dome_r40",
+    "spec": {
+     "family": "dome",
+     "rake": 40.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9907532533824264,
+     0.009246568036500822
+    ],
+    "labelled": 36533,
+    "digit_counts": {
+     "0": 24030,
+     "1": 35973,
+     "2": 560
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 1.194095492362976,
+    "max_fixture_penetration_mm": 0.05824427306652069,
+    "peak_reaction_N": 0.06966771930456161,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.3329230316448957e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 651033.0,
+     "band_new": 11588.0,
+     "lead_new": 24945.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 16772,
+    "removal": 0.9946714043617249,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 3,
+     "digit_counts": {
+      "1": 3,
+      "2": 189
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.39727985858917236,
+     "digit1_count": 3
+    },
+    "assign_dz_lowest_layer_mm": 0.09727850556373596,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.143539160490036,
+     "min": -1.9974857568740845
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 1842044,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.852518244995736
+   },
+   "dome_r44": {
+    "row": "dome_r44",
+    "spec": {
+     "family": "dome",
+     "rake": 44.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.990769765111063,
+     0.009230056307864212
+    ],
+    "labelled": 37193,
+    "digit_counts": {
+     "0": 23370,
+     "1": 36634,
+     "2": 559
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 1.1067737340927124,
+    "max_fixture_penetration_mm": 0.05824287608265877,
+    "peak_reaction_N": 0.07589858025312424,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.3613688426848967e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 737512.0,
+     "band_new": 11964.0,
+     "lead_new": 25229.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 16772,
+    "removal": 0.992895245552063,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 4,
+     "digit_counts": {
+      "1": 4,
+      "2": 188
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.4017334580421448,
+     "digit1_count": 4
+    },
+    "assign_dz_lowest_layer_mm": 0.10173209011554718,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.1442851424217224,
+     "min": -2.027912139892578
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 1823692,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.844327619997784
+   },
+   "dome_r45": {
+    "row": "dome_r45",
+    "spec": {
+     "family": "dome",
+     "rake": 45.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998214189272
+    ],
+    "labelled": 0,
+    "digit_counts": {
+     "0": 60563
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.7371246814727783,
+    "max_fixture_penetration_mm": 0.05824241042137146,
+    "peak_reaction_N": 0.17253409326076508,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 0.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 3.2274724617309403e-06,
+     "work_with_gate_closed_particle_substeps": 26177.0,
+     "contact_particle_substeps": 791995.0,
+     "band_new": 0.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 0,
+    "engaged_substeps": 0,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 192,
+     "digit_counts": {
+      "0": 192
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": null,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": null,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13418681919574738,
+     "min": -1.2323036193847656
+    },
+    "unassigned_above_plane": 563,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 563,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 13512000,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 0,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.75832860401715
+   },
+   "dome_r46": {
+    "row": "dome_r46",
+    "spec": {
+     "family": "dome",
+     "rake": 46.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998214189272
+    ],
+    "labelled": 0,
+    "digit_counts": {
+     "0": 60563
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.7075931429862976,
+    "max_fixture_penetration_mm": 0.05824194476008415,
+    "peak_reaction_N": 0.16978010535240173,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 0.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 3.2271652798954165e-06,
+     "work_with_gate_closed_particle_substeps": 27245.0,
+     "contact_particle_substeps": 783902.0,
+     "band_new": 0.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 0,
+    "engaged_substeps": 0,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 192,
+     "digit_counts": {
+      "0": 192
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": null,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": null,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13450905680656433,
+     "min": -1.217961311340332
+    },
+    "unassigned_above_plane": 563,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 563,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 13512000,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 0,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.72558054799447
+   },
+   "dome_r50": {
+    "row": "dome_r50",
+    "spec": {
+     "family": "dome",
+     "rake": 50.0
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 1,
+    "mass_fractions": [
+     0.9999998214189272
+    ],
+    "labelled": 0,
+    "digit_counts": {
+     "0": 60563
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.6944046020507812,
+    "max_fixture_penetration_mm": 0.05824427306652069,
+    "peak_reaction_N": 0.16080604493618011,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 0.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 3.2124958124768455e-06,
+     "work_with_gate_closed_particle_substeps": 28986.0,
+     "contact_particle_substeps": 762341.0,
+     "band_new": 0.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 0,
+    "engaged_substeps": 0,
+    "removal": 0.0,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 192,
+     "digit_counts": {
+      "0": 192
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": null,
+     "digit1_count": 0
+    },
+    "assign_dz_lowest_layer_mm": null,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.1344466507434845,
+     "min": -1.2227054834365845
+    },
+    "unassigned_above_plane": 563,
+    "unassigned_above_by_class": {
+     "never_within_width_and_band_while_armed": 0,
+     "within_band_only_while_stroke_off": 563,
+     "edge_never_passed_while_stroke_on": 0,
+     "passed_but_beyond_rear_limit": 0,
+     "passed_but_segment_gate_closed": 0,
+     "passed_other": 0
+    },
+    "first_fail_totals_above": {
+     "stroke_off": 13512000,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 0,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.7154370220087
+   },
+   "dome_r45_cf60": {
+    "row": "dome_r45_cf60",
+    "spec": {
+     "family": "dome",
+     "rake": 45.0,
+     "counterfactual": {
+      "theta_max_deg": 60.0
+     }
+    },
+    "particles": 60563,
+    "counterfactual": [
+     {
+      "key": "theta_max_deg",
+      "frozen_value": 45.0,
+      "counterfactual_value": 60.0
+     }
+    ],
+    "label": "COUNTERFACTUAL diagnostic (law parameter overridden on the solver instance; not law 8)",
+    "components": 2,
+    "mass_fractions": [
+     0.990769765111063,
+     0.009230056307864212
+    ],
+    "labelled": 37339,
+    "digit_counts": {
+     "0": 23224,
+     "1": 36780,
+     "2": 559
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 1.114795207977295,
+    "max_fixture_penetration_mm": 0.058244738727808,
+    "peak_reaction_N": 0.07846777886152267,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.3214765860757325e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 673862.0,
+     "band_new": 11867.0,
+     "lead_new": 25472.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 16772,
+    "removal": 0.992895245552063,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 4,
+     "digit_counts": {
+      "1": 4,
+      "2": 188
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.40773022174835205,
+     "digit1_count": 4
+    },
+    "assign_dz_lowest_layer_mm": 0.10772887617349625,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.14479458332061768,
+     "min": -1.9600112438201904
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 1818226,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.838416481012246
+   },
+   "dome_r50_cf60": {
+    "row": "dome_r50_cf60",
+    "spec": {
+     "family": "dome",
+     "rake": 50.0,
+     "counterfactual": {
+      "theta_max_deg": 60.0
+     }
+    },
+    "particles": 60563,
+    "counterfactual": [
+     {
+      "key": "theta_max_deg",
+      "frozen_value": 45.0,
+      "counterfactual_value": 60.0
+     }
+    ],
+    "label": "COUNTERFACTUAL diagnostic (law parameter overridden on the solver instance; not law 8)",
+    "components": 2,
+    "mass_fractions": [
+     0.9907367416537898,
+     0.00926307976513743
+    ],
+    "labelled": 38426,
+    "digit_counts": {
+     "0": 22137,
+     "1": 37865,
+     "2": 561
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 1.0810906887054443,
+    "max_fixture_penetration_mm": 0.05824287608265877,
+    "peak_reaction_N": 0.08330094814300537,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 1.0,
+     "cutting_work_J": 2.2181388885655906e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 809945.0,
+     "band_new": 12712.0,
+     "lead_new": 25714.0
+    },
+    "stroke_on_substeps": 16772,
+    "engaged_substeps": 16772,
+    "removal": 0.9964475631713867,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 2,
+     "digit_counts": {
+      "1": 2,
+      "2": 190
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.4139496088027954,
+     "digit1_count": 2
+    },
+    "assign_dz_lowest_layer_mm": 0.11394824832677841,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.14586374163627625,
+     "min": -2.153618335723877
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4069364,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 1864217,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.966218337009195
+   },
+   "dome_phase_d000": {
+    "row": "dome_phase_d000",
+    "spec": {
+     "family": "dome",
+     "rake": 10.0,
+     "edge_z": 0.02
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9907367416537898,
+     0.00926307976513743
+    ],
+    "labelled": 30383,
+    "digit_counts": {
+     "0": 30180,
+     "1": 29822,
+     "2": 561
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.4931188225746155,
+    "max_fixture_penetration_mm": 0.05824194476008415,
+    "peak_reaction_N": 0.029796414077281952,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 1.554377604406909e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 347344.0,
+     "band_new": 30383.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 16345,
+    "engaged_substeps": 11490,
+    "removal": 0.9964475631713867,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 2,
+     "digit_counts": {
+      "1": 2,
+      "2": 190
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.4597865045070648,
+     "digit1_count": 2
+    },
+    "assign_dz_lowest_layer_mm": -0.04021450877189636,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13712793588638306,
+     "min": -0.9132046103477478
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4103144,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 2642558,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.85109186900081
+   },
+   "dome_phase_d010": {
+    "row": "dome_phase_d010",
+    "spec": {
+     "family": "dome",
+     "rake": 10.0,
+     "edge_z": 0.0201
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9908193002969727,
+     0.009180521121954386
+    ],
+    "labelled": 30443,
+    "digit_counts": {
+     "0": 30120,
+     "1": 29887,
+     "2": 556
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.3936007022857666,
+    "max_fixture_penetration_mm": 0.05824380740523338,
+    "peak_reaction_N": 0.033806607127189636,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.0578452222252963e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 347980.0,
+     "band_new": 30443.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 14014,
+    "engaged_substeps": 10635,
+    "removal": 0.9875666499137878,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 7,
+     "digit_counts": {
+      "1": 7,
+      "2": 185
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.3793230354785919,
+     "digit1_count": 7
+    },
+    "assign_dz_lowest_layer_mm": -0.02067815512418747,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13717171549797058,
+     "min": -0.9555090069770813
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4081187,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 2668434,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.81524944800185
+   },
+   "dome_phase_d030": {
+    "row": "dome_phase_d030",
+    "spec": {
+     "family": "dome",
+     "rake": 10.0,
+     "edge_z": 0.020300000000000002
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9913146521560711,
+     0.008685169262856129
+    ],
+    "labelled": 30503,
+    "digit_counts": {
+     "0": 30060,
+     "1": 29977,
+     "2": 526
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.607417106628418,
+    "max_fixture_penetration_mm": 0.05824380740523338,
+    "peak_reaction_N": 0.040113989263772964,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.4262044462375343e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 329890.0,
+     "band_new": 30503.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 16782,
+    "engaged_substeps": 16102,
+    "removal": 0.9307283163070679,
+    "substrate_retained": 0.9999666213989258,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 36,
+     "digit_counts": {
+      "1": 36,
+      "2": 156
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": 0.20271539688110352,
+     "digit1_count": 36
+    },
+    "assign_dz_lowest_layer_mm": 0.0027157366275787354,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13671723008155823,
+     "min": -1.5908479690551758
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4063734,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 2676976,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.840371894999407
+   },
+   "dome_phase_d040": {
+    "row": "dome_phase_d040",
+    "spec": {
+     "family": "dome",
+     "rake": 10.0,
+     "edge_z": 0.0204
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9938244349088355,
+     0.00617538651009162
+    ],
+    "labelled": 30713,
+    "digit_counts": {
+     "0": 29850,
+     "1": 30339,
+     "2": 374
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.3880211114883423,
+    "max_fixture_penetration_mm": 0.05824613571166992,
+    "peak_reaction_N": 0.11691618710756302,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.4000019038794562e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 731219.0,
+     "band_new": 30713.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 15314,
+    "engaged_substeps": 12109,
+    "removal": 0.6642984747886658,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 189,
+     "digit_counts": {
+      "1": 189,
+      "2": 3
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": -0.17577317357063293,
+     "digit1_count": 189
+    },
+    "assign_dz_lowest_layer_mm": -0.27577299624681473,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13336539268493652,
+     "min": -0.2811569571495056
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4063171,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 2617748,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.62849366100272
+   },
+   "dome_phase_d050": {
+    "row": "dome_phase_d050",
+    "spec": {
+     "family": "dome",
+     "rake": 10.0,
+     "edge_z": 0.0205
+    },
+    "particles": 60563,
+    "counterfactual": null,
+    "label": "law 8 unchanged (tlmpm_v5), diagnostic sweep row, not an acceptance run",
+    "components": 2,
+    "mass_fractions": [
+     0.9938409466374721,
+     0.006158874781455011
+    ],
+    "labelled": 26123,
+    "digit_counts": {
+     "0": 34440,
+     "1": 25750,
+     "2": 373
+    },
+    "direct_code0_bridges": 0,
+    "max_tool_penetration_mm": 0.362270325422287,
+    "max_fixture_penetration_mm": 0.05824241042137146,
+    "peak_reaction_N": 0.08541809767484665,
+    "segment_summary": {
+     "armed_segment_substeps": 2880000.0,
+     "seg_ok_fraction": 1.0,
+     "seg_plow_fraction": 0.0,
+     "cutting_work_J": 2.399998720648e-06,
+     "work_with_gate_closed_particle_substeps": 0.0,
+     "contact_particle_substeps": 736023.0,
+     "band_new": 26123.0,
+     "lead_new": 0.0
+    },
+    "stroke_on_substeps": 13791,
+    "engaged_substeps": 10592,
+    "removal": 0.6625222563743591,
+    "substrate_retained": 1.0,
+    "lowest_above_layer": {
+     "z_mm": 20.500000566244125,
+     "count": 192,
+     "attached": 190,
+     "digit_counts": {
+      "1": 190,
+      "2": 2
+     }
+    },
+    "lowest_layer_assign_s_mm": {
+     "median": -0.23824813961982727,
+     "digit1_count": 190
+    },
+    "assign_dz_lowest_layer_mm": -0.23824814707040787,
+    "substrate_top_layer_final_dz_mm": {
+     "median": -0.13340823352336884,
+     "min": -0.299304723739624
+    },
+    "unassigned_above_plane": 0,
+    "first_fail_totals_above": {
+     "stroke_off": 4067675,
+     "outside_edge_width": 0,
+     "ahead_of_edge": 2626011,
+     "beyond_rear_limit": 0,
+     "segment_gate_closed": 0,
+     "outside_band": 0
+    },
+    "wall_s": 30.689919650991214
+   }
+  }
+ },
+ "classification": {
+  "a_oblique": {
+   "class": "missing side assignment at the exit face (band front f <= 0 is the plane through the edge perpendicular to d); contributing: support (relief-slot overhang sag ~1.1 mm, ~2 mm along d) and tool trajectory (4 mm overtravel)",
+   "evidence": "s2201/s2202/s2203: 684/616/314 unassigned within 12 mm, all on the uphill side, only failing condition f > 0; decisive direct bridges 2/84/6 were behind the final edge in reference positions; relabelling them gives 2 components; sweep: law 8 fails from 25 deg (4 mm overtravel, 30 mm slot); 35 deg separates with 6 mm overtravel, a 12 mm slot or gravity off; plane phase 0-0.75 mm does not rescue it"
+  },
+  "b_rake45": {
+   "class": "unsupported cutting orientation: motion 45.0000006 deg out of the blade plane against theta_max = 45 deg (float32 decides); behind it class (c) core carry on s2307",
+   "evidence": "s2307: gate closed on 120/120 segments for 17200 armed substeps, 0 labels, 13406 particle-substeps of cutting work with the gate closed; COUNTERFACTUAL theta_max 60: 24563 labels, 1 component from one carried apex particle (relabel -> 2); dome sweep: rho 10-44 separate (0.963-0.995), 45/46/50 give 0 labels, COUNTERFACTUAL 60 separates 45/50 (0.993/0.996)"
+  },
+  "c_residual": {
+   "class": "contact: core-band carry (particles inside |s| <= dx riding ahead of the edge are reachable by neither band nor lead); bumps3: contact lift plus code compatibility of chips cut by different digits",
+   "evidence": "s2501: 2 (p0) + 1 (p1) chip particles at z = H + 2.5 mm, closest approach f = +0.10..+0.43 mm, carried 39-80 mm; relabel -> 4 components; Test B s1502: 0 code-0 within 4 mm of its planes; bumps3: 49 substrate particles lifted 0.92-1.05 mm before assignment, chips carry codes 42/40/32"
+  },
+  "d_trim": {
+   "class": "contact (wedge/chip-load depression before the edge passes) at a lattice-phase margin (numerical resolution)",
+   "evidence": "TRIM-02-K2-R10: 45/316 lowest-layer particles pushed 0.47 mm down, s = -0.30 mm at assignment; substrate under the dome -0.36 mm median (P05 -1.73, min -2.12) vs -0.13 elsewhere; dome phase sweep: residue 1%/4%/7%/19%/98%/99% for gaps 0.5/0.4/0.3/0.2/0.1/0.0 mm"
+  },
+  "e_swept_normal": {
+   "class": "numerical, latent",
+   "evidence": "0 flipped digits in every recorded run; F2.6 pure draw 904 draw digits used the solver's exact fallback; CPU generic-yaw pure draw 15/28 flips"
+  },
+  "recommendation": "Versioned law 9 = law 8 + breakthrough-gated lead (lead rule on plow_k OR B_k; B_k: no digit-0 particle in segment k's strip 0 < f <= 2dx, |s| <= dx while S = c+1) + relative swept-normal fallback (|m x e|^2 <= max(1e-20, (1e-5|m|)^2)); no new physical parameter; not implemented; must pass the full ADR 0006/A1 matrix, Phase F rows and new oblique / flat-board / bar-end rows before use. (b) envelope rho <= 44 deg declared; clearance-derived motion gate and a carried-material rule are separate candidate variants."
+ }
+}

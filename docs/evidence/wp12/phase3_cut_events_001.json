@@ -1,0 +1,139 @@
+{
+  "experiment": "wp12_phase3_cut_events_001",
+  "recorder": "cut_events_v1",
+  "command": "/home/ningan/RoboticCuttingSim/.venv/bin/python scripts/run_wp12_cut_events_gpu.py --device cuda:1 --out artifacts/wp12/cut_events_001 --evidence docs/evidence/wp12/phase3_cut_events_001.json",
+  "cwd": "/home/ningan/RoboticCuttingSim",
+  "git_head": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+  "git_dirty": true,
+  "warp": "1.17.0",
+  "python": "3.12.12",
+  "device": "cuda:1",
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "task": "CUT-01-R scripted reference edge (kinematic ideal tracking)",
+  "seed": 42,
+  "particle_spacing_m": 0.001,
+  "material_dt_s": 0.0001,
+  "solver": "tlmpm_v5",
+  "cutting_law": 8,
+  "max_cuts": 1,
+  "particles": 96000,
+  "control_steps": 400,
+  "substeps": 80000,
+  "run_order": "off,on,off,on",
+  "labelled": {
+    "run0": 28500,
+    "run1": 28500,
+    "run2": 28500,
+    "run3": 28500
+  },
+  "final_comparisons": {
+    "run1_vs_run0": {
+      "codes_equal": true,
+      "max_abs_dx_m": 3.4115277230739594e-05,
+      "max_abs_dv_m_s": 1.0530419785936829e-05,
+      "within_band": true
+    },
+    "run2_vs_run0": {
+      "codes_equal": true,
+      "max_abs_dx_m": 1.6596168279647827e-05,
+      "max_abs_dv_m_s": 7.790772770022159e-06,
+      "within_band": true
+    },
+    "run3_vs_run0": {
+      "codes_equal": true,
+      "max_abs_dx_m": 3.480818122625351e-05,
+      "max_abs_dv_m_s": 1.1716360859281849e-05,
+      "within_band": true
+    }
+  },
+  "band": {
+    "max_abs_dx_m": 6e-05,
+    "source": "ADR 0012 (GPU nondeterminism)"
+  },
+  "neutrality_pass": true,
+  "recorder_metadata": {
+    "version": "cut_events_v1",
+    "enabled": true,
+    "solver_module": "robotic_cutting_sim.tlmpm_v5",
+    "cutting_law": 8,
+    "max_cuts": 1,
+    "particles": 96000,
+    "capacity": 96000,
+    "summary_capacity": 262144,
+    "events_attempted": 600,
+    "events_logged": 600,
+    "event_overflow": 0,
+    "substeps": 80000,
+    "summary_overflow": 0,
+    "unexpected_code_changes": 0,
+    "events_per_cut": {
+      "0": 600
+    },
+    "sign_inconsistent_links": 0,
+    "both_new_links": 560,
+    "lead_links": 0,
+    "blade_z_fallback_links": 0,
+    "degenerate_reference_normal_links": 0,
+    "log_sha256": "7afd2521032d4f85253d0c731b73a63909d3bc778a7dca6450ea3638b85e8ec9",
+    "activation_sha256": "4944bb18485a29bdd5cc42c0b01d182a3c49ed6fd901e6aa33bf4f848d03c0d5",
+    "lattice_sha256": "30b998443f1e3a8f04e2d273a8a46f124cf6e68eb8e430a36879bde44206958b",
+    "neighbours_sha256": "926f9c779083a064682703485ee98a66c3613fa903c83507252a3698797f27f2",
+    "reference_sha256": "5609d67cb0a7982a349344092ce219576a119264024a8c382b23278539e7ff21",
+    "log_bytes": 48000,
+    "activation_bytes": 3520000,
+    "device_bytes": 21902368,
+    "index_semantics": "pose/twist/cut at index-1 after step(advance=True)",
+    "scope": "Read-only record of the solver's own side assignment (oracle data, not an observation)"
+  },
+  "audits": {
+    "logged_links": 600,
+    "conflicting_links_final_codes": 600,
+    "logged_equals_conflicting": true,
+    "sign_inconsistent": 0,
+    "t_range": [
+      0.4987216889858246,
+      0.5015111565589905
+    ],
+    "reference_plane_offset_spacings": {
+      "p50": 9.66489315032959e-05,
+      "p95": 0.0006306067225523293,
+      "max": 0.0015111565589904785
+    },
+    "reference_normal_angle_to_x_deg": {
+      "p50": 0.0,
+      "p95": 0.0,
+      "max": 0.0
+    },
+    "plane": "workpiece-local x = 0 (scripted edge line; reference configuration)"
+  },
+  "log_size": {
+    "events": 600,
+    "log_bytes": 48000,
+    "log_file_bytes": 48384,
+    "activation_bytes": 3520000,
+    "recorder_device_bytes": 21902368
+  },
+  "timing": {
+    "mean_control_step_ms_off": 266.73357562633106,
+    "mean_control_step_ms_on": 268.9353144100278,
+    "median_control_step_ms_off": 266.30247350840364,
+    "median_control_step_ms_on": 267.72871750290506,
+    "mean_ms_per_substep_off": 1.3336678781316553,
+    "mean_ms_per_substep_on": 1.344676572050139,
+    "overhead_ms_per_substep_mean": 0.01100869391848363,
+    "overhead_ms_per_substep_median": 0.007131219972507097,
+    "overhead_fraction_mean": 0.008254449326548815,
+    "isolated_recorder_ms_per_substep": [
+      0.007537340025010053,
+      0.007415504987875465
+    ],
+    "episode_wall_s": {
+      "run0_off": 107.97745433100499,
+      "run1_on": 107.56939668298583,
+      "run2_off": 107.51741241199488,
+      "run3_on": 108.73214511100377
+    },
+    "scope": "material_wall_s per control step (CUDA graph launch + sync + slot check; with the recorder also its overflow check); interleaved runs on one GPU; another agent may share the GPU"
+  },
+  "artifacts": "artifacts/wp12/cut_events_001"
+}

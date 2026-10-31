@@ -1,0 +1,2770 @@
+{
+ "evidence_id": "wp12_phase2_throughcut_001",
+ "spec": "docs/WP12_SPECIFICATION.md section 2.4 options A-D",
+ "scope": "Kinematic ideal tracking, tlmpm_v5, cutting law 8, 1 mm particles, 4 mm grid, material dt 0.1 ms, seed 42, CUT-01-R bar 160 x 30 x 20 mm (cutting_tasks_v1 material, provisional uncalibrated), ruler_knife_v2_y; no PhysX, robot or cameras",
+ "summary_command": [
+  "scripts/summarize_wp12_board_throughcut.py",
+  "artifacts/wp12/workcell_throughcut_001",
+  "artifacts/wp12/workcell_throughcut_002",
+  "artifacts/wp12/workcell_throughcut_003",
+  "artifacts/wp12/workcell_throughcut_004",
+  "artifacts/wp12/workcell_throughcut_005",
+  "artifacts/wp12/workcell_throughcut_006",
+  "artifacts/wp12/workcell_throughcut_007",
+  "artifacts/wp12/workcell_throughcut_008",
+  "artifacts/wp12/workcell_throughcut_009",
+  "artifacts/wp12/workcell_throughcut_010",
+  "--evidence",
+  "docs/evidence/wp12/phase2_throughcut_001.json",
+  "--figure",
+  "docs/media/wp12/phase2_throughcut_bottom_layers_001.png",
+  "--notes",
+  "/mnt/data/ningan/tmp/claude-1004/-home-ningan-RoboticCuttingSim/2dbee09e-127d-4db1-a9d9-f2a32de8d08d/scratchpad/notes_throughcut_001.json"
+ ],
+ "summary_git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+ "summary_git_dirty": true,
+ "rows": [
+  {
+   "row": "S_P100",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "A/B",
+   "support": "solid",
+   "declared_h_m": 0.001,
+   "edge_stop_local_z_m": 0.0010000000000000698,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_001",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "S_P100",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_001"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 552.1973281210085,
+   "loop_wall_s": 542.5892695160001,
+   "formal": true,
+   "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+   "git_dirty": true,
+   "components_end_hold": 1,
+   "component_mass_fractions_end_hold": [
+    0.9999999999996599
+   ],
+   "components_end_settle": 1,
+   "component_masses_end_settle_kg": [
+    0.143999999999951
+   ],
+   "component_mass_fractions_end_settle": [
+    0.9999999999996599
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": false,
+    "two_main_parts_together_ge_99pct": false
+   },
+   "persistence": {
+    "first_separated_history_time_s": null,
+    "separated_duration_to_end_s": null,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": false,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "FAIL",
+    "outcome_status": "FAIL"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 24,
+     "unconflicted": 6,
+     "both_unassigned": 6,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 24,
+     "unconflicted": 6,
+     "both_unassigned": 6,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [
+    0
+   ],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 172,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 172,
+   "direct_code0_bridges_end_settle": 172,
+   "bridge_layers_end_settle": {
+    "0": 172
+   },
+   "separation_end_settle": null,
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4130446629329434,
+     "fixture_Fz_max_N": 1.5912260777570046,
+     "fixture_Fz_sample_mean_N": 1.4203623085622195,
+     "fixture_impulse_z_Ns": 0.4521742921385419,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.0004073776653967798,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 5.508615868166089e-05,
+     "min_det_F": 0.9946427881162394
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4212902706377206,
+     "fixture_Fz_max_N": 1.4601482510342245,
+     "fixture_Fz_sample_mean_N": 1.421947576175398,
+     "fixture_impulse_z_Ns": 3.837483730721846,
+     "blade_Fz_on_tool_mean_N": 0.008699554600928881,
+     "min_particle_z_m": 0.0003829041961580515,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 6.708485307171941e-05,
+     "min_det_F": 0.9573052852085971
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4126946019843023,
+     "fixture_Fz_max_N": 1.4134300431631166,
+     "fixture_Fz_sample_mean_N": 1.4125201881625038,
+     "fixture_impulse_z_Ns": 0.4238083805952907,
+     "blade_Fz_on_tool_mean_N": 4.376855700390555e-05,
+     "min_particle_z_m": 0.000382967438781634,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 6.787321763113141e-05,
+     "min_det_F": 0.9568230649407281
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4105890370413867,
+     "fixture_Fz_max_N": 1.4139853392086654,
+     "fixture_Fz_sample_mean_N": 1.4106716348882464,
+     "fixture_impulse_z_Ns": 2.341577801488702,
+     "blade_Fz_on_tool_mean_N": -0.002051284568394186,
+     "min_particle_z_m": 0.0003784680739045143,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.153191836550832e-05,
+     "min_det_F": 0.9569655819961591
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.412639986237673,
+     "fixture_Fz_max_N": 1.4126411318956982,
+     "fixture_Fz_sample_mean_N": 1.4126405065762748,
+     "fixture_impulse_z_Ns": 4.266172758437773,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.000378419499611482,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.158034713938832e-05,
+     "min_det_F": 0.9595341419741377
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.000378419499611482,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.000378419499611482,
+    "min_particle_z_near_plane_m": 0.0004250897327437997
+   },
+   "det_F_end_hold": {
+    "min": 0.9568230509757996,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005429630633443594,
+     0.004484489560127258,
+     0.003449230920523405
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9596080780029297,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005152011755853891,
+     0.004490576684474945,
+     0.0034407773055136204
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": false,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0010924347443506122,
+     "near_plane_z_median_m": 0.0009222925291396677,
+     "far_z_mean_m": 0.0004304184784220221,
+     "layer0_particles_above_0_6mm": 320
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0010849620448425412,
+     "near_plane_z_median_m": 0.0009289158042520285,
+     "far_z_mean_m": 0.00043047233546773594,
+     "layer0_particles_above_0_6mm": 328
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.0009927762439474463,
+     "near_plane_z_median_m": 0.000822625937871635,
+     "far_z_mean_m": 0.00043081525325154265,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "FAIL",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "S_P050",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "A/B",
+   "support": "solid",
+   "declared_h_m": 0.0005,
+   "edge_stop_local_z_m": 0.0005,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_002",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "S_P050",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_002"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 553.2946088079916,
+   "loop_wall_s": 543.4271033839905,
+   "formal": true,
+   "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+   "git_dirty": true,
+   "components_end_hold": 1,
+   "component_mass_fractions_end_hold": [
+    0.9999999999996599
+   ],
+   "components_end_settle": 1,
+   "component_masses_end_settle_kg": [
+    0.143999999999951
+   ],
+   "component_mass_fractions_end_settle": [
+    0.9999999999996599
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": false,
+    "two_main_parts_together_ge_99pct": false
+   },
+   "persistence": {
+    "first_separated_history_time_s": null,
+    "separated_duration_to_end_s": null,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": false,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "FAIL",
+    "outcome_status": "FAIL"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 28,
+     "unconflicted": 2,
+     "both_unassigned": 2,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 28,
+     "unconflicted": 2,
+     "both_unassigned": 2,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [
+    0
+   ],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 16,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 16,
+   "direct_code0_bridges_end_settle": 16,
+   "bridge_layers_end_settle": {
+    "0": 16
+   },
+   "separation_end_settle": null,
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4130446640112986,
+     "fixture_Fz_max_N": 1.5912262859687647,
+     "fixture_Fz_sample_mean_N": 1.4203622160933733,
+     "fixture_impulse_z_Ns": 0.45217429248361557,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00040737740346230567,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 5.5087090004235506e-05,
+     "min_det_F": 0.9946423114665909
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.421237059188592,
+     "fixture_Fz_max_N": 1.4601687737466635,
+     "fixture_Fz_sample_mean_N": 1.4218454138456915,
+     "fixture_impulse_z_Ns": 3.922614283360514,
+     "blade_Fz_on_tool_mean_N": 0.008649244753290125,
+     "min_particle_z_m": 0.00037582984077744186,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.45512661524117e-05,
+     "min_det_F": 0.9556703331195876
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.413146499229675,
+     "fixture_Fz_max_N": 1.414154707935413,
+     "fixture_Fz_sample_mean_N": 1.412962215579501,
+     "fixture_impulse_z_Ns": 0.4239439497689025,
+     "blade_Fz_on_tool_mean_N": 0.00045925480662845075,
+     "min_particle_z_m": 0.00037649302976205945,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.421086775138974e-05,
+     "min_det_F": 0.9563513420811578
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4120899979171722,
+     "fixture_Fz_max_N": 1.4137506571046043,
+     "fixture_Fz_sample_mean_N": 1.4121054883698605,
+     "fixture_impulse_z_Ns": 2.372311196500849,
+     "blade_Fz_on_tool_mean_N": -0.0005503472078907006,
+     "min_particle_z_m": 0.000377620046492666,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.26378639228642e-05,
+     "min_det_F": 0.9570405121728812
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399961939904,
+     "fixture_Fz_max_N": 1.4126406038552637,
+     "fixture_Fz_sample_mean_N": 1.4126404494615479,
+     "fixture_impulse_z_Ns": 4.153161588810332,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.0003781268314924091,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.187697337940335e-05,
+     "min_det_F": 0.9572272243007313
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.0003784752043429762,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.0003784752043429762,
+    "min_particle_z_near_plane_m": 0.0004281215078663081
+   },
+   "det_F_end_hold": {
+    "min": 0.9569551348686218,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005592214874923229,
+     0.00448494590818882,
+     0.0034383381716907024
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9572973251342773,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.0053701819851994514,
+     0.004484258592128754,
+     0.003449695883318782
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": false,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0009156865417025983,
+     "near_plane_z_median_m": 0.0008285350340884179,
+     "far_z_mean_m": 0.00043067959342927984,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009154221042990685,
+     "near_plane_z_median_m": 0.0008285336080007255,
+     "far_z_mean_m": 0.0004307836551355043,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.000916936609428376,
+     "near_plane_z_median_m": 0.0008256995060946792,
+     "far_z_mean_m": 0.0004308215531927999,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "FAIL",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "S_P0375",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "A/B (bracketing row, added after S_P025/S_P050)",
+   "support": "solid",
+   "declared_h_m": 0.000375,
+   "edge_stop_local_z_m": 0.000375,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_010",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "S_P0375",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_010"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 539.9636645519931,
+   "loop_wall_s": 529.7901758700027,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.1,
+    "separated_duration_to_end_s": 4.9,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.04119310513121922,
+      -4.5739714551718265e-08,
+      0.009872987127348607
+     ],
+     [
+      -0.041193019434812905,
+      7.246272434785594e-08,
+      0.009872929686533709
+     ]
+    ],
+    "centroid_x_gap_m": 0.08238612456603212,
+    "min_particle_center_distance_near_plane_m": 0.0018755721604887963,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4130446640165164,
+     "fixture_Fz_max_N": 1.591226575847514,
+     "fixture_Fz_sample_mean_N": 1.4203620119715135,
+     "fixture_impulse_z_Ns": 0.45217429248528523,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.0004073774325661361,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 5.508569302037358e-05,
+     "min_det_F": 0.9946427291534848
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.421229416347756,
+     "fixture_Fz_max_N": 1.4601638644098593,
+     "fixture_Fz_sample_mean_N": 1.421843763191589,
+     "fixture_impulse_z_Ns": 3.951017777446762,
+     "blade_Fz_on_tool_mean_N": 0.008637264894859912,
+     "min_particle_z_m": 0.00037533033173531294,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.474218728020787e-05,
+     "min_det_F": 0.9556745968977287
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4134901401311244,
+     "fixture_Fz_max_N": 1.4140550427261984,
+     "fixture_Fz_sample_mean_N": 1.413219389654903,
+     "fixture_impulse_z_Ns": 0.42404704203933735,
+     "blade_Fz_on_tool_mean_N": 0.0008396075615261603,
+     "min_particle_z_m": 0.00037826778134331107,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.210049079731107e-05,
+     "min_det_F": 0.956469120585694
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.412420700328034,
+     "fixture_Fz_max_N": 1.412798338984954,
+     "fixture_Fz_sample_mean_N": 1.412436133517546,
+     "fixture_impulse_z_Ns": 2.401115190557658,
+     "blade_Fz_on_tool_mean_N": -0.00021971063608147874,
+     "min_particle_z_m": 0.0003788314643315971,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.122923852875829e-05,
+     "min_det_F": 0.9572125575976648
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399633886875,
+     "fixture_Fz_max_N": 1.4126404214383619,
+     "fixture_Fz_sample_mean_N": 1.412640381817687,
+     "fixture_impulse_z_Ns": 4.096655893827194,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00037908917875029147,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.09107262082398e-05,
+     "min_det_F": 0.9573165027248071
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.00037908938247710466,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.00037908938247710466,
+    "min_particle_z_near_plane_m": 0.00042270933045074344
+   },
+   "det_F_end_hold": {
+    "min": 0.9571558833122253,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005615361966192722,
+     0.004484516102820635,
+     0.0034378296695649624
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.957316517829895,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005623663775622845,
+     0.00448418827727437,
+     0.003441574750468135
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0009176952298730612,
+     "near_plane_z_median_m": 0.0008245939097832888,
+     "far_z_mean_m": 0.00043065687565831465,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009114995482377708,
+     "near_plane_z_median_m": 0.0008204743498936296,
+     "far_z_mean_m": 0.00043080778057143714,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.0009112095576710999,
+     "near_plane_z_median_m": 0.000821083493065089,
+     "far_z_mean_m": 0.0004308220555152123,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "S_P025",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "A/B",
+   "support": "solid",
+   "declared_h_m": 0.00025,
+   "edge_stop_local_z_m": 0.00025,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_003",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "S_P025",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_003"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 551.4367328549997,
+   "loop_wall_s": 541.3270195210062,
+   "formal": true,
+   "git_sha": "1c9160546e923e1c782719497eaca52cba4c92ad",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.1,
+    "separated_duration_to_end_s": 4.9,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.04119374900408471,
+      1.5532321534331292e-07,
+      0.00987295697939054
+     ],
+     [
+      -0.04119368371549001,
+      7.034116909478064e-09,
+      0.0098729255700837
+     ]
+    ],
+    "centroid_x_gap_m": 0.08238743271957472,
+    "min_particle_center_distance_near_plane_m": 0.0018746036664022369,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4130446652745372,
+     "fixture_Fz_max_N": 1.591226296386829,
+     "fixture_Fz_sample_mean_N": 1.4203622778803453,
+     "fixture_impulse_z_Ns": 0.45217429288785194,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00040737749077379704,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 5.5087090004235506e-05,
+     "min_det_F": 0.9946426695313371
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4212675921082745,
+     "fixture_Fz_max_N": 1.4601338316714423,
+     "fixture_Fz_sample_mean_N": 1.4218851483273403,
+     "fixture_impulse_z_Ns": 3.951123906061003,
+     "blade_Fz_on_tool_mean_N": 0.008673967977733748,
+     "min_particle_z_m": 0.0003753370838239789,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.513241143897176e-05,
+     "min_det_F": 0.955674565861089
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4129558316743753,
+     "fixture_Fz_max_N": 1.4136180348844027,
+     "fixture_Fz_sample_mean_N": 1.4126872272925444,
+     "fixture_impulse_z_Ns": 0.42388674950231264,
+     "blade_Fz_on_tool_mean_N": 0.00031898830608649104,
+     "min_particle_z_m": 0.0003769541799556464,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.466628449037671e-05,
+     "min_det_F": 0.9564918001495656
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4124263476949195,
+     "fixture_Fz_max_N": 1.412745352388413,
+     "fixture_Fz_sample_mean_N": 1.4124327577156766,
+     "fixture_impulse_z_Ns": 2.4011247910813633,
+     "blade_Fz_on_tool_mean_N": -0.0002140733394138378,
+     "min_particle_z_m": 0.00037738069659098983,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.267884211614728e-05,
+     "min_det_F": 0.9572189160871406
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399450863876,
+     "fixture_Fz_max_N": 1.4126401251397807,
+     "fixture_Fz_sample_mean_N": 1.412640419351236,
+     "fixture_impulse_z_Ns": 4.096655840750524,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00037762350984849036,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.237662794068456e-05,
+     "min_det_F": 0.9573157549826831
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.00037762350984849036,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.00037762350984849036,
+    "min_particle_z_near_plane_m": 0.0004226787423249334
+   },
+   "det_F_end_hold": {
+    "min": 0.957165002822876,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.0056162686087191105,
+     0.004485226236283779,
+     0.0034384308382868767
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9573157429695129,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.00561379874125123,
+     0.004484837409108877,
+     0.0034405409824103117
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.000906420114915818,
+     "near_plane_z_median_m": 0.0008139815763570368,
+     "far_z_mean_m": 0.000430706882965751,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009117274894379079,
+     "near_plane_z_median_m": 0.0008213293622247875,
+     "far_z_mean_m": 0.00043080547843904547,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.0009110613027587533,
+     "near_plane_z_median_m": 0.0008209412335418165,
+     "far_z_mean_m": 0.0004308215243023975,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "S_000",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "A/B",
+   "support": "solid",
+   "declared_h_m": 0.0,
+   "edge_stop_local_z_m": 6.987683001669076e-17,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_004",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "S_000",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_004"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 524.9968820979993,
+   "loop_wall_s": 514.6757399310009,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.1,
+    "separated_duration_to_end_s": 4.9,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.04119636566399529,
+      1.2636630587281716e-07,
+      0.009872912510357617
+     ],
+     [
+      -0.04119533547474954,
+      3.4583305629711716e-08,
+      0.0098729029578693
+     ]
+    ],
+    "centroid_x_gap_m": 0.08239170113874483,
+    "min_particle_center_distance_near_plane_m": 0.001873463741151824,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.413044662181969,
+     "fixture_Fz_max_N": 1.5912260984473034,
+     "fixture_Fz_sample_mean_N": 1.420362319601506,
+     "fixture_impulse_z_Ns": 0.4521742918982301,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00040737816016189754,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 5.50866243429482e-05,
+     "min_det_F": 0.994643025349772
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4212791721413602,
+     "fixture_Fz_max_N": 1.4601343328922571,
+     "fixture_Fz_sample_mean_N": 1.421874238940196,
+     "fixture_impulse_z_Ns": 3.9795816819958088,
+     "blade_Fz_on_tool_mean_N": 0.008686463261734976,
+     "min_particle_z_m": 0.00037448087823577225,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.583509432151914e-05,
+     "min_det_F": 0.955662430860205
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4127119393903842,
+     "fixture_Fz_max_N": 1.4132418327875975,
+     "fixture_Fz_sample_mean_N": 1.4125488150324044,
+     "fixture_impulse_z_Ns": 0.42381358181711526,
+     "blade_Fz_on_tool_mean_N": 6.340557081744673e-05,
+     "min_particle_z_m": 0.0003766940499190241,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.543090032413602e-05,
+     "min_det_F": 0.9565766716424444
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.41243717495305,
+     "fixture_Fz_max_N": 1.412865869021771,
+     "fixture_Fz_sample_mean_N": 1.4124490704233956,
+     "fixture_impulse_z_Ns": 2.401143197420185,
+     "blade_Fz_on_tool_mean_N": -0.0002032076650279765,
+     "min_particle_z_m": 0.0003770730399992317,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.302995072677732e-05,
+     "min_det_F": 0.9572287862112377
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399979090587,
+     "fixture_Fz_max_N": 1.4126403992261032,
+     "fixture_Fz_sample_mean_N": 1.4126404551116016,
+     "fixture_impulse_z_Ns": 4.06840319397809,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.000377230579033494,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.276964606717229e-05,
+     "min_det_F": 0.9573056740037146
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.0003772315103560686,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.0003772315103560686,
+    "min_particle_z_near_plane_m": 0.000422762765083462
+   },
+   "det_F_end_hold": {
+    "min": 0.9571780562400818,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005619112402200699,
+     0.00448485417291522,
+     0.0034385197795927525
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9573056697845459,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005616328679025173,
+     0.00448448583483696,
+     0.0034403912723064423
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0009019943536259234,
+     "near_plane_z_median_m": 0.0008116446551866829,
+     "far_z_mean_m": 0.0004307755522216515,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009116212022490799,
+     "near_plane_z_median_m": 0.000821824069134891,
+     "far_z_mean_m": 0.00043080845662431483,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.0009108530357480049,
+     "near_plane_z_median_m": 0.0008210814266931266,
+     "far_z_mean_m": 0.0004308234317965495,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "S_M025_DIAG",
+   "label": "DIAGNOSTIC_PENETRATION_NOT_ADOPTABLE",
+   "option": "diagnostic",
+   "support": "solid",
+   "declared_h_m": -0.00025,
+   "edge_stop_local_z_m": -0.00025,
+   "blade_overlaps_board_box_m": 0.0002500000000000002,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_005",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "S_M025_DIAG",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_005"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 531.8406080530112,
+   "loop_wall_s": 521.530700053001,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.1,
+    "separated_duration_to_end_s": 4.9,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.041198801433156025,
+      -4.7495929417659576e-08,
+      0.009872908101043581
+     ],
+     [
+      -0.04119926062730694,
+      2.1217463533216448e-07,
+      0.009872856871349835
+     ]
+    ],
+    "centroid_x_gap_m": 0.08239806206046296,
+    "min_particle_center_distance_near_plane_m": 0.0018819906949226254,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4130446642801617,
+     "fixture_Fz_max_N": 1.5912259538799545,
+     "fixture_Fz_sample_mean_N": 1.4203623772872929,
+     "fixture_impulse_z_Ns": 0.45217429256965175,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00040737775270827115,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 5.508802132681012e-05,
+     "min_det_F": 0.9946426099112469
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4212359601402487,
+     "fixture_Fz_max_N": 1.4601118147576422,
+     "fixture_Fz_sample_mean_N": 1.4218306394627265,
+     "fixture_impulse_z_Ns": 4.036310126798306,
+     "blade_Fz_on_tool_mean_N": 0.00864431214673966,
+     "min_particle_z_m": 0.00037450535455718637,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.579923840239644e-05,
+     "min_det_F": 0.955671175472757
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4126837155904401,
+     "fixture_Fz_max_N": 1.4133497481686799,
+     "fixture_Fz_sample_mean_N": 1.412506916336078,
+     "fixture_impulse_z_Ns": 0.42380511467713206,
+     "blade_Fz_on_tool_mean_N": 1.8852855442711796e-05,
+     "min_particle_z_m": 0.00037680481909774244,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.377361180260777e-05,
+     "min_det_F": 0.9567405649564336
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4124718949264108,
+     "fixture_Fz_max_N": 1.4129503205486722,
+     "fixture_Fz_sample_mean_N": 1.4124765182756989,
+     "fixture_impulse_z_Ns": 2.4294516592734268,
+     "blade_Fz_on_tool_mean_N": -0.00016850784071044303,
+     "min_particle_z_m": 0.00037716416409239173,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.298478158190846e-05,
+     "min_det_F": 0.9572916856412387
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399041319548,
+     "fixture_Fz_max_N": 1.4126410667673743,
+     "fixture_Fz_sample_mean_N": 1.4126403090553683,
+     "fixture_impulse_z_Ns": 3.983644529652113,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.0003772065683733672,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.279339479282498e-05,
+     "min_det_F": 0.9573477707618115
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.0003772065683733672,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.0003772065683733672,
+    "min_particle_z_near_plane_m": 0.0004190474865026772
+   },
+   "det_F_end_hold": {
+    "min": 0.9572470188140869,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.00562343979254365,
+     0.004484817385673523,
+     0.003438768209889531
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9573478102684021,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005614961963146925,
+     0.004484531935304403,
+     0.00344027834944427
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0009129790705628693,
+     "near_plane_z_median_m": 0.0008214935369323939,
+     "far_z_mean_m": 0.00043072447771555744,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009114451240748167,
+     "near_plane_z_median_m": 0.0008214827976189554,
+     "far_z_mean_m": 0.00043081364557535077,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.0009119075257331133,
+     "near_plane_z_median_m": 0.0008221982570830733,
+     "far_z_mean_m": 0.00043082455231342466,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "D8_M400",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "D",
+   "support": "slot8",
+   "declared_h_m": -0.004,
+   "edge_stop_local_z_m": -0.0039999999999999316,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_006",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "D8_M400",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_006"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 531.83646494399,
+   "loop_wall_s": 521.5790850519988,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.1,
+    "separated_duration_to_end_s": 4.9,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.04127006234366865,
+      3.119736635803642e-07,
+      0.00987263913301339
+     ],
+     [
+      -0.04126959329639475,
+      2.7665597857175265e-07,
+      0.009872848809754337
+     ]
+    ],
+    "centroid_x_gap_m": 0.08253965564006341,
+    "min_particle_center_distance_near_plane_m": 0.002052570091669134,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4128792289247272,
+     "fixture_Fz_max_N": 1.5458329463910485,
+     "fixture_Fz_sample_mean_N": 1.4089545296990562,
+     "fixture_impulse_z_Ns": 0.4521213532559127,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.0003122816560789943,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00010143389226868749,
+     "min_det_F": 0.9943962892421678
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.420966841842943,
+     "fixture_Fz_max_N": 1.4615708610301201,
+     "fixture_Fz_sample_mean_N": 1.4217453598336478,
+     "fixture_impulse_z_Ns": 4.547093893897418,
+     "blade_Fz_on_tool_mean_N": 0.008350825483719182,
+     "min_particle_z_m": 0.0003005836915690452,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.658899994567037e-05,
+     "min_det_F": 0.9557416371814706
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4126521902807332,
+     "fixture_Fz_max_N": 1.4128434697372023,
+     "fixture_Fz_sample_mean_N": 1.4126150318778175,
+     "fixture_impulse_z_Ns": 0.42379565708421996,
+     "blade_Fz_on_tool_mean_N": 1.232157873213661e-05,
+     "min_particle_z_m": 0.00034885050263255835,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.432588608935475e-05,
+     "min_det_F": 0.9574127690899177
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.412524360127521,
+     "fixture_Fz_max_N": 1.4127451327164682,
+     "fixture_Fz_sample_mean_N": 1.4125350445927767,
+     "fixture_impulse_z_Ns": 2.68379628424229,
+     "blade_Fz_on_tool_mean_N": -0.00011581077533593855,
+     "min_particle_z_m": 0.0003681217785924673,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.3769420851022e-05,
+     "min_det_F": 0.9574250361942538
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.41263997214856,
+     "fixture_Fz_max_N": 1.412640563861506,
+     "fixture_Fz_sample_mean_N": 1.4126404527965837,
+     "fixture_impulse_z_Ns": 3.220819136498717,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00037678718217648566,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.32152839191258e-05,
+     "min_det_F": 0.9574634995509849
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.0003769563336391002,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.0003769563336391002,
+    "min_particle_z_near_plane_m": 0.00037773369695059955
+   },
+   "det_F_end_hold": {
+    "min": 0.9574354887008667,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.005695270374417305,
+     0.0044866930693387985,
+     0.003435221267864108
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9574742913246155,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.00567507604137063,
+     0.004486975260078907,
+     0.003441423177719116
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0008996459073387086,
+     "near_plane_z_median_m": 0.0008032874902710319,
+     "far_z_mean_m": 0.00043086675234371794,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009033996029756963,
+     "near_plane_z_median_m": 0.0008107512257993221,
+     "far_z_mean_m": 0.00043085616047028454,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.000908721995074302,
+     "near_plane_z_median_m": 0.0008198949508368969,
+     "far_z_mean_m": 0.00043084551018546333,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "D8_000",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "D",
+   "support": "slot8",
+   "declared_h_m": 0.0,
+   "edge_stop_local_z_m": 6.987683001669076e-17,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_007",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "D8_000",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_007"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 407.86005229500006,
+   "loop_wall_s": 397.8447032940021,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.1,
+    "separated_duration_to_end_s": 4.9,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.041196906230431554,
+      1.1089470839002596e-07,
+      0.009872572471443462
+     ],
+     [
+      -0.0411965291410645,
+      9.135953465992565e-08,
+      0.00987265437331676
+     ]
+    ],
+    "centroid_x_gap_m": 0.08239343537149606,
+    "min_particle_center_distance_near_plane_m": 0.0018126289811140888,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4128792303702649,
+     "fixture_Fz_max_N": 1.5458324766899971,
+     "fixture_Fz_sample_mean_N": 1.408954760649988,
+     "fixture_impulse_z_Ns": 0.4521213537184848,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.00031228430452756584,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00010143342660740018,
+     "min_det_F": 0.9943960521739921
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4214005064180455,
+     "fixture_Fz_max_N": 1.4616287443607319,
+     "fixture_Fz_sample_mean_N": 1.422326005501039,
+     "fixture_impulse_z_Ns": 3.9799214179705276,
+     "blade_Fz_on_tool_mean_N": 0.008788779776638389,
+     "min_particle_z_m": 0.00034244684502482414,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.658154936507344e-05,
+     "min_det_F": 0.9557571004511115
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.412712207756111,
+     "fixture_Fz_max_N": 1.4132078229892122,
+     "fixture_Fz_sample_mean_N": 1.4125270312326255,
+     "fixture_impulse_z_Ns": 0.42381366232683326,
+     "blade_Fz_on_tool_mean_N": 6.480169130185232e-05,
+     "min_particle_z_m": 0.00037615938344970345,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.603067206218839e-05,
+     "min_det_F": 0.9566604746857027
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4124460593809667,
+     "fixture_Fz_max_N": 1.412880761779955,
+     "fixture_Fz_sample_mean_N": 1.4124563015235252,
+     "fixture_impulse_z_Ns": 2.4011583009476434,
+     "blade_Fz_on_tool_mean_N": -0.00019437355737917481,
+     "min_particle_z_m": 0.0003765248984564096,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.357151480391622e-05,
+     "min_det_F": 0.9573217395417949
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399314820128,
+     "fixture_Fz_max_N": 1.4126407170326956,
+     "fixture_Fz_sample_mean_N": 1.4126403861184964,
+     "fixture_impulse_z_Ns": 4.068403002668197,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": 0.0003665994736365974,
+     "max_particles_below_board_top": 0,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 7.33060878701508e-05,
+     "min_det_F": 0.9573820611219559
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": 0.0003665994736365974,
+    "particles_below_board_top": 0,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.00037669698940590024,
+    "min_particle_z_near_plane_m": 0.0003665994736365974
+   },
+   "det_F_end_hold": {
+    "min": 0.9572740197181702,
+    "reference_local_m": [
+     -0.0044999998062849045,
+     -0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     -0.005619419272989035,
+     -0.004482716787606478,
+     0.003435790305957198
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.957382082939148,
+    "reference_local_m": [
+     -0.0044999998062849045,
+     -0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     -0.0056265732273459435,
+     -0.0044820914044976234,
+     0.003438018960878253
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0008976223180070519,
+     "near_plane_z_median_m": 0.0008098818070720881,
+     "far_z_mean_m": 0.00043079088559413016,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0009075887501239777,
+     "near_plane_z_median_m": 0.0008203707984648645,
+     "far_z_mean_m": 0.00043082334554249733,
+     "layer0_particles_above_0_6mm": 308
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.0009064425830729306,
+     "near_plane_z_median_m": 0.0008197309798561037,
+     "far_z_mean_m": 0.00043083792076989387,
+     "layer0_particles_above_0_6mm": 308
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "D40_M400",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "D (CUT-01-R reference gap)",
+   "support": "slot40",
+   "declared_h_m": -0.004,
+   "edge_stop_local_z_m": -0.0039999999999999316,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_008",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "D40_M400",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_008"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 403.24674815700564,
+   "loop_wall_s": 392.42621017400234,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 2,
+   "component_mass_fractions_end_hold": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "components_end_settle": 2,
+   "component_masses_end_settle_kg": [
+    0.07200000000005478,
+    0.07200000000005478
+   ],
+   "component_mass_fractions_end_settle": [
+    0.5000000000003806,
+    0.5000000000003806
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": true,
+    "two_main_parts_together_ge_99pct": true
+   },
+   "persistence": {
+    "first_separated_history_time_s": 3.2,
+    "separated_duration_to_end_s": 4.8,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": true,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "PASS",
+    "outcome_status": "PASS"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 0,
+   "direct_code0_bridges_end_settle": 0,
+   "bridge_layers_end_settle": {},
+   "separation_end_settle": {
+    "centroid_local_m": [
+     [
+      0.041372340753354345,
+      4.94019352117731e-07,
+      0.009700154314331869
+     ],
+     [
+      -0.04137382714507857,
+      5.93138419693909e-07,
+      0.009699179534679246
+     ]
+    ],
+    "centroid_x_gap_m": 0.08274616789843292,
+    "min_particle_center_distance_near_plane_m": 0.0021501627993107926,
+    "note": "Current particle centres; separation is the reference stencil topology, not this geometric distance"
+   },
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4125388031681632,
+     "fixture_Fz_max_N": 1.5373423831671342,
+     "fixture_Fz_sample_mean_N": 1.4145243502364746,
+     "fixture_impulse_z_Ns": 0.45201241701381223,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": -0.0007930651190690696,
+     "max_particles_below_board_top": 1080,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00016079406486824155,
+     "min_det_F": 0.9779371092429898
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4245797734062795,
+     "fixture_Fz_max_N": 1.4734631324530754,
+     "fixture_Fz_sample_mean_N": 1.424396246471574,
+     "fixture_impulse_z_Ns": 4.558655274900095,
+     "blade_Fz_on_tool_mean_N": 0.011930600528738816,
+     "min_particle_z_m": -0.0007367822690866888,
+     "max_particles_below_board_top": 1020,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00022997596533969045,
+     "min_det_F": 0.9384646467787597
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.4133292880015143,
+     "fixture_Fz_max_N": 1.415938324925461,
+     "fixture_Fz_sample_mean_N": 1.413019124517678,
+     "fixture_impulse_z_Ns": 0.4239987864004543,
+     "blade_Fz_on_tool_mean_N": 0.0006804521065835919,
+     "min_particle_z_m": -0.0007056479225866497,
+     "max_particles_below_board_top": 830,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00022616033675149083,
+     "min_det_F": 0.9406320694764952
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4126055500541443,
+     "fixture_Fz_max_N": 1.412735781867831,
+     "fixture_Fz_sample_mean_N": 1.4126141493306608,
+     "fixture_impulse_z_Ns": 2.6839505451028742,
+     "blade_Fz_on_tool_mean_N": -3.4601212273867676e-05,
+     "min_particle_z_m": -0.0006538586458191276,
+     "max_particles_below_board_top": 808,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.0002222301554866135,
+     "min_det_F": 0.9409532270382513
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399948608093,
+     "fixture_Fz_max_N": 1.4126414874826683,
+     "fixture_Fz_sample_mean_N": 1.4126404435378457,
+     "fixture_impulse_z_Ns": 3.220819188282645,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": -0.0006506830686703324,
+     "max_particles_below_board_top": 808,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00022110698046162724,
+     "min_det_F": 0.9409682646013663
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": -0.0006506830686703324,
+    "particles_below_board_top": 808,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.0002288932300871238,
+    "min_particle_z_near_plane_m": -0.0006506830686703324
+   },
+   "det_F_end_hold": {
+    "min": 0.9409147500991821,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.006007940974086523,
+     0.004475478548556566,
+     0.0025203023105859756
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9409683346748352,
+    "reference_local_m": [
+     0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     0.006002623122185469,
+     0.004475531168282032,
+     0.0025295361410826445
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": true,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.00010117701458511874,
+     "near_plane_z_median_m": 1.2911894373246469e-05,
+     "far_z_mean_m": 0.0004334437075885944,
+     "layer0_particles_above_0_6mm": 0
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.0001326586789218709,
+     "near_plane_z_median_m": 4.0251106838695705e-05,
+     "far_z_mean_m": 0.00043336509355382686,
+     "layer0_particles_above_0_6mm": 0
+    },
+    "FINAL": {
+     "near_plane_z_max_m": 0.00014273414853960276,
+     "near_plane_z_median_m": 4.7180454203044064e-05,
+     "far_z_mean_m": 0.0004333305440765495,
+     "layer0_particles_above_0_6mm": 0
+    }
+   },
+   "status": "PASS",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  },
+  {
+   "row": "D40_000",
+   "label": "CANDIDATE_STUDY_ROW",
+   "option": "D (CUT-01-R reference gap)",
+   "support": "slot40",
+   "declared_h_m": 0.0,
+   "edge_stop_local_z_m": 6.987683001669076e-17,
+   "blade_overlaps_board_box_m": 0.0,
+   "lowest_point_is_edge_vertex": true,
+   "dir": "artifacts/wp12/workcell_throughcut_009",
+   "command": [
+    "scripts/run_wp12_board_throughcut.py",
+    "--row",
+    "D40_000",
+    "--device",
+    "cuda:0",
+    "--out",
+    "artifacts/wp12/workcell_throughcut_009"
+   ],
+   "seed": 42,
+   "device": "cuda:0",
+   "wall_s": 402.9990396229987,
+   "loop_wall_s": 392.3970690999995,
+   "formal": true,
+   "git_sha": "dd1538b32bd16f3176d28d9c0a6b22e78056d5dd",
+   "git_dirty": true,
+   "components_end_hold": 1,
+   "component_mass_fractions_end_hold": [
+    0.9999999999996599
+   ],
+   "components_end_settle": 1,
+   "component_masses_end_settle_kg": [
+    0.143999999999951
+   ],
+   "component_mass_fractions_end_settle": [
+    0.9999999999996599
+   ],
+   "two_part_v1_style": {
+    "two_substantial_parts_each_ge_40pct": false,
+    "two_main_parts_together_ge_99pct": false
+   },
+   "persistence": {
+    "first_separated_history_time_s": null,
+    "separated_duration_to_end_s": null,
+    "count_drops_after_separation_s": [],
+    "persists_ge_0_5_s": false,
+    "history_stride_control_steps": 5
+   },
+   "configured_sever_goal": {
+    "verdict": "FAIL",
+    "outcome_status": "FAIL"
+   },
+   "bottom_layer_links_end_hold": {
+    "0": {
+     "links": 30,
+     "conflicting": 24,
+     "unconflicted": 6,
+     "both_unassigned": 6,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "bottom_layer_links_end_settle": {
+    "0": {
+     "links": 30,
+     "conflicting": 24,
+     "unconflicted": 6,
+     "both_unassigned": 6,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "1": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "2": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    },
+    "3": {
+     "links": 30,
+     "conflicting": 30,
+     "unconflicted": 0,
+     "both_unassigned": 0,
+     "one_unassigned": 0,
+     "same_side": 0
+    }
+   },
+   "layers_with_unconflicted_links_end_settle": [
+    0
+   ],
+   "column_unassigned_by_layer_end_settle": {
+    "0": 48,
+    "1": 0,
+    "2": 0,
+    "3": 0
+   },
+   "column_particles_per_layer": 240,
+   "direct_code0_bridges_end_hold": 48,
+   "direct_code0_bridges_end_settle": 48,
+   "bridge_layers_end_settle": {
+    "0": 48
+   },
+   "separation_end_settle": null,
+   "board_contact": {
+    "weight_N": 1.4126399999999997,
+    "pre_contact_rest": {
+     "fixture_Fz_mean_N": 1.4125387972860075,
+     "fixture_Fz_max_N": 1.537341766932794,
+     "fixture_Fz_sample_mean_N": 1.4145243375409497,
+     "fixture_impulse_z_Ns": 0.4520124151315224,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": -0.0007930553401820362,
+     "max_particles_below_board_top": 1080,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.0001607963931746781,
+     "min_det_F": 0.9779377301337255
+    },
+    "cut": {
+     "fixture_Fz_mean_N": 1.4252201087843859,
+     "fixture_Fz_max_N": 1.4734626314465178,
+     "fixture_Fz_sample_mean_N": 1.42511069077337,
+     "fixture_impulse_z_Ns": 3.9906163045962804,
+     "blade_Fz_on_tool_mean_N": 0.012585524696838555,
+     "min_particle_z_m": -0.0005348934209905565,
+     "max_particles_below_board_top": 1020,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.0001844557118602097,
+     "min_det_F": 0.9384704529853569
+    },
+    "hold": {
+     "fixture_Fz_mean_N": 1.412805298524101,
+     "fixture_Fz_max_N": 1.4189539735316647,
+     "fixture_Fz_sample_mean_N": 1.4119238507452698,
+     "fixture_impulse_z_Ns": 0.42384158955723034,
+     "blade_Fz_on_tool_mean_N": 6.886157279950567e-06,
+     "min_particle_z_m": -0.0005642694304697216,
+     "max_particles_below_board_top": 796,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00021659053163602948,
+     "min_det_F": 0.9386978191578177
+    },
+    "withdraw": {
+     "fixture_Fz_mean_N": 1.4109624874772455,
+     "fixture_Fz_max_N": 1.4182692619435089,
+     "fixture_Fz_sample_mean_N": 1.4108235172820858,
+     "fixture_impulse_z_Ns": 2.398636228711317,
+     "blade_Fz_on_tool_mean_N": -0.0016776185763694015,
+     "min_particle_z_m": -0.0008789388812147081,
+     "max_particles_below_board_top": 1088,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.0002196187269873917,
+     "min_det_F": 0.9403294081899827
+    },
+    "settle": {
+     "fixture_Fz_mean_N": 1.4126399067435225,
+     "fixture_Fz_max_N": 1.4126432083094294,
+     "fixture_Fz_sample_mean_N": 1.4126401936432957,
+     "fixture_impulse_z_Ns": 4.068402931421345,
+     "blade_Fz_on_tool_mean_N": 0.0,
+     "min_particle_z_m": -0.0008942786371335387,
+     "max_particles_below_board_top": 1088,
+     "max_particle_centres_inside_board": 0,
+     "max_fixture_penetration_stat_m": 0.00017643655883148313,
+     "min_det_F": 0.9410339081811724
+    }
+   },
+   "board_end_settle": {
+    "min_particle_z_m": -0.0008942786371335387,
+    "particles_below_board_top": 1088,
+    "particle_centres_inside_board_boxes": 0,
+    "min_board_sdf_m": 0.00027356515056453645,
+    "min_particle_z_near_plane_m": -0.0008942786371335387
+   },
+   "det_F_end_hold": {
+    "min": 0.9400461912155151,
+    "reference_local_m": [
+     -0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     -0.005870050750672817,
+     0.0044797202572226524,
+     0.0025494955480098724
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "det_F_end_settle": {
+    "min": 0.9410598874092102,
+    "reference_local_m": [
+     -0.0044999998062849045,
+     0.0044999998062849045,
+     0.0035000001080334187
+    ],
+    "current_local_m": [
+     -0.005305080208927393,
+     0.004477492533624172,
+     0.0023606314789503813
+    ],
+    "below_0_5": 0,
+    "nonpositive": 0
+   },
+   "clean_through_cut": false,
+   "bottom_layer_lift": {
+    "CUT": {
+     "near_plane_z_max_m": 0.0001919847127282992,
+     "near_plane_z_median_m": 0.00011529092080309056,
+     "far_z_mean_m": 0.0004327019694416473,
+     "layer0_particles_above_0_6mm": 0
+    },
+    "HOLD": {
+     "near_plane_z_max_m": 0.00018199280020780861,
+     "near_plane_z_median_m": 0.00011008248111465946,
+     "far_z_mean_m": 0.0004331147960620001,
+     "layer0_particles_above_0_6mm": 0
+    },
+    "FINAL": {
+     "near_plane_z_max_m": -4.9691094318404794e-05,
+     "near_plane_z_median_m": -0.00013656125520356,
+     "far_z_mean_m": 0.0004336423044539212,
+     "layer0_particles_above_0_6mm": 0
+    }
+   },
+   "status": "FAIL",
+   "status_meaning": "PASS = clean through-cut (>= 2 components, v1-style mass split, persists >= 0.5 s, zero bridges)"
+  }
+ ],
+ "table_markdown": "| row | h (mm) | comp hold/settle | mass fractions (settle) | L0 conflict/links | L1 | L2 | bridges | min z (mm) | below top | Fz hold mean/max (N) | min detF | wall (s) | result |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n| S_P100 | +1.000 | 1/1 | 1.000 | 24/30 | 30/30 | 30/30 | 172 | 0.378 | 0 | 1.41/1.41 | 0.957 | 552 | FAIL |\n| S_P050 | +0.500 | 1/1 | 1.000 | 28/30 | 30/30 | 30/30 | 16 | 0.378 | 0 | 1.41/1.41 | 0.957 | 553 | FAIL |\n| S_P0375 | +0.375 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | 0.379 | 0 | 1.41/1.41 | 0.957 | 540 | PASS |\n| S_P025 | +0.250 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | 0.378 | 0 | 1.41/1.41 | 0.957 | 551 | PASS |\n| S_000 | +0.000 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | 0.377 | 0 | 1.41/1.41 | 0.957 | 525 | PASS |\n| S_M025_DIAG DIAG | -0.250 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | 0.377 | 0 | 1.41/1.41 | 0.957 | 532 | DIAGNOSTIC |\n| D8_M400 | -4.000 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | 0.377 | 0 | 1.41/1.41 | 0.957 | 532 | PASS |\n| D8_000 | +0.000 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | 0.367 | 0 | 1.41/1.41 | 0.957 | 408 | PASS |\n| D40_M400 | -4.000 | 2/2 | 0.500, 0.500 | 30/30 | 30/30 | 30/30 | 0 | -0.651 | 808 | 1.41/1.42 | 0.941 | 403 | PASS |\n| D40_000 | +0.000 | 1/1 | 1.000 | 24/30 | 30/30 | 30/30 | 48 | -0.894 | 1088 | 1.41/1.42 | 0.940 | 403 | FAIL |",
+ "smallest_nonnegative_h_with_clean_through_cut_m": 0.0,
+ "diagnostic_rows": [
+  "S_M025_DIAG"
+ ],
+ "diagnostic_rule": "DIAGNOSTIC_PENETRATION_NOT_ADOPTABLE: the edge enters the rigid board; never a candidate",
+ "analysis_notes": {
+  "blade_vs_fixture_code_answer": {
+   "summary": "TLMPM does not know that the board is rigid for the blade. The kinematic blade is a prescribed SDF that acts only on material particles. Nothing stops, resists or reports a blade entering a fixture box. Fixture boxes act only on material particles, through a per-particle penalty impulse with Coulomb friction. There is no grid boundary condition.",
+   "details": [
+    "kinematic_env.py:135-136 (HEAD dd1538b): the edge is set to the commanded target with no collision check and passed to LiveCuttingMaterial.advance. live_material.py:265 assigns the interpolated poses to the solver unchanged.",
+    "tlmpm_v5.py:185-296 _rigid_contacts: the blade is the convex polygon SDF (_profile_sdf, :231) minus the contact radius 0.45 mm. Its impulse ji goes into the particle impulse (:290) and its negative into the tool reaction (:292). Only material particles are tested. No fixture box is ever compared with the blade pose. stats[3] (:296) is the max blade-into-material penetration, not blade-into-board.",
+    "tlmpm_v5.py:299-327 _obstacle_contacts: the handle box is tool-attached and also pushes material only.",
+    "tlmpm_v5.py:720-733 and 848-851: the fixture boxes and table plane (live_material.py:178-180, built from task.fixture_boxes_local with floor=False and fixture_walls=False at :167) go only to the fixture_contacts kernel. fixture_contacts.py:11-28 runs per particle: the box SDF gap is sdf - radius, the impulse is _contact_impulse (tlmpm.py:113-123: penalty jn = k m/dt max(-predicted gap, 0) with k = contact_stiffness 0.1, and friction capped at mu jn with mu = contact_friction = material friction 0.3), and stats[0] is the max fixture/table penetration. The impulse enters P2G with gravity (tlmpm_v5.py:513). _grid_update (tlmpm_v5.py:532) applies no boundary condition.",
+    "The board impulse is not in bed.reaction (live_material.py:282 reads blade and handle only), so no runtime output reports board forces. This study measures them by material momentum balance (dP - M g dt + reaction) and cross-checks with a NumPy replica of the fixture kernel. At rest this gives 1.413 N against a weight of 1.413 N.",
+    "Planning is the only place that knows about supports. goal_planner._relief_end (goal_planner.py:237-250) ends a through-cut on the support top when the edge line below the bar would hit a support. That is why the compiled sever_mid plan on the solid board stops at local z = 0.",
+    "Grid domain: tlmpm_v5.py:734-735 builds the grid origin and dims from particle positions only. The board's x/y size does not change the domain or the node count (5850 nodes, dims [45, 13, 10] in every row). Fixture cost is O(particles x boxes) per substep (fixture_contacts.py:19), which is negligible."
+   ]
+  },
+  "bottom_layer_observation": "On the solid board and the 8 mm slot, the bottom-layer particles near the cut lift from their resting centre height of 0.43 mm to 0.80-0.92 mm by the end of the cut. The wedge spreads the halves and the soft provisional material (E 50 kPa, yield 1 kPa) curls up at the cut faces. 308 layer-0 particles end above 0.6 mm; far from the cut the bottom stays at 0.431 mm. The law-4 band (used by law 8; the law-8 lead rule is inactive for a vertical non-plowing descent) labels particles by their current position relative to the edge (local x <= 0). So the clean-cut margin above the board comes partly from this lift and the 0.45 mm resting height. It depends on the material and is not a robust tolerance. At h = +1.0 mm, 172 of 240 layer-0 particles in the |x| < 4 mm stencil column stay unassigned. At +0.5 mm, 16 stay unassigned. At +0.375 mm and below, none do. Only layer 0 is ever bridged.",
+  "recommendation": {
+   "primary": "Option A, made explicit as A+B. Cut to the board surface: end the armed descent with the edge's lowest point exactly at the board top (h = 0, which is what goal_planner._relief_end already plans for a solid board). On cutting_tasks_v1 at 1 mm, h = 0, +0.25 and +0.375 mm all give a clean, persistent two-piece through-cut with zero code-0 bridges and all 30 layer-0 cross-plane links conflicting. h = +0.5 mm leaves 16 bridging particles and one component; h = +1.0 mm leaves 172.",
+   "smallest_nonnegative_clean_h_m": 0.0,
+   "largest_tested_clean_h_m": 0.000375,
+   "first_tested_bridged_h_m": 0.0005,
+   "option_B": "Physical contact. In TLMPM the board is real only for the material: zero particle centres inside the board in every row, max penalty-shell penetration 72-101 um on solid and 8 mm boards, fixture Fz mean during the cut 1.421 N against a weight of 1.413 N. TLMPM has no blade-board contact, so no blade force is blocked. In Native, PhysX knife-board contact must stop the edge at the board top and must be monitored: an edge below the top is a violation, never a silent pass-through. If PhysX stops the edge above h = +0.375 mm, the bottom layer stays bridged; report that as the Option-B limitation.",
+   "option_C": "A sacrificial or compliant board needs a new deformable board model (e.g. a second TLMPM body or a compliant contact law). That is a physics change, out of scope here; kept as a documented study item only. S_M025_DIAG shows that 0.25 mm of penetration buys nothing over h = 0 (identical topology), so there is no cutting reason to need it.",
+   "option_D": "An explicit slotted board stays an opt-in scene option for cuts that must pass below the workpiece bottom (oblique or tilted planes, overtravel plans). The 8 mm slot cuts cleanly at h = -4 mm and h = 0. A 40 mm gap (CUT-01-R) needs the overtravel: at h = 0 the unsupported bar sags 0.5-0.9 mm into the gap and 48 bridging particles remain (FAIL), while h = -4 mm passes (M1a-equivalent). Never a hidden default.",
+   "never": "S_M025_DIAG (h = -0.25 mm) puts the edge 0.25 mm inside the rigid board. TLMPM neither detects nor resists it (stats have no blade-fixture term), so it is DIAGNOSTIC_PENETRATION_NOT_ADOPTABLE and never a candidate.",
+   "caveats": "Kinematic ideal tracking with a single seed and a single material (provisional, uncalibrated) at 1 mm spacing and 4 mm grid. The margin above the board depends on the resting height (contact radius) and the bottom-layer lift, so it must be re-measured for other materials, spacings and live tracking error."
+  },
+  "run_provenance_notes": [
+   "Rows 001-003 ran with the HEAD kinematic_env.py/live_material.py. Rows 004-010 ran after another agent added an opt-in cut_events recorder (default off) to those two files in the working tree. tlmpm_v5.py, fixture_contacts.py and scene_config.py hashes are identical in every run manifest.",
+   "Rows 007-010 ran with the runner after S_P0375 was added (runner_sha256 c336e9f6f6 vs 1f1bdfc99f). Only a ROWS entry and the docstring changed; the plan and measurements are unchanged.",
+   "Three to four rows ran concurrently on cuda:0, sharing it with other tenants. Wall times include that sharing."
+  ]
+ }
+}

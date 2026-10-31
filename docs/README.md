@@ -14,7 +14,35 @@
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
 | Use the reusable WP-11 environment (scene + goal configs, policy API, datasets) | [Policy-ready API](POLICY_READY_API.md) · [WP-11 plan](WP11_PLAN.md) |
 
-## WP-11: reusable cutting environment (2026-10-30)
+## WP-12: current flat-board workcell (2026-10-31)
+
+- [Final validation, Native demos and acceptance matrix](reports/WP12_FINAL_VALIDATION.md).
+- [Generalization: 170 saved kinematic runs, Native coverage and Family D diagnosis](reports/WP12_GENERALIZATION.md).
+- [Workcell](reports/WP12_WORKCELL.md), [ADR 0017](adr/0017-blade-master-flat-board-workcell.md):
+  one board directly on the table, physical knife grasp, explicit slotted-board variant.
+- [Surface decision](reports/WP12_PHASE3_XHIGH_DECISION.md): `particle_surface_v1` default;
+  `cut_aware_surface_v1` opt-in, Surface PARTIAL, both frozen comparison gates FAIL.
+- [Cutting physics](reports/WP12_CUTTING_PHYSICS.md), [resolution study](reports/WP12_RESOLUTION_STUDY.md)
+  and [supported envelope v2](../configs/wp12/supported_envelope_v2.json): law 8 / TLMPM v5 unchanged;
+  contact force NOT CONVERGED, material uncalibrated, solid-board oblique limits retained.
+- [API readiness](reports/WP12_AGENTIC_READINESS.md), [performance](reports/WP12_PERFORMANCE.md)
+  and [environment API](POLICY_READY_API.md); kinematic host-memory gate FAIL remains disclosed.
+- [Plan and phase status](WP12_PLAN.md), [specification](WP12_SPECIFICATION.md),
+  [historical takeover](HANDOFF_WP12_20261031.md), [current progress](PROGRESS.md).
+- [Native gallery](media/wp12/demos/) and [evidence](evidence/wp12/).
+
+## Repository map
+
+| Path | Purpose |
+| --- | --- |
+| `src/robotic_cutting_sim/` | Physics, scene/goal configuration, controllers, environments, rendering and evaluation |
+| `configs/` | Versioned scenes, goals, profiles and frozen protocols |
+| `scripts/` | Reproduction runners and read-only diagnostics/reports |
+| `tests/` | CPU unit/integration checks; GPU probes invoked separately |
+| `docs/`, `docs/evidence/`, `docs/media/` | Reports, compact receipts and published Native media |
+| `artifacts/`, `.deps/`, `.venv/` | Ignored local experiments, assets/dependencies and environment; never bundled with Git |
+
+## WP-11 history: reusable cutting environment (2026-10-30)
 
 - Plan and acceptance: [WP11_PLAN.md](WP11_PLAN.md). Decisions:
   - [ADR 0013](adr/0013-ruler-knife-v2-and-trim-orientation-metrics.md): `ruler_knife_v2` and the τ/ψ/ρ/μ orientation metrics;
@@ -57,7 +85,7 @@
   [ADR 0009](adr/0009-demo3-wrist-depth-retarget.md) (Demo 3 wrist-depth retarget);
   [Native smokes](evidence/phase2/native_smokes_001.json).
 
-## Current scene and validation
+## Earlier scene and validation references
 
 - [Evaluation v2](EVALUATION_V2.md): separate integrity, cutting outcome and
   geometry; Diagnostic/Research/Precision profiles and preserved strict scores.

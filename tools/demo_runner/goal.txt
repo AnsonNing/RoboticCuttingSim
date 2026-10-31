@@ -1,18 +1,19 @@
-完成 RoboticCuttingSim 的 WP-11（使用者 2026-10-30 的規格與補充「Project Goal & Generalization Requirements」）：照 docs/WP11_PLAN.md 的 Phase A–M 與 I，把它做成可重用、可物理互動的切割環境，而不是固定的 Demo。內容包括：
-- ruler_knife_v2 像 /home/ningan/a.png（ADR 0013）；
-- 近水平 TRIM 的 live 流程 HOME → REORIENT → PRE-CUT → SKIM → WITHDRAW → RETURN_HOME；
-- return-to-home 與 episode 狀態機；
-- 場景隨機化與泛化統計；
-- 夾持壓力測試與 law 8 邊界驗證；
-- policy-ready API 與資料收集器；
-- 場景／目標／控制器／評估分離；
-- tlmpm_v5 可擴充多刀歷史（ADR 0014）；
-- 補充 §8 的 Tests A–F。
-執行順序照計畫第 4 節。BladeMaster baseline（final_v4、law 8）與所有凍結門檻不動，新功能一律版本化且 opt-in。先讀 tools/demo_runner/round_prompt.md 並照它的規則做。若是中途恢復，先看：
+完成 RoboticCuttingSim 的 WP-12「Physically Consistent Cut Surfaces, BladeMaster Workcell & Generalized Cutting」（使用者 2026-10-30 的規格，全文在 docs/WP12_SPECIFICATION.md），在分支 claude/wp12-physical-cut-surfaces 上做（起點 main fbe99bd）。依規格 Phase 0–7 的順序：
+- Phase 0：先清掉 repo 所有追蹤文字檔中使用者另一個專案的縮寫字樣（改寫成 agentic control 或直接刪去），並加一個 CPU 測試確保之後不再出現；然後做 audit、baseline freeze、BladeMaster Section III-F 技術研究；寫出 docs/WP12_PLAN.md、WP12_BASELINE_AUDIT.md、WP12_SURFACE_TECH_REVIEW.md；
+- Phase 1：診斷切面不平整的來源（物理／重建／刀具路徑），做多層 debug viewer，跑 G1–G8 幾何測試與量化指標；
+- Phase 2：blade_master_flat_board_v1 工作台。完整木製切割板直接放在桌面，不要灰色墊高支柱，參考 /home/ningan/b.png；刀具外觀參考 /home/ningan/a.png。處理刀刃與實體板的穿切衝突，不得讓刀偷偷穿過剛體板；
+- Phase 3：cut_aware_surface_v1（reference-grid linked volume、Hermite data、local dual contouring、cut-side-aware embedding），與 particle_surface_v1 做量化比較，S1–S9；
+- Phase 4：law 8 失敗區（30–35° 斜切、45° rake、殘留橋）找根因，必要時做版本化的 law 9；支援角度範圍；工件、材料泛化；解析度研究；
+- Phase 5：預先宣告的泛化 benchmark（task families A–H、ID/OOD、可行性分類）；
+- Phase 6：API／觀測／錄製／多 episode／profiling 的 agentic-control 就緒驗收；
+- Phase 7：完整 regression、Native Demo 1–7 影片與對照圖、acceptance matrix。
+物理優先：不得用理想平面修切面、不得只為視覺改粒子、不得放寬評估。final_v4、law 8、WP-11 凍結結果與歷史證據一律不動，新東西版本化且 opt-in。
+repo 內（程式、文件、commit 訊息、README）完全不要出現使用者另一個專案的縮寫字樣；需要提到未來的使用者時，只說 agentic control。
+先讀 tools/demo_runner/round_prompt.md 並照它的規則做。若是中途恢復，先看：
 - git status；
 - docs/PROGRESS.md 最上方「進行中」；
-- docs/WP11_PLAN.md。
-然後確認背景工作，從停下的地方接著做，不重做已完成的部分。規劃、決策、審查用 xhigh（你自己或 rcs-review）；寫程式與實作交給 rcs-impl（high）。每完成一個小步驟就 commit 並 push 到 claude/wp11-cutting-refinement，然後直接接下一步，不要停下來等人。全部 Phase（含 I：final_v4 regression、水平 TRIM 影片、泛化、policy-ready、Tests A–F、CI、文件）完成並經 rcs-review 審查後，依序：
-1. 更新 README（含新影片／場景影像）；
+- docs/WP12_PLAN.md。
+確認背景工作狀態後，從停下的地方接著做，不重做已完成的部分。所有工作都用 effort high（你自己、rcs-impl、rcs-review 皆是），唯一例外：Phase 4（物理引擎與切割規則）的決策、根因分析與審查交給 xhigh 子代理 rcs-xhigh（或以 effort xhigh 啟動的 rcs-review），包括是否做 law 9、law 9 設計、驗收判定；Phase 4 的程式實作與實跑仍交給 rcs-impl（high）。每完成一個小步驟就 commit 並 push 到 claude/wp12-physical-cut-surfaces，然後直接接下一步，不要停下來等人。全部 Phase 完成並經 rcs-review 審查後，依序：
+1. 更新 README（新工作台場景影像、Demo 1–7 影片、ParticleSurface 與 Cut-aware 對照）與 PROGRESS；
 2. 合併到 main 並 push；
 3. 最後才建立 /mnt/data/ningan/lab_records/rcs_demo_runner/DONE。

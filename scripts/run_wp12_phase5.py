@@ -1,0 +1,873 @@
+#!/usr/bin/env python3
+"""WP-12 Phase 5 generalization benchmark runner (config: the FROZEN configs/wp12/benchmark_v1.json).
+
+Every output path is new; nothing is ever overwritten (a resumed stage skips and preserves existing outputs).
+
+Provenance (decision WP12_PHASE5_FREEZE_DECISION.md finding 3): ``--config`` defaults to the FROZEN
+``configs/wp12/benchmark_v1.json``; for a FROZEN config ``--envelope`` defaults to the config's declared ``envelope`` and
+any other envelope is refused, and both files must match their pinned sha256 (``generalization_wp12.FROZEN_SHA256``).
+A DRAFT config (or a FROZEN file whose hash differs) is refused unless ``--dev`` (every output then labelled DEV).
+The queue forwards ``--config``, ``--envelope`` and ``--dev`` to every child.
+
+Subcommands:
+
+* ``samples --split S --out FILE``: the declared samples of a split (scene, goal, draws, envelope parameters). CPU.
+* ``feasibility --split S --out DIR [--only ID ...] [--resume] [--no-preflight]``: pre-execution class of every
+  sample (generalization_wp12.classify_feasibility: scene geometry -> envelope -> C2 motion preflight).
+  ``DIR/<sample_id>.json`` per sample and ``DIR/feasibility_summary[_NNN].json``. CPU (.venv).
+* ``kinematic --sample-id ID --out DIR [--device cuda:1] [--steps N] [--surface-profile P]``: one kinematic
+  ideal-tracking episode (goal planner WaypointPolicy, goal_eval_v2a, physical/geometry quality, runtime). Results
+  are KINEMATIC (runtime_source = kinematic_ideal_tracking), never live. ``--steps`` marks a partial smoke.
+* ``queue --feasibility DIR --out-root DIR --log-dir DIR --queue-log FILE``: ``kinematic`` once for every
+  valid_feasible sample in declared order (resumable; <= N concurrent per device; waits while other jobs use a GPU).
+* ``repeat --feasibility DIR --kinematic-root DIR --out-root DIR``: the declared reproducibility repeats (metrics
+  .reliability.reproducibility: the first valid_feasible ID benchmark sample of each family, rerun once on the other
+  device than its recorded run; verdict and component count are compared in the report).
+* ``demo7-select --feasibility DIR --out FILE``: the Phase 7 Demo 7 draw (benchmark phase7_demos.demo_7) from the
+  held-out feasibility, refused once any held-out kinematic output exists or a selection file exists (never redrawn).
+* ``native-select --feasibility DIR --out FILE``: the declared Native stratified sub-sample (>= 3 per stratum).
+* ``native-prepare --sample-id ID --out DIR`` / ``native-launch --sample-id ID --out DIR``: one Native Isaac Sim
+  episode through scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal (WP-12 Phase 2b pattern).
+* ``summarize --feasibility DIR [--kinematic-root DIR] [--native-root DIR] --out FILE``: feasibility rate, success
+  among feasible, overall success, class distribution, Wilson 95 % intervals and denominators per stratum / family /
+  range set / ID population; every declared sample counted once. Native classes follow the declared
+  ``native.success_definition`` (``native_execution``: the Phase 2b ``classify_live`` gates).
+
+  TMPDIR=/mnt/data/ningan/tmp .venv/bin/python scripts/run_wp12_phase5.py --config configs/wp12/benchmark_v1.json \\
+      --envelope configs/wp12/supported_envelope_v2.json feasibility --split benchmark \\
+      --out artifacts/wp12/phase5_001/feasibility_benchmark
+"""
+import argparse
+from copy import deepcopy
+from datetime import datetime
+import json
+import math
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import time
+import traceback
+
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT/'src'))
+sys.path.insert(0, str(ROOT/'scripts'))
+from robotic_cutting_sim import generalization as G  # noqa: E402
+from robotic_cutting_sim import generalization_wp12 as W  # noqa: E402
+import run_generalization as RG  # noqa: E402  (WP-11 Phase E helpers: jsonable, write_new, git_state, gpu_other_jobs)
+
+jsonable, write_new, git_state = RG.jsonable, RG.write_new, RG.git_state
+
+
+def next_free(path):
+    path = Path(path)
+    if not path.exists():
+        return path
+    for i in range(2, 1000):
+        candidate = path.with_name(f'{path.stem}_{i:03d}{path.suffix}')
+        if not candidate.exists():
+            return candidate
+    raise FileExistsError(path)
+
+
+def declared(config, split):
+    return [(W.make_sample_id(config, f, rs, split, s), {'family': f, 'range_set': rs, 'split': split, 'stratum': f'{f}_{rs}',
+                                                          'seed': s, 'variant': W.variant_of(config, f, i),
+                                                          'ood_dimensions': None})
+            for f, rs, s, i in W.sample_ids(config, split)]
+
+
+def selected_ids(config, split, only):
+    ids = [sid for sid, _ in declared(config, split)]
+    if not only:
+        return ids
+    keep = [sid for sid in ids if any(sid == tok or sid.startswith(tok) or f'_{tok}_' in sid for tok in only)]
+    return keep
+
+
+def _sha(path):
+    import hashlib
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def meta(args, config):
+    return {'command': sys.argv, 'config': str(args.config), 'config_sha256': _sha(args.config),
+            'envelope_sha256': _sha(args.envelope), 'module_sha256': _sha(W.__file__), 'runner_sha256': _sha(__file__),
+            'benchmark_id': config['benchmark_id'],
+            'benchmark_status': config['status'], 'envelope': str(args.envelope), 'started': datetime.now().astimezone().isoformat(),
+            'tmpdir': os.environ.get('TMPDIR'), 'python': sys.executable, **git_state(),
+            'provenance': getattr(args, 'provenance', None),
+            'label': 'DEV' if getattr(args, 'dev', False) or (args.cmd in ('feasibility', 'kinematic')
+                                                               and getattr(args, 'split', 'dev') == 'dev') else None}
+
+
+def _rel(path):
+    path = Path(path).resolve()
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def resolve_provenance(config_path, envelope_path, dev=False):
+    """(config path, envelope path, provenance record) or SystemExit (decision finding 3).
+
+    FROZEN config: the envelope defaults to the config's declared ``envelope``; another envelope is refused; both files
+    must match ``W.FROZEN_SHA256`` (a FROZEN file at an unpinned path or with another hash is refused unless ``dev``).
+    DRAFT config: refused unless ``dev`` (the envelope then defaults to envelope v1, as the DRAFT was written for)."""
+    config_path = Path(config_path).resolve()
+    doc = json.loads(config_path.read_text())
+    status = doc.get('status')
+    problems = []
+    if status == 'FROZEN':
+        declared = (ROOT/doc['envelope']).resolve()
+        envelope_path = declared if envelope_path is None else Path(envelope_path).resolve()
+        if envelope_path != declared:
+            raise SystemExit(f'Refused: {_rel(config_path)} is FROZEN with envelope {doc["envelope"]}; '
+                             f'--envelope {_rel(envelope_path)} does not match')
+        for path in (config_path, envelope_path):
+            pinned = W.FROZEN_SHA256.get(_rel(path))
+            if pinned is None:
+                problems.append(f'{_rel(path)} has no pinned sha256 (not a committed frozen file)')
+            elif _sha(path) != pinned:
+                problems.append(f'{_rel(path)} sha256 {_sha(path)[:12]} != pinned {pinned[:12]} (edited after the freeze)')
+    elif status == 'DRAFT':
+        envelope_path = W.ENVELOPE if envelope_path is None else Path(envelope_path).resolve()
+        problems.append(f'{_rel(config_path)} is a DRAFT (not the frozen benchmark)')
+    else:
+        raise SystemExit(f'Refused: {_rel(config_path)} has status {status!r}')
+    if problems and not dev:
+        raise SystemExit('Refused: ' + '; '.join(problems) + '. Pass --dev for a DEV-labelled run.')
+    record = {'config': _rel(config_path), 'config_status': status, 'config_sha256': _sha(config_path),
+              'envelope': _rel(envelope_path), 'envelope_sha256': _sha(envelope_path),
+              'frozen_hashes_verified': status == 'FROZEN' and not problems, 'dev': bool(dev),
+              'dev_reasons': problems}
+    return config_path, Path(envelope_path).resolve(), record
+
+
+# ----------------------------------------------------------------------------- samples / feasibility
+
+def cmd_samples(args):
+    config = W.load_benchmark(args.config)
+    rows = [W.sample_by_id(config, sid) for sid in selected_ids(config, args.split, args.only)]
+    write_new(args.out, {'meta': meta(args, config), 'split': args.split, 'samples': rows})
+    print(f'{len(rows)} samples -> {args.out}')
+    return 0
+
+
+def feasibility_row(config, envelope, sample_id, no_preflight=False):
+    start = time.perf_counter()
+    try:
+        sample = W.sample_by_id(config, sample_id)
+    except W.NotExpressible as error:
+        return {'sample_id': sample_id, 'feasibility_class': None, 'classification_error': True,
+                'reason': f'not expressible: {error}', 'wall_s': time.perf_counter()-start}
+    row = W.classify_feasibility(
+        sample, envelope, compile_fn=lambda s: W.compile_sample(config, s),
+        preflight_fn=None if no_preflight else (lambda task: W.preflight(task, config['common']['preflight_geometry'])),
+        precedence=tuple(config['feasibility']['precedence']),
+        run_preflight_when_unsupported=bool(config['feasibility']['run_preflight_when_unsupported']), common=config['common'])
+    row['sample'] = {k: sample[k] for k in ('scene', 'goal', 'draws', 'derived', 'envelope_parameters', 'index', 'rng')}
+    row['wall_s'] = time.perf_counter()-start
+    return row
+
+
+def cmd_feasibility(args):
+    config, envelope = W.load_benchmark(args.config), W.load_envelope(args.envelope)
+    out = Path(args.out)
+    if out.exists() and not args.resume:
+        raise FileExistsError(f'{out} exists; pass --resume to continue it (existing sample files are kept)')
+    out.mkdir(parents=True, exist_ok=bool(args.resume))
+    write_new(next_free(out/'feasibility_meta.json'), meta(args, config))
+    rows = []
+    for sid in selected_ids(config, args.split, args.only):
+        path = out/f'{sid}.json'
+        if path.exists():
+            rows.append(json.loads(path.read_text()))
+            print(f'[P5] {sid}: kept ({rows[-1].get("feasibility_class")})', flush=True)
+            continue
+        try:
+            row = feasibility_row(config, envelope, sid, args.no_preflight)
+        except Exception as error:   # never lost: a classification error row
+            row = {'sample_id': sid, 'feasibility_class': None, 'classification_error': True,
+                   'reason': f'feasibility error: {error!r}', 'traceback': traceback.format_exc()}
+        write_new(path, row)
+        rows.append(row)
+        print(f"[P5] {sid}: {row.get('feasibility_class')} | {str(row.get('reason'))[:160]} | {row.get('wall_s', 0):.1f} s",
+              flush=True)
+    summary = {'meta': meta(args, config), 'split': args.split, 'finished': datetime.now().astimezone().isoformat(),
+               'samples': [{k: r.get(k) for k in ('sample_id', 'family', 'range_set', 'stratum', 'seed', 'variant',
+                                                  'ood_dimensions', 'feasibility_class', 'failing_classes', 'reason',
+                                                  'envelope_pending', 'wall_s')} | {
+                   'task_id': (r.get('compile') or {}).get('task_id'), 'digits': (r.get('compile') or {}).get('digits_used'),
+                   'duration_s': (r.get('compile') or {}).get('duration_s'),
+                   'preflight_binding': ((r.get('checks') or {}).get('preflight', {}).get('receipt') or {}).get('path', {}).get('binding')}
+                   for r in rows]}
+    write_new(next_free(out/'feasibility_summary.json'), summary)
+    return 0
+
+
+# ----------------------------------------------------------------------------- kinematic episode
+
+def _gpu_memory():
+    try:
+        from robotic_cutting_sim.surface_runtime import gpu_process_memory_mib
+        return gpu_process_memory_mib(os.getpid())
+    except Exception as error:
+        return {'error': repr(error)}
+
+
+def cmd_kinematic(args):
+    config = W.load_benchmark(args.config)
+    extra = {'provenance': {**args.provenance, 'runner_sha256': _sha(__file__), 'module_sha256': _sha(W.__file__)}}
+    if args.dev:
+        extra['label'] = 'DEV'
+    args.reconnection_check = True
+    return kinematic_episode(config, W.sample_by_id(config, args.sample_id), args, extra)
+
+
+def reconnection_check(env, task, material):
+    """Spec 5.8 'no accidental reconnection' (report-only, never a verdict input): the global mechanical component
+    count (goals._Recording.components: the evaluator's own component rule on the recorded codes and reference
+    stencils) at every recorded history frame must never decrease, so the final count is >= the count after every
+    step. Read from the episode's recorded oracle history (evaluation only)."""
+    from robotic_cutting_sim.goals import _Recording
+    start = time.monotonic()
+    bed, history = material.bed, env._history
+    data = {'time_s': np.asarray([s['time_s'] for s in history], float),
+            'positions': np.asarray([s['positions'] for s in history], float),
+            'codes': np.asarray([s['codes'] for s in history]), 'mass_kg': material.masses,
+            'reference_positions': material.world_points, 'reference_stencil_nodes': bed.nodes.numpy(),
+            'reference_stencil_weights': bed.weights.numpy(), 'reference_stencil_gradients': bed.gradients.numpy(),
+            'code_encoding': getattr(material, 'code_encoding', 'ternary'), 'max_cuts': int(getattr(material, 'max_cuts', 1))}
+    rec = _Recording(data, task)
+    if rec.missing:
+        return {'status': 'NOT_RUN', 'reason': f'recording lacks {rec.missing}'}
+    counts = [int(rec.components(i)[0]) for i in range(len(rec.time))]
+    drops = [{'frame': i, 'time_s': float(rec.time[i]), 'from': counts[i-1], 'to': counts[i]}
+             for i in range(1, len(counts)) if counts[i] < counts[i-1]]
+    return {'status': 'PASS' if not drops else 'FAIL', 'component_counts_per_frame': counts,
+            'times_s': rec.time.tolist(), 'final_components': counts[-1], 'max_components': max(counts),
+            'decreases': drops, 'wall_s': time.monotonic()-start,
+            'rule': 'global mechanical components (evaluator rule) non-decreasing over every recorded history frame'}
+
+
+def kinematic_episode(config, sample, args, extra=None):
+    """One kinematic ideal-tracking episode of a built sample (also used by scripts/run_wp12_phase4_e2.py).
+
+    ``args`` needs out, device, steps, expect_task_id, feasibility_class, surface_profile, geometry_level and
+    no_geometry; ``extra`` (dict) is recorded in the manifest config and in result.json (it may set 'label')."""
+    from robotic_cutting_sim import goal_planner
+    from robotic_cutting_sim.policies import WaypointPolicy
+    from robotic_cutting_sim.recording import manifest, new_output
+    from robotic_cutting_sim.scene_config import make_configured_kinematic_env
+    common = config['common']
+    task, info = W.compile_sample(config, sample)
+    task_id = task.task_id
+    if args.expect_task_id and task_id != args.expect_task_id:
+        raise SystemExit(f'Compiled {task_id}, feasibility recorded {args.expect_task_id}')
+    surface_profile = args.surface_profile or common['surface_profile']
+    out = new_output(args.out)
+    steps_total = int(round(task.duration_s/task.control_dt_s))
+    stride = W.history_stride(config, steps_total)
+    options = goal_planner.planner_options(task.goal, None)
+    limits = goal_planner.action_limits(options, task.scene)
+    run_config = {'benchmark_id': config['benchmark_id'], 'benchmark_status': config['status'], 'sample_id': sample['sample_id'],
+                  'family': sample['family'], 'range_set': sample['range_set'], 'split': sample['split'], 'seed': sample['seed'],
+                  'variant': sample['variant'], 'task_id': task_id, 'config_sha256': task.config_sha256, 'device': args.device,
+                  'feasibility_class': args.feasibility_class, 'material_dt_s': common['material_dt_s'],
+                  'material_seed': common['material_seed'], 'history_stride': stride, 'control_steps': steps_total,
+                  'solver_module': info['solver_module'], 'max_cuts': info['max_cuts'], 'slots_per_node': info.get('slots_per_node'),
+                  'surface_profile': surface_profile, 'cutting_law': common['solver']['cutting_law'],
+                  'particle_spacing_m': task.particle_spacing_m, 'grid_dx_m': task.grid_dx_m,
+                  'runtime_source': 'kinematic_ideal_tracking', 'scene': info['scene'], 'goal': info['goal'],
+                  'planner_options': options, 'draws': sample['draws'], 'derived': sample['derived'],
+                  'envelope_parameters': sample['envelope_parameters'], 'ood_dimensions': sample['ood_dimensions'],
+                  'label': 'DEV' if sample['split'] == 'dev' or args.steps is not None else None, **(extra or {})}
+    (out/'manifest.json').write_text(json.dumps(jsonable(manifest(run_config, 'kinematic_ideal_tracking')), indent=1))
+    result = {'status': 'RUNNING', **{k: run_config[k] for k in ('benchmark_id', 'sample_id', 'family', 'range_set', 'split',
+                                                                 'seed', 'variant', 'task_id', 'config_sha256', 'device',
+                                                                 'feasibility_class', 'solver_module', 'max_cuts',
+                                                                 'surface_profile', 'history_stride', 'control_steps',
+                                                                 'runtime_source', 'label')}, **(extra or {})}
+    start = time.monotonic()
+    reset_ok, reset_error = True, None
+    try:
+        env = make_configured_kinematic_env(task, seed=common['material_seed'], device=args.device,
+                                            material_dt=common['material_dt_s'], delta_frame='world', ik_failure='reject',
+                                            history_stride=stride, action_limits=limits,
+                                            surface_profile=None if surface_profile == 'particle_surface_v1' else surface_profile)
+        observation, _ = env.reset(seed=common['material_seed'])
+    except Exception as error:   # reset failure is a reliability result, preserved
+        reset_ok, reset_error = False, f'{type(error).__name__}: {error}'
+        result.update(status='ABORTED', reason=f'reset failed: {reset_error}', traceback=traceback.format_exc(),
+                      reliability={'reset_success': False, 'reset_error': reset_error})
+        (out/'result.json').write_text(json.dumps(jsonable(result), indent=1))
+        print(f'[P5K] {sample["sample_id"]}: reset failed {reset_error}', flush=True)
+        return 1
+    setup_wall = time.monotonic()-start
+    plan = goal_planner.plan(task.scene, task.goal, task.tool_profile, options)
+    policy = WaypointPolicy(env.task, plan, limits, **goal_planner.policy_options(options))
+    material = env.backend.material
+    bed = material.bed
+    dt = task.control_dt_s
+    finite, min_det, max_speed = True, float('inf'), 0.
+    limit = steps_total if args.steps is None else min(args.steps, steps_total)
+    actions = []
+    loop_start = time.monotonic()
+    with (out/'actions.jsonl').open('w') as stream:
+        for step in range(limit):
+            action = policy(observation)
+            observation, _, terminated, truncated, info_step = env.step(action)
+            diag = env.backend.last_diagnostics['material']
+            stroke = env.backend.stroke_history[-1] if env.backend.stroke_history else {}
+            if (step+1) % 10 == 0 or step == limit-1 or terminated or truncated:
+                x, v = bed.x.numpy(), bed.v.numpy()
+                det = np.linalg.det(bed.F.numpy().astype(float))
+                ok = bool(np.isfinite(x).all() and np.isfinite(v).all() and np.isfinite(det).all())
+                finite &= ok
+                if np.isfinite(det).any():
+                    min_det = min(min_det, float(np.nanmin(det)))
+                max_speed = max(max_speed, float(np.nanmax(np.linalg.norm(v, axis=1))))
+            blade = np.asarray(diag['current_material_reaction_impulse_world'], float)/dt
+            row = {'step': step+1, 'time_s': env.time_s, 'phase': policy.phase, 'cut_enabled': bool(action['cut_enabled']),
+                   'cut_index': int(diag['cut_index']), 'edge_pose_world': env.backend.edge, 'blade_force_world_N': blade[:3],
+                   'labelled_count': stroke.get('labelled_count'), 'engaged': stroke.get('engaged'),
+                   'workspace_clamped': bool((info_step.get('action_report') or {}).get('workspace_clamped', False))}
+            actions.append({'workspace_clamped': row['workspace_clamped']})
+            stream.write(json.dumps(jsonable(row))+'\n')
+            if terminated or truncated:
+                break
+            if step % 100 == 0:
+                print(f'[P5K] {sample["sample_id"]} step {step+1}/{limit} t={env.time_s:.2f}s phase={policy.phase} '
+                      f'wall={time.monotonic()-loop_start:.0f}s', flush=True)
+    episode_wall = time.monotonic()-loop_start
+    slots, solver_invalid = None, None if finite else 'non-finite particle state or deformation gradient'
+    if hasattr(bed, 'check_slots'):
+        try:
+            slots = bed.check_slots()
+        except Exception as error:   # SlotOverflowError: the affected substeps are invalid
+            solver_invalid, slots = f'slot overflow: {error}', {'overflow': str(error)}
+    eval_start = time.monotonic()
+    try:
+        evaluation = env.evaluate()
+    except Exception as error:
+        evaluation = {'verdict': None, 'status': 'NOT_RUN', 'error': repr(error), 'traceback': traceback.format_exc()}
+    evaluation_wall = time.monotonic()-eval_start
+    try:
+        metrics = G.episode_metrics(task.goal, evaluation)
+    except Exception as error:
+        metrics = {'error': repr(error)}
+    stability = {'finite': finite, 'min_det_F_sampled': min_det, 'max_speed_m_s_sampled': max_speed,
+                 'sampling': 'every 10 control steps'}
+    physical = W.physical_quality(task, material, evaluation, metrics, stability, actions)
+    geometry = W.geometry_quality(env, task, args.geometry_level or common['geometry_quality_level']) \
+        if not args.no_geometry else {'status': 'NOT_RUN', 'reason': '--no-geometry'}
+    reconnection = {'status': 'NOT_RUN', 'reason': 'not requested by the caller (Phase 5 kinematic only)'}
+    if getattr(args, 'reconnection_check', False):   # opt-in: other callers (E2, gridpos) keep their behaviour
+        try:
+            reconnection = reconnection_check(env, task, material)
+        except Exception as error:   # report-only: never breaks the episode
+            reconnection = {'status': 'ERROR', 'reason': f'{type(error).__name__}: {error}'}
+    history = env._history
+    np.savez_compressed(out/'physics_state.npz', time_s=np.asarray([s['time_s'] for s in history], float),
+                        positions=np.asarray([s['positions'] for s in history], np.float32),
+                        codes=np.asarray([s['codes'] for s in history]), mass_kg=material.masses,
+                        reference_positions=material.world_points, reference_indices=material.lattice,
+                        code_encoding=getattr(material, 'code_encoding', 'ternary'),
+                        max_cuts=int(getattr(material, 'max_cuts', 1)))
+    gpu = _gpu_memory()
+    result.update(status='COMPLETE', policy_done=bool(policy.done), steps_run=len(actions), partial=limit < steps_total,
+                  evaluation=evaluation, metrics=metrics, solver_invalid=solver_invalid, slots=slots, stability=stability,
+                  physical_quality=physical, geometry_quality=geometry,
+                  **({'reconnection_check': reconnection} if getattr(args, 'reconnection_check', False) else {}),
+                  runtime={'reset_overhead_s': setup_wall, 'episode_wall_s': episode_wall, 'evaluation_wall_s': evaluation_wall,
+                           'simulated_s': env.time_s, 'simulation_throughput_sim_s_per_wall_s': env.time_s/max(episode_wall, 1e-9),
+                           'surface_reconstruction_s': geometry.get('extract_wall_s'), 'gpu_process_memory_mib': gpu},
+                  particles=int(bed.n), substeps_per_control_step=int(material.substeps), history_frames=len(history),
+                  physics_state_bytes=(out/'physics_state.npz').stat().st_size,
+                  finished=datetime.now().astimezone().isoformat())
+    cls, kind, reason = W.classify_execution(result)
+    result.update({'class': cls, 'failure_kind': kind, 'class_reason': reason,
+                   'reliability': {'reset_success': reset_ok, 'outputs': None},
+                   'label_text': 'KINEMATIC ideal-tracking result; not a live result (no robot, grasp, slip, dynamics or cameras)'})
+    env.close()
+    (out/'result.json').write_text(json.dumps(jsonable(result), indent=1))
+    valid = {}
+    for name in ('manifest.json', 'result.json'):
+        try:
+            json.loads((out/name).read_text())
+            valid[name] = True
+        except Exception:
+            valid[name] = False
+    valid['actions.jsonl'] = all(json.loads(line) is not None for line in (out/'actions.jsonl').read_text().splitlines())
+    write_new(out/'reliability.json', {'reset_success': reset_ok, 'recorded_output_validity': valid})
+    print(f'[P5K] {sample["sample_id"]}: {cls} | {reason} | episode {episode_wall:.0f} s', flush=True)
+    return 0
+
+
+# ----------------------------------------------------------------------------- queue
+
+def child_prefix(args):
+    """Interpreter, runner and the provenance flags every child gets (decision finding 3: --envelope forwarded)."""
+    return [sys.executable, str(Path(__file__).resolve()), '--config', str(args.config), '--envelope', str(args.envelope),
+            *(['--dev'] if args.dev else [])]
+
+
+def cmd_queue(args):
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    rows = {p.stem: json.loads(p.read_text()) for p in feas.glob(f"{config['sample_prefix']}_*.json")}
+    order = [sid for split in W.SPLITS for sid, _ in declared(config, split)]
+    pending = [rows[sid] for sid in order if sid in rows and rows[sid].get('feasibility_class') == 'valid_feasible']
+    if args.only:
+        pending = [r for r in pending if r['sample_id'] in set(selected_ids(config, r['split'], args.only))]
+    return run_jobs(args, [{**r, '_out': str(Path(args.out_root)/r['sample_id'])} for r in pending], 'QUEUE')
+
+
+def repeat_selection(config, feasibility_rows):
+    """Declared reproducibility repeats (metrics.reliability.reproducibility): per family with an ID stratum, the first
+    valid_feasible ID benchmark sample in declared seed order (feasibility only, never outcomes)."""
+    by_id = {r['sample_id']: r for r in feasibility_rows}
+    out = {}
+    for stratum in W.strata(config):
+        if stratum['range_set'] != 'ID':
+            continue
+        ids = [W.make_sample_id(config, stratum['family'], 'ID', 'benchmark', seed)
+               for seed in W.seed_list(config, stratum['family'], 'benchmark', 'ID')]
+        out[stratum['family']] = next((i for i in ids if by_id.get(i, {}).get('feasibility_class') == 'valid_feasible'), None)
+    return out
+
+
+def cmd_repeat(args):
+    """One rerun of each declared repeat sample on the OTHER device than its recorded benchmark run."""
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    rows = [json.loads(p.read_text()) for p in feas.glob(f"{config['sample_prefix']}_*_benchmark_*.json")]
+    by_id = {r['sample_id']: r for r in rows}
+    jobs, skipped = [], {}
+    for family, sid in repeat_selection(config, rows).items():
+        original = Path(args.kinematic_root)/str(sid)/'result.json'
+        if sid is None or not original.exists():
+            skipped[family] = 'no valid_feasible ID sample' if sid is None else f'{original} missing (original not finished)'
+            continue
+        first = json.loads(original.read_text()).get('device')
+        other = [d for d in args.devices if d != first]
+        if not other:
+            skipped[family] = f'no device other than {first} in {args.devices}'
+            continue
+        jobs.append({**by_id[sid], '_out': str(Path(args.out_root)/sid), '_device': other[0], '_repeat_of': str(original)})
+    Path(args.out_root).mkdir(parents=True, exist_ok=True)
+    write_new(next_free(Path(args.out_root)/'repeat_selection.json'),
+              {'meta': meta(args, config), 'rule': config['metrics']['reliability']['reproducibility'],
+               'jobs': [{k: j[k] for k in ('sample_id', '_device', '_repeat_of')} for j in jobs], 'skipped': skipped})
+    return run_jobs(args, jobs, 'REPEAT')
+
+
+def run_jobs(args, pending, name):
+    """Launch ``kinematic`` children for ``pending`` rows (``_out`` output dir, optional ``_device``) in order: at most
+    ``--max-concurrent`` per device, a device is used only while <= ``--max-other`` other active jobs run on it, an
+    existing output directory is skipped and preserved, and no job starts once ``--cap-job-hours`` (summed job wall
+    time, finished plus running) is reached: the rest stay pending (PAUSE, resumable with the same command)."""
+    logs = Path(args.log_dir)
+    logs.mkdir(parents=True, exist_ok=True)
+    for row in pending:
+        Path(row['_out']).parent.mkdir(parents=True, exist_ok=True)
+    running, log = {}, open(args.queue_log, 'a')
+
+    def note(text):
+        log.write(f'{datetime.now().astimezone().isoformat()} {text}\n')
+        log.flush()
+    note(f'{name} start {len(pending)} valid_feasible samples; devices {args.devices}; max {args.max_concurrent} per device; '
+         f'launch when <= {args.max_other} other active jobs on that GPU; cap {args.cap_job_hours} job-h; '
+         f'provenance {args.provenance}; {git_state()}')
+    fast_failures, last_wait, used_s = 0, None, 0.
+    while pending or running:
+        for pid, (proc, row, began, device) in list(running.items()):
+            if proc.poll() is not None:
+                wall = time.monotonic()-began
+                used_s += wall
+                note(f"END {row['sample_id']} device={device} rc={proc.returncode} wall={wall:.0f}s job_hours={used_s/3600:.2f}")
+                del running[pid]
+                fast = proc.returncode != 0 and wall < 60 and not (Path(row['_out'])/'result.json').exists()
+                fast_failures = fast_failures+1 if fast else 0
+                if fast_failures >= 2:
+                    note(f'ABORT two consecutive fast launch failures; {len(pending)} pending left unlaunched')
+                    pending = []
+        if args.cap_job_hours is not None and pending:
+            committed = used_s+sum(time.monotonic()-e[2] for e in running.values())
+            if committed >= args.cap_job_hours*3600:
+                note(f'PAUSE job-hour cap {args.cap_job_hours} reached ({committed/3600:.2f}); {len(pending)} pending stay '
+                     f'unlaunched (resume with the same command; finished outputs are kept)')
+                pending = []
+                continue
+        launched, waits = False, {}
+        for device in args.devices:
+            if not pending:
+                break
+            if args.min_free_gb is not None and shutil.disk_usage(Path(pending[0]['_out']).parent).free/1e9 < args.min_free_gb:
+                waits['disk'] = f'< {args.min_free_gb} GB free'
+                break
+            if len([1 for e in running.values() if e[3] == device]) >= args.max_concurrent:
+                continue
+            index = next((i for i, r in enumerate(pending) if r.get('_device') in (None, device)), None)
+            if index is None:
+                continue
+            others = RG.gpu_other_jobs(int(device.split(':')[1]), set(running))
+            if len(others) > args.max_other:
+                waits[device] = others
+                continue
+            row = pending.pop(index)
+            out = Path(row['_out'])
+            if out.exists():
+                note(f"SKIP {row['sample_id']} (output exists; preserved, not rerun)")
+                continue
+            log_path = next_free(logs/f"phase5_{out.parent.name}_{row['sample_id']}_001.log")
+            command = [*child_prefix(args), 'kinematic',
+                       '--sample-id', row['sample_id'], '--device', device, '--out', str(out),
+                       '--feasibility-class', 'valid_feasible']
+            task_id = (row.get('compile') or {}).get('task_id')
+            if task_id:
+                command += ['--expect-task-id', task_id]
+            if args.surface_profile:
+                command += ['--surface-profile', args.surface_profile]
+            proc = subprocess.Popen(command, cwd=str(ROOT), stdout=open(log_path, 'w'), stderr=subprocess.STDOUT,
+                                    env={**os.environ, 'TMPDIR': os.environ.get('TMPDIR', '/mnt/data/ningan/tmp')})
+            running[proc.pid] = (proc, row, time.monotonic(), device)
+            note(f"START {row['sample_id']} device={device} pid={proc.pid} others={others} log={log_path}"
+                 + (f" repeat_of={row['_repeat_of']}" if row.get('_repeat_of') else ''))
+            launched = True
+        if launched:
+            time.sleep(20)
+            continue
+        if waits and (last_wait is None or time.monotonic()-last_wait > 600):
+            note(f'WAIT {waits}; {len(running)} running; {len(pending)} pending')
+            last_wait = time.monotonic()
+        time.sleep(args.poll_s)
+    note(f'{name} done; job_hours={used_s/3600:.2f}')
+    return 0
+
+
+# ----------------------------------------------------------------------------- Phase 7 Demo 7
+
+DEMO7_DEFAULT_OUT = ROOT/'artifacts/wp12/phase7_demo7_selection_001.json'
+
+
+def held_out_episode_outputs():
+    """Every held-out kinematic or Native episode output under artifacts/wp12 (a Demo 7 draw must precede them all)."""
+    base = ROOT/'artifacts/wp12'
+    found = set()
+    for pattern in ('*/P5_*_held_out_*/manifest.json', '*/*/P5_*_held_out_*/manifest.json',
+                    '*/P5_*_held_out_*/result.json', '*/*/P5_*_held_out_*/result.json',
+                    '*/P5_*_held_out_*/launch.json', '*/*/P5_*_held_out_*/launch.json'):
+        found.update(str(p.parent) for p in base.glob(pattern))
+    return sorted(found)
+
+
+def cmd_demo7_select(args):
+    """The Demo 7 draw (benchmark phase7_demos.demo_7): after the held-out feasibility, before any held-out episode,
+    once (refused when a selection file already exists or any held-out episode output exists, unless --dev)."""
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    rows = [json.loads(p.read_text()) for p in sorted(feas.glob(f"{config['sample_prefix']}_*_held_out_*.json"))]
+    problems = []
+    existing = sorted(str(p) for p in (ROOT/'artifacts/wp12').glob('phase7_demo7_selection_*.json'))
+    if existing:
+        problems.append(f'a Demo 7 selection already exists ({existing}); it is never redrawn')
+    episodes = held_out_episode_outputs()
+    if episodes:
+        problems.append(f'{len(episodes)} held-out episode outputs exist ({episodes[:3]}); the draw must precede them')
+    if problems and not args.dev:
+        raise SystemExit('Refused: ' + '; '.join(problems))
+    selection = W.demo7_selection(config, rows)
+    declared_held_out = [sid for sid, _ in declared(config, 'held_out')]
+    by_id = {r['sample_id']: r for r in rows}
+    record = {'schema': 'rcs_wp12_phase7_demo7_selection_v1', 'label': 'DEV' if args.dev else None,
+              'meta': meta(args, config), 'drawn': datetime.now().astimezone().isoformat(),
+              'feasibility_dir': _rel(feas), 'held_out_declared': len(declared_held_out),
+              'held_out_feasibility_rows': len(rows),
+              'held_out_feasibility_classes': {c: sum(by_id.get(s, {}).get('feasibility_class') == c for s in declared_held_out)
+                                               for c in (*W.FEASIBILITY_CLASSES, None)},
+              'held_out_episode_outputs_at_draw': episodes, 'refusal_overridden_by_dev': problems if args.dev else [],
+              **selection,
+              'next': 'commit this file before any held-out kinematic episode; Native Demo 7 runs this sample with '
+                      'particle_surface_v1 then cut_aware_surface_v1 (configs/wp12/phase7_demos_v1.json); never redrawn'}
+    out = Path(args.out) if args.out else DEMO7_DEFAULT_OUT
+    write_new(out, record)
+    if args.evidence_copy:
+        write_new(args.evidence_copy, record)
+    print(json.dumps({'demo_7_sample_id': selection['demo_7_sample_id'], 'pool_size': selection['pool_size'],
+                      'out': str(out), 'evidence_copy': args.evidence_copy}))
+    return 0
+
+
+# ----------------------------------------------------------------------------- Native
+
+def cmd_native_select(args):
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    rows = [json.loads(p.read_text()) for p in feas.glob(f"{config['sample_prefix']}_*_{args.split}_*.json")]
+    selection = W.native_selection(config, rows, split=args.split)
+    write_new(args.out, {'meta': meta(args, config), 'rule': config['native']['selection'], 'strata': selection})
+    for stratum, row in selection.items():
+        print(stratum, len(row['selected']), row['shortfall_reason'] or '')
+    return 0
+
+
+def native_compile(config, sample):
+    from robotic_cutting_sim.scene_config import compile_task
+    native = config['native']
+    options = native['planner_overrides']
+    rule = native['duration_rule']
+    _, info = W.compile_sample(config, sample)   # solver + digits as the kinematic stage
+    scene, goal = info['scene'], deepcopy(info['goal'])
+    goal['episode']['duration_s'] = float(rule['probe_duration_s'])
+    probe = compile_task(deepcopy(scene), deepcopy(goal), planner_options=options, seed=native['seed'])
+    done = next((float(t) for t, label in zip(probe._times(), probe.reference_phase_labels) if label == 'DONE'), None)
+    if done is None:
+        raise RuntimeError('The Native probe compile has no DONE knot')
+    step = float(rule['round_up_to_s'])
+    goal['episode']['duration_s'] = math.ceil((float(rule['plan_end_factor'])*done+float(rule['settle_after_plan_s']))/step-1e-9)*step
+    task = compile_task(deepcopy(scene), deepcopy(goal), planner_options=options, seed=native['seed'])
+    steps = int(round(task.duration_s/task.control_dt_s))
+    return task, scene, goal, {'plan_end_s': done, 'duration_s': goal['episode']['duration_s'], 'steps': steps,
+                               'history_stride': max(5, math.ceil(steps/40)), 'planner_overrides': options}
+
+
+def native_prepare(config, sample_id, out):
+    sample = W.sample_by_id(config, sample_id)
+    task, scene, goal, info = native_compile(config, sample)
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=False)
+    write_new(out/'scene.json', scene)
+    write_new(out/'goal.json', goal)
+    receipt = {'sample_id': sample_id, 'family': sample['family'], 'range_set': sample['range_set'], 'split': sample['split'],
+               'native_task_id': task.task_id, 'config_sha256': task.config_sha256, 'solver_module': task.solver_module,
+               'max_cuts': task.max_cuts, 'particles': int(task.sample_particles()[0].shape[0]), **info,
+               'record_every': config['native']['record_every'], 'workcell_geometry': task.workcell_geometry(),
+               'compiled_with': sys.executable, **git_state(), 'prepared': datetime.now().astimezone().isoformat()}
+    write_new(out/'prepare.json', receipt)
+    return receipt
+
+
+def cmd_native_prepare(args):
+    receipt = native_prepare(W.load_benchmark(args.config), args.sample_id, args.out)
+    print(json.dumps({k: receipt[k] for k in ('sample_id', 'native_task_id', 'plan_end_s', 'duration_s', 'steps')}))
+    return 0
+
+
+def cmd_native_launch(args):
+    import run_wp12_workcell_live as WL   # gpu_snapshot, du_bytes (WP-12 Phase 2b launcher)
+    config = W.load_benchmark(args.config)
+    native = config['native']
+    out = Path(args.out)
+    out = out if out.is_absolute() else ROOT/out
+    out.mkdir(parents=True, exist_ok=False)
+    prep = native_prepare(config, args.sample_id, out/'inputs')
+    free = shutil.disk_usage(out).free/1e9
+    if free < args.disk_floor_gb:
+        write_new(out/'attempt.json', {'status': 'NOT_RUN', 'reason': f'disk {free:.1f} GB < floor {args.disk_floor_gb} GB'})
+        return 3
+    run_dir = out/'run'
+    command = [native['python'], 'scripts/run_wp10_live.py', '--runtime', 'isaac_sim',
+               '--scene', str((out/'inputs'/'scene.json').relative_to(ROOT)), '--goal', str((out/'inputs'/'goal.json').relative_to(ROOT)),
+               '--planner-options', json.dumps(prep['planner_overrides']), *native['flags'],
+               '--record-every', str(prep['record_every']), '--oracle-stride', str(prep['history_stride']),
+               '--steps', str(prep['steps']), '--gpu', str(args.gpu if args.gpu is not None else native['gpu']),
+               '--seed', str(native['seed']), '--out', str(run_dir.relative_to(ROOT))]
+    if args.surface_profile:
+        command += ['--surface-profile', args.surface_profile]
+    env = {**os.environ, 'OMNI_KIT_ACCEPT_EULA': 'YES', 'PYTHONUNBUFFERED': '1', 'TMPDIR': '/mnt/data/ningan/tmp'}
+    log = next_free(ROOT/'artifacts/wp12/logs'/f'{out.name}_{args.sample_id}.log')
+    attempt = {'sample_id': args.sample_id, 'command': command, 'cwd': str(ROOT), 'log': str(log),
+               'started': datetime.now().astimezone().isoformat(), 'gpu_before': WL.gpu_snapshot(), 'disk_free_gb_before': free,
+               **git_state()}
+    if args.dry_run:
+        write_new(out/'attempt.json', {**attempt, 'status': 'NOT_RUN', 'reason': '--dry-run (command recorded only)'})
+        print(json.dumps({'dry_run': True, 'command': command}))
+        return 0
+    write_new(out/'launch.json', {**attempt, 'status': 'LAUNCHING',
+                                  'note': 'written before the Native process starts: from here on a missing result is a crash'})
+    start = time.monotonic()
+    with log.open('w') as stream:
+        proc = subprocess.Popen(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT)
+        attempt['pid'] = proc.pid
+        returncode = proc.wait()
+    result = json.loads((run_dir/'result.json').read_text()) if (run_dir/'result.json').exists() else None
+    attempt.update(returncode=returncode, wall_s=time.monotonic()-start, ended=datetime.now().astimezone().isoformat(),
+                   run_dir_bytes=WL.du_bytes(run_dir), result_status=(result or {}).get('status'),
+                   note='A zero return code is not task success; the summary classifies the result.')
+    write_new(out/'attempt.json', attempt)
+    return 0
+
+
+def _load_live_analysis():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('wp12_phase5_live_analysis', ROOT/'scripts/run_wp12_workcell_live_analysis.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def native_execution(root, sample_id):
+    """Execution result of a Native attempt directory ``root/sample_id`` by the DECLARED Native success definition
+    (benchmark_v1.json native.success_definition; decision finding 1), or None if the sample has no attempt directory.
+
+    The Phase 2b class is ``run_wp12_workcell_live_analysis.live_classification`` (``classify_live`` with the grasp
+    warning gates 2 mm / pi/60 rad and the task-phase IK-not-ok / workspace-clamp counts), mapped by
+    ``generalization_wp12.map_live_class``. A plan-preflight refusal is an execution failure (IK_FAILURE or
+    SCENE_INFEASIBLE, reason kept); a launched attempt without an episode result is a crash. Only an attempt never
+    launched is not_run: no ``run/`` directory and no launch receipt (``launch.json``, written just before the Native
+    process starts), e.g. a ``--dry-run`` or a disk-floor refusal."""
+    attempt_dir = Path(root)/sample_id
+    if not attempt_dir.exists():
+        return None
+    attempt = json.loads((attempt_dir/'attempt.json').read_text()) if (attempt_dir/'attempt.json').exists() else None
+    run = attempt_dir/'run'
+    launched = run.exists() or (attempt_dir/'launch.json').exists() or (attempt or {}).get('returncode') is not None
+    if not launched:
+        why = (attempt or {}).get('reason') or 'attempt directory without a launch receipt or run directory'
+        cls, kind, reason = W.map_live_class(None, why, launched=False)
+        return {'status': 'NOT_RUN', 'reason': reason, 'runtime_source': 'live_isaac_sim',
+                'native_classification': {'class': cls, 'failure_kind': kind, 'reason': reason, 'launched': False}}
+    live = _load_live_analysis().live_classification(run)
+    cls, kind, reason = W.map_live_class(live['class'], live['reason'])
+    return {'status': 'COMPLETE' if live['episode_result_present'] else 'ABORTED', 'reason': reason,
+            'runtime_source': 'live_isaac_sim', 'returncode': (attempt or {}).get('returncode'),
+            'native_classification': {'class': cls, 'failure_kind': kind, 'reason': reason, 'launched': True,
+                                      'live_class': live['class'], 'live_reason': live['reason'],
+                                      'definition': 'benchmark_v1.json native.success_definition (workcell_live_v1 rules)'},
+            'live': live}
+
+
+# ----------------------------------------------------------------------------- summary
+
+def cmd_summarize(args):
+    config = W.load_benchmark(args.config)
+    feas = Path(args.feasibility)
+    out = {'schema': 'rcs_wp12_benchmark_evidence_v1', 'meta': meta(args, config), 'split': args.split,
+           'label': ('DEV' if args.split == 'dev' else None),
+           'scope': 'Kinematic classes are KINEMATIC ideal-tracking results, never live results. Native classes come from '
+                    'live Native Isaac Sim episodes of the declared stratified sub-sample.'}
+    decl = declared(config, args.split)
+    rows = {p.stem: json.loads(p.read_text()) for p in feas.glob(f"{config['sample_prefix']}_*_{args.split}_*.json")}
+    for runtime, root in (('kinematic', args.kinematic_root), ('native', args.native_root)):
+        if root is None and runtime == 'native':
+            continue
+        final = []
+        for sid, metadata in decl:
+            if sid not in rows:
+                continue
+            feas_row = rows[sid]
+            execution = None
+            if feas_row.get('feasibility_class') == 'valid_feasible':
+                if runtime == 'kinematic' and root is not None:
+                    path = Path(root)/sid/'result.json'
+                    execution = json.loads(path.read_text()) if path.exists() else (
+                        {'status': 'ABORTED', 'reason': 'output directory without result.json'} if (Path(root)/sid).exists() else None)
+                elif runtime == 'native':
+                    execution = native_execution(root, sid)
+            row = W.final_row({**metadata, **feas_row}, execution)
+            final.append(row)
+        targets = {k: v for k, v in config['targets'].items() if isinstance(v, dict) and v.get('runtime') == runtime}
+        population = (lambda r: W.id_population(config, r['family'], r.get('variant'))) \
+            if config.get('target_scope') else None
+        out[runtime] = {'tables': W.summarize(final, decl, targets, population), 'samples': final}
+    write_new(args.out, out)
+    t = out['kinematic']['tables']['overall']
+    print(json.dumps({k: t[k] for k in ('samples', 'counts', 'feasibility_rate', 'success_among_feasible', 'overall_success')}))
+    return 0
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('--config', type=Path, default=W.BENCHMARK_V1,
+                   help='benchmark file (default: the FROZEN configs/wp12/benchmark_v1.json)')
+    p.add_argument('--envelope', type=Path, default=None,
+                   help="FROZEN config: defaults to the config's declared envelope; another envelope is refused")
+    p.add_argument('--dev', action='store_true',
+                   help='allow a DRAFT config or an unpinned/edited file; every output is labelled DEV (never evidence)')
+    sub = p.add_subparsers(dest='cmd', required=True)
+    s = sub.add_parser('samples')
+    s.add_argument('--split', choices=W.SPLITS, default='dev')
+    s.add_argument('--only', nargs='*')
+    s.add_argument('--out', required=True)
+    s = sub.add_parser('feasibility')
+    s.add_argument('--split', choices=W.SPLITS, default='dev')
+    s.add_argument('--only', nargs='*', help='sample ids or prefixes (e.g. P5_A_ID_dev)')
+    s.add_argument('--out', required=True)
+    s.add_argument('--resume', action='store_true')
+    s.add_argument('--no-preflight', action='store_true', help='DEV only: skip the motion preflight (samples stay unclassified)')
+    s = sub.add_parser('kinematic')
+    s.add_argument('--sample-id', required=True)
+    s.add_argument('--out', required=True)
+    s.add_argument('--device', default='cuda:1')
+    s.add_argument('--steps', type=int, help='Smoke only: stop after this many control steps (result partial, never a task result)')
+    s.add_argument('--expect-task-id')
+    s.add_argument('--feasibility-class')
+    s.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'))
+    s.add_argument('--geometry-level', choices=('basic', 'full'))
+    s.add_argument('--no-geometry', action='store_true')
+    s = sub.add_parser('queue')
+    s.add_argument('--feasibility', required=True)
+    s.add_argument('--out-root', required=True)
+    s.add_argument('--log-dir', default=str(ROOT/'artifacts/wp12/logs'))
+    s.add_argument('--queue-log', required=True)
+    s.add_argument('--devices', nargs='+', default=['cuda:1'])
+    s.add_argument('--max-concurrent', type=int, default=2)
+    s.add_argument('--max-other', type=int, default=2)
+    s.add_argument('--min-free-gb', type=float)
+    s.add_argument('--poll-s', type=float, default=60.)
+    s.add_argument('--only', nargs='*')
+    s.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'))
+    s.add_argument('--cap-job-hours', type=float, help='pause (no new launch) once summed job wall time reaches this')
+    s = sub.add_parser('repeat')
+    s.add_argument('--feasibility', required=True)
+    s.add_argument('--kinematic-root', required=True, help='the benchmark kinematic root (original runs)')
+    s.add_argument('--out-root', required=True)
+    s.add_argument('--log-dir', default=str(ROOT/'artifacts/wp12/logs'))
+    s.add_argument('--queue-log', required=True)
+    s.add_argument('--devices', nargs='+', default=['cuda:1', 'cuda:0'])
+    s.add_argument('--max-concurrent', type=int, default=2)
+    s.add_argument('--max-other', type=int, default=2)
+    s.add_argument('--min-free-gb', type=float)
+    s.add_argument('--poll-s', type=float, default=60.)
+    s.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'))
+    s.add_argument('--cap-job-hours', type=float)
+    s = sub.add_parser('demo7-select')
+    s.add_argument('--feasibility', required=True, help='the held-out feasibility directory')
+    s.add_argument('--out', help=f'default {DEMO7_DEFAULT_OUT.relative_to(ROOT)}')
+    s.add_argument('--evidence-copy', help='also write the record here (e.g. docs/evidence/wp12/...) for the commit')
+    s = sub.add_parser('native-select')
+    s.add_argument('--split', choices=W.SPLITS, default='benchmark', help='dev only to exercise the rule (DEV)')
+    s.add_argument('--feasibility', required=True)
+    s.add_argument('--out', required=True)
+    s = sub.add_parser('native-prepare')
+    s.add_argument('--sample-id', required=True)
+    s.add_argument('--out', required=True)
+    s = sub.add_parser('native-launch')
+    s.add_argument('--sample-id', required=True)
+    s.add_argument('--out', required=True)
+    s.add_argument('--gpu', type=int)
+    s.add_argument('--surface-profile', choices=('particle_surface_v1', 'cut_aware_surface_v1'))
+    s.add_argument('--disk-floor-gb', type=float, default=15.)
+    s.add_argument('--dry-run', action='store_true')
+    s = sub.add_parser('summarize')
+    s.add_argument('--split', choices=W.SPLITS, default='benchmark')
+    s.add_argument('--feasibility', required=True)
+    s.add_argument('--kinematic-root')
+    s.add_argument('--native-root')
+    s.add_argument('--out', required=True)
+    args = p.parse_args(argv)
+    args.config, args.envelope, args.provenance = resolve_provenance(args.config, args.envelope, args.dev)
+    return {'samples': cmd_samples, 'feasibility': cmd_feasibility, 'kinematic': cmd_kinematic, 'queue': cmd_queue,
+            'repeat': cmd_repeat, 'demo7-select': cmd_demo7_select,
+            'native-select': cmd_native_select, 'native-prepare': cmd_native_prepare, 'native-launch': cmd_native_launch,
+            'summarize': cmd_summarize}[args.cmd](args)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

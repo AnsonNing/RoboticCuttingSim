@@ -1,0 +1,349 @@
+{
+ "schema": "rcs_wp12_supported_envelope_v1",
+ "schema_note": "The schema id names the FILE FORMAT (generalization_wp12.ENVELOPE_SCHEMA, unchanged); the envelope version is envelope_id.",
+ "envelope_id": "wp12_supported_envelope_v2",
+ "status": "DECLARED",
+ "status_values": "TEMPLATE (fields only, every bound null; the feasibility classifier evaluates no rule and marks every sample envelope_pending) | DECLARED (the orchestrator filled every bound after the Phase 4 xhigh decision and committed the file before any formal Phase 5 run; a change afterwards is a new envelope version)",
+ "filled_by": "rcs-xhigh, WP-12 Phase 5 freeze decision (user instruction 2026-10-31), from the E2 evidence; to be committed by the orchestrator together with configs/wp12/benchmark_v1.json (the freeze commit) before any formal Phase 5 run",
+ "decision_ref": "docs/reports/WP12_PHASE5_FREEZE_DECISION.md (E-1..E-4); docs/reports/WP12_PHASE4_E2.md section 4; docs/reports/WP12_PHASE4_XHIGH_DECISION.md D1, D2, D5",
+ "declared": {
+  "date": "2026-10-31 (KST)",
+  "head_at_declaration": "c279a4d (evidence and decisions read at 1f9d441; 28c8379 and c279a4d add only the opt-in tlmpm_v6 candidate and its guard test)",
+  "law": "law 8 (ADR 0012), tlmpm_v5, ruler_knife_v2_y, 1 mm particles, 4 mm grid, 0.1 ms material dt, seed 42",
+  "supersedes": "configs/wp12/supported_envelope_v1.json for Phase 5 benchmark v1 and the Phase 7 demos. v1 stays DECLARED, byte-identical and citable as the D2 record; configs/wp12/supported_envelope_v2_PROPOSED.json stays as the rcs-impl proposal record (status PROPOSED, never in force).",
+  "source_commits": {
+   "phase4a_root_causes": "b012902 (docs/reports/WP12_CUTTING_PHYSICS.md sections 1-10, docs/evidence/wp12/phase4a_law8_rootcause_001.json)",
+   "xhigh_review_and_rake_envelope_C6": "81a9626 (docs/reports/WP12_PHASE4_XHIGH_REVIEW.md section 5)",
+   "e1_protocol": "3dd3848 (configs/wp12/phase4_e1_protocol_v1.json)",
+   "e1_results": "15e5ec1 (docs/evidence/wp12/phase4_e1_001.json, WP12_CUTTING_PHYSICS.md 'E1 results')",
+   "resolution_protocol_and_study": "5efbfa0, cce4944, 77fd033 (docs/evidence/wp12/phase4_resolution_001.json)",
+   "phase4c_geometry_material": "05b31c5 (docs/evidence/wp12/phase4c_geometry_material_001.json)",
+   "phase2a_throughcut_window": "ec3e8a7 (docs/evidence/wp12/phase2_throughcut_001.json, WP12_WORKCELL.md section 5)",
+   "phase2b_native": "2f299cc (docs/evidence/wp12/phase2b_native_001.json)",
+   "methods_review": "5ccfa96 (docs/reports/WP12_PHASE4_METHODS_REVIEW.md section 2.4)",
+   "phase5_dev_feasibility": "94c7602 (artifacts/wp12/phase5_dev_002, DEV only)",
+   "wp11_records": "docs/reports/WP11_PHASE_F_LAW8.md, WP11_PHASE_E_ROUND1.md, WP11_PHASE_E_ROUND2.md (frozen, read only)",
+   "envelope_v1": "1876424 (configs/wp12/supported_envelope_v1.json, DECLARED, decision D2)",
+   "e2_protocol": "1876424 (configs/wp12/phase4_e2_protocol_v1.json, committed before any formal row)",
+   "e2_results": "1f9d441 (docs/evidence/wp12/phase4_e2_001.json; artifacts/wp12/phase4_e2_001; WP12_PHASE4_E2.md section 4; envelope proposal configs/wp12/supported_envelope_v2_PROPOSED.json)",
+   "verification_v1_v4": "71a0822 (docs/evidence/wp12/phase4_verification_001.json, COUNTERFACTUAL rows, never acceptance)",
+   "prototype_decision": "b05c7f0 (docs/reports/WP12_PHASE4_PROTOTYPE_DECISION.md: tlmpm_v6 opt-in candidate off the critical path; D1 stands)"
+  },
+  "not_dependent_on": "the tlmpm_v6 grid_musl_v1 candidate (committed in 28c8379 as an opt-in candidate under its own gridpos protocol; not accepted, not used) and every COUNTERFACTUAL V1-V4 row. Any adopted law, solver or controller option gets a NEW envelope version after its own acceptance."
+ },
+ "scope": "Physical admissibility for the WP-12 Phase 5 benchmark v1 (spec 5.3 class 'physically_unsupported') of law 8, tlmpm_v5, ruler_knife_v2_y at 1 mm / 4 mm / 0.1 ms, kinematic ideal tracking unless a note says Native, with the WP-12 goal planner and controller_profile path_v2 (armed through-cut end 0.1-0.3 mm above the board top; measured 0.16-0.28 mm in E2 and Phase 2b; the frozen v1 controller ends 0.3-0.5 mm above and is a KNOWN FAILURE for pieces <= 10 mm). INSIDE a bound means 'not declared physically unsupported, admissible for execution', NOT 'validated': each rule's note splits its admissible range into VALIDATED, PARTIALLY_VALIDATED, NOT_RUN and the excluded KNOWN_FAILURE / UNSUPPORTED_BY_LAW / PHYSICALLY_INFEASIBLE / KINEMATICALLY_INFEASIBLE parts. A bound is set at the edge of the first known failure or physical limit, or at the outermost value reviewed, with ONE declared exception: a bound may contain a named KNOWN_FAILURE point when the decision declares the interval an OOD boundary study (rule sever_tilt_solid_board); samples there are executed and measured, never ID, never in a target and never a demo. The Phase 5 ID uses only the cells listed in phase5_id_rules (same rule schema, bounds = validated cells); generalization_wp12.freeze_problems checks the admissible bounds (including 'when' rules) and every declared ID sample against 'rules'; phase5_id_rules is checked by the freeze decision script and the proposed CPU test. Samples outside a bound are physically_unsupported, never dropped and never counted as controller failures. Material parameters are provisional and uncalibrated; forces are not resolution-converged; every validated cell is one kinematic run per point (seed 42, one 160 x 30 x 20 mm bar, one lattice phase) unless stated.",
+ "rule_semantics": {
+  "parameter": "a key of the sample's envelope_parameters (generalization_wp12.envelope_parameters); a rule whose parameter the sample does not carry is NOT_APPLICABLE",
+  "when": "optional {parameter: value} conditions; the rule applies only if every condition equals the sample's value",
+  "kind": "max: value <= max | min: value >= min | range: min <= value <= max | in_set: value in values | subset: every element of the value list is in values",
+  "null_bound": "a null bound is UNDECLARED: the rule is NOT_EVALUATED and the sample is marked envelope_pending (never silently supported or unsupported)",
+  "evidence": "the record that justifies the bound (report section, evidence file, commit)"
+ },
+ "rules": [
+  {
+   "id": "trim_rake_deg",
+   "parameter": "rake_deg_max",
+   "kind": "max",
+   "max": 44.0,
+   "evidence": "WP12_CUTTING_PHYSICS.md section 7.2 and C6; WP12_PHASE4_XHIGH_REVIEW.md section 5; phase4a_law8_rootcause_001.json (dome rake sweep, s2307); WP11_PHASE_F_LAW8.md (F2.1, M3a-c); phase2b_native_001.json (TRIM rho 10); docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "Blade rake rho (ADR 0013), skims at motion elevation mu = 0 only. VALIDATED on the flat board through the planner: rho 10 (Native TRIM and Test C; E2 skims), rho 35 (E2 SKIM_r35: removal 0.952, the lowest E2 removal; max residual substrate particle height 11.1 mm above the trim plane, reported quality). VALIDATED by the law-8 acceptance (WP-11 support): 14/15/16 (F2.1), 25 (M3a), 35 (M3b/M3c). PARTIALLY_VALIDATED: 10-44 (dome sweep, diagnostic). KNOWN_FAILURE: 45 (motion on theta_max, float32 tie, 0 labels; s2307 frozen FAIL). UNSUPPORTED_BY_LAW: > 45. NOT_RUN: Native rho != 10, live out-of-plane tracking margin. Phase 5 ID: 10-35."
+  },
+  {
+   "id": "trim_rake_deg_min",
+   "parameter": "rake_deg_min",
+   "kind": "min",
+   "min": 9.2,
+   "evidence": "ruler_knife_v2_y geometry (tool_profile.RULER_KNIFE_V2_Y: 1.5 mm, 25 deg double bevel, bevel face 3.465 mm): lower-bevel heel drop 3.465 mm x sin(12.5 deg - rho) = 0.151 mm at rho 10, 0.200 mm at 9.19, 0.452 mm at 5; goal/planner edge clearance 0.2 mm (goals.py remove_protrusions/trim_plane edge_clearance_m); WP11_PHASE_E_ROUND2.md TEST_A_W s2406 (rho 5) SCENE_INFEASIBLE by -0.25 mm",
+   "note": "PHYSICALLY_INFEASIBLE below 9.2 deg at the declared 0.2 mm clearance: the blade heel goes below the trim plane into the substrate. NOT_RUN: 9.2-10. VALIDATED minimum: 10. Phase 5 ID minimum: 10."
+  },
+  {
+   "id": "trim_skew_abs_deg",
+   "parameter": "skew_abs_deg_max",
+   "kind": "max",
+   "max": 30.0,
+   "evidence": "WP11_PHASE_E_ROUND1.md E1_TEST_A_s7 (psi 20, rho 10, kinematic TASK_SUCCESS, wp11_workcell_v1); WP11_PHASE_E_ROUND2.md TEST_A_W s2409 (psi 35 IK_FAILURE); benchmark_v1_DRAFT OOD outer 30; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "Edge skew psi (ADR 0013). VALIDATED: 0-10 on the flat board through the planner (E2 SKIM_psi_p10 / SKIM_psi_m10, removal 0.973 each); 0-20 on wp11_workcell_v1 (WP-11 s7; skim physics does not involve the board). NOT_RUN: 10-30 on the flat board, Native psi != 0. KINEMATICALLY_UNREACHABLE: 35 (WP-11 s2409 IK). Near-pure draws (psi > ~89.4) hit the latent swept-normal defect (e): UNSUPPORTED until fallback v2 ships. Phase 5 ID: |psi| <= 10."
+  },
+  {
+   "id": "sever_tilt_solid_board",
+   "parameter": "sever_tilt_abs_deg_max",
+   "when": {
+    "board_kind": "solid"
+   },
+   "kind": "max",
+   "max": 9.9,
+   "evidence": "phase4_e1_001.json (A_p00..A_p35, A_m01..A_m35, R_p05/R_p20/R_p35 rows, repeats); WP12_CUTTING_PHYSICS.md 'E1 results'; WP12_PHASE4_METHODS_REVIEW.md section 2.4; WP12_RESOLUTION_STUDY.md OBL20; WP12_WORKCELL.md 9.2 (live armed end 0.16-0.28 mm); docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "Sever-plane tilt theta about the edge line (E1/Phase 5 call it 'tau'; NOT the ADR 0013 edge tilt, which stays 0). Flat board, Option A (edge ends on the board top). VALIDATED through the planner (path_v2, one run each): 0 (every vertical record), +2 (E2 SOLID_p02: 2 parts, 0 direct bridges, armed end 0.212 mm). KNOWN_FAILURE: +5 through the planner (E2 SOLID_p05: 1 part, 26 direct bridges, armed end 0.275 mm inside [0, 0.375]; the decision D1 armed-end argument held); 5 at a scripted h >= 0.25 mm (E1 R_p05_h0250); |theta| >= 10 at h = 0 (E1, both signs; 20 at every resolution). PARTIALLY_VALIDATED: |theta| <= 5 at a scripted h = 0 (no controller ends there). NOT_RUN through the planner: (0, 2), (2, 5), (5, 9.9] and every negative tilt. BOUNDARY-STUDY BOUND (freeze decision E-1): kept at 9.9 although 5 is a known failure inside it, so that benchmark family BF measures the transition and the 5-10 gap under the real pipeline; those samples are executed and reported, never ID, never in a target, never a demo. Phase 5 ID: theta = 0 only."
+  },
+  {
+   "id": "sever_tilt_slotted_board",
+   "parameter": "sever_tilt_abs_deg_max",
+   "when": {
+    "board_kind": "slotted"
+   },
+   "kind": "max",
+   "max": 34.9,
+   "evidence": "phase4_e1_001.json slotted rows D_p00, D_p20(_reach), D_p25(_reach), D_p30(_reach), D_p35(_reach) and reachability; WP12_WORKCELL.md section 5 (D8 rows); docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "Explicit Option D: one 8 mm wide, 8 mm deep through-width groove under the plane (its x at the board top); labelled 'Option D' in every sample, report and video. VALIDATED through the planner with the 4 mm overtravel (plane_section; E2, one run each): -20, +20, +25 (2 parts, 0 direct bridges; lowest edge point 3.49 / 3.49 / 3.38 mm into the groove; knife-handle slack 2.516 / 2.515 / 1.228 mm; SLOT_p25 2 particle centres 0.03 mm below the board top, inside the groove); vertical at 4 mm below the workpiece bottom (Phase 2a D8_M400); scripted reach-limit overtravel 0, 20, 25, 30 (E1). KNOWN_FAILURE: 35 (scripted 2.19 mm overtravel, 90 bridges). COLLISION_CONSTRAINED: 32.1 with the planner (DEV phase5_dev_003, knife handle -0.68 mm at HOLD); groove-limit overtravel at 20-35 (E1). NOT_RUN: planner -34.9..-20 and +25..+34.9 except +25, lattice phases other than a node line at the board top, any Native slotted run. Phase 5 ID: |theta| <= 20 (both ends confirmed)."
+  },
+  {
+   "id": "sever_plane_yaw_abs_deg",
+   "parameter": "sever_plane_yaw_abs_deg_max",
+   "kind": "max",
+   "max": 35.0,
+   "evidence": "no cutting run with a plane yawed relative to the workpiece lattice exists; artifacts/wp12/phase5_dev_002 feasibility (P5_B_ID_dev_s52901 13.0 deg valid_feasible, P5_B_OOD_dev_s53101 32.9 deg ik_unreachable at APPROACH, DEV); benchmark_v1_DRAFT OOD outer 35; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "Vertical plane yawed about local z (advance -z, edge parallel to the board; no tilted exit front, so the class (a) mechanism does not apply). VALIDATED on the solid board through the planner: 0-15 (E2 YAW_p15 / YAW_m15: 2 parts, 0 direct bridges, armed end 0.20 mm). KINEMATICS (DEV, one sample each): 13 reachable, 32.9 IK-unreachable at APPROACH. NOT_RUN: 15-35, Native. No known failure. Phase 5 ID: |phi| <= 15."
+  },
+  {
+   "id": "sever_advance_tilt_abs_deg",
+   "parameter": "advance_tilt_abs_deg_max",
+   "kind": "max",
+   "max": 30.0,
+   "evidence": "WP11_PHASE_E_ROUND1.md E1_TEST_A_s3 (15 deg, TASK_SUCCESS); WP11_PHASE_E_ROUND2.md E2_TEST_A_W_s2404 (30 deg, TASK_SUCCESS); both kinematic on wp11_workcell_v1; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "Slanted chop (advance tilted inside a vertical blade plane). PARTIALLY_VALIDATED: 15 and 30 on the WP-11 relief-slot support (kinematic). KINEMATICALLY_INFEASIBLE on blade_master_flat_board_v1 with the current planner for every beta != 0: through_cut_rotation keeps the edge normal to the advance and _relief_end stops the edge CENTRE on the board top, so the low end of the 120 mm edge lies 60 mm x sin(beta) below it (E2 ADV_p15 / ADV_m15: blade_collision -15.53 mm at HOLD:cut0; ADV_m15 also knife handle -6.52 mm). A planner limitation, not a physics result: the physical bound is kept. Excluded from benchmark v1 (declared exclusion). A flat-board slanted chop needs a planner change (stop at the lowest edge point) and new confirmation rows. Phase 5 ID: beta = 0."
+  },
+  {
+   "id": "board_kinds",
+   "parameter": "board_kind",
+   "kind": "in_set",
+   "values": [
+    "solid",
+    "slotted"
+   ],
+   "evidence": "ADR 0017; WP12_WORKCELL.md sections 5 and 9; phase4_e1_001.json; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "solid = blade_master_flat_board_v1 (default; Native VALIDATED for vertical CUT, partial cut, TRIM, Test B, Test C). slotted = the explicit Option D variant, only where a family declares it (kinematic VALIDATED: E1 rows, Phase 2a D8 rows, E2 SLOT rows with the planner; Native NOT_RUN: Demo 2 is the first Native slotted run). Never a hidden default."
+  },
+  {
+   "id": "material_profiles",
+   "parameter": "material_profile",
+   "kind": "in_set",
+   "values": [
+    "cutting_tasks_v1",
+    "wp12_reference_v1",
+    "wp12_soft_elastic_v1",
+    "wp12_clay_plastic_v1",
+    "wp12_firm_v1",
+    "wp12_low_friction_v1",
+    "wp12_high_friction_v1",
+    "wp12_low_cut_resistance_v1",
+    "wp12_high_cut_resistance_v1",
+    "wp12_light_v1",
+    "wp12_dense_v1"
+   ],
+   "evidence": "phase4c_geometry_material_001.json (M01-M11 on G01 CUT and G11 TRIM); WP12_GENERALIZATION_GEOMETRY_MATERIAL.md section 5; materials_wp12.admit",
+   "note": "All PROVISIONAL_UNCALIBRATED. VALIDATED: cutting_tasks_v1 (every Phase 2-4 record). PARTIALLY_VALIDATED (one CUT and one TRIM run each, kinematic): the other ten. Distinct mechanics: soft_elastic, clay_plastic, firm, light, dense. low/high_cut_resistance give codes and positions identical to the reference under law 8 (G_c changes only the blade force): force-only variants, not distinct separation behaviour. low/high_friction: weak effect in edge-normal CUT/TRIM (0 codes differ at mu 0.8), friction-dominated tasks NOT_RUN. EXCLUDED: wp12_stiff_v1 (grid CFL 0.290 at 0.1 ms, refused by the admission rule; it ran only at 50 us, outside the formal resolution) and every profile not listed. Phase 5 ID: cutting_tasks_v1 only."
+  },
+  {
+   "id": "cut_digits_max",
+   "parameter": "cut_digits",
+   "kind": "max",
+   "max": 5,
+   "evidence": "phase2b_native_001.json (Test B, 4 digits, 5 pieces, Native); WP12_AGENTIC_READINESS.md (MULTI 5 slices, 4 digits); WP11_PHASE_E_ROUND2.md (S = 16, max occupancy 8)",
+   "note": "VALIDATED: <= 4 digits. NOT_RUN: 5 (DRAFT OOD outer). Slot overflow raises SlotOverflowError and is an execution failure (solver_invalid), never hidden; G15 overflowed S = 8 with overlapping bumps, Phase 5 uses S = 16. Phase 5 ID: <= 3 digits."
+  },
+  {
+   "id": "workpiece_height_m",
+   "parameter": "workpiece_height_m",
+   "kind": "range",
+   "min": 0.004,
+   "max": 0.035,
+   "evidence": "phase4c_geometry_material_001.json (G01-G22, *_pathv2_DIAG); phase2b_native_001.json (20 mm bar); WP12_RESOLUTION_STUDY.md (18 mm)",
+   "note": "VALIDATED: 12-32 mm (Phase 4c, kinematic, one run per geometry), 20 mm Native. PARTIALLY_VALIDATED: 4-10 mm with path_v2 only (G07/G09/G10/G21 diagnostic controller variant, declared after the v1 failures). KNOWN_FAILURE: <= 10 mm with the frozen v1 controller (armed end 0.4 mm). NOT_RUN: 32-35 mm (the 40 mm blade depth and the 5 mm handle clearance rule bind; the preflight classifies it). Phase 5 ID: 16-24 mm (path_v2)."
+  },
+  {
+   "id": "protrusion_families",
+   "parameter": "protrusion_families",
+   "kind": "subset",
+   "values": [
+    "dome",
+    "gaussian",
+    "ellipsoid_cap",
+    "ridge",
+    "irregular"
+   ],
+   "evidence": "phase2b_native_001.json (Test C); phase4c_geometry_material_001.json (G11-G18); WP11_PHASE_E_ROUND1.md (Test C)",
+   "note": "VALIDATED (TRIM and CUT): dome, gaussian, ellipsoid_cap; irregular (heightfield_v2, G17, one run). NOT_RUN: ridge. Overlapping footprints are not a family: per-protrusion TRIM of overlapping bumps is UNSUPPORTED by the planner (G15/G15b) and the generator refuses them (protrusions_overlap). Phase 5 ID: dome, gaussian, ellipsoid_cap."
+  },
+  {
+   "id": "cut_speed_m_s",
+   "parameter": "cut_speed_m_s",
+   "kind": "range",
+   "min": 0.004,
+   "max": 0.03,
+   "evidence": "every validated through-cut used 10 mm/s (goal_planner DEFAULT_OPTIONS cut_speed_m_s); benchmark_v1_DRAFT OOD outer 4-30 mm/s; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "VALIDATED: 0.008-0.012 m/s (E2 CUT_v08 / CUT_v12, with 0.010 everywhere: 2 parts, 0 direct bridges, armed end 0.16 mm; the armed end is set by the path_v2 0.3 mm completion tolerance, not by the speed). NOT_RUN: 0.004-0.008, 0.012-0.030, Native != 0.010. No known failure (quasi-static material at these speeds). Phase 5 ID: 0.008-0.012."
+  },
+  {
+   "id": "skim_speed_m_s",
+   "parameter": "skim_speed_m_s",
+   "kind": "range",
+   "min": 0.01,
+   "max": 0.06,
+   "evidence": "every validated skim used 25 mm/s (goal_planner DEFAULT_OPTIONS skim_speed_m_s; dome sweep; Native TRIM/Test C); benchmark_v1_DRAFT OOD outer 10-60 mm/s; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "VALIDATED: 0.020-0.030 m/s (E2 SKIM_v20 / SKIM_v30, dome removal 0.975 / 0.961, with 0.025 everywhere). NOT_RUN: 0.010-0.020, 0.030-0.060, Native != 0.025. Phase 5 ID: 0.020-0.030."
+  },
+  {
+   "id": "trim_depth_m",
+   "parameter": "trim_depth_m",
+   "kind": "range",
+   "min": 0.0,
+   "max": 0.0,
+   "evidence": "WP12_CUTTING_PHYSICS.md section 7.2 (slab rows: an 80 mm continuous 2.8 mm chip piles up ahead of the edge and never separates at any rake; the unrestrained slab also slides off at rho >= 30)",
+   "note": "Applies only to full-length layer trims (Phase 5 C trim_layer). KNOWN_FAILURE (diagnostic, kinematic): a continuous full-length chip is carried ahead of the edge (class (c)) and never separates. Every trim_layer sample is physically_unsupported until a dedicated study. Region trims over a protrusion (trim_plane_protrusion) do not carry this parameter. No Phase 5 v1 family carries this parameter (trim_layer removed by decision D5)."
+  },
+  {
+   "id": "operation_patterns",
+   "parameter": "operation_pattern",
+   "kind": "in_set",
+   "values": [
+    "sever",
+    "remove_protrusions",
+    "trim_plane",
+    "sequence:sever>sever",
+    "sequence:remove_protrusions>remove_protrusions",
+    "sequence:remove_protrusions>remove_protrusions>remove_protrusions",
+    "sequence:remove_protrusions>remove_protrusions>remove_protrusions>remove_protrusions",
+    "sequence:trim_plane>trim_plane",
+    "sequence:sever>remove_protrusions",
+    "sequence:remove_protrusions>sever",
+    "sequence:sever>move_piece",
+    "sequence:remove_protrusions>move_piece",
+    "sequence:sever>move_piece>sever",
+    "sequence:sever>move_piece>remove_protrusions"
+   ],
+   "evidence": "phase2b_native_001.json (sever, divide, remove_protrusions x3); WP11_PHASE_E_ROUND2.md TEST_D2 (s2503/s2504/s2505 PASS, s2501/s2502/s2506 FAIL by class (c)); WP11_PHASE_E_ROUND1.md SLICE-PUSH (pushes PASS, second-cut location FAIL); WP12_AGENTIC_READINESS.md and artifacts/wp12/phase6_goalfeat_001 (cut>push>cut, DEV coarse); phase4c G15_overlapping_TRIMPLANE_DIAG; docs/evidence/wp12/phase4_e2_001.json (E2, commit 1f9d441)",
+   "note": "VALIDATED (kinematic, flat board, planner): sever (incl. multi-plane), remove_protrusions (1-3), sequence:sever>sever, sequence:remove_protrusions>... (2-3 steps), trim_plane over a protrusion region (E2 TRIM_PLANE, removed 0.959), sequence:trim_plane>trim_plane (E2 TRIM_TRIM, 0.970 per step; the second digit's 380 unlabelled two-sided particles are reported, trim digits are judged by the WP-11 trim criterion), sequence:sever>move_piece (E2 CUT_PUSH: 20 mm push of the 0.5 L piece, 19.90 mm, other piece 0.3 um; WP-11 SLICE-PUSH: 20 mm pushes of 0.3-0.36 L pieces, 5/5). PARTIALLY_VALIDATED: sequence:sever>remove_protrusions and sequence:remove_protrusions>sever (3 of 6 WP-11 TEST_D2 failed by class (c) core-band carry); sequence:sever>move_piece>remove_protrusions (ADDED in v2: one kinematic run, E2 CUT_PUSH_TRIM, trim of the STATIONARY piece only: 3 parts, push 19.91 mm, removal 0.968; class (c) not observed, not excluded). NOT_RUN at the formal resolution: sequence:remove_protrusions>move_piece, sequence:sever>move_piece>sever (DEV 4 mm particles only), four sequential removals. Native VALIDATED: sever, divide, remove_protrusions (1 and 3) only."
+  }
+ ],
+ "phase5_id_rules": {
+  "semantics": "Same rule schema as 'rules', bounds = the VALIDATED cells usable by the Phase 5 ID (kinematic, flat board, path_v2, cutting_tasks_v1, 1 mm / 4 mm / 0.1 ms). Every ID sample of population ID_validated must satisfy every applicable rule; every ID_unconfirmed sample fails at least one (so the target population is exactly the validated cells). Not read by generalization_wp12 (no behaviour change); checked by the freeze decision script and by the proposed CPU test.",
+  "rules": [
+   {
+    "id": "id_rake_max",
+    "parameter": "rake_deg_max",
+    "kind": "max",
+    "max": 35.0
+   },
+   {
+    "id": "id_rake_min",
+    "parameter": "rake_deg_min",
+    "kind": "min",
+    "min": 10.0
+   },
+   {
+    "id": "id_skew",
+    "parameter": "skew_abs_deg_max",
+    "kind": "max",
+    "max": 10.0
+   },
+   {
+    "id": "id_tilt_solid",
+    "parameter": "sever_tilt_abs_deg_max",
+    "when": {
+     "board_kind": "solid"
+    },
+    "kind": "max",
+    "max": 0.0
+   },
+   {
+    "id": "id_tilt_slotted",
+    "parameter": "sever_tilt_abs_deg_max",
+    "when": {
+     "board_kind": "slotted"
+    },
+    "kind": "max",
+    "max": 20.0
+   },
+   {
+    "id": "id_plane_yaw",
+    "parameter": "sever_plane_yaw_abs_deg_max",
+    "kind": "max",
+    "max": 15.0
+   },
+   {
+    "id": "id_advance_tilt",
+    "parameter": "advance_tilt_abs_deg_max",
+    "kind": "max",
+    "max": 0.0
+   },
+   {
+    "id": "id_board_kinds",
+    "parameter": "board_kind",
+    "kind": "in_set",
+    "values": [
+     "solid",
+     "slotted"
+    ]
+   },
+   {
+    "id": "id_material",
+    "parameter": "material_profile",
+    "kind": "in_set",
+    "values": [
+     "cutting_tasks_v1"
+    ]
+   },
+   {
+    "id": "id_digits",
+    "parameter": "cut_digits",
+    "kind": "max",
+    "max": 4
+   },
+   {
+    "id": "id_height",
+    "parameter": "workpiece_height_m",
+    "kind": "range",
+    "min": 0.012,
+    "max": 0.032
+   },
+   {
+    "id": "id_protrusion_families",
+    "parameter": "protrusion_families",
+    "kind": "subset",
+    "values": [
+     "dome",
+     "gaussian",
+     "ellipsoid_cap",
+     "irregular"
+    ]
+   },
+   {
+    "id": "id_cut_speed",
+    "parameter": "cut_speed_m_s",
+    "kind": "range",
+    "min": 0.008,
+    "max": 0.012
+   },
+   {
+    "id": "id_skim_speed",
+    "parameter": "skim_speed_m_s",
+    "kind": "range",
+    "min": 0.02,
+    "max": 0.03
+   },
+   {
+    "id": "id_operation_patterns",
+    "parameter": "operation_pattern",
+    "kind": "in_set",
+    "values": [
+     "sever",
+     "remove_protrusions",
+     "trim_plane",
+     "sequence:sever>sever",
+     "sequence:remove_protrusions>remove_protrusions",
+     "sequence:remove_protrusions>remove_protrusions>remove_protrusions",
+     "sequence:trim_plane>trim_plane",
+     "sequence:sever>move_piece"
+    ]
+   }
+  ]
+ },
+ "changes_from_v1": [
+  "bounds: unchanged except operation_patterns gains sequence:sever>move_piece>remove_protrusions (PARTIALLY_VALIDATED by E2 CUT_PUSH_TRIM; the only widening, declared by the xhigh decision, never by rcs-impl; needed for Demo 6, read by no benchmark v1 family)",
+  "sever_tilt_solid_board: bound kept at 9.9 as a declared boundary-study bound (E2 SOLID_p05 FAIL inside it); scope text amended with the single exception rule",
+  "notes: E2 outcomes recorded as VALIDATED (CONFIRMED rows), KNOWN_FAILURE (SOLID_p05) and KINEMATICALLY_INFEASIBLE (ADV rows, planner limitation)",
+  "phase5_id_rules: new machine-readable validated cells for the Phase 5 ID",
+  "scope: freeze_problems now evaluates 'when' rules and every declared ID sample (since 1876424); the v1 sentence saying it skips them is obsolete"
+ ],
+ "not_covered": "one kinematic run per validated point (seed 42, one bar, one lattice phase); dimensions confirmed one at a time (interactions untested); no Native run outside the Phase 2b / Phase 6 cells; forces not converged; material provisional and uncalibrated"
+}

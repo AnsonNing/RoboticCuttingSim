@@ -1,0 +1,100 @@
+{
+ "description": "Sever at x = 0.0 mm, kerf_face push of the +x piece by 20.0 mm, sever the pushed piece at reference x = 40.0 mm planned at 60.0 mm (planner_offset_local_m).",
+ "episode": {
+  "control_dt_s": 0.02,
+  "duration_s": 21.5
+ },
+ "evaluator_version": "goal_eval_v2a",
+ "goal_id": "cut_reposition_cut",
+ "planner": {
+  "controller_profile": "path_v2",
+  "cut_extent": "plane_section"
+ },
+ "schema": "rcs_goal_v1",
+ "steps": [
+  {
+   "description": "",
+   "expected_pieces": 2,
+   "goal_id": "sever1",
+   "minimum_main_parts_mass_fraction": 0.99,
+   "minimum_part_mass_fraction": 0.25,
+   "plane_error_bound_m": 0.002,
+   "planes": [
+    {
+     "normal_local": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "origin_local_m": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "type": "sever"
+  },
+  {
+   "description": "",
+   "direction_local": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "distance_m": 0.02,
+   "goal_id": "push",
+   "maximum_other_displacement_m": 0.002,
+   "minimum_displacement_m": 0.01,
+   "minimum_piece_mass_fraction": 0.05,
+   "minimum_selector_share": 0.5,
+   "push_edge_height_m": 0.003,
+   "push_speed_m_s": 0.01,
+   "selector": {
+    "side_of_plane": {
+     "normal_local": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "origin_local_m": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "side": "positive"
+    }
+   },
+   "type": "move_piece"
+  },
+  {
+   "description": "",
+   "expected_pieces": 2,
+   "goal_id": "sever2",
+   "minimum_main_parts_mass_fraction": 0.99,
+   "minimum_part_mass_fraction": 0.125,
+   "plane_error_bound_m": 0.002,
+   "planes": [
+    {
+     "normal_local": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "origin_local_m": [
+      0.04,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "planner_offset_local_m": [
+    0.02,
+    0.0,
+    0.0
+   ],
+   "type": "sever"
+  }
+ ],
+ "type": "sequence"
+}

@@ -1,0 +1,3783 @@
+{
+ "evidence": "WP-12 Phase 2b: live Native workcell acceptance of blade_master_flat_board_v1 and the old/new comparison",
+ "report": "docs/reports/WP12_WORKCELL.md (Phase 2b Native acceptance)",
+ "protocol": {
+  "path": "configs/wp12/workcell_live_v1.json",
+  "sha256": "4b2016b6f59942800983d8614d3aae9eb3b678d256b2551cd41eccc48adbd472"
+ },
+ "scope": "LIVE Native results only (runtime_source live_isaac_sim): Isaac Sim 6.2 Kit/PhysX Franka articulation with the physically grasped ruler_knife_v2_y (two-finger physical_grasp, pregrasped at the workcell HOME) + retained TLMPM material (tlmpm_v5, law 8, 1 mm particles, 4 mm grid, 0.1 ms) + RTX cameras, on blade_master_flat_board_v1 (one solid board on the table, no risers). Material parameters are provisional and uncalibrated. One seed per episode, no repeat statistics, no Lab parity, never kinematic replay.",
+ "live_episodes": [
+  {
+   "analysis": "artifacts/wp12/workcell_live_001/analysis_002/analysis.json",
+   "superseded_analyses": [
+    "artifacts/wp12/workcell_live_001/analysis_001/analysis.json"
+   ],
+   "episode": "CUT",
+   "root": "artifacts/wp12/workcell_live_001",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_001/run",
+   "class": "TASK_SUCCESS",
+   "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "declared_rule_class": null,
+   "partial_cut": null,
+   "task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "PASS",
+   "failed_checks": [],
+   "outcome_metrics": {
+    "mechanical_components": 2,
+    "piece_mass_fractions": [
+     0.5000000000003806,
+     0.5000000000003806
+    ],
+    "substantial_pieces": 2,
+    "main_pieces_mass_fraction": 1.0000000000007612,
+    "minor_pieces_mass_fraction": 0.0
+   },
+   "metrics": {
+    "cut_completion": 1.0,
+    "separation": true,
+    "mechanical_components": 2,
+    "expected_pieces": 2,
+    "cut_position_error_m": 0.0015000000421423465,
+    "overcut_debris_mass_fraction": 0.0,
+    "definitions": {
+     "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+     "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+     "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.0004639625549316406,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 30,
+    "task_steps_rotation_clamped": 238
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 2.7350429990912677e-06,
+    "max_rotation_rad": 0.0003006750446292487,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 2,
+    "tensor_contact_max_penetration_m": 7.3285773396492004e-06,
+    "non_finger_roles_in_contact": {
+     "fixture": {
+      "steps": 19,
+      "max_contacts": 2,
+      "phases": [
+       "CUT:cut0",
+       "HOLD:cut0",
+       "WITHDRAW:cut0"
+      ]
+     }
+    }
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": -4.071210650720414e-08,
+    "max_penetration_into_board_m": 4.071210650720414e-08,
+    "at_phase": "HOLD:cut0",
+    "steps_with_tool_board_contact_pairs": 19,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": 0.00037655257619917393,
+    "at_frame": 35,
+    "at_time_s": 7.0,
+    "max_particles_below_board_top_in_a_frame": 0,
+    "frames_with_particles_below_board_top": 0,
+    "frames": 75,
+    "final_min_particle_centre_minus_board_top_m": 0.00037736978265456855,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 7.507771981596042e-05,
+    "whole_drift_m": [
+     -7.507360409059664e-05,
+     7.861180650557543e-07,
+     -0.00012727188943076687
+    ],
+    "final_components": 2,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 0.5,
+      "reference_x_range_m": [
+       -0.0794999971985817,
+       -0.0005000000237487257
+      ],
+      "drift_end_minus_start_m": [
+       -0.0013234518189399191,
+       1.63345673657562e-06,
+       -0.00012746814269529692
+      ],
+      "horizontal_drift_m": 0.0013234528269780873
+     },
+     {
+      "label": 1,
+      "mass_fraction": 0.5,
+      "reference_x_range_m": [
+       0.0005000000237487257,
+       0.0794999971985817
+      ],
+      "drift_end_minus_start_m": [
+       0.0011733046107654174,
+       -6.122060646403555e-08,
+       -0.0001270756361645524
+      ],
+      "horizontal_drift_m": 0.0011733046123625997
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 0.9012498539794251,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 2.117023054293713,
+   "operations": [
+    {
+     "op": "cut0",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.00027559800010769527,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": -4.071210650720414e-08,
+      "max": 4.7942288640591066e-05,
+      "mean": 1.1935588862417925e-05,
+      "p95": 4.584025610927453e-05,
+      "max_abs": 4.7942288640591066e-05,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": -4.071210650720414e-08,
+     "end_of_armed_within_clean_cut_window": true,
+     "steps_with_tool_board_contact_pairs": 19,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.008921845050817171,
+      "max": 0.03983945449546023
+     },
+     "board_reaction_inferred_hold_z_max_n": 2.117023054293713,
+     "board_reaction_inferred_hold_mean_world_n": [
+      0.009086927670546174,
+      0.06130371866979018,
+      0.625953677873941
+     ],
+     "workpiece_horizontal_displacement_m": 7.780300974483096e-05,
+     "by_side_of_plane_x_m": {
+      "negative_side": -0.0012963983859044469,
+      "positive_side": 0.001140804015625094
+     },
+     "crossing_links_conflicting": [
+      600,
+      600
+     ],
+     "direct_code0_bridges": 0,
+     "kerf_offset_from_declared_m": 0.0,
+     "tracking_error_m": {
+      "min": 0.00033322597067574544,
+      "max": 0.005183583320277475,
+      "mean": 0.0010068767341395622,
+      "p95": 0.0013891160323604422,
+      "max_abs": 0.005183583320277475,
+      "samples": 452
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    }
+   ],
+   "measured_path_clearance": "PASS",
+   "measured_path_clearance_staged": null,
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 75,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 75,
+     "start_depth_valid_fraction": 0.21031901041666667,
+     "end_depth_valid_fraction": 0.21029622395833333,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 75,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 75,
+     "start_depth_valid_fraction": 0.5729166666666666,
+     "end_depth_valid_fraction": 0.5729166666666666,
+     "start_to_end_translation_m": 6.93815842765978e-05
+    },
+    "wrist_d405_1": {
+     "frames": 75,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 741,
+     "max_displacement_from_first_m": 0.2882798876605061,
+     "max_measured_vs_current_USD_translation_m": 2.1122478222062802e-08
+    },
+    "wrist_d405_1": {
+     "samples": 741,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 741,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 740,
+    "step_wall_ms_mean": 403.76564934843503,
+    "material_wall_ms_mean": 269.9815823674136,
+    "episode_wall_s": 357.3797114719928,
+    "process_wall_s": 385.2798789040098,
+    "run_dir_bytes": 516666388
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_001/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_001/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "18",
+     "--steps",
+     "700",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_001/run"
+    ],
+    "started": "2026-10-31T00:13:07.348307+09:00",
+    "ended": "2026-10-31T00:19:32.744855+09:00",
+    "returncode": 0,
+    "wall_s": 385.2798789040098,
+    "git_sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  },
+  {
+   "analysis": "artifacts/wp12/workcell_live_002/analysis_002/analysis.json",
+   "superseded_analyses": [
+    "artifacts/wp12/workcell_live_002/analysis_001/analysis.json"
+   ],
+   "episode": "PARTIAL",
+   "root": "artifacts/wp12/workcell_live_002",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_002/run",
+   "class": "CUTTING_FAILURE",
+   "class_reason": "outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes",
+   "declared_rule_class": "PARTIAL_CUT_ACCEPTED",
+   "partial_cut": {
+    "class": "PARTIAL_CUT_ACCEPTED",
+    "checks": {
+     "integrity_pass": true,
+     "one_mechanical_component": true,
+     "kerf_exists": true,
+     "no_label_below_declared_depth_minus_one_cell": true,
+     "plan_finished_no_grasp_or_ik_failure": true
+    },
+    "mechanical_components": 1,
+    "labelled_particles_cut0": 14400,
+    "labelled_reference_z_min_m": 0.010499999858438969,
+    "labelled_reference_z_floor_m": 0.006,
+    "sever_verdict": "FAIL",
+    "rule": "configs/wp12/workcell_live_v1.json episodes[PARTIAL].success"
+   },
+   "task_id": "CFG-bar_flat_board-partial_cut_mid_depth-c393ad75",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "FAIL",
+   "failed_checks": [
+    "expected_substantial_pieces",
+    "every_plane_has_an_interface",
+    "cut_at_declared_planes"
+   ],
+   "outcome_metrics": {
+    "mechanical_components": 1,
+    "piece_mass_fractions": [
+     0.9999999999996599
+    ],
+    "substantial_pieces": 1,
+    "main_pieces_mass_fraction": 0.9999999999996599,
+    "minor_pieces_mass_fraction": 0.0
+   },
+   "metrics": {
+    "cut_completion": 0.5,
+    "separation": false,
+    "mechanical_components": 1,
+    "expected_pieces": 2,
+    "cut_position_error_m": null,
+    "overcut_debris_mass_fraction": 0.0,
+    "definitions": {
+     "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+     "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+     "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.0004467964172363281,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 37,
+    "task_steps_rotation_clamped": 238
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 1.4248322940796731e-06,
+    "max_rotation_rad": 0.00013198443703416502,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 0,
+    "tensor_contact_max_penetration_m": 7.1711838245391846e-06,
+    "non_finger_roles_in_contact": {}
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": 0.00984641356914412,
+    "max_penetration_into_board_m": 0.0,
+    "at_phase": "HOLD:cut0",
+    "steps_with_tool_board_contact_pairs": 0,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": 0.0004172859189566225,
+    "at_frame": 31,
+    "at_time_s": 6.2,
+    "max_particles_below_board_top_in_a_frame": 0,
+    "frames_with_particles_below_board_top": 0,
+    "frames": 66,
+    "final_min_particle_centre_minus_board_top_m": 0.0004285805334802717,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 7.831471471160658e-05,
+    "whole_drift_m": [
+     7.826563269872792e-05,
+     -2.7722335089489047e-06,
+     -0.00011252743082739922
+    ],
+    "final_components": 1,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 1.0,
+      "reference_x_range_m": [
+       -0.0794999971985817,
+       0.0794999971985817
+      ],
+      "drift_end_minus_start_m": [
+       7.826563269872792e-05,
+       -2.7722335089489047e-06,
+       -0.00011252743082739922
+      ],
+      "horizontal_drift_m": 7.831471471160658e-05
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 0.9012498539794251,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 0.5592955568552498,
+   "operations": [
+    {
+     "op": "cut0",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.010281341803874034,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": 0.00984641356914412,
+      "max": 0.010171985411996183,
+      "mean": 0.009990334004169753,
+      "p95": 0.010154150615532204,
+      "max_abs": 0.010171985411996183,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": 0.00984641356914412,
+     "end_of_armed_within_clean_cut_window": false,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.003954010548401281,
+      "max": 0.03410709196968978
+     },
+     "board_reaction_inferred_hold_z_max_n": 0.38319471819504547,
+     "board_reaction_inferred_hold_mean_world_n": [
+      -0.07184110517943433,
+      0.021816252670864355,
+      0.14062222436364216
+     ],
+     "workpiece_horizontal_displacement_m": 7.800974856714137e-05,
+     "by_side_of_plane_x_m": {
+      "negative_side": 4.648481917017009e-05,
+      "positive_side": 0.00010938668769692039
+     },
+     "crossing_links_conflicting": [
+      300,
+      600
+     ],
+     "direct_code0_bridges": 1440,
+     "kerf_offset_from_declared_m": 0.0,
+     "tracking_error_m": {
+      "min": 0.00033322597067574544,
+      "max": 0.005183583320277475,
+      "mean": 0.0010494345172733215,
+      "p95": 0.0014577822007897688,
+      "max_abs": 0.005183583320277475,
+      "samples": 376
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    }
+   ],
+   "measured_path_clearance": "PASS",
+   "measured_path_clearance_staged": null,
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 66,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 66,
+     "start_depth_valid_fraction": 0.21031901041666667,
+     "end_depth_valid_fraction": 0.210302734375,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 66,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 66,
+     "start_depth_valid_fraction": 0.5729166666666666,
+     "end_depth_valid_fraction": 0.5729166666666666,
+     "start_to_end_translation_m": 6.133263358086678e-05
+    },
+    "wrist_d405_1": {
+     "frames": 66,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 643,
+     "max_displacement_from_first_m": 0.27978307338359143,
+     "max_measured_vs_current_USD_translation_m": 2.013955726342211e-08
+    },
+    "wrist_d405_1": {
+     "samples": 643,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 643,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 642,
+    "step_wall_ms_mean": 392.46341772050073,
+    "material_wall_ms_mean": 269.62805601260555,
+    "episode_wall_s": 305.3725562370091,
+    "process_wall_s": 331.4008830879902,
+    "run_dir_bytes": 459330853
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_002/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_002/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "15",
+     "--steps",
+     "600",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_002/run"
+    ],
+    "started": "2026-10-31T00:19:39.960247+09:00",
+    "ended": "2026-10-31T00:25:11.480042+09:00",
+    "returncode": 0,
+    "wall_s": 331.4008830879902,
+    "git_sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  },
+  {
+   "analysis": "artifacts/wp12/workcell_live_003/analysis_001/analysis.json",
+   "superseded_analyses": [],
+   "episode": "TRIM",
+   "root": "artifacts/wp12/workcell_live_003",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_003/run",
+   "class": "TASK_SUCCESS",
+   "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "declared_rule_class": null,
+   "partial_cut": null,
+   "task_id": "CFG-trim01_flat_board-trim_bump_rho10-13827418",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "PASS",
+   "failed_checks": [],
+   "outcome_metrics": {
+    "mechanical_components": 2,
+    "plane_local_z_m": 0.02,
+    "largest_component_below_plane_mass_share": 0.9999791666663268,
+    "detached_below_plane_mass_fraction": 2.083333333333334e-05,
+    "reference_substrate_component_ids": [
+     0
+    ],
+    "items": [
+     {
+      "id": "dome",
+      "selected": true,
+      "reference_particles_above_plane": 1044,
+      "reference_mass_above_plane_kg": 0.0015659999999999997,
+      "removed_mass_fraction": 0.9770114942528736,
+      "pass": true,
+      "residual_substrate_height_m": 0.01007650189101696
+     }
+    ],
+    "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+   },
+   "metrics": {
+    "cut_completion": 0.9770114942528736,
+    "per_protrusion_removed": {
+     "dome": 0.9770114942528736
+    },
+    "separation": true,
+    "mechanical_components": 2,
+    "cut_position_error_m": 0.01007650189101696,
+    "overcut_detached_below_plane_fraction": 2.083333333333334e-05,
+    "substrate_share": 0.9999791666663268,
+    "definitions": {
+     "cut_completion": "min removed mass fraction over selected protrusions",
+     "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+     "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.0003948807716369629,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 30,
+    "task_steps_rotation_clamped": 179
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 6.918753642687513e-07,
+    "max_rotation_rad": 8.507437401832025e-05,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 0,
+    "tensor_contact_max_penetration_m": 7.3052942752838135e-06,
+    "non_finger_roles_in_contact": {}
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": 0.019796312933758678,
+    "max_penetration_into_board_m": 0.0,
+    "at_phase": "PRE_CUT:dome",
+    "steps_with_tool_board_contact_pairs": 0,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": 0.0004233044746797532,
+    "at_frame": 27,
+    "at_time_s": 5.4,
+    "max_particles_below_board_top_in_a_frame": 0,
+    "frames_with_particles_below_board_top": 0,
+    "frames": 66,
+    "final_min_particle_centre_minus_board_top_m": 0.00042448140447959304,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 0.00046273606169763284,
+    "whole_drift_m": [
+     0.00046270056243004256,
+     -5.731694545050206e-06,
+     -0.00011220920892862467
+    ],
+    "final_components": 2,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 0.9894686946127528,
+      "reference_x_range_m": [
+       -0.0794999971985817,
+       0.0794999971985817
+      ],
+      "drift_end_minus_start_m": [
+       0.00012720165848595027,
+       1.6402975442427118e-06,
+       -0.00011500748734384614
+      ],
+      "horizontal_drift_m": 0.0001272122340720812
+     },
+     {
+      "label": 1,
+      "mass_fraction": 0.010531305387247019,
+      "reference_x_range_m": [
+       -0.009499999694526196,
+       0.009499999694526196
+      ],
+      "drift_end_minus_start_m": [
+       0.031984496799729624,
+       -0.0006983671391615422,
+       0.00015070301219962529
+      ],
+      "horizontal_drift_m": 0.0319921201578291
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 0.8906776160467416,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 0.3822505474556237,
+   "operations": [
+    {
+     "op": "dome",
+     "kind": "surface_trim",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.02005774709863229,
+     "knife_lowest_minus_support_top_hold_m": null,
+     "knife_lowest_minus_support_top_op_min_m": 0.019796312933758678,
+     "end_of_armed_within_clean_cut_window": null,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.022321038630405014,
+      "max": 0.07014767038317307
+     },
+     "board_reaction_inferred_hold_z_max_n": null,
+     "board_reaction_inferred_hold_mean_world_n": null,
+     "workpiece_horizontal_displacement_m": 0.00046143061416532106,
+     "by_side_of_plane_x_m": null,
+     "crossing_links_conflicting": null,
+     "direct_code0_bridges": null,
+     "kerf_offset_from_declared_m": null,
+     "tracking_error_m": {
+      "min": 0.00046081533790585423,
+      "max": 0.006597438779644766,
+      "mean": 0.0010184853110107484,
+      "p95": 0.001762377115332196,
+      "max_abs": 0.006597438779644766,
+      "samples": 329
+     },
+     "lowest_blade_point_above_bar_top_m": {
+      "min": -0.00016477946362793497,
+      "max": 0.00020516375607421145,
+      "mean": 4.561220410294327e-05,
+      "p95": 0.00011699832597185477,
+      "max_abs": 0.00020516375607421145,
+      "samples": 88
+     },
+     "measured_orientation": {
+      "rho_deg": null,
+      "tau_deg": null,
+      "psi_deg": null,
+      "mu_deg": null
+     }
+    }
+   ],
+   "measured_path_clearance": "FAIL",
+   "measured_path_clearance_staged": null,
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 66,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 66,
+     "start_depth_valid_fraction": 0.21031575520833334,
+     "end_depth_valid_fraction": 0.210302734375,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 66,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 66,
+     "start_depth_valid_fraction": 0.5729166666666666,
+     "end_depth_valid_fraction": 0.5729166666666666,
+     "start_to_end_translation_m": 3.811420698033109e-05
+    },
+    "wrist_d405_1": {
+     "frames": 66,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 638,
+     "max_displacement_from_first_m": 0.38930582303052425,
+     "max_measured_vs_current_USD_translation_m": 1.526458099954283e-08
+    },
+    "wrist_d405_1": {
+     "samples": 638,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 638,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 637,
+    "step_wall_ms_mean": 423.8178075614142,
+    "material_wall_ms_mean": 273.1921682198692,
+    "episode_wall_s": 324.68207144799817,
+    "process_wall_s": 351.3721185030008,
+    "run_dir_bytes": 468917784
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_003/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_003/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "15",
+     "--steps",
+     "575",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_003/run"
+    ],
+    "started": "2026-10-31T00:25:13.559256+09:00",
+    "ended": "2026-10-31T00:31:05.039832+09:00",
+    "returncode": 0,
+    "wall_s": 351.3721185030008,
+    "git_sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  },
+  {
+   "analysis": "artifacts/wp12/workcell_live_004/analysis_002/analysis.json",
+   "superseded_analyses": [
+    "artifacts/wp12/workcell_live_004/analysis_001/analysis.json"
+   ],
+   "episode": "TESTB",
+   "root": "artifacts/wp12/workcell_live_004",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_004/run",
+   "class": "TASK_SUCCESS",
+   "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "declared_rule_class": null,
+   "partial_cut": null,
+   "task_id": "CFG-bar_flat_board-divide_5_slices-c19e742e",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "PASS",
+   "failed_checks": [],
+   "outcome_metrics": {
+    "mechanical_components": 5,
+    "piece_mass_fractions": [
+     0.21875000000009923,
+     0.2000000000000805,
+     0.19375000000007425,
+     0.19375000000007425,
+     0.19375000000007425
+    ],
+    "substantial_pieces": 5,
+    "main_pieces_mass_fraction": 1.0000000000004023,
+    "minor_pieces_mass_fraction": 0.0
+   },
+   "metrics": {
+    "cut_completion": 1.0,
+    "separation": true,
+    "mechanical_components": 5,
+    "expected_pieces": 5,
+    "cut_position_error_m": 0.005000000402331353,
+    "overcut_debris_mass_fraction": 0.0,
+    "definitions": {
+     "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+     "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+     "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.0004858970642089844,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 58,
+    "task_steps_rotation_clamped": 238
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 1.5194299109208376e-05,
+    "max_rotation_rad": 0.0004487990041750854,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 2,
+    "tensor_contact_max_penetration_m": 7.253140211105347e-06,
+    "non_finger_roles_in_contact": {
+     "fixture": {
+      "steps": 77,
+      "max_contacts": 2,
+      "phases": [
+       "CUT:cut0",
+       "CUT:cut1",
+       "CUT:cut2",
+       "CUT:cut3",
+       "HOLD:cut0",
+       "HOLD:cut1",
+       "HOLD:cut2",
+       "HOLD:cut3",
+       "WITHDRAW:cut0",
+       "WITHDRAW:cut1",
+       "WITHDRAW:cut2",
+       "WITHDRAW:cut3"
+      ]
+     }
+    }
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": -2.5801548829765264e-08,
+    "max_penetration_into_board_m": 2.5801548829765264e-08,
+    "at_phase": "HOLD:cut3",
+    "steps_with_tool_board_contact_pairs": 77,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": 0.00030517979757860303,
+    "at_frame": 100,
+    "at_time_s": 20.0,
+    "max_particles_below_board_top_in_a_frame": 0,
+    "frames_with_particles_below_board_top": 0,
+    "frames": 191,
+    "final_min_particle_centre_minus_board_top_m": 0.0003606752725318074,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 0.0009218304154481479,
+    "whole_drift_m": [
+     0.0009218268645578897,
+     2.558637269127302e-06,
+     -0.00017257059588409764
+    ],
+    "final_components": 5,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 0.20000000000000004,
+      "reference_x_range_m": [
+       -0.0794999971985817,
+       -0.048500001430511475
+      ],
+      "drift_end_minus_start_m": [
+       -0.0017726906006746562,
+       0.00011771725565571028,
+       -0.00015564817213086987
+      ],
+      "horizontal_drift_m": 0.0017765948660286581
+     },
+     {
+      "label": 1,
+      "mass_fraction": 0.19375,
+      "reference_x_range_m": [
+       -0.04749999940395355,
+       -0.017500000074505806
+      ],
+      "drift_end_minus_start_m": [
+       -0.000650304463859705,
+       2.3931793438086153e-05,
+       -0.00018344196403947619
+      ],
+      "horizontal_drift_m": 0.0006507446707065849
+     },
+     {
+      "label": 2,
+      "mass_fraction": 0.19375,
+      "reference_x_range_m": [
+       -0.016499999910593033,
+       0.013500000350177288
+      ],
+      "drift_end_minus_start_m": [
+       0.0005848802069554753,
+       1.881062332916368e-05,
+       -0.0001944353722329803
+      ],
+      "horizontal_drift_m": 0.0005851826176829856
+     },
+     {
+      "label": 3,
+      "mass_fraction": 0.19375,
+      "reference_x_range_m": [
+       0.014499999582767487,
+       0.04450000077486038
+      ],
+      "drift_end_minus_start_m": [
+       0.0018800539904956781,
+       -0.00015324097468692347,
+       -0.0001854858841164493
+      ],
+      "horizontal_drift_m": 0.0018862888971474443
+     },
+     {
+      "label": 4,
+      "mass_fraction": 0.21875000000000006,
+      "reference_x_range_m": [
+       0.045499999076128006,
+       0.0794999971985817
+      ],
+      "drift_end_minus_start_m": [
+       0.004227567880275562,
+       1.939573645357974e-06,
+       -0.00014760840003963556
+      ],
+      "horizontal_drift_m": 0.004227568325205819
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 1.0806886382393714,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 12.711096041075143,
+   "operations": [
+    {
+     "op": "cut0",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.00027619404084957937,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": -1.9816806329578385e-08,
+      "max": 4.069314117424554e-05,
+      "mean": 8.6571163825788e-06,
+      "p95": 3.456172822058518e-05,
+      "max_abs": 4.069314117424554e-05,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": -1.9816806329578385e-08,
+     "end_of_armed_within_clean_cut_window": true,
+     "steps_with_tool_board_contact_pairs": 19,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.017879457036386232,
+      "max": 0.057183049647676086
+     },
+     "board_reaction_inferred_hold_z_max_n": 3.306156747593923,
+     "board_reaction_inferred_hold_mean_world_n": [
+      0.030818955595952942,
+      -0.007756575225313328,
+      0.7652957076330453
+     ],
+     "workpiece_horizontal_displacement_m": 0.0006265842225056568,
+     "by_side_of_plane_x_m": {
+      "negative_side": -0.0013872141912967503,
+      "positive_side": 0.0011300324665372435
+     },
+     "crossing_links_conflicting": [
+      600,
+      600
+     ],
+     "direct_code0_bridges": 0,
+     "kerf_offset_from_declared_m": -4.1723251242853365e-10,
+     "tracking_error_m": {
+      "min": 0.0005259755486693199,
+      "max": 0.0047559384133591944,
+      "mean": 0.0009774315953427445,
+      "p95": 0.0012741924670607787,
+      "max_abs": 0.0047559384133591944,
+      "samples": 451
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    },
+    {
+     "op": "cut1",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.0001633117800494497,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": -1.538228911780737e-08,
+      "max": 3.942190609276981e-05,
+      "mean": 7.2667117847025755e-06,
+      "p95": 3.9184430191230996e-05,
+      "max_abs": 3.942190609276981e-05,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": -1.538228911780737e-08,
+     "end_of_armed_within_clean_cut_window": true,
+     "steps_with_tool_board_contact_pairs": 20,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.0146699568935787,
+      "max": 0.05285297520477924
+     },
+     "board_reaction_inferred_hold_z_max_n": 12.711096041075143,
+     "board_reaction_inferred_hold_mean_world_n": [
+      0.0743687092913016,
+      -0.2873889389133061,
+      1.4455159327887506
+     ],
+     "workpiece_horizontal_displacement_m": 0.00035692880556105884,
+     "by_side_of_plane_x_m": {
+      "negative_side": -0.0007320135734577552,
+      "positive_side": 0.0010828837579123973
+     },
+     "crossing_links_conflicting": [
+      600,
+      600
+     ],
+     "direct_code0_bridges": 0,
+     "kerf_offset_from_declared_m": -0.000999999992549419,
+     "tracking_error_m": {
+      "min": 0.00030385715792877817,
+      "max": 0.0017229982478044784,
+      "mean": 0.000857470999920905,
+      "p95": 0.0012200522355487649,
+      "max_abs": 0.0017229982478044784,
+      "samples": 345
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    },
+    {
+     "op": "cut2",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.00023983163696858316,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": -1.3610690475715503e-08,
+      "max": 4.464618050162468e-05,
+      "mean": 8.873895509626505e-06,
+      "p95": 3.856083402145916e-05,
+      "max_abs": 4.464618050162468e-05,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": -1.3610690475715503e-08,
+     "end_of_armed_within_clean_cut_window": true,
+     "steps_with_tool_board_contact_pairs": 19,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.011726744362007678,
+      "max": 0.03885598871515248
+     },
+     "board_reaction_inferred_hold_z_max_n": 1.185747844690559,
+     "board_reaction_inferred_hold_mean_world_n": [
+      0.04720386471579254,
+      0.07060042084238866,
+      0.3470870006781645
+     ],
+     "workpiece_horizontal_displacement_m": 3.826131692039172e-05,
+     "by_side_of_plane_x_m": {
+      "negative_side": -0.000562109022690215,
+      "positive_side": 0.0009385756814056917
+     },
+     "crossing_links_conflicting": [
+      600,
+      600
+     ],
+     "direct_code0_bridges": 0,
+     "kerf_offset_from_declared_m": -0.002000000033527613,
+     "tracking_error_m": {
+      "min": 0.00033205364021941135,
+      "max": 0.0017832300091874993,
+      "mean": 0.0008722667390953365,
+      "p95": 0.00125164674018179,
+      "max_abs": 0.0017832300091874993,
+      "samples": 346
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    },
+    {
+     "op": "cut3",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.000207609212857807,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": -2.5801548829765264e-08,
+      "max": 5.9833591389892374e-05,
+      "mean": 1.1723805031517547e-05,
+      "p95": 5.752716808465584e-05,
+      "max_abs": 5.9833591389892374e-05,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": -2.5801548829765264e-08,
+     "end_of_armed_within_clean_cut_window": true,
+     "steps_with_tool_board_contact_pairs": 19,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.009672762812834015,
+      "max": 0.03987885017301008
+     },
+     "board_reaction_inferred_hold_z_max_n": 1.6041968945390637,
+     "board_reaction_inferred_hold_mean_world_n": [
+      -0.017399181813868358,
+      0.04914995720672768,
+      0.46848775850228214
+     ],
+     "workpiece_horizontal_displacement_m": 0.00014177087312461722,
+     "by_side_of_plane_x_m": {
+      "negative_side": -0.00042595205755219094,
+      "positive_side": 0.0009950019539489102
+     },
+     "crossing_links_conflicting": [
+      600,
+      600
+     ],
+     "direct_code0_bridges": 0,
+     "kerf_offset_from_declared_m": -0.003000000074505807,
+     "tracking_error_m": {
+      "min": 0.00030880662242767354,
+      "max": 0.003058686582682776,
+      "mean": 0.0008889506421717569,
+      "p95": 0.0012800722640194848,
+      "max_abs": 0.003058686582682776,
+      "samples": 353
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    }
+   ],
+   "measured_path_clearance": "FAIL",
+   "measured_path_clearance_staged": null,
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 191,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 191,
+     "start_depth_valid_fraction": 0.21031901041666667,
+     "end_depth_valid_fraction": 0.21027994791666665,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 191,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 191,
+     "start_depth_valid_fraction": 0.5729166666666666,
+     "end_depth_valid_fraction": 0.5729166666666666,
+     "start_to_end_translation_m": 8.537484473558366e-05
+    },
+    "wrist_d405_1": {
+     "frames": 191,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 1898,
+     "max_displacement_from_first_m": 0.30320053329567986,
+     "max_measured_vs_current_USD_translation_m": 2.1429923007650057e-08
+    },
+    "wrist_d405_1": {
+     "samples": 1898,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 1898,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 1897,
+    "step_wall_ms_mean": 427.58042763552874,
+    "material_wall_ms_mean": 269.1585239870065,
+    "episode_wall_s": 933.8700890190084,
+    "process_wall_s": 994.8048989750096,
+    "run_dir_bytes": 1217578264
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_004/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_004/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "47",
+     "--steps",
+     "1850",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_004/run"
+    ],
+    "started": "2026-10-31T00:31:06.318577+09:00",
+    "ended": "2026-10-31T00:47:41.220839+09:00",
+    "returncode": 0,
+    "wall_s": 994.8048989750096,
+    "git_sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  },
+  {
+   "analysis": "artifacts/wp12/workcell_live_005/analysis_001/analysis.json",
+   "superseded_analyses": [],
+   "episode": "TESTC",
+   "root": "artifacts/wp12/workcell_live_005",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_005/run",
+   "class": "TASK_SUCCESS",
+   "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "declared_rule_class": null,
+   "partial_cut": null,
+   "task_id": "CFG-bar_three_bumps_flat_board-remove_all_protrusions_rho10-e0441d65",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "PASS",
+   "failed_checks": [],
+   "outcome_metrics": {
+    "mechanical_components": 8,
+    "plane_local_z_m": 0.02,
+    "largest_component_below_plane_mass_share": 0.9999583333329937,
+    "detached_below_plane_mass_fraction": 4.166666666666668e-05,
+    "reference_substrate_component_ids": [
+     0
+    ],
+    "items": [
+     {
+      "id": "p0",
+      "selected": true,
+      "reference_particles_above_plane": 1044,
+      "reference_mass_above_plane_kg": 0.0015659999999999997,
+      "removed_mass_fraction": 0.9578544061302682,
+      "pass": true,
+      "residual_substrate_height_m": 0.0041735503077507015
+     },
+     {
+      "id": "p1",
+      "selected": true,
+      "reference_particles_above_plane": 1044,
+      "reference_mass_above_plane_kg": 0.0015659999999999997,
+      "removed_mass_fraction": 0.978927203065134,
+      "pass": true,
+      "residual_substrate_height_m": 0.009747018590569496
+     },
+     {
+      "id": "p2",
+      "selected": true,
+      "reference_particles_above_plane": 1044,
+      "reference_mass_above_plane_kg": 0.0015659999999999997,
+      "removed_mass_fraction": 0.9597701149425288,
+      "pass": true,
+      "residual_substrate_height_m": 0.0038990169018507
+     }
+    ],
+    "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+   },
+   "metrics": {
+    "cut_completion": 0.9578544061302682,
+    "per_protrusion_removed": {
+     "p0": 0.9578544061302682,
+     "p1": 0.978927203065134,
+     "p2": 0.9597701149425288
+    },
+    "separation": true,
+    "mechanical_components": 8,
+    "cut_position_error_m": 0.009747018590569496,
+    "overcut_detached_below_plane_fraction": 4.166666666666668e-05,
+    "substrate_share": 0.9999583333329937,
+    "definitions": {
+     "cut_completion": "min removed mass fraction over selected protrusions",
+     "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+     "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.0004596710205078125,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 49,
+    "task_steps_rotation_clamped": 180
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 8.151981103222637e-07,
+    "max_rotation_rad": 8.626756523574554e-05,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 0,
+    "tensor_contact_max_penetration_m": 7.068738341331482e-06,
+    "non_finger_roles_in_contact": {}
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": 0.019734609946039122,
+    "max_penetration_into_board_m": 0.0,
+    "at_phase": "SKIM:p2",
+    "steps_with_tool_board_contact_pairs": 0,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": -0.0005970681668259203,
+    "at_frame": 72,
+    "at_time_s": 14.4,
+    "max_particles_below_board_top_in_a_frame": 2,
+    "frames_with_particles_below_board_top": 24,
+    "frames": 113,
+    "final_min_particle_centre_minus_board_top_m": -4.640865154215135e-05,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 0.003051351096271166,
+    "whole_drift_m": [
+     0.0030425530993776436,
+     -0.00023154729577937123,
+     -0.00038075013524449704
+    ],
+    "final_components": 8,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 0.9694548682564665,
+      "reference_x_range_m": [
+       -0.0794999971985817,
+       0.0794999971985817
+      ],
+      "drift_end_minus_start_m": [
+       0.0008019914774803322,
+       2.042681509182821e-05,
+       -0.00012015042768288159
+      ],
+      "horizontal_drift_m": 0.0008022515719684704
+     },
+     {
+      "label": 6,
+      "mass_fraction": 0.01034983658152766,
+      "reference_x_range_m": [
+       -0.009499999694526196,
+       0.009499999694526196
+      ],
+      "drift_end_minus_start_m": [
+       0.051953980732313415,
+       0.0027147079619121205,
+       2.5195226646981123e-05
+      ],
+      "horizontal_drift_m": 0.05202485707094314
+     },
+     {
+      "label": 7,
+      "mass_fraction": 0.010107735141024091,
+      "reference_x_range_m": [
+       0.04050000011920929,
+       0.05849999934434891
+      ],
+      "drift_end_minus_start_m": [
+       0.04263336861695737,
+       0.00010872229557243283,
+       -0.01843667574022783
+      ],
+      "horizontal_drift_m": 0.042633507246846586
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 0.8903725777447107,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 0.28631718798278594,
+   "operations": [
+    {
+     "op": "p0",
+     "kind": "surface_trim",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.020045470832795773,
+     "knife_lowest_minus_support_top_hold_m": null,
+     "knife_lowest_minus_support_top_op_min_m": 0.019844466186879295,
+     "end_of_armed_within_clean_cut_window": null,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.021560036502845846,
+      "max": 0.06724966671602368
+     },
+     "board_reaction_inferred_hold_z_max_n": null,
+     "board_reaction_inferred_hold_mean_world_n": null,
+     "workpiece_horizontal_displacement_m": 0.0004868003671728238,
+     "by_side_of_plane_x_m": null,
+     "crossing_links_conflicting": null,
+     "direct_code0_bridges": null,
+     "kerf_offset_from_declared_m": null,
+     "tracking_error_m": {
+      "min": 0.00047585982987862445,
+      "max": 0.006224981477355807,
+      "mean": 0.000981249521846552,
+      "p95": 0.0016050821908430042,
+      "max_abs": 0.006224981477355807,
+      "samples": 344
+     },
+     "lowest_blade_point_above_bar_top_m": {
+      "min": -9.430970595525334e-05,
+      "max": 0.00015375251980589977,
+      "mean": 4.752762928609972e-05,
+      "p95": 0.00010175511072777136,
+      "max_abs": 0.00015375251980589977,
+      "samples": 87
+     },
+     "measured_orientation": {
+      "rho_deg": null,
+      "tau_deg": null,
+      "psi_deg": null,
+      "mu_deg": null
+     }
+    },
+    {
+     "op": "p1",
+     "kind": "surface_trim",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.020053819991397714,
+     "knife_lowest_minus_support_top_hold_m": null,
+     "knife_lowest_minus_support_top_op_min_m": 0.01978967634594128,
+     "end_of_armed_within_clean_cut_window": null,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.031790993130134844,
+      "max": 0.08398174476886612
+     },
+     "board_reaction_inferred_hold_z_max_n": null,
+     "board_reaction_inferred_hold_mean_world_n": null,
+     "workpiece_horizontal_displacement_m": 0.0011040533169166765,
+     "by_side_of_plane_x_m": null,
+     "crossing_links_conflicting": null,
+     "direct_code0_bridges": null,
+     "kerf_offset_from_declared_m": null,
+     "tracking_error_m": {
+      "min": 0.00017049262557788963,
+      "max": 0.0026213303132352982,
+      "mean": 0.0008993182756582926,
+      "p95": 0.001555503844148343,
+      "max_abs": 0.0026213303132352982,
+      "samples": 214
+     },
+     "lowest_blade_point_above_bar_top_m": {
+      "min": -0.00020118847057682201,
+      "max": 0.000211659344123781,
+      "mean": 4.410259291405562e-05,
+      "p95": 0.00010260976073840735,
+      "max_abs": 0.000211659344123781,
+      "samples": 88
+     },
+     "measured_orientation": {
+      "rho_deg": null,
+      "tau_deg": null,
+      "psi_deg": null,
+      "mu_deg": null
+     }
+    },
+    {
+     "op": "p2",
+     "kind": "surface_trim",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.02004300678873082,
+     "knife_lowest_minus_support_top_hold_m": null,
+     "knife_lowest_minus_support_top_op_min_m": 0.019734609946039122,
+     "end_of_armed_within_clean_cut_window": null,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.03402303317882404,
+      "max": 0.08948648745916965
+     },
+     "board_reaction_inferred_hold_z_max_n": null,
+     "board_reaction_inferred_hold_mean_world_n": null,
+     "workpiece_horizontal_displacement_m": 0.0013119887647875421,
+     "by_side_of_plane_x_m": null,
+     "crossing_links_conflicting": null,
+     "direct_code0_bridges": null,
+     "kerf_offset_from_declared_m": null,
+     "tracking_error_m": {
+      "min": 0.00015486949907302753,
+      "max": 0.002204681861879806,
+      "mean": 0.0009350589877461709,
+      "p95": 0.0015967738548828974,
+      "max_abs": 0.002204681861879806,
+      "samples": 218
+     },
+     "lowest_blade_point_above_bar_top_m": {
+      "min": -0.000253253679042751,
+      "max": 0.0002612290884380884,
+      "mean": 4.1610394433995885e-05,
+      "p95": 0.00013805873495429855,
+      "max_abs": 0.0002612290884380884,
+      "samples": 88
+     },
+     "measured_orientation": {
+      "rho_deg": null,
+      "tau_deg": null,
+      "psi_deg": null,
+      "mu_deg": null
+     }
+    }
+   ],
+   "measured_path_clearance": "FAIL",
+   "measured_path_clearance_staged": "FAIL",
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 113,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 113,
+     "start_depth_valid_fraction": 0.21029296875,
+     "end_depth_valid_fraction": 0.21025065104166665,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 113,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 113,
+     "start_depth_valid_fraction": 0.5729166666666666,
+     "end_depth_valid_fraction": 0.5729166666666666,
+     "start_to_end_translation_m": 7.228936232081583e-05
+    },
+    "wrist_d405_1": {
+     "frames": 113,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 1116,
+     "max_displacement_from_first_m": 0.39603773811564336,
+     "max_measured_vs_current_USD_translation_m": 1.61968170252274e-08
+    },
+    "wrist_d405_1": {
+     "samples": 1116,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 1116,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 1115,
+    "step_wall_ms_mean": 470.5302565231908,
+    "material_wall_ms_mean": 281.28318154953126,
+    "episode_wall_s": 602.7733986149833,
+    "process_wall_s": 644.5906828549923,
+    "run_dir_bytes": 776387741
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_005/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_005/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "27",
+     "--steps",
+     "1050",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_005/run"
+    ],
+    "started": "2026-10-31T00:47:42.092192+09:00",
+    "ended": "2026-10-31T00:58:26.793986+09:00",
+    "returncode": 0,
+    "wall_s": 644.5906828549923,
+    "git_sha": "30e419379d475e8c0ce6d6f41f3a3598c3174a5e",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  },
+  {
+   "analysis": "artifacts/wp12/workcell_live_006/analysis_001/analysis.json",
+   "superseded_analyses": [],
+   "episode": "WP11_CUT_REPRO",
+   "root": "artifacts/wp12/workcell_live_006",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_006/run",
+   "class": "TASK_SUCCESS",
+   "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "declared_rule_class": null,
+   "partial_cut": null,
+   "task_id": "CFG-E1_CUT_s1101-E1_CUT_s1101_sever-85f34a04",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "PASS",
+   "failed_checks": [],
+   "outcome_metrics": {
+    "mechanical_components": 2,
+    "piece_mass_fractions": [
+     0.6388888888893977,
+     0.36111111111134203
+    ],
+    "substantial_pieces": 2,
+    "main_pieces_mass_fraction": 1.0000000000007396,
+    "minor_pieces_mass_fraction": 0.0
+   },
+   "metrics": {
+    "cut_completion": 1.0,
+    "separation": true,
+    "mechanical_components": 2,
+    "expected_pieces": 2,
+    "cut_position_error_m": 0.001499999798834327,
+    "overcut_debris_mass_fraction": 0.0,
+    "definitions": {
+     "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+     "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+     "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.0004916191101074219,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 25,
+    "task_steps_rotation_clamped": 224
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 8.716956167753376e-07,
+    "max_rotation_rad": 0.0001008123537085592,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 0,
+    "tensor_contact_max_penetration_m": 6.916932761669159e-06,
+    "non_finger_roles_in_contact": {}
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": -0.004198597172879084,
+    "max_penetration_into_board_m": 0.004198597172879084,
+    "at_phase": "HOLD:cut0",
+    "steps_with_tool_board_contact_pairs": 0,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": -0.000278589955996722,
+    "at_frame": 78,
+    "at_time_s": 15.36,
+    "max_particles_below_board_top_in_a_frame": 150,
+    "frames_with_particles_below_board_top": 46,
+    "frames": 79,
+    "final_min_particle_centre_minus_board_top_m": -0.000278589955996722,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 0.0002687686963512983,
+    "whole_drift_m": [
+     -0.00026876417294805025,
+     -1.5593197000383942e-06,
+     -0.00018957344534784905
+    ],
+    "final_components": 2,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 0.6388888888888888,
+      "reference_x_range_m": [
+       -0.07150000333786011,
+       0.019500000402331352
+      ],
+      "drift_end_minus_start_m": [
+       -0.0008394238491103503,
+       -3.65510789276777e-07,
+       -0.0001694171858248189
+      ],
+      "horizontal_drift_m": 0.0008394239286876288
+     },
+     {
+      "label": 1,
+      "mass_fraction": 0.36111111111111105,
+      "reference_x_range_m": [
+       0.020500000566244125,
+       0.07150000333786011
+      ],
+      "drift_end_minus_start_m": [
+       0.0007408644848671264,
+       -3.671443157539693e-06,
+       -0.00022523451988820317
+      ],
+      "horizontal_drift_m": 0.000740873581950586
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 0.8478443405325706,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 0.4961688144544596,
+   "operations": [
+    {
+     "op": "cut0",
+     "kind": "through_cut",
+     "knife_lowest_minus_support_top_end_of_armed_m": -0.003753926808594543,
+     "knife_lowest_minus_support_top_hold_m": {
+      "min": -0.004198597172879084,
+      "max": -0.0038169522342513806,
+      "mean": -0.004017726003922096,
+      "p95": -0.0038259088264479242,
+      "max_abs": 0.004198597172879084,
+      "samples": 15
+     },
+     "knife_lowest_minus_support_top_op_min_m": -0.004198597172879084,
+     "end_of_armed_within_clean_cut_window": false,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.01336841257026431,
+      "max": 0.0542121578808845
+     },
+     "board_reaction_inferred_hold_z_max_n": 0.42615341409112806,
+     "board_reaction_inferred_hold_mean_world_n": [
+      -0.01983887145483231,
+      -0.05049514578727752,
+      0.006913836520253414
+     ],
+     "workpiece_horizontal_displacement_m": 0.0002524638752034971,
+     "by_side_of_plane_x_m": {
+      "negative_side": -0.0008757690226600054,
+      "positive_side": 0.000850315574079452
+     },
+     "crossing_links_conflicting": [
+      612,
+      612
+     ],
+     "direct_code0_bridges": 0,
+     "kerf_offset_from_declared_m": 4.842877383837152e-10,
+     "tracking_error_m": {
+      "min": 0.0005469909266949322,
+      "max": 0.005329141958543816,
+      "mean": 0.0010274319953564534,
+      "p95": 0.0013285891518227562,
+      "max_abs": 0.005329141958543816,
+      "samples": 465
+     },
+     "lowest_blade_point_above_bar_top_m": null,
+     "measured_orientation": null
+    }
+   ],
+   "measured_path_clearance": "PASS",
+   "measured_path_clearance_staged": null,
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 79,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 79,
+     "start_depth_valid_fraction": 0.28877604166666665,
+     "end_depth_valid_fraction": 0.28883463541666665,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 79,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 79,
+     "start_depth_valid_fraction": 1.0,
+     "end_depth_valid_fraction": 1.0,
+     "start_to_end_translation_m": 6.531614570890693e-05
+    },
+    "wrist_d405_1": {
+     "frames": 79,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 769,
+     "max_displacement_from_first_m": 0.31047735700300194,
+     "max_measured_vs_current_USD_translation_m": 2.077335211861075e-08
+    },
+    "wrist_d405_1": {
+     "samples": 769,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 769,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 768,
+    "step_wall_ms_mean": 398.06412404696135,
+    "material_wall_ms_mean": 235.3559885478186,
+    "episode_wall_s": 369.11425686697476,
+    "process_wall_s": 394.42086906998884,
+    "run_dir_bytes": 649212913
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_006/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_006/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "19",
+     "--steps",
+     "725",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_006/run"
+    ],
+    "started": "2026-10-31T00:58:27.167249+09:00",
+    "ended": "2026-10-31T01:05:01.674839+09:00",
+    "returncode": 0,
+    "wall_s": 394.42086906998884,
+    "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  },
+  {
+   "analysis": "artifacts/wp12/workcell_live_007/analysis_001/analysis.json",
+   "superseded_analyses": [],
+   "episode": "TRIM_PATH_V3",
+   "root": "artifacts/wp12/workcell_live_007",
+   "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/workcell_live_007/run",
+   "class": "TASK_SUCCESS",
+   "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+   "declared_rule_class": null,
+   "partial_cut": null,
+   "task_id": "CFG-trim01_flat_board-trim_bump_rho10-4f7c00e6",
+   "task_id_match": true,
+   "runtime_source": "live_isaac_sim",
+   "verdict": "PASS",
+   "failed_checks": [],
+   "outcome_metrics": {
+    "mechanical_components": 2,
+    "plane_local_z_m": 0.02,
+    "largest_component_below_plane_mass_share": 0.9999583333329937,
+    "detached_below_plane_mass_fraction": 4.166666666666668e-05,
+    "reference_substrate_component_ids": [
+     0
+    ],
+    "items": [
+     {
+      "id": "dome",
+      "selected": true,
+      "reference_particles_above_plane": 1044,
+      "reference_mass_above_plane_kg": 0.0015659999999999997,
+      "removed_mass_fraction": 0.978927203065134,
+      "pass": true,
+      "residual_substrate_height_m": 0.010307015404105186
+     }
+    ],
+    "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+   },
+   "metrics": {
+    "cut_completion": 0.978927203065134,
+    "per_protrusion_removed": {
+     "dome": 0.978927203065134
+    },
+    "separation": true,
+    "mechanical_components": 2,
+    "cut_position_error_m": 0.010307015404105186,
+    "overcut_detached_below_plane_fraction": 4.166666666666668e-05,
+    "substrate_share": 0.9999583333329937,
+    "definitions": {
+     "cut_completion": "min removed mass fraction over selected protrusions",
+     "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+     "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+    }
+   },
+   "home_outcome": "PASS",
+   "home_joint_error_max_rad": 0.00040841102600097656,
+   "reset_pregrasp": "PASS_STABLE_GRASP",
+   "plan_preflight": "PASS",
+   "ik": {
+    "task_steps_ik_not_ok": 0,
+    "task_steps_workspace_clamped": 0,
+    "task_steps_translation_clamped": 221,
+    "task_steps_rotation_clamped": 158
+   },
+   "grasp_task_phase": {
+    "max_slip_m": 7.367472541723604e-07,
+    "max_rotation_rad": 8.610063853181367e-05,
+    "grasp_lost": false
+   },
+   "tool_contacts": {
+    "unintended_contact_count_max": 0,
+    "tensor_contact_max_penetration_m": 6.981194019317627e-06,
+    "non_finger_roles_in_contact": {}
+   },
+   "knife_vs_support_top": {
+    "min_over_task_phase_m": 0.019970331732859475,
+    "max_penetration_into_board_m": 0.0,
+    "at_phase": "SKIM:dome",
+    "steps_with_tool_board_contact_pairs": 0,
+    "steps_with_tool_table_contact_pairs": 0
+   },
+   "material_vs_support_top": {
+    "min_particle_centre_minus_board_top_m": 0.00042365086846984923,
+    "at_frame": 36,
+    "at_time_s": 7.2,
+    "max_particles_below_board_top_in_a_frame": 0,
+    "frames_with_particles_below_board_top": 0,
+    "frames": 81,
+    "final_min_particle_centre_minus_board_top_m": 0.0004246370808687061,
+    "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+   },
+   "workpiece_displacement": {
+    "whole_horizontal_drift_m": 0.00044630713077771196,
+    "whole_drift_m": [
+     0.00044625769362178087,
+     -6.642730342444627e-06,
+     -0.00011308075083294941
+    ],
+    "final_components": 2,
+    "pieces": [
+     {
+      "label": 0,
+      "mass_fraction": 0.9894274761963643,
+      "reference_x_range_m": [
+       -0.0794999971985817,
+       0.0794999971985817
+      ],
+      "drift_end_minus_start_m": [
+       0.00011964926740293247,
+       -1.329796227732189e-06,
+       -0.00011532950170709856
+      ],
+      "horizontal_drift_m": 0.00011965665693167987
+     },
+     {
+      "label": 1,
+      "mass_fraction": 0.01057252380363546,
+      "reference_x_range_m": [
+       -0.009499999694526196,
+       0.009499999694526196
+      ],
+      "drift_end_minus_start_m": [
+       0.031011840411630732,
+       -0.0005038525820251276,
+       9.736813946135958e-05
+      ],
+      "horizontal_drift_m": 0.0310159332140896
+     }
+    ]
+   },
+   "free_hover_check_n": {
+    "finger_force_z": 0.9126091185331461,
+    "tool_weight": 0.8694908284533833
+   },
+   "board_reaction_inferred_task_max_z_n": 0.455564450037491,
+   "operations": [
+    {
+     "op": "dome",
+     "kind": "surface_trim",
+     "knife_lowest_minus_support_top_end_of_armed_m": 0.020029713749855405,
+     "knife_lowest_minus_support_top_hold_m": null,
+     "knife_lowest_minus_support_top_op_min_m": 0.019970331732859475,
+     "end_of_armed_within_clean_cut_window": null,
+     "steps_with_tool_board_contact_pairs": 0,
+     "blade_reaction_armed_norm_n": {
+      "mean": 0.017718826038959218,
+      "max": 0.06885213795346087
+     },
+     "board_reaction_inferred_hold_z_max_n": null,
+     "board_reaction_inferred_hold_mean_world_n": null,
+     "workpiece_horizontal_displacement_m": 0.0004458276296485856,
+     "by_side_of_plane_x_m": null,
+     "crossing_links_conflicting": null,
+     "direct_code0_bridges": null,
+     "kerf_offset_from_declared_m": null,
+     "tracking_error_m": {
+      "min": 0.0005724944017966917,
+      "max": 0.0062003109812298245,
+      "mean": 0.0009616849937782876,
+      "p95": 0.0015148236584922778,
+      "max_abs": 0.0062003109812298245,
+      "samples": 446
+     },
+     "lowest_blade_point_above_bar_top_m": {
+      "min": -2.1620477566264285e-05,
+      "max": 0.00010688080714318232,
+      "mean": 4.2677668530188664e-05,
+      "p95": 8.994834097344541e-05,
+      "max_abs": 0.00010688080714318232,
+      "samples": 117
+     },
+     "measured_orientation": {
+      "rho_deg": null,
+      "tau_deg": null,
+      "psi_deg": null,
+      "mu_deg": null
+     }
+    }
+   ],
+   "measured_path_clearance": "PASS",
+   "measured_path_clearance_staged": null,
+   "cameras": {
+    "closeup_rgb": {
+     "frames": 81,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "global_d455": {
+     "frames": 81,
+     "start_depth_valid_fraction": 0.21031575520833334,
+     "end_depth_valid_fraction": 0.21029947916666666,
+     "start_to_end_translation_m": 0.0
+    },
+    "overview_rgb": {
+     "frames": 81,
+     "start_depth_valid_fraction": null,
+     "end_depth_valid_fraction": null,
+     "start_to_end_translation_m": null
+    },
+    "wrist_d405_0": {
+     "frames": 81,
+     "start_depth_valid_fraction": 0.5729166666666666,
+     "end_depth_valid_fraction": 0.5729166666666666,
+     "start_to_end_translation_m": 4.9256973622661894e-05
+    },
+    "wrist_d405_1": {
+     "frames": 81,
+     "start_depth_valid_fraction": 0.10260662342767296,
+     "end_depth_valid_fraction": 0.10260662342767296,
+     "start_to_end_translation_m": 0.0
+    }
+   },
+   "camera_pose_trace": {
+    "wrist_d405_0": {
+     "samples": 786,
+     "max_displacement_from_first_m": 0.3891205321855968,
+     "max_measured_vs_current_USD_translation_m": 1.5531313070094917e-08
+    },
+    "wrist_d405_1": {
+     "samples": 786,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+    },
+    "global_d455": {
+     "samples": 786,
+     "max_displacement_from_first_m": 0.0,
+     "max_measured_vs_current_USD_translation_m": 0.0
+    }
+   },
+   "performance": {
+    "control_steps": 785,
+    "step_wall_ms_mean": 422.52447345245884,
+    "material_wall_ms_mean": 272.91340229129656,
+    "episode_wall_s": 394.49947884099674,
+    "process_wall_s": 425.6912225529959,
+    "run_dir_bytes": 561449229
+   },
+   "attempt": {
+    "command": [
+     ".deps/isaacsim-venv/bin/python",
+     "scripts/run_wp10_live.py",
+     "--runtime",
+     "isaac_sim",
+     "--scene",
+     "artifacts/wp12/workcell_live_007/inputs/scene.json",
+     "--goal",
+     "artifacts/wp12/workcell_live_007/inputs/goal.json",
+     "--planner-options",
+     "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v3\"}",
+     "--controller",
+     "scripted",
+     "--edge-feedback",
+     "measured",
+     "--hold-until-time-limit",
+     "--return-home",
+     "--record-cameras",
+     "--overview-camera",
+     "--record-every",
+     "10",
+     "--oracle-stride",
+     "19",
+     "--steps",
+     "725",
+     "--gpu",
+     "0",
+     "--seed",
+     "42",
+     "--out",
+     "artifacts/wp12/workcell_live_007/run"
+    ],
+    "started": "2026-10-31T01:05:05.298026+09:00",
+    "ended": "2026-10-31T01:12:11.095596+09:00",
+    "returncode": 0,
+    "wall_s": 425.6912225529959,
+    "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+    "git_dirty": true,
+    "result_status": "PASS_EXECUTION",
+    "gpu_before": {
+     "gpus": [
+      "0, 30299, 1813, 0",
+      "1, 32050, 70, 0"
+     ],
+     "compute_apps": [
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22336, 766 MiB, /mnt/data/envs/flospo/bin/python",
+      "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 22335, 766 MiB, /mnt/data/envs/flospo/bin/python"
+     ]
+    }
+   },
+   "failure": null
+  }
+ ],
+ "wp11_reference": {
+  "scope": "Read-only re-analysis of preserved WP-11 live records (actions.jsonl, results); their physics_state.npz files were deleted on 2026-10-30 (artifacts/wp11/phaseE/DELETED_NPZ_20261030.txt), so material-side metrics (displacement, bridges, particles vs support) come only from the WP-11 evidence files or are NOT_AVAILABLE. \"support top\" for wp11_workcell_v1 is the workpiece-bottom plane (board segments with 40 mm gaps).",
+  "episodes": [
+   {
+    "analysis": "artifacts/wp12/wp11_reference_002/C5_live_trim_rho10_001/analysis.json",
+    "episode": "C5_live_trim_rho10_001",
+    "root": "artifacts/wp12/wp11_reference_002",
+    "run": "/home/ningan/RoboticCuttingSim/artifacts/wp12/wp11_reference_001/C5_sample/run_001",
+    "class": "CUTTING_FAILURE",
+    "class_reason": "the scripted plan did not finish within the episode (task end STOP_AFTER_PHASE:WITHDRAW, final phase RETURN_HOME)",
+    "declared_rule_class": null,
+    "partial_cut": null,
+    "task_id": "CFG-trim01_wp11_workcell-trim_bump_rho10-570db2f5",
+    "task_id_match": true,
+    "runtime_source": "live_isaac_sim",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "outcome_metrics": {
+     "mechanical_components": 2,
+     "plane_local_z_m": 0.02,
+     "largest_component_below_plane_mass_share": 0.9999583333329937,
+     "detached_below_plane_mass_fraction": 4.166666666666668e-05,
+     "reference_substrate_component_ids": [
+      0
+     ],
+     "items": [
+      {
+       "id": "dome",
+       "selected": true,
+       "reference_particles_above_plane": 1044,
+       "reference_mass_above_plane_kg": 0.0015659999999999997,
+       "removed_mass_fraction": 0.978927203065134,
+       "pass": true,
+       "residual_substrate_height_m": 0.011519938260316848
+      }
+     ],
+     "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+    },
+    "metrics": {
+     "cut_completion": 0.978927203065134,
+     "per_protrusion_removed": {
+      "dome": 0.978927203065134
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.011519938260316848,
+     "overcut_detached_below_plane_fraction": 4.166666666666668e-05,
+     "substrate_share": 0.9999583333329937,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "home_outcome": "PASS",
+    "home_joint_error_max_rad": 0.0005488395690917969,
+    "reset_pregrasp": "PASS_STABLE_GRASP",
+    "plan_preflight": "PASS",
+    "ik": {
+     "task_steps_ik_not_ok": 0,
+     "task_steps_workspace_clamped": 0,
+     "task_steps_translation_clamped": 24,
+     "task_steps_rotation_clamped": 89
+    },
+    "grasp_task_phase": {
+     "max_slip_m": 7.466130133532905e-07,
+     "max_rotation_rad": 9.050101743887918e-05,
+     "grasp_lost": false
+    },
+    "tool_contacts": {
+     "unintended_contact_count_max": 0,
+     "tensor_contact_max_penetration_m": 7.158145308494568e-06,
+     "non_finger_roles_in_contact": {}
+    },
+    "knife_vs_support_top": {
+     "min_over_task_phase_m": 0.01981420206681632,
+     "max_penetration_into_board_m": 0.0,
+     "at_phase": "PRE_CUT:dome",
+     "steps_with_tool_board_contact_pairs": 0,
+     "steps_with_tool_table_contact_pairs": 0
+    },
+    "material_vs_support_top": {
+     "min_particle_centre_minus_board_top_m": 0.0004232847422827035,
+     "at_frame": 56,
+     "at_time_s": 5.6000000000000005,
+     "max_particles_below_board_top_in_a_frame": 0,
+     "frames_with_particles_below_board_top": 0,
+     "frames": 208,
+     "final_min_particle_centre_minus_board_top_m": 0.0004245692689437419,
+     "scope": "Particle centres (not the contact shell) vs the board top (workpiece-local z = 0), every recorded frame"
+    },
+    "workpiece_displacement": {
+     "whole_horizontal_drift_m": 0.0004362021468224671,
+     "whole_drift_m": [
+      0.00043619678407127836,
+      -2.1629744343656075e-06,
+      -0.00011313805820474532
+     ],
+     "final_components": 2,
+     "pieces": [
+      {
+       "label": 0,
+       "mass_fraction": 0.9894274761963643,
+       "reference_x_range_m": [
+        -0.0794999971985817,
+        0.0794999971985817
+       ],
+       "drift_end_minus_start_m": [
+        0.00013049845477484611,
+        3.0315759504998436e-06,
+        -0.00011567290149577282
+       ],
+       "horizontal_drift_m": 0.0001305336629048852
+      },
+      {
+       "label": 1,
+       "mass_fraction": 0.01057252380363546,
+       "reference_x_range_m": [
+        -0.009499999694526196,
+        0.009499999694526196
+       ],
+       "drift_end_minus_start_m": [
+        0.02904491236144727,
+        -0.000488293908989934,
+        0.000124084732366362
+       ],
+       "horizontal_drift_m": 0.029049016593091566
+      }
+     ]
+    },
+    "free_hover_check_n": {
+     "finger_force_z": 0.9108739384450019,
+     "tool_weight": 0.8694908284533833
+    },
+    "board_reaction_inferred_task_max_z_n": 0.34939076388254764,
+    "operations": [
+     {
+      "op": "dome",
+      "kind": "surface_trim",
+      "knife_lowest_minus_support_top_end_of_armed_m": 0.02004768973339019,
+      "knife_lowest_minus_support_top_hold_m": null,
+      "knife_lowest_minus_support_top_op_min_m": 0.01981420206681632,
+      "end_of_armed_within_clean_cut_window": null,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.022045584064157017,
+       "max": 0.07096507890640809
+      },
+      "board_reaction_inferred_hold_z_max_n": null,
+      "board_reaction_inferred_hold_mean_world_n": null,
+      "workpiece_horizontal_displacement_m": 0.0004315093292901669,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.00041426355196030304,
+       "max": 0.006117184530648414,
+       "mean": 0.001012559810624285,
+       "p95": 0.00191242996875526,
+       "max_abs": 0.006117184530648414,
+       "samples": 332
+      },
+      "lowest_blade_point_above_bar_top_m": {
+       "min": -0.00011415927599564557,
+       "max": 0.00017841629133556747,
+       "mean": 4.691169199080012e-05,
+       "p95": 0.00010902329079120342,
+       "max_abs": 0.00017841629133556747,
+       "samples": 87
+      },
+      "measured_orientation": {
+       "rho_deg": null,
+       "tau_deg": null,
+       "psi_deg": null,
+       "mu_deg": null
+      }
+     }
+    ],
+    "measured_path_clearance": "FAIL",
+    "measured_path_clearance_staged": null,
+    "cameras": {
+     "closeup_rgb": {
+      "frames": 208,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "global_d455": {
+      "frames": 208,
+      "start_depth_valid_fraction": 0.2861686197916667,
+      "end_depth_valid_fraction": 0.2862890625,
+      "start_to_end_translation_m": 0.0
+     },
+     "overview_rgb": {
+      "frames": 208,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "wrist_d405_0": {
+      "frames": 208,
+      "start_depth_valid_fraction": 1.0,
+      "end_depth_valid_fraction": 1.0,
+      "start_to_end_translation_m": 9.286825406842531e-05
+     },
+     "wrist_d405_1": {
+      "frames": 208,
+      "start_depth_valid_fraction": 0.10260662342767296,
+      "end_depth_valid_fraction": 0.10260662342767296,
+      "start_to_end_translation_m": 0.0
+     }
+    },
+    "camera_pose_trace": {
+     "wrist_d405_0": {
+      "samples": 1036,
+      "max_displacement_from_first_m": 0.38927988665495766,
+      "max_measured_vs_current_USD_translation_m": 1.6068418617591392e-08
+     },
+     "wrist_d405_1": {
+      "samples": 1036,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+     },
+     "global_d455": {
+      "samples": 1036,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 0.0
+     }
+    },
+    "performance": {
+     "control_steps": 1035,
+     "step_wall_ms_mean": 452.61908845002057,
+     "material_wall_ms_mean": 287.7458335951059,
+     "episode_wall_s": 636.9358597320024,
+     "process_wall_s": 696.9383889650053,
+     "run_dir_bytes": null
+    },
+    "attempt": {
+     "command": "OMNI_KIT_ACCEPT_EULA=YES PYTHONUNBUFFERED=1 TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/python scripts/run_wp10_live.py --runtime isaac_sim --scene trim01_wp11_workcell --goal trim_bump_rho10 --planner-options '{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}' --controller scripted --edge-feedback measured --stop-after-phase WITHDRAW --hold-until-time-limit --return-home --record-cameras --overview-camera --record-every 5 --steps 700 --gpu 1 --seed 42 --out artifacts/wp11/phaseC5/live_trim_rho10_001",
+     "started": null,
+     "ended": null,
+     "returncode": null,
+     "wall_s": 696.9383889650053,
+     "git_sha": null,
+     "git_dirty": null,
+     "result_status": null,
+     "gpu_before": null
+    },
+    "failure": null
+   },
+   {
+    "analysis": "artifacts/wp12/wp11_reference_002/E1_CUT_s1101/analysis.json",
+    "episode": "E1_CUT_s1101",
+    "root": "artifacts/wp12/wp11_reference_002",
+    "run": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_CUT_s1101/run_001",
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+    "declared_rule_class": null,
+    "partial_cut": null,
+    "task_id": "CFG-E1_CUT_s1101-E1_CUT_s1101_sever-85f34a04",
+    "task_id_match": true,
+    "runtime_source": "live_isaac_sim",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "outcome_metrics": {
+     "mechanical_components": 2,
+     "piece_mass_fractions": [
+      0.6388888888893977,
+      0.36111111111134203
+     ],
+     "substantial_pieces": 2,
+     "main_pieces_mass_fraction": 1.0000000000007396,
+     "minor_pieces_mass_fraction": 0.0
+    },
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 2,
+     "expected_pieces": 2,
+     "cut_position_error_m": 0.001499999798834327,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "home_outcome": "PASS",
+    "home_joint_error_max_rad": 0.0004937648773193359,
+    "reset_pregrasp": "PASS_STABLE_GRASP",
+    "plan_preflight": "PASS",
+    "ik": {
+     "task_steps_ik_not_ok": 0,
+     "task_steps_workspace_clamped": 0,
+     "task_steps_translation_clamped": 29,
+     "task_steps_rotation_clamped": 224
+    },
+    "grasp_task_phase": {
+     "max_slip_m": 8.716956167753376e-07,
+     "max_rotation_rad": 0.0001008123537085592,
+     "grasp_lost": false
+    },
+    "tool_contacts": {
+     "unintended_contact_count_max": 0,
+     "tensor_contact_max_penetration_m": 6.916932761669159e-06,
+     "non_finger_roles_in_contact": {}
+    },
+    "knife_vs_support_top": {
+     "min_over_task_phase_m": -0.00420037880700358,
+     "max_penetration_into_board_m": 0.00420037880700358,
+     "at_phase": "HOLD:cut0",
+     "steps_with_tool_board_contact_pairs": 0,
+     "steps_with_tool_table_contact_pairs": 0
+    },
+    "material_vs_support_top": null,
+    "workpiece_displacement": null,
+    "free_hover_check_n": {
+     "finger_force_z": 0.8478443405325706,
+     "tool_weight": 0.8694908284533833
+    },
+    "board_reaction_inferred_task_max_z_n": 0.46692411480928375,
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "knife_lowest_minus_support_top_end_of_armed_m": -0.0037491120008703444,
+      "knife_lowest_minus_support_top_hold_m": {
+       "min": -0.00420037880700358,
+       "max": -0.003821018386256453,
+       "mean": -0.004017945043241631,
+       "p95": -0.003822743531319758,
+       "max_abs": 0.00420037880700358,
+       "samples": 15
+      },
+      "knife_lowest_minus_support_top_op_min_m": -0.00420037880700358,
+      "end_of_armed_within_clean_cut_window": false,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.013319329141195775,
+       "max": 0.054947842381244574
+      },
+      "board_reaction_inferred_hold_z_max_n": 0.39308650873557416,
+      "board_reaction_inferred_hold_mean_world_n": [
+       0.002215795874078682,
+       -0.05418225577039863,
+       -0.14231438641099645
+      ],
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.0005469909266949322,
+       "max": 0.005329141958543816,
+       "mean": 0.0010271890571728977,
+       "p95": 0.00132909552605873,
+       "max_abs": 0.005329141958543816,
+       "samples": 465
+      },
+      "lowest_blade_point_above_bar_top_m": null,
+      "measured_orientation": null
+     }
+    ],
+    "measured_path_clearance": "PASS",
+    "measured_path_clearance_staged": null,
+    "cameras": {
+     "closeup_rgb": {
+      "frames": 79,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "global_d455": {
+      "frames": 79,
+      "start_depth_valid_fraction": 0.28877604166666665,
+      "end_depth_valid_fraction": 0.28883463541666665,
+      "start_to_end_translation_m": 0.0
+     },
+     "overview_rgb": {
+      "frames": 79,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "wrist_d405_0": {
+      "frames": 74,
+      "start_depth_valid_fraction": 1.0,
+      "end_depth_valid_fraction": 1.0,
+      "start_to_end_translation_m": 6.65839072517236e-05
+     },
+     "wrist_d405_1": {
+      "frames": 79,
+      "start_depth_valid_fraction": 0.10260662342767296,
+      "end_depth_valid_fraction": 0.10260662342767296,
+      "start_to_end_translation_m": 0.0
+     }
+    },
+    "camera_pose_trace": {
+     "wrist_d405_0": {
+      "samples": 769,
+      "max_displacement_from_first_m": 0.31047883342630683,
+      "max_measured_vs_current_USD_translation_m": 2.070765584925432e-08
+     },
+     "wrist_d405_1": {
+      "samples": 769,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+     },
+     "global_d455": {
+      "samples": 769,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 0.0
+     }
+    },
+    "performance": {
+     "control_steps": 768,
+     "step_wall_ms_mean": 558.9203037891803,
+     "material_wall_ms_mean": 362.4093890393472,
+     "episode_wall_s": 528.7425960180117,
+     "process_wall_s": 575.3151755509898,
+     "run_dir_bytes": 649135214
+    },
+    "attempt": {
+     "command": [
+      ".deps/isaacsim-venv/bin/python",
+      "scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "artifacts/wp11/phaseE/round1_live_001/E1_CUT_s1101/inputs/scene.json",
+      "--goal",
+      "artifacts/wp11/phaseE/round1_live_001/E1_CUT_s1101/inputs/goal.json",
+      "--planner-options",
+      "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "19",
+      "--steps",
+      "725",
+      "--gpu",
+      "0",
+      "--seed",
+      "42",
+      "--out",
+      "artifacts/wp11/phaseE/round1_live_001/E1_CUT_s1101/run_001"
+     ],
+     "started": "2026-10-30T06:58:48.929836+09:00",
+     "ended": "2026-10-30T07:08:24.258004+09:00",
+     "returncode": 0,
+     "wall_s": 575.3151755509898,
+     "git_sha": "1ecfe5ea2dc80d6a986f9adccbb36f9f3b91e775",
+     "git_dirty": false,
+     "result_status": "PASS_EXECUTION",
+     "gpu_before": null
+    },
+    "failure": null
+   },
+   {
+    "analysis": "artifacts/wp12/wp11_reference_002/E1_TEST_B_s1502/analysis.json",
+    "episode": "E1_TEST_B_s1502",
+    "root": "artifacts/wp12/wp11_reference_002",
+    "run": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/run_001",
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+    "declared_rule_class": null,
+    "partial_cut": null,
+    "task_id": "CFG-E1_TEST_B_s1502-E1_TEST_B_s1502_divide5-48298237",
+    "task_id_match": true,
+    "runtime_source": "live_isaac_sim",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "outcome_metrics": {
+     "mechanical_components": 5,
+     "piece_mass_fractions": [
+      0.21341463414642334,
+      0.2073170731708075,
+      0.2073170731708075,
+      0.20121951219519163,
+      0.17073170731711237
+     ],
+     "substantial_pieces": 5,
+     "main_pieces_mass_fraction": 1.0000000000003424,
+     "minor_pieces_mass_fraction": 0.0
+    },
+    "metrics": {
+     "cut_completion": 1.0,
+     "separation": true,
+     "mechanical_components": 5,
+     "expected_pieces": 5,
+     "cut_position_error_m": 0.004925939145276219,
+     "overcut_debris_mass_fraction": 0.0,
+     "definitions": {
+      "cut_completion": "substantial pieces / expected pieces (capped at 1)",
+      "cut_position_error_m": "max over planes: frozen 2 mm midpoint statistic (grid-aligned) or actual - ideal-geometric-label statistic (oblique, ADR 0006 Am. 1)",
+      "overcut_debris_mass_fraction": "mass outside the expected main pieces"
+     }
+    },
+    "home_outcome": "PASS",
+    "home_joint_error_max_rad": 0.0003933906555175781,
+    "reset_pregrasp": "PASS_STABLE_GRASP",
+    "plan_preflight": "PASS",
+    "ik": {
+     "task_steps_ik_not_ok": 0,
+     "task_steps_workspace_clamped": 0,
+     "task_steps_translation_clamped": 53,
+     "task_steps_rotation_clamped": 252
+    },
+    "grasp_task_phase": {
+     "max_slip_m": 9.18406570918008e-07,
+     "max_rotation_rad": 9.573769714371321e-05,
+     "grasp_lost": false
+    },
+    "tool_contacts": {
+     "unintended_contact_count_max": 0,
+     "tensor_contact_max_penetration_m": 6.863847374916077e-06,
+     "non_finger_roles_in_contact": {}
+    },
+    "knife_vs_support_top": {
+     "min_over_task_phase_m": -0.004150723831573888,
+     "max_penetration_into_board_m": 0.004150723831573888,
+     "at_phase": "HOLD:cut3",
+     "steps_with_tool_board_contact_pairs": 0,
+     "steps_with_tool_table_contact_pairs": 0
+    },
+    "material_vs_support_top": null,
+    "workpiece_displacement": null,
+    "free_hover_check_n": {
+     "finger_force_z": 0.9043452689783408,
+     "tool_weight": 0.8694908284533833
+    },
+    "board_reaction_inferred_task_max_z_n": 0.562494418305414,
+    "operations": [
+     {
+      "op": "cut0",
+      "kind": "through_cut",
+      "knife_lowest_minus_support_top_end_of_armed_m": -0.0038033417193965996,
+      "knife_lowest_minus_support_top_hold_m": {
+       "min": -0.004111360697213906,
+       "max": -0.003886161502541813,
+       "mean": -0.00399500594606395,
+       "p95": -0.003903173937632133,
+       "max_abs": 0.004111360697213906,
+       "samples": 15
+      },
+      "knife_lowest_minus_support_top_op_min_m": -0.004111360697213906,
+      "end_of_armed_within_clean_cut_window": false,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.016235340291873835,
+       "max": 0.04727949857444864
+      },
+      "board_reaction_inferred_hold_z_max_n": 0.48751558485164426,
+      "board_reaction_inferred_hold_mean_world_n": [
+       0.03758618452594775,
+       0.02665148874444773,
+       0.06881451867862293
+      ],
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.0004896732085947001,
+       "max": 0.0034580397010873466,
+       "mean": 0.0009407102659351874,
+       "p95": 0.0013195728635494808,
+       "max_abs": 0.0034580397010873466,
+       "samples": 483
+      },
+      "lowest_blade_point_above_bar_top_m": null,
+      "measured_orientation": null
+     },
+     {
+      "op": "cut1",
+      "kind": "through_cut",
+      "knife_lowest_minus_support_top_end_of_armed_m": -0.0037996063030846378,
+      "knife_lowest_minus_support_top_hold_m": {
+       "min": -0.004115710599433789,
+       "max": -0.0038731048902716364,
+       "mean": -0.003994711398425058,
+       "p95": -0.003881005050974018,
+       "max_abs": 0.004115710599433789,
+       "samples": 15
+      },
+      "knife_lowest_minus_support_top_op_min_m": -0.004115710599433789,
+      "end_of_armed_within_clean_cut_window": false,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.017557533766297456,
+       "max": 0.051570922960110864
+      },
+      "board_reaction_inferred_hold_z_max_n": 0.4811875740851065,
+      "board_reaction_inferred_hold_mean_world_n": [
+       0.05693769426141642,
+       0.02671422263229444,
+       -0.02889357915366492
+      ],
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.0004769579162567421,
+       "max": 0.0015945660701701028,
+       "mean": 0.0008213150889626572,
+       "p95": 0.0010951977843909025,
+       "max_abs": 0.0015945660701701028,
+       "samples": 364
+      },
+      "lowest_blade_point_above_bar_top_m": null,
+      "measured_orientation": null
+     },
+     {
+      "op": "cut2",
+      "kind": "through_cut",
+      "knife_lowest_minus_support_top_end_of_armed_m": -0.003777503738813262,
+      "knife_lowest_minus_support_top_hold_m": {
+       "min": -0.004134634763812345,
+       "max": -0.0038477165946839004,
+       "mean": -0.003996994469681298,
+       "p95": -0.00385624492644764,
+       "max_abs": 0.004134634763812345,
+       "samples": 15
+      },
+      "knife_lowest_minus_support_top_op_min_m": -0.004134634763812345,
+      "end_of_armed_within_clean_cut_window": false,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.010945931950284624,
+       "max": 0.034230492871006046
+      },
+      "board_reaction_inferred_hold_z_max_n": 0.49997909664662077,
+      "board_reaction_inferred_hold_mean_world_n": [
+       0.022319151506641922,
+       -0.007476012809712936,
+       0.19738246944701635
+      ],
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.00047590186473562407,
+       "max": 0.0016631859397518564,
+       "mean": 0.0008354170340031845,
+       "p95": 0.001127750319066777,
+       "max_abs": 0.0016631859397518564,
+       "samples": 370
+      },
+      "lowest_blade_point_above_bar_top_m": null,
+      "measured_orientation": null
+     },
+     {
+      "op": "cut3",
+      "kind": "through_cut",
+      "knife_lowest_minus_support_top_end_of_armed_m": -0.0038350055104382497,
+      "knife_lowest_minus_support_top_hold_m": {
+       "min": -0.004150723831573888,
+       "max": -0.003838179130816466,
+       "mean": -0.003997822335436552,
+       "p95": -0.0038431523445040653,
+       "max_abs": 0.004150723831573888,
+       "samples": 15
+      },
+      "knife_lowest_minus_support_top_op_min_m": -0.004150723831573888,
+      "end_of_armed_within_clean_cut_window": false,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.007504986266832103,
+       "max": 0.03241601919240945
+      },
+      "board_reaction_inferred_hold_z_max_n": 0.4554267133461508,
+      "board_reaction_inferred_hold_mean_world_n": [
+       0.03576389256317968,
+       0.010429363308708355,
+       -0.1275049572241765
+      ],
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.00047771556171108246,
+       "max": 0.0026853403310058465,
+       "mean": 0.000853499179610718,
+       "p95": 0.001127230872151949,
+       "max_abs": 0.0026853403310058465,
+       "samples": 377
+      },
+      "lowest_blade_point_above_bar_top_m": null,
+      "measured_orientation": null
+     }
+    ],
+    "measured_path_clearance": "PASS",
+    "measured_path_clearance_staged": null,
+    "cameras": {
+     "closeup_rgb": {
+      "frames": 202,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "global_d455": {
+      "frames": 202,
+      "start_depth_valid_fraction": 0.2874837239583333,
+      "end_depth_valid_fraction": 0.28747395833333333,
+      "start_to_end_translation_m": 0.0
+     },
+     "overview_rgb": {
+      "frames": 202,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "wrist_d405_0": {
+      "frames": 174,
+      "start_depth_valid_fraction": 1.0,
+      "end_depth_valid_fraction": 1.0,
+      "start_to_end_translation_m": 2.4067754342130446e-05
+     },
+     "wrist_d405_1": {
+      "frames": 202,
+      "start_depth_valid_fraction": 0.10260662342767296,
+      "end_depth_valid_fraction": 0.10260662342767296,
+      "start_to_end_translation_m": 0.0
+     }
+    },
+    "camera_pose_trace": {
+     "wrist_d405_0": {
+      "samples": 2007,
+      "max_displacement_from_first_m": 0.28747500185809965,
+      "max_measured_vs_current_USD_translation_m": 2.1157523089432038e-08
+     },
+     "wrist_d405_1": {
+      "samples": 2007,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+     },
+     "global_d455": {
+      "samples": 2007,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 0.0
+     }
+    },
+    "performance": {
+     "control_steps": 2006,
+     "step_wall_ms_mean": 606.8782200194515,
+     "material_wall_ms_mean": 412.73142680198356,
+     "episode_wall_s": 1505.6220140289952,
+     "process_wall_s": 1577.2578415569878,
+     "run_dir_bytes": 1545421898
+    },
+    "attempt": {
+     "command": [
+      ".deps/isaacsim-venv/bin/python",
+      "scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/inputs/scene.json",
+      "--goal",
+      "artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/inputs/goal.json",
+      "--planner-options",
+      "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "49",
+      "--steps",
+      "1950",
+      "--gpu",
+      "1",
+      "--seed",
+      "42",
+      "--out",
+      "artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/run_001"
+     ],
+     "started": "2026-10-30T07:09:06.156555+09:00",
+     "ended": "2026-10-30T07:35:23.473315+09:00",
+     "returncode": 0,
+     "wall_s": 1577.2578415569878,
+     "git_sha": "1ecfe5ea2dc80d6a986f9adccbb36f9f3b91e775",
+     "git_dirty": false,
+     "result_status": "PASS_EXECUTION",
+     "gpu_before": null
+    },
+    "failure": null
+   },
+   {
+    "analysis": "artifacts/wp12/wp11_reference_002/E1_TEST_C_s1602/analysis.json",
+    "episode": "E1_TEST_C_s1602",
+    "root": "artifacts/wp12/wp11_reference_002",
+    "run": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602/run_001",
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+    "declared_rule_class": null,
+    "partial_cut": null,
+    "task_id": "CFG-E1_TEST_C_s1602-E1_TEST_C_s1602_remove3-5d2b4b78",
+    "task_id_match": true,
+    "runtime_source": "live_isaac_sim",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "outcome_metrics": {
+     "mechanical_components": 4,
+     "plane_local_z_m": 0.022,
+     "largest_component_below_plane_mass_share": 0.9999999999988459,
+     "detached_below_plane_mass_fraction": 0.0,
+     "reference_substrate_component_ids": [
+      0
+     ],
+     "items": [
+      {
+       "id": "p0",
+       "selected": true,
+       "reference_particles_above_plane": 473,
+       "reference_mass_above_plane_kg": 0.0007094999999999998,
+       "removed_mass_fraction": 0.9619450317124737,
+       "pass": true,
+       "residual_substrate_height_m": 9.404855966568121e-05
+      },
+      {
+       "id": "p1",
+       "selected": true,
+       "reference_particles_above_plane": 2047,
+       "reference_mass_above_plane_kg": 0.0030704999999999994,
+       "removed_mass_fraction": 0.9965803615046409,
+       "pass": true,
+       "residual_substrate_height_m": 0.0001796259284019483
+      },
+      {
+       "id": "p2",
+       "selected": true,
+       "reference_particles_above_plane": 758,
+       "reference_mass_above_plane_kg": 0.001137,
+       "removed_mass_fraction": 0.9722955145118733,
+       "pass": true,
+       "residual_substrate_height_m": 0.00018740433454513677
+      }
+     ],
+     "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+    },
+    "metrics": {
+     "cut_completion": 0.9619450317124737,
+     "per_protrusion_removed": {
+      "p0": 0.9619450317124737,
+      "p1": 0.9965803615046409,
+      "p2": 0.9722955145118733
+     },
+     "separation": true,
+     "mechanical_components": 4,
+     "cut_position_error_m": 0.00018740433454513677,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999988459,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "home_outcome": "PASS",
+    "home_joint_error_max_rad": 0.0004999637603759766,
+    "reset_pregrasp": "PASS_STABLE_GRASP",
+    "plan_preflight": "PASS",
+    "ik": {
+     "task_steps_ik_not_ok": 0,
+     "task_steps_workspace_clamped": 0,
+     "task_steps_translation_clamped": 35,
+     "task_steps_rotation_clamped": 178
+    },
+    "grasp_task_phase": {
+     "max_slip_m": 8.276798570264739e-07,
+     "max_rotation_rad": 9.53348984294085e-05,
+     "grasp_lost": false
+    },
+    "tool_contacts": {
+     "unintended_contact_count_max": 0,
+     "tensor_contact_max_penetration_m": 7.243826985359192e-06,
+     "non_finger_roles_in_contact": {}
+    },
+    "knife_vs_support_top": {
+     "min_over_task_phase_m": 0.02174587442080661,
+     "max_penetration_into_board_m": 0.0,
+     "at_phase": "PRE_CUT:p2",
+     "steps_with_tool_board_contact_pairs": 0,
+     "steps_with_tool_table_contact_pairs": 0
+    },
+    "material_vs_support_top": null,
+    "workpiece_displacement": null,
+    "free_hover_check_n": {
+     "finger_force_z": 0.8989817220252008,
+     "tool_weight": 0.8694908284533833
+    },
+    "board_reaction_inferred_task_max_z_n": 0.4291857499163598,
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "knife_lowest_minus_support_top_end_of_armed_m": 0.02204742300236423,
+      "knife_lowest_minus_support_top_hold_m": null,
+      "knife_lowest_minus_support_top_op_min_m": 0.021825276025952148,
+      "end_of_armed_within_clean_cut_window": null,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.009537561086205258,
+       "max": 0.03969912690730785
+      },
+      "board_reaction_inferred_hold_z_max_n": null,
+      "board_reaction_inferred_hold_mean_world_n": null,
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.0004252988156330783,
+       "max": 0.00595463281397938,
+       "mean": 0.0009971060744202928,
+       "p95": 0.0017595990592948407,
+       "max_abs": 0.00595463281397938,
+       "samples": 327
+      },
+      "lowest_blade_point_above_bar_top_m": {
+       "min": -0.00010728978669004297,
+       "max": 0.00016984264256883486,
+       "mean": 4.691192995290974e-05,
+       "p95": 9.953384871747015e-05,
+       "max_abs": 0.00016984264256883486,
+       "samples": 83
+      },
+      "measured_orientation": {
+       "rho_deg": null,
+       "tau_deg": null,
+       "psi_deg": null,
+       "mu_deg": null
+      }
+     },
+     {
+      "op": "p1",
+      "kind": "surface_trim",
+      "knife_lowest_minus_support_top_end_of_armed_m": 0.022044317386073806,
+      "knife_lowest_minus_support_top_hold_m": null,
+      "knife_lowest_minus_support_top_op_min_m": 0.0217623030923407,
+      "end_of_armed_within_clean_cut_window": null,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.0430173141559489,
+       "max": 0.09856393272980991
+      },
+      "board_reaction_inferred_hold_z_max_n": null,
+      "board_reaction_inferred_hold_mean_world_n": null,
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.00017422578733212616,
+       "max": 0.0025372223054735544,
+       "mean": 0.0009320268500899239,
+       "p95": 0.0017021627490730747,
+       "max_abs": 0.0025372223054735544,
+       "samples": 230
+      },
+      "lowest_blade_point_above_bar_top_m": {
+       "min": -0.00018011549594675047,
+       "max": 0.00021979420879299216,
+       "mean": 4.485921365894963e-05,
+       "p95": 0.00013565505904824808,
+       "max_abs": 0.00021979420879299216,
+       "samples": 87
+      },
+      "measured_orientation": {
+       "rho_deg": null,
+       "tau_deg": null,
+       "psi_deg": null,
+       "mu_deg": null
+      }
+     },
+     {
+      "op": "p2",
+      "kind": "surface_trim",
+      "knife_lowest_minus_support_top_end_of_armed_m": 0.02204211989040722,
+      "knife_lowest_minus_support_top_hold_m": null,
+      "knife_lowest_minus_support_top_op_min_m": 0.02174587442080661,
+      "end_of_armed_within_clean_cut_window": null,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.04096060619373349,
+       "max": 0.1543256918470528
+      },
+      "board_reaction_inferred_hold_z_max_n": null,
+      "board_reaction_inferred_hold_mean_world_n": null,
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.0003533423162247851,
+       "max": 0.0027523751324390403,
+       "mean": 0.0009328811932605795,
+       "p95": 0.0015734643367665523,
+       "max_abs": 0.0027523751324390403,
+       "samples": 195
+      },
+      "lowest_blade_point_above_bar_top_m": {
+       "min": -0.000207227238545174,
+       "max": 0.00023494823637405793,
+       "mean": 4.20963152831922e-05,
+       "p95": 0.00016783138723254753,
+       "max_abs": 0.00023494823637405793,
+       "samples": 78
+      },
+      "measured_orientation": {
+       "rho_deg": null,
+       "tau_deg": null,
+       "psi_deg": null,
+       "mu_deg": null
+      }
+     }
+    ],
+    "measured_path_clearance": "FAIL",
+    "measured_path_clearance_staged": "FAIL",
+    "cameras": {
+     "closeup_rgb": {
+      "frames": 219,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "global_d455": {
+      "frames": 219,
+      "start_depth_valid_fraction": 0.28629231770833335,
+      "end_depth_valid_fraction": 0.28640950520833336,
+      "start_to_end_translation_m": 0.0
+     },
+     "overview_rgb": {
+      "frames": 219,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "wrist_d405_0": {
+      "frames": 203,
+      "start_depth_valid_fraction": 1.0,
+      "end_depth_valid_fraction": 1.0,
+      "start_to_end_translation_m": 6.823038556120678e-05
+     },
+     "wrist_d405_1": {
+      "frames": 219,
+      "start_depth_valid_fraction": 0.10260662342767296,
+      "end_depth_valid_fraction": 0.10260662342767296,
+      "start_to_end_translation_m": 0.0
+     }
+    },
+    "camera_pose_trace": {
+     "wrist_d405_0": {
+      "samples": 1089,
+      "max_displacement_from_first_m": 0.3958219463077408,
+      "max_measured_vs_current_USD_translation_m": 1.547488155511923e-08
+     },
+     "wrist_d405_1": {
+      "samples": 1089,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+     },
+     "global_d455": {
+      "samples": 1089,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 0.0
+     }
+    },
+    "performance": {
+     "control_steps": 1088,
+     "step_wall_ms_mean": 657.0149672652522,
+     "material_wall_ms_mean": 449.85760936962083,
+     "episode_wall_s": 947.159577776998,
+     "process_wall_s": 1020.0067154849967,
+     "run_dir_bytes": 1626918378
+    },
+    "attempt": {
+     "command": [
+      ".deps/isaacsim-venv/bin/python",
+      "scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602/inputs/scene.json",
+      "--goal",
+      "artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602/inputs/goal.json",
+      "--planner-options",
+      "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "5",
+      "--oracle-stride",
+      "26",
+      "--steps",
+      "1025",
+      "--gpu",
+      "0",
+      "--seed",
+      "42",
+      "--out",
+      "artifacts/wp11/phaseE/round1_live_003/E1_TEST_C_s1602/run_001"
+     ],
+     "started": "2026-10-30T08:18:38.904624+09:00",
+     "ended": "2026-10-30T08:35:38.924457+09:00",
+     "returncode": 0,
+     "wall_s": 1020.0067154849967,
+     "git_sha": "002c95e80b4acd68fc40c92af9c335060f7befe5",
+     "git_dirty": false,
+     "result_status": "PASS_EXECUTION",
+     "gpu_before": null
+    },
+    "failure": null
+   },
+   {
+    "analysis": "artifacts/wp12/wp11_reference_002/E1_TRIM_s1203/analysis.json",
+    "episode": "E1_TRIM_s1203",
+    "root": "artifacts/wp12/wp11_reference_002",
+    "run": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TRIM_s1203/run_001",
+    "class": "TASK_SUCCESS",
+    "class_reason": "goal evaluator PASS (live Native), plan finished, grasp within gates, no IK failure",
+    "declared_rule_class": null,
+    "partial_cut": null,
+    "task_id": "CFG-E1_TRIM_s1203-E1_TRIM_s1203_trim-ae40cee7",
+    "task_id_match": true,
+    "runtime_source": "live_isaac_sim",
+    "verdict": "PASS",
+    "failed_checks": [],
+    "outcome_metrics": {
+     "mechanical_components": 2,
+     "plane_local_z_m": 0.018,
+     "largest_component_below_plane_mass_share": 0.9999999999995047,
+     "detached_below_plane_mass_fraction": 0.0,
+     "reference_substrate_component_ids": [
+      1
+     ],
+     "items": [
+      {
+       "id": "p0",
+       "selected": true,
+       "reference_particles_above_plane": 1403,
+       "reference_mass_above_plane_kg": 0.0021044999999999996,
+       "removed_mass_fraction": 0.993585174625802,
+       "pass": true,
+       "residual_substrate_height_m": 0.0002570647448301329
+      }
+     ],
+     "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+    },
+    "metrics": {
+     "cut_completion": 0.993585174625802,
+     "per_protrusion_removed": {
+      "p0": 0.993585174625802
+     },
+     "separation": true,
+     "mechanical_components": 2,
+     "cut_position_error_m": 0.0002570647448301329,
+     "overcut_detached_below_plane_fraction": 0.0,
+     "substrate_share": 0.9999999999995047,
+     "definitions": {
+      "cut_completion": "min removed mass fraction over selected protrusions",
+      "cut_position_error_m": "max residual substrate particle-centre height above the plane in the selected footprints (reported quality)",
+      "overcut_detached_below_plane_fraction": "below-plane mass detached from the substrate"
+     }
+    },
+    "home_outcome": "PASS",
+    "home_joint_error_max_rad": 0.0004987716674804688,
+    "reset_pregrasp": "PASS_STABLE_GRASP",
+    "plan_preflight": "PASS",
+    "ik": {
+     "task_steps_ik_not_ok": 0,
+     "task_steps_workspace_clamped": 0,
+     "task_steps_translation_clamped": 30,
+     "task_steps_rotation_clamped": 184
+    },
+    "grasp_task_phase": {
+     "max_slip_m": 6.384529679273755e-07,
+     "max_rotation_rad": 5.8979935188467836e-05,
+     "grasp_lost": false
+    },
+    "tool_contacts": {
+     "unintended_contact_count_max": 0,
+     "tensor_contact_max_penetration_m": 7.202848792076111e-06,
+     "non_finger_roles_in_contact": {}
+    },
+    "knife_vs_support_top": {
+     "min_over_task_phase_m": 0.017787056835526005,
+     "max_penetration_into_board_m": 0.0,
+     "at_phase": "PRE_CUT:p0",
+     "steps_with_tool_board_contact_pairs": 0,
+     "steps_with_tool_table_contact_pairs": 0
+    },
+    "material_vs_support_top": null,
+    "workpiece_displacement": null,
+    "free_hover_check_n": {
+     "finger_force_z": 0.8859656814485788,
+     "tool_weight": 0.8694908284533833
+    },
+    "board_reaction_inferred_task_max_z_n": 0.43340030945837493,
+    "operations": [
+     {
+      "op": "p0",
+      "kind": "surface_trim",
+      "knife_lowest_minus_support_top_end_of_armed_m": 0.018041975454859194,
+      "knife_lowest_minus_support_top_hold_m": null,
+      "knife_lowest_minus_support_top_op_min_m": 0.017787056835526005,
+      "end_of_armed_within_clean_cut_window": null,
+      "steps_with_tool_board_contact_pairs": 0,
+      "blade_reaction_armed_norm_n": {
+       "mean": 0.029159279991211193,
+       "max": 0.07569368930324699
+      },
+      "board_reaction_inferred_hold_z_max_n": null,
+      "board_reaction_inferred_hold_mean_world_n": null,
+      "workpiece_horizontal_displacement_m": null,
+      "by_side_of_plane_x_m": null,
+      "crossing_links_conflicting": null,
+      "direct_code0_bridges": null,
+      "kerf_offset_from_declared_m": null,
+      "tracking_error_m": {
+       "min": 0.0005083975824039817,
+       "max": 0.005549380411846949,
+       "mean": 0.0010297298450523884,
+       "p95": 0.001780507066712255,
+       "max_abs": 0.005549380411846949,
+       "samples": 317
+      },
+      "lowest_blade_point_above_bar_top_m": {
+       "min": -0.0001308555613497575,
+       "max": 0.0001710067613736599,
+       "mean": 4.5161745470015284e-05,
+       "p95": 0.0001134781390835643,
+       "max_abs": 0.0001710067613736599,
+       "samples": 76
+      },
+      "measured_orientation": {
+       "rho_deg": null,
+       "tau_deg": null,
+       "psi_deg": null,
+       "mu_deg": null
+      }
+     }
+    ],
+    "measured_path_clearance": "FAIL",
+    "measured_path_clearance_staged": null,
+    "cameras": {
+     "closeup_rgb": {
+      "frames": 67,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "global_d455": {
+      "frames": 67,
+      "start_depth_valid_fraction": 0.28380208333333334,
+      "end_depth_valid_fraction": 0.283798828125,
+      "start_to_end_translation_m": 0.0
+     },
+     "overview_rgb": {
+      "frames": 67,
+      "start_depth_valid_fraction": null,
+      "end_depth_valid_fraction": null,
+      "start_to_end_translation_m": null
+     },
+     "wrist_d405_0": {
+      "frames": 63,
+      "start_depth_valid_fraction": 1.0,
+      "end_depth_valid_fraction": 1.0,
+      "start_to_end_translation_m": 6.789218800085122e-05
+     },
+     "wrist_d405_1": {
+      "frames": 67,
+      "start_depth_valid_fraction": 0.10260662342767296,
+      "end_depth_valid_fraction": 0.10260662342767296,
+      "start_to_end_translation_m": 0.0
+     }
+    },
+    "camera_pose_trace": {
+     "wrist_d405_0": {
+      "samples": 642,
+      "max_displacement_from_first_m": 0.3834069915404504,
+      "max_measured_vs_current_USD_translation_m": 1.5804464155739418e-08
+     },
+     "wrist_d405_1": {
+      "samples": 642,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 9.22770971153152e-10
+     },
+     "global_d455": {
+      "samples": 642,
+      "max_displacement_from_first_m": 0.0,
+      "max_measured_vs_current_USD_translation_m": 0.0
+     }
+    },
+    "performance": {
+     "control_steps": 641,
+     "step_wall_ms_mean": 566.8921442678371,
+     "material_wall_ms_mean": 358.4478196770677,
+     "episode_wall_s": 442.60364949800714,
+     "process_wall_s": 481.3370434719982,
+     "run_dir_bytes": 589155350
+    },
+    "attempt": {
+     "command": [
+      ".deps/isaacsim-venv/bin/python",
+      "scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "artifacts/wp11/phaseE/round1_live_001/E1_TRIM_s1203/inputs/scene.json",
+      "--goal",
+      "artifacts/wp11/phaseE/round1_live_001/E1_TRIM_s1203/inputs/goal.json",
+      "--planner-options",
+      "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "15",
+      "--steps",
+      "575",
+      "--gpu",
+      "0",
+      "--seed",
+      "42",
+      "--out",
+      "artifacts/wp11/phaseE/round1_live_001/E1_TRIM_s1203/run_001"
+     ],
+     "started": "2026-10-30T06:55:17.594060+09:00",
+     "ended": "2026-10-30T07:03:18.948373+09:00",
+     "returncode": 0,
+     "wall_s": 481.3370434719982,
+     "git_sha": "1ecfe5ea2dc80d6a986f9adccbb36f9f3b91e775",
+     "git_dirty": false,
+     "result_status": "PASS_EXECUTION",
+     "gpu_before": null
+    },
+    "failure": null
+   }
+  ]
+ },
+ "summarizer": {
+  "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+  "git_dirty": true,
+  "command": [
+   "scripts/summarize_wp12_workcell_live.py",
+   "--out",
+   "docs/evidence/wp12/phase2b_native_001.json",
+   "--extra",
+   "/mnt/data/ningan/tmp/claude-1004/-home-ningan-RoboticCuttingSim/2dbee09e-127d-4db1-a9d9-f2a32de8d08d/scratchpad/extra.json"
+  ]
+ },
+ "extra": {
+  "rigid_probe_end_render": {
+   "run": "artifacts/wp12/workcell_005",
+   "command": ".venv/bin/python scripts/run_logged.py artifacts/wp12/logs/workcell_005_native.log -- .deps/isaacsim-venv/bin/python scripts/run_wp12_flat_board_native.py --out artifacts/wp12/workcell_005 --gpu 0 --skip-settle --end-render",
+   "change": "isaac_sim_runner.LiveIsaacSimCutting.rigid_probe_step(..., refresh_camera_extrinsics=False) opt-in keyword; default unchanged; CPU test tests/test_wp12_rigid_probe_camera_refresh.py",
+   "git_sha": "f53dc78b9e70ae5a6667977970fc8596d54c24ee",
+   "git_dirty": true,
+   "seed": 42,
+   "gpu": 0,
+   "wall_s": 61.7,
+   "status": "EXECUTED",
+   "verdict": "PASS",
+   "end_capture_checks": {
+    "wrist_d405_0_runtime_vs_measured_hand_translation_m": 9.89e-09,
+    "wrist_d405_0_runtime_vs_measured_hand_rotation_rad": 1.1e-07,
+    "runtime_vs_current_USD_max_translation_m": 1.4e-16,
+    "rendering_advanced_physics": false
+   },
+   "start_vs_end_camera_translation_m": {
+    "wrist_d405_0": 0.3305,
+    "wrist_d405_1": 0.0,
+    "global_d455": 0.0
+   },
+   "end_depth_valid_fraction": {
+    "wrist_d405_0": 0.35,
+    "global_d455": 0.156,
+    "wrist_d405_1": 0.103
+   },
+   "probe": {
+    "max_knife_penetration_into_board_m": 6.39e-08,
+    "hold_mean_inferred_board_force_on_tool_world_n": [
+     -1.023,
+     0.18,
+     5.01
+    ],
+    "max_grasp_slip_m": 2.13e-05,
+    "max_grasp_rotation_rad": 0.00144
+   },
+   "media": "docs/media/wp12/workcell_live/probe_end_render/"
+  },
+  "cpu_tests": "see the report; tests/test_wp12_rigid_probe_camera_refresh.py and tests/test_wp12_workcell_live_protocol.py are new",
+  "notes": [
+   "workcell_live_002 PARTIAL: the sever verdict FAIL is the expected evaluator output for a deliberate partial cut; the declared rule class is PARTIAL_CUT_ACCEPTED.",
+   "C5_live_trim_rho10_001 reference: class CUTTING_FAILURE is an artefact of applying the Phase E classifier to the C5 protocol (--stop-after-phase WITHDRAW); its recorded verdict is PASS and it is not a failure.",
+   "Test C chip particles below the board top: chip-p1 particles 46445/46572 (reference z 24.5 mm) passed through the cut substrate (conflicting digits decouple in TLMPM) to -0.597 mm and end embedded in the substrate (local z ~7 mm); chip-p0 particles 20088/20796 touched the board past the +x bar end (-0.08 mm transiently, -0.05 mm at the end). Final chips: p0 and p2 past the +x bar end on the board, p1 on the bar top at x ~ +52 mm, 4 fragments (59 particles) on the bar top.",
+   "Test B measured-path C2 FAIL (-12.5 um tool_blade vs static_flat_board, contact_allowed): C2 uses the nominal grasp; the measured knife min was -0.03 um and the knife slipped 15 um in the hand.",
+   "Test B inferred board reaction 12.7 N is one control step at first board contact of cut 1 (finger z -11.6 N, knife arriving at ~20 mm/s); settled hold 0.35-1.45 N.",
+   "Provenance: workcell_live_001-005 at 30e4193, 006-007 and workcell_005 at f53dc78, dirty trees (attempt.json git_status_porcelain). Another agent's uncommitted edit of src/robotic_cutting_sim/usd_surface_bridge.py (imported by the runner) was present when 003-005 launched; it was committed in 89b289d as +43/-0 lines (additive USD method); the launched file was not snapshotted."
+  ]
+ }
+}

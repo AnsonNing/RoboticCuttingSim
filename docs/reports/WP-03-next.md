@@ -38,7 +38,7 @@ From the repository root, using a fresh output directory for every run:
 
 OVRTX is isolated under `.deps/rtx-venv` (ignored). Its wheel was1,348,231,444bytes,
 OVStage66,832,291bytes; installed renderer environment occupies about2.5GiB.
-The project `.venv`, driver, OS and RSI were not changed. This host's optional
+The project `.venv`, driver, OS and other projects were not changed. This host's optional
 environment reads project site-packages through an uncommitted `.pth` file.
 For an independent installation, create a Python3.12 virtual environment and
 install this project with its `tools` extra plus `requirements-rtx.lock` there.

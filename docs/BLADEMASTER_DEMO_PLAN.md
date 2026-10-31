@@ -83,14 +83,14 @@ Live Isaac Sim／PhysX＋physical grasp＋scripted controller（先不做 BC／P
 | D. Dataset & demo runner | P0 | Reset／Action／Record／Evaluate 可反覆執行 |
 | E. Isaac Lab parity | P1 | Lab 夾持（TRIM pregrasp 角速度）與切割差異 |
 | F. Cut-aware surface | P1 | 需要時改善切面視覺 |
-| G. BC／Diffusion／PPO／LLM／RSI | P2 | 場景穩定後再做（原 WP-10 E/F/G） |
+| G. BC／Diffusion／PPO／LLM／agentic control | P2 | 場景穩定後再做（原 WP-10 E/F/G） |
 | H. 多材料校準、大規模 RL 加速 | P2 | 之後研究 |
 
 只用一把尺狀刀、一套軟材料、一台主動 Franka 完成三個 Demo。
 
 ## 7. 規則
 
-- `AGENTS.md` 全部適用：不改 v1 物理／門檻／紀錄；新東西版本化且 opt-in；PASS／FAIL／BLOCKED／NOT_RUN 分開；保留失敗；不覆寫輸出；記錄指令、commit、seed、版本、wall time、artifact 路徑；不改驅動、RSI 或其他專案。
+- `AGENTS.md` 全部適用：不改 v1 物理／門檻／紀錄；新東西版本化且 opt-in；PASS／FAIL／BLOCKED／NOT_RUN 分開；保留失敗；不覆寫輸出；記錄指令、commit、seed、版本、wall time、artifact 路徑；不改驅動或其他專案。
 - 使用者已明確允許：在本分支隨時 commit 並 push；全部完成並審查後合併 main 並 push；整理 GitHub（README、PROGRESS、報告、場景影像）。
 - GPU：先 `nvidia-smi`；不要停止別人的行程；兩張 5090 都可用，優先 GPU 1，避開正在跑的他人工作。
 - Phase 1 沒通過，不開始完整 live robot demo 的反覆嘗試（單次 smoke 用來取得夾持／IK 診斷可以）。

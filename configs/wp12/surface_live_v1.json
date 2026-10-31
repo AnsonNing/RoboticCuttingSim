@@ -1,0 +1,34 @@
+{
+  "schema": "rcs_wp12_surface_live_v1",
+  "stage_id": "wp12_phase3_layer6_surface_live_v1",
+  "status": "PREDECLARED",
+  "declared": "2026-10-31, WP-12 Phase 3 Layer 6, written before any surface_live_NNN Native episode. Physics (tlmpm_v5 law 8, final_v4), goal evaluators, every v1-v4 and goal threshold, the blade_master_flat_board_v1 record, the Phase 2b protocol (configs/wp12/workcell_live_v1.json) and its records are unchanged. Failed runs are kept; any rule change is a new stage file.",
+  "scope": "LIVE Native Isaac Sim 6.2 only. Re-runs Phase 2b episodes with the opt-in surface_profile='cut_aware_surface_v1' (rendered specimen surface; cut_events_v1 recorder on). The surface is one-way render geometry: it never feeds back into physics and is not the collider. Material parameters remain provisional and uncalibrated. One seed per episode, no repeat statistics.",
+  "inputs": "Each episode is prepared by scripts/run_wp12_workcell_live.py prepare() from configs/wp12/workcell_live_v1.json (same scene, goal, planner overrides, duration rule, history stride, seed 42), so the live task id must equal the Phase 2b record's.",
+  "runtime": {
+    "launcher": "scripts/run_wp12_surface_live.py launch --episode ID --out artifacts/wp12/surface_live_NNN",
+    "runner": "scripts/run_wp10_live.py --runtime isaac_sim --scene/--goal with the Phase 2b flags plus --surface-profile <profile> --surface-timing-log",
+    "gpu": 0,
+    "one_native_run_at_a_time": true
+  },
+  "episodes": [
+    {"id": "B_CUT", "phase2b_episode": "CUT", "phase2b_record": "artifacts/wp12/workcell_live_001", "surface_profile": "cut_aware_surface_v1", "media": "cut"},
+    {"id": "B_PARTIAL", "phase2b_episode": "PARTIAL", "phase2b_record": "artifacts/wp12/workcell_live_002", "surface_profile": "cut_aware_surface_v1", "media": "partial"},
+    {"id": "B_TESTB", "phase2b_episode": "TESTB", "phase2b_record": "artifacts/wp12/workcell_live_004", "surface_profile": "cut_aware_surface_v1", "media": "test_b"},
+    {"id": "B_TRIM_PATH_V3", "phase2b_episode": "TRIM_PATH_V3", "phase2b_record": "artifacts/wp12/workcell_live_007", "surface_profile": "cut_aware_surface_v1", "media": "trim_path_v3"},
+    {"id": "A_CUT_PROFILE", "phase2b_episode": "CUT", "phase2b_record": "artifacts/wp12/workcell_live_001", "surface_profile": "particle_surface_v1", "media": null,
+     "reason": "A vs B profiling on the same task: the default surface with the in-memory timing trace written (--surface-timing-log); the profile flag particle_surface_v1 resolves to the recorded default kernel current_volume_v1"}
+  ],
+  "physics_unchanged_rule": {
+    "text": "The surface must not change physics. Per episode, compared with its Phase 2b record (GPU float32 atomics make Native repeatable at verdict level only, WP-11): (1) task id equal; (2) goal verdict and outcome class equal (PARTIAL: the declared PARTIAL_CUT_ACCEPTED conditions of workcell_live_v1.json); (3) mechanical piece count equal; (4) piece mass fractions / removal fraction within 0.02 absolute; (5) labelled particle count and conflicting cross-plane link count reported (not scored).",
+    "removal_fraction_tolerance_abs": 0.02
+  },
+  "surface_measurements_report_only": {
+    "audit": "per extraction: audit ok, lattice pieces, mesh shells vs mechanical components (welded faces = shell_component_violations > 0; dropped fragment = component without a shell; phantom = shell without its own lattice piece), visually separated but mechanically bridged components (shown, never hidden)",
+    "hermite": "per extraction: crossings by source (recorder / sign-inconsistent midpoint / point with fallback normal / midpoint fallback), log entries not links / not conflicting / duplicates",
+    "temporal": "frame-to-frame vertex motion at unchanged codes (same codes SHA256 as the previous extraction) vs the largest particle motion of the same interval",
+    "mesh": "vertices, triangles, cut triangles, boundary / non-manifold / inconsistently oriented edges, degenerate triangles (reference mesh)",
+    "timings": "ms per extraction: cut-event log fetch, partition, topology+QEF, quads, embedding, audit, validity, world transform, normals, USD upload; per step: material (TLMPM incl. recorder kernels), robot physics, surface update, camera capture, step wall; GPU process memory",
+    "media": "the Phase 2b close-up views (start / progress / final) via scripts/export_wp12_workcell_media.py and MP4 via scripts/render_packed_episode.py for CUT and Test B, in docs/media/wp12/surface_live/<media>/"
+  }
+}

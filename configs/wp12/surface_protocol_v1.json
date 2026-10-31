@@ -1,0 +1,97 @@
+{
+  "schema": "wp12_surface_protocol_v1",
+  "status": "FROZEN_PROPOSAL (Phase 1). Freeze = the commit that adds this file; it must precede the first Phase 3 S-test run. Any change after that is a new version (surface_protocol_v2) with the reason recorded.",
+  "source": {
+    "diagnosis": "docs/reports/WP12_SURFACE_DIAGNOSIS.md",
+    "evidence": "docs/evidence/wp12/phase1_surface_diagnosis_001.json",
+    "run": "artifacts/wp12/phase1_001 (protocol.json written before the run)",
+    "basis": "Analytic expectations (tech review section 7.2), the G1/G2 geometric controls and the G3a/G3b repeat spread. No threshold is fitted to a cut result of the method under test (cut_aware_surface_v1 does not exist yet)."
+  },
+  "resolution": {"particle_spacing_s_m": 0.001, "grid_dx_m": 0.004, "material_dt_s": 1e-4, "solver": "tlmpm_v5", "cutting_law": 8,
+                  "note": "All thresholds are in particle spacings s; at another spacing they scale with s, but a new resolution needs its own G1/G2 controls before use."},
+  "profiles_compared": {
+    "baseline_A": "particle_surface_v1 = CuttingSurface profile current_volume_v1 (the profile every configured/registered task renders; legacy reported alongside, never the comparison target)",
+    "candidate_B": "cut_aware_surface_v1 (Phase 3)"
+  },
+  "metrics": {
+    "implementation": "src/robotic_cutting_sim/surface_metrics_v1.py (surface_report, mesh_validity_v1, temporal_stability) and surface_attribution_v1.py",
+    "region_rule": "region_rule_v1: a vertex is cut-face if its nearest same-component boundary sample is a cut side sample within 1.5 s; core = cut-face vertices >= 3 s from every exterior sample of their component",
+    "patch_radius_m": 0.002, "normal_radius_m": 0.003, "coverage_radius_m": 0.001, "core_margin_m": 0.003,
+    "distance": "P50/P95/max over cut-face vertices, absolute signed distance to the local least-squares plane of same (component, cut, side) locus samples within the patch radius; plus the reverse locus->mesh exact point-triangle distance and coverage (fraction of locus samples within 1 s of the mesh)",
+    "signed_error": "bias_toward_side2 = mean offset of both faces along N (side 1 -> 2); thickness_bias = mean(side-1 offset) - mean(side-2 offset)",
+    "normal_error": "core cut-face triangles vs the fitted local locus plane normal (radius 3 mm), unsigned; outward fraction reported; the F-mapped (Nanson) normal is a secondary diagnostic",
+    "roughness": "patch plane-fit RMS (radius 2 mm), quadratic mean and P50/P95, mesh core vs locus core; never a success criterion on its own",
+    "mesh_validity": "degenerate, boundary, non-manifold, inconsistently oriented edges; shells; per-shell signed volume > 0 and Euler characteristic; bounded self-intersection sample (20000 triangles)",
+    "boundary_continuity": "rim corner samples x_e + F_e (P - X_e + s/2 d) -> mesh distance P95/max; open edges within 2 s of a corner",
+    "topology": "shells per mechanical component from the extractor's provenance; shells built from > 1 component; components without shell; faces nearer another component (visual interpenetration)",
+    "volume": "mesh vs sum m/rho (reference) and sum (m/rho) det F (current), total and per component",
+    "detached_mass_and_bridges": "mechanical_components_packed masses; law8_validation.bridge_report per digit; code-0 particles lattice-adjacent to both sides",
+    "temporal": "frames without code change: topology hash and vertex residual vs the embedding function; slow motion: residual after transporting the previous mesh by its nearest particles' displacement (temporal_stability)"
+  },
+  "references_and_spaces": {
+    "material_reference_space": "Hermite points P and normals N of cut_events_v1 (exact solver decision); local plane of P within the patch radius. For B: its pre-embedding mesh. For A: approximate pull-back X = X_p + F_p^-1 (v - x_p), diagnostic only.",
+    "current_space": "side locus q = x_p + F_p (P - X_p) of the same (component, cut, side), local plane; translation-only q and the raw face particles reported alongside (Phase 1: F mapping adds up to ~0.02 mm RMS under the wedge strain)",
+    "fallback": "link_midpoint_fallback (no recorder): clearly labelled; staircase-limited thresholds below; never presented as recorder quality",
+    "never": "the declared/target cut plane is never a reference for B or A (G2 analytic plane only in the geometric unit test); post-cut physical deformation is reported as material behaviour, never as surface error"
+  },
+  "expected_discretization_error_from_phase1": {
+    "hermite_locus_vs_analytic_plane": "<= 1.2e-6 s (float32 log storage)",
+    "midpoint_locus_staircase_oblique": "P95 0.40 s, max 0.43 s, RMS 0.22 s (G2 30 deg and (1,2,3)/sqrt14); 0 on lattice-aligned planes through cell faces; constant offset up to 0.5 s for an axis plane between cell faces (G2 axis_x 0.30 s)",
+    "A_current_volume_v1_zero_physics": "core P95 vs analytic plane 0.14-0.30 s (dominated by the staircase); vs its own midpoint locus 0.07-0.09 s; normal P50 4.1-4.6 deg / P95 8-12 deg on oblique planes; rim corner P95 0.9-1.25 s; volume -1.8 to -2.3 %",
+    "A_legacy_zero_physics": "thickness bias +1.02 to +1.20 s (each face ~0.6 s outward), volume +17 to +20 %",
+    "B_expected": "tech review section 7.2: P95 <= 0.05 s, max <= 0.25 s with recorder Hermite data in the reference space"
+  },
+  "measurement_uncertainty": {
+    "gpu_nondeterminism_band_m": 6e-5,
+    "band_source": "ADR 0012 (equal codes, |dx| <= 0.06 mm)",
+    "phase1_repeat_spread": "G3a and G3b repeats (same seed, cuda:1): every reported current-space distance/roughness P95 within 0.005 s between repeats; codes, recorder audits and verdicts identical",
+    "rule": "A comparison B vs A is decided only when the difference exceeds 0.06 s (or 1 deg for normals, 0.5 % for volume); S-tests run >= 2 repeats and report the spread"
+  },
+  "thresholds_for_candidate_B": {
+    "S0_uncut_box": {"whole_surface_p95_s": 0.02, "whole_surface_max_s": 0.05, "volume_rel_error": 1e-4, "closed_oriented_manifold": true, "shells": 1, "euler": 2},
+    "G2_static_unit_test": {"hermite": {"cut_face_p95_s": 0.05, "cut_face_max_s": 0.25, "non_crease_normal_p95_deg": 2.0, "non_manifold_edges": 0},
+                            "midpoint_fallback": {"cut_face_p95_s": 0.45, "cut_face_max_s": 0.5},
+                            "numeric_tolerance_m": 1e-8},
+    "S1_flat_cut": {"reference_p95_s": 0.1, "reference_max_s": 0.5, "current_p95_s": 0.5, "current_max_s": 1.5,
+                    "abs_bias_toward_side2_s": 0.1, "abs_thickness_bias_s": 0.1, "normal_p95_deg": 10.0, "coverage_min": 0.99,
+                    "rim_corner_p95_s": 0.5, "closed": true, "shells_equal_components": true},
+    "S2_deformed_cut": {"as": "S1 in current space", "current_max_s": 2.0, "report": "embedding estimator and det F fallback counts"},
+    "S3_curved_trajectory": {"as": "S1 reference space", "report": "single-plane residual (must not be forced to 0)"},
+    "S4_partial_cut": {"cut_faces_on_non_conflicting_links": 0, "coverage_of_conflicting_links_min": 0.99, "mechanical_components": 1,
+                       "slit_extent_equals_conflicting_extent": true, "tip_representatives_shared": true},
+    "S5_intersecting_cuts": {"per_cut": "as S1", "slots_per_node": 16, "quasi_manifold_violations": "report only (v1)"},
+    "S6_four_slices": {"mechanical_components_min": 5, "shells_per_component_min": 1,
+                       "per_component_reference_volume_error": "<= 0.5 s * A_cut,component / V_component + 1e-4"},
+    "S7_thin_chip": {"skipped_fragments": 0, "chip_current_volume_rel_error": 0.05, "non_manifold_edges": "report only (v1)"},
+    "S8_recontact": {"vertices_shared_across_conflicting_codes": 0, "shell_set_unchanged_since_separation": true,
+                     "report": "inter-shell intersections, particle gap and penetration from contact stats"},
+    "S9_negative_controls": {"events": 0, "cut_faces": 0, "mesh": "equals the S0 mesh embedded", "hermite_points_outside_swept_region": 0},
+    "all": {"volume_reference": "|V_mesh - sum m/rho| <= 0.5 s * A_cut + 1e-4 V", "volume_current_rel": 0.02,
+            "temporal_fixed_state": "topology hash constant and vertex residual <= 1e-3 s",
+            "temporal_slow_motion_residual_p95_s": 0.05}
+  },
+  "phase3_comparison_gate": {
+    "rule": "B is not worse than A on any frozen metric beyond the measurement uncertainty, and B is better than A on cut-face current-space P95 distance, coverage (partial cuts, chips) and topology (shells = components, no skipped fragments)",
+    "A_reference_values_phase1": {
+      "current_p95_s_through_cuts": "0.36-0.70 (G3a/G3b/G6/G7), 0.35-1.08 (Phase 0 baselines)",
+      "coverage": "0.89-1.00 separated faces; 0.26 partial cut (G4); 0.37 thin chip (G5, chip skipped)",
+      "normal_p50_p95_deg": "6.6-9.8 / 18.7-51.0",
+      "rim_corner_p95_s": "0.86-1.39",
+      "thickness_bias_s": "-0.09 to +0.26 (current_volume_v1); legacy +0.56 to +1.13"
+    },
+    "smoothness_is_never_a_success_criterion": true,
+    "physical_indentation_and_deformation_must_survive_in_current_space": true
+  },
+  "S_test_definitions": {
+    "S1": "physical flat cut: G3a (registered CUT-01-R scripted edge, kinematic_env, seed 42) and G3b (drive_blade, 80x30x12 mm block, vertical cut yawed 20 deg)",
+    "S2": "compress then cut: drive_blade, flat press 2 mm (disarmed) then vertical cut through the compressed zone (new in Phase 3)",
+    "S3": "curved trajectory: a vertical cut whose edge yaws by >= 15 deg during the stroke (drive_blade_sequence with per-substep rotation or a sequence of short yawed phases; new in Phase 3)",
+    "S4": "partial cut: G4 (6 of 12 mm, hold armed, withdraw disarmed)",
+    "S5": "intersecting cuts: G6 (two parallel + one perpendicular, slots_per_node 16)",
+    "S6": "four parallel slices: blade_probe slices5-like 4-cut plan on a 120 mm walled block (probe_v5_multicut slices) with the recorder",
+    "S7": "thin chip: G5 (dome 4 mm, edge 2 mm above the substrate, rake 25 deg)",
+    "S8": "recontact: G7 (cut, disarmed side push closing the kerf, hold, withdraw)",
+    "S9": "negative controls: G8 (armed approach, armed flat press, armed side push, disarmed slide, disarmed plunge) and the G4 hold phase",
+    "runner_parameters": "scripts/run_wp12_phase1_geometry.py PROTOCOL (1 mm, 4 mm grid, 0.1 ms, law 8, tlmpm_v5, ruler_knife_v1, cutting_energy 5 J/m^2, recorder on)"
+  }
+}

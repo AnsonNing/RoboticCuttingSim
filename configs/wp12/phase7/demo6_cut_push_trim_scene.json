@@ -1,0 +1,55 @@
+{
+ "schema": "rcs_scene_v1",
+ "scene_id": "E2_CUT_PUSH_TRIM",
+ "description": "WP-12 E2 cut -> push -> trim",
+ "workpiece": {
+  "base_box_m": {
+   "length_m": 0.16,
+   "width_m": 0.03,
+   "height_m": 0.02
+  },
+  "protrusions": [
+   {
+    "id": "p0",
+    "family": "dome",
+    "x_m": -0.044800000000000006,
+    "y_m": 0.0,
+    "radius_x_m": 0.012,
+    "radius_y_m": 0.01,
+    "height_m": 0.008
+   }
+  ],
+  "world_pose": {
+   "translation_m": [
+    0.0,
+    0.0,
+    0.01
+   ],
+   "yaw_deg": 0.0
+  },
+  "material_profile": "cutting_tasks_v1"
+ },
+ "supports": {
+  "kind": "flat_board",
+  "workcell": {
+   "profile": "blade_master_flat_board_v1",
+   "overrides": {
+    "cutting_board": {
+     "yaw_deg": 0.0
+    }
+   }
+  }
+ },
+ "tool": {
+  "profile_id": "ruler_knife_v2_y",
+  "grasp_preset": "default"
+ },
+ "solver": {
+  "module": "tlmpm_v5",
+  "cutting_law": 8,
+  "max_cuts": 2,
+  "particle_spacing_m": 0.001,
+  "grid_dx_m": 0.004,
+  "slots_per_node": 16
+ }
+}

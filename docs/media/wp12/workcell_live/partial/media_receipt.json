@@ -1,0 +1,45 @@
+{
+ "root": "artifacts/wp12/workcell_live_002",
+ "frames": {
+  "start": {
+   "index": 0,
+   "time_s": 0.0
+  },
+  "progress": {
+   "index": 29,
+   "time_s": 5.8
+  },
+  "final": {
+   "index": 65,
+   "time_s": 12.84
+  }
+ },
+ "written": {
+  "start_closeup_rgb": "docs/media/wp12/workcell_live/partial/start_closeup.png",
+  "start_overview_rgb": "docs/media/wp12/workcell_live/partial/start_overview.png",
+  "progress_closeup_rgb": "docs/media/wp12/workcell_live/partial/progress_closeup.png",
+  "progress_overview_rgb": "docs/media/wp12/workcell_live/partial/progress_overview.png",
+  "final_closeup_rgb": "docs/media/wp12/workcell_live/partial/final_closeup.png",
+  "final_overview_rgb": "docs/media/wp12/workcell_live/partial/final_overview.png",
+  "start_global_d455_rgb": "docs/media/wp12/workcell_live/partial/start_global_d455_rgb.png",
+  "start_global_d455_depth": "docs/media/wp12/workcell_live/partial/start_global_d455_depth.png",
+  "start_wrist_d405_0_rgb": "docs/media/wp12/workcell_live/partial/start_wrist_d405_0_rgb.png",
+  "start_wrist_d405_0_depth": "docs/media/wp12/workcell_live/partial/start_wrist_d405_0_depth.png",
+  "start_wrist_d405_1_rgb": "docs/media/wp12/workcell_live/partial/start_wrist_d405_1_rgb.png",
+  "start_wrist_d405_1_depth": "docs/media/wp12/workcell_live/partial/start_wrist_d405_1_depth.png",
+  "final_global_d455_rgb": "docs/media/wp12/workcell_live/partial/final_global_d455_rgb.png",
+  "final_global_d455_depth": "docs/media/wp12/workcell_live/partial/final_global_d455_depth.png",
+  "final_wrist_d405_0_rgb": "docs/media/wp12/workcell_live/partial/final_wrist_d405_0_rgb.png",
+  "final_wrist_d405_0_depth": "docs/media/wp12/workcell_live/partial/final_wrist_d405_0_depth.png",
+  "final_wrist_d405_1_rgb": "docs/media/wp12/workcell_live/partial/final_wrist_d405_1_rgb.png",
+  "final_wrist_d405_1_depth": "docs/media/wp12/workcell_live/partial/final_wrist_d405_1_depth.png"
+ },
+ "command": [
+  "scripts/export_wp12_workcell_media.py",
+  "--root",
+  "artifacts/wp12/workcell_live_002",
+  "--media",
+  "docs/media/wp12/workcell_live/partial"
+ ],
+ "scope": "Recorded live Native frames (presentation close-up/overview are presentation-only, never observations)"
+}

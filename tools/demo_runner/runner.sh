@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# RoboticCuttingSim demo unattended runner (copied from the RSI v2 runner). Interactive Claude runs in tmux window rcs-demos:claude, so you can attach and type
+# RoboticCuttingSim unattended runner. Interactive Claude runs in tmux window rcs-demos:claude, so you can attach and type
 # into it (tmux attach -t rcs-demos; detach with Ctrl-b d). This loop runs in window rcs-demos:runner and every
 # minute looks at the claude pane:
 #  - claude not running: resume the session (launch.sh sets /goal from goal.txt), or start a new one if resume keeps failing;
@@ -14,7 +14,7 @@ STATE=/mnt/data/ningan/lab_records/rcs_demo_runner
 S=rcs-demos
 P=$S:claude
 TICK=60; LIMIT_RETRY=3600; ERR_RETRY=600; IDLE_NUDGE=3600; USER_QUIET=900
-MSG='（runner 自動訊息）請接著做：看 docs/PROGRESS.md 最上方「進行中」與 docs/BLADEMASTER_DEMO_PLAN.md，從停下的地方繼續；記得隨時 commit 並 push。'
+MSG='（runner 自動訊息）請接著做：看 docs/PROGRESS.md 最上方「進行中」與 tools/demo_runner/goal.txt 指定的計畫，從停下的地方繼續；記得隨時 commit 並 push。'
 mkdir -p "$STATE"
 cd "$REPO" || exit 1
 

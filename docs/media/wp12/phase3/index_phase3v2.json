@@ -1,0 +1,14 @@
+{
+ "source_run": "artifacts/wp12/phase3_surface_002",
+ "figures": {
+  "saved_S4_partial": "docs/media/wp12/phase3/phase3v2_saved_S4_partial_A_B1_B2.png",
+  "saved_S7_chip": "docs/media/wp12/phase3/phase3v2_saved_S7_chip_A_B1_B2.png",
+  "saved_S1_G3b_oblique": "docs/media/wp12/phase3/phase3v2_saved_S1_G3b_oblique_A_B1_B2.png",
+  "saved_S6_slices": "docs/media/wp12/phase3/phase3v2_saved_S6_slices_A_B1_B2.png",
+  "H1_S4_partial": "docs/media/wp12/phase3/phase3v2_H1_S4_partial_A_B1_B2.png",
+  "H2_S4_partial_yaw10": "docs/media/wp12/phase3/phase3v2_H2_S4_partial_yaw10_A_B1_B2.png",
+  "H2_S7_chip": "docs/media/wp12/phase3/phase3v2_H2_S7_chip_A_B1_B2.png",
+  "H2_S1_G3b_yaw35": "docs/media/wp12/phase3/phase3v2_H2_S1_G3b_yaw35_A_B1_B2.png",
+  "H2_S5_cross75": "docs/media/wp12/phase3/phase3v2_H2_S5_cross75_A_B1_B2.png"
+ }
+}

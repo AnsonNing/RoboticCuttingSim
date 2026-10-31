@@ -1,0 +1,1354 @@
+{
+ "evidence": "WP-12 Phase 4: tlmpm_v6 CANDIDATE staged acceptance (grid-consistent position update)",
+ "protocol": "configs/wp12/phase4_gridpos_protocol_v1.json",
+ "protocol_sha256": "44d4a790555d69edd54407f55748db75c1e00fa81fdc65e7c2ad5177a0d89d88",
+ "root": "artifacts/wp12/gridpos_001",
+ "summarizer_sha256": "4af51b666a56c1d587d9a713c902c3c228bb09705d2de0f74dfa872e330e6c14",
+ "git_sha": "177faae7537a8b552b767b4574b2ad5c7f8febbd",
+ "created": "2026-10-31T08:42:14.155917+09:00",
+ "scope": "KINEMATIC ideal-tracking rows (and measured-trajectory replays); provisional uncalibrated material; a candidate acceptance, not adoption; forces are resolution-specific diagnostics (NOT_CONVERGED)",
+ "stages": {
+  "S1": {
+   "pass": 8,
+   "fail": 1,
+   "not_run": 4,
+   "failed_rows": [
+    "FB_CUT"
+   ],
+   "verdict": "FAIL"
+  },
+  "S2": {
+   "pass": 0,
+   "fail": 0,
+   "not_run": 41,
+   "failed_rows": [],
+   "verdict": "INCOMPLETE"
+  },
+  "S3": {
+   "pass": 0,
+   "fail": 0,
+   "not_run": 29,
+   "failed_rows": [],
+   "verdict": "INCOMPLETE"
+  }
+ },
+ "decision_by_gates": "REJECTED",
+ "S1": "FAIL",
+ "rows": [
+  {
+   "row": "M1a",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS",
+    "components_v6": 2,
+    "components_v5": 2
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.027092921444652623,
+    "blade_force_peak_abs_N": 0.07127814494507462,
+    "tool_work_j": 0.0006583401357448913,
+    "max_blade_overlap_m": 0.00027047356707043946,
+    "max_fixture_overlap_m": 0.00021540169836953282,
+    "final_particle_ke_j": 1.924151816532852e-11,
+    "final_grid_ke_j": 1.9176909671804138e-11,
+    "final_null_space_ke_j": 2.364079083266049e-14,
+    "max_null_space_ke_j": 6.601255533013159e-08,
+    "final_elastic_j": 0.00018467038601293316,
+    "min_det_F": 0.9485940034341531,
+    "final_labelled": 28500,
+    "mechanical_components": 2,
+    "grid_position_residual_m": 0.00011282915162751073,
+    "drift_max_m": 0.002436014091094664,
+    "min_local_z_m": null,
+    "wall_s": 164.09230247698724
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.016497561761493477,
+    "blade_force_peak_abs_N": 0.05744277268037364,
+    "tool_work_j": 0.0004107573727549634,
+    "max_blade_overlap_m": 0.0004865399096161127,
+    "max_fixture_overlap_m": 0.0002299671177752316,
+    "final_particle_ke_j": 3.3499966400412494e-13,
+    "final_grid_ke_j": 3.089246742629048e-13,
+    "final_null_space_ke_j": 1.0484602351063965e-14,
+    "max_null_space_ke_j": 8.073631782285273e-08,
+    "final_elastic_j": 0.00018482945543270488,
+    "min_det_F": 0.9384488286892377,
+    "final_labelled": 28528,
+    "mechanical_components": 2,
+    "grid_position_residual_m": 0.0023479793086828,
+    "drift_max_m": 0.0023482536493756186,
+    "min_local_z_m": null,
+    "wall_s": 165.08896144802566
+   },
+   "wall_s": {
+    "V6": 164.09230247698724,
+    "V5": 165.08896144802566
+   },
+   "grid_position_residual_v6_m": 0.00011282915162751073,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "M1a_r2",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M3b",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS",
+    "components_v6": 2,
+    "components_v5": 2,
+    "trim_v6": {
+     "removal": 1.0,
+     "substrate": 0.9999999999996599
+    }
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.04043150840801436,
+    "blade_force_peak_abs_N": 0.12392536670514363,
+    "tool_work_j": 0.0015150859305776976,
+    "max_blade_overlap_m": 0.0003653720486909151,
+    "max_fixture_overlap_m": 5.4741103667765856e-05,
+    "final_particle_ke_j": 7.678479855703036e-12,
+    "final_grid_ke_j": 1.3977363014220595e-12,
+    "final_null_space_ke_j": 6.233952708855833e-12,
+    "max_null_space_ke_j": 1.1657602456528164e-07,
+    "final_elastic_j": 0.0002279980311252221,
+    "min_det_F": 0.8472372978123335,
+    "final_labelled": 32574,
+    "mechanical_components": 2,
+    "grid_position_residual_m": 6.703047561543163e-05,
+    "drift_max_m": 0.01567363759875416,
+    "min_local_z_m": null,
+    "wall_s": 149.58599261799827
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.034359938068979974,
+    "blade_force_peak_abs_N": 0.12046207218244612,
+    "tool_work_j": 0.0012651363248323833,
+    "max_blade_overlap_m": 0.001199996331706643,
+    "max_fixture_overlap_m": 5.540793063119054e-05,
+    "final_particle_ke_j": 8.511743274373996e-12,
+    "final_grid_ke_j": 3.718384161382536e-12,
+    "final_null_space_ke_j": 4.655807852272228e-12,
+    "max_null_space_ke_j": 1.0139423034875953e-07,
+    "final_elastic_j": 0.000165271622978629,
+    "min_det_F": 0.8538649379069145,
+    "final_labelled": 31434,
+    "mechanical_components": 2,
+    "grid_position_residual_m": 0.017309972791230047,
+    "drift_max_m": 0.017308785199863546,
+    "min_local_z_m": null,
+    "wall_s": 149.7302470979921
+   },
+   "wall_s": {
+    "V6": 149.58599261799827,
+    "V5": 149.7302470979921
+   },
+   "grid_position_residual_v6_m": 6.703047561543163e-05,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "M3b_r2",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M4",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS"
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.01346535987215584,
+    "blade_force_peak_abs_N": 0.04766926866907728,
+    "tool_work_j": 0.00022076668204511793,
+    "max_blade_overlap_m": 0.00027046643663197756,
+    "max_fixture_overlap_m": 0.00021540123270824552,
+    "final_particle_ke_j": 1.7406469332431671e-12,
+    "final_grid_ke_j": 1.6219179829699458e-12,
+    "final_null_space_ke_j": 7.35442942564813e-14,
+    "max_null_space_ke_j": 6.602793067420249e-08,
+    "final_elastic_j": 0.00013114026850355454,
+    "min_det_F": 0.9485869208238321,
+    "final_labelled": 13906,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 5.7772761609456506e-05,
+    "drift_max_m": 0.0017720876320998602,
+    "min_local_z_m": null,
+    "wall_s": 145.05893728899537
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.0166278784992437,
+    "blade_force_peak_abs_N": 0.05744792946937084,
+    "tool_work_j": 0.0002919592895261398,
+    "max_blade_overlap_m": 0.00025099480990320444,
+    "max_fixture_overlap_m": 0.00016079266788437963,
+    "final_particle_ke_j": 9.138438972581991e-08,
+    "final_grid_ke_j": 6.801532683986317e-08,
+    "final_null_space_ke_j": 1.2777067635512387e-08,
+    "max_null_space_ke_j": 3.5369773395500596e-08,
+    "final_elastic_j": 0.0001247696683184763,
+    "min_det_F": 0.9601617453129893,
+    "final_labelled": 13496,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 0.0022906811972177293,
+    "drift_max_m": 0.002290700772096938,
+    "min_local_z_m": null,
+    "wall_s": 144.14140477299225
+   },
+   "wall_s": {
+    "V6": 145.05893728899537,
+    "V5": 144.14140477299225
+   },
+   "grid_position_residual_v6_m": 5.7772761609456506e-05,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "M5a",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS"
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.21271586343251872,
+    "blade_force_peak_abs_N": 0.3592480566329685,
+    "tool_work_j": 0.0040268282500619534,
+    "max_blade_overlap_m": 0.0002064725267700851,
+    "max_fixture_overlap_m": 0.0002154007670469582,
+    "final_particle_ke_j": 2.0921451478849093e-11,
+    "final_grid_ke_j": 2.086975352019282e-11,
+    "final_null_space_ke_j": 1.2687596975364539e-14,
+    "max_null_space_ke_j": 2.6404277364726314e-08,
+    "final_elastic_j": 9.167981583410134e-05,
+    "min_det_F": 0.9738660832087487,
+    "final_labelled": 0,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 7.445685644324324e-05,
+    "drift_max_m": 0.00013417864124036662,
+    "min_local_z_m": null,
+    "wall_s": 138.497485993983
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.14024191368986805,
+    "blade_force_peak_abs_N": 0.35944182438559263,
+    "tool_work_j": 0.004070907559253101,
+    "max_blade_overlap_m": 0.0001999383675865829,
+    "max_fixture_overlap_m": 0.00019866629736497998,
+    "final_particle_ke_j": 2.1203458463869673e-11,
+    "final_grid_ke_j": 2.1140695252090314e-11,
+    "final_null_space_ke_j": 1.757965437888976e-14,
+    "max_null_space_ke_j": 3.537005471615196e-08,
+    "final_elastic_j": 8.676697339010867e-05,
+    "min_det_F": 0.9762154956470395,
+    "final_labelled": 0,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 9.097197088393273e-05,
+    "drift_max_m": 8.803076996743877e-05,
+    "min_local_z_m": null,
+    "wall_s": 138.50943149800878
+   },
+   "wall_s": {
+    "V6": 138.497485993983,
+    "V5": 138.50943149800878
+   },
+   "grid_position_residual_v6_m": 7.445685644324324e-05,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "M5b",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS"
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 3.165141785388293,
+    "blade_force_peak_abs_N": 3.7249264074034865,
+    "tool_work_j": 0.01481219739662265,
+    "max_blade_overlap_m": 0.0007154440390877426,
+    "max_fixture_overlap_m": 0.0006488224607892334,
+    "final_particle_ke_j": 3.5176641378695067e-10,
+    "final_grid_ke_j": 3.513442228356638e-10,
+    "final_null_space_ke_j": 2.385501589664185e-13,
+    "max_null_space_ke_j": 4.75245299791679e-08,
+    "final_elastic_j": 0.0010122582160133724,
+    "min_det_F": 0.8971003107611941,
+    "final_labelled": 0,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 6.439460687476545e-05,
+    "drift_max_m": 0.002852249750656294,
+    "min_local_z_m": null,
+    "wall_s": 138.84039608898456
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 2.941144675181065,
+    "blade_force_peak_abs_N": 3.5164397424042897,
+    "tool_work_j": 0.01407491730037691,
+    "max_blade_overlap_m": 0.000623330648522824,
+    "max_fixture_overlap_m": 0.000438524701166898,
+    "final_particle_ke_j": 5.78873067411942e-10,
+    "final_grid_ke_j": 5.784218203152749e-10,
+    "final_null_space_ke_j": 2.2417900755403662e-13,
+    "max_null_space_ke_j": 1.0615330724122896e-07,
+    "final_elastic_j": 0.0008779865618779752,
+    "min_det_F": 0.9189969516013475,
+    "final_labelled": 0,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 0.001461189329254591,
+    "drift_max_m": 0.0014611871584764658,
+    "min_local_z_m": null,
+    "wall_s": 139.00556104100542
+   },
+   "wall_s": {
+    "V6": 138.84039608898456,
+    "V5": 139.00556104100542
+   },
+   "grid_position_residual_v6_m": 6.439460687476545e-05,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "M8b",
+   "stage": "S1",
+   "kind": "matrix",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS",
+    "components_v6": 3,
+    "components_v5": 3
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.04952055139098806,
+    "blade_force_peak_abs_N": 0.15817571073837552,
+    "tool_work_j": 0.003680154520724084,
+    "max_blade_overlap_m": 0.0002529746852815151,
+    "max_fixture_overlap_m": 0.00013037532335147262,
+    "final_particle_ke_j": 5.688081746030592e-11,
+    "final_grid_ke_j": 5.6809429482260394e-11,
+    "final_null_space_ke_j": 2.764502283222416e-14,
+    "max_null_space_ke_j": 2.788659757273645e-07,
+    "final_elastic_j": 0.00014755143215744568,
+    "min_det_F": 0.9503989038818288,
+    "final_labelled": 56973,
+    "mechanical_components": 3,
+    "grid_position_residual_m": 0.00017258551470654068,
+    "drift_max_m": 0.002755457358487887,
+    "min_local_z_m": null,
+    "wall_s": 292.2041140710062
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.0372126808728953,
+    "blade_force_peak_abs_N": 0.14954549316927784,
+    "tool_work_j": 0.0029150091455211655,
+    "max_blade_overlap_m": 0.0005390738951973617,
+    "max_fixture_overlap_m": 0.00013235985534265637,
+    "final_particle_ke_j": 1.7489342721151058e-11,
+    "final_grid_ke_j": 1.742659402024293e-11,
+    "final_null_space_ke_j": 2.5917031278974083e-14,
+    "max_null_space_ke_j": 1.292973272616169e-07,
+    "final_elastic_j": 0.00015746715135879448,
+    "min_det_F": 0.9436256505131808,
+    "final_labelled": 57030,
+    "mechanical_components": 3,
+    "grid_position_residual_m": 0.0029075685427867775,
+    "drift_max_m": 0.0028919852119583525,
+    "min_local_z_m": null,
+    "wall_s": 293.68254876098945
+   },
+   "wall_s": {
+    "V6": 292.2041140710062,
+    "V5": 293.68254876098945
+   },
+   "grid_position_residual_v6_m": 0.00017258551470654068,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "F2.7_withdrawal_v2",
+   "stage": "S1",
+   "kind": "phase_f",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS"
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.013463219210430916,
+    "blade_force_peak_abs_N": 0.04766741856404399,
+    "tool_work_j": 0.00022076742705919348,
+    "max_blade_overlap_m": 0.0002704709768295288,
+    "max_fixture_overlap_m": 0.00021540123270824552,
+    "final_particle_ke_j": 1.6080619042740323e-12,
+    "final_grid_ke_j": 1.5009406702409164e-12,
+    "final_null_space_ke_j": 6.646544785628926e-14,
+    "max_null_space_ke_j": 6.600535069155036e-08,
+    "final_elastic_j": 0.00013108271783336624,
+    "min_det_F": 0.9485860449230871,
+    "final_labelled": 13904,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 5.739070725373365e-05,
+    "drift_max_m": 0.0017717446861319345,
+    "min_local_z_m": null,
+    "wall_s": 144.42036058599479
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.016627006271662224,
+    "blade_force_peak_abs_N": 0.05740350686492003,
+    "tool_work_j": 0.0002919160374811318,
+    "max_blade_overlap_m": 0.00025026564253494143,
+    "max_fixture_overlap_m": 0.00016079546185210347,
+    "final_particle_ke_j": 1.7913544577354118e-09,
+    "final_grid_ke_j": 9.56898829385234e-10,
+    "final_null_space_ke_j": 7.723260100967737e-10,
+    "max_null_space_ke_j": 3.5369804052709784e-08,
+    "final_elastic_j": 0.0001229331035610568,
+    "min_det_F": 0.9601508967873829,
+    "final_labelled": 13496,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 0.0022290120236142493,
+    "drift_max_m": 0.002229009857304006,
+    "min_local_z_m": null,
+    "wall_s": 143.80396757400013
+   },
+   "wall_s": {
+    "V6": 144.42036058599479,
+    "V5": 143.80396757400013
+   },
+   "grid_position_residual_v6_m": 5.739070725373365e-05,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "F2.9_blunt_handle_v2",
+   "stage": "S1",
+   "kind": "phase_f_v2",
+   "gate_class": "kill",
+   "status": "PASS",
+   "reasons": [],
+   "attributable": [],
+   "details": {
+    "verdict_v6": "PASS",
+    "verdict_v5": "PASS"
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.0,
+    "blade_force_peak_abs_N": 1.076343964092605,
+    "tool_work_j": 0.0,
+    "max_blade_overlap_m": 0.0,
+    "max_fixture_overlap_m": 0.00021540262969210744,
+    "final_particle_ke_j": 1.3262037681198214e-11,
+    "final_grid_ke_j": 1.320828896860525e-11,
+    "final_null_space_ke_j": 1.6258288334261713e-14,
+    "max_null_space_ke_j": 1.824644619226635e-07,
+    "final_elastic_j": 0.00015229518414819825,
+    "min_det_F": 0.9256053269524152,
+    "final_labelled": 0,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 0.00010533435725891668,
+    "drift_max_m": 0.0008750328783365765,
+    "min_local_z_m": null,
+    "wall_s": 167.3504416180076
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.0,
+    "blade_force_peak_abs_N": 1.0150265309833881,
+    "tool_work_j": 0.0,
+    "max_blade_overlap_m": 0.0,
+    "max_fixture_overlap_m": 0.00016079546185210347,
+    "final_particle_ke_j": 1.3611957725584004e-11,
+    "final_grid_ke_j": 1.3559149046768208e-11,
+    "final_null_space_ke_j": 1.549295741309238e-14,
+    "max_null_space_ke_j": 1.8719203964236102e-07,
+    "final_elastic_j": 0.0001358455026623507,
+    "min_det_F": 0.9470496278042636,
+    "final_labelled": 0,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 0.0004029174381165641,
+    "drift_max_m": 0.0004179817276665692,
+    "min_local_z_m": null,
+    "wall_s": 142.43539018399315
+   },
+   "wall_s": {
+    "V6": 167.3504416180076,
+    "V5": 142.43539018399315
+   },
+   "grid_position_residual_v6_m": 0.00010533435725891668,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "FB_CUT",
+   "stage": "S1",
+   "kind": "workcell",
+   "gate_class": "kill",
+   "status": "FAIL",
+   "reasons": [
+    "V6 frozen criterion FAIL",
+    "V6 verdict FAIL worse than V5 PASS",
+    "components V6 1 != V5 2"
+   ],
+   "attributable": [
+    "V6 frozen criterion FAIL",
+    "V6 verdict FAIL worse than V5 PASS",
+    "components V6 1 != V5 2"
+   ],
+   "details": {
+    "verdict_v6": "FAIL",
+    "verdict_v5": "PASS",
+    "components_v6": 1,
+    "components_v5": 2
+   },
+   "v6": {
+    "blade_force_mean_abs_contact_N": 0.025158263023895948,
+    "blade_force_peak_abs_N": 0.06677839613293861,
+    "tool_work_j": 0.0005354473650224249,
+    "max_blade_overlap_m": 0.0002508593024685979,
+    "max_fixture_overlap_m": 9.600428165867925e-05,
+    "final_particle_ke_j": 2.3876543853510864e-11,
+    "final_grid_ke_j": 2.3778562159616414e-11,
+    "final_null_space_ke_j": 3.60780138615009e-14,
+    "max_null_space_ke_j": 3.688948638858592e-08,
+    "final_elastic_j": 8.522199431073145e-05,
+    "min_det_F": 0.9536573852566582,
+    "final_labelled": 28488,
+    "mechanical_components": 1,
+    "grid_position_residual_m": 7.731151087330594e-05,
+    "drift_max_m": 0.0022647329085822756,
+    "min_local_z_m": 0.00035587235470302403,
+    "wall_s": 236.29773769300664
+   },
+   "v5": {
+    "blade_force_mean_abs_contact_N": 0.010237051638408452,
+    "blade_force_peak_abs_N": 0.04464720835787997,
+    "tool_work_j": 0.0002547341390948018,
+    "max_blade_overlap_m": 0.00048287236131727695,
+    "max_fixture_overlap_m": 8.09829798527062e-05,
+    "final_particle_ke_j": 6.101079576499285e-13,
+    "final_grid_ke_j": 5.706854532080571e-13,
+    "final_null_space_ke_j": 1.556321428449397e-14,
+    "max_null_space_ke_j": 3.822103335551085e-08,
+    "final_elastic_j": 8.573115517242972e-05,
+    "min_det_F": 0.955696376147013,
+    "final_labelled": 28392,
+    "mechanical_components": 2,
+    "grid_position_residual_m": 0.001996138933970873,
+    "drift_max_m": 0.001994829295407233,
+    "min_local_z_m": 0.0003699238586705178,
+    "wall_s": 212.75219527998706
+   },
+   "wall_s": {
+    "V6": 236.29773769300664,
+    "V5": 212.75219527998706
+   },
+   "grid_position_residual_v6_m": 7.731151087330594e-05,
+   "solver_verified": {
+    "V6": true,
+    "V5": true
+   }
+  },
+  {
+   "row": "FB_CUT_r2",
+   "stage": "S1",
+   "kind": "workcell",
+   "gate_class": "kill",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "FB_TRIM_r10",
+   "stage": "S1",
+   "kind": "workcell",
+   "gate_class": "kill",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M1b",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M2",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M3a",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M3c",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M5c",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M6",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M8a",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "diagnostic",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M9a",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M9b",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M9c",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "report",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M9d",
+   "stage": "S2",
+   "kind": "matrix",
+   "gate_class": "report",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "M7",
+   "stage": "S2",
+   "kind": "matrix_m7",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.1_gate_14",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.1_gate_15",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.1_gate_16",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.3_inplane_v2",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.4_rocking",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.5_pure_rotation",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.6_saw_cut",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.6_pure_draw",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.8_finite_edge",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.9_flat_press",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.9_side_push",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.9_no_contact",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.9_blunt_handle",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "report",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.10_recontact",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F2.11_multicut_history",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F3_cut",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F3_trim",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F3_cut_dt_half",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "characterization",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "F3_trim_dt_half",
+   "stage": "S2",
+   "kind": "phase_f",
+   "gate_class": "characterization",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_side_push",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_flat_press",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_no_contact",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_stop_mid",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_withdrawal",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_half_depth_cut",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "PhaseR_Rb_blunt_handle_v2",
+   "stage": "S2",
+   "kind": "phase_r",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "POSTCUT_press",
+   "stage": "S2",
+   "kind": "postcut",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "POSTCUT_push",
+   "stage": "S2",
+   "kind": "postcut",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "POSTCUT_stop_withdraw",
+   "stage": "S2",
+   "kind": "postcut",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "FB_partial",
+   "stage": "S3",
+   "kind": "workcell",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "FB_TestB",
+   "stage": "S3",
+   "kind": "workcell",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "FB_TestC",
+   "stage": "S3",
+   "kind": "workcell",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "4c_G01",
+   "stage": "S3",
+   "kind": "phase4c",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "4c_G07",
+   "stage": "S3",
+   "kind": "phase4c",
+   "gate_class": "known_failure",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_A_p00",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_A_p05",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_A_p10",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_A_p20",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_R_p05_h0250",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_D_p20_reach",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_D_p25_reach",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "E1_D_p30_reach",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "acceptance",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "TEST_D2_s2501",
+   "stage": "S3",
+   "kind": "generalization",
+   "gate_class": "known_failure",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "TRIM_W_s2307",
+   "stage": "S3",
+   "kind": "generalization",
+   "gate_class": "known_failure",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "EFF_CUT",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "effect",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "EFF_TRIM",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "effect",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "EFF_OBL20",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "effect",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "EFF_MULTI2",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "effect",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "EFF_S7",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "effect",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "EFF_G3b",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "effect",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "RES_CUT_s075_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "v5_standin": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/wp12/resolution_002/CUT_s075_g4s_dt0050",
+    "runner_sha256_identical": true,
+    "tlmpm_v5_unchanged_since_record": true,
+    "row_config_identical": true,
+    "status": "OK",
+    "p50": 0.1445259321059716,
+    "p99": 1.5078208136504183,
+    "verdict": "PASS",
+    "mechanical_components": 2
+   },
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "RES_TRIM_s075_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "v5_standin": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/wp12/resolution_002/TRIM_s075_g4s_dt0050",
+    "runner_sha256_identical": true,
+    "tlmpm_v5_unchanged_since_record": true,
+    "row_config_identical": true,
+    "status": "OK",
+    "p50": 0.01572934701793369,
+    "p99": 1.3337944226206335,
+    "verdict": "PASS",
+    "mechanical_components": 2
+   },
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "RES_MULTI2_s075_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "v5_standin": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/wp12/resolution_002/MULTI2_s075_g4s_dt0050",
+    "runner_sha256_identical": true,
+    "tlmpm_v5_unchanged_since_record": true,
+    "row_config_identical": true,
+    "status": "OK",
+    "p50": 0.13251465671392845,
+    "p99": 1.6473984407926856,
+    "verdict": "PASS",
+    "mechanical_components": 3
+   },
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "RES_CUT_s050_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "v5_standin": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/wp12/resolution_002/CUT_s050_g4s_dt0050",
+    "runner_sha256_identical": true,
+    "tlmpm_v5_unchanged_since_record": true,
+    "row_config_identical": true,
+    "status": "OK",
+    "p50": 0.05642251185307337,
+    "p99": 1.8469089983779268,
+    "verdict": "PASS",
+    "mechanical_components": 2
+   },
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "RES_TRIM_s050_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "v5_standin": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/wp12/resolution_002/TRIM_s050_g4s_dt0050",
+    "runner_sha256_identical": true,
+    "tlmpm_v5_unchanged_since_record": true,
+    "row_config_identical": true,
+    "status": "OK",
+    "p50": 0.005962363823830658,
+    "p99": 1.3891048091434661,
+    "verdict": "PASS",
+    "mechanical_components": 2
+   },
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "RES_MULTI2_s050_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "v5_standin": {
+    "path": "/home/ningan/RoboticCuttingSim/artifacts/wp12/resolution_002/MULTI2_s050_g4s_dt0050",
+    "runner_sha256_identical": true,
+    "tlmpm_v5_unchanged_since_record": true,
+    "row_config_identical": true,
+    "status": "OK",
+    "p50": 0.17509158220013885,
+    "p99": 1.966484735384446,
+    "verdict": "PASS",
+    "mechanical_components": 3
+   },
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "DT_CUT_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "DT_TRIM_dt0050",
+   "stage": "S3",
+   "kind": "verify",
+   "gate_class": "characterization",
+   "status": "NOT_RUN"
+  },
+  {
+   "row": "NAT_FB_CUT",
+   "stage": "S4",
+   "status": "NOT_RUN",
+   "reason": "not scheduled (Native use only)"
+  },
+  {
+   "row": "NAT_FB_TRIM_r10",
+   "stage": "S4",
+   "status": "NOT_RUN",
+   "reason": "not scheduled (Native use only)"
+  }
+ ],
+ "repeat_bands": {},
+ "reopen_measure": {
+  "rule": "q50 = P50_V5/P50_V6 >= 2 and q99 >= 2 on each of EFF_CUT, EFF_TRIM, EFF_MULTI2, EFF_S7, EFF_G3b; only if ACCEPTED",
+  "rows": {
+   "EFF_CUT": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "EFF_TRIM": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "EFF_MULTI2": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "EFF_S7": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "EFF_G3b": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "EFF_OBL20": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "RES_CUT_s050_dt0050": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "RES_TRIM_s050_dt0050": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   },
+   "RES_MULTI2_s050_dt0050": {
+    "V5": {},
+    "V6": {},
+    "q50": null,
+    "q99": null
+   }
+  },
+  "measure_holds": null,
+  "status": "NOT_ELIGIBLE"
+ },
+ "gpu_h_spent_queue": 0.9250623488877803,
+ "extra": {
+  "verdict": "S1 FAIL -> tlmpm_v6 REJECTED under phase4_gridpos_protocol_v1 (kill rule, applied strictly; no tuning; outputs kept)",
+  "kill_row": "FB_CUT (Phase 2b CUT, bar_flat_board + sever_mid, path_v2 overrides, kinematic backend through run_wp12_phase5.kinematic_episode)",
+  "kill_reasons": [
+   "V6 goal evaluator FAIL (outcome: expected_substantial_pieces, every_plane_has_an_interface, cut_at_declared_planes); class execution_failure; plan finished; integrity PASS",
+   "V5 arm at the same commit PASS (task_success, 2 components)",
+   "FINAL mechanical components V6 1 != V5 2"
+  ],
+  "fb_cut_bridge_diagnosis_read_only": {
+   "V5": {
+    "components": 2,
+    "labelled_digit0": 28392,
+    "side1": 14196,
+    "side2": 14196,
+    "direct_bridges": 0,
+    "bridge_ref_z_mm": [],
+    "bridge_ref_x_mm": null,
+    "bridge_ref_y_mm": null,
+    "unassigned_within_4mm_of_plane": 0,
+    "unassigned_by_z_layer_mm": {},
+    "labelled_by_z_layer_lowest3": {
+     "0.5": 1272,
+     "1.5": 1380,
+     "2.5": 1380
+    },
+    "monitor": {
+     "min_local_z_m": 0.0003699238586705178,
+     "max_blade_overlap_m": 0.00048287236131727695,
+     "blade_force_mean_abs_contact_N": 0.010237051638408452,
+     "tool_work_j": 0.0002547341390948018,
+     "min_det_F": 0.955696376147013,
+     "final_labelled": 28392
+    }
+   },
+   "V6": {
+    "components": 1,
+    "labelled_digit0": 28488,
+    "side1": 14244,
+    "side2": 14244,
+    "direct_bridges": 12,
+    "bridge_ref_z_mm": [
+     0.5
+    ],
+    "bridge_ref_x_mm": [
+     -1.5,
+     1.5
+    ],
+    "bridge_ref_y_mm": [
+     -14.5,
+     14.5
+    ],
+    "unassigned_within_4mm_of_plane": 12,
+    "unassigned_by_z_layer_mm": {
+     "0.5": 12
+    },
+    "labelled_by_z_layer_lowest3": {
+     "0.5": 1368,
+     "1.5": 1380,
+     "2.5": 1380
+    },
+    "monitor": {
+     "min_local_z_m": 0.00035587235470302403,
+     "max_blade_overlap_m": 0.0002508593024685979,
+     "blade_force_mean_abs_contact_N": 0.025158263023895948,
+     "tool_work_j": 0.0005354473650224249,
+     "min_det_F": 0.9536573852566582,
+     "final_labelled": 28488
+    }
+   }
+  },
+  "fb_cut_reading": "V6 leaves 12 bottom-layer particles (reference z 0.5 mm, x within +-1.5 mm of the plane, at the two side faces y = +-14.5 mm) with digit 0 = 0; they are direct code-0 bridges between the two sides, so the stencil graph stays one component. V5 labels every particle within 4 mm of the plane (0 bridges). V6 labels more of the bottom layer overall (1368 vs 1272) but not these corner particles. Not investigated further (no tuning; S2/S3 not run).",
+  "caveat_repeat_band": "the declared repeats (M1a_r2, M3b_r2, FB_CUT_r2) were not launched after the stop, so the GPU nondeterminism band of FB_CUT is unmeasured; the kill rule does not depend on it",
+  "not_launched_after_stop": [
+   "V6/FB_TRIM_r10",
+   "V5/FB_TRIM_r10",
+   "V6/M1a_r2",
+   "V5/M1a_r2",
+   "V6/M3b_r2",
+   "V5/M3b_r2",
+   "V6/FB_CUT_r2",
+   "V5/FB_CUT_r2"
+  ],
+  "S2_S3": "NOT_RUN (S1 failed; protocol: stop on any S1 FAIL)",
+  "S4": "NOT_RUN (not scheduled)",
+  "reopen_measure": "NOT_ELIGIBLE (v6 rejected); not computed",
+  "gpu_h": {
+   "S1_queue_ledger": 0.925,
+   "dev_smokes_before_commit": 0.29
+  },
+  "commands": [
+   "TMPDIR=/mnt/data/ningan/tmp nohup .venv/bin/python scripts/run_wp12_gridpos.py queue --stage S1 --out-root artifacts/wp12/gridpos_001 >> artifacts/wp12/logs/gridpos_001_queue.log 2>&1 &",
+   "diagnosis: read-only script (reference stencil + cut_diagnostics.direct_bridges on the FINAL packed codes of both arms) -> artifacts/wp12/gridpos_001/FB_CUT_bridge_diagnosis.json"
+  ],
+  "protocol_commit": "28c8379 (guard-test follow-up c279a4d)",
+  "seed": 42
+ }
+}
