@@ -2,7 +2,7 @@
 
 - the protocol declares the decision's stages: S1 = the kill set, S2/S3 rows, S4 Native not scheduled; ids unique;
   budget cap 18 GPU-h; every row kind has a runner driver; E1 rows copy the frozen E1 protocol rows; RES rows name an
-  existing resolution_002 V5 stand-in;
+  recorded resolution_002 V5 stand-in in tracked evidence metadata;
 - queue order: per row V6 then V5 (no V5 for stand-in rows), repeats last; S4 never queued;
 - the summarizer's row gate implements the kill rule (frozen verdict, integrity, components vs V5, TRIM thresholds,
   not worse than V5) and never gates report / characterization rows on their verdict;
@@ -58,6 +58,7 @@ def test_protocol_stages_match_the_decision(protocol):
 def test_rows_are_runnable_and_copy_frozen_specs(protocol):
     runner = load("run_wp12_gridpos")
     e1 = {r["id"]: r for r in json.loads((ROOT/"configs/wp12/phase4_e1_protocol_v1.json").read_text())["rows"]}
+    resolution = json.loads((ROOT/"docs/evidence/wp12/phase4_resolution_002.json").read_text())
     for row in protocol["rows"]:
         assert row["kind"] in runner.DRIVERS or row["kind"] == "native", row["id"]
         if row["kind"] == "verify":
@@ -66,8 +67,31 @@ def test_rows_are_runnable_and_copy_frozen_specs(protocol):
             if spec["kind"] == "e1":
                 assert spec["e1_spec"] == e1[spec["e1_spec"]["id"]]
         if row.get("v5_standin"):
-            assert (ROOT/row["v5_standin"]/"result.json").exists(), row["v5_standin"]
+            # Ordinary CI checks the declared reference against retained metadata;
+            # it does not need the ignored multi-GB simulation output.
+            standin = Path(row["v5_standin"])
+            assert standin.parent.as_posix() == resolution["run_dir"]
+            recorded = resolution["rows"][standin.name]
+            assert recorded["status"] == "COMPLETED"
+            assert recorded["protocol_sha256"] == resolution["protocol_sha256"]
+            assert recorded["runner_sha256"] == hashlib.sha256((ROOT/"scripts/run_wp12_resolution.py").read_bytes()).hexdigest()
+            for key in ("case", "spacing_m", "grid_dx_m", "dt_s", "variant"):
+                assert recorded["row"][key] == row["args"]["row"][key]
             assert row["gate"] == "characterization"
+
+
+@pytest.mark.parametrize("standin", [r["v5_standin"] for r in json.loads(PROTOCOL.read_text())["rows"]
+                                     if r.get("v5_standin")])
+def test_genuine_local_standin_matches_retained_metadata(standin):
+    """Optional receipt check; missing local experiments are NOT_RUN, never a physical pass."""
+    path = ROOT/standin/"result.json"
+    if not path.is_file():
+        pytest.skip(f"NOT_RUN: ignored historical receipt absent: {standin}/result.json")
+    actual = json.loads(path.read_text())
+    evidence = json.loads((ROOT/"docs/evidence/wp12/phase4_resolution_002.json").read_text())
+    recorded = evidence["rows"][Path(standin).name]
+    for key in ("runner_sha256", "protocol_sha256", "row"):
+        assert actual[key] == recorded[key]
 
 
 def test_queue_order(protocol):

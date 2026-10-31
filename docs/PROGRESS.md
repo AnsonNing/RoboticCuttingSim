@@ -1,3 +1,23 @@
+# Progress — 2026-10-31 Asia/Seoul
+
+## WP-12 finalization in progress — `codex/wp12-finalize`
+
+The authorized finish plan narrows delivery to evidence, CI, documentation and reviewed main publication.
+All reasoning/review uses xhigh. The original worktree and frozen physics/configuration/evidence remain unchanged.
+
+- Existing Native driver PID 917765 continues independently: `artifacts/wp12/phase5_native_001/`, log
+  `artifacts/wp12/logs/phase5_native_001_driver.log` (12/27 complete at takeover; episode 13 running).
+- Reuse all 170 benchmark runs and 12 Native Demo 1–6 runs. ID feasible 47/61 = 0.77 [0.65, 0.86]; target ≥0.9 NOT MET.
+- Running only held-out ID feasibility needed by the frozen outcome-blind Demo 7 draw:
+  `artifacts/wp12/finalize_001/feasibility_held_out`; selection/config must be committed before a held-out outcome.
+- Confirmed prior CI failures (run 41146127558): 2 missing-matplotlib errors and 1 ignored-artifact assumption.
+  Minimal repair in progress; full CPU regression runs on GitHub, with targeted local checks.
+- Next: read-only Family D diagnosis; freeze Demo 7; WP-12 README/media/index; Native summary; final review/main/CI.
+- Runtime receipts/status: `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`.
+  No DONE marker is written until remote main, media and final CI are verified.
+
+## Preserved handoff and history
+
 # Progress — 2026-10-29 Asia/Seoul
 
 ## 進行中：WP-12（2026-10-30，分支 `claude/wp12-physical-cut-surfaces`，起點 main `fbe99bd`）
