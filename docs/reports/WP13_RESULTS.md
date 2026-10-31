@@ -67,6 +67,23 @@ lattice defect; using a half-grid lattice verifies the intended affine identity
 without changing its tolerance. A first test command named a nonexistent scene
 test; it collected nothing and remains an unsuccessful invocation.
 
+The first formal CUT pair succeeds in both arms: v7 near-cut consistency P95
+and P99 improve by 6.06× and 5.73×, and midpoint-locus patch roughness falls
+85.96%. These are one-pair results, not generalization. The first v7 run took
+1.74× the baseline wall because its diagnostics performed global atomic writes
+even for zero impulses. Skipping those zero writes preserves CPU physical state,
+reactions and diagnostic sums bit for bit over 300 substeps; its original slow
+run and source are retained rather than rerun for timing.
+
+A second instrumentation defect was found in cumulative float32 impulse sums:
+the fixture sum can stagnate at 1 N·s while tiny increments continue. Those new
+cumulative partitions in the early CUT/PARTIAL records are **INVALID** and are
+not used as force evidence. Existing per-control reaction/work/penetration
+records are separate and remain available. Later diagnostics sum in float64;
+this changes no physical state or reaction. The initial incorrect diagnostic
+cast edit failed CPU compilation and was preserved, then corrected before the
+next candidate episode. No physical parameter or cutting criterion was tuned.
+
 ## E — Frozen representative cohort
 
 [focused_v1](../../configs/wp13/focused_v1.json) fixes 16 configurations × two

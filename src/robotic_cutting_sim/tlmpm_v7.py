@@ -50,7 +50,7 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                     profile_count: int, blade_width: float, floor: int, walls: int, tool: int,
                     law: int, slice_efficiency: float, zone: float, zone_rear: float, flags: wp.array(dtype=int),
                     segments: int, seg_ok: wp.array(dtype=int), engaged: wp.array(dtype=int),
-                    totals: wp.array(dtype=float)):
+                    totals: wp.array(dtype=wp.float64)):
     p = wp.tid()
     impulse[p] = wp.vec3(0.0)
     xp, vp, mp = x[p], v[p], mass[p]
@@ -130,7 +130,7 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                     remaining = wp.max((1.0-progress[p])*threshold, 0.0)
                     fraction = wp.min(remaining/dw, 1.0)
                     contact_work[p] = contact_work[p]+fraction*dw
-                    wp.atomic_add(totals, 5, fraction*dw)
+                    wp.atomic_add(totals, 5, wp.float64(fraction*dw))
                     progress[p] = wp.min(progress[p]+fraction*dw/wp.max(threshold, 1.0e-12), 1.0)
                     # Material already cut no longer resists in-plane edge motion.
                     if local[0] >= -0.0005 and wp.abs(local[2]) <= 0.00025+radius:
@@ -149,15 +149,15 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                         wp.atomic_max(flags, v5._edge_segment(local[1], blade_width, segments), 1)
         if wp.length_sq(ji) > 0.0:
             jn = wp.dot(ji, normal)
-            wp.atomic_add(totals, 0, jn)
-            wp.atomic_add(totals, 1, wp.length(ji-jn*normal))
+            wp.atomic_add(totals, 0, wp.float64(jn))
+            wp.atomic_add(totals, 1, wp.float64(wp.length(ji-jn*normal)))
             partition = int(3)
             if local[0] >= -zone_rear and local[0] <= 2.0*radius:
                 partition = 2
-            wp.atomic_add(totals, partition, wp.length(ji))
-            wp.atomic_add(totals, 4, wp.dot(ji, linear+wp.cross(angular, lever)))
-            wp.atomic_add(totals, 9, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
-            wp.atomic_max(totals, 11, wp.max(-gap, 0.0))
+            wp.atomic_add(totals, partition, wp.float64(wp.length(ji)))
+            wp.atomic_add(totals, 4, wp.float64(wp.dot(ji, linear+wp.cross(angular, lever))))
+            wp.atomic_add(totals, 9, wp.float64(wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp))
+            wp.atomic_max(totals, 11, wp.float64(wp.max(-gap, 0.0)))
         impulse[p] = impulse[p]+ji
         torque = wp.cross(lever, -ji)
         wp.atomic_add(reaction, 0, wp.spatial_vector(-ji[0], -ji[1], -ji[2], torque[0], torque[1], torque[2]))
@@ -173,7 +173,7 @@ def fixture_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                      centers: wp.array(dtype=wp.vec3), halves: wp.array(dtype=wp.vec3),
                      plane: wp.vec4, radius: float, dt: float,
                      stiffness: float, friction: float, stats: wp.array(dtype=float),
-                     totals: wp.array(dtype=float)):
+                     totals: wp.array(dtype=wp.float64)):
     p = wp.tid()
     xp, vp, mp = x[p], v[p], mass[p]
     for box in range(centers.shape[0]):
@@ -184,10 +184,10 @@ def fixture_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
         impulse[p] = impulse[p]+ji
         if wp.length_sq(ji) > 0.0:
             jn = wp.dot(ji, normal)
-            wp.atomic_add(totals, 6, jn)
-            wp.atomic_add(totals, 7, wp.length(ji-jn*normal))
-            wp.atomic_add(totals, 8, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
-            wp.atomic_max(totals, 10, wp.max(-gap, 0.0))
+            wp.atomic_add(totals, 6, wp.float64(jn))
+            wp.atomic_add(totals, 7, wp.float64(wp.length(ji-jn*normal)))
+            wp.atomic_add(totals, 8, wp.float64(wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp))
+            wp.atomic_max(totals, 10, wp.float64(wp.max(-gap, 0.0)))
         wp.atomic_max(stats, 0, wp.max(-gap, 0.0))
     normal = wp.vec3(plane[0], plane[1], plane[2])
     gap = wp.dot(normal, xp)+plane[3]-radius
@@ -195,10 +195,10 @@ def fixture_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
     impulse[p] = impulse[p]+ji
     if wp.length_sq(ji) > 0.0:
         jn = wp.dot(ji, normal)
-        wp.atomic_add(totals, 6, jn)
-        wp.atomic_add(totals, 7, wp.length(ji-jn*normal))
-        wp.atomic_add(totals, 8, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
-        wp.atomic_max(totals, 10, wp.max(-gap, 0.0))
+        wp.atomic_add(totals, 6, wp.float64(jn))
+        wp.atomic_add(totals, 7, wp.float64(wp.length(ji-jn*normal)))
+        wp.atomic_add(totals, 8, wp.float64(wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp))
+        wp.atomic_max(totals, 10, wp.float64(wp.max(-gap, 0.0)))
     wp.atomic_max(stats, 0, wp.max(-gap, 0.0))
 
 @wp.kernel
@@ -252,7 +252,7 @@ class TLMPM(v5.TLMPM):
             self.previous_pose = wp.array(self.poses.numpy()[:1], dtype=wp.transform)
             self.front_crossings = wp.zeros(self.n, dtype=int)
             self.front_reached = wp.zeros(self.n, dtype=int)
-            self.contact_totals = wp.zeros(12, dtype=float)
+            self.contact_totals = wp.zeros(12, dtype=wp.float64)
         behind = self.blade_profile_xz[:, 0]
         self.bevel_depth_m = float(-behind[behind < 0].max())
         self.blade_half_thickness_m = float(np.abs(self.blade_profile_xz[:, 1]).max())
@@ -272,6 +272,7 @@ class TLMPM(v5.TLMPM):
         paths = ("tlmpm_v5.py", "tlmpm_v6.py", "tlmpm_v7.py")
         return {"solver": SOLVER_NAME, "status": STATUS,
                 "position_update": "grid_musl_v1", "cut_front": "finite_relative_sweep_v1",
+                "diagnostic_accumulation": "float64",
                 "contact": "velocity_projection_tau_v1", "contact_relaxation_s": CONTACT_RELAXATION_S,
                 "work_bevel_depth_m": self.bevel_depth_m,
                 "edge_release_depth_m": EDGE_RELEASE_DEPTH_M,

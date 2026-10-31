@@ -75,6 +75,10 @@ def main():
                    'roughness_rms_m': roughness(summary), 'runtime': runtime,
                    'episode_ms_per_control_step': 1000*runtime['episode_wall_s']/(runtime['simulated_s']/.02),
                    'summary_path': str(path), 'source_manifest': summary['source_manifest']}
+            if solver == 'tlmpm_v7':
+                row['contact_partition_status'] = ('MEASURED_FLOAT64' if
+                    (summary.get('solver_receipt') or {}).get('diagnostic_accumulation') == 'float64' else
+                    'INVALID_FLOAT32_ACCUMULATION: cumulative sums can stagnate; use per-control reactions/penetration')
             arms[solver] = row; rows.append(row)
         if len(arms) == 2:
             b, c = arms['tlmpm_v5'], arms['tlmpm_v7']
