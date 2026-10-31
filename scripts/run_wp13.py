@@ -101,6 +101,8 @@ def run(a):
     from robotic_cutting_sim.live_material import LiveCuttingMaterial
     original_reset, original_advance = LiveCuttingMaterial.reset, LiveCuttingMaterial.advance
     materials, contact = [], []
+    armed_steps = 0
+    during_saved = False
 
     def reset(material, *args, **kwargs):
         result = original_reset(material, *args, **kwargs)
@@ -108,9 +110,17 @@ def run(a):
         return result
 
     def advance(material, *args, **kwargs):
+        nonlocal armed_steps, during_saved
         result = original_advance(material, *args, **kwargs)
         stats = material.bed.stats.numpy()
         contact.append([material.time_s, *stats.tolist()])
+        if kwargs.get('cutting', True):
+            armed_steps += 1
+        if armed_steps >= 50 and not during_saved:
+            np.savez_compressed(a.out/'during_state.npz', **material.bed.snapshot(),
+                                reference=material.points, lattice=material.lattice,
+                                time_s=material.time_s)
+            during_saved = True
         return result
 
     LiveCuttingMaterial.reset, LiveCuttingMaterial.advance = reset, advance
