@@ -1,6 +1,9 @@
 """WP-12 Phase 2b: the declared live workcell protocol and the partial-cut goal (CPU, no Isaac)."""
 import json
+import importlib.util
 from pathlib import Path
+import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -45,3 +48,40 @@ def test_partial_goal_differs_from_sever_mid_only_by_id_description_and_planner_
     differing = sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))
     assert differing == ["description", "goal_id", "planner"]
     assert b["planner"] == {"overtravel_m": -0.010}
+
+
+@pytest.mark.parametrize('caller_tmpdir', [False, True])
+def test_first_launch_creates_logs_and_uses_portable_tmpdir(tmp_path, monkeypatch, caller_tmpdir):
+    """Exercise a real CPU child in a fresh output tree; no Isaac/GPU is launched."""
+    spec = importlib.util.spec_from_file_location('first_workcell_launch', ROOT/'scripts/run_wp12_workcell_live.py')
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    monkeypatch.setattr(runner, 'ROOT', tmp_path)
+    protocol = {'runtime': {'tmpdir': str(tmp_path/'absent_original_host_tmp')}}
+    monkeypatch.setattr(runner, 'load_protocol', lambda: protocol)
+    monkeypatch.setattr(runner, 'gpu_snapshot', lambda: {})
+    monkeypatch.setattr(runner, 'git_state', lambda: {})
+
+    def prepare(protocol, episode, out):
+        out.mkdir()
+        return {}
+
+    def command(protocol, prep, inputs, run):
+        script = ("import json,os,pathlib; p=pathlib.Path("+repr(str(run))+"); p.mkdir(); "
+                  "(p/'result.json').write_text(json.dumps({'status':'TEST_CHILD','tmpdir':os.environ['TMPDIR']}))")
+        return [sys.executable, '-c', script]
+
+    monkeypatch.setattr(runner, 'prepare', prepare)
+    monkeypatch.setattr(runner, 'runner_command', command)
+    if caller_tmpdir:
+        monkeypatch.setenv('TMPDIR', str(tmp_path))
+    else:
+        monkeypatch.delenv('TMPDIR', raising=False)
+    assert runner.cmd_launch(SimpleNamespace(out='artifacts/native_first_run', episode='CUT', disk_floor_gb=0)) == 0
+    assert (tmp_path/'artifacts/wp12/logs/native_first_run_CUT.log').is_file()
+    attempt = json.loads((tmp_path/'artifacts/native_first_run/attempt.json').read_text())
+    used = Path(attempt['env']['TMPDIR'])
+    assert used.is_dir() and used != Path(protocol['runtime']['tmpdir'])
+    if caller_tmpdir:
+        assert used == tmp_path
+    assert attempt['result_status'] == 'TEST_CHILD'

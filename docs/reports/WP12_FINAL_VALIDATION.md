@@ -48,7 +48,8 @@ New checks use `.venv/bin/python`, Python 3.12.12, worktree `src` first in `PYTH
 | --- | --- | --- |
 | Debug-viewer, gridpos metadata/genuine receipts, naming tests | **PASS** | 18 passed, 1.10 s pytest; actual matplotlib installed through locked test extra |
 | Core API/scene/goal/step fields/generalization/flat-board/cut events/topology/naming | **PASS** | 166 passed, 18 `cpu_sim` deselected, 37.60 s; deselected simulations **NOT_RUN** |
-| Native receipt-completeness and gzip tests | **PASS** | 37 passed, 8.75 s pytest; includes genuine historical Phase 2b comparison |
+| Native receipt-completeness and gzip tests | **PASS** | 37 passed, 8.76 s pytest; includes genuine historical Phase 2b comparison |
+| Fresh-checkout launcher portability | **PASS** | 5 tests, 0.88 s pytest; actual CPU child, newly created log directory, caller TMPDIR and fallback; no Native simulation |
 | README prepare + API compile | **PASS** | CPU-only exact CUT inputs compiled; launch CLI help verified; no cosmetic Native rerun |
 | Family D read-only diagnosis | **PASS (diagnostic execution)** | 0.73 s process; first ID+OOD saved histories, census of all 20; benchmark remains 0/20 FAIL |
 | Held-out ID feasibility and outcome-blind selection | **PASS (classification/selection)** | 40 configurations, 268.50 s; 38 feasible, 2 collision-constrained; 45 OOD feasibility rows **NOT_RUN** |
@@ -68,6 +69,9 @@ The release guard requires recorded actions (plain/gzip), nonempty finite positi
 grasp/control measurements before certifying success. Missing evidence gives an integrity failure; frozen numerical
 classification gates/failure precedence and historical results remain unchanged. Synthetic negative tests and genuine
 Phase 2b receipts validate the guard. No controller, simulation physics, evaluator or threshold changed.
+The second review also found that the quick-start launcher assumed an existing log directory and the original
+host temporary path. It now creates the log parent, honors a writable caller TMPDIR, and otherwise uses the
+existing declared directory or a local system fallback; frozen protocol bytes are unchanged.
 
 ## Open items and research backlog
 

@@ -27,6 +27,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 import numpy as np
@@ -176,8 +177,15 @@ def cmd_launch(args):
         return 3
     run_dir = out/'run'
     command = runner_command(protocol, prep, (out/'inputs').relative_to(ROOT), run_dir.relative_to(ROOT))
-    env = {**os.environ, 'OMNI_KIT_ACCEPT_EULA': 'YES', 'PYTHONUNBUFFERED': '1', 'TMPDIR': protocol['runtime']['tmpdir']}
+    tmpdir = os.environ.get('TMPDIR')
+    if tmpdir is None:
+        declared = protocol['runtime']['tmpdir']
+        tmpdir = declared if Path(declared).is_dir() and os.access(declared, os.W_OK) else tempfile.gettempdir()
+    if not Path(tmpdir).is_dir() or not os.access(tmpdir, os.W_OK):
+        raise SystemExit(f'TMPDIR is not a writable directory: {tmpdir}')
+    env = {**os.environ, 'OMNI_KIT_ACCEPT_EULA': 'YES', 'PYTHONUNBUFFERED': '1', 'TMPDIR': tmpdir}
     log = ROOT/'artifacts/wp12/logs'/f'{out.name}_{args.episode}.log'
+    log.parent.mkdir(parents=True, exist_ok=True)
     if log.exists():
         raise FileExistsError(log)
     attempt = {'episode': args.episode, 'command': command, 'cwd': str(ROOT),

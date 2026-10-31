@@ -64,6 +64,7 @@ The bootstrap installs project-local dependencies; it does not upgrade drivers.
 bash scripts/bootstrap.sh --runtime base --managed-python
 bash scripts/bootstrap.sh --runtime isaac_sim --managed-python --accept-eula
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+export TMPDIR="${TMPDIR:-/tmp}"
 
 # CPU-only: compile the exact WP-12 straight-cut scene and live goal.
 .venv/bin/python scripts/run_wp12_workcell_live.py prepare \
