@@ -69,12 +69,30 @@ def main():
             is_partial = case['episode'] == 'PARTIAL'
             passed = bool((summary.get('partial_cut_rule') or {}).get('accepted')) if is_partial else summary['class'] == 'task_success'
             runtime = summary['runtime']
+            manifest_path = Path(summary['source_manifest'])
+            manifest = json.loads(manifest_path.read_text())
+            task, _ = build(case, solver)
+            expected_options = task.controller['planner']
+            actual_options = manifest['config']['planner_options']
+            mismatch = {k: {'compiled': v, 'executed': actual_options.get(k)}
+                        for k, v in expected_options.items() if actual_options.get(k) != v}
             row = {'case': name, 'family': case['episode'], 'solver': solver, 'outcome_pass': passed,
                    'original_class': summary['class'], 'partial_cut_rule': summary.get('partial_cut_rule'),
                    'metrics': summary['metrics'], 'supplemental': extra,
                    'roughness_rms_m': roughness(summary), 'runtime': runtime,
                    'episode_ms_per_control_step': 1000*runtime['episode_wall_s']/(runtime['simulated_s']/.02),
-                   'summary_path': str(path), 'source_manifest': summary['source_manifest']}
+                   'summary_path': str(path), 'source_manifest': summary['source_manifest'],
+                   'summary_sha256': G.sha(path), 'manifest_sha256': G.sha(manifest_path),
+                   'provenance': {k: manifest[k] for k in ('timestamp', 'command', 'python', 'backend',
+                        'git_sha', 'git_dirty', 'packages', 'source_checkouts')},
+                   'source_sha256': {k: v for k, v in manifest['local_code_sha256'].items()
+                        if k.endswith(('tlmpm_v5.py', 'tlmpm_v6.py', 'tlmpm_v7.py', 'run_wp13.py'))},
+                   'effective_planner_options': actual_options,
+                   'execution_integrity': {'status': 'FAIL' if mismatch else 'PASS',
+                        'compiled_vs_executed': mismatch,
+                        'scope': 'Legacy driver dropped compiled overrides. Observed outcomes remain real; '
+                                 'they do not validate the requested planner configuration. '
+                                 'P01 duplicates P00 depth; no completed episode rerun.'}}
             if solver == 'tlmpm_v7':
                 row['contact_partition_status'] = ('MEASURED_FLOAT64' if
                     (summary.get('solver_receipt') or {}).get('diagnostic_accumulation') == 'float64' else
@@ -83,6 +101,8 @@ def main():
         if len(arms) == 2:
             b, c = arms['tlmpm_v5'], arms['tlmpm_v7']
             pair = {'case': name, 'family': case['episode'], 'v5_pass': b['outcome_pass'], 'v7_pass': c['outcome_pass']}
+            pair['same_effective_planner_options'] = b['effective_planner_options'] == c['effective_planner_options']
+            pair['both_match_compiled_planner'] = all(r['execution_integrity']['status'] == 'PASS' for r in (b, c))
             for metric in ('p50', 'p95', 'p99'):
                 vb, vc = b['supplemental']['near_cut'][metric], c['supplemental']['near_cut'][metric]
                 pair[f'consistency_{metric}_reduction_factor'] = vb/vc if vb is not None and vc else None
@@ -91,12 +111,16 @@ def main():
             pair['runtime_ratio_v7_over_v5'] = c['runtime']['episode_wall_s']/b['runtime']['episode_wall_s']
             pairs.append(pair)
     counts = {s: {'completed': sum(r['solver'] == s for r in rows),
-                  'outcome_pass': sum(r['solver'] == s and r['outcome_pass'] for r in rows)} for s in protocol['arms']}
+                  'outcome_pass': sum(r['solver'] == s and r['outcome_pass'] for r in rows),
+                  'compiled_planner_integrity_pass': sum(r['solver'] == s and r['execution_integrity']['status'] == 'PASS' for r in rows)} for s in protocol['arms']}
     output = {'protocol': 'configs/wp13/focused_v1.json', 'planned_episodes': 32, 'counts': counts,
               'candidate_status': a.candidate_status, 'rows': rows, 'pairs': pairs, 'pending': pending,
               'scope': 'Deterministic frozen scenes and provisional uncalibrated materials. '
                        'Outcome success, kinematic consistency, cut-face roughness and contact validity remain separate. '
-                       'Runtime includes observation/evaluation instrumentation, not pure GPU kernel time.'}
+                       'Runtime includes observation/evaluation instrumentation, not pure GPU kernel time. '
+                       'The frozen batch used legacy goal-derived planner options, not all compiled overrides; '
+                       'matched-arm measurements are descriptive under those actual paths. P01 is duplicate-depth '
+                       'evidence and does not establish partial-depth diversity. Candidate remains REJECTED.'}
     G.write_new(a.out, output)
     print(json.dumps({'counts': counts, 'pairs': len(pairs), 'pending': len(pending)}))
 

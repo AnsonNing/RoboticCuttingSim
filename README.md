@@ -48,7 +48,9 @@ uncalibrated. [Decision, paired outcomes and failures](docs/reports/WP13_RESULTS
 **Matched Native CUT, v5 left / v7 right**, seed 42, identical captured times,
 `particle_surface_v1`, 1×. This local improvement is real; it does not overturn
 the kinematic TRIM failure. Native v7 TRIM itself passes (100% above-plane mass
-removed); the difference from ideal tracking is unresolved.
+removed). The kinematic driver dropped compiled planner overrides, including
+action limits and one partial-depth change; its paired measurements describe
+the recorded legacy paths. Cross-runtime differences remain unresolved.
 Candidate full recordings: [CUT](docs/media/wp13/v7_cut_native.mp4),
 [TRIM](docs/media/wp13/v7_trim_native.mp4),
 [four slices](docs/media/wp13/v7_multicut_native.mp4).

@@ -68,7 +68,8 @@ lattice defect; using a half-grid lattice verifies the intended affine identity
 without changing its tolerance. A first test command named a nonexistent scene
 test; it collected nothing and remains an unsuccessful invocation.
 
-The first formal CUT pair succeeds in both arms: v7 near-cut consistency P95
+The recorded C00 CUT pair succeeds in both arms (legacy goal-derived planner;
+see the execution-integrity deviation below): v7 near-cut consistency P95
 and P99 improve by 6.06× and 5.73×, and midpoint-locus patch roughness falls
 85.96%. These are one-pair results, not generalization. The first v7 run took
 1.74× the baseline wall because its diagnostics performed global atomic writes
@@ -161,3 +162,23 @@ comparison and five looping GIF previews. Capture timestamps and hashes are in
 at nominal 5 fps; presentation speed and crops are labelled. Local full decode,
 links and 178 protected Git blobs PASS. Rendered remote main playback, exact-main
 CI, independent review and final matrix aggregation are still pending.
+
+
+## Independent review and execution-integrity deviation
+
+The independent sequential read-only xhigh review of `82fabb0` found a real
+P2 driver bug: the reused historical kinematic driver recomputes planner options
+from the goal and ignores the compiled controller overrides. It executes P01
+with `overtravel_m=-0.010` rather than its requested `-0.012`; P01 and P00
+record identical paths. P01 is **duplicate-depth evidence**, not a successful
+new partial-depth setting. Broader audit also finds dropped controller-profile
+and action-limit overrides. The manifests preserve actual values; compiled task
+identity alone is insufficient proof of execution.
+
+All paired arms use the same actual legacy options. Their observed outcomes and
+quality differences are real under those paths, but the batch's requested-planner
+integrity gate FAILS. Native launches explicitly pass the compiled options and
+are separate. The running frozen batch retains its original driver until the dt
+pairs finish, so contact comparisons do not mix control paths. Completed episodes
+are not repeated. The driver repair and regression check follow batch completion;
+no corrected-depth outcome is claimed. [Original review](../evidence/wp13/review_001.json).
