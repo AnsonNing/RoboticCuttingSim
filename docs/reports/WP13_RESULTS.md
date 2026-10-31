@@ -1,6 +1,7 @@
 # WP-13 integrated cutting experiment
 
-Status: IN_PROGRESS, 2026-11-01 KST. Baseline `11895016b34ed821be2bdecbc5351667fb62d47d`.
+Status: candidate **REJECTED FOR PROMOTION**; engineering publication IN_PROGRESS,
+2026-11-01 KST. Baseline `11895016b34ed821be2bdecbc5351667fb62d47d`.
 The production default remains TLMPM v5, Law 8, `particle_surface_v1`.
 Material parameters are provisional and uncalibrated.
 
@@ -85,6 +86,30 @@ cast edit failed CPU compilation and was preserved, then corrected before the
 next candidate episode. No physical parameter or cutting criterion was tuned.
 
 ## E — Frozen representative cohort
+
+**Decisive rejection:** the primary frozen T00 TRIM succeeds on v5 (two
+components), but v7 remains one component and fails
+`selected_protrusions_removed`. Better x/F consistency and lower local locus
+roughness do not establish chip detachment. The one focused physical alternative
+has already been exercised; no further solver tuning follows this failure.
+The candidate stays explicitly experimental and the production default remains
+v5. The remaining predeclared matrix and Native episodes characterize its limits
+and support the authorized rejection-publication path.
+
+Read-only final-stencil diagnosis finds **216 direct code-0 bridges** on v7
+TRIM versus zero on v5. Although 1,044 particles have the positive-side digit,
+the above-plane reference mass removed is exactly zero because the material
+remains one mechanical body. Per-substep rejection reasons were not recorded
+for those unassigned particles, so a specific missed-crossing history is not
+invented retrospectively. [Bridge evidence](../evidence/wp13/trim_bridge_diagnosis_001.json).
+
+The separate 2 mm small-block recontact control also fails its initial severing
+precondition (retained CPU failure / expected unsupported result, not a pass).
+One necessary 1 mm GPU control passes: two components, unchanged labels/bonds
+through disarmed withdrawal and push, actual cross-component particle distance
+0.689 mm versus the 0.9 mm contact diameter, measured push contact, and 144 finite
+Hermite events without sign-inconsistent records. This is a kinematic control,
+not Native or real-material validation.
 
 [focused_v1](../../configs/wp13/focused_v1.json) fixes 16 configurations × two
 solver arms = 32 kinematic episodes and three configurations × two arms = six
