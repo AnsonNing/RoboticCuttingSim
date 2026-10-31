@@ -191,6 +191,18 @@ Four-slice legacy v1 precision remains 5.0 mm in both arms even though the
 independent task evaluator passes: open-loop placement/sliding remains visible.
 No frozen v1 threshold or result has been changed.
 
+| Native case | Process wall v5/v7 (s) | Mean control wall v5/v7 (ms) | Mean material wall v5/v7 (ms) |
+| --- | ---: | ---: | ---: |
+| CUT | 386.67 / 387.90 | 405.11 / 404.62 | 270.08 / 268.81 |
+| TRIM | 354.16 / 354.06 | 427.07 / 428.69 | 275.06 / 271.64 |
+| Four slices | 993.90 / 968.54 | 428.16 / 414.37 | 268.92 / 268.69 |
+
+These include recording/instrumentation overhead and are not real-time or pure
+kernel benchmarks. Native control-wall P95 is roughly 614–634 ms. Kinematic
+run receipts also record throughput, milliseconds per 20 ms control interval
+and process GPU memory; offline surface extraction timing is separate. No broad
+speedup claim is based on these single paired episodes.
+
 Six initial setup attempts failed before physics due to the isolated worktree's
 missing asset-cache path. Existing assets were linked read-only; a fresh full
 547-sample Native geometric preflight passed before the six new actual episodes.
@@ -223,3 +235,28 @@ are separate. The running frozen batch retains its original driver until the dt
 pairs finish, so contact comparisons do not mix control paths. Completed episodes
 are not repeated. The driver repair and regression check follow batch completion;
 no corrected-depth outcome is claimed. [Original review](../evidence/wp13/review_001.json).
+
+
+## Reproducibility and scope
+
+Base: Python 3.12.12, Warp 1.17.0, Newton 1.6.1, NumPy 2.5.4,
+SciPy 1.18.1. Native: Isaac Sim 6.2.0.0, NumPy 2.3.1, SciPy 1.17.0,
+Torch 2.11.0+cu128; the same Python/Warp/Newton. Hardware: two RTX 5090
+32 GB, driver 570.211.01. Kinematic pairs use cuda:1 except the reserved
+0.75 mm and minus-20-degree pairs on cuda:0; each pair shares its device.
+Native episodes run one at a time on GPU 0. No driver, package environment,
+training run, other worktree or historical experiment is modified.
+
+The first v7 CUT source predates diagnostic optimization. Later changes remove
+zero diagnostic atomics and accumulate diagnostics in float64; physical formulae
+remain fixed after the one focused alternative. CPU neutrality receipts establish
+exact physical-state/reaction equality for those instrumentation changes, not
+GPU bitwise identity. Each actual run manifest and source hash takes precedence
+over the long-lived queue launch commit. Large states remain under ignored
+`artifacts/wp13`; only compact receipts and real encoded media are published.
+
+Scientific limits remain explicit: no real-material calibration, no converged
+force prediction, no stress-driven fracture, no arbitrary solid-board oblique
+cutting, no general Native robustness rate, and no accepted replacement for v5.
+Vision-only observations still exclude force and oracle material state. Camera
+v5, goals, frozen v1 evaluation and the prior v6 rejection remain unchanged.

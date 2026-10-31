@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Summarize completed WP-13 evidence without changing any outcome or threshold."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -69,6 +70,9 @@ def main():
             actions = [json.loads(line) for line in (out/'actions.jsonl').read_text().splitlines()]
             force = np.linalg.norm(np.asarray([r['blade_force_world_N'] for r in actions]), axis=1)
             contact_force = force[force > 1.e-12]
+            path_fields = ('time_s', 'phase', 'cut_enabled', 'cut_index', 'edge_pose_world')
+            path_signature = hashlib.sha256(json.dumps(
+                [{k: r[k] for k in path_fields} for r in actions], sort_keys=True).encode()).hexdigest()
             extra = supplemental(out/'final_state.npz', case, solver)
             is_partial = case['episode'] == 'PARTIAL'
             passed = bool((summary.get('partial_cut_rule') or {}).get('accepted')) if is_partial else summary['class'] == 'task_success'
@@ -87,6 +91,7 @@ def main():
                    'episode_ms_per_control_step': 1000*runtime['episode_wall_s']/(runtime['simulated_s']/.02),
                    'summary_path': str(path), 'source_manifest': summary['source_manifest'],
                    'class_reason': result['class_reason'],
+                   'recorded_control_path_sha256': path_signature,
                    'sampled_stability': result['stability'],
                    'recorded_goal_evaluation': {k: result['evaluation'][k] for k in
                         ('verdict', 'integrity', 'outcome')},
@@ -115,6 +120,7 @@ def main():
             b, c = arms['tlmpm_v5'], arms['tlmpm_v7']
             pair = {'case': name, 'family': case['episode'], 'v5_pass': b['outcome_pass'], 'v7_pass': c['outcome_pass']}
             pair['same_effective_planner_options'] = b['effective_planner_options'] == c['effective_planner_options']
+            pair['identical_recorded_control_path'] = b['recorded_control_path_sha256'] == c['recorded_control_path_sha256']
             pair['both_match_compiled_planner'] = all(r['execution_integrity']['status'] == 'PASS' for r in (b, c))
             for metric in ('p50', 'p95', 'p99'):
                 vb, vc = b['supplemental']['near_cut'][metric], c['supplemental']['near_cut'][metric]
@@ -134,6 +140,14 @@ def main():
                        'The frozen batch used legacy goal-derived planner options, not all compiled overrides; '
                        'matched-arm measurements are descriptive under those actual paths. P01 is duplicate-depth '
                        'evidence and does not establish partial-depth diversity. Candidate remains REJECTED.'}
+    output['partial_depth_duplicate_audit'] = []
+    for solver in protocol['arms']:
+        partial = {r['case']: r for r in rows if r['solver'] == solver and r['case'] in ('P00_partial', 'P01_shallow')}
+        if len(partial) == 2:
+            output['partial_depth_duplicate_audit'].append({'solver': solver,
+                'identical_recorded_control_path': partial['P00_partial']['recorded_control_path_sha256'] ==
+                                                   partial['P01_shallow']['recorded_control_path_sha256'],
+                'scope': 'Hash of actual time, phase, cut enable/id and world edge pose; force is excluded.'})
     G.write_new(a.out, output)
     print(json.dumps({'counts': counts, 'pairs': len(pairs), 'pending': len(pending)}))
 
