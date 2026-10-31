@@ -39,6 +39,10 @@ def main():
             write_new(inputs/'goal.json', info['goal'])
             options = task.controller['planner']
             steps = round(task.duration_s/task.control_dt_s)
+            write_new(inputs/'prepare.json', {'episode': row['episode'], 'sample_id': name,
+                'live_task_id': task.task_id, 'planner_overrides': options, 'duration_s': task.duration_s,
+                'steps': steps, 'history_stride': max(5, math.ceil(steps/40)), 'record_every': 10,
+                'spec': {'id': row['episode']}, 'wp13_case': row, 'solver_module': solver})
             command = [str(ROOT/'.deps/isaacsim-venv/bin/python'), 'scripts/run_wp10_live.py',
                        '--runtime', 'isaac_sim', '--scene', str(inputs/'scene.json'), '--goal', str(inputs/'goal.json'),
                        '--planner-options', json.dumps(options), '--controller', 'scripted', '--edge-feedback', 'measured',

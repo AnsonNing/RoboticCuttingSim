@@ -58,10 +58,11 @@ def measures(material, task):
     from robotic_cutting_sim.cut_topology import mechanical_components_packed
     bed = material.bed
     X, x, F, codes = bed.reference.numpy(), bed.x.numpy(), bed.F.numpy(), bed.code.numpy()
-    planes = task.goal.get('planes')
+    from robotic_cutting_sim.goals import goal_planes
+    planes = goal_planes(task.goal, task.scene) if task.goal['type'] in ('sever', 'divide') else None
     if planes:
-        origins = [p['origin_local_m'] for p in planes]
-        normals = [p['normal_local'] for p in planes]
+        origins = [p[0] for p in planes]
+        normals = [p[1] for p in planes]
     else:
         origins = [[0., 0., task.scene['workpiece']['base_box_m']['height_m']]]
         normals = [[0., 0., 1.]]

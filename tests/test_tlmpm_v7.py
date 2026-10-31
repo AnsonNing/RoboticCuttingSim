@@ -104,3 +104,23 @@ def test_candidate_physical_negative_controls(control):
     else:
         assert not result['state']['codes'].any()
         assert result['severed_bonds'] == 0
+
+
+def test_public_task_switch_preserves_the_explicit_candidate(tmp_path):
+    import json
+    from robotic_cutting_sim.live_env import open_cutting_env
+    from robotic_cutting_sim.scene_config import compile_task
+    root = Path(__file__).resolve().parents[1]
+    scene = json.loads((root/'configs/wp12/scenes/bar_flat_board.json').read_text())
+    scene['solver']['particle_spacing_m'] = .004
+    with open_cutting_env(runtime='kinematic', scene=scene, goal='sever_mid',
+                          preset='cutting_research_v1', device='cpu', output_dir=tmp_path/'run') as env:
+        env.reset(seed=42)
+        scene['solver']['module'] = 'tlmpm_v7'
+        task = compile_task(scene, 'sever_mid', seed=42)
+        env.switch_task(task=task)
+        assert env.backend.config.solver == 'tlmpm_v7'
+        observation, _ = env.reset(seed=42)
+        assert type(env.backend.material.bed) is V.TLMPM
+        assert not env.backend.material.bed.code.numpy().any()
+        assert observation['task']['goal']['type'] == 'sever'
