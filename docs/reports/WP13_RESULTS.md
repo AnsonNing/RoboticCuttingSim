@@ -28,7 +28,7 @@ modified. The trace observes every substep through a CUDA graph; it writes no
 physical state. The original recorded scene/goal, planner and evaluator run
 through the existing WP-12 driver.
 
-## B/C — Candidate under development
+## B/C — Experimental candidate
 
 `tlmpm_v7` is opt-in. It integrates x and F from the same MUSL field, evaluates
 blade and board contact with a velocity-level normal constraint and a fixed
@@ -42,7 +42,7 @@ recorder supplies link intersections and Hermite provenance downstream.
 This is a numerical cutting experiment, not a calibrated fracture model. It
 does not add stress-driven damage, remove particles, smooth meshes or promote
 the rejected v6. Physical outcomes, contact stability, quality and generalization
-are NOT_RUN until their actual results are recorded below.
+are assessed separately below.
 
 The first complete candidate CUT failed (one component, 13,080 labels): the
 0.5 mm work region lost directional engagement halfway down the bar. Its
@@ -130,8 +130,34 @@ The rotated-board configuration initially failed compile-time footprint checks;
 its board centre was moved 25 mm inward before any formal physics outcome.
 The two-bump draft needed two retained digits, also corrected before outcomes.
 
-## D/F — Pending
+## D — Unchanged surface profiles
 
-Surface comparisons, precommitted held-out matrix, Native runs, independent
-review, animated gallery, full CPU CI and remote main publication remain
-NOT_RUN. DONE has not been written.
+Both unchanged v1 profiles were extracted on 15 saved states across CUT,
+PARTIAL, TRIM and four-slice episodes, including during-cut frames. The baseline
+C00 during-state has no recorded F and is NOT_RUN; completed physics was not
+repeated. Midpoint-fallback provenance is explicit; no Hermite data is invented.
+No renderer change or surface promotion follows a failed primary physical TRIM.
+[Surface measurements](../evidence/wp13/surfaces_001.json).
+
+## Native integration and media
+
+Six fresh paired Native episodes completed: **6/6 TASK_SUCCESS, 6/6 HOME PASS**.
+CUT and four slices produce two and five components respectively. T00 removes
+97.5096% of above-plane mass with v5 and 100% with v7. These are selected
+predeclared demonstration scenes, not random generalization. Legacy v1 precision
+metrics remain frozen and separate from task outcome; a successful divide task
+can still have shifted cut locations. Native F was not recorded, so Native x/F
+consistency is NOT_RUN. [Complete compact receipts](../evidence/wp13/native_001.json).
+
+Six initial setup attempts failed before physics due to the isolated worktree's
+missing asset-cache path. Existing assets were linked read-only; a fresh full
+547-sample Native geometric preflight passed before the six new actual episodes.
+Original failures, incomplete analysis metadata and unsuccessful invocations are
+retained under `artifacts/wp13`; no outcome was replaced.
+
+The gallery uses genuine recorded RGB only: six full clips, a matched-time CUT
+comparison and five looping GIF previews. Capture timestamps and hashes are in
+[media provenance](../evidence/wp13/media_001.json). Full videos retain all frames
+at nominal 5 fps; presentation speed and crops are labelled. Local full decode,
+links and 178 protected Git blobs PASS. Rendered remote main playback, exact-main
+CI, independent review and final matrix aggregation are still pending.

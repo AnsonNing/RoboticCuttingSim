@@ -2,57 +2,62 @@
 
 A configurable robotic cutting research environment with live **Native Isaac Sim 6.2**,
 two Franka Pandas and an end-held blade in a physical two-finger grasp. One continuous
-specimen is cut using **TLMPM v5 / law 8**, with persistent side labels, multiple cuts
+specimen is cut using **TLMPM v5 / Law 8**, with persistent side labels, multiple cuts
 and RGB-D observations. Scene, goal, controller and evaluation have separate APIs.
 Material parameters are provisional and uncalibrated; Isaac Lab parity is unverified.
 
-![WP-12: one cutting board directly on the table, with the continuous specimen between two Frankas](docs/media/wp12/flat_board_start_presentation_overview_rgb.png)
+[![Live Native straight CUT — animated workcell view](docs/media/wp13/hero_native.gif)](docs/media/wp13/v5_cut_native.mp4)
 
-**WP-12 workcell: `blade_master_flat_board_v1`.** One wooden board directly on the table,
-without risers. Franka 1 stays at its normal safe park. Both wrist D405s use the fixed,
-hand-aligned v5 mount; the Global D455 provides an additional RGB-D view.
-The image is a recorded Native presentation frame; presentation cameras are separate
-from policy observations. [Workcell validation](docs/reports/WP12_WORKCELL.md).
+**Live Native recording, seed 42, default v5 and `particle_surface_v1`, 1× preview.**
+Click any animation for its full MP4. The `blade_master_flat_board_v1` workcell has
+one wooden board directly on the table. Franka 1 stays at its normal safe park;
+both wrist D405s use fixed, hand-aligned v5 mounts, with a Global D455 RGB-D view.
+[Workcell geometry and cameras](docs/reports/WP12_WORKCELL.md).
 
-## Latest Native demonstrations
+## Native cutting gallery
 
-All six configurations were recorded in live Native Isaac Sim, at seed 42 and
-1 mm particles / 4 mm grid / 0.1 ms. Both surface profiles completed their declared
-tasks and returned HOME: **12/12 TASK_SUCCESS**. This is a scoped demonstration result,
-separate from generalization and numerical convergence.
-[Results, commands and limitations](docs/reports/WP12_FINAL_VALIDATION.md) ·
-[original evidence](docs/evidence/wp12/phase7_demos_001.json).
+These are six fresh WP-13 episodes: CUT, TRIM and four slices, each paired v5/v7,
+**6/6 TASK_SUCCESS and 6/6 HOME PASS**. All use 1 mm particles, 4 mm grid and
+0.1 ms substeps. These selected demonstrations do not establish generalization.
+The following three previews show the supported v5 baseline, seed 42,
+`particle_surface_v1`. Presentation cameras are separate from policy observations.
 
-| Task | Recorded final frame, default ParticleSurface |
-| --- | --- |
-| Straight CUT: two equal pieces · [Native video](docs/media/wp12/demos/demo1_clean_cut/particle_surface_v1/demo.mp4) | ![Straight cut](docs/media/wp12/demos/demo1_clean_cut/particle_surface_v1/final_closeup.png) |
-| Oblique 20°: **explicit slotted board**, 8 mm groove | ![Slotted oblique cut](docs/media/wp12/demos/demo2_oblique_slot_p20/particle_surface_v1/final_closeup.png) |
-| TRIM at rake 10°: 97.9% dome removal · [Native video](docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4) | ![Trim](docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/final_closeup.png) |
-| Four slices: five pieces · [Native video](docs/media/wp12/demos/demo4_four_slices/particle_surface_v1/demo.mp4) | ![Four slices](docs/media/wp12/demos/demo4_four_slices/particle_surface_v1/final_closeup.png) |
-| Three bumps: sequential removal | ![Three bumps](docs/media/wp12/demos/demo5_three_bumps/particle_surface_v1/final_closeup.png) |
-| CUT → push → TRIM: trim on the stationary piece | ![Cut push trim](docs/media/wp12/demos/demo6_cut_push_trim/particle_surface_v1/final_closeup.png) |
+| Straight CUT · 1× | TRIM at rake 10° · 1× | Four slices · 3× preview |
+| --- | --- | --- |
+| [![Straight CUT — real Native animation](docs/media/wp13/cut_preview.gif)](docs/media/wp13/v5_cut_native.mp4) | [![TRIM — real Native animation](docs/media/wp13/trim_preview.gif)](docs/media/wp13/v5_trim_native.mp4) | [![Four slices — real Native animation](docs/media/wp13/multicut_preview.gif)](docs/media/wp13/v5_multicut_native.mp4) |
+| Two pieces | 97.51% above-plane dome mass detached | Five pieces; placement quality reported separately |
 
-Videos combine recorded Native camera frames with labelled oracle diagnostics;
-the particle/force debug panels are excluded from policy observations.
-[Video provenance](docs/evidence/wp12/finalize_media_publication_001.json).
-Demo 7 uses a separate outcome-blind held-out selection; its status and scope are in
-the [generalization report](docs/reports/WP12_GENERALIZATION.md).
+[Recording provenance and exact capture timestamps](docs/evidence/wp13/media_001.json) ·
+[WP-13 measurements and limitations](docs/reports/WP13_RESULTS.md) ·
+[earlier WP-12 demonstrations](docs/reports/WP12_FINAL_VALIDATION.md).
+Full clips retain every captured RGB frame at the nominal 5 fps cadence;
+previews use labelled crops and speeds.
 
-## Cut-surface comparison
+## Experimental integrated solver: rejection retained
 
-Left: default `particle_surface_v1`. Right: opt-in `cut_aware_surface_v1`.
-Both are render geometry; the reconstructed mesh is not the collider.
+**v7 is opt-in and REJECTED FOR PROMOTION. v5 remains the default.**
+Its shared MUSL position/F update, velocity-level contact and finite causal front
+improve the standard kinematic CUT's near-plane consistency P95 by 6.06× and local
+physical-locus roughness by 85.96%. However, the primary kinematic TRIM stays
+connected, and a held-out shorter/firmer CUT also fails. Improved surfaces cannot
+substitute for chip detachment. Contact forces remain unconverged and materials
+uncalibrated. [Decision, paired outcomes and failures](docs/reports/WP13_RESULTS.md).
 
-| Straight CUT | TRIM, including the cut-aware spikes |
-| --- | --- |
-| ![ParticleSurface and cut-aware straight cut](docs/media/wp12/demos/demo1_clean_cut/ab_final_closeup.png) | ![ParticleSurface and cut-aware trim](docs/media/wp12/demos/demo3_trim_rho10/ab_final_closeup.png) |
+[![Matched Native CUT: v5 left, experimental v7 right — real animation](docs/media/wp13/cut_v5_v7_preview.gif)](docs/media/wp13/cut_v5_v7_native_comparison.mp4)
 
-Cut-aware v1 covers more of the recorded cut locus, including thin/partial faces,
-with fewer triangles. It also folds and spans tears where the solver's particle
-positions disagree with its deformation gradient. **Surface: PARTIAL; Phase 3 gates
-FAIL under both frozen protocols.** ParticleSurface stays the default.
-[Decision and measured boundaries](docs/reports/WP12_PHASE3_XHIGH_DECISION.md) ·
-[reconstruction versus actual particles](docs/media/wp12/demos/demo3_trim_rho10/reconstruction_vs_particles.png).
+**Matched Native CUT, v5 left / v7 right**, seed 42, identical captured times,
+`particle_surface_v1`, 1×. This local improvement is real; it does not overturn
+the kinematic TRIM failure. Native v7 TRIM itself passes (100% above-plane mass
+removed); the difference from ideal tracking is unresolved.
+Candidate full recordings: [CUT](docs/media/wp13/v7_cut_native.mp4),
+[TRIM](docs/media/wp13/v7_trim_native.mp4),
+[four slices](docs/media/wp13/v7_multicut_native.mp4).
+
+Both surface profiles are one-way render geometry, separate from collision.
+Unchanged `particle_surface_v1` and opt-in `cut_aware_surface_v1` were measured on
+saved states; no plane smoothing, particle removal or visual tear splitting was
+adopted. The historical WP-12 cut-aware surface gate remains FAIL.
+[Original surface decision](docs/reports/WP12_PHASE3_XHIGH_DECISION.md).
 
 ## Quick start
 

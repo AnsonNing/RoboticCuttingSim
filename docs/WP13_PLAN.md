@@ -14,9 +14,9 @@ No plane smoothing, hidden fracture, goal changes or historical evidence edits.
 | --- | --- | --- |
 | A Baseline/instrumentation | PASS (diagnosis) | v6 failure reproduced; traced corners genuinely remain ahead of the finite edge by 8–32 micrometres |
 | B Coupled kinematics/front | PARTIAL / promotion REJECTED | Final CUT and PARTIAL correct; primary TRIM remains one component while v5 separates |
-| C Contact | IN_PROGRESS | Candidate velocity projection and physical edge zone; dt pair pending |
-| D Honest surfaces | NOT_RUN | Unchanged surface profiles on improved state before any renderer change |
-| E Focused generalization | PREDECLARED | `configs/wp13/focused_v1.json`: 32 paired kinematic and 6 Native episodes |
+| C Contact | PARTIAL | Velocity-level law and 1 mm recontact measured; dt pair pending, no convergence claim |
+| D Honest surfaces | MEASURED / PARTIAL | 15 saved states × two unchanged profiles; one during-state NOT_RUN; no renderer promotion |
+| E Focused generalization | IN_PROGRESS | `configs/wp13/focused_v1.json`: 32 paired kinematic and 6 Native episodes |
 | F Publication | IN_PROGRESS | Honest rejection report + functioning v5 gallery; reviewed PR and exact-main CI/media pending |
 
 Planning/complex analysis/review may use xhigh; implementation/testing use high.
