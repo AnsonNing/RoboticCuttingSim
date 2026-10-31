@@ -3,7 +3,8 @@
 Date: 2026-10-31 (KST). Engineering finalization branch `codex/wp12-finalize`.
 The benchmark is **FROZEN** at `722468c`; the full 170-sample kinematic benchmark is complete.
 ID_validated feasible success is **47/61 = 0.77 [0.65, 0.86]**, original ≥0.9 target **NOT MET**.
-The Native stratified sample is being completed and summarized separately; execution success is not task success.
+The frozen Native stratified sample is complete: **18/27 task success**, including **14/19 ID_validated**
+(0.737 [0.512, 0.882]); its original ≥0.80 target is **NOT MET**. Execution success is not task success.
 Material parameters remain provisional and uncalibrated. Kinematic results are ideal tracking, never live robot results.
 
 Current results are in [benchmark results](#benchmark-results-kinematic-benchmark-split--2026-10-31)
@@ -389,8 +390,47 @@ All 58 execution failures are outcome failures (no solver, integrity, crash or p
 - **§5.7 kinematic target (≥ 0.9 among feasible ID): NOT MET** (point 0.77, lower bound 0.65). Not redefined.
 - **Family D (multiple sequential slices) fails every sample in ID and OOD.** Read-only finalization diagnosis below confirms later cuts miss their declared reference planes after the
   workpiece slides. All 20 verdicts remain FAIL; separation alone does not satisfy the task.
-- Not yet run: held-out split, Demo 7 selection, reproducibility repeats; Native sub-sample in progress
-  (`artifacts/wp12/phase5_native_001/`).
+- Native sub-sample and the minimal held-out/Demo 7 execution are reported below. Reproducibility repeats and
+  the remaining held-out matrix are NOT_RUN under the authorized finalization scope.
+
+## Native benchmark sub-sample — completed 2026-10-31
+
+[Selected-cohort evidence](../evidence/wp12/finalize_native_cohort_001.json) ·
+[whole-benchmark coverage](../evidence/wp12/phase5_native_001.json) ·
+[frozen pre-outcome selection](../evidence/wp12/phase5_native_selection_001.json).
+The independent existing driver finished all 27 selected episodes without restart or interruption.
+The selection was the first three **feasible** seeds in each of A–H ID plus A OOD, using feasibility alone,
+never kinematic outcomes. These are **24 ID + 3 A OOD**, not a random Native test of all 170 configurations.
+All 27 use live Isaac Sim 6.2, default `particle_surface_v1`, unchanged law 8 / `tlmpm_v5` and material seed 42.
+
+| Selected Native population | Task success / selected feasible | Wilson 95% interval | Kinematic success, same IDs |
+| --- | --- | --- | --- |
+| All selected | 18/27 = 0.667 | [0.478, 0.814] | 19/27 |
+| All ID | 15/24 = 0.625 | [0.427, 0.788] | 16/24 |
+| **ID_validated (original Native target population)** | **14/19 = 0.737** | **[0.512, 0.882]** | 14/19 |
+| ID_unconfirmed | 1/5 = 0.200 | [0.036, 0.624] | 2/5 |
+| A OOD only | 3/3 = 1.000 | [0.439, 1.000] | 3/3 |
+
+Per ID family A/B/C/D/E/F/G/H: **3/3, 3/3, 2/3, 0/3, 2/3, 1/3, 1/3, 3/3**.
+The original Native ≥0.80 target is **NOT MET**, by either point estimate or lower bound. These small,
+stratified denominators do not support a full-population Native success estimate or broad OOD claim.
+In the whole-benchmark coverage report, **124 unselected feasible rows are NOT_RUN** and 19 rows are infeasible;
+its full denominators must not be confused with the selected-cohort rates above.
+
+All nine task failures are outcome failures, with complete finite recorded state; none is a solver, integrity,
+grasp, IK, clamp, crash or unfinished-plan failure. Native and kinematic success labels agree on **26/27**:
+18 both succeed, eight both fail, one F sample succeeds only kinematically. This is outcome-label agreement,
+not equality of trajectories or material states. All 27 return HOME; maximum task slip is 11.93 µm,
+rotation 0.522 mrad; no task-phase IK-not-ok or workspace-clamp episode. Sum of attempt wall times is
+**10006.43 s (2.78 h)**, range 225.79–675.74 s; the driver log's 2.85 h includes overhead.
+Classification used the reviewed complete-receipt guard; it did not change any frozen numerical gate.
+
+Commands (read-only summaries; no new simulation):
+
+```bash
+.venv/bin/python scripts/run_wp12_phase5.py summarize --split benchmark --feasibility artifacts/wp12/phase5_001/feasibility_benchmark --kinematic-root artifacts/wp12/phase5_001/kinematic_benchmark --native-root artifacts/wp12/phase5_native_001 --out docs/evidence/wp12/phase5_native_001.json
+.venv/bin/python scripts/report_wp12_native.py --out docs/evidence/wp12/finalize_native_cohort_001.json
+```
 
 ## Finalization: Family D diagnosis (read-only, no new episode)
 
@@ -430,6 +470,10 @@ The frozen draw requires every ID feasibility row and reads no task outcomes. It
 [goal](../../configs/wp12/finalization/demo7_goal.json) and
 [execution scope](../../configs/wp12/finalization/demo7_execution_v1.json) were committed at **ab1ec8f**
 before any held-out outcome. Material simulation seed remains 42; sample seed is the scene/task draw.
+Standard compilation deterministically sets `max_cuts` from raw 1 to the two planned digits and replaces the
+raw 120 s feasibility-probe duration with the execution duration (kinematic 14.5 s, Native 20.5 s).
+The selected geometry, two declared goal planes and every goal threshold are unchanged; this is the existing
+wrapper contract, not an outcome-dependent config edit.
 
 The one selected kinematic episode **FAILS** its outcome (process exit 0, 150.66 s wall; episode loop 142.88 s,
 14.5 s simulated, cuda:1). Integrity PASS; cut 1 PASS at 1.5 mm, cut 2 FAIL at **4.0 mm versus 2.0 mm**.
@@ -437,6 +481,13 @@ Both scoped sever operations separate; the plan finishes, no material is lost an
 [New result, manifest, exact command and hashes](../evidence/wp12/finalize_demo7_kinematic_001.json).
 Run: `artifacts/wp12/finalize_001/kinematic_held_out/P5_D_ID_held_out_s54501`.
 No alternate is run: the draw is retained as a failed held-out example, separate from the 170-sample benchmark.
-One Native default-profile episode is scheduled after the existing Native driver completes.
+The same frozen sample then ran exactly once in Native Isaac Sim on GPU 0, after the existing driver completed.
+It also **FAILS** (`CUTTING_FAILURE`, outcome `step1:cut1:cut_at_declared_planes`): first cut 1.5 mm PASS,
+second cut **4.0 mm > 2.0 mm**. Integrity PASS, finite state, complete receipts, controller DONE, HOME PASS,
+0 IK-not-ok/workspace clamps; task slip 5.29 µm, rotation 0.493 mrad. Process wall **344.43 s**, 20.5 s
+declared task duration (the existing Native wrapper allows physical tracking; geometry/planes/thresholds unchanged).
+[Native result, exact command, manifest and hashes](../evidence/wp12/finalize_demo7_native_001.json).
+Run: `artifacts/wp12/finalize_001/native_held_out/P5_D_ID_held_out_s54501`.
+Camera recording/media was **NOT_RUN** for this benchmark-style attempt; no cosmetic rerun was made.
 The second Native surface profile and the full 85-episode held-out matrix are **NOT_RUN (scope reduced)**.
 A failure remains evidence; no manual alternative is selected to improve presentation.

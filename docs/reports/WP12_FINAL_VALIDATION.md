@@ -19,13 +19,13 @@ The authorized finish plan reduces additional experiments; the frozen physics, p
 | Surface | **PARTIAL** | Cut-aware v1 is opt-in, event-consistent but folds/spans tears at inconsistent solver states; comparison gates **FAIL** under both frozen protocols |
 | Deformation | **PASS (scoped)** | No target-plane flattening/smoothing in cut-aware v1; pressed zones and curved cuts retained in S1–S8 + four Native episodes; not a certificate of near-face physical fidelity |
 | Negative controls | **PARTIAL** | Frozen law-8 controls retained; controls after prior real cuts not exhaustively rerun; no new controls invented for finalization |
-| Generalization | **FAIL / original target NOT MET** | Reused 170 kinematic runs; ID_validated feasible 47/61 = 0.77 [0.65, 0.86], original ≥0.90 target retained; Native sample reported separately |
+| Generalization | **FAIL / original targets NOT MET** | Reused 170 kinematic runs: ID_validated 47/61 = 0.77 [0.65, 0.86] versus ≥0.90; selected Native ID_validated 14/19 = 0.737 [0.512, 0.882] versus ≥0.80; selected held-out Demo 7 FAIL in both runtimes |
 | Evaluation | **PASS (scoped)** | Independent integrity/outcome/quality, frozen v1 unaffected; missing Native receipts now prevent a success certificate |
 | API | **PASS (scoped)** | Phase 6 reset/step/evaluate/task-switch and observation isolation evidence reused, focused local regression below |
 | Recording | **PASS (scoped)** | Saved Native camera/oracle separation and manifests; 12/12 existing demos pass the new [complete-receipt audit](../evidence/wp12/finalize_native_demo_integrity_001.json); held-out inputs committed before outcomes |
 | Reliability | **PARTIAL** | State-isolation checks and Native CUT→TRIM→CUT pass; kinematic host-RSS gate **FAIL** retained, GPU debris repeatability OPEN |
 | Performance | **PARTIAL** | [Measured breakdown](WP12_PERFORMANCE.md), shared-GPU limits and lost per-step profiler stages disclosed; no fresh quiet-GPU study |
-| Regression | **PASS (CPU code regression)** | [Full CI on `0a5a8fd`](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174478144): 1634 passed, 12 skipped/NOT_RUN, 5 historical xfailed; final remote main CI required before DONE |
+| Regression | **PASS (targeted); full CPU CI is a publication gate** | 42 step-field tests pass under both Haswell and SkylakeX after a test-only portability fix; prior full CI success and same-code failure both preserved below; [release checks](https://github.com/AnsonNing/RoboticCuttingSim/pull/3/checks) |
 | Reproducibility | **PARTIAL** | Frozen commands/hashes/seeds and tracked media, genuine artifact checks skip explicitly when absent; no independent-host WP-12 Native rerun |
 
 Completion criterion 4 (no major physics/surface contradiction) remains **OPEN**: near-face particle positions and
@@ -38,7 +38,10 @@ Law 8 / `tlmpm_v5` stays unchanged; the rejected `tlmpm_v6` candidate is not pro
 
 Existing evidence reused without reruns: 170 kinematic benchmark episodes (16.28 job-hours), Native Demo 1–6
 A/B pairs (12/12 task success), Phase 0–4 studies, Phase 6 API/reset/recording studies. These are distinct from
-new finalization work. [Generalization, Native coverage and Family D cause](WP12_GENERALIZATION.md).
+new finalization work. The independent pre-existing Native driver completed its 27 selected benchmark episodes:
+18/27 task success; selected ID_validated 14/19, target NOT MET; nine outcome failures; all 27 complete receipts
+and HOME PASS. This finalization summarized that existing queue without restarting it.
+[Generalization, Native coverage and Family D cause](WP12_GENERALIZATION.md).
 
 New checks use `.venv/bin/python`, Python 3.12.12, worktree `src` first in `PYTHONPATH`,
 `TMPDIR=/mnt/data/ningan/tmp`; exact commands/timing/logs are retained under
@@ -54,15 +57,28 @@ New checks use `.venv/bin/python`, Python 3.12.12, worktree `src` first in `PYTH
 | Family D read-only diagnosis | **PASS (diagnostic execution)** | 0.73 s process; first ID+OOD saved histories, census of all 20; benchmark remains 0/20 FAIL |
 | Held-out ID feasibility and outcome-blind selection | **PASS (classification/selection)** | 40 configurations, 268.50 s; 38 feasible, 2 collision-constrained; 45 OOD feasibility rows **NOT_RUN** |
 | Selected Demo 7 kinematic seed 54501, material seed 42 | **FAIL (outcome)** | 150.66 s process, 142.88 s episode, cuda:1; second cut 4.0 mm > frozen 2.0 mm; preserved without redraw |
-| Selected Demo 7 Native default profile | **NOT_RUN (scheduled)** | Waits for original Native driver; same selected sample, no concurrent Native process |
+| Selected Demo 7 Native default profile | **FAIL (outcome)** | 344.43 s attempt wall, GPU 0, same frozen seed 54501 / material 42; second cut 4.0 mm > 2.0 mm; integrity and HOME PASS, no IK/clamp/grasp failure; camera recording NOT_RUN |
 | Extra Demo 7 Native surface profile / full 85 held-out episodes / reproducibility repeats | **NOT_RUN (scope reduced)** | Authorized lightweight finalization; no claim of held-out success/generalization |
 | README/docs/media links and protected identity | **PASS (initial check)** | 179 local links; renderable PNG/MP4; 92/92 protected Git blobs unchanged; final check follows final report update |
-| Full CPU regression | **PASS** | 1634 passed, 12 skipped/NOT_RUN, 5 xfailed, 3593.75 s on reviewed code `0a5a8fd`; [receipt](../evidence/wp12/finalize_cpu_ci_001.json); no local full-suite rerun |
+| Full CPU regression on `0a5a8fd` | **PASS and FAIL (different BLAS hosts)** | PR: 1634 passed, 12 skipped/NOT_RUN, 5 xfailed, 3593.75 s; push: 1 failed / 1633 passed, 4891.71 s; both receipts retained; no duplicated local full suite |
+| Exact same-host historical step-field regression | **PASS** | 42 passed default 25.95 s; Haswell 26.09 s; SkylakeX 26.18 s; frozen fixture unchanged; [diagnosis and commands](../evidence/wp12/finalize_cpu_blas_001.json) |
 
 One initial smoke invocation referenced nonexistent `tests/test_cut_events_v1.py` and collected no tests (exit 4).
 It was corrected to `tests/test_cut_events.py`; the failed command/log is preserved. No test result was fabricated.
 The original failed CI run [41146127558](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41146127558)
 had 3 failures (2 matplotlib dependency errors, 1 local artifact assumption); both causes are fixed.
+
+The same reviewed `0a5a8fd` code passed [PR CI 41174478144](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174478144)
+on SkylakeX but failed [push CI 41174474111](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174474111)
+on Haswell. The sole failing test hashed yawed plan floats: two report and seven quaternion components differ by
+1.39e-17, changing the task-id suffix despite identical scene and normalized goal. Untouched pre-feature source
+reproduces both respective IDs on the same hosts. The test now runs the full historical source package from
+`77fd033` in a fresh subprocess on the current host and compares all plans/waypoints/task IDs **exactly**;
+stable normalized goals/variants/errors retain their frozen fixture pins. Git history is required, never skipped.
+No production hashing, numerical tolerance, forced BLAS, physics, fixture, controller or evaluator was changed.
+Independent xhigh review approved this fix and the Native cohort denominators. Full branch and exact-main CPU
+workflows are publication gates; final workflow receipts and remote media hashes are stored with the runtime
+release record under `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`.
 
 The independent xhigh review found a missing-evidence false-success path in the Native adapter.
 The release guard requires recorded actions (plain/gzip), nonempty finite positions/velocities and task-phase
@@ -90,8 +106,9 @@ No new law, solver replacement, surface v3, training, threshold adjustment or la
 
 Date: 2026-10-31 (KST). Demos 1–6 of the PREDECLARED [`configs/wp12/phase7_demos_v1.json`](../../configs/wp12/phase7_demos_v1.json)
 (decision: [`WP12_PHASE5_FREEZE_DECISION.md`](WP12_PHASE5_FREEZE_DECISION.md) §3, E-4), run exactly as declared, with no
-change to any config, threshold, physics, evaluator or frozen record. Demo 7 is **NOT_RUN** here. It is drawn later
-from the Phase 5 held-out selection.
+change to any config, threshold, physics, evaluator or frozen record. This section preserves Demos 1–6's original
+paired evaluation; the finalization's separately selected **Demo 7 FAIL** is reported above and in the
+[held-out section](WP12_GENERALIZATION.md#finalization-minimal-held-out--demo-7-protocol).
 
 Evidence: [`docs/evidence/wp12/phase7_demos_001.json`](../evidence/wp12/phase7_demos_001.json). Each run records its
 config hashes, commit, seed, versions, command, wall time, ms/step, physical metrics, geometry metrics and runtime

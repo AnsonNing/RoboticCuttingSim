@@ -1,30 +1,37 @@
 # Progress — 2026-10-31 Asia/Seoul
 
-## WP-12 finalization in progress — `codex/wp12-finalize`
+## WP-12 finalization — delivery and retained limits
 
 The authorized finish plan narrows delivery to evidence, CI, documentation and reviewed main publication.
 All reasoning/review uses xhigh. The original worktree and frozen physics/configuration/evidence remain unchanged.
 
-- Existing Native driver PID 917765 continues independently: `artifacts/wp12/phase5_native_001/`, log
-  `artifacts/wp12/logs/phase5_native_001_driver.log`; no batch restart or job interruption.
-- Reused all 170 benchmark runs: ID_validated 47/61 = 0.77 [0.65, 0.86], original ≥0.9 NOT MET.
+- Reused all 170 kinematic benchmark runs: ID_validated 47/61 = 0.77 [0.65, 0.86], original ≥0.90 NOT MET.
   Family D 0/20 diagnosed from saved evidence: open-loop planes miss sliding material; no rerun/rescore.
+- The original Native driver finished its frozen 27-episode selection without restart/interruption.
+  Native task success 18/27; ID_validated 14/19 = 0.737 [0.512, 0.882], original ≥0.80 NOT MET.
+  All nine failures are outcomes, complete receipts 27/27, HOME PASS 27/27; Native/kinematic labels agree 26/27.
+  This cohort covers 24 ID + 3 A OOD only; 124 other feasible Native benchmark rows remain NOT_RUN.
 - Existing Native Demo 1–6 pairs remain 12/12 TASK_SUCCESS; read-only complete-receipt audit PASS 12/12.
 - Held-out ID-only feasibility 38/40 feasible (268.50 s); frozen outcome-blind pool 30.
-  Selected Family D seed 54501, scene/goal committed at `ab1ec8f` before outcomes.
-  One kinematic episode FAIL (150.66 s; second cut location 4.0 mm > 2.0 mm); preserved, no redraw.
-- Durable waiter PID 970042 schedules exactly one default-profile Native Demo 7 after the original driver finishes.
-  Outputs: `artifacts/wp12/finalize_001/native_held_out/P5_D_ID_held_out_s54501`.
-  Extra profile/full held-out matrix/repeats NOT_RUN (authorized scope reduction).
-- CI dependency/artifact fixes plus reviewed Native receipt-completeness guard: targeted checks PASS
-  (18 CI cases, 37 Native evidence cases, 166 core smokes; 18 expensive CPU simulations deselected/NOT_RUN).
-- README now uses WP-12 flat-board Native frames, six demos and honest A/B comparison. Three existing MP4s copied
-  unchanged for publication. Link/media/protected check PASS (92/92 protected blobs); final recheck pending.
-- [Acceptance matrix and limits](reports/WP12_FINAL_VALIDATION.md), [generalization](reports/WP12_GENERALIZATION.md).
-- Full code CPU CI **PASS** at `0a5a8fd`: [run 41174478144](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174478144), 1634 passed / 12 skipped (NOT_RUN) / 5 historical xfailed, 3593.75 s.
-- Next: finish Native summary/Demo 7; independent xhigh final data review; main merge/push, then exact-main CI/media verification.
-- Runtime receipts/status: `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`.
-  No DONE marker is written until remote main, media and final CI are verified.
+  Family D seed 54501, scene/goal committed at `ab1ec8f` before outcomes; material seed 42.
+  Exactly one kinematic episode FAIL (150.66 s) and one Native default-profile episode FAIL (344.43 s):
+  second cut location 4.0 mm > 2.0 mm in both. Integrity PASS; Native HOME PASS; no redraw.
+  Outputs: `artifacts/wp12/finalize_001/{kinematic_held_out,native_held_out}/P5_D_ID_held_out_s54501`.
+  Extra profile/full held-out matrix/repeats/Demo 7 camera recording NOT_RUN (authorized reduced scope).
+- CI dependency/artifact fixes, Native receipt-completeness guard and portable fresh-log launcher are reviewed.
+  Focused checks PASS: 18 CI cases, 37 Native evidence cases, 166 core smokes, 5 launcher cases.
+  18 expensive local CPU simulations deselected/NOT_RUN; full GitHub CPU CI is the regression gate.
+- Same code `0a5a8fd`: PR CI passed 1634 tests, but push CI failed one CPU-dependent float hash.
+  Test-only exact same-host historical reference fixes this without changing source/physics/frozen pins;
+  42 tests PASS each on default/Haswell/SkylakeX. Both original CI receipts/failure are preserved.
+- README uses real WP-12 flat-board Native frames, six demos, three existing byte-identical MP4s and honest A/B
+  comparison. Protected identity checks retain all 92 blobs. Surface PARTIAL / frozen gates FAIL, force NOT
+  CONVERGED, uncalibrated materials, Demo 5 fragments 5 vs 9 OPEN and host-memory FAIL remain explicit.
+- [Acceptance matrix](reports/WP12_FINAL_VALIDATION.md), [generalization and Native cohort](reports/WP12_GENERALIZATION.md).
+- Publication and exact-commit checks: [PR #3](https://github.com/AnsonNing/RoboticCuttingSim/pull/3) and
+  [CPU workflows](https://github.com/AnsonNing/RoboticCuttingSim/actions/workflows/tests.yml).
+  Runtime commands, independent review, final main SHA/CI/media receipts and completion markers:
+  `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`. DONE is written only after remote main verification.
 
 ## Preserved handoff and history
 
