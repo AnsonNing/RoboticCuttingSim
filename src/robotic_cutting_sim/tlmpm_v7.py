@@ -147,16 +147,17 @@ def _rigid_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
                     actual_edge_motion = advancing > 1.0e-5 or (wp.abs(drawing) > 1.0e-5 and advancing >= -1.0e-5)
                     if progress[p] >= 1.0 and (law != 3 or (actual_edge_motion and dw > 1.0e-20)):
                         wp.atomic_max(flags, v5._edge_segment(local[1], blade_width, segments), 1)
-        jn = wp.dot(ji, normal)
-        wp.atomic_add(totals, 0, jn)
-        wp.atomic_add(totals, 1, wp.length(ji-jn*normal))
-        partition = int(3)
-        if local[0] >= -zone_rear and local[0] <= 2.0*radius:
-            partition = 2
-        wp.atomic_add(totals, partition, wp.length(ji))
-        wp.atomic_add(totals, 4, wp.dot(ji, linear+wp.cross(angular, lever)))
-        wp.atomic_add(totals, 9, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
-        wp.atomic_max(totals, 11, wp.max(-gap, 0.0))
+        if wp.length_sq(ji) > 0.0:
+            jn = wp.dot(ji, normal)
+            wp.atomic_add(totals, 0, jn)
+            wp.atomic_add(totals, 1, wp.length(ji-jn*normal))
+            partition = int(3)
+            if local[0] >= -zone_rear and local[0] <= 2.0*radius:
+                partition = 2
+            wp.atomic_add(totals, partition, wp.length(ji))
+            wp.atomic_add(totals, 4, wp.dot(ji, linear+wp.cross(angular, lever)))
+            wp.atomic_add(totals, 9, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
+            wp.atomic_max(totals, 11, wp.max(-gap, 0.0))
         impulse[p] = impulse[p]+ji
         torque = wp.cross(lever, -ji)
         wp.atomic_add(reaction, 0, wp.spatial_vector(-ji[0], -ji[1], -ji[2], torque[0], torque[1], torque[2]))
@@ -181,21 +182,23 @@ def fixture_contacts(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
         gap = hit[3]-radius
         ji = _contact_impulse(gap, normal, vp, mp, dt, stiffness, friction)
         impulse[p] = impulse[p]+ji
-        jn = wp.dot(ji, normal)
-        wp.atomic_add(totals, 6, jn)
-        wp.atomic_add(totals, 7, wp.length(ji-jn*normal))
-        wp.atomic_add(totals, 8, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
-        wp.atomic_max(totals, 10, wp.max(-gap, 0.0))
+        if wp.length_sq(ji) > 0.0:
+            jn = wp.dot(ji, normal)
+            wp.atomic_add(totals, 6, jn)
+            wp.atomic_add(totals, 7, wp.length(ji-jn*normal))
+            wp.atomic_add(totals, 8, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
+            wp.atomic_max(totals, 10, wp.max(-gap, 0.0))
         wp.atomic_max(stats, 0, wp.max(-gap, 0.0))
     normal = wp.vec3(plane[0], plane[1], plane[2])
     gap = wp.dot(normal, xp)+plane[3]-radius
     ji = _contact_impulse(gap, normal, vp, mp, dt, stiffness, friction)
     impulse[p] = impulse[p]+ji
-    jn = wp.dot(ji, normal)
-    wp.atomic_add(totals, 6, jn)
-    wp.atomic_add(totals, 7, wp.length(ji-jn*normal))
-    wp.atomic_add(totals, 8, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
-    wp.atomic_max(totals, 10, wp.max(-gap, 0.0))
+    if wp.length_sq(ji) > 0.0:
+        jn = wp.dot(ji, normal)
+        wp.atomic_add(totals, 6, jn)
+        wp.atomic_add(totals, 7, wp.length(ji-jn*normal))
+        wp.atomic_add(totals, 8, wp.dot(ji, vp)+0.5*wp.length_sq(ji)/mp)
+        wp.atomic_max(totals, 10, wp.max(-gap, 0.0))
     wp.atomic_max(stats, 0, wp.max(-gap, 0.0))
 
 @wp.kernel
