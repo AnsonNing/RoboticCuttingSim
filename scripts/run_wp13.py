@@ -117,7 +117,7 @@ def run(a):
         contact.append([material.time_s, *stats.tolist()])
         if kwargs.get('cutting', True):
             armed_steps += 1
-        if armed_steps >= 50 and not during_saved:
+        if armed_steps >= 50 and not during_saved and np.count_nonzero(material.bed.code.numpy()) >= 200:
             np.savez_compressed(a.out/'during_state.npz', **material.bed.snapshot(),
                                 reference=material.points, lattice=material.lattice,
                                 time_s=material.time_s)
