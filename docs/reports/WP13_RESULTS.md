@@ -325,7 +325,8 @@ two integration regression tests inspect the real historical driver's manifest
 and action limits before intentionally stopping before physics. They pass and
 verify restoration of scoped overrides. `--planner-source legacy_goal_v1`
 explicitly replays the recorded deviation. No corrected-depth physical outcome
-is claimed; that requested depth remains NOT_RUN. [Original review](../evidence/wp13/review_001.json).
+is claimed; that requested depth remains NOT_RUN. [Original review](../evidence/wp13/review_001.json);
+[follow-up: no blocking findings for rejection publication](../evidence/wp13/review_002.json).
 
 
 ## Reproducibility and scope

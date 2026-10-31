@@ -1,0 +1,15 @@
+{
+  "reviewed_sha": "1b2e8f11476be137510291ac1bfe7b5ecf1c2d5f",
+  "baseline_sha": "11895016b34ed821be2bdecbc5351667fb62d47d",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "xhigh",
+  "mode": "independent sequential read-only CLI follow-up",
+  "status": "NO_BLOCKING_FINDINGS_FOR_REJECTION_ENGINEERING_PUBLICATION",
+  "prior_finding": "P2 RESOLVED IN CODE; recorded protocol deviation retained",
+  "corrected_physical_validation": "NOT_RUN; completed episodes not repeated",
+  "response": "**No blocking findings for the rejection engineering publication at `1b2e8f1`.**\n\n- The prior P2 is **resolved in code**: [execute_episode](/home/ningan/RoboticCuttingSim-wp13/scripts/run_wp13.py:95) supplies compiled options through an equality-based, scoped shim, restores patched functions, and retains explicit legacy replay. The frozen historical driver is unchanged.\n- The evidence remains honest. Auditing all 32 rows against saved manifests, results and actions confirmed **16/16 matching paired paths, 0/32 compiled-planner matches**, duplicate P01/P00 paths, and observed **v5 14/16 versus v7 9/16**, including two partial controls. These limitations are explicit in the [report](/home/ningan/RoboticCuttingSim-wp13/docs/reports/WP13_RESULTS.md:214).\n- The regression tests inspect the real driver before physics construction; the saved receipt supports **52 passed / 1 known xfail**. Corrected physical validation remains **NOT_RUN**. Scientific failures and rejection remain intact; Native\u2019s six task/HOME successes remain separate.\n\nAll 178 protected blobs are unchanged. Exact-head CI, merge, exact-main CI and remote media verification remain subsequent gates. No tests, simulations, edits or external interactions were performed during this review.\n\n",
+  "response_sha256": "86f54a447504b39c85f72b99a38bff305035e4d5ae2ebe942a8edfe7ad699845",
+  "events_path": "artifacts/wp13/review_events_002.jsonl",
+  "events_sha256": "4c8aa3d8a77b8a9939cc2846f81252cc42790b9ca269ce1599e7fac24b9db385",
+  "scope": "No tests/simulations, edits or external interactions by reviewer. No human approval implied. Subsequent commit adds review receipt and minor documentation clarification only."
+}

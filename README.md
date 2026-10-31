@@ -112,12 +112,12 @@ print(task.task_id, task.solver_module, task.max_cuts)
 Deployable observations exclude contact force, particles and material cut codes.
 The kinematic runtime has ideal tracking and no cameras; it is a physics diagnostic.
 
-## Supported scope and open limits
+## Supported scope and retained WP-12 limits
 
 | Capability | Evidence / boundary |
 | --- | --- |
-| Solid-board vertical sever, TRIM, multiple slices and mixed operations | Native Demos 1–6 above; open-loop bar sliding can move later cuts off their declared planes |
-| Oblique cutting | The 20° Native demo uses an explicit slotted board; arbitrary solid-board tilt is unsupported |
+| Solid-board vertical sever, TRIM, multiple slices and mixed operations | [WP-12 Native Demos 1–6](docs/reports/WP12_FINAL_VALIDATION.md); open-loop bar sliding can move later cuts off their declared planes |
+| Oblique cutting | The WP-12 20° Native demo uses an explicit slotted board; arbitrary solid-board tilt is unsupported |
 | Generalization | 170 saved kinematic runs; feasible ID_validated **47/61 = 77%**, Wilson 95% [65%, 86%]; original ≥90% target **NOT MET** |
 | Multi-slice family D | 0/20 benchmark successes; later cut locations fail after material slides; frozen failures retained |
 | Surface quality | PARTIAL; cut-aware gate FAIL, trim spikes and thin-chip tears remain |
