@@ -21,7 +21,8 @@ All reasoning/review uses xhigh. The original worktree and frozen physics/config
 - README now uses WP-12 flat-board Native frames, six demos and honest A/B comparison. Three existing MP4s copied
   unchanged for publication. Link/media/protected check PASS (92/92 protected blobs); final recheck pending.
 - [Acceptance matrix and limits](reports/WP12_FINAL_VALIDATION.md), [generalization](reports/WP12_GENERALIZATION.md).
-- Next: finish Native summary/Demo 7; verify GitHub full CPU CI; independent xhigh final review; main merge/push/media.
+- Full code CPU CI **PASS** at `0a5a8fd`: [run 41174478144](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174478144), 1634 passed / 12 skipped (NOT_RUN) / 5 historical xfailed, 3593.75 s.
+- Next: finish Native summary/Demo 7; independent xhigh final data review; main merge/push, then exact-main CI/media verification.
 - Runtime receipts/status: `/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/`.
   No DONE marker is written until remote main, media and final CI are verified.
 

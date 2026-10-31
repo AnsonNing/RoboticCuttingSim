@@ -1,0 +1,135 @@
+{
+  "schema": "rcs_wp12_finalize_cpu_ci_v1",
+  "verdict": "PASS",
+  "scope": "Full GitHub CPU regression on reviewed code commit; no physical-fidelity promotion",
+  "ci": {
+    "scope": "ACTUAL_COMPLETED_GITHUB_CPU_CI",
+    "id": 41174478144,
+    "head_sha": "0a5a8fd20cc0fbcd215a01d837d78e5a2227c8eb",
+    "head_branch": "codex/wp12-finalize",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174478144",
+    "created_at": "2026-10-31T05:55:17Z",
+    "updated_at": "2026-10-31T06:55:58Z",
+    "jobs": [
+      {
+        "id": 124459067662,
+        "name": "cpu",
+        "status": "completed",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-10-31T05:55:27Z",
+            "completed_at": "2026-10-31T05:55:28Z"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-10-31T05:55:28Z",
+            "completed_at": "2026-10-31T05:55:32Z"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-10-31T05:55:32Z",
+            "completed_at": "2026-10-31T05:55:35Z"
+          },
+          {
+            "name": "Run python -m pip install -c requirements.lock -e '.[policy,test]'",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-10-31T05:55:35Z",
+            "completed_at": "2026-10-31T05:55:56Z"
+          },
+          {
+            "name": "Record environment",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5,
+            "started_at": "2026-10-31T05:55:56Z",
+            "completed_at": "2026-10-31T05:55:57Z"
+          },
+          {
+            "name": "Run python -m pytest -q -rsx",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-10-31T05:55:57Z",
+            "completed_at": "2026-10-31T06:55:54Z"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 11,
+            "started_at": "2026-10-31T06:55:54Z",
+            "completed_at": "2026-10-31T06:55:56Z"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12,
+            "started_at": "2026-10-31T06:55:56Z",
+            "completed_at": "2026-10-31T06:55:56Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13,
+            "started_at": "2026-10-31T06:55:56Z",
+            "completed_at": "2026-10-31T06:55:56Z"
+          }
+        ],
+        "log": "/mnt/data/ningan/lab_records/rcs_wp12_codex_20261031/ci_code_0a5a8fd_job_124459067662.log",
+        "pytest_summary": "2026-10-31T06:55:52.3002479Z 1634 passed, 12 skipped, 5 xfailed, 5 warnings in 3593.75s (0:59:53)"
+      }
+    ],
+    "collected_at": "2026-10-31T15:56:46+0900"
+  },
+  "pytest": {
+    "passed": 1634,
+    "skipped": 12,
+    "xfailed": 5,
+    "wall_s": 3593.75,
+    "skipped_status": "NOT_RUN",
+    "xfailed_status": "known historical failures retained"
+  },
+  "local_environment": {
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "base_versions": {
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "matplotlib": "3.11.2",
+      "pytest": "9.1.1",
+      "warp-lang": "1.17.0",
+      "newton": "1.6.1",
+      "usd-core": "26.8",
+      "gymnasium": "1.4.0"
+    },
+    "native_versions": {
+      "isaacsim": "6.2.0.0",
+      "warp-lang": "1.17.0",
+      "torch": "2.11.0+cu128"
+    },
+    "gpu": "index, name, driver_version, uuid, memory.total [MiB]\n0, NVIDIA GeForce RTX 5090, 570.211.01, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 32607 MiB\n1, NVIDIA GeForce RTX 5090, 570.211.01, GPU-a278df44-8db0-7770-630f-4f298a570b35, 32607 MiB\n",
+    "git_head": "10e66a2171f6d88eb2f6b512e597c8a3824714e2"
+  },
+  "job_log_sha256": {
+    "ci_code_0a5a8fd_job_124459067662.log": "97c4a4e7d4f8ee030d5deb4e9bbc5cdf57a6e2100429898a116fa093888699ed"
+  },
+  "note": "Final documentation/Native evidence additions are checked with naming, links, media and protected identities; final remote main CI is independently verified before DONE."
+}

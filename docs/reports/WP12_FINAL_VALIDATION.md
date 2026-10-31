@@ -25,7 +25,7 @@ The authorized finish plan reduces additional experiments; the frozen physics, p
 | Recording | **PASS (scoped)** | Saved Native camera/oracle separation and manifests; 12/12 existing demos pass the new [complete-receipt audit](../evidence/wp12/finalize_native_demo_integrity_001.json); held-out inputs committed before outcomes |
 | Reliability | **PARTIAL** | State-isolation checks and Native CUT→TRIM→CUT pass; kinematic host-RSS gate **FAIL** retained, GPU debris repeatability OPEN |
 | Performance | **PARTIAL** | [Measured breakdown](WP12_PERFORMANCE.md), shared-GPU limits and lost per-step profiler stages disclosed; no fresh quiet-GPU study |
-| Regression | **NOT_RUN (final CI pending)** | Targeted local checks pass; GitHub full CPU regression is the release gate, no duplicate local full suite |
+| Regression | **PASS (CPU code regression)** | [Full CI on `0a5a8fd`](https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41174478144): 1634 passed, 12 skipped/NOT_RUN, 5 historical xfailed; final remote main CI required before DONE |
 | Reproducibility | **PARTIAL** | Frozen commands/hashes/seeds and tracked media, genuine artifact checks skip explicitly when absent; no independent-host WP-12 Native rerun |
 
 Completion criterion 4 (no major physics/surface contradiction) remains **OPEN**: near-face particle positions and
@@ -57,7 +57,7 @@ New checks use `.venv/bin/python`, Python 3.12.12, worktree `src` first in `PYTH
 | Selected Demo 7 Native default profile | **NOT_RUN (scheduled)** | Waits for original Native driver; same selected sample, no concurrent Native process |
 | Extra Demo 7 Native surface profile / full 85 held-out episodes / reproducibility repeats | **NOT_RUN (scope reduced)** | Authorized lightweight finalization; no claim of held-out success/generalization |
 | README/docs/media links and protected identity | **PASS (initial check)** | 179 local links; renderable PNG/MP4; 92/92 protected Git blobs unchanged; final check follows final report update |
-| Full CPU regression | **NOT_RUN (final CI pending)** | Runs on GitHub Actions; no repeated one-hour local full suite |
+| Full CPU regression | **PASS** | 1634 passed, 12 skipped/NOT_RUN, 5 xfailed, 3593.75 s on reviewed code `0a5a8fd`; [receipt](../evidence/wp12/finalize_cpu_ci_001.json); no local full-suite rerun |
 
 One initial smoke invocation referenced nonexistent `tests/test_cut_events_v1.py` and collected no tests (exit 4).
 It was corrected to `tests/test_cut_events.py`; the failed command/log is preserved. No test result was fabricated.
