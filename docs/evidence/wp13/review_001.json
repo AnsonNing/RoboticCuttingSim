@@ -1,0 +1,13 @@
+{
+  "reviewed_sha": "82fabb08037f2874204cea5924af1bf147896aad",
+  "baseline_sha": "11895016b34ed821be2bdecbc5351667fb62d47d",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "xhigh",
+  "mode": "read-only sequential independent CLI",
+  "final_response": "One material finding in `82fabb0` against the specified baseline:\n\n- **P2 \u2014 Kinematic execution discards compiled planner overrides.** [run_wp13.py:131](/home/ningan/RoboticCuttingSim-wp13/scripts/run_wp13.py:131) invokes a driver that rebuilds options from `task.goal` at [run_wp12_phase5.py:276](/home/ningan/RoboticCuttingSim-wp13/scripts/run_wp12_phase5.py:276), losing the overrides used during task compilation. Concrete trigger: [P01_shallow.json:6](/home/ningan/RoboticCuttingSim-wp13/configs/wp13/cases/P01_shallow.json:6) requests `overtravel_m=-0.012`, but its saved manifest records effective `-0.010`. P00 and P01 have identical recorded timestamps, phases, cut indices and edge trajectories in both solver arms. P01 therefore supplies duplicate-depth evidence under a different compiled task identity. Preserve these runs and identify the mismatch; WP-13 execution must consume the compiled planner options before claiming partial-depth diversity.\n\nNo other blocking findings identified in the inspected solver/API changes, tests, scripts, completed evidence and README claims. All 178 protected blobs remain unchanged; completed Native receipts support **6/6 TASK_SUCCESS and HOME PASS**. Primary kinematic TRIM and held-out CUT remain **FAIL**, and v7 remains **REJECTED FOR PROMOTION**.\n\nRemaining scope: the running 32-episode cohort, final quantitative aggregation and publication/CI checks remain intentionally pending. No files changed, tests or simulations run, agents spawned, or GitHub interactions performed.\n\n",
+  "response_sha256": "363d96f3226551ff72b4d622f728ac8b789f865b9746a2e0eb79720bdb95ee6a",
+  "events_path": "artifacts/wp13/review_events_001.jsonl",
+  "events_sha256": "b6d128689cb3f23caa489bbc60841cc0b8ac2388148a6f92884ec97a0e60f5f9",
+  "finding_status": "CONFIRMED; protocol mismatch disclosed; driver fix deferred until frozen batch ends to avoid mixing paths",
+  "scope": "No tests/simulations, edits or GitHub interactions by reviewer. No human approval implied."
+}

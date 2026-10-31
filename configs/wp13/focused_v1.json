@@ -1,0 +1,48 @@
+{
+  "id": "wp13_focused_v1",
+  "status": "PREDECLARED",
+  "baseline_sha": "11895016b34ed821be2bdecbc5351667fb62d47d",
+  "candidate": "tlmpm_v7",
+  "rows": [
+    "configs/wp13/cases/C00_cut.json",
+    "configs/wp13/cases/C01_aspect_firm.json",
+    "configs/wp13/cases/C02_yaw_slippery.json",
+    "configs/wp13/cases/C03_offset.json",
+    "configs/wp13/cases/T00_trim.json",
+    "configs/wp13/cases/T01_asymmetric_clay.json",
+    "configs/wp13/cases/T02_two_bumps.json",
+    "configs/wp13/cases/P00_partial.json",
+    "configs/wp13/cases/P01_shallow.json",
+    "configs/wp13/cases/M00_four_slices.json",
+    "configs/wp13/cases/M01_two_cuts.json",
+    "configs/wp13/cases/O00_slot20.json",
+    "configs/wp13/cases/O01_slot_minus20.json",
+    "configs/wp13/cases/D00_cut_dt50us.json",
+    "configs/wp13/cases/D01_trim_dt50us.json",
+    "configs/wp13/cases/R00_cut_s075.json"
+  ],
+  "arms": [
+    "tlmpm_v5",
+    "tlmpm_v7"
+  ],
+  "kinematic_episodes": 32,
+  "native_rows": [
+    "C00_cut",
+    "T00_trim",
+    "M00_four_slices"
+  ],
+  "native_arms": [
+    "tlmpm_v5",
+    "tlmpm_v7"
+  ],
+  "native_episodes": 6,
+  "surface_profile": "particle_surface_v1",
+  "geometry": "solid flat board except explicit O00/O01 8 mm groove",
+  "seed_scope": "Explicit deterministic geometries; seeds do not independently randomize their fixed shapes. Held-out configurations not used for tuning. Material seed 42 stays paired.",
+  "outcome_rules": "Existing independent goal evaluation unchanged. PARTIAL means one component, visible kerf, no labels below 6 mm, plan done. Record outcome, correctness and quality independently. Negative controls separately. Geometric infeasibility excluded explicitly; controller relocation errors retained.",
+  "quality_targets": {
+    "near_cut_consistency_reduction_factor": 2.0,
+    "roughness_reduction_fraction": 0.25
+  },
+  "decision": "No promotion without CUT/TRIM correctness, partial/negatives intact, held-out gains and Native checks. One focused alternative; otherwise reject and publish functioning baseline media."
+}

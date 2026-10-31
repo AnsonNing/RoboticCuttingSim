@@ -1,0 +1,5813 @@
+{
+ "scope": "Unchanged v1 profiles over saved physics, midpoint fallback explicitly labelled. No physical integration, mesh smoothing or visual tear splitting. During states are the first saved nonzero-front sample, not necessarily matched times. Self intersections NOT_RUN; watertight does not imply absence of degenerates or self intersections. TRIM and partial global planarity not scored as a severed planar face.",
+ "rows": [
+  {
+   "case": "C00_cut",
+   "solver": "tlmpm_v5",
+   "frame": "during",
+   "status": "NOT_RUN",
+   "reason": "No saved deformation state; completed physics not repeated"
+  },
+  {
+   "case": "C00_cut",
+   "solver": "tlmpm_v5",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/C00_cut/final_state.npz",
+   "state_sha256": "65b361b5f5d19e6751515d010b1404adff781f8e3c4e8a8ac0b08317dd88591d",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 76014,
+     "triangles": 152020,
+     "extraction_wall_s": 0.18583091700566,
+     "basic_mesh_validity": {
+      "vertices": 76014,
+      "triangles": 152020,
+      "degenerate_triangles": 2,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 9.020562075079397e-16,
+      "edges": 228030,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 600,
+      "volume": {
+       "total_mesh_volume_m3": 9.47520885425766e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589971061598536e-05,
+       "total_relative_error_reference": -0.01299907768149411,
+       "total_relative_error_current": -0.0119668981901753,
+       "max_abs_component_relative_error_current": 0.01201923861732418,
+       "components": [
+        {
+         "component": 0,
+         "particles": 48000,
+         "mesh_volume_m3": 4.7378521806352e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.794982273565312e-05,
+         "relative_error_reference": -0.012947462367666989,
+         "relative_error_current": -0.0119145576919168
+        },
+        {
+         "component": 1,
+         "particles": 48000,
+         "mesh_volume_m3": 4.7373566736224595e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.794988788033225e-05,
+         "relative_error_reference": -0.013050692995321233,
+         "relative_error_current": -0.01201923861732418
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 5655,
+       "exterior": 70359,
+       "unmatched": 0,
+       "core": 3390,
+       "vertices": 76014,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 3390,
+       "p50": 7.63679988694387e-05,
+       "p95": 0.00023217312728268,
+       "max": 0.0004760195046867132,
+       "mean": 9.460564028392871e-05,
+       "p50_spacings": 0.0763679988694387,
+       "p95_spacings": 0.23217312728268,
+       "max_spacings": 0.4760195046867132,
+       "mean_spacings": 0.0946056402839287
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -6.427651751930017e-06,
+       "mean_offset_along_N_side2_m": 4.503581235376858e-06,
+       "bias_toward_side2_m": -9.620352582765796e-07,
+       "thickness_bias_m": -1.0931232987306874e-05,
+       "side1_vertices": 2836,
+       "side2_vertices": 2819
+      },
+      "coverage": 0.9533333333333334,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 6450,
+       "p50": 10.194687310311574,
+       "p95": 26.957302047944815,
+       "max": 32.04677862230693,
+       "mean": 11.916018935284002
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 6450,
+       "p50": 21.065762998330065,
+       "p95": 39.75319929837568,
+       "max": 43.22637899979019,
+       "mean": 20.294535199751476
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 3390,
+       "p50": 0.00013291694244750801,
+       "p95": 0.00025141599886714156,
+       "max": 0.0002683895975425528,
+       "mean": 0.00014117589537548535,
+       "quadratic_mean": 0.0001556218958560472,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 3390,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 1186,
+       "p50": 0.00020275134724533628,
+       "p95": 0.0005700560328927221,
+       "max": 0.0006747086120617684,
+       "mean": 0.00024702836756742853,
+       "quadratic_mean": 0.00030291369797928454,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 1200,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 200,
+       "corner_to_mesh_distance": {
+        "count": 200,
+        "p50": 0.000776424940553144,
+        "p95": 0.0011447256986018006,
+        "max": 0.0012113156237142026,
+        "mean": 0.0007028587188009702,
+        "p50_spacings": 0.776424940553144,
+        "p95_spacings": 1.1447256986018006,
+        "max_spacings": 1.2113156237142026,
+        "mean_spacings": 0.7028587188009702
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 2,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 18404,
+     "triangles": 36800,
+     "extraction_wall_s": 0.29327842901693657,
+     "basic_mesh_validity": {
+      "vertices": 18404,
+      "triangles": 36800,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.535353091231545e-07,
+      "edges": 55200,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 600,
+      "volume": {
+       "total_mesh_volume_m3": 9.520069700068094e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589971061598536e-05,
+       "total_relative_error_reference": -0.008326072909573884,
+       "total_relative_error_current": -0.007289006513309653,
+       "max_abs_component_relative_error_current": 0.007338387932893177,
+       "components": [
+        {
+         "component": 0,
+         "particles": 48000,
+         "mesh_volume_m3": 4.76026839989533e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.794982273565312e-05,
+         "relative_error_reference": -0.008277416688473262,
+         "relative_error_current": -0.007239625026636623
+        },
+        {
+         "component": 1,
+         "particles": 48000,
+         "mesh_volume_m3": 4.759801300172764e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.794988788033225e-05,
+         "relative_error_reference": -0.008374729130674505,
+         "relative_error_current": -0.007338387932893177
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 1184,
+       "exterior": 17220,
+       "unmatched": 0,
+       "core": 642,
+       "vertices": 18404,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 642,
+       "p50": 7.25242806743639e-05,
+       "p95": 0.0002585752197652219,
+       "max": 0.00034325091123888694,
+       "mean": 8.718925297903961e-05,
+       "p50_spacings": 0.07252428067436391,
+       "p95_spacings": 0.2585752197652219,
+       "max_spacings": 0.34325091123888696,
+       "mean_spacings": 0.08718925297903961
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -5.2719763961303975e-05,
+       "mean_offset_along_N_side2_m": 5.868322822012468e-05,
+       "bias_toward_side2_m": 2.9817321294103508e-06,
+       "thickness_bias_m": -0.00011140299218142865,
+       "side1_vertices": 590,
+       "side2_vertices": 590
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9966216216216216,
+      "normal_error_deg_core": {
+       "count": 1138,
+       "p50": 21.0304588862259,
+       "p95": 29.651532929113603,
+       "max": 32.544821390543675,
+       "mean": 21.33692149617579
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 1138,
+       "p50": 33.644184503117216,
+       "p95": 48.99560905705655,
+       "max": 49.36002142209667,
+       "mean": 30.985207338744512
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 638,
+       "p50": 0.00024241614003000334,
+       "p95": 0.00042845394934602445,
+       "max": 0.0004360108678314337,
+       "mean": 0.00020557973080452923,
+       "quadratic_mean": 0.00025232013016059123,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 642,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 1186,
+       "p50": 0.00020275134724533628,
+       "p95": 0.0005700560328927221,
+       "max": 0.0006747086120617684,
+       "mean": 0.00024702836756742853,
+       "quadratic_mean": 0.00030291369797928454,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 1200,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 200,
+       "corner_to_mesh_distance": {
+        "count": 200,
+        "p50": 8.595551813230524e-06,
+        "p95": 0.0002932800721191877,
+        "max": 0.00040002208611535057,
+        "mean": 5.805849351818128e-05,
+        "p50_spacings": 0.008595551813230524,
+        "p95_spacings": 0.2932800721191877,
+        "max_spacings": 0.40002208611535056,
+        "mean_spacings": 0.058058493518181285
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 2,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00033701160137824084,
+      "local_patch_roughness": {
+       "count": 593,
+       "p50": 0.000203696665330858,
+       "p95": 0.0005704285564126369,
+       "max": 0.0006747086120617684,
+       "mean": 0.00024587382494473315,
+       "quadratic_mean": 0.000301265961952766,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0005824219302148937,
+       "p95": 0.001237129071033892,
+       "rms": 0.0006833818739939874
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 1,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00034554850580871435,
+      "local_patch_roughness": {
+       "count": 593,
+       "p50": 0.00020212982141552325,
+       "p95": 0.0005699085175523668,
+       "max": 0.0006709005709413359,
+       "mean": 0.0002481829101901238,
+       "quadratic_mean": 0.0003045525193060222,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0005804961168177254,
+       "p95": 0.0012316846442744194,
+       "rms": 0.0006825905030504339
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/C00_cut_final/summary.json",
+   "summary_sha256": "319ac6950f959bccd73765d9837da77813638712dcd08637d1be03fcf472fda3"
+  },
+  {
+   "case": "C00_cut",
+   "solver": "tlmpm_v7",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 2.6,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/C00_cut/during_state.npz",
+   "state_sha256": "3a260878beed22661ffbd3acc64562b550d3cc9d83e4728db8dc001cd5d668b3",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 69720,
+     "triangles": 139436,
+     "extraction_wall_s": 0.1625671890215017,
+     "basic_mesh_validity": {
+      "vertices": 69720,
+      "triangles": 139436,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 3.999178761416277e-14,
+      "edges": 209154,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.539413941298757e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588369716101187e-05,
+       "total_relative_error_reference": -0.006311047781379769,
+       "total_relative_error_current": -0.005105745424086109,
+       "max_abs_component_relative_error_current": 0.005105745424086109,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.539413941298757e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588369716101187e-05,
+         "relative_error_reference": -0.006311047781379769,
+         "relative_error_current": -0.005105745424086109
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 83,
+       "exterior": 69637,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 69720,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.0002170802407260059,
+       "mean_offset_along_N_side2_m": 1.0663605423964848e-05,
+       "bias_toward_side2_m": 0.00011387192307498537,
+       "thickness_bias_m": 0.00020641663530204105,
+       "side1_vertices": 66,
+       "side2_vertices": 15
+      },
+      "coverage": 0.5333333333333333,
+      "plane_coverage": 0.9759036144578314,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 7.318352591462014e-08,
+       "p95": 5.159232687492445e-07,
+       "max": 5.258832575051149e-07,
+       "mean": 1.224550620817105e-07,
+       "quadratic_mean": 1.849438869741016e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 0.00022540115172429886,
+        "p95": 0.0005546899190652732,
+        "max": 0.0005700805604178499,
+        "mean": 0.00026036405068505263,
+        "p50_spacings": 0.22540115172429886,
+        "p95_spacings": 0.5546899190652732,
+        "max_spacings": 0.5700805604178498,
+        "mean_spacings": 0.26036405068505264
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17322,
+     "triangles": 34640,
+     "extraction_wall_s": 0.2691468239936512,
+     "basic_mesh_validity": {
+      "vertices": 17322,
+      "triangles": 34640,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.6229257597431423e-07,
+      "edges": 51960,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.58879959431356e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588369716101187e-05,
+       "total_relative_error_reference": -0.001166708925671088,
+       "total_relative_error_current": 4.483329545084453e-05,
+       "max_abs_component_relative_error_current": 4.483329545084453e-05,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.58879959431356e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588369716101187e-05,
+         "relative_error_reference": -0.001166708925671088,
+         "relative_error_current": 4.483329545084453e-05
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 89,
+       "exterior": 17233,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 17322,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 3.224824357455061e-05,
+       "mean_offset_along_N_side2_m": -2.5609624157206783e-05,
+       "bias_toward_side2_m": 3.3193097086719146e-06,
+       "thickness_bias_m": 5.785786773175739e-05,
+       "side1_vertices": 47,
+       "side2_vertices": 40
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9775280898876404,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 7.318352591462014e-08,
+       "p95": 5.159232687492445e-07,
+       "max": 5.258832575051149e-07,
+       "mean": 1.224550620817105e-07,
+       "quadratic_mean": 1.849438869741016e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 8.671600527581828e-09,
+        "p95": 6.696010582111217e-07,
+        "max": 1.1868801186360935e-06,
+        "mean": 8.896328926904579e-08,
+        "p50_spacings": 8.671600527581827e-06,
+        "p95_spacings": 0.0006696010582111217,
+        "max_spacings": 0.0011868801186360935,
+        "mean_spacings": 8.896328926904579e-05
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0001604138819630119,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 7.318352591462014e-08,
+       "p95": 5.254076900750691e-07,
+       "max": 5.258832575051149e-07,
+       "mean": 1.2332913570954276e-07,
+       "quadratic_mean": 1.865668568018368e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 6.447552355648014e-07,
+       "p95": 3.4897221762820207e-06,
+       "rms": 1.4849642798813275e-06
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00016237518482940919,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 7.210859997980121e-08,
+       "p95": 5.130856275214903e-07,
+       "max": 5.193914969164997e-07,
+       "mean": 1.2158098845387826e-07,
+       "quadratic_mean": 1.8330654816798404e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 6.396639888243138e-07,
+       "p95": 3.399371429993023e-06,
+       "rms": 1.4612919686961467e-06
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/C00_cut_during/summary.json",
+   "summary_sha256": "22bc03d92bbc37cd812efc671830f14ca10dd7c2b98b4224f28b9a6d9d7b8461"
+  },
+  {
+   "case": "C00_cut",
+   "solver": "tlmpm_v7",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/C00_cut/final_state.npz",
+   "state_sha256": "34dcdd93f6f97dfc1bc6d25825825f2fb6602977b6015c1230d8990cbbd6da4c",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 74972,
+     "triangles": 149936,
+     "extraction_wall_s": 0.22425290799583308,
+     "basic_mesh_validity": {
+      "vertices": 74972,
+      "triangles": 149936,
+      "degenerate_triangles": 2,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.861358289723114e-15,
+      "edges": 224904,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 600,
+      "volume": {
+       "total_mesh_volume_m3": 9.529752598217369e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.590704593266264e-05,
+       "total_relative_error_reference": -0.007317437685691053,
+       "total_relative_error_current": -0.0063553198262085876,
+       "max_abs_component_relative_error_current": 0.006487817093447082,
+       "components": [
+        {
+         "component": 0,
+         "particles": 48000,
+         "mesh_volume_m3": 4.7656234533498714e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.7954648097641846e-05,
+         "relative_error_reference": -0.007161780552110437,
+         "relative_error_current": -0.006222828776378966
+        },
+        {
+         "component": 1,
+         "particles": 48000,
+         "mesh_volume_m3": 4.764129144867497e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.795239783502079e-05,
+         "relative_error_reference": -0.007473094819271811,
+         "relative_error_current": -0.006487817093447082
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 4833,
+       "exterior": 70139,
+       "unmatched": 0,
+       "core": 2733,
+       "vertices": 74972,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 2733,
+       "p50": 2.230814456918482e-05,
+       "p95": 3.833581757238048e-05,
+       "max": 5.25978005868633e-05,
+       "mean": 2.024434753733966e-05,
+       "p50_spacings": 0.02230814456918482,
+       "p95_spacings": 0.03833581757238048,
+       "max_spacings": 0.0525978005868633,
+       "mean_spacings": 0.02024434753733966
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -1.710408072797035e-05,
+       "mean_offset_along_N_side2_m": 1.3675913778615146e-05,
+       "bias_toward_side2_m": -1.714083474677602e-06,
+       "thickness_bias_m": -3.077999450658549e-05,
+       "side1_vertices": 2417,
+       "side2_vertices": 2416
+      },
+      "coverage": 1.0,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 5160,
+       "p50": 1.3246217149587354,
+       "p95": 2.3188443595763877,
+       "max": 2.9315922939270895,
+       "mean": 1.3391710143133535
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 5160,
+       "p50": 11.52541887189526,
+       "p95": 13.942438833486515,
+       "max": 14.48433248228957,
+       "mean": 11.23118633198885
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 2733,
+       "p50": 1.1194513340368784e-05,
+       "p95": 1.9186259110798002e-05,
+       "max": 2.0983524902586764e-05,
+       "mean": 1.1344365208212415e-05,
+       "quadratic_mean": 1.2296219546033643e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 2733,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 1196,
+       "p50": 4.288775714485242e-05,
+       "p95": 6.337048790978886e-05,
+       "max": 7.647941271573966e-05,
+       "mean": 3.830160794937413e-05,
+       "quadratic_mean": 4.253883326557841e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 1200,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 200,
+       "corner_to_mesh_distance": {
+        "count": 200,
+        "p50": 0.0006589658701845334,
+        "p95": 0.0008853440511183843,
+        "max": 0.0010958459941915358,
+        "mean": 0.0006890221182112516,
+        "p50_spacings": 0.6589658701845335,
+        "p95_spacings": 0.8853440511183843,
+        "max_spacings": 1.0958459941915357,
+        "mean_spacings": 0.6890221182112516
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 2,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 18404,
+     "triangles": 36800,
+     "extraction_wall_s": 0.3026801359956153,
+     "basic_mesh_validity": {
+      "vertices": 18404,
+      "triangles": 36800,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 4.244525048550358e-07,
+      "edges": 55200,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 600,
+      "volume": {
+       "total_mesh_volume_m3": 9.589199628279001e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.590704593266264e-05,
+       "total_relative_error_reference": -0.0011250387209376861,
+       "total_relative_error_current": -0.00015691912649662442,
+       "max_abs_component_relative_error_current": 0.0003243606221160236,
+       "components": [
+        {
+         "component": 0,
+         "particles": 48000,
+         "mesh_volume_m3": 4.7955152317362944e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.7954648097641846e-05,
+         "relative_error_reference": -0.0009343267216056498,
+         "relative_error_current": 1.0514511962858998e-05
+        },
+        {
+         "component": 1,
+         "particles": 48000,
+         "mesh_volume_m3": 4.793684396542707e-05,
+         "material_reference_volume_m3": 4.8000000000000015e-05,
+         "material_current_volume_m3": 4.795239783502079e-05,
+         "relative_error_reference": -0.0013157507202697224,
+         "relative_error_current": -0.0003243606221160236
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 1172,
+       "exterior": 17232,
+       "unmatched": 0,
+       "core": 700,
+       "vertices": 18404,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 700,
+       "p50": 2.802146368787398e-05,
+       "p95": 4.593809422152198e-05,
+       "max": 5.059308483215097e-05,
+       "mean": 2.7453200064275245e-05,
+       "p50_spacings": 0.02802146368787398,
+       "p95_spacings": 0.04593809422152198,
+       "max_spacings": 0.05059308483215097,
+       "mean_spacings": 0.027453200064275245
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -1.3151598928268285e-05,
+       "mean_offset_along_N_side2_m": 1.3587087132268655e-05,
+       "bias_toward_side2_m": 2.1774410200018523e-07,
+       "thickness_bias_m": -2.673868606053694e-05,
+       "side1_vertices": 586,
+       "side2_vertices": 586
+      },
+      "coverage": 1.0,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 1248,
+       "p50": 3.4300250648441004,
+       "p95": 5.567983433420216,
+       "max": 6.076988479717695,
+       "mean": 3.1716569315297907
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 1248,
+       "p50": 11.231554130840337,
+       "p95": 17.643645061704465,
+       "max": 18.344952986431473,
+       "mean": 11.296884423849027
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 696,
+       "p50": 3.0220862382692335e-05,
+       "p95": 4.48620533640967e-05,
+       "max": 4.679306137331332e-05,
+       "mean": 2.843892969181815e-05,
+       "quadratic_mean": 3.120721742732512e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 700,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 1196,
+       "p50": 4.288775714485242e-05,
+       "p95": 6.337048790978886e-05,
+       "max": 7.647941271573966e-05,
+       "mean": 3.830160794937413e-05,
+       "quadratic_mean": 4.253883326557841e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 1200,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 200,
+       "corner_to_mesh_distance": {
+        "count": 200,
+        "p50": 2.398434362469487e-07,
+        "p95": 3.7331273173769086e-05,
+        "max": 7.224478808883496e-05,
+        "mean": 4.8067481869455126e-06,
+        "p50_spacings": 0.00023984343624694867,
+        "p95_spacings": 0.03733127317376909,
+        "max_spacings": 0.07224478808883496,
+        "mean_spacings": 0.0048067481869455125
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 2,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0001513278205016275,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 4.287088462700041e-05,
+       "p95": 6.371563299376546e-05,
+       "max": 7.647941271573966e-05,
+       "mean": 3.850851145256557e-05,
+       "quadratic_mean": 4.267882140566237e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 8.473934246739596e-05,
+       "p95": 0.0002546899588944388,
+       "rms": 0.0001241071806064333
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 1,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00012273295913080363,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 4.288878521672254e-05,
+       "p95": 6.288260453244251e-05,
+       "max": 7.629926680202906e-05,
+       "mean": 3.8094704446182686e-05,
+       "quadratic_mean": 4.239838292455193e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 8.915140257632494e-05,
+       "p95": 0.00025453087511544603,
+       "rms": 0.00012693391911337888
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/C00_cut_final/summary.json",
+   "summary_sha256": "a2a167e75c9cc91ed2d6b85bcea0df13553cd02701642a5568992b68a0413af1"
+  },
+  {
+   "case": "P00_partial",
+   "solver": "tlmpm_v5",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 2.6,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/P00_partial/during_state.npz",
+   "state_sha256": "6f1dfcbce6975473caab1217eafc20f5ac12155fe944331dced932f5afba2392",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 69800,
+     "triangles": 139596,
+     "extraction_wall_s": 0.2157134489971213,
+     "basic_mesh_validity": {
+      "vertices": 69800,
+      "triangles": 139596,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.1410095801004027e-12,
+      "edges": 209394,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.537567888029142e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589190399150006e-05,
+       "total_relative_error_reference": -0.006503344996964678,
+       "total_relative_error_current": -0.005383406624759446,
+       "max_abs_component_relative_error_current": 0.005383406624759446,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.537567888029142e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.589190399150006e-05,
+         "relative_error_reference": -0.006503344996964678,
+         "relative_error_current": -0.005383406624759446
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 83,
+       "exterior": 69717,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 69800,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.00018493577087536298,
+       "mean_offset_along_N_side2_m": 0.00019489212751296,
+       "bias_toward_side2_m": 0.00018991394919416147,
+       "thickness_bias_m": -9.956356637597015e-06,
+       "side1_vertices": 71,
+       "side2_vertices": 10
+      },
+      "coverage": 0.5333333333333333,
+      "plane_coverage": 0.9759036144578314,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 1.3614054951912302e-07,
+       "p95": 2.893411858590171e-07,
+       "max": 4.737337070644668e-07,
+       "mean": 1.572533131085453e-07,
+       "quadratic_mean": 1.840304551831761e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 0.00018330325045758935,
+        "p95": 0.0005126630087489948,
+        "max": 0.0005201251182726905,
+        "mean": 0.00022038345478291347,
+        "p50_spacings": 0.18330325045758936,
+        "p95_spacings": 0.5126630087489948,
+        "max_spacings": 0.5201251182726906,
+        "mean_spacings": 0.22038345478291346
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17322,
+     "triangles": 34640,
+     "extraction_wall_s": 0.27655540499836206,
+     "basic_mesh_validity": {
+      "vertices": 17322,
+      "triangles": 34640,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.628166928852513e-07,
+      "edges": 51960,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.585244342149533e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589190399150006e-05,
+       "total_relative_error_reference": -0.001537047692757329,
+       "total_relative_error_current": -0.0004115109655996643,
+       "max_abs_component_relative_error_current": 0.0004115109655996643,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.585244342149533e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.589190399150006e-05,
+         "relative_error_reference": -0.001537047692757329,
+         "relative_error_current": -0.0004115109655996643
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 89,
+       "exterior": 17233,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 17322,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 2.2150930822263722e-05,
+       "mean_offset_along_N_side2_m": -2.5135830684507226e-05,
+       "bias_toward_side2_m": -1.492449931121752e-06,
+       "thickness_bias_m": 4.728676150677095e-05,
+       "side1_vertices": 42,
+       "side2_vertices": 45
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9775280898876404,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 1.3614054951912302e-07,
+       "p95": 2.893411858590171e-07,
+       "max": 4.737337070644668e-07,
+       "mean": 1.572533131085453e-07,
+       "quadratic_mean": 1.840304551831761e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 5.1189839350092384e-08,
+        "p95": 5.205637244634915e-06,
+        "max": 5.829616192512924e-06,
+        "mean": 7.798779617219596e-07,
+        "p50_spacings": 5.118983935009238e-05,
+        "p95_spacings": 0.0052056372446349156,
+        "max_spacings": 0.005829616192512923,
+        "mean_spacings": 0.0007798779617219596
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00014084336205575577,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 1.3573645215035027e-07,
+       "p95": 2.877145890723776e-07,
+       "max": 4.737337070644668e-07,
+       "mean": 1.5678435989295094e-07,
+       "quadratic_mean": 1.835289585311619e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 3.789764810289117e-07,
+       "p95": 1.3767727945790538e-06,
+       "rms": 6.465261337174615e-07
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00014185988182711034,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 1.3737762549831027e-07,
+       "p95": 2.895655990449143e-07,
+       "max": 4.7347032267413517e-07,
+       "mean": 1.5772226632413963e-07,
+       "quadratic_mean": 1.8453058892855962e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 3.466901167677836e-07,
+       "p95": 1.3470568551973342e-06,
+       "rms": 6.352657838761259e-07
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/P00_partial_during/summary.json",
+   "summary_sha256": "37f3c20eb2bdcda6c63c39e21d64d37581f1a0409613c4a5e699935f218b4f0e"
+  },
+  {
+   "case": "P00_partial",
+   "solver": "tlmpm_v5",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/P00_partial/final_state.npz",
+   "state_sha256": "00292f3d170422c4176abbfba3329a5f1c1d3e459cc30a0ed4fe78175548833d",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 71414,
+     "triangles": 142828,
+     "extraction_wall_s": 0.21437361298012547,
+     "basic_mesh_validity": {
+      "vertices": 71414,
+      "triangles": 142828,
+      "degenerate_triangles": 6,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 0.0,
+      "edges": 214242,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 296,
+      "volume": {
+       "total_mesh_volume_m3": 9.534730362061833e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589549560903256e-05,
+       "total_relative_error_reference": -0.006798920618559342,
+       "total_relative_error_current": -0.005716556183715002,
+       "max_abs_component_relative_error_current": 0.005716556183715002,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.534730362061833e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.589549560903256e-05,
+         "relative_error_reference": -0.006798920618559342,
+         "relative_error_current": -0.005716556183715002
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 1175,
+       "exterior": 70239,
+       "unmatched": 0,
+       "core": 672,
+       "vertices": 71414,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 672,
+       "p50": 0.0002431771915916343,
+       "p95": 0.000648471892696056,
+       "max": 0.0007991033001558252,
+       "mean": 0.00028483627420557975,
+       "p50_spacings": 0.24317719159163428,
+       "p95_spacings": 0.648471892696056,
+       "max_spacings": 0.7991033001558252,
+       "mean_spacings": 0.2848362742055797
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.00015824464989813573,
+       "mean_offset_along_N_side2_m": -0.00016959711076373673,
+       "bias_toward_side2_m": -5.676230432800504e-06,
+       "thickness_bias_m": 0.00032784176066187246,
+       "side1_vertices": 571,
+       "side2_vertices": 583
+      },
+      "coverage": 0.5371621621621622,
+      "plane_coverage": 0.9821276595744681,
+      "normal_error_deg_core": {
+       "count": 1320,
+       "p50": 45.332178178054995,
+       "p95": 71.54092017346363,
+       "max": 78.47077850711425,
+       "mean": 36.701016416949884
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 1320,
+       "p50": 48.53787543594463,
+       "p95": 67.71243507915378,
+       "max": 70.21986696478234,
+       "mean": 40.342481988369116
+      },
+      "normal_outward_fraction_core": 0.9159090909090909,
+      "roughness_mesh_core": {
+       "count": 672,
+       "p50": 0.00019285839778179767,
+       "p95": 0.00022786812377022686,
+       "max": 0.00023705089991257037,
+       "mean": 0.00019570537803057392,
+       "quadratic_mean": 0.00019675115572050008,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 672,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 576,
+       "p50": 0.00015968546990862814,
+       "p95": 0.0002720873262640795,
+       "max": 0.0005959035792583328,
+       "mean": 0.00014506097101806378,
+       "quadratic_mean": 0.00018261111731390913,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 592,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 96,
+       "corner_to_mesh_distance": {
+        "count": 96,
+        "p50": 0.0003831809251413301,
+        "p95": 0.0009228408525714383,
+        "max": 0.000978025940339559,
+        "mean": 0.00043572730513960793,
+        "p50_spacings": 0.38318092514133006,
+        "p95_spacings": 0.9228408525714383,
+        "max_spacings": 0.978025940339559,
+        "mean_spacings": 0.43572730513960795
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17794,
+     "triangles": 35584,
+     "extraction_wall_s": 0.3022503880201839,
+     "basic_mesh_validity": {
+      "vertices": 17794,
+      "triangles": 35584,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.39988773143664e-07,
+      "edges": 53376,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 296,
+      "volume": {
+       "total_mesh_volume_m3": 9.568085212403418e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589549560903256e-05,
+       "total_relative_error_reference": -0.0033244570413109168,
+       "total_relative_error_current": -0.0022383062273694885,
+       "max_abs_component_relative_error_current": 0.0022383062273694885,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.568085212403418e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.589549560903256e-05,
+         "relative_error_reference": -0.0033244570413109168,
+         "relative_error_current": -0.0022383062273694885
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 549,
+       "exterior": 17245,
+       "unmatched": 0,
+       "core": 361,
+       "vertices": 17794,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 361,
+       "p50": 0.0002177484597284768,
+       "p95": 0.0009183039466111178,
+       "max": 0.0010113047375836977,
+       "mean": 0.00024109160371644725,
+       "p50_spacings": 0.2177484597284768,
+       "p95_spacings": 0.9183039466111178,
+       "max_spacings": 1.0113047375836977,
+       "mean_spacings": 0.24109160371644725
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 9.810421746015751e-05,
+       "mean_offset_along_N_side2_m": -0.00011322895513623312,
+       "bias_toward_side2_m": -7.562368838037803e-06,
+       "thickness_bias_m": 0.00021133317259639065,
+       "side1_vertices": 268,
+       "side2_vertices": 281
+      },
+      "coverage": 0.9932432432432432,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 640,
+       "p50": 22.28639476523917,
+       "p95": 76.1580390623951,
+       "max": 89.740450766573,
+       "mean": 28.447453034747365
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 640,
+       "p50": 25.98132607347292,
+       "p95": 62.317499827246856,
+       "max": 66.6474305026819,
+       "mean": 28.815786033706434
+      },
+      "normal_outward_fraction_core": 0.85625,
+      "roughness_mesh_core": {
+       "count": 336,
+       "p50": 0.00022701346433768042,
+       "p95": 0.0004268335140761772,
+       "max": 0.0005335510458591243,
+       "mean": 0.00019771762052537179,
+       "quadratic_mean": 0.00023761029874714998,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 361,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 576,
+       "p50": 0.00015968546990862814,
+       "p95": 0.0002720873262640795,
+       "max": 0.0005959035792583328,
+       "mean": 0.00014506097101806378,
+       "quadratic_mean": 0.00018261111731390913,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 592,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 96,
+       "corner_to_mesh_distance": {
+        "count": 96,
+        "p50": 3.464952565283971e-06,
+        "p95": 0.00014729508769112748,
+        "max": 0.0003945382022291444,
+        "mean": 3.3266695355876824e-05,
+        "p50_spacings": 0.0034649525652839706,
+        "p95_spacings": 0.14729508769112748,
+        "max_spacings": 0.3945382022291444,
+        "mean_spacings": 0.03326669535587683
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 296,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0005092887646423882,
+      "local_patch_roughness": {
+       "count": 288,
+       "p50": 0.0001595156603754722,
+       "p95": 0.0002707827826194318,
+       "max": 0.000595367347104749,
+       "mean": 0.0001450958038261567,
+       "quadratic_mean": 0.00018248941654231532,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 296,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0003304574304401143,
+       "p95": 0.0006971438371238518,
+       "rms": 0.000456946196033767
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 296,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0005076806864943147,
+      "local_patch_roughness": {
+       "count": 288,
+       "p50": 0.00016019692139175094,
+       "p95": 0.0002727166398896866,
+       "max": 0.0005959035792583328,
+       "mean": 0.00014502613820997084,
+       "quadratic_mean": 0.00018273273703229504,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 296,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.00033096143956887084,
+       "p95": 0.0006969864820895834,
+       "rms": 0.0004571040030882845
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/P00_partial_final/summary.json",
+   "summary_sha256": "b5e91dbdf9fb7d0b5e112b6d9dc8dcfd5aa56684f0455c6e5ce082302890eea8"
+  },
+  {
+   "case": "P00_partial",
+   "solver": "tlmpm_v7",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 2.6,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/P00_partial/during_state.npz",
+   "state_sha256": "65634ed0223d8c2c770b7ef45026246f055100ce17565cd5fafe1a88d76d78b9",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 69726,
+     "triangles": 139448,
+     "extraction_wall_s": 0.2208870860049501,
+     "basic_mesh_validity": {
+      "vertices": 69726,
+      "triangles": 139448,
+      "degenerate_triangles": 2,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.916324932999136e-15,
+      "edges": 209172,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.539413850921674e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588369956444706e-05,
+       "total_relative_error_reference": -0.006311057195659275,
+       "total_relative_error_current": -0.005105779787953143,
+       "max_abs_component_relative_error_current": 0.005105779787953143,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.539413850921674e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588369956444706e-05,
+         "relative_error_reference": -0.006311057195659275,
+         "relative_error_current": -0.005105779787953143
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 83,
+       "exterior": 69643,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 69726,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.00019552688453507283,
+       "mean_offset_along_N_side2_m": -0.0001477414587429058,
+       "bias_toward_side2_m": 2.389271289608351e-05,
+       "thickness_bias_m": 0.0003432683432779786,
+       "side1_vertices": 46,
+       "side2_vertices": 35
+      },
+      "coverage": 0.5333333333333333,
+      "plane_coverage": 0.9759036144578314,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 7.341262496002686e-08,
+       "p95": 5.233144509885644e-07,
+       "max": 5.257069202542919e-07,
+       "mean": 1.2266429454441566e-07,
+       "quadratic_mean": 1.8588410086847243e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 0.00022591505911599946,
+        "p95": 0.0005551316023557486,
+        "max": 0.0005704179440657577,
+        "mean": 0.0002607694246332221,
+        "p50_spacings": 0.22591505911599946,
+        "p95_spacings": 0.5551316023557485,
+        "max_spacings": 0.5704179440657576,
+        "mean_spacings": 0.26076942463322206
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17322,
+     "triangles": 34640,
+     "extraction_wall_s": 0.2728890249854885,
+     "basic_mesh_validity": {
+      "vertices": 17322,
+      "triangles": 34640,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.6232145837159794e-07,
+      "edges": 51960,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.588798987033517e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588369956444706e-05,
+       "total_relative_error_reference": -0.0011667721840089892,
+       "total_relative_error_current": 4.4744893111039155e-05,
+       "max_abs_component_relative_error_current": 4.4744893111039155e-05,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.588798987033517e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588369956444706e-05,
+         "relative_error_reference": -0.0011667721840089892,
+         "relative_error_current": 4.4744893111039155e-05
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 89,
+       "exterior": 17233,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 17322,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 3.302226406691082e-05,
+       "mean_offset_along_N_side2_m": -2.4441711007254017e-05,
+       "bias_toward_side2_m": 4.2902765298284e-06,
+       "thickness_bias_m": 5.746397507416483e-05,
+       "side1_vertices": 48,
+       "side2_vertices": 39
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9775280898876404,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 7.341262496002686e-08,
+       "p95": 5.233144509885644e-07,
+       "max": 5.257069202542919e-07,
+       "mean": 1.2266429454441566e-07,
+       "quadratic_mean": 1.8588410086847243e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 7.327024759621984e-09,
+        "p95": 7.147832072971193e-07,
+        "max": 1.1200838232844855e-06,
+        "mean": 9.028663681880417e-08,
+        "p50_spacings": 7.327024759621984e-06,
+        "p95_spacings": 0.0007147832072971193,
+        "max_spacings": 0.0011200838232844855,
+        "mean_spacings": 9.028663681880416e-05
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00016147471899199639,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 7.341262496002686e-08,
+       "p95": 5.230680745775004e-07,
+       "max": 5.247609827905072e-07,
+       "mean": 1.229576527315071e-07,
+       "quadratic_mean": 1.858644581276448e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 6.4988532916872e-07,
+       "p95": 3.4459357740244084e-06,
+       "rms": 1.4729073338556866e-06
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0001612427589439323,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 7.232643431346614e-08,
+       "p95": 5.23615577713198e-07,
+       "max": 5.257069202542919e-07,
+       "mean": 1.2237093635732422e-07,
+       "quadratic_mean": 1.859037415338321e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 6.384985515297764e-07,
+       "p95": 3.458503833891086e-06,
+       "rms": 1.4724629764177959e-06
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/P00_partial_during/summary.json",
+   "summary_sha256": "bf37c9241d229283c8bf7d61d7a3d64788c3fd855e4e9c3ff28865f34e5d349f"
+  },
+  {
+   "case": "P00_partial",
+   "solver": "tlmpm_v7",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/P00_partial/final_state.npz",
+   "state_sha256": "e6c2a4e10632cbedbf91f7917bddb8d30d2ae0e7905373025be7a0f2fe241240",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 71250,
+     "triangles": 142496,
+     "extraction_wall_s": 0.2060807680245489,
+     "basic_mesh_validity": {
+      "vertices": 71250,
+      "triangles": 142496,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 8.419915007906719e-14,
+      "edges": 213744,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 270,
+      "volume": {
+       "total_mesh_volume_m3": 9.562532623235848e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589890572289658e-05,
+       "total_relative_error_reference": -0.0039028517462661775,
+       "total_relative_error_current": -0.002852790534738969,
+       "max_abs_component_relative_error_current": 0.002852790534738969,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.562532623235848e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.589890572289658e-05,
+         "relative_error_reference": -0.0039028517462661775,
+         "relative_error_current": -0.002852790534738969
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 928,
+       "exterior": 70322,
+       "unmatched": 0,
+       "core": 39,
+       "vertices": 71250,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 39,
+       "p50": 0.0005424371707351647,
+       "p95": 0.0005520516192121175,
+       "max": 0.0005542737169269944,
+       "mean": 0.0005357248028703495,
+       "p50_spacings": 0.5424371707351647,
+       "p95_spacings": 0.5520516192121174,
+       "max_spacings": 0.5542737169269945,
+       "mean_spacings": 0.5357248028703495
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.00014974285384119422,
+       "mean_offset_along_N_side2_m": -0.00020490892631909764,
+       "bias_toward_side2_m": -2.758303623895171e-05,
+       "thickness_bias_m": 0.00035465178016029183,
+       "side1_vertices": 427,
+       "side2_vertices": 501
+      },
+      "coverage": 0.42962962962962964,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 22,
+       "p50": 21.875538199628352,
+       "p95": 30.406176724562183,
+       "max": 30.43712403555713,
+       "mean": 24.982464247192375
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 22,
+       "p50": 28.052785023631934,
+       "p95": 31.561552923315837,
+       "max": 31.595370378984292,
+       "mean": 25.891625968008046
+      },
+      "normal_outward_fraction_core": 0.5454545454545454,
+      "roughness_mesh_core": {
+       "count": 29,
+       "p50": 1.7636468799198808e-06,
+       "p95": 4.6822869712842595e-06,
+       "max": 5.026494217209191e-06,
+       "mean": 2.123491638327947e-06,
+       "quadratic_mean": 2.799981102708567e-06,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 39,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 532,
+       "p50": 2.7498495448866273e-05,
+       "p95": 5.9492586696052525e-05,
+       "max": 6.0064172543309955e-05,
+       "mean": 2.7443069001274e-05,
+       "quadratic_mean": 3.311461630155439e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 540,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 96,
+       "corner_to_mesh_distance": {
+        "count": 96,
+        "p50": 0.0005569600423849783,
+        "p95": 0.0008621565521175095,
+        "max": 0.0008898398057379555,
+        "mean": 0.0005378486492802555,
+        "p50_spacings": 0.5569600423849783,
+        "p95_spacings": 0.8621565521175094,
+        "max_spacings": 0.8898398057379555,
+        "mean_spacings": 0.5378486492802554
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17742,
+     "triangles": 35480,
+     "extraction_wall_s": 0.2971266680106055,
+     "basic_mesh_validity": {
+      "vertices": 17742,
+      "triangles": 35480,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.3432852896402243e-07,
+      "edges": 53220,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 270,
+      "volume": {
+       "total_mesh_volume_m3": 9.606879722845642e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.589890572289658e-05,
+       "total_relative_error_reference": 0.0007166377964206983,
+       "total_relative_error_current": 0.001771568760656601,
+       "max_abs_component_relative_error_current": 0.001771568760656601,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.606879722845642e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.589890572289658e-05,
+         "relative_error_reference": 0.0007166377964206983,
+         "relative_error_current": 0.001771568760656601
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 493,
+       "exterior": 17249,
+       "unmatched": 0,
+       "core": 325,
+       "vertices": 17742,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 325,
+       "p50": 3.487699505102039e-05,
+       "p95": 9.916791140554028e-05,
+       "max": 0.00010815295207482489,
+       "mean": 3.758913529580209e-05,
+       "p50_spacings": 0.03487699505102039,
+       "p95_spacings": 0.09916791140554028,
+       "max_spacings": 0.10815295207482489,
+       "mean_spacings": 0.03758913529580209
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -6.961817149177301e-06,
+       "mean_offset_along_N_side2_m": 7.380670443402678e-06,
+       "bias_toward_side2_m": 2.0942664711268826e-07,
+       "thickness_bias_m": -1.4342487592579979e-05,
+       "side1_vertices": 246,
+       "side2_vertices": 247
+      },
+      "coverage": 1.0,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 576,
+       "p50": 4.032046746458192,
+       "p95": 18.112781856559607,
+       "max": 19.619463056974425,
+       "mean": 5.440204190843718
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 576,
+       "p50": 8.496690807555765,
+       "p95": 15.49813533568109,
+       "max": 15.97358597655089,
+       "mean": 9.190912512730923
+      },
+      "normal_outward_fraction_core": 0.7951388888888888,
+      "roughness_mesh_core": {
+       "count": 319,
+       "p50": 2.9629725328407783e-05,
+       "p95": 5.674433480182662e-05,
+       "max": 6.078341384290029e-05,
+       "mean": 3.14929778925589e-05,
+       "quadratic_mean": 3.6169917652445594e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 325,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 532,
+       "p50": 2.7498495448866273e-05,
+       "p95": 5.9492586696052525e-05,
+       "max": 6.0064172543309955e-05,
+       "mean": 2.7443069001274e-05,
+       "quadratic_mean": 3.311461630155439e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 540,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 96,
+       "corner_to_mesh_distance": {
+        "count": 96,
+        "p50": 1.4550319574881807e-07,
+        "p95": 2.264301385596434e-06,
+        "max": 2.4083113065588708e-05,
+        "mean": 1.3729919763645324e-06,
+        "p50_spacings": 0.00014550319574881807,
+        "p95_spacings": 0.002264301385596434,
+        "max_spacings": 0.024083113065588708,
+        "mean_spacings": 0.0013729919763645325
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 270,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0003756097147395084,
+      "local_patch_roughness": {
+       "count": 266,
+       "p50": 2.744279235218722e-05,
+       "p95": 5.950221643065597e-05,
+       "max": 5.99601493519466e-05,
+       "mean": 2.744697926635455e-05,
+       "quadratic_mean": 3.310715207525425e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 270,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 5.533664055701906e-05,
+       "p95": 0.000140558466677512,
+       "rms": 7.584297327457028e-05
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 270,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.000374069175053647,
+      "local_patch_roughness": {
+       "count": 266,
+       "p50": 2.752638451779615e-05,
+       "p95": 5.938416967561449e-05,
+       "max": 6.0064172543309955e-05,
+       "mean": 2.7439158736193446e-05,
+       "quadratic_mean": 3.312207884575379e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 270,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 5.5227575016957584e-05,
+       "p95": 0.00014027901944081735,
+       "rms": 7.569985067830066e-05
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/P00_partial_final/summary.json",
+   "summary_sha256": "a043d0783568c39a1f71db2ac09b2bf8aa3068d7719951b4866ee4e1601f80ec"
+  },
+  {
+   "case": "T00_trim",
+   "solver": "tlmpm_v5",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 3.4,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/T00_trim/during_state.npz",
+   "state_sha256": "d4084982cfcf0d5eedd75c68de39d0f4df713689b97aab3c04a306762f2d7d42",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 72800,
+     "triangles": 145596,
+     "extraction_wall_s": 0.21501574901049025,
+     "basic_mesh_validity": {
+      "vertices": 72800,
+      "triangles": 145596,
+      "degenerate_triangles": 1,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 6.009999604454331e-15,
+      "edges": 218394,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 222,
+      "volume": {
+       "total_mesh_volume_m3": 9.619132954249057e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.69438002321768e-05,
+       "total_relative_error_reference": -0.008786431489937086,
+       "total_relative_error_current": -0.007761926888404262,
+       "max_abs_component_relative_error_current": 0.007761926888404262,
+       "components": [
+        {
+         "component": 0,
+         "particles": 97044,
+         "mesh_volume_m3": 9.619132954249057e-05,
+         "material_reference_volume_m3": 9.704400000000003e-05,
+         "material_current_volume_m3": 9.69438002321768e-05,
+         "relative_error_reference": -0.008786431489937086,
+         "relative_error_current": -0.007761926888404262
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 1872,
+       "exterior": 70912,
+       "unmatched": 16,
+       "core": 825,
+       "vertices": 72800,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 825,
+       "p50": 0.00020518132871888414,
+       "p95": 0.0005453882531912476,
+       "max": 0.0006746024601962051,
+       "mean": 0.00025366856340138,
+       "p50_spacings": 0.20518132871888414,
+       "p95_spacings": 0.5453882531912476,
+       "max_spacings": 0.6746024601962051,
+       "mean_spacings": 0.25366856340138
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.00023573094380160815,
+       "mean_offset_along_N_side2_m": 0.0001853213107109264,
+       "bias_toward_side2_m": 0.00021052612725626726,
+       "thickness_bias_m": 5.040963309068175e-05,
+       "side1_vertices": 970,
+       "side2_vertices": 902
+      },
+      "coverage": 0.8018018018018018,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 1507,
+       "p50": 10.805213283638977,
+       "p95": 27.505897383813796,
+       "max": 87.39527208987342,
+       "mean": 13.154943013455782
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 1507,
+       "p50": 23.087869759856837,
+       "p95": 40.233508540019166,
+       "max": 78.0951653284436,
+       "mean": 22.891163267535685
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 825,
+       "p50": 0.0001053148869513058,
+       "p95": 0.0002076808122112917,
+       "max": 0.00022934854084220038,
+       "mean": 0.00010716721097219375,
+       "quadratic_mean": 0.00012401385995651338,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 825,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 422,
+       "p50": 0.00020326809204217552,
+       "p95": 0.0003934378767140945,
+       "max": 0.0004991111725017383,
+       "mean": 0.00019510270329084405,
+       "quadratic_mean": 0.0002273448719599287,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 441,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 70,
+       "corner_to_mesh_distance": {
+        "count": 70,
+        "p50": 0.0018559831439752886,
+        "p95": 0.004330040507011718,
+        "max": 0.004892272649957612,
+        "mean": 0.0018947411226856855,
+        "p50_spacings": 1.8559831439752885,
+        "p95_spacings": 4.330040507011717,
+        "max_spacings": 4.8922726499576115,
+        "mean_spacings": 1.8947411226856854
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 18022,
+     "triangles": 36040,
+     "extraction_wall_s": 0.285390005010413,
+     "basic_mesh_validity": {
+      "vertices": 18022,
+      "triangles": 36040,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 4.549236030923651e-08,
+      "edges": 54060,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 222,
+      "volume": {
+       "total_mesh_volume_m3": 9.684531108277746e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.69438002321768e-05,
+       "total_relative_error_reference": -0.002047410630462183,
+       "total_relative_error_current": -0.00101594067040351,
+       "max_abs_component_relative_error_current": 0.00101594067040351,
+       "components": [
+        {
+         "component": 0,
+         "particles": 97044,
+         "mesh_volume_m3": 9.684531108277746e-05,
+         "material_reference_volume_m3": 9.704400000000003e-05,
+         "material_current_volume_m3": 9.69438002321768e-05,
+         "relative_error_reference": -0.002047410630462183,
+         "relative_error_current": -0.00101594067040351
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 432,
+       "exterior": 17590,
+       "unmatched": 0,
+       "core": 179,
+       "vertices": 18022,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 179,
+       "p50": 0.00010159656037933683,
+       "p95": 0.00029783477422206934,
+       "max": 0.0003836173384500008,
+       "mean": 0.00011538601350338647,
+       "p50_spacings": 0.10159656037933683,
+       "p95_spacings": 0.29783477422206933,
+       "max_spacings": 0.3836173384500008,
+       "mean_spacings": 0.11538601350338647
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 1.2420878254633693e-05,
+       "mean_offset_along_N_side2_m": -5.121342965218568e-06,
+       "bias_toward_side2_m": 3.6497676447075623e-06,
+       "thickness_bias_m": 1.754222121985226e-05,
+       "side1_vertices": 213,
+       "side2_vertices": 217
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9953703703703703,
+      "normal_error_deg_core": {
+       "count": 287,
+       "p50": 17.03156039325298,
+       "p95": 57.536283518528165,
+       "max": 68.53828144702304,
+       "mean": 20.474060013945056
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 287,
+       "p50": 26.16179243411574,
+       "p95": 63.2873287611688,
+       "max": 68.70888943481758,
+       "mean": 28.867739803035793
+      },
+      "normal_outward_fraction_core": 0.9372822299651568,
+      "roughness_mesh_core": {
+       "count": 163,
+       "p50": 0.00016954772447326727,
+       "p95": 0.0003268525559070624,
+       "max": 0.0003738979731774177,
+       "mean": 0.00017586417026641235,
+       "quadratic_mean": 0.00019582788078799208,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 179,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 422,
+       "p50": 0.00020326809204217552,
+       "p95": 0.0003934378767140945,
+       "max": 0.0004991111725017383,
+       "mean": 0.00019510270329084405,
+       "quadratic_mean": 0.0002273448719599287,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 441,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 70,
+       "corner_to_mesh_distance": {
+        "count": 70,
+        "p50": 0.00022475600785341632,
+        "p95": 0.0005224376676318985,
+        "max": 0.0006004995651466186,
+        "mean": 0.0002338223811917643,
+        "p50_spacings": 0.22475600785341632,
+        "p95_spacings": 0.5224376676318985,
+        "max_spacings": 0.6004995651466186,
+        "mean_spacings": 0.2338223811917643
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 222,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0006627276226728481,
+      "local_patch_roughness": {
+       "count": 218,
+       "p50": 0.00022325704127689974,
+       "p95": 0.00038813136567136515,
+       "max": 0.0004991111725017383,
+       "mean": 0.00020270236183334817,
+       "quadratic_mean": 0.00023321869468969644,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 222,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 222,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.003051916714851001,
+      "local_patch_roughness": {
+       "count": 208,
+       "p50": 0.00019376852294628082,
+       "p95": 0.0004071770631107131,
+       "max": 0.0004367802533911014,
+       "mean": 0.00018368218362293262,
+       "quadratic_mean": 0.00021834569006296526,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 222,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/T00_trim_during/summary.json",
+   "summary_sha256": "6fa50ca9d0f5022125e94aefcf2e9d7956e6e7cdc9cd2ae707bb74343c1a50e1"
+  },
+  {
+   "case": "T00_trim",
+   "solver": "tlmpm_v5",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/T00_trim/final_state.npz",
+   "state_sha256": "33243c104f9affe419760d97e7599ba90ab93634e8cb86b7a4f2edc9bb2f04df",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 73590,
+     "triangles": 147172,
+     "extraction_wall_s": 0.21354536700528115,
+     "basic_mesh_validity": {
+      "vertices": 73590,
+      "triangles": 147172,
+      "degenerate_triangles": 2,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 4.863020247175296e-16,
+      "edges": 220758,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 344,
+      "volume": {
+       "total_mesh_volume_m3": 9.5992361229155e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.693806636538736e-05,
+       "total_relative_error_reference": -0.010836721186730035,
+       "total_relative_error_current": -0.009755766456777958,
+       "max_abs_component_relative_error_current": 0.5687038665293668,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96018,
+         "mesh_volume_m3": 9.438098285847638e-05,
+         "material_reference_volume_m3": 9.601800000000004e-05,
+         "material_current_volume_m3": 9.59108626942167e-05,
+         "relative_error_reference": -0.017049065191148096,
+         "relative_error_current": -0.015951059064267702
+        },
+        {
+         "component": 1,
+         "particles": 1026,
+         "mesh_volume_m3": 1.6113783706786094e-06,
+         "material_reference_volume_m3": 1.0260000000000002e-06,
+         "material_current_volume_m3": 1.0272036711706822e-06,
+         "relative_error_reference": 0.5705442209343168,
+         "relative_error_current": 0.5687038665293668
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 2730,
+       "exterior": 70860,
+       "unmatched": 0,
+       "core": 976,
+       "vertices": 73590,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 976,
+       "p50": 0.00025213554854814843,
+       "p95": 0.000488850448764056,
+       "max": 0.0005890623704398875,
+       "mean": 0.0002650389592939278,
+       "p50_spacings": 0.2521355485481484,
+       "p95_spacings": 0.4888504487640559,
+       "max_spacings": 0.5890623704398875,
+       "mean_spacings": 0.2650389592939278
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 0.00019959550249754257,
+       "mean_offset_along_N_side2_m": 0.00012559606502224338,
+       "bias_toward_side2_m": 0.00016259578375989298,
+       "thickness_bias_m": 7.39994374752992e-05,
+       "side1_vertices": 1552,
+       "side2_vertices": 1170
+      },
+      "coverage": 0.8662790697674418,
+      "plane_coverage": 0.9970695970695971,
+      "normal_error_deg_core": {
+       "count": 1744,
+       "p50": 12.701965758437941,
+       "p95": 23.42510551644157,
+       "max": 31.08581820650163,
+       "mean": 12.61614079247379
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 1744,
+       "p50": 15.375360778388924,
+       "p95": 35.3843353888076,
+       "max": 42.673012224146994,
+       "mean": 17.926693711383596
+      },
+      "normal_outward_fraction_core": 0.9971330275229358,
+      "roughness_mesh_core": {
+       "count": 976,
+       "p50": 0.00013139979657002918,
+       "p95": 0.00021346541219281778,
+       "max": 0.00023091097828441913,
+       "mean": 0.0001305315318203805,
+       "quadratic_mean": 0.00013920207959205961,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 976,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 620,
+       "p50": 0.0002648165795892867,
+       "p95": 0.0004919249519018032,
+       "max": 0.0006127566618736154,
+       "mean": 0.0002638529639901978,
+       "quadratic_mean": 0.0002947091726151683,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 687,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 140,
+       "corner_to_mesh_distance": {
+        "count": 140,
+        "p50": 0.0013338823375703417,
+        "p95": 0.0080144067949259,
+        "max": 0.011405798737481012,
+        "mean": 0.002444740566201151,
+        "p50_spacings": 1.3338823375703417,
+        "p95_spacings": 8.014406794925899,
+        "max_spacings": 11.405798737481012,
+        "mean_spacings": 2.4447405662011508
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 2,
+      "shells_spanning_components": 1,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": false
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 18268,
+     "triangles": 36528,
+     "extraction_wall_s": 0.3122747850138694,
+     "basic_mesh_validity": {
+      "vertices": 18268,
+      "triangles": 36528,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.3154005529325442e-08,
+      "edges": 54792,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 3,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 344,
+      "volume": {
+       "total_mesh_volume_m3": 9.650904228376994e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.693806636538736e-05,
+       "total_relative_error_reference": -0.005512527474445447,
+       "total_relative_error_current": -0.0044257544812200105,
+       "max_abs_component_relative_error_current": 0.35261786768577164,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96018,
+         "mesh_volume_m3": 9.511962824439205e-05,
+         "material_reference_volume_m3": 9.601800000000004e-05,
+         "material_current_volume_m3": 9.59108626942167e-05,
+         "relative_error_reference": -0.009356284817513282,
+         "relative_error_current": -0.008249685464171756
+        },
+        {
+         "component": 1,
+         "particles": 1026,
+         "mesh_volume_m3": 1.3894140393778847e-06,
+         "material_reference_volume_m3": 1.0260000000000002e-06,
+         "material_current_volume_m3": 1.0272036711706822e-06,
+         "relative_error_reference": 0.35420471674257736,
+         "relative_error_current": 0.35261786768577164
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 638,
+       "exterior": 17603,
+       "unmatched": 27,
+       "core": 200,
+       "vertices": 18268,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 200,
+       "p50": 0.00012926223651762138,
+       "p95": 0.00033110364565573175,
+       "max": 0.00042819955138665485,
+       "mean": 0.00014859420369276276,
+       "p50_spacings": 0.12926223651762137,
+       "p95_spacings": 0.33110364565573175,
+       "max_spacings": 0.42819955138665483,
+       "mean_spacings": 0.14859420369276277
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -3.4625122768538515e-06,
+       "mean_offset_along_N_side2_m": 7.552224890545749e-06,
+       "bias_toward_side2_m": 2.044856306845949e-06,
+       "thickness_bias_m": -1.10147371673996e-05,
+       "side1_vertices": 310,
+       "side2_vertices": 316
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9811912225705329,
+      "normal_error_deg_core": {
+       "count": 316,
+       "p50": 22.41710223173989,
+       "p95": 38.38382630817088,
+       "max": 43.02063661396945,
+       "mean": 23.24056474521789
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 316,
+       "p50": 26.01663016836261,
+       "p95": 55.256648030444104,
+       "max": 58.145894313207585,
+       "mean": 27.552641951945784
+      },
+      "normal_outward_fraction_core": 0.9620253164556962,
+      "roughness_mesh_core": {
+       "count": 187,
+       "p50": 0.00023953700610424637,
+       "p95": 0.0003857776576822988,
+       "max": 0.00042342016038050367,
+       "mean": 0.00022826615750560125,
+       "quadratic_mean": 0.00024798680884307835,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 200,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 620,
+       "p50": 0.0002648165795892867,
+       "p95": 0.0004919249519018032,
+       "max": 0.0006127566618736154,
+       "mean": 0.0002638529639901978,
+       "quadratic_mean": 0.0002947091726151683,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 687,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 140,
+       "corner_to_mesh_distance": {
+        "count": 140,
+        "p50": 0.000248494112732843,
+        "p95": 0.0006508856780821409,
+        "max": 0.000747391383127516,
+        "mean": 0.0002722803207790443,
+        "p50_spacings": 0.248494112732843,
+        "p95_spacings": 0.6508856780821409,
+        "max_spacings": 0.747391383127516,
+        "mean_spacings": 0.2722803207790443
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 3,
+      "mechanical_components": 2,
+      "shells_spanning_components": 1,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {
+       "0": 2
+      },
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": false
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 344,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0007028798456465154,
+      "local_patch_roughness": {
+       "count": 316,
+       "p50": 0.0002856659519295988,
+       "p95": 0.0004741173046863927,
+       "max": 0.0006097534916833959,
+       "mean": 0.00027076497800501784,
+       "quadratic_mean": 0.0002959988154105991,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 344,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 1,
+      "samples": 344,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0006039124758441073,
+      "local_patch_roughness": {
+       "count": 306,
+       "p50": 0.0002424665390117625,
+       "p95": 0.0004956399326395554,
+       "max": 0.0006127566618736154,
+       "mean": 0.0002573211731100418,
+       "quadratic_mean": 0.0002943408111466504,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 344,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/T00_trim_final/summary.json",
+   "summary_sha256": "980cb6d64730cd41b2c2d76ec6a107f01aaf2b03822fbdb765f0951fda968e3a"
+  },
+  {
+   "case": "T00_trim",
+   "solver": "tlmpm_v7",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 3.4,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/T00_trim/during_state.npz",
+   "state_sha256": "ae359fb0ef58e74bb0501e90622344b07d9cd116c15be144beb89875bb3409b5",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 72316,
+     "triangles": 144628,
+     "extraction_wall_s": 0.21764935200917535,
+     "basic_mesh_validity": {
+      "vertices": 72316,
+      "triangles": 144628,
+      "degenerate_triangles": 1,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 3.2985694553705047e-15,
+      "edges": 216942,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 210,
+      "volume": {
+       "total_mesh_volume_m3": 9.643218321467664e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.694635547238603e-05,
+       "total_relative_error_reference": -0.006304529752724419,
+       "total_relative_error_current": -0.0053036780516813025,
+       "max_abs_component_relative_error_current": 0.0053036780516813025,
+       "components": [
+        {
+         "component": 0,
+         "particles": 97044,
+         "mesh_volume_m3": 9.643218321467664e-05,
+         "material_reference_volume_m3": 9.704400000000003e-05,
+         "material_current_volume_m3": 9.694635547238603e-05,
+         "relative_error_reference": -0.006304529752724419,
+         "relative_error_current": -0.0053036780516813025
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 1521,
+       "exterior": 70795,
+       "unmatched": 0,
+       "core": 692,
+       "vertices": 72316,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 692,
+       "p50": 1.691228642667468e-05,
+       "p95": 0.0004484152407828764,
+       "max": 0.0005900523872216456,
+       "mean": 6.103384800023157e-05,
+       "p50_spacings": 0.01691228642667468,
+       "p95_spacings": 0.4484152407828764,
+       "max_spacings": 0.5900523872216455,
+       "mean_spacings": 0.061033848000231566
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 4.7696072755855945e-05,
+       "mean_offset_along_N_side2_m": 1.0821533313705533e-05,
+       "bias_toward_side2_m": 2.9258803034780738e-05,
+       "thickness_bias_m": 3.687453944215041e-05,
+       "side1_vertices": 728,
+       "side2_vertices": 793
+      },
+      "coverage": 0.861904761904762,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 1274,
+       "p50": 1.5864624879178169,
+       "p95": 44.45731772771241,
+       "max": 75.20524416272424,
+       "mean": 7.667039827332383
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 1274,
+       "p50": 11.967265237597646,
+       "p95": 54.99278479352599,
+       "max": 63.6661983419305,
+       "mean": 16.616366372693648
+      },
+      "normal_outward_fraction_core": 0.9646781789638933,
+      "roughness_mesh_core": {
+       "count": 692,
+       "p50": 1.7141139533471824e-05,
+       "p95": 0.00011927015687360581,
+       "max": 0.00013375225054118155,
+       "mean": 3.737469108138806e-05,
+       "quadratic_mean": 5.335270971588677e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 692,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 404,
+       "p50": 2.4414877741482138e-05,
+       "p95": 5.468351707132268e-05,
+       "max": 7.463003389068936e-05,
+       "mean": 2.7282207916408405e-05,
+       "quadratic_mean": 3.156238488774839e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 420,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 48,
+       "corner_to_mesh_distance": {
+        "count": 48,
+        "p50": 0.0010332259073911978,
+        "p95": 0.0013976916693345866,
+        "max": 0.0014851760534588044,
+        "mean": 0.0009953201627653696,
+        "p50_spacings": 1.0332259073911978,
+        "p95_spacings": 1.3976916693345867,
+        "max_spacings": 1.4851760534588043,
+        "mean_spacings": 0.9953201627653696
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17998,
+     "triangles": 35992,
+     "extraction_wall_s": 0.2868541820207611,
+     "basic_mesh_validity": {
+      "vertices": 17998,
+      "triangles": 35992,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.1419398112304331e-07,
+      "edges": 53988,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 210,
+      "volume": {
+       "total_mesh_volume_m3": 9.694776030407521e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.694635547238603e-05,
+       "total_relative_error_reference": -0.0009917119649315589,
+       "total_relative_error_current": 1.4490814867025837e-05,
+       "max_abs_component_relative_error_current": 1.4490814867025837e-05,
+       "components": [
+        {
+         "component": 0,
+         "particles": 97044,
+         "mesh_volume_m3": 9.694776030407521e-05,
+         "material_reference_volume_m3": 9.704400000000003e-05,
+         "material_current_volume_m3": 9.694635547238603e-05,
+         "relative_error_reference": -0.0009917119649315589,
+         "relative_error_current": 1.4490814867025837e-05
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 407,
+       "exterior": 17591,
+       "unmatched": 0,
+       "core": 190,
+       "vertices": 17998,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 190,
+       "p50": 3.229821622358739e-05,
+       "p95": 0.00010542178173211434,
+       "max": 0.00016165294530945263,
+       "mean": 3.5847033345382314e-05,
+       "p50_spacings": 0.03229821622358739,
+       "p95_spacings": 0.10542178173211433,
+       "max_spacings": 0.16165294530945262,
+       "mean_spacings": 0.03584703334538231
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 4.83836678504869e-06,
+       "mean_offset_along_N_side2_m": -2.8580398747030224e-05,
+       "bias_toward_side2_m": -1.1871015980990767e-05,
+       "thickness_bias_m": 3.3418765532078915e-05,
+       "side1_vertices": 203,
+       "side2_vertices": 200
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9901719901719902,
+      "normal_error_deg_core": {
+       "count": 321,
+       "p50": 3.3367978034848838,
+       "p95": 32.07478061954577,
+       "max": 45.413745453027325,
+       "mean": 5.949072421183417
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 321,
+       "p50": 10.567624963594954,
+       "p95": 24.43430210842933,
+       "max": 32.8352352541611,
+       "mean": 12.293442500627483
+      },
+      "normal_outward_fraction_core": 0.9252336448598131,
+      "roughness_mesh_core": {
+       "count": 180,
+       "p50": 2.5575596758222046e-05,
+       "p95": 5.624022847223981e-05,
+       "max": 6.20868432482753e-05,
+       "mean": 2.7391193643828073e-05,
+       "quadratic_mean": 3.207393855523292e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 190,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 404,
+       "p50": 2.4414877741482138e-05,
+       "p95": 5.468351707132268e-05,
+       "max": 7.463003389068936e-05,
+       "mean": 2.7282207916408405e-05,
+       "quadratic_mean": 3.156238488774839e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 420,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 48,
+       "corner_to_mesh_distance": {
+        "count": 48,
+        "p50": 1.4235773271634489e-05,
+        "p95": 7.26356555294716e-05,
+        "max": 8.593383917363785e-05,
+        "mean": 2.3782013480824117e-05,
+        "p50_spacings": 0.01423577327163449,
+        "p95_spacings": 0.0726356555294716,
+        "max_spacings": 0.08593383917363785,
+        "mean_spacings": 0.023782013480824118
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 210,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 1.3037177818440993e-05,
+      "local_patch_roughness": {
+       "count": 204,
+       "p50": 1.6797890481169852e-05,
+       "p95": 3.970556615282184e-05,
+       "max": 4.680801102851755e-05,
+       "mean": 1.820095487168296e-05,
+       "quadratic_mean": 2.1141917137396172e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 210,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 210,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.002313228392826315,
+      "local_patch_roughness": {
+       "count": 200,
+       "p50": 3.864489745516928e-05,
+       "p95": 5.888298175504865e-05,
+       "max": 7.463003389068936e-05,
+       "mean": 3.654508602202836e-05,
+       "quadratic_mean": 3.945087690978956e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 210,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/T00_trim_during/summary.json",
+   "summary_sha256": "99793a7f9659250eff86fca63c5a87ed7ef0a827e94a105c49801dac29d594c2"
+  },
+  {
+   "case": "T00_trim",
+   "solver": "tlmpm_v7",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/T00_trim/final_state.npz",
+   "state_sha256": "92dbb3bed6a23c6beffd242082a7c2c3376c7c4a5237cc6c500c1a60060aa4ff",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 72948,
+     "triangles": 145888,
+     "extraction_wall_s": 0.21318897200399078,
+     "basic_mesh_validity": {
+      "vertices": 72948,
+      "triangles": 145888,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.3988770513557683e-14,
+      "edges": 218832,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 316,
+      "volume": {
+       "total_mesh_volume_m3": 9.624980811234388e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.694832602856105e-05,
+       "total_relative_error_reference": -0.008183832979433533,
+       "total_relative_error_current": -0.007205053917190739,
+       "max_abs_component_relative_error_current": 0.007205053917190739,
+       "components": [
+        {
+         "component": 0,
+         "particles": 97044,
+         "mesh_volume_m3": 9.624980811234388e-05,
+         "material_reference_volume_m3": 9.704400000000003e-05,
+         "material_current_volume_m3": 9.694832602856105e-05,
+         "relative_error_reference": -0.008183832979433533,
+         "relative_error_current": -0.007205053917190739
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 2902,
+       "exterior": 70046,
+       "unmatched": 0,
+       "core": 1322,
+       "vertices": 72948,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 1322,
+       "p50": 1.774633419294702e-05,
+       "p95": 5.818123033853158e-05,
+       "max": 0.0001092519035992724,
+       "mean": 2.2383774000194102e-05,
+       "p50_spacings": 0.01774633419294702,
+       "p95_spacings": 0.05818123033853158,
+       "max_spacings": 0.1092519035992724,
+       "mean_spacings": 0.0223837740001941
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -2.6663792992632566e-05,
+       "mean_offset_along_N_side2_m": 3.2910931753353714e-05,
+       "bias_toward_side2_m": 3.123569380360574e-06,
+       "thickness_bias_m": -5.9574724745986284e-05,
+       "side1_vertices": 1318,
+       "side2_vertices": 1584
+      },
+      "coverage": 0.9794303797468354,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 2438,
+       "p50": 1.4069338999449528,
+       "p95": 3.011308787054285,
+       "max": 6.044485350588086,
+       "mean": 1.5151868009289626
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 2438,
+       "p50": 9.716914544549269,
+       "p95": 13.03783799089273,
+       "max": 16.948593732737653,
+       "mean": 9.617577642844207
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 1322,
+       "p50": 1.6474991976211986e-05,
+       "p95": 7.36431220042198e-05,
+       "max": 9.881178588549367e-05,
+       "mean": 2.768382952546874e-05,
+       "quadratic_mean": 3.543550714242957e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 1322,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 605,
+       "p50": 2.9195897888874794e-05,
+       "p95": 9.045138665732087e-05,
+       "max": 0.00020137903186629737,
+       "mean": 3.628562365724523e-05,
+       "quadratic_mean": 4.512486759684748e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 632,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 80,
+       "corner_to_mesh_distance": {
+        "count": 80,
+        "p50": 0.0011095508414563802,
+        "p95": 0.006510352978504489,
+        "max": 0.008183423483384742,
+        "mean": 0.0017309471339555156,
+        "p50_spacings": 1.1095508414563802,
+        "p95_spacings": 6.510352978504489,
+        "max_spacings": 8.183423483384741,
+        "mean_spacings": 1.7309471339555156
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {
+       "0": 2
+      },
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": false
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 18212,
+     "triangles": 36416,
+     "extraction_wall_s": 0.3015662299876567,
+     "basic_mesh_validity": {
+      "vertices": 18212,
+      "triangles": 36416,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 1.5106308226227437e-07,
+      "edges": 54624,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 2,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 316,
+      "volume": {
+       "total_mesh_volume_m3": 9.684079840023561e-05,
+       "total_reference_volume_m3": 9.704400000000003e-05,
+       "total_current_volume_m3": 9.694832602856105e-05,
+       "total_relative_error_reference": -0.0020939120374718037,
+       "total_relative_error_current": -0.0011091231043407253,
+       "max_abs_component_relative_error_current": 0.0011091231043407253,
+       "components": [
+        {
+         "component": 0,
+         "particles": 97044,
+         "mesh_volume_m3": 9.684079840023561e-05,
+         "material_reference_volume_m3": 9.704400000000003e-05,
+         "material_current_volume_m3": 9.694832602856105e-05,
+         "relative_error_reference": -0.0020939120374718037,
+         "relative_error_current": -0.0011091231043407253
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 613,
+       "exterior": 17599,
+       "unmatched": 0,
+       "core": 276,
+       "vertices": 18212,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 276,
+       "p50": 3.319282236517729e-05,
+       "p95": 0.00013146529423957573,
+       "max": 0.0002554271155127692,
+       "mean": 4.3814201438715044e-05,
+       "p50_spacings": 0.03319282236517729,
+       "p95_spacings": 0.13146529423957573,
+       "max_spacings": 0.2554271155127692,
+       "mean_spacings": 0.04381420143871504
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -6.709802547891348e-07,
+       "mean_offset_along_N_side2_m": -3.67565206029074e-05,
+       "bias_toward_side2_m": -1.871375042884827e-05,
+       "thickness_bias_m": 3.6085540348118264e-05,
+       "side1_vertices": 312,
+       "side2_vertices": 299
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9967373572593801,
+      "normal_error_deg_core": {
+       "count": 462,
+       "p50": 2.9408296280525166,
+       "p95": 6.919036666364501,
+       "max": 11.143557996118552,
+       "mean": 3.2499025206174257
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 462,
+       "p50": 9.72991366412013,
+       "p95": 16.059939286073977,
+       "max": 18.427833193807906,
+       "mean": 10.094288747631643
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 259,
+       "p50": 3.129325066028905e-05,
+       "p95": 9.091927162581626e-05,
+       "max": 0.00011883583557507412,
+       "mean": 3.504135915226154e-05,
+       "quadratic_mean": 4.327347618967213e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 276,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 605,
+       "p50": 2.9195897888874794e-05,
+       "p95": 9.045138665732087e-05,
+       "max": 0.00020137903186629737,
+       "mean": 3.628562365724523e-05,
+       "quadratic_mean": 4.512486759684748e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 632,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 80,
+       "corner_to_mesh_distance": {
+        "count": 80,
+        "p50": 1.884568668598974e-05,
+        "p95": 7.504653608218458e-05,
+        "max": 0.00010557378423868625,
+        "mean": 2.7293492028977838e-05,
+        "p50_spacings": 0.01884568668598974,
+        "p95_spacings": 0.07504653608218458,
+        "max_spacings": 0.10557378423868626,
+        "mean_spacings": 0.027293492028977837
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 2,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {
+       "0": 2
+      },
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": false
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 316,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.000143581547245388,
+      "local_patch_roughness": {
+       "count": 304,
+       "p50": 1.9387119842786346e-05,
+       "p95": 4.4958382750885015e-05,
+       "max": 4.637888479925794e-05,
+       "mean": 2.1959534375997195e-05,
+       "quadratic_mean": 2.4782452089929248e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 316,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 316,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.013945257145219358,
+      "local_patch_roughness": {
+       "count": 301,
+       "p50": 4.375602945834255e-05,
+       "p95": 0.00010638995827140212,
+       "max": 0.00020137903186629737,
+       "mean": 5.075449788149573e-05,
+       "quadratic_mean": 5.892801550883684e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 316,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "status": "NOT_APPLICABLE",
+       "reason": "curled shaving/trim geometry; local patch roughness reported without a global plane penalty"
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/T00_trim_final/summary.json",
+   "summary_sha256": "6202e84a08e571923660bca3808801a1f2e42cd538414ba801fe5c37eab14577"
+  },
+  {
+   "case": "M00_four_slices",
+   "solver": "tlmpm_v5",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 2.7,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/M00_four_slices/during_state.npz",
+   "state_sha256": "09bf0a4dcd87ad4ae9be623e363ff2524eaab4b3a7b32f8703287bc3d86540e3",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 69816,
+     "triangles": 139628,
+     "extraction_wall_s": 0.20849277099478059,
+     "basic_mesh_validity": {
+      "vertices": 69816,
+      "triangles": 139628,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 9.047081748819748e-13,
+      "edges": 209442,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.537344578708425e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588899961391271e-05,
+       "total_relative_error_reference": -0.006526606384539419,
+       "total_relative_error_current": -0.005376569042374923,
+       "max_abs_component_relative_error_current": 0.005376569042374923,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.537344578708425e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588899961391271e-05,
+         "relative_error_reference": -0.006526606384539419,
+         "relative_error_current": -0.005376569042374923
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 83,
+       "exterior": 69733,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 69816,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -0.00019506901306596663,
+       "mean_offset_along_N_side2_m": -0.00017660161435357688,
+       "bias_toward_side2_m": -0.00018583531370977175,
+       "thickness_bias_m": -1.846739871238975e-05,
+       "side1_vertices": 10,
+       "side2_vertices": 71
+      },
+      "coverage": 0.5333333333333333,
+      "plane_coverage": 0.9759036144578314,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 1.558825487848369e-07,
+       "p95": 3.429757234427555e-07,
+       "max": 4.2073477126696613e-07,
+       "mean": 1.724271306188914e-07,
+       "quadratic_mean": 1.9051825854675479e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 0.00019342733725981456,
+        "p95": 0.0005098366947835963,
+        "max": 0.0005275991173642495,
+        "mean": 0.00021977690863328483,
+        "p50_spacings": 0.19342733725981456,
+        "p95_spacings": 0.5098366947835963,
+        "max_spacings": 0.5275991173642495,
+        "mean_spacings": 0.21977690863328483
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17322,
+     "triangles": 34640,
+     "extraction_wall_s": 0.2644732680055313,
+     "basic_mesh_validity": {
+      "vertices": 17322,
+      "triangles": 34640,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.5804647414589733e-07,
+      "edges": 51960,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.585053560918103e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588899961391271e-05,
+       "total_relative_error_reference": -0.0015569207376979182,
+       "total_relative_error_current": -0.00040113052473746906,
+       "max_abs_component_relative_error_current": 0.00040113052473746906,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.585053560918103e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588899961391271e-05,
+         "relative_error_reference": -0.0015569207376979182,
+         "relative_error_current": -0.00040113052473746906
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 89,
+       "exterior": 17233,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 17322,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 3.098004456328656e-05,
+       "mean_offset_along_N_side2_m": -1.295003819197203e-05,
+       "bias_toward_side2_m": 9.015003185657265e-06,
+       "thickness_bias_m": 4.3930082755258586e-05,
+       "side1_vertices": 52,
+       "side2_vertices": 35
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9775280898876404,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 1.558825487848369e-07,
+       "p95": 3.429757234427555e-07,
+       "max": 4.2073477126696613e-07,
+       "mean": 1.724271306188914e-07,
+       "quadratic_mean": 1.9051825854675479e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 8.434659793002708e-08,
+        "p95": 4.71167349424708e-06,
+        "max": 5.093019943998645e-06,
+        "mean": 6.62201041945426e-07,
+        "p50_spacings": 8.434659793002707e-05,
+        "p95_spacings": 0.00471167349424708,
+        "max_spacings": 0.005093019943998646,
+        "mean_spacings": 0.000662201041945426
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0001626422000321184,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 1.6829228143142956e-07,
+       "p95": 3.4536521014057413e-07,
+       "max": 4.2073477126696613e-07,
+       "mean": 1.9460301879744827e-07,
+       "quadratic_mean": 2.1012399120624977e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 3.310714642558484e-07,
+       "p95": 1.3796953911906925e-06,
+       "rms": 6.20470732118852e-07
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00011913767596283369,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 1.281355448532903e-07,
+       "p95": 3.3602235200792423e-07,
+       "max": 3.5151066443315706e-07,
+       "mean": 1.5025124244033452e-07,
+       "quadratic_mean": 1.6864851614802926e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 4.3626634631619894e-07,
+       "p95": 1.3877962357178948e-06,
+       "rms": 7.281436333644742e-07
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/M00_four_slices_during/summary.json",
+   "summary_sha256": "ee07d4cf547593842410d0983871547796afea1f8821fd885b345c33a3ee5bdf"
+  },
+  {
+   "case": "M00_four_slices",
+   "solver": "tlmpm_v5",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v5/M00_four_slices/final_state.npz",
+   "state_sha256": "56e76a4ae1965bd9be9b957d9c94e58784e1187a51a7bad51919bc95bb4b936a",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 93682,
+     "triangles": 187344,
+     "extraction_wall_s": 0.30473135999636725,
+     "basic_mesh_validity": {
+      "vertices": 93682,
+      "triangles": 187344,
+      "degenerate_triangles": 1,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 8.886474208351632e-15,
+      "edges": 281016,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 5,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 2400,
+      "volume": {
+       "total_mesh_volume_m3": 9.295019611140198e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.593006264118785e-05,
+       "total_relative_error_reference": -0.03176879050622972,
+       "total_relative_error_current": -0.031062906118717145,
+       "max_abs_component_relative_error_current": 0.04579356210025229,
+       "components": [
+        {
+         "component": 4,
+         "particles": 21000,
+         "mesh_volume_m3": 2.0470950591853475e-05,
+         "material_reference_volume_m3": 2.1000000000000006e-05,
+         "material_current_volume_m3": 2.0979693897404224e-05,
+         "relative_error_reference": -0.025192828959358603,
+         "relative_error_current": -0.02424931974883079
+        },
+        {
+         "component": 0,
+         "particles": 19200,
+         "mesh_volume_m3": 1.8609038923583616e-05,
+         "material_reference_volume_m3": 1.9200000000000006e-05,
+         "material_current_volume_m3": 1.9184217053152962e-05,
+         "relative_error_reference": -0.03077922273002031,
+         "relative_error_current": -0.029981840174958557
+        },
+        {
+         "component": 1,
+         "particles": 18600,
+         "mesh_volume_m3": 1.7739798610435236e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8591153764882732e-05,
+         "relative_error_reference": -0.046247386535740086,
+         "relative_error_current": -0.04579356210025229
+        },
+        {
+         "component": 2,
+         "particles": 18600,
+         "mesh_volume_m3": 1.8066979145400813e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.858710757556469e-05,
+         "relative_error_reference": -0.028657035193504776,
+         "relative_error_current": -0.027983290463528532
+        },
+        {
+         "component": 3,
+         "particles": 18600,
+         "mesh_volume_m3": 1.8063428840128823e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8587890350183252e-05,
+         "relative_error_reference": -0.028847911821031108,
+         "relative_error_current": -0.02821522508331663
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 21722,
+       "exterior": 71566,
+       "unmatched": 394,
+       "core": 12416,
+       "vertices": 93682,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 12411,
+       "p50": 0.000155467204812749,
+       "p95": 0.0006836957498493037,
+       "max": 0.0014847807491969562,
+       "mean": 0.00022924232114857228,
+       "p50_spacings": 0.15546720481274898,
+       "p95_spacings": 0.6836957498493037,
+       "max_spacings": 1.4847807491969562,
+       "mean_spacings": 0.22924232114857226
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 7.392019800226307e-05,
+       "mean_offset_along_N_side2_m": -8.615409080309813e-05,
+       "bias_toward_side2_m": -6.1169464004175275e-06,
+       "thickness_bias_m": 0.0001600742888053612,
+       "side1_vertices": 10858,
+       "side2_vertices": 10808
+      },
+      "coverage": 0.8147916666666667,
+      "plane_coverage": 0.9974219685111868,
+      "normal_error_deg_core": {
+       "count": 23362,
+       "p50": 9.993299511366757,
+       "p95": 29.822594465215648,
+       "max": 88.57816002458983,
+       "mean": 12.616407880430021
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 23362,
+       "p50": 13.227937079446075,
+       "p95": 39.47240107379454,
+       "max": 54.19638134605915,
+       "mean": 16.339937355841773
+      },
+      "normal_outward_fraction_core": 0.9988014724766715,
+      "roughness_mesh_core": {
+       "count": 3967,
+       "p50": 0.00010597977239983637,
+       "p95": 0.0002483156914759456,
+       "max": 0.000340434304154692,
+       "mean": 0.0001192743716923641,
+       "quadratic_mean": 0.00013901593312633234,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 3967,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 3920,
+       "p50": 0.00019989893902414875,
+       "p95": 0.0005690153208307976,
+       "max": 0.0007003857039872,
+       "mean": 0.00024008881962708835,
+       "quadratic_mean": 0.0003127650167016415,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 4001,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 800,
+       "corner_to_mesh_distance": {
+        "count": 800,
+        "p50": 0.0005769276901989289,
+        "p95": 0.0010501131224474815,
+        "max": 0.0015936836096531646,
+        "mean": 0.0005924526501792977,
+        "p50_spacings": 0.5769276901989289,
+        "p95_spacings": 1.0501131224474816,
+        "max_spacings": 1.5936836096531646,
+        "mean_spacings": 0.5924526501792977
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 5,
+      "mechanical_components": 5,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 22010,
+     "triangles": 44000,
+     "extraction_wall_s": 0.32333705300698057,
+     "basic_mesh_validity": {
+      "vertices": 22010,
+      "triangles": 44000,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.785145507701628e-08,
+      "edges": 66000,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 5,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 2400,
+      "volume": {
+       "total_mesh_volume_m3": 9.226009263653199e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.593006264118785e-05,
+       "total_relative_error_reference": -0.03895736836945872,
+       "total_relative_error_current": -0.038256724780664796,
+       "max_abs_component_relative_error_current": 0.05274429255266453,
+       "components": [
+        {
+         "component": 4,
+         "particles": 21000,
+         "mesh_volume_m3": 2.0437194182727753e-05,
+         "material_reference_volume_m3": 2.1000000000000006e-05,
+         "material_current_volume_m3": 2.0979693897404224e-05,
+         "relative_error_reference": -0.026800277012964405,
+         "relative_error_current": -0.02585832364044136
+        },
+        {
+         "component": 0,
+         "particles": 19200,
+         "mesh_volume_m3": 1.8698736064156755e-05,
+         "material_reference_volume_m3": 1.9200000000000006e-05,
+         "material_current_volume_m3": 1.9184217053152962e-05,
+         "relative_error_reference": -0.02610749665850264,
+         "relative_error_current": -0.025306270652125335
+        },
+        {
+         "component": 1,
+         "particles": 18600,
+         "mesh_volume_m3": 1.7610576511816187e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8591153764882732e-05,
+         "relative_error_reference": -0.053194811192678194,
+         "relative_error_current": -0.05274429255266453
+        },
+        {
+         "component": 2,
+         "particles": 18600,
+         "mesh_volume_m3": 1.7770440139714735e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.858710757556469e-05,
+         "relative_error_reference": -0.044599992488455184,
+         "relative_error_current": -0.04393730614243486
+        },
+        {
+         "component": 3,
+         "particles": 18600,
+         "mesh_volume_m3": 1.7743145738116558e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8587890350183252e-05,
+         "relative_error_reference": -0.04606743343459375,
+         "relative_error_current": -0.045445964881020866
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 4559,
+       "exterior": 17451,
+       "unmatched": 0,
+       "core": 2331,
+       "vertices": 22010,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 2331,
+       "p50": 6.123930405526138e-05,
+       "p95": 0.00020970748479935962,
+       "max": 0.0004371899473625935,
+       "mean": 7.200775713784392e-05,
+       "p50_spacings": 0.06123930405526138,
+       "p95_spacings": 0.2097074847993596,
+       "max_spacings": 0.4371899473625935,
+       "mean_spacings": 0.07200775713784392
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -2.0045066777464724e-05,
+       "mean_offset_along_N_side2_m": 3.288816848906766e-05,
+       "bias_toward_side2_m": 6.421550855801469e-06,
+       "thickness_bias_m": -5.293323526653239e-05,
+       "side1_vertices": 2295,
+       "side2_vertices": 2233
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9932002632156175,
+      "normal_error_deg_core": {
+       "count": 4067,
+       "p50": 20.25265527685955,
+       "p95": 38.16777771611826,
+       "max": 86.29218454859947,
+       "mean": 21.396510051278394
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 4067,
+       "p50": 37.007018596015456,
+       "p95": 54.73412191027066,
+       "max": 67.32593259021242,
+       "mean": 36.56961334636697
+      },
+      "normal_outward_fraction_core": 0.9891812146545366,
+      "roughness_mesh_core": {
+       "count": 2262,
+       "p50": 0.0003115855248798161,
+       "p95": 0.0004878272389347144,
+       "max": 0.0006112339692544233,
+       "mean": 0.0002503803012495135,
+       "quadratic_mean": 0.00030534882518315823,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 2331,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 3920,
+       "p50": 0.00019989893902414875,
+       "p95": 0.0005690153208307976,
+       "max": 0.0007003857039872,
+       "mean": 0.00024008881962708835,
+       "quadratic_mean": 0.0003127650167016415,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 4001,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 800,
+       "corner_to_mesh_distance": {
+        "count": 800,
+        "p50": 7.093967513777294e-06,
+        "p95": 0.00034711275009148156,
+        "max": 0.0009132788155275048,
+        "mean": 7.636097208320956e-05,
+        "p50_spacings": 0.007093967513777294,
+        "p95_spacings": 0.34711275009148157,
+        "max_spacings": 0.9132788155275048,
+        "mean_spacings": 0.07636097208320956
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 5,
+      "mechanical_components": 5,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0004513453758213217,
+      "local_patch_roughness": {
+       "count": 594,
+       "p50": 0.0002502502066692707,
+       "p95": 0.0005580982879256013,
+       "max": 0.0006943336882715871,
+       "mean": 0.000247795243965141,
+       "quadratic_mean": 0.00030197561972371316,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0005792727273501288,
+       "p95": 0.001243754889940564,
+       "rms": 0.000686204713878811
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 1,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0004150714143573886,
+      "local_patch_roughness": {
+       "count": 592,
+       "p50": 0.0002301554865519675,
+       "p95": 0.0005641312400633533,
+       "max": 0.0006526932909367114,
+       "mean": 0.0002588923077244757,
+       "quadratic_mean": 0.0003151872752580972,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0005679395433520404,
+       "p95": 0.0012802520554275455,
+       "rms": 0.0006925607535346014
+      }
+     },
+     {
+      "cut": 1,
+      "side": 1,
+      "component": 1,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0006469842986505625,
+      "local_patch_roughness": {
+       "count": 583,
+       "p50": 0.00022183999902164762,
+       "p95": 0.0005886667331069291,
+       "max": 0.0006525838759626265,
+       "mean": 0.000245822294265203,
+       "quadratic_mean": 0.000328983792132822,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0007329700478304792,
+       "p95": 0.00151737417201469,
+       "rms": 0.0009038297751008608
+      }
+     },
+     {
+      "cut": 1,
+      "side": 2,
+      "component": 2,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0004564371705714357,
+      "local_patch_roughness": {
+       "count": 596,
+       "p50": 0.0003348628317390817,
+       "p95": 0.0005926451452071607,
+       "max": 0.0006862079216677841,
+       "mean": 0.0002666634504800286,
+       "quadratic_mean": 0.00034063397022806273,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0007363559208438482,
+       "p95": 0.0013857866113261418,
+       "rms": 0.000834140663911798
+      }
+     },
+     {
+      "cut": 2,
+      "side": 1,
+      "component": 2,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0005989801289616116,
+      "local_patch_roughness": {
+       "count": 581,
+       "p50": 0.0002201268272906887,
+       "p95": 0.0005654024853753904,
+       "max": 0.0006488083862471095,
+       "mean": 0.0002584003191713683,
+       "quadratic_mean": 0.00033567839047251647,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0007574622761427681,
+       "p95": 0.0014910136424544115,
+       "rms": 0.0009151114620541751
+      }
+     },
+     {
+      "cut": 2,
+      "side": 2,
+      "component": 3,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0006437848043315654,
+      "local_patch_roughness": {
+       "count": 581,
+       "p50": 7.130457885720321e-05,
+       "p95": 0.0005555386913628748,
+       "max": 0.0006181508066211957,
+       "mean": 0.00018172556924955313,
+       "quadratic_mean": 0.00027336599522746784,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0007972902129218679,
+       "p95": 0.0015434965394779485,
+       "rms": 0.0009346051624507185
+      }
+     },
+     {
+      "cut": 3,
+      "side": 1,
+      "component": 3,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00047497070271061465,
+      "local_patch_roughness": {
+       "count": 596,
+       "p50": 0.00027849405779462554,
+       "p95": 0.0005155518787716823,
+       "max": 0.0006665030582651184,
+       "mean": 0.00024197941660913526,
+       "quadratic_mean": 0.0003058171809214218,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0007207434705065077,
+       "p95": 0.0012643909189282545,
+       "rms": 0.0008099883584074833
+      }
+     },
+     {
+      "cut": 3,
+      "side": 2,
+      "component": 4,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0005981646815816479,
+      "local_patch_roughness": {
+       "count": 586,
+       "p50": 0.00017517553467287663,
+       "p95": 0.0005774632991619297,
+       "max": 0.0007003857039872,
+       "mean": 0.0002117349533981327,
+       "quadratic_mean": 0.00028932148197743706,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 0.0007349141493521974,
+       "p95": 0.0015581816441569544,
+       "rms": 0.0008856836447268094
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v5/M00_four_slices_final/summary.json",
+   "summary_sha256": "d0c6ee89f57525caf4bc79b1e5b905ba719ca12d13ff2c1a8928d0f99a7ef004"
+  },
+  {
+   "case": "M00_four_slices",
+   "solver": "tlmpm_v7",
+   "frame": "during",
+   "status": "MEASURED",
+   "time_s": 2.7,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/M00_four_slices/during_state.npz",
+   "state_sha256": "b9ed8d41ad4c1f0e888d0bdf271a18d6be036198f8e460a48c9a5a07461374c4",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 69754,
+     "triangles": 139504,
+     "extraction_wall_s": 0.20554186799563468,
+     "basic_mesh_validity": {
+      "vertices": 69754,
+      "triangles": 139504,
+      "degenerate_triangles": 1,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 8.214346743738479e-15,
+      "edges": 209256,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.539130090983257e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588074359550416e-05,
+       "total_relative_error_reference": -0.006340615522577713,
+       "total_relative_error_current": -0.005104702647451578,
+       "max_abs_component_relative_error_current": 0.005104702647451578,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.539130090983257e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588074359550416e-05,
+         "relative_error_reference": -0.006340615522577713,
+         "relative_error_current": -0.005104702647451578
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 83,
+       "exterior": 69671,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 69754,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -7.348657373297379e-05,
+       "mean_offset_along_N_side2_m": -0.0002109038596034364,
+       "bias_toward_side2_m": -0.0001421952166682051,
+       "thickness_bias_m": 0.00013741728587046259,
+       "side1_vertices": 12,
+       "side2_vertices": 71
+      },
+      "coverage": 0.5333333333333333,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 8.264585737453637e-08,
+       "p95": 5.306352034742335e-07,
+       "max": 6.156805180535369e-07,
+       "mean": 1.380079905957077e-07,
+       "quadratic_mean": 2.0591518454672663e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 0.00022648734097363576,
+        "p95": 0.0005553449954082679,
+        "max": 0.0005726718793312665,
+        "mean": 0.00026093536101621845,
+        "p50_spacings": 0.22648734097363576,
+        "p95_spacings": 0.5553449954082679,
+        "max_spacings": 0.5726718793312665,
+        "mean_spacings": 0.26093536101621845
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 17322,
+     "triangles": 34640,
+     "extraction_wall_s": 0.2634883229911793,
+     "basic_mesh_validity": {
+      "vertices": 17322,
+      "triangles": 34640,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 2.6161154707398354e-07,
+      "edges": 51960,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 1,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 60,
+      "volume": {
+       "total_mesh_volume_m3": 9.588518831280056e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.588074359550416e-05,
+       "total_relative_error_reference": -0.0011959550749945252,
+       "total_relative_error_current": 4.6356725341443824e-05,
+       "max_abs_component_relative_error_current": 4.6356725341443824e-05,
+       "components": [
+        {
+         "component": 0,
+         "particles": 96000,
+         "mesh_volume_m3": 9.588518831280056e-05,
+         "material_reference_volume_m3": 9.600000000000003e-05,
+         "material_current_volume_m3": 9.588074359550416e-05,
+         "relative_error_reference": -0.0011959550749945252,
+         "relative_error_current": 4.6356725341443824e-05
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 89,
+       "exterior": 17233,
+       "unmatched": 0,
+       "core": 0,
+       "vertices": 17322,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": 3.5951299865561095e-05,
+       "mean_offset_along_N_side2_m": -1.954740038810341e-05,
+       "bias_toward_side2_m": 8.201949738728842e-06,
+       "thickness_bias_m": 5.5498700253664505e-05,
+       "side1_vertices": 52,
+       "side2_vertices": 35
+      },
+      "coverage": 1.0,
+      "plane_coverage": 0.9775280898876404,
+      "normal_error_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null
+      },
+      "normal_outward_fraction_core": null,
+      "roughness_mesh_core": {
+       "count": 0,
+       "p50": null,
+       "p95": null,
+       "max": null,
+       "mean": null,
+       "quadratic_mean": null,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 0,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 112,
+       "p50": 8.264585737453637e-08,
+       "p95": 5.306352034742335e-07,
+       "max": 6.156805180535369e-07,
+       "mean": 1.380079905957077e-07,
+       "quadratic_mean": 2.0591518454672663e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 120,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 68,
+       "corner_to_mesh_distance": {
+        "count": 68,
+        "p50": 3.136662011021221e-08,
+        "p95": 3.5638698653848135e-07,
+        "max": 2.6466347489523315e-06,
+        "mean": 1.2998979215949517e-07,
+        "p50_spacings": 3.1366620110212214e-05,
+        "p95_spacings": 0.0003563869865384813,
+        "max_spacings": 0.0026466347489523313,
+        "mean_spacings": 0.00012998979215949518
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 1,
+      "mechanical_components": 1,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.0001900460036613367,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 7.9306120773488e-08,
+       "p95": 4.551459431546658e-07,
+       "max": 4.598905505204919e-07,
+       "mean": 1.1808347076615804e-07,
+       "quadratic_mean": 1.694554405821766e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 5.771842560819869e-07,
+       "p95": 3.1681776023712493e-06,
+       "rms": 1.3482246360961946e-06
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 0,
+      "samples": 60,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00013334459238288494,
+      "local_patch_roughness": {
+       "count": 56,
+       "p50": 9.485535822646454e-08,
+       "p95": 6.126066486553722e-07,
+       "max": 6.156805180535369e-07,
+       "mean": 1.5793251042525738e-07,
+       "quadratic_mean": 2.3682689904427111e-07,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 60,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 6.689897368312842e-07,
+       "p95": 3.791285043407926e-06,
+       "rms": 1.5750824235844204e-06
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/M00_four_slices_during/summary.json",
+   "summary_sha256": "cb7607f1bf6502d8cc6927c1df0826a72c027e5b3c98f03e254a388b3d4300e2"
+  },
+  {
+   "case": "M00_four_slices",
+   "solver": "tlmpm_v7",
+   "frame": "final",
+   "status": "MEASURED",
+   "time_s": null,
+   "state": "artifacts/wp13/focused_001/tlmpm_v7/M00_four_slices/final_state.npz",
+   "state_sha256": "e85dbd0b06e48723de4fc2625eb06c1be0a299561518f4f90a11fb2e93fdd2a8",
+   "profiles": [
+    {
+     "profile": "particle_surface_v1",
+     "vertices": 90154,
+     "triangles": 180288,
+     "extraction_wall_s": 0.30760374100646004,
+     "basic_mesh_validity": {
+      "vertices": 90154,
+      "triangles": 180288,
+      "degenerate_triangles": 1,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 6.6623616554976814e-15,
+      "edges": 270432,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 5,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 2400,
+      "volume": {
+       "total_mesh_volume_m3": 9.496067074831134e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.594512783221528e-05,
+       "total_relative_error_reference": -0.010826346371757141,
+       "total_relative_error_current": -0.010260626111473931,
+       "max_abs_component_relative_error_current": 0.017321115485080075,
+       "components": [
+        {
+         "component": 4,
+         "particles": 21000,
+         "mesh_volume_m3": 2.077064729640586e-05,
+         "material_reference_volume_m3": 2.1000000000000006e-05,
+         "material_current_volume_m3": 2.0985763990126404e-05,
+         "relative_error_reference": -0.010921557314006914,
+         "relative_error_current": -0.010250601017992687
+        },
+        {
+         "component": 0,
+         "particles": 19200,
+         "mesh_volume_m3": 1.8946813311372803e-05,
+         "material_reference_volume_m3": 1.9200000000000006e-05,
+         "material_current_volume_m3": 1.918536001823794e-05,
+         "relative_error_reference": -0.013186806699333479,
+         "relative_error_current": -0.012433788401070879
+        },
+        {
+         "component": 1,
+         "particles": 18600,
+         "mesh_volume_m3": 1.8270312839001523e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8592353134788587e-05,
+         "relative_error_reference": -0.017725116182713902,
+         "relative_error_current": -0.017321115485080075
+        },
+        {
+         "component": 2,
+         "particles": 18600,
+         "mesh_volume_m3": 1.851300534924475e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8590724232389456e-05,
+         "relative_error_reference": -0.004677131761035048,
+         "relative_error_current": -0.004180519390917629
+        },
+        {
+         "component": 3,
+         "particles": 18600,
+         "mesh_volume_m3": 1.8459891952286398e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.859092645667289e-05,
+         "relative_error_reference": -0.007532690737290531,
+         "relative_error_current": -0.0070483041655764285
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 19596,
+       "exterior": 70558,
+       "unmatched": 0,
+       "core": 11279,
+       "vertices": 90154,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 11279,
+       "p50": 2.3886936455769664e-05,
+       "p95": 6.464798104605095e-05,
+       "max": 8.797357050112031e-05,
+       "mean": 2.7561424966716e-05,
+       "p50_spacings": 0.023886936455769663,
+       "p95_spacings": 0.06464798104605095,
+       "max_spacings": 0.08797357050112031,
+       "mean_spacings": 0.027561424966716
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -2.834440181100253e-05,
+       "mean_offset_along_N_side2_m": 1.7150367693692774e-05,
+       "bias_toward_side2_m": -5.597017058654877e-06,
+       "thickness_bias_m": -4.5494769504695304e-05,
+       "side1_vertices": 9922,
+       "side2_vertices": 9674
+      },
+      "coverage": 1.0,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 21274,
+       "p50": 1.4282382758158332,
+       "p95": 2.5455249801994126,
+       "max": 3.7697663526223493,
+       "mean": 1.395791131820346
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 21274,
+       "p50": 10.521718520023754,
+       "p95": 14.246146069342615,
+       "max": 16.31839554231114,
+       "mean": 10.727561071324278
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 3963,
+       "p50": 1.1997907102258645e-05,
+       "p95": 2.0424544749850415e-05,
+       "max": 2.61098978179344e-05,
+       "mean": 1.2086188093502414e-05,
+       "quadratic_mean": 1.308057563180375e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 3963,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 3988,
+       "p50": 4.3935005809580395e-05,
+       "p95": 6.58539224721734e-05,
+       "max": 8.737482915930463e-05,
+       "mean": 3.972635614384155e-05,
+       "quadratic_mean": 4.3857797194053606e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 4001,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 800,
+       "corner_to_mesh_distance": {
+        "count": 800,
+        "p50": 0.000612589416524954,
+        "p95": 0.0008604446258583437,
+        "max": 0.0012354399290273133,
+        "mean": 0.0006349054899540335,
+        "p50_spacings": 0.612589416524954,
+        "p95_spacings": 0.8604446258583437,
+        "max_spacings": 1.2354399290273133,
+        "mean_spacings": 0.6349054899540334
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 5,
+      "mechanical_components": 5,
+      "shells_spanning_components": 0,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": true
+     }
+    },
+    {
+     "profile": "cut_aware_surface_v1",
+     "vertices": 22010,
+     "triangles": 44000,
+     "extraction_wall_s": 0.3252083580009639,
+     "basic_mesh_validity": {
+      "vertices": 22010,
+      "triangles": 44000,
+      "degenerate_triangles": 0,
+      "repeated_index_triangles": 0,
+      "min_triangle_area_m2": 3.633340967600084e-07,
+      "edges": 66000,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "inconsistently_oriented_edges": 0,
+      "connected_components": 5,
+      "unreferenced_vertices": 0,
+      "watertight": true
+     },
+     "self_intersections": {
+      "status": "NOT_RUN",
+      "reason": "focused offline geometry characterization"
+     },
+     "hermite_source": "midpoint_fallback_R4; no cut-event log recorded in this particle-profile episode",
+     "metrics": {
+      "locus_source": "link_midpoint_fallback",
+      "conflicting_link_rows": 2400,
+      "volume": {
+       "total_mesh_volume_m3": 9.581360364789214e-05,
+       "total_reference_volume_m3": 9.600000000000003e-05,
+       "total_current_volume_m3": 9.594512783221528e-05,
+       "total_relative_error_reference": -0.0019416286677904928,
+       "total_relative_error_current": -0.0013708271310361646,
+       "max_abs_component_relative_error_current": 0.02326204361149118,
+       "components": [
+        {
+         "component": 4,
+         "particles": 21000,
+         "mesh_volume_m3": 2.143996053516366e-05,
+         "material_reference_volume_m3": 2.1000000000000006e-05,
+         "material_current_volume_m3": 2.0985763990126404e-05,
+         "relative_error_reference": 0.020950501674459793,
+         "relative_error_current": 0.021643078862935466
+        },
+        {
+         "component": 0,
+         "particles": 19200,
+         "mesh_volume_m3": 1.9417200525291844e-05,
+         "material_reference_volume_m3": 1.9200000000000006e-05,
+         "material_current_volume_m3": 1.918536001823794e-05,
+         "relative_error_reference": 0.011312527358949888,
+         "relative_error_current": 0.012084240631059999
+        },
+        {
+         "component": 1,
+         "particles": 18600,
+         "mesh_volume_m3": 1.815985700532689e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8592353134788587e-05,
+         "relative_error_reference": -0.023663601864145796,
+         "relative_error_current": -0.02326204361149118
+        },
+        {
+         "component": 2,
+         "particles": 18600,
+         "mesh_volume_m3": 1.8611570358686216e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.8590724232389456e-05,
+         "relative_error_reference": 0.0006220622949577799,
+         "relative_error_current": 0.0011213186767862072
+        },
+        {
+         "component": 3,
+         "particles": 18600,
+         "mesh_volume_m3": 1.818501522342353e-05,
+         "material_reference_volume_m3": 1.86e-05,
+         "material_current_volume_m3": 1.859092645667289e-05,
+         "relative_error_reference": -0.02231100949335862,
+         "relative_error_current": -0.021833835672221934
+        }
+       ],
+       "face_assignment": "triangle centroid -> nearest particle's component"
+      },
+      "region": {
+       "cut_face": 4520,
+       "exterior": 17490,
+       "unmatched": 0,
+       "core": 2789,
+       "vertices": 22010,
+       "region_max_m": 0.0015,
+       "core_margin_m": 0.003
+      },
+      "distance_to_side_locus_plane_core": {
+       "count": 2789,
+       "p50": 2.498598443924561e-05,
+       "p95": 5.127555843153499e-05,
+       "max": 6.340155037078901e-05,
+       "mean": 2.6675845065383974e-05,
+       "p50_spacings": 0.024985984439245608,
+       "p95_spacings": 0.05127555843153499,
+       "max_spacings": 0.06340155037078901,
+       "mean_spacings": 0.026675845065383973
+      },
+      "signed_bias": {
+       "mean_offset_along_N_side1_m": -4.508864244917184e-06,
+       "mean_offset_along_N_side2_m": 4.095728397542966e-06,
+       "bias_toward_side2_m": -2.0656792368710896e-07,
+       "thickness_bias_m": -8.604592642460149e-06,
+       "side1_vertices": 2261,
+       "side2_vertices": 2259
+      },
+      "coverage": 1.0,
+      "plane_coverage": 1.0,
+      "normal_error_deg_core": {
+       "count": 4975,
+       "p50": 3.3588571013179784,
+       "p95": 5.580556195663719,
+       "max": 6.635271813156861,
+       "mean": 3.3465352378909947
+      },
+      "normal_error_vs_F_mapped_normal_deg_core": {
+       "count": 4975,
+       "p50": 10.885924399973721,
+       "p95": 16.63296573111004,
+       "max": 19.423522204166854,
+       "mean": 10.750492675794952
+      },
+      "normal_outward_fraction_core": 1.0,
+      "roughness_mesh_core": {
+       "count": 2773,
+       "p50": 3.255621123323197e-05,
+       "p95": 4.7651615804452e-05,
+       "max": 5.475403344772215e-05,
+       "mean": 3.0755052788609495e-05,
+       "quadratic_mean": 3.330061385915785e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 2789,
+       "grouped": true
+      },
+      "roughness_locus_core": {
+       "count": 3988,
+       "p50": 4.3935005809580395e-05,
+       "p95": 6.58539224721734e-05,
+       "max": 8.737482915930463e-05,
+       "mean": 3.972635614384155e-05,
+       "quadratic_mean": 4.3857797194053606e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 4001,
+       "grouped": true
+      },
+      "rim": {
+       "corner_samples": 800,
+       "corner_to_mesh_distance": {
+        "count": 800,
+        "p50": 6.273963278207365e-07,
+        "p95": 4.017440137028292e-05,
+        "max": 0.00011462005116766322,
+        "mean": 5.824356001639013e-06,
+        "p50_spacings": 0.0006273963278207365,
+        "p95_spacings": 0.04017440137028292,
+        "max_spacings": 0.11462005116766322,
+        "mean_spacings": 0.005824356001639013
+       },
+       "open_edges_near_junction": 0
+      },
+      "status": "MEASURED"
+     },
+     "topology": {
+      "mesh_shells": 5,
+      "mechanical_components": 5,
+      "shells_spanning_components": 4,
+      "shell_component_source": "nearest particle majority",
+      "faces_nearer_other_component": 0,
+      "components_without_shell": [],
+      "components_with_multiple_shells": {},
+      "components_without_shell_mass_kg": 0.0,
+      "shells_equal_components": false
+     }
+    }
+   ],
+   "physical_faces": {
+    "rows": [
+     {
+      "cut": 0,
+      "side": 1,
+      "component": 0,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 8.379931916478889e-05,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 4.405178562428325e-05,
+       "p95": 6.411843840129426e-05,
+       "max": 8.212905934850549e-05,
+       "mean": 3.9506018953211705e-05,
+       "quadratic_mean": 4.3474186155460923e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 9.527081646635863e-05,
+       "p95": 0.00030545055447605895,
+       "rms": 0.00014457709828998486
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "component": 1,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 4.2053308929447614e-05,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 4.5255402430721274e-05,
+       "p95": 7.30472459860719e-05,
+       "max": 8.737482915930463e-05,
+       "mean": 4.010413538576064e-05,
+       "quadratic_mean": 4.4939452395452186e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 9.228909530401073e-05,
+       "p95": 0.0002581141226460891,
+       "rms": 0.00013238895807342647
+      }
+     },
+     {
+      "cut": 1,
+      "side": 1,
+      "component": 1,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 1.4300475189680556e-05,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 5.2516216655151634e-05,
+       "p95": 6.759653762318731e-05,
+       "max": 7.236867367659808e-05,
+       "mean": 4.716226374908093e-05,
+       "quadratic_mean": 5.0272705853752505e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 7.721458021867696e-05,
+       "p95": 0.0002186257792331935,
+       "rms": 0.00011736389873883392
+      }
+     },
+     {
+      "cut": 1,
+      "side": 2,
+      "component": 2,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.000205047402266044,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 3.9699324473218734e-05,
+       "p95": 6.226786023393577e-05,
+       "max": 7.020403390687559e-05,
+       "mean": 3.476141252967341e-05,
+       "quadratic_mean": 3.902917931766386e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 7.30520435375346e-05,
+       "p95": 0.0002532946157443924,
+       "rms": 0.00011500482361588052
+      }
+     },
+     {
+      "cut": 2,
+      "side": 1,
+      "component": 2,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00016337912678962853,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 4.1800812408469314e-05,
+       "p95": 5.636958167809427e-05,
+       "max": 6.135310228045954e-05,
+       "mean": 3.653088469372255e-05,
+       "quadratic_mean": 4.0145701157797556e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 6.968468177417765e-05,
+       "p95": 0.000191248259113206,
+       "rms": 0.00010389149841655213
+      }
+     },
+     {
+      "cut": 2,
+      "side": 2,
+      "component": 3,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00012708721698093312,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 4.429358904189655e-05,
+       "p95": 5.798206632577752e-05,
+       "max": 6.164194153424888e-05,
+       "mean": 3.8073691829896356e-05,
+       "quadratic_mean": 4.1819856545456735e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 7.582430264060192e-05,
+       "p95": 0.00019847814724265357,
+       "rms": 0.00011043887624539837
+      }
+     },
+     {
+      "cut": 3,
+      "side": 1,
+      "component": 3,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": 0.0001469994285399326,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 3.7899639018676133e-05,
+       "p95": 6.593779101497858e-05,
+       "max": 7.557096688859299e-05,
+       "mean": 3.4059294483560286e-05,
+       "quadratic_mean": 3.834465327646172e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 7.248261467183797e-05,
+       "p95": 0.0002285771393613251,
+       "rms": 0.00010705462020300372
+      }
+     },
+     {
+      "cut": 3,
+      "side": 2,
+      "component": 4,
+      "samples": 600,
+      "rigid_aligned_deformation_bias_along_reference_normal_m": -8.39710264434929e-05,
+      "local_patch_roughness": {
+       "count": 598,
+       "p50": 5.276945223140982e-05,
+       "p95": 6.959969531562652e-05,
+       "max": 7.360371994335133e-05,
+       "mean": 4.820266615632281e-05,
+       "quadratic_mean": 5.1196361427903064e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": false
+      },
+      "whole_face_plane_residual_m": {
+       "p50": 7.802414866172949e-05,
+       "p95": 0.00026728100650737213,
+       "rms": 0.00012724304333335226
+      }
+     }
+    ],
+    "locus_source": "link_midpoint_fallback",
+    "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+   },
+   "summary_path": "artifacts/wp13/surfaces_001/tlmpm_v7/M00_four_slices_final/summary.json",
+   "summary_sha256": "6ec69cda02596689620ffa8b4ba9924beebecc7e886e0af4080045648f9c8b05"
+  }
+ ],
+ "measured_states": 15,
+ "not_run_states": 1
+}

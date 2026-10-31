@@ -1,0 +1,8 @@
+{
+  "id": "P01_shallow",
+  "episode": "PARTIAL",
+  "seed": 13037,
+  "planner_options": {
+    "overtravel_m": -0.012
+  }
+}

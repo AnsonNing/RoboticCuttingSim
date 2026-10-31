@@ -1,0 +1,124 @@
+{
+ "case": {
+  "id": "CUT",
+  "episode": "CUT",
+  "seed": 42
+ },
+ "solver": "tlmpm_v7",
+ "status": "COMPLETE",
+ "class": "execution_failure",
+ "partial_cut_rule": null,
+ "metrics": {
+  "consistency": {
+   "0-1s": {
+    "n": 2664,
+    "p50": 0.0038315131028439538,
+    "p99": 1.5249884433376841,
+    "max": 1.549311993927708
+   },
+   "1-3s": {
+    "n": 7000,
+    "p50": 0.007148688090403317,
+    "p99": 0.6988776702177013,
+    "max": 1.10689213471896
+   },
+   "3-6s": {
+    "n": 10500,
+    "p50": 0.0026265335483037127,
+    "p99": 0.1091324492015869,
+    "max": 0.2224014719317761
+   },
+   ">6s": {
+    "n": 259000,
+    "p50": 0.0007392238137957341,
+    "p99": 0.016521685299453873,
+    "max": 0.061617625093291356
+   },
+   "first_to_far_p99_ratio": 92.30223283505424
+  },
+  "locus_source": "link_midpoint_fallback",
+  "roughness": [
+   {
+    "cut": 0,
+    "side": 1,
+    "patch_roughness": {
+     "count": 236,
+     "p50": 0.0001104497843851323,
+     "p95": 0.00015922195185531354,
+     "max": 0.0001632809220854684,
+     "mean": 9.089751915717873e-05,
+     "quadratic_mean": 0.00010575980351730993,
+     "radius_m": 0.002,
+     "min_points": 6,
+     "centres_sampled": 236,
+     "grouped": true
+    }
+   },
+   {
+    "cut": 0,
+    "side": 2,
+    "patch_roughness": {
+     "count": 236,
+     "p50": 0.00011376900497975473,
+     "p95": 0.0001589454326060666,
+     "max": 0.000163104639191809,
+     "mean": 9.048635836605222e-05,
+     "quadratic_mean": 0.00010568449201337514,
+     "radius_m": 0.002,
+     "min_points": 6,
+     "centres_sampled": 236,
+     "grouped": true
+    }
+   }
+  ],
+  "mechanical_components": 1,
+  "component_masses_kg": [
+   0.143999999999951
+  ],
+  "mass_error_fraction": 3.400058012914543e-13,
+  "minimum_final_det_F": 0.8601029515266418,
+  "minimum_local_z_m": 0.000401777884690091,
+  "finite_final": true,
+  "slot_diagnostics": {
+   "code_encoding": "packed2",
+   "max_cuts": 4,
+   "slots_per_node": 8,
+   "max_occupied_slots": 3,
+   "overflow_entries": 0
+  },
+  "contact": {
+   "fixture_overlap_max_m": 0.00016253982903435826,
+   "blade_overlap_max_m": 0.0005956628010608256,
+   "tool_work_j": 0.007619584439680693,
+   "contact_steps": 137
+  }
+ },
+ "runtime": {
+  "reset_overhead_s": 2.552539924014127,
+  "episode_wall_s": 184.88623614399694,
+  "evaluation_wall_s": 1.5752129800093826,
+  "simulated_s": 14.0,
+  "simulation_throughput_sim_s_per_wall_s": 0.07572224029211255,
+  "surface_reconstruction_s": null,
+  "gpu_process_memory_mib": {
+   "GPU-a278df44-8db0-7770-630f-4f298a570b35": 970.0
+  }
+ },
+ "process_wall_s": 191.00349220097996,
+ "source_manifest": "artifacts/wp13/dev_cut_001/manifest.json",
+ "solver_receipt": {
+  "solver": "tlmpm_v7",
+  "status": "EXPERIMENTAL_NOT_ACCEPTED",
+  "position_update": "grid_musl_v1",
+  "cut_front": "finite_relative_sweep_v1",
+  "contact": "velocity_projection_tau_v1",
+  "contact_relaxation_s": 0.0002,
+  "edge_release_depth_m": 0.0005,
+  "edge_release_half_thickness_m": 0.00025,
+  "source_sha256": {
+   "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+   "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+   "tlmpm_v7.py": "80d41b773a8e36c5c573fcc61e20db6b9c9fe9ce944811002040707f2975fc07"
+  }
+ }
+}

@@ -1,0 +1,25 @@
+{
+  "full_collected_cpu_receipt": "docs/evidence/wp13/local_verification_001.json",
+  "final_focused": {
+    "command": "PYTHONPATH=src CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q tests/test_wp13_driver.py tests/test_tlmpm_v7.py tests/test_wp13_media_checker.py tests/test_live_env.py tests/test_wrist_camera_clearance.py tests/test_wrist_camera_audit.py tests/test_research_observation.py tests/test_repo_naming.py -rsx --junitxml=artifacts/wp13/final_focused_cpu_002.xml",
+    "passed": 52,
+    "expected_failures": 1,
+    "wall_s": 26.54,
+    "log": "artifacts/wp13/final_focused_cpu_002.log",
+    "junit_sha256": "ae07cb57e62d5642ba33deb622ab30f163ef971a7665a37fa4e1a0480f3cc075",
+    "scope": "Actual driver repair after 32 completed GPU episodes; no physics reruns. Known coarse severing-precondition failure remains xfailed, not PASS."
+  },
+  "driver_fix": {
+    "first_prepared_guard": "FAIL two checks: Task.goal returns a fresh dictionary, identity comparison missed it",
+    "failed_log": "artifacts/wp13/driver_fix_prepared_001.log",
+    "corrected_prepared_checks": {
+      "passed": 2,
+      "wall_s": 1.23,
+      "log": "artifacts/wp13/driver_fix_prepared_002.log"
+    },
+    "final_source_sha256": "167a73430a36680068d5a83dd3aba4b98e8dbb55b65b8d8897abe6187e1fe471",
+    "corrected_physical_matrix": "NOT_RUN; recorded batch deliberately not replaced"
+  },
+  "candidate_source_sha256": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+  "exact_final_remote_CI": "Required release gate recorded in PR, not asserted by local checks"
+}
