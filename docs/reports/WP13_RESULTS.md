@@ -43,12 +43,44 @@ does not add stress-driven damage, remove particles, smooth meshes or promote
 the rejected v6. Physical outcomes, contact stability, quality and generalization
 are NOT_RUN until their actual results are recorded below.
 
+The first complete candidate CUT failed (one component, 13,080 labels): the
+0.5 mm work region lost directional engagement halfway down the bar. Its
+[receipt](../evidence/wp13/dev_cut_001.json) and exact matching source are retained.
+The single focused alternative uses the actual 3.383 mm bevel for cutting work,
+retains flank reactions, and stores a finite sweep until actual work confirms
+engagement while that layer is still at the bevel. It does not label unswept
+layers. This alternative CUT passed the existing evaluator: two 72 g pieces,
+near-cut consistency P99 0.311 spacings, local face roughness about 0.043 mm RMS,
+fixture overlap 0.031 mm and blade overlap 0.125 mm. These are development
+measurements, not matched A/B acceptance or generalization.
+[Alternative receipt](../evidence/wp13/dev_cut_alternative_001.json).
+
 One initial CPU construction failed because the base constructor calls
 `set_trajectory` before the candidate allocates its previous-pose buffer. That
 failure is retained in the runner events; the corrected CPU compile is in
 `artifacts/wp13/v7_cpu_compile_002.log`. It does not establish cutting success.
 
-## D–F — Pending
+CPU contact/front/rigid-translation controls: 13 passed, including six physical
+negative controls (no contact, side push, flat press, blunt, stop, withdrawal).
+One initial rigid-translation test used the documented zero-mass node-plane
+lattice defect; using a half-grid lattice verifies the intended affine identity
+without changing its tolerance. A first test command named a nonexistent scene
+test; it collected nothing and remains an unsuccessful invocation.
+
+## E — Frozen representative cohort
+
+[focused_v1](../../configs/wp13/focused_v1.json) fixes 16 configurations × two
+solver arms = 32 kinematic episodes and three configurations × two arms = six
+Native episodes. It includes aspect ratios, Gaussian/dome bumps, one/two bumps,
+partial depths, two/four cuts, explicit ±20° slotted cuts, yaw, stiffness/yield/
+friction variations, half timestep and one 0.75 mm spacing spot check. Seeds
+are recorded; deterministic shape configurations do not acquire random shape
+diversity merely by changing their seeds. No outcome-based redraw is allowed.
+The rotated-board configuration initially failed compile-time footprint checks;
+its board centre was moved 25 mm inward before any formal physics outcome.
+The two-bump draft needed two retained digits, also corrected before outcomes.
+
+## D/F — Pending
 
 Surface comparisons, precommitted held-out matrix, Native runs, independent
 review, animated gallery, full CPU CI and remote main publication remain

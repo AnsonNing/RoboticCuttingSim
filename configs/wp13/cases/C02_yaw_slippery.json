@@ -24,7 +24,11 @@
       "profile": "blade_master_flat_board_v1",
       "overrides": {
         "cutting_board": {
-          "yaw_deg": 8.0
+          "yaw_deg": 8.0,
+          "center_xy_world_m": [
+            0.0,
+            0.055
+          ]
         }
       }
     }

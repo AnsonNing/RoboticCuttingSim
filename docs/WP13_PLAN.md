@@ -12,10 +12,10 @@ No plane smoothing, hidden fracture, goal changes or historical evidence edits.
 | Phase | Status | Next decisive evidence |
 | --- | --- | --- |
 | A Baseline/instrumentation | PASS (diagnosis) | v6 failure reproduced; traced corners genuinely remain ahead of the finite edge by 8–32 micrometres |
-| B Coupled kinematics/front | IN_PROGRESS | Opt-in v7; baseline CUT development run, then PARTIAL/TRIM and controls |
+| B Coupled kinematics/front | IN_PROGRESS | First CUT FAIL retained; focused alternative CUT PASS (2 × 72 g); final paired CUT/PARTIAL/TRIM next |
 | C Contact | IN_PROGRESS | Candidate velocity projection and physical edge zone; dt pair pending |
 | D Honest surfaces | NOT_RUN | Unchanged surface profiles on improved state before any renderer change |
-| E Focused generalization | NOT_RUN | Precommitted seeds/configs, 24–36 kinematic and 6–8 Native episodes |
+| E Focused generalization | PREDECLARED | `configs/wp13/focused_v1.json`: 32 paired kinematic and 6 Native episodes |
 | F Publication | NOT_RUN | Compact results, animated real Native gallery, PR merge and exact-main CI/media |
 
 Planning/complex analysis/review may use xhigh; implementation/testing use high.
