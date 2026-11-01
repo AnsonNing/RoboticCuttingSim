@@ -1,0 +1,31 @@
+{
+  "id": "T02_two_bumps",
+  "episode": "TRIM",
+  "seed": 13029,
+  "workpiece": {
+    "material_profile": "wp12_low_friction_v1",
+    "protrusions": [
+      {
+        "id": "p0",
+        "family": "dome",
+        "x_m": -0.028,
+        "y_m": 0.0,
+        "radius_x_m": 0.01,
+        "radius_y_m": 0.009,
+        "height_m": 0.006
+      },
+      {
+        "id": "p1",
+        "family": "gaussian",
+        "x_m": 0.028,
+        "y_m": 0.001,
+        "radius_x_m": 0.012,
+        "radius_y_m": 0.008,
+        "height_m": 0.007
+      }
+    ]
+  },
+  "solver_options": {
+    "max_cuts": 2
+  }
+}
