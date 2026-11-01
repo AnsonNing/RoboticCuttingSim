@@ -1,0 +1,18 @@
+{
+  "id": "wp14_finite_support_candidate_v1",
+  "status": "PREDECLARED_BEFORE_GPU_OUTCOMES",
+  "source_sha256": "d38eb4158df21dd33fea96e07623df2be67831c9fefea54f7ba9809a8e168648",
+  "solver": "tlmpm_v7_1",
+  "basis": "Fresh corrected T00 trace: 216 code0 bridges never see engaged particle bevel residence; 216 actual support links cross the finite front, 152 under engaged stroke. Candidate requires actual endpoint contact work and interface residence, with original inherited band.",
+  "rows": [
+    "configs/wp14/cases/T00_trim.json",
+    "configs/wp14/cases/C00_cut.json"
+  ],
+  "episodes": 2,
+  "device": "cuda:0",
+  "planner_source": "compiled",
+  "not_promotion": "Exploratory TRIM repair and CUT regression control. CUT research profile stays bound to original v7. Native/general TRIM support not implied.",
+  "negative_controls_cpu": "15 passed in 11.84 s; initial expired-pending test failure retained before source correction.",
+  "development_limit": "One main physical candidate; no further correction without new causal evidence.",
+  "shared_physics": "Original v7 position/F/contact and v5 packed fields; finite link supplements side assignment only; no task-specific engine, target plane, deletion, band increase or smoothing."
+}

@@ -41,6 +41,9 @@ def validate_task(scene, goal, planner, spacing):
     for filename, expected in doc['source_sha256'].items():
         actual = hashlib.sha256(Path(__file__).with_name(filename).read_bytes()).hexdigest()
         if actual != expected: errors.append(f'validated solver source differs: {filename}')
+    for filename,expected in doc['configuration_source_sha256'].items():
+        if hashlib.sha256((ROOT/filename).read_bytes()).hexdigest() != expected:
+            errors.append(f'validated material/workcell source differs: {filename}')
     if solver['module'] != doc['solver'] or solver['cutting_law'] != doc['cutting_law']:
         errors.append('solver/law differs from explicit profile')
     if solver['max_cuts'] != doc['max_cuts'] or solver.get('slots_per_node', 8) != doc['slots_per_node']:
@@ -60,6 +63,13 @@ def validate_task(scene, goal, planner, spacing):
     support = scene['supports']; workcell = support.get('workcell') or {}
     if support['kind'] != 'flat_board' or workcell.get('profile') != 'blade_master_flat_board_v1':
         errors.append('profile requires the declared solid flat board')
+    overrides=workcell.get('overrides',{})
+    board=overrides.get('cutting_board',{})
+    if (set(overrides)-{'cutting_board'} or set(board)-{'yaw_deg','center_xy_world_m'}
+            or board.get('yaw_deg',0.) != pose['yaw_deg']
+            or not any(np.allclose(board.get('center_xy_world_m',[0.,.03]),p,atol=1.e-12,rtol=0)
+                       for p in ([0.,.03],[0.,.055]))):
+        errors.append('workcell/board overrides outside profile')
     if scene['tool']['profile_id'] != env['tool']:
         errors.append('tool outside profile')
     if goal['type'] != 'sever' or len(goal.get('planes', [])) != 1:
@@ -81,7 +91,8 @@ def validate_task(scene, goal, planner, spacing):
         raise ValueError(f'{name}: '+ '; '.join(errors))
     return {'id':name, 'solver':doc['solver'], 'front':doc['front'], 'contact':doc['contact'],
             'position_update':doc['position_update'], 'envelope':env, 'evaluator':doc['evaluator'],
-            'source_sha256':doc['source_sha256'], 'configuration_sha256':hashlib.sha256(PROFILES[name].read_bytes()).hexdigest()}
+            'source_sha256':doc['source_sha256'], 'configuration_source_sha256':doc['configuration_source_sha256'],
+            'configuration_sha256':hashlib.sha256(PROFILES[name].read_bytes()).hexdigest()}
 
 
 def validate_runtime(task, solver, law, dt, cuts, slots, slice_efficiency):

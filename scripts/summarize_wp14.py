@@ -17,6 +17,27 @@ def digest(value):
     return hashlib.sha256(json.dumps(G.jsonable(value), sort_keys=True).encode()).hexdigest()
 
 
+def energy_momentum(state_path,task,tool_work):
+    from robotic_cutting_sim.root_cause_diagnostics import elastic_state
+    z=np.load(state_path)
+    x,v,X,F,Fpi=(z[k].astype(float) for k in ('positions','velocities','reference','F','Fpi'))
+    mass=task.material.density_kg_m3*task.particle_spacing_m**3
+    kinetic=float(.5*mass*np.sum(v*v))
+    potential_change=float(mass*9.81*np.sum(x[:,2]-X[:,2]))
+    elastic=elastic_state(F,Fpi,task.material.young_modulus_pa,task.material.poisson_ratio,task.material.yield_stress_pa)
+    stored=float(elastic['psi'].sum()*task.particle_spacing_m**3)
+    return {'final_kinetic_J':kinetic,'gravitational_potential_change_J':potential_change,
+            'final_projected_Hencky_energy_J':stored,
+            'mechanical_energy_change_minus_tool_work_J':kinetic+potential_change+stored-tool_work,
+            'final_linear_momentum_kg_m_s':(mass*v.sum(0)).tolist(),
+            'final_angular_momentum_about_initial_COM_kg_m2_s':(mass*np.cross(x-X.mean(0),v).sum(0)).tolist(),
+            'final_max_speed_m_s':float(np.linalg.norm(v,axis=1).max()),
+            'total_energy_balance':'NOT_RUN',
+            'scope':'Initially stress-free stationary particles. Final Hencky energy uses the existing projected '
+            'J2 diagnostic. Work residual omits plastic/contact/grid-transfer dissipation and fixture stabilization; '
+            'not a conservation gate or calibrated force prediction. External gravity/fixtures exchange momentum.'}
+
+
 def replay(task, actions):
     """Recompute each requested control from deployable kinematic proprioception.
 
@@ -105,6 +126,7 @@ def main():
                 partial_control=summary.get('partial_cut_rule'), execution_integrity=audit,
                 config=manifest['config'], metrics=summary['metrics'], sampled_stability=result['stability'],
                 solver_receipt=summary.get('solver_receipt'), supplemental=supplemental(out/'final_state.npz', case, solver),
+                energy_momentum=energy_momentum(out/'final_state.npz',task,summary['metrics']['contact']['tool_work_j']),
                 roughness_rms_m=roughness(summary), control_path_sha256=digest([{k:r[k] for k in fields} for r in actions]),
                 reaction_control_average_peak_N=float(force.max()), runtime=summary['runtime'],
                 process_wall_s=summary['process_wall_s'], provenance={k:manifest[k] for k in

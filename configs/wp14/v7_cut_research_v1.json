@@ -88,8 +88,15 @@
   "source_sha256": {
     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
-    "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+    "material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+    "tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7"
   },
   "evaluator": "unchanged goal_eval_v1 sever; frozen v1 precision benchmark remains separate",
-  "unsupported_action_behavior": "Requests outside the profile are errors; no fallback or mid-episode solver change."
+  "unsupported_action_behavior": "Requests outside the profile are errors; no fallback or mid-episode solver change.",
+  "configuration_source_sha256": {
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "configs/materials/materials_wp12_v1.json": "c6373ef96d00722f024e1b45c65a52599712e618b10f318dbc0e3f9311f0cac0",
+    "configs/wp12_workcells_v1.json": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
+  }
 }
