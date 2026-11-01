@@ -28,16 +28,15 @@
       "wp12_firm_v1"
     ],
     "cut_x_m": [
-      -0.006,
-      0.006
+      -0.004,
+      0.004
     ],
     "yaw_deg": [
-      -8.0,
-      8.0
+      -5.0,
+      5.0
     ],
     "normal_local": [
-      "+x",
-      "-x"
+      "+x"
     ],
     "particle_spacing_m": 0.001,
     "grid_dx_m": 0.004,
@@ -52,9 +51,17 @@
       "oblique cuts relative to board",
       "arbitrary multi-cut placement",
       "other resolutions",
-      "other material profiles"
+      "other material profiles",
+      "reverse blade-line direction (only a failed-location held-out instance)",
+      "half-grid cut locations with an ideal frozen statistic above 2 mm"
     ],
-    "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases."
+    "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases.",
+    "cut_x_values_m": [
+      -0.004,
+      0.0,
+      0.004
+    ],
+    "length_increment_m": 0.008
   },
   "planner": {
     "controller_profile": "path_v2",
@@ -99,5 +106,20 @@
     "configs/wp12_workcells_v1.json": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
   },
   "unsupported_configuration_behavior": "Requests outside the profile are errors; no fallback or mid-episode solver change.",
-  "validation_scope": "Declared compiled scripted controller only. Configuration selection is not an outcome certificate; arbitrary policy actions require separate execution validation."
+  "validation_scope": "Declared compiled scripted controller only. Configuration selection is not an outcome certificate; arbitrary policy actions require separate execution validation.",
+  "scope_decision": {
+    "type": "POST_HOC_RESTRICTION_OF_FAILED_PROPOSED_ENVELOPE",
+    "validated_kinematic_instances": [
+      "C00_cut",
+      "C01_aspect_firm",
+      "H00_cut",
+      "H01_cut"
+    ],
+    "retained_failed_heldout": [
+      "H02_cut",
+      "H03_cut"
+    ],
+    "basis": "Both versions truly separate all four held-out cases, but H02/H03 each have actual AND ideal-geometric frozen midpoint statistic 2.5 mm > unchanged 2 mm. No redraw or threshold change. Restrict to tested +x blade direction, \u00b15 degree yaw and node-phase cut locations -4/0/+4 mm on 8 mm length increments.",
+    "inference_limit": "Ranges describe a numerical research envelope around four measured instances, not a verified Cartesian product or an independent success rate after narrowing. Original predeclared held-out task denominator remains 2/4 in each arm. Native cases were selected before held-out outcomes."
+  }
 }

@@ -69,6 +69,9 @@ def validate_task(scene, goal, planner, spacing):
     for key, limits in ((k, env[k]) for k in ('length_m', 'width_m', 'height_m')):
         if not limits[0]-1.e-12 <= wp['base_box_m'][key] <= limits[1]+1.e-12:
             errors.append(f'{key} outside profile')
+    length_units=wp['base_box_m']['length_m']/env['length_increment_m']
+    if abs(length_units-round(length_units))>1.e-10:
+        errors.append('bar length reference-lattice phase outside profile')
     if wp['material_profile'] not in env['material_profiles']:
         errors.append('material outside profile')
     pose = wp['world_pose']
@@ -92,11 +95,13 @@ def validate_task(scene, goal, planner, spacing):
         plane = goal['planes'][0]; normal = plane['normal_local']
         normals=[{'+x': [1.,0.,0.], '-x': [-1.,0.,0.]}[sign] for sign in env['normal_local']]
         if not any(np.allclose(normal,n,atol=1.e-12,rtol=0) for n in normals):
-            errors.append('oblique normal outside profile')
+            errors.append('cut/blade direction outside profile')
         if plane.get('approach_local') is not None:
             errors.append('custom approach outside profile')
         if not env['cut_x_m'][0] <= plane['origin_local_m'][0] <= env['cut_x_m'][1]:
             errors.append('cut location outside profile')
+        if not any(abs(plane['origin_local_m'][0]-value)<1.e-12 for value in env['cut_x_values_m']):
+            errors.append('cut reference-lattice phase outside profile')
         if (goal['expected_pieces'] != 2 or goal['minimum_part_mass_fraction'] < .4 or
                 goal['minimum_main_parts_mass_fraction'] < .99 or goal['plane_error_bound_m'] > .002):
             errors.append('goal evaluator requirements weaker than validated sever')
@@ -106,6 +111,7 @@ def validate_task(scene, goal, planner, spacing):
         raise ValueError(f'{name}: '+ '; '.join(errors))
     return {'id':name, 'solver':doc['solver'], 'front':doc['front'], 'contact':doc['contact'],
             'position_update':doc['position_update'], 'envelope':env, 'evaluator':doc['evaluator'],
+            'scope_decision':doc['scope_decision'],
             'source_sha256':doc['source_sha256'], 'configuration_source_sha256':doc['configuration_source_sha256'],
             'configuration_sha256':hashlib.sha256(PROFILES[name].read_bytes()).hexdigest()}
 

@@ -20,7 +20,7 @@ def proposed(name='C00_cut'):
     return replace(task,scene_json=json.dumps(scene))
 
 
-@pytest.mark.parametrize('name',['C00_cut','C01_aspect_firm','H00_cut','H01_cut','H02_cut','H03_cut'])
+@pytest.mark.parametrize('name',['C00_cut','C01_aspect_firm','H00_cut','H01_cut'])
 def test_proposed_configuration_envelope_is_independent_of_outcomes(name):
     task=proposed(name)
     receipt=P.validate_runtime(task,'tlmpm_v7',8,.0001,4,8,1.)
@@ -55,6 +55,20 @@ def test_profile_refuses_unsupported_configuration(change):
 def test_profile_rejects_runtime_overrides(solver,law,dt,cuts,slots,efficiency):
     with pytest.raises(ValueError,match='runtime'):
         P.validate_runtime(proposed(),solver,law,dt,cuts,slots,efficiency)
+
+
+@pytest.mark.parametrize('name',['H02_cut','H03_cut'])
+def test_failed_predeclared_boundaries_remain_outside_adopted_configuration(name):
+    task=proposed(name)
+    with pytest.raises(ValueError,match='outside profile'):
+        P.validate_task(task.scene,task.goal,task.controller['planner'],.001)
+
+
+def test_unmeasured_half_grid_location_is_refused_without_changing_evaluator():
+    task=proposed();goal=task.goal;goal['planes'][0]['origin_local_m'][0]=.002
+    assert goal['plane_error_bound_m']==.002
+    with pytest.raises(ValueError,match='lattice phase'):
+        P.validate_task(task.scene,goal,task.controller['planner'],.001)
 
 
 def test_profile_refuses_changed_solver_source_binding(monkeypatch):
