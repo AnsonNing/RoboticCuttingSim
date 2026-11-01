@@ -20,7 +20,7 @@ def main():
     result=json.loads((episode/'result.json').read_text())
     material=json.loads((episode/'material.json').read_text())
     prepared=json.loads((a.source/'prepared.json').read_text())
-    if result['runtime_source']!='live_isaac_sim' or result['task_status']!='TASK_SUCCESS':
+    if result['runtime_source']!='live_isaac_sim' or result['task_status']!='PASS':
         raise ValueError('Expected completed actual Native task; preserve failed sources')
     if (material['solver_module']!='robotic_cutting_sim.tlmpm_v7' or
             material['research_profile']['configuration_sha256']!=prepared['profile']['configuration_sha256']):
