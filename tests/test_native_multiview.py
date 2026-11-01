@@ -45,6 +45,14 @@ def test_archived_capture_gap_is_explicit_and_current_recording_still_refuses_it
     assert check_set(f,initial,archived=True)['missing_cameras']==['wrist_d405_0']
 
 
+def test_optional_actual_closeup_requires_the_same_capture_timestamp(tmp_path):
+    from robotic_cutting_sim.native_multiview import read_closeup
+    rgb=np.full((16,24,3),127,np.uint8)
+    np.savez(tmp_path/'closeup_rgb_0003.npz',rgb=rgb,physics_timestamp_s=.6)
+    np.testing.assert_array_equal(read_closeup(tmp_path,3,.6)['rgb'],rgb)
+    with pytest.raises(ValueError,match='timestamp'):read_closeup(tmp_path,3,.8)
+
+
 def test_irregular_capture_all_frames_and_exact_physics_pts(tmp_path):
     sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
     from encode_wp13_media import encode_timed_frames

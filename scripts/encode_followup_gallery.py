@@ -30,7 +30,9 @@ def main():
     for row in catalog['episodes']:
         source=Path(row['source_episode']);out=a.stage/row['id']
         old=previous.get(row['id'])
-        if old and old['status']=='PASS' and old['source_episode']==row['source_episode']:
+        if old and old['status']=='PASS' and all(old.get(k)==v for k,v in row.items()):
+            for path,expected in old['receipt']['source_sha256'].items():
+                if sha256_file(Path(path))!=expected:raise ValueError('Raw reuse source changed')
             outputs={}
             for path,expected in old['published'].items():
                 if sha256_file(Path(path))!=expected:raise ValueError('Published reuse source changed')
@@ -45,6 +47,7 @@ def main():
         if row.get('archived'):command.append('--archived-native')
         if row.get('global_pixel_crop'):
             command += ['--global-pixel-crop',*[str(v) for v in row['global_pixel_crop']]]
+        if row.get('presentation_closeup'):command.append('--presentation-closeup')
         with (a.stage/(row['id']+'.log')).open('x') as log:
             code=subprocess.call(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
         record={**row,'command':command,'returncode':code,'status':'PASS' if code==0 else 'BLOCKED'}

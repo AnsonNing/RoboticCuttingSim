@@ -126,6 +126,8 @@ def main():
     parser.add_argument('--archived-native', action='store_true', help='Preserve historical mounts/metadata; never relabel as the current rig')
     parser.add_argument('--global-pixel-crop', type=int, nargs=4, metavar=('X','Y','W','H'),
                         help='Optional fixed digital Global RGB crop, with the complete unaltered view inset')
+    parser.add_argument('--presentation-closeup', action='store_true',
+                        help='Add the actual synchronized closeup_rgb stream, labelled presentation-only')
     args = parser.parse_args()
     start = time.perf_counter()
     episode = args.episode_dir.resolve()

@@ -71,6 +71,14 @@ def check_set(frames, initial=None, *, archived=False):
             'missing_cameras':[n for n in CAMERAS if frames[n] is None]}
 
 
+def read_closeup(observations, index, time_s):
+    """A real, optional presentation stream; never an alias of a wrist camera."""
+    with np.load(observations/f'closeup_rgb_{index:04d}.npz') as data:
+        if abs(float(data['physics_timestamp_s'])-time_s)>1e-7:
+            raise ValueError('Presentation close-up timestamp differs from actual Global capture')
+        return {'rgb':data['rgb'].copy()}
+
+
 def depth_rgb(frame):
     """Fixed D405 70–500 mm optical-Z colour scale; invalid pixels stay black."""
     depth=np.asarray(frame['depth_m']).squeeze()
@@ -107,15 +115,22 @@ def canvas(frames, solver, phase, task_status, title, surface='particle_surface_
         text=f'{t:.2f}s | {short_solver} | {phase}'
         draw.text((x+8,y+21 if depth else y+27),text,font=font,fill='#bbc3d0')
         if depth:draw.text((x+8,y+36),f"valid {np.mean(frame['valid_mask']):.1%}",font=font,fill='#bbc3d0')
-    pane('global_d455',(0,80,1280,960))
+    has_closeup='closeup_rgb' in frames
+    pane('global_d455',(0,80,1280,640 if has_closeup else 960))
     pane('wrist_d405_0',(1280,80,640,340))
     pane('wrist_d405_1',(1280,420,640,340))
     pane('wrist_d405_0',(1280,760,320,280),True)
     pane('wrist_d405_1',(1600,760,320,280),True)
     if global_crop is not None:
-        full=ImageOps.contain(Image.fromarray(frames['global_d455']['rgb'][...,:3]),(320,240),Image.Resampling.LANCZOS)
-        im.paste(full,(952,145));draw.rectangle((952,145,952+full.width,145+full.height),outline='white')
-        draw.text((956,127),'Global full RGB (all occluders retained)',font=ImageFont.truetype(FONT,13),fill='white')
+        box=(220,165) if has_closeup else (320,240);origin=(8,160) if has_closeup else (952,145)
+        full=ImageOps.contain(Image.fromarray(frames['global_d455']['rgb'][...,:3]),box,Image.Resampling.LANCZOS)
+        im.paste(full,origin);draw.rectangle((*origin,origin[0]+full.width,origin[1]+full.height),outline='white')
+        draw.text((origin[0]+4,origin[1]-18),'Global full RGB; all occluders retained',font=ImageFont.truetype(FONT,11),fill='white')
+    if has_closeup:
+        picture=ImageOps.contain(Image.fromarray(frames['closeup_rgb']['rgb'][...,:3]),(1280,268),Image.Resampling.LANCZOS)
+        im.paste(picture,((1280-picture.width)//2,772))
+        draw.text((8,722),'closeup_rgb: actual Native presentation camera (not an observation)',font=small,fill='white')
+        draw.text((8,746),f'{t:.2f}s | {solver} | {phase}',font=small,fill='#bbc3d0')
     footer='Archived camera calibration retained; no retrofit to the current rig.' if archived else 'Fixed hand-local v5 D405 mounts.'
     draw.text((18,1052),'Actual recorded cameras. '+footer+' Physical sensor calibration unvalidated.',font=small,fill='#bbc3d0')
     return np.asarray(im)
@@ -139,14 +154,19 @@ def render_episode(args, episode, out, started):
     if not indices or (not archived and any(streams[name]!=indices for name in CAMERAS)):
         raise ValueError('Camera frame indices are not paired')
     initial={name:read_set(obs,streams[name][0],allow_missing=archived)[name] for name in CAMERAS}
+    def load(index):
+        frames=read_set(obs,index,allow_missing=archived)
+        if args.presentation_closeup:
+            frames['closeup_rgb']=read_closeup(obs,index,float(frames['global_d455']['physics_timestamp_s']))
+        return frames
     crop=args.global_pixel_crop
     if crop is not None:
         x,y,w,h=crop;rgb=initial['global_d455']['rgb']
         if min(x,y)<0 or min(w,h)<1 or x+w>rgb.shape[1] or y+h>rgb.shape[0]:raise ValueError('Global pixel crop outside actual image')
     audit=[];inputs={}
     for index in indices:
-        audit.append(check_set(read_set(obs,index,allow_missing=archived),initial,archived=archived))
-        for name in CAMERAS:
+        audit.append(check_set(load(index),initial,archived=archived))
+        for name in (*CAMERAS,*(('closeup_rgb',) if args.presentation_closeup else ())):
             path=obs/f'{name}_{index:04d}.npz'
             if path.exists():inputs[str(path)]=dm.sha256_file(path)
     times=np.array([r['time_s'] for r in audit]);dt=np.diff(times)
@@ -160,7 +180,7 @@ def render_episode(args, episode, out, started):
     phases={index:(('ARCHIVED_REFERENCE' if archived and not rows else 'HOME') if row<0 else rows[row].get('policy_phase','UNKNOWN')) for index,row in zip(indices,chosen)}
     status=result.get('task_status','NOT_REPORTED');title=args.title or result['task_id']
     def transform(path):
-        index=int(path.stem.rsplit('_',1)[1]);return canvas(read_set(obs,index,allow_missing=archived),solver,phases[index],status,title,surface,archived,crop)
+        index=int(path.stem.rsplit('_',1)[1]);return canvas(load(index),solver,phases[index],status,title,surface,archived,crop)
     files=[obs/f'global_d455_{i:04d}.npz' for i in indices]
     encoded=(encode_frames(files,out/'demo.mp4',None,view=LAYOUT,frame_transform=transform,fps=fps) if constant
              else encode_timed_frames(files,out/'demo.mp4',transform,times))
@@ -175,6 +195,8 @@ def render_episode(args, episode, out, started):
         'frame_count':len(indices),'capture_time_s':times.tolist(),'frame_checks':audit,
         'sync_status':'PASS','depth_colour_range_m':[.07,.50],'invalid_depth':'black',
         'global_pixel_crop_xywh':crop,'native_clock_origin_offset_s':float(offsets[0]),
+        'presentation_closeup':{'included':bool(args.presentation_closeup),'policy_observation':False,
+                               'recorded_spec':setup.get('presentation_closeup_camera')},
         'initial_calibration':{name:{key:initial[name][key].tolist() for key in ('K','T_world_camera','T_hand_camera') if key in initial[name]} for name in CAMERAS},
         'missing_raw_captures':[{k:r[k] for k in ('time_s','missing_cameras')} for r in audit if r['missing_cameras']],
         'full_clip_speed':1.,'gif_speed':speed,'gif_command':command,'encoder':encoded,'full_decode':'PASS',
