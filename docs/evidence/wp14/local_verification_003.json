@@ -1,0 +1,25 @@
+{
+  "command": "CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python -m pytest -q tests/test_tlmpm_v7_1.py tests/test_research_profiles.py tests/test_wp14_integrity.py tests/test_repo_naming.py",
+  "status": "PASS",
+  "passed": 60,
+  "wall_s": 31.87,
+  "log": "artifacts/wp14/logs/review_fixes_cpu_001.log",
+  "log_sha256": "f7a47355e552bb2058abe03389f5cdc34a444a8f07a69c338d9e3c52e1263012",
+  "source_sha256": {
+    "src/robotic_cutting_sim/research_profiles.py": "a9679385b7fa258065da8c658429b18643c93dd0a18c9cc5f7808a29cfef7b88",
+    "src/robotic_cutting_sim/tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+    "src/robotic_cutting_sim/tlmpm_v7_1.py": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+    "tests/test_tlmpm_v7_1.py": "64e6ccd001860fb52e157882b4bbe812a7178069c3244f44f0fe2666498e3136",
+    "tests/test_research_profiles.py": "0e858059f8522fd1ab814b289cc7bc9bed1efa9c13744ae924f897814da8a77a",
+    "configs/wp14/v7_cut_research_v1.json": "9a5956146c255adda763769059f12f2b4f0ce69f833824cf839b4ef5650ed056"
+  },
+  "regressions_before_fix": {
+    "status": "FAIL",
+    "failed": 6,
+    "log": "artifacts/wp14/logs/review_regressions_before_001.log",
+    "log_sha256": "ab25e3bfc456f206885cdf7ee34477597156e49f4a5e21dbee3b2b5acc5a75aa"
+  },
+  "candidate_front": "finite_support_interface_v1_2",
+  "candidate_gpu_task_status": "NOT_RUN",
+  "scope": "Review fixes only; original v7 source/profile and all completed GPU/Native outcomes unchanged. Full collected suite is separately reported; exact final CI still required."
+}

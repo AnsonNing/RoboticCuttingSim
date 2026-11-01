@@ -85,6 +85,20 @@ def test_no_profile_retains_existing_selection():
     assert P.validate_runtime(task,'tlmpm_v5',8,.0001,4,8,1.) is None
 
 
+def test_profile_rejects_effective_material_override():
+    from robotic_cutting_sim.task_scenarios import configure_task
+    task=configure_task(proposed(),material_profile_id='cheddar_provisional_v1')
+    with pytest.raises(ValueError,match='effective material'):
+        P.validate_runtime(task,'tlmpm_v7',8,.0001,4,8,1.)
+
+
+def test_profile_rejects_direct_material_parameter_override():
+    task=proposed()
+    task=replace(task,material=replace(task.material,friction=.9))
+    with pytest.raises(ValueError,match='effective material'):
+        P.validate_runtime(task,'tlmpm_v7',8,.0001,4,8,1.)
+
+
 def test_public_profile_factory_and_runtime_payload_roundtrip():
     from robotic_cutting_sim.scene_config import configured_task_payload,task_from_payload
     task=P.compile_research_task('v7_cut_research_v1','configs/wp12/scenes/bar_flat_board.json','sever_mid')

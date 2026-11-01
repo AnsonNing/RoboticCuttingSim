@@ -82,20 +82,31 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
         pending_cut[p] = -1
         return
     if B._digit(old_codes[p],cut) != 0:
+        pending_q[p] = -1
+        pending_cut[p] = -1
         return
     d = B._digit(reached[p],cut)
     if d == 0:
+        pending_q[p] = -1
+        pending_cut[p] = -1
         return
     twist = twists[i]
     # The link construction is for a translational finite sweep, not a
     # rotating swept volume. Rotating/disarmed motion retains v7 behavior.
     if wp.length_sq(wp.vec3(twist[3],twist[4],twist[5])) > 1.e-10:
+        pending_q[p] = -1
+        pending_cut[p] = -1
         return
     local = wp.transform_point(wp.transform_inverse(poses[i]),x[p])
     side = B._swept_side(x[p],poses[i],twist,local)
     if wp.abs(side) > band or (d == 1 and side >= 0.0) or (d == 2 and side < 0.0):
+        pending_q[p] = -1
+        pending_cut[p] = -1
         return
     q = int(-1)
+    if pending_cut[p] != cut:
+        pending_q[p] = -1
+        pending_cut[p] = -1
     if pending_cut[p] == cut:
         q = pending_q[p]
         if q >= 0:
@@ -103,6 +114,7 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
             if here[3] == 0.0 or here[0] < -bevel or here[0] > 0.0 or wp.abs(here[1]) > width:
                 q = -1
                 pending_q[p] = -1
+                pending_cut[p] = -1
     if q < 0:
         for node_index in range(8):
             if q < 0 and (weights[p,node_index] > 0.0 or wp.length_sq(gradients[p,node_index]) > 0.0):
@@ -130,6 +142,7 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
                 if dw > 1.e-20:
                     codes[p] = codes[p] | (d << (2*cut))
                     pending_q[p] = -1
+                    pending_cut[p] = -1
                     wp.atomic_add(diagnostics,1,1)
 
 
@@ -174,9 +187,10 @@ class TLMPM(V.TLMPM):
     def solver_receipt(self):
         receipt = super().solver_receipt()
         return {**receipt,'solver':SOLVER_NAME,'status':'EXPERIMENTAL_NOT_ACCEPTED',
-                'cut_front':'finite_support_interface_v1_1','shared_base_solver':'tlmpm_v7',
+                'cut_front':'finite_support_interface_v1_2','shared_base_solver':'tlmpm_v7',
                 'candidate_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 'link_completion_counts':dict(zip(('finite_link_events','completed_side_digits'),
                                                    self.link_diagnostics.numpy().tolist())),
                 'scope':'Actual reference-node support links; translational sweep only. Same v7 contact and x/F. '
-                'v1_1 clears pending evidence at disarm; its new regression is CPU-verified, GPU outcome NOT_RUN.'}
+                'v1_2 clears pending evidence at disarm, rotation and side/band exits; '
+                'lifecycle regressions are CPU-verified, GPU outcome NOT_RUN.'}

@@ -121,6 +121,9 @@ def validate_runtime(task, solver, law, dt, cuts, slots, slice_efficiency):
         return None
     receipt = validate_task(task.scene, task.goal, task.controller['planner'], task.particle_spacing_m)
     doc = document(receipt['id'])
+    from .scene_config import scene_material
+    if task.material != scene_material(task.scene):
+        raise ValueError(f"{receipt['id']}: effective material differs from the validated scene recipe")
     if (solver != doc['solver'] or law != doc['cutting_law'] or dt != doc['envelope']['material_dt_s']
             or cuts != doc['max_cuts'] or slots != doc['slots_per_node'] or slice_efficiency != 1.):
         raise ValueError(f"{receipt['id']}: runtime solver/contact/discretization overrides outside profile")

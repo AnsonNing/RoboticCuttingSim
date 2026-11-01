@@ -8,7 +8,7 @@ interactive logs remain under ignored artifacts/wp14/runner_20261101.
 | Phase | Result | Evidence / limit |
 | --- | --- | --- |
 | A Compiled planner | PASS | 14 core episodes; all actual commands replay; seven identical paired paths; Partial truly 1.799 mm shallower |
-| B Finite interface | PARTIAL | Two actual substep traces, one candidate; TRIM still FAIL. Post-study disarm correction CPU-only; no old GPU outcome reassigned |
+| B Finite interface | PARTIAL | Two actual substep traces, one candidate; TRIM still FAIL. Post-study pending-lifecycle correction CPU-only; no old GPU outcome reassigned |
 | C Scoped profile | QUALIFIED | Original v7 four successful CUT instances, reproducible quality gains, six negatives and fresh GPU recontact PASS |
 | D Held-out / Native | PARTIAL / Native PASS | Original held-out 2/4 task passes each; all 4/4 physically sever; ±6 mm frozen location gates FAIL. Four predeclared Native tasks/HOME PASS |
 | E Publication | IN_PROGRESS | Explicit source-bound selection, real media, 12 state reconstructions and CPU checks complete; final review, PR/main exact CI and remote playback required |
@@ -33,7 +33,7 @@ or outcome redraw. Native cases C00/H01 were selected before held-out outcomes.
 
 One full collected CPU suite records 1705 passed / 9 skipped / 6 xfailed in
 1921.97 s; collection began at 3ceb131 while metadata evolved. Current-source
-focused checks: 54 passed. Exact final/main CPU CI remains a release gate.
+focused checks: 60 passed. Exact final/main CPU CI remains a release gate.
 
 [Single results report](reports/WP14_RESULTS.md),
 [all core evidence](evidence/wp14/core_001.json),

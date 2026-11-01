@@ -1,0 +1,44 @@
+{
+  "command": [
+    "/home/ningan/.vscode-server/extensions/openai.chatgpt-26.930.41038-linux-x64/bin/linux-x86_64/codex",
+    "-C",
+    "/home/ningan/RoboticCuttingSim-wp14",
+    "-a",
+    "never",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6.1-sol",
+    "-c",
+    "model_reasoning_effort=\"xhigh\"",
+    "-c",
+    "memories.generate_memories=false",
+    "exec",
+    "--ephemeral",
+    "--json",
+    "-o",
+    "artifacts/wp14/review_001/final.txt",
+    "-"
+  ],
+  "returncode": 0,
+  "wall_s": 407.171591074999,
+  "reviewed_commit": "689877445e756ba8302e700d0b48d995e220d4b9",
+  "mode": "READ_ONLY_XHIGH",
+  "mutations_authorized": false,
+  "findings": [
+    {
+      "priority": "P1",
+      "issue": "Effective material override retained profile receipt",
+      "fix": "Runtime compares effective task.material with the exact scene recipe; both food-profile and direct material overrides covered."
+    },
+    {
+      "priority": "P2",
+      "issue": "Pending interface evidence survived early rotation/side/band exits",
+      "fix": "Clear pending interface/cut on all ineligible exits and expired/cut-switched evidence; pending-excursion-return controls cannot complete without a new sweep."
+    }
+  ],
+  "verification": "local_verification_003.json",
+  "original_review_sha256": "b6ce6ba036e829e7c26da4faf0de0cece9e434361fec7325f60b17316ddae205",
+  "original_events_sha256": "ac444a43f357ad0b3971dce7ded33820680c30c6d41841332cf2859debc5d703",
+  "delta_review": "PENDING"
+}

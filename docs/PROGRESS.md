@@ -14,11 +14,11 @@
 - Fresh Native C00/H01 v5/v7: 4/4 TASK_SUCCESS, 4/4 HOME PASS. Exact profile configuration/source verified.
   Same scene/controller, coupled resolved-command differences 0.040/0.061 mm; Native x/F NOT_RUN (no F).
 - Two substep traces diagnose missed TRIM interface engagement. One finite v7_1 candidate retains CUT
-  but still fails TRIM; its post-study disarm cleanup front v1_1 is CPU-verified only, GPU NOT_RUN.
+  but still fails TRIM; its post-study pending-lifecycle correction v1_2 is CPU-verified only, GPU NOT_RUN.
   TRIM stays Unsupported; Partial and Multi-cut stay Experimental. No tolerance widening or renderer repair.
 - One half-dt pair passes both arms; forces are sensitive, not converged/calibrated. New GPU recontact PASS.
   Twelve saved-state/two-profile reconstructions retain degenerates, sampled intersections and Partial coverage loss.
-- Full collected CPU 1705 passed / 9 skipped / 6 xfailed (not exact final head); current focused 54 PASS.
+- Full collected CPU 1705 passed / 9 skipped / 6 xfailed (not exact final head); current focused 60 PASS.
   Six new MP4s/two real GIFs encode genuine Native captures; all prior WP-12/WP-13 evidence and gallery retained.
 - Final read-only review, PR/main exact-commit CI and rendered remote media/docs checks remain release gates.
   publication_verified and DONE are absent until they pass.

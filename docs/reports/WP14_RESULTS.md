@@ -94,9 +94,10 @@ GPU 0, so comparisons with GPU 1 are not isolated speed or numerical-repeat
 claims. **The CUT profile stays bound to original v7**, never this candidate.
 [Actual traces, candidate results and source hashes](../evidence/wp14/front_candidate_001.json).
 
-After the GPU study, a focused regression reproduced pending evidence surviving
-disarm. The versioned front `finite_support_interface_v1_1` now clears it;
-current focused controls pass. **v1_1 GPU task outcomes are NOT_RUN**. The GPU
+After the GPU study, focused regressions reproduced pending evidence surviving
+disarm, then rotation and side/band exits during final review. The lifecycle
+correction is versioned as `finite_support_interface_v1_2`; it clears expired
+evidence before every early return. **v1_1 and v1_2 GPU task outcomes are NOT_RUN**. The GPU
 rows above remain tied to original candidate source `48c12f4b…`; no result is
 reassigned to the correction. Neither experimental front enters the CUT profile.
 
@@ -208,8 +209,12 @@ launch never started physics; its empty log is retained before tmux launch.
 Local full CPU: **1705 passed, 9 skipped, 6 xfailed**, 1921.97 s; collected at
 3ceb131 while metadata evolved, not an exact-final-head claim. After scope
 restriction, **35 focused tests pass**; final current-source checks including
-disarm-event regression record **54 passed**. [Full collected receipt](../evidence/wp14/local_verification_001.json),
-[current focused checks and retained failure](../evidence/wp14/local_verification_002.json).
+pending-event and effective-material regressions record **60 passed**. [Full collected receipt](../evidence/wp14/local_verification_001.json),
+[latest focused checks and retained failures](../evidence/wp14/local_verification_003.json).
+The sequential read-only xhigh [review](../evidence/wp14/review_001.json) found two
+real issues: runtime material overrides and expired pending front events. Both
+are reproduced in retained failing tests, fixed and covered by the 60 checks.
+A short read-only delta review follows before publication.
 Real media encoding and local full decode complete; five previous moving GIFs
 and all seven WP-13 full MP4s remain byte-identical. Independent final read-only
 review, PR/main merge and exact-main CI/rendered remote playback are release

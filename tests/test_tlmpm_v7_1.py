@@ -6,12 +6,12 @@ import warp as wp
 from robotic_cutting_sim import tlmpm_v7 as V, tlmpm_v7_1 as C
 
 
-@pytest.mark.parametrize('mode', ['contact', 'no_contact', 'no_sweep', 'disarmed', 'disarmed_pending', 'stop', 'outside_edge', 'rotation', 'expired'])
+@pytest.mark.parametrize('mode', ['contact', 'no_contact', 'no_sweep', 'disarmed', 'disarmed_pending', 'stop', 'outside_edge', 'rotation', 'expired', 'pending_rotation', 'pending_outside', 'pending_band', 'pending_side'])
 def test_completion_requires_finite_sweep_and_actual_endpoint_work(mode):
     from robotic_cutting_sim.tool_profile import RULER_KNIFE_V2_Y
     a = lambda value,dtype: wp.array(value,dtype=dtype,device='cpu')
     height = .01 if mode == 'no_contact' else .0002
-    y = .1 if mode == 'outside_edge' else 0.
+    y = .1 if mode in ('outside_edge','pending_outside') else 0.
     x = a([[.0001,y,-height],[.0001,y,height]],wp.vec3)
     velocity = wp.zeros(2,dtype=wp.vec3,device='cpu')
     mass = a([1.5e-6]*2,float)
@@ -22,20 +22,34 @@ def test_completion_requires_finite_sweep_and_actual_endpoint_work(mode):
     previous = a([[0.,0.,0.,0.,0.,0.,1.]],wp.transform)
     shift = .004 if mode == 'expired' else (0. if mode=='no_sweep' else .0002)
     poses = a([[shift,0.,0.,0.,0.,0.,1.]],wp.transform)
-    twists = a([[0. if mode=='stop' else .01,0.,0.,0.,0.,1. if mode=='rotation' else 0.]],wp.spatial_vector)
+    twists = a([[0. if mode=='stop' else .01,0.,0.,0.,0.,1. if mode in ('rotation','pending_rotation') else 0.]],wp.spatial_vector)
     cuts = a([-1 if mode in ('disarmed','disarmed_pending') else 0],int); index = a([0],int); stroke = a([1],int)
     segment = a([1,1],int)
     polygon,_ = RULER_KNIFE_V2_Y.tlmpm_profile(); profile = a(polygon,wp.vec2)
-    pending_q = a([1 if mode in ('expired','disarmed_pending') else -1,-1],int)
-    pending_cut = a([0 if mode in ('expired','disarmed_pending') else -1,-1],int)
+    seeded = mode in ('expired','disarmed_pending') or mode.startswith('pending_')
+    pending_q = a([1 if seeded else -1,-1],int)
+    pending_cut = a([0 if seeded else -1,-1],int)
     diagnostics = wp.zeros(2,dtype=int,device='cpu')
     original_positions = x.numpy().copy()
-    wp.launch(C._complete_links,2,[x,x,velocity,mass,old_codes,codes,reached,nodes,weights,gradients,
-        offsets,neighbours,poses,previous,twists,cuts,index,stroke,segment,2,.06,.024,.003383,.00075,
-        profile,len(polygon),.00045,.0001,.3,1.,pending_q,pending_cut,diagnostics],device='cpu')
+    if mode=='pending_side':reached.assign(np.array([2,0],np.int32))
+    args=[x,x,velocity,mass,old_codes,codes,reached,nodes,weights,gradients,
+        offsets,neighbours,poses,previous,twists,cuts,index,stroke,segment,2,.06,
+        .00005 if mode=='pending_band' else .024,.003383,.00075,
+        profile,len(polygon),.00045,.0001,.3,1.,pending_q,pending_cut,diagnostics]
+    wp.launch(C._complete_links,2,args,device='cpu')
     assert codes.numpy().tolist() == ([1,0] if mode=='contact' else [0,0])
     np.testing.assert_array_equal(x.numpy(),original_positions)
-    if mode in ('expired','disarmed_pending'):assert pending_q.numpy()[0] == -1
+    if seeded:assert pending_q.numpy()[0] == -1
+    if mode.startswith('pending_'):
+        # Return to the bevel without a new crossing: the expired event must
+        # not complete a digit, even though contact work is now available.
+        x.assign(np.array([[.0001,0.,-height],[.0001,0.,height]],np.float32))
+        twists.assign(np.array([[.01,0.,0.,0.,0.,0.]],np.float32))
+        reached.assign(np.array([1,0],np.int32))
+        wp.copy(previous,poses)
+        args[21]=.024
+        wp.launch(C._complete_links,2,args,device='cpu')
+        assert codes.numpy().tolist()==[0,0]
 
 
 def test_candidate_retains_exact_v7_uncut_cpu_motion_and_deformation():
