@@ -21,12 +21,15 @@ COLUMNS = ['substep', 'cut', 'old_forward_m', 'new_forward_m', 'old_y_m', 'new_y
            'reached_digit', 'side_digit', 'progress', 'consumed_work_increment_J',
            'cumulative_particle_work_J', 'blade_gap_before_m', 'board_gap_after_m',
            'world_local_dx_m', 'world_local_dy_m', 'world_local_dz_m',
-           'impulse_x_Ns', 'impulse_y_Ns', 'impulse_z_Ns', 'edge_x_m', 'edge_y_m', 'edge_z_m']
+           'impulse_x_Ns', 'impulse_y_Ns', 'impulse_z_Ns', 'edge_x_m', 'edge_y_m', 'edge_z_m',
+           'link_old_forward_m', 'link_new_forward_m', 'partner_swept_side_m']
 SAMPLES = ['first_crossing', 'first_particle_work', 'closest_front', 'last_bevel',
-           'first_reached', 'first_assigned', 'deepest_board', 'closest_engaged_front']
+           'first_reached', 'first_assigned', 'deepest_board', 'closest_engaged_front',
+           'first_finite_link_crossing', 'first_engaged_finite_link_crossing']
 COUNTERS = ['armed_substeps', 'leading_crossings', 'finite_crossings', 'bevel_residence_substeps',
             'engaged_bevel_substeps', 'particle_work_substeps', 'reached_but_no_stroke',
-            'reached_but_outside_bevel', 'link_plane_intersection_substeps', 'finite_link_front_crossings']
+            'reached_but_outside_bevel', 'link_plane_intersection_substeps', 'finite_link_front_crossings',
+            'engaged_finite_link_front_crossings']
 
 
 @wp.kernel
@@ -95,16 +98,22 @@ def observe(ids: wp.array(dtype=int), partner: wp.array(dtype=int),
     sa = V5._swept_side(x0[p], previous[0], twists[i], a)
     sqa = V5._swept_side(x0[q], previous[0], twists[i], aq)
     sqb = V5._swept_side(x[q], poses[i], twists[i], bq)
+    link_crossing = False
+    link_a = float(1.e20); link_b = float(1.e20)
     if sa*sqa < 0.0 and side*sqb < 0.0:
         counts[j, 8] += 1
         la = a+(aq-a)*(sa/(sa-sqa))
         lb = b+(bq-b)*(side/(side-sqb))
+        link_a = la[0]; link_b = lb[0]
         if la[0] >= 0.0 and lb[0] <= 0.0 and la[0] > lb[0]:
             t = la[0]/(la[0]-lb[0])
             y = la[1]+t*(lb[1]-la[1])
             if wp.abs(y) <= width:
                 counts[j, 9] += 1
-    for slot in range(8):
+                link_crossing = True
+                if stroke[0] == cut+1:
+                    counts[j, 10] += 1
+    for slot in range(10):
         update = False
         key = float(step[0])
         if slot == 0: update = crossing and keys[j, slot] == 1.e20
@@ -118,6 +127,8 @@ def observe(ids: wp.array(dtype=int), partner: wp.array(dtype=int),
             key = board_gap; update = key < keys[j, slot]
         elif slot == 7:
             key = wp.abs(b[0]); update = stroke[0] == cut+1 and key < keys[j, slot]
+        elif slot == 8: update = link_crossing and keys[j, slot] == 1.e20
+        elif slot == 9: update = link_crossing and stroke[0] == cut+1 and keys[j, slot] == 1.e20
         if update:
             keys[j, slot] = key
             saved[j, slot, 0] = float(step[0]); saved[j, slot, 1] = float(cut)
@@ -135,6 +146,7 @@ def observe(ids: wp.array(dtype=int), partner: wp.array(dtype=int),
             saved[j, slot, 22] = impulses[p][0]; saved[j, slot, 23] = impulses[p][1]; saved[j, slot, 24] = impulses[p][2]
             origin = wp.transform_get_translation(poses[i])
             saved[j, slot, 25] = origin[0]; saved[j, slot, 26] = origin[1]; saved[j, slot, 27] = origin[2]
+            saved[j, slot, 28] = link_a; saved[j, slot, 29] = link_b; saved[j, slot, 30] = sqb
 
 
 @wp.kernel
@@ -147,6 +159,7 @@ def main():
     p.add_argument('--source-run', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--device', default='cuda:1')
+    p.add_argument('--links', choices=('nearest_vertical', 'actual_support'), default='nearest_vertical')
     a = p.parse_args()
     original_summary = json.loads((a.source_run/'summary.json').read_text())
     if original_summary['class'] == 'task_success':
@@ -168,6 +181,21 @@ def main():
             if int(u) in neighbours: neighbours[int(u)].append(int(v))
             if int(v) in neighbours: neighbours[int(v)].append(int(u))
     partner = np.array([max(neighbours[int(i)], key=lambda j: abs(ref[j, 2]-ref[i, 2])) for i in ids], np.int32)
+    if a.links == 'actual_support':
+        nodes, weights, gradients = probe.nodes.numpy(), probe.weights.numpy(), probe.gradients.numpy()
+        valid = (weights > 0) | (np.linalg.norm(gradients, axis=-1) > 0)
+        positive = np.flatnonzero((codes & 3) == 2)
+        node_particles = {}
+        for q in positive:
+            for node in nodes[q][valid[q]]:
+                node_particles.setdefault(int(node), set()).add(int(q))
+        partners = []
+        for i in ids:
+            candidates = set().union(*(node_particles.get(int(node), set()) for node in nodes[i][valid[i]]))
+            if not candidates:
+                raise ValueError(f'No positive-side support neighbour for direct bridge {i}')
+            partners.append(min(candidates, key=lambda q: (float(np.linalg.norm(ref[q]-ref[i])), q)))
+        partner = np.array(partners, np.int32)
     original = V7.TLMPM; beds = []
 
     class Traced(original):
@@ -208,7 +236,8 @@ def main():
     bed = beds[-1]
     counts = bed.counts.numpy(); keys = bed.keys.numpy(); samples = bed.samples.numpy()
     G.write_new(a.out/'front_trace.json', dict(source_run=str(a.source_run), source_sha256=G.sha(a.source_run/'summary.json'),
-        particle_ids=ids, partner_ids=partner, reference_m=ref[ids], reference_partner_m=ref[partner],
+        particle_ids=ids, partner_ids=partner, link_selection=a.links,
+        diagnostic_source_sha256=G.sha(Path(__file__)), reference_m=ref[ids], reference_partner_m=ref[partner],
         final_positions_m=bed.x.numpy()[ids], final_codes=bed.code.numpy()[ids],
         final_reached=bed.front_reached.numpy()[ids], counters=COUNTERS, counts=counts,
         sample_names=SAMPLES, columns=COLUMNS, sample_valid=keys != np.float32(1.e20), samples=samples,

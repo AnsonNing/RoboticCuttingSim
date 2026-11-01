@@ -13,7 +13,7 @@ not require TRIM adoption. No smoothing, deletion, permissive labels or hidden f
 | Phase | Status | Decisive next work |
 | --- | --- | --- |
 | A Correct Planner revalidation | IN_PROGRESS | `configs/wp14/core_v1.json`: 14 episodes frozen before outcomes; real-driver compiled override tests 4 PASS |
-| B Coupled front/contact | NOT_RUN | Trace residual bridges first; at most one candidate and one diagnosed correction |
+| B Coupled front/contact | DIAGNOSIS_RUNNING | New T00 v7 remains one body; read-only selected-substep trace on idle cuda:0, original core remains cuda:1 |
 | C Scoped profile validation | NOT_RUN | Separate physical integrity, surface quality and numerical/contact limits |
 | D Held-out / Native | NOT_RUN | Freeze envelope and 4–6 held-out pairs; 2–3 Native pairs for proposed supported families |
 | E Documentation / release | NOT_RUN | Explicit selectable profiles, capability table, real media, review, PR/main CI and remote verification |
@@ -43,3 +43,12 @@ yaw on a matching solid board. Both blade-line directions are tested. This is
 a proposal subject to all failures, not an adopted envelope. TRIM and Multi-cut
 are assessed separately; they are not required for CUT-only adoption. The new
 held-out configurations have only compiled; physical outcomes are NOT_RUN.
+
+First three completed core pairs: C00 and C01 physically PASS both arms with
+identical actual commands and compiled replay PASS. Candidate x/F P95 gains
+6.05x / 8.49x; local locus roughness reductions 85.94% / 78.48%. New T00 v5
+PASS / v7 FAIL (one mechanical body, fixture overlap 0.467 mm). Quality gains
+do not change that failed separation. Remaining eight core episodes pending.
+Six current-source CPU physical negatives PASS (11.20 s); six replay/trace
+checks PASS (5.32 s), including finite moving-link sweep and bitwise unchanged
+solver input arrays after observation. No physical solver source was modified.
