@@ -1,0 +1,71 @@
+"""A scoped profile must refuse unsupported tasks and runtime substitutions."""
+from copy import deepcopy
+from dataclasses import replace
+import json
+from pathlib import Path
+import sys
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'scripts'))
+from run_wp13 import build
+from robotic_cutting_sim import research_profiles as P
+
+
+def proposed(name='C00_cut'):
+    row = json.loads((ROOT/f'configs/wp14/cases/{name}.json').read_text())
+    task,_ = build(row,'tlmpm_v7')
+    scene=task.scene;scene['solver']['research_profile']='v7_cut_research_v1'
+    return replace(task,scene_json=json.dumps(scene))
+
+
+@pytest.mark.parametrize('name',['C00_cut','C01_aspect_firm','H00_cut','H01_cut','H02_cut','H03_cut'])
+def test_proposed_configuration_envelope_is_independent_of_outcomes(name):
+    task=proposed(name)
+    receipt=P.validate_runtime(task,'tlmpm_v7',8,.0001,4,8,1.)
+    assert receipt['front']=='finite_relative_sweep_v1'
+    assert receipt['contact']=='velocity_projection_tau_v1'
+    assert len(receipt['source_sha256']['tlmpm_v7.py'])==64
+
+
+@pytest.mark.parametrize('change',['solver','law','geometry','material','size','placement','normal','location','goal','controller','spacing','threshold'])
+def test_profile_refuses_unsupported_configuration(change):
+    task=proposed();scene=task.scene;goal=task.goal;options=task.controller['planner'];spacing=.001
+    if change=='solver':scene['solver']['module']='tlmpm_v5'
+    elif change=='law':scene['solver']['cutting_law']=5
+    elif change=='geometry':scene['workpiece']['protrusions']=[{'id':'unexpected'}]
+    elif change=='material':scene['workpiece']['material_profile']='wp12_soft_elastic_v1'
+    elif change=='size':scene['workpiece']['base_box_m']['width_m']=.06
+    elif change=='placement':scene['workpiece']['world_pose']['yaw_deg']=20.
+    elif change=='normal':goal['planes'][0]['normal_local']=[.99,0.,.1]
+    elif change=='location':goal['planes'][0]['origin_local_m'][0]=.02
+    elif change=='goal':goal['type']='trim_plane'
+    elif change=='controller':options['controller_profile']='v1'
+    elif change=='spacing':spacing=.002
+    elif change=='threshold':goal['plane_error_bound_m']=.01
+    with pytest.raises(ValueError,match='v7_cut_research_v1:'):
+        P.validate_task(scene,goal,options,spacing)
+
+
+@pytest.mark.parametrize('solver,law,dt,cuts,slots,efficiency',[
+    ('tlmpm_v5',8,.0001,4,8,1.),('tlmpm_v7',5,.0001,4,8,1.),
+    ('tlmpm_v7',8,.00005,4,8,1.),('tlmpm_v7',8,.0001,2,8,1.),
+    ('tlmpm_v7',8,.0001,4,16,1.),('tlmpm_v7',8,.0001,4,8,2.)])
+def test_profile_rejects_runtime_overrides(solver,law,dt,cuts,slots,efficiency):
+    with pytest.raises(ValueError,match='runtime'):
+        P.validate_runtime(proposed(),solver,law,dt,cuts,slots,efficiency)
+
+
+def test_profile_refuses_changed_solver_source_binding(monkeypatch):
+    original=P.document('v7_cut_research_v1');changed=deepcopy(original)
+    changed['source_sha256']['tlmpm_v7.py']='0'*64
+    monkeypatch.setattr(P,'document',lambda _:changed)
+    task=proposed()
+    with pytest.raises(ValueError,match='validated solver source differs'):
+        P.validate_task(task.scene,task.goal,task.controller['planner'],.001)
+
+
+def test_no_profile_retains_existing_selection():
+    task,_=build({'episode':'CUT','seed':42},'tlmpm_v5')
+    assert P.validate_runtime(task,'tlmpm_v5',8,.0001,4,8,1.) is None
