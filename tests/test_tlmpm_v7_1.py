@@ -90,3 +90,20 @@ def test_candidate_physical_negatives_use_actual_candidate_class(control,monkeyp
         assert result['solver_receipt']['link_completion_counts']['completed_side_digits']==0
     assert np.isfinite(result['state']['positions']).all()
     assert np.linalg.det(result['state']['F']).min()>0.
+
+
+def test_public_switch_keeps_the_explicit_candidate_class(tmp_path):
+    import json
+    from pathlib import Path
+    from robotic_cutting_sim.live_env import open_cutting_env
+    from robotic_cutting_sim.scene_config import compile_task
+    scene=json.loads((Path(__file__).resolve().parents[1]/'configs/wp12/scenes/bar_flat_board.json').read_text())
+    scene['solver']['particle_spacing_m']=.004
+    with open_cutting_env(runtime='kinematic',scene=scene,goal='sever_mid',
+                          preset='cutting_research_v1',device='cpu',output_dir=tmp_path/'run') as env:
+        env.reset(seed=42)
+        scene['solver']['module']='tlmpm_v7_1'
+        env.switch_task(task=compile_task(scene,'sever_mid',seed=42))
+        env.reset(seed=42)
+        assert type(env.backend.material.bed) is C.TLMPM
+        assert env.backend.material.parameter_receipt['tlmpm_v7_1']['solver']=='tlmpm_v7_1'
