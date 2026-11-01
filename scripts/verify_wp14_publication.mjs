@@ -129,6 +129,19 @@ try {
     if(new Set(screenshots).size<2) throw Error(`Rendered GIF motion not established: ${media.path}`);
     receipt.gifs.push({path:media.path,status:'PASS_RENDERED_MOTION',imageState,screenshot_sha256:screenshots});
   }
+  const scenePage=`https://github.com/${repo}/blob/main/docs/WP14_SCENES.md`;
+  await call('Page.navigate',{url:scenePage});
+  const sceneSelector="Array.from(document.querySelectorAll('img')).find(i=>decodeURIComponent(i.getAttribute('data-canonical-src')||i.src).includes('docs/media/wp14/scene_overview.png'))";
+  let sceneState;
+  for(let i=0;i<100;i++) {
+    sceneState=await evaluate(`(()=>{const i=${sceneSelector};return i?{complete:i.complete,width:i.naturalWidth,height:i.naturalHeight,src:i.src}:null})()`);
+    if(sceneState?.complete && sceneState.width>0)break;
+    await pause(300);
+  }
+  if(!sceneState?.width)throw Error('Rendered scene overview failed to load');
+  await evaluate(`(${sceneSelector}).scrollIntoView({block:'center'})`);
+  await fs.writeFile(path.join(out,'github_scene.png'),Buffer.from((await call('Page.captureScreenshot')).data,'base64'),{flag:'wx'});
+  receipt.scene_page={url:scenePage,status:'PASS_RENDERED_SCENE_IMAGE',...sceneState};
   await call('Page.navigate',{url:'about:blank'});
   await pause(200);
   for(const media of receipt.media.filter(m=>m.path.endsWith('.mp4'))) {

@@ -40,6 +40,14 @@ def main():
                 media[path]={'full_decode':'PASS' if result.returncode==0 else 'FAIL',
                     'sha256':hashlib.sha256((ROOT/path).read_bytes()).hexdigest()}
                 if result.returncode:errors.append({'path':path,'error':result.stderr[-500:]})
+            elif path.endswith('.png'):
+                from PIL import Image
+                try:
+                    with Image.open(ROOT/path) as picture:
+                        size=picture.size;picture.verify()
+                    media[path]={'decode':'PASS','size':size,
+                        'sha256':hashlib.sha256((ROOT/path).read_bytes()).hexdigest()}
+                except Exception as error:errors.append({'path':path,'error':str(error)})
     provenance={}
     for file,key in (('docs/evidence/wp13/media_001.json','media'),('docs/evidence/wp14/media_001.json','comparisons'),
                      ('docs/evidence/wp14/scene_refresh_001.json','media')):
@@ -50,6 +58,9 @@ def main():
             if row is None or row['runtime_source']!='live_isaac_sim':errors.append({'path':path,'error':'no Native provenance'})
             elif (item['sha256']!=row['gif_sha256'] or hashlib.sha256((ROOT/row['mp4']).read_bytes()).hexdigest()!=row['mp4_sha256']):
                 errors.append({'path':path,'error':'media hash differs from provenance'})
+    scene_image=json.loads((ROOT/'docs/evidence/wp14/scene_refresh_001.json').read_text())['image']
+    if hashlib.sha256((ROOT/scene_image['path']).read_bytes()).hexdigest()!=scene_image['sha256']:
+        errors.append({'path':scene_image['path'],'error':'scene image differs from actual capture provenance'})
     baseline=json.loads(a.protected.read_text());changed=[]
     for path,expected in baseline['blobs'].items():
         if git('hash-object','--',path).decode().strip()!=expected:changed.append(path)

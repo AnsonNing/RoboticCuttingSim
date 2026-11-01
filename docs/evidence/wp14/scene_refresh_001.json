@@ -1,0 +1,504 @@
+{
+  "scope": "ENGINEERING_SCENE_VIDEO_REFRESH; not an additional independent adoption sample",
+  "runtime_source": "live_isaac_sim",
+  "source": "artifacts/wp14/scene_refresh_001",
+  "prepared": {
+    "scene": "standard_cut",
+    "catalog": "configs/wp14/scene_catalog_v1.json",
+    "task_id": "CFG-bar_flat_board-sever_mid-5da99059",
+    "profile": {
+      "id": "v7_cut_research_v1",
+      "solver": "tlmpm_v7",
+      "front": "finite_relative_sweep_v1",
+      "contact": "velocity_projection_tau_v1",
+      "position_update": "grid_musl_v1",
+      "envelope": {
+        "family": "single_straight_sever",
+        "geometry": "continuous rectangular bar without protrusions on solid flat board",
+        "length_m": [
+          0.12,
+          0.16
+        ],
+        "width_m": [
+          0.024,
+          0.032
+        ],
+        "height_m": [
+          0.016,
+          0.02
+        ],
+        "material_profiles": [
+          "cutting_tasks_v1",
+          "wp12_reference_v1",
+          "wp12_firm_v1"
+        ],
+        "cut_x_m": [
+          -0.004,
+          0.004
+        ],
+        "yaw_deg": [
+          -5.0,
+          5.0
+        ],
+        "normal_local": [
+          "+x"
+        ],
+        "particle_spacing_m": 0.001,
+        "grid_dx_m": 0.004,
+        "material_dt_s": 0.0001,
+        "cut_speed_m_s": 0.01,
+        "controller_profile": "path_v2",
+        "front": "finite_relative_sweep_v1",
+        "contact": "velocity_projection_tau_v1",
+        "tool": "ruler_knife_v2_y",
+        "unsupported": [
+          "TRIM",
+          "oblique cuts relative to board",
+          "arbitrary multi-cut placement",
+          "other resolutions",
+          "other material profiles",
+          "reverse blade-line direction (only a failed-location held-out instance)",
+          "half-grid cut locations with an ideal frozen statistic above 2 mm"
+        ],
+        "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases.",
+        "cut_x_values_m": [
+          -0.004,
+          0.0,
+          0.004
+        ],
+        "length_increment_m": 0.008
+      },
+      "evaluator": "unchanged goal_eval_v1 sever; frozen v1 precision benchmark remains separate",
+      "scope_decision": {
+        "type": "POST_HOC_RESTRICTION_OF_FAILED_PROPOSED_ENVELOPE",
+        "validated_kinematic_instances": [
+          "C00_cut",
+          "C01_aspect_firm",
+          "H00_cut",
+          "H01_cut"
+        ],
+        "retained_failed_heldout": [
+          "H02_cut",
+          "H03_cut"
+        ],
+        "basis": "Both versions truly separate all four held-out cases, but H02/H03 each have actual AND ideal-geometric frozen midpoint statistic 2.5 mm > unchanged 2 mm. No redraw or threshold change. Restrict to tested +x blade direction, \u00b15 degree yaw and node-phase cut locations -4/0/+4 mm on 8 mm length increments.",
+        "inference_limit": "Ranges describe a numerical research envelope around four measured instances, not a verified Cartesian product or an independent success rate after narrowing. Original predeclared held-out task denominator remains 2/4 in each arm. Native cases were selected before held-out outcomes."
+      },
+      "source_sha256": {
+        "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+        "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+        "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+        "material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+        "tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7"
+      },
+      "configuration_source_sha256": {
+        "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+        "configs/materials/materials_wp12_v1.json": "c6373ef96d00722f024e1b45c65a52599712e618b10f318dbc0e3f9311f0cac0",
+        "configs/wp12_workcells_v1.json": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
+      },
+      "configuration_sha256": "9a5956146c255adda763769059f12f2b4f0ce69f833824cf839b4ef5650ed056"
+    },
+    "source_inputs": {
+      "scene": "configs/wp14/scenes/standard_cut.json",
+      "goal": "configs/wp14/goals/standard_cut.json",
+      "planner_options": {
+        "controller_profile": "path_v2",
+        "cut_clearance_m": 0.008,
+        "cut_speed_m_s": 0.01,
+        "hold_s": 0.3,
+        "home_height_m": 0.04,
+        "home_orientation_local_xyzw": null,
+        "home_position_local_m": null,
+        "kerf_speed_m_s": 0.02,
+        "max_rotation_deg": 1.0,
+        "max_translation_m": 0.001,
+        "overtravel_m": 0.004,
+        "protrusion_order": "along_skim",
+        "push_release_m": 0.002,
+        "rake_deg": 35.0,
+        "safe_height_m": 0.03,
+        "saw_amplitude_m": 0.0,
+        "saw_period_s": 0.4,
+        "skew_deg": 0.0,
+        "skim_direction_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "skim_margin_m": 0.01,
+        "skim_speed_m_s": 0.025
+      },
+      "seed": 42,
+      "case": "C00_cut",
+      "matching_native_evidence": "docs/evidence/wp14/native_001.json",
+      "input_sha256": {
+        "scene": "e584f6c5643ff2465476c1d9bd3d8269ea9b063ec1dec4661e001a20a302dca0",
+        "goal": "e3c39a595572e2a7551366c074097f963b6218db4bc91324cac91cd27542b04a"
+      }
+    },
+    "command": [
+      "/home/ningan/RoboticCuttingSim-wp14/.deps/isaacsim-venv/bin/python",
+      "/home/ningan/RoboticCuttingSim-wp14/scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/inputs/scene.json",
+      "--goal",
+      "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/inputs/goal.json",
+      "--planner-options",
+      "{\"controller_profile\": \"path_v2\", \"cut_clearance_m\": 0.008, \"cut_speed_m_s\": 0.01, \"hold_s\": 0.3, \"home_height_m\": 0.04, \"home_orientation_local_xyzw\": null, \"home_position_local_m\": null, \"kerf_speed_m_s\": 0.02, \"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"overtravel_m\": 0.004, \"protrusion_order\": \"along_skim\", \"push_release_m\": 0.002, \"rake_deg\": 35.0, \"safe_height_m\": 0.03, \"saw_amplitude_m\": 0.0, \"saw_period_s\": 0.4, \"skew_deg\": 0.0, \"skim_direction_local\": [1.0, 0.0, 0.0], \"skim_margin_m\": 0.01, \"skim_speed_m_s\": 0.025}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "20",
+      "--steps",
+      "700",
+      "--gpu",
+      "0",
+      "--seed",
+      "42",
+      "--out",
+      "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/run",
+      "--surface-profile",
+      "particle_surface_v1",
+      "--surface-timing-log"
+    ],
+    "camera_rig": "wrist_camera_rig_v5",
+    "native_execution": "NOT_RUN",
+    "scope": "Explicit CUT research scene; full Native plan preflight remains enabled. A new run is an engineering replay, not an independent adoption sample."
+  },
+  "attempt": {
+    "command": [
+      "/home/ningan/RoboticCuttingSim-wp14/.deps/isaacsim-venv/bin/python",
+      "/home/ningan/RoboticCuttingSim-wp14/scripts/run_wp10_live.py",
+      "--runtime",
+      "isaac_sim",
+      "--scene",
+      "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/inputs/scene.json",
+      "--goal",
+      "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/inputs/goal.json",
+      "--planner-options",
+      "{\"controller_profile\": \"path_v2\", \"cut_clearance_m\": 0.008, \"cut_speed_m_s\": 0.01, \"hold_s\": 0.3, \"home_height_m\": 0.04, \"home_orientation_local_xyzw\": null, \"home_position_local_m\": null, \"kerf_speed_m_s\": 0.02, \"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"overtravel_m\": 0.004, \"protrusion_order\": \"along_skim\", \"push_release_m\": 0.002, \"rake_deg\": 35.0, \"safe_height_m\": 0.03, \"saw_amplitude_m\": 0.0, \"saw_period_s\": 0.4, \"skew_deg\": 0.0, \"skim_direction_local\": [1.0, 0.0, 0.0], \"skim_margin_m\": 0.01, \"skim_speed_m_s\": 0.025}",
+      "--controller",
+      "scripted",
+      "--edge-feedback",
+      "measured",
+      "--hold-until-time-limit",
+      "--return-home",
+      "--record-cameras",
+      "--overview-camera",
+      "--record-every",
+      "10",
+      "--oracle-stride",
+      "20",
+      "--steps",
+      "700",
+      "--gpu",
+      "0",
+      "--seed",
+      "42",
+      "--out",
+      "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/run",
+      "--surface-profile",
+      "particle_surface_v1",
+      "--surface-timing-log"
+    ],
+    "returncode": 0,
+    "wall_s": 384.9182026610015,
+    "result_path": "artifacts/wp14/scene_refresh_001/run/result.json",
+    "source_commit": "8c02a5e4ef1b983b549d9c376ce2d850e7b003bb",
+    "scope": "ENGINEERING_SCENE_VIDEO_REFRESH; evaluate actual result separately"
+  },
+  "task_status": "PASS",
+  "home_outcome": {
+    "status": "PASS",
+    "reason": null,
+    "checks": {
+      "plan_preflight": true,
+      "trajectory_executed": true,
+      "grasp_held": true,
+      "home_joint_error": true,
+      "tool_translation_vs_reset": true,
+      "tool_rotation_vs_reset": true,
+      "grasp_slip": true,
+      "grasp_rotation": true,
+      "no_label_changes": true,
+      "no_unintended_tool_contacts": true,
+      "measured_path_clearance": true
+    },
+    "failed_checks": [],
+    "gates": {
+      "max_home_joint_error_rad": 0.01,
+      "max_tool_translation_error_m": 0.005,
+      "max_tool_rotation_error_rad": 0.0524,
+      "max_grasp_slip_m": 0.002,
+      "max_grasp_rotation_rad": 0.0524,
+      "max_label_changes": 0,
+      "max_unintended_tool_contacts": 0,
+      "require_measured_path_clearance": true,
+      "scope": "home_outcome PASS needs: plan preflight PASS, the trajectory fully executed, grasp never lost, final joints within max_home_joint_error_rad of q_home after settle_s, final tool body pose within the translation/rotation bounds of the tool pose measured right after the reset pregrasp settle, grasp slip/rotation since settling within the bounds (the GraspMonitor warning gates), zero material cut-label changes, zero native unintended tool contacts (palm/table/fixture/other), and the measured joint path passing the same geometric clearance check."
+    },
+    "scope": "Physical return-to-home only; reported separately from the task outcome"
+  },
+  "profile": {
+    "id": "v7_cut_research_v1",
+    "solver": "tlmpm_v7",
+    "front": "finite_relative_sweep_v1",
+    "contact": "velocity_projection_tau_v1",
+    "position_update": "grid_musl_v1",
+    "envelope": {
+      "family": "single_straight_sever",
+      "geometry": "continuous rectangular bar without protrusions on solid flat board",
+      "length_m": [
+        0.12,
+        0.16
+      ],
+      "width_m": [
+        0.024,
+        0.032
+      ],
+      "height_m": [
+        0.016,
+        0.02
+      ],
+      "material_profiles": [
+        "cutting_tasks_v1",
+        "wp12_reference_v1",
+        "wp12_firm_v1"
+      ],
+      "cut_x_m": [
+        -0.004,
+        0.004
+      ],
+      "yaw_deg": [
+        -5.0,
+        5.0
+      ],
+      "normal_local": [
+        "+x"
+      ],
+      "particle_spacing_m": 0.001,
+      "grid_dx_m": 0.004,
+      "material_dt_s": 0.0001,
+      "cut_speed_m_s": 0.01,
+      "controller_profile": "path_v2",
+      "front": "finite_relative_sweep_v1",
+      "contact": "velocity_projection_tau_v1",
+      "tool": "ruler_knife_v2_y",
+      "unsupported": [
+        "TRIM",
+        "oblique cuts relative to board",
+        "arbitrary multi-cut placement",
+        "other resolutions",
+        "other material profiles",
+        "reverse blade-line direction (only a failed-location held-out instance)",
+        "half-grid cut locations with an ideal frozen statistic above 2 mm"
+      ],
+      "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases.",
+      "cut_x_values_m": [
+        -0.004,
+        0.0,
+        0.004
+      ],
+      "length_increment_m": 0.008
+    },
+    "evaluator": "unchanged goal_eval_v1 sever; frozen v1 precision benchmark remains separate",
+    "scope_decision": {
+      "type": "POST_HOC_RESTRICTION_OF_FAILED_PROPOSED_ENVELOPE",
+      "validated_kinematic_instances": [
+        "C00_cut",
+        "C01_aspect_firm",
+        "H00_cut",
+        "H01_cut"
+      ],
+      "retained_failed_heldout": [
+        "H02_cut",
+        "H03_cut"
+      ],
+      "basis": "Both versions truly separate all four held-out cases, but H02/H03 each have actual AND ideal-geometric frozen midpoint statistic 2.5 mm > unchanged 2 mm. No redraw or threshold change. Restrict to tested +x blade direction, \u00b15 degree yaw and node-phase cut locations -4/0/+4 mm on 8 mm length increments.",
+      "inference_limit": "Ranges describe a numerical research envelope around four measured instances, not a verified Cartesian product or an independent success rate after narrowing. Original predeclared held-out task denominator remains 2/4 in each arm. Native cases were selected before held-out outcomes."
+    },
+    "source_sha256": {
+      "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+      "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+      "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+      "material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+      "tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7"
+    },
+    "configuration_source_sha256": {
+      "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+      "configs/materials/materials_wp12_v1.json": "c6373ef96d00722f024e1b45c65a52599712e618b10f318dbc0e3f9311f0cac0",
+      "configs/wp12_workcells_v1.json": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
+    },
+    "configuration_sha256": "9a5956146c255adda763769059f12f2b4f0ce69f833824cf839b4ef5650ed056"
+  },
+  "source_sha256": {
+    "result.json": "8651d4faf559a7186521b458233c5a2ea285a7ea92beeec9cab8e1ef17b68838",
+    "material.json": "274a72797601461fb2970e37614edcc3602216285530515d96dbe9ac4d5d3190",
+    "manifest.json": "9cd054b5ed0cb7037a4ccf060a6a4d0c53322f61595bb94b9c2412a2928727fb",
+    "final_live_scene.usda": "807bc061f9cc06ca38f7c1d310090db6a2f82880e27d5e5e8e76527a3a161b0a"
+  },
+  "capture": {
+    "view": "overview_rgb",
+    "frames": 75,
+    "capture_time_s": [
+      0.0,
+      0.2,
+      0.4,
+      0.6,
+      0.8,
+      1.0,
+      1.2,
+      1.4000000000000001,
+      1.6,
+      1.8,
+      2.0,
+      2.2,
+      2.4,
+      2.6,
+      2.8000000000000003,
+      3.0,
+      3.2,
+      3.4,
+      3.6,
+      3.8000000000000003,
+      4.0,
+      4.2,
+      4.4,
+      4.6000000000000005,
+      4.8,
+      5.0,
+      5.2,
+      5.4,
+      5.6000000000000005,
+      5.8,
+      6.0,
+      6.2,
+      6.4,
+      6.6000000000000005,
+      6.8,
+      7.0,
+      7.2,
+      7.4,
+      7.6000000000000005,
+      7.8,
+      8.0,
+      8.2,
+      8.4,
+      8.6,
+      8.8,
+      9.0,
+      9.200000000000001,
+      9.4,
+      9.6,
+      9.8,
+      10.0,
+      10.200000000000001,
+      10.4,
+      10.6,
+      10.8,
+      11.0,
+      11.200000000000001,
+      11.4,
+      11.6,
+      11.8,
+      12.0,
+      12.200000000000001,
+      12.4,
+      12.6,
+      12.8,
+      13.0,
+      13.200000000000001,
+      13.4,
+      13.6,
+      13.8,
+      14.0,
+      14.200000000000001,
+      14.4,
+      14.6,
+      14.8
+    ],
+    "ordered_capture_sha256": "6ee0ae2e8d2fbb8caff02821a7ad7a26f7138175f5e6191cab8238c73f66d6a1",
+    "ffmpeg_command": [
+      "ffmpeg",
+      "-v",
+      "error",
+      "-n",
+      "-f",
+      "rawvideo",
+      "-pixel_format",
+      "rgb24",
+      "-video_size",
+      "960x540",
+      "-framerate",
+      "5",
+      "-i",
+      "-",
+      "-vf",
+      "scale=640:360,drawbox=x=0:y=0:w=iw:h=24:color=black@0.7:t=fill,drawtext=text='Live Native | WP14 CUT research scene | original v7 | 1x':fontcolor=white:fontsize=13:x=8:y=5",
+      "-c:v",
+      "libx264",
+      "-crf",
+      "24",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "docs/media/wp14/scene_walkthrough_native.mp4"
+    ]
+  },
+  "image": {
+    "path": "docs/media/wp14/scene_overview.png",
+    "sha256": "0ac60f7e5d07f78e3363c9dbc19cbf1b9e54bfc2e16d4ed633115247a000b8aa",
+    "source_frame": "artifacts/wp14/scene_refresh_001/run/episode_000/observations/overview_rgb_0036.npz",
+    "source_frame_sha256": "6c50a47cd12fb1f4bad512f5dd97640c38e282c5198c490d6b69e5f174c462cf",
+    "physics_timestamp_s": 7.2,
+    "scope": "Unmodified actual overview RGB capture; presentation camera is separate from policy observations"
+  },
+  "media": [
+    {
+      "gif": "docs/media/wp14/scene_walkthrough_preview.gif",
+      "mp4": "docs/media/wp14/scene_walkthrough_native.mp4",
+      "runtime_source": "live_isaac_sim",
+      "gif_sha256": "bf5750b5c6419d144c2700aa12be43ed5fdf048fceaad8db02b25348e48c4b1c",
+      "mp4_sha256": "77f522f1edf0cbca259eb246f7e383b90f6b2e68e8a2c77b1fec580aa99f26b7",
+      "preview_speed": 1.0,
+      "preview_interval_s": [
+        3.0,
+        10.0
+      ],
+      "preview_command": [
+        "ffmpeg",
+        "-v",
+        "error",
+        "-n",
+        "-ss",
+        "3.0",
+        "-t",
+        "7.0",
+        "-i",
+        "docs/media/wp14/scene_walkthrough_native.mp4",
+        "-filter_complex",
+        "setpts=(PTS-STARTPTS)/1.0,fps=5,scale=640:-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=3",
+        "-loop",
+        "0",
+        "docs/media/wp14/scene_walkthrough_preview.gif"
+      ]
+    }
+  ],
+  "full_stage": "artifacts/wp14/scene_refresh_001/run/episode_000/final_live_scene.usda",
+  "execution_manifest": {
+    "timestamp": "2026-11-02T01:20:24.336809+09:00",
+    "git_sha": "e285d87c2c73ef516276cb0c6913cef587d165c8",
+    "git_dirty": false
+  },
+  "provenance_note": "Native launch was clean at e285d87, as recorded by run/manifest.json. attempt.source_commit is the head sampled when the wrapper exited (8c02a5e); only docs/encoding/release checks evolved during physics. Native runner, source-bound v7, scene/goal/controller and profile inputs remained unchanged."
+}

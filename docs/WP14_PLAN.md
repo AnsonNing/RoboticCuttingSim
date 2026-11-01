@@ -41,6 +41,10 @@ focused checks: 60 passed. Exact final/main CPU CI remains a release gate.
 [Native receipts](evidence/wp14/native_001.json),
 [real media provenance](evidence/wp14/media_001.json).
 
+User-requested [scene/video update](WP14_SCENES.md): two exact-input scene presets,
+one fresh engineering Native task/HOME PASS (separate from scientific counts),
+current real MP4/GIF/scene PNG and 35 scene/profile/naming checks PASS.
+
 Large states and unsuccessful runs remain under artifacts/wp14. Preserve all
 659 inventoried historical blobs, camera rig v5 and existing Native gallery.
 Use high for implementation/tests and a sequential read-only xhigh final review.

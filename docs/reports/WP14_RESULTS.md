@@ -6,6 +6,16 @@ explicit CUT configuration is qualified in the measured instances. General defau
 Law 8 / particle_surface_v1. Materials are provisional and uncalibrated.
 Camera rig v5, frozen evaluation v1 and all WP-12/WP-13 evidence are unchanged.
 
+The user additionally requested updated scenes and videos: two [directly
+launchable scenes](../WP14_SCENES.md), copied from the recorded Native inputs,
+and one fresh standard-CUT engineering replay are delivered. That replay has
+task **PASS**, HOME **PASS**, 384.92 s process wall and real current media. It
+is separate from the four predeclared scientific Native episodes and supplies
+no new independent adoption sample. [Actual replay/scene/image provenance](../evidence/wp14/scene_refresh_001.json).
+The scene/media [review](../evidence/wp14/review_003.json) caught an encoder
+status-schema mismatch; it was fixed and actual successful encoding verified.
+Two scene/profile/naming focused checks record **35 passed**, 16.84 s.
+
 ## Execution integrity and all paired outcomes
 
 The core was committed at `cd02821` before outcomes: seven matched configurations,

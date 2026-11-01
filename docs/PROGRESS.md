@@ -19,7 +19,10 @@
 - One half-dt pair passes both arms; forces are sensitive, not converged/calibrated. New GPU recontact PASS.
   Twelve saved-state/two-profile reconstructions retain degenerates, sampled intersections and Partial coverage loss.
 - Full collected CPU 1705 passed / 9 skipped / 6 xfailed (not exact final head); current focused 60 PASS.
-  Six new MP4s/two real GIFs encode genuine Native captures; all prior WP-12/WP-13 evidence and gallery retained.
+  Seven new MP4s/three real GIFs encode genuine Native captures; all prior WP-12/WP-13 evidence and gallery retained.
+- User-requested scene/video refresh: two directly launchable scene configurations; one extra engineering
+  Native replay task/HOME PASS (384.92 s), current real scene PNG/animation/full clip.
+  Scientific Native denominator remains the original 4/4; replay is separate. [Scene entry](WP14_SCENES.md).
 - Sequential xhigh review ACCEPT after reproduced/fixed material and pending-event findings.
   PR/main exact-commit CI and rendered remote media/docs checks remain release gates.
   publication_verified and DONE are absent until they pass.
