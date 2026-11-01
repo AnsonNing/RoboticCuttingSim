@@ -1,0 +1,11 @@
+{
+  "schema": "wp14_followup_candidate_budget_v1",
+  "basis": "Original v7 two-bump kinematic FAIL; Native FAIL with A 0% and B 100% genuinely detached; HOME PASS. Existing actual WP14 traces show particle-centre engagement absent, but 152/216 selected support interfaces cross while engaged.",
+  "seed": 42,
+  "first_candidate": "Existing immutable tlmpm_v7_1 finite support interface v1_2, whose lifecycle correction previously had CPU-only verification",
+  "first_episode": "configs/wp14_followup/two_bumps_kinematic_case_v1.json",
+  "limit": "One first candidate and at most one causally diagnosed versioned correction. No task/geometry/material/threshold/seed tuning.",
+  "conditional_second": "Only after failure diagnosis. Preserve original v7/CUT profile and v7_1 source unchanged. Reuse all baseline evidence.",
+  "controls_if_candidate_used": ["C00 CUT consistency and physical roughness", "single-bump T00", "PARTIAL", "blunt/no-cut", "necessary contact control", "two-bump Native"],
+  "camera": "v7 Global fixed view has actual arm/blade occlusion. One final fixed-view correction may be predeclared from the saved 8 phase images, preserving controlled v5 optics and both wrist mounts."
+}
