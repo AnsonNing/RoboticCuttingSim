@@ -1,0 +1,107 @@
+{
+  "solver_version": 7,
+  "spacing_m": 0.001,
+  "device": "cuda:1",
+  "components": 2,
+  "cross_component_min_particle_distance_m": 0.0006890976892360154,
+  "checks": {
+    "separated_first": true,
+    "disarmed_labels_unchanged": true,
+    "disarmed_bonds_unchanged": true,
+    "push_contact_measured": true,
+    "faces_recontacted": true,
+    "finite_Hermite_events": true,
+    "no_sign_inconsistent_events": true
+  },
+  "status": "PASS",
+  "forces": [
+    {
+      "mean_N": [
+        -1.431387630645986e-07,
+        6.689937492865283e-08,
+        0.03228985145688057
+      ],
+      "peak_abs_N": [
+        0.00011852179886773229,
+        4.687788896262646e-05,
+        0.0744761973619461
+      ]
+    },
+    {
+      "mean_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "peak_abs_N": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "mean_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "peak_abs_N": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "mean_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "peak_abs_N": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "mean_N": [
+        0.004006462171673775,
+        3.591771857713866e-08,
+        6.848696648376063e-05
+      ],
+      "peak_abs_N": [
+        0.01346930768340826,
+        1.765840806911001e-06,
+        0.0034409433137625456
+      ]
+    }
+  ],
+  "labels_after_phase": [
+    3456,
+    3456,
+    3456,
+    3456,
+    3456
+  ],
+  "events": 144,
+  "scope": "Kinematic control only, not Native or calibrated material. Failure of the first cut blocks a non-welding claim; topology alone is not evidence of actual face contact.",
+  "command": [
+    "scripts/wp13_recontact_probe.py",
+    "--spacing",
+    ".001",
+    "--solver",
+    "7",
+    "--device",
+    "cuda:1",
+    "--out",
+    "artifacts/wp14/recontact_001"
+  ],
+  "process_wall_s": 4.25065343100141,
+  "returncode": 0,
+  "source_result_sha256": "d2b52d5d4cb6485ca3c4ff5de3526dd99a5948f05f85ec98bf77ddfcfc5d32b0",
+  "solver_source_sha256": {
+    "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+    "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+    "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+  }
+}

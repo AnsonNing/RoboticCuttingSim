@@ -1,0 +1,78 @@
+{
+  "source": "artifacts/wp14/core_001/tlmpm_v5/C00_cut/actions.jsonl",
+  "source_commit": "cd0282194a4ed630b5b0e8cff9214cf406e21d1d",
+  "rows": [
+    {
+      "step": 1,
+      "time_s": 0.02,
+      "phase": "APPROACH:cut0",
+      "cut_enabled": false,
+      "cut_index": -1,
+      "edge_pose_world": [
+        7.499663825616675e-07,
+        -2.8868798137297424e-07,
+        0.19700124428516236,
+        -0.7035171142698824,
+        0.007125482886482152,
+        4.2079762846468707e-07,
+        0.7106425947146953
+      ],
+      "blade_force_world_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "labelled_count": 0,
+      "engaged": 0,
+      "workspace_clamped": false
+    },
+    {
+      "step": 2,
+      "time_s": 0.04,
+      "phase": "APPROACH:cut0",
+      "cut_enabled": false,
+      "cut_index": -1,
+      "edge_pose_world": [
+        7.44152745749845e-07,
+        -2.864501116301893e-07,
+        0.19600124428518176,
+        -0.6998740188262983,
+        0.014250126635727497,
+        4.186185685777291e-07,
+        0.7141241430330002
+      ],
+      "blade_force_world_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "labelled_count": 0,
+      "engaged": 0,
+      "workspace_clamped": false
+    },
+    {
+      "step": 3,
+      "time_s": 0.06,
+      "phase": "APPROACH:cut0",
+      "cut_enabled": false,
+      "cut_index": -1,
+      "edge_pose_world": [
+        7.383391089380226e-07,
+        -2.8421224188740434e-07,
+        0.19500124428520116,
+        -0.696177625266508,
+        0.021373685182657923,
+        4.1640762926458894e-07,
+        0.7175513080329692
+      ],
+      "blade_force_world_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "labelled_count": 0,
+      "engaged": 0,
+      "workspace_clamped": false
+    }
+  ]
+}

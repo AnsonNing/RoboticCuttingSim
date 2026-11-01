@@ -1,0 +1,13 @@
+{
+  "id": "C01_aspect_firm",
+  "episode": "CUT",
+  "seed": 13013,
+  "workpiece": {
+    "base_box_m": {
+      "length_m": 0.12,
+      "width_m": 0.024,
+      "height_m": 0.016
+    },
+    "material_profile": "wp12_firm_v1"
+  }
+}

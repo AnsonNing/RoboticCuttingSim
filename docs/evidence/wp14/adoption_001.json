@@ -1,0 +1,128 @@
+{
+  "scope": "SCIENTIFIC_SCOPED_ADOPTION; not a publication receipt",
+  "default": {
+    "solver": "tlmpm_v5",
+    "law": 8,
+    "changed": false
+  },
+  "adoption_status": {
+    "Straight_CUT": "VALIDATED_RESEARCH_PROFILE_IN_FOUR_MEASURED_INSTANCES",
+    "Partial": "EXPERIMENTAL",
+    "Multi_cut": "EXPERIMENTAL",
+    "TRIM": "UNSUPPORTED_BY_PROFILE",
+    "Reverse_oblique": "EXPERIMENTAL_NEW_ADOPTION_NOT_RUN"
+  },
+  "profile": "v7_cut_research_v1",
+  "profile_sha256": "9a5956146c255adda763769059f12f2b4f0ce69f833824cf839b4ef5650ed056",
+  "solver": "tlmpm_v7",
+  "front": "finite_relative_sweep_v1",
+  "contact": "velocity_projection_tau_v1",
+  "source_sha256": {
+    "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+    "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+    "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+    "material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+    "tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7"
+  },
+  "support_envelope": {
+    "family": "single_straight_sever",
+    "geometry": "continuous rectangular bar without protrusions on solid flat board",
+    "length_m": [
+      0.12,
+      0.16
+    ],
+    "width_m": [
+      0.024,
+      0.032
+    ],
+    "height_m": [
+      0.016,
+      0.02
+    ],
+    "material_profiles": [
+      "cutting_tasks_v1",
+      "wp12_reference_v1",
+      "wp12_firm_v1"
+    ],
+    "cut_x_m": [
+      -0.004,
+      0.004
+    ],
+    "yaw_deg": [
+      -5.0,
+      5.0
+    ],
+    "normal_local": [
+      "+x"
+    ],
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "cut_speed_m_s": 0.01,
+    "controller_profile": "path_v2",
+    "front": "finite_relative_sweep_v1",
+    "contact": "velocity_projection_tau_v1",
+    "tool": "ruler_knife_v2_y",
+    "unsupported": [
+      "TRIM",
+      "oblique cuts relative to board",
+      "arbitrary multi-cut placement",
+      "other resolutions",
+      "other material profiles",
+      "reverse blade-line direction (only a failed-location held-out instance)",
+      "half-grid cut locations with an ideal frozen statistic above 2 mm"
+    ],
+    "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases.",
+    "cut_x_values_m": [
+      -0.004,
+      0.0,
+      0.004
+    ],
+    "length_increment_m": 0.008
+  },
+  "scope_decision": {
+    "type": "POST_HOC_RESTRICTION_OF_FAILED_PROPOSED_ENVELOPE",
+    "validated_kinematic_instances": [
+      "C00_cut",
+      "C01_aspect_firm",
+      "H00_cut",
+      "H01_cut"
+    ],
+    "retained_failed_heldout": [
+      "H02_cut",
+      "H03_cut"
+    ],
+    "basis": "Both versions truly separate all four held-out cases, but H02/H03 each have actual AND ideal-geometric frozen midpoint statistic 2.5 mm > unchanged 2 mm. No redraw or threshold change. Restrict to tested +x blade direction, \u00b15 degree yaw and node-phase cut locations -4/0/+4 mm on 8 mm length increments.",
+    "inference_limit": "Ranges describe a numerical research envelope around four measured instances, not a verified Cartesian product or an independent success rate after narrowing. Original predeclared held-out task denominator remains 2/4 in each arm. Native cases were selected before held-out outcomes."
+  },
+  "denominators": {
+    "core_compiled_replay": "14/14 PASS; seven identical commanded pairs",
+    "heldout_task": "2/4 PASS per solver; two failed cases per solver retained",
+    "heldout_true_severing": "4/4 per solver",
+    "formal_kinematic_completed": 24,
+    "exploratory_candidate_completed": 2,
+    "read_only_front_trace_repeats": 2,
+    "native_task": "4/4 PASS",
+    "native_HOME": "4/4 PASS",
+    "fresh_GPU_recontact": "PASS",
+    "v7_physical_CPU_negatives": "6/6 PASS"
+  },
+  "limits": [
+    "Post-hoc scope restriction, not independent confirmation after narrowing",
+    "Not a Cartesian product or random success rate",
+    "TRIM failures and failed frozen location checks retained",
+    "v7_1 corrected front GPU task results NOT_RUN; neither candidate front adopted",
+    "Materials uncalibrated; forces sensitive, not converged",
+    "Native x/F and total energy balance NOT_RUN",
+    "Particle-surface degenerates and sampled intersections retained"
+  ],
+  "evidence": {
+    "core": "core_001.json",
+    "heldout": "heldout_001.json",
+    "native": "native_001.json",
+    "review": "review_002.json",
+    "surfaces": "surfaces_001.json"
+  },
+  "review_status": "ACCEPT_AFTER_FIXES",
+  "publication_status": "VERIFY_SEPARATELY_AFTER_PR_MERGE_EXACT_MAIN_CI_AND_REMOTE_MEDIA"
+}

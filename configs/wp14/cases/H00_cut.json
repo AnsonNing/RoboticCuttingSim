@@ -1,0 +1,52 @@
+{
+  "id": "H00_cut",
+  "episode": "CUT",
+  "seed": 140101,
+  "workpiece": {
+    "base_box_m": {
+      "length_m": 0.144,
+      "width_m": 0.028,
+      "height_m": 0.018
+    },
+    "material_profile": "wp12_reference_v1",
+    "world_pose": {
+      "translation_m": [
+        0.0,
+        0.0,
+        0.01
+      ],
+      "yaw_deg": 5.0
+    }
+  },
+  "supports": {
+    "kind": "flat_board",
+    "workcell": {
+      "profile": "blade_master_flat_board_v1",
+      "overrides": {
+        "cutting_board": {
+          "yaw_deg": 5.0,
+          "center_xy_world_m": [
+            0.0,
+            0.055
+          ]
+        }
+      }
+    }
+  },
+  "goal_options": {
+    "planes": [
+      {
+        "origin_local_m": [
+          0.004,
+          0.0,
+          0.0
+        ],
+        "normal_local": [
+          1.0,
+          0.0,
+          0.0
+        ]
+      }
+    ]
+  }
+}

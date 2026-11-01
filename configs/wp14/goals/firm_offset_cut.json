@@ -1,0 +1,28 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "sever_mid",
+  "type": "sever",
+  "description": "Sever the workpiece at local x = 0 (the CUT-01 target plane) into two substantial pieces (>= 40% each, >= 99% together, frozen 2 mm location bound).",
+  "episode": {
+    "duration_s": 13.5,
+    "control_dt_s": 0.02
+  },
+  "planes": [
+    {
+      "origin_local_m": [
+        -0.004,
+        0.0,
+        0.0
+      ],
+      "normal_local": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "expected_pieces": 2,
+  "minimum_part_mass_fraction": 0.4,
+  "minimum_main_parts_mass_fraction": 0.99,
+  "plane_error_bound_m": 0.002
+}

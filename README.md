@@ -33,7 +33,74 @@ The following three previews show the supported v5 baseline, seed 42,
 Full clips retain every captured RGB frame at the nominal 5 fps cadence;
 previews use labelled crops and speeds.
 
+## CUT research profile (WP-14)
+
+**`v7_cut_research_v1` is a scoped Validated Research Profile using original
+`tlmpm_v7`. v5 / Law 8 remains the default.** Four matched kinematic CUT instances
+improve near-cut x/F P95 by **5.60–8.49×** and local physical-locus roughness by
+**78.0–86.1%**. Two predeclared Native pairs complete **4/4 tasks and 4/4 HOME**.
+
+[![Updated WP-14 actual Native research scene](docs/media/wp14/scene_walkthrough_preview.gif)](docs/media/wp14/scene_walkthrough_native.mp4)
+
+**Updated executable scene and real full recording, 1×.**
+[Launch the standard or firm-offset CUT scene](docs/WP14_SCENES.md) ·
+[actual scene overview](docs/media/wp14/scene_overview.png) ·
+[scene/video provenance](docs/evidence/wp14/scene_refresh_001.json).
+This extra engineering replay does not add an independent adoption sample.
+
+[![Real Native standard CUT: v5 left and v7 research profile right, matched capture times](docs/media/wp14/standard_cut_v5_v7_preview.gif)](docs/media/wp14/standard_cut_v5_v7_comparison.mp4)
+
+**v5 left / v7 CUT profile right, 1× simulation time.** These are genuine Native
+RGB captures with identical timestamps and the same declared scene/controller;
+measured-feedback commands differ slightly under coupled dynamics. Individual
+full recordings: [v5 standard](docs/media/wp14/v5_standard_cut_native.mp4),
+[v7 standard](docs/media/wp14/v7_standard_cut_native.mp4).
+
+[![Real Native firm offset CUT: v5 left and v7 research profile right](docs/media/wp14/firm_offset_cut_v5_v7_preview.gif)](docs/media/wp14/firm_offset_cut_v5_v7_comparison.mp4)
+
+**Firm material, yaw −5°, cut at −4 mm**, 1×. Full recordings:
+[v5](docs/media/wp14/v5_firm_offset_cut_native.mp4),
+[v7](docs/media/wp14/v7_firm_offset_cut_native.mp4).
+[Frame timestamps/source hashes](docs/evidence/wp14/media_001.json) ·
+[Native tracking, physical contacts and HOME](docs/evidence/wp14/native_001.json).
+
+| Selection / family | Supported scope |
+| --- | --- |
+| Default v5 + Law 8 | Existing baseline, unchanged |
+| `v7_cut_research_v1` / Straight CUT | Four validated instances; constrained reference/firm bar configuration |
+| Partial / Multi-cut | Experimental; distinct-depth ligament and one four-slice pattern pass |
+| TRIM | Unsupported by the CUT profile; v7 and finite v7_1 primary failures retained |
+| Reverse / oblique | New adoption NOT_RUN; earlier slotted-board evidence retained |
+
+The original held-out task denominator is **2/4 per solver**, although all four
+cases truly sever into two parts. The ±6 mm cases fail the unchanged 2 mm
+reference-midpoint gate (even ideal geometric labels score 2.5 mm). The wider
+proposal is rejected. Final use is restricted after those failures to +x blade
+direction, ±5° yaw, -4/0/+4 mm cut positions and 8 mm bar-length increments,
+within the declared 1 mm particle / 4 mm grid / 0.1 ms configuration. These
+finite results do not validate all combinations or a random success rate.
+TRIM failure does not veto proven CUT; surface appearance does not certify it.
+
+```python
+from robotic_cutting_sim.research_profiles import compile_research_task
+
+task = compile_research_task(
+    "v7_cut_research_v1", "configs/wp12/scenes/bar_flat_board.json", "sever_mid")
+# Explicit original v7, recorded path_v2 controller, 14 s completion window.
+```
+
+Configuration selection checks and records the solver/front/contact sources,
+material, scene and numerical scope; incompatible overrides raise. New policy
+actions require separate evaluation. `tlmpm_v7_1` stays Experimental and is not
+selected by this profile. Its post-study pending-event lifecycle correction is CPU-verified only;
+GPU outcomes are not reassigned to it. Materials are uncalibrated; forces are not converged.
+[Results, all failures and exact commands](docs/reports/WP14_RESULTS.md) ·
+[Profile configuration](configs/wp14/v7_cut_research_v1.json).
+
 ## Experimental integrated solver: rejection retained
+
+**Historical WP-13 full/default promotion decision, preserved below.** The
+WP-14 CUT-only qualification above does not rewrite those recorded outcomes.
 
 **v7 is opt-in and REJECTED FOR PROMOTION. v5 remains the default.**
 Its shared MUSL position/F update, velocity-level contact and finite causal front

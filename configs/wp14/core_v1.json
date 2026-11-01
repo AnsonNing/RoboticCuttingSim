@@ -1,0 +1,31 @@
+{
+  "id": "wp14_core_v1",
+  "status": "PREDECLARED_BEFORE_OUTCOMES",
+  "baseline_sha": "98c42c272f02c4438de6867663448f222aaf5fdc",
+  "rows": [
+    "configs/wp14/cases/C00_cut.json",
+    "configs/wp14/cases/C01_aspect_firm.json",
+    "configs/wp14/cases/T00_trim.json",
+    "configs/wp14/cases/T01_asymmetric_clay.json",
+    "configs/wp14/cases/T02_two_bumps.json",
+    "configs/wp14/cases/M00_four_slices.json",
+    "configs/wp14/cases/P01_shallow.json"
+  ],
+  "arms": [
+    "tlmpm_v5",
+    "tlmpm_v7"
+  ],
+  "episodes": 14,
+  "planner_source": "compiled",
+  "material_seed": 42,
+  "device": "cuda:1",
+  "surface_profile": "particle_surface_v1",
+  "partial_control": "Existing partial_cut_rule unchanged; actual depth must differ from historical P00/P01 -0.010 m path. Requested overtravel -0.012 m.",
+  "integrity": "Both compiled controller dictionaries equal executed options; every commanded pose, phase, speed, cut id and enabled state paired. Scenes/materials/goals equal except solver.",
+  "adoption": "Independent families; TRIM failure does not veto verified CUT. Keep v5 Law 8 default. No tuning before all core outcomes.",
+  "quality_targets": {
+    "consistency_p95_factor": 2.0,
+    "roughness_reduction_fraction": 0.25
+  },
+  "negative_controls": "Uncontacted/side push/flat press/blunt/stop/withdraw; no deletion, label tolerance widening or smoothing."
+}

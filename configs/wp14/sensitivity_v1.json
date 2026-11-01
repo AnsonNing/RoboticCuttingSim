@@ -1,0 +1,16 @@
+{
+  "id": "wp14_dt_sensitivity_v1",
+  "status": "PREDECLARED_BEFORE_OUTCOMES",
+  "rows": [
+    "configs/wp14/cases/D00_cut_dt50us.json"
+  ],
+  "arms": [
+    "tlmpm_v5",
+    "tlmpm_v7"
+  ],
+  "episodes": 2,
+  "device": "cuda:1",
+  "planner_source": "compiled",
+  "surface_profile": "particle_surface_v1",
+  "comparison": "Same commanded C00 path and physical geometry at 50 us vs core 100 us; time-step sensitivity only, not convergence. No resolution sweep."
+}

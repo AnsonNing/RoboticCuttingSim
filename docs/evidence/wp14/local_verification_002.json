@@ -1,0 +1,20 @@
+{
+  "command": "PYTHONPATH=\"$PWD/src\" .venv/bin/python -m pytest -q tests/test_tlmpm_v7_1.py tests/test_research_profiles.py tests/test_wp14_integrity.py tests/test_repo_naming.py",
+  "status": "PASS",
+  "passed": 54,
+  "wall_s": 31.43,
+  "log": "artifacts/wp14/logs/final_cpu_focused_001.log",
+  "log_sha256": "4d88a25fd84347e083039cbe09315c92d09bb80c506b64697f7edf296c0015f6",
+  "source_sha256": {
+    "src/robotic_cutting_sim/tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+    "src/robotic_cutting_sim/tlmpm_v7_1.py": "7482c2072402845e4d00042f0f7fb8f81295ce0024531206864a903d1a524e44",
+    "configs/wp14/v7_cut_research_v1.json": "9a5956146c255adda763769059f12f2b4f0ce69f833824cf839b4ef5650ed056"
+  },
+  "retained_regression_failure": "artifacts/wp14/logs/pending_disarm_regression_001.log",
+  "candidate_front": "finite_support_interface_v1_1",
+  "candidate_gpu_task_status": "NOT_RUN",
+  "original_gpu_candidate_source_sha256": "48c12f4be494478d7627533eb694898ea12cd7e68e3e6f5df2f88076a4453a9b",
+  "scope": "One post-study diagnosed disarm lifecycle correction. Original v7 profile/source and all completed GPU/Native results are unchanged; no old candidate result is assigned to v1_1. Exact-final/main CI remains a release gate.",
+  "head_at_execution": "2701d45",
+  "git_dirty_at_execution": true
+}

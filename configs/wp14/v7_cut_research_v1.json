@@ -1,0 +1,125 @@
+{
+  "id": "v7_cut_research_v1",
+  "purpose": "Explicit scoped research configuration. Selecting it does not itself establish adoption; see WP14_RESULTS.",
+  "solver": "tlmpm_v7",
+  "cutting_law": 8,
+  "front": "finite_relative_sweep_v1",
+  "contact": "velocity_projection_tau_v1",
+  "position_update": "grid_musl_v1",
+  "general_default": false,
+  "envelope": {
+    "family": "single_straight_sever",
+    "geometry": "continuous rectangular bar without protrusions on solid flat board",
+    "length_m": [
+      0.12,
+      0.16
+    ],
+    "width_m": [
+      0.024,
+      0.032
+    ],
+    "height_m": [
+      0.016,
+      0.02
+    ],
+    "material_profiles": [
+      "cutting_tasks_v1",
+      "wp12_reference_v1",
+      "wp12_firm_v1"
+    ],
+    "cut_x_m": [
+      -0.004,
+      0.004
+    ],
+    "yaw_deg": [
+      -5.0,
+      5.0
+    ],
+    "normal_local": [
+      "+x"
+    ],
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "cut_speed_m_s": 0.01,
+    "controller_profile": "path_v2",
+    "front": "finite_relative_sweep_v1",
+    "contact": "velocity_projection_tau_v1",
+    "tool": "ruler_knife_v2_y",
+    "unsupported": [
+      "TRIM",
+      "oblique cuts relative to board",
+      "arbitrary multi-cut placement",
+      "other resolutions",
+      "other material profiles",
+      "reverse blade-line direction (only a failed-location held-out instance)",
+      "half-grid cut locations with an ideal frozen statistic above 2 mm"
+    ],
+    "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases.",
+    "cut_x_values_m": [
+      -0.004,
+      0.0,
+      0.004
+    ],
+    "length_increment_m": 0.008
+  },
+  "planner": {
+    "controller_profile": "path_v2",
+    "cut_clearance_m": 0.008,
+    "cut_speed_m_s": 0.01,
+    "hold_s": 0.3,
+    "home_height_m": 0.04,
+    "home_orientation_local_xyzw": null,
+    "home_position_local_m": null,
+    "kerf_speed_m_s": 0.02,
+    "max_rotation_deg": 1.0,
+    "max_translation_m": 0.001,
+    "overtravel_m": 0.004,
+    "protrusion_order": "along_skim",
+    "push_release_m": 0.002,
+    "rake_deg": 35.0,
+    "safe_height_m": 0.03,
+    "saw_amplitude_m": 0.0,
+    "saw_period_s": 0.4,
+    "skew_deg": 0.0,
+    "skim_direction_local": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "skim_margin_m": 0.01,
+    "skim_speed_m_s": 0.025
+  },
+  "max_cuts": 4,
+  "slots_per_node": 8,
+  "source_sha256": {
+    "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+    "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+    "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+    "material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+    "tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7"
+  },
+  "evaluator": "unchanged goal_eval_v1 sever; frozen v1 precision benchmark remains separate",
+  "configuration_source_sha256": {
+    "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
+    "configs/materials/materials_wp12_v1.json": "c6373ef96d00722f024e1b45c65a52599712e618b10f318dbc0e3f9311f0cac0",
+    "configs/wp12_workcells_v1.json": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
+  },
+  "unsupported_configuration_behavior": "Requests outside the profile are errors; no fallback or mid-episode solver change.",
+  "validation_scope": "Declared compiled scripted controller only. Configuration selection is not an outcome certificate; arbitrary policy actions require separate execution validation.",
+  "scope_decision": {
+    "type": "POST_HOC_RESTRICTION_OF_FAILED_PROPOSED_ENVELOPE",
+    "validated_kinematic_instances": [
+      "C00_cut",
+      "C01_aspect_firm",
+      "H00_cut",
+      "H01_cut"
+    ],
+    "retained_failed_heldout": [
+      "H02_cut",
+      "H03_cut"
+    ],
+    "basis": "Both versions truly separate all four held-out cases, but H02/H03 each have actual AND ideal-geometric frozen midpoint statistic 2.5 mm > unchanged 2 mm. No redraw or threshold change. Restrict to tested +x blade direction, \u00b15 degree yaw and node-phase cut locations -4/0/+4 mm on 8 mm length increments.",
+    "inference_limit": "Ranges describe a numerical research envelope around four measured instances, not a verified Cartesian product or an independent success rate after narrowing. Original predeclared held-out task denominator remains 2/4 in each arm. Native cases were selected before held-out outcomes."
+  }
+}

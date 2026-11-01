@@ -1,0 +1,85 @@
+{
+  "schema": "wp14_scene_catalog_v1",
+  "profile": "v7_cut_research_v1",
+  "purpose": "Directly launch the exact scenes used by the validated Native CUT recordings; explicit research selection, no default replacement.",
+  "surface_profile": "particle_surface_v1",
+  "camera_rig": "wrist_camera_rig_v5",
+  "entries": {
+    "standard_cut": {
+      "scene": "configs/wp14/scenes/standard_cut.json",
+      "goal": "configs/wp14/goals/standard_cut.json",
+      "planner_options": {
+        "controller_profile": "path_v2",
+        "cut_clearance_m": 0.008,
+        "cut_speed_m_s": 0.01,
+        "hold_s": 0.3,
+        "home_height_m": 0.04,
+        "home_orientation_local_xyzw": null,
+        "home_position_local_m": null,
+        "kerf_speed_m_s": 0.02,
+        "max_rotation_deg": 1.0,
+        "max_translation_m": 0.001,
+        "overtravel_m": 0.004,
+        "protrusion_order": "along_skim",
+        "push_release_m": 0.002,
+        "rake_deg": 35.0,
+        "safe_height_m": 0.03,
+        "saw_amplitude_m": 0.0,
+        "saw_period_s": 0.4,
+        "skew_deg": 0.0,
+        "skim_direction_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "skim_margin_m": 0.01,
+        "skim_speed_m_s": 0.025
+      },
+      "seed": 42,
+      "case": "C00_cut",
+      "matching_native_evidence": "docs/evidence/wp14/native_001.json",
+      "input_sha256": {
+        "scene": "e584f6c5643ff2465476c1d9bd3d8269ea9b063ec1dec4661e001a20a302dca0",
+        "goal": "e3c39a595572e2a7551366c074097f963b6218db4bc91324cac91cd27542b04a"
+      }
+    },
+    "firm_offset_cut": {
+      "scene": "configs/wp14/scenes/firm_offset_cut.json",
+      "goal": "configs/wp14/goals/firm_offset_cut.json",
+      "planner_options": {
+        "controller_profile": "path_v2",
+        "cut_clearance_m": 0.008,
+        "cut_speed_m_s": 0.01,
+        "hold_s": 0.3,
+        "home_height_m": 0.04,
+        "home_orientation_local_xyzw": null,
+        "home_position_local_m": null,
+        "kerf_speed_m_s": 0.02,
+        "max_rotation_deg": 1.0,
+        "max_translation_m": 0.001,
+        "overtravel_m": 0.004,
+        "protrusion_order": "along_skim",
+        "push_release_m": 0.002,
+        "rake_deg": 35.0,
+        "safe_height_m": 0.03,
+        "saw_amplitude_m": 0.0,
+        "saw_period_s": 0.4,
+        "skew_deg": 0.0,
+        "skim_direction_local": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "skim_margin_m": 0.01,
+        "skim_speed_m_s": 0.025
+      },
+      "seed": 42,
+      "case": "H01_cut",
+      "matching_native_evidence": "docs/evidence/wp14/native_001.json",
+      "input_sha256": {
+        "scene": "88aada7550144dfbe26e45a40e178020d2dc424d873c05bf774f70e7e3ac2767",
+        "goal": "27d9be8022e4f5f97b888bb3d25a591d80fdf449b8a16b9cf631f4c3265b118b"
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "id": "wp14_heldout_v1",
+  "status": "PREDECLARED_BEFORE_ANY_HELDOUT_OUTCOME",
+  "basis": "Corrected core C00 and C01 each have two true parts on v5/v7; no physical tuning. Proposed envelope is tested, not presumed accepted. Remaining core families still pending.",
+  "rows": [
+    "configs/wp14/cases/H00_cut.json",
+    "configs/wp14/cases/H01_cut.json",
+    "configs/wp14/cases/H02_cut.json",
+    "configs/wp14/cases/H03_cut.json"
+  ],
+  "arms": [
+    "tlmpm_v5",
+    "tlmpm_v7"
+  ],
+  "episodes": 8,
+  "device": "cuda:1",
+  "planner_source": "compiled",
+  "material_seed": 42,
+  "surface_profile": "particle_surface_v1",
+  "candidate_profile": "v7_cut_research_v1",
+  "native_rows": [
+    "configs/wp14/cases/C00_cut.json",
+    "configs/wp14/cases/H01_cut.json"
+  ],
+  "native_arms": [
+    "tlmpm_v5",
+    "tlmpm_v7"
+  ],
+  "native_episodes": 4,
+  "envelope": {
+    "family": "single_straight_sever",
+    "geometry": "continuous rectangular bar without protrusions on solid flat board",
+    "length_m": [
+      0.12,
+      0.16
+    ],
+    "width_m": [
+      0.024,
+      0.032
+    ],
+    "height_m": [
+      0.016,
+      0.02
+    ],
+    "material_profiles": [
+      "cutting_tasks_v1",
+      "wp12_reference_v1",
+      "wp12_firm_v1"
+    ],
+    "cut_x_m": [
+      -0.006,
+      0.006
+    ],
+    "yaw_deg": [
+      -8.0,
+      8.0
+    ],
+    "normal_local": [
+      "+x",
+      "-x"
+    ],
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004,
+    "material_dt_s": 0.0001,
+    "cut_speed_m_s": 0.01,
+    "controller_profile": "path_v2",
+    "front": "finite_relative_sweep_v1",
+    "contact": "velocity_projection_tau_v1",
+    "tool": "ruler_knife_v2_y",
+    "unsupported": [
+      "TRIM",
+      "oblique cuts relative to board",
+      "arbitrary multi-cut placement",
+      "other resolutions",
+      "other material profiles"
+    ],
+    "claims": "Small finite cohort across the proposed envelope, not a random success rate or calibrated physical law. All failures retained; a failed boundary restricts adoption without redrawing cases."
+  }
+}

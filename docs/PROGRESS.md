@@ -1,3 +1,34 @@
+# Progress — 2026-11-02 Asia/Seoul
+
+## WP-14 — compiled planner and scoped CUT profile
+
+- Independent branch `codex/wp14-v7-scoped-adoption`, baseline `98c42c2`.
+- 14 new core episodes: 14/14 compiled actual-command replay PASS, seven identical paired paths.
+  New Partial is 1.799 mm shallower than historical P01; connected ligament control passes both arms.
+- Original v7 supports four measured CUT instances with x/F P95 gains 5.60–8.49x and locus roughness
+  reductions 78.0–86.1%. `v7_cut_research_v1` explicitly selects/pins that implementation; v5 / Law 8
+  and particle_surface_v1 remain defaults. No generic full/default v7 promotion.
+- Four frozen held-out pairs: task 2/4 per arm, true two-part severing 4/4. ±6 mm rows fail unchanged
+  2 mm midpoint statistic; even ideal geometric labels score 2.5 mm. Post-hoc scope restriction is explicit,
+  not a new held-out confirmation or a Cartesian-product guarantee; failed rows remain in the denominator.
+- Fresh Native C00/H01 v5/v7: 4/4 TASK_SUCCESS, 4/4 HOME PASS. Exact profile configuration/source verified.
+  Same scene/controller, coupled resolved-command differences 0.040/0.061 mm; Native x/F NOT_RUN (no F).
+- Two substep traces diagnose missed TRIM interface engagement. One finite v7_1 candidate retains CUT
+  but still fails TRIM; its post-study pending-lifecycle correction v1_2 is CPU-verified only, GPU NOT_RUN.
+  TRIM stays Unsupported; Partial and Multi-cut stay Experimental. No tolerance widening or renderer repair.
+- One half-dt pair passes both arms; forces are sensitive, not converged/calibrated. New GPU recontact PASS.
+  Twelve saved-state/two-profile reconstructions retain degenerates, sampled intersections and Partial coverage loss.
+- Full collected CPU 1705 passed / 9 skipped / 6 xfailed (not exact final head); current focused 60 PASS.
+  Seven new MP4s/three real GIFs encode genuine Native captures; all prior WP-12/WP-13 evidence and gallery retained.
+- User-requested scene/video refresh: two directly launchable scene configurations; one extra engineering
+  Native replay task/HOME PASS (384.92 s), current real scene PNG/animation/full clip.
+  Scientific Native denominator remains the original 4/4; replay is separate. [Scene entry](WP14_SCENES.md).
+- Sequential xhigh review ACCEPT after reproduced/fixed material and pending-event findings.
+  PR/main exact-commit CI and rendered remote media/docs checks remain release gates.
+  publication_verified and DONE are absent until they pass.
+- [Results and all limits](reports/WP14_RESULTS.md), [phase checklist](WP14_PLAN.md),
+  [scope restriction](evidence/wp14/support_scope_001.json), [Native](evidence/wp14/native_001.json).
+
 # Progress — 2026-11-01 Asia/Seoul
 
 ## WP-13 — experimental rejection and engineering payload

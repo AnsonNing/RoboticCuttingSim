@@ -1,0 +1,43 @@
+{
+  "command": [
+    "/home/ningan/.vscode-server/extensions/openai.chatgpt-26.930.41038-linux-x64/bin/linux-x86_64/codex",
+    "-C",
+    "/home/ningan/RoboticCuttingSim-wp14",
+    "-a",
+    "never",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6.1-sol",
+    "-c",
+    "model_reasoning_effort=\"xhigh\"",
+    "-c",
+    "memories.generate_memories=false",
+    "exec",
+    "--ephemeral",
+    "--json",
+    "-o",
+    "artifacts/wp14/review_002/final.txt",
+    "-"
+  ],
+  "returncode": 0,
+  "wall_s": 136.36194968199925,
+  "reviewed_commit": "13cc5db5c75112ac2f03899d4496fade833595e2",
+  "mode": "READ_ONLY_XHIGH",
+  "mutations_authorized": false,
+  "verdict": "ACCEPT",
+  "summary": "**ACCEPT** \u2014 no introduced defects found in `6898774 \u2192 13cc5db`.\n\n- Effective-material comparison rejects both profile and direct parameter overrides.\n- Pending state clears on rotation, side/band rejection and expiry. The excursion\u2192return regression restores contact without a fresh crossing, meaningfully checking stale-event reuse.\n- Original `tlmpm_v7` and `v7_cut_research_v1` remain byte-identical, adopted and correctly pinned.\n- Candidate v1_2 GPU status is accurately **NOT_RUN**; historical GPU outcomes remain attached to v1.\n\nVerified the actual prior `final.txt`, receipt/source hashes and saved **60-pass** log. Evidence caveat: one retained before-fix failure (`pending_outside`) was an argument-index error, corrected in the current test; rotation/side/band failures reproduce the lifecycle issue.\n\nNo edits, tests, physics runs or agents. Release CI and remote verification remain pending.",
+  "review_sha256": "9ca0c321dfe1fd917d06e54389519fd6ce60520639f47aace8c4f3c3e994902d",
+  "events_sha256": "131084a9f75777d22d967a0b617d6062da5e831c7b5223064a56fbd1e36009f6",
+  "prior_review": "review_001.json",
+  "regression_audit": {
+    "command": "CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=\"$PWD/src\" .venv/bin/python artifacts/wp14/review_regression_audit_001/run.py",
+    "historical_commit": "689877445e756ba8302e700d0b48d995e220d4b9",
+    "historical_candidate_sha256": "7482c2072402845e4d00042f0f7fb8f81295ce0024531206864a903d1a524e44",
+    "current_test_source_sha256": "64e6ccd001860fb52e157882b4bbe812a7178069c3244f44f0fe2666498e3136",
+    "log": "artifacts/wp14/review_regression_audit_001/pytest.log",
+    "log_sha256": "b26d1518983f341381a2c579aed24260b8329ec6330ae0b8c60ad6a8f3bc0a5e",
+    "result": "3 failed, 1 passed, 17 deselected in 0.21s",
+    "scope": "Corrected current regression tests against historical candidate source. Rotation/band/side truly reproduce stale pending evidence; outside-edge was already correctly cleared. Original six-failure log retained; its outside-edge failure was a test argument-index error, not solver evidence."
+  }
+}
