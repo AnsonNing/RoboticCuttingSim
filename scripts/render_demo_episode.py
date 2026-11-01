@@ -122,6 +122,10 @@ def main():
     parser.add_argument("--particle-stride", type=int, default=3)
     parser.add_argument("--poster-frame", type=int, default=-1)
     parser.add_argument("--keep-frames", action="store_true")
+    parser.add_argument('--layout', choices=('diagnostic_v1','native_multiview_v2'), default='diagnostic_v1')
+    parser.add_argument('--archived-native', action='store_true', help='Preserve historical mounts/metadata; never relabel as the current rig')
+    parser.add_argument('--global-pixel-crop', type=int, nargs=4, metavar=('X','Y','W','H'),
+                        help='Optional fixed digital Global RGB crop, with the complete unaltered view inset')
     args = parser.parse_args()
     start = time.perf_counter()
     episode = args.episode_dir.resolve()
@@ -133,7 +137,11 @@ def main():
     out.mkdir(parents=True, exist_ok=False)  # never overwrite an earlier render
     out = out.resolve()
     try:
-        render(args, episode, out, start)
+        if args.layout == 'native_multiview_v2':
+            from robotic_cutting_sim.native_multiview import render_episode
+            render_episode(args, episode, out, start)
+        else:
+            render(args, episode, out, start)
     except Exception:
         import traceback
         (out / "render_failure.txt").write_text(traceback.format_exc())

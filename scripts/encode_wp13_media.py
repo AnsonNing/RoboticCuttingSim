@@ -12,21 +12,28 @@ import numpy as np
 from run_wp13 import ROOT, G
 
 
-def encode_frames(files, out, title, *, view='overview_rgb'):
-    first = np.load(files[0])['rgb']
+def encode_frames(files, out, title, *, view='overview_rgb', frame_transform=None, fps=5., timestamps=None):
+    """Encode raw frames, optionally through the versioned camera layout renderer."""
+    first = frame_transform(files[0]) if frame_transform else np.load(files[0])['rgb']
     height, width = first.shape[:2]
+    filters = (f"scale=640:360,drawbox=x=0:y=0:w=iw:h=24:color=black@0.7:t=fill,"
+               f"drawtext=text='{title}':fontcolor=white:fontsize=13:x=8:y=5") if title is not None else 'null'
+    if timestamps is not None:
+        relative=np.asarray(timestamps,float)-timestamps[0]
+        pts='+'.join(f'{round(t*1000)}*eq(N,{i})' for i,t in enumerate(relative))
+        filters=f"setpts='{pts}'"
+        fps=1000.
     command = ['ffmpeg', '-v', 'error', '-n', '-f', 'rawvideo', '-pixel_format', 'rgb24',
-               '-video_size', f'{width}x{height}', '-framerate', '5', '-i', '-',
-               '-vf', f"scale=640:360,drawbox=x=0:y=0:w=iw:h=24:color=black@0.7:t=fill,"
-                      f"drawtext=text='{title}':fontcolor=white:fontsize=13:x=8:y=5",
+               '-video_size', f'{width}x{height}', '-framerate', str(fps), '-i', '-',
+               '-vf', filters, '-vsync', 'vfr', '-enc_time_base', '1:1000',
                '-c:v', 'libx264', '-crf', '24', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', str(out)]
     digest = hashlib.sha256(); times = []
     with subprocess.Popen(command, stdin=subprocess.PIPE) as child:
         for path in files:
-            data = np.load(path)
-            rgb = np.asarray(data['rgb'], np.uint8)
-            child.stdin.write(rgb.tobytes())
-            times.append(float(data['physics_timestamp_s']))
+            with np.load(path) as data:
+                rgb = frame_transform(path) if frame_transform else np.asarray(data['rgb'], np.uint8)
+                child.stdin.write(rgb.tobytes())
+                times.append(float(data['physics_timestamp_s']))
             digest.update(path.name.encode()); digest.update(path.read_bytes())
         child.stdin.close()
         if child.wait() != 0:
@@ -42,6 +49,26 @@ def preview(source, out, *, start, duration, width=480, speed=1.):
            '-filter_complex', filters, '-loop', '0', str(out)]
     subprocess.run(cmd, check=True)
     return cmd
+
+
+def encode_timed_frames(files, out, frame_transform, times):
+    """VFR for saved irregular captures, without dropping or interpolating frames.
+
+    Encoder packet time base is 1 ms; every captured timestamp must be representable
+    exactly at that precision. The last capture has one final 1 ms packet.
+    """
+    times=np.asarray(times,float)
+    relative=times-times[0]
+    if not np.allclose(relative*1000,np.round(relative*1000),atol=1e-6,rtol=0) or np.any(np.diff(times)<=0):
+        raise ValueError('VFR capture timestamps require increasing millisecond precision')
+    receipt=encode_frames(files,out,None,view='native_multiview_v2',frame_transform=frame_transform,timestamps=times)
+    probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','v:0',
+        '-show_frames','-show_entries','frame=best_effort_timestamp_time','-of','json',str(out)],text=True))
+    actual=np.array([float(row['best_effort_timestamp_time']) for row in probe['frames']])
+    if actual.shape!=relative.shape or not np.allclose(actual,relative,atol=1e-6,rtol=0):
+        raise ValueError('VFR output PTS differ from captured physics timestamps')
+    return {**receipt,'timing':'VFR exact captured timestamps',
+        'decoded_pts_relative_s':actual.tolist(),'last_packet_duration_s':.001,'pts_check':'PASS'}
 
 
 def main():

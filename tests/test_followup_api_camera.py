@@ -63,3 +63,13 @@ def test_new_rig_changes_only_global_and_preserves_real_hand_local_mounts():
     assert .6<g['working_distance_to_target_m']<6.
     assert old.specs['global_d455']['width']==640
     with pytest.raises(ValueError):make_rig(rig_profile='unknown')
+
+
+def test_fixed_pose_corrections_retain_controlled_v5_global_optics():
+    old=make_rig()
+    for profile in ('wrist_camera_rig_v7','wrist_camera_rig_v8'):
+        rig=make_rig(rig_profile=profile)
+        for name in ('wrist_d405_0','wrist_d405_1'):assert rig.specs[name]==old.specs[name]
+        for key in ('width','height','K','near_m','far_m','native_near_m','native_far_m'):
+            assert rig.specs['global_d455'][key]==old.specs['global_d455'][key]
+        assert rig.specs['global_d455']['T_world_camera']!=old.specs['global_d455']['T_world_camera']

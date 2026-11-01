@@ -1,0 +1,88 @@
+{
+  "episodes": [
+    {
+      "id": "wp13_v5_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/native_002/tlmpm_v5/C00_cut/run/episode_000",
+      "title": "WP-13 cut v5",
+      "preview_speed": 1.0
+    },
+    {
+      "id": "wp13_v7_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/native_002/tlmpm_v7/C00_cut/run/episode_000",
+      "title": "WP-13 cut v7",
+      "preview_speed": 1.0
+    },
+    {
+      "id": "wp13_v5_trim",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/native_002/tlmpm_v5/T00_trim/run/episode_000",
+      "title": "WP-13 trim v5",
+      "preview_speed": 1.0
+    },
+    {
+      "id": "wp13_v7_trim",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/native_002/tlmpm_v7/T00_trim/run/episode_000",
+      "title": "WP-13 trim v7",
+      "preview_speed": 1.0
+    },
+    {
+      "id": "wp13_v5_multicut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/native_002/tlmpm_v5/M00_four_slices/run/episode_000",
+      "title": "WP-13 multicut v5",
+      "preview_speed": 3.0
+    },
+    {
+      "id": "wp13_v7_multicut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/native_002/tlmpm_v7/M00_four_slices/run/episode_000",
+      "title": "WP-13 multicut v7",
+      "preview_speed": 3.0
+    },
+    {
+      "id": "wp14_v5_standard_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/native_001/tlmpm_v5/C00_cut/run/episode_000",
+      "title": "WP-14 standard_cut v5"
+    },
+    {
+      "id": "wp14_v7_standard_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/native_001/tlmpm_v7/C00_cut/run/episode_000",
+      "title": "WP-14 standard_cut v7"
+    },
+    {
+      "id": "wp14_v5_firm_offset_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/native_001/tlmpm_v5/H01_cut/run/episode_000",
+      "title": "WP-14 firm_offset_cut v5"
+    },
+    {
+      "id": "wp14_v7_firm_offset_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/native_001/tlmpm_v7/H01_cut/run/episode_000",
+      "title": "WP-14 firm_offset_cut v7"
+    },
+    {
+      "id": "wp14_walkthrough",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/scene_refresh_001/run/episode_000",
+      "title": "WP-14 CUT scene walkthrough"
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "wp13_cut_compare",
+      "sources": [
+        "wp13_v5_cut",
+        "wp13_v7_cut"
+      ]
+    },
+    {
+      "id": "wp14_standard_cut_compare",
+      "sources": [
+        "wp14_v5_standard_cut",
+        "wp14_v7_standard_cut"
+      ]
+    },
+    {
+      "id": "wp14_firm_offset_cut_compare",
+      "sources": [
+        "wp14_v5_firm_offset_cut",
+        "wp14_v7_firm_offset_cut"
+      ]
+    }
+  ]
+}
