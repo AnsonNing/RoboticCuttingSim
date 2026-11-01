@@ -99,5 +99,32 @@
     }
   ],
   "exact_final_head_ci": "PENDING",
-  "scope": "PASS/FAIL/SKIPPED/XFAIL recorded independently. Exact-final-commit GitHub CI remains required."
+  "scope": "PASS/FAIL/SKIPPED/XFAIL recorded independently. Exact-final-commit GitHub CI remains required.",
+  "pre_release_github_ci_failures": [
+    {
+      "run_id": 41344249359,
+      "url": "https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41344249359",
+      "head_sha": "5f0aa7554ef0f9a28a239899811de3f7cdcbb76f",
+      "status": "FAIL",
+      "summary": "1 failed, 1739 passed, 12 skipped, 6 xfailed, 6 warnings in 3254.45s (0:54:14)",
+      "failed_test": "tests/test_native_multiview.py::test_irregular_capture_all_frames_and_exact_physics_pts",
+      "reason": "FileNotFoundError: [Errno 2] No such file or directory: 'ffmpeg'",
+      "fix": "Declare ffmpeg/ffprobe as CI tools via the Ubuntu ffmpeg package. Keep the actual encoding and exact-PTS assertions; do not skip or weaken the test.",
+      "archive": "artifacts/wp14/followup_001/ci_head_002/41344249359.zip",
+      "archive_sha256": "1b56a1eb489bc52c0cf8d6f593d7402c4c3c0e7f63b93b6047cfc2a188b09958"
+    }
+  ],
+  "CI_dependency_fix_focused": {
+    "focused_command": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/test_native_multiview.py"
+    ],
+    "focused_result": "10 passed in 0.23s",
+    "focused_returncode": 0,
+    "workflow_parse": "PASS",
+    "fix": "Provision ffmpeg/ffprobe only on ephemeral GitHub runner, record versions, perform actual VFR check before full suite. No local/shared environment changes, no test skip or threshold change."
+  }
 }

@@ -218,6 +218,9 @@ Focused API/camera/media tests, actual contact negatives and the public topology
 bundle pass. The first full collection has 1,739 passes and one stale solver-list
 assertion failure; its expected registry was updated and the related 29 tests pass.
 Nine skips and six expected failures are separate. [Test accounting](../evidence/wp14_followup/tests_001.json).
+The first full follow-up GitHub push suite has 1,739 passes and one VFR-test failure:
+the hosted image lacks `ffmpeg`. The workflow now provisions `ffmpeg`/`ffprobe`;
+the real encoding and exact-PTS assertions remain mandatory and unchanged.
 Exact-commit GitHub publication checks are
 recorded separately; skips and expected failures are not passes. Main merge,
 exact-main CI and actual remote GIF/MP4 playback remain publication gates until
