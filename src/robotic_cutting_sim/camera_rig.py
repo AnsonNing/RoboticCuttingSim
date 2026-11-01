@@ -6,6 +6,7 @@ mounts are visual-only and introduce no rigid bodies, contacts, mass or inertia.
 Matrices act on column vectors; camera frames use OpenCV +Z forward, +Y down.
 """
 from copy import deepcopy
+import json
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,7 @@ from scipy.spatial.transform import Rotation
 WRIST_LAYOUT = "wrist_d405_global_d455"
 LEGACY_LAYOUT = "legacy_fixed_d455"
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v5.json"
+RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6', 'wrist_camera_rig_v7', 'wrist_camera_rig_v8')
 _CV_TO_USD = np.diag([1., -1., -1., 1.])
 
 
@@ -63,7 +65,11 @@ def _bracket_obb(transform, anchor):
 
 class CameraRig:
     def __init__(self, task_id="TRIM-01", camera_layout=WRIST_LAYOUT,
-                 initial_hand_poses_world_xyzw=None):
+                 initial_hand_poses_world_xyzw=None, rig_profile='wrist_camera_rig_v5'):
+        if rig_profile not in RIG_PROFILES:
+            raise ValueError(f'Unknown camera rig profile: {rig_profile}')
+        if camera_layout in (LEGACY_LAYOUT, 'fixed_d455') and rig_profile != RIG_PROFILES[0]:
+            raise ValueError('The versioned Global rig requires the wrist/global layout')
         if camera_layout == "fixed_d455":
             camera_layout = LEGACY_LAYOUT
         if camera_layout not in (WRIST_LAYOUT, LEGACY_LAYOUT):
@@ -141,6 +147,29 @@ class CameraRig:
             "calibration_scope": "Authored official USD pseudo-depth lens; runtime render-product K must be recorded independently",
             "visual_obbs": [],
         }
+        if rig_profile == 'wrist_camera_rig_v6':
+            path = CONFIG_PATH.with_name(rig_profile+'.json')
+            config = json.loads(path.read_text())
+            view = config['global_d455']
+            transform = _look_at(view['eye_world_m'], view['target_world_m'])
+            width, height = view['resolution_wh']
+            self.specs['global_d455'].update(
+                rig_profile=rig_profile, width=width, height=height,
+                K=_intrinsics(width,height,view['hfov_deg']),
+                T_world_camera=transform.tolist(), look_at_target_world_m=view['target_world_m'],
+                working_distance_to_target_m=float(np.linalg.norm(transform[:3,3]-view['target_world_m'])),
+                near_m=view['near_m'], far_m=view['far_m'],
+                native_near_m=view['native_near_m'], native_far_m=view['far_m'],
+                native_maximum_disparity=view['maximum_disparity_px'],
+                calibration_scope='Versioned square-pixel simulated D455 lens; actual render-product K recorded; physical calibration unvalidated')
+        elif rig_profile in ('wrist_camera_rig_v7','wrist_camera_rig_v8'):
+            config=json.loads(CONFIG_PATH.with_name(rig_profile+'.json').read_text())['global_d455']
+            transform=_look_at(config['eye_world_m'], config['target_world_m'])
+            self.specs['global_d455'].update(
+                rig_profile=rig_profile,T_world_camera=transform.tolist(),
+                look_at_target_world_m=config['target_world_m'],
+                working_distance_to_target_m=float(np.linalg.norm(transform[:3,3]-config['target_world_m'])),
+                optical_profile='unchanged validated v5 SingleView 640x480')
 
     def calibrations(self, hand_poses_world_xyzw):
         hands = np.asarray(hand_poses_world_xyzw, float)
@@ -223,8 +252,12 @@ class CameraRig:
             camera = UsdGeom.Camera.Get(stage, path)
             camera.CreateProjectionAttr("perspective")
             camera.CreateClippingRangeAttr(Gf.Vec2f(.001, 20.))
+            if global_spec['rig_profile'] == 'wrist_camera_rig_v6':
+                camera.CreateFocalLengthAttr(10.)
+                camera.CreateHorizontalApertureAttr(10.*global_spec['width']/global_spec['K'][0][0])
+                camera.CreateVerticalApertureAttr(10.*global_spec['height']/global_spec['K'][1][1])
         disabled = _disable_physics_and_products(stage, prim)
-        authored = usd_camera_calibration(stage, depth_path, 640, 480)
+        authored = usd_camera_calibration(stage, depth_path, global_spec['width'], global_spec['height'])
         global_spec.update(prim_path=root, optical_prim_path=depth_path, depth_camera_path=depth_path,
                            color_camera_path=color_path, asset=asset, K=authored["K"],
                            T_world_camera=authored["T_world_camera"], disabled_source_apis=disabled)
@@ -274,12 +307,14 @@ def _disable_physics_and_products(stage, root):
     return disabled
 
 
-def make_rig(task_id="TRIM-01", camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None):
-    return CameraRig(task_id, camera_layout, initial_hand_poses_world_xyzw)
+def make_rig(task_id="TRIM-01", camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None,
+             rig_profile='wrist_camera_rig_v5'):
+    return CameraRig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile)
 
 
 def author_camera_rig(stage, hand_paths, d455_asset, task_id="TRIM-01", *,
-                      camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None):
+                      camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None,
+                      rig_profile='wrist_camera_rig_v5'):
     if initial_hand_poses_world_xyzw is None:
         from pxr import Usd, UsdGeom
         poses = []
@@ -290,5 +325,5 @@ def author_camera_rig(stage, hand_paths, d455_asset, task_id="TRIM-01", *,
             transform = np.asarray(UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
             poses.append(np.r_[transform[:3, 3], Rotation.from_matrix(transform[:3, :3]).as_quat()])
         initial_hand_poses_world_xyzw = poses
-    rig = make_rig(task_id, camera_layout, initial_hand_poses_world_xyzw)
+    rig = make_rig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile)
     return rig.author_usd(stage, hand_paths, global_d455_asset_path=d455_asset)

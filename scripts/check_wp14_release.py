@@ -16,8 +16,12 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--protected',type=Path,required=True)
+    p.add_argument('--followup',action='store_true')
     a=p.parse_args();tracked=set(git('ls-files','-z').decode().rstrip('\0').split('\0'))
     pages=['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md']
+    if a.followup:
+        pages=['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
+               'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/WP14_FOLLOWUP_RESULTS.md','docs/WP14_SCENES.md']
     errors=[];links=[];media={}
     for page in pages:
         text=(ROOT/page).read_text();text=re.sub(r'^```.*?^```\s*$','',text,flags=re.M|re.S)
@@ -52,6 +56,42 @@ def main():
     for file,key in (('docs/evidence/wp13/media_001.json','media'),('docs/evidence/wp14/media_001.json','comparisons'),
                      ('docs/evidence/wp14/scene_refresh_001.json','media')):
         for row in json.loads((ROOT/file).read_text())[key]:provenance[row['gif']]=row
+    if a.followup:
+        for filename in ('current_gallery_003.json','archive_gallery_003.json','two_bumps_media_002.json'):
+            document=ROOT/'docs/evidence/wp14_followup'/filename
+            data=json.loads(document.read_text())
+            for row in data['episodes']:
+                if row['status']!='PASS':
+                    errors.append({'path':str(document),'error':'remaster refused','episode':row['id']})
+                    continue
+                receipt=row['receipt']
+                for filename,expected in row['published'].items():
+                    if hashlib.sha256((ROOT/filename).read_bytes()).hexdigest()!=expected:
+                        errors.append({'path':filename,'error':'published bytes differ from camera receipt'})
+                    if filename.endswith('.gif'):
+                        mp4=next(p for p in row['published'] if p.endswith('.mp4'))
+                        provenance[filename]={'runtime_source':receipt['runtime_source'],'gif_sha256':expected,
+                                              'mp4':mp4,'mp4_sha256':row['published'][mp4]}
+                for filename,expected in receipt.get('implementation_sha256',{}).items():
+                    relative=str(Path(filename).relative_to(ROOT))
+                    source=git('show',receipt['source_commit']+':'+relative)
+                    if hashlib.sha256(source).hexdigest()!=expected:
+                        errors.append({'path':relative,'error':'renderer source differs from recorded commit'})
+                if receipt['sync_status']!='PASS' or receipt['full_decode']!='PASS' or receipt.get('renderer_source_status'):
+                    errors.append({'path':str(document),'error':'camera sync/decode/source gate failed','episode':row['id']})
+            for row in data['comparisons']:
+                prefix='docs/media/wp14_followup/current_v3/'+row['id']
+                provenance[prefix+'.gif']={'runtime_source':'live_isaac_sim','gif_sha256':row['gif_sha256'],
+                                          'mp4':prefix+'.mp4','mp4_sha256':row['mp4_sha256']}
+        physics=json.loads((ROOT/'docs/evidence/wp14_followup/native_detachment_001.json').read_text())
+        native=json.loads((ROOT/'docs/evidence/wp14_followup/native_001.json').read_text())
+        candidate=next(r for r in native['rows'] if r['label']=='bounded_rigid_v2')
+        if (physics['status']!='PASS' or candidate['task_status']!='PASS' or
+                candidate['home_outcome']['status']!='PASS' or
+                candidate['solver_module']!='robotic_cutting_sim.tlmpm_v7_2'):
+            errors.append({'error':'requested Native two-bump physical gate failed'})
+        camera=json.loads((ROOT/'docs/evidence/wp14_followup/visibility_review_001.json').read_text())
+        if camera['status']!='PASS_VISUAL_REVIEW':errors.append({'error':'actual eight-phase view review incomplete'})
     for path,item in media.items():
         if path.endswith('.gif'):
             row=provenance.get(path)

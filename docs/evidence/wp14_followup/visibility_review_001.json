@@ -1,0 +1,25 @@
+{
+  "status": "PASS_VISUAL_REVIEW",
+  "source_contact_sheet": "artifacts/wp14/followup_001/visibility_final_001/contact_sheet.png",
+  "reviewed_phases": [
+    "initial",
+    "first_approach",
+    "middle_A",
+    "A_complete",
+    "second_approach",
+    "middle_B",
+    "final_surface",
+    "HOME"
+  ],
+  "findings": "Both protrusions and full material are visible initially; the front-right elevated fixed Global view keeps the working leading edge and adjacent substrate visible during both skims, with the arm outside the main material area. The blade physically covers its own immediate contact footprint. Final substrate and detached shavings remain visible. No robot/tool/gripper visibility changes.",
+  "colour_diagnostic_used_as_gate": false,
+  "wrist_visibility_gate": false,
+  "secondary_arm_max_joint_change_rad": 2.0231406827608822e-11,
+  "old_views_retained": [
+    "artifacts/wp14/followup_001/visibility_baseline_002/contact_sheet.png",
+    "configs/wrist_camera_rig_v5.json",
+    "configs/wrist_camera_rig_v6.json",
+    "configs/wrist_camera_rig_v7.json"
+  ],
+  "range": "Actual material optical Z across sampled frames 0.7246\u20130.8296m, within controlled Global depth range; actual K and full-image validity recorded separately. Physical sensor calibration is unvalidated."
+}

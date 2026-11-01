@@ -1,0 +1,102 @@
+{
+  "trim_trace_001": {
+    "source": "artifacts/wp14/trim_trace_001/front_trace.json",
+    "source_sha256": "fcda69f413e12912245beb4394ce7c4483fef90f17810adf6576eb42d84bf740",
+    "selected_particles": 216,
+    "final_zero_digit_particles": 216,
+    "counts": {
+      "armed_substeps": {
+        "particles": 216,
+        "substeps": 3801600
+      },
+      "leading_crossings": {
+        "particles": 216,
+        "substeps": 216
+      },
+      "finite_crossings": {
+        "particles": 216,
+        "substeps": 216
+      },
+      "bevel_residence_substeps": {
+        "particles": 216,
+        "substeps": 296806
+      },
+      "engaged_bevel_substeps": {
+        "particles": 0,
+        "substeps": 0
+      },
+      "particle_work_substeps": {
+        "particles": 0,
+        "substeps": 0
+      },
+      "reached_but_no_stroke": {
+        "particles": 216,
+        "substeps": 393052
+      },
+      "reached_but_outside_bevel": {
+        "particles": 216,
+        "substeps": 2853918
+      },
+      "link_plane_intersection_substeps": {
+        "particles": 0,
+        "substeps": 0
+      },
+      "finite_link_front_crossings": {
+        "particles": 0,
+        "substeps": 0
+      }
+    }
+  },
+  "trim_support_trace_001": {
+    "source": "artifacts/wp14/trim_support_trace_001/front_trace.json",
+    "source_sha256": "ba54cdf3037acd85e5de88a95e58b84ca7c84e47933a15ba109f91ff58cda452",
+    "selected_particles": 216,
+    "final_zero_digit_particles": 216,
+    "counts": {
+      "armed_substeps": {
+        "particles": 216,
+        "substeps": 3801600
+      },
+      "leading_crossings": {
+        "particles": 216,
+        "substeps": 217
+      },
+      "finite_crossings": {
+        "particles": 216,
+        "substeps": 217
+      },
+      "bevel_residence_substeps": {
+        "particles": 216,
+        "substeps": 296807
+      },
+      "engaged_bevel_substeps": {
+        "particles": 0,
+        "substeps": 0
+      },
+      "particle_work_substeps": {
+        "particles": 0,
+        "substeps": 0
+      },
+      "reached_but_no_stroke": {
+        "particles": 216,
+        "substeps": 393051
+      },
+      "reached_but_outside_bevel": {
+        "particles": 216,
+        "substeps": 2853916
+      },
+      "link_plane_intersection_substeps": {
+        "particles": 216,
+        "substeps": 3801600
+      },
+      "finite_link_front_crossings": {
+        "particles": 216,
+        "substeps": 216
+      },
+      "engaged_finite_link_front_crossings": {
+        "particles": 152,
+        "substeps": 152
+      }
+    }
+  }
+}

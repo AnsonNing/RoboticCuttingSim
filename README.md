@@ -2,17 +2,24 @@
 
 A configurable robotic cutting research environment with live **Native Isaac Sim 6.2**,
 two Franka Pandas and an end-held blade in a physical two-finger grasp. One continuous
-specimen is cut using **TLMPM v5 / Law 8**, with persistent side labels, multiple cuts
-and RGB-D observations. Scene, goal, controller and evaluation have separate APIs.
+specimen supports **original v7 for the validated Straight CUT research profile**,
+with **v5 / Law 8 retained as the legacy default**. Persistent cut histories, multiple
+cuts and RGB-D observations use separate scene, goal, controller and evaluation APIs.
 Material parameters are provisional and uncalibrated; Isaac Lab parity is unverified.
 
-[![Live Native straight CUT — animated workcell view](docs/media/wp13/hero_native.gif)](docs/media/wp13/v5_cut_native.mp4)
+[![Sequential removal of two different protrusions — actual Native multiview animation](docs/media/wp14_followup/two_bumps_v2/two_bumps_v7_2_native.gif)](docs/media/wp14_followup/two_bumps_v2/two_bumps_v7_2_native.mp4)
 
-**Live Native recording, seed 42, default v5 and `particle_surface_v1`, 1× preview.**
-Click any animation for its full MP4. The `blade_master_flat_board_v1` workcell has
-one wooden board directly on the table. Franka 1 stays at its normal safe park;
-both wrist D405s use fixed, hand-aligned v5 mounts, with a Global D455 RGB-D view.
-[Workcell geometry and cameras](docs/reports/WP12_WORKCELL.md).
+**Sequential removal of two different protrusions — real Native Isaac Sim, seed 42, 1×.**
+The versioned experimental `tlmpm_v7_2` detaches the 9 mm dome and 5.5 mm asymmetric
+cap in separate passes: **A/B 100%, mechanical bodies 1 → 2 → 3, substrate retained,
+HOME PASS**. Global D455 and both actual wrist D405 RGB/depth views are synchronized;
+a labelled presentation close-up shows the height/shape difference. The larger
+Global pane has a labelled fixed pixel crop and the complete original view inset.
+Franka 1 remains parked with unchanged hand-local v5 wrist mounts.
+[Scene / goal, measured state arrays and retained failures](docs/reports/WP14_FOLLOWUP_RESULTS.md) ·
+[All full multiview movies](docs/NATIVE_MULTIVIEW_GALLERY.md).
+This is one verified demo; single-bump kinematic T00 still fails, and general TRIM
+support is not claimed. The validated original-v7 CUT profile remains separate.
 
 ## Native cutting gallery
 
@@ -24,14 +31,15 @@ The following three previews show the supported v5 baseline, seed 42,
 
 | Straight CUT · 1× | TRIM at rake 10° · 1× | Four slices · 3× preview |
 | --- | --- | --- |
-| [![Straight CUT — real Native animation](docs/media/wp13/cut_preview.gif)](docs/media/wp13/v5_cut_native.mp4) | [![TRIM — real Native animation](docs/media/wp13/trim_preview.gif)](docs/media/wp13/v5_trim_native.mp4) | [![Four slices — real Native animation](docs/media/wp13/multicut_preview.gif)](docs/media/wp13/v5_multicut_native.mp4) |
+| [![Straight CUT — real Native animation](docs/media/wp14_followup/current_v3/wp13_v5_cut.gif)](docs/media/wp14_followup/current_v3/wp13_v5_cut.mp4) | [![TRIM — real Native animation](docs/media/wp14_followup/current_v3/wp13_v5_trim.gif)](docs/media/wp14_followup/current_v3/wp13_v5_trim.mp4) | [![Four slices — real Native animation](docs/media/wp14_followup/current_v3/wp13_v5_multicut.gif)](docs/media/wp14_followup/current_v3/wp13_v5_multicut.mp4) |
 | Two pieces | 97.51% above-plane dome mass detached | Five pieces; placement quality reported separately |
 
-[Recording provenance and exact capture timestamps](docs/evidence/wp13/media_001.json) ·
+[Multiview provenance and exact capture timestamps](docs/evidence/wp14_followup/current_gallery_003.json) ·
 [WP-13 measurements and limitations](docs/reports/WP13_RESULTS.md) ·
 [earlier WP-12 demonstrations](docs/reports/WP12_FINAL_VALIDATION.md).
-Full clips retain every captured RGB frame at the nominal 5 fps cadence;
-previews use labelled crops and speeds.
+New full clips retain every Global capture and synchronize both real wrist RGB/depth streams.
+Irregular captures keep their exact presentation timestamps; previews have labelled speeds.
+[All current and archived multiview recordings](docs/NATIVE_MULTIVIEW_GALLERY.md).
 
 ## CUT research profile (WP-14)
 
@@ -40,7 +48,7 @@ previews use labelled crops and speeds.
 improve near-cut x/F P95 by **5.60–8.49×** and local physical-locus roughness by
 **78.0–86.1%**. Two predeclared Native pairs complete **4/4 tasks and 4/4 HOME**.
 
-[![Updated WP-14 actual Native research scene](docs/media/wp14/scene_walkthrough_preview.gif)](docs/media/wp14/scene_walkthrough_native.mp4)
+[![Updated WP-14 actual Native research scene](docs/media/wp14_followup/current_v3/wp14_walkthrough.gif)](docs/media/wp14_followup/current_v3/wp14_walkthrough.mp4)
 
 **Updated executable scene and real full recording, 1×.**
 [Launch the standard or firm-offset CUT scene](docs/WP14_SCENES.md) ·
@@ -48,20 +56,20 @@ improve near-cut x/F P95 by **5.60–8.49×** and local physical-locus roughness
 [scene/video provenance](docs/evidence/wp14/scene_refresh_001.json).
 This extra engineering replay does not add an independent adoption sample.
 
-[![Real Native standard CUT: v5 left and v7 research profile right, matched capture times](docs/media/wp14/standard_cut_v5_v7_preview.gif)](docs/media/wp14/standard_cut_v5_v7_comparison.mp4)
+[![Real Native standard CUT: v5 left and v7 research profile right, matched capture times](docs/media/wp14_followup/current_v3/wp14_standard_cut_compare.gif)](docs/media/wp14_followup/current_v3/wp14_standard_cut_compare.mp4)
 
 **v5 left / v7 CUT profile right, 1× simulation time.** These are genuine Native
 RGB captures with identical timestamps and the same declared scene/controller;
 measured-feedback commands differ slightly under coupled dynamics. Individual
-full recordings: [v5 standard](docs/media/wp14/v5_standard_cut_native.mp4),
-[v7 standard](docs/media/wp14/v7_standard_cut_native.mp4).
+full recordings: [v5 standard](docs/media/wp14_followup/current_v3/wp14_v5_standard_cut.mp4),
+[v7 standard](docs/media/wp14_followup/current_v3/wp14_v7_standard_cut.mp4).
 
-[![Real Native firm offset CUT: v5 left and v7 research profile right](docs/media/wp14/firm_offset_cut_v5_v7_preview.gif)](docs/media/wp14/firm_offset_cut_v5_v7_comparison.mp4)
+[![Real Native firm offset CUT: v5 left and v7 research profile right](docs/media/wp14_followup/current_v3/wp14_firm_offset_cut_compare.gif)](docs/media/wp14_followup/current_v3/wp14_firm_offset_cut_compare.mp4)
 
 **Firm material, yaw −5°, cut at −4 mm**, 1×. Full recordings:
-[v5](docs/media/wp14/v5_firm_offset_cut_native.mp4),
-[v7](docs/media/wp14/v7_firm_offset_cut_native.mp4).
-[Frame timestamps/source hashes](docs/evidence/wp14/media_001.json) ·
+[v5](docs/media/wp14_followup/current_v3/wp14_v5_firm_offset_cut.mp4),
+[v7](docs/media/wp14_followup/current_v3/wp14_v7_firm_offset_cut.mp4).
+[Multiview timestamps/source hashes](docs/evidence/wp14_followup/current_gallery_003.json) ·
 [Native tracking, physical contacts and HOME](docs/evidence/wp14/native_001.json).
 
 | Selection / family | Supported scope |
@@ -82,13 +90,14 @@ finite results do not validate all combinations or a random success rate.
 TRIM failure does not veto proven CUT; surface appearance does not certify it.
 
 ```python
-from robotic_cutting_sim.research_profiles import compile_research_task
+from robotic_cutting_sim.scene_config import compile_task
 
-task = compile_research_task(
-    "v7_cut_research_v1", "configs/wp12/scenes/bar_flat_board.json", "sever_mid")
+task = compile_task("configs/wp12/scenes/bar_flat_board.json", "sever_mid",
+                    solver_profile="v7_cut_research_v1")
 # Explicit original v7, recorded path_v2 controller, 14 s completion window.
 ```
 
+[Normal Scene / Goal / Environment selection](docs/V7_RESEARCH_WORKFLOW.md) is supported.
 Configuration selection checks and records the solver/front/contact sources,
 material, scene and numerical scope; incompatible overrides raise. New policy
 actions require separate evaluation. `tlmpm_v7_1` stays Experimental and is not
@@ -110,7 +119,7 @@ connected, and a held-out shorter/firmer CUT also fails. Improved surfaces canno
 substitute for chip detachment. Contact forces remain unconverged and materials
 uncalibrated. [Decision, paired outcomes and failures](docs/reports/WP13_RESULTS.md).
 
-[![Matched Native CUT: v5 left, experimental v7 right — real animation](docs/media/wp13/cut_v5_v7_preview.gif)](docs/media/wp13/cut_v5_v7_native_comparison.mp4)
+[![Matched Native CUT: v5 left, experimental v7 right — real animation](docs/media/wp14_followup/current_v3/wp13_cut_compare.gif)](docs/media/wp14_followup/current_v3/wp13_cut_compare.mp4)
 
 **Matched Native CUT, v5 left / v7 right**, seed 42, identical captured times,
 `particle_surface_v1`, 1×. This local improvement is real; it does not overturn
@@ -118,9 +127,9 @@ the kinematic TRIM failure. Native v7 TRIM itself passes (100% above-plane mass
 removed). The kinematic driver dropped compiled planner overrides, including
 action limits and one partial-depth change; its paired measurements describe
 the recorded legacy paths. Cross-runtime differences remain unresolved.
-Candidate full recordings: [CUT](docs/media/wp13/v7_cut_native.mp4),
-[TRIM](docs/media/wp13/v7_trim_native.mp4),
-[four slices](docs/media/wp13/v7_multicut_native.mp4).
+Candidate full recordings: [CUT](docs/media/wp14_followup/current_v3/wp13_v7_cut.mp4),
+[TRIM](docs/media/wp14_followup/current_v3/wp13_v7_trim.mp4),
+[four slices](docs/media/wp14_followup/current_v3/wp13_v7_multicut.mp4).
 
 Both surface profiles are one-way render geometry, separate from collision.
 Unchanged `particle_surface_v1` and opt-in `cut_aware_surface_v1` were measured on
@@ -161,7 +170,8 @@ The same scene/goal configuration is available through the Python API:
 from robotic_cutting_sim.scene_config import compile_task
 from robotic_cutting_sim.live_env import open_cutting_env
 
-task = compile_task("configs/wp12/scenes/bar_flat_board.json", "sever_mid", seed=42)
+task = compile_task("configs/wp12/scenes/bar_flat_board.json", "sever_mid", seed=42,
+                    solver_profile="v7_cut_research_v1")
 # CPU-only configuration inspection:
 print(task.task_id, task.solver_module, task.max_cuts)
 

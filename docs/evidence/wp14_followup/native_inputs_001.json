@@ -1,0 +1,12 @@
+{
+  "task_id": "CFG-two_distinct_bumps_v1-sequential_two_bumps_rho10_v1-9a7b24d9",
+  "duration_s": 16.5,
+  "scene": "configs/wp14_followup/two_bumps_native_scene_v2.json",
+  "goal": "configs/wp14_followup/two_bumps_native_goal_v2.json",
+  "input_sha256": {
+    "configs/wp14_followup/two_bumps_native_scene_v2.json": "5085ea0b059a2153e7500d34e21ad0dd9132f055437c50de164125d96c3e968a",
+    "configs/wp14_followup/two_bumps_native_goal_v2.json": "44abaa87398d316ba1f06bcb7afdcbe37577ad1bde4a34ca5af27d0206317032"
+  },
+  "prelaunch_inputs": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/inputs",
+  "scope": "Byte-identical export of inputs frozen before the actual Native launch; no post-result tuning. Normal compile_task needs no external planner override."
+}

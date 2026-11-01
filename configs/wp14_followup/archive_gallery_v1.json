@@ -1,0 +1,2714 @@
+{
+  "episodes": [
+    {
+      "id": "archive_demos_demo1a_01_law8_final_demo1a",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo1a/episode_000",
+      "title": "Archive demo1a (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo1a/live_20261029_law8_final_demo1a.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo1a_02_pathv2_d_demo1a",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1a/episode_000",
+      "title": "Archive demo1a (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo1b_03_law8_final_demo1b",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo1b/episode_000",
+      "title": "Archive demo1b (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo1b/live_20261029_law8_final_demo1b.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo1b_04_pathv2_d_demo1b",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1b/episode_000",
+      "title": "Archive demo1b (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo2_05_law8_final_demo2",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo2/episode_000",
+      "title": "Archive demo2 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo2/live_20261029_law8_final_demo2.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo2_06_pathv2_c_demo2",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_c/demo2/episode_000",
+      "title": "Archive demo2 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo2/live_20261029_pathv2_c_demo2.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo3_07_law8_final_demo3",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/episode_000",
+      "title": "Archive demo3 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo3/live_20261029_law8_final_demo3.mp4"
+      ]
+    },
+    {
+      "id": "archive_demos_demo3_08_vision_e_demo3",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_vision_e/demo3/episode_000",
+      "title": "Archive demo3 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/demos/demo3/live_20261029_vision_e_demo3.mp4"
+      ]
+    },
+    {
+      "id": "archive_deployment_cut01_09",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "title": "Archive deployment_cut01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/deployment_cut01/global_d455.mp4",
+        "docs/media/deployment_cut01/global_d455_depth.mp4",
+        "docs/media/deployment_cut01/synchronized_multiview.mp4",
+        "docs/media/deployment_cut01/wrist_d405_0.mp4",
+        "docs/media/deployment_cut01/wrist_d405_0_depth.mp4",
+        "docs/media/deployment_cut01/wrist_d405_1.mp4",
+        "docs/media/deployment_cut01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_deployment_trim01_10",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "title": "Archive deployment_trim01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/deployment_trim01/global_d455.mp4",
+        "docs/media/deployment_trim01/global_d455_depth.mp4",
+        "docs/media/deployment_trim01/synchronized_multiview.mp4",
+        "docs/media/deployment_trim01/wrist_d405_0.mp4",
+        "docs/media/deployment_trim01/wrist_d405_0_depth.mp4",
+        "docs/media/deployment_trim01/wrist_d405_1.mp4",
+        "docs/media/deployment_trim01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_global_close_cut01_11",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "title": "Archive global_close_cut01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/global_close_cut01/global_d455.mp4",
+        "docs/media/global_close_cut01/global_d455_depth.mp4",
+        "docs/media/global_close_cut01/synchronized_multiview.mp4",
+        "docs/media/global_close_cut01/wrist_d405_0.mp4",
+        "docs/media/global_close_cut01/wrist_d405_0_depth.mp4",
+        "docs/media/global_close_cut01/wrist_d405_1.mp4",
+        "docs/media/global_close_cut01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_global_close_trim01_12",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "title": "Archive global_close_trim01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/global_close_trim01/global_d455.mp4",
+        "docs/media/global_close_trim01/global_d455_depth.mp4",
+        "docs/media/global_close_trim01/synchronized_multiview.mp4",
+        "docs/media/global_close_trim01/wrist_d405_0.mp4",
+        "docs/media/global_close_trim01/wrist_d405_0_depth.mp4",
+        "docs/media/global_close_trim01/wrist_d405_1.mp4",
+        "docs/media/global_close_trim01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp08_physical_grasp_v2_cut01_13",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "title": "Archive cut01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp08_physical_grasp_v2/cut01/global_d455.mp4",
+        "docs/media/wp08_physical_grasp_v2/cut01/global_d455_depth.mp4",
+        "docs/media/wp08_physical_grasp_v2/cut01/synchronized_multiview.mp4",
+        "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_0.mp4",
+        "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_0_depth.mp4",
+        "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_1.mp4",
+        "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp08_physical_grasp_v2_trim01_14",
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "title": "Archive trim01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp08_physical_grasp_v2/trim01/global_d455.mp4",
+        "docs/media/wp08_physical_grasp_v2/trim01/global_d455_depth.mp4",
+        "docs/media/wp08_physical_grasp_v2/trim01/synchronized_multiview.mp4",
+        "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_0.mp4",
+        "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_0_depth.mp4",
+        "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_1.mp4",
+        "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp11_slice_push_relocate_15",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/episode_000",
+      "title": "Archive slice_push_relocate (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp11/slice_push_relocate/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp11_test_a_s6_16",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_A_s6/run_001/episode_000",
+      "title": "Archive test_a_s6 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp11/test_a_s6/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp11_test_b_s1502_17",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/run_001/episode_000",
+      "title": "Archive test_b_s1502 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp11/test_b_s1502/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp11_trim_rho10_18",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_001/episode_000",
+      "title": "Archive trim_rho10 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp11/trim_rho10/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp11_trim_rho10_clear_19",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002/episode_000",
+      "title": "Archive trim_rho10_clear (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp11/trim_rho10_clear/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp12_demos_demo1_clean_cut_particle_surface_v1_20_demo",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/demos_001/DEMO1_A/run/episode_000",
+      "title": "Archive particle_surface_v1 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp12/demos/demo1_clean_cut/particle_surface_v1/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp12_demos_demo3_trim_rho10_particle_surface_v1_21_demo",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/demos_001/DEMO3_A/run/episode_000",
+      "title": "Archive particle_surface_v1 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp12_demos_demo4_four_slices_particle_surface_v1_22_demo",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/demos_001/DEMO4_A/run/episode_000",
+      "title": "Archive particle_surface_v1 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp12/demos/demo4_four_slices/particle_surface_v1/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp12_surface_live_cut_23",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/surface_live_002/run/episode_000",
+      "title": "Archive cut (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp12/surface_live/cut/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wp12_surface_live_test_b_24",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/surface_live_007/run/episode_000",
+      "title": "Archive test_b (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wp12/surface_live/test_b/demo.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_cut01_25",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "title": "Archive wrist_cut01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_cut01/global_d455.mp4",
+        "docs/media/wrist_cut01/global_d455_depth.mp4",
+        "docs/media/wrist_cut01/synchronized_multiview.mp4",
+        "docs/media/wrist_cut01/wrist_d405_0.mp4",
+        "docs/media/wrist_cut01/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_cut01/wrist_d405_1.mp4",
+        "docs/media/wrist_cut01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_motion_probe_26",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "title": "Archive wrist_motion_probe (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_motion_probe/global_d455.mp4",
+        "docs/media/wrist_motion_probe/global_d455_depth.mp4",
+        "docs/media/wrist_motion_probe/synchronized_multiview.mp4",
+        "docs/media/wrist_motion_probe/wrist_d405_0.mp4",
+        "docs/media/wrist_motion_probe/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_motion_probe/wrist_d405_1.mp4",
+        "docs/media/wrist_motion_probe/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_trim01_27",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "title": "Archive wrist_trim01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_trim01/global_d455.mp4",
+        "docs/media/wrist_trim01/global_d455_depth.mp4",
+        "docs/media/wrist_trim01/synchronized_multiview.mp4",
+        "docs/media/wrist_trim01/wrist_d405_0.mp4",
+        "docs/media/wrist_trim01/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_trim01/wrist_d405_1.mp4",
+        "docs/media/wrist_trim01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_v4_cut01_28",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "title": "Archive wrist_v4_cut01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_v4_cut01/global_d455.mp4",
+        "docs/media/wrist_v4_cut01/global_d455_depth.mp4",
+        "docs/media/wrist_v4_cut01/synchronized_multiview.mp4",
+        "docs/media/wrist_v4_cut01/wrist_d405_0.mp4",
+        "docs/media/wrist_v4_cut01/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_v4_cut01/wrist_d405_1.mp4",
+        "docs/media/wrist_v4_cut01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_v4_trim01_29",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "title": "Archive wrist_v4_trim01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_v4_trim01/global_d455.mp4",
+        "docs/media/wrist_v4_trim01/global_d455_depth.mp4",
+        "docs/media/wrist_v4_trim01/synchronized_multiview.mp4",
+        "docs/media/wrist_v4_trim01/wrist_d405_0.mp4",
+        "docs/media/wrist_v4_trim01/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_v4_trim01/wrist_d405_1.mp4",
+        "docs/media/wrist_v4_trim01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_v5_cut01_30",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "title": "Archive wrist_v5_cut01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_v5_cut01/global_d455.mp4",
+        "docs/media/wrist_v5_cut01/global_d455_depth.mp4",
+        "docs/media/wrist_v5_cut01/synchronized_multiview.mp4",
+        "docs/media/wrist_v5_cut01/wrist_d405_0.mp4",
+        "docs/media/wrist_v5_cut01/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_v5_cut01/wrist_d405_1.mp4",
+        "docs/media/wrist_v5_cut01/wrist_d405_1_depth.mp4"
+      ]
+    },
+    {
+      "id": "archive_wrist_v5_trim01_31",
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "title": "Archive wrist_v5_trim01 (original calibration)",
+      "archived": true,
+      "preview_width": 640,
+      "preview_speed": 2.0,
+      "old_media": [
+        "docs/media/wrist_v5_trim01/global_d455.mp4",
+        "docs/media/wrist_v5_trim01/global_d455_depth.mp4",
+        "docs/media/wrist_v5_trim01/synchronized_multiview.mp4",
+        "docs/media/wrist_v5_trim01/wrist_d405_0.mp4",
+        "docs/media/wrist_v5_trim01/wrist_d405_0_depth.mp4",
+        "docs/media/wrist_v5_trim01/wrist_d405_1.mp4",
+        "docs/media/wrist_v5_trim01/wrist_d405_1_depth.mp4"
+      ]
+    }
+  ],
+  "comparisons": [],
+  "archive_inventory": [
+    {
+      "old_media": "docs/media/cut01/d455_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "artifacts/isaacsim_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/cut01/d455_0_rgb.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "artifacts/isaacsim_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/cut01/d455_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "artifacts/isaacsim_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/cut01/d455_1_rgb.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "artifacts/isaacsim_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/cut01/global.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "artifacts/isaacsim_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+        "artifacts/isaacsim_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_cut01_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/demos/demo1a/live_20261029_law8_final_demo1a.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo1a/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo1a/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 81,
+        "global_d455": 81,
+        "closeup_rgb": 81,
+        "overview_rgb": 81,
+        "wrist_d405_1": 81
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo1a_01_law8_final_demo1a"
+    },
+    {
+      "old_media": "docs/media/demos/demo1a/live_20261029_pathv2_d_demo1a.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1a/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1a/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 81,
+        "global_d455": 81,
+        "closeup_rgb": 81,
+        "overview_rgb": 81,
+        "wrist_d405_1": 81
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo1a_02_pathv2_d_demo1a"
+    },
+    {
+      "old_media": "docs/media/demos/demo1b/live_20261029_law8_final_demo1b.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo1b/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo1b/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 81,
+        "global_d455": 81,
+        "closeup_rgb": 81,
+        "overview_rgb": 81,
+        "wrist_d405_1": 81
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo1b_03_law8_final_demo1b"
+    },
+    {
+      "old_media": "docs/media/demos/demo1b/live_20261029_pathv2_d_demo1b.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1b/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_d/demo1b/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 81,
+        "global_d455": 81,
+        "closeup_rgb": 81,
+        "overview_rgb": 81,
+        "wrist_d405_1": 81
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo1b_04_pathv2_d_demo1b"
+    },
+    {
+      "old_media": "docs/media/demos/demo2/live_20261029_law8_final_demo2.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo2/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo2/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 81,
+        "global_d455": 81,
+        "closeup_rgb": 81,
+        "overview_rgb": 81,
+        "wrist_d405_1": 81
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo2_05_law8_final_demo2"
+    },
+    {
+      "old_media": "docs/media/demos/demo2/live_20261029_pathv2_c_demo2.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_c/demo2/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_pathv2_c/demo2/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 81,
+        "global_d455": 81,
+        "closeup_rgb": 81,
+        "overview_rgb": 81,
+        "wrist_d405_1": 81
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo2_06_pathv2_c_demo2"
+    },
+    {
+      "old_media": "docs/media/demos/demo3/live_20261029_law8_final_demo3.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_law8_final/demo3/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 161,
+        "global_d455": 161,
+        "closeup_rgb": 161,
+        "overview_rgb": 161,
+        "wrist_d405_1": 161
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo3_07_law8_final_demo3"
+    },
+    {
+      "old_media": "docs/media/demos/demo3/live_20261029_vision_e_demo3.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/BLADEMASTER_DEMOS.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_vision_e/demo3/episode_000"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp10_claude/demos/live_20261029_vision_e/demo3/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 161,
+        "global_d455": 161,
+        "closeup_rgb": 161,
+        "overview_rgb": 161,
+        "wrist_d405_1": 161
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_demos_demo3_08_vision_e_demo3"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PORTABLE_DEPLOYMENT_VALIDATION.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PORTABLE_DEPLOYMENT_VALIDATION.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_cut01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_cut",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_cut01_09"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PORTABLE_DEPLOYMENT_VALIDATION.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PORTABLE_DEPLOYMENT_VALIDATION.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/deployment_trim01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp07-clean-003-20261028/artifacts/deployment_full_003/isaac_sim_full_trim",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_deployment_trim01_10"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/GLOBAL_CLOSE_VIEW.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/GLOBAL_CLOSE_VIEW.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/GLOBAL_CLOSE_VIEW.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_cut01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_cut01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_cut01_11"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/GLOBAL_CLOSE_VIEW.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/GLOBAL_CLOSE_VIEW.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/GLOBAL_CLOSE_VIEW.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/global_close_trim01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_global_close_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_global_close_trim01_12"
+    },
+    {
+      "old_media": "docs/media/live_isaac_kit_d0/d455_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/isaacsim_live_native_d0_ff_repeat_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_live_native_d0_ff_repeat_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/live_isaac_kit_d0/d455_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/isaacsim_live_native_d0_ff_repeat_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_live_native_d0_ff_repeat_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/live_isaac_kit_d0/global.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/isaacsim_live_native_d0_ff_repeat_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_live_native_d0_ff_repeat_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/live_isaac_kit_d0/measured_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/isaacsim_live_native_d0_ff_repeat_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_live_native_d0_ff_repeat_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/live_isaac_kit_d0/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/isaacsim_live_native_d0_ff_repeat_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_live_native_d0_ff_repeat_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/trim01/d455_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+        "artifacts/isaacsim_trim01_coarse_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/trim01/d455_0_rgb.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+        "artifacts/isaacsim_trim01_coarse_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/trim01/d455_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+        "artifacts/isaacsim_trim01_coarse_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/trim01/d455_1_rgb.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+        "artifacts/isaacsim_trim01_coarse_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/trim01/global.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+        "artifacts/isaacsim_trim01_coarse_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+        "artifacts/isaacsim_trim01_coarse_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_trim01_coarse_001",
+      "camera_frames": {
+        "d455_1": 41,
+        "d455_0": 41
+      },
+      "status": "MISSING_RAW_CAMERA",
+      "note": "Archived layout predates all three camera streams; no synthetic retrofit"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/media/wp08_physical_grasp_v2/README.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PHYSICAL_TOOL_INDEPENDENT_VALIDATION.md",
+        "docs/media/wp08_physical_grasp_v2/README.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/cut01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_cut01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_cut01_13"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/media/wp08_physical_grasp_v2/README.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PHYSICAL_TOOL_INDEPENDENT_VALIDATION.md",
+        "docs/media/wp08_physical_grasp_v2/README.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp08_physical_grasp_v2/trim01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001"
+      ],
+      "source_episode": "/mnt/data/ningan/RoboticCuttingSim-wp08-native-303472d/artifacts/native_physical_trim01_v2_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp08_physical_grasp_v2_trim01_14"
+    },
+    {
+      "old_media": "docs/media/wp10_kinematic/cut01r_oblique20_002.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/WP-10B.md"
+      ],
+      "status": "NOT_APPLICABLE",
+      "note": "Explicit kinematic diagnostic, no real Native camera claim"
+    },
+    {
+      "old_media": "docs/media/wp10_kinematic/cut01r_saw.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "status": "NOT_APPLICABLE",
+      "note": "Explicit kinematic diagnostic, no real Native camera claim"
+    },
+    {
+      "old_media": "docs/media/wp10_kinematic/cut02_agent_002.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/WP-10B.md"
+      ],
+      "status": "NOT_APPLICABLE",
+      "note": "Explicit kinematic diagnostic, no real Native camera claim"
+    },
+    {
+      "old_media": "docs/media/wp10_kinematic/trim01r_skim_002.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/reports/WP-10B.md"
+      ],
+      "status": "NOT_APPLICABLE",
+      "note": "Explicit kinematic diagnostic, no real Native camera claim"
+    },
+    {
+      "old_media": "docs/media/wp11/slice_push_relocate/demo.mp4",
+      "published_file_present": false,
+      "referencing_docs": [
+        "docs/reports/WP11_PHASE_E_ROUND1.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/episode_000"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_004/E1_SLICE_PUSH_s1301/run_001/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 196,
+        "global_d455": 202,
+        "closeup_rgb": 202,
+        "wrist_d405_1": 202,
+        "overview_rgb": 202
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp11_slice_push_relocate_15"
+    },
+    {
+      "old_media": "docs/media/wp11/test_a_s6/demo.mp4",
+      "published_file_present": false,
+      "referencing_docs": [
+        "docs/reports/WP11_PHASE_E_ROUND1.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_A_s6/run_001/episode_000"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_A_s6/run_001/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 137,
+        "global_d455": 143,
+        "closeup_rgb": 143,
+        "overview_rgb": 143,
+        "wrist_d405_1": 143
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp11_test_a_s6_16"
+    },
+    {
+      "old_media": "docs/media/wp11/test_b_s1502/demo.mp4",
+      "published_file_present": false,
+      "referencing_docs": [
+        "docs/reports/WP11_PHASE_E_ROUND1.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/run_001/episode_000"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseE/round1_live_001/E1_TEST_B_s1502/run_001/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 174,
+        "global_d455": 202,
+        "closeup_rgb": 202,
+        "wrist_d405_1": 202,
+        "overview_rgb": 202
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp11_test_b_s1502_17"
+    },
+    {
+      "old_media": "docs/media/wp11/trim_rho10/demo.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PROGRESS.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_001/episode_000"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_001/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 208,
+        "global_d455": 208,
+        "closeup_rgb": 208,
+        "wrist_d405_1": 208,
+        "overview_rgb": 208
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp11_trim_rho10_18"
+    },
+    {
+      "old_media": "docs/media/wp11/trim_rho10_clear/demo.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/PROGRESS.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002/episode_000"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp11/phaseC5/live_trim_rho10_clear_002/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 353,
+        "overview_rgb": 353,
+        "global_d455": 353,
+        "closeup_rgb": 353,
+        "wrist_d405_1": 353
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp11_trim_rho10_clear_19"
+    },
+    {
+      "old_media": "docs/media/wp12/demos/demo1_clean_cut/particle_surface_v1/demo.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/wp12/demos_001/DEMO1_A"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/demos_001/DEMO1_A/run/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 75,
+        "global_d455": 75,
+        "closeup_rgb": 75,
+        "overview_rgb": 75,
+        "wrist_d405_1": 75
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp12_demos_demo1_clean_cut_particle_surface_v1_20_demo"
+    },
+    {
+      "old_media": "docs/media/wp12/demos/demo3_trim_rho10/particle_surface_v1/demo.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/wp12/demos_001/DEMO3_A"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/demos_001/DEMO3_A/run/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 66,
+        "global_d455": 66,
+        "closeup_rgb": 66,
+        "overview_rgb": 66,
+        "wrist_d405_1": 66
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp12_demos_demo3_trim_rho10_particle_surface_v1_21_demo"
+    },
+    {
+      "old_media": "docs/media/wp12/demos/demo4_four_slices/particle_surface_v1/demo.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "artifacts/wp12/demos_001/DEMO4_A"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/demos_001/DEMO4_A/run/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 191,
+        "global_d455": 191,
+        "closeup_rgb": 191,
+        "wrist_d405_1": 191,
+        "overview_rgb": 191
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp12_demos_demo4_four_slices_particle_surface_v1_22_demo"
+    },
+    {
+      "old_media": "docs/media/wp12/surface_live/cut/demo.mp4",
+      "published_file_present": false,
+      "referencing_docs": [
+        "docs/reports/WP12_SURFACE_LIVE.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/surface_live_002/run/episode_000",
+        "artifacts/wp12/surface_live_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/surface_live_002/run/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 75,
+        "global_d455": 75,
+        "closeup_rgb": 75,
+        "overview_rgb": 75,
+        "wrist_d405_1": 75
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp12_surface_live_cut_23"
+    },
+    {
+      "old_media": "docs/media/wp12/surface_live/test_b/demo.mp4",
+      "published_file_present": false,
+      "referencing_docs": [
+        "docs/reports/WP12_SURFACE_LIVE.md"
+      ],
+      "source_candidates": [
+        "/mnt/data/ningan/RoboticCuttingSim_artifacts/wp12/surface_live_007/run/episode_000",
+        "artifacts/wp12/surface_live_007"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wp12/surface_live_007/run/episode_000",
+      "camera_frames": {
+        "wrist_d405_0": 191,
+        "global_d455": 191,
+        "closeup_rgb": 191,
+        "wrist_d405_1": 191,
+        "overview_rgb": 191
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wp12_surface_live_test_b_24"
+    },
+    {
+      "old_media": "docs/media/wp13/cut_v5_v7_native_comparison.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp13/v5_cut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md",
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp13/v5_multicut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp13/v5_trim_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp13/v7_cut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp13/v7_multicut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp13/v7_trim_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/firm_offset_cut_v5_v7_comparison.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/scene_walkthrough_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md",
+        "docs/WP14_SCENES.md",
+        "docs/WP14_SCENES.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/standard_cut_v5_v7_comparison.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/v5_firm_offset_cut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/v5_standard_cut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/v7_firm_offset_cut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wp14/v7_standard_cut_native.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "README.md"
+      ],
+      "status": "CURRENT_GALLERY",
+      "note": "Mapped to new current Gallery remasters"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERAS.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_cut01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_cut01_002",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_cut01_25"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERAS.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_motion_probe/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_motion_probe_001",
+      "camera_frames": {
+        "wrist_d405_0": 21,
+        "wrist_d405_1": 21,
+        "global_d455": 21
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_motion_probe_26"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERAS.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_trim01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/isaacsim_wrist_trim01_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_trim01_27"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERA_V4.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_cut01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_cut01_28"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERA_V4.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v4_trim01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v4_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v4_trim01_29"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERA_V5.md",
+        "docs/README.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_cut01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_cut_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_cut01_30"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/global_d455.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/global_d455_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/synchronized_multiview.mp4",
+      "published_file_present": true,
+      "referencing_docs": [
+        "docs/WRIST_CAMERA_V5.md",
+        "docs/README.md"
+      ],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/wrist_d405_0.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/wrist_d405_0_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/wrist_d405_1.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    },
+    {
+      "old_media": "docs/media/wrist_v5_trim01/wrist_d405_1_depth.mp4",
+      "published_file_present": true,
+      "referencing_docs": [],
+      "source_candidates": [
+        "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001"
+      ],
+      "source_episode": "/home/ningan/RoboticCuttingSim/artifacts/wrist_v5_native_trim_001",
+      "camera_frames": {
+        "wrist_d405_0": 41,
+        "global_d455": 41,
+        "wrist_d405_1": 41
+      },
+      "status": "READY_TO_REMASTER",
+      "remaster_id": "archive_wrist_v5_trim01_31"
+    }
+  ]
+}

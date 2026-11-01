@@ -1,0 +1,173 @@
+{
+  "schema": "sequential_two_bump_detachment_v1",
+  "status": "PASS",
+  "checks": {
+    "initial_single_body": true,
+    "unchanged_particle_mass_count": true,
+    "both_bumps_detached": true,
+    "base_retained": true,
+    "limited_detached_substrate": true,
+    "two_separate_chips": true,
+    "after_A_recorded": true,
+    "after_B_recorded": true,
+    "A_detached_before_B": true,
+    "B_still_connected_after_A": true
+  },
+  "measurements": {
+    "initial": {
+      "frame_index": 0,
+      "time_s": 0.0,
+      "mechanical_components": 1,
+      "component_masses_kg": [
+        0.1558994999998528
+      ],
+      "substrate_retained_fraction": 1.0,
+      "detached_below_plane_fraction": 0.0,
+      "bumps": {
+        "A_dome": {
+          "target_particles": 1200,
+          "target_mass_kg": 0.0018,
+          "detached_fraction": 0.0,
+          "component_ids": [
+            0
+          ],
+          "detached_component_ids": []
+        },
+        "B_irregular": {
+          "target_particles": 333,
+          "target_mass_kg": 0.0004994999999999999,
+          "detached_fraction": 0.0,
+          "component_ids": [
+            0
+          ],
+          "detached_component_ids": []
+        }
+      }
+    },
+    "final": {
+      "frame_index": 40,
+      "time_s": 16.5,
+      "mechanical_components": 3,
+      "component_masses_kg": [
+        0.15359999999987178,
+        0.0017999999999999824,
+        0.0004994999999999977
+      ],
+      "substrate_retained_fraction": 1.0,
+      "detached_below_plane_fraction": 0.0,
+      "bumps": {
+        "A_dome": {
+          "target_particles": 1200,
+          "target_mass_kg": 0.0018,
+          "detached_fraction": 1.0,
+          "component_ids": [
+            1
+          ],
+          "detached_component_ids": [
+            1
+          ]
+        },
+        "B_irregular": {
+          "target_particles": 333,
+          "target_mass_kg": 0.0004994999999999999,
+          "detached_fraction": 1.0,
+          "component_ids": [
+            2
+          ],
+          "detached_component_ids": [
+            2
+          ]
+        }
+      }
+    },
+    "after_A": {
+      "frame_index": 17,
+      "time_s": 7.14,
+      "mechanical_components": 2,
+      "component_masses_kg": [
+        0.15409949999986766,
+        0.0017999999999999824
+      ],
+      "substrate_retained_fraction": 1.0,
+      "detached_below_plane_fraction": 0.0,
+      "bumps": {
+        "A_dome": {
+          "target_particles": 1200,
+          "target_mass_kg": 0.0018,
+          "detached_fraction": 1.0,
+          "component_ids": [
+            1
+          ],
+          "detached_component_ids": [
+            1
+          ]
+        },
+        "B_irregular": {
+          "target_particles": 333,
+          "target_mass_kg": 0.0004994999999999999,
+          "detached_fraction": 0.0,
+          "component_ids": [
+            0
+          ],
+          "detached_component_ids": []
+        }
+      }
+    },
+    "after_B": {
+      "frame_index": 27,
+      "time_s": 11.34,
+      "mechanical_components": 3,
+      "component_masses_kg": [
+        0.15359999999987178,
+        0.0017999999999999824,
+        0.0004994999999999977
+      ],
+      "substrate_retained_fraction": 1.0,
+      "detached_below_plane_fraction": 0.0,
+      "bumps": {
+        "A_dome": {
+          "target_particles": 1200,
+          "target_mass_kg": 0.0018,
+          "detached_fraction": 1.0,
+          "component_ids": [
+            1
+          ],
+          "detached_component_ids": [
+            1
+          ]
+        },
+        "B_irregular": {
+          "target_particles": 333,
+          "target_mass_kg": 0.0004994999999999999,
+          "detached_fraction": 1.0,
+          "component_ids": [
+            2
+          ],
+          "detached_component_ids": [
+            2
+          ]
+        }
+      }
+    }
+  },
+  "first_phase_times_s": {
+    "REORIENT:A_dome": 0.02,
+    "PRE_CUT:A_dome": 2.82,
+    "SKIM:A_dome": 4.2,
+    "WITHDRAW:A_dome": 6.04,
+    "REORIENT:B_irregular": 6.82,
+    "PRE_CUT:B_irregular": 7.1,
+    "SKIM:B_irregular": 8.48,
+    "WITHDRAW:B_irregular": 10.16,
+    "RETURN_HOME": 10.94,
+    "done": 13.7
+  },
+  "reference_source": "exact recorded material-local final_state.reference, checked against world history",
+  "scope": "Actual positive weight/gradient packed-code reference stencil graph, including code-zero bridges. No height drop substituted for detachment. Native grasp/HOME/contact/quality evaluated independently.",
+  "source_sha256": {
+    "artifacts/wp14/followup_001/candidate_001/physics_state.npz": "0e56c64eb0a80c992986c3839f1c052a7e53af6a53724567e791bb4cf6f38dc6",
+    "configs/wp14_followup/two_bumps_scene_v1.json": "6023b82c62ae1e0580d2bf1eefd10d8054697a5c205fbcf6d92cf1cc3bb10a8c",
+    "configs/wp14_followup/two_bumps_goal_v1.json": "3722d2953ae8e5d89492b3db60bce72487fed33b0032ab021318f1f0787a0dc2"
+  },
+  "wall_s": 1.4659716290007054
+}

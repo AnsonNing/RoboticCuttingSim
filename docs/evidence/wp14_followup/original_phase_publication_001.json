@@ -1,0 +1,37 @@
+{
+  "schema": "wp14_original_phase_publication_verified_v1",
+  "status": "PASS",
+  "verified_at": "2026-11-01T19:23:24.536332+00:00",
+  "merge_sha": "74dd9397ce35adaf3e92c2d2c51dd5d06cfd33a7",
+  "pr_url": "https://github.com/AnsonNing/RoboticCuttingSim/pull/5",
+  "ci_status": "success",
+  "ci_run_id": 41333943702,
+  "ci_url": "https://github.com/AnsonNing/RoboticCuttingSim/actions/runs/41333943702",
+  "ci_summary": "2026-11-01T19:21:19.1151624Z 1712 passed, 12 skipped, 6 xfailed, 5 warnings in 5094.67s (1:24:54)",
+  "ci_log_archive": "artifacts/wp14/runner_20261101/main_ci_41333943702.zip",
+  "ci_log_sha256": "5dca7371f66a5aa1e4c2eb0e2b78390aceeeb82dbbbe0615a1402f5c9e9872fc",
+  "readme_media_verified": true,
+  "media_receipt": "artifacts/wp14/remote_media_001/remote_media_verified.json",
+  "media_receipt_sha256": "48e5556365b965786cf369933af6b2c03bf347fec8ce4fb007c5045093424bec",
+  "adoption_status": {
+    "CUT": "Validated Research Profile, original v7, four measured configurations",
+    "TRIM": "Unsupported by CUT profile; original study failures retained",
+    "Partial": "Experimental",
+    "Multi-cut": "Experimental",
+    "legacy_v5": "Default retained"
+  },
+  "support_envelope": "configs/wp14/v7_cut_research_v1.json",
+  "original_test_denominators": {
+    "core": 14,
+    "held_out": 8,
+    "sensitivity": 2,
+    "candidate": 2,
+    "read_only_trim_traces": 2,
+    "native": 4,
+    "native_task_pass": 4,
+    "native_home_pass": 4,
+    "extra_scene_replay": 1
+  },
+  "protected_receipt": "artifacts/wp14/runner_20261101/merge_tree_verification_001.json",
+  "followup_task": "IN_PROGRESS; this phase receipt does not complete the new two-bump/multiview mandate. Root publication_verified.json and DONE remain absent until combined delivery is verified."
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "wp14_followup_controls_v1",
+  "solver": "tlmpm_v7_2",
+  "device": "cuda:1",
+  "seed": 42,
+  "rows": ["configs/wp14/cases/C00_cut.json", "configs/wp14/cases/T00_trim.json", "configs/wp14/cases/P01_shallow.json"],
+  "amendment_before_controls": "The v2 protocol's plain-text P00 label denotes PARTIAL. Execute WP-14's frozen corrected shallow P01 case, preserving its exact geometry/depth/evaluator, instead of the historical legacy-path P00. No new partial-depth tuning.",
+  "baseline_reuse": "Original v7 C00 from artifacts/wp14/core_001/tlmpm_v7/C00_cut, only after exact scene/goal/controller/numerics/source comparison; other frozen WP-14 baselines retained.",
+  "physical_negatives": "tests/test_tlmpm_v7_2.py: real candidate class, six CPU contact cases, no_contact/side_push/flat_press/blunt/stop/withdraw",
+  "acceptance": "Unchanged goal evaluator plus explicit two-bump mechanical gate; candidate CUT x/F and local-locus roughness P95 <=1.2x original v7, all x/F finite, no slot overflow. No default or original-profile substitution."
+}

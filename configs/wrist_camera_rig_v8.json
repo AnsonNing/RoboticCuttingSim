@@ -1,0 +1,19 @@
+{
+  "schema": "rcs_global_camera_followup_v1",
+  "profile_id": "wrist_camera_rig_v8",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "inherits_global_optics": "wrist_camera_rig_v5",
+  "scope": "One actual-visibility correction after v7 eight-phase Native frames: use front-right elevated fixed view, preserve exactly controlled v5 optics, all wrist mounts and park. v6 optics and v7 occluded view retained as failed proposals.",
+  "global_d455": {
+    "eye_world_m": [
+      0.36,
+      -0.44,
+      0.55
+    ],
+    "target_world_m": [
+      0.0,
+      0.0,
+      0.025
+    ]
+  }
+}

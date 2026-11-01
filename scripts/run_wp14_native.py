@@ -63,6 +63,8 @@ def main():
                        '--record-every', '10', '--oracle-stride', str(max(5, math.ceil(steps/40))),
                        '--steps', str(steps), '--gpu', str(a.gpu), '--seed', '42', '--out', str(out/'run'),
                        '--surface-profile', protocol['surface_profile'], '--surface-timing-log']
+            if protocol.get('camera_rig_profile'):
+                command += ['--camera-rig-profile', protocol['camera_rig_profile']]
             before = subprocess.check_output(['nvidia-smi', '--query-gpu=index,memory.free,memory.used,utilization.gpu',
                                               '--format=csv,noheader,nounits'], text=True).splitlines()
             free = int(before[a.gpu].split(',')[1])

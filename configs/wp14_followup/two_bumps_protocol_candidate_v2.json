@@ -1,0 +1,73 @@
+{
+  "schema": "wp14_followup_bounded_protocol_v1",
+  "scene": "configs/wp14_followup/two_bumps_scene_v1.json",
+  "goal": "configs/wp14_followup/two_bumps_goal_v1.json",
+  "seed": 42,
+  "solver": "tlmpm_v7_2",
+  "material_dt_s": 0.0001,
+  "surface_profile": "particle_surface_v1",
+  "camera_rig_profile": "wrist_camera_rig_v8",
+  "frozen_before_first_followup_physics": true,
+  "baseline": [
+    "one ideal-tracking two-bump episode",
+    "one full Native two-bump episode with measured edge feedback, physical grasp and full plan preflight"
+  ],
+  "acceptance": {
+    "initial_mechanical_components": 1,
+    "each_bump_detached_mass_fraction_min": 0.9,
+    "base_in_main_component_mass_fraction_min": 0.99,
+    "detached_below_plane_mass_fraction_max": 0.01,
+    "distinct_cut_digits": [
+      0,
+      1
+    ],
+    "mechanical_connectivity": "actual positive weight/gradient eight-node graph with packed histories, including zero-code bridges; evaluate initial, after A and after B",
+    "home": "native recorded grasp and return HOME gates",
+    "camera_visibility": "actual native Global frames: initial, first approach, middle/end A, second approach, middle B, final and HOME; no robot/tool/gripper hiding",
+    "camera_sync": "same episode, identical physics/surface/extrinsics timestamps; measured hand @ fixed v5 mount; fixed Global; actual K/range recorded"
+  },
+  "conditional_research_budget": {
+    "when": "If original v7 fails real separation, diagnose existing recorded front/contact traces and the failed episode before changing physics",
+    "candidates_max": 2,
+    "rule": "one causally motivated versioned candidate and at most one diagnosed correction; retain original v7/profile byte-identical; no seed search",
+    "minimum_controls": [
+      "original frozen CUT C00 near-cut x/F and roughness comparison",
+      "single-bump TRIM",
+      "two-bump TRIM",
+      "PARTIAL",
+      "blunt/no-cut",
+      "necessary contact negative control"
+    ],
+    "stop": "If bounded research still fails, mark two-bump physical delivery and hero BLOCKED, enumerate missing movies; no CUT-only completion claim"
+  },
+  "materials": "Existing cutting_tasks_v1 uncalibrated clay-like recipe; no parameter tuning",
+  "media": "Re-encode all available old raw cameras; no re-simulation merely for missing encoded wrist panes. Old outputs remain immutable.",
+  "visibility_corrections": "At most one justified new fixed Global view version after actual recorded frames reveal an issue; no wrist calibration/park changes. Keep failed view evidence.",
+  "native_rows": [
+    "configs/wp14_followup/two_bumps_case_v2.json"
+  ],
+  "native_arms": [
+    "tlmpm_v7_2"
+  ],
+  "native_episodes": 1,
+  "effective_duration_rule": "Existing run_wp13.build: 120 s ideal probe, then ceil((1.1*first_DONE+1)/0.5)*0.5, same compiled controller in both runtimes",
+  "amendment": "Second and final bounded candidate: immutable v7_1 passes ideal two-bump A/B100%, 1->2->3 components. Only bounded rigid rotation (<=1e-4rad/substep, same v7 endpoint chord construction) replaces its translation-only restriction; all other finite-interface, actual endpoint-work, stroke, side/band, bevel and lifecycle gates retained. Actual original-v7 Native measured SKIM angular speed median0.0009414rad/s, max0.01360rad/s; no exact-fixed-hand assumption. One Global pose correction informed by all 8 actual prior frames; optics remain v5.",
+  "CUT_regression": {
+    "case": "configs/wp14/cases/C00_cut.json",
+    "baseline": "artifacts/wp14/core_001/tlmpm_v7/C00_cut",
+    "requirements": [
+      "unchanged frozen goal PASS and true 2-part sever",
+      "near-cut x/F P95 <=1.2 times original v7 same compiled inputs",
+      "local physical-locus roughness P95 <=1.2 times original v7 same compiled inputs",
+      "finite final x/F and no slot overflow"
+    ],
+    "scope": "Candidate-specific regression; never changes or substitutes original v7 CUT profile"
+  },
+  "controls": [
+    "C00 CUT",
+    "T00 single-bump",
+    "P00 PARTIAL",
+    "two-bump Native",
+    "six actual CPU contact negatives"
+  ]
+}

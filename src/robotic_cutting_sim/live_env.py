@@ -6,6 +6,7 @@ ownership of those operations; oracle history is used only by evaluate().
 from contextlib import contextmanager
 import copy
 from dataclasses import asdict
+from pathlib import Path
 
 import numpy as np
 
@@ -584,6 +585,7 @@ class CuttingTaskEnv:
 def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=42,
                      action_mode=ACTION_MODES[0], observation_profile="vision_proprio",
                      include_global_camera=False, camera_layout="wrist_d405_global_d455", task=None, preset=None,
+                     scene=None, goal=None, solver_profile=None, planner_options=None,
                      **backend_options):
     """Start a pinned live runtime in its dedicated venv, then close it on exit.
 
@@ -619,9 +621,26 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
         if include_global_camera:
             raise ValueError("The research preset includes the global camera itself (preset_overrides)")
         with open_policy_env(task_id, runtime=runtime, output_dir=output_dir, seed=seed, preset=preset, task=task,
+                             scene=scene, goal=goal, solver_profile=solver_profile, planner_options=planner_options,
                              **backend_options) as env:
             yield env
         return
+    # Preserve the pre-existing Native static-USD backend option. JSON/dict
+    # scenes use the new Scene/Goal path; no task configuration is inferred.
+    if (scene is not None and goal is None and runtime == 'isaac_sim'
+            and isinstance(scene,(str,Path)) and Path(scene).suffix.lower() in ('.usd','.usda','.usdc')
+            and solver_profile is None and planner_options is None):
+        backend_options['scene']=str(scene)
+        scene=None
+    if (scene is None) != (goal is None):
+        raise ValueError('scene and goal go together')
+    if scene is not None:
+        if task is not None:
+            raise ValueError('Pass a compiled task or scene+goal, not both')
+        from .scene_config import compile_task
+        task = compile_task(scene, goal, solver_profile=solver_profile, planner_options=planner_options, seed=seed)
+    elif solver_profile is not None or planner_options is not None:
+        raise ValueError('solver_profile/planner_options require scene+goal')
     if task is not None and runtime == "isaac_lab":
         raise NotImplementedError("Isaac Lab builds tasks from registered task ids; a compiled ConfiguredTaskSpec "
                                   "runs on runtime='kinematic' or 'isaac_sim'")

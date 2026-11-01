@@ -1,0 +1,386 @@
+{
+  "status": "BLOCKED",
+  "protocol_sha256": "513057fca7d2350b6e609d812108c0aaf7b8fa74a080721b0215fd707908fb2e",
+  "summaries": {
+    "H0": {
+      "development": {
+        "status": "FAIL",
+        "frames": 18,
+        "failed_frames": [
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_negative_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_positive",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_negative",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_development",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_negative_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_positive",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_negative",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_development",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          }
+        ]
+      },
+      "held_out": {
+        "status": "FAIL",
+        "frames": 10,
+        "failed_frames": [
+          {
+            "case_id": "steep_negative",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_held_out",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": true,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          },
+          {
+            "case_id": "steep_negative",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_held_out",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": true,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          }
+        ]
+      }
+    },
+    "H1": {
+      "development": {
+        "status": "FAIL",
+        "frames": 18,
+        "failed_frames": [
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_negative_near",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_positive",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_negative",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_development",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_positive_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "x_negative_near",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_positive",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "y_negative",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_development",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          }
+        ]
+      },
+      "held_out": {
+        "status": "FAIL",
+        "frames": 10,
+        "failed_frames": [
+          {
+            "case_id": "steep_negative",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_held_out",
+            "camera": "d455_0",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": true,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          },
+          {
+            "case_id": "steep_negative",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": false
+            }
+          },
+          {
+            "case_id": "step_held_out",
+            "camera": "d455_1",
+            "checks": {
+              "exact_native_values": true,
+              "plane_p95": true,
+              "coverage": true,
+              "feature_rgb_geometry": true,
+              "feature_scanlines": true,
+              "feature_registration": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  "native_samples_exactly_preserved": true,
+  "source_result": "artifacts/wp14/followup_001/camera_controls_audit_001/result.json",
+  "source_sha256": "5bb61c00ea8f41fed9fca32b807c95ac01d22db84c17acc0e7fc40d136b4ba52",
+  "scope": "Failed proposed v6 optics retained; exact v5 controlled optics used by final pose8. No optical acceptance thresholds relaxed."
+}

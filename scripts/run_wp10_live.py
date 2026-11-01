@@ -526,6 +526,8 @@ def main(argv=None):
     p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
     p.add_argument('--gym', action='store_true')
     p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
+    p.add_argument('--camera-rig-profile', choices=('wrist_camera_rig_v5','wrist_camera_rig_v6','wrist_camera_rig_v7','wrist_camera_rig_v8'),
+                   default='wrist_camera_rig_v5', help='Versioned fixed Global view; wrist calibration unchanged')
     p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2', 'blademaster_workcell_v1'))
     p.add_argument('--overview-camera', action='store_true',
                    help='Native only: author and record the presentation-only overview and close-up RGB cameras '
@@ -599,6 +601,10 @@ def main(argv=None):
         if a.runtime == 'isaac_lab' and a.tool_attachment_mode == 'legacy_fixed_tool':
             options.pop('grip_contact_profile', None)
     options.update(particle_spacing_m=a.spacing, camera=a.observation != 'state' or a.record_cameras)
+    if a.runtime == 'isaac_sim':
+        options['camera_rig_profile'] = a.camera_rig_profile
+    elif a.camera_rig_profile != 'wrist_camera_rig_v5':
+        raise ValueError('Versioned Global camera rigs require the Native Isaac Sim runtime')
     if a.overview_camera:
         options['overview_camera'] = True
     options.update(scenario=a.scenario, material_profile_id=a.material_profile, material_dt=a.material_dt,
@@ -736,7 +742,7 @@ def run_configured(a, out, task):
         return 2
     options = dict(camera=a.observation != 'state' or a.record_cameras, ik_iterations=a.ik_iterations,
                    material_dt=a.material_dt, history_stride=a.oracle_stride, gpu=a.gpu, device=f'cuda:{a.gpu}',
-                   action_limits=task.action_limits())
+                   action_limits=task.action_limits(), camera_rig_profile=a.camera_rig_profile)
     if a.overview_camera:
         options['overview_camera'] = True
     if getattr(a, 'surface_profile', None) is not None:

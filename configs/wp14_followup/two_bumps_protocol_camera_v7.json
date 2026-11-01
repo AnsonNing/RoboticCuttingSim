@@ -1,0 +1,55 @@
+{
+  "schema": "wp14_followup_bounded_protocol_v1",
+  "scene": "configs/wp14_followup/two_bumps_scene_v1.json",
+  "goal": "configs/wp14_followup/two_bumps_goal_v1.json",
+  "seed": 42,
+  "solver": "tlmpm_v7",
+  "material_dt_s": 0.0001,
+  "surface_profile": "particle_surface_v1",
+  "camera_rig_profile": "wrist_camera_rig_v7",
+  "frozen_before_first_followup_physics": true,
+  "baseline": [
+    "one ideal-tracking two-bump episode",
+    "one full Native two-bump episode with measured edge feedback, physical grasp and full plan preflight"
+  ],
+  "acceptance": {
+    "initial_mechanical_components": 1,
+    "each_bump_detached_mass_fraction_min": 0.9,
+    "base_in_main_component_mass_fraction_min": 0.99,
+    "detached_below_plane_mass_fraction_max": 0.01,
+    "distinct_cut_digits": [
+      0,
+      1
+    ],
+    "mechanical_connectivity": "actual positive weight/gradient eight-node graph with packed histories, including zero-code bridges; evaluate initial, after A and after B",
+    "home": "native recorded grasp and return HOME gates",
+    "camera_visibility": "actual native Global frames: initial, first approach, middle/end A, second approach, middle B, final and HOME; no robot/tool/gripper hiding",
+    "camera_sync": "same episode, identical physics/surface/extrinsics timestamps; measured hand @ fixed v5 mount; fixed Global; actual K/range recorded"
+  },
+  "conditional_research_budget": {
+    "when": "If original v7 fails real separation, diagnose existing recorded front/contact traces and the failed episode before changing physics",
+    "candidates_max": 2,
+    "rule": "one causally motivated versioned candidate and at most one diagnosed correction; retain original v7/profile byte-identical; no seed search",
+    "minimum_controls": [
+      "original frozen CUT C00 near-cut x/F and roughness comparison",
+      "single-bump TRIM",
+      "two-bump TRIM",
+      "PARTIAL",
+      "blunt/no-cut",
+      "necessary contact negative control"
+    ],
+    "stop": "If bounded research still fails, mark two-bump physical delivery and hero BLOCKED, enumerate missing movies; no CUT-only completion claim"
+  },
+  "materials": "Existing cutting_tasks_v1 uncalibrated clay-like recipe; no parameter tuning",
+  "media": "Re-encode all available old raw cameras; no re-simulation merely for missing encoded wrist panes. Old outputs remain immutable.",
+  "visibility_corrections": "At most one justified new fixed Global view version after actual recorded frames reveal an issue; no wrist calibration/park changes. Keep failed view evidence.",
+  "native_rows": [
+    "configs/wp14_followup/two_bumps_kinematic_case_v1.json"
+  ],
+  "native_arms": [
+    "tlmpm_v7"
+  ],
+  "native_episodes": 1,
+  "effective_duration_rule": "Existing run_wp13.build: 120 s ideal probe, then ceil((1.1*first_DONE+1)/0.5)*0.5, same compiled controller in both runtimes",
+  "amendment": "Before any recorded Native frame: first v6 attempt refused registration. v6 independent controls failed coverage and feature gates. Original solver, material, scene, seed, path and all physical thresholds unchanged. Only Global pose changes; optical parameters return to the already validated exact v5 recipe."
+}
