@@ -1,0 +1,46 @@
+{
+  "command": [
+    "/home/ningan/RoboticCuttingSim-wp14/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-rsx"
+  ],
+  "commit_before": "3ceb1315ed199de430808b082f6f2eff4cfca17c",
+  "started": "2026-11-01T14:56:21.530349+00:00",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "scope": "Full collected CPU suite, GPU visibility disabled. Skips and expected failures are separately reported.",
+  "returncode": 0,
+  "wall_s": 1925.3266856050013,
+  "commit_after": "7eeb30ef1042c8fe184d1fcf9ee5cd038a662e81",
+  "finished": "2026-11-01T15:28:26.858519+00:00",
+  "summary": "1705 passed, 9 skipped, 6 xfailed, 221 warnings in 1921.97s",
+  "log_sha256": "db64cb196a4c92a9602b8a25ffd5861382d35891147757db545e18d21bb176a8",
+  "exact_final_head": false,
+  "source_scope": "Suite collected at 3ceb131 and ran while documentation/analysis/profile metadata evolved. Physics v5/v7/v7_1 remained unchanged. Narrowed-profile focused checks were run separately; exact final/main CI is still mandatory.",
+  "focused": [
+    {
+      "log": "artifacts/wp14/logs/final_scope_cpu_001.log",
+      "command": "PYTHONPATH=\"$PWD/src\" .venv/bin/python -m pytest -q tests/test_research_profiles.py tests/test_wp14_integrity.py",
+      "status": "PASS",
+      "passed": 35,
+      "wall_s": 18.27
+    },
+    {
+      "log": "artifacts/wp14/logs/candidate_cpu_003.log",
+      "status": "PASS",
+      "passed": 15,
+      "wall_s": 11.84
+    },
+    {
+      "log": "artifacts/wp14/logs/negative_controls_cpu_001.log",
+      "status": "PASS",
+      "passed": 6,
+      "wall_s": 11.2
+    }
+  ]
+}

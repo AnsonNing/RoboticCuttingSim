@@ -14,6 +14,31 @@
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
 | Use the reusable WP-11 environment (scene + goal configs, policy API, datasets) | [Policy-ready API](POLICY_READY_API.md) · [WP-11 plan](WP11_PLAN.md) |
 
+## WP-14: compiled planner and scoped CUT adoption (2026-11-02)
+
+[Results and exact commands](reports/WP14_RESULTS.md) · [phase checklist](WP14_PLAN.md) ·
+[original held-out protocol](../configs/wp14/heldout_v1.json) ·
+[scope restriction and retained 2/4 denominator](evidence/wp14/support_scope_001.json) ·
+[genuine Native comparisons](../README.md#cut-research-profile-wp-14).
+
+| Family / selection | Status |
+| --- | --- |
+| v5 + Law 8 | Default unchanged |
+| `v7_cut_research_v1` / Straight CUT | Validated Research Profile for four measured configurations; original v7 |
+| Partial / Multi-cut | Experimental; new partial-depth control and one four-slice pattern pass |
+| TRIM | Unsupported by CUT profile; v7 and finite v7_1 failures retained |
+| Reverse / oblique | New adoption NOT_RUN; historical evidence unchanged |
+
+The proposed ±6 mm envelope fails its frozen location statistic. Narrowing is
+post hoc, with all failed rows retained and no claim of a new held-out success
+rate. Native C00/H01 were predeclared: [4/4 task and HOME](evidence/wp14/native_001.json).
+[14 core episodes](evidence/wp14/core_001.json),
+[all four held-out pairs](evidence/wp14/heldout_001.json),
+[time-step sensitivity](evidence/wp14/sensitivity_001.json),
+[fresh recontact](evidence/wp14/recontact_001.json),
+[unchanged surfaces and defects](evidence/wp14/surfaces_001.json).
+The default surface and v5 hand-aligned cameras remain unchanged.
+
 ## WP-13: integrated candidate and honest rejection (2026-11-01)
 
 - [Results, physical gains and failures](reports/WP13_RESULTS.md), [live phase checklist](WP13_PLAN.md).

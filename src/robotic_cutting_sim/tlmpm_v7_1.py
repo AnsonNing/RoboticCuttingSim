@@ -77,7 +77,11 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
                     pending_q: wp.array(dtype=int), pending_cut: wp.array(dtype=int),
                     diagnostics: wp.array(dtype=int)):
     p = wp.tid(); i = index[0]; cut = cuts[i]
-    if cut < 0 or B._digit(old_codes[p],cut) != 0:
+    if cut < 0:
+        pending_q[p] = -1
+        pending_cut[p] = -1
+        return
+    if B._digit(old_codes[p],cut) != 0:
         return
     d = B._digit(reached[p],cut)
     if d == 0:
@@ -170,8 +174,9 @@ class TLMPM(V.TLMPM):
     def solver_receipt(self):
         receipt = super().solver_receipt()
         return {**receipt,'solver':SOLVER_NAME,'status':'EXPERIMENTAL_NOT_ACCEPTED',
-                'cut_front':'finite_support_interface_v1','shared_base_solver':'tlmpm_v7',
+                'cut_front':'finite_support_interface_v1_1','shared_base_solver':'tlmpm_v7',
                 'candidate_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                 'link_completion_counts':dict(zip(('finite_link_events','completed_side_digits'),
                                                    self.link_diagnostics.numpy().tolist())),
-                'scope':'Actual reference-node support links; translational sweep only. Same v7 contact and x/F.'}
+                'scope':'Actual reference-node support links; translational sweep only. Same v7 contact and x/F. '
+                'v1_1 clears pending evidence at disarm; its new regression is CPU-verified, GPU outcome NOT_RUN.'}

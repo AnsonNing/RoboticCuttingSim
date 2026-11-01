@@ -6,7 +6,7 @@ import warp as wp
 from robotic_cutting_sim import tlmpm_v7 as V, tlmpm_v7_1 as C
 
 
-@pytest.mark.parametrize('mode', ['contact', 'no_contact', 'no_sweep', 'disarmed', 'stop', 'outside_edge', 'rotation', 'expired'])
+@pytest.mark.parametrize('mode', ['contact', 'no_contact', 'no_sweep', 'disarmed', 'disarmed_pending', 'stop', 'outside_edge', 'rotation', 'expired'])
 def test_completion_requires_finite_sweep_and_actual_endpoint_work(mode):
     from robotic_cutting_sim.tool_profile import RULER_KNIFE_V2_Y
     a = lambda value,dtype: wp.array(value,dtype=dtype,device='cpu')
@@ -23,11 +23,11 @@ def test_completion_requires_finite_sweep_and_actual_endpoint_work(mode):
     shift = .004 if mode == 'expired' else (0. if mode=='no_sweep' else .0002)
     poses = a([[shift,0.,0.,0.,0.,0.,1.]],wp.transform)
     twists = a([[0. if mode=='stop' else .01,0.,0.,0.,0.,1. if mode=='rotation' else 0.]],wp.spatial_vector)
-    cuts = a([-1 if mode=='disarmed' else 0],int); index = a([0],int); stroke = a([1],int)
+    cuts = a([-1 if mode in ('disarmed','disarmed_pending') else 0],int); index = a([0],int); stroke = a([1],int)
     segment = a([1,1],int)
     polygon,_ = RULER_KNIFE_V2_Y.tlmpm_profile(); profile = a(polygon,wp.vec2)
-    pending_q = a([1 if mode=='expired' else -1,-1],int)
-    pending_cut = a([0 if mode=='expired' else -1,-1],int)
+    pending_q = a([1 if mode in ('expired','disarmed_pending') else -1,-1],int)
+    pending_cut = a([0 if mode in ('expired','disarmed_pending') else -1,-1],int)
     diagnostics = wp.zeros(2,dtype=int,device='cpu')
     original_positions = x.numpy().copy()
     wp.launch(C._complete_links,2,[x,x,velocity,mass,old_codes,codes,reached,nodes,weights,gradients,
@@ -35,7 +35,7 @@ def test_completion_requires_finite_sweep_and_actual_endpoint_work(mode):
         profile,len(polygon),.00045,.0001,.3,1.,pending_q,pending_cut,diagnostics],device='cpu')
     assert codes.numpy().tolist() == ([1,0] if mode=='contact' else [0,0])
     np.testing.assert_array_equal(x.numpy(),original_positions)
-    if mode=='expired':assert pending_q.numpy()[0] == -1
+    if mode in ('expired','disarmed_pending'):assert pending_q.numpy()[0] == -1
 
 
 def test_candidate_retains_exact_v7_uncut_cpu_motion_and_deformation():

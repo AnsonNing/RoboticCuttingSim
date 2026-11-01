@@ -25,7 +25,28 @@ const readme = pinned.toString();
 const paths = [...new Set([...readme.matchAll(/\]\((docs\/media\/wp(?:13|14)\/[^)#]+)\)/g)].map(m=>m[1]))];
 if (!paths.some(p=>p.includes('/wp14/'))) throw Error('No WP-14 media linked from README');
 const receipt = {merge_sha:sha, started:new Date().toISOString(), readme_sha256:hash(pinned),
-                 page_url:`https://github.com/${repo}`, media:[], gifs:[], videos:[]};
+                 page_url:`https://github.com/${repo}`, media:[], gifs:[], videos:[], documents:[]};
+const documentPaths=new Set();
+for(const page of ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md']) {
+  const bytes=await fetchBytes(raw(sha)+page);
+  documentPaths.add(page);
+  const source=bytes.toString().replace(/^```.*?^```\s*$/gms,'');
+  for(const match of source.matchAll(/\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g)) {
+    const target=match[1].replace(/^<|>$/g,'');
+    if(/^[a-z]+:|^\/\//i.test(target))continue;
+    const relative=decodeURIComponent(target.split('#')[0].split('?')[0]);
+    if(!relative)continue;
+    const resolved=path.posix.normalize(path.posix.join(path.posix.dirname(page),relative));
+    if(resolved.startsWith('../')||resolved.startsWith('/'))throw Error(`Document link escapes tree: ${resolved}`);
+    if(/\.(md|json|py|yaml|toml|sh)$/.test(resolved))documentPaths.add(resolved);
+  }
+}
+for(const filename of documentPaths) {
+  const bytes=await fetchBytes(raw(sha)+filename);
+  const expected=execFileSync('git',['show',`${sha}:${filename}`],{maxBuffer:16*1024*1024});
+  if(!bytes.equals(expected))throw Error(`Remote document differs from exact commit: ${filename}`);
+  receipt.documents.push({path:filename,status:'PASS_REMOTE_EXACT_BYTES',sha256:hash(bytes)});
+}
 for (const mediaPath of paths) {
   const data = await fetchBytes(raw(sha)+mediaPath);
   const live = await fetchBytes(raw('main')+mediaPath);

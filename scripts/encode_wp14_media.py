@@ -56,7 +56,7 @@ def main():
         subprocess.run(command,check=True)
         gif_name=f'{label}_v5_v7_preview.gif'
         gif_command=preview(a.stage/name,a.stage/gif_name,start=3.,duration=7.,width=960,speed=1.)
-        comparisons.append({'case':case,'mp4':str(a.publish/name),'gif':str(a.publish/gif_name),
+        comparisons.append({'case':case,'runtime_source':'live_isaac_sim','mp4':str(a.publish/name),'gif':str(a.publish/gif_name),
             'left':'v5 default baseline','right':'v7_cut_research_v1 (original tlmpm_v7, not v7_1)',
             'matched_physics_timestamps_s':ta,'sources':[left[1],right[1]],
             'comparison_command':command,'preview_command':gif_command,'preview_speed':1.,

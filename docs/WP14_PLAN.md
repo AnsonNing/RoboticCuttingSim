@@ -1,54 +1,48 @@
 # WP-14 — v7 refinement and scoped adoption
 
-IN_PROGRESS: Phase A frozen; no physics tuning, 2026-11-01 Asia/Seoul.
-Branch `codex/wp14-v7-scoped-adoption`, refreshed starting `origin/main`
-`98c42c272f02c4438de6867663448f222aaf5fdc`.
+Research payload complete; final review/publication IN_PROGRESS, 2026-11-02
+Asia/Seoul. Independent branch `codex/wp14-v7-scoped-adoption`, starting main
+`98c42c272f02c4438de6867663448f222aaf5fdc`. Full user attachment and durable
+interactive logs remain under ignored artifacts/wp14/runner_20261101.
 
-Use the corrected compiled Planner before changing physics. Keep v7 grid-consistent
-kinematics and v5 + Law 8 as the default/fallback. Preserve WP-12/WP-13 sources,
-frozen protocols, raw failures, scene/goal/API/camera contracts and Native media.
-Acceptance is independent per task family; verified CUT research adoption does
-not require TRIM adoption. No smoothing, deletion, permissive labels or hidden fallback.
-
-| Phase | Status | Decisive next work |
+| Phase | Result | Evidence / limit |
 | --- | --- | --- |
-| A Correct Planner revalidation | IN_PROGRESS | `configs/wp14/core_v1.json`: 14 episodes frozen before outcomes; real-driver compiled override tests 4 PASS |
-| B Coupled front/contact | DIAGNOSIS_RUNNING | New T00 v7 remains one body; read-only selected-substep trace on idle cuda:0, original core remains cuda:1 |
-| C Scoped profile validation | NOT_RUN | Separate physical integrity, surface quality and numerical/contact limits |
-| D Held-out / Native | NOT_RUN | Freeze envelope and 4–6 held-out pairs; 2–3 Native pairs for proposed supported families |
-| E Documentation / release | NOT_RUN | Explicit selectable profiles, capability table, real media, review, PR/main CI and remote verification |
+| A Compiled planner | PASS | 14 core episodes; all actual commands replay; seven identical paired paths; Partial truly 1.799 mm shallower |
+| B Finite interface | PARTIAL | Two actual substep traces, one candidate; TRIM still FAIL. Post-study disarm correction CPU-only; no old GPU outcome reassigned |
+| C Scoped profile | QUALIFIED | Original v7 four successful CUT instances, reproducible quality gains, six negatives and fresh GPU recontact PASS |
+| D Held-out / Native | PARTIAL / Native PASS | Original held-out 2/4 task passes each; all 4/4 physically sever; ±6 mm frozen location gates FAIL. Four predeclared Native tasks/HOME PASS |
+| E Publication | IN_PROGRESS | Explicit source-bound selection, real media, 12 state reconstructions and CPU checks complete; final review, PR/main exact CI and remote playback required |
 
-No new physics result or adoption is claimed yet. User-provided full plan and
-durable interactive logs: ignored `artifacts/wp14/runner_20261101/`.
-Tmux `rcs-wp14-codex` accepts direct user input. Implementation/testing use high;
-planning/complex analysis/review may use xhigh. There is no inherited WP-13 deadline.
+`v7_cut_research_v1` binds original tlmpm_v7 / finite_relative_sweep_v1 /
+velocity_projection_tau_v1. General default v5 + Law 8 remains unchanged.
+TRIM failure does not veto CUT. No permissive labels, smoothing, deletion,
+perfect plane, silent fallback or intra-episode solver swap is used.
 
-Core exact command (new output only):
+The failed proposed ±6 mm envelope remains frozen in heldout_v1. Final scope
+restriction is post hoc, not a new held-out confirmation: +x blade direction,
+±5 degree yaw, -4/0/+4 mm cut locations, 8 mm length increments; reference/firm
+bars in the declared 1/4 mm, 0.1 ms configuration. Four measured instances do
+not validate a Cartesian product or a random success rate. Both failed held-out
+rows stay in the original denominator; evaluators and thresholds are unchanged.
 
-```bash
-PYTHONPATH="$PWD/src" .venv/bin/python scripts/run_wp14_queue.py \
-  --protocol configs/wp14/core_v1.json --root artifacts/wp14/core_001
-```
+Frozen protocols (all committed before their physical outcomes): core_v1,
+heldout_v1, sensitivity_v1, candidate_v1 under configs/wp14. Exactly 24 formal
+kinematic episodes plus two exploratory candidate runs, two diagnostic repeats,
+four Native episodes and one fresh recontact control completed. No large matrix
+or outcome redraw. Native cases C00/H01 were selected before held-out outcomes.
 
-Both RTX 5090 GPUs idle at preflight; driver 570.211.01; 30 GiB home /
-25 GiB data free. Kinematic pairs use cuda:1 sequentially. Historical protocols
-and solver sources are unchanged. Partial uses -12 mm overtravel versus the
-recorded prior -10 mm; execution audit will compare actual trajectories.
+One full collected CPU suite records 1705 passed / 9 skipped / 6 xfailed in
+1921.97 s; collection began at 3ceb131 while metadata evolved. Current-source
+focused checks: 54 passed. Exact final/main CPU CI remains a release gate.
 
-Held-out declaration before outcomes: `configs/wp14/heldout_v1.json` fixes four
-new CUT pairs (8 kinematic episodes) and two Native pairs (4 episodes). Proposed
-support is single straight severing, discrete reference/firm material recipes,
-120–160 x 24–32 x 16–20 mm continuous bars, ±6 mm cut locations and ±8° workpiece
-yaw on a matching solid board. Both blade-line directions are tested. This is
-a proposal subject to all failures, not an adopted envelope. TRIM and Multi-cut
-are assessed separately; they are not required for CUT-only adoption. The new
-held-out configurations have only compiled; physical outcomes are NOT_RUN.
+[Single results report](reports/WP14_RESULTS.md),
+[all core evidence](evidence/wp14/core_001.json),
+[all held-out outcomes](evidence/wp14/heldout_001.json),
+[Native receipts](evidence/wp14/native_001.json),
+[real media provenance](evidence/wp14/media_001.json).
 
-First three completed core pairs: C00 and C01 physically PASS both arms with
-identical actual commands and compiled replay PASS. Candidate x/F P95 gains
-6.05x / 8.49x; local locus roughness reductions 85.94% / 78.48%. New T00 v5
-PASS / v7 FAIL (one mechanical body, fixture overlap 0.467 mm). Quality gains
-do not change that failed separation. Remaining eight core episodes pending.
-Six current-source CPU physical negatives PASS (11.20 s); six replay/trace
-checks PASS (5.32 s), including finite moving-link sweep and bitwise unchanged
-solver input arrays after observation. No physical solver source was modified.
+Large states and unsuccessful runs remain under artifacts/wp14. Preserve all
+659 inventoried historical blobs, camera rig v5 and existing Native gallery.
+Use high for implementation/tests and a sequential read-only xhigh final review.
+Do not write publication_verified.json until exact-main CI and actual remote
+README GIF motion, full MP4 playback and document links pass. DONE is last.

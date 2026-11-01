@@ -3,6 +3,9 @@
 import argparse
 import json
 from pathlib import Path
+import hashlib
+
+import numpy as np
 
 from run_wp13 import G
 
@@ -25,6 +28,9 @@ def main():
             material = json.loads((episode/'material.json').read_text())
             manifest = json.loads((episode/'manifest.json').read_text())
             result = json.loads((episode/'result.json').read_text())
+            actions=[json.loads(line) for line in (episode/'actions.jsonl').read_text().splitlines()]
+            command_fields=('time_s','submitted','resolved_target_world_xyz_xyzw','policy_phase')
+            control_digest=hashlib.sha256(json.dumps([{k:r[k] for k in command_fields} for r in actions],sort_keys=True).encode()).hexdigest()
             if (d['runtime_source'] != 'live_isaac_sim' or
                     material['solver_module'] != 'robotic_cutting_sim.'+solver):
                 raise ValueError(f'Native or solver provenance mismatch: {root}')
@@ -46,6 +52,8 @@ def main():
                    'x_F_consistency': {'status':'NOT_RUN','reason':'Native recorder has no F'},
                    'research_profile':material.get('research_profile'),
                    'resolved_material':material.get('actual_backend_material'),
+                   'resolved_commands_sha256':control_digest,
+                   'actions_sha256':G.sha(episode/'actions.jsonl'),
                    'plan_preflight':json.loads((root/'run/plan_preflight.json').read_text())}
             geometry = root/'physical_faces_001/geometry.json'
             if not geometry.exists(): geometry = root/'geometry.json'
@@ -60,6 +68,29 @@ def main():
                       'a v1 cut-position metric may exceed its frozen benchmark while the task succeeds. '
                       'Complete operation metadata recorded before launch; analysis is read-only. '
                       'No calibration or force convergence established.'}
+    pairs=[]
+    from robotic_cutting_sim.scene_config import resolve_scene
+    from robotic_cutting_sim.goals import validate_goal
+    for case_path in protocol['native_rows']:
+        case=Path(case_path).stem;inputs=[];by_solver={r['solver']:r for r in rows if r['case']==case}
+        tracks=[]
+        for solver in protocol['native_arms']:
+            root=args.root/solver/case
+            scene=resolve_scene(json.loads((root/'inputs/scene.json').read_text()))
+            scene['solver'].pop('module');scene['solver'].pop('research_profile',None)
+            goal=validate_goal(json.loads((root/'inputs/goal.json').read_text()))
+            options=json.loads((root/'inputs/prepare.json').read_text())['planner_overrides']
+            inputs.append(json.dumps([scene,goal,options],sort_keys=True))
+            acts=[json.loads(line) for line in (root/'run/episode_000/actions.jsonl').read_text().splitlines()]
+            tracks.append({r['time_s']:np.asarray(r['resolved_target_world_xyz_xyzw'],float) for r in acts})
+        common=sorted(set(tracks[0])&set(tracks[1]))
+        distances=[float(np.linalg.norm(tracks[0][t][:3]-tracks[1][t][:3])) for t in common]
+        pairs.append({'case':case,'same_declared_scene_goal_controller':inputs[0]==inputs[1],
+            'identical_resolved_command_hashes':len({r['resolved_commands_sha256'] for r in by_solver.values()})==1,
+            'common_control_timestamps':len(common),'paired_resolved_position_difference_max_m':max(distances,default=None),
+            'scope':'Identical compiled settings with measured feedback. Resolved commands can diverge under coupled '
+            'material/robot dynamics; measured tracking is reported per arm. This is not an identical-pose replay.'})
+    output['pairs']=pairs
     for row in rows:
         if row['solver']=='tlmpm_v7' and (row['research_profile'] or {}).get('id')!=protocol['candidate_profile']:
             raise ValueError('Native did not execute the explicit declared profile')
