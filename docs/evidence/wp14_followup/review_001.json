@@ -1,0 +1,36 @@
+{
+  "schema": "wp14_followup_self_review_v1",
+  "review_type": "primary-agent self-review; not an independent external review",
+  "status": "ACCEPT_FOR_PR_REVIEW",
+  "base_main": "74dd9397ce35adaf3e92c2d2c51dd5d06cfd33a7",
+  "checks": {
+    "original_v5_v6_v7_v7_1_sources_unchanged": true,
+    "CUT_profile_unchanged": true,
+    "protected_historical_blobs_977_unchanged": true,
+    "actual_two_bump_native_gate_pass": true,
+    "public_saved_state_graph_test_pass": true,
+    "same_input_CUT_regression_pass": true,
+    "T00_failure_and_partial_sever_failure_retained": true,
+    "actual_47_full_multiview_movies": true,
+    "wrist_mounts_and_park_unchanged": true,
+    "all_eight_actual_Global_phases_reviewed": true,
+    "rejected_optics_not_adopted": true,
+    "no_particle_deletion_smoothing_or_robot_hiding": true
+  },
+  "material_issues_found_and_fixed": [
+    "Normal Scene/Goal routing initially shadowed legacy Native static-USD scene option; suffix-aware preservation and focused contract test added.",
+    "Irregular recorded capture cadence initially refused; exact-PTS VFR path reuses existing encoder, checks decoded PTS and preserves all frames.",
+    "Archive raw wrist gaps initially refused; explicit archive-only missing-capture panes preserve the entire Global timeline without substitution.",
+    "Media reuse originally compared only episode/id; now every layout option and all raw source hashes must match.",
+    "First full CPU collection exposed stale packed-solver enumeration expectation; updated exact declared list for v7_2, focused29PASS."
+  ],
+  "known_limits": [
+    "v7_2 is one verified two-protrusion demonstration, not general TRIM support; single-bump T00 ideal tracking still fails.",
+    "Small-rotation endpoint chords are bounded approximation, not general rotational CCD.",
+    "Native F is absent; no Native x/F claim. Material/force/sensor physical calibration unvalidated.",
+    "Full initial local suite has one historical registry assertion failure with focused fix; exact-final-head GitHub CI still required.",
+    "Final main CI and actual remote playback verification remain release gates."
+  ],
+  "local_release_check": "artifacts/wp14/followup_001/release_check_002.json",
+  "kernel_diff_sha256": "dd7325f146a52cb78eec0086e23cbbd761c54e2068552626ffcd035deeb2d61c"
+}

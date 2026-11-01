@@ -30,6 +30,7 @@ def main():
     b,c=records;ratio=c['supplemental']['near_cut']['p95']/b['supplemental']['near_cut']['p95']
     rough_ratio=np.array(c['roughness_p95_m'])/b['roughness_p95_m']
     checks={'same_frozen_inputs_except_solver':normalized[0]==normalized[1],
+            'actual_compiled_controls_replay':all(r['actual_command_replay']['status']=='PASS' for r in records),
             'candidate_true_sever':c['task_class']=='task_success' and c['mechanical_components']==2,
             'x_F_P95_retained':ratio<=1.2,'roughness_P95_retained':bool(np.all(rough_ratio<=1.2)),
             'finite':c['finite_final'],'no_slot_overflow':c['slots']['overflow_entries']==0}

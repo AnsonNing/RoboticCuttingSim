@@ -1,0 +1,489 @@
+{
+  "schema": "native_eight_phase_camera_audit_v1",
+  "frames": [
+    {
+      "phase": "initial",
+      "requested_time_s": 0.0,
+      "captured_time_s": 0.0,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0000.npz",
+      "source_sha256": "12f5d82a4bc445ce63ece33ebd74d87228671f50ead688a8e0dc87bc99490bc5",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/initial.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.20440104166666667,
+      "material_optical_Z_range_m": [
+        0.7249871654429738,
+        0.8294728780251011
+      ],
+      "projected_base_top_unique_pixels": 652,
+      "base_top_material_colour_fraction_diagnostic": 0.9539877300613497,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/initial.png"
+    },
+    {
+      "phase": "first_approach",
+      "requested_time_s": 2.92,
+      "captured_time_s": 3.0,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0015.npz",
+      "source_sha256": "60b6df76e9b2b5bd6627321b6eb2b8391b8d3ecbeb5eb2a4b1bdbb3e34ecc02a",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/first_approach.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.18011067708333334,
+      "material_optical_Z_range_m": [
+        0.7250246332767885,
+        0.8295557847762912
+      ],
+      "projected_base_top_unique_pixels": 650,
+      "base_top_material_colour_fraction_diagnostic": 0.9615384615384616,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/first_approach.png"
+    },
+    {
+      "phase": "middle_A",
+      "requested_time_s": 5.2,
+      "captured_time_s": 5.2,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0026.npz",
+      "source_sha256": "862090b363c03e5b51609d0d86e5840e282ffa64f12c1751d8d94f25533c4a9e",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/middle_A.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.17659505208333334,
+      "material_optical_Z_range_m": [
+        0.7249633668135774,
+        0.8294755057075258
+      ],
+      "projected_base_top_unique_pixels": 650,
+      "base_top_material_colour_fraction_diagnostic": 0.7384615384615385,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/middle_A.png"
+    },
+    {
+      "phase": "A_complete",
+      "requested_time_s": 6.12,
+      "captured_time_s": 6.2,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0031.npz",
+      "source_sha256": "8370a221e5cc6d8a4cf2d0bd1084799750093960897fd8a20bef44b5afa20826",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/A_complete.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.17498046875,
+      "material_optical_Z_range_m": [
+        0.7248775704795456,
+        0.8294062272566018
+      ],
+      "projected_base_top_unique_pixels": 651,
+      "base_top_material_colour_fraction_diagnostic": 0.7526881720430108,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/A_complete.png"
+    },
+    {
+      "phase": "second_approach",
+      "requested_time_s": 7.26,
+      "captured_time_s": 7.2,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0036.npz",
+      "source_sha256": "0747d6d96144ec89b323df77f6bc76b2fa16eb91ab24472ee1a5a7b886c51a6a",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/second_approach.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.17133463541666666,
+      "material_optical_Z_range_m": [
+        0.7248807565470173,
+        0.8294093307509759
+      ],
+      "projected_base_top_unique_pixels": 651,
+      "base_top_material_colour_fraction_diagnostic": 0.6866359447004609,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/second_approach.png"
+    },
+    {
+      "phase": "middle_B",
+      "requested_time_s": 9.49,
+      "captured_time_s": 9.4,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0047.npz",
+      "source_sha256": "0d136151ef75f09ae78039500f1df4a477fe555a080b67972a5564d4317773c8",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/middle_B.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.17211263020833334,
+      "material_optical_Z_range_m": [
+        0.724616147319643,
+        0.8291273546793051
+      ],
+      "projected_base_top_unique_pixels": 655,
+      "base_top_material_colour_fraction_diagnostic": 0.7129770992366412,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/middle_B.png"
+    },
+    {
+      "phase": "final_surface",
+      "requested_time_s": 13.98,
+      "captured_time_s": 14.0,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0070.npz",
+      "source_sha256": "773d84593e73be97d36c681ef85a7d230ae29b3e2b22c59a196043eca888e190",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/final_surface.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.203828125,
+      "material_optical_Z_range_m": [
+        0.7245720594997701,
+        0.8290467930196953
+      ],
+      "projected_base_top_unique_pixels": 651,
+      "base_top_material_colour_fraction_diagnostic": 0.956989247311828,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/final_surface.png"
+    },
+    {
+      "phase": "HOME",
+      "requested_time_s": 17.78,
+      "captured_time_s": 17.78,
+      "source": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000/observations/global_d455_0090.npz",
+      "source_sha256": "563a668cc0c33fd61a57c114235a783260597564870e45697c44970d7d0a43d0",
+      "png": "artifacts/wp14/followup_001/visibility_final_001/HOME.png",
+      "K": [
+        [
+          317.04312011949685,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          317.04312011949685,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.7739572992033209,
+          0.4296117654458311,
+          -0.46521374657292536,
+          0.3600000272291355
+        ],
+        [
+          0.6332377902572632,
+          -0.5250810466560148,
+          0.5685945791446859,
+          -0.43999999404922113
+        ],
+        [
+          2.2015462301508285e-17,
+          -0.7346588496936115,
+          -0.678436713752182,
+          0.5499999863159126
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0000000000000002
+        ]
+      ],
+      "valid_depth_fraction_full_image": 0.20434895833333333,
+      "material_optical_Z_range_m": [
+        0.7246342852697948,
+        0.829120250226735
+      ],
+      "projected_base_top_unique_pixels": 651,
+      "base_top_material_colour_fraction_diagnostic": 0.9585253456221198,
+      "range_of_colour_rule": "RGB R>1.15G and G>1.15B; diagnostic only, never task outcome",
+      "published_png": "docs/evidence/wp14_followup/visibility_001/HOME.png"
+    }
+  ],
+  "secondary_arm_joint_max_change_from_first_rad": 2.0231406827608822e-11,
+  "projection_only_status": "MEASURED",
+  "visual_visibility_status": "PENDING_VISUAL_REVIEW",
+  "scope": "Actual Native RGB with robot/tool/gripper rendered. No image alteration except contact-sheet labels. Pixel colour coverage is not a visibility or physical-cutting acceptance gate. Wrist extrinsics, fixed Global and all timestamps are checked independently by the multiview renderer."
+}

@@ -1,3 +1,24 @@
+# Follow-up progress — 2026-11-02 Asia/Seoul
+
+- New authorized v7 workflow / sequential two-protrusion / multiview task is separate from original WP-14.
+- Normal compile_task and environment Scene/Goal selection support the frozen original-v7 CUT profile;
+  untagged v5/Law8 and all historical source/config/media evidence are retained.
+- New explicitly versioned v7_2 Native: task/HOME PASS, A/B 100% true detachment, graph1→2→3,
+  all103933particles retained, substrate intact, no skipped material surfaces. Original v7 failure retained.
+- Six real contact negatives PASS; CUT regression retains x/F, local roughness and whole-face planarity
+  within0.2% of original v7. T00single-bumpFAIL remains explicit; shallow partial rule passes separately
+  from its expected generic sever-goal FAIL. No all-task/default v7 promotion.
+- Fixed Global rig8 retains controlled v5 optics and unchanged wrist mounts/Franka1park; eight actual
+  phase views reviewed. Proposed v6 optics and occluded pose7 failures preserved.
+- 47 full multiview MP4s:44 individual Native recordings (including31archive remasters) and3matched
+  comparisons; no old material simulations rerun. Missing historical raw frames are labelled honestly.
+- First full CPU:1739PASS/1stale registry assertion FAIL/9SKIP/6XFAIL; registry expectation fixed,
+  related29testsPASS. Exact-commit PR/main CI, review and remote media playback remain publication gates.
+  Completion is recorded only by the post-merge verification receipt and final DONE marker;
+  original WP-14 completion cannot replace this new task's release checks.
+- [Follow-up measurements](reports/WP14_FOLLOWUP_RESULTS.md), [multiview gallery](NATIVE_MULTIVIEW_GALLERY.md),
+  [normal v7 workflow](V7_RESEARCH_WORKFLOW.md). Earlier dated progress below is historical.
+
 # Progress — 2026-11-02 Asia/Seoul
 
 ## WP-14 — compiled planner and scoped CUT profile

@@ -6,6 +6,7 @@ import {spawn, execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 
 const [sha, destination] = process.argv.slice(2);
+const followup = process.argv.includes('--followup');
 if (!/^[0-9a-f]{40}$/.test(sha || '') || !destination) throw Error('usage: node script SHA NEW_OUTPUT');
 const out = path.resolve(destination);
 await fs.mkdir(out);
@@ -23,11 +24,14 @@ const main = await fetchBytes(raw('main')+'README.md');
 if (!pinned.equals(main)) throw Error('main README bytes differ from pinned merge commit');
 const readme = pinned.toString();
 const paths = [...new Set([...readme.matchAll(/\]\((docs\/media\/wp(?:13|14)\/[^)#]+)\)/g)].map(m=>m[1]))];
-if (!paths.some(p=>p.includes('/wp14/'))) throw Error('No WP-14 media linked from README');
+if (!followup && !paths.some(p=>p.includes('/wp14/'))) throw Error('No WP-14 media linked from README');
 const receipt = {merge_sha:sha, started:new Date().toISOString(), readme_sha256:hash(pinned),
                  page_url:`https://github.com/${repo}`, media:[], gifs:[], videos:[], documents:[]};
 const documentPaths=new Set();
-for(const page of ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md']) {
+const pages=followup ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
+  'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/WP14_FOLLOWUP_RESULTS.md','docs/WP14_SCENES.md'] :
+  ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md'];
+for(const page of pages) {
   const bytes=await fetchBytes(raw(sha)+page);
   documentPaths.add(page);
   const source=bytes.toString().replace(/^```.*?^```\s*$/gms,'');
@@ -39,8 +43,12 @@ for(const page of ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/report
     const resolved=path.posix.normalize(path.posix.join(path.posix.dirname(page),relative));
     if(resolved.startsWith('../')||resolved.startsWith('/'))throw Error(`Document link escapes tree: ${resolved}`);
     if(/\.(md|json|py|yaml|toml|sh)$/.test(resolved))documentPaths.add(resolved);
+    if(followup && resolved.startsWith('docs/media/wp14_followup/') && /\.(mp4|gif|png)$/.test(resolved) && !paths.includes(resolved))paths.push(resolved);
+    if(followup && resolved.startsWith('docs/evidence/wp14_followup/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
   }
 }
+if(followup && (paths.filter(p=>p.endsWith('.mp4')).length!==47 || paths.filter(p=>p.endsWith('.gif')).length!==8))
+  throw Error('Follow-up publication must expose all 47 full MP4s and eight README animations');
 for(const filename of documentPaths) {
   const bytes=await fetchBytes(raw(sha)+filename);
   const expected=execFileSync('git',['show',`${sha}:${filename}`],{maxBuffer:16*1024*1024});
@@ -117,7 +125,14 @@ try {
       await pause(200);
     }
     if(!imageState.width) throw Error(`GIF failed to decode: ${media.path}`);
-    const clip=await evaluate(`(()=>{const r=(${select}).getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()`);
+    let clip;
+    for(let attempt=0;attempt<50;attempt++) {
+      await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+      clip=await evaluate(`(()=>{const r=(${select}).getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()`);
+      if(clip.width>0 && clip.height>0)break;
+      await pause(100);
+    }
+    if(!(clip.width>0 && clip.height>0))throw Error(`Rendered GIF has no layout box: ${media.path}`);
     const screenshots=[];
     for(let frame=0;frame<8;frame++) {
       await pause(350);
@@ -152,8 +167,10 @@ try {
       await new Promise((resolve,reject)=>{video.onloadedmetadata=resolve;video.onerror=()=>reject(Error('video load'));});
       const duration=video.duration;video.playbackRate=8;await video.play();
       await new Promise((resolve,reject)=>{video.onended=resolve;video.onerror=()=>reject(Error('video playback'));setTimeout(()=>reject(Error('playback timeout')),50000);});
+      const quality=video.getVideoPlaybackQuality();
       return {duration_s:duration,current_time_s:video.currentTime,ended:video.ended,
-        decoded_frames:video.getVideoPlaybackQuality().totalVideoFrames,ready_state:video.readyState,
+        decoded_frames:quality.totalVideoFrames-quality.droppedVideoFrames,
+        total_video_frames:quality.totalVideoFrames,dropped_video_frames:quality.droppedVideoFrames,ready_state:video.readyState,
         playback_rate:video.playbackRate};})()`);
     if(!playback.ended || playback.decoded_frames<5 || Math.abs(playback.current_time_s-playback.duration_s)>.1)
       throw Error(`Full browser playback incomplete: ${media.path}`);

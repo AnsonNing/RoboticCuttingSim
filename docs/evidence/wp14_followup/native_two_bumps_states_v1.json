@@ -1,0 +1,14 @@
+{
+  "schema": "native_two_bump_measured_states_v1",
+  "sha256": "4dd167c333c2cf689bbe317a0fd2c275f3f56d59572a43a9c5166aa6adb59b76",
+  "source_episode": "artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000",
+  "source_detachment": "artifacts/wp14/followup_001/native_candidate_detachment_001/detachment.json",
+  "checkpoints": [
+    "initial",
+    "after_A",
+    "after_B",
+    "final"
+  ],
+  "source_physics_sha256": "128f7bdd46c197192234f6adeff9b879ad3461aef7bf2fcc3b50371d4effaf7b",
+  "scope": "Exact recorded Native arrays at four measured times. Complete unchanged particle budget and actual reference stencil. No inferred F, particle deletion, relabelling or mesh repair; oracle evidence, never a policy observation."
+}

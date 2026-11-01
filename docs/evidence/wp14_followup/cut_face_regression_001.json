@@ -1,0 +1,127 @@
+{
+  "records": [
+    {
+      "source_state": "artifacts/wp14/core_001/tlmpm_v7/C00_cut/final_state.npz",
+      "sha256": "0e494ec7e88fe5224f516840037bf3620e32c63cb5ea0a0610bd46a3d2592042",
+      "components": 2,
+      "physical_faces": {
+        "rows": [
+          {
+            "cut": 0,
+            "side": 1,
+            "component": 0,
+            "samples": 600,
+            "rigid_aligned_deformation_bias_along_reference_normal_m": 0.000144612778174486,
+            "local_patch_roughness": {
+              "count": 598,
+              "p50": 4.2860413434838224e-05,
+              "p95": 6.371807541169241e-05,
+              "max": 7.65387531063097e-05,
+              "mean": 3.829695751698833e-05,
+              "quadratic_mean": 4.254254748707266e-05,
+              "radius_m": 0.002,
+              "min_points": 6,
+              "centres_sampled": 600,
+              "grouped": false
+            },
+            "whole_face_plane_residual_m": {
+              "p50": 8.568139036708307e-05,
+              "p95": 0.00025448954019811784,
+              "rms": 0.00012495044862326996
+            }
+          },
+          {
+            "cut": 0,
+            "side": 2,
+            "component": 1,
+            "samples": 600,
+            "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00012469007373708103,
+            "local_patch_roughness": {
+              "count": 598,
+              "p50": 4.2916283952275715e-05,
+              "p95": 6.344824184169141e-05,
+              "max": 7.619431018119113e-05,
+              "mean": 3.8102766095999046e-05,
+              "quadratic_mean": 4.238882420684555e-05,
+              "radius_m": 0.002,
+              "min_points": 6,
+              "centres_sampled": 600,
+              "grouped": false
+            },
+            "whole_face_plane_residual_m": {
+              "p50": 8.883002753300577e-05,
+              "p95": 0.00025471651103999964,
+              "rms": 0.00012675807366794244
+            }
+          }
+        ],
+        "locus_source": "link_midpoint_fallback",
+        "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+      }
+    },
+    {
+      "source_state": "artifacts/wp14/followup_001/controls_v2_001/C00_cut/final_state.npz",
+      "sha256": "b3137ebec2e67528c4c64eb0c22f9e3d9b4f097ce154acf3d5b612d4b4f2865d",
+      "components": 2,
+      "physical_faces": {
+        "rows": [
+          {
+            "cut": 0,
+            "side": 1,
+            "component": 0,
+            "samples": 600,
+            "rigid_aligned_deformation_bias_along_reference_normal_m": 0.00014336530039740585,
+            "local_patch_roughness": {
+              "count": 598,
+              "p50": 4.2916875901607206e-05,
+              "p95": 6.372043820071301e-05,
+              "max": 7.659093218842532e-05,
+              "mean": 3.829004744333657e-05,
+              "quadratic_mean": 4.2544625354319195e-05,
+              "radius_m": 0.002,
+              "min_points": 6,
+              "centres_sampled": 600,
+              "grouped": false
+            },
+            "whole_face_plane_residual_m": {
+              "p50": 8.528691593485475e-05,
+              "p95": 0.00025425736270131834,
+              "rms": 0.0001247649598415744
+            }
+          },
+          {
+            "cut": 0,
+            "side": 2,
+            "component": 1,
+            "samples": 600,
+            "rigid_aligned_deformation_bias_along_reference_normal_m": -0.00012437110904278982,
+            "local_patch_roughness": {
+              "count": 598,
+              "p50": 4.2931094342874576e-05,
+              "p95": 6.357205343569832e-05,
+              "max": 7.62874461384327e-05,
+              "mean": 3.815747462866294e-05,
+              "quadratic_mean": 4.2435830673814235e-05,
+              "radius_m": 0.002,
+              "min_points": 6,
+              "centres_sampled": 600,
+              "grouped": false
+            },
+            "whole_face_plane_residual_m": {
+              "p50": 8.88087928982066e-05,
+              "p95": 0.0002548063772108195,
+              "rms": 0.00012656720434713365
+            }
+          }
+        ],
+        "locus_source": "link_midpoint_fallback",
+        "scope": "Actual conflicting-link side locus, rigid-aligned per mechanical component. Bias measures deformation relative to its own reference midpoint locus, not calibrated cutting accuracy."
+      }
+    }
+  ],
+  "whole_face_planarity_P95_ratios": [
+    0.9990876737149246,
+    1.00035280858101
+  ],
+  "scope": "Additional read-only quality review on identical frozen CUT inputs, no evaluator changes or mesh edits"
+}

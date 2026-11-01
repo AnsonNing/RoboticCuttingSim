@@ -1,0 +1,103 @@
+{
+  "schema": "wp14_followup_test_accounting_v1",
+  "focused": [
+    {
+      "name": "api_camera_tests_001",
+      "source_log": "artifacts/wp14/followup_001/api_camera_tests_001.log",
+      "sha256": "4d99c13c57b549db10fbb1320cd5f4d6d4610ce7d5afc17e25f80caa26bc1d09",
+      "summary": "35 passed in 18.86s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "integration_tests_001",
+      "source_log": "artifacts/wp14/followup_001/integration_tests_001.log",
+      "sha256": "76553c8d071014c661084ce6e1f7cd2025850195345684ade671d1c04472e651",
+      "summary": "33 passed in 4.04s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "focused_tests_002",
+      "source_log": "artifacts/wp14/followup_001/focused_tests_002.log",
+      "sha256": "2d32b0d251919804dca6720533264030c7a547dfcd3de206a8e0811d1a8bc454",
+      "summary": "89 passed in 20.54s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "rigid_candidate_tests_002",
+      "source_log": "artifacts/wp14/followup_001/rigid_candidate_tests_002.log",
+      "sha256": "dc6246732fd79189b7ab57648d2f9c9d5f38801359c4cee6f31f23437ca829b2",
+      "summary": "11 passed in 11.96s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "media_candidate_tests_003",
+      "source_log": "artifacts/wp14/followup_001/media_candidate_tests_003.log",
+      "sha256": "621aebb1b25ccce8dd93a2cdd1d5235f84ed6c8460dd94d9f3bcdfad498be164",
+      "summary": "25 passed in 15.66s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "api_compatibility_tests_004",
+      "source_log": "artifacts/wp14/followup_001/api_compatibility_tests_004.log",
+      "sha256": "d96fefbfa0fffb2abf3c08bc45313b36fcd22fc6fd41a0691d0a28db4bbf7aee",
+      "summary": "48 passed in 19.02s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "closeup_media_tests_004",
+      "source_log": "artifacts/wp14/followup_001/closeup_media_tests_004.log",
+      "sha256": "810ca1e58c25d5e0eb8205829407dd480e99f1ceea99699f6ac1a09a9b1b1010",
+      "summary": "10 passed in 0.28s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "recorded_topology_tests_001",
+      "source_log": "artifacts/wp14/followup_001/recorded_topology_tests_001.log",
+      "sha256": "4f4bc837e498f3029dc7da0e02fb556c916c0f836951685e465be20c1e1a3e80",
+      "summary": "1 passed, 1 warning in 1.66s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    },
+    {
+      "name": "final_integration_tests_006",
+      "source_log": "artifacts/wp14/followup_001/final_integration_tests_006.log",
+      "sha256": "d57f6b93032d030f453e6edec3ccc7293b94663aa95dee41548e4114b82fed9c",
+      "summary": "29 passed, 1 warning in 16.67s",
+      "scope": "Focused CPU or saved-evidence audit, not a new Native episode"
+    }
+  ],
+  "first_full_cpu": {
+    "command": [
+      "/home/ningan/RoboticCuttingSim-wp14/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-rsx"
+    ],
+    "source_commit": "e441ee7ab87794d8c934bf23392515d07607c04f",
+    "started": "2026-11-01T18:39:53.173436+00:00",
+    "scope": "Full collected CPU suite; GPU probes run separately",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1"
+    },
+    "returncode": 1,
+    "wall_s": 1941.6529874249973,
+    "finished": "2026-11-01T19:12:14.825498+00:00",
+    "result": "FAIL: stale packed-solver enumeration expected only through v7_1; actual registry correctly includes v7_2",
+    "summary": "1 failed, 1739 passed, 9 skipped, 6 xfailed, 221 warnings in 1938.63s",
+    "fix": "Update tests/test_tlmpm_v6.py exact declared tuple to include v7_2; focused integration29PASS. Physics/evaluation thresholds unchanged."
+  },
+  "other_preserved_test_failures": [
+    {
+      "log": "artifacts/wp14/followup_001/rigid_candidate_tests_001.log",
+      "reason": "Six reused parent-control assertions required module7_1 while the actual class correctly was7_2; corrected expected module, physical assertions retained."
+    },
+    {
+      "log": "artifacts/wp14/followup_001/final_integration_tests_005.log",
+      "reason": "Wrong guessed test filename; no tests collected. Correct file test_tlmpm_v6.py subsequently run."
+    }
+  ],
+  "exact_final_head_ci": "PENDING",
+  "scope": "PASS/FAIL/SKIPPED/XFAIL recorded independently. Exact-final-commit GitHub CI remains required."
+}

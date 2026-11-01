@@ -1,0 +1,17 @@
+{
+  "invalid": [
+    "kinematic_detachment_002",
+    "candidate_detachment_001"
+  ],
+  "reason": "Initial auxiliary analysis treated kinematic world reference_positions as material-local coordinates. Both old outputs preserved and INVALID; corrected analysis uses exact saved final_state.reference and checks its transform against history, then cross-checks final graph against live solver summary. Native explicit reference_positions_local analysis was not affected.",
+  "valid": [
+    "kinematic_detachment_003",
+    "candidate_detachment_002",
+    "native_detachment_003"
+  ],
+  "failed_tool_attempts": [
+    "kinematic_detachment_001 (missing stencil keys)",
+    "native_detachment_002 (attempted NPZ read while writer still active)",
+    "trim_vfr_001 (FFmpeg 4.4 concat option unsupported; fixed via original encoder timebase)"
+  ]
+}

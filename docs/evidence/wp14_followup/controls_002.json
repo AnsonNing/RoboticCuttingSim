@@ -1,0 +1,1243 @@
+{
+ "schema": "wp14_followup_candidate_controls_v1",
+ "CUT_regression_status": "PASS",
+ "checks": {
+  "same_frozen_inputs_except_solver": true,
+  "candidate_true_sever": true,
+  "x_F_P95_retained": true,
+  "roughness_P95_retained": true,
+  "finite": true,
+  "no_slot_overflow": true
+ },
+ "near_cut_x_F_P95_ratio_candidate_over_original": 0.9991759052422917,
+ "local_roughness_P95_ratios_candidate_over_original": [
+  1.000037081926994,
+  1.001951379430116
+ ],
+ "records": [
+  {
+   "root": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/core_001/tlmpm_v7/C00_cut",
+   "summary_sha256": "06a1e5fbe85d69d51421c2a96766199479f558aca5bf753d46bafd39f741e19b",
+   "solver": "tlmpm_v7",
+   "task_class": "task_success",
+   "mechanical_components": 2,
+   "supplemental": {
+    "near_cut": {
+     "links": 2300,
+     "p50": 0.015023062411249458,
+     "p95": 0.26638283353544684,
+     "p99": 0.31011561395744297
+    },
+    "compatible_link_stretch_max": 1.2482984097139542,
+    "compatible_links_stretched_over_2x": 0,
+    "state_sha256": "0e494ec7e88fe5224f516840037bf3620e32c63cb5ea0a0610bd46a3d2592042",
+    "scope": "Final compatible reference links; no renderer and no fracture inferred from stretch."
+   },
+   "roughness_p95_m": [
+    6.371807541169241e-05,
+    6.344824184169141e-05
+   ],
+   "actual_command_replay": {
+    "status": "PASS",
+    "controls": 700,
+    "max_position_error_m": 8.242356898547264e-17,
+    "max_orientation_error_rad": 6.661338147752957e-16,
+    "phase_cut_mismatches": [],
+    "required_waypoints": [
+     {
+      "pose": [
+       7.557800193874753e-07,
+       -2.909258511079126e-07,
+       0.19800124428514285,
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "HOME",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.06799999999999999,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "APPROACH:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.048,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "PRE_CUT:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.038,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": 0.02,
+      "cut_index": 0,
+      "hold_s": 0.3,
+      "label": "PRE_CUT:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.01,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": true,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": 0.01,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "CUT:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.01,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.3,
+      "label": "HOLD:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.038,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": 0.02,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "WITHDRAW:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.06799999999999999,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "WITHDRAW:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       7.557800193874753e-07,
+       -2.909258511079126e-07,
+       0.19800124428514285,
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "RETURN_HOME",
+      "track_path": false
+     }
+    ],
+    "executed_phases": {
+     "APPROACH:cut0": {
+      "steps": 130,
+      "min_world_xyz_m": [
+       7.233836573918745e-12,
+       -2.8868798137297424e-07,
+       0.06800124428766499
+      ],
+      "max_world_xyz_m": [
+       7.499663825616675e-07,
+       -2.7845537168923117e-12,
+       0.19700124428516236
+      ],
+      "speed_max_m_s": 0.05000000000000121,
+      "first_world_xyzw": [
+       -0.7035171142698824,
+       0.007125482886482152,
+       4.2079762846468707e-07,
+       0.7106425947146953
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.8726646259971884,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "PRE_CUT:cut0": {
+      "steps": 60,
+      "min_world_xyz_m": [
+       0.0,
+       -2.645334692473437e-12,
+       0.038
+      ],
+      "max_world_xyz_m": [
+       6.872167246256968e-12,
+       0.0,
+       0.06700124428766499
+      ],
+      "speed_max_m_s": 0.05000000000000111,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "CUT:cut0": {
+      "steps": 139,
+      "min_world_xyz_m": [
+       0.0,
+       0.0,
+       0.010200000000000166
+      ],
+      "max_world_xyz_m": [
+       0.0,
+       0.0,
+       0.0378
+      ],
+      "speed_max_m_s": 0.010000000000000153,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       0
+      ],
+      "cut_enabled": [
+       true
+      ]
+     },
+     "HOLD:cut0": {
+      "steps": 15,
+      "min_world_xyz_m": [
+       0.0,
+       0.0,
+       0.01
+      ],
+      "max_world_xyz_m": [
+       0.0,
+       0.0,
+       0.01
+      ],
+      "speed_max_m_s": 0.01000000000000848,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "WITHDRAW:cut0": {
+      "steps": 100,
+      "min_world_xyz_m": [
+       0.0,
+       0.0,
+       0.0104
+      ],
+      "max_world_xyz_m": [
+       0.0,
+       0.0,
+       0.06799999999999999
+      ],
+      "speed_max_m_s": 0.05000000000000111,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "RETURN_HOME": {
+      "steps": 130,
+      "min_world_xyz_m": [
+       5.813636811929979e-09,
+       -2.90923066554196e-07,
+       0.06899999999998059
+      ],
+      "max_world_xyz_m": [
+       7.557727855509019e-07,
+       -2.2378697427245716e-09,
+       0.19799999999747794
+      ],
+      "speed_max_m_s": 0.05000000000000121,
+      "first_world_xyzw": [
+       -0.0071251864060089334,
+       0.7035172635363764,
+       4.2618174904938966e-09,
+       0.7106424499176562
+      ],
+      "last_world_xyzw": [
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "angular_speed_max_rad_s": 0.8726646259971909,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "done": {
+      "steps": 126,
+      "min_world_xyz_m": [
+       7.557727855509019e-07,
+       -2.90923066554196e-07,
+       0.19799999999747794
+      ],
+      "max_world_xyz_m": [
+       7.557727855509019e-07,
+       -2.90923066554196e-07,
+       0.19799999999747794
+      ],
+      "speed_max_m_s": 0.0,
+      "first_world_xyzw": [
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "last_world_xyzw": [
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     }
+    },
+    "policy_done": true,
+    "scope": "All recorded kinematic commands replayed from compiled planner and prior recorded edge; no physics replay."
+   },
+   "finite_final": true,
+   "slots": {
+    "code_encoding": "packed2",
+    "max_cuts": 4,
+    "slots_per_node": 8,
+    "max_occupied_slots": 3,
+    "overflow_entries": 0
+   },
+   "solver_receipt": {
+    "solver": "tlmpm_v7",
+    "status": "EXPERIMENTAL_NOT_ACCEPTED",
+    "position_update": "grid_musl_v1",
+    "cut_front": "finite_relative_sweep_v1",
+    "diagnostic_accumulation": "float64",
+    "contact": "velocity_projection_tau_v1",
+    "contact_relaxation_s": 0.0002,
+    "work_bevel_depth_m": 0.0033830313477665186,
+    "edge_release_depth_m": 0.0005,
+    "edge_release_half_thickness_m": 0.00025,
+    "source_sha256": {
+     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    }
+   }
+  },
+  {
+   "root": "artifacts/wp14/followup_001/controls_v2_001/C00_cut",
+   "summary_sha256": "207754a684cf59c52f2ab51a75d976e6827f6f96a442b82bbd7c654f7ed848bd",
+   "solver": "tlmpm_v7_2",
+   "task_class": "task_success",
+   "mechanical_components": 2,
+   "supplemental": {
+    "near_cut": {
+     "links": 2300,
+     "p50": 0.015546915226914482,
+     "p95": 0.2661633088387868,
+     "p99": 0.31033201912734987
+    },
+    "compatible_link_stretch_max": 1.2457196592796818,
+    "compatible_links_stretched_over_2x": 0,
+    "state_sha256": "b3137ebec2e67528c4c64eb0c22f9e3d9b4f097ce154acf3d5b612d4b4f2865d",
+    "scope": "Final compatible reference links; no renderer and no fracture inferred from stretch."
+   },
+   "roughness_p95_m": [
+    6.372043820071301e-05,
+    6.357205343569832e-05
+   ],
+   "actual_command_replay": {
+    "status": "PASS",
+    "controls": 700,
+    "max_position_error_m": 8.242356898547264e-17,
+    "max_orientation_error_rad": 6.661338147752957e-16,
+    "phase_cut_mismatches": [],
+    "required_waypoints": [
+     {
+      "pose": [
+       7.557800193874753e-07,
+       -2.909258511079126e-07,
+       0.19800124428514285,
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "HOME",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.06799999999999999,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "APPROACH:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.048,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "PRE_CUT:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.038,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": 0.02,
+      "cut_index": 0,
+      "hold_s": 0.3,
+      "label": "PRE_CUT:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.01,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": true,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": 0.01,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "CUT:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.01,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.3,
+      "label": "HOLD:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.038,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": 0.02,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "WITHDRAW:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       0.0,
+       0.0,
+       0.06799999999999999,
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "WITHDRAW:cut0",
+      "track_path": false
+     },
+     {
+      "pose": [
+       7.557800193874753e-07,
+       -2.909258511079126e-07,
+       0.19800124428514285,
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "cut": false,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "speed_m_s": null,
+      "cut_index": 0,
+      "hold_s": 0.0,
+      "label": "RETURN_HOME",
+      "track_path": false
+     }
+    ],
+    "executed_phases": {
+     "APPROACH:cut0": {
+      "steps": 130,
+      "min_world_xyz_m": [
+       7.233836573918745e-12,
+       -2.8868798137297424e-07,
+       0.06800124428766499
+      ],
+      "max_world_xyz_m": [
+       7.499663825616675e-07,
+       -2.7845537168923117e-12,
+       0.19700124428516236
+      ],
+      "speed_max_m_s": 0.05000000000000121,
+      "first_world_xyzw": [
+       -0.7035171142698824,
+       0.007125482886482152,
+       4.2079762846468707e-07,
+       0.7106425947146953
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.8726646259971884,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "PRE_CUT:cut0": {
+      "steps": 60,
+      "min_world_xyz_m": [
+       0.0,
+       -2.645334692473437e-12,
+       0.038
+      ],
+      "max_world_xyz_m": [
+       6.872167246256968e-12,
+       0.0,
+       0.06700124428766499
+      ],
+      "speed_max_m_s": 0.05000000000000111,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "CUT:cut0": {
+      "steps": 139,
+      "min_world_xyz_m": [
+       0.0,
+       0.0,
+       0.010200000000000166
+      ],
+      "max_world_xyz_m": [
+       0.0,
+       0.0,
+       0.0378
+      ],
+      "speed_max_m_s": 0.010000000000000153,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       0
+      ],
+      "cut_enabled": [
+       true
+      ]
+     },
+     "HOLD:cut0": {
+      "steps": 15,
+      "min_world_xyz_m": [
+       0.0,
+       0.0,
+       0.01
+      ],
+      "max_world_xyz_m": [
+       0.0,
+       0.0,
+       0.01
+      ],
+      "speed_max_m_s": 0.01000000000000848,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "WITHDRAW:cut0": {
+      "steps": 100,
+      "min_world_xyz_m": [
+       0.0,
+       0.0,
+       0.0104
+      ],
+      "max_world_xyz_m": [
+       0.0,
+       0.0,
+       0.06799999999999999
+      ],
+      "speed_max_m_s": 0.05000000000000111,
+      "first_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "last_world_xyzw": [
+       0.0,
+       0.7071067811865476,
+       0.0,
+       0.7071067811865476
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "RETURN_HOME": {
+      "steps": 130,
+      "min_world_xyz_m": [
+       5.813636811929979e-09,
+       -2.90923066554196e-07,
+       0.06899999999998059
+      ],
+      "max_world_xyz_m": [
+       7.557727855509019e-07,
+       -2.2378697427245716e-09,
+       0.19799999999747794
+      ],
+      "speed_max_m_s": 0.05000000000000121,
+      "first_world_xyzw": [
+       -0.0071251864060089334,
+       0.7035172635363764,
+       4.2618174904938966e-09,
+       0.7106424499176562
+      ],
+      "last_world_xyzw": [
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "angular_speed_max_rad_s": 0.8726646259971909,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     },
+     "done": {
+      "steps": 126,
+      "min_world_xyz_m": [
+       7.557727855509019e-07,
+       -2.90923066554196e-07,
+       0.19799999999747794
+      ],
+      "max_world_xyz_m": [
+       7.557727855509019e-07,
+       -2.90923066554196e-07,
+       0.19799999999747794
+      ],
+      "speed_max_m_s": 0.0,
+      "first_world_xyzw": [
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "last_world_xyzw": [
+       -0.7071066341614377,
+       2.9650412759317646e-07,
+       4.229446429800709e-07,
+       0.7071069282114383
+      ],
+      "angular_speed_max_rad_s": 0.0,
+      "cut_ids": [
+       -1
+      ],
+      "cut_enabled": [
+       false
+      ]
+     }
+    },
+    "policy_done": true,
+    "scope": "All recorded kinematic commands replayed from compiled planner and prior recorded edge; no physics replay."
+   },
+   "finite_final": true,
+   "slots": {
+    "code_encoding": "packed2",
+    "max_cuts": 4,
+    "slots_per_node": 8,
+    "max_occupied_slots": 3,
+    "overflow_entries": 0
+   },
+   "solver_receipt": {
+    "solver": "tlmpm_v7_2",
+    "status": "EXPERIMENTAL_NOT_ACCEPTED",
+    "position_update": "grid_musl_v1",
+    "cut_front": "finite_support_interface_rigid_chord_v2",
+    "diagnostic_accumulation": "float64",
+    "contact": "velocity_projection_tau_v1",
+    "contact_relaxation_s": 0.0002,
+    "work_bevel_depth_m": 0.0033830313477665186,
+    "edge_release_depth_m": 0.0005,
+    "edge_release_half_thickness_m": 0.00025,
+    "source_sha256": {
+     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    },
+    "shared_base_solver": "tlmpm_v7",
+    "candidate_source_sha256": "485080b0db4d8c6e1bbb4a395dfd593e2be90ce37a445c945dba442de9957c84",
+    "link_completion_counts": {
+     "finite_link_events": 240,
+     "completed_side_digits": 0
+    },
+    "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+    "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+    "maximum_rotation_per_substep_rad": 0.0001
+   }
+  }
+ ],
+ "controls": [
+  {
+   "case": "T00_trim",
+   "class": "execution_failure",
+   "components": 1,
+   "partial_cut_rule": null,
+   "metrics": {
+    "consistency": {
+     "0-1s": {
+      "n": 14802,
+      "p50": 0.001120107649607689,
+      "p99": 0.24653788092093165,
+      "max": 1.8672663927563211
+     },
+     "1-3s": {
+      "n": 24768,
+      "p50": 0.0012467905206410305,
+      "p99": 0.1264045624472974,
+      "max": 0.8923290080231481
+     },
+     "3-6s": {
+      "n": 43438,
+      "p50": 0.0009689469404017838,
+      "p99": 0.03029028739341017,
+      "max": 0.18068715462212145
+     },
+     ">6s": {
+      "n": 199020,
+      "p50": 0.0007940291954227664,
+      "p99": 0.02013282819377863,
+      "max": 0.12485318565959055
+     },
+     "first_to_far_p99_ratio": 12.245566223880848
+    },
+    "locus_source": "link_midpoint_fallback",
+    "roughness": [
+     {
+      "cut": 0,
+      "side": 1,
+      "patch_roughness": {
+       "count": 302,
+       "p50": 1.923152192035404e-05,
+       "p95": 4.3618182424339924e-05,
+       "max": 4.774188765548178e-05,
+       "mean": 2.135302772196929e-05,
+       "quadratic_mean": 2.4092558532134655e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 316,
+       "grouped": true
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "patch_roughness": {
+       "count": 300,
+       "p50": 4.2163377987573244e-05,
+       "p95": 0.00010258819728680388,
+       "max": 0.00016109663579485844,
+       "mean": 4.956085626738421e-05,
+       "quadratic_mean": 5.703619168643344e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 316,
+       "grouped": true
+      }
+     }
+    ],
+    "mechanical_components": 1,
+    "component_masses_kg": [
+     0.14556599999993808
+    ],
+    "mass_error_fraction": 4.253925312124267e-13,
+    "minimum_final_det_F": 0.8850947618484497,
+    "minimum_local_z_m": 0.00039068525074981153,
+    "finite_final": true,
+    "slot_diagnostics": {
+     "code_encoding": "packed2",
+     "max_cuts": 1,
+     "slots_per_node": 8,
+     "max_occupied_slots": 3,
+     "overflow_entries": 0
+    },
+    "contact": {
+     "fixture_overlap_max_m": 0.00047047791304066777,
+     "blade_overlap_max_m": 0.0001513876486569643,
+     "tool_work_j": 0.0017200188786965498,
+     "contact_steps": 140
+    },
+    "candidate_contact_partitions": {
+     "values": {
+      "blade_normal_impulse_Ns": 0.07968953586747377,
+      "blade_tangent_impulse_Ns": 0.012838238391858542,
+      "bevel_impulse_norm_sum_Ns": 0.048871068869228096,
+      "flank_impulse_norm_sum_Ns": 0.032163173519394156,
+      "tool_work_J": 0.001720018871878517,
+      "consumed_cutting_work_J": 3.3429794824318804e-06,
+      "fixture_normal_impulse_Ns": 16.348231874841,
+      "fixture_friction_impulse_Ns": 0.047130693528399895,
+      "fixture_pretransfer_energy_change_J": 0.16942617397566062,
+      "blade_pretransfer_energy_change_J": 0.006810124292984788,
+      "fixture_penetration_max_m": 0.00047047791304066777,
+      "blade_penetration_max_m": 0.0001513876486569643
+     },
+     "scope": "Cumulative candidate contacts; impulse norms are not vector net impulses. Energy is the particle impulse expression before grid transfer, not total-system energy. Flank/edge denotes physical bevel-depth partition; material contacts excluded."
+    }
+   },
+   "solver_receipt": {
+    "solver": "tlmpm_v7_2",
+    "status": "EXPERIMENTAL_NOT_ACCEPTED",
+    "position_update": "grid_musl_v1",
+    "cut_front": "finite_support_interface_rigid_chord_v2",
+    "diagnostic_accumulation": "float64",
+    "contact": "velocity_projection_tau_v1",
+    "contact_relaxation_s": 0.0002,
+    "work_bevel_depth_m": 0.0033830313477665186,
+    "edge_release_depth_m": 0.0005,
+    "edge_release_half_thickness_m": 0.00025,
+    "source_sha256": {
+     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    },
+    "shared_base_solver": "tlmpm_v7",
+    "candidate_source_sha256": "485080b0db4d8c6e1bbb4a395dfd593e2be90ce37a445c945dba442de9957c84",
+    "link_completion_counts": {
+     "finite_link_events": 304,
+     "completed_side_digits": 72
+    },
+    "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+    "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+    "maximum_rotation_per_substep_rad": 0.0001
+   },
+   "source_summary_sha256": "df5afc7d71a7648861ab089497d7bcedc3f9365e2705d42ba0c74adb76cb453d"
+  },
+  {
+   "case": "P01_shallow",
+   "class": "execution_failure",
+   "components": 1,
+   "partial_cut_rule": {
+    "class": "PARTIAL_CUT_ACCEPTED",
+    "checks": {
+     "integrity_pass": true,
+     "one_mechanical_component": true,
+     "kerf_exists": true,
+     "no_label_below_declared_depth_minus_one_cell": true,
+     "plan_finished_no_grasp_or_ik_failure": true
+    },
+    "accepted": true,
+    "mechanical_components": 1,
+    "labelled_particles_cut0": 11520,
+    "labelled_reference_z_min_m": 0.012500000186264515,
+    "labelled_reference_z_floor_m": 0.006,
+    "sever_verdict": "FAIL",
+    "rule": "configs/wp12/workcell_live_v1.json episodes[PARTIAL].success (run_wp12_workcell_live_analysis.partial_rule)"
+   },
+   "metrics": {
+    "consistency": {
+     "0-1s": {
+      "n": 2660,
+      "p50": 0.0008009719443789734,
+      "p99": 0.2665326457209453,
+      "max": 0.2724045159345313
+     },
+     "1-3s": {
+      "n": 7000,
+      "p50": 0.0008036943611336167,
+      "p99": 0.16695897597946466,
+      "max": 0.1894621410690189
+     },
+     "3-6s": {
+      "n": 10500,
+      "p50": 0.000259204670973412,
+      "p99": 0.02869298806009118,
+      "max": 0.03575229324267476
+     },
+     ">6s": {
+      "n": 259000,
+      "p50": 0.00030124749286035077,
+      "p99": 0.040082013831173505,
+      "max": 0.21816019393663746
+     },
+     "first_to_far_p99_ratio": 6.649681995609996
+    },
+    "locus_source": "link_midpoint_fallback",
+    "roughness": [
+     {
+      "cut": 0,
+      "side": 1,
+      "patch_roughness": {
+       "count": 236,
+       "p50": 2.91267596774591e-05,
+       "p95": 3.768844050635552e-05,
+       "max": 3.866422349439213e-05,
+       "mean": 2.3251522583708703e-05,
+       "quadratic_mean": 2.7077980296039844e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 240,
+       "grouped": true
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "patch_roughness": {
+       "count": 236,
+       "p50": 2.8997800122389087e-05,
+       "p95": 3.767043043114216e-05,
+       "max": 3.863516897977941e-05,
+       "mean": 2.322866292996957e-05,
+       "quadratic_mean": 2.7052058193379854e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 240,
+       "grouped": true
+      }
+     }
+    ],
+    "mechanical_components": 1,
+    "component_masses_kg": [
+     0.143999999999951
+    ],
+    "mass_error_fraction": 3.400058012914543e-13,
+    "minimum_final_det_F": 0.9683376550674438,
+    "minimum_local_z_m": 0.00044552554027177393,
+    "finite_final": true,
+    "slot_diagnostics": {
+     "code_encoding": "packed2",
+     "max_cuts": 4,
+     "slots_per_node": 8,
+     "max_occupied_slots": 3,
+     "overflow_entries": 0
+    },
+    "contact": {
+     "fixture_overlap_max_m": 1.2097705621272326e-05,
+     "blade_overlap_max_m": 0.000105525046819821,
+     "tool_work_j": 0.000535371780312488,
+     "contact_steps": 63
+    },
+    "candidate_contact_partitions": {
+     "values": {
+      "blade_normal_impulse_Ns": 0.42259845414694613,
+      "blade_tangent_impulse_Ns": 0.01738557205904422,
+      "bevel_impulse_norm_sum_Ns": 0.35377350899303717,
+      "flank_impulse_norm_sum_Ns": 0.0698284121652191,
+      "tool_work_J": 0.0005353728022405343,
+      "consumed_cutting_work_J": 4.499997810503695e-06,
+      "fixture_normal_impulse_Ns": 17.033850781454884,
+      "fixture_friction_impulse_Ns": 0.04224765650132373,
+      "fixture_pretransfer_energy_change_J": 0.1703735477866811,
+      "blade_pretransfer_energy_change_J": 0.06574114906881909,
+      "fixture_penetration_max_m": 1.2097705621272326e-05,
+      "blade_penetration_max_m": 0.000105525046819821
+     },
+     "scope": "Cumulative candidate contacts; impulse norms are not vector net impulses. Energy is the particle impulse expression before grid transfer, not total-system energy. Flank/edge denotes physical bevel-depth partition; material contacts excluded."
+    }
+   },
+   "solver_receipt": {
+    "solver": "tlmpm_v7_2",
+    "status": "EXPERIMENTAL_NOT_ACCEPTED",
+    "position_update": "grid_musl_v1",
+    "cut_front": "finite_support_interface_rigid_chord_v2",
+    "diagnostic_accumulation": "float64",
+    "contact": "velocity_projection_tau_v1",
+    "contact_relaxation_s": 0.0002,
+    "work_bevel_depth_m": 0.0033830313477665186,
+    "edge_release_depth_m": 0.0005,
+    "edge_release_half_thickness_m": 0.00025,
+    "source_sha256": {
+     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    },
+    "shared_base_solver": "tlmpm_v7",
+    "candidate_source_sha256": "485080b0db4d8c6e1bbb4a395dfd593e2be90ce37a445c945dba442de9957c84",
+    "link_completion_counts": {
+     "finite_link_events": 240,
+     "completed_side_digits": 0
+    },
+    "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+    "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+    "maximum_rotation_per_substep_rad": 0.0001
+   },
+   "source_summary_sha256": "e6d56c9c770eced9961b9596713b1b12516383028a809753cb50329f6f5145e1"
+  }
+ ],
+ "scope": "Same GPU1, seed, compiled scene/goal/controller and numerics; unchanged frozen evaluator. Candidate regression is separate from the immutable original v7 CUT profile. Failed TRIM controls remain explicit."
+}
