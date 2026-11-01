@@ -34,3 +34,12 @@ Both RTX 5090 GPUs idle at preflight; driver 570.211.01; 30 GiB home /
 25 GiB data free. Kinematic pairs use cuda:1 sequentially. Historical protocols
 and solver sources are unchanged. Partial uses -12 mm overtravel versus the
 recorded prior -10 mm; execution audit will compare actual trajectories.
+
+Held-out declaration before outcomes: `configs/wp14/heldout_v1.json` fixes four
+new CUT pairs (8 kinematic episodes) and two Native pairs (4 episodes). Proposed
+support is single straight severing, discrete reference/firm material recipes,
+120–160 x 24–32 x 16–20 mm continuous bars, ±6 mm cut locations and ±8° workpiece
+yaw on a matching solid board. Both blade-line directions are tested. This is
+a proposal subject to all failures, not an adopted envelope. TRIM and Multi-cut
+are assessed separately; they are not required for CUT-only adoption. The new
+held-out configurations have only compiled; physical outcomes are NOT_RUN.
