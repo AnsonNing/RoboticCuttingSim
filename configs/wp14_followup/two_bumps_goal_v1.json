@@ -1,0 +1,22 @@
+{
+  "schema": "rcs_goal_v1",
+  "goal_id": "sequential_two_bumps_rho10_v1",
+  "type": "remove_protrusions",
+  "description": "A then lift then B, separate cut digits, return HOME. Frozen >=90% each detached target mass and >=99% base retention; physical connectivity mandatory.",
+  "episode": {
+    "duration_s": 36.0,
+    "control_dt_s": 0.02
+  },
+  "planner": {
+    "controller_profile": "path_v2",
+    "rake_deg": 10.0,
+    "max_translation_m": 0.001,
+    "max_rotation_deg": 1.0
+  },
+  "select": "all",
+  "plane_local_z_m": null,
+  "edge_clearance_m": 0.0002,
+  "minimum_removed_fraction": 0.9,
+  "minimum_substrate_share": 0.99,
+  "maximum_detached_below_fraction": 0.01
+}

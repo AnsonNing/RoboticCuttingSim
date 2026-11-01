@@ -26,23 +26,29 @@ def select_profile(scene, name):
     return scene
 
 
-def compile_research_task(name, scene, goal, *, seed=42):
+def compile_research_task(name, scene, goal, *, seed=42, planner_options=None,
+                          particle_spacing_m=None, select=True):
     """Compile the profile controller, recording enough time to finish its plan.
 
     A sufficient requested duration is retained. A shorter goal receives the
     same completion margin used by the frozen paired driver (10% plus 1 s,
     rounded up to 0.5 s). The actual duration is explicit in the compiled goal.
     """
-    from .scene_config import compile_task
+    from .scene_config import _compile_task_resolved, resolve_scene
     from .goals import validate_goal
-    scene=select_profile(scene,name);goal=validate_goal(goal)
+    scene=select_profile(scene,name) if select else resolve_scene(scene)
+    goal=validate_goal(goal)
     requested=goal['episode']['duration_s']
     probe_goal=deepcopy(goal);probe_goal['episode']['duration_s']=120.
     options=document(name)['planner']
-    probe=compile_task(scene,probe_goal,planner_options=options,seed=seed)
+    if planner_options is not None and planner_options != options:
+        raise ValueError(f'{name}: effective controller outside profile')
+    probe=_compile_task_resolved(scene,probe_goal,planner_options=options,seed=seed,
+                                 particle_spacing_m=particle_spacing_m)
     done=next(float(t) for t,label in zip(probe._times(),probe.reference_phase_labels) if label=='DONE')
     goal['episode']['duration_s']=max(requested,.5*math.ceil((1.1*done+1.)/.5))
-    return compile_task(scene,goal,planner_options=options,seed=seed)
+    return _compile_task_resolved(scene,goal,planner_options=options,seed=seed,
+                                   particle_spacing_m=particle_spacing_m)
 
 
 def validate_task(scene, goal, planner, spacing):

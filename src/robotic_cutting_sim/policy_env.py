@@ -885,7 +885,8 @@ def research_preset(**overrides):
     return replace(ResearchPreset(), **overrides) if overrides else ResearchPreset()
 
 
-def compile_policy_task(scene, goal, *, tool_profile=None, planner_options=None, particle_spacing_m=None, seed=42):
+def compile_policy_task(scene, goal, *, tool_profile=None, planner_options=None, particle_spacing_m=None, seed=42,
+                        solver_profile=None):
     """compile_task(scene, goal) with an optional tool profile override (written into the scene config)."""
     from .scene_config import compile_task, resolve_scene
     scene = resolve_scene(scene)
@@ -893,12 +894,12 @@ def compile_policy_task(scene, goal, *, tool_profile=None, planner_options=None,
         scene = copy.deepcopy(scene)
         scene["tool"]["profile_id"] = str(tool_profile)
     kwargs = {} if particle_spacing_m is None else {"particle_spacing_m": particle_spacing_m}
-    return compile_task(scene, goal, planner_options=planner_options, seed=seed, **kwargs)
+    return compile_task(scene, goal, planner_options=planner_options, seed=seed, solver_profile=solver_profile, **kwargs)
 
 
 @contextmanager
 def open_policy_env(task_id=None, *, runtime, output_dir, seed=42, preset=PRESET_ID, task=None, scene=None, goal=None,
-                    tool_profile=None, planner_options=None, particle_spacing_m=None, recording=None,
+                    tool_profile=None, planner_options=None, particle_spacing_m=None, recording=None, solver_profile=None,
                     observation_profile="deployable", preset_overrides=None, runtime_profile=None, **backend_options):
     """The ``open_cutting_env(..., preset=...)`` path: compile, open the inner env, wrap it, close everything.
 
@@ -937,8 +938,8 @@ def open_policy_env(task_id=None, *, runtime, output_dir, seed=42, preset=PRESET
         if task is not None:
             raise ValueError("Pass a compiled task or scene+goal, not both")
         task = compile_policy_task(scene, goal, tool_profile=tool_profile, planner_options=planner_options,
-                                   particle_spacing_m=particle_spacing_m, seed=seed)
-    elif tool_profile is not None or planner_options is not None:
+                                   particle_spacing_m=particle_spacing_m, seed=seed, solver_profile=solver_profile)
+    elif tool_profile is not None or planner_options is not None or solver_profile is not None:
         raise ValueError("tool_profile/planner_options apply to a scene+goal compile")
     settings = research_preset(**(preset_overrides or {}))
     limits = backend_options.pop("action_limits", None)

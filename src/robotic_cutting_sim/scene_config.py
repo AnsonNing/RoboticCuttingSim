@@ -833,7 +833,27 @@ def _goal_target(goal, scene):
     return "sever", "CUT-01", (0., 0., 0.), (1., 0., 0.), 0.
 
 
-def compile_task(scene, goal, *, particle_spacing_m=None, planner_options=None, seed=42):
+def compile_task(scene, goal, *, particle_spacing_m=None, planner_options=None, seed=42, solver_profile=None):
+    """Compile a normal Scene/Goal, optionally selecting a scoped research solver.
+
+    Profile-tagged scenes use the profile's frozen controller and completion
+    margin. Unsupported geometry, controller or numerical overrides are refused.
+    Untagged scenes retain their declared solver and controller.
+    """
+    scene = resolve_scene(scene)
+    declared = scene['solver'].get('research_profile')
+    if solver_profile is not None and declared is not None and declared != solver_profile:
+        raise ValueError('Explicit solver_profile conflicts with the scene research_profile')
+    name = solver_profile or declared
+    if name is not None:
+        from .research_profiles import compile_research_task
+        return compile_research_task(name, scene, goal, seed=seed, planner_options=planner_options,
+                                     particle_spacing_m=particle_spacing_m, select=declared is None)
+    return _compile_task_resolved(scene, goal, particle_spacing_m=particle_spacing_m,
+                                  planner_options=planner_options, seed=seed)
+
+
+def _compile_task_resolved(scene, goal, *, particle_spacing_m=None, planner_options=None, seed=42):
     """Compile ``rcs_scene_v1`` + ``rcs_goal_v1`` into a ConfiguredTaskSpec.
 
     ``scene``/``goal`` are dicts or JSON paths (bare names resolve under

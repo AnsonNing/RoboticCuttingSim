@@ -1,0 +1,27 @@
+{
+  "schema": "rcs_global_camera_followup_v1",
+  "profile_id": "wrist_camera_rig_v6",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "scope": "Only fixed Global pose and optical profile change. Provisional simulated lens, not hardware calibration. Both hands, wrist mounts and Franka 1 park unchanged.",
+  "global_d455": {
+    "eye_world_m": [
+      0.08,
+      0.34,
+      0.84
+    ],
+    "target_world_m": [
+      0.0,
+      0.02,
+      0.025
+    ],
+    "resolution_wh": [
+      960,
+      720
+    ],
+    "hfov_deg": 45.0,
+    "near_m": 0.6,
+    "native_near_m": 0.52,
+    "far_m": 6.0,
+    "maximum_disparity_px": 256.0
+  }
+}
