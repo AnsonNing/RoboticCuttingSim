@@ -6,6 +6,7 @@ ownership of those operations; oracle history is used only by evaluate().
 from contextlib import contextmanager
 import copy
 from dataclasses import asdict
+from pathlib import Path
 
 import numpy as np
 
@@ -624,6 +625,13 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
                              **backend_options) as env:
             yield env
         return
+    # Preserve the pre-existing Native static-USD backend option. JSON/dict
+    # scenes use the new Scene/Goal path; no task configuration is inferred.
+    if (scene is not None and goal is None and runtime == 'isaac_sim'
+            and isinstance(scene,(str,Path)) and Path(scene).suffix.lower() in ('.usd','.usda','.usdc')
+            and solver_profile is None and planner_options is None):
+        backend_options['scene']=str(scene)
+        scene=None
     if (scene is None) != (goal is None):
         raise ValueError('scene and goal go together')
     if scene is not None:

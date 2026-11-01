@@ -48,6 +48,19 @@ def test_normal_environment_scene_dispatch_uses_the_same_compiled_task(tmp_path,
         with live_env.open_cutting_env(scene=SCENE,output_dir=tmp_path):pass
 
 
+def test_normal_scene_api_preserves_legacy_native_static_usd_option(tmp_path,monkeypatch):
+    from robotic_cutting_sim import live_env,isaac_sim_runner
+    seen={}
+    class ReachedConfig(Exception):pass
+    def config(**kwargs):
+        seen.update(kwargs)
+        raise ReachedConfig
+    monkeypatch.setattr(isaac_sim_runner,'IsaacSimCuttingConfig',config)
+    with pytest.raises(ReachedConfig):
+        with live_env.open_cutting_env(scene='my_stage.usda',runtime='isaac_sim',output_dir=tmp_path/'run'):pass
+    assert seen['scene']=='my_stage.usda'
+
+
 def test_new_rig_changes_only_global_and_preserves_real_hand_local_mounts():
     hands=np.array([[.2,.1,.3,0,0,0,1],[-.3,.2,.5,0,0,1,0]])
     old=make_rig(initial_hand_poses_world_xyzw=hands)
