@@ -114,25 +114,30 @@ try {
   if(!await evaluate("!!document.querySelector('article.markdown-body')")) throw Error('Rendered GitHub README missing');
   await fs.writeFile(path.join(out,'github_readme.png'),Buffer.from((await call('Page.captureScreenshot')).data,'base64'),{flag:'wx'});
   for(const media of receipt.media.filter(m=>m.path.endsWith('.gif'))) {
-    const select = `Array.from(document.querySelectorAll('article.markdown-body img')).find(i=>
+    // GitHub's animated-image component temporarily hides the original IMG
+    // while preparing its replacement. Scroll the actual component into view,
+    // then select a decoded, visible image after that asynchronous setup.
+    const candidates = `Array.from(document.querySelectorAll('article.markdown-body img')).filter(i=>
       decodeURIComponent(i.getAttribute('data-canonical-src')||i.src).includes(${JSON.stringify(media.path)}))`;
-    if(!await evaluate(`!!(${select})`)) throw Error(`Rendered GIF missing: ${media.path}`);
-    await evaluate(`(${select}).scrollIntoView({block:'center'})`);
+    const select = `(${candidates}).find(i=>{const r=i.getBoundingClientRect();
+      return i.complete && i.naturalWidth>0 && r.width>0 && r.height>0 && getComputedStyle(i).visibility==='visible'})`;
+    if(!await evaluate(`(${candidates}).length>0`)) throw Error(`Rendered GIF missing: ${media.path}`);
     let imageState;
-    for(let i=0;i<50;i++) {
-      imageState = await evaluate(`(()=>{const i=${select};return {complete:i.complete,width:i.naturalWidth,height:i.naturalHeight,src:i.src}})()`);
-      if(imageState.complete && imageState.width>0) break;
-      await pause(200);
+    for(let i=0;i<180;i++) {
+      imageState = await evaluate(`(()=>{const candidates=${candidates};
+        const component=candidates[0]?.closest('animated-image')||candidates[0];
+        component?.scrollIntoView({block:'center'});
+        const i=${select};if(!i)return null;
+        const r=i.getBoundingClientRect();return {complete:i.complete,width:i.naturalWidth,height:i.naturalHeight,
+          src:i.src,rendered_width:r.width,rendered_height:r.height}})()`);
+      if(imageState) break;
+      await pause(500);
     }
-    if(!imageState.width) throw Error(`GIF failed to decode: ${media.path}`);
-    let clip;
-    for(let attempt=0;attempt<50;attempt++) {
-      await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
-      clip=await evaluate(`(()=>{const r=(${select}).getBoundingClientRect();return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()`);
-      if(clip.width>0 && clip.height>0)break;
-      await pause(100);
-    }
-    if(!(clip.width>0 && clip.height>0))throw Error(`Rendered GIF has no layout box: ${media.path}`);
+    if(!imageState) throw Error(`GIF failed to decode and become visible: ${media.path}`);
+    await evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+    const clip=await evaluate(`(()=>{const i=${select};if(!i)return null;const r=i.getBoundingClientRect();
+      return {x:r.x+scrollX,y:r.y+scrollY,width:r.width,height:r.height,scale:1}})()`);
+    if(!clip || !(clip.width>0 && clip.height>0))throw Error(`Rendered GIF has no layout box: ${media.path}`);
     const screenshots=[];
     for(let frame=0;frame<8;frame++) {
       await pause(350);
