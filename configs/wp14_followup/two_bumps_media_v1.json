@@ -1,0 +1,25 @@
+{
+  "episodes": [
+    {
+      "id": "two_bumps_v7_2_native",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/followup_001/native_candidate_001/tlmpm_v7_2/two_bumps_v2/run/episode_000",
+      "title": "Sequential removal: dome + irregular cap",
+      "global_pixel_crop": [
+        192,
+        144,
+        256,
+        192
+      ],
+      "preview_speed": 1.0,
+      "preview_width": 960
+    },
+    {
+      "id": "two_bumps_original_v7_failure",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/followup_001/native_baseline_002/tlmpm_v7/two_bumps_v1/run/episode_000",
+      "title": "Original v7 failure: dome A remains connected",
+      "preview_speed": 1.0,
+      "preview_width": 960
+    }
+  ],
+  "comparisons": []
+}
