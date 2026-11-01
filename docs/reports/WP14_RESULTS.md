@@ -1,7 +1,7 @@
 # WP-14 compiled-planner refinement and scoped CUT adoption
 
 Scoped CUT adoption selected, 2026-11-02 Asia/Seoul; final independent review
-and publication gates pending. The proposed broad envelope failed; the narrower
+ACCEPT after fixes. Publication requires the exact-main verification below. The proposed broad envelope failed; the narrower
 explicit CUT configuration is qualified in the measured instances. General defaults remain v5 /
 Law 8 / particle_surface_v1. Materials are provisional and uncalibrated.
 Camera rig v5, frozen evaluation v1 and all WP-12/WP-13 evidence are unchanged.
@@ -214,8 +214,13 @@ pending-event and effective-material regressions record **60 passed**. [Full col
 The sequential read-only xhigh [review](../evidence/wp14/review_001.json) found two
 real issues: runtime material overrides and expired pending front events. Both
 are reproduced in retained failing tests, fixed and covered by the 60 checks.
-A short read-only delta review follows before publication.
+The read-only [delta review](../evidence/wp14/review_002.json) is **ACCEPT**.
+A corrected-test replay against the historical candidate confirms three real
+rotation/side/band failures and one already-passing outside-edge control; the
+original outside-edge test error is retained and is not solver evidence.
 Real media encoding and local full decode complete; five previous moving GIFs
-and all seven WP-13 full MP4s remain byte-identical. Independent final read-only
-review, PR/main merge and exact-main CI/rendered remote playback are release
-gates. publication_verified and DONE are absent until those gates complete.
+and all seven WP-13 full MP4s remain byte-identical. Final scientific [adoption decision](../evidence/wp14/adoption_001.json) is
+separate from publication. PR/main merge and exact-main CI/rendered remote
+playback are release gates; their actual URLs, merge SHA and byte/playback
+receipts are recorded beside the runner TASK and in the merged PR.
+publication_verified and DONE may be written only after those gates pass.

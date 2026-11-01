@@ -1,6 +1,6 @@
 # WP-14 — v7 refinement and scoped adoption
 
-Research payload complete; final review/publication IN_PROGRESS, 2026-11-02
+Research payload complete; final review ACCEPT; publication verification required, 2026-11-02
 Asia/Seoul. Independent branch `codex/wp14-v7-scoped-adoption`, starting main
 `98c42c272f02c4438de6867663448f222aaf5fdc`. Full user attachment and durable
 interactive logs remain under ignored artifacts/wp14/runner_20261101.
@@ -11,7 +11,7 @@ interactive logs remain under ignored artifacts/wp14/runner_20261101.
 | B Finite interface | PARTIAL | Two actual substep traces, one candidate; TRIM still FAIL. Post-study pending-lifecycle correction CPU-only; no old GPU outcome reassigned |
 | C Scoped profile | QUALIFIED | Original v7 four successful CUT instances, reproducible quality gains, six negatives and fresh GPU recontact PASS |
 | D Held-out / Native | PARTIAL / Native PASS | Original held-out 2/4 task passes each; all 4/4 physically sever; ±6 mm frozen location gates FAIL. Four predeclared Native tasks/HOME PASS |
-| E Publication | IN_PROGRESS | Explicit source-bound selection, real media, 12 state reconstructions and CPU checks complete; final review, PR/main exact CI and remote playback required |
+| E Publication | IN_PROGRESS | Explicit source-bound selection, real media, 12 state reconstructions and CPU checks complete; review ACCEPT after fixes; PR/main exact CI and remote playback required |
 
 `v7_cut_research_v1` binds original tlmpm_v7 / finite_relative_sweep_v1 /
 velocity_projection_tau_v1. General default v5 + Law 8 remains unchanged.

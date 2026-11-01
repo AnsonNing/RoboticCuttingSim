@@ -20,7 +20,8 @@
   Twelve saved-state/two-profile reconstructions retain degenerates, sampled intersections and Partial coverage loss.
 - Full collected CPU 1705 passed / 9 skipped / 6 xfailed (not exact final head); current focused 60 PASS.
   Six new MP4s/two real GIFs encode genuine Native captures; all prior WP-12/WP-13 evidence and gallery retained.
-- Final read-only review, PR/main exact-commit CI and rendered remote media/docs checks remain release gates.
+- Sequential xhigh review ACCEPT after reproduced/fixed material and pending-event findings.
+  PR/main exact-commit CI and rendered remote media/docs checks remain release gates.
   publication_verified and DONE are absent until they pass.
 - [Results and all limits](reports/WP14_RESULTS.md), [phase checklist](WP14_PLAN.md),
   [scope restriction](evidence/wp14/support_scope_001.json), [Native](evidence/wp14/native_001.json).

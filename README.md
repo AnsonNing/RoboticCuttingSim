@@ -84,7 +84,7 @@ task = compile_research_task(
 Configuration selection checks and records the solver/front/contact sources,
 material, scene and numerical scope; incompatible overrides raise. New policy
 actions require separate evaluation. `tlmpm_v7_1` stays Experimental and is not
-selected by this profile. Its post-study disarm correction is CPU-verified only;
+selected by this profile. Its post-study pending-event lifecycle correction is CPU-verified only;
 GPU outcomes are not reassigned to it. Materials are uncalibrated; forces are not converged.
 [Results, all failures and exact commands](docs/reports/WP14_RESULTS.md) ·
 [Profile configuration](configs/wp14/v7_cut_research_v1.json).

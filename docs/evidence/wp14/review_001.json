@@ -40,5 +40,5 @@
   "verification": "local_verification_003.json",
   "original_review_sha256": "b6ce6ba036e829e7c26da4faf0de0cece9e434361fec7325f60b17316ddae205",
   "original_events_sha256": "ac444a43f357ad0b3971dce7ded33820680c30c6d41841332cf2859debc5d703",
-  "delta_review": "PENDING"
+  "delta_review": "review_002.json: ACCEPT"
 }
