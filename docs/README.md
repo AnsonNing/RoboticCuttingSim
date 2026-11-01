@@ -10,6 +10,7 @@
 | Measure cutting outcome and geometry independently | [Evaluation v2](EVALUATION_V2.md) |
 | Check both hand-aligned wrist cameras | [Camera rig v5](WRIST_CAMERA_V5.md) |
 | Use the same-instance remote GUI | [Remote interactive viewer](REMOTE_INTERACTIVE_VIEWER.md) |
+| Run the current CUT research scenes and watch updated real recordings | [WP-14 executable scenes](WP14_SCENES.md) |
 | Run or reproduce the three BladeMaster-style demos | [Demo report](reports/BLADEMASTER_DEMOS.md) · [Plan](BLADEMASTER_DEMO_PLAN.md) |
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
 | Use the reusable WP-11 environment (scene + goal configs, policy API, datasets) | [Policy-ready API](POLICY_READY_API.md) · [WP-11 plan](WP11_PLAN.md) |
@@ -20,6 +21,10 @@
 [original held-out protocol](../configs/wp14/heldout_v1.json) ·
 [scope restriction and retained 2/4 denominator](evidence/wp14/support_scope_001.json) ·
 [genuine Native comparisons](../README.md#cut-research-profile-wp-14).
+
+[Updated standard/firm-offset scene entry and latest real scene recording](WP14_SCENES.md).
+The extra scene/video replay is engineering evidence, separate from the four
+predeclared Native adoption episodes.
 
 | Family / selection | Status |
 | --- | --- |

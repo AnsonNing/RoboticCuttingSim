@@ -27,7 +27,7 @@ if (!paths.some(p=>p.includes('/wp14/'))) throw Error('No WP-14 media linked fro
 const receipt = {merge_sha:sha, started:new Date().toISOString(), readme_sha256:hash(pinned),
                  page_url:`https://github.com/${repo}`, media:[], gifs:[], videos:[], documents:[]};
 const documentPaths=new Set();
-for(const page of ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md']) {
+for(const page of ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md']) {
   const bytes=await fetchBytes(raw(sha)+page);
   documentPaths.add(page);
   const source=bytes.toString().replace(/^```.*?^```\s*$/gms,'');

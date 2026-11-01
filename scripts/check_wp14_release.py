@@ -17,7 +17,7 @@ def main():
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--protected',type=Path,required=True)
     a=p.parse_args();tracked=set(git('ls-files','-z').decode().rstrip('\0').split('\0'))
-    pages=['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md']
+    pages=['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md']
     errors=[];links=[];media={}
     for page in pages:
         text=(ROOT/page).read_text();text=re.sub(r'^```.*?^```\s*$','',text,flags=re.M|re.S)
@@ -41,7 +41,8 @@ def main():
                     'sha256':hashlib.sha256((ROOT/path).read_bytes()).hexdigest()}
                 if result.returncode:errors.append({'path':path,'error':result.stderr[-500:]})
     provenance={}
-    for file,key in (('docs/evidence/wp13/media_001.json','media'),('docs/evidence/wp14/media_001.json','comparisons')):
+    for file,key in (('docs/evidence/wp13/media_001.json','media'),('docs/evidence/wp14/media_001.json','comparisons'),
+                     ('docs/evidence/wp14/scene_refresh_001.json','media')):
         for row in json.loads((ROOT/file).read_text())[key]:provenance[row['gif']]=row
     for path,item in media.items():
         if path.endswith('.gif'):

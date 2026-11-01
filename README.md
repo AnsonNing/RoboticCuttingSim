@@ -40,6 +40,14 @@ previews use labelled crops and speeds.
 improve near-cut x/F P95 by **5.60–8.49×** and local physical-locus roughness by
 **78.0–86.1%**. Two predeclared Native pairs complete **4/4 tasks and 4/4 HOME**.
 
+[![Updated WP-14 actual Native research scene](docs/media/wp14/scene_walkthrough_preview.gif)](docs/media/wp14/scene_walkthrough_native.mp4)
+
+**Updated executable scene and real full recording, 1×.**
+[Launch the standard or firm-offset CUT scene](docs/WP14_SCENES.md) ·
+[actual scene overview](docs/media/wp14/scene_overview.png) ·
+[scene/video provenance](docs/evidence/wp14/scene_refresh_001.json).
+This extra engineering replay does not add an independent adoption sample.
+
 [![Real Native standard CUT: v5 left and v7 research profile right, matched capture times](docs/media/wp14/standard_cut_v5_v7_preview.gif)](docs/media/wp14/standard_cut_v5_v7_comparison.mp4)
 
 **v5 left / v7 CUT profile right, 1× simulation time.** These are genuine Native
