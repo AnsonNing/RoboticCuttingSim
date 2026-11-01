@@ -1,0 +1,28 @@
+{
+  "rows": [
+    {
+      "solver": "tlmpm_v5",
+      "prior_actions": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/focused_001/tlmpm_v5/P01_shallow/actions.jsonl",
+      "current_actions": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/core_001/tlmpm_v5/P01_shallow/actions.jsonl",
+      "prior_sha256": "f7b313c468e6b86e4d85ae1224f8a2aae17d86163817c447f2dbde5ef6c17016",
+      "current_sha256": "5c8ba6011a68a848d71bf774b9c22b7a109645a8a1f1eb121e5769fb76c14956",
+      "prior_min_armed_world_z_m": 0.02040124428766507,
+      "current_min_armed_world_z_m": 0.022200000000000095,
+      "difference_m": 0.0017987557123350234,
+      "status": "PASS_DISTINCT_DEPTH",
+      "scope": "Measured physical commanded depth differs by more than 1 mm, independently of path hashes. Actual compiled command replay is separately required."
+    },
+    {
+      "solver": "tlmpm_v7",
+      "prior_actions": "/home/ningan/RoboticCuttingSim-wp13/artifacts/wp13/focused_001/tlmpm_v7/P01_shallow/actions.jsonl",
+      "current_actions": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/core_001/tlmpm_v7/P01_shallow/actions.jsonl",
+      "prior_sha256": "62213ecb63539b232572029d04fbf88c39cf9283d11e9eb422a2afb55e442b8e",
+      "current_sha256": "5cff1ef006830380a70cd7d6f8ad67cbb92cd0fc09cc71024024e790d082d94d",
+      "prior_min_armed_world_z_m": 0.02040124428766507,
+      "current_min_armed_world_z_m": 0.022200000000000095,
+      "difference_m": 0.0017987557123350234,
+      "status": "PASS_DISTINCT_DEPTH",
+      "scope": "Measured physical commanded depth differs by more than 1 mm, independently of path hashes. Actual compiled command replay is separately required."
+    }
+  ]
+}

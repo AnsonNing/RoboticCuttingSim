@@ -1,0 +1,1339 @@
+{
+ "traces": [
+  {
+   "source": "artifacts/wp14/trim_trace_001/front_trace.json",
+   "sha256": "fcda69f413e12912245beb4394ce7c4483fef90f17810adf6576eb42d84bf740",
+   "manifest": {
+    "timestamp": "2026-11-01T23:26:32.365132+09:00",
+    "command": [
+     "scripts/diagnose_wp14_front.py",
+     "--source-run",
+     "artifacts/wp14/core_001/tlmpm_v7/T00_trim",
+     "--out",
+     "artifacts/wp14/trim_trace_001",
+     "--device",
+     "cuda:0"
+    ],
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "backend": "kinematic_ideal_tracking",
+    "git_sha": "a0b31c13ee26d97783d26b4fc8e1ce4723d554a7",
+    "git_dirty": true,
+    "config": {
+     "benchmark_id": "wp12_phase4_e2_protocol_v1",
+     "benchmark_status": "E2_PROTOCOL",
+     "sample_id": "T00_trim",
+     "family": "TRIM",
+     "range_set": "wp13",
+     "split": "wp13",
+     "seed": 42,
+     "variant": "TRIM",
+     "task_id": "CFG-trim01_flat_board-trim_bump_rho10-8b4d6fcb",
+     "config_sha256": "8b4d6fcb6484e52fc91526e737037cb9f2ff8fb8ea65344304c1d734b18d9b8b",
+     "device": "cuda:0",
+     "feasibility_class": null,
+     "material_dt_s": 0.0001,
+     "material_seed": 42,
+     "history_stride": 15,
+     "control_steps": 575,
+     "solver_module": "tlmpm_v7",
+     "max_cuts": 1,
+     "slots_per_node": null,
+     "surface_profile": "particle_surface_v1",
+     "cutting_law": 8,
+     "particle_spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "runtime_source": "kinematic_ideal_tracking",
+     "scene": {
+      "schema": "rcs_scene_v1",
+      "scene_id": "trim01_flat_board",
+      "description": "TRIM-01-R workpiece (160 x 30 x 20 mm bar, one 8 mm dome at the centre) lying directly on the solid cutting board of blade_master_flat_board_v1, ruler_knife_v2_y tip toward world +y, HOME from the workcell record. tlmpm_v5 law 8 with one cut digit.",
+      "workpiece": {
+       "base_box_m": {
+        "length_m": 0.16,
+        "width_m": 0.03,
+        "height_m": 0.02
+       },
+       "protrusions": [
+        {
+         "id": "dome",
+         "family": "dome",
+         "x_m": 0.0,
+         "y_m": 0.0,
+         "radius_x_m": 0.012,
+         "radius_y_m": 0.012,
+         "height_m": 0.008
+        }
+       ],
+       "world_pose": {
+        "translation_m": [
+         0.0,
+         0.0,
+         0.01
+        ],
+        "yaw_deg": 0.0
+       },
+       "material_profile": "cutting_tasks_v1"
+      },
+      "supports": {
+       "kind": "flat_board",
+       "workcell": {
+        "profile": "blade_master_flat_board_v1"
+       }
+      },
+      "tool": {
+       "profile_id": "ruler_knife_v2_y",
+       "grasp_preset": "default"
+      },
+      "solver": {
+       "module": "tlmpm_v7",
+       "cutting_law": 8,
+       "max_cuts": 1,
+       "particle_spacing_m": 0.001,
+       "grid_dx_m": 0.004
+      }
+     },
+     "goal": {
+      "schema": "rcs_goal_v1",
+      "goal_id": "trim_bump_rho10",
+      "type": "remove_protrusions",
+      "description": "Remove every protrusion above the base top with near-horizontal surface_trim passes at the C2 rake rho = 10 deg (ADR 0013 decision record), path_v2 controller profile: >= 90% of each protrusion's above-plane reference mass detached, the substrate keeps >= 99% of the below-plane mass, <= 1% below-plane mass detached. Precision is reported separately.",
+      "episode": {
+       "duration_s": 11.5,
+       "control_dt_s": 0.02
+      },
+      "planner": {
+       "controller_profile": "path_v2",
+       "rake_deg": 10.0
+      },
+      "select": "all",
+      "plane_local_z_m": null,
+      "edge_clearance_m": 0.0002,
+      "minimum_removed_fraction": 0.9,
+      "minimum_substrate_share": 0.99,
+      "maximum_detached_below_fraction": 0.01
+     },
+     "planner_options": {
+      "controller_profile": "path_v2",
+      "home_position_local_m": null,
+      "home_orientation_local_xyzw": null,
+      "home_height_m": 0.04,
+      "safe_height_m": 0.03,
+      "cut_speed_m_s": 0.01,
+      "cut_clearance_m": 0.008,
+      "overtravel_m": 0.004,
+      "hold_s": 0.3,
+      "kerf_speed_m_s": 0.02,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "rake_deg": 10.0,
+      "skew_deg": 0.0,
+      "skim_speed_m_s": 0.025,
+      "skim_margin_m": 0.01,
+      "skim_direction_local": [
+       1.0,
+       0.0,
+       0.0
+      ],
+      "protrusion_order": "along_skim",
+      "push_release_m": 0.002,
+      "max_translation_m": 0.001,
+      "max_rotation_deg": 1.0
+     },
+     "draws": [],
+     "derived": {},
+     "envelope_parameters": {},
+     "ood_dimensions": [],
+     "label": "WP14_RESIDUAL_DIAGNOSIS_NOT_ACCEPTANCE",
+     "planner_source": "compiled",
+     "wp13_case": {
+      "id": "T00_trim",
+      "episode": "TRIM",
+      "seed": 42
+     },
+     "candidate_source_sha256": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+     "argv": [
+      "scripts/diagnose_wp14_front.py",
+      "--source-run",
+      "artifacts/wp14/core_001/tlmpm_v7/T00_trim",
+      "--out",
+      "artifacts/wp14/trim_trace_001",
+      "--device",
+      "cuda:0"
+     ]
+    },
+    "config_sha256": "bb541dcccdb040e19fd24d1465c73926ca28b0e49d4b08e4e8727abd4506c9c9",
+    "packages": {
+     "newton": "1.6.1",
+     "warp-lang": "1.17.0",
+     "numpy": "2.5.4",
+     "scipy": "1.18.1",
+     "isaaclab": null,
+     "isaacsim": null,
+     "torch": null,
+     "usd-core": "26.8",
+     "mujoco": "3.12.0",
+     "mujoco-warp": "3.12.0",
+     "newton-usd-schemas": "0.6.0",
+     "ovrtx": null,
+     "ovstage": null
+    },
+    "source_checkouts": {
+     "newton": {
+      "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+      "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty": false
+     },
+     "CRESSim-MPM": {
+      "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+      "tracked_patch_sha256": "869b881d787e2b096ca3cc52187de7912fb76abf8a4da1b4525cb9f0dd59df51",
+      "dirty": true
+     },
+     "IsaacLab": {
+      "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+      "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty": false
+     }
+    },
+    "local_code_sha256": {
+     "src/robotic_cutting_sim/__init__.py": "d13a603c011d7f243d6af56b8c13125b575eb95fca279b0ac989deb7d1bfd680",
+     "src/robotic_cutting_sim/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+     "src/robotic_cutting_sim/agent_api.py": "5d6d00e31b1fa464b95e1202b9e8e78b0363f1c694bbb0bed1272d80552f1dc2",
+     "src/robotic_cutting_sim/agentic_readiness.py": "dca43e1930180d7932ddb92c9377e8d0835fab65f95c921b40035d2c420484e4",
+     "src/robotic_cutting_sim/benchmark.py": "50cb7f75a62d2c8c40f2216c07b81cf43e931fb79168555207d05f54c272ae0c",
+     "src/robotic_cutting_sim/blade_probe.py": "ec54f0876db25544ae1d19572a5613218a58a946de76fe436ec981e9bd877df3",
+     "src/robotic_cutting_sim/camera.py": "73eee693a0256f61c8014775b273cce1adb460b1fbb9a7f768c9cf911603a82c",
+     "src/robotic_cutting_sim/camera_rig.py": "c7a00d3576bd8e6cee0336db331331c67aae8735ff74b58a242aed6818c50c7b",
+     "src/robotic_cutting_sim/cli.py": "1754869597e115cea78435bc1ce524bd41d58355a579dfa914abfa493e830891",
+     "src/robotic_cutting_sim/control.py": "040c567b29c4d912db6da2faa33ccd46777eadeaa78b5791115c10995ee51b71",
+     "src/robotic_cutting_sim/coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316",
+     "src/robotic_cutting_sim/cressim_probe.py": "4088237a93f47993675528bac32752745308c1212e92036cb0bfc84bd535b79a",
+     "src/robotic_cutting_sim/cut_aware_surface.py": "0ea8961015abee3daa34ae5ab4fcc71db5c63707886574d9d0ac1a834ad473c6",
+     "src/robotic_cutting_sim/cut_aware_surface_v2.py": "b078c2b456e1194dda03386ac532f374a88126b36a7be556beef935d94ab877d",
+     "src/robotic_cutting_sim/cut_debug_view.py": "82aa1a320bcc4af3b6445b995ace9ed9dfa28d0c252db69f061c2998744b48ee",
+     "src/robotic_cutting_sim/cut_diagnostics.py": "851d10d0257aedb1c11d85c646e90aed6f702887bc25aadd3270969575a33964",
+     "src/robotic_cutting_sim/cut_event_snapshots.py": "d7e273a51e34c05fab6b3428908cc5df00770de6e24dd2d09834d9945578abc3",
+     "src/robotic_cutting_sim/cut_events.py": "1b9bfd37c233be79e49b65101e3c360d7ebafff4100b03a2d1f3dfe5bb5ac49a",
+     "src/robotic_cutting_sim/cut_topology.py": "2beb01ee520f2d43e86a9291cfa04dd47a933be80f7c2e4d9b388bdbec67d4d4",
+     "src/robotic_cutting_sim/cutting_surface.py": "fa40f10c9f3da0626c83b0461afd3f3a2462cc5a12786197c8d223c2ec223838",
+     "src/robotic_cutting_sim/dataset.py": "c2a16a70b3ed9c542d86d0cacf7bf35cb00a56744b737aad45b061d978958d43",
+     "src/robotic_cutting_sim/demo_evaluation.py": "e1a52457c476cb0b48ad6235f70f02f106be720de7a119d59498577e8d045767",
+     "src/robotic_cutting_sim/demo_media.py": "95b3321d61be28b1d860e98127c0256f27e67b17c7d247eb4056a800ae7304c8",
+     "src/robotic_cutting_sim/deployment_doctor.py": "e7574fa514aad3b2049e226add9ba4edb36acb54be20292f7f5f634d9fdb41b8",
+     "src/robotic_cutting_sim/deployment_validation.py": "17b85c79069309360780ac81e8dffb67e4d783645fd93643e55da640fa0caa7a",
+     "src/robotic_cutting_sim/doctor.py": "15f048a658cd4f9d9b81df5c7b60331d813f99d129a66913e551ba778412d3d4",
+     "src/robotic_cutting_sim/env.py": "5fb16c8951d892493215d04cf80f4e15cbc0fb32e16c27ce80405be8c7d75b20",
+     "src/robotic_cutting_sim/env_demo.py": "9db7ca309128d51e51c0442e659ece100750b3bc4cf2874111f2d60ee934acad",
+     "src/robotic_cutting_sim/episode_lifecycle.py": "8ee2f60e23fbecc74ea0d2b4a63592403c387a3eb0076e4f7ac9670a6d366afc",
+     "src/robotic_cutting_sim/evaluation.py": "ba7b93eff2e39e835dce053de5558bee58025e5dc9885440a6035feefa4d8ca1",
+     "src/robotic_cutting_sim/exit_candidates.py": "c751aac92fe69cb30e3a61bdb9216856a8fdd8349db813f3cc7533559406e427",
+     "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+     "src/robotic_cutting_sim/fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+     "src/robotic_cutting_sim/flat_board_workcell.py": "6aac8196008cac86c90bc3aad206379f505cb2148583ad642bb4d8dafc84ddea",
+     "src/robotic_cutting_sim/food_materials.py": "2be0e4f76e6986a3eb4e85f023be26ad59575730374a4a88151843ff3985e28f",
+     "src/robotic_cutting_sim/generalization.py": "d4015fd6234b873b968b2487d5c7b0b7968bfa28a082f4ab64b2ac2357b2916a",
+     "src/robotic_cutting_sim/generalization_wp12.py": "dcf587c3e10234dbe099bd3298e2c7a88510050f8271e5d7df592537dc3faadb",
+     "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+     "src/robotic_cutting_sim/geometry_providers.py": "a6a178481b5f2fa0da592b2fd62e5637d5072ba63012abc28ee2b157e0ad1efe",
+     "src/robotic_cutting_sim/goal_planner.py": "7a49e255cedd1ab8bc0914df251f8c7cbe14db6dbb5145f7cd253964ca3e077d",
+     "src/robotic_cutting_sim/goals.py": "c2cb544a0dee129d71054c0df3266601fbc6e75b41e94c6a00a735812bba8602",
+     "src/robotic_cutting_sim/grasp_monitor.py": "5157475c51146ea2a813885ffd82ea32cd4a27f47babc4c9e9397de098b185a4",
+     "src/robotic_cutting_sim/gym_env.py": "8be1496b23a671f0adbfc742dae5b373610d29a83b297925750abd6a703bff13",
+     "src/robotic_cutting_sim/isaac_lab_env.py": "40b3abb16eec03cf6fa5098080c3172517612d68b25dcb2dea87c08e81ef77d5",
+     "src/robotic_cutting_sim/isaac_sim_runner.py": "3f929cda712c61b0ab2c6dd4db174bc0b097a1e004d23ef9c2d2d9e11dcfb925",
+     "src/robotic_cutting_sim/kinematic_env.py": "2ea54fd969c8a8bbcc7bab6d0e2e0a7bb30aec918b7fa74380fc870cce2f4c87",
+     "src/robotic_cutting_sim/law8_validation.py": "22f0040961776353aa09315f7c7b786b0f1bd2c3085c342bce963c709f036d64",
+     "src/robotic_cutting_sim/live_acceptance.py": "9dc2388d5462f074c78c5457cd3ee0f4fd3882f82d024dccf251a7c7547006c6",
+     "src/robotic_cutting_sim/live_camera.py": "ca1277d1f5cfe892efdfde8496d3d4de3ae5e0240258f8c0e3b40d85ffd00a67",
+     "src/robotic_cutting_sim/live_env.py": "7e8b52fe8c679054ae6daed008c19973bbbc6a54ea4984e8ceb89e2a9d53d776",
+     "src/robotic_cutting_sim/live_material.py": "946f714320fde42a752e97361f155054a081fcf4e41bfcd206ecd07f13fe081d",
+     "src/robotic_cutting_sim/material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+     "src/robotic_cutting_sim/materials_wp12.py": "1ae68be6dbc856f0c6d4b78f96b19f2d1f716192d6b124b77d080e3c647de5a3",
+     "src/robotic_cutting_sim/motion_preflight.py": "eb294cb5d140b44f588a9f58a1cc7665e02c7ff509d6069bbe5c80ff187dbe34",
+     "src/robotic_cutting_sim/multi_cut_evaluation.py": "260c68ba5d503bae70eef77598fa9f723ce745ad2b25701387e276f588b3d5b0",
+     "src/robotic_cutting_sim/native_camera_geometry.py": "89bad438ba42125ac982c3cab902eefa00de3e505628693bbe81dac940d9576b",
+     "src/robotic_cutting_sim/native_fixture.py": "642335b9ac5769140fb06b2fdc3331cf032d659c80c9d32ce3dd8a76847f02bd",
+     "src/robotic_cutting_sim/native_tool.py": "4a17cb5eebbdab9cc27b5e49ff042071dddadba1a20e1ae3fb4ea2f3e87a6e93",
+     "src/robotic_cutting_sim/newton_probe.py": "ab0bb411cac19f638334b382b78e7e2114d0911489ff3b176bc323273dc7e3b2",
+     "src/robotic_cutting_sim/newton_tool.py": "695708a2619bf0da072d5076a1c97b052fdfd153f2a1f634ffe2641b0c161ed3",
+     "src/robotic_cutting_sim/packed_solvers.py": "96df71d3355255a4c5d337a25066407e2e8fdfab851b33c5bb97f1548b7602ac",
+     "src/robotic_cutting_sim/pad_contact.py": "467625a1e28e5d218f79fec005b9182bd4e1592802a306ce70afd93c4c01c758",
+     "src/robotic_cutting_sim/perception_relocate.py": "d23b8cc1f34ec022886117058d753acef86fc9b4653bf6c76ba19fa95f8fb93a",
+     "src/robotic_cutting_sim/physical_contacts.py": "1b0a471c0c8c65e3b6f6e2114d429593eaa15e8d143cd10e59103f352cfbed85",
+     "src/robotic_cutting_sim/physical_tool.py": "1110fb1f000ef4778a40adf220f6af733c7cd97258c8cc6aca45e7398ab79dc4",
+     "src/robotic_cutting_sim/policies.py": "f6036bee355fd0d4f88266cb4774ff628fe9039e00140292b8039187efb802cd",
+     "src/robotic_cutting_sim/policy_config.py": "0cd3e40a56a02c38ca3f7e08dcece23763de7de181bd776fb17396f8c061ace2",
+     "src/robotic_cutting_sim/policy_env.py": "cc788369a9cf7b62b569f1a944847dbec54cf3afc5460afb616666ca3695c32b",
+     "src/robotic_cutting_sim/policy_examples.py": "cbb3d0cf80f9d459399fb4d5c87ac34413d07c8b0472ae22d7278053995b1e75",
+     "src/robotic_cutting_sim/presentation_camera.py": "a3b5a975983ca56ff0d1837482ad3696af2568d264decedd6df66eb6f9fb62d6",
+     "src/robotic_cutting_sim/preview.py": "a7afba89579420bfbb5edabb53a05bb7023a36c080dd5913c4549ad86833b3e1",
+     "src/robotic_cutting_sim/probe_kernels.py": "1c0eb76352c680fec41e4ba60092da63cbf7a03c26cf11debfdd4c7806d87081",
+     "src/robotic_cutting_sim/profiling.py": "76f3d8d60c846bafbf1eac4d052e167c2ce8c8de5c1e91694a4905350fbb9c1e",
+     "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a",
+     "src/robotic_cutting_sim/remote_control.py": "366a8cbc3976fd2f2c91678207172134d5fcdc213cb863aa732f1b6e30c7b31c",
+     "src/robotic_cutting_sim/remote_runtime.py": "cbebd47ae3ace40c75b62a793b50a23d132edca16b2f6f9bc87e93c3e5516dcc",
+     "src/robotic_cutting_sim/remote_viewer.py": "664084868d17f470fc15073bdb57acb346e0627834cd2789818783565b2b4789",
+     "src/robotic_cutting_sim/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+     "src/robotic_cutting_sim/research_env.py": "40691ec4ba3c184c9ff7f1301d2590a4971b63f35cc4244d50d74cdc562f738e",
+     "src/robotic_cutting_sim/research_profiles.py": "25a42d43de8a426204274bf16b6db0def4e8ca45fead8e482673c25f4b58ca55",
+     "src/robotic_cutting_sim/reward.py": "7d5e18670488d909635bb7a5656f9f95806d263841e653c8f701d0b46725e557",
+     "src/robotic_cutting_sim/robot.py": "03e7078727f3ce111c927163547ee0462458b83f9cc568df2f0f714fa8c9a4b2",
+     "src/robotic_cutting_sim/root_cause_diagnostics.py": "fd6e53544c5e91b442f886e1bd3d482223b241c408d84e503db497f4a091d0aa",
+     "src/robotic_cutting_sim/root_cause_recorders.py": "f5added0e3a7402f83d55e50d659c0298ef77f9e924fbfa153ceb57e8803f048",
+     "src/robotic_cutting_sim/rtx_outputs.py": "b9a3d38286d23132676c3be3e2ab5386bf674c0c36da10ebcfbee4bd24b75423",
+     "src/robotic_cutting_sim/runtime_profiles.py": "eaa116ce6012acae4f0704ee808066452159edab3a69edb10cb2afe761a8bc31",
+     "src/robotic_cutting_sim/scene.py": "90b3bc8fe13d343fac256b485deaf9fb5b59430b5d6aa5b4857f2e8e4901e03a",
+     "src/robotic_cutting_sim/scene_config.py": "9e4d8bb9e2ba67e320177999e87613b8cbd06ea3a67a34937afebcf965cdd928",
+     "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+     "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+     "src/robotic_cutting_sim/sensor_contract.py": "b976a9c670855c7c8220251f11444576ddd100293e47e3656e7cbbc0ab0aab0a",
+     "src/robotic_cutting_sim/sequence_blade_probe.py": "8cbb144536cc02ca455673b53095830e0962440189472eb529de16ec5e327312",
+     "src/robotic_cutting_sim/single_view_controls.py": "f0dfeefdb78866ef35f1116d97b295aaca265d85fbbf22a4423ef4d2487d3480",
+     "src/robotic_cutting_sim/single_view_registration.py": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df",
+     "src/robotic_cutting_sim/skim_orientation.py": "162c30109db2a5c6c5051c386cdd92717a2b572e6054e9fe90f7c1f7c0a97e16",
+     "src/robotic_cutting_sim/surface_attribution_v1.py": "9a9851e5178d76ce031b34b7e5e9b6ac2df9ddc62eb66560041c71ca7c43a534",
+     "src/robotic_cutting_sim/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+     "src/robotic_cutting_sim/surface_distance.py": "2fc4908b3dbccacb053268da17f8a5570c18372e9ef90dbfdb51f8d13cb58248",
+     "src/robotic_cutting_sim/surface_evaluation.py": "018b035d3976b593eff4fc57323e1223da38d31391bc95ef6202ebf9b979fb59",
+     "src/robotic_cutting_sim/surface_metrics_v1.py": "639a6ee92d225622e2c8769aa28fe396531913e335053d369151d47b7a756f64",
+     "src/robotic_cutting_sim/surface_metrics_v2.py": "1c9ec9072fa905e36502aef35d9f90a812ea3f0d9f01b9f3cd2204216cf6e209",
+     "src/robotic_cutting_sim/surface_runtime.py": "166cc3d086882d192ea48122fd36dfb5be745fd05725f90b8f83c6298313e8f9",
+     "src/robotic_cutting_sim/task_randomization.py": "01e1fdce6552d9c01a0c5a002f272e86c20d840079cba49c5d50093205f12f48",
+     "src/robotic_cutting_sim/task_scenarios.py": "f71bfa2eaaa0212ee71a40e696b7a948e58c817aaaf2ef1274751e1ad9a572ad",
+     "src/robotic_cutting_sim/tasks.py": "2977ab4bd325c6085f21f9b3be858e963c5017ec43b7b350a6452383578cdda5",
+     "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+     "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+     "src/robotic_cutting_sim/tlmpm_v3.py": "9073036b0a86076ae44ad268a91427a4ce20c32133f8759d67595bd4836a6b1a",
+     "src/robotic_cutting_sim/tlmpm_v4.py": "cb8985ebbfe530be741025f009400622f6b72cdceacf239f952612c91c2eaea9",
+     "src/robotic_cutting_sim/tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "src/robotic_cutting_sim/tlmpm_v5_counterfactual.py": "c24f8f914781bf26063d8de886d2746305d85e8f1c37aca00ff467d244aaac43",
+     "src/robotic_cutting_sim/tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "src/robotic_cutting_sim/tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+     "src/robotic_cutting_sim/tool_compatibility.py": "abcb657d00f657795ba7f1a82d12f52895d12aa01b20643fc6a34a06303dfa8f",
+     "src/robotic_cutting_sim/tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7",
+     "src/robotic_cutting_sim/trajectory.py": "c780ed6f5503f0cf50a90e462b95715b48bab4834493e0352b5a25d8f93d9d88",
+     "src/robotic_cutting_sim/usd_surface_bridge.py": "a33b1859c30d8aca403e0f1debac505c5e0899d5195e057c6caa99dcff315f86",
+     "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+     "src/robotic_cutting_sim/workcell.py": "e16cbb3dd66521e7b0121f37e6bde4dd8d3086593c1df9f8f532314591de334e",
+     "src/robotic_cutting_sim/workpieces.py": "ca79e00857b77b4495f510d817c8c581a12ea30a54187c5077db96227d173e6f",
+     "src/robotic_cutting_sim/wrist_camera_audit.py": "d98c91a89a97f85d237cf098f20cf29c1594713bdcfa76e6c9e789a2b7af0c7c",
+     "src/robotic_cutting_sim/wrist_camera_clearance.py": "22e982b7b0cfd3613c5e12c3e01863b9001ccf78846155391d23e562078cd0ae",
+     "src/robotic_cutting_sim/wrist_depth_survey.py": "761833a520dea07491040d7744a1a8e91cbe86f4d29f19e5bef7d6e59d709f4a"
+    },
+    "physics_proven": false,
+    "vision_proven": false
+   },
+   "original_selection_run": "artifacts/wp14/core_001/tlmpm_v7/T00_trim",
+   "selected_particles": 216,
+   "link_selection": "nearest_vertical",
+   "counters": {
+    "armed_substeps": {
+     "particles": 216,
+     "total_substeps_or_events": 3801600
+    },
+    "leading_crossings": {
+     "particles": 216,
+     "total_substeps_or_events": 216
+    },
+    "finite_crossings": {
+     "particles": 216,
+     "total_substeps_or_events": 216
+    },
+    "bevel_residence_substeps": {
+     "particles": 216,
+     "total_substeps_or_events": 296806
+    },
+    "engaged_bevel_substeps": {
+     "particles": 0,
+     "total_substeps_or_events": 0
+    },
+    "particle_work_substeps": {
+     "particles": 0,
+     "total_substeps_or_events": 0
+    },
+    "reached_but_no_stroke": {
+     "particles": 216,
+     "total_substeps_or_events": 393052
+    },
+    "reached_but_outside_bevel": {
+     "particles": 216,
+     "total_substeps_or_events": 2853918
+    },
+    "link_plane_intersection_substeps": {
+     "particles": 0,
+     "total_substeps_or_events": 0
+    },
+    "finite_link_front_crossings": {
+     "particles": 0,
+     "total_substeps_or_events": 0
+    }
+   },
+   "samples": {
+    "first_crossing": {
+     "particles": 216,
+     "new_forward_m": [
+      -2.4382025003433228e-06,
+      -1.1175870895385742e-08
+     ],
+     "swept_side_m": [
+      -0.003809325397014618,
+      -0.0008062068372964859
+     ],
+     "board_gap_after_m": [
+      0.015940673649311066,
+      0.018943792209029198
+     ],
+     "substep": [
+      42652.0,
+      43454.0
+     ]
+    },
+    "first_particle_work": {
+     "particles": 0
+    },
+    "closest_front": {
+     "particles": 216,
+     "new_forward_m": [
+      -1.2293457984924316e-06,
+      1.2237578630447388e-06
+     ],
+     "swept_side_m": [
+      -0.003809325397014618,
+      -0.0008062068372964859
+     ],
+     "board_gap_after_m": [
+      0.015940673649311066,
+      0.018943792209029198
+     ],
+     "substep": [
+      42652.0,
+      43453.0
+     ]
+    },
+    "last_bevel": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.003383031114935875,
+      -0.003380570560693741
+     ],
+     "swept_side_m": [
+      -0.003809325397014618,
+      -0.0008062068372964859
+     ],
+     "board_gap_after_m": [
+      0.015940673649311066,
+      0.018943792209029198
+     ],
+     "substep": [
+      44025.0,
+      44827.0
+     ]
+    },
+    "first_reached": {
+     "particles": 216,
+     "new_forward_m": [
+      -2.4382025003433228e-06,
+      -1.1175870895385742e-08
+     ],
+     "swept_side_m": [
+      -0.003809325397014618,
+      -0.0008062068372964859
+     ],
+     "board_gap_after_m": [
+      0.015940673649311066,
+      0.018943792209029198
+     ],
+     "substep": [
+      42652.0,
+      43454.0
+     ]
+    },
+    "first_assigned": {
+     "particles": 0
+    },
+    "deepest_board": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.03646807745099068,
+      0.008501904085278511
+     ],
+     "swept_side_m": [
+      -0.003825215622782707,
+      -0.0008093435317277908
+     ],
+     "board_gap_after_m": [
+      0.015924783423542976,
+      0.018940655514597893
+     ],
+     "substep": [
+      40000.0,
+      57599.0
+     ]
+    },
+    "closest_engaged_front": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.005370575003325939,
+      -0.003397013060748577
+     ],
+     "swept_side_m": [
+      -0.003809325397014618,
+      -0.0008062068372964859
+     ],
+     "board_gap_after_m": [
+      0.015940673649311066,
+      0.018943792209029198
+     ],
+     "substep": [
+      44833.0,
+      44833.0
+     ]
+    }
+   },
+   "bevel_residence_s_range": [
+    0.1374,
+    0.1375
+   ],
+   "final_measured_class": "execution_failure",
+   "scope": "Actual fresh substeps. Read-only selected particle/nearest vertical link observations; counter times include the full episode. Link test uses old/new swept-plane intersection, not a fracture criterion. Impulse is all contacts combined; consumed work is particle cutting work. No historical event is inferred."
+  },
+  {
+   "source": "artifacts/wp14/trim_support_trace_001/front_trace.json",
+   "sha256": "ba54cdf3037acd85e5de88a95e58b84ca7c84e47933a15ba109f91ff58cda452",
+   "manifest": {
+    "timestamp": "2026-11-01T23:32:30.415495+09:00",
+    "command": [
+     "scripts/diagnose_wp14_front.py",
+     "--source-run",
+     "artifacts/wp14/core_001/tlmpm_v7/T00_trim",
+     "--out",
+     "artifacts/wp14/trim_support_trace_001",
+     "--links",
+     "actual_support",
+     "--device",
+     "cuda:0"
+    ],
+    "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+    "backend": "kinematic_ideal_tracking",
+    "git_sha": "35688fb68641ad155abaf71871ca52eff48101d0",
+    "git_dirty": true,
+    "config": {
+     "benchmark_id": "wp12_phase4_e2_protocol_v1",
+     "benchmark_status": "E2_PROTOCOL",
+     "sample_id": "T00_trim",
+     "family": "TRIM",
+     "range_set": "wp13",
+     "split": "wp13",
+     "seed": 42,
+     "variant": "TRIM",
+     "task_id": "CFG-trim01_flat_board-trim_bump_rho10-8b4d6fcb",
+     "config_sha256": "8b4d6fcb6484e52fc91526e737037cb9f2ff8fb8ea65344304c1d734b18d9b8b",
+     "device": "cuda:0",
+     "feasibility_class": null,
+     "material_dt_s": 0.0001,
+     "material_seed": 42,
+     "history_stride": 15,
+     "control_steps": 575,
+     "solver_module": "tlmpm_v7",
+     "max_cuts": 1,
+     "slots_per_node": null,
+     "surface_profile": "particle_surface_v1",
+     "cutting_law": 8,
+     "particle_spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "runtime_source": "kinematic_ideal_tracking",
+     "scene": {
+      "schema": "rcs_scene_v1",
+      "scene_id": "trim01_flat_board",
+      "description": "TRIM-01-R workpiece (160 x 30 x 20 mm bar, one 8 mm dome at the centre) lying directly on the solid cutting board of blade_master_flat_board_v1, ruler_knife_v2_y tip toward world +y, HOME from the workcell record. tlmpm_v5 law 8 with one cut digit.",
+      "workpiece": {
+       "base_box_m": {
+        "length_m": 0.16,
+        "width_m": 0.03,
+        "height_m": 0.02
+       },
+       "protrusions": [
+        {
+         "id": "dome",
+         "family": "dome",
+         "x_m": 0.0,
+         "y_m": 0.0,
+         "radius_x_m": 0.012,
+         "radius_y_m": 0.012,
+         "height_m": 0.008
+        }
+       ],
+       "world_pose": {
+        "translation_m": [
+         0.0,
+         0.0,
+         0.01
+        ],
+        "yaw_deg": 0.0
+       },
+       "material_profile": "cutting_tasks_v1"
+      },
+      "supports": {
+       "kind": "flat_board",
+       "workcell": {
+        "profile": "blade_master_flat_board_v1"
+       }
+      },
+      "tool": {
+       "profile_id": "ruler_knife_v2_y",
+       "grasp_preset": "default"
+      },
+      "solver": {
+       "module": "tlmpm_v7",
+       "cutting_law": 8,
+       "max_cuts": 1,
+       "particle_spacing_m": 0.001,
+       "grid_dx_m": 0.004
+      }
+     },
+     "goal": {
+      "schema": "rcs_goal_v1",
+      "goal_id": "trim_bump_rho10",
+      "type": "remove_protrusions",
+      "description": "Remove every protrusion above the base top with near-horizontal surface_trim passes at the C2 rake rho = 10 deg (ADR 0013 decision record), path_v2 controller profile: >= 90% of each protrusion's above-plane reference mass detached, the substrate keeps >= 99% of the below-plane mass, <= 1% below-plane mass detached. Precision is reported separately.",
+      "episode": {
+       "duration_s": 11.5,
+       "control_dt_s": 0.02
+      },
+      "planner": {
+       "controller_profile": "path_v2",
+       "rake_deg": 10.0
+      },
+      "select": "all",
+      "plane_local_z_m": null,
+      "edge_clearance_m": 0.0002,
+      "minimum_removed_fraction": 0.9,
+      "minimum_substrate_share": 0.99,
+      "maximum_detached_below_fraction": 0.01
+     },
+     "planner_options": {
+      "controller_profile": "path_v2",
+      "home_position_local_m": null,
+      "home_orientation_local_xyzw": null,
+      "home_height_m": 0.04,
+      "safe_height_m": 0.03,
+      "cut_speed_m_s": 0.01,
+      "cut_clearance_m": 0.008,
+      "overtravel_m": 0.004,
+      "hold_s": 0.3,
+      "kerf_speed_m_s": 0.02,
+      "saw_amplitude_m": 0.0,
+      "saw_period_s": 0.4,
+      "rake_deg": 10.0,
+      "skew_deg": 0.0,
+      "skim_speed_m_s": 0.025,
+      "skim_margin_m": 0.01,
+      "skim_direction_local": [
+       1.0,
+       0.0,
+       0.0
+      ],
+      "protrusion_order": "along_skim",
+      "push_release_m": 0.002,
+      "max_translation_m": 0.001,
+      "max_rotation_deg": 1.0
+     },
+     "draws": [],
+     "derived": {},
+     "envelope_parameters": {},
+     "ood_dimensions": [],
+     "label": "WP14_RESIDUAL_DIAGNOSIS_NOT_ACCEPTANCE",
+     "planner_source": "compiled",
+     "wp13_case": {
+      "id": "T00_trim",
+      "episode": "TRIM",
+      "seed": 42
+     },
+     "candidate_source_sha256": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+     "argv": [
+      "scripts/diagnose_wp14_front.py",
+      "--source-run",
+      "artifacts/wp14/core_001/tlmpm_v7/T00_trim",
+      "--out",
+      "artifacts/wp14/trim_support_trace_001",
+      "--links",
+      "actual_support",
+      "--device",
+      "cuda:0"
+     ]
+    },
+    "config_sha256": "fd7e9a9103c0be7bbb614f2adb0e6a0e3f879957829cebd3280a851fbaf3da0e",
+    "packages": {
+     "newton": "1.6.1",
+     "warp-lang": "1.17.0",
+     "numpy": "2.5.4",
+     "scipy": "1.18.1",
+     "isaaclab": null,
+     "isaacsim": null,
+     "torch": null,
+     "usd-core": "26.8",
+     "mujoco": "3.12.0",
+     "mujoco-warp": "3.12.0",
+     "newton-usd-schemas": "0.6.0",
+     "ovrtx": null,
+     "ovstage": null
+    },
+    "source_checkouts": {
+     "newton": {
+      "sha": "713fecdc41caf0c9d726f5c016939f36e66e3dff",
+      "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty": false
+     },
+     "CRESSim-MPM": {
+      "sha": "09aa5009b8580351f516b6df7660e87821fc5eb6",
+      "tracked_patch_sha256": "869b881d787e2b096ca3cc52187de7912fb76abf8a4da1b4525cb9f0dd59df51",
+      "dirty": true
+     },
+     "IsaacLab": {
+      "sha": "e3f7d9ff1f5d7f8280de3ece9000b7117f66bcf4",
+      "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty": false
+     }
+    },
+    "local_code_sha256": {
+     "src/robotic_cutting_sim/__init__.py": "d13a603c011d7f243d6af56b8c13125b575eb95fca279b0ac989deb7d1bfd680",
+     "src/robotic_cutting_sim/affine_surface_controls.py": "e01e7629e37a989d755a4c012a11cd361d0bb8a6ebd79d9cd06d09a81d11e44a",
+     "src/robotic_cutting_sim/agent_api.py": "5d6d00e31b1fa464b95e1202b9e8e78b0363f1c694bbb0bed1272d80552f1dc2",
+     "src/robotic_cutting_sim/agentic_readiness.py": "dca43e1930180d7932ddb92c9377e8d0835fab65f95c921b40035d2c420484e4",
+     "src/robotic_cutting_sim/benchmark.py": "50cb7f75a62d2c8c40f2216c07b81cf43e931fb79168555207d05f54c272ae0c",
+     "src/robotic_cutting_sim/blade_probe.py": "ec54f0876db25544ae1d19572a5613218a58a946de76fe436ec981e9bd877df3",
+     "src/robotic_cutting_sim/camera.py": "73eee693a0256f61c8014775b273cce1adb460b1fbb9a7f768c9cf911603a82c",
+     "src/robotic_cutting_sim/camera_rig.py": "c7a00d3576bd8e6cee0336db331331c67aae8735ff74b58a242aed6818c50c7b",
+     "src/robotic_cutting_sim/cli.py": "1754869597e115cea78435bc1ce524bd41d58355a579dfa914abfa493e830891",
+     "src/robotic_cutting_sim/control.py": "040c567b29c4d912db6da2faa33ccd46777eadeaa78b5791115c10995ee51b71",
+     "src/robotic_cutting_sim/coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316",
+     "src/robotic_cutting_sim/cressim_probe.py": "4088237a93f47993675528bac32752745308c1212e92036cb0bfc84bd535b79a",
+     "src/robotic_cutting_sim/cut_aware_surface.py": "0ea8961015abee3daa34ae5ab4fcc71db5c63707886574d9d0ac1a834ad473c6",
+     "src/robotic_cutting_sim/cut_aware_surface_v2.py": "b078c2b456e1194dda03386ac532f374a88126b36a7be556beef935d94ab877d",
+     "src/robotic_cutting_sim/cut_debug_view.py": "82aa1a320bcc4af3b6445b995ace9ed9dfa28d0c252db69f061c2998744b48ee",
+     "src/robotic_cutting_sim/cut_diagnostics.py": "851d10d0257aedb1c11d85c646e90aed6f702887bc25aadd3270969575a33964",
+     "src/robotic_cutting_sim/cut_event_snapshots.py": "d7e273a51e34c05fab6b3428908cc5df00770de6e24dd2d09834d9945578abc3",
+     "src/robotic_cutting_sim/cut_events.py": "1b9bfd37c233be79e49b65101e3c360d7ebafff4100b03a2d1f3dfe5bb5ac49a",
+     "src/robotic_cutting_sim/cut_topology.py": "2beb01ee520f2d43e86a9291cfa04dd47a933be80f7c2e4d9b388bdbec67d4d4",
+     "src/robotic_cutting_sim/cutting_surface.py": "fa40f10c9f3da0626c83b0461afd3f3a2462cc5a12786197c8d223c2ec223838",
+     "src/robotic_cutting_sim/dataset.py": "c2a16a70b3ed9c542d86d0cacf7bf35cb00a56744b737aad45b061d978958d43",
+     "src/robotic_cutting_sim/demo_evaluation.py": "e1a52457c476cb0b48ad6235f70f02f106be720de7a119d59498577e8d045767",
+     "src/robotic_cutting_sim/demo_media.py": "95b3321d61be28b1d860e98127c0256f27e67b17c7d247eb4056a800ae7304c8",
+     "src/robotic_cutting_sim/deployment_doctor.py": "e7574fa514aad3b2049e226add9ba4edb36acb54be20292f7f5f634d9fdb41b8",
+     "src/robotic_cutting_sim/deployment_validation.py": "17b85c79069309360780ac81e8dffb67e4d783645fd93643e55da640fa0caa7a",
+     "src/robotic_cutting_sim/doctor.py": "15f048a658cd4f9d9b81df5c7b60331d813f99d129a66913e551ba778412d3d4",
+     "src/robotic_cutting_sim/env.py": "5fb16c8951d892493215d04cf80f4e15cbc0fb32e16c27ce80405be8c7d75b20",
+     "src/robotic_cutting_sim/env_demo.py": "9db7ca309128d51e51c0442e659ece100750b3bc4cf2874111f2d60ee934acad",
+     "src/robotic_cutting_sim/episode_lifecycle.py": "8ee2f60e23fbecc74ea0d2b4a63592403c387a3eb0076e4f7ac9670a6d366afc",
+     "src/robotic_cutting_sim/evaluation.py": "ba7b93eff2e39e835dce053de5558bee58025e5dc9885440a6035feefa4d8ca1",
+     "src/robotic_cutting_sim/exit_candidates.py": "c751aac92fe69cb30e3a61bdb9216856a8fdd8349db813f3cc7533559406e427",
+     "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+     "src/robotic_cutting_sim/fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+     "src/robotic_cutting_sim/flat_board_workcell.py": "6aac8196008cac86c90bc3aad206379f505cb2148583ad642bb4d8dafc84ddea",
+     "src/robotic_cutting_sim/food_materials.py": "2be0e4f76e6986a3eb4e85f023be26ad59575730374a4a88151843ff3985e28f",
+     "src/robotic_cutting_sim/generalization.py": "d4015fd6234b873b968b2487d5c7b0b7968bfa28a082f4ab64b2ac2357b2916a",
+     "src/robotic_cutting_sim/generalization_wp12.py": "dcf587c3e10234dbe099bd3298e2c7a88510050f8271e5d7df592537dc3faadb",
+     "src/robotic_cutting_sim/geometry.py": "291578b3dd04d5bef2defa63acb1ffef4ffd25c6bab18f99b0fe264af0d96a7a",
+     "src/robotic_cutting_sim/geometry_providers.py": "a6a178481b5f2fa0da592b2fd62e5637d5072ba63012abc28ee2b157e0ad1efe",
+     "src/robotic_cutting_sim/goal_planner.py": "7a49e255cedd1ab8bc0914df251f8c7cbe14db6dbb5145f7cd253964ca3e077d",
+     "src/robotic_cutting_sim/goals.py": "c2cb544a0dee129d71054c0df3266601fbc6e75b41e94c6a00a735812bba8602",
+     "src/robotic_cutting_sim/grasp_monitor.py": "5157475c51146ea2a813885ffd82ea32cd4a27f47babc4c9e9397de098b185a4",
+     "src/robotic_cutting_sim/gym_env.py": "8be1496b23a671f0adbfc742dae5b373610d29a83b297925750abd6a703bff13",
+     "src/robotic_cutting_sim/isaac_lab_env.py": "40b3abb16eec03cf6fa5098080c3172517612d68b25dcb2dea87c08e81ef77d5",
+     "src/robotic_cutting_sim/isaac_sim_runner.py": "3f929cda712c61b0ab2c6dd4db174bc0b097a1e004d23ef9c2d2d9e11dcfb925",
+     "src/robotic_cutting_sim/kinematic_env.py": "2ea54fd969c8a8bbcc7bab6d0e2e0a7bb30aec918b7fa74380fc870cce2f4c87",
+     "src/robotic_cutting_sim/law8_validation.py": "22f0040961776353aa09315f7c7b786b0f1bd2c3085c342bce963c709f036d64",
+     "src/robotic_cutting_sim/live_acceptance.py": "9dc2388d5462f074c78c5457cd3ee0f4fd3882f82d024dccf251a7c7547006c6",
+     "src/robotic_cutting_sim/live_camera.py": "ca1277d1f5cfe892efdfde8496d3d4de3ae5e0240258f8c0e3b40d85ffd00a67",
+     "src/robotic_cutting_sim/live_env.py": "7e8b52fe8c679054ae6daed008c19973bbbc6a54ea4984e8ceb89e2a9d53d776",
+     "src/robotic_cutting_sim/live_material.py": "946f714320fde42a752e97361f155054a081fcf4e41bfcd206ecd07f13fe081d",
+     "src/robotic_cutting_sim/material_config.py": "939c357cb846da97e4a018e25daa59a441f1a903340507372fbce9f8c10dd797",
+     "src/robotic_cutting_sim/materials_wp12.py": "1ae68be6dbc856f0c6d4b78f96b19f2d1f716192d6b124b77d080e3c647de5a3",
+     "src/robotic_cutting_sim/motion_preflight.py": "eb294cb5d140b44f588a9f58a1cc7665e02c7ff509d6069bbe5c80ff187dbe34",
+     "src/robotic_cutting_sim/multi_cut_evaluation.py": "260c68ba5d503bae70eef77598fa9f723ce745ad2b25701387e276f588b3d5b0",
+     "src/robotic_cutting_sim/native_camera_geometry.py": "89bad438ba42125ac982c3cab902eefa00de3e505628693bbe81dac940d9576b",
+     "src/robotic_cutting_sim/native_fixture.py": "642335b9ac5769140fb06b2fdc3331cf032d659c80c9d32ce3dd8a76847f02bd",
+     "src/robotic_cutting_sim/native_tool.py": "4a17cb5eebbdab9cc27b5e49ff042071dddadba1a20e1ae3fb4ea2f3e87a6e93",
+     "src/robotic_cutting_sim/newton_probe.py": "ab0bb411cac19f638334b382b78e7e2114d0911489ff3b176bc323273dc7e3b2",
+     "src/robotic_cutting_sim/newton_tool.py": "695708a2619bf0da072d5076a1c97b052fdfd153f2a1f634ffe2641b0c161ed3",
+     "src/robotic_cutting_sim/packed_solvers.py": "96df71d3355255a4c5d337a25066407e2e8fdfab851b33c5bb97f1548b7602ac",
+     "src/robotic_cutting_sim/pad_contact.py": "467625a1e28e5d218f79fec005b9182bd4e1592802a306ce70afd93c4c01c758",
+     "src/robotic_cutting_sim/perception_relocate.py": "d23b8cc1f34ec022886117058d753acef86fc9b4653bf6c76ba19fa95f8fb93a",
+     "src/robotic_cutting_sim/physical_contacts.py": "1b0a471c0c8c65e3b6f6e2114d429593eaa15e8d143cd10e59103f352cfbed85",
+     "src/robotic_cutting_sim/physical_tool.py": "1110fb1f000ef4778a40adf220f6af733c7cd97258c8cc6aca45e7398ab79dc4",
+     "src/robotic_cutting_sim/policies.py": "f6036bee355fd0d4f88266cb4774ff628fe9039e00140292b8039187efb802cd",
+     "src/robotic_cutting_sim/policy_config.py": "0cd3e40a56a02c38ca3f7e08dcece23763de7de181bd776fb17396f8c061ace2",
+     "src/robotic_cutting_sim/policy_env.py": "cc788369a9cf7b62b569f1a944847dbec54cf3afc5460afb616666ca3695c32b",
+     "src/robotic_cutting_sim/policy_examples.py": "cbb3d0cf80f9d459399fb4d5c87ac34413d07c8b0472ae22d7278053995b1e75",
+     "src/robotic_cutting_sim/presentation_camera.py": "a3b5a975983ca56ff0d1837482ad3696af2568d264decedd6df66eb6f9fb62d6",
+     "src/robotic_cutting_sim/preview.py": "a7afba89579420bfbb5edabb53a05bb7023a36c080dd5913c4549ad86833b3e1",
+     "src/robotic_cutting_sim/probe_kernels.py": "1c0eb76352c680fec41e4ba60092da63cbf7a03c26cf11debfdd4c7806d87081",
+     "src/robotic_cutting_sim/profiling.py": "76f3d8d60c846bafbf1eac4d052e167c2ce8c8de5c1e91694a4905350fbb9c1e",
+     "src/robotic_cutting_sim/recording.py": "c95e062f31755cb940d9025d4b3dd45812e7b1d03bff9e0ede8e7567697c2e1a",
+     "src/robotic_cutting_sim/remote_control.py": "366a8cbc3976fd2f2c91678207172134d5fcdc213cb863aa732f1b6e30c7b31c",
+     "src/robotic_cutting_sim/remote_runtime.py": "cbebd47ae3ace40c75b62a793b50a23d132edca16b2f6f9bc87e93c3e5516dcc",
+     "src/robotic_cutting_sim/remote_viewer.py": "664084868d17f470fc15073bdb57acb346e0627834cd2789818783565b2b4789",
+     "src/robotic_cutting_sim/represented_target.py": "6ebcb3adb49e768e35a457957b44c491a138f290893aa1b6ddbcf734523d76c0",
+     "src/robotic_cutting_sim/research_env.py": "40691ec4ba3c184c9ff7f1301d2590a4971b63f35cc4244d50d74cdc562f738e",
+     "src/robotic_cutting_sim/research_profiles.py": "25a42d43de8a426204274bf16b6db0def4e8ca45fead8e482673c25f4b58ca55",
+     "src/robotic_cutting_sim/reward.py": "7d5e18670488d909635bb7a5656f9f95806d263841e653c8f701d0b46725e557",
+     "src/robotic_cutting_sim/robot.py": "03e7078727f3ce111c927163547ee0462458b83f9cc568df2f0f714fa8c9a4b2",
+     "src/robotic_cutting_sim/root_cause_diagnostics.py": "fd6e53544c5e91b442f886e1bd3d482223b241c408d84e503db497f4a091d0aa",
+     "src/robotic_cutting_sim/root_cause_recorders.py": "f5added0e3a7402f83d55e50d659c0298ef77f9e924fbfa153ceb57e8803f048",
+     "src/robotic_cutting_sim/rtx_outputs.py": "b9a3d38286d23132676c3be3e2ab5386bf674c0c36da10ebcfbee4bd24b75423",
+     "src/robotic_cutting_sim/runtime_profiles.py": "eaa116ce6012acae4f0704ee808066452159edab3a69edb10cb2afe761a8bc31",
+     "src/robotic_cutting_sim/scene.py": "90b3bc8fe13d343fac256b485deaf9fb5b59430b5d6aa5b4857f2e8e4901e03a",
+     "src/robotic_cutting_sim/scene_config.py": "9e4d8bb9e2ba67e320177999e87613b8cbd06ea3a67a34937afebcf965cdd928",
+     "src/robotic_cutting_sim/scene_frames.py": "6e008128a504882cf4aaf826a4ad507ab28c2032f536226c05a849fd4cc7fd8b",
+     "src/robotic_cutting_sim/scene_validation.py": "6eb54ec2229a316ef4f9b9b928450e673b3642cbd542eaf0cf7dd3df0995fcbe",
+     "src/robotic_cutting_sim/sensor_contract.py": "b976a9c670855c7c8220251f11444576ddd100293e47e3656e7cbbc0ab0aab0a",
+     "src/robotic_cutting_sim/sequence_blade_probe.py": "8cbb144536cc02ca455673b53095830e0962440189472eb529de16ec5e327312",
+     "src/robotic_cutting_sim/single_view_controls.py": "f0dfeefdb78866ef35f1116d97b295aaca265d85fbbf22a4423ef4d2487d3480",
+     "src/robotic_cutting_sim/single_view_registration.py": "4ac9ec2a4f17b98a35698f37db7b32e4000414c489f8da9f3cc4ace422cd67df",
+     "src/robotic_cutting_sim/skim_orientation.py": "162c30109db2a5c6c5051c386cdd92717a2b572e6054e9fe90f7c1f7c0a97e16",
+     "src/robotic_cutting_sim/surface_attribution_v1.py": "9a9851e5178d76ce031b34b7e5e9b6ac2df9ddc62eb66560041c71ca7c43a534",
+     "src/robotic_cutting_sim/surface_controls.py": "f4ed94e8e4ef1cddb741fbcefaf8bead9b2b3751e76ff851af3b849b90e8b9a6",
+     "src/robotic_cutting_sim/surface_distance.py": "2fc4908b3dbccacb053268da17f8a5570c18372e9ef90dbfdb51f8d13cb58248",
+     "src/robotic_cutting_sim/surface_evaluation.py": "018b035d3976b593eff4fc57323e1223da38d31391bc95ef6202ebf9b979fb59",
+     "src/robotic_cutting_sim/surface_metrics_v1.py": "639a6ee92d225622e2c8769aa28fe396531913e335053d369151d47b7a756f64",
+     "src/robotic_cutting_sim/surface_metrics_v2.py": "1c9ec9072fa905e36502aef35d9f90a812ea3f0d9f01b9f3cd2204216cf6e209",
+     "src/robotic_cutting_sim/surface_runtime.py": "166cc3d086882d192ea48122fd36dfb5be745fd05725f90b8f83c6298313e8f9",
+     "src/robotic_cutting_sim/task_randomization.py": "01e1fdce6552d9c01a0c5a002f272e86c20d840079cba49c5d50093205f12f48",
+     "src/robotic_cutting_sim/task_scenarios.py": "f71bfa2eaaa0212ee71a40e696b7a948e58c817aaaf2ef1274751e1ad9a572ad",
+     "src/robotic_cutting_sim/tasks.py": "2977ab4bd325c6085f21f9b3be858e963c5017ec43b7b350a6452383578cdda5",
+     "src/robotic_cutting_sim/tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+     "src/robotic_cutting_sim/tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+     "src/robotic_cutting_sim/tlmpm_v3.py": "9073036b0a86076ae44ad268a91427a4ce20c32133f8759d67595bd4836a6b1a",
+     "src/robotic_cutting_sim/tlmpm_v4.py": "cb8985ebbfe530be741025f009400622f6b72cdceacf239f952612c91c2eaea9",
+     "src/robotic_cutting_sim/tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "src/robotic_cutting_sim/tlmpm_v5_counterfactual.py": "c24f8f914781bf26063d8de886d2746305d85e8f1c37aca00ff467d244aaac43",
+     "src/robotic_cutting_sim/tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "src/robotic_cutting_sim/tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+     "src/robotic_cutting_sim/tool_compatibility.py": "abcb657d00f657795ba7f1a82d12f52895d12aa01b20643fc6a34a06303dfa8f",
+     "src/robotic_cutting_sim/tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7",
+     "src/robotic_cutting_sim/trajectory.py": "c780ed6f5503f0cf50a90e462b95715b48bab4834493e0352b5a25d8f93d9d88",
+     "src/robotic_cutting_sim/usd_surface_bridge.py": "a33b1859c30d8aca403e0f1debac505c5e0899d5195e057c6caa99dcff315f86",
+     "src/robotic_cutting_sim/visual_geometry.py": "828c5ec8c270e00439d89a8080f14528c61b724e29f3bc59d4f7da243b96cb85",
+     "src/robotic_cutting_sim/workcell.py": "e16cbb3dd66521e7b0121f37e6bde4dd8d3086593c1df9f8f532314591de334e",
+     "src/robotic_cutting_sim/workpieces.py": "ca79e00857b77b4495f510d817c8c581a12ea30a54187c5077db96227d173e6f",
+     "src/robotic_cutting_sim/wrist_camera_audit.py": "d98c91a89a97f85d237cf098f20cf29c1594713bdcfa76e6c9e789a2b7af0c7c",
+     "src/robotic_cutting_sim/wrist_camera_clearance.py": "22e982b7b0cfd3613c5e12c3e01863b9001ccf78846155391d23e562078cd0ae",
+     "src/robotic_cutting_sim/wrist_depth_survey.py": "761833a520dea07491040d7744a1a8e91cbe86f4d29f19e5bef7d6e59d709f4a"
+    },
+    "physics_proven": false,
+    "vision_proven": false
+   },
+   "original_selection_run": "artifacts/wp14/core_001/tlmpm_v7/T00_trim",
+   "selected_particles": 216,
+   "link_selection": "actual_support",
+   "counters": {
+    "armed_substeps": {
+     "particles": 216,
+     "total_substeps_or_events": 3801600
+    },
+    "leading_crossings": {
+     "particles": 216,
+     "total_substeps_or_events": 217
+    },
+    "finite_crossings": {
+     "particles": 216,
+     "total_substeps_or_events": 217
+    },
+    "bevel_residence_substeps": {
+     "particles": 216,
+     "total_substeps_or_events": 296807
+    },
+    "engaged_bevel_substeps": {
+     "particles": 0,
+     "total_substeps_or_events": 0
+    },
+    "particle_work_substeps": {
+     "particles": 0,
+     "total_substeps_or_events": 0
+    },
+    "reached_but_no_stroke": {
+     "particles": 216,
+     "total_substeps_or_events": 393051
+    },
+    "reached_but_outside_bevel": {
+     "particles": 216,
+     "total_substeps_or_events": 2853916
+    },
+    "link_plane_intersection_substeps": {
+     "particles": 216,
+     "total_substeps_or_events": 3801600
+    },
+    "finite_link_front_crossings": {
+     "particles": 216,
+     "total_substeps_or_events": 216
+    },
+    "engaged_finite_link_front_crossings": {
+     "particles": 152,
+     "total_substeps_or_events": 152
+    }
+   },
+   "samples": {
+    "first_crossing": {
+     "particles": 216,
+     "new_forward_m": [
+      -2.4605542421340942e-06,
+      0.0
+     ],
+     "swept_side_m": [
+      -0.003809317946434021,
+      -0.000806223601102829
+     ],
+     "board_gap_after_m": [
+      0.015940681099891663,
+      0.018943775445222855
+     ],
+     "substep": [
+      42652.0,
+      43454.0
+     ]
+    },
+    "first_particle_work": {
+     "particles": 0
+    },
+    "closest_front": {
+     "particles": 216,
+     "new_forward_m": [
+      -1.2274831533432007e-06,
+      1.2293457984924316e-06
+     ],
+     "swept_side_m": [
+      -0.003809317946434021,
+      -0.000806223601102829
+     ],
+     "board_gap_after_m": [
+      0.015940681099891663,
+      0.018943775445222855
+     ],
+     "substep": [
+      42652.0,
+      43453.0
+     ]
+    },
+    "last_bevel": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.0033830273896455765,
+      -0.003380637615919113
+     ],
+     "swept_side_m": [
+      -0.003809317946434021,
+      -0.000806223601102829
+     ],
+     "board_gap_after_m": [
+      0.015940681099891663,
+      0.018943775445222855
+     ],
+     "substep": [
+      44025.0,
+      44827.0
+     ]
+    },
+    "first_reached": {
+     "particles": 216,
+     "new_forward_m": [
+      -2.4605542421340942e-06,
+      0.0
+     ],
+     "swept_side_m": [
+      -0.003809317946434021,
+      -0.000806223601102829
+     ],
+     "board_gap_after_m": [
+      0.015940681099891663,
+      0.018943775445222855
+     ],
+     "substep": [
+      42652.0,
+      43454.0
+     ]
+    },
+    "first_assigned": {
+     "particles": 0
+    },
+    "deepest_board": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.036468058824539185,
+      0.008501898497343063
+     ],
+     "swept_side_m": [
+      -0.0038252249360084534,
+      -0.0008093174546957016
+     ],
+     "board_gap_after_m": [
+      0.01592477411031723,
+      0.018940681591629982
+     ],
+     "substep": [
+      40000.0,
+      57599.0
+     ]
+    },
+    "closest_engaged_front": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.005370541475713253,
+      -0.003397020511329174
+     ],
+     "swept_side_m": [
+      -0.003809317946434021,
+      -0.000806223601102829
+     ],
+     "board_gap_after_m": [
+      0.015940681099891663,
+      0.018943775445222855
+     ],
+     "substep": [
+      44833.0,
+      44833.0
+     ]
+    },
+    "first_finite_link_crossing": {
+     "particles": 216,
+     "new_forward_m": [
+      -0.005934314802289009,
+      -0.003077130764722824
+     ],
+     "swept_side_m": [
+      -0.0038063470274209976,
+      -0.000787464901804924
+     ],
+     "board_gap_after_m": [
+      0.015943652018904686,
+      0.01896253414452076
+     ],
+     "substep": [
+      44555.0,
+      45282.0
+     ]
+    },
+    "first_engaged_finite_link_crossing": {
+     "particles": 152,
+     "new_forward_m": [
+      -0.005934314802289009,
+      -0.003688654862344265
+     ],
+     "swept_side_m": [
+      -0.0038063470274209976,
+      -0.000787464901804924
+     ],
+     "board_gap_after_m": [
+      0.015943652018904686,
+      0.01896253414452076
+     ],
+     "substep": [
+      44852.0,
+      45282.0
+     ]
+    }
+   },
+   "bevel_residence_s_range": [
+    0.1374,
+    0.1375
+   ],
+   "final_measured_class": "execution_failure",
+   "scope": "Actual fresh substeps. Read-only selected particle/nearest vertical link observations; counter times include the full episode. Link test uses old/new swept-plane intersection, not a fracture criterion. Impulse is all contacts combined; consumed work is particle cutting work. No historical event is inferred."
+  }
+ ],
+ "candidate": [
+  {
+   "case": "T00_trim",
+   "solver": "tlmpm_v7_1",
+   "class": "execution_failure",
+   "source_summary": "artifacts/wp14/candidate_001/tlmpm_v7_1/T00_trim/summary.json",
+   "summary_sha256": "c8bba7e6f7162c1ef52ddce1c880c48853a5e5a0267f0a80a175088c9beda4b4",
+   "direct_code0_bridges": 144,
+   "solver_receipt": {
+    "solver": "tlmpm_v7_1",
+    "status": "EXPERIMENTAL_NOT_ACCEPTED",
+    "position_update": "grid_musl_v1",
+    "cut_front": "finite_support_interface_v1",
+    "diagnostic_accumulation": "float64",
+    "contact": "velocity_projection_tau_v1",
+    "contact_relaxation_s": 0.0002,
+    "work_bevel_depth_m": 0.0033830313477665186,
+    "edge_release_depth_m": 0.0005,
+    "edge_release_half_thickness_m": 0.00025,
+    "source_sha256": {
+     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    },
+    "shared_base_solver": "tlmpm_v7",
+    "candidate_source_sha256": "48c12f4be494478d7627533eb694898ea12cd7e68e3e6f5df2f88076a4453a9b",
+    "link_completion_counts": {
+     "finite_link_events": 304,
+     "completed_side_digits": 72
+    },
+    "scope": "Actual reference-node support links; translational sweep only. Same v7 contact and x/F."
+   },
+   "metrics": {
+    "consistency": {
+     "0-1s": {
+      "n": 14802,
+      "p50": 0.0011253130569639338,
+      "p99": 0.2461301637515205,
+      "max": 1.8648214493154582
+     },
+     "1-3s": {
+      "n": 24768,
+      "p50": 0.0012476473591644887,
+      "p99": 0.12672594309663868,
+      "max": 0.8918645119890591
+     },
+     "3-6s": {
+      "n": 43438,
+      "p50": 0.0009752710566599981,
+      "p99": 0.030210227713832704,
+      "max": 0.18067443138184372
+     },
+     ">6s": {
+      "n": 199020,
+      "p50": 0.0007864153268703019,
+      "p99": 0.02011442042632421,
+      "max": 0.11928331841846114
+     },
+     "first_to_far_p99_ratio": 12.23650289368538
+    },
+    "locus_source": "link_midpoint_fallback",
+    "roughness": [
+     {
+      "cut": 0,
+      "side": 1,
+      "patch_roughness": {
+       "count": 302,
+       "p50": 1.9220365868996363e-05,
+       "p95": 4.3580717921186644e-05,
+       "max": 4.778820093527839e-05,
+       "mean": 2.1342615806009877e-05,
+       "quadratic_mean": 2.408192936787985e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 316,
+       "grouped": true
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "patch_roughness": {
+       "count": 300,
+       "p50": 4.1750717468399184e-05,
+       "p95": 0.00010088266939797631,
+       "max": 0.0001613402766836258,
+       "mean": 4.949167619096454e-05,
+       "quadratic_mean": 5.6901062576513974e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 316,
+       "grouped": true
+      }
+     }
+    ],
+    "mechanical_components": 1,
+    "component_masses_kg": [
+     0.14556599999993808
+    ],
+    "mass_error_fraction": 4.253925312124267e-13,
+    "minimum_final_det_F": 0.8849530816078186,
+    "minimum_local_z_m": 0.0003903979086317122,
+    "finite_final": true,
+    "slot_diagnostics": {
+     "code_encoding": "packed2",
+     "max_cuts": 1,
+     "slots_per_node": 8,
+     "max_occupied_slots": 3,
+     "overflow_entries": 0
+    },
+    "contact": {
+     "fixture_overlap_max_m": 0.00046953075798228383,
+     "blade_overlap_max_m": 0.0001514364266768098,
+     "tool_work_j": 0.0017200115190227905,
+     "contact_steps": 140
+    },
+    "candidate_contact_partitions": {
+     "values": {
+      "blade_normal_impulse_Ns": 0.079688818565943,
+      "blade_tangent_impulse_Ns": 0.01283925740255437,
+      "bevel_impulse_norm_sum_Ns": 0.048865212132908536,
+      "flank_impulse_norm_sum_Ns": 0.032168395780689356,
+      "tool_work_J": 0.0017200113815762643,
+      "consumed_cutting_work_J": 3.3434195155597247e-06,
+      "fixture_normal_impulse_Ns": 16.348230783470072,
+      "fixture_friction_impulse_Ns": 0.04713677926079814,
+      "fixture_pretransfer_energy_change_J": 0.16943063502497133,
+      "blade_pretransfer_energy_change_J": 0.006809110876557868,
+      "fixture_penetration_max_m": 0.00046953075798228383,
+      "blade_penetration_max_m": 0.0001514364266768098
+     },
+     "scope": "Cumulative candidate contacts; impulse norms are not vector net impulses. Energy is the particle impulse expression before grid transfer, not total-system energy. Flank/edge denotes physical bevel-depth partition; material contacts excluded."
+    }
+   },
+   "runtime": {
+    "reset_overhead_s": 10.231365567000466,
+    "episode_wall_s": 425.5627502570005,
+    "evaluation_wall_s": 2.622735281000132,
+    "simulated_s": 11.5,
+    "simulation_throughput_sim_s_per_wall_s": 0.027023041826511048,
+    "surface_reconstruction_s": null,
+    "gpu_process_memory_mib": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 1008.0
+    }
+   },
+   "scope": "Exploratory candidate on GPU 0; original formal pairs use GPU 1. Not an isolated cross-GPU quality attribution."
+  },
+  {
+   "case": "C00_cut",
+   "solver": "tlmpm_v7_1",
+   "class": "task_success",
+   "source_summary": "artifacts/wp14/candidate_001/tlmpm_v7_1/C00_cut/summary.json",
+   "summary_sha256": "35cc851922f8f3b6cba2841088dd80227dc4830e0d0f3caaa6e60700cd0ecb02",
+   "direct_code0_bridges": 0,
+   "solver_receipt": {
+    "solver": "tlmpm_v7_1",
+    "status": "EXPERIMENTAL_NOT_ACCEPTED",
+    "position_update": "grid_musl_v1",
+    "cut_front": "finite_support_interface_v1",
+    "diagnostic_accumulation": "float64",
+    "contact": "velocity_projection_tau_v1",
+    "contact_relaxation_s": 0.0002,
+    "work_bevel_depth_m": 0.0033830313477665186,
+    "edge_release_depth_m": 0.0005,
+    "edge_release_half_thickness_m": 0.00025,
+    "source_sha256": {
+     "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+     "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+     "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    },
+    "shared_base_solver": "tlmpm_v7",
+    "candidate_source_sha256": "48c12f4be494478d7627533eb694898ea12cd7e68e3e6f5df2f88076a4453a9b",
+    "link_completion_counts": {
+     "finite_link_events": 240,
+     "completed_side_digits": 0
+    },
+    "scope": "Actual reference-node support links; translational sweep only. Same v7 contact and x/F."
+   },
+   "metrics": {
+    "consistency": {
+     "0-1s": {
+      "n": 2300,
+      "p50": 0.015239497742792867,
+      "p99": 0.31017546515166766,
+      "max": 0.31261579218565905
+     },
+     "1-3s": {
+      "n": 7000,
+      "p50": 0.007597288924878992,
+      "p99": 0.1990378347811693,
+      "max": 0.20574230053043266
+     },
+     "3-6s": {
+      "n": 10500,
+      "p50": 0.0008651799972875121,
+      "p99": 0.03718244133939896,
+      "max": 0.04098942870845987
+     },
+     ">6s": {
+      "n": 259000,
+      "p50": 0.000284439523699269,
+      "p99": 0.0028357358391755353,
+      "max": 0.024987804193007855
+     },
+     "first_to_far_p99_ratio": 109.38094475042794
+    },
+    "locus_source": "link_midpoint_fallback",
+    "roughness": [
+     {
+      "cut": 0,
+      "side": 1,
+      "patch_roughness": {
+       "count": 598,
+       "p50": 4.2945236762509124e-05,
+       "p95": 6.377647658668234e-05,
+       "max": 7.660805774604977e-05,
+       "mean": 3.8273639286013914e-05,
+       "quadratic_mean": 4.25416277618709e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": true
+      }
+     },
+     {
+      "cut": 0,
+      "side": 2,
+      "patch_roughness": {
+       "count": 598,
+       "p50": 4.293089945360177e-05,
+       "p95": 6.336896880417974e-05,
+       "max": 7.62737951293945e-05,
+       "mean": 3.810429771181549e-05,
+       "quadratic_mean": 4.240092196066389e-05,
+       "radius_m": 0.002,
+       "min_points": 6,
+       "centres_sampled": 600,
+       "grouped": true
+      }
+     }
+    ],
+    "mechanical_components": 2,
+    "component_masses_kg": [
+     0.07200000000005478,
+     0.07200000000005478
+    ],
+    "mass_error_fraction": 7.611581118480458e-13,
+    "minimum_final_det_F": 0.9653427600860596,
+    "minimum_local_z_m": 0.00042366620618849993,
+    "finite_final": true,
+    "slot_diagnostics": {
+     "code_encoding": "packed2",
+     "max_cuts": 4,
+     "slots_per_node": 8,
+     "max_occupied_slots": 3,
+     "overflow_entries": 0
+    },
+    "contact": {
+     "fixture_overlap_max_m": 2.9173505026847124e-05,
+     "blade_overlap_max_m": 0.00012441285070963204,
+     "tool_work_j": 0.0013685250829063023,
+     "contact_steps": 112
+    },
+    "candidate_contact_partitions": {
+     "values": {
+      "blade_normal_impulse_Ns": 0.7827673257873491,
+      "blade_tangent_impulse_Ns": 0.03738759191509741,
+      "bevel_impulse_norm_sum_Ns": 0.48829509627087486,
+      "flank_impulse_norm_sum_Ns": 0.2962179040099163,
+      "tool_work_J": 0.0013685271855597904,
+      "consumed_cutting_work_J": 1.2749993802929667e-05,
+      "fixture_normal_impulse_Ns": 19.91599872713683,
+      "fixture_friction_impulse_Ns": 0.096124442581542,
+      "fixture_pretransfer_energy_change_J": 0.22133400153220112,
+      "blade_pretransfer_energy_change_J": 0.10916770514353782,
+      "fixture_penetration_max_m": 2.9173505026847124e-05,
+      "blade_penetration_max_m": 0.00012441285070963204
+     },
+     "scope": "Cumulative candidate contacts; impulse norms are not vector net impulses. Energy is the particle impulse expression before grid transfer, not total-system energy. Flank/edge denotes physical bevel-depth partition; material contacts excluded."
+    }
+   },
+   "runtime": {
+    "reset_overhead_s": 0.6133937419999711,
+    "episode_wall_s": 188.32213989999946,
+    "evaluation_wall_s": 1.5719504290009354,
+    "simulated_s": 14.0,
+    "simulation_throughput_sim_s_per_wall_s": 0.0743407015629395,
+    "surface_reconstruction_s": null,
+    "gpu_process_memory_mib": {
+     "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad": 944.0
+    }
+   },
+   "scope": "Exploratory candidate on GPU 0; original formal pairs use GPU 1. Not an isolated cross-GPU quality attribution."
+  }
+ ],
+ "decision": "TRIM remains unsupported by the CUT profile. One finite candidate retained as experimental; no permissive correction or replacement of original v7 follows its failed primary TRIM.",
+ "scope": "All diagnostics observe fresh actual substeps. No historical bridge is retrospectively assigned a crossing. Selected bridge particles are above the board; this does not explain or clear all other material-board contacts."
+}

@@ -90,7 +90,8 @@ def validate_task(scene, goal, planner, spacing):
         errors.append('only one straight sever is supported by this profile')
     else:
         plane = goal['planes'][0]; normal = plane['normal_local']
-        if not any(np.allclose(normal, n, atol=1.e-12, rtol=0) for n in ([1.,0.,0.],[-1.,0.,0.])):
+        normals=[{'+x': [1.,0.,0.], '-x': [-1.,0.,0.]}[sign] for sign in env['normal_local']]
+        if not any(np.allclose(normal,n,atol=1.e-12,rtol=0) for n in normals):
             errors.append('oblique normal outside profile')
         if plane.get('approach_local') is not None:
             errors.append('custom approach outside profile')

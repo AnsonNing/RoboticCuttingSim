@@ -23,6 +23,10 @@ def main():
     subprocess.run(command, check=True)
     from robotic_cutting_sim import surface_metrics_v1 as S
     data = deepcopy(json.loads((a.out/'summary.json').read_text()))
+    if data['case']['episode']=='PARTIAL':
+        for face in data['physical_faces']['rows']:
+            face['whole_face_plane_residual_m']={'status':'NOT_APPLICABLE',
+                'reason':'Partial slit with an intact ligament is not a complete near-planar severed face.'}
     for row in data['profiles']:
         mesh = a.out/(row['profile']+'.npz')
         z = np.load(mesh)

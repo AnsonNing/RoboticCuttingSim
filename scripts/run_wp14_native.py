@@ -48,10 +48,13 @@ def main():
             write_new(inputs/'scene.json', info['scene'])
             write_new(inputs/'goal.json', info['goal'])
             options = task.controller['planner']
+            from robotic_cutting_sim.goal_planner import plan_with_report
+            _,plan_report=plan_with_report(task.scene,task.goal,task.tool_profile,options)
             steps = round(task.duration_s/task.control_dt_s)
             write_new(inputs/'prepare.json', {'episode': row['episode'], 'sample_id': name,
                 'live_task_id': task.task_id, 'planner_overrides': options, 'duration_s': task.duration_s,
                 'steps': steps, 'history_stride': max(5, math.ceil(steps/40)), 'record_every': 10,
+                'plan_report_operations':plan_report['operations'],'live_config_sha256':task.config_sha256,
                 'spec': {'id': row['episode']}, 'wp14_case': row, 'solver_module': solver})
             command = [str(ROOT/'.deps/isaacsim-venv/bin/python'), 'scripts/run_wp10_live.py',
                        '--runtime', 'isaac_sim', '--scene', str(inputs/'scene.json'), '--goal', str(inputs/'goal.json'),

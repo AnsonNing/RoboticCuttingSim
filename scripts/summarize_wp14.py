@@ -72,12 +72,16 @@ def replay(task, actions):
             mismatches.append({'step': r['step'], 'actual': [r['phase'], r['cut_enabled'], r['cut_index']],
                                'expected': [policy.phase, action['cut_enabled'], expected_cut]})
         group = phase_rows.setdefault(r['phase'], {'steps': 0, 'min_world_xyz_m': actual[:3].copy(),
-            'max_world_xyz_m': actual[:3].copy(), 'speed_max_m_s': 0., 'world_xyzw': actual[3:].tolist(),
+            'max_world_xyz_m': actual[:3].copy(), 'speed_max_m_s': 0., 'first_world_xyzw': actual[3:].tolist(),
+            'last_world_xyzw': actual[3:].tolist(), 'angular_speed_max_rad_s':0.,
             'cut_ids': set(), 'cut_enabled': set()})
         group['steps'] += 1
         group['min_world_xyz_m'] = np.minimum(group['min_world_xyz_m'], actual[:3])
         group['max_world_xyz_m'] = np.maximum(group['max_world_xyz_m'], actual[:3])
         group['speed_max_m_s'] = max(group['speed_max_m_s'], float(np.linalg.norm(actual[:3]-edge[:3])/(r['time_s']-previous_time)))
+        rotation=(Rotation.from_quat(actual[3:])*Rotation.from_quat(edge[3:]).inv()).magnitude()
+        group['angular_speed_max_rad_s']=max(group['angular_speed_max_rad_s'],float(rotation/(r['time_s']-previous_time)))
+        group['last_world_xyzw']=actual[3:].tolist()
         group['cut_ids'].add(r['cut_index']); group['cut_enabled'].add(r['cut_enabled'])
         edge, commanded = actual, actual
         previous_time = r['time_s']
@@ -98,10 +102,11 @@ def main():
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args()
     protocol = json.loads(a.protocol.read_text())
+    solvers=protocol['arms'] if 'arms' in protocol else [protocol['solver']]
     rows, pairs, pending = [], [], []
     for case_path in protocol['rows']:
         case = json.loads(Path(case_path).read_text()); arms = {}
-        for solver in protocol['arms']:
+        for solver in solvers:
             out = a.root/solver/case['id']
             if not (out/'summary.json').exists():
                 pending.append({'case': case['id'], 'solver': solver, 'status': 'NOT_RUN_OR_INCOMPLETE'})
@@ -125,6 +130,7 @@ def main():
                 original_class=summary['class'], original_reason=result['class_reason'],
                 partial_control=summary.get('partial_cut_rule'), execution_integrity=audit,
                 config=manifest['config'], metrics=summary['metrics'], sampled_stability=result['stability'],
+                resolved_material_from_recorded_scene=asdict(task.material),
                 solver_receipt=summary.get('solver_receipt'), supplemental=supplemental(out/'final_state.npz', case, solver),
                 energy_momentum=energy_momentum(out/'final_state.npz',task,summary['metrics']['contact']['tool_work_j']),
                 roughness_rms_m=roughness(summary), control_path_sha256=digest([{k:r[k] for k in fields} for r in actions]),
@@ -134,7 +140,7 @@ def main():
                 evidence={str(out/n):G.sha(out/n) for n in ('summary.json','manifest.json','result.json','actions.jsonl','final_state.npz')})
             arms[solver] = row; rows.append(row)
         if len(arms) == 2:
-            b, c = [arms[s] for s in protocol['arms']]
+            b, c = [arms[s] for s in solvers]
             same_input = []
             for r in (b,c):
                 config = r['config']
