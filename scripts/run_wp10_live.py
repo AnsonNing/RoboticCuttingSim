@@ -526,7 +526,7 @@ def main(argv=None):
     p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
     p.add_argument('--gym', action='store_true')
     p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
-    p.add_argument('--camera-rig-profile', choices=('wrist_camera_rig_v5','wrist_camera_rig_v6','wrist_camera_rig_v7'),
+    p.add_argument('--camera-rig-profile', choices=('wrist_camera_rig_v5','wrist_camera_rig_v6','wrist_camera_rig_v7','wrist_camera_rig_v8'),
                    default='wrist_camera_rig_v5', help='Versioned fixed Global view; wrist calibration unchanged')
     p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2', 'blademaster_workcell_v1'))
     p.add_argument('--overview-camera', action='store_true',

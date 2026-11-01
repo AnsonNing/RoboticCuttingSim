@@ -451,7 +451,7 @@ class PolicyReadyEnv:
         if self.runtime_source == "kinematic_ideal_tracking":
             config = backend.config
             changes = dict(task_id=task.task_id, max_cuts=int(task.max_cuts), cutting_law=task.cutting_law,
-                           solver=task.solver_module if task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1") else None,
+                           solver=task.solver_module if task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1", "tlmpm_v7_2") else None,
                            slots_per_node=task.scene["solver"].get("slots_per_node"))
             if changes["solver"] is None:
                 changes["cut_events"] = None

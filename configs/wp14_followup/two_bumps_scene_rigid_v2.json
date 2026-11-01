@@ -1,0 +1,65 @@
+{
+  "schema": "rcs_scene_v1",
+  "scene_id": "two_distinct_bumps_v1",
+  "description": "Same frozen continuous two-bump geometry/material. Explicit bounded rigid-sweep v7_2 research candidate, not the original v7 CUT profile.",
+  "workpiece": {
+    "base_box_m": {
+      "length_m": 0.16,
+      "width_m": 0.032,
+      "height_m": 0.02
+    },
+    "protrusions": [
+      {
+        "id": "A_dome",
+        "family": "dome",
+        "x_m": -0.03,
+        "y_m": -0.001,
+        "radius_x_m": 0.013,
+        "radius_y_m": 0.011,
+        "height_m": 0.009,
+        "yaw_deg": 0.0,
+        "peak_offset": 0.0
+      },
+      {
+        "id": "B_irregular",
+        "family": "irregular",
+        "x_m": 0.028,
+        "y_m": 0.001,
+        "radius_x_m": 0.009,
+        "radius_y_m": 0.007,
+        "height_m": 0.0055,
+        "yaw_deg": 25.0,
+        "peak_offset": 0.35
+      }
+    ],
+    "world_pose": {
+      "translation_m": [
+        0.0,
+        0.0,
+        0.01
+      ],
+      "yaw_deg": 0.0
+    },
+    "material_profile": "cutting_tasks_v1",
+    "geometry_provider": {
+      "id": "heightfield_v2"
+    }
+  },
+  "supports": {
+    "kind": "flat_board",
+    "workcell": {
+      "profile": "blade_master_flat_board_v1"
+    }
+  },
+  "tool": {
+    "profile_id": "ruler_knife_v2_y",
+    "grasp_preset": "default"
+  },
+  "solver": {
+    "module": "tlmpm_v7_2",
+    "cutting_law": 8,
+    "max_cuts": 2,
+    "particle_spacing_m": 0.001,
+    "grid_dx_m": 0.004
+  }
+}

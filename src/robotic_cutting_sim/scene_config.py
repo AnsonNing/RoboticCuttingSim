@@ -101,7 +101,8 @@ SUPPORT_KINDS = ("solid_board", "slotted_board", "boxes", "flat_board")   # flat
 SOLVERS = {"tlmpm_v4": {"laws": (4, 5, 6, 7, 8), "max_cuts": 2},
            "tlmpm_v5": {"laws": (4, 5, 8), "max_cuts": 15},
            "tlmpm_v7": {"laws": (8,), "max_cuts": 15},
-           "tlmpm_v7_1": {"laws": (8,), "max_cuts": 15}}
+           "tlmpm_v7_1": {"laws": (8,), "max_cuts": 15},
+           "tlmpm_v7_2": {"laws": (8,), "max_cuts": 15}}
 _ID = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
@@ -262,7 +263,7 @@ def validate_scene(source):
                      "particle_spacing_m": _number(solver.get("particle_spacing_m", .001), "solver.particle_spacing_m", positive=True),
                      "grid_dx_m": _number(solver.get("grid_dx_m", .004), "solver.grid_dx_m", positive=True)}
     if "slots_per_node" in solver:  # opt-in (WP-11 Phase E round 2): kept only when declared, so other ids are unchanged
-        if solver["module"] not in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1"):
+        if solver["module"] not in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1", "tlmpm_v7_2"):
             raise SceneConfigError("solver.slots_per_node applies to tlmpm_v5 only")
         out["solver"]["slots_per_node"] = _integer(solver["slots_per_node"], "solver.slots_per_node", 1, 64)
     if "research_profile" in solver:
@@ -1019,7 +1020,7 @@ def make_configured_kinematic_env(task, **options):
         raise TypeError("Expected a ConfiguredTaskSpec from compile_task")
     if task.solver_module == "tlmpm_v5" and "solver" not in KinematicConfig.__dataclass_fields__:
         raise NotImplementedError("tlmpm_v5 is not available in the kinematic backend yet (ADR 0014 pending)")
-    if task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1"):
+    if task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1", "tlmpm_v7_2"):
         options.setdefault("solver", task.solver_module)
     declared = task.scene["solver"].get("slots_per_node")
     if declared is not None:  # opt-in scene slot capacity (LiveCuttingMaterial also reads it from the task)

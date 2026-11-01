@@ -9,7 +9,7 @@ consumer (codes, slots, recorders, evaluators) treats them alike.
 import importlib
 
 DEFAULT_PACKED_SOLVER = "tlmpm_v5"
-CANDIDATE_SOLVERS = ("tlmpm_v6", "tlmpm_v7", "tlmpm_v7_1")
+CANDIDATE_SOLVERS = ("tlmpm_v6", "tlmpm_v7", "tlmpm_v7_1", "tlmpm_v7_2")
 PACKED_SOLVERS = (DEFAULT_PACKED_SOLVER, *CANDIDATE_SOLVERS)
 
 

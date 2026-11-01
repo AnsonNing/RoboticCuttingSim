@@ -168,6 +168,8 @@ class LiveCuttingMaterial:
                 from .tlmpm_v6 import TLMPM   # opt-in CANDIDATE (ADR 0020 proposed)
             elif self.solver == 'tlmpm_v7':
                 from .tlmpm_v7 import TLMPM   # WP-13 opt-in experiment
+            elif self.solver == 'tlmpm_v7_2':
+                from .tlmpm_v7_2 import TLMPM   # bounded measured rigid-sweep candidate
             elif self.solver == 'tlmpm_v7_1':
                 from .tlmpm_v7_1 import TLMPM   # WP-14 opt-in finite-interface experiment
             elif self.cutting_law in (4, 5, 6, 7, 8):
@@ -250,7 +252,7 @@ class LiveCuttingMaterial:
                                       "slots_per_node": self.slots_per_node,
                                       "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md"}
-        elif self.solver in ('tlmpm_v6', 'tlmpm_v7', 'tlmpm_v7_1'):
+        elif self.solver in ('tlmpm_v6', 'tlmpm_v7', 'tlmpm_v7_1', 'tlmpm_v7_2'):
             self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
                                       "code_encoding": self.code_encoding, "max_cuts": self.max_cuts,
                                       "slots_per_node": self.slots_per_node,

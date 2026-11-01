@@ -10,7 +10,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--case',type=Path,required=True)
-    p.add_argument('--solver',choices=('tlmpm_v7_1',),default='tlmpm_v7_1')
+    p.add_argument('--solver',choices=('tlmpm_v7_1','tlmpm_v7_2'),default='tlmpm_v7_1')
     p.add_argument('--device',default='cuda:0')
     p.add_argument('--dt',type=float)
     a=p.parse_args()

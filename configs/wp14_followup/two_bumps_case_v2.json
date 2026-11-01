@@ -1,0 +1,7 @@
+{
+  "id": "two_bumps_v2",
+  "episode": "TRIM",
+  "seed": 42,
+  "scene": "configs/wp14_followup/two_bumps_scene_rigid_v2.json",
+  "goal": "configs/wp14_followup/two_bumps_goal_v1.json"
+}
