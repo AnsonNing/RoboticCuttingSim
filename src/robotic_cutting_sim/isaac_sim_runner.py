@@ -184,7 +184,7 @@ class IsaacSimCuttingConfig:
             import json
             solver = ((json.loads(self.configured_task).get("scene") or {}).get("solver") or {}
                       if self.configured_task is not None else {})
-            if solver.get("module") not in ("tlmpm_v5", "tlmpm_v7"):
+            if solver.get("module") not in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1"):
                 raise ValueError("surface_profile='cut_aware_surface_v1' needs a configured tlmpm_v5 task (packed codes "
                                  "and the cut_events_v1 recorder, which it turns on)")
         if self.surface_unmeshable is None:
@@ -660,7 +660,7 @@ class LiveIsaacSimCutting:
                             "cut_events_summary_capacity": recorder_summary_capacity(self.task, c.material_dt)}
             self.material = LiveCuttingMaterial(material_config, task=self.task, max_cuts=self.task.max_cuts,
                 cutting_law=self.task.cutting_law,
-                solver=self.task.solver_module if self.task.solver_module in ("tlmpm_v5", "tlmpm_v7") else None,
+                solver=self.task.solver_module if self.task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1") else None,
                 **recorder)
         else:
             self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))

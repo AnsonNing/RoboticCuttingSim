@@ -93,10 +93,11 @@
     "tool_profile.py": "40bc37d93d128f59cc4ee539b2ef46ef1e50dfe4482b607cda531ef14ac399a7"
   },
   "evaluator": "unchanged goal_eval_v1 sever; frozen v1 precision benchmark remains separate",
-  "unsupported_action_behavior": "Requests outside the profile are errors; no fallback or mid-episode solver change.",
   "configuration_source_sha256": {
     "configs/cutting_tasks_v1.json": "feb3a8ddb99504ccabee122615b841c844fd8a0527fc1eec713cd70c9d7013a1",
     "configs/materials/materials_wp12_v1.json": "c6373ef96d00722f024e1b45c65a52599712e618b10f318dbc0e3f9311f0cac0",
     "configs/wp12_workcells_v1.json": "fc0af48d80c5490a2f6662c64bb72c80f1770c4eaab25d8cf88cda16d1603836"
-  }
+  },
+  "unsupported_configuration_behavior": "Requests outside the profile are errors; no fallback or mid-episode solver change.",
+  "validation_scope": "Declared compiled scripted controller only. Configuration selection is not an outcome certificate; arbitrary policy actions require separate execution validation."
 }

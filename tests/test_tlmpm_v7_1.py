@@ -32,7 +32,7 @@ def test_completion_requires_finite_sweep_and_actual_endpoint_work(mode):
     original_positions = x.numpy().copy()
     wp.launch(C._complete_links,2,[x,x,velocity,mass,old_codes,codes,reached,nodes,weights,gradients,
         offsets,neighbours,poses,previous,twists,cuts,index,stroke,segment,2,.06,.024,.003383,.00075,
-        profile,len(polygon),.00045,.0001,.3,pending_q,pending_cut,diagnostics],device='cpu')
+        profile,len(polygon),.00045,.0001,.3,1.,pending_q,pending_cut,diagnostics],device='cpu')
     assert codes.numpy().tolist() == ([1,0] if mode=='contact' else [0,0])
     np.testing.assert_array_equal(x.numpy(),original_positions)
     if mode=='expired':assert pending_q.numpy()[0] == -1

@@ -37,7 +37,8 @@ def _interface(p: wp.vec3, q: wp.vec3, pose: wp.transform, twist: wp.spatial_vec
 def _endpoint_work(q: int, start: wp.array(dtype=wp.vec3), velocity: wp.array(dtype=wp.vec3),
                    mass: wp.array(dtype=float), pose: wp.transform, twist: wp.spatial_vector,
                    profile: wp.array(dtype=wp.vec2), profile_count: int, width: float,
-                   radius: float, dt: float, friction: float, bevel: float, half_thickness: float):
+                   radius: float, dt: float, friction: float, bevel: float, half_thickness: float,
+                   slice_efficiency: float):
     local = wp.transform_point(wp.transform_inverse(pose), start[q])
     work = float(0.0)
     if (local[0] >= -bevel and local[0] <= 2.0*radius and wp.abs(local[1]) <= width
@@ -56,7 +57,7 @@ def _endpoint_work(q: int, start: wp.array(dtype=wp.vec3), velocity: wp.array(dt
         in_plane = wp.max(wp.length_sq(relative)-un*un,0.0)
         push = wp.max(wp.dot(impulse,advance),0.0)
         drag = wp.max(wp.dot(impulse,along*wp.sign(us)),0.0)
-        work = (push*wp.max(uc,0.0)+drag*wp.abs(us))*in_plane/(in_plane+un*un+1.e-20)
+        work = (push*wp.max(uc,0.0)+slice_efficiency*drag*wp.abs(us))*in_plane/(in_plane+un*un+1.e-20)
     return work
 
 
@@ -72,7 +73,8 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
                     stroke: wp.array(dtype=int), segment_ok: wp.array(dtype=int), segments: int,
                     width: float, band: float, bevel: float, half_thickness: float,
                     profile: wp.array(dtype=wp.vec2), profile_count: int, radius: float,
-                    dt: float, friction: float, pending_q: wp.array(dtype=int), pending_cut: wp.array(dtype=int),
+                    dt: float, friction: float, slice_efficiency: float,
+                    pending_q: wp.array(dtype=int), pending_cut: wp.array(dtype=int),
                     diagnostics: wp.array(dtype=int)):
     p = wp.tid(); i = index[0]; cut = cuts[i]
     if cut < 0 or B._digit(old_codes[p],cut) != 0:
@@ -120,7 +122,7 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
         if here[3] != 0.0 and here[0] <= 0.0 and here[0] >= -bevel and wp.abs(here[1]) <= width:
             if segment_ok[B._edge_segment(here[1],width,segments)] != 0:
                 dw = _endpoint_work(q,start,velocity,mass,poses[i],twist,profile,profile_count,
-                                    width,radius,dt,friction,bevel,half_thickness)
+                                    width,radius,dt,friction,bevel,half_thickness,slice_efficiency)
                 if dw > 1.e-20:
                     codes[p] = codes[p] | (d << (2*cut))
                     pending_q[p] = -1
@@ -161,7 +163,7 @@ class TLMPM(V.TLMPM):
                 self.link_offsets,self.link_neighbours,self.poses,self.link_previous_pose,self.twists,self.cuts,
                 self.index,self.stroke,self.segment_ok,self.edge_segments,self.config.blade_half_width,
                 self.law4_parameters['band_h_m'],self.bevel_depth_m,self.blade_half_thickness_m,self.profile,
-                len(self.blade_profile_xz),self.radius,self.config.dt,self.config.contact_friction,
+                len(self.blade_profile_xz),self.radius,self.config.dt,self.config.contact_friction,self.slice_efficiency,
                 self.pending_q,self.pending_cut,self.link_diagnostics])
             if advance: wp.launch(B._advance,1,[self.index])
 

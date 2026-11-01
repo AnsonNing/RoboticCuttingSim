@@ -69,3 +69,21 @@ def test_profile_refuses_changed_solver_source_binding(monkeypatch):
 def test_no_profile_retains_existing_selection():
     task,_=build({'episode':'CUT','seed':42},'tlmpm_v5')
     assert P.validate_runtime(task,'tlmpm_v5',8,.0001,4,8,1.) is None
+
+
+def test_public_profile_factory_and_runtime_payload_roundtrip():
+    from robotic_cutting_sim.scene_config import configured_task_payload,task_from_payload
+    task=P.compile_research_task('v7_cut_research_v1','configs/wp12/scenes/bar_flat_board.json','sever_mid')
+    assert task.solver_module=='tlmpm_v7'
+    assert task.duration_s==14.
+    assert task.scene['solver']['research_profile']=='v7_cut_research_v1'
+    assert task_from_payload(configured_task_payload(task)).task_id==task.task_id
+
+
+def test_runtime_profile_selection_refuses_silent_solver_override(tmp_path):
+    from robotic_cutting_sim.scene_config import make_configured_kinematic_env
+    task=P.compile_research_task('v7_cut_research_v1','configs/wp12/scenes/bar_flat_board.json','sever_mid')
+    env=make_configured_kinematic_env(task,device='cpu',solver='tlmpm_v5')
+    with pytest.raises(ValueError,match='runtime solver'):
+        env.reset(seed=42)
+    env.close()

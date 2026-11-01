@@ -237,7 +237,7 @@ def test_free_block_momentum_change_equals_blade_impulse(cls):
 # ----------------------------------------------------------------------------- opt-in plumbing
 
 def test_packed_solver_helper():
-    assert PACKED_SOLVERS == ("tlmpm_v5", "tlmpm_v6", "tlmpm_v7")
+    assert PACKED_SOLVERS == ("tlmpm_v5", "tlmpm_v6", "tlmpm_v7", "tlmpm_v7_1")
     assert is_packed_solver("tlmpm_v5") and is_packed_solver("tlmpm_v6") and not is_packed_solver(None)
     assert not is_packed_solver("tlmpm_v4") and not is_packed_solver("tlmpm_v5_counterfactual")
     assert packed_solver_class("tlmpm_v5") is tlmpm_v5.TLMPM and packed_solver_class("tlmpm_v6") is tlmpm_v6.TLMPM

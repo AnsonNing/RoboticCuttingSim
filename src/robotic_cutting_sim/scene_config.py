@@ -100,7 +100,8 @@ V1_MATERIAL_PROFILE = "cutting_tasks_v1"
 SUPPORT_KINDS = ("solid_board", "slotted_board", "boxes", "flat_board")   # flat_board: WP-12 (ADR 0017)
 SOLVERS = {"tlmpm_v4": {"laws": (4, 5, 6, 7, 8), "max_cuts": 2},
            "tlmpm_v5": {"laws": (4, 5, 8), "max_cuts": 15},
-           "tlmpm_v7": {"laws": (8,), "max_cuts": 15}}
+           "tlmpm_v7": {"laws": (8,), "max_cuts": 15},
+           "tlmpm_v7_1": {"laws": (8,), "max_cuts": 15}}
 _ID = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
@@ -249,7 +250,7 @@ def validate_scene(source):
         raise SceneConfigError(f"tool.profile_id must be one of {sorted(PROFILES)}")
     out["tool"] = {"profile_id": tool["profile_id"], "grasp_preset": str(tool.get("grasp_preset", "default"))}
     solver = doc["solver"]
-    _keys(solver, "solver", ("module", "cutting_law", "max_cuts"), ("particle_spacing_m", "grid_dx_m", "slots_per_node"))
+    _keys(solver, "solver", ("module", "cutting_law", "max_cuts"), ("particle_spacing_m", "grid_dx_m", "slots_per_node", "research_profile"))
     if solver["module"] not in SOLVERS:
         raise SceneConfigError(f"solver.module must be one of {sorted(SOLVERS)}")
     limits = SOLVERS[solver["module"]]
@@ -261,9 +262,13 @@ def validate_scene(source):
                      "particle_spacing_m": _number(solver.get("particle_spacing_m", .001), "solver.particle_spacing_m", positive=True),
                      "grid_dx_m": _number(solver.get("grid_dx_m", .004), "solver.grid_dx_m", positive=True)}
     if "slots_per_node" in solver:  # opt-in (WP-11 Phase E round 2): kept only when declared, so other ids are unchanged
-        if solver["module"] not in ("tlmpm_v5", "tlmpm_v7"):
+        if solver["module"] not in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1"):
             raise SceneConfigError("solver.slots_per_node applies to tlmpm_v5 only")
         out["solver"]["slots_per_node"] = _integer(solver["slots_per_node"], "solver.slots_per_node", 1, 64)
+    if "research_profile" in solver:
+        from .research_profiles import document
+        document(solver['research_profile'])  # explicit, known version; absent keeps historical payloads unchanged
+        out['solver']['research_profile'] = solver['research_profile']
     out["table_top_world_z_m"] = _number(doc.get("table_top_world_z_m", _protocol()["common"]["table_top_world_z_m"]),
                                          "table_top_world_z_m")
     if out["supports"]["kind"] == "flat_board":   # the workcell record is the single source of the table top
@@ -850,6 +855,9 @@ def compile_task(scene, goal, *, particle_spacing_m=None, planner_options=None, 
         raise SceneInfeasible("spacing_too_coarse", "particle spacing must give at least two base layers")
     episode = goal["episode"]
     options = goal_planner.planner_options(goal, planner_options)
+    if scene['solver'].get('research_profile'):
+        from .research_profiles import validate_task
+        validate_task(scene,goal,options,spacing)
     waypoints, report = goal_planner.plan_with_report(scene, goal, profile, options)
     digits = report["digits_used"]
     if digits > scene["solver"]["max_cuts"]:
@@ -991,7 +999,7 @@ def make_configured_kinematic_env(task, **options):
         raise TypeError("Expected a ConfiguredTaskSpec from compile_task")
     if task.solver_module == "tlmpm_v5" and "solver" not in KinematicConfig.__dataclass_fields__:
         raise NotImplementedError("tlmpm_v5 is not available in the kinematic backend yet (ADR 0014 pending)")
-    if task.solver_module in ("tlmpm_v5", "tlmpm_v7"):
+    if task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1"):
         options.setdefault("solver", task.solver_module)
     declared = task.scene["solver"].get("slots_per_node")
     if declared is not None:  # opt-in scene slot capacity (LiveCuttingMaterial also reads it from the task)

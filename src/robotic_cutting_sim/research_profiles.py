@@ -2,6 +2,7 @@
 from copy import deepcopy
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -26,9 +27,22 @@ def select_profile(scene, name):
 
 
 def compile_research_task(name, scene, goal, *, seed=42):
-    """Compile the named profile's declared controller and validated solver path."""
+    """Compile the profile controller, recording enough time to finish its plan.
+
+    A sufficient requested duration is retained. A shorter goal receives the
+    same completion margin used by the frozen paired driver (10% plus 1 s,
+    rounded up to 0.5 s). The actual duration is explicit in the compiled goal.
+    """
     from .scene_config import compile_task
-    return compile_task(select_profile(scene, name), goal, planner_options=document(name)['planner'], seed=seed)
+    from .goals import validate_goal
+    scene=select_profile(scene,name);goal=validate_goal(goal)
+    requested=goal['episode']['duration_s']
+    probe_goal=deepcopy(goal);probe_goal['episode']['duration_s']=120.
+    options=document(name)['planner']
+    probe=compile_task(scene,probe_goal,planner_options=options,seed=seed)
+    done=next(float(t) for t,label in zip(probe._times(),probe.reference_phase_labels) if label=='DONE')
+    goal['episode']['duration_s']=max(requested,.5*math.ceil((1.1*done+1.)/.5))
+    return compile_task(scene,goal,planner_options=options,seed=seed)
 
 
 def validate_task(scene, goal, planner, spacing):

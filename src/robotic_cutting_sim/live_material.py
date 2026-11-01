@@ -108,6 +108,11 @@ class LiveCuttingMaterial:
         self.pending_obstacle_wrenches = {}
         self.target = target or WorkpieceTarget()
         self.task = task
+        self.research_profile_receipt = None
+        if getattr(task,'scene_json','') and task.scene['solver'].get('research_profile'):
+            from .research_profiles import validate_runtime
+            self.research_profile_receipt = validate_runtime(task,self.solver,self.cutting_law,
+                self.config.material_dt,self.max_cuts,self.slots_per_node,self.slice_efficiency)
         # The retained floor/tray implementation is in the world identity frame.
         # Reject other workpiece poses until the fixture and gravity are also transformed.
         if task is None and not np.allclose(self.target.world_from_workpiece_xyzw, [0, 0, 0, 0, 0, 0, 1], atol=1e-12):
@@ -163,6 +168,8 @@ class LiveCuttingMaterial:
                 from .tlmpm_v6 import TLMPM   # opt-in CANDIDATE (ADR 0020 proposed)
             elif self.solver == 'tlmpm_v7':
                 from .tlmpm_v7 import TLMPM   # WP-13 opt-in experiment
+            elif self.solver == 'tlmpm_v7_1':
+                from .tlmpm_v7_1 import TLMPM   # WP-14 opt-in finite-interface experiment
             elif self.cutting_law in (4, 5, 6, 7, 8):
                 from .tlmpm_v4 import TLMPM
             elif self.cutting_law == 3:
@@ -243,13 +250,15 @@ class LiveCuttingMaterial:
                                       "slots_per_node": self.slots_per_node,
                                       "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md"}
-        elif self.solver in ('tlmpm_v6', 'tlmpm_v7'):
+        elif self.solver in ('tlmpm_v6', 'tlmpm_v7', 'tlmpm_v7_1'):
             self.parameter_receipt = {**self.parameter_receipt, "solver_module": solver_module,
                                       "code_encoding": self.code_encoding, "max_cuts": self.max_cuts,
                                       "slots_per_node": self.slots_per_node,
                                       "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
                                       "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
                                       self.solver: self.bed.solver_receipt()}
+        if self.research_profile_receipt is not None:
+            self.parameter_receipt['research_profile'] = self.research_profile_receipt
         self.bed.set_trajectory(np.tile(self._pose_local(self.last_pose), (self.substeps+1, 1)).astype(np.float32),
             np.zeros((self.substeps+1, 6), np.float32), np.full(self.substeps+1, -1, np.int32))
         recorder = self.cut_event_recorder = None
