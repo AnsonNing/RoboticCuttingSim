@@ -33,6 +33,10 @@ def main():
         (output / directory).mkdir()
     fixture = json.loads((args.fixture_dir / "fixture.json").read_text())
     protocol = json.loads((args.fixture_dir / "protocol.json").read_text())
+    optics = protocol['runtime_profile']
+    width, height = optics.get('width',640), optics.get('height',480)
+    focal = optics.get('focal_length_px',317.0431137084961)
+    disparity = optics.get('maximum_disparity_px',150.)
     write_json(output/"manifest.json", manifest({"fixture_dir":str(args.fixture_dir.resolve()),
         "protocol_sha256":fixture["protocol_sha256"], "gpu":args.gpu, "noise":args.noise},
         "real_isaac_sim_kit_native_camera_controls"))
@@ -67,16 +71,16 @@ def main():
             "rgbDepthOutputMode": 0, "effectiveDistance": 4.}
         for name, (camera_path, _) in fixture["cameras"].items():
             if name == "global":
-                sensor = CameraSensor(RtxCamera(camera_path, tick_rate=0.), resolution=(480,640),
+                sensor = CameraSensor(RtxCamera(camera_path, tick_rate=0.), resolution=(height,width),
                                       annotators=["rgb", "distance_to_image_plane"])
             else:
-                sensor = SingleViewDepthCameraSensor(RtxCamera(camera_path, tick_rate=0.), resolution=(480,640),
+                sensor = SingleViewDepthCameraSensor(RtxCamera(camera_path, tick_rate=0.), resolution=(height,width),
                     annotators=["distance_to_image_plane", "depth_sensor_distance", "depth_sensor_point_cloud_position"])
                 sensor.set_sensor_baseline(95.)
-                sensor.set_sensor_focal_length(317.0431137084961)
-                sensor.set_sensor_size(640.)
+                sensor.set_sensor_focal_length(focal)
+                sensor.set_sensor_size(float(width))
                 sensor.set_sensor_disparity_confidence(1.)
-                sensor.set_sensor_maximum_disparity(150.)
+                sensor.set_sensor_maximum_disparity(disparity)
                 sensor.set_sensor_noise_parameters(noise, noise)
                 sensor.set_sensor_disparity_noise_downscale(1.)
                 sensor.set_sensor_distance_cutoffs(.52, 6.)
@@ -138,14 +142,14 @@ def main():
                 if not np.allclose(pose[:3,3], fixture["cameras"][name][1], atol=1e-6, rtol=0):
                     raise RuntimeError(f"Runtime camera alias/wrong location for {name}")
                 rgb = numpy_data(data["rgb"][0])[..., :3]
-                ideal = numpy_data(data["distance_to_image_plane"][0]).reshape(480,640,1)
+                ideal = numpy_data(data["distance_to_image_plane"][0]).reshape(height,width,1)
                 target = output / ("global_debug" if name == "global" else "observations")
                 np.savez_compressed(target / f"{name}_{index:04d}.npz", rgb=rgb,
                     camera_calibration_json=json.dumps(camera), timestamp_s=case["time_s"],
                     surface_timestamp_s=case["time_s"], live_camera_source="Isaac Sim6.2 Kit native sensor controls")
                 if name != "global":
-                    raw = numpy_data(data["depth_sensor_distance"][0]).reshape(480,640,1)
-                    xyz = numpy_data(data["depth_sensor_point_cloud_position"][0]).reshape(480,640,-1)
+                    raw = numpy_data(data["depth_sensor_distance"][0]).reshape(height,width,1)
+                    xyz = numpy_data(data["depth_sensor_point_cloud_position"][0]).reshape(height,width,-1)
                     np.savez_compressed(output / "camera_debug" / f"{name}_{index:04d}.npz",
                         depth_sensor_distance_raw=raw, pointcloud_position_raw=xyz,
                         ideal_distance_to_image_plane_raw=ideal)

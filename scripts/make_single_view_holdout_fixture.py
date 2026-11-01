@@ -70,10 +70,13 @@ def main():
                "d455_1": ("/World/D455_1/RSD455/Camera_Pseudo_Depth", [.1, 0., 0.]),
                "global": ("/World/GlobalCamera", [0., -.15, 0.])}
     for name, (prim_path, eye) in cameras.items():
+        optics = protocol['runtime_profile']
+        width, height = optics.get('width',640), optics.get('height',480)
+        focal = optics.get('focal_length_px',317.04312)
         camera = UsdGeom.Camera.Define(stage, prim_path)
         camera.CreateHorizontalApertureAttr(20.955)
-        camera.CreateVerticalApertureAttr(20.955 * .75)
-        camera.CreateFocalLengthAttr(20.955 * 317.04312 / 640.)
+        camera.CreateVerticalApertureAttr(20.955 * height/width)
+        camera.CreateFocalLengthAttr(20.955 * focal / width)
         camera.CreateClippingRangeAttr(Gf.Vec2f(.01, 10.))
         pose = UsdGeom.Xformable(camera)
         pose.AddTranslateOp().Set(Gf.Vec3d(*eye))
