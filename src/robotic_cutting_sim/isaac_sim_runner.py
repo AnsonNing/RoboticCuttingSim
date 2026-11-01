@@ -1340,7 +1340,7 @@ class LiveIsaacSimCutting:
                 sensor.set_sensor_maximum_disparity(150.)
                 sensor.set_sensor_disparity_confidence(1.)
                 sensor.set_sensor_distance_cutoffs(.52,6.)
-                if c.camera_rig_profile != 'wrist_camera_rig_v5':
+                if c.camera_rig_profile == 'wrist_camera_rig_v6':
                     spec = self.camera_specs[name]
                     sensor.set_sensor_focal_length(float(spec['K'][0][0]))
                     sensor.set_sensor_size(float(width))

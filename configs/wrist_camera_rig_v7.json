@@ -1,0 +1,19 @@
+{
+  "schema": "rcs_global_camera_followup_v1",
+  "profile_id": "wrist_camera_rig_v7",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "inherits_global_optics": "wrist_camera_rig_v5",
+  "scope": "Fixed Global pose only. Keep the exact controlled 640x480 native SingleView optics, all hand-local mounts and secondary park. v6 narrow optics failed independent controls and are not used.",
+  "global_d455": {
+    "eye_world_m": [
+      0.05,
+      0.19,
+      0.66
+    ],
+    "target_world_m": [
+      0.0,
+      0.02,
+      0.025
+    ]
+  }
+}

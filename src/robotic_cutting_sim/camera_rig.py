@@ -16,7 +16,7 @@ from scipy.spatial.transform import Rotation
 WRIST_LAYOUT = "wrist_d405_global_d455"
 LEGACY_LAYOUT = "legacy_fixed_d455"
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v5.json"
-RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6')
+RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6', 'wrist_camera_rig_v7')
 _CV_TO_USD = np.diag([1., -1., -1., 1.])
 
 
@@ -162,6 +162,14 @@ class CameraRig:
                 native_near_m=view['native_near_m'], native_far_m=view['far_m'],
                 native_maximum_disparity=view['maximum_disparity_px'],
                 calibration_scope='Versioned square-pixel simulated D455 lens; actual render-product K recorded; physical calibration unvalidated')
+        elif rig_profile == 'wrist_camera_rig_v7':
+            config=json.loads(CONFIG_PATH.with_name(rig_profile+'.json').read_text())['global_d455']
+            transform=_look_at(config['eye_world_m'], config['target_world_m'])
+            self.specs['global_d455'].update(
+                rig_profile=rig_profile,T_world_camera=transform.tolist(),
+                look_at_target_world_m=config['target_world_m'],
+                working_distance_to_target_m=float(np.linalg.norm(transform[:3,3]-config['target_world_m'])),
+                optical_profile='unchanged validated v5 SingleView 640x480')
 
     def calibrations(self, hand_poses_world_xyzw):
         hands = np.asarray(hand_poses_world_xyzw, float)
