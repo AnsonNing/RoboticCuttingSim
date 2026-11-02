@@ -25,6 +25,7 @@ def export_success(recording_dir):
     if not result.get('success'):
         raise ValueError('Only independently successful recordings enter the success manifest')
     provenance = json.loads((rec/'provenance.json').read_text())
+    episode_id = f"s{provenance['scene_seed']}_{hashlib.sha256(str(rec.resolve()).encode()).hexdigest()[:12]}_{rec.name}"
     manifest_file = rec/'success_manifest.json'
     if manifest_file.exists():
         prior = json.loads(manifest_file.read_text())
@@ -67,7 +68,8 @@ def export_success(recording_dir):
             image.paste(Image.fromarray(color).resize((320, 240)), (640, 240))
         draw = ImageDraw.Draw(image)
         text = (f'agentic control robot | scene seed {provenance["scene_seed"]} | tlmpm_v7_2 | TASK PASS\n'
-                f'{rec.name} | controller {str(provenance.get("controller_sha256"))[:12]} | physics {t:.3f} s | 1x\n'
+                f'{episode_id} | controller {str(provenance.get("controller_sha256"))[:12]} | physics {t:.3f} s | 1x\n'
+                f'{provenance.get("controller_provenance")} | {provenance.get("candidate_id")}\n'
                 'Live Global RGB / wrist_0 RGB / wrist_0 optical Z: 0.07-1.00 m; invalid black')
         draw.text((6, 486), text, fill='white')
         image.save(stage/f'frame_{i:05d}.png')
@@ -92,8 +94,12 @@ def export_success(recording_dir):
     video = next(stream for stream in probe['streams'] if stream['codec_type'] == 'video')
     if video['codec_name'] != 'h264' or video['pix_fmt'] != 'yuv420p' or int(video['nb_frames']) != len(times):
         raise ValueError('Media codec, pixel format or complete original frame count mismatch')
-    manifest = dict(**provenance, episode_id=str(rec.parent.parent.name)+'_'+rec.name,
+    metrics = result.get('outcome', {}).get('metrics', {})
+    manifest = dict(**provenance, episode_id=episode_id,
         task_success=True, physical_result=result, home_status=receipt['home_status'],
+        per_bump_removed_fraction={row['id']: row['removed_mass_fraction'] for row in metrics.get('items', [])},
+        substrate_retention=metrics.get('largest_component_below_plane_mass_share'),
+        mechanical_components=metrics.get('mechanical_components'),
         simulation_duration_s=float(times[-1]), wall_time_s=receipt['wall_time_s'],
         mp4_path=str(movie.relative_to(rec)), mp4_sha256=sha256(movie), media_decode_status='PASS',
         capture_time_s=times.tolist(), original_frame_count=len(times), sources=sources, command=cmd,
