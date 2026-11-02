@@ -55,6 +55,22 @@ def test_replay_refuses_interpolation_and_missing_state():
         module.exact_index([0., .2, .4], .3)
 
 
+def test_opposite_axis_uses_measured_body_or_exact_legacy_attachment():
+    from types import SimpleNamespace
+    spec=importlib.util.spec_from_file_location('replay_edge_reference',Path('scripts/rerender_native_global.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    tool=SimpleNamespace(T_tool_edge=np.eye(4))
+    index,matrix,kind,prim=module.opposite_edge_reference(['/World/Tools/CuttingTool_0'],tool,{})
+    assert index==0 and kind=='independent_measured_tool_body' and prim is None
+    hand='/World/Franka_0/panda_hand'
+    setup={'hand_prim':hand,'knife_prim':hand+'/LiveKnife','T_hand_edge_xyz_xyzw':[0,0,.18,1,0,0,0]}
+    index,matrix,kind,prim=module.opposite_edge_reference([hand],tool,setup)
+    assert kind=='recorded_fixed_hand_attachment' and prim==hand+'/LiveKnife'
+    np.testing.assert_allclose(matrix,module.pose_matrix(setup['T_hand_edge_xyz_xyzw']))
+    with pytest.raises(ValueError,match='exact recorded legacy'):
+        module.opposite_edge_reference([hand],tool,{**setup,'knife_prim':'/unrecorded/guess'})
+
+
 def test_replay_cannot_substitute_a_surface_when_only_positions_exist(tmp_path):
     spec=importlib.util.spec_from_file_location('replay_global',Path('scripts/rerender_native_global.py'))
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)

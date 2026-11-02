@@ -43,6 +43,21 @@ def require_saved_surfaces(episode, frames):
             raise ValueError(f'Missing exact saved surface {path}; re-record required, no substitute surface')
 
 
+def opposite_edge_reference(body_paths, tool_spec, setup):
+    """Use an independent measured tool, or the recorded legacy fixed attachment."""
+    indices=[i for i,path in enumerate(body_paths) if 'tool' in path.lower()]
+    if len(indices)==1:
+        return indices[0],tool_spec.T_tool_edge,'independent_measured_tool_body',None
+    if indices:
+        raise ValueError('Ambiguous measured tool bodies')
+    hand=setup.get('hand_prim');knife=setup.get('knife_prim')
+    mount=np.asarray(setup.get('T_hand_edge_xyz_xyzw',[]),float)
+    if (hand not in body_paths or knife!=hand+'/LiveKnife' or mount.shape!=(7,)
+            or not np.isfinite(mount).all()):
+        raise ValueError('Requires a measured tool body or exact recorded legacy hand attachment')
+    return body_paths.index(hand),pose_matrix(mount),'recorded_fixed_hand_attachment',knife
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('episode', type=Path)
@@ -185,10 +200,8 @@ def main():
                 from types import SimpleNamespace
                 from robotic_cutting_sim.physical_tool import make_tool_spec
                 tool_spec = make_tool_spec(SimpleNamespace(**task_record))
-            tool_indices=[i for i,path in enumerate(body_paths) if 'tool' in path.lower()]
-            if len(tool_indices)!=1:
-                raise ValueError('Requires one measured physical tool body for opposite-tool axis audit')
-            tool_index=tool_indices[0]
+            setup=load_json(episode/'setup.json') if (episode/'setup.json').exists() else {}
+            tool_index,body_from_edge,edge_source,legacy_edge_prim=opposite_edge_reference(body_paths,tool_spec,setup)
         audit = []
         for row in selected:
             timestamp, index = row['time_s'], row['frame']
@@ -234,8 +247,17 @@ def main():
                 up = task_frame[:3,2]
                 horizontal_axis=optical_axis-(optical_axis@up)*up
                 horizontal_axis/=np.linalg.norm(horizontal_axis)
-                edge = pose_matrix(robot['body_pose'][bi,tool_index]) @ tool_spec.T_tool_edge
+                edge = pose_matrix(robot['body_pose'][bi,tool_index]) @ body_from_edge
+                rendered_edge_error=None
+                if legacy_edge_prim is not None:
+                    prim=stage.GetPrimAtPath(legacy_edge_prim)
+                    if not prim:raise ValueError('Recorded legacy knife prim missing')
+                    actual_edge=np.asarray(UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
+                    rendered_edge_error=float(np.abs(actual_edge-edge).max())
+                    if rendered_edge_error>1e-5:raise ValueError('Legacy rendered knife differs from recorded hand attachment')
                 opposite_readback = {
+                    'blade_pose_source':edge_source,
+                    'legacy_rendered_edge_matrix_error':rendered_edge_error,
                     'optical_positive_Z_world': optical_axis.tolist(),
                     'target_face_outward_normal_world': normal.tolist(),
                     'optical_axis_dot_face_normal': float(optical_axis@normal),
@@ -294,6 +316,7 @@ def main():
             'published_modalities':['rgb'],
             'native_stereo_registration':'BLOCKED narrow24 controls retained; no registered Global depth published' if narrow_rgb_only else 'unregistered diagnostic, no new validation',
             'source_sha256': {str(p): sha256_file(p) for p in [robot_path, episode/'frame_manifest.json',
+                *[p for p in (episode/'task.json',episode/'setup.json') if p.exists()],
                 episode/'final_live_scene.usda' if (episode/'final_live_scene.usda').exists() else episode/'final_live_scene.usda.gz',
                 *[episode/'surface_debug'/f"surface_{row['frame']:04d}.npz" for row in selected]]},
             'implementation_sha256': sha256_file(Path(__file__)), 'versions': runtime_versions(),
