@@ -168,7 +168,9 @@ def test_named_view_selection_and_scene_preparation_cannot_change_physics(tmp_pa
     for view,profile in [('left','wrist_camera_rig_v10'),('right','wrist_camera_rig_v11'),('opposite_tool','wrist_camera_rig_v14')]:
         new=module.prepare('standard_cut',tmp_path/view,global_view=view)
         assert new['task_id']==old['task_id'] and new['source_inputs']==old['source_inputs']
-        assert new['profile']==old['profile'] and new['camera_rig']==profile
+        assert new['profile']==old['profile'] and new['camera_rig']=='wrist_camera_rig_v5'
+        assert new['display_global_profiles'][view]==profile
+        assert '--save-render-surfaces' in new['command']
     with pytest.raises(ValueError,match='conflicts'):
         select_global_view('left','wrist_camera_rig_v11')
     with pytest.raises(ValueError,match='Unknown'):
@@ -199,3 +201,12 @@ def test_adopted_opposite_tool_elevation_is_3d_oblique_but_horizontally_normal()
     assert incidence==pytest.approx(17.123944951922702)
     assert abs(np.asarray(old['T_world_camera'])[2,2])<1e-12
     assert abs(g['working_distance_to_target_m']-.6)<1e-12
+
+
+def test_direct_narrow_native_depth_guard_is_retained_and_recording_optics_work():
+    from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig
+    for profile in ['wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v14']:
+        with pytest.raises(NotImplementedError,match='BLOCKED'):
+            IsaacSimCuttingConfig(camera=True,camera_layout='wrist_d405_global_d455',camera_mode='native_single_view',camera_rig_profile=profile)
+    for profile in ['wrist_camera_rig_v5','wrist_camera_rig_v8','wrist_camera_rig_v9']:
+        assert IsaacSimCuttingConfig(camera=True,camera_layout='wrist_d405_global_d455',camera_mode='native_single_view',camera_rig_profile=profile).camera

@@ -127,6 +127,10 @@ class IsaacSimCuttingConfig:
         from .camera_rig import RIG_PROFILES
         if self.camera_rig_profile not in RIG_PROFILES:
             raise ValueError('Unknown camera_rig_profile')
+        if self.camera and self.camera_rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v13','wrist_camera_rig_v14'):
+            raise NotImplementedError('Narrow Global native stereo registration is BLOCKED by independent controls. '
+                'Record with controlled v5/v8/v9 optics and --save-render-surfaces, then use '
+                'scripts/render_native_global_views.py for named Global RGB replay and original wrist RGB-D.')
         if self.camera_rig_profile != RIG_PROFILES[0] and self.camera_layout != 'wrist_d405_global_d455':
             raise ValueError('The new rig requires wrist_d405_global_d455')
         if self.camera_layout == "wrist_d405_global_d455" and self.camera_mode != "native_single_view":

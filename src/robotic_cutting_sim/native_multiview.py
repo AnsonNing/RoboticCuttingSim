@@ -31,18 +31,26 @@ def three_global_canvas(frames, external, solver, phase, status, title, surface,
     def pane(frame,box,label,depth=False):
         x,y,w,h=box
         draw.text((x+8,y+4),label,font=font,fill='white')
-        draw.text((x+8,y+27),f'{t:.2f}s | {phase}',font=font,fill='#bbc3d0')
+        draw.text((x+8,y+27),('Depth [m] 0.07-0.50 | invalid=black' if depth else f'RGB | {t:.2f}s | {phase}'),font=font,fill='#bbc3d0')
+        if depth:draw.text((x+8,y+50),f'{t:.2f}s | {phase}',font=font,fill='#bbc3d0')
         if frame is None:
             draw.text((x+8,y+65),'NO RAW CAPTURE (historical gap)',font=font,fill='#e5dbab');return
         pixels=depth_rgb(frame) if depth else frame['rgb'][...,:3]
-        pic=ImageOps.contain(Image.fromarray(np.asarray(pixels,np.uint8)),(w,h-54),Image.Resampling.LANCZOS)
-        im.paste(pic,(x+(w-pic.width)//2,y+54+(h-54-pic.height)//2))
+        header=76 if depth else 54
+        pic=ImageOps.contain(Image.fromarray(np.asarray(pixels,np.uint8)),(w,h-header),Image.Resampling.LANCZOS)
+        im.paste(pic,(x+(w-pic.width)//2,y+header+(h-header-pic.height)//2))
     for i,name in enumerate(EXTERNAL_VIEWS):
         pane(external[name],(i*640,75,640,570),f'Global {name.upper()} RGB | '+('rig14 / normal bearing +17deg' if i==2 else f'rig{10+i} / low side view'))
     for i,(name,depth) in enumerate([('wrist_d405_0',False),('wrist_d405_1',False),('wrist_d405_0',True),('wrist_d405_1',True)]):
-        pane(frames[name],(i*480,655,480,365),name+(' Depth 70-500mm' if depth else ' RGB'),depth)
+        arm='arm_0' if name.endswith('0') else 'arm_1 safe park'
+        pane(frames[name],(i*480,655,480,365),name+' / '+arm,depth)
+        if depth:
+            values=np.linspace(0,1,440)
+            bar=np.uint8(np.stack([values,1-abs(2*values-1),1-values],-1)*255)
+            im.paste(Image.fromarray(np.repeat(bar[None,:,:],8,axis=0)),(i*480+20,1022))
+            for x,text in [(20,'0.07m'),(205,'0.285m'),(410,'0.50m')]:draw.text((i*480+x,1030),text,font=ImageFont.truetype(FONT,12),fill='white')
     scope='Historical wrist calibration retained.' if archived else 'Fixed hand-local v5 wrist mounts.'
-    draw.text((15,1048),'All external views and real occluders retained; no crop. '+scope+' Sensor models provisional.',font=font,fill='#bbc3d0')
+    draw.text((15,1054),'Global: RGB camera replay only; native narrow stereo depth NOT VALIDATED. '+scope+' Wrist depth in meters; invalid black.',font=font,fill='#bbc3d0')
     return np.asarray(im)
 
 

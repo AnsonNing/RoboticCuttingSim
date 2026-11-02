@@ -19,12 +19,17 @@ def prepare(name, out, gpu=0, camera_rig_profile=None, global_view=None):
     from robotic_cutting_sim.research_profiles import validate_runtime
     from robotic_cutting_sim.recording import write_json
     catalog=json.loads(CATALOG.read_text());entry=catalog['entries'][name]
+    display_views=[]
     if global_view is not None:
-        from robotic_cutting_sim.camera_rig import select_global_view
-        camera_rig_profile=select_global_view(global_view,camera_rig_profile)
+        from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES
+        if global_view!='all' and global_view not in GLOBAL_VIEW_PROFILES:raise ValueError('Unknown named Global view')
+        display_views=list(GLOBAL_VIEW_PROFILES) if global_view=='all' else [global_view]
+        camera_rig_profile=camera_rig_profile or 'wrist_camera_rig_v5'
     if camera_rig_profile is not None:
         from robotic_cutting_sim.camera_rig import RIG_PROFILES
         if camera_rig_profile not in RIG_PROFILES:raise ValueError('Unknown camera rig profile')
+        if camera_rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v13','wrist_camera_rig_v14'):
+            raise NotImplementedError('Use controlled recording optics with --global-view for subsequent Global RGB replay; narrow Native stereo controls remain BLOCKED')
     inputs={}
     for kind in ('scene','goal'):
         source=ROOT/entry[kind]
@@ -48,11 +53,18 @@ def prepare(name, out, gpu=0, camera_rig_profile=None, global_view=None):
         '--surface-profile',catalog['surface_profile'],'--surface-timing-log']
     if camera_rig_profile is not None:
         command+=['--camera-rig-profile',camera_rig_profile]
+    if display_views:command+=['--save-render-surfaces']
     record={'scene':name,'catalog':str(CATALOG.relative_to(ROOT)),'task_id':task.task_id,
         'profile':receipt,'source_inputs':entry,'command':command,
         'camera_rig':camera_rig_profile or catalog['camera_rig'],'native_execution':'NOT_RUN',
         'scope':'Explicit CUT research scene; full Native plan preflight remains enabled. '
                 'A new run is an engineering replay, not an independent adoption sample.'}
+    if display_views:
+        record['display_global_views']=display_views
+        record['display_global_profiles']={name:GLOBAL_VIEW_PROFILES[name] for name in display_views}
+        record['display_command']=[str(ROOT/'.venv/bin/python'),str(ROOT/'scripts/render_native_global_views.py'),
+            str(out/'run/episode_000'),'--out',str(out/'display'),'--gpu',str(gpu),'--views',*display_views]
+        record['display_scope']='Record physics once with controlled Global sensor; replay exact meshes/poses for Global RGB only; original wrist RGB-D unchanged'
     write_json(out/'prepared.json',record)
     return record
 
@@ -66,7 +78,7 @@ def main():
     from robotic_cutting_sim.camera_rig import RIG_PROFILES
     p.add_argument('--camera-rig-profile',choices=RIG_PROFILES)
     from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES
-    p.add_argument('--global-view',choices=tuple(GLOBAL_VIEW_PROFILES))
+    p.add_argument('--global-view',choices=(*GLOBAL_VIEW_PROFILES,'all'),help='Display RGB viewpoint(s) after one controlled-optics recording')
     a=p.parse_args();record=prepare(a.scene,a.out,a.gpu,a.camera_rig_profile,a.global_view)
     if a.mode=='prepare':
         print(json.dumps(record,indent=2));return 0
@@ -80,6 +92,11 @@ def main():
         'wall_s':time.monotonic()-start,'result_path':str(a.out/'run/result.json'),
         'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         'scope':'ENGINEERING_SCENE_VIDEO_REFRESH; evaluate actual result separately'})
+    if code==0 and record.get('display_command'):
+        if not (a.out/'run/episode_000/frame_manifest.json').exists():
+            raise RuntimeError('Native process exited without a completed recording; display refused')
+        with (a.out/'display.log').open('x') as log:
+            code=subprocess.call(record['display_command'],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
     return code
 
 

@@ -49,8 +49,13 @@ def main():
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--indices', type=int, nargs='+')
-    parser.add_argument('--rig-profile', default='wrist_camera_rig_v9')
+    parser.add_argument('--rig-profile')
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES,select_global_view
+    parser.add_argument('--global-view',choices=tuple(GLOBAL_VIEW_PROFILES))
     args = parser.parse_args()
+    if args.global_view is not None:
+        args.rig_profile=select_global_view(args.global_view,args.rig_profile)
+    args.rig_profile=args.rig_profile or 'wrist_camera_rig_v9'
     out = args.out
     out.mkdir(parents=True, exist_ok=False)
     (out / 'observations').mkdir()
@@ -257,12 +262,17 @@ def main():
                     'optical_positive_Z_world': np.asarray(calibration['T_world_camera'])[:3,2].tolist(),
                     'camera_position_world_m': np.asarray(calibration['T_world_camera'])[:3,3].tolist()}
             valid = np.isfinite(raw) & (raw >= profile['near_m']) & (raw <= profile['far_m'])
+            narrow_rgb_only=args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v13','wrist_camera_rig_v14')
+            published_valid=np.zeros_like(valid) if narrow_rgb_only else valid
             original = episode / 'observations' / f'global_d455_{index:04d}.npz'
             with np.load(original) as old:
                 native_time = float(old['native_physics_timestamp_s'])
             target = out / 'observations' / f'global_d455_{index:04d}.npz'
-            np.savez_compressed(target, rgb=rgb, depth_m=np.where(valid, raw, 0), valid_mask=valid,
+            np.savez_compressed(target, rgb=rgb, depth_m=np.where(published_valid, raw, 0), valid_mask=published_valid,
                 native_depth_raw=raw, ideal_depth_m=ideal, K=calibration['K'], T_world_camera=calibration['T_world_camera'],
+                native_raw_valid_mask=valid, native_depth_registration_validated=False,
+                published_modalities='rgb_only' if narrow_rgb_only else 'rgb_with_unregistered_depth_diagnostic',
+                depth_scope='No accepted registered narrow-lens depth. Native raw and ideal AOVs are debug only; normalized depth invalid.' if narrow_rgb_only else 'Native unregistered raw depth diagnostic; no calibration claim',
                 physics_timestamp_s=timestamp, surface_timestamp_s=timestamp, camera_extrinsics_timestamp_s=timestamp,
                 native_physics_timestamp_s=native_time, camera_id='global_d455',
                 live_source='Isaac Sim6.2 native camera replay of measured Native states; no physics rerun',
@@ -274,13 +284,15 @@ def main():
                 'ideal_foreground_below_native_minimum_pixels': int((np.isfinite(ideal) & (ideal > clipping[0]) & (ideal < profile['native_near_m'])).sum()),
                 'foreground_scope': 'RGB and ideal first-hit depth retain foreground below 0.52m; only native valid-depth output is range-filtered',
                 'staged': staged, 'capture_sha256': sha256_file(target), 'original_global_sha256': sha256_file(original),
-                'valid_depth_fraction': float(valid.mean())})
+                'valid_depth_fraction': float(published_valid.mean()),'native_raw_valid_fraction_diagnostic':float(valid.mean())})
             (out / 'progress.json').write_text(json.dumps(audit, indent=2) + '\n')
             print(f'GLOBAL replay {index}: {timestamp:.2f}s', flush=True)
         receipt = {'schema': 'native_global_camera_replay_v1', 'status': 'PASS_RENDER', 'source_episode': str(episode),
             'runtime_source': 'native_camera_replay', 'replay_inputs': True,
             'physics_runs': 0, 'source_native_outcome_unchanged': True, 'wrist_captures_modified': False,
             'rendering_only': True, 'profile': profile, 'calibration': calibration, 'frames': audit,
+            'published_modalities':['rgb'],
+            'native_stereo_registration':'BLOCKED narrow24 controls retained; no registered Global depth published' if narrow_rgb_only else 'unregistered diagnostic, no new validation',
             'source_sha256': {str(p): sha256_file(p) for p in [robot_path, episode/'frame_manifest.json',
                 episode/'final_live_scene.usda' if (episode/'final_live_scene.usda').exists() else episode/'final_live_scene.usda.gz',
                 *[episode/'surface_debug'/f"surface_{row['frame']:04d}.npz" for row in selected]]},
