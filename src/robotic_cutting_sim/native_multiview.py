@@ -153,6 +153,13 @@ def render_episode(args, episode, out, started):
     material=json.loads((episode/'material.json').read_text()) if (episode/'material.json').exists() else {}
     solver=material.get('solver_module','legacy solver unrecorded').split('.')[-1]
     surface=setup.get('config',{}).get('surface_profile') or ('recorded archive surface' if archived else 'particle_surface_v1')
+    manifest=json.loads((episode/'manifest.json').read_text())
+    runtime_config=manifest.get('config',{})
+    runtime_config=runtime_config.get('config',runtime_config)
+    # Policy episode setup contains body labels only. Read its actual Native
+    # configuration before labelling an experimental cut-aware recording.
+    if runtime_config.get('surface_profile')=='cut_aware_surface_v1':
+        surface='cut_aware_surface_v1'
     obs=episode/'observations'
     streams=dm.discover_streams(p.name for p in obs.glob('*.npz'))
     if not all(name in streams for name in CAMERAS):raise ValueError('Missing actual Global or either wrist stream')
