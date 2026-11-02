@@ -91,6 +91,8 @@ def main():
     payload={'schema':'wp14_followup_gallery_v1','catalog_sha256':sha256_file(a.catalog),
         'simulator_runs':0,'scope':'Remastered actual saved Native cameras. Prior task evaluations and failures unchanged.',
         'episodes':receipts,'comparisons':comparisons,'archive_inventory':catalog.get('archive_inventory',[])}
+    if catalog.get('publication_context'):
+        payload['publication_context']=catalog['publication_context']
     with a.evidence.open('x') as f:f.write(json.dumps(payload,indent=2)+'\n')
 
 

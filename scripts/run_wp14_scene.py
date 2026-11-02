@@ -14,11 +14,14 @@ sys.path.insert(0, str(ROOT/'src'))
 CATALOG = ROOT/'configs/wp14/scene_catalog_v1.json'
 
 
-def prepare(name, out, gpu=0):
+def prepare(name, out, gpu=0, camera_rig_profile=None):
     from robotic_cutting_sim.scene_config import compile_task
     from robotic_cutting_sim.research_profiles import validate_runtime
     from robotic_cutting_sim.recording import write_json
     catalog=json.loads(CATALOG.read_text());entry=catalog['entries'][name]
+    if camera_rig_profile is not None:
+        from robotic_cutting_sim.camera_rig import RIG_PROFILES
+        if camera_rig_profile not in RIG_PROFILES:raise ValueError('Unknown camera rig profile')
     inputs={}
     for kind in ('scene','goal'):
         source=ROOT/entry[kind]
@@ -40,9 +43,11 @@ def prepare(name, out, gpu=0):
         '--steps',str(round(task.duration_s/task.control_dt_s)),'--gpu',str(gpu),
         '--seed',str(entry['seed']),'--out',str(out/'run'),
         '--surface-profile',catalog['surface_profile'],'--surface-timing-log']
+    if camera_rig_profile is not None:
+        command+=['--camera-rig-profile',camera_rig_profile]
     record={'scene':name,'catalog':str(CATALOG.relative_to(ROOT)),'task_id':task.task_id,
         'profile':receipt,'source_inputs':entry,'command':command,
-        'camera_rig':catalog['camera_rig'],'native_execution':'NOT_RUN',
+        'camera_rig':camera_rig_profile or catalog['camera_rig'],'native_execution':'NOT_RUN',
         'scope':'Explicit CUT research scene; full Native plan preflight remains enabled. '
                 'A new run is an engineering replay, not an independent adoption sample.'}
     write_json(out/'prepared.json',record)
@@ -55,7 +60,9 @@ def main():
     p.add_argument('--scene',choices=tuple(json.loads(CATALOG.read_text())['entries']),default='standard_cut')
     p.add_argument('--out',type=Path,required=True)
     p.add_argument('--gpu',type=int,default=0)
-    a=p.parse_args();record=prepare(a.scene,a.out,a.gpu)
+    from robotic_cutting_sim.camera_rig import RIG_PROFILES
+    p.add_argument('--camera-rig-profile',choices=RIG_PROFILES)
+    a=p.parse_args();record=prepare(a.scene,a.out,a.gpu,a.camera_rig_profile)
     if a.mode=='prepare':
         print(json.dumps(record,indent=2));return 0
     from robotic_cutting_sim.recording import write_json

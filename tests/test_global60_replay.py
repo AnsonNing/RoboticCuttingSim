@@ -33,6 +33,19 @@ def test_v9_target_translation_is_frozen_at_scene_creation():
     assert np.linalg.norm(eye-target)==pytest.approx(.6,abs=1e-9)
 
 
+def test_normal_scene_launcher_only_changes_explicit_camera_selection(tmp_path):
+    spec=importlib.util.spec_from_file_location('wp14_scene_global60',Path('scripts/run_wp14_scene.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    old=module.prepare('standard_cut',tmp_path/'old')
+    new=module.prepare('standard_cut',tmp_path/'new',camera_rig_profile='wrist_camera_rig_v9')
+    assert old['task_id']==new['task_id']
+    assert old['profile']==new['profile']
+    assert old['source_inputs']==new['source_inputs']
+    assert old['camera_rig']=='wrist_camera_rig_v5'
+    assert new['camera_rig']=='wrist_camera_rig_v9'
+    assert new['command'][-2:]==['--camera-rig-profile','wrist_camera_rig_v9']
+
+
 def test_replay_refuses_interpolation_and_missing_state():
     spec = importlib.util.spec_from_file_location('replay_global', Path('scripts/rerender_native_global.py'))
     module = importlib.util.module_from_spec(spec)

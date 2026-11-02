@@ -1,3 +1,23 @@
+# Global camera refresh — 2026-11-02 Asia/Seoul — IN PROGRESS
+
+- New user authorization: physical Global camera about 0.60 m from each workpiece, changed viewing angle,
+  all current/gallery movies updated. The completed prior WP-14 release remains historical evidence.
+- Branch `codex/global-60cm-all-media` starts from merged PR #6 main `b9100bc`; its exact main CI succeeded.
+- Explicit rig9 keeps controlled v5 Global optics, both fixed wrist mounts and default v5 selection;
+  only Global pose and its explicitly versioned logical near range change. The camera targets the
+  initial workpiece base-plane centre once, then remains World-fixed. No wrist aiming or robot hiding.
+- Exact source-fidelity audit PASS:13 saved-mesh Native episodes /513 captures retain the original
+  staged surface hashes and measured robot/tool matrices. Camera replay is explicitly labelled.
+- Position-only trial rendering was rejected: current-volume surfaces need absent per-frame F.
+  Those angle trials remain in artifacts and cannot supply published media.31 source cases require
+  new recordings; five identical-input aliases reduce this to26 unique engineering recordings.
+- New recordings and media review remain IN PROGRESS. Scientific denominators and old outcomes stay frozen.
+  Optional exact staged-mesh archival prevents future camera changes from requiring another material run.
+- CPU camera/media/recorder checks PASS74; scene launcher checks PASS8. Full final CI /PR/main /
+  remote-media verification NOT_RUN for this new release. New publication receipt and DONE remain absent.
+- Runtime ledger, failed attempts, raw recordings and protected1309-blob baseline:
+  `artifacts/wp14/global60_001/`. [Camera refresh report](reports/GLOBAL60_CAMERA_REFRESH.md).
+
 # Follow-up progress — 2026-11-02 Asia/Seoul
 
 - New authorized v7 workflow / sequential two-protrusion / multiview task is separate from original WP-14.

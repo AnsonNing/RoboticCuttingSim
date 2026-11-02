@@ -88,7 +88,7 @@ def depth_rgb(frame):
     return np.where(valid[...,None],np.uint8(rgb*255),0)
 
 
-def canvas(frames, solver, phase, task_status, title, surface='particle_surface_v1', archived=False, global_crop=None, global_replay=False):
+def canvas(frames, solver, phase, task_status, title, surface='particle_surface_v1', archived=False, global_crop=None, global_replay=False, global_distance_m=None):
     im=Image.new('RGB',(1920,1080),(17,19,24));draw=ImageDraw.Draw(im)
     small=ImageFont.truetype(FONT,18);large=ImageFont.truetype(FONT,25)
     t=float(frames['global_d455']['physics_timestamp_s'])
@@ -96,6 +96,8 @@ def canvas(frames, solver, phase, task_status, title, surface='particle_surface_
     draw.text((18,43),f'sim {t:.2f} s | phase {phase} | recorded task {task_status} | playback 1x',font=small,fill='#e5dbab')
     if global_replay:
         draw.text((18,65),'Global: physical 0.60 m camera replay | wrists: original Native captures',font=small,fill='#e5dbab')
+    elif global_distance_m is not None:
+        draw.text((18,65),f'New Native rig9 recording | fixed Global working distance {global_distance_m:.2f} m',font=small,fill='#e5dbab')
     def pane(name,box,depth=False):
         x,y,w,h=box
         frame=frames[name]
@@ -134,6 +136,7 @@ def canvas(frames, solver, phase, task_status, title, surface='particle_surface_
         draw.text((8,722),'closeup_rgb: actual Native presentation camera (not an observation)',font=small,fill='white')
         draw.text((8,746),f'{t:.2f}s | {solver} | {phase}',font=small,fill='#bbc3d0')
     footer='Archived camera calibration retained; no retrofit to the current rig.' if archived else 'Fixed hand-local v5 D405 mounts.'
+    if archived and global_replay:footer='Archived wrist calibration retained; fixed Global rig9.'
     source='Global re-render of measured states; original wrists. ' if global_replay else 'Actual recorded cameras. '
     draw.text((18,1052),source+footer+' Physical sensor calibration unvalidated.',font=small,fill='#bbc3d0')
     return np.asarray(im)
@@ -158,6 +161,7 @@ def render_episode(args, episode, out, started):
         raise ValueError('Camera frame indices are not paired')
     replay_dir=getattr(args,'global_replay',None)
     replay=None
+    global_distance=None
     if replay_dir is not None:
         replay_dir=replay_dir.resolve()
         replay=json.loads((replay_dir/'replay_receipt.json').read_text())
@@ -170,6 +174,14 @@ def render_episode(args, episode, out, started):
                 raise ValueError('Replayed Global source bytes changed')
         for path,expected in replay['source_sha256'].items():
             if dm.sha256_file(Path(path))!=expected:raise ValueError('Measured replay input changed')
+        global_distance=replay['profile']['working_distance_to_target_m']
+    elif (episode/'camera_rig.json').exists():
+        rig=json.loads((episode/'camera_rig.json').read_text())['specs']['global_d455']
+        if rig.get('rig_profile')=='wrist_camera_rig_v9':
+            target=np.asarray(rig['look_at_target_world_m'])
+            eye=np.asarray(rig['T_world_camera'])[:3,3]
+            global_distance=float(np.linalg.norm(eye-target))
+            if abs(global_distance-.6)>1e-6:raise ValueError('Rig9 actual physical distance is not 0.60 m')
     def load(index):
         frames=read_set(obs,index,allow_missing=archived)
         if replay_dir is not None:
@@ -179,6 +191,9 @@ def render_episode(args, episode, out, started):
             frames['closeup_rgb']=read_closeup(obs,index,float(frames['global_d455']['physics_timestamp_s']))
         return frames
     initial={name:load(streams[name][0])[name] for name in CAMERAS}
+    if global_distance is not None and replay is None:
+        if not np.allclose(initial['global_d455']['T_world_camera'],rig['T_world_camera'],atol=1e-5,rtol=0):
+            raise ValueError('Recorded Native Global pose differs from declared rig9 physical pose')
     crop=args.global_pixel_crop
     if crop is not None:
         x,y,w,h=crop;rgb=initial['global_d455']['rgb']
@@ -203,7 +218,7 @@ def render_episode(args, episode, out, started):
     phases={index:(('ARCHIVED_REFERENCE' if archived and not rows else 'HOME') if row<0 else rows[row].get('policy_phase','UNKNOWN')) for index,row in zip(indices,chosen)}
     status=result.get('task_status','NOT_REPORTED');title=args.title or result['task_id']
     def transform(path):
-        index=int(path.stem.rsplit('_',1)[1]);return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None)
+        index=int(path.stem.rsplit('_',1)[1]);return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None,global_distance)
     files=[obs/f'global_d455_{i:04d}.npz' for i in indices]
     encoded=(encode_frames(files,out/'demo.mp4',None,view=LAYOUT,frame_transform=transform,fps=fps) if constant
              else encode_timed_frames(files,out/'demo.mp4',transform,times))
@@ -213,11 +228,13 @@ def render_episode(args, episode, out, started):
     subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(out/'demo.mp4'),'-f','null','-'],check=True)
     receipt={'schema':'native_multiview_render_receipt_v2','layout':LAYOUT,'episode_dir':str(episode),
         'runtime_source':'native_camera_replay_and_original_wrist_captures' if replay else 'live_isaac_sim','solver':solver,'surface_profile':surface,'archived_calibration':archived,
-        'global_camera_replay':replay,'additional_physics_runs':0,
+        'global_camera_replay':replay,'encoder_simulator_runs':0,
+        'global_working_distance_m':global_distance,
         'task_id':result['task_id'],'task_status':status,'cameras':list(CAMERAS),
         'panes':['global_d455 RGB','wrist_d405_0 RGB','wrist_d405_1 RGB','wrist_d405_0 Depth','wrist_d405_1 Depth'],
         'frame_count':len(indices),'capture_time_s':times.tolist(),'frame_checks':audit,
         'sync_status':'PASS','depth_colour_range_m':[.07,.50],'invalid_depth':'black',
+        'sync_kind':'same_measured_state_time_with_global_camera_replay' if replay else 'simultaneous_native_camera_capture',
         'global_pixel_crop_xywh':crop,'native_clock_origin_offset_s':float(offsets[0]),
         'presentation_closeup':{'included':bool(args.presentation_closeup),'policy_observation':False,
                                'recorded_spec':setup.get('presentation_closeup_camera')},
