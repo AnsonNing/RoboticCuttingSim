@@ -37,3 +37,14 @@ def validate_frame(rgb, depth_m, physics_timestamp_s, surface_timestamp_s):
     return {"rgb": rgb, "depth_m": depth.astype(np.float32, copy=False),
             "valid_mask": depth > 0, "timestamp_s": float(times[0]),
             "surface_timestamp_s": float(times[1])}
+
+
+def validate_rgb_frame(rgb, physics_timestamp_s, surface_timestamp_s):
+    """An explicitly RGB-only camera has no depth array or depth-validity mask."""
+    rgb = np.asarray(rgb)
+    if rgb.ndim != 3 or rgb.shape[2] != 3 or rgb.dtype != np.uint8:
+        raise ValueError('Expected uint8 RGB HxWx3')
+    times = np.asarray([physics_timestamp_s, surface_timestamp_s], float)
+    if not np.isfinite(times).all() or np.min(times) < 0 or abs(times[0]-times[1]) > 1e-9:
+        raise ValueError('Physics and surface timestamps must match and be nonnegative')
+    return {'rgb': rgb, 'timestamp_s': float(times[0]), 'surface_timestamp_s': float(times[1])}

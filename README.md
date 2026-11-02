@@ -204,3 +204,10 @@ The kinematic runtime has ideal tracking and no cameras; it is a physics diagnos
 
 GPU probes run separately. A skipped check is NOT_RUN; successful execution is
 separate from task success, physical fidelity and real-material calibration.
+
+## Agentic control robot seeded trimming
+
+The opt-in [seeded trimming challenge](docs/AGENTIC_TRIM_CHALLENGE.md) provides
+actual live rig14 Global RGB and wrist_0 RGB-D, explicit arm_0 actions and
+independent physical scoring. Preparation is validated; autonomous research
+results are tracked separately in its study report.

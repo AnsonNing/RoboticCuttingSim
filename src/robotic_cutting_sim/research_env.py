@@ -58,9 +58,9 @@ def proprio_observation(proprio, timestamp_s):
 def vision_observation(frames, calibration, timestamp_s, profile, proprio=None, *,
                        include_global_camera=False):
     """Allowlist named RGB-D sensors; global inclusion is an explicit option."""
-    from .sensor_contract import validate_frame
+    from .sensor_contract import validate_frame, validate_rgb_frame
     wrist = "wrist_d405_0" in frames or "wrist_d405_1" in frames
-    names = ("wrist_d405_0", "wrist_d405_1") if wrist else ("d455_0", "d455_1")
+    names = tuple(n for n in ("wrist_d405_0", "wrist_d405_1") if n in frames) if wrist else ("d455_0", "d455_1")
     if include_global_camera:
         names += ("global_d455" if wrist else "global",)
     for name in names:
@@ -70,9 +70,11 @@ def vision_observation(frames, calibration, timestamp_s, profile, proprio=None, 
                 recorded_time = float(source.get(field, timestamp_s))
                 if not np.isfinite(recorded_time) or abs(recorded_time-timestamp_s) > 1e-9:
                     raise ValueError(description+" timestamps must match")
-    validated = {name: validate_frame(frames[name]["rgb"], frames[name]["depth_m"],
-                    timestamp_s, frames[name]["surface_timestamp_s"]) for name in names}
-    observation = {key: {name: validated[name][key] for name in names}
+    validated = {name: (validate_rgb_frame(frames[name]['rgb'], timestamp_s, frames[name]['surface_timestamp_s'])
+                    if frames[name].get('modalities') == ['rgb'] else
+                    validate_frame(frames[name]["rgb"], frames[name]["depth_m"],
+                    timestamp_s, frames[name]["surface_timestamp_s"])) for name in names}
+    observation = {key: {name: validated[name][key] for name in names if key in validated[name]}
                    for key in ("rgb", "depth_m", "valid_mask")}
     observation["calibration"] = {name: calibration[name] for name in names}
     observation["timestamp_s"] = float(timestamp_s)

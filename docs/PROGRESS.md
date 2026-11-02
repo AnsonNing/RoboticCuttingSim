@@ -1,3 +1,18 @@
+# WP-15 preparation — agentic control robot — 2026-11-02
+
+- Opt-in seeded continuous 1–2 protrusion geometry: 12 actual particle hashes
+  differ, both counts/four families represented, same-seed hashes repeat.
+- Actual Native rig14 RGB-only + wrist_0 RGB-D smoke: 20 steps / 0.4 s,
+  fixed Global, moving hand-local wrist, synchronized timestamps, GPU1 guard PASS.
+  The original narrow Global stereo-depth guard remains; no fabricated depth.
+- CPU contracts 35 PASS; independent evaluator/media checks 8 PASS; focused max
+  review found and fixed camera subset, fresh recorder directory and ffmpeg4
+  compatibility issues. Original solvers, thresholds and historical records stay frozen.
+- Camera smoke physical FAIL_INTEGRITY (incomplete) and startup failure preserved.
+  Scripted full-episode diagnostics and actual autonomous research NOT_RUN at this
+  preparation commit. No cutting success or study completion is claimed.
+- [Environment and preparation evidence](AGENTIC_TRIM_CHALLENGE.md).
+
 # Latest showcase scope — v7 homepage, historical baselines retained
 
 - Homepage displays5 real moving v7/v7_2 previews, with three fixed Global RGB
