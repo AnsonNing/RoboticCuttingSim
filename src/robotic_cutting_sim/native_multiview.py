@@ -88,12 +88,14 @@ def depth_rgb(frame):
     return np.where(valid[...,None],np.uint8(rgb*255),0)
 
 
-def canvas(frames, solver, phase, task_status, title, surface='particle_surface_v1', archived=False, global_crop=None):
+def canvas(frames, solver, phase, task_status, title, surface='particle_surface_v1', archived=False, global_crop=None, global_replay=False):
     im=Image.new('RGB',(1920,1080),(17,19,24));draw=ImageDraw.Draw(im)
     small=ImageFont.truetype(FONT,18);large=ImageFont.truetype(FONT,25)
     t=float(frames['global_d455']['physics_timestamp_s'])
     draw.text((18,10),f'{title} | Native Isaac Sim | {solver} | {surface}',font=large,fill='white')
     draw.text((18,43),f'sim {t:.2f} s | phase {phase} | recorded task {task_status} | playback 1x',font=small,fill='#e5dbab')
+    if global_replay:
+        draw.text((18,65),'Global: physical 0.60 m camera replay | wrists: original Native captures',font=small,fill='#e5dbab')
     def pane(name,box,depth=False):
         x,y,w,h=box
         frame=frames[name]
@@ -132,7 +134,8 @@ def canvas(frames, solver, phase, task_status, title, surface='particle_surface_
         draw.text((8,722),'closeup_rgb: actual Native presentation camera (not an observation)',font=small,fill='white')
         draw.text((8,746),f'{t:.2f}s | {solver} | {phase}',font=small,fill='#bbc3d0')
     footer='Archived camera calibration retained; no retrofit to the current rig.' if archived else 'Fixed hand-local v5 D405 mounts.'
-    draw.text((18,1052),'Actual recorded cameras. '+footer+' Physical sensor calibration unvalidated.',font=small,fill='#bbc3d0')
+    source='Global re-render of measured states; original wrists. ' if global_replay else 'Actual recorded cameras. '
+    draw.text((18,1052),source+footer+' Physical sensor calibration unvalidated.',font=small,fill='#bbc3d0')
     return np.asarray(im)
 
 
@@ -153,12 +156,29 @@ def render_episode(args, episode, out, started):
     indices=streams[CAMERAS[0]]
     if not indices or (not archived and any(streams[name]!=indices for name in CAMERAS)):
         raise ValueError('Camera frame indices are not paired')
-    initial={name:read_set(obs,streams[name][0],allow_missing=archived)[name] for name in CAMERAS}
+    replay_dir=getattr(args,'global_replay',None)
+    replay=None
+    if replay_dir is not None:
+        replay_dir=replay_dir.resolve()
+        replay=json.loads((replay_dir/'replay_receipt.json').read_text())
+        if replay['status']!='PASS_RENDER' or Path(replay['source_episode']).resolve()!=episode.resolve():
+            raise ValueError('Global replay is incomplete or belongs to another Native episode')
+        if [r['frame'] for r in replay['frames']]!=indices:
+            raise ValueError('Global replay does not cover the complete original timeline')
+        for row in replay['frames']:
+            if dm.sha256_file(replay_dir/'observations'/f"global_d455_{row['frame']:04d}.npz")!=row['capture_sha256']:
+                raise ValueError('Replayed Global source bytes changed')
+        for path,expected in replay['source_sha256'].items():
+            if dm.sha256_file(Path(path))!=expected:raise ValueError('Measured replay input changed')
     def load(index):
         frames=read_set(obs,index,allow_missing=archived)
+        if replay_dir is not None:
+            with np.load(replay_dir/'observations'/f'global_d455_{index:04d}.npz') as data:
+                frames['global_d455']={k:data[k] for k in data.files}
         if args.presentation_closeup:
             frames['closeup_rgb']=read_closeup(obs,index,float(frames['global_d455']['physics_timestamp_s']))
         return frames
+    initial={name:load(streams[name][0])[name] for name in CAMERAS}
     crop=args.global_pixel_crop
     if crop is not None:
         x,y,w,h=crop;rgb=initial['global_d455']['rgb']
@@ -169,6 +189,9 @@ def render_episode(args, episode, out, started):
         for name in (*CAMERAS,*(('closeup_rgb',) if args.presentation_closeup else ())):
             path=obs/f'{name}_{index:04d}.npz'
             if path.exists():inputs[str(path)]=dm.sha256_file(path)
+        if replay_dir is not None:
+            path=replay_dir/'observations'/f'global_d455_{index:04d}.npz'
+            inputs[str(path)]=dm.sha256_file(path)
     times=np.array([r['time_s'] for r in audit]);dt=np.diff(times)
     offsets=np.array([r['native_time_s']-r['time_s'] for r in audit])
     if not np.allclose(offsets,offsets[0],atol=1e-6,rtol=0):raise ValueError('Native/episode clock origin changed during recording')
@@ -180,7 +203,7 @@ def render_episode(args, episode, out, started):
     phases={index:(('ARCHIVED_REFERENCE' if archived and not rows else 'HOME') if row<0 else rows[row].get('policy_phase','UNKNOWN')) for index,row in zip(indices,chosen)}
     status=result.get('task_status','NOT_REPORTED');title=args.title or result['task_id']
     def transform(path):
-        index=int(path.stem.rsplit('_',1)[1]);return canvas(load(index),solver,phases[index],status,title,surface,archived,crop)
+        index=int(path.stem.rsplit('_',1)[1]);return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None)
     files=[obs/f'global_d455_{i:04d}.npz' for i in indices]
     encoded=(encode_frames(files,out/'demo.mp4',None,view=LAYOUT,frame_transform=transform,fps=fps) if constant
              else encode_timed_frames(files,out/'demo.mp4',transform,times))
@@ -189,7 +212,8 @@ def render_episode(args, episode, out, started):
     command=preview(out/'demo.mp4',out/'demo.gif',start=0,duration=float(times[-1]-times[0]+1/fps),width=args.gif_width,speed=speed)
     subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(out/'demo.mp4'),'-f','null','-'],check=True)
     receipt={'schema':'native_multiview_render_receipt_v2','layout':LAYOUT,'episode_dir':str(episode),
-        'runtime_source':'live_isaac_sim','solver':solver,'surface_profile':surface,'archived_calibration':archived,
+        'runtime_source':'native_camera_replay_and_original_wrist_captures' if replay else 'live_isaac_sim','solver':solver,'surface_profile':surface,'archived_calibration':archived,
+        'global_camera_replay':replay,'additional_physics_runs':0,
         'task_id':result['task_id'],'task_status':status,'cameras':list(CAMERAS),
         'panes':['global_d455 RGB','wrist_d405_0 RGB','wrist_d405_1 RGB','wrist_d405_0 Depth','wrist_d405_1 Depth'],
         'frame_count':len(indices),'capture_time_s':times.tolist(),'frame_checks':audit,

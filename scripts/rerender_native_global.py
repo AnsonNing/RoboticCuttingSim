@@ -98,7 +98,14 @@ def main():
         camera = stage.GetPrimAtPath(camera_path)
         if not camera:
             raise ValueError(f'Original Global camera missing: {camera_path}')
-        profile = CameraRig(rig_profile=args.rig_profile).specs['global_d455']
+        task_path=episode/'task.json'
+        if task_path.exists():
+            task_record=load_json(task_path)
+        else:
+            task_record=load_json(episode/'setup.json')['task']
+        task_frame=pose_matrix(task_record['world_from_workpiece_xyzw'])
+        target=task_frame[:3,:3]@np.array([0.,0.,task_record['geometry']['base_height_m']])+task_frame[:3,3]
+        profile = CameraRig(rig_profile=args.rig_profile,global_target_world_m=target).specs['global_d455']
         transform = np.asarray(profile['T_world_camera'])
         # Move the actual existing Global housing, retaining its optical offsets.
         root = stage.GetPrimAtPath('/World/WristCameraRig/GlobalD455')

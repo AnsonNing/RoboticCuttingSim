@@ -65,7 +65,8 @@ def _bracket_obb(transform, anchor):
 
 class CameraRig:
     def __init__(self, task_id="TRIM-01", camera_layout=WRIST_LAYOUT,
-                 initial_hand_poses_world_xyzw=None, rig_profile='wrist_camera_rig_v5'):
+                 initial_hand_poses_world_xyzw=None, rig_profile='wrist_camera_rig_v5',
+                 global_target_world_m=None):
         if rig_profile not in RIG_PROFILES:
             raise ValueError(f'Unknown camera rig profile: {rig_profile}')
         if camera_layout in (LEGACY_LAYOUT, 'fixed_d455') and rig_profile != RIG_PROFILES[0]:
@@ -164,6 +165,12 @@ class CameraRig:
                 calibration_scope='Versioned square-pixel simulated D455 lens; actual render-product K recorded; physical calibration unvalidated')
         elif rig_profile in ('wrist_camera_rig_v7','wrist_camera_rig_v8','wrist_camera_rig_v9'):
             config=json.loads(CONFIG_PATH.with_name(rig_profile+'.json').read_text())['global_d455']
+            if rig_profile == 'wrist_camera_rig_v9' and global_target_world_m is not None:
+                target=np.asarray(global_target_world_m,float)
+                if target.shape!=(3,) or not np.isfinite(target).all():
+                    raise ValueError('Global target must be finite world XYZ')
+                offset=np.asarray(config['eye_world_m'])-np.asarray(config['target_world_m'])
+                config={**config,'target_world_m':target.tolist(),'eye_world_m':(target+offset).tolist()}
             transform=_look_at(config['eye_world_m'], config['target_world_m'])
             self.specs['global_d455'].update(
                 rig_profile=rig_profile,T_world_camera=transform.tolist(),
@@ -310,13 +317,13 @@ def _disable_physics_and_products(stage, root):
 
 
 def make_rig(task_id="TRIM-01", camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None,
-             rig_profile='wrist_camera_rig_v5'):
-    return CameraRig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile)
+             rig_profile='wrist_camera_rig_v5', global_target_world_m=None):
+    return CameraRig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile, global_target_world_m)
 
 
 def author_camera_rig(stage, hand_paths, d455_asset, task_id="TRIM-01", *,
                       camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None,
-                      rig_profile='wrist_camera_rig_v5'):
+                      rig_profile='wrist_camera_rig_v5', global_target_world_m=None):
     if initial_hand_poses_world_xyzw is None:
         from pxr import Usd, UsdGeom
         poses = []
@@ -327,5 +334,5 @@ def author_camera_rig(stage, hand_paths, d455_asset, task_id="TRIM-01", *,
             transform = np.asarray(UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
             poses.append(np.r_[transform[:3, 3], Rotation.from_matrix(transform[:3, :3]).as_quat()])
         initial_hand_poses_world_xyzw = poses
-    rig = make_rig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile)
+    rig = make_rig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile, global_target_world_m)
     return rig.author_usd(stage, hand_paths, global_d455_asset_path=d455_asset)
