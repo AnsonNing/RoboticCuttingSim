@@ -1,5 +1,10 @@
 # Seeded trimming for an agentic control robot
 
+The subsequent [executed study](reports/AGENTIC_TRIM_STUDY.md) contains the actual
+agent proposals, revisions, development/formal/OOD attempts and failure analysis.
+No autonomous cutting success or measured mechanical success rate was established.
+The preparation evidence below remains attributed to its original stage.
+
 This opt-in Native environment generates a continuous clay-like workpiece with
 one or two protrusions. Scene seeds change count, family, position, radii,
 height, yaw and asymmetry. The four families are dome, Gaussian, irregular and

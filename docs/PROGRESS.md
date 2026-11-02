@@ -1,3 +1,21 @@
+# WP-15 bounded study — agentic control robot — 2026-11-03
+
+- Existing agent authored two methods and three controller versions, inspected
+  its own observations, revised action-limit handling and froze selected C2
+  before fresh held-out seeds were declared. No cutting trajectory was supplied.
+- Executed two scripted diagnostics, ten development attempts, sixteen formal
+  attempts on eight unique seeds and two separate OOD attempts. All failures
+  and the original operational formal ledger 0/8 remain preserved.
+- Actual candidate control evidence: C1 59 actions / 1.18 s; frozen C2 OOD
+  17 actions / 0.34 s. No complete candidate physics recording survived.
+  Mechanical success rate/generalization are NOT_RUN; autonomous success is
+  not established. Scripted evidence never enters agent denominators.
+- Disjoint CPU subsets: 1782 PASS / 9 SKIP / 6 XFAIL. Delivery provenance
+  timeout/error handling additionally passed 22 focused tests; original frozen
+  study source, physics, thresholds and historical records remain unchanged.
+- [Actual study, costs and limits](reports/AGENTIC_TRIM_STUDY.md),
+  [compact outcomes](evidence/wp15/study_summary_001.json).
+
 # WP-15 preparation — agentic control robot — 2026-11-02
 
 - Opt-in seeded continuous 1–2 protrusion geometry: 12 actual particle hashes

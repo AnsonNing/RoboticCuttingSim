@@ -209,5 +209,7 @@ separate from task success, physical fidelity and real-material calibration.
 
 The opt-in [seeded trimming challenge](docs/AGENTIC_TRIM_CHALLENGE.md) provides
 actual live rig14 Global RGB and wrist_0 RGB-D, explicit arm_0 actions and
-independent physical scoring. Preparation is validated; autonomous research
-results are tracked separately in its study report.
+independent physical scoring. The [executed bounded study](docs/reports/AGENTIC_TRIM_STUDY.md)
+compared two agent-authored methods on real seeded scenes. Runtime failures
+prevented mechanical performance measurement; no autonomous cutting success
+was established. All original physics and historical evidence remain preserved.

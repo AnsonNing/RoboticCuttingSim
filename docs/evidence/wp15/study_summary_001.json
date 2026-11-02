@@ -1,0 +1,144 @@
+{
+  "schema": "agentic_control_robot_study_v1",
+  "frozen_simulator_commit": "9b91d3556f6b0fac102e58b37bdbf3db6bce887f",
+  "selected_controller_sha256": "e34cea86c160a4d9f7e545eb7f26e904b1b5d1166fadc3734f88eeeb2f159a3b",
+  "methods": 2,
+  "authored_controller_versions": 3,
+  "groups": [
+    {
+      "split": "scripted_diagnostic",
+      "attempts": 2,
+      "unique_scene_seeds": [
+        0,
+        1
+      ],
+      "agent_success_eligible": false,
+      "physical_evaluation": "NOT_RUN_RUNTIME_KILLED",
+      "established_successes": 0,
+      "worker_wall_s": 769.744
+    },
+    {
+      "split": "development",
+      "group": "trim_local_c2_dev",
+      "attempts": 2,
+      "scene_seeds": [
+        15,
+        29
+      ],
+      "controller_sha256": "e34cea86c160a4d9f7e545eb7f26e904b1b5d1166fadc3734f88eeeb2f159a3b",
+      "wall_s": 475.607,
+      "errors": {
+        "episode process exit 137": 2
+      }
+    },
+    {
+      "split": "development",
+      "group": "trim_skim_c1_dev",
+      "attempts": 2,
+      "scene_seeds": [
+        15,
+        29
+      ],
+      "controller_sha256": "dba5a7a3a5341240b59af1a48aae42bc1d5665eead182e6b3d2806ef58c5aa67",
+      "wall_s": 481.535,
+      "errors": {
+        "episode process exit 137": 2
+      }
+    },
+    {
+      "split": "development",
+      "group": "trim_skim_c1_dev_r2",
+      "attempts": 2,
+      "scene_seeds": [
+        15,
+        29
+      ],
+      "controller_sha256": "8202b0cd3060feaa64a13418baf112cc7fe808bbeb37e83158d2812c89c341b3",
+      "wall_s": 336.808,
+      "errors": {
+        "episode process exit 137": 2
+      }
+    },
+    {
+      "split": "development",
+      "group": "trim_skim_c1_dev_r3",
+      "attempts": 2,
+      "scene_seeds": [
+        15,
+        29
+      ],
+      "controller_sha256": "8202b0cd3060feaa64a13418baf112cc7fe808bbeb37e83158d2812c89c341b3",
+      "wall_s": 160.56,
+      "errors": {
+        "episode process exit 137": 2
+      }
+    },
+    {
+      "split": "development",
+      "group": "trim_skim_c1_dev_r4",
+      "attempts": 2,
+      "scene_seeds": [
+        15,
+        29
+      ],
+      "controller_sha256": "8202b0cd3060feaa64a13418baf112cc7fe808bbeb37e83158d2812c89c341b3",
+      "wall_s": 1592.83,
+      "errors": {
+        "episode process exit 137": 2
+      }
+    },
+    {
+      "split": "formal",
+      "attempts": 16,
+      "unique_scene_seeds": [
+        102188,
+        128018,
+        135545,
+        139573,
+        173088,
+        175997,
+        181818,
+        184202
+      ],
+      "wall_s": 11131.285,
+      "errors": {
+        "episode process exit 137": 8,
+        "KeyError: 'stdout'": 2,
+        "ModuleNotFoundError: No module named 'isaacsim.sensors.experimental.physics'": 6
+      },
+      "established_successes": 0,
+      "physical_evaluation": "NOT_RUN_NO_FINAL_PHYSICS"
+    },
+    {
+      "split": "ood",
+      "attempts": 2,
+      "unique_scene_seeds": [
+        300001,
+        300002
+      ],
+      "wall_s": 1524.299,
+      "errors": {
+        "episode process exit 137": 2
+      },
+      "established_successes": 0,
+      "physical_evaluation": "NOT_RUN_NO_FINAL_PHYSICS"
+    }
+  ],
+  "mechanical_success_rate": null,
+  "mechanical_success_rate_reason": "No completed candidate physics recording; runtime failures do not measure cutting performance.",
+  "established_successes": 0,
+  "llm_cost_usd": 6.2541,
+  "agent_wall_hours": 4.476,
+  "cpu_validation": {
+    "passed": 1782,
+    "skipped": 9,
+    "xfailed": 6
+  },
+  "delivery_provenance_fix_tests": {
+    "passed": 22,
+    "native_verification": "NOT_RUN"
+  },
+  "agent_commit": "2c589e2559715a41dc26e45e1fa91864991c5acc",
+  "study_attempt_count": 30,
+  "candidate_cut_enabled_steps_established": 0
+}
