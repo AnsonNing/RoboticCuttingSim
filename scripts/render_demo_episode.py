@@ -128,6 +128,10 @@ def main():
                         help='Optional fixed digital Global RGB crop, with the complete unaltered view inset')
     parser.add_argument('--presentation-closeup', action='store_true',
                         help='Add the actual synchronized closeup_rgb stream, labelled presentation-only')
+    parser.add_argument('--global-replay', type=Path,
+                        help='Explicit Native camera replay receipt/directory for a new Global viewpoint; original wrist captures retained')
+    parser.add_argument('--global-replays',type=Path,nargs=3,metavar=('LEFT','RIGHT','OPPOSITE_TOOL'),
+                        help='Three complete Native camera replay directories; retain all external views and both wrists')
     args = parser.parse_args()
     start = time.perf_counter()
     episode = args.episode_dir.resolve()

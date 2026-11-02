@@ -66,3 +66,57 @@ def test_irregular_capture_all_frames_and_exact_physics_pts(tmp_path):
     assert receipt['pts_check']=='PASS'
     assert receipt['decoded_pts_relative_s']==times
     assert receipt['frames']==4
+
+
+def test_irregular_matched_comparison_keeps_every_actual_pts(tmp_path):
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
+    from encode_wp13_media import encode_timed_frames
+    from encode_followup_gallery import encode_matched_comparison
+    times=[0.,.2,.4,.5]
+    files=[]
+    for i,t in enumerate(times):
+        path=tmp_path/f'global_d455_{i:04d}.npz'
+        np.savez(path,rgb=np.full((16,24,3),i*60,np.uint8),physics_timestamp_s=t);files.append(path)
+    def transform(path):
+        with np.load(path) as data:return data['rgb']
+    for side in ['left','right']:
+        encode_timed_frames(files,tmp_path/(side+'.mp4'),transform,times)
+    receipt=encode_matched_comparison(tmp_path/'left.mp4',tmp_path/'right.mp4',tmp_path/'pair.mp4',times)
+    assert receipt['pts_check']=='PASS'
+    assert receipt['decoded_pts_relative_s']==times
+
+
+def test_three_external_replays_refuse_wrong_view_and_near_clip(tmp_path):
+    from robotic_cutting_sim.native_multiview import require_external_replays
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES
+    from robotic_cutting_sim.demo_media import sha256_file
+    episode=tmp_path/'episode';episode.mkdir();paths=[]
+    for name,profile in GLOBAL_VIEW_PROFILES.items():
+        folder=tmp_path/name;folder.mkdir();(folder/'observations').mkdir()
+        capture=folder/'observations/global_d455_0000.npz'
+        np.savez(capture,rgb=np.zeros((8,12,3),np.uint8))
+        receipt={'status':'PASS_RENDER','source_episode':str(episode),'profile':{'rig_profile':profile},
+            'physics_runs':0,'wrist_captures_modified':False,'source_sha256':{},
+            'frames':[{'frame':0,'capture_sha256':sha256_file(capture),'render_clipping_range_m':[.001,20]}]}
+        (folder/'replay_receipt.json').write_text(json.dumps(receipt));paths.append(folder)
+    assert list(require_external_replays(paths,episode,[0]))==['left','right','opposite_tool']
+    with pytest.raises(ValueError,match='wrong camera profile'):
+        require_external_replays(paths[::-1],episode,[0])
+    r=json.loads((paths[0]/'replay_receipt.json').read_text());r['frames'][0]['render_clipping_range_m']=[.52,20]
+    (paths[0]/'replay_receipt.json').write_text(json.dumps(r))
+    with pytest.raises(ValueError,match='render-near'):
+        require_external_replays(paths,episode,[0])
+
+
+def test_three_global_canvas_retains_all_actual_external_and_wrist_pixels():
+    from robotic_cutting_sim.native_multiview import three_global_canvas
+    f=frames();external={}
+    for i,name in enumerate(['left','right','opposite_tool']):
+        external[name]=deepcopy(f['global_d455']);external[name]['rgb'][:]=[255 if k==i else 0 for k in range(3)]
+    f['wrist_d405_0']['rgb'][:]=[23,45,67];f['wrist_d405_1']['rgb'][:]=[89,123,157]
+    im=three_global_canvas(f,external,'tlmpm_v7','CUT','PASS','test','particle_surface_v1',False)
+    assert im.shape==(1080,1920,3)
+    for i,c in enumerate([[255,0,0],[0,255,0],[0,0,255]]):
+        assert np.any(np.all(im[200:600,i*640:(i+1)*640]==c,axis=-1))
+    for i,c in enumerate([[23,45,67],[89,123,157]]):
+        assert np.any(np.all(im[750:1000,i*480:(i+1)*480]==c,axis=-1))

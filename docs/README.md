@@ -15,10 +15,16 @@
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
 | Use the reusable WP-11 environment (scene + goal configs, policy API, datasets) | [Policy-ready API](POLICY_READY_API.md) · [WP-11 plan](WP11_PLAN.md) |
 
+## Three external views and wrist RGB-D
+
+[LEFT / RIGHT / OPPOSITE TOOL camera names and recording/replay API](GLOBAL_CAMERA_VIEWS.md) ·
+[Current v7 synchronized movies](NATIVE_MULTIVIEW_GALLERY.md) ·
+[Historical media and baseline evidence](HISTORICAL_CAMERA_MEDIA.md).
+
 ## v7 workflow and multiview follow-up
 
 [Normal Scene / Goal / Environment solver selection](V7_RESEARCH_WORKFLOW.md) ·
-[Current and archived multiview gallery](NATIVE_MULTIVIEW_GALLERY.md) ·
+[Current v7 multiview gallery](NATIVE_MULTIVIEW_GALLERY.md) ·
 [Two-protrusion results and retained failures](reports/WP14_FOLLOWUP_RESULTS.md).
 
 ## WP-14: compiled planner and scoped CUT adoption (2026-11-02)
@@ -26,7 +32,7 @@
 [Results and exact commands](reports/WP14_RESULTS.md) · [phase checklist](WP14_PLAN.md) ·
 [original held-out protocol](../configs/wp14/heldout_v1.json) ·
 [scope restriction and retained 2/4 denominator](evidence/wp14/support_scope_001.json) ·
-[genuine Native comparisons](../README.md#cut-research-profile-wp-14).
+[retained Native paired evidence](HISTORICAL_CAMERA_MEDIA.md#matched-captured-time-comparisons).
 
 [Updated standard/firm-offset scene entry and latest real scene recording](WP14_SCENES.md).
 The extra scene/video replay is engineering evidence, separate from the four

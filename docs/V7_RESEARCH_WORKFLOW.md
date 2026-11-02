@@ -32,11 +32,17 @@ from robotic_cutting_sim.live_env import open_cutting_env
 with open_cutting_env(runtime="isaac_sim", preset="cutting_research_v1",
                       scene="configs/wp12/scenes/bar_flat_board.json", goal="sever_mid",
                       solver_profile="v7_cut_research_v1", seed=42,
-                      material_dt=0.0001, output_dir="artifacts/my_v7_native") as env:
+                      material_dt=0.0001, camera_rig_profile="wrist_camera_rig_v9",
+                      output_dir="artifacts/my_v7_native") as env:
     observation, info = env.reset(seed=42)
     # Supply actions through the normal policy API; new policies need evaluation.
     # observation, reward, terminated, truncated, info = env.step(action)
 ```
+
+The explicit camera option uses the supported recording optics; omit it to retain
+camera rig v5. To display LEFT/RIGHT/OPPOSITE TOOL, record exact render surfaces and
+run the [three-view RGB replay entry](GLOBAL_CAMERA_VIEWS.md). Narrow native stereo
+registration is still blocked; the replay retains the original wrist RGB-D.
 
 `runtime="kinematic"` accepts the same scene/goal/profile; it has ideal tracking and no rendered cameras.
 Without the policy preset, pass `observation_profile="state"` on that runtime. A compiled `task=` also works.

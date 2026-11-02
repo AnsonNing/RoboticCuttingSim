@@ -1,0 +1,157 @@
+{
+  "frame": 20,
+  "time_s": 4.0,
+  "phase": "PRE_CUT:cut0",
+  "path": "docs/media/three_global_v1/scene_three_global.png",
+  "sha256": "b51134f18ed90134aaabc3aad678b95479f58e6f56b7d1833efbfabd94f5bd8d",
+  "source_sha256": {
+    "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/wp14_v7_standard_cut/left/observations/global_d455_0020.npz": "83a4b45edd771765be896a1a81ee3a2dfd69da3701f659af3de25ee32533001b",
+    "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/wp14_v7_standard_cut/right/observations/global_d455_0020.npz": "c584dc63951485cde08dcf0b1887b27bc49a097b686b110e137cc598ec938605",
+    "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/wp14_v7_standard_cut/opposite_tool/observations/global_d455_0020.npz": "a48dead873f8184e5bd69c02f5ee6b460fe836edbdcaace38a9ff9ffc58a6a7b",
+    "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v7_standard_cut/episode_000/observations/global_d455_0020.npz": "c99c19fec40dbdc0072f3862deeb24296e5b91f59076e1c7fa96d0ecaf4084f0",
+    "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v7_standard_cut/episode_000/observations/wrist_d405_0_0020.npz": "2c134496caeba12f38daabdab00b8b351fe376ea88260a038635295bc4433d08",
+    "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v7_standard_cut/episode_000/observations/wrist_d405_1_0020.npz": "452c096bb528f12139551b803f4627c1946e2380e5cb0bdbe836116c2efed65d"
+  },
+  "calibration": {
+    "left": {
+      "K": [
+        [
+          1505.4816761329878,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          1505.4816761329876,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.8729434821372647,
+          0.1436339951257258,
+          -0.4661962595713206,
+          0.27971775607217625
+        ],
+        [
+          0.487821357664942,
+          -0.2570292544355094,
+          0.8342459381802584,
+          -0.5005476951153132
+        ],
+        [
+          -4.2287526683118514e-18,
+          -0.955670046516343,
+          -0.29443974288714986,
+          0.20666387549201998
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "right": {
+      "K": [
+        [
+          1505.4816761329878,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          1505.4816761329876,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          0.48782135766494206,
+          0.25702925443550956,
+          -0.8342459381802582,
+          0.5005475696352477
+        ],
+        [
+          0.8729434821372648,
+          -0.1436339951257258,
+          0.4661962595713206,
+          -0.279717729089491
+        ],
+        [
+          -9.26199048767738e-17,
+          -0.9556700465163432,
+          -0.29443974288714986,
+          0.20666386887325422
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "opposite_tool": {
+      "K": [
+        [
+          1505.4816761329878,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          1505.4816761329876,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "T_world_camera": [
+        [
+          -1.0,
+          -1.0048151100817235e-17,
+          -7.727835272676296e-17,
+          -4.966005664982605e-18
+        ],
+        [
+          2.4549957628739546e-17,
+          0.29443974288714986,
+          -0.9556700465163431,
+          0.5884020284582425
+        ],
+        [
+          -3.1431205269787544e-17,
+          -0.955670046516343,
+          -0.29443974288714975,
+          0.19666384395221576
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v7_standard_cut/episode_000",
+  "task_status": "PASS",
+  "scope": "Labelled composition of exact Native Global RGB camera replay and original measured wrist RGB-D; no physics rerun",
+  "source_receipt_sha256": "770e80196d0bbee8fb4fd91e21bbd8a9c757ff5ba4b50f1ae26b4b02bf7df969",
+  "recipe_sha256": "1fc007050397848889ec2797b0d3bb1dec8ac0d2ad5288a05ffc4fecf8a5ce05"
+}

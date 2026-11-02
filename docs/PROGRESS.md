@@ -1,3 +1,57 @@
+# Latest showcase scope — v7 homepage, historical baselines retained
+
+- Homepage displays5 real moving v7/v7_2 previews, with three fixed Global RGB
+  views and both wrist RGB-D pairs. v5 comparisons move to the explicit historical
+  media entry. All47 MP4s,8 prior GIFs and the original manifest remain byte-identical.
+- Three already-encoded v7 GIFs are reused; no new recording, camera replay,
+  physics trial or whole-gallery re-encode. v5/Law8 default and all research limits remain.
+-020a0a2 is an earlier unmerged showcase. Its CI is historical only; the revised
+  payload requires its own checks before PR7/main and exact-commit verification.
+
+# Three fixed Global views + real wrist RGB-D — 2026-11-02 — media/API validated
+
+- User-finalized LEFT rig10 / RIGHT rig11 / OPPOSITE_TOOL rig14. All preserve0.60m,
+  HFOV24deg and17.12394deg elevation. Opposite horizontal bearing is -workpieceY,
+  zero lateral obliquity; full3D incidence is17.12deg, not0. Rig12/base-front and
+  rig13/zero-elevation remain historical candidates; rig9 high-angle framing is superseded.
+- Three-view Native preview PASS at identical CUT/TRIM/two-bump states; accepted
+  LEFT/RIGHT captures reused byte-for-byte. No physical/particle/robot/solver changes.
+- New narrow stereo controls remain BLOCKED (coverage and feature checks fail).
+  The original source-correspondence guard and criteria are preserved. Supported
+  recording optics provide real wrist RGB-D; exact mesh/pose replay supplies Global RGB only.
+- One controlled-optics recording per missing state stream; never three physics
+  runs for three views. Four unavailable historical raw-source slots are explicitly
+  linked to two NEW current registered demonstrations, not falsely called remasters.
+- Named configuration/API and recording/replay entry implemented; final focused CPU54PASS.
+  Media preserves47 full MP4s and8 original GIFs; the v7 homepage selects5 visible GIFs
+  (3 reused existing v7 previews;11 GIFs stored).37 sources/111 RGB replays unchanged.
+  All11 necessary recordings completed capture;5 actual goal failures remain explicit.
+- Publication is tracked by [PR7](https://github.com/AnsonNing/RoboticCuttingSim/pull/7).
+  Final payload/main CI and exact-commit GitHub animation/full-playback verification
+  are independent gates; runtime receipts are written only after actual validation.
+- Runtime/provenance: `artifacts/wp14/three_global_001/`. New publication_verified
+  and DONE do not exist. Earlier progress headings below are historical stages.
+
+# Global camera refresh — 2026-11-02 Asia/Seoul — IN PROGRESS
+
+- New user authorization: physical Global camera about 0.60 m from each workpiece, changed viewing angle,
+  all current/gallery movies updated. The completed prior WP-14 release remains historical evidence.
+- Branch `codex/global-60cm-all-media` starts from merged PR #6 main `b9100bc`; its exact main CI succeeded.
+- Explicit rig9 keeps controlled v5 Global optics, both fixed wrist mounts and default v5 selection;
+  only Global pose and its explicitly versioned logical near range change. The camera targets the
+  initial workpiece base-plane centre once, then remains World-fixed. No wrist aiming or robot hiding.
+- Exact source-fidelity audit PASS:13 saved-mesh Native episodes /513 captures retain the original
+  staged surface hashes and measured robot/tool matrices. Camera replay is explicitly labelled.
+- Position-only trial rendering was rejected: current-volume surfaces need absent per-frame F.
+  Those angle trials remain in artifacts and cannot supply published media.31 source cases require
+  new recordings; five identical-input aliases reduce this to26 unique engineering recordings.
+- New recordings and media review remain IN PROGRESS. Scientific denominators and old outcomes stay frozen.
+  Optional exact staged-mesh archival prevents future camera changes from requiring another material run.
+- CPU camera/media/recorder checks PASS74; scene launcher checks PASS8. Full final CI /PR/main /
+  remote-media verification NOT_RUN for this new release. New publication receipt and DONE remain absent.
+- Runtime ledger, failed attempts, raw recordings and protected1309-blob baseline:
+  `artifacts/wp14/global60_001/`. [Camera refresh report](reports/GLOBAL60_CAMERA_REFRESH.md).
+
 # Follow-up progress — 2026-11-02 Asia/Seoul
 
 - New authorized v7 workflow / sequential two-protrusion / multiview task is separate from original WP-14.

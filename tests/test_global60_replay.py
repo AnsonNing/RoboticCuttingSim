@@ -1,0 +1,228 @@
+"""Explicit camera version and measured-state matching for the media refresh."""
+import importlib.util
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+from robotic_cutting_sim.camera_rig import make_rig
+
+
+def test_v9_physical_distance_and_wrist_identity():
+    old, new = make_rig(), make_rig(rig_profile='wrist_camera_rig_v9')
+    for name in ('wrist_d405_0', 'wrist_d405_1'):
+        assert new.specs[name] == old.specs[name]
+    global_view = new.specs['global_d455']
+    eye = np.asarray(global_view['T_world_camera'])[:3, 3]
+    target = np.asarray(global_view['look_at_target_world_m'])
+    assert np.linalg.norm(eye-target) == pytest.approx(.60, abs=1e-9)
+    forward = np.asarray(global_view['T_world_camera'])[:3, 2]
+    assert np.dot(forward, (target-eye)/.60) == pytest.approx(1.)
+    for key in ('K', 'width', 'height', 'native_near_m', 'native_far_m'):
+        assert global_view[key] == old.specs['global_d455'][key]
+    assert global_view['near_m'] == global_view['native_near_m'] == .52
+    assert make_rig().specs == old.specs
+
+
+def test_v9_target_translation_is_frozen_at_scene_creation():
+    target=np.array([.02,-.01,.12])
+    rig=make_rig(rig_profile='wrist_camera_rig_v9',global_target_world_m=target)
+    view=rig.specs['global_d455']
+    eye=np.asarray(view['T_world_camera'])[:3,3]
+    np.testing.assert_allclose(view['look_at_target_world_m'],target)
+    assert np.linalg.norm(eye-target)==pytest.approx(.6,abs=1e-9)
+
+
+def test_normal_scene_launcher_only_changes_explicit_camera_selection(tmp_path):
+    spec=importlib.util.spec_from_file_location('wp14_scene_global60',Path('scripts/run_wp14_scene.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    old=module.prepare('standard_cut',tmp_path/'old')
+    new=module.prepare('standard_cut',tmp_path/'new',camera_rig_profile='wrist_camera_rig_v9')
+    assert old['task_id']==new['task_id']
+    assert old['profile']==new['profile']
+    assert old['source_inputs']==new['source_inputs']
+    assert old['camera_rig']=='wrist_camera_rig_v5'
+    assert new['camera_rig']=='wrist_camera_rig_v9'
+    assert new['command'][-2:]==['--camera-rig-profile','wrist_camera_rig_v9']
+
+
+def test_replay_refuses_interpolation_and_missing_state():
+    spec = importlib.util.spec_from_file_location('replay_global', Path('scripts/rerender_native_global.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.exact_index([0., .2, .4], .2) == 1
+    with pytest.raises(ValueError, match='interpolation refused'):
+        module.exact_index([0., .2, .4], .3)
+
+
+def test_opposite_axis_uses_measured_body_or_exact_legacy_attachment():
+    from types import SimpleNamespace
+    spec=importlib.util.spec_from_file_location('replay_edge_reference',Path('scripts/rerender_native_global.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    tool=SimpleNamespace(T_tool_edge=np.eye(4))
+    index,matrix,kind,prim=module.opposite_edge_reference(['/World/Tools/CuttingTool_0'],tool,{})
+    assert index==0 and kind=='independent_measured_tool_body' and prim is None
+    hand='/World/Franka_0/panda_hand'
+    setup={'hand_prim':hand,'knife_prim':hand+'/LiveKnife','T_hand_edge_xyz_xyzw':[0,0,.18,1,0,0,0]}
+    index,matrix,kind,prim=module.opposite_edge_reference([hand],tool,setup)
+    assert kind=='recorded_fixed_hand_attachment' and prim==hand+'/LiveKnife'
+    np.testing.assert_allclose(matrix,module.pose_matrix(setup['T_hand_edge_xyz_xyzw']))
+    with pytest.raises(ValueError,match='exact recorded legacy'):
+        module.opposite_edge_reference([hand],tool,{**setup,'knife_prim':'/unrecorded/guess'})
+
+
+def test_replay_cannot_substitute_a_surface_when_only_positions_exist(tmp_path):
+    spec=importlib.util.spec_from_file_location('replay_global',Path('scripts/rerender_native_global.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    np.savez(tmp_path/'physics_state.npz',positions=np.zeros((1,1,3)))
+    with pytest.raises(ValueError,match='no substitute surface'):
+        module.require_saved_surfaces(tmp_path,[{'frame':0,'time_s':0.}])
+
+
+def test_exact_staged_surface_snapshot_rejects_stale_or_modified_geometry(tmp_path):
+    import hashlib
+    from types import SimpleNamespace
+    spec=importlib.util.spec_from_file_location('wp10_surface_save',Path('scripts/run_wp10_live.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    vertices=np.array([[0,0,0],[1,0,0],[0,1,0]],np.float32)
+    faces=np.array([[0,1,2]],np.int32)
+    backend=SimpleNamespace(_surface_time=.2,surface_arrays=(vertices,faces),
+        surface_receipt={'surface_sha256':hashlib.sha256(vertices.tobytes()+faces.tobytes()).hexdigest()})
+    module.save_surface_snapshot(backend,tmp_path,0,.2)
+    with np.load(tmp_path/'surface_debug/surface_0000.npz') as data:
+        np.testing.assert_array_equal(data['vertices_m'],vertices)
+        np.testing.assert_array_equal(data['triangles'],faces)
+    with pytest.raises(ValueError,match='stale'):
+        module.save_surface_snapshot(backend,tmp_path,1,.4)
+    vertices[0,0]=.1
+    with pytest.raises(ValueError,match='differ'):
+        module.save_surface_snapshot(backend,tmp_path,1,.2)
+
+
+def test_v10_reference_low_angle_is_actual_narrow_lens_with_fixed_wrists():
+    target=np.array([.02,-.01,.12])
+    old=make_rig()
+    rig=make_rig(rig_profile='wrist_camera_rig_v10',global_target_world_m=target)
+    g=rig.specs['global_d455']
+    eye=np.asarray(g['T_world_camera'])[:3,3]
+    direction=(eye-target)/np.linalg.norm(eye-target)
+    reference=np.array([.38,-.68,.24]);reference/=np.linalg.norm(reference)
+    np.testing.assert_allclose(direction,reference,atol=1e-12)
+    assert np.linalg.norm(eye-target)==pytest.approx(.60,abs=1e-12)
+    assert 16 < np.degrees(np.arcsin(direction[2])) < 18
+    hfov=np.degrees(2*np.arctan(g['width']/(2*g['K'][0][0])))
+    assert hfov==pytest.approx(24.)
+    assert g['K'][0][0]==g['K'][1][1]
+    assert g['K'][0][0]*.095/g['native_near_m']<g['native_maximum_disparity']
+    for name in ('wrist_d405_0','wrist_d405_1'):
+        assert rig.specs[name]==old.specs[name]
+    assert make_rig().specs==old.specs
+    with pytest.raises(ValueError,match='finite world XYZ'):
+        make_rig(rig_profile='wrist_camera_rig_v10',global_target_world_m=[0,float('nan'),0])
+
+
+def test_frontal_view_uses_measured_base_and_workspace_and_rotates_with_them():
+    from scipy.spatial.transform import Rotation
+    from robotic_cutting_sim.camera_rig import arm0_front_view,pose_matrix
+    base=np.array([-.46,.12,-.01,0,0,0,1.])
+    target=np.array([0.,0.,.03])
+    T,receipt=arm0_front_view(base,target,.6,17.)
+    base_T=pose_matrix(base)
+    camera_local=(np.linalg.inv(base_T)@T)[:3,3]
+    assert camera_local[0]>0
+    bearing=target[:2]-base[:2]
+    # Same bearing from base through workarea to camera, facing back.
+    offset=T[:2,3]-target[:2]
+    assert bearing[0]*offset[1]-bearing[1]*offset[0]==pytest.approx(0.,abs=1e-12)
+    assert np.dot(T[:2,2],bearing)<0
+    assert np.linalg.norm(T[:3,3]-target)==pytest.approx(.6)
+    assert receipt['workarea_azimuth_from_base_positive_X_deg']==pytest.approx(-14.6208739886)
+    rotation=Rotation.from_euler('z',73,degrees=True)
+    moved_base=np.r_[rotation.apply(base[:3]),rotation.as_quat()]
+    moved,_=arm0_front_view(moved_base,rotation.apply(target),.6,17.)
+    np.testing.assert_allclose(moved[:3,3],rotation.apply(T[:3,3]),atol=1e-12)
+    np.testing.assert_allclose(moved[:3,2],rotation.apply(T[:3,2]),atol=1e-12)
+    with pytest.raises(ValueError,match='behind'):
+        arm0_front_view(base,[-1.,.12,.03],.6,17.)
+    old=make_rig();new=make_rig(rig_profile='wrist_camera_rig_v12')
+    for name in ('wrist_d405_0','wrist_d405_1'):
+        assert old.specs[name]==new.specs[name]
+    g=new.specs['global_d455']
+    assert g['render_near_m']==.001
+    assert g['native_near_m']==.52
+
+
+def test_named_three_global_views_preserve_left_right_and_level_opposite_geometry():
+    from scipy.spatial.transform import Rotation
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES,tool_opposite_view
+    assert GLOBAL_VIEW_PROFILES=={'left':'wrist_camera_rig_v10','right':'wrist_camera_rig_v11','opposite_tool':'wrist_camera_rig_v14'}
+    reference=make_rig()
+    for profile in GLOBAL_VIEW_PROFILES.values():
+        rig=make_rig(rig_profile=profile)
+        for name in ('wrist_d405_0','wrist_d405_1'):
+            assert rig.specs[name]==reference.specs[name]
+        assert rig.specs['global_d455']['render_near_m']==.001
+    yaw=Rotation.from_euler('z',37,degrees=True)
+    workpiece=[.1,-.2,.08,*yaw.as_quat()]
+    T,receipt=tool_opposite_view(workpiece,[.2,.04,.03],.6)
+    normal=yaw.apply([0,1,0]);forward=T[:3,2]
+    np.testing.assert_allclose(forward,-normal,atol=1e-12)
+    assert forward[2]==pytest.approx(0.,abs=1e-12)
+    assert forward@yaw.apply([1,0,0])==pytest.approx(0.,abs=1e-12)
+    assert np.linalg.norm(T[:3,3]-receipt['target_world_m'])==pytest.approx(.6)
+    assert receipt['horizontal_obliquity_deg']==0.
+    tilted=Rotation.from_euler('x',10,degrees=True)
+    with pytest.raises(ValueError,match='horizontal'):
+        tool_opposite_view([0,0,0,*tilted.as_quat()],[.2,.04,.03])
+
+
+def test_named_view_selection_and_scene_preparation_cannot_change_physics(tmp_path):
+    from robotic_cutting_sim.camera_rig import select_global_view
+    spec=importlib.util.spec_from_file_location('three_view_scene',Path('scripts/run_wp14_scene.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    old=module.prepare('standard_cut',tmp_path/'old')
+    for view,profile in [('left','wrist_camera_rig_v10'),('right','wrist_camera_rig_v11'),('opposite_tool','wrist_camera_rig_v14')]:
+        new=module.prepare('standard_cut',tmp_path/view,global_view=view)
+        assert new['task_id']==old['task_id'] and new['source_inputs']==old['source_inputs']
+        assert new['profile']==old['profile'] and new['camera_rig']=='wrist_camera_rig_v5'
+        assert new['display_global_profiles'][view]==profile
+        assert '--save-render-surfaces' in new['command']
+    with pytest.raises(ValueError,match='conflicts'):
+        select_global_view('left','wrist_camera_rig_v11')
+    with pytest.raises(ValueError,match='Unknown'):
+        select_global_view('front_base')
+
+
+def test_environment_named_global_view_reaches_native_config(tmp_path,monkeypatch):
+    from robotic_cutting_sim import live_env,isaac_sim_runner
+    seen={}
+    class ConfigReached(Exception):pass
+    def config(**kwargs):
+        seen.update(kwargs);raise ConfigReached
+    monkeypatch.setattr(isaac_sim_runner,'IsaacSimCuttingConfig',config)
+    with pytest.raises(ConfigReached):
+        with live_env.open_cutting_env(runtime='isaac_sim',output_dir=tmp_path/'run',global_view='opposite_tool'):pass
+    assert seen['camera_rig_profile']=='wrist_camera_rig_v14'
+
+
+def test_adopted_opposite_tool_elevation_is_3d_oblique_but_horizontally_normal():
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES
+    assert GLOBAL_VIEW_PROFILES['opposite_tool']=='wrist_camera_rig_v14'
+    old=make_rig(rig_profile='wrist_camera_rig_v13').specs['global_d455']
+    g=make_rig(rig_profile='wrist_camera_rig_v14').specs['global_d455']
+    n=np.array([0.,1.,0.]);axis=np.asarray(g['T_world_camera'])[:3,2]
+    horizontal=axis.copy();horizontal[2]=0;horizontal/=np.linalg.norm(horizontal)
+    np.testing.assert_allclose(horizontal,-n,atol=1e-12)
+    incidence=np.degrees(np.arccos(-axis@n))
+    assert incidence==pytest.approx(17.123944951922702)
+    assert abs(np.asarray(old['T_world_camera'])[2,2])<1e-12
+    assert abs(g['working_distance_to_target_m']-.6)<1e-12
+
+
+def test_direct_narrow_native_depth_guard_is_retained_and_recording_optics_work():
+    from robotic_cutting_sim.isaac_sim_runner import IsaacSimCuttingConfig
+    for profile in ['wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v14']:
+        with pytest.raises(NotImplementedError,match='BLOCKED'):
+            IsaacSimCuttingConfig(camera=True,camera_layout='wrist_d405_global_d455',camera_mode='native_single_view',camera_rig_profile=profile)
+    for profile in ['wrist_camera_rig_v5','wrist_camera_rig_v8','wrist_camera_rig_v9']:
+        assert IsaacSimCuttingConfig(camera=True,camera_layout='wrist_d405_global_d455',camera_mode='native_single_view',camera_rig_profile=profile).camera

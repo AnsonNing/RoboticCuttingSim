@@ -15,6 +15,24 @@ sys.path.insert(0,str(ROOT/'src'))
 from robotic_cutting_sim.demo_media import sha256_file
 
 
+def encode_matched_comparison(left, right, target, times):
+    """Keep each actual input capture PTS, including a short final interval."""
+    import numpy as np
+    command=['ffmpeg','-v','error','-n','-i',str(left),'-i',str(right),'-filter_complex',
+        '[0:v]settb=1/1000,scale=1280:720[l];[1:v]settb=1/1000,scale=1280:720[r];[l][r]hstack=inputs=2[v]',
+        '-map','[v]','-vsync','vfr','-enc_time_base','1:1000','-video_track_timescale','1000',
+        '-c:v','libx264','-threads','2','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart',str(target)]
+    subprocess.run(command,check=True)
+    probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-select_streams','v:0',
+        '-show_entries','frame=best_effort_timestamp_time','-of','json',str(target)],text=True))
+    actual=np.array([float(r['best_effort_timestamp_time']) for r in probe['frames']])
+    expected=np.asarray(times)-times[0]
+    if actual.shape!=expected.shape or not np.allclose(actual,expected,atol=1e-6,rtol=0):
+        raise ValueError('Comparison PTS differ from actual matched camera captures')
+    return {'command':command,'pts_check':'PASS','decoded_pts_relative_s':actual.tolist(),
+            'timing':'VFR exact matched capture timestamps'}
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--catalog',type=Path,required=True)
@@ -48,13 +66,15 @@ def main():
         if row.get('global_pixel_crop'):
             command += ['--global-pixel-crop',*[str(v) for v in row['global_pixel_crop']]]
         if row.get('presentation_closeup'):command.append('--presentation-closeup')
+        if row.get('global_replay'):command+=['--global-replay',row['global_replay']]
+        if row.get('global_replays'):command+=['--global-replays',*row['global_replays']]
         with (a.stage/(row['id']+'.log')).open('x') as log:
             code=subprocess.call(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
         record={**row,'command':command,'returncode':code,'status':'PASS' if code==0 else 'BLOCKED'}
         if code==0:
             receipt=json.loads((out/'render_receipt.json').read_text())
             outputs={}
-            names=['demo.mp4']+(['demo.gif'] if not row.get('archived') else [])
+            names=['demo.mp4']+(['demo.gif'] if row.get('publish_preview',not row.get('archived')) else [])
             for name in names:
                 target=a.publish/(row['id']+Path(name).suffix)
                 with target.open('xb') as dest,(out/name).open('rb') as src:shutil.copyfileobj(src,dest)
@@ -76,20 +96,18 @@ def main():
         if len(ta)!=len(tb) or not np.allclose(ta,tb,atol=1e-8,rtol=0):
             raise ValueError('Comparison source physics timestamps differ; pairing refused')
         target=a.publish/(row['id']+'.mp4')
-        command=['ffmpeg','-v','error','-n','-i',str(a.publish/(left['id']+'.mp4')),
-            '-i',str(a.publish/(right['id']+'.mp4')),'-filter_complex',
-            '[0:v]scale=1280:720[l];[1:v]scale=1280:720[r];[l][r]hstack=inputs=2[v]',
-            '-map','[v]','-c:v','libx264','-crf','23','-pix_fmt','yuv420p','-movflags','+faststart',str(target)]
-        subprocess.run(command,check=True)
+        encoded=encode_matched_comparison(a.publish/(left['id']+'.mp4'),a.publish/(right['id']+'.mp4'),target,ta)
         from encode_wp13_media import preview
         gif=a.publish/(row['id']+'.gif')
         preview_command=preview(target,gif,start=0,duration=len(ta)/5,width=1280,speed=1.)
         subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(target),'-f','null','-'],check=True)
-        comparisons.append({**row,'status':'PASS','capture_time_s':ta,'command':command,
+        comparisons.append({**row,'status':'PASS','capture_time_s':ta,**encoded,'full_decode':'PASS',
                             'preview_command':preview_command,'mp4_sha256':sha256_file(target),'gif_sha256':sha256_file(gif)})
     payload={'schema':'wp14_followup_gallery_v1','catalog_sha256':sha256_file(a.catalog),
         'simulator_runs':0,'scope':'Remastered actual saved Native cameras. Prior task evaluations and failures unchanged.',
         'episodes':receipts,'comparisons':comparisons,'archive_inventory':catalog.get('archive_inventory',[])}
+    if catalog.get('publication_context'):
+        payload['publication_context']=catalog['publication_context']
     with a.evidence.open('x') as f:f.write(json.dumps(payload,indent=2)+'\n')
 
 

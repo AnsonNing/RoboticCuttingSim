@@ -127,6 +127,10 @@ class IsaacSimCuttingConfig:
         from .camera_rig import RIG_PROFILES
         if self.camera_rig_profile not in RIG_PROFILES:
             raise ValueError('Unknown camera_rig_profile')
+        if self.camera and self.camera_rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v13','wrist_camera_rig_v14'):
+            raise NotImplementedError('Narrow Global native stereo registration is BLOCKED by independent controls. '
+                'Record with controlled v5/v8/v9 optics and --save-render-surfaces, then use '
+                'scripts/render_native_global_views.py for named Global RGB replay and original wrist RGB-D.')
         if self.camera_rig_profile != RIG_PROFILES[0] and self.camera_layout != 'wrist_d405_global_d455':
             raise ValueError('The new rig requires wrist_d405_global_d455')
         if self.camera_layout == "wrist_d405_global_d455" and self.camera_mode != "native_single_view":
@@ -564,7 +568,11 @@ class LiveIsaacSimCutting:
             self.pre_authored_camera_specs=author_camera_rig(stage,hand_paths,
                 ROOT/"artifacts/workcell_asset_cache"/ASSETS["d455"],task_id=c.task_id or "TRIM-01",
                 camera_layout=c.camera_layout,initial_hand_poses_world_xyzw=nominal_hands,
-                rig_profile=c.camera_rig_profile)
+                rig_profile=c.camera_rig_profile,
+                global_target_world_m=(self.task.points_to_world([0.,0.,self.task.geometry.base_height_m])
+                    if self.task and c.camera_rig_profile in ('wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12') else None),
+                global_workpiece_pose_xyzw=self.task.world_from_workpiece_xyzw if self.task else None,
+                global_workpiece_dimensions_m=([self.task.geometry.length_m,self.task.geometry.width_m,self.task.geometry.base_height_m] if self.task else None))
         SimulationManager.setup_simulation(dt=c.control_dt/c.robot_substeps, device="cpu")
         if not SimulationManager.switch_physics_engine("physx"):
             raise RuntimeError("Native Isaac PhysX engine is unavailable")
@@ -1299,7 +1307,11 @@ class LiveIsaacSimCutting:
                 author_camera_rig(self.stage,self.hand_paths,asset,
                 task_id=c.task_id or "TRIM-01",camera_layout=c.camera_layout,
                 initial_hand_poses_world_xyzw=self.proprioception()["hand_pose_both_xyzw"],
-                rig_profile=c.camera_rig_profile))
+                rig_profile=c.camera_rig_profile,
+                global_target_world_m=(self.task.points_to_world([0.,0.,self.task.geometry.base_height_m])
+                    if self.task and c.camera_rig_profile in ('wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12') else None),
+                global_workpiece_pose_xyzw=self.task.world_from_workpiece_xyzw if self.task else None,
+                global_workpiece_dimensions_m=([self.task.geometry.length_m,self.task.geometry.width_m,self.task.geometry.base_height_m] if self.task else None)))
             paths={name:spec["optical_prim_path"] for name,spec in self.camera_specs.items()}
             if set(paths)!={"wrist_d405_0","wrist_d405_1","global_d455"}:
                 raise ValueError("The new native rig must expose both wrist D405 IDs and global_d455")
@@ -1340,7 +1352,7 @@ class LiveIsaacSimCutting:
                 sensor.set_sensor_maximum_disparity(150.)
                 sensor.set_sensor_disparity_confidence(1.)
                 sensor.set_sensor_distance_cutoffs(.52,6.)
-                if c.camera_rig_profile == 'wrist_camera_rig_v6':
+                if c.camera_rig_profile in ('wrist_camera_rig_v6','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13','wrist_camera_rig_v14'):
                     spec = self.camera_specs[name]
                     sensor.set_sensor_focal_length(float(spec['K'][0][0]))
                     sensor.set_sensor_size(float(width))
