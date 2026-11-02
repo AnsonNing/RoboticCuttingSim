@@ -549,8 +549,10 @@ def main(argv=None):
     p.add_argument('--observation', choices=('state', 'vision_proprio'), default='state')
     p.add_argument('--gym', action='store_true')
     p.add_argument('--record-cameras', action='store_true', help='Record RGB-D with a state-only controller')
-    p.add_argument('--camera-rig-profile', choices=('wrist_camera_rig_v5','wrist_camera_rig_v6','wrist_camera_rig_v7','wrist_camera_rig_v8','wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12'),
-                   default='wrist_camera_rig_v5', help='Versioned fixed Global view; wrist calibration unchanged')
+    from robotic_cutting_sim.camera_rig import RIG_PROFILES,GLOBAL_VIEW_PROFILES,select_global_view
+    p.add_argument('--camera-rig-profile',choices=RIG_PROFILES,
+                   help='Versioned fixed Global view; omitted selection retains v5')
+    p.add_argument('--global-view',choices=tuple(GLOBAL_VIEW_PROFILES),help='Named Global-only view; both wrist mounts unchanged')
     p.add_argument('--scenario', choices=('raised_workpiece_50mm_v1', 'ruler_workcell_v2', 'blademaster_workcell_v1'))
     p.add_argument('--overview-camera', action='store_true',
                    help='Native only: author and record the presentation-only overview and close-up RGB cameras '
@@ -613,6 +615,10 @@ def main(argv=None):
     p.add_argument('--save-render-surfaces',action='store_true',
                    help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
     a = p.parse_args(argv)
+    if a.global_view is not None:
+        try:a.camera_rig_profile=select_global_view(a.global_view,a.camera_rig_profile)
+        except ValueError as error:p.error(str(error))
+    a.camera_rig_profile=a.camera_rig_profile or 'wrist_camera_rig_v5'
     validate_arguments(p, a)
     out = new_output(a.out)
     write_json(out / 'manifest.json', manifest(jsonable(vars(a)), 'wp10_actual_live_validation'))

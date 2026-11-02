@@ -14,11 +14,14 @@ sys.path.insert(0, str(ROOT/'src'))
 CATALOG = ROOT/'configs/wp14/scene_catalog_v1.json'
 
 
-def prepare(name, out, gpu=0, camera_rig_profile=None):
+def prepare(name, out, gpu=0, camera_rig_profile=None, global_view=None):
     from robotic_cutting_sim.scene_config import compile_task
     from robotic_cutting_sim.research_profiles import validate_runtime
     from robotic_cutting_sim.recording import write_json
     catalog=json.loads(CATALOG.read_text());entry=catalog['entries'][name]
+    if global_view is not None:
+        from robotic_cutting_sim.camera_rig import select_global_view
+        camera_rig_profile=select_global_view(global_view,camera_rig_profile)
     if camera_rig_profile is not None:
         from robotic_cutting_sim.camera_rig import RIG_PROFILES
         if camera_rig_profile not in RIG_PROFILES:raise ValueError('Unknown camera rig profile')
@@ -62,7 +65,9 @@ def main():
     p.add_argument('--gpu',type=int,default=0)
     from robotic_cutting_sim.camera_rig import RIG_PROFILES
     p.add_argument('--camera-rig-profile',choices=RIG_PROFILES)
-    a=p.parse_args();record=prepare(a.scene,a.out,a.gpu,a.camera_rig_profile)
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES
+    p.add_argument('--global-view',choices=tuple(GLOBAL_VIEW_PROFILES))
+    a=p.parse_args();record=prepare(a.scene,a.out,a.gpu,a.camera_rig_profile,a.global_view)
     if a.mode=='prepare':
         print(json.dumps(record,indent=2));return 0
     from robotic_cutting_sim.recording import write_json

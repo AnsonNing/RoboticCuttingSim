@@ -158,3 +158,30 @@ def test_named_three_global_views_preserve_left_right_and_level_opposite_geometr
     tilted=Rotation.from_euler('x',10,degrees=True)
     with pytest.raises(ValueError,match='horizontal'):
         tool_opposite_view([0,0,0,*tilted.as_quat()],[.2,.04,.03])
+
+
+def test_named_view_selection_and_scene_preparation_cannot_change_physics(tmp_path):
+    from robotic_cutting_sim.camera_rig import select_global_view
+    spec=importlib.util.spec_from_file_location('three_view_scene',Path('scripts/run_wp14_scene.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    old=module.prepare('standard_cut',tmp_path/'old')
+    for view,profile in [('left','wrist_camera_rig_v10'),('right','wrist_camera_rig_v11'),('opposite_tool','wrist_camera_rig_v13')]:
+        new=module.prepare('standard_cut',tmp_path/view,global_view=view)
+        assert new['task_id']==old['task_id'] and new['source_inputs']==old['source_inputs']
+        assert new['profile']==old['profile'] and new['camera_rig']==profile
+    with pytest.raises(ValueError,match='conflicts'):
+        select_global_view('left','wrist_camera_rig_v11')
+    with pytest.raises(ValueError,match='Unknown'):
+        select_global_view('front_base')
+
+
+def test_environment_named_global_view_reaches_native_config(tmp_path,monkeypatch):
+    from robotic_cutting_sim import live_env,isaac_sim_runner
+    seen={}
+    class ConfigReached(Exception):pass
+    def config(**kwargs):
+        seen.update(kwargs);raise ConfigReached
+    monkeypatch.setattr(isaac_sim_runner,'IsaacSimCuttingConfig',config)
+    with pytest.raises(ConfigReached):
+        with live_env.open_cutting_env(runtime='isaac_sim',output_dir=tmp_path/'run',global_view='opposite_tool'):pass
+    assert seen['camera_rig_profile']=='wrist_camera_rig_v13'

@@ -585,7 +585,7 @@ class CuttingTaskEnv:
 def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=42,
                      action_mode=ACTION_MODES[0], observation_profile="vision_proprio",
                      include_global_camera=False, camera_layout="wrist_d405_global_d455", task=None, preset=None,
-                     scene=None, goal=None, solver_profile=None, planner_options=None,
+                     scene=None, goal=None, solver_profile=None, planner_options=None, global_view=None,
                      **backend_options):
     """Start a pinned live runtime in its dedicated venv, then close it on exit.
 
@@ -614,6 +614,9 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
     tasks; turns the cut_events_v1 recorder on; selection and per-frame provenance are recorded,
     ``surface_runtime.py``). The surface is render geometry only and never feeds back into physics.
     """
+    if global_view is not None:
+        from .camera_rig import select_global_view
+        backend_options['camera_rig_profile'] = select_global_view(global_view,backend_options.get('camera_rig_profile'))
     if preset is not None:
         from .policy_env import open_policy_env
         if observation_profile != "vision_proprio" and "observation_profile" not in backend_options:

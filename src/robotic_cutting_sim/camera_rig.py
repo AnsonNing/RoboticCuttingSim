@@ -22,6 +22,15 @@ GLOBAL_VIEW_PROFILES = {'left': 'wrist_camera_rig_v10', 'right': 'wrist_camera_r
 _CV_TO_USD = np.diag([1., -1., -1., 1.])
 
 
+def select_global_view(name, rig_profile=None):
+    if name not in GLOBAL_VIEW_PROFILES:
+        raise ValueError(f'Unknown named Global view: {name}')
+    selected = GLOBAL_VIEW_PROFILES[name]
+    if rig_profile is not None and rig_profile != selected:
+        raise ValueError('Named Global view conflicts with camera_rig_profile')
+    return selected
+
+
 def pose_matrix(pose_xyzw):
     pose = np.asarray(pose_xyzw, float)
     if pose.shape != (7,) or not np.isfinite(pose).all() or np.linalg.norm(pose[3:]) < 1e-9:
@@ -407,13 +416,17 @@ def _disable_physics_and_products(stage, root):
 
 
 def make_rig(task_id="TRIM-01", camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None,
-             rig_profile='wrist_camera_rig_v5', global_target_world_m=None):
-    return CameraRig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile, global_target_world_m)
+             rig_profile='wrist_camera_rig_v5', global_target_world_m=None, *,
+             global_workpiece_pose_xyzw=None, global_workpiece_dimensions_m=None):
+    return CameraRig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile, global_target_world_m,
+                     global_workpiece_pose_xyzw=global_workpiece_pose_xyzw,
+                     global_workpiece_dimensions_m=global_workpiece_dimensions_m)
 
 
 def author_camera_rig(stage, hand_paths, d455_asset, task_id="TRIM-01", *,
                       camera_layout=WRIST_LAYOUT, initial_hand_poses_world_xyzw=None,
-                      rig_profile='wrist_camera_rig_v5', global_target_world_m=None):
+                      rig_profile='wrist_camera_rig_v5', global_target_world_m=None,
+                      global_workpiece_pose_xyzw=None, global_workpiece_dimensions_m=None):
     if initial_hand_poses_world_xyzw is None:
         from pxr import Usd, UsdGeom
         poses = []
@@ -424,5 +437,7 @@ def author_camera_rig(stage, hand_paths, d455_asset, task_id="TRIM-01", *,
             transform = np.asarray(UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
             poses.append(np.r_[transform[:3, 3], Rotation.from_matrix(transform[:3, :3]).as_quat()])
         initial_hand_poses_world_xyzw = poses
-    rig = make_rig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile, global_target_world_m)
+    rig = make_rig(task_id, camera_layout, initial_hand_poses_world_xyzw, rig_profile, global_target_world_m,
+                   global_workpiece_pose_xyzw=global_workpiece_pose_xyzw,
+                   global_workpiece_dimensions_m=global_workpiece_dimensions_m)
     return rig.author_usd(stage, hand_paths, global_d455_asset_path=d455_asset)
