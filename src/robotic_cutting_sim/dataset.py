@@ -168,8 +168,16 @@ def export_episode(episode_dir):
     arrays["policy_phase"] = np.asarray([str(row.get("policy_phase", "")) for row in actions], str)
     arrays["termination_reason"] = np.asarray([str(info.get("termination_reason")) for info in infos], str)
     proprio = [row.get("observation_proprio") or {} for row in actions]
+    provenance = episode_dir/'provenance.json'
+    single_arm = (provenance.exists() and
+                  json.loads(provenance.read_text()).get('version') == 'rcs_trim_random_sim_v1')
+    if single_arm:
+        proprio = [{key: (np.asarray(value)[0] if key in ('q', 'qdot', 'finger_q', 'finger_qdot')
+                         else value) for key, value in row.items() if key != 'tool_pose'} for row in proprio]
     for key, shape in (("q", (2, 7)), ("qdot", (2, 7)), ("hand_pose", (7,)), ("finger_q", (2, 2)),
                        ("finger_qdot", (2, 2)), ("tool_pose", (7,))):
+        if single_arm and key in ('q', 'qdot', 'finger_q', 'finger_qdot'):
+            shape = shape[1:]
         if any(key in p for p in proprio):
             arrays[f"proprio__{key}"] = _stack(proprio, key, shape)
     arrays["reward"] = np.asarray([float(row.get("reward") or 0.) for row in actions], float)
@@ -183,14 +191,20 @@ def export_episode(episode_dir):
         for path in files:
             with np.load(path, allow_pickle=False) as data:
                 rgb.append(data["rgb"])
-                depth.append(data["depth_m"])
-                valid.append(data["valid_mask"] if "valid_mask" in data else np.isfinite(data["depth_m"]))
+                if 'depth_m' in data:
+                    depth.append(data["depth_m"])
+                    valid.append(data["valid_mask"] if "valid_mask" in data else np.isfinite(data["depth_m"]))
+                elif 'modalities' not in data or list(data['modalities']) != ['rgb']:
+                    raise ValueError('A depth-less frame must explicitly declare RGB-only acquisition')
                 times.append(float(data["physics_timestamp_s"]))
                 K.append(data["K"] if "K" in data else np.full((3, 3), np.nan))
                 T.append(data["T_world_camera"] if "T_world_camera" in data else np.full((4, 4), np.nan))
-        arrays.update({f"camera__{name}__rgb": np.stack(rgb), f"camera__{name}__depth_m": np.stack(depth),
-                       f"camera__{name}__valid_mask": np.stack(valid), f"camera__{name}__time_s": np.asarray(times),
+        arrays.update({f"camera__{name}__rgb": np.stack(rgb), f"camera__{name}__time_s": np.asarray(times),
                        f"camera__{name}__K": np.stack(K), f"camera__{name}__T_world_camera": np.stack(T)})
+        if depth:
+            if len(depth) != len(rgb):
+                raise ValueError('Camera depth modality changed inside an episode')
+            arrays.update({f"camera__{name}__depth_m": np.stack(depth), f"camera__{name}__valid_mask": np.stack(valid)})
         dt = np.diff(times)
         camera_rates[name] = {"frames": len(times), "median_interval_s": float(np.median(dt)) if len(dt) else None,
                               "recorded_rate_hz": float(1./np.median(dt)) if len(dt) and np.median(dt) > 0 else None}

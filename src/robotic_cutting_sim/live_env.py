@@ -679,6 +679,11 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
                 action_mode=action_mode, observation_profile=observation_profile,
                 include_global_camera=include_global_camera, task=task, **wrapper_options)
             yield wrapper
+        except BaseException as error:
+            import traceback
+            write_json(output/'runtime_error.json', {'status': 'FAIL_EXECUTION',
+                'error': f'{type(error).__name__}: {error}', 'traceback': traceback.format_exc()})
+            raise
         finally:
             if wrapper:
                 wrapper.close()

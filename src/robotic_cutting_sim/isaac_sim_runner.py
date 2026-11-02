@@ -55,6 +55,8 @@ class IsaacSimCuttingConfig:
     camera_mode: str = "rtx_rgbd"
     camera_layout: str = "legacy_fixed_d455"
     camera_rig_profile: str = "wrist_camera_rig_v5"
+    global_rgb_only: bool = False  # explicit live RGB; never bypasses the native stereo-depth guard
+    active_camera_ids: tuple | None = None  # optional acquisition subset; wrists retain their physical mounts
     observation_motion_probe: bool = False
     feedback: bool = True
     velocity_feedforward: bool | None = None
@@ -127,7 +129,15 @@ class IsaacSimCuttingConfig:
         from .camera_rig import RIG_PROFILES
         if self.camera_rig_profile not in RIG_PROFILES:
             raise ValueError('Unknown camera_rig_profile')
-        if self.camera and self.camera_rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v13','wrist_camera_rig_v14'):
+        if self.global_rgb_only and self.camera_layout != 'wrist_d405_global_d455':
+            raise ValueError('global_rgb_only requires the wrist/global camera layout')
+        if self.active_camera_ids is not None:
+            ids = tuple(self.active_camera_ids)
+            if (not ids or len(set(ids)) != len(ids) or
+                    not set(ids) <= {'wrist_d405_0', 'wrist_d405_1', 'global_d455'} or
+                    self.camera_layout != 'wrist_d405_global_d455'):
+                raise ValueError('Invalid active_camera_ids for the wrist/global camera layout')
+        if self.camera and not self.global_rgb_only and self.camera_rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v13','wrist_camera_rig_v14'):
             raise NotImplementedError('Narrow Global native stereo registration is BLOCKED by independent controls. '
                 'Record with controlled v5/v8/v9 optics and --save-render-surfaces, then use '
                 'scripts/render_native_global_views.py for named Global RGB replay and original wrist RGB-D.')
@@ -1329,7 +1339,10 @@ class LiveIsaacSimCutting:
                 "D405_model":"ideal_d405_prototype; actual RTX geometry, unvalidated physical sensor model",
                 "native_D455_model":"Controlled SingleView profile; physical calibration unvalidated"}
             write_json(self.output/"camera_rig.json",self.camera_rig_receipt)
-        native_ids=({"global_d455"} if c.camera_layout=="wrist_d405_global_d455" else
+        if c.active_camera_ids is not None:
+            paths = {name: path for name, path in paths.items() if name in c.active_camera_ids}
+        native_ids=({"global_d455"} if c.camera_layout=="wrist_d405_global_d455" and not c.global_rgb_only else
+                    set() if c.camera_layout=="wrist_d405_global_d455" else
                     {"d455_0","d455_1"} if c.camera_mode=="native_single_view" else set())
         # Native assets contain same-named pre-authored2048x1080 products. In
         #6.2 their Hydra texture adoption can alias the two camera views. Create
@@ -1376,7 +1389,8 @@ class LiveIsaacSimCutting:
                     annotator.attach(str(sensor.render_product.GetPath()))
             else:
                 self.cameras[name] = CameraSensor(RtxCamera(path,tick_rate=0.), resolution=(height,width),
-                            annotators=["rgb","distance_to_image_plane"])
+                            annotators=(["rgb"] if name == 'global_d455' and c.global_rgb_only
+                                        else ["rgb","distance_to_image_plane"]))
                 if self.camera_specs:
                     intrinsic=np.asarray(self.camera_specs[name]["K"],float)
                     self.cameras[name].render_product.CreatePixelAspectRatioAttr(float(intrinsic[1,1]/intrinsic[0,0]))
@@ -1385,6 +1399,9 @@ class LiveIsaacSimCutting:
                 spec=self.camera_specs[name]
                 self.calibration[name].update(sensor_model=spec["sensor_model"],near_m=spec["near_m"],far_m=spec["far_m"],
                     camera_id=name,camera_layout=c.camera_layout,capability=spec.get("capability"))
+            if name == 'global_d455' and c.global_rgb_only:
+                self.calibration[name].update(modalities=['rgb'], depth_status='BLOCKED_NATIVE_STEREO_VALIDATION',
+                                              capability='live_rgb_only')
             self.camera_params[name] = rep.AnnotatorRegistry.get_annotator("camera_params")
             self.camera_params[name].attach(str(self.cameras[name].render_product.GetPath()))
         write_json(self.output/"calibration_authored.json",self.calibration)
@@ -1423,9 +1440,10 @@ class LiveIsaacSimCutting:
         import json
         from .native_camera_geometry import measured_camera_extrinsics
         from .usd_surface_bridge import usd_camera_calibration
+        active_specs={name:spec for name,spec in self.camera_specs.items() if name in self.calibration}
         current={name:usd_camera_calibration(self.stage,spec["optical_prim_path"],spec["width"],spec["height"])["T_world_camera"]
-                 for name,spec in self.camera_specs.items()}
-        sample=measured_camera_extrinsics(self.camera_specs,measured_hand_poses,current,self.fixed_world_optical,
+                 for name,spec in active_specs.items()}
+        sample=measured_camera_extrinsics(active_specs,measured_hand_poses,current,self.fixed_world_optical,
                                          self.time_s,self.SimulationManager.get_simulation_time())
         for name,pose in sample["cameras"].items():
             self.calibration[name]={**self.calibration[name],**pose}
@@ -1623,7 +1641,9 @@ class LiveIsaacSimCutting:
             rep.orchestrator.step(rt_subframes=1,delta_time=0.)
             latest = {name:{a:data(name,sensor,a) for a in
                        (["rgb","distance_to_image_plane","depth_sensor_distance","depth_sensor_point_cloud_position"]
-                       if name in self.native_parameters else ["rgb","distance_to_image_plane"])}
+                       if name in self.native_parameters else
+                       ["rgb"] if name == 'global_d455' and self.config.global_rgb_only else
+                       ["rgb","distance_to_image_plane"])}
                       for name,sensor in self.cameras.items()}
             if overview is not None:
                 overview_rgb=overview.get_data("rgb")[0]
@@ -1668,6 +1688,18 @@ class LiveIsaacSimCutting:
                     "runtime_vs_measured_hand_composition":transform_error(expected_pose,runtime_pose),
                     "physics_timestamp_s":self.time_s,"rendering_advanced_physics":False}
             rgb = numpy_data(payload["rgb"][0])
+            if name == 'global_d455' and self.config.global_rgb_only:
+                expected=(self.calibration[name]['height'], self.calibration[name]['width'])
+                if rgb.shape[:2] != expected:
+                    raise ValueError('Malformed live Global RGB array')
+                frames[name] = {'rgb': rgb[:,:,:3].astype(np.uint8,copy=False), 'modalities': ['rgb'],
+                    'physics_timestamp_s': self.time_s, 'surface_timestamp_s': self.time_s,
+                    'native_physics_timestamp_s': before[0], 'live_source': 'Isaac Sim6.2 Kit/PhysX/RTX',
+                    'camera_id': name, 'K': np.asarray(self.calibration[name]['K']),
+                    'T_world_camera': runtime_pose.copy(), 'T_camera_world': np.linalg.inv(runtime_pose),
+                    'camera_extrinsics_timestamp_s': self.camera_extrinsics['timestamp_s'],
+                    'physical_sensor_calibration_validated': False}
+                continue
             depth = numpy_data(payload["distance_to_image_plane"][0]).squeeze()
             expected=(self.calibration[name]["height"],self.calibration[name]["width"])
             if rgb.shape[:2] != expected or depth.shape != expected:

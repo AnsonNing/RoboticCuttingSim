@@ -1,0 +1,112 @@
+{
+  "geometry_diversity": {
+    "status": "PASS",
+    "checks": {
+      "same_seed_full_hashes": true,
+      "different_actual_particle_states": true,
+      "both_counts": true,
+      "four_families": true,
+      "continuous_material": true
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "initial_particle_hashes": [
+      "8b0df25ca95461d9198c258fcd7cfd8f96baa36e27a3a0ca7c46171621fa3a5e",
+      "1a69da508aa42f1fe5296912a8c761758f7445953475ae89be932cb2e5f12f86",
+      "5adf2433f805b794aa4e73b4b9bfa5ede512b3748afb5607daeef1eed7d1b847",
+      "75729611522e3f752950bbeec8ee6794e85574f51b4d31ff6ac34ca14ebcdde1",
+      "9746df9812cf93d49aef9df9feba141828cdaeca9fb613e0476c78db92dcb384",
+      "e29badcc748dd2656623e8618ad76977c3c19fc2c82e5d35dcf036a3a01cc6fe",
+      "21966db7e1cf9640a9741461131a400897cf3be9d0fdc939bbbb2ee18acbf135",
+      "5a910dec3066c9ea143c0ca264005def1b2a5092654f789c41235dad65da627e",
+      "d9882bc5626c8644c99b85d0fdede0d9331b72b6852134bc14702b4067ad77a1",
+      "b7ed563e7c7a65718930b3c4a5ea1db28ac1319685a7e8cd2366e91a3b86ee52",
+      "95a5c0db7c4279dcac52476395a4d6b71d7ade3e849cd5775ba0abc57bf006b9",
+      "ccbbd2b82e6286ec23719a54945b99960499c4aed17820eecb15c665f8b3737c"
+    ],
+    "wall_s": 5.766336957007297
+  },
+  "live_native_cameras": {
+    "status": "PASS",
+    "checks": {
+      "global_fixed": true,
+      "wrist_moves_with_actual_hand": true,
+      "timestamps_match": true,
+      "wrist_only_depth": true,
+      "global_640x480": true
+    },
+    "control_steps": 20,
+    "simulation_duration_s": 0.4,
+    "wall_s": 93.132,
+    "gpu_guard": "PASS",
+    "actual_global_T_world_camera": [
+      [
+        -1.0,
+        -4.440892098500626e-16,
+        5.551115123125784e-16,
+        -7.237830445064641e-24
+      ],
+      [
+        -5.469879240540745e-16,
+        0.2944397428871496,
+        -0.9556700465163432,
+        0.5894020295551161
+      ],
+      [
+        2.671200708279292e-16,
+        -0.9556700465163432,
+        -0.2944397428871497,
+        0.1966638403920674
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "wrist_translation_m": 0.0039230483330795615,
+    "physics_status": "FAIL_INTEGRITY",
+    "outcome_status": "FAIL",
+    "scope": "Environment camera/proprioception diagnostic only; not an autonomous candidate. Full24s cutting NOT_RUN. Earlier initialization failure preserved."
+  },
+  "physics_unchanged": [
+    {
+      "path": "src/robotic_cutting_sim/tlmpm_v5.py",
+      "unchanged": true,
+      "sha256": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b"
+    },
+    {
+      "path": "src/robotic_cutting_sim/tlmpm_v7.py",
+      "unchanged": true,
+      "sha256": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+    },
+    {
+      "path": "src/robotic_cutting_sim/tlmpm_v7_2.py",
+      "unchanged": true,
+      "sha256": "485080b0db4d8c6e1bbb4a395dfd593e2be90ce37a445c945dba442de9957c84"
+    },
+    {
+      "path": "src/robotic_cutting_sim/goals.py",
+      "unchanged": true,
+      "sha256": "c2cb544a0dee129d71054c0df3266601fbc6e75b41e94c6a00a735812bba8602"
+    }
+  ],
+  "research": "NOT_RUN_AT_PREPARATION_FREEZE",
+  "media_source_hashes": {
+    "live_wrist_motion.png": "816e6130969f927f745dcdd1757f7c7096c9d75538455f7171c21ab396b2c742",
+    "live_global_reset.png": "cb47dd2b587929906aa3c786d60b3babaa90184e5d284da93871e3f6abed6e60"
+  }
+}
