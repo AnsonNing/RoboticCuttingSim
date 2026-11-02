@@ -134,9 +134,9 @@ def main():
         optical_local = np.linalg.inv(old_root) @ old_optical
         _set_transform(root, transform @ np.diag([1., -1., -1., 1.]) @ np.linalg.inv(optical_local))
         width, height = profile['width'], profile['height']
-        if args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13'):
+        if args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13','wrist_camera_rig_v14'):
             UsdGeom.Camera(camera).CreateClippingRangeAttr(Gf.Vec2f(.001, 20.))
-        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13')
+        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13','wrist_camera_rig_v14')
         if controlled_lens:
             # Change the actual optical prim; a crop cannot establish this view.
             optical_camera = UsdGeom.Camera(camera)
@@ -171,9 +171,19 @@ def main():
         params.attach(product)
         bridge = DynamicSurfaceBridge(stage)
         tool_spec = None
-        if args.rig_profile == 'wrist_camera_rig_v13':
+        if args.rig_profile in ('wrist_camera_rig_v13','wrist_camera_rig_v14'):
             from robotic_cutting_sim.tool_profile import PROFILES, make_profile_tool_spec
-            tool_spec = make_profile_tool_spec(PROFILES[task_record['tool_profile_id']])
+            profile_id=task_record.get('tool_profile_id')
+            if profile_id in PROFILES:
+                tool_spec = make_profile_tool_spec(PROFILES[profile_id])
+            else:
+                from types import SimpleNamespace
+                from robotic_cutting_sim.physical_tool import make_tool_spec
+                tool_spec = make_tool_spec(SimpleNamespace(**task_record))
+            tool_indices=[i for i,path in enumerate(body_paths) if 'tool' in path.lower()]
+            if len(tool_indices)!=1:
+                raise ValueError('Requires one measured physical tool body for opposite-tool axis audit')
+            tool_index=tool_indices[0]
         audit = []
         for row in selected:
             timestamp, index = row['time_s'], row['frame']
@@ -210,18 +220,23 @@ def main():
             raw = numpy_data(sensor.get_data('depth_sensor_distance')[0]).reshape(height, width)
             ideal = numpy_data(sensor.get_data('distance_to_image_plane')[0]).reshape(height, width)
             clipping = list(map(float, UsdGeom.Camera(camera).GetClippingRangeAttr().Get()))
-            if args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13') and clipping[0] > .00101:
+            if args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13','wrist_camera_rig_v14') and clipping[0] > .00101:
                 raise ValueError('Frontal camera render near plane could remove real foreground')
             opposite_readback = None
             if tool_spec is not None:
                 optical_axis = np.asarray(calibration['T_world_camera'])[:3,2]
                 normal = np.asarray(profile['tool_opposite_reference']['target_face_outward_normal_world'])
-                edge = pose_matrix(robot['body_pose'][bi,body_paths.index('/World/Tools/CuttingTool_0')]) @ tool_spec.T_tool_edge
+                up = task_frame[:3,2]
+                horizontal_axis=optical_axis-(optical_axis@up)*up
+                horizontal_axis/=np.linalg.norm(horizontal_axis)
+                edge = pose_matrix(robot['body_pose'][bi,tool_index]) @ tool_spec.T_tool_edge
                 opposite_readback = {
                     'optical_positive_Z_world': optical_axis.tolist(),
                     'target_face_outward_normal_world': normal.tolist(),
                     'optical_axis_dot_face_normal': float(optical_axis@normal),
                     'normal_incidence_error_deg': float(np.degrees(np.arccos(np.clip(-optical_axis@normal,-1.,1.)))),
+                    'horizontal_normal_incidence_error_deg': float(np.degrees(np.arccos(np.clip(-horizontal_axis@normal,-1.,1.)))),
+                    'expected_3d_incidence_deg': profile['tool_opposite_reference']['elevation_deg'],
                     'optical_dot_workpiece_long_axis': float(optical_axis@task_frame[:3,0]),
                     'optical_dot_workpiece_up_axis': float(optical_axis@task_frame[:3,2]),
                     'measured_blade_edge_line_world': edge[:3,1].tolist(),
@@ -230,8 +245,9 @@ def main():
                     'edge_line_vs_target_face_normal_deg': float(np.degrees(np.arccos(np.clip(edge[:3,1]@normal,-1.,1.)))),
                     'cut_enabled': row.get('cut_enabled'),
                     'scope': 'Camera remains fixed; measured blade axes may change when approaching/returning HOME'}
-                if opposite_readback['normal_incidence_error_deg'] > .001:
-                    raise ValueError('Tool-opposite optical axis is not normal to the declared vertical target face')
+                if (opposite_readback['horizontal_normal_incidence_error_deg'] > .001 or
+                    abs(opposite_readback['normal_incidence_error_deg']-opposite_readback['expected_3d_incidence_deg'])>.001):
+                    raise ValueError('Tool-opposite horizontal bearing or 3D incidence differs from declared elevation')
             front_readback = None
             if base_pose is not None:
                 rendered_base = np.asarray(UsdGeom.Xformable(stage.GetPrimAtPath(base_path)).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T

@@ -1,0 +1,46 @@
+{
+  "schema": "rcs_global_camera_followup_v2",
+  "profile_id": "wrist_camera_rig_v14",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "scope": "Adopted OPPOSITE_TOOL view: distal workpiece+Y, horizontal optical projection -localY with zero lateral obliquity, elevation17.1239449519degrees matching LEFT/RIGHT. 3D incidence differs from full face normal by that elevation. World-fixed Global; v5 wrists, Franka1park, physics and defaults unchanged. rig13zero-elevation evidence preserved.",
+  "global_d455": {
+    "eye_world_m": [
+      0.0,
+      0.5884020279098058,
+      0.1966638457322899
+    ],
+    "target_world_m": [
+      0,
+      0.015,
+      0.02
+    ],
+    "resolution_wh": [
+      640,
+      480
+    ],
+    "hfov_deg": 24.0,
+    "near_m": 0.52,
+    "native_near_m": 0.52,
+    "far_m": 6.0,
+    "maximum_disparity_px": 320.0,
+    "elevation_deg": 17.123944951922702,
+    "distance_m": 0.6,
+    "render_near_m": 0.001,
+    "render_far_m": 20.0
+  },
+  "named_view": "opposite_tool",
+  "reference_workpiece_world_xyzw": [
+    0,
+    0,
+    0.01,
+    0,
+    0,
+    0,
+    1
+  ],
+  "reference_workpiece_dimensions_m": [
+    0.16,
+    0.03,
+    0.02
+  ]
+}

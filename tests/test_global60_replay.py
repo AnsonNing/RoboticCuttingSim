@@ -139,7 +139,7 @@ def test_frontal_view_uses_measured_base_and_workspace_and_rotates_with_them():
 def test_named_three_global_views_preserve_left_right_and_level_opposite_geometry():
     from scipy.spatial.transform import Rotation
     from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES,tool_opposite_view
-    assert GLOBAL_VIEW_PROFILES=={'left':'wrist_camera_rig_v10','right':'wrist_camera_rig_v11','opposite_tool':'wrist_camera_rig_v13'}
+    assert GLOBAL_VIEW_PROFILES=={'left':'wrist_camera_rig_v10','right':'wrist_camera_rig_v11','opposite_tool':'wrist_camera_rig_v14'}
     reference=make_rig()
     for profile in GLOBAL_VIEW_PROFILES.values():
         rig=make_rig(rig_profile=profile)
@@ -165,7 +165,7 @@ def test_named_view_selection_and_scene_preparation_cannot_change_physics(tmp_pa
     spec=importlib.util.spec_from_file_location('three_view_scene',Path('scripts/run_wp14_scene.py'))
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     old=module.prepare('standard_cut',tmp_path/'old')
-    for view,profile in [('left','wrist_camera_rig_v10'),('right','wrist_camera_rig_v11'),('opposite_tool','wrist_camera_rig_v13')]:
+    for view,profile in [('left','wrist_camera_rig_v10'),('right','wrist_camera_rig_v11'),('opposite_tool','wrist_camera_rig_v14')]:
         new=module.prepare('standard_cut',tmp_path/view,global_view=view)
         assert new['task_id']==old['task_id'] and new['source_inputs']==old['source_inputs']
         assert new['profile']==old['profile'] and new['camera_rig']==profile
@@ -184,4 +184,18 @@ def test_environment_named_global_view_reaches_native_config(tmp_path,monkeypatc
     monkeypatch.setattr(isaac_sim_runner,'IsaacSimCuttingConfig',config)
     with pytest.raises(ConfigReached):
         with live_env.open_cutting_env(runtime='isaac_sim',output_dir=tmp_path/'run',global_view='opposite_tool'):pass
-    assert seen['camera_rig_profile']=='wrist_camera_rig_v13'
+    assert seen['camera_rig_profile']=='wrist_camera_rig_v14'
+
+
+def test_adopted_opposite_tool_elevation_is_3d_oblique_but_horizontally_normal():
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES
+    assert GLOBAL_VIEW_PROFILES['opposite_tool']=='wrist_camera_rig_v14'
+    old=make_rig(rig_profile='wrist_camera_rig_v13').specs['global_d455']
+    g=make_rig(rig_profile='wrist_camera_rig_v14').specs['global_d455']
+    n=np.array([0.,1.,0.]);axis=np.asarray(g['T_world_camera'])[:3,2]
+    horizontal=axis.copy();horizontal[2]=0;horizontal/=np.linalg.norm(horizontal)
+    np.testing.assert_allclose(horizontal,-n,atol=1e-12)
+    incidence=np.degrees(np.arccos(-axis@n))
+    assert incidence==pytest.approx(17.123944951922702)
+    assert abs(np.asarray(old['T_world_camera'])[2,2])<1e-12
+    assert abs(g['working_distance_to_target_m']-.6)<1e-12

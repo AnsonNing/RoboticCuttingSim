@@ -67,6 +67,7 @@ def main():
             command += ['--global-pixel-crop',*[str(v) for v in row['global_pixel_crop']]]
         if row.get('presentation_closeup'):command.append('--presentation-closeup')
         if row.get('global_replay'):command+=['--global-replay',row['global_replay']]
+        if row.get('global_replays'):command+=['--global-replays',*row['global_replays']]
         with (a.stage/(row['id']+'.log')).open('x') as log:
             code=subprocess.call(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
         record={**row,'command':command,'returncode':code,'status':'PASS' if code==0 else 'BLOCKED'}

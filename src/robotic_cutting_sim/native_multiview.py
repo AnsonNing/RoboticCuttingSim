@@ -18,6 +18,57 @@ CAMERAS=('global_d455','wrist_d405_0','wrist_d405_1')
 CLOCKS=('physics_timestamp_s','surface_timestamp_s','camera_extrinsics_timestamp_s')
 LAYOUT='native_multiview_v2'
 FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+EXTERNAL_VIEWS=('left','right','opposite_tool')
+
+
+def three_global_canvas(frames, external, solver, phase, status, title, surface, archived):
+    """Three uncut full Global frames above the two actual wrist RGB/depth pairs."""
+    im=Image.new('RGB',(1920,1080),(17,19,24));draw=ImageDraw.Draw(im)
+    font=ImageFont.truetype(FONT,18);large=ImageFont.truetype(FONT,24)
+    t=float(frames['global_d455']['physics_timestamp_s'])
+    draw.text((15,8),f'{title} | Native Isaac Sim | {solver} | {surface}',font=large,fill='white')
+    draw.text((15,40),f'sim {t:.2f}s | {phase} | task {status} | 1x | exact saved-state Global replay + original Native wrists',font=font,fill='#e5dbab')
+    def pane(frame,box,label,depth=False):
+        x,y,w,h=box
+        draw.text((x+8,y+4),label,font=font,fill='white')
+        draw.text((x+8,y+27),f'{t:.2f}s | {phase}',font=font,fill='#bbc3d0')
+        if frame is None:
+            draw.text((x+8,y+65),'NO RAW CAPTURE (historical gap)',font=font,fill='#e5dbab');return
+        pixels=depth_rgb(frame) if depth else frame['rgb'][...,:3]
+        pic=ImageOps.contain(Image.fromarray(np.asarray(pixels,np.uint8)),(w,h-54),Image.Resampling.LANCZOS)
+        im.paste(pic,(x+(w-pic.width)//2,y+54+(h-54-pic.height)//2))
+    for i,name in enumerate(EXTERNAL_VIEWS):
+        pane(external[name],(i*640,75,640,570),f'Global {name.upper()} RGB | '+('rig14 / normal bearing +17deg' if i==2 else f'rig{10+i} / low side view'))
+    for i,(name,depth) in enumerate([('wrist_d405_0',False),('wrist_d405_1',False),('wrist_d405_0',True),('wrist_d405_1',True)]):
+        pane(frames[name],(i*480,655,480,365),name+(' Depth 70-500mm' if depth else ' RGB'),depth)
+    scope='Historical wrist calibration retained.' if archived else 'Fixed hand-local v5 wrist mounts.'
+    draw.text((15,1048),'All external views and real occluders retained; no crop. '+scope+' Sensor models provisional.',font=font,fill='#bbc3d0')
+    return np.asarray(im)
+
+
+def require_external_replays(paths,episode,indices):
+    from .camera_rig import GLOBAL_VIEW_PROFILES
+    if len(paths)!=3:raise ValueError('All three named external views are required')
+    result={}
+    for name,path in zip(EXTERNAL_VIEWS,paths):
+        path=Path(path).resolve();receipt=json.loads((path/'replay_receipt.json').read_text())
+        if receipt.get('status')!='PASS_RENDER' or Path(receipt['source_episode']).resolve()!=episode.resolve():
+            raise ValueError(f'{name}: incomplete replay or wrong Native episode')
+        if receipt['profile']['rig_profile']!=GLOBAL_VIEW_PROFILES[name]:
+            raise ValueError(f'{name}: wrong camera profile')
+        if [r['frame'] for r in receipt['frames']]!=indices:
+            raise ValueError(f'{name}: replay does not cover complete capture timeline')
+        if receipt.get('physics_runs')!=0 or receipt.get('wrist_captures_modified'):
+            raise ValueError(f'{name}: replay changed physics or wrist captures')
+        for row in receipt['frames']:
+            if row.get('render_clipping_range_m',[1])[0]>.00101:
+                raise ValueError(f'{name}: missing actual small render-near readback')
+            capture=path/'observations'/f"global_d455_{row['frame']:04d}.npz"
+            if dm.sha256_file(capture)!=row['capture_sha256']:raise ValueError(f'{name}: changed capture bytes')
+        for source,expected in receipt['source_sha256'].items():
+            if dm.sha256_file(Path(source))!=expected:raise ValueError(f'{name}: changed measured replay inputs')
+        result[name]=(path,receipt)
+    return result
 
 
 def read_set(observations, index, *, allow_missing=False):
@@ -166,7 +217,11 @@ def render_episode(args, episode, out, started):
     indices=streams[CAMERAS[0]]
     if not indices or (not archived and any(streams[name]!=indices for name in CAMERAS)):
         raise ValueError('Camera frame indices are not paired')
-    replay_dir=getattr(args,'global_replay',None)
+    triple_paths=getattr(args,'global_replays',None)
+    if triple_paths and (getattr(args,'global_replay',None) is not None or args.global_pixel_crop is not None or args.presentation_closeup):
+        raise ValueError('Three Global layout uses complete external frames; single replay/crop/closeup options conflict')
+    triples=require_external_replays(triple_paths,episode,indices) if triple_paths else {}
+    replay_dir=triples['left'][0] if triples else getattr(args,'global_replay',None)
     replay=None
     global_distance=None
     if replay_dir is not None:
@@ -197,7 +252,14 @@ def render_episode(args, episode, out, started):
         if args.presentation_closeup:
             frames['closeup_rgb']=read_closeup(obs,index,float(frames['global_d455']['physics_timestamp_s']))
         return frames
+    def external_load(index):
+        result={}
+        for name,(path,_) in triples.items():
+            with np.load(path/'observations'/f'global_d455_{index:04d}.npz') as data:
+                result[name]={k:data[k] for k in data.files}
+        return result
     initial={name:load(streams[name][0])[name] for name in CAMERAS}
+    external_initial=external_load(indices[0]) if triples else {}
     if global_distance is not None and replay is None:
         if not np.allclose(initial['global_d455']['T_world_camera'],rig['T_world_camera'],atol=1e-5,rtol=0):
             raise ValueError('Recorded Native Global pose differs from declared rig9 physical pose')
@@ -207,7 +269,15 @@ def render_episode(args, episode, out, started):
         if min(x,y)<0 or min(w,h)<1 or x+w>rgb.shape[1] or y+h>rgb.shape[0]:raise ValueError('Global pixel crop outside actual image')
     audit=[];inputs={}
     for index in indices:
-        audit.append(check_set(load(index),initial,archived=archived))
+        current=load(index);checked=check_set(current,initial,archived=archived)
+        if triples:
+            external=external_load(index);checked['external_views']={}
+            for name,frame in external.items():
+                checked['external_views'][name]=check_set({**current,'global_d455':frame},
+                    {**initial,'global_d455':external_initial[name]},archived=archived)
+                path=triples[name][0]/'observations'/f'global_d455_{index:04d}.npz'
+                inputs[str(path)]=dm.sha256_file(path)
+        audit.append(checked)
         for name in (*CAMERAS,*(('closeup_rgb',) if args.presentation_closeup else ())):
             path=obs/f'{name}_{index:04d}.npz'
             if path.exists():inputs[str(path)]=dm.sha256_file(path)
@@ -225,7 +295,9 @@ def render_episode(args, episode, out, started):
     phases={index:(('ARCHIVED_REFERENCE' if archived and not rows else 'HOME') if row<0 else rows[row].get('policy_phase','UNKNOWN')) for index,row in zip(indices,chosen)}
     status=result.get('task_status','NOT_REPORTED');title=args.title or result['task_id']
     def transform(path):
-        index=int(path.stem.rsplit('_',1)[1]);return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None,global_distance)
+        index=int(path.stem.rsplit('_',1)[1])
+        if triples:return three_global_canvas(load(index),external_load(index),solver,phases[index],status,title,surface,archived)
+        return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None,global_distance)
     files=[obs/f'global_d455_{i:04d}.npz' for i in indices]
     encoded=(encode_frames(files,out/'demo.mp4',None,view=LAYOUT,frame_transform=transform,fps=fps) if constant
              else encode_timed_frames(files,out/'demo.mp4',transform,times))
@@ -233,9 +305,12 @@ def render_episode(args, episode, out, started):
     speed=args.gif_speed
     command=preview(out/'demo.mp4',out/'demo.gif',start=0,duration=float(times[-1]-times[0]+1/fps),width=args.gif_width,speed=speed)
     subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(out/'demo.mp4'),'-f','null','-'],check=True)
-    receipt={'schema':'native_multiview_render_receipt_v2','layout':LAYOUT,'episode_dir':str(episode),
+    replay_summary=({'receipt_path':str(replay_dir/'replay_receipt.json'),
+        'receipt_sha256':dm.sha256_file(replay_dir/'replay_receipt.json'),
+        'source_episode':replay['source_episode'],'profile':replay['profile'],'physics_runs':0} if triples else replay)
+    receipt={'schema':'native_multiview_render_receipt_v2','layout':'native_multiview_three_global_v1' if triples else LAYOUT,'episode_dir':str(episode),
         'runtime_source':'native_camera_replay_and_original_wrist_captures' if replay else 'live_isaac_sim','solver':solver,'surface_profile':surface,'archived_calibration':archived,
-        'global_camera_replay':replay,'encoder_simulator_runs':0,
+        'global_camera_replay':replay_summary,'encoder_simulator_runs':0,
         'global_working_distance_m':global_distance,
         'task_id':result['task_id'],'task_status':status,'cameras':list(CAMERAS),
         'panes':['global_d455 RGB','wrist_d405_0 RGB','wrist_d405_1 RGB','wrist_d405_0 Depth','wrist_d405_1 Depth'],
@@ -262,4 +337,16 @@ def render_episode(args, episode, out, started):
             str(Path(__file__).resolve().parents[2]/'scripts/render_demo_episode.py')],text=True).strip(),
         'outputs':{n:dm.sha256_file(out/n) for n in ('demo.mp4','demo.gif','poster.png')},
         'wall_s':time.perf_counter()-started}
+    if triples:
+        receipt['three_global_views']={name:{'receipt_path':str(path/'replay_receipt.json'),
+            'receipt_sha256':dm.sha256_file(path/'replay_receipt.json'),'profile':r['profile'],
+            'source_commit':r['source_commit'],'physics_runs':r['physics_runs'],
+            'frame_count':len(r['frames']),'maximum_body_matrix_error':max(x['maximum_rendered_body_matrix_error'] for x in r['frames']),
+            'maximum_render_near_m':max(x['render_clipping_range_m'][0] for x in r['frames']),
+            'initial_calibration':{key:external_initial[name][key].tolist() for key in ('K','T_world_camera')}}
+            for name,(path,r) in triples.items()}
+        receipt['cameras']=['global_'+name for name in EXTERNAL_VIEWS]+list(CAMERAS[1:])
+        receipt['panes']=['global_'+name+' RGB' for name in EXTERNAL_VIEWS]+receipt['panes'][1:]
+        for path,_ in triples.values():inputs[str(path/'replay_receipt.json')]=dm.sha256_file(path/'replay_receipt.json')
+        receipt['source_sha256'].update(inputs)
     (out/'render_receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
