@@ -40,3 +40,31 @@ def test_replay_refuses_interpolation_and_missing_state():
     assert module.exact_index([0., .2, .4], .2) == 1
     with pytest.raises(ValueError, match='interpolation refused'):
         module.exact_index([0., .2, .4], .3)
+
+
+def test_replay_cannot_substitute_a_surface_when_only_positions_exist(tmp_path):
+    spec=importlib.util.spec_from_file_location('replay_global',Path('scripts/rerender_native_global.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    np.savez(tmp_path/'physics_state.npz',positions=np.zeros((1,1,3)))
+    with pytest.raises(ValueError,match='no substitute surface'):
+        module.require_saved_surfaces(tmp_path,[{'frame':0,'time_s':0.}])
+
+
+def test_exact_staged_surface_snapshot_rejects_stale_or_modified_geometry(tmp_path):
+    import hashlib
+    from types import SimpleNamespace
+    spec=importlib.util.spec_from_file_location('wp10_surface_save',Path('scripts/run_wp10_live.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    vertices=np.array([[0,0,0],[1,0,0],[0,1,0]],np.float32)
+    faces=np.array([[0,1,2]],np.int32)
+    backend=SimpleNamespace(_surface_time=.2,surface_arrays=(vertices,faces),
+        surface_receipt={'surface_sha256':hashlib.sha256(vertices.tobytes()+faces.tobytes()).hexdigest()})
+    module.save_surface_snapshot(backend,tmp_path,0,.2)
+    with np.load(tmp_path/'surface_debug/surface_0000.npz') as data:
+        np.testing.assert_array_equal(data['vertices_m'],vertices)
+        np.testing.assert_array_equal(data['triangles'],faces)
+    with pytest.raises(ValueError,match='stale'):
+        module.save_surface_snapshot(backend,tmp_path,1,.4)
+    vertices[0,0]=.1
+    with pytest.raises(ValueError,match='differ'):
+        module.save_surface_snapshot(backend,tmp_path,1,.2)

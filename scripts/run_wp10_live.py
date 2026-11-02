@@ -49,10 +49,31 @@ def failure_receipt(output, env=None):
         raise
 
 
+def save_surface_snapshot(backend, output, index, timestamp):
+    """Privileged exact staged geometry for future camera-only re-rendering."""
+    import hashlib
+    if abs(float(backend._surface_time)-timestamp)>1e-9:
+        raise ValueError('Refusing to save a stale rendered surface')
+    vertices,faces=backend.surface_arrays
+    vertices=np.asarray(vertices,np.float32);faces=np.asarray(faces,np.int32)
+    digest=hashlib.sha256(vertices.tobytes()+faces.tobytes()).hexdigest()
+    if digest!=backend.surface_receipt['surface_sha256']:
+        raise ValueError('Saved surface arrays differ from staged geometry')
+    target=Path(output)/'surface_debug'
+    target.mkdir(exist_ok=True)
+    extra={}
+    if getattr(backend,'cut_aware_surface',None) is not None:
+        extra['face_varying_normals']=np.asarray(backend.bridge.mesh.GetNormalsAttr().Get(),np.float32)
+    with (target/f'surface_{index:04d}.npz').open('xb') as stream:
+        np.savez_compressed(stream,vertices_m=vertices,triangles=faces,physics_timestamp_s=timestamp,
+            source_surface_sha256=digest,**extra)
+
+
 class EpisodeRecorder:
     """Raw RGB-D, poses, commands and actual material history, with fresh names."""
-    def __init__(self, output, env, controller, every=10):
+    def __init__(self, output, env, controller, every=10, *, save_surfaces=False):
         self.output, self.env, self.controller, self.every = Path(output), env, controller, every
+        self.save_surfaces=save_surfaces
         self.output.mkdir(exist_ok=False)
         (self.output / 'observations').mkdir()
         self.rows, self.samples, self.states, self.errors, self.rotation_errors = [], [], [], [], []
@@ -117,6 +138,8 @@ class EpisodeRecorder:
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
                               cut_enabled=getattr(self, 'last_cut', False)))
+        if self.save_surfaces:
+            save_surface_snapshot(backend,self.output,index,env.time_s)
         state = backend.material.history_state()
         self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
         self.states.append(jsonable(self.measured()))
@@ -587,6 +610,8 @@ def main(argv=None):
     p.add_argument('--surface-timing-log', action='store_true', default=argparse.SUPPRESS,
                    help='Configured runs: write the in-memory per-step physics/surface/camera timings to '
                         'episode_###/runtime_timing_trace.json (profiling; both surface profiles)')
+    p.add_argument('--save-render-surfaces',action='store_true',
+                   help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
     a = p.parse_args(argv)
     validate_arguments(p, a)
     out = new_output(a.out)
@@ -634,7 +659,8 @@ def main(argv=None):
                 else:
                     gym = None
                     observation, _ = env.reset(seed=seed)
-                recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every)
+                recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every,
+                                           save_surfaces=a.save_render_surfaces)
                 before = env.time_s
                 try:
                     env.step(dict(mode=DELTA_MODE, target=np.zeros(6), cut_index=env.backend.material.max_cuts))
@@ -762,7 +788,8 @@ def run_configured(a, out, task):
             for episode in range(a.episodes):
                 seed, episode_start = a.seed + episode, time.monotonic()
                 observation, reset_info = env.reset(seed=seed)
-                recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every)
+                recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every,
+                                           save_surfaces=a.save_render_surfaces)
                 policy, profile_receipt = None, None
                 if a.controller == 'scripted':
                     policy, profile_receipt = configured_policy(env, a)

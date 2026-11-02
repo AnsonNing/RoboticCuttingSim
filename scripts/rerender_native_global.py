@@ -35,6 +35,14 @@ def exact_index(times, timestamp):
     return i
 
 
+def require_saved_surfaces(episode, frames):
+    """Positions alone cannot reproduce current-volume or cut-aware surfaces."""
+    for row in frames:
+        path=episode/'surface_debug'/f"surface_{row['frame']:04d}.npz"
+        if not path.exists():
+            raise ValueError(f'Missing exact saved surface {path}; re-record required, no substitute surface')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('episode', type=Path)
@@ -64,6 +72,7 @@ def main():
         selected = frames if args.indices is None else [r for r in frames if r['frame'] in args.indices]
         if args.indices is not None and len(selected) != len(args.indices):
             raise ValueError('Requested capture index missing')
+        require_saved_surfaces(episode,selected)
         robot_path = episode / 'robot_state.npz'
         robot = np.load(robot_path)
         body_paths = robot['body_prim_paths'].tolist()
@@ -135,18 +144,6 @@ def main():
         rgb_reader.attach(product)
         params = rep.AnnotatorRegistry.get_annotator('camera_params')
         params.attach(product)
-        state_path = episode / 'physics_state.npz'
-        use_meshes = (episode / 'surface_debug').exists()
-        if not use_meshes:
-            state = np.load(state_path)
-            material = load_json(episode / 'material.json')
-            task = load_json(episode / 'task.json')
-            spacing = task['particle_spacing_m']
-            partition = CurrentMechanicalPartition(state['reference_stencil_nodes'], state['reference_stencil_weights'],
-                state['reference_stencil_gradients'], material['max_cuts'], encoding=material.get('code_encoding', 'ternary'))
-            surface = CuttingSurface(partition, spacing, min(spacing, .0015), f'cuda:{args.gpu}',
-                profile='legacy', unmeshable='raise')
-            workpiece = pose_matrix(task['world_from_workpiece_xyzw'])
         bridge = DynamicSurfaceBridge(stage)
         audit = []
         for row in selected:
@@ -158,20 +155,15 @@ def main():
                     raise ValueError(f'Missing recorded robot/tool body {path}')
                 _set_transform(prim, pose_matrix(pose))
                 UsdGeom.Xformable(prim).SetResetXformStack(True)
-            if use_meshes:
-                mesh_path = episode / 'surface_debug' / f'surface_{index:04d}.npz'
-                with np.load(mesh_path) as mesh:
-                    if abs(float(mesh['physics_timestamp_s']) - timestamp) > 1e-7:
-                        raise ValueError('Stale saved mesh')
-                    vertices, triangles = mesh['vertices_m'], mesh['triangles']
-                mesh_info = {'method': 'original_saved_surface', 'source_sha256': sha256_file(mesh_path)}
-            else:
-                pi = exact_index(state['time_s'], timestamp)
-                local = (state['positions'][pi] - workpiece[:3, 3]) @ workpiece[:3, :3]
-                vertices, triangles, mesh_info = surface.extract(local, state['codes'][pi])
-                vertices = (vertices @ workpiece[:3, :3].T + workpiece[:3, 3]).astype(np.float32)
-                mesh_info['method'] = 'unchanged_legacy_particle_surface_from_saved_current_state'
-            staged = bridge.update(vertices, triangles, timestamp)
+            mesh_path = episode / 'surface_debug' / f'surface_{index:04d}.npz'
+            with np.load(mesh_path) as mesh:
+                if abs(float(mesh['physics_timestamp_s']) - timestamp) > 1e-7:
+                    raise ValueError('Stale saved mesh')
+                vertices, triangles = mesh['vertices_m'], mesh['triangles']
+                normals=mesh['face_varying_normals'] if 'face_varying_normals' in mesh else None
+            mesh_info = {'method': 'original_saved_surface', 'source_sha256': sha256_file(mesh_path)}
+            staged = (bridge.update(vertices, triangles, timestamp) if normals is None else
+                bridge.update_face_varying_v1(vertices,triangles,normals,timestamp))
             # Rendering is stopped-time only: no simulation/PhysX/material stepping.
             for _ in range(10):
                 rep.orchestrator.step(rt_subframes=1, delta_time=0.)
@@ -211,7 +203,7 @@ def main():
             'rendering_only': True, 'profile': profile, 'calibration': calibration, 'frames': audit,
             'source_sha256': {str(p): sha256_file(p) for p in [robot_path, episode/'frame_manifest.json',
                 episode/'final_live_scene.usda' if (episode/'final_live_scene.usda').exists() else episode/'final_live_scene.usda.gz',
-                *([state_path, episode/'material.json', episode/'task.json'] if not use_meshes else [])]},
+                *[episode/'surface_debug'/f"surface_{row['frame']:04d}.npz" for row in selected]]},
             'implementation_sha256': sha256_file(Path(__file__)), 'versions': runtime_versions(),
             'profile_sha256': sha256_file(ROOT/'configs'/f'{args.rig_profile}.json'),
             'source_commit': subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
