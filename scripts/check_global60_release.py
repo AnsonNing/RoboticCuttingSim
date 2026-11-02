@@ -86,7 +86,8 @@ def check_global60(out, protected):
     if len(origins.get('exact_surface_global_replay',set()))!=13 or len(origins.get('new_native_recording',set()))!=26:
         errors.append({'error':'source inventory does not retain 13 exact-surface replays / 26 unique new recordings'})
     for row in catalog['comparisons']:
-        if row['status']!='PASS':errors.append({'episode':row['id'],'error':'comparison encoding failed'})
+        if row['status']!='PASS' or row.get('pts_check')!='PASS' or row.get('full_decode')!='PASS':
+            errors.append({'episode':row['id'],'error':'comparison encoding/PTS/decode failed'})
         prefix='docs/media/global60_v1/'+row['id']
         for extension,key in [('.mp4','mp4_sha256'),('.gif','gif_sha256')]:
             published[prefix+extension]=row[key]

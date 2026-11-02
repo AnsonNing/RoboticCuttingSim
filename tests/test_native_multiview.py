@@ -66,3 +66,21 @@ def test_irregular_capture_all_frames_and_exact_physics_pts(tmp_path):
     assert receipt['pts_check']=='PASS'
     assert receipt['decoded_pts_relative_s']==times
     assert receipt['frames']==4
+
+
+def test_irregular_matched_comparison_keeps_every_actual_pts(tmp_path):
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
+    from encode_wp13_media import encode_timed_frames
+    from encode_followup_gallery import encode_matched_comparison
+    times=[0.,.2,.4,.5]
+    files=[]
+    for i,t in enumerate(times):
+        path=tmp_path/f'global_d455_{i:04d}.npz'
+        np.savez(path,rgb=np.full((16,24,3),i*60,np.uint8),physics_timestamp_s=t);files.append(path)
+    def transform(path):
+        with np.load(path) as data:return data['rgb']
+    for side in ['left','right']:
+        encode_timed_frames(files,tmp_path/(side+'.mp4'),transform,times)
+    receipt=encode_matched_comparison(tmp_path/'left.mp4',tmp_path/'right.mp4',tmp_path/'pair.mp4',times)
+    assert receipt['pts_check']=='PASS'
+    assert receipt['decoded_pts_relative_s']==times
