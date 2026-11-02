@@ -147,16 +147,16 @@ def depth_rgb(frame):
     return np.where(valid[...,None],np.uint8(rgb*255),0)
 
 
-def canvas(frames, solver, phase, task_status, title, surface='particle_surface_v1', archived=False, global_crop=None, global_replay=False, global_distance_m=None):
+def canvas(frames, solver, phase, task_status, title, surface='particle_surface_v1', archived=False, global_crop=None, global_replay=False, global_distance_m=None, global_profile=None):
     im=Image.new('RGB',(1920,1080),(17,19,24));draw=ImageDraw.Draw(im)
     small=ImageFont.truetype(FONT,18);large=ImageFont.truetype(FONT,25)
     t=float(frames['global_d455']['physics_timestamp_s'])
     draw.text((18,10),f'{title} | Native Isaac Sim | {solver} | {surface}',font=large,fill='white')
     draw.text((18,43),f'sim {t:.2f} s | phase {phase} | recorded task {task_status} | playback 1x',font=small,fill='#e5dbab')
     if global_replay:
-        draw.text((18,65),'Global: physical 0.60 m camera replay | wrists: original Native captures',font=small,fill='#e5dbab')
+        draw.text((18,65),f'Global RGB: {global_profile or "camera"} replay | wrists: original Native RGB-D',font=small,fill='#e5dbab')
     elif global_distance_m is not None:
-        draw.text((18,65),f'New Native rig9 recording | fixed Global working distance {global_distance_m:.2f} m',font=small,fill='#e5dbab')
+        draw.text((18,65),f'New Native recording | fixed Global working distance {global_distance_m:.2f} m',font=small,fill='#e5dbab')
     def pane(name,box,depth=False):
         x,y,w,h=box
         frame=frames[name]
@@ -195,7 +195,7 @@ def canvas(frames, solver, phase, task_status, title, surface='particle_surface_
         draw.text((8,722),'closeup_rgb: actual Native presentation camera (not an observation)',font=small,fill='white')
         draw.text((8,746),f'{t:.2f}s | {solver} | {phase}',font=small,fill='#bbc3d0')
     footer='Archived camera calibration retained; no retrofit to the current rig.' if archived else 'Fixed hand-local v5 D405 mounts.'
-    if archived and global_replay:footer='Archived wrist calibration retained; fixed Global rig9.'
+    if archived and global_replay:footer=f'Archived wrist calibration retained; fixed Global {global_profile or "replay"}.'
     source='Global re-render of measured states; original wrists. ' if global_replay else 'Actual recorded cameras. '
     draw.text((18,1052),source+footer+' Physical sensor calibration unvalidated.',font=small,fill='#bbc3d0')
     return np.asarray(im)
@@ -305,7 +305,8 @@ def render_episode(args, episode, out, started):
     def transform(path):
         index=int(path.stem.rsplit('_',1)[1])
         if triples:return three_global_canvas(load(index),external_load(index),solver,phases[index],status,title,surface,archived)
-        return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None,global_distance)
+        return canvas(load(index),solver,phases[index],status,title,surface,archived,crop,replay is not None,global_distance,
+                      replay['profile']['rig_profile'] if replay else None)
     files=[obs/f'global_d455_{i:04d}.npz' for i in indices]
     encoded=(encode_frames(files,out/'demo.mp4',None,view=LAYOUT,frame_transform=transform,fps=fps) if constant
              else encode_timed_frames(files,out/'demo.mp4',transform,times))
