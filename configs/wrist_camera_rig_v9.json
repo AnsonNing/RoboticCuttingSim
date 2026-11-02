@@ -1,0 +1,12 @@
+{
+  "schema": "rcs_global_camera_followup_v1",
+  "profile_id": "wrist_camera_rig_v9",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "inherits_global_optics": "wrist_camera_rig_v5",
+  "scope": "User-requested physical 0.60 m Global view, elevated from the front with a changed azimuth. Only Global pose changes. Native 0.52 m cutoff retained; logical valid-depth range now explicitly uses the same provisional native cutoff. No hardware calibration claim.",
+  "global_d455": {
+    "eye_world_m": [0.18, -0.36, 0.4749719092257398],
+    "target_world_m": [0.0, 0.0, 0.03],
+    "near_m": 0.52
+  }
+}
