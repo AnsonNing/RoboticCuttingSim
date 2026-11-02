@@ -15,6 +15,11 @@
 | Check current status and unresolved work | [Progress](PROGRESS.md) |
 | Use the reusable WP-11 environment (scene + goal configs, policy API, datasets) | [Policy-ready API](POLICY_READY_API.md) · [WP-11 plan](WP11_PLAN.md) |
 
+## Three external views and wrist RGB-D
+
+[LEFT / RIGHT / OPPOSITE TOOL camera names and recording/replay API](GLOBAL_CAMERA_VIEWS.md) ·
+[Complete synchronized movies](NATIVE_MULTIVIEW_GALLERY.md).
+
 ## v7 workflow and multiview follow-up
 
 [Normal Scene / Goal / Environment solver selection](V7_RESEARCH_WORKFLOW.md) ·

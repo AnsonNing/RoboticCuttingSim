@@ -7,15 +7,25 @@ with **v5 / Law 8 retained as the legacy default**. Persistent cut histories, mu
 cuts and RGB-D observations use separate scene, goal, controller and evaluation APIs.
 Material parameters are provisional and uncalibrated; Isaac Lab parity is unverified.
 
-[![Sequential removal of two different protrusions — actual Native multiview animation](docs/media/wp14_followup/two_bumps_v2/two_bumps_v7_2_native.gif)](docs/media/wp14_followup/two_bumps_v2/two_bumps_v7_2_native.mp4)
+[![Sequential removal of two different protrusions — actual Native multiview animation](docs/media/three_global_v1/two_bumps_v7_2_native.gif)](docs/media/three_global_v1/two_bumps_v7_2_native.mp4)
 
 **Sequential removal of two different protrusions — real Native Isaac Sim, seed 42, 1×.**
 The versioned experimental `tlmpm_v7_2` detaches the 9 mm dome and 5.5 mm asymmetric
 cap in separate passes: **A/B 100%, mechanical bodies 1 → 2 → 3, substrate retained,
-HOME PASS**. Global D455 and both actual wrist D405 RGB/depth views are synchronized;
-a labelled presentation close-up shows the height/shape difference. The larger
-Global pane has a labelled fixed pixel crop and the complete original view inset.
-Franka 1 remains parked with unchanged hand-local v5 wrist mounts.
+HOME PASS**. The movie shows **three fixed Global RGB views — LEFT, RIGHT and
+OPPOSITE TOOL — plus arm_0 / arm_1 Wrist D405 RGB and Depth** at the same physics
+timestamp. All external views are low-angle (17.12°), about 0.60 m away, with full
+uncropped RGB. OPPOSITE TOOL looks back from the blade-tip side without sideways
+yaw. Franka 1 remains at its normal park; both hand-local wrist mounts are unchanged.
+
+Wrist depth is **optical Z in meters**, with a **0.07–0.50 m** blue→green→red
+scale; black means invalid/out of range. A parked wrist may not see the specimen.
+Global RGB is a Native camera replay of the exact saved live mesh and measured
+robot/tool state; original wrist RGB-D is reused. These are synchronized state
+views, not three new physics trials. Narrow Global stereo-depth controls remain
+**BLOCKED**; no calibrated Global depth is claimed.
+[Camera names, calibration, recording/replay commands and source receipts](docs/GLOBAL_CAMERA_VIEWS.md) ·
+[Retained earlier gallery](https://github.com/AnsonNing/RoboticCuttingSim/blob/b9100bcd662bafcb81cefedae424856d047e9e72/docs/NATIVE_MULTIVIEW_GALLERY.md).
 [Scene / goal, measured state arrays and retained failures](docs/reports/WP14_FOLLOWUP_RESULTS.md) ·
 [All full multiview movies](docs/NATIVE_MULTIVIEW_GALLERY.md).
 This is one verified demo; single-bump kinematic T00 still fails, and general TRIM
@@ -23,18 +33,19 @@ support is not claimed. The validated original-v7 CUT profile remains separate.
 
 ## Native cutting gallery
 
-These are six fresh WP-13 episodes: CUT, TRIM and four slices, each paired v5/v7,
-**6/6 TASK_SUCCESS and 6/6 HOME PASS**. All use 1 mm particles, 4 mm grid and
-0.1 ms substeps. These selected demonstrations do not establish generalization.
-The following three previews show the supported v5 baseline, seed 42,
-`particle_surface_v1`. Presentation cameras are separate from policy observations.
+These camera-engineering recordings repeat the six selected CUT, TRIM and
+four-slice recipes, paired v5/v7: **6/6 task PASS and 6/6 HOME PASS**. Each movie
+retains all three external RGB views and both actual wrist RGB/depth pairs.
+They use 1 mm particles, 4 mm grid and 0.1 ms substeps. These are separate from
+the frozen WP-13 scientific denominator and do not establish generalization.
+The three previews below show v5, seed 42, `particle_surface_v1`.
 
 | Straight CUT · 1× | TRIM at rake 10° · 1× | Four slices · 3× preview |
 | --- | --- | --- |
-| [![Straight CUT — real Native animation](docs/media/wp14_followup/current_v3/wp13_v5_cut.gif)](docs/media/wp14_followup/current_v3/wp13_v5_cut.mp4) | [![TRIM — real Native animation](docs/media/wp14_followup/current_v3/wp13_v5_trim.gif)](docs/media/wp14_followup/current_v3/wp13_v5_trim.mp4) | [![Four slices — real Native animation](docs/media/wp14_followup/current_v3/wp13_v5_multicut.gif)](docs/media/wp14_followup/current_v3/wp13_v5_multicut.mp4) |
-| Two pieces | 97.51% above-plane dome mass detached | Five pieces; placement quality reported separately |
+| [![Straight CUT — real Native animation](docs/media/three_global_v1/wp13_v5_cut.gif)](docs/media/three_global_v1/wp13_v5_cut.mp4) | [![TRIM — real Native animation](docs/media/three_global_v1/wp13_v5_trim.gif)](docs/media/three_global_v1/wp13_v5_trim.mp4) | [![Four slices — real Native animation](docs/media/three_global_v1/wp13_v5_multicut.gif)](docs/media/three_global_v1/wp13_v5_multicut.mp4) |
+| Two pieces | 97.70% above-plane dome mass detached (new engineering recording) | Five pieces; placement quality reported separately |
 
-[Multiview provenance and exact capture timestamps](docs/evidence/wp14_followup/current_gallery_003.json) ·
+[Multiview provenance and exact capture timestamps](docs/evidence/three_global/media_001.json) ·
 [WP-13 measurements and limitations](docs/reports/WP13_RESULTS.md) ·
 [earlier WP-12 demonstrations](docs/reports/WP12_FINAL_VALIDATION.md).
 New full clips retain every Global capture and synchronize both real wrist RGB/depth streams.
@@ -48,28 +59,29 @@ Irregular captures keep their exact presentation timestamps; previews have label
 improve near-cut x/F P95 by **5.60–8.49×** and local physical-locus roughness by
 **78.0–86.1%**. Two predeclared Native pairs complete **4/4 tasks and 4/4 HOME**.
 
-[![Updated WP-14 actual Native research scene](docs/media/wp14_followup/current_v3/wp14_walkthrough.gif)](docs/media/wp14_followup/current_v3/wp14_walkthrough.mp4)
+[![Updated WP-14 actual Native research scene](docs/media/three_global_v1/wp14_walkthrough.gif)](docs/media/three_global_v1/wp14_walkthrough.mp4)
 
-**Updated executable scene and real full recording, 1×.**
+**Executable scene: three Global RGB views and two wrist RGB-D pairs, 1×.**
 [Launch the standard or firm-offset CUT scene](docs/WP14_SCENES.md) ·
-[actual scene overview](docs/media/wp14/scene_overview.png) ·
-[scene/video provenance](docs/evidence/wp14/scene_refresh_001.json).
+[actual three-view scene](docs/media/three_global_v1/scene_three_global.png) ·
+[scene/video provenance](docs/evidence/three_global/scene_001.json).
 This extra engineering replay does not add an independent adoption sample.
 
-[![Real Native standard CUT: v5 left and v7 research profile right, matched capture times](docs/media/wp14_followup/current_v3/wp14_standard_cut_compare.gif)](docs/media/wp14_followup/current_v3/wp14_standard_cut_compare.mp4)
+[![Real Native standard CUT: v5 left and v7 research profile right, matched capture times](docs/media/three_global_v1/wp14_standard_cut_compare.gif)](docs/media/three_global_v1/wp14_standard_cut_compare.mp4)
 
-**v5 left / v7 CUT profile right, 1× simulation time.** These are genuine Native
-RGB captures with identical timestamps and the same declared scene/controller;
-measured-feedback commands differ slightly under coupled dynamics. Individual
-full recordings: [v5 standard](docs/media/wp14_followup/current_v3/wp14_v5_standard_cut.mp4),
-[v7 standard](docs/media/wp14_followup/current_v3/wp14_v7_standard_cut.mp4).
+**v5 left / v7 CUT profile right, 1× simulation time.** These camera-engineering
+recordings have matched timestamps and the same declared scene/controller;
+measured-feedback commands differ slightly under coupled dynamics. Each solver panel
+contains all three Global RGB views and both wrist RGB-D pairs. Individual
+full recordings: [v5 standard](docs/media/three_global_v1/wp14_v5_standard_cut.mp4),
+[v7 standard](docs/media/three_global_v1/wp14_v7_standard_cut.mp4).
 
-[![Real Native firm offset CUT: v5 left and v7 research profile right](docs/media/wp14_followup/current_v3/wp14_firm_offset_cut_compare.gif)](docs/media/wp14_followup/current_v3/wp14_firm_offset_cut_compare.mp4)
+[![Real Native firm offset CUT: v5 left and v7 research profile right](docs/media/three_global_v1/wp14_firm_offset_cut_compare.gif)](docs/media/three_global_v1/wp14_firm_offset_cut_compare.mp4)
 
 **Firm material, yaw −5°, cut at −4 mm**, 1×. Full recordings:
-[v5](docs/media/wp14_followup/current_v3/wp14_v5_firm_offset_cut.mp4),
-[v7](docs/media/wp14_followup/current_v3/wp14_v7_firm_offset_cut.mp4).
-[Multiview timestamps/source hashes](docs/evidence/wp14_followup/current_gallery_003.json) ·
+[v5](docs/media/three_global_v1/wp14_v5_firm_offset_cut.mp4),
+[v7](docs/media/three_global_v1/wp14_v7_firm_offset_cut.mp4).
+[Multiview timestamps/source hashes](docs/evidence/three_global/media_001.json) ·
 [Native tracking, physical contacts and HOME](docs/evidence/wp14/native_001.json).
 
 | Selection / family | Supported scope |
@@ -119,7 +131,7 @@ connected, and a held-out shorter/firmer CUT also fails. Improved surfaces canno
 substitute for chip detachment. Contact forces remain unconverged and materials
 uncalibrated. [Decision, paired outcomes and failures](docs/reports/WP13_RESULTS.md).
 
-[![Matched Native CUT: v5 left, experimental v7 right — real animation](docs/media/wp14_followup/current_v3/wp13_cut_compare.gif)](docs/media/wp14_followup/current_v3/wp13_cut_compare.mp4)
+[![Matched Native CUT: v5 left, experimental v7 right — real animation](docs/media/three_global_v1/wp13_cut_compare.gif)](docs/media/three_global_v1/wp13_cut_compare.mp4)
 
 **Matched Native CUT, v5 left / v7 right**, seed 42, identical captured times,
 `particle_surface_v1`, 1×. This local improvement is real; it does not overturn
@@ -127,9 +139,9 @@ the kinematic TRIM failure. Native v7 TRIM itself passes (100% above-plane mass
 removed). The kinematic driver dropped compiled planner overrides, including
 action limits and one partial-depth change; its paired measurements describe
 the recorded legacy paths. Cross-runtime differences remain unresolved.
-Candidate full recordings: [CUT](docs/media/wp14_followup/current_v3/wp13_v7_cut.mp4),
-[TRIM](docs/media/wp14_followup/current_v3/wp13_v7_trim.mp4),
-[four slices](docs/media/wp14_followup/current_v3/wp13_v7_multicut.mp4).
+Candidate full recordings: [CUT](docs/media/three_global_v1/wp13_v7_cut.mp4),
+[TRIM](docs/media/three_global_v1/wp13_v7_trim.mp4),
+[four slices](docs/media/three_global_v1/wp13_v7_multicut.mp4).
 
 Both surface profiles are one-way render geometry, separate from collision.
 Unchanged `particle_surface_v1` and opt-in `cut_aware_surface_v1` were measured on

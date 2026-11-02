@@ -1,0 +1,338 @@
+{
+  "schema": "three_global_original_wrist_mount_and_park_v1",
+  "status": "PASS",
+  "current_recording_sources": 28,
+  "historical_sources": 9,
+  "T_hand_camera_v5": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      -0.085
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.045
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.02
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "current_sources": [
+    {
+      "id": "wp13_v5_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp13_v5_cut/episode_000",
+      "robot_state_sha256": "45117489f319f242b7df3307fd18031e0ca49c7087220545c4fc945de7d618a5",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp13_v7_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp13_v7_cut/episode_000",
+      "robot_state_sha256": "4f7ab92aa9404e01a9132e7a42a894c8b14c898adccab1bfe331fbfad947e0fb",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp13_v5_trim",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp13_v5_trim/episode_000",
+      "robot_state_sha256": "89e8a37b832b539913aab8ec05cb83663648df5edf56a6a1de180ddcdb4ab738",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp13_v7_trim",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp13_v7_trim/episode_000",
+      "robot_state_sha256": "d82946b64857ce10c77101af0a2f143ffadb2e3725d03da193cdaa131249e154",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp13_v5_multicut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp13_v5_multicut/episode_000",
+      "robot_state_sha256": "dc03a7859bd090af855f832225d771c4a2caaae842c5e49b98043a61828a796e",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp13_v7_multicut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp13_v7_multicut/episode_000",
+      "robot_state_sha256": "bf6114705a8b8532f9666cebe727f2adef1a9ea20c845c04ed805b0a9b3f2ab0",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp14_v7_standard_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v7_standard_cut/episode_000",
+      "robot_state_sha256": "4211c433f432b4016541586716582c7b1e9515f03c4909dca8a7459595620232",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp14_v5_firm_offset_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v5_firm_offset_cut/episode_000",
+      "robot_state_sha256": "ff1be98c648b9a1ee3dffe64a35e2c09e3be8b53eaca3b4f96093c81d2943a10",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "wp14_v7_firm_offset_cut",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/wp14_v7_firm_offset_cut/episode_000",
+      "robot_state_sha256": "689f0a49f111c8580bbf722b0d0834a28e5ed5b91bff0971b845d69e1caa02e1",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo1a_01_law8_final_demo1a",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/archive_demos_demo1a_01_law8_final_demo1a/episode_000",
+      "robot_state_sha256": "c77e17cff5b60532e3b57d95314a02ebc37a368aec910f9b54e73b06857d90fc",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo1a_02_pathv2_d_demo1a",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/archive_demos_demo1a_02_pathv2_d_demo1a/episode_000",
+      "robot_state_sha256": "a2d47457d3d1e30451684d1b81689867f7f9f449339cb03fb6c0187545769da4",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo1b_03_law8_final_demo1b",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_demos_demo1b_03_law8_final_demo1b/episode_000",
+      "robot_state_sha256": "3d20013dea35a41fa0f5dbb80917ece52d41d599e2fdccefd53cfa9868b96488",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo1b_04_pathv2_d_demo1b",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_demos_demo1b_04_pathv2_d_demo1b/episode_000",
+      "robot_state_sha256": "910ca7ab84ae2f6c442f7417879859f2a836c2f54627665fa57d17c84211f54e",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo2_05_law8_final_demo2",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_demos_demo2_05_law8_final_demo2/episode_000",
+      "robot_state_sha256": "664938a3d5ce63a39953ee6fd773319ed68d399a645584ea4878c5f1d124960e",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo2_06_pathv2_c_demo2",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_demos_demo2_06_pathv2_c_demo2/episode_000",
+      "robot_state_sha256": "be550a20ed6339c579d17550808069fd1dd8417da89d1f1836e30c0c94c9188d",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo3_07_law8_final_demo3",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_demos_demo3_07_law8_final_demo3/episode_000",
+      "robot_state_sha256": "fc99e4854526082676c9850a5a5c8cb1612d774aca6604cc5916eaab2511d9ea",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_demos_demo3_08_vision_e_demo3",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_demos_demo3_08_vision_e_demo3/episode_000",
+      "robot_state_sha256": "ad19bf83d3ea1beae14094e9d9597502cb35b0b11ce1a017827494342d138241",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "missing_original_cut01",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/missing_original_cut01/episode_000",
+      "robot_state_sha256": "39ce5bbfc9270d9885487e8b3fc2903b50c217bc672bf13f8dc3ecc913235f86",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "missing_original_trim01",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/missing_original_trim01/episode_000",
+      "robot_state_sha256": "b33cd7332de9e14f97895d71e30d491098b17cd78e70a7e5c53b836fb9c263c3",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp11_slice_push_relocate_15",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_wp11_slice_push_relocate_15/episode_000",
+      "robot_state_sha256": "ce9472b1cae75ce767e61c91aeeaaf71417a19f6f86afc831e8d96393a3bc3a3",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp11_test_a_s6_16",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_wp11_test_a_s6_16/episode_000",
+      "robot_state_sha256": "7b21c840df897b75d333e0e495ee89c3029beff4a39a9d098ab2b867451183ed",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp11_test_b_s1502_17",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/native_wide_002/archive_wp11_test_b_s1502_17/episode_000",
+      "robot_state_sha256": "ec7c95382a20783909471152e2a1bb52600f934d910fae6664bdab3ce3ce46fa",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp11_trim_rho10_18",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/archive_wp11_trim_rho10_18/episode_000",
+      "robot_state_sha256": "8a14abce34f70c171fb6c2c499106cab2420aad537ab5b027198db1efb8c610b",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp11_trim_rho10_clear_19",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/archive_wp11_trim_rho10_clear_19/episode_000",
+      "robot_state_sha256": "d7bbbf4adc7fa4e64cb31ff63cb2eac746069c8497cfc76a51d4bd8816fb6ace",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp12_surface_live_cut_23",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/archive_wp12_surface_live_cut_23/episode_000",
+      "robot_state_sha256": "18f410ea56e04229c27f8d2548711f12651b5fdc2df198e9eb4d4a9d6cc892cb",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "archive_wp12_surface_live_test_b_24",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/archive_wp12_surface_live_test_b_24/episode_000",
+      "robot_state_sha256": "72c50ceb3970be23f308940cca0df237474f47534719c99775bba5da9a317828",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "two_bumps_v7_2_native",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000",
+      "robot_state_sha256": "55b017cb6157827919fb2aca84570724a0eb6808414df2b5ed239623344497b5",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    },
+    {
+      "id": "two_bumps_original_v7_failure",
+      "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_original_v7_failure/episode_000",
+      "robot_state_sha256": "c9c638660d2ae9d299b4da59c73cea4f69a94333fd0a92bd49c825907f3e080f",
+      "wrist_v5_identity_rotation_and_fixed_mount": "PASS",
+      "arm1_hand_max_translation_from_initial_m": 0.0,
+      "arm1_hand_max_quaternion_component_change": 0.0,
+      "park_scope": "Measured stationary pose; shared normal safe-park target in unchanged native runner/workcell source"
+    }
+  ],
+  "historical_sources_preserved": [
+    {
+      "id": "archive_global_close_cut01_11",
+      "wrist_profile": "wrist_camera_rig_v3",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_global_close_trim01_12",
+      "wrist_profile": "wrist_camera_rig_v3",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_cut01_25",
+      "wrist_profile": "wrist_camera_rig_v2",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_motion_probe_26",
+      "wrist_profile": "wrist_camera_rig_v2",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_trim01_27",
+      "wrist_profile": "wrist_camera_rig_v2",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_v4_cut01_28",
+      "wrist_profile": "wrist_camera_rig_v4",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_v4_trim01_29",
+      "wrist_profile": "wrist_camera_rig_v4",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_v5_cut01_30",
+      "wrist_profile": "wrist_camera_rig_v5",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    },
+    {
+      "id": "archive_wrist_v5_trim01_31",
+      "wrist_profile": "wrist_camera_rig_v5",
+      "scope": "Historical hand-local calibration and measured arm pose preserved, not relabelled current v5/safe park"
+    }
+  ],
+  "source_files": {
+    "src/robotic_cutting_sim/workcell.py": "e16cbb3dd66521e7b0121f37e6bde4dd8d3086593c1df9f8f532314591de334e",
+    "configs/wrist_camera_rig_v5.json": "515b07c3b492641d86663f472b2c9cf31a4138cb2ba2bf17e64ff5eb96042586"
+  },
+  "scope": "Read-only source/state and mount audit, not additional dynamics. Every actual wrist frame also passes encoder timestamp/measured-hand composition checks."
+}

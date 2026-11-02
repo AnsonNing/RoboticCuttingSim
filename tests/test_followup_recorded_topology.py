@@ -4,14 +4,16 @@ This audits one saved episode; it is not another physics trial or success rate.
 """
 from pathlib import Path
 import numpy as np
+import pytest
 from robotic_cutting_sim.cut_topology import mechanical_components_packed
 from robotic_cutting_sim.scene_config import compile_task
 
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def test_recorded_native_two_bumps_are_continuous_then_two_separate_chips():
-    z=np.load(ROOT/'docs/evidence/wp14_followup/native_two_bumps_states_v1.npz')
+@pytest.mark.parametrize('bundle',['wp14_followup','three_global'])
+def test_recorded_native_two_bumps_are_continuous_then_two_separate_chips(bundle):
+    z=np.load(ROOT/f'docs/evidence/{bundle}/native_two_bumps_states_v1.npz')
     task=compile_task(ROOT/'configs/wp14_followup/two_bumps_scene_rigid_v2.json',
                       ROOT/'configs/wp14_followup/two_bumps_goal_v1.json')
     reference=z['reference_positions_local'];mass=z['mass_kg'];codes=z['codes']

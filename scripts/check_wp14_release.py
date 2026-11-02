@@ -18,7 +18,11 @@ def main():
     p.add_argument('--protected',type=Path,required=True)
     p.add_argument('--followup',action='store_true')
     p.add_argument('--global60',action='store_true')
+    p.add_argument('--three-global',action='store_true')
     a=p.parse_args()
+    if a.three_global:
+        from check_three_global_release import check_three_global
+        return check_three_global(a.out,a.protected)
     if a.global60:
         from check_global60_release import check_global60
         return check_global60(a.out,a.protected)

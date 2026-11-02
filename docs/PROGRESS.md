@@ -1,3 +1,26 @@
+# Three fixed Global views + real wrist RGB-D — 2026-11-02 — media/API validated
+
+- User-finalized LEFT rig10 / RIGHT rig11 / OPPOSITE_TOOL rig14. All preserve0.60m,
+  HFOV24deg and17.12394deg elevation. Opposite horizontal bearing is -workpieceY,
+  zero lateral obliquity; full3D incidence is17.12deg, not0. Rig12/base-front and
+  rig13/zero-elevation remain historical candidates; rig9 high-angle framing is superseded.
+- Three-view Native preview PASS at identical CUT/TRIM/two-bump states; accepted
+  LEFT/RIGHT captures reused byte-for-byte. No physical/particle/robot/solver changes.
+- New narrow stereo controls remain BLOCKED (coverage and feature checks fail).
+  The original source-correspondence guard and criteria are preserved. Supported
+  recording optics provide real wrist RGB-D; exact mesh/pose replay supplies Global RGB only.
+- One controlled-optics recording per missing state stream; never three physics
+  runs for three views. Four unavailable historical raw-source slots are explicitly
+  linked to two NEW current registered demonstrations, not falsely called remasters.
+- Named configuration/API and recording/replay entry implemented; final focused CPU54PASS.
+  Media includes47 full MP4s,8 moving GIFs,37 unique sources and111 RGB camera replays.
+  All11 necessary recordings completed capture;5 actual goal failures remain explicit.
+- Publication is tracked by [PR7](https://github.com/AnsonNing/RoboticCuttingSim/pull/7).
+  Final payload/main CI and exact-commit GitHub animation/full-playback verification
+  are independent gates; runtime receipts are written only after actual validation.
+- Runtime/provenance: `artifacts/wp14/three_global_001/`. New publication_verified
+  and DONE do not exist. Earlier progress headings below are historical stages.
+
 # Global camera refresh — 2026-11-02 Asia/Seoul — IN PROGRESS
 
 - New user authorization: physical Global camera about 0.60 m from each workpiece, changed viewing angle,

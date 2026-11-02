@@ -1,0 +1,1246 @@
+{
+  "schema": "three_global_selected_visibility_v1",
+  "status": "PASS_VISUAL_REVIEW",
+  "scope": "Selected eight real Native phase frames; not an all-frame absence-of-occlusion claim",
+  "source_episode": "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000",
+  "source_receipt_sha256": "c7387be45553639419130f845abb34e27cc571ef46fb8a7935e52acab0525581",
+  "frames": [
+    {
+      "frame": 0,
+      "time_s": 0.0,
+      "phase": "HOME",
+      "path": "docs/evidence/three_global/visibility/frame_0000.png",
+      "sha256": "506e01682d18a1bd3e6bae0a8b1352e8317bf5581126be60088c27e1f005d260",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0000.npz": "3cc162aea48aa422a4c99999cd52131e73056891dabf1a85f84dec6321a725eb",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0000.npz": "73ad0dcbf5e276da8f0468b62742cfa24c4b0c9b5f7dccd8fe43e1c3808286a5",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0000.npz": "a93f04eb6f39079964d8eadff1400c5400819837ae623ea3dcf4c2bbb51e5467",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0000.npz": "f7e2072b64bc484845c0b3d0a483e27b05c64bee38d1383ce2f6728c83fcb4f6",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0000.npz": "3856ce965c8adaae8f833dcb7b13f180955284fe1c61757718cef5f3bde9c00d",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0000.npz": "1ea3348e1af68aa98b1a4d1e7b012d6faffd1ea17ffe3bf8fac506f7b5bf8a3c"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 15,
+      "time_s": 3.0,
+      "phase": "PRE_CUT:A_dome",
+      "path": "docs/evidence/three_global/visibility/frame_0015.png",
+      "sha256": "c730e9df90d59a7970a18ccd487485ba7abedd7f46e8e188900f17582d741d7f",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0015.npz": "4bf97a71059cbc49938ddb908ecbb6c513e25589a3c64b612a5485f03b9ccf7a",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0015.npz": "99348cb4a548060a83237c70398169ed6c4497c6b502631ab2ae64b85199b8a2",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0015.npz": "6be30d727b6e0682ae4641335515d68ea4dee71891b74aa5efb991aab532ce29",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0015.npz": "87b508efdb3c4abab507f2a5fd724b8fe083436f6955b5b286a9f19b4fb74d80",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0015.npz": "5361287dcc867c639ed025d970946da795a8a8e25612d21022ec3537ca6e7d86",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0015.npz": "6ee3b1b02a9f6e5b6547c45947e5f448926bb8bd21a0106be5404ca69c187055"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 26,
+      "time_s": 5.2,
+      "phase": "SKIM:A_dome",
+      "path": "docs/evidence/three_global/visibility/frame_0026.png",
+      "sha256": "91bce7e4abfb3f249cc7de460b3c538275123a8d5e51bcc3cc2e62193ef4bd92",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0026.npz": "1775739423161885d843cd3810c441ccaa261b9e5f75b54f3a35ea78ddef96f2",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0026.npz": "d4701bfc17747374229587a39a2a80a5a88879c491007884bb06a8569e66dc90",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0026.npz": "34db409db14baae8c0f424b60f0701b18865969252dccad7c660d6b8577de689",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0026.npz": "b6d0c0e64b994c268b2b5d379091b03656780429f714fd1355afb12cb3bd86f1",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0026.npz": "b68e733fb930c77980d39e93c4fe65b7eee946c3b8ce96c2c36513fff3bea4cf",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0026.npz": "761bd985fd7f976fe6e64f36b381000fd3cc01cb01d35d5fa85d6d8324a9e843"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 31,
+      "time_s": 6.2,
+      "phase": "WITHDRAW:A_dome",
+      "path": "docs/evidence/three_global/visibility/frame_0031.png",
+      "sha256": "73b21a0724b2950b94d4168aa85bd1a3953b59d0ddae473383e2e788510a7439",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0031.npz": "4be3e7c4607e0393cd0bdacd80c9c32d53259a627e500888304091156aea5632",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0031.npz": "cc865f1f977a6f0417aa489cedd74190a8de7b4b5881448eb7c3c3709e0ae028",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0031.npz": "a86252ec66ab2d99fea316e5aeecb5289e622aabc559d35ff1ccd2098ac1ced7",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0031.npz": "985fe5b1300e332ed31485725303ae557975a22e41c97cf96fb031b07a45e0f1",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0031.npz": "e92cfd0ebc7fcce4fd074131cc096a480cc127a697c585e184d1a05a037ad203",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0031.npz": "d550b608851dd7b5dccca03f024748987d240d4a495df70e1b802ffd86265a49"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 36,
+      "time_s": 7.2,
+      "phase": "REORIENT:B_irregular",
+      "path": "docs/evidence/three_global/visibility/frame_0036.png",
+      "sha256": "e9134c8b61ce3c14220a90efb71e050c8ae52173c9342858323acb99b587645b",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0036.npz": "3b909a932f96440eda50afbe15c61c7a55bcd60b461e97b9c6ba9642510877f9",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0036.npz": "01c1e4f196e3550dc1f1d61047cd936b434796620dffb5ad0bdcedc8838cb61a",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0036.npz": "6e0a2edfe558f4229c1147d6bc6ace07c0d188a5a4d79a3261a1838f6847b116",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0036.npz": "016158b0f58dedd2d95fc9c98c79523b1b3e05b1dc9752c1dd2417eafe32f9c4",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0036.npz": "4349015c97424c6091696f3199645eba8eb054470b2958e60f70de1a352f60fd",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0036.npz": "31147aa27054d6cd2f663dd18207a34783b3e0450c74ab622dd0a4fe2a0a77a9"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 47,
+      "time_s": 9.4,
+      "phase": "SKIM:B_irregular",
+      "path": "docs/evidence/three_global/visibility/frame_0047.png",
+      "sha256": "e40c09fa591cd0c7fb067aa4f133a171ab192f6fa5ec87fdf094cc3a544017ec",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0047.npz": "651e9b53d08ee1d46c5dc14c965815628ae653fe5baae09aa0c3449bfa887a18",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0047.npz": "5a02d1678a8015f22743d771bf7df6f660beb4c64e9b7251c296e2b83d6160e5",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0047.npz": "0f19f8520a26ccc9dda86b39393a5951d1752413c74b0f8a80133e0057ab7387",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0047.npz": "99a3faf6434cde9a0c606d32a4aba7a6390f966b281e1c2e1727fb15120b446a",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0047.npz": "72ed1fd95307a946e182e5464ab5577d3394bf6ebbf7fccf4ae78f0c7e68d307",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0047.npz": "06fa2e27f37027aeafc93f39b256e0662d2a52f4a64c0b7e91c2a611f96d190e"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 70,
+      "time_s": 14.0,
+      "phase": "HOLD_AFTER_STOP",
+      "path": "docs/evidence/three_global/visibility/frame_0070.png",
+      "sha256": "343955f84cbca96a0329ab843d08847281df8782c5416b014a252847c863ca82",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0070.npz": "69d5607e143201c8f89877285a5a64bf0395bbb3d157f16e6899c2340f699e3f",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0070.npz": "a24986d002ac5e7547e0a4b40e1ebe05d89f791333e909559335ddf055ea30d2",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0070.npz": "68cdec66d78feb76bdf1afa82b201714101036cd36124dcad1b038bd9bdb6468",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0070.npz": "dadb727d809d8cfcfb3d0bfb7c5e552bc739dd8591b09e98916c3a222d181db8",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0070.npz": "7ec3968bf948f88ea0f054dc4d77d6ca9e50c0b9789a080b7a6833f9acb4d91f",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0070.npz": "b5b18ca3f1899f2fc9840a4e608e3f390c391e642a07c37c8d7a9b17b980d1c7"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "frame": 90,
+      "time_s": 17.78,
+      "phase": "RETURN_HOME:SETTLE_HOME",
+      "path": "docs/evidence/three_global/visibility/frame_0090.png",
+      "sha256": "5f7ac01c0d784c56f0316b6d40377d3b5f8f28360d57a39972980f757ed6820a",
+      "source_sha256": {
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/left/observations/global_d455_0090.npz": "c49b862583f03a60e95e734bbb1be698523813f9aa07c0144a2cc5a3c170f5e8",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/right/observations/global_d455_0090.npz": "fa4aec5e35696522521927d1354b4f9602484b34cf1673845b654215d7759cc3",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/three_global_001/replays_001/two_bumps_v7_2_native/opposite_tool/observations/global_d455_0090.npz": "010a910bdd5e66d8ea64910e5b3ef06efdc08ec2e0d4245c9a05cebd709479a6",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/global_d455_0090.npz": "cdbae44513b995a910cab8e72894240bb2d8dd5add76333bcadc03e1d6f1bbc2",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_0_0090.npz": "97c4910a2add6efdf8ae762a294b74a6fea195d0c72bc6af969058eb40886dce",
+        "/home/ningan/RoboticCuttingSim-wp14/artifacts/wp14/global60_001/native_rerecord_001/two_bumps_v7_2_native/episode_000/observations/wrist_d405_1_0090.npz": "dd4590a404a6557dbc78a56fe14ee36939adb8f40114dd5085cb1ce96b24e347"
+      },
+      "calibration": {
+        "left": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.8729434821372647,
+              0.1436339951257258,
+              -0.4661962595713206,
+              0.27971775607217625
+            ],
+            [
+              0.487821357664942,
+              -0.2570292544355094,
+              0.8342459381802584,
+              -0.5005476951153132
+            ],
+            [
+              -4.2287526683118514e-18,
+              -0.955670046516343,
+              -0.29443974288714986,
+              0.20666387549201998
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "right": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              0.48782135766494206,
+              0.25702925443550956,
+              -0.8342459381802582,
+              0.5005475696352477
+            ],
+            [
+              0.8729434821372648,
+              -0.1436339951257258,
+              0.4661962595713206,
+              -0.279717729089491
+            ],
+            [
+              -9.26199048767738e-17,
+              -0.9556700465163432,
+              -0.29443974288714986,
+              0.20666386887325422
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        },
+        "opposite_tool": {
+          "K": [
+            [
+              1505.4816761329878,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              1505.4816761329876,
+              240.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "T_world_camera": [
+            [
+              -1.0,
+              -1.0048151100817235e-17,
+              -7.727835272676296e-17,
+              -4.9660010120916676e-18
+            ],
+            [
+              2.4549957628739546e-17,
+              0.29443974288714986,
+              -0.9556700465163431,
+              0.5894020314746448
+            ],
+            [
+              -3.1431205269787544e-17,
+              -0.955670046516343,
+              -0.29443974288714975,
+              0.19666383416180777
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    }
+  ],
+  "renderer_source_commit": "7182e091927d5a17908e7ec1d12615b14fea909f",
+  "recipe_sha256": "1fc007050397848889ec2797b0d3bb1dec8ac0d2ad5288a05ffc4fecf8a5ce05",
+  "limitations": [
+    "Actual arm/tool partial occlusion remains during cutting; robots are not hidden",
+    "Detached shavings can rest on the substrate",
+    "Parked arm_1 wrist mostly sees its own arm/background; invalid depth remains black",
+    "Global RGB camera replay is not a validated narrow Global RGB-D recording"
+  ],
+  "reviewed_utc": "2026-11-02T09:27:45.038888+00:00",
+  "review_kind": "Primary-agent direct inspection of eight actual Native seven-pane composites and standard CUT scene",
+  "findings": {
+    "two_different_continuous_bumps_visible_before_cut": true,
+    "first_chip_visible_after_first_skim": true,
+    "second_bump_and_detached_shavings_visible_after_second_skim": true,
+    "low_three_external_compositions_retained": true,
+    "opposite_tool_zero_horizontal_yaw_and_17deg_elevation": true,
+    "real_forearm_blade_occlusion_retained": true,
+    "wrist_pair_actual_rgb_depth_and_parked_view_retained": true,
+    "colour_scale_m_invalid_black_visible": true,
+    "no_presentation_closeup_or_digital_crop": true
+  }
+}

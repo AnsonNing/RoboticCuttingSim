@@ -7,8 +7,9 @@ import {createHash} from 'node:crypto';
 
 const [sha, destination] = process.argv.slice(2);
 const global60 = process.argv.includes('--global60');
-const followup = process.argv.includes('--followup') || global60;
-const mediaPrefix = global60 ? 'docs/media/global60_v1/' : 'docs/media/wp14_followup/';
+const threeGlobal = process.argv.includes('--three-global');
+const followup = process.argv.includes('--followup') || global60 || threeGlobal;
+const mediaPrefix = threeGlobal ? 'docs/media/three_global_v1/' : global60 ? 'docs/media/global60_v1/' : 'docs/media/wp14_followup/';
 if (!/^[0-9a-f]{40}$/.test(sha || '') || !destination) throw Error('usage: node script SHA NEW_OUTPUT');
 const out = path.resolve(destination);
 await fs.mkdir(out);
@@ -30,7 +31,8 @@ if (!followup && !paths.some(p=>p.includes('/wp14/'))) throw Error('No WP-14 med
 const receipt = {merge_sha:sha, started:new Date().toISOString(), readme_sha256:hash(pinned),
                  page_url:`https://github.com/${repo}`, media:[], gifs:[], videos:[], documents:[]};
 const documentPaths=new Set();
-const pages=global60 ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
+const pages=threeGlobal ? ['README.md','docs/README.md','docs/GLOBAL_CAMERA_VIEWS.md','docs/V7_RESEARCH_WORKFLOW.md',
+  'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/THREE_GLOBAL_CAMERA_REFRESH.md','docs/WP14_SCENES.md'] : global60 ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
   'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/GLOBAL60_CAMERA_REFRESH.md','docs/WP14_SCENES.md'] : followup ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
   'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/WP14_FOLLOWUP_RESULTS.md','docs/WP14_SCENES.md'] :
   ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md'];
@@ -49,6 +51,7 @@ for(const page of pages) {
     if(followup && resolved.startsWith(mediaPrefix) && /\.(mp4|gif|png)$/.test(resolved) && !paths.includes(resolved))paths.push(resolved);
     if(followup && resolved.startsWith('docs/evidence/wp14_followup/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
     if(global60 && resolved.startsWith('docs/evidence/global60/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
+    if(threeGlobal && resolved.startsWith('docs/evidence/three_global/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
   }
 }
 if(followup && (paths.filter(p=>p.endsWith('.mp4')).length!==47 || paths.filter(p=>p.endsWith('.gif')).length!==8))
@@ -61,6 +64,8 @@ for(const filename of documentPaths) {
 }
 for (const mediaPath of paths) {
   const data = await fetchBytes(raw(sha)+mediaPath);
+  const expected = execFileSync('git',['show',`${sha}:${mediaPath}`],{maxBuffer:128*1024*1024});
+  if (!data.equals(expected)) throw Error(`Remote media differs from exact commit: ${mediaPath}`);
   const live = await fetchBytes(raw('main')+mediaPath);
   if (!data.equals(live)) throw Error(`main media differs: ${mediaPath}`);
   const filename = path.join(out, mediaPath.replaceAll('/','_'));
@@ -155,7 +160,7 @@ try {
   }
   const scenePage=`https://github.com/${repo}/blob/main/docs/WP14_SCENES.md`;
   await call('Page.navigate',{url:scenePage});
-  const scenePath=global60 ? 'docs/media/global60_v1/scene_global60.png' : 'docs/media/wp14/scene_overview.png';
+  const scenePath=threeGlobal ? 'docs/media/three_global_v1/scene_three_global.png' : global60 ? 'docs/media/global60_v1/scene_global60.png' : 'docs/media/wp14/scene_overview.png';
   const sceneSelector=`Array.from(document.querySelectorAll('img')).find(i=>decodeURIComponent(i.getAttribute('data-canonical-src')||i.src).includes(${JSON.stringify(scenePath)}))`;
   let sceneState;
   for(let i=0;i<100;i++) {
