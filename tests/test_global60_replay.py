@@ -81,3 +81,25 @@ def test_exact_staged_surface_snapshot_rejects_stale_or_modified_geometry(tmp_pa
     vertices[0,0]=.1
     with pytest.raises(ValueError,match='differ'):
         module.save_surface_snapshot(backend,tmp_path,1,.2)
+
+
+def test_v10_reference_low_angle_is_actual_narrow_lens_with_fixed_wrists():
+    target=np.array([.02,-.01,.12])
+    old=make_rig()
+    rig=make_rig(rig_profile='wrist_camera_rig_v10',global_target_world_m=target)
+    g=rig.specs['global_d455']
+    eye=np.asarray(g['T_world_camera'])[:3,3]
+    direction=(eye-target)/np.linalg.norm(eye-target)
+    reference=np.array([.38,-.68,.24]);reference/=np.linalg.norm(reference)
+    np.testing.assert_allclose(direction,reference,atol=1e-12)
+    assert np.linalg.norm(eye-target)==pytest.approx(.60,abs=1e-12)
+    assert 16 < np.degrees(np.arcsin(direction[2])) < 18
+    hfov=np.degrees(2*np.arctan(g['width']/(2*g['K'][0][0])))
+    assert hfov==pytest.approx(24.)
+    assert g['K'][0][0]==g['K'][1][1]
+    assert g['K'][0][0]*.095/g['native_near_m']<g['native_maximum_disparity']
+    for name in ('wrist_d405_0','wrist_d405_1'):
+        assert rig.specs[name]==old.specs[name]
+    assert make_rig().specs==old.specs
+    with pytest.raises(ValueError,match='finite world XYZ'):
+        make_rig(rig_profile='wrist_camera_rig_v10',global_target_world_m=[0,float('nan'),0])

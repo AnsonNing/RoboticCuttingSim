@@ -125,6 +125,15 @@ def main():
         optical_local = np.linalg.inv(old_root) @ old_optical
         _set_transform(root, transform @ np.diag([1., -1., -1., 1.]) @ np.linalg.inv(optical_local))
         width, height = profile['width'], profile['height']
+        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10')
+        if controlled_lens:
+            # Change the actual optical prim; a crop cannot establish this view.
+            optical_camera = UsdGeom.Camera(camera)
+            optical_camera.CreateFocalLengthAttr(10.)
+            optical_camera.CreateHorizontalApertureAttr(10.*width/profile['K'][0][0])
+            optical_camera.CreateVerticalApertureAttr(10.*height/profile['K'][1][1])
+        expected_k = (profile['K'] if controlled_lens else
+            [[317.0431137, 0, 320], [0, 317.0431137, 240], [0, 0, 1]])
         sensor = SingleViewDepthCameraSensor(RtxCamera(camera_path, tick_rate=0.), resolution=(height, width),
             annotators=['distance_to_image_plane', 'depth_sensor_distance'])
         sensor.set_sensor_baseline(95.)
@@ -133,6 +142,11 @@ def main():
         sensor.set_sensor_maximum_disparity(150.)
         sensor.set_sensor_disparity_confidence(1.)
         sensor.set_sensor_distance_cutoffs(.52, 6.)
+        if controlled_lens:
+            sensor.set_sensor_focal_length(float(profile['K'][0][0]))
+            sensor.set_sensor_size(float(width))
+            sensor.set_sensor_maximum_disparity(float(profile['native_maximum_disparity']))
+            sensor.set_sensor_distance_cutoffs(float(profile['native_near_m']),float(profile['native_far_m']))
         sensor.set_sensor_noise_parameters(0., 0.)
         sensor.set_sensor_disparity_noise_downscale(1.)
         sensor.set_enabled_outlier_removal(True)
@@ -175,8 +189,8 @@ def main():
             calibration = calibration_from_replicator(params.get_data())
             if not np.allclose(calibration['T_world_camera'], transform, atol=1e-5, rtol=0):
                 raise ValueError('Native camera extrinsics differ from requested physical pose')
-            if not np.allclose(calibration['K'], [[317.0431137, 0, 320], [0, 317.0431137, 240], [0, 0, 1]], atol=.002, rtol=0):
-                raise ValueError('Native camera lens changed from controlled v5 optics')
+            if not np.allclose(calibration['K'], expected_k, atol=.002, rtol=0):
+                raise ValueError('Native camera lens differs from selected controlled optical profile')
             rgb = numpy_data(rgb_reader.get_data())[..., :3]
             raw = numpy_data(sensor.get_data('depth_sensor_distance')[0]).reshape(height, width)
             ideal = numpy_data(sensor.get_data('distance_to_image_plane')[0]).reshape(height, width)
