@@ -121,7 +121,9 @@ def main():
                 raise ValueError('Frontal preview requires the actual measured arm0 base')
             base_pose = robot['body_pose'][exact_index(robot['time_s'],frames[0]['time_s']),body_paths.index(base_path)]
         profile = CameraRig(rig_profile=args.rig_profile,global_target_world_m=target,
-            global_reference_base_world_xyzw=base_pose).specs['global_d455']
+            global_reference_base_world_xyzw=base_pose,
+            global_workpiece_pose_xyzw=task_record['world_from_workpiece_xyzw'],
+            global_workpiece_dimensions_m=[task_record['geometry'][k] for k in ('length_m','width_m','base_height_m')]).specs['global_d455']
         transform = np.asarray(profile['T_world_camera'])
         # Move the actual existing Global housing, retaining its optical offsets.
         root = stage.GetPrimAtPath('/World/WristCameraRig/GlobalD455')
@@ -132,9 +134,9 @@ def main():
         optical_local = np.linalg.inv(old_root) @ old_optical
         _set_transform(root, transform @ np.diag([1., -1., -1., 1.]) @ np.linalg.inv(optical_local))
         width, height = profile['width'], profile['height']
-        if args.rig_profile == 'wrist_camera_rig_v12':
+        if args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13'):
             UsdGeom.Camera(camera).CreateClippingRangeAttr(Gf.Vec2f(.001, 20.))
-        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12')
+        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13')
         if controlled_lens:
             # Change the actual optical prim; a crop cannot establish this view.
             optical_camera = UsdGeom.Camera(camera)
@@ -168,6 +170,10 @@ def main():
         params = rep.AnnotatorRegistry.get_annotator('camera_params')
         params.attach(product)
         bridge = DynamicSurfaceBridge(stage)
+        tool_spec = None
+        if args.rig_profile == 'wrist_camera_rig_v13':
+            from robotic_cutting_sim.tool_profile import PROFILES, make_profile_tool_spec
+            tool_spec = make_profile_tool_spec(PROFILES[task_record['tool_profile_id']])
         audit = []
         for row in selected:
             timestamp, index = row['time_s'], row['frame']
@@ -204,8 +210,28 @@ def main():
             raw = numpy_data(sensor.get_data('depth_sensor_distance')[0]).reshape(height, width)
             ideal = numpy_data(sensor.get_data('distance_to_image_plane')[0]).reshape(height, width)
             clipping = list(map(float, UsdGeom.Camera(camera).GetClippingRangeAttr().Get()))
-            if args.rig_profile == 'wrist_camera_rig_v12' and clipping[0] > .00101:
+            if args.rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12','wrist_camera_rig_v13') and clipping[0] > .00101:
                 raise ValueError('Frontal camera render near plane could remove real foreground')
+            opposite_readback = None
+            if tool_spec is not None:
+                optical_axis = np.asarray(calibration['T_world_camera'])[:3,2]
+                normal = np.asarray(profile['tool_opposite_reference']['target_face_outward_normal_world'])
+                edge = pose_matrix(robot['body_pose'][bi,body_paths.index('/World/Tools/CuttingTool_0')]) @ tool_spec.T_tool_edge
+                opposite_readback = {
+                    'optical_positive_Z_world': optical_axis.tolist(),
+                    'target_face_outward_normal_world': normal.tolist(),
+                    'optical_axis_dot_face_normal': float(optical_axis@normal),
+                    'normal_incidence_error_deg': float(np.degrees(np.arccos(np.clip(-optical_axis@normal,-1.,1.)))),
+                    'optical_dot_workpiece_long_axis': float(optical_axis@task_frame[:3,0]),
+                    'optical_dot_workpiece_up_axis': float(optical_axis@task_frame[:3,2]),
+                    'measured_blade_edge_line_world': edge[:3,1].tolist(),
+                    'measured_blade_advance_world': edge[:3,0].tolist(),
+                    'measured_blade_face_normal_world': edge[:3,2].tolist(),
+                    'edge_line_vs_target_face_normal_deg': float(np.degrees(np.arccos(np.clip(edge[:3,1]@normal,-1.,1.)))),
+                    'cut_enabled': row.get('cut_enabled'),
+                    'scope': 'Camera remains fixed; measured blade axes may change when approaching/returning HOME'}
+                if opposite_readback['normal_incidence_error_deg'] > .001:
+                    raise ValueError('Tool-opposite optical axis is not normal to the declared vertical target face')
             front_readback = None
             if base_pose is not None:
                 rendered_base = np.asarray(UsdGeom.Xformable(stage.GetPrimAtPath(base_path)).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
@@ -228,6 +254,7 @@ def main():
             audit.append({'frame': index, 'time_s': timestamp, 'robot_state_index': bi, 'surface': mesh_info,
                 'maximum_rendered_body_matrix_error': body_error,
                 'render_clipping_range_m': clipping, 'arm0_front_readback': front_readback,
+                'tool_opposite_readback': opposite_readback,
                 'ideal_foreground_below_native_minimum_pixels': int((np.isfinite(ideal) & (ideal > clipping[0]) & (ideal < profile['native_near_m'])).sum()),
                 'foreground_scope': 'RGB and ideal first-hit depth retain foreground below 0.52m; only native valid-depth output is range-filtered',
                 'staged': staged, 'capture_sha256': sha256_file(target), 'original_global_sha256': sha256_file(original),

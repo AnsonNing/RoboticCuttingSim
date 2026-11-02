@@ -134,3 +134,27 @@ def test_frontal_view_uses_measured_base_and_workspace_and_rotates_with_them():
     g=new.specs['global_d455']
     assert g['render_near_m']==.001
     assert g['native_near_m']==.52
+
+
+def test_named_three_global_views_preserve_left_right_and_level_opposite_geometry():
+    from scipy.spatial.transform import Rotation
+    from robotic_cutting_sim.camera_rig import GLOBAL_VIEW_PROFILES,tool_opposite_view
+    assert GLOBAL_VIEW_PROFILES=={'left':'wrist_camera_rig_v10','right':'wrist_camera_rig_v11','opposite_tool':'wrist_camera_rig_v13'}
+    reference=make_rig()
+    for profile in GLOBAL_VIEW_PROFILES.values():
+        rig=make_rig(rig_profile=profile)
+        for name in ('wrist_d405_0','wrist_d405_1'):
+            assert rig.specs[name]==reference.specs[name]
+        assert rig.specs['global_d455']['render_near_m']==.001
+    yaw=Rotation.from_euler('z',37,degrees=True)
+    workpiece=[.1,-.2,.08,*yaw.as_quat()]
+    T,receipt=tool_opposite_view(workpiece,[.2,.04,.03],.6)
+    normal=yaw.apply([0,1,0]);forward=T[:3,2]
+    np.testing.assert_allclose(forward,-normal,atol=1e-12)
+    assert forward[2]==pytest.approx(0.,abs=1e-12)
+    assert forward@yaw.apply([1,0,0])==pytest.approx(0.,abs=1e-12)
+    assert np.linalg.norm(T[:3,3]-receipt['target_world_m'])==pytest.approx(.6)
+    assert receipt['horizontal_obliquity_deg']==0.
+    tilted=Rotation.from_euler('x',10,degrees=True)
+    with pytest.raises(ValueError,match='horizontal'):
+        tool_opposite_view([0,0,0,*tilted.as_quat()],[.2,.04,.03])
