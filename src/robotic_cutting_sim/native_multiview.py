@@ -42,7 +42,7 @@ def three_global_canvas(frames, external, solver, phase, status, title, surface,
     for i,name in enumerate(EXTERNAL_VIEWS):
         pane(external[name],(i*640,75,640,570),f'Global {name.upper()} RGB | '+('rig14 / normal bearing +17deg' if i==2 else f'rig{10+i} / low side view'))
     for i,(name,depth) in enumerate([('wrist_d405_0',False),('wrist_d405_1',False),('wrist_d405_0',True),('wrist_d405_1',True)]):
-        arm='arm_0' if name.endswith('0') else 'arm_1 safe park'
+        arm='arm_0' if name.endswith('0') else ('arm_1 recorded pose' if archived else 'arm_1 safe park')
         pane(frames[name],(i*480,655,480,365),name+' / '+arm,depth)
         if depth:
             values=np.linspace(0,1,440)
