@@ -11,7 +11,12 @@ import numpy as np
 from check_wp12_release import ROOT,git,headings,animated_gif_metadata
 
 
-def check_three_global(out,protected):
+def readme_gifs(source):
+    """Only visible Markdown images count toward the current README showcase."""
+    return re.findall(r'!\[[^\]]*\]\(([^\s)]+\.gif)\)',source)
+
+
+def check_three_global(out,protected,reuse_check=None):
     prefix='docs/media/three_global_v1/'
     evidence=ROOT/'docs/evidence/three_global'
     errors=[];links=[];media={};verified=set();hashes={}
@@ -21,9 +26,20 @@ def check_three_global(out,protected):
         return hashes[key]
     def require(condition,message,**context):
         if not condition:errors.append({'error':message,**context})
+    presentation=json.loads((evidence/'presentation_002.json').read_text())
+    visible=set(presentation['readme_gifs'])
+    actual=readme_gifs((ROOT/'README.md').read_text())
+    require(len(actual)==len(visible)==presentation['readme_gif_count']==5 and set(actual)==visible,
+            'README animations differ from current v7 presentation')
+    require(not re.search(r'\]\([^)]*(?:v5[^)]*\.(?:gif|mp4)|compare[^)]*\.(?:gif|mp4))\)',(ROOT/'README.md').read_text()),
+            'baseline/comparison media remains in homepage')
+    prior=json.loads(Path(reuse_check).read_text()) if reuse_check else {}
+    if prior:require(prior['status']=='PASS','prior decode audit did not pass')
+    reused=[]
     tracked=set(git('ls-files','-z').decode().rstrip('\0').split('\0'))
     pages=['README.md','docs/README.md','docs/GLOBAL_CAMERA_VIEWS.md','docs/V7_RESEARCH_WORKFLOW.md',
-           'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/THREE_GLOBAL_CAMERA_REFRESH.md','docs/WP14_SCENES.md']
+           'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/HISTORICAL_CAMERA_MEDIA.md',
+           'docs/reports/THREE_GLOBAL_CAMERA_REFRESH.md','docs/WP14_SCENES.md']
     for page in pages:
         source=re.sub(r'^```.*?^```\s*$','',(ROOT/page).read_text(),flags=re.M|re.S)
         for target in re.findall(r'\]\(([^\s)]+)(?:\s+"[^\"]*")?\)',source):
@@ -37,17 +53,28 @@ def check_three_global(out,protected):
                 require(unquote(url.fragment) in headings((ROOT/name).read_text()),'missing heading',path=name)
             if not name.startswith(prefix) or name in media:continue
             path=ROOT/name
-            if name.endswith('.gif'):media[name]=animated_gif_metadata(path.read_bytes())
+            if name.endswith('.gif') and name in visible:media[name]=animated_gif_metadata(path.read_bytes())
             elif name.endswith('.mp4'):
-                decoded=subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(path),'-f','null','-'],capture_output=True,text=True)
-                require(decoded.returncode==0,'full decode failed',path=name)
-                media[name]={'sha256':digest(path),'full_decode':'PASS' if decoded.returncode==0 else 'FAIL'}
+                old=prior.get('media',{}).get(name,{})
+                if prior.get('status')=='PASS' and old.get('sha256')==digest(path) and old.get('full_decode')=='PASS':
+                    media[name]={'sha256':digest(path),'full_decode':'PASS','decode_evidence':str(reuse_check)}
+                    reused.append(name)
+                else:
+                    decoded=subprocess.run(['ffmpeg','-v','error','-xerror','-i',str(path),'-f','null','-'],capture_output=True,text=True)
+                    require(decoded.returncode==0,'full decode failed',path=name)
+                    media[name]={'sha256':digest(path),'full_decode':'PASS' if decoded.returncode==0 else 'FAIL'}
             elif name.endswith('.png'):
                 from PIL import Image
                 with Image.open(path) as im:im.verify()
                 media[name]={'sha256':digest(path),'decode':'PASS'}
     require(sum(p.endswith('.mp4') for p in media)==47,'not all47 full movies linked')
-    require(sum(p.endswith('.gif') for p in media)==8,'not all8 README animations linked')
+    require({p for p in media if p.endswith('.gif')}==visible,'current README animations not all linked')
+    require(digest(ROOT/presentation['source_manifest']['path'])==presentation['source_manifest']['sha256'],
+            'historical media manifest changed')
+    for name,expected in presentation['preserved_media'].items():
+        require(digest(ROOT/name)==expected,'preserved media changed',path=name)
+    require(len(presentation['preserved_media'])==56,'incomplete old media preservation inventory')
+    require(len(list((ROOT/prefix).glob('*.gif')))==presentation['stored_gif_count']==11,'wrong stored GIF inventory')
     catalog=json.loads((evidence/'media_001.json').read_text());published={};sources=set()
     require(len(catalog['episodes'])==44 and len(catalog['comparisons'])==3,'incomplete movie catalog')
     profiles={'left':'wrist_camera_rig_v10','right':'wrist_camera_rig_v11','opposite_tool':'wrist_camera_rig_v14'}
@@ -97,6 +124,17 @@ def check_three_global(out,protected):
                             'incorrect horizontal/3D opposite-tool incidence',frame=index)
     require(len(sources)==37,'wrong unique source count; aliases or missing sources not reconciled')
     require(len(verified)==111,'not all37 source streams have three replay receipts')
+    for derivative in presentation['gif_derivations']:
+        row=next(r for r in catalog['episodes'] if r['id']==derivative['id'])
+        require(derivative['gif'] in visible and derivative['gif_sha256']==row['receipt']['outputs']['demo.gif'],
+                'v7 preview differs from original encoder output',episode=row['id'])
+        require(row['published'][derivative['mp4']]==derivative['mp4_sha256'],
+                'v7 preview full movie differs from source',episode=row['id'])
+        require(derivative['command']==row['receipt']['gif_command'] and
+                derivative['speed']==row['receipt']['gif_speed'] and
+                derivative['source_encoder_commit']==row['receipt']['source_commit'],
+                'v7 preview encoding provenance changed',episode=row['id'])
+        published[derivative['gif']]=derivative['gif_sha256']
     for row in catalog['comparisons']:
         require(row['status']=='PASS' and row['pts_check']=='PASS' and row['full_decode']=='PASS','comparison decode/PTS failed',episode=row['id'])
         for extension,key in [('.mp4','mp4_sha256'),('.gif','gif_sha256')]:published[prefix+row['id']+extension]=row[key]
@@ -123,6 +161,9 @@ def check_three_global(out,protected):
     report={'status':'FAIL' if errors else 'PASS','head':git('rev-parse','HEAD').decode().strip(),
         'index_tree':git('write-tree').decode().strip(),'unstaged_tracked_changes':unstaged,
         'scope':'ENGINEERING_CAMERA_PUBLICATION_ONLY','links':links,'media':media,'unique_sources':len(sources),
+        'readme_gif_count':len(visible),'stored_gif_count':presentation['stored_gif_count'],
+        'preserved_media_count':len(presentation['preserved_media']),'reused_full_decode':reused,
+        'presentation_manifest_sha256':digest(evidence/'presentation_002.json'),
         'replay_receipts':len(verified),'protected':{'baseline':baseline['baseline'],'checked':len(baseline['blobs']),'changed':changed},'errors':errors}
     Path(out).parent.mkdir(parents=True,exist_ok=True)
     with Path(out).open('x') as file:json.dump(report,file,indent=2);file.write('\n')

@@ -1,3 +1,13 @@
+# Latest showcase scope — v7 homepage, historical baselines retained
+
+- Homepage displays5 real moving v7/v7_2 previews, with three fixed Global RGB
+  views and both wrist RGB-D pairs. v5 comparisons move to the explicit historical
+  media entry. All47 MP4s,8 prior GIFs and the original manifest remain byte-identical.
+- Three already-encoded v7 GIFs are reused; no new recording, camera replay,
+  physics trial or whole-gallery re-encode. v5/Law8 default and all research limits remain.
+-020a0a2 is an earlier unmerged showcase. Its CI is historical only; the revised
+  payload requires its own checks before PR7/main and exact-commit verification.
+
 # Three fixed Global views + real wrist RGB-D — 2026-11-02 — media/API validated
 
 - User-finalized LEFT rig10 / RIGHT rig11 / OPPOSITE_TOOL rig14. All preserve0.60m,
@@ -13,7 +23,8 @@
   runs for three views. Four unavailable historical raw-source slots are explicitly
   linked to two NEW current registered demonstrations, not falsely called remasters.
 - Named configuration/API and recording/replay entry implemented; final focused CPU54PASS.
-  Media includes47 full MP4s,8 moving GIFs,37 unique sources and111 RGB camera replays.
+  Media preserves47 full MP4s and8 original GIFs; the v7 homepage selects5 visible GIFs
+  (3 reused existing v7 previews;11 GIFs stored).37 sources/111 RGB replays unchanged.
   All11 necessary recordings completed capture;5 actual goal failures remain explicit.
 - Publication is tracked by [PR7](https://github.com/AnsonNing/RoboticCuttingSim/pull/7).
   Final payload/main CI and exact-commit GitHub animation/full-playback verification

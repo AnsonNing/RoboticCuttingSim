@@ -31,8 +31,22 @@ if (!followup && !paths.some(p=>p.includes('/wp14/'))) throw Error('No WP-14 med
 const receipt = {merge_sha:sha, started:new Date().toISOString(), readme_sha256:hash(pinned),
                  page_url:`https://github.com/${repo}`, media:[], gifs:[], videos:[], documents:[]};
 const documentPaths=new Set();
+let presentation;
+let visibleGifs;
+if(threeGlobal) {
+  const filename='docs/evidence/three_global/presentation_002.json';
+  presentation=JSON.parse((await fetchBytes(raw(sha)+filename)).toString());
+  documentPaths.add(filename);
+  visibleGifs=new Set(presentation.readme_gifs);
+  const actual=[...readme.matchAll(/!\[[^\]]*\]\(([^\s)]+\.gif)\)/g)].map(m=>m[1]);
+  if(actual.length!==presentation.readme_gif_count || visibleGifs.size!==actual.length || actual.some(p=>!visibleGifs.has(p)))
+    throw Error('README visible GIFs differ from current presentation manifest');
+  for(const filename of Object.keys(presentation.preserved_media))
+    if(filename.endsWith('.gif') && !visibleGifs.has(filename))documentPaths.add(filename);
+}
 const pages=threeGlobal ? ['README.md','docs/README.md','docs/GLOBAL_CAMERA_VIEWS.md','docs/V7_RESEARCH_WORKFLOW.md',
-  'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/THREE_GLOBAL_CAMERA_REFRESH.md','docs/WP14_SCENES.md'] : global60 ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
+  'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/HISTORICAL_CAMERA_MEDIA.md',
+  'docs/reports/THREE_GLOBAL_CAMERA_REFRESH.md','docs/WP14_SCENES.md'] : global60 ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
   'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/GLOBAL60_CAMERA_REFRESH.md','docs/WP14_SCENES.md'] : followup ? ['README.md','docs/README.md','docs/V7_RESEARCH_WORKFLOW.md',
   'docs/NATIVE_MULTIVIEW_GALLERY.md','docs/reports/WP14_FOLLOWUP_RESULTS.md','docs/WP14_SCENES.md'] :
   ['README.md','docs/README.md','docs/WP14_PLAN.md','docs/reports/WP14_RESULTS.md','docs/WP14_SCENES.md'];
@@ -48,18 +62,22 @@ for(const page of pages) {
     const resolved=path.posix.normalize(path.posix.join(path.posix.dirname(page),relative));
     if(resolved.startsWith('../')||resolved.startsWith('/'))throw Error(`Document link escapes tree: ${resolved}`);
     if(/\.(md|json|py|yaml|toml|sh)$/.test(resolved))documentPaths.add(resolved);
-    if(followup && resolved.startsWith(mediaPrefix) && /\.(mp4|gif|png)$/.test(resolved) && !paths.includes(resolved))paths.push(resolved);
+    if(followup && resolved.startsWith(mediaPrefix) && /\.(mp4|gif|png)$/.test(resolved) && !paths.includes(resolved) &&
+       (!threeGlobal || !resolved.endsWith('.gif') || visibleGifs.has(resolved)))paths.push(resolved);
     if(followup && resolved.startsWith('docs/evidence/wp14_followup/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
     if(global60 && resolved.startsWith('docs/evidence/global60/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
     if(threeGlobal && resolved.startsWith('docs/evidence/three_global/') && /\.(npz|png)$/.test(resolved))documentPaths.add(resolved);
   }
 }
-if(followup && (paths.filter(p=>p.endsWith('.mp4')).length!==47 || paths.filter(p=>p.endsWith('.gif')).length!==8))
-  throw Error('Follow-up publication must expose all 47 full MP4s and eight README animations');
+const expectedGifCount=threeGlobal ? presentation.readme_gif_count : 8;
+if(followup && (paths.filter(p=>p.endsWith('.mp4')).length!==47 || paths.filter(p=>p.endsWith('.gif')).length!==expectedGifCount))
+  throw Error(`Publication must expose all 47 full MP4s and ${expectedGifCount} current README animations`);
+const remoteHashes=new Map();
 for(const filename of documentPaths) {
   const bytes=await fetchBytes(raw(sha)+filename);
   const expected=execFileSync('git',['show',`${sha}:${filename}`],{maxBuffer:16*1024*1024});
   if(!bytes.equals(expected))throw Error(`Remote document differs from exact commit: ${filename}`);
+  remoteHashes.set(filename,hash(bytes));
   receipt.documents.push({path:filename,status:'PASS_REMOTE_EXACT_BYTES',sha256:hash(bytes)});
 }
 for (const mediaPath of paths) {
@@ -76,6 +94,20 @@ for (const mediaPath of paths) {
     media.full_decode = 'PASS';
   }
   receipt.media.push(media);
+  remoteHashes.set(mediaPath,media.sha256);
+}
+if(threeGlobal) {
+  if(remoteHashes.get(presentation.source_manifest.path)!==presentation.source_manifest.sha256)
+    throw Error('Preserved source media manifest changed');
+  receipt.preserved_media=[];
+  for(const [filename,expected] of Object.entries(presentation.preserved_media)) {
+    if(remoteHashes.get(filename)!==expected)throw Error(`Preserved remote media changed: ${filename}`);
+    if(!paths.includes(filename) && hash(await fetchBytes(raw('main')+filename))!==expected)
+      throw Error(`Live main preserved media changed: ${filename}`);
+    receipt.preserved_media.push({path:filename,sha256:expected,status:'PASS_REMOTE_PRESERVED_BYTES'});
+  }
+  receipt.presentation={path:'docs/evidence/three_global/presentation_002.json',
+    readme_gif_count:presentation.readme_gif_count,stored_gif_count:presentation.stored_gif_count};
 }
 const chromeLog = await fs.open(path.join(out,'chrome.log'),'wx');
 const chrome = spawn('/usr/bin/google-chrome',[

@@ -19,10 +19,11 @@ def main():
     p.add_argument('--followup',action='store_true')
     p.add_argument('--global60',action='store_true')
     p.add_argument('--three-global',action='store_true')
+    p.add_argument('--reuse-check',type=Path,help='Reuse prior full MP4 decode only for identical SHA256 bytes')
     a=p.parse_args()
     if a.three_global:
         from check_three_global_release import check_three_global
-        return check_three_global(a.out,a.protected)
+        return check_three_global(a.out,a.protected,a.reuse_check)
     if a.global60:
         from check_global60_release import check_global60
         return check_global60(a.out,a.protected)
