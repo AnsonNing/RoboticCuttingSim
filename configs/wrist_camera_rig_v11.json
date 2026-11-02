@@ -1,0 +1,33 @@
+{
+  "schema": "rcs_global_camera_followup_v2",
+  "profile_id": "wrist_camera_rig_v11",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "scope": "Small low-angle side-azimuth candidate compared against rig10 before bulk rendering. Actual Global-only provisional simulated narrow lens; no wrist, robot, park, material or default changes.",
+  "global_d455": {
+    "eye_world_m": [
+      0.5005475629081548,
+      -0.27971775574279234,
+      0.2066638457322899
+    ],
+    "target_world_m": [
+      0.0,
+      0.0,
+      0.03
+    ],
+    "resolution_wh": [
+      640,
+      480
+    ],
+    "hfov_deg": 24.0,
+    "near_m": 0.52,
+    "native_near_m": 0.52,
+    "far_m": 6.0,
+    "maximum_disparity_px": 320.0,
+    "reference_direction_world": [
+      0.68,
+      -0.38,
+      0.24
+    ],
+    "elevation_deg": 17.123944951922702
+  }
+}

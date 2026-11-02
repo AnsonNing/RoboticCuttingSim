@@ -16,7 +16,7 @@ from scipy.spatial.transform import Rotation
 WRIST_LAYOUT = "wrist_d405_global_d455"
 LEGACY_LAYOUT = "legacy_fixed_d455"
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v5.json"
-RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6', 'wrist_camera_rig_v7', 'wrist_camera_rig_v8', 'wrist_camera_rig_v9', 'wrist_camera_rig_v10')
+RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6', 'wrist_camera_rig_v7', 'wrist_camera_rig_v8', 'wrist_camera_rig_v9', 'wrist_camera_rig_v10','wrist_camera_rig_v11')
 _CV_TO_USD = np.diag([1., -1., -1., 1.])
 
 
@@ -148,11 +148,11 @@ class CameraRig:
             "calibration_scope": "Authored official USD pseudo-depth lens; runtime render-product K must be recorded independently",
             "visual_obbs": [],
         }
-        if rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10'):
+        if rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11'):
             path = CONFIG_PATH.with_name(rig_profile+'.json')
             config = json.loads(path.read_text())
             view = config['global_d455']
-            if rig_profile == 'wrist_camera_rig_v10' and global_target_world_m is not None:
+            if rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11') and global_target_world_m is not None:
                 target = np.asarray(global_target_world_m, float)
                 if target.shape != (3,) or not np.isfinite(target).all():
                     raise ValueError('Global target must be finite world XYZ')
@@ -267,7 +267,7 @@ class CameraRig:
             camera = UsdGeom.Camera.Get(stage, path)
             camera.CreateProjectionAttr("perspective")
             camera.CreateClippingRangeAttr(Gf.Vec2f(.001, 20.))
-            if global_spec['rig_profile'] in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10'):
+            if global_spec['rig_profile'] in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11'):
                 camera.CreateFocalLengthAttr(10.)
                 camera.CreateHorizontalApertureAttr(10.*global_spec['width']/global_spec['K'][0][0])
                 camera.CreateVerticalApertureAttr(10.*global_spec['height']/global_spec['K'][1][1])

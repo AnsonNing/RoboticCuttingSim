@@ -125,7 +125,7 @@ def main():
         optical_local = np.linalg.inv(old_root) @ old_optical
         _set_transform(root, transform @ np.diag([1., -1., -1., 1.]) @ np.linalg.inv(optical_local))
         width, height = profile['width'], profile['height']
-        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10')
+        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11')
         if controlled_lens:
             # Change the actual optical prim; a crop cannot establish this view.
             optical_camera = UsdGeom.Camera(camera)
