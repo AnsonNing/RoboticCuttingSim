@@ -138,7 +138,7 @@ class EpisodeRecorder:
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
                               cut_enabled=getattr(self, 'last_cut', False)))
-        if self.save_surfaces:
+        if getattr(self,'save_surfaces',False):
             save_surface_snapshot(backend,self.output,index,env.time_s)
         state = backend.material.history_state()
         self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
