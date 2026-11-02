@@ -73,7 +73,7 @@ def main():
         if code==0:
             receipt=json.loads((out/'render_receipt.json').read_text())
             outputs={}
-            names=['demo.mp4']+(['demo.gif'] if not row.get('archived') else [])
+            names=['demo.mp4']+(['demo.gif'] if row.get('publish_preview',not row.get('archived')) else [])
             for name in names:
                 target=a.publish/(row['id']+Path(name).suffix)
                 with target.open('xb') as dest,(out/name).open('rb') as src:shutil.copyfileobj(src,dest)
