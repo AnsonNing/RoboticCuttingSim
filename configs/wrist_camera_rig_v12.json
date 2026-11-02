@@ -1,0 +1,77 @@
+{
+  "schema": "rcs_global_camera_followup_v2",
+  "profile_id": "wrist_camera_rig_v12",
+  "inherits_wrist_calibration": "wrist_camera_rig_v5",
+  "scope": "Frontal Global candidate along the measured arm0-base-to-workarea ray beyond the workarea, looking back. Actual Global-only pose and simulated narrow lens. The front bearing is checked against measured base rotation; not a claim of zero base-local yaw. Low material-level elevation; unchanged v5 wrists, Franka1 park, robot motion and physics. Preview only, not publication acceptance.",
+  "global_d455": {
+    "eye_world_m": [
+      0.5548337062329052,
+      -0.14473922771293177,
+      0.2066638457322899
+    ],
+    "target_world_m": [
+      0.0,
+      0.0,
+      0.03
+    ],
+    "resolution_wh": [
+      640,
+      480
+    ],
+    "hfov_deg": 24.0,
+    "near_m": 0.52,
+    "native_near_m": 0.52,
+    "far_m": 6.0,
+    "maximum_disparity_px": 320.0,
+    "elevation_deg": 17.123944951922702,
+    "distance_m": 0.6,
+    "pose_rule": "arm0_base_to_workarea_front_v1",
+    "render_near_m": 0.001,
+    "render_far_m": 20.0
+  },
+  "reference_arm0_base_world_xyzw": [
+    -0.46,
+    0.12,
+    -0.01,
+    0,
+    0,
+    0,
+    1
+  ],
+  "depth_range_scope": "0.52m is only logical/native valid-depth cutoff. RGB/ideal-depth geometry keeps 0.001m render clipping; foreground never removed by the depth mask.",
+  "nominal_front_reference": {
+    "definition": "Camera on the horizontal arm0-base-to-workarea ray beyond the workarea; looks back toward arm0 front. Not zero base-local yaw.",
+    "arm0_base_pose_world_xyzw": [
+      -0.46,
+      0.12,
+      -0.01,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "arm0_base_positive_X_world": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "base_to_workarea_horizontal_unit_world": [
+      0.9676172723968439,
+      -0.25242189714700275,
+      0.0
+    ],
+    "workarea_azimuth_from_base_positive_X_deg": -14.620873988631656,
+    "camera_position_in_arm0_base_m": [
+      1.0148337062329051,
+      -0.2647392277129318,
+      0.21666384573228992
+    ],
+    "optical_positive_Z_in_arm0_base": [
+      -0.9247228437215087,
+      0.2412320461882196,
+      -0.29443974288714986
+    ],
+    "working_distance_m": 0.6,
+    "elevation_deg": 17.123944951922702
+  }
+}

@@ -114,7 +114,14 @@ def main():
             task_record=load_json(episode/'setup.json')['task']
         task_frame=pose_matrix(task_record['world_from_workpiece_xyzw'])
         target=task_frame[:3,:3]@np.array([0.,0.,task_record['geometry']['base_height_m']])+task_frame[:3,3]
-        profile = CameraRig(rig_profile=args.rig_profile,global_target_world_m=target).specs['global_d455']
+        base_path = '/World/Franka_0/Geometry/panda_link0'
+        base_pose = None
+        if args.rig_profile == 'wrist_camera_rig_v12':
+            if base_path not in body_paths:
+                raise ValueError('Frontal preview requires the actual measured arm0 base')
+            base_pose = robot['body_pose'][exact_index(robot['time_s'],frames[0]['time_s']),body_paths.index(base_path)]
+        profile = CameraRig(rig_profile=args.rig_profile,global_target_world_m=target,
+            global_reference_base_world_xyzw=base_pose).specs['global_d455']
         transform = np.asarray(profile['T_world_camera'])
         # Move the actual existing Global housing, retaining its optical offsets.
         root = stage.GetPrimAtPath('/World/WristCameraRig/GlobalD455')
@@ -125,7 +132,9 @@ def main():
         optical_local = np.linalg.inv(old_root) @ old_optical
         _set_transform(root, transform @ np.diag([1., -1., -1., 1.]) @ np.linalg.inv(optical_local))
         width, height = profile['width'], profile['height']
-        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11')
+        if args.rig_profile == 'wrist_camera_rig_v12':
+            UsdGeom.Camera(camera).CreateClippingRangeAttr(Gf.Vec2f(.001, 20.))
+        controlled_lens = args.rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12')
         if controlled_lens:
             # Change the actual optical prim; a crop cannot establish this view.
             optical_camera = UsdGeom.Camera(camera)
@@ -194,6 +203,17 @@ def main():
             rgb = numpy_data(rgb_reader.get_data())[..., :3]
             raw = numpy_data(sensor.get_data('depth_sensor_distance')[0]).reshape(height, width)
             ideal = numpy_data(sensor.get_data('distance_to_image_plane')[0]).reshape(height, width)
+            clipping = list(map(float, UsdGeom.Camera(camera).GetClippingRangeAttr().Get()))
+            if args.rig_profile == 'wrist_camera_rig_v12' and clipping[0] > .00101:
+                raise ValueError('Frontal camera render near plane could remove real foreground')
+            front_readback = None
+            if base_pose is not None:
+                rendered_base = np.asarray(UsdGeom.Xformable(stage.GetPrimAtPath(base_path)).ComputeLocalToWorldTransform(Usd.TimeCode.Default())).T
+                camera_in_base = np.linalg.inv(rendered_base) @ np.asarray(calibration['T_world_camera'])
+                front_readback = {'T_arm0_base_camera_cv': camera_in_base.tolist(),
+                    'base_T_world': rendered_base.tolist(),
+                    'optical_positive_Z_world': np.asarray(calibration['T_world_camera'])[:3,2].tolist(),
+                    'camera_position_world_m': np.asarray(calibration['T_world_camera'])[:3,3].tolist()}
             valid = np.isfinite(raw) & (raw >= profile['near_m']) & (raw <= profile['far_m'])
             original = episode / 'observations' / f'global_d455_{index:04d}.npz'
             with np.load(original) as old:
@@ -207,6 +227,9 @@ def main():
                 camera_render_source='saved_native_state_replay_v1', rig_profile=args.rig_profile)
             audit.append({'frame': index, 'time_s': timestamp, 'robot_state_index': bi, 'surface': mesh_info,
                 'maximum_rendered_body_matrix_error': body_error,
+                'render_clipping_range_m': clipping, 'arm0_front_readback': front_readback,
+                'ideal_foreground_below_native_minimum_pixels': int((np.isfinite(ideal) & (ideal > clipping[0]) & (ideal < profile['native_near_m'])).sum()),
+                'foreground_scope': 'RGB and ideal first-hit depth retain foreground below 0.52m; only native valid-depth output is range-filtered',
                 'staged': staged, 'capture_sha256': sha256_file(target), 'original_global_sha256': sha256_file(original),
                 'valid_depth_fraction': float(valid.mean())})
             (out / 'progress.json').write_text(json.dumps(audit, indent=2) + '\n')

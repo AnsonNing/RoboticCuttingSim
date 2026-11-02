@@ -16,7 +16,7 @@ from scipy.spatial.transform import Rotation
 WRIST_LAYOUT = "wrist_d405_global_d455"
 LEGACY_LAYOUT = "legacy_fixed_d455"
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "configs/wrist_camera_rig_v5.json"
-RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6', 'wrist_camera_rig_v7', 'wrist_camera_rig_v8', 'wrist_camera_rig_v9', 'wrist_camera_rig_v10','wrist_camera_rig_v11')
+RIG_PROFILES = ('wrist_camera_rig_v5', 'wrist_camera_rig_v6', 'wrist_camera_rig_v7', 'wrist_camera_rig_v8', 'wrist_camera_rig_v9', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12')
 _CV_TO_USD = np.diag([1., -1., -1., 1.])
 
 
@@ -52,6 +52,42 @@ def _intrinsics(width=848, height=480, hfov_deg=87.):
     return [[focal, 0., width/2], [0., focal, height/2], [0., 0., 1.]]
 
 
+def arm0_front_view(base_pose_xyzw, target_world_m, distance_m, elevation_deg):
+    """World-fixed view along the base-to-workarea frontal approach direction.
+
+    The Panda's authored base +X and measured rotation identify its front
+    hemisphere. The workarea bearing within that hemisphere defines the
+    frontal viewing line; this is not an assertion of zero base-local yaw.
+    """
+    base = pose_matrix(base_pose_xyzw)
+    target = np.asarray(target_world_m, float)
+    if target.shape != (3,) or not np.isfinite(target).all():
+        raise ValueError('Global target must be finite world XYZ')
+    if not np.isfinite([distance_m, elevation_deg]).all() or distance_m <= 0 or not 0 <= elevation_deg < 80:
+        raise ValueError('Invalid frontal camera distance/elevation')
+    bearing = target - base[:3, 3]
+    bearing[2] = 0.
+    if np.linalg.norm(bearing) < 1e-9:
+        raise ValueError('Workarea has no horizontal direction from arm0 base')
+    bearing /= np.linalg.norm(bearing)
+    local_bearing = base[:3, :3].T @ bearing
+    if local_bearing[0] <= 0:
+        raise ValueError('Workarea is behind the measured arm0 base front')
+    elevation = np.deg2rad(elevation_deg)
+    eye = target + distance_m * (np.cos(elevation)*bearing + [0., 0., np.sin(elevation)])
+    transform = _look_at(eye, target)
+    return transform, {
+        'definition': 'Camera on the horizontal arm0-base-to-workarea ray beyond the workarea; looks back toward arm0 front. Not zero base-local yaw.',
+        'arm0_base_pose_world_xyzw': np.asarray(base_pose_xyzw, float).tolist(),
+        'arm0_base_positive_X_world': base[:3, 0].tolist(),
+        'base_to_workarea_horizontal_unit_world': bearing.tolist(),
+        'workarea_azimuth_from_base_positive_X_deg': float(np.rad2deg(np.arctan2(local_bearing[1], local_bearing[0]))),
+        'camera_position_in_arm0_base_m': (np.linalg.inv(base) @ np.r_[eye, 1.])[:3].tolist(),
+        'optical_positive_Z_in_arm0_base': (base[:3, :3].T @ transform[:3, 2]).tolist(),
+        'working_distance_m': float(distance_m), 'elevation_deg': float(elevation_deg),
+    }
+
+
 def _bracket_obb(transform, anchor):
     rear = transform[:3, 3] - .020*transform[:3, 2]
     anchor = np.asarray(anchor, float)
@@ -66,7 +102,7 @@ def _bracket_obb(transform, anchor):
 class CameraRig:
     def __init__(self, task_id="TRIM-01", camera_layout=WRIST_LAYOUT,
                  initial_hand_poses_world_xyzw=None, rig_profile='wrist_camera_rig_v5',
-                 global_target_world_m=None):
+                 global_target_world_m=None, global_reference_base_world_xyzw=None):
         if rig_profile not in RIG_PROFILES:
             raise ValueError(f'Unknown camera rig profile: {rig_profile}')
         if camera_layout in (LEGACY_LAYOUT, 'fixed_d455') and rig_profile != RIG_PROFILES[0]:
@@ -148,10 +184,17 @@ class CameraRig:
             "calibration_scope": "Authored official USD pseudo-depth lens; runtime render-product K must be recorded independently",
             "visual_obbs": [],
         }
-        if rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11'):
+        if rig_profile in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12'):
             path = CONFIG_PATH.with_name(rig_profile+'.json')
             config = json.loads(path.read_text())
             view = config['global_d455']
+            front_receipt = None
+            if rig_profile == 'wrist_camera_rig_v12':
+                target = view['target_world_m'] if global_target_world_m is None else global_target_world_m
+                base = (config['reference_arm0_base_world_xyzw'] if global_reference_base_world_xyzw is None
+                        else global_reference_base_world_xyzw)
+                front_transform, front_receipt = arm0_front_view(base, target, view['distance_m'], view['elevation_deg'])
+                view = {**view, 'target_world_m': list(target), 'eye_world_m': front_transform[:3, 3].tolist()}
             if rig_profile in ('wrist_camera_rig_v10','wrist_camera_rig_v11') and global_target_world_m is not None:
                 target = np.asarray(global_target_world_m, float)
                 if target.shape != (3,) or not np.isfinite(target).all():
@@ -169,6 +212,8 @@ class CameraRig:
                 native_near_m=view['native_near_m'], native_far_m=view['far_m'],
                 native_maximum_disparity=view['maximum_disparity_px'],
                 calibration_scope='Versioned square-pixel simulated D455 lens; actual render-product K recorded; physical calibration unvalidated')
+            if front_receipt is not None:
+                self.specs['global_d455']['front_reference'] = front_receipt
         elif rig_profile in ('wrist_camera_rig_v7','wrist_camera_rig_v8','wrist_camera_rig_v9'):
             config=json.loads(CONFIG_PATH.with_name(rig_profile+'.json').read_text())['global_d455']
             if rig_profile == 'wrist_camera_rig_v9' and global_target_world_m is not None:
@@ -267,7 +312,7 @@ class CameraRig:
             camera = UsdGeom.Camera.Get(stage, path)
             camera.CreateProjectionAttr("perspective")
             camera.CreateClippingRangeAttr(Gf.Vec2f(.001, 20.))
-            if global_spec['rig_profile'] in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11'):
+            if global_spec['rig_profile'] in ('wrist_camera_rig_v6', 'wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12'):
                 camera.CreateFocalLengthAttr(10.)
                 camera.CreateHorizontalApertureAttr(10.*global_spec['width']/global_spec['K'][0][0])
                 camera.CreateVerticalApertureAttr(10.*global_spec['height']/global_spec['K'][1][1])

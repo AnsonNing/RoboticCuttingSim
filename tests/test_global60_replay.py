@@ -103,3 +103,34 @@ def test_v10_reference_low_angle_is_actual_narrow_lens_with_fixed_wrists():
     assert make_rig().specs==old.specs
     with pytest.raises(ValueError,match='finite world XYZ'):
         make_rig(rig_profile='wrist_camera_rig_v10',global_target_world_m=[0,float('nan'),0])
+
+
+def test_frontal_view_uses_measured_base_and_workspace_and_rotates_with_them():
+    from scipy.spatial.transform import Rotation
+    from robotic_cutting_sim.camera_rig import arm0_front_view,pose_matrix
+    base=np.array([-.46,.12,-.01,0,0,0,1.])
+    target=np.array([0.,0.,.03])
+    T,receipt=arm0_front_view(base,target,.6,17.)
+    base_T=pose_matrix(base)
+    camera_local=(np.linalg.inv(base_T)@T)[:3,3]
+    assert camera_local[0]>0
+    bearing=target[:2]-base[:2]
+    # Same bearing from base through workarea to camera, facing back.
+    offset=T[:2,3]-target[:2]
+    assert bearing[0]*offset[1]-bearing[1]*offset[0]==pytest.approx(0.,abs=1e-12)
+    assert np.dot(T[:2,2],bearing)<0
+    assert np.linalg.norm(T[:3,3]-target)==pytest.approx(.6)
+    assert receipt['workarea_azimuth_from_base_positive_X_deg']==pytest.approx(-14.6208739886)
+    rotation=Rotation.from_euler('z',73,degrees=True)
+    moved_base=np.r_[rotation.apply(base[:3]),rotation.as_quat()]
+    moved,_=arm0_front_view(moved_base,rotation.apply(target),.6,17.)
+    np.testing.assert_allclose(moved[:3,3],rotation.apply(T[:3,3]),atol=1e-12)
+    np.testing.assert_allclose(moved[:3,2],rotation.apply(T[:3,2]),atol=1e-12)
+    with pytest.raises(ValueError,match='behind'):
+        arm0_front_view(base,[-1.,.12,.03],.6,17.)
+    old=make_rig();new=make_rig(rig_profile='wrist_camera_rig_v12')
+    for name in ('wrist_d405_0','wrist_d405_1'):
+        assert old.specs[name]==new.specs[name]
+    g=new.specs['global_d455']
+    assert g['render_near_m']==.001
+    assert g['native_near_m']==.52

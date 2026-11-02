@@ -566,7 +566,7 @@ class LiveIsaacSimCutting:
                 camera_layout=c.camera_layout,initial_hand_poses_world_xyzw=nominal_hands,
                 rig_profile=c.camera_rig_profile,
                 global_target_world_m=(self.task.points_to_world([0.,0.,self.task.geometry.base_height_m])
-                    if self.task and c.camera_rig_profile in ('wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11') else None))
+                    if self.task and c.camera_rig_profile in ('wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12') else None))
         SimulationManager.setup_simulation(dt=c.control_dt/c.robot_substeps, device="cpu")
         if not SimulationManager.switch_physics_engine("physx"):
             raise RuntimeError("Native Isaac PhysX engine is unavailable")
@@ -1303,7 +1303,7 @@ class LiveIsaacSimCutting:
                 initial_hand_poses_world_xyzw=self.proprioception()["hand_pose_both_xyzw"],
                 rig_profile=c.camera_rig_profile,
                 global_target_world_m=(self.task.points_to_world([0.,0.,self.task.geometry.base_height_m])
-                    if self.task and c.camera_rig_profile in ('wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11') else None)))
+                    if self.task and c.camera_rig_profile in ('wrist_camera_rig_v9','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12') else None)))
             paths={name:spec["optical_prim_path"] for name,spec in self.camera_specs.items()}
             if set(paths)!={"wrist_d405_0","wrist_d405_1","global_d455"}:
                 raise ValueError("The new native rig must expose both wrist D405 IDs and global_d455")
@@ -1344,7 +1344,7 @@ class LiveIsaacSimCutting:
                 sensor.set_sensor_maximum_disparity(150.)
                 sensor.set_sensor_disparity_confidence(1.)
                 sensor.set_sensor_distance_cutoffs(.52,6.)
-                if c.camera_rig_profile in ('wrist_camera_rig_v6','wrist_camera_rig_v10','wrist_camera_rig_v11'):
+                if c.camera_rig_profile in ('wrist_camera_rig_v6','wrist_camera_rig_v10','wrist_camera_rig_v11','wrist_camera_rig_v12'):
                     spec = self.camera_specs[name]
                     sensor.set_sensor_focal_length(float(spec['K'][0][0]))
                     sensor.set_sensor_size(float(width))
