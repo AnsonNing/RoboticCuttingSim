@@ -211,9 +211,12 @@ class AgenticTrimEnv:
 
 @contextmanager
 def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id', evaluator_python=None,
-             stream_physics=False, memory_receipts=False, native_sensor_runtime=None):
+             stream_physics=False, memory_receipts=False, native_sensor_runtime=None,
+             material_diagnostics='snapshot', v7_2_optimizations=True):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
+    if not isinstance(v7_2_optimizations, bool):
+        raise ValueError("v7_2_optimizations must be a bool")
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=False)
     memory_log = output/'runtime_memory.jsonl' if memory_receipts else None
@@ -226,6 +229,8 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
         raise
     record_memory(memory_log, 'scene_compiled', particle_count=manifest['particle_count'])
     options = {'history_mode': 'latest'} if stream_physics else {}
+    options['material_diagnostics'] = material_diagnostics
+    options['v7_2_optimizations'] = v7_2_optimizations
     if native_sensor_runtime is not None:
         options['native_sensor_runtime'] = native_sensor_runtime
     previous_log = os.environ.get('RCS_RUNTIME_MEMORY_LOG')
