@@ -1,4 +1,4 @@
-# WP-15 recovery — agentic control robot — 2026-11-03 — IN_PROGRESS
+# WP-15 recovery — agentic control robot — 2026-11-03 — evaluation complete
 
 - Opt-in exact-precision streamed recording, interruption recovery, memory
   receipts and a versioned offline Isaac Sim 6.2 contact-extension repair are
@@ -10,10 +10,20 @@
   arm1 checks PASS. Recording finalization RSS 5654000→5654040 KiB; whole-process
   observations are separate from causal claims about recorder memory.
 - Exact inherited C2 completed a one-protrusion scene: integrity PASS, outcome
-  FAIL (64.8% detached versus the original 90% requirement). The existing
-  researcher is actually analyzing its own observations and running inherited
-  comparisons. Revisions, new held-out outcomes and autonomous success remain
-  pending; runtime readiness alone does not complete this task.
+  FAIL (64.8% detached versus the original 90% requirement). Matched inherited
+  C1 and C2 comparisons each scored 0/2. The existing researcher authored C3
+  from its own evidence; C3 scored 4/4 development successes on distinct
+  one-/two-protrusion scenes, all with verified complete MP4s.
+- Frozen C3 completed standard independent evaluation: 4 declared, 4 complete
+  and scored, 4 mechanical successes, zero infrastructure errors. Its 95%
+  Wilson interval is 51.01%–100%; development and formal rates stay separate.
+- C3's eight actual scenes have eight unique solid/reference/initial-particle
+  hashes, one-/two-protrusion counts and three sampled shape families. All nine
+  recovery successes have complete verified MP4s (eight autonomous, one script).
+  All 14 full Native scores and five inherited-controller failures are retained.
+- Surface quality remains descriptive, HOME NOT_RUN and materials uncalibrated.
+  [PR9](https://github.com/AnsonNing/RoboticCuttingSim/pull/9) tracks publication
+  and exact-version CI.
 - [Current evidence and remaining work](reports/AGENTIC_TRIM_RECOVERY.md).
 
 # WP-15 bounded study — agentic control robot — 2026-11-03
