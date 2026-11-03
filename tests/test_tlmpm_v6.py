@@ -245,11 +245,15 @@ def test_packed_solver_helper():
         packed_solver_class("tlmpm_v4")
 
 
-def test_v6_is_never_a_default():
+def test_v6_is_never_a_default(monkeypatch):
+    from robotic_cutting_sim import tlmpm_v4
+    from robotic_cutting_sim.coupled_robot import CouplingConfig
     from robotic_cutting_sim.kinematic_env import KinematicConfig
     from robotic_cutting_sim.live_material import LiveCuttingMaterial
+    from robotic_cutting_sim.packed_solvers import DEFAULT_PACKED_SOLVER
     from robotic_cutting_sim.scene_config import SOLVERS
     from robotic_cutting_sim.tool_profile import RULER_KNIFE_V1 as profile
+    assert DEFAULT_PACKED_SOLVER == "tlmpm_v5"
     assert KinematicConfig().solver is None and "tlmpm_v6" not in SOLVERS
     assert LiveCuttingMaterial(tool_profile=profile, cutting_law=8).solver is None
     material = LiveCuttingMaterial(tool_profile=profile, cutting_law=8, max_cuts=15, solver="tlmpm_v6")
@@ -270,11 +274,24 @@ def test_v6_is_never_a_default():
     named = [str(p.relative_to(ROOT)) for p in (ROOT/"configs").rglob("*.json")
              if p.name != "phase4_gridpos_protocol_v1.json" and selects_v6(json.loads(p.read_text()))]
     assert named == []
-    # Only the solver itself, the helper and the opt-in plumbing name it in src/.
-    src = ROOT/"src"/"robotic_cutting_sim"
-    users = sorted(p.name for p in src.glob("*.py") if "tlmpm_v6" in p.read_text())
-    assert users == ["blade_probe.py", "kinematic_env.py", "live_material.py", "packed_solvers.py", "tlmpm_v6.py",
-                     "tlmpm_v7.py"]
+    # Check runtime dispatch, rather than filenames that may reuse a v6 helper.
+    # Stop at construction so this selection test runs no solver physics.
+    class SolverSelected(Exception):
+        pass
+
+    def selected_solver(self, *args, **kwargs):
+        raise SolverSelected(type(self))
+
+    for module in (tlmpm_v4, tlmpm_v5, tlmpm_v6):
+        monkeypatch.setattr(module.TLMPM, "__init__", selected_solver)
+    for options, expected in (({}, tlmpm_v4.TLMPM),
+                              ({"solver": "tlmpm_v5"}, tlmpm_v5.TLMPM),
+                              ({"solver": "tlmpm_v6"}, tlmpm_v6.TLMPM)):
+        candidate = LiveCuttingMaterial(CouplingConfig(device="cpu"), tool_profile=profile,
+                                        cutting_law=8, **options)
+        with pytest.raises(SolverSelected) as selected:
+            candidate.reset([0., 0., 0., 0., 0., 0., 1.], seed=42)
+        assert selected.value.args == (expected,)
 
 
 @pytest.mark.cpu_sim
