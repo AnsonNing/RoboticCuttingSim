@@ -219,6 +219,30 @@ def test_fresh_reset_uses_actual_recorder_and_persists_final_raw_state(task, tmp
     assert evaluate_recording(recorder.output)['status'] == 'FAIL_INTEGRITY'
 
 
+def test_audit_mass_roundoff_keeps_physical_decisions_exact():
+    spec = importlib.util.spec_from_file_location('wp15_audit', ROOT / 'scripts/audit_wp15_evidence.py')
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    # Actual Native/file-evaluator discrepancy: two ULPs in a diagnostic sum.
+    stored = dict(integrity=dict(status='PASS', metrics=dict(recorded_mass_kg=0.155847)),
+                  outcome=dict(status='FAIL', removed_mass_fraction=0.701010101010101),
+                  success=False, steps=1200)
+    recomputed = json.loads(json.dumps(stored))
+    recomputed['integrity']['metrics']['recorded_mass_kg'] = 0.15584699999999996
+    assert stored != recomputed
+    assert audit.evaluations_match(stored, recomputed)
+    for key, value in [('success', True), ('success', 0), ('steps', 1200.0)]:
+        changed = {**recomputed, key: value}
+        assert not audit.evaluations_match(stored, changed)
+    changed = json.loads(json.dumps(recomputed))
+    changed['outcome']['removed_mass_fraction'] = float(np.nextafter(
+        changed['outcome']['removed_mass_fraction'], 1.0))
+    assert not audit.evaluations_match(stored, changed)
+    changed = json.loads(json.dumps(recomputed))
+    changed['integrity']['metrics']['recorded_mass_kg'] += 1e-10
+    assert not audit.evaluations_match(stored, changed)
+
+
 def test_actual_success_encoding_and_audit_from_same_original_frames(task, tmp_path):
     if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
         pytest.skip('ffmpeg/ffprobe unavailable: media verification NOT_RUN')
