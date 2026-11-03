@@ -86,7 +86,17 @@ class AgenticTrimEnv:
         if self.started:
             self.finalize('RESET')
         record_memory(self.memory_log, 'before_reset', attempt=len(self.attempts))
-        self.env.reset(seed=self.manifest['sim_seed'], controller='agentic control robot')
+        try:
+            self.env.reset(seed=self.manifest['sim_seed'], controller='agentic control robot')
+        except BaseException as error:
+            # Kit's shutdown may exit Python while deferred contexts unwind.
+            # Preserve the original startup fault before that teardown begins.
+            import traceback
+            write_json(self.output/'initialization_error.json', dict(
+                status='FAIL_INITIALIZATION', error=f'{type(error).__name__}: {error}',
+                traceback=traceback.format_exc(), **self.provenance))
+            record_memory(self.memory_log, 'reset_failed', error=f'{type(error).__name__}: {error}')
+            raise
         record_memory(self.memory_log, 'after_reset', attempt=len(self.attempts))
         index = len(self.attempts)
         rec = self.output/'recording'/f'attempt_{index:03d}'
@@ -231,8 +241,9 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
                 yield adapter
             except BaseException as error:
                 import traceback
-                write_json(output/'controller_error.json', dict(error=f'{type(error).__name__}: {error}',
-                                                               traceback=traceback.format_exc()))
+                if not isinstance(error, GeneratorExit):
+                    write_json(output/'controller_error.json', dict(error=f'{type(error).__name__}: {error}',
+                                                                   traceback=traceback.format_exc()))
                 raise
             finally:
                 adapter.finalize('WORKER_EXIT')

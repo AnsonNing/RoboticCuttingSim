@@ -12,6 +12,7 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path, PurePosixPath
+import traceback
 
 from .recording import write_json
 
@@ -84,16 +85,29 @@ def activate_offline_contact_extension(app, output):
     Activation is separate from valid post-physics sensor updates. The latter
     remain measured by NativeToolContacts and its original physical trace.
     """
-    import carb.eventdispatcher
-    import carb.settings
-    import omni.kit.registry.nucleus as registry
-    from .runtime_memory import record_memory
-
     output = Path(output)/"native_sensor_runtime_v1"
     output.mkdir(parents=True, exist_ok=True)
     receipt = dict(profile=PROFILE, timestamp_utc=datetime.now(timezone.utc).isoformat(),
-                   status="ACTIVATING", native_sensor_updates="NOT_RUN")
+                   status="ACTIVATING", activation_stage="IMPORT_KIT_BINDINGS", native_sensor_updates="NOT_RUN")
+    write_json(output/"activation.json", receipt)
     try:
+        import carb.eventdispatcher
+        import carb.settings
+        from .runtime_memory import record_memory
+
+        manager = app.get_extension_manager()
+        # This registry is registered but not started by the minimal experience.
+        # Kit exposes its Python module only after its extension is enabled.
+        receipt["activation_stage"] = "ENABLE_REGISTRY_EXTENSION"
+        write_json(output/"activation.json", receipt)
+        registry_enabled = manager.set_extension_enabled_immediate("omni.kit.registry.nucleus", True)
+        receipt["registry_activation_returned"] = bool(registry_enabled)
+        if not registry_enabled:
+            raise RuntimeError("Kit could not activate the installed nucleus registry extension")
+        receipt["activation_stage"] = "IMPORT_REGISTRY_MODULE"
+        import omni.kit.registry.nucleus as registry
+
+        receipt["activation_stage"] = "CONFIGURE_OFFLINE_REGISTRIES"
         receipt["isaacsim_version"] = importlib.metadata.version("isaacsim")
         receipt["kit_version"] = app.get_kit_version()
         kit_version = receipt["kit_version"]
@@ -129,7 +143,8 @@ def activate_offline_contact_extension(app, output):
         receipt["provider_urls"] = urls
         if any(urls[row["name"]] != row["url"]+"/v2" for row in registries):
             raise RuntimeError("Kit registry provider did not consume the offline URLs")
-        manager = app.get_extension_manager()
+        receipt["activation_stage"] = "ENABLE_CONTACT_EXTENSION"
+        write_json(output/"activation.json", receipt)
         enabled = manager.set_extension_enabled_immediate(SENSOR_EXTENSION, True)
         receipt["activation_returned"] = bool(enabled)
         if not enabled:
@@ -153,8 +168,10 @@ def activate_offline_contact_extension(app, output):
         from isaacsim.sensors.experimental.physics import Contact, ContactSensor
         receipt["module_classes"] = [Contact.__module__, ContactSensor.__module__]
         receipt["status"] = "PASS_EXTENSION_ENABLED"
+        receipt["activation_stage"] = "COMPLETE"
     except BaseException as error:
-        receipt.update(status="FAIL_EXTENSION_ACTIVATION", error=f"{type(error).__name__}: {error}")
+        receipt.update(status="FAIL_EXTENSION_ACTIVATION", error=f"{type(error).__name__}: {error}",
+                       traceback=traceback.format_exc())
         write_json(output/"activation.json", receipt)
         raise
     write_json(output/"activation.json", receipt)

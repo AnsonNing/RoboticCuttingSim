@@ -1,6 +1,7 @@
 import gzip
 import hashlib
 import json
+import builtins
 
 import pytest
 
@@ -47,3 +48,21 @@ def test_sensor_repair_is_explicit_and_versioned():
     assert IsaacSimCuttingConfig(native_sensor_runtime=runtime.PROFILE).native_sensor_runtime == runtime.PROFILE
     with pytest.raises(ValueError, match="native_sensor_runtime"):
         IsaacSimCuttingConfig(native_sensor_runtime="unversioned")
+
+
+def test_kit_import_failure_is_recorded_before_context_close(tmp_path, monkeypatch):
+    original_import = builtins.__import__
+
+    def importing(name, *args, **kwargs):
+        if name == "carb.eventdispatcher":
+            raise ModuleNotFoundError("deliberate unavailable Kit binding")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", importing)
+    with pytest.raises(ModuleNotFoundError, match="deliberate unavailable"):
+        runtime.activate_offline_contact_extension(object(), tmp_path)
+    receipt = json.loads((tmp_path/"native_sensor_runtime_v1/activation.json").read_text())
+    assert receipt["status"] == "FAIL_EXTENSION_ACTIVATION"
+    assert receipt["activation_stage"] == "IMPORT_KIT_BINDINGS"
+    assert "deliberate unavailable Kit binding" in receipt["error"]
+    assert "ModuleNotFoundError" in receipt["traceback"]
