@@ -12,6 +12,7 @@ from pathlib import Path
 import warp as wp
 from . import tlmpm_v5 as B, tlmpm_v7 as V, tlmpm_v7_1 as I
 from . import tlmpm_v7_2_contacts as H
+from . import tlmpm_v7_2_frontier as F
 from .tlmpm_v7_1 import _interface, _endpoint_work
 
 SOLVER_NAME='tlmpm_v7_2'
@@ -108,11 +109,14 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
 class TLMPM(I.TLMPM):
     solver_name=SOLVER_NAME
 
-    def __init__(self,*args,optimize_contacts=True,**kwargs):
+    def __init__(self,*args,optimize_contacts=True,optimize_frontier=True,**kwargs):
         super().__init__(*args,**kwargs)
         self.optimize_contacts = bool(optimize_contacts)
+        self.optimize_frontier = bool(optimize_frontier)
         if self.optimize_contacts:
             wp.load_module(module=H.__name__,device=self.device)
+        if self.optimize_frontier:
+            wp.load_module(module=F.__name__,device=self.device)
         wp.load_module(module=__name__,device=self.device)
 
     def step(self,advance=True):
@@ -124,7 +128,8 @@ class TLMPM(I.TLMPM):
             else:
                 _SHARED_V7_STEP(self,advance=False)
             wp.copy(self.link_codes,self.code)
-            wp.launch(_complete_links,self.n,[self.x_start,self.x,self.link_velocity_start,self.mass,
+            frontier_kernel = F._complete_links if self.optimize_frontier else _complete_links
+            wp.launch(frontier_kernel,self.n,[self.x_start,self.x,self.link_velocity_start,self.mass,
                 self.link_codes,self.code,self.front_reached,self.nodes,self.weights,self.gradients,
                 self.link_offsets,self.link_neighbours,self.poses,self.link_previous_pose,self.twists,self.cuts,
                 self.index,self.stroke,self.segment_ok,self.edge_segments,self.config.blade_half_width,
@@ -144,5 +149,10 @@ class TLMPM(I.TLMPM):
             'contact_execution':'skip_zero_reaction_atomics_v1' if self.optimize_contacts else 'original_v7',
             'contact_source_sha256':hashlib.sha256(Path(H.__file__).read_bytes()).hexdigest()
                 if self.optimize_contacts else None,
+            'optimize_frontier':self.optimize_frontier,
+            'frontier_execution':'hoisted_interface_v1' if self.optimize_frontier else 'original_v7_2',
+            'frontier_kernel':(F.__name__ if self.optimize_frontier else __name__)+'._complete_links',
+            'frontier_source_sha256':hashlib.sha256(Path(F.__file__).read_bytes()).hexdigest()
+                if self.optimize_frontier else None,
             'scope':'Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. '
                     'No general rotational CCD or physical calibration; original v7 CUT profile unchanged.'}

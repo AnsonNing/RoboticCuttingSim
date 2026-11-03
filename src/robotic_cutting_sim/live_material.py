@@ -42,8 +42,9 @@ class LiveCuttingMaterial:
         grid-consistent position update and is handled exactly as tlmpm_v5 here (packed codes, slots, recorders);
         its receipt adds ``tlmpm_v6`` (position update and source hashes).
 
-        ``v7_2_optimizations=False`` rolls tlmpm_v7_2 contact execution
-        back to the original path. True uses its adopted defaults; other solvers are unchanged.
+        ``v7_2_optimizations=False`` rolls tlmpm_v7_2 contact and frontier
+        execution back to the original paths. True uses both optimized defaults;
+        other solvers are unchanged.
 
         ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) attaches the read-only Hermite
         cut-event recorder (cut_events.CutEventRecorder) to every substep; its overflow raises after the
@@ -194,6 +195,7 @@ class LiveCuttingMaterial:
                 solver_kwargs["slots_per_node"] = self.slots_per_node
             if self.solver == 'tlmpm_v7_2' and not self.v7_2_optimizations:
                 solver_kwargs["optimize_contacts"] = False
+                solver_kwargs["optimize_frontier"] = False
 
         start = time.perf_counter()
         c = self.config
