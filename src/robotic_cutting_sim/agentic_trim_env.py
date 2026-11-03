@@ -13,6 +13,7 @@ import numpy as np
 from .policy_env import jsonable, load_episode_recorder
 from .scene_config import SceneInfeasible, configured_task_payload
 from .seeded_trim import GOAL_TEXT, VERSION, compile_seed
+from .runtime_memory import record_memory
 
 ROOT = Path(__file__).resolve().parents[2]
 CAMERAS = ('global_d455', 'wrist_d405_0')
@@ -45,10 +46,12 @@ class AgenticTrimEnv:
     the same scene and preserves the abandoned attempt as independent evidence.
     A reset before the first action is idempotent (the external worker resets too).
     """
-    def __init__(self, env, output, task, manifest, *, seed, evaluator_python=None):
+    def __init__(self, env, output, task, manifest, *, seed, evaluator_python=None,
+                 stream_physics=False, memory_log=None):
         self.env, self.output, self.task = env, Path(output), task
         self.manifest, self.seed = manifest, int(seed)
         self.evaluator_python = evaluator_python
+        self.stream_physics, self.memory_log = bool(stream_physics), memory_log
         self.started, self.finished, self.attempts = False, True, []
         self.total_steps = 0
         self.wall_start = time.perf_counter()
@@ -60,13 +63,18 @@ class AgenticTrimEnv:
             candidate_id=spec.get('ctx', {}).get('candidate_id') or
                          Path(spec.get('control', {}).get('path', 'diagnostic')).stem,
             agent_commit=spec.get('ctx', {}).get('agent_commit'),
-            controller_provenance='agent_candidate' if spec else 'environment_diagnostic',
-            split=spec.get('ctx', {}).get('split', 'diagnostic'), solver_version='tlmpm_v7_2')
+            controller_provenance=spec.get('ctx', {}).get('controller_provenance') or
+                                  ('agent_candidate' if spec else 'environment_diagnostic'),
+            parent_run=spec.get('ctx', {}).get('parent_run'),
+            split=spec.get('ctx', {}).get('split', 'diagnostic'), solver_version='tlmpm_v7_2',
+            physical_recording='streamed_physics_v1' if self.stream_physics else 'legacy_npz')
         try:
             self.provenance['solver_commit'] = subprocess.check_output(
-                ['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
-        except subprocess.CalledProcessError:
+                ['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True,
+                stderr=subprocess.PIPE, timeout=10).strip()
+        except (OSError, subprocess.SubprocessError) as error:
             self.provenance['solver_commit'] = None
+            self.provenance['solver_commit_error'] = f'{type(error).__name__}: {error}'
 
     @property
     def time_s(self):
@@ -79,12 +87,25 @@ class AgenticTrimEnv:
             return self.observe(), {'status': 'READY', 'timestamp_s': self.time_s}
         if self.started:
             self.finalize('RESET')
-        self.env.reset(seed=self.manifest['sim_seed'], controller='agentic control robot')
+        record_memory(self.memory_log, 'before_reset', attempt=len(self.attempts))
+        try:
+            self.env.reset(seed=self.manifest['sim_seed'], controller='agentic control robot')
+        except BaseException as error:
+            # Kit's shutdown may exit Python while deferred contexts unwind.
+            # Preserve the original startup fault before that teardown begins.
+            import traceback
+            write_json(self.output/'initialization_error.json', dict(
+                status='FAIL_INITIALIZATION', error=f'{type(error).__name__}: {error}',
+                traceback=traceback.format_exc(), **self.provenance))
+            record_memory(self.memory_log, 'reset_failed', error=f'{type(error).__name__}: {error}')
+            raise
+        record_memory(self.memory_log, 'after_reset', attempt=len(self.attempts))
         index = len(self.attempts)
         rec = self.output/'recording'/f'attempt_{index:03d}'
         rec.parent.mkdir(exist_ok=True)
         recorder, _ = load_episode_recorder()
-        self.env._recorder = recorder(rec, self.env.inner, 'agentic control robot', every=10)
+        options = {'stream_physics': True} if self.stream_physics else {}
+        self.env._recorder = recorder(rec, self.env.inner, 'agentic control robot', every=10, **options)
         self.env._recorder_finished = False
         self.current_recording = rec
         write_json(rec/'compiled_task.json', json.loads(configured_task_payload(self.task)))
@@ -133,6 +154,9 @@ class AgenticTrimEnv:
             raise RuntimeError('The total episode control-step budget is exhausted')
         _, _, terminated, truncated, info = self.env.step(action)
         self.total_steps += 1
+        if self.total_steps == 1 or self.total_steps % 100 == 0:
+            record_memory(self.memory_log, 'control_step', control_steps=self.total_steps,
+                          simulation_time_s=self.time_s)
         allowed = ('action_status', 'action_requested', 'action_executed', 'action_report',
                    'action_timestamp_s', 'timestamp_s', 'control_step', 'ik_status', 'termination_reason')
         public_info = {k: copy.deepcopy(info[k]) for k in allowed if k in info}
@@ -149,6 +173,8 @@ class AgenticTrimEnv:
         if not self.started or self.finished:
             return
         rec = self.current_recording
+        record_memory(self.memory_log, 'before_finalize', control_steps=self.total_steps,
+                      simulation_time_s=self.time_s)
         write_json(rec/'episode_receipt.json', {**self.provenance, 'reason': reason, 'home_status': 'NOT_RUN',
                    'wall_time_s': time.perf_counter()-self.wall_start, 'simulation_duration_s': self.time_s})
         try:
@@ -165,8 +191,11 @@ class AgenticTrimEnv:
         if not self.env._recorder_finished:
             self.env._refresh_cameras(force=True)
             self.env.finish_recording(dict(status='RECORDED', reason=reason, **self.provenance))
+        record_memory(self.memory_log, 'recording_finalized', simulation_time_s=self.time_s)
         # Evaluate and preserve results BEFORE SimulationApp.close may exit.
         result = independent_evaluate(rec, self.evaluator_python)
+        record_memory(self.memory_log, 'independent_evaluation_finished',
+                      evaluation_status=result.get('status'), success=bool(result.get('success')))
         write_json(rec/'evaluation.json', result)
         self.attempts[-1].update(status=result['status'], task_success=bool(result.get('success')))
         write_json(self.output/'recording'/'attempts.json', self.attempts)
@@ -181,29 +210,48 @@ class AgenticTrimEnv:
 
 
 @contextmanager
-def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id', evaluator_python=None):
+def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id', evaluator_python=None,
+             stream_physics=False, memory_receipts=False, native_sensor_runtime=None):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=False)
+    memory_log = output/'runtime_memory.jsonl' if memory_receipts else None
+    record_memory(memory_log, 'before_scene_compile')
     try:
         task, manifest = compile_seed(seed, policy_seed=policy_seed, sim_seed=sim_seed,
                                      distribution=distribution, output_dir=output/'scene')
     except SceneInfeasible as error:
         write_json(output/'scene_infeasible.json', dict(status='SCENE_INFEASIBLE', scene_seed=seed, reason=str(error)))
         raise
-    with open_cutting_env(runtime='isaac_sim', output_dir=output/'native', task=task, seed=sim_seed,
-            preset='cutting_research_v1', camera_rig_profile='wrist_camera_rig_v14', global_rgb_only=True,
-            active_camera_ids=CAMERAS, device='cuda:0', dx=.004, material_dt=.0001,
-            surface_update='on_capture', history_stride=10,
-            preset_overrides=dict(camera_every=10, gripper_control_mode='hold')) as env:
-        adapter = AgenticTrimEnv(env, output, task, manifest, seed=seed, evaluator_python=evaluator_python)
-        try:
-            yield adapter
-        except BaseException as error:
-            import traceback
-            write_json(output/'controller_error.json', dict(error=f'{type(error).__name__}: {error}',
-                                                           traceback=traceback.format_exc()))
-            raise
-        finally:
-            adapter.finalize('WORKER_EXIT')
+    record_memory(memory_log, 'scene_compiled', particle_count=manifest['particle_count'])
+    options = {'history_mode': 'latest'} if stream_physics else {}
+    if native_sensor_runtime is not None:
+        options['native_sensor_runtime'] = native_sensor_runtime
+    previous_log = os.environ.get('RCS_RUNTIME_MEMORY_LOG')
+    if memory_log:
+        os.environ['RCS_RUNTIME_MEMORY_LOG'] = str(memory_log)
+    try:
+        with open_cutting_env(runtime='isaac_sim', output_dir=output/'native', task=task, seed=sim_seed,
+                preset='cutting_research_v1', camera_rig_profile='wrist_camera_rig_v14', global_rgb_only=True,
+                active_camera_ids=CAMERAS, device='cuda:0', dx=.004, material_dt=.0001,
+                surface_update='on_capture', history_stride=10, **options,
+                preset_overrides=dict(camera_every=10, gripper_control_mode='hold')) as env:
+            adapter = AgenticTrimEnv(env, output, task, manifest, seed=seed,
+                evaluator_python=evaluator_python, stream_physics=stream_physics, memory_log=memory_log)
+            try:
+                yield adapter
+            except BaseException as error:
+                import traceback
+                if not isinstance(error, GeneratorExit):
+                    write_json(output/'controller_error.json', dict(error=f'{type(error).__name__}: {error}',
+                                                                   traceback=traceback.format_exc()))
+                raise
+            finally:
+                adapter.finalize('WORKER_EXIT')
+    finally:
+        if memory_log:
+            if previous_log is None:
+                os.environ.pop('RCS_RUNTIME_MEMORY_LOG', None)
+            else:
+                os.environ['RCS_RUNTIME_MEMORY_LOG'] = previous_log

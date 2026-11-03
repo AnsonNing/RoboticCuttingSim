@@ -20,6 +20,7 @@ def export_success(recording_dir):
     """
     from PIL import Image, ImageDraw
     from .agentic_trim_env import write_json
+    from .recording import physical_recording_paths
     rec = Path(recording_dir)
     result = json.loads((rec/'independent_evaluation.json').read_text())
     if not result.get('success'):
@@ -103,7 +104,8 @@ def export_success(recording_dir):
         simulation_duration_s=float(times[-1]), wall_time_s=receipt['wall_time_s'],
         mp4_path=str(movie.relative_to(rec)), mp4_sha256=sha256(movie), media_decode_status='PASS',
         capture_time_s=times.tolist(), original_frame_count=len(times), sources=sources, command=cmd,
-        recording_hashes={p.name: sha256(p) for p in (rec/'physics_state.npz', rec/'compiled_task.json',
-                                                   rec/'independent_evaluation.json', rec/'provenance.json')})
+        recording_hashes={str(p.relative_to(rec)): sha256(p) for p in
+            (*physical_recording_paths(rec), rec/'compiled_task.json',
+             rec/'independent_evaluation.json', rec/'provenance.json')})
     write_json(manifest_file, manifest)
     return manifest

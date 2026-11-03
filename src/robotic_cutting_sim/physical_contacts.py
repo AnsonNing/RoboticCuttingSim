@@ -108,7 +108,8 @@ class NativeToolContacts:
         import omni.kit.app
         from pxr import PhysicsSchemaTools, UsdGeom, UsdPhysics
         manager = omni.kit.app.get_app().get_extension_manager()
-        manager.set_extension_enabled_immediate("isaacsim.sensors.experimental.physics", True)
+        if not manager.set_extension_enabled_immediate("isaacsim.sensors.experimental.physics", True):
+            raise RuntimeError("Native contact sensor extension activation failed; see kit.log")
         from isaacsim.core.simulation_manager import SimulationManager
         from isaacsim.sensors.experimental.physics import Contact, ContactSensor
         if not math.isfinite(dt) or dt <= 0:

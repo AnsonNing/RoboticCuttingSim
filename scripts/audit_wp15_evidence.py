@@ -9,6 +9,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import math
 from pathlib import Path
 import subprocess
 import sys
@@ -18,6 +19,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from robotic_cutting_sim.seeded_trim import evaluate_recording
+from robotic_cutting_sim.recording import physical_recording_paths
 
 
 def sha256(path):
@@ -27,6 +29,29 @@ def sha256(path):
 
 def read_json(path):
     return json.loads(Path(path).read_text())
+
+
+def evaluations_match(stored, recomputed, path=()):
+    """Compare original decisions exactly; allow mass-sum reduction roundoff.
+
+    Native and file evaluators can differ by two float64 ULPs in the reported
+    total mass. Only that diagnostic allows four ULPs; outcome values, types,
+    statuses, booleans and structure must agree exactly. Neither score changes.
+    """
+    if type(stored) is not type(recomputed):
+        return False
+    if isinstance(stored, dict):
+        return stored.keys() == recomputed.keys() and all(
+            evaluations_match(value, recomputed[key], path + (key,))
+            for key, value in stored.items())
+    if isinstance(stored, list):
+        return len(stored) == len(recomputed) and all(
+            evaluations_match(a, b, path + (index,))
+            for index, (a, b) in enumerate(zip(stored, recomputed)))
+    if isinstance(stored, float) and path == ('integrity', 'metrics', 'recorded_mass_kg'):
+        return bool(math.isfinite(stored) and math.isfinite(recomputed) and
+                    abs(stored - recomputed) <= 4 * max(math.ulp(stored), math.ulp(recomputed)))
+    return stored == recomputed
 
 
 def discover(root):
@@ -94,7 +119,8 @@ def media_checks(rec, *, decode):
     checks['source_identity'] = all(manifest.get(k) == provenance.get(k) for k in identity)
     checks['independent_physical_result'] = bool(manifest.get('task_success') is True
         and manifest.get('physical_result') == read_json(rec / 'independent_evaluation.json'))
-    required_hashes = {'physics_state.npz', 'compiled_task.json', 'independent_evaluation.json', 'provenance.json'}
+    required_hashes = {p.relative_to(rec).as_posix() for p in physical_recording_paths(rec)} | {
+        'compiled_task.json', 'independent_evaluation.json', 'provenance.json'}
     checks['recording_hashes'] = required_hashes.issubset(manifest.get('recording_hashes', {}))
     for name, expected in manifest.get('recording_hashes', {}).items():
         if Path(name).name != name:
@@ -133,10 +159,15 @@ def audit_attempt(rec, *, decode=True, public=False):
         elif path.is_file():
             hashes[path.relative_to(rec).as_posix()] = sha256(path)
     result, provenance, cameras, media = {}, {}, {}, dict(status='NOT_REQUIRED')
+    evaluation_comparison = {}
     try:
         result = evaluate_recording(rec)
         stored = read_json(rec / 'independent_evaluation.json')
-        checks['stored_evaluation_matches'] = stored == result
+        checks['stored_evaluation_matches'] = evaluations_match(stored, result)
+        evaluation_comparison = dict(exact_match=stored == result,
+            recorded_mass_diagnostic_max_ulps=4,
+            stored_recorded_mass_kg=stored.get('integrity', {}).get('metrics', {}).get('recorded_mass_kg'),
+            recomputed_recorded_mass_kg=result.get('integrity', {}).get('metrics', {}).get('recorded_mass_kg'))
         provenance = read_json(rec / 'provenance.json')
         if provenance.get('controller_provenance') == 'agent_candidate':
             required = ('scene_seed', 'policy_seed', 'sim_seed', 'scene_hash', 'solver_commit',
@@ -157,13 +188,15 @@ def audit_attempt(rec, *, decode=True, public=False):
                                       for name, digest in hashes.items())
     checks['recording_unchanged'] &= set(hashes) == {
         p.relative_to(rec).as_posix() for p in rec.rglob('*') if p.is_file() and not p.is_symlink()}
-    checks['raw_physics_present'] = 'physics_state.npz' in hashes
+    checks['raw_physics_present'] = all(p.relative_to(rec).as_posix() in hashes
+                                        for p in physical_recording_paths(rec))
     provenance = {key: provenance.get(key) for key in ('scene_seed', 'policy_seed', 'sim_seed', 'scene_hash',
         'solver_commit', 'solver_version', 'agent_commit', 'candidate_id', 'controller_sha256',
         'controller_provenance', 'split', 'agent_success_eligible')}
     return dict(audit_status='PASS' if checks and all(checks.values()) and not errors else 'FAIL',
         checks=checks, errors=errors, provenance=provenance, physical_status=result.get('status', 'NOT_RUN'),
         task_success=bool(result.get('success')), integrity=result.get('integrity', {}),
+        evaluation_comparison=evaluation_comparison,
         outcome=result.get('outcome', {}), quality=result.get('quality', {}),
         home_status=result.get('home_status', 'NOT_RUN'), raw_cameras=cameras, success_media=media,
         file_sha256=hashes)

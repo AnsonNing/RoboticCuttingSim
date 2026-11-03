@@ -17,7 +17,7 @@ from .tasks import ACTION_MODES, make_task
 OBSERVATION_PROFILES = ("vision_proprio", "vision_only", "state")
 IK_FAILURE_MODES = ("raise", "reject")
 WRAPPER_OPTIONS = ("action_limits", "delta_frame", "ik_failure", "max_consecutive_ik_failures", "reward", "history_stride",
-                   "expose_episode_state")
+                   "history_mode", "expose_episode_state")
 
 
 class CuttingTaskEnv:
@@ -50,7 +50,7 @@ class CuttingTaskEnv:
     def __init__(self, backend, task_id=None, *, seed=42, action_mode=ACTION_MODES[0],
                  observation_profile="vision_proprio", include_global_camera=False,
                  action_limits=None, delta_frame="edge", ik_failure="raise",
-                 max_consecutive_ik_failures=None, reward=None, history_stride=1, task=None,
+                 max_consecutive_ik_failures=None, reward=None, history_stride=1, history_mode="full", task=None,
                  expose_episode_state=False):
         if (action_mode not in ACTION_MODES+(DELTA_MODE,) or observation_profile not in OBSERVATION_PROFILES
                 or delta_frame not in DELTA_FRAMES or ik_failure not in IK_FAILURE_MODES):
@@ -59,7 +59,10 @@ class CuttingTaskEnv:
             raise ValueError("max_consecutive_ik_failures must be positive or None")
         if not isinstance(history_stride, (int, np.integer)) or history_stride < 1:
             raise ValueError('History stride must be a positive integer')
+        if history_mode not in ("full", "latest"):
+            raise ValueError('History mode must be full or latest')
         self.history_stride, self._control_steps_count = int(history_stride), 0
+        self.history_mode = history_mode
         # ``task``: an explicit task object (e.g. a compiled ConfiguredTaskSpec) for runtimes
         # that build their task at reset; otherwise the backend's task or the registered id.
         self.task = task or getattr(backend, "task", None) or make_task(task_id, seed=seed)
@@ -171,8 +174,14 @@ class CuttingTaskEnv:
             return
         material = self.backend.material
         state = (material.history_state() if hasattr(material, 'history_state') else material.world_state())
-        self._history.append({"time_s": self.time_s,
-            **{name: state[name].copy() for name in ("positions", "velocities", "codes")}})
+        sample = {"time_s": self.time_s,
+            **{name: state[name].copy() for name in ("positions", "velocities", "codes")}}
+        if getattr(self, 'history_mode', 'full') == "latest":
+            # An opt-in streamed recorder consumes this exact sampled state.
+            # Full history remains the default for live evaluate().
+            self._history[:] = [sample]
+        else:
+            self._history.append(sample)
 
     def step(self, action=None):
         self._require_ready()
@@ -456,6 +465,10 @@ class CuttingTaskEnv:
         and the report says so).
         """
         self._require_ready()
+        if getattr(self, 'history_mode', 'full') == "latest":
+            return {"task_id": self.task.task_id, "status": "NOT_RUN", "success": False,
+                    "episode_complete": False, "reason": "Bounded material history; evaluate the persisted recording",
+                    "runtime_source": self.runtime_source}
         if len(self._history) < 2:
             return {"task_id": self.task.task_id, "status": "NOT_RUN", "success": False,
                     "episode_complete": False, "reason": "No physical step recorded since reset",

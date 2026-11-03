@@ -103,8 +103,12 @@ class IsaacSimCuttingConfig:
     # whose goal evaluators use the surface as quality evidence only, and to "raise" (the v1 behaviour, as on
     # main) for everything else (legacy D0, CUT/TRIM and final_v4 tasks). setup.json records the resolved value.
     surface_unmeshable: str | None = None
+    # Opt-in task runtime repair; extension code, dependency metadata and physics stay unchanged.
+    native_sensor_runtime: str | None = None
 
     def __post_init__(self):
+        if self.native_sensor_runtime not in (None, "isaac62_physx_offline_v1"):
+            raise ValueError("Unknown native_sensor_runtime profile")
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
             raise ValueError("Unknown tool attachment mode; no implicit fixed-tool fallback")
         if self.tool_init_mode not in ("pregrasped", "free", "pickup"):
@@ -396,6 +400,10 @@ class LiveIsaacSimCutting:
         self.home = None  # declared HOME (WP-11 Phase D), set at reset
 
     def reset(self,seed=None):
+        if self.config.native_sensor_runtime is not None and not hasattr(self, "contact_extension_runtime"):
+            import omni.kit.app
+            from .native_sensor_runtime import activate_offline_contact_extension
+            self.contact_extension_runtime = activate_offline_contact_extension(omni.kit.app.get_app(), self.output)
         import omni.timeline
         import omni.usd
         import warp as wp

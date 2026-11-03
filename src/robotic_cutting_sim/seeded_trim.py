@@ -121,6 +121,7 @@ def evaluate_recording(recording_dir):
     original mechanical graph, including unassigned (code-zero) bridges.
     """
     from .scene_config import task_from_payload
+    from .recording import load_physics_recording
     out = Path(recording_dir)
     if (out/'attempts.json').exists():
         attempts = json.loads((out/'attempts.json').read_text())
@@ -135,17 +136,36 @@ def evaluate_recording(recording_dir):
         return {**results[-1], 'attempt_count': len(results),
                 'attempt_outcomes': [dict(status=r['status'], success=bool(r.get('success'))) for r in results]}
     task = task_from_payload(json.loads((out/'compiled_task.json').read_text()))
-    with np.load(out/'physics_state.npz', allow_pickle=False) as source:
-        data = {key: source[key] for key in source.files}
+    data, checkpoint = load_physics_recording(out)
     if len(data['time_s']) < 2 or data['time_s'][-1] <= 0:
-        return dict(status='NOT_RUN', success=False, reason='No physical transition recorded')
+        return dict(status='NOT_RUN', success=False, reason='No physical transition recorded',
+                    **({'recording_completion': checkpoint} if checkpoint is not None else {}))
     data.update(code_encoding='packed2', max_cuts=2, particle_spacing_m=task.particle_spacing_m)
     if (out/'surface_state.npz').exists():
         with np.load(out/'surface_state.npz', allow_pickle=False) as source:
             data.update({key: source[key] for key in source.files})
     result = task.evaluate_goal(data)
+    completion = {}
+    if checkpoint is not None:
+        # These are recording-I/O checks. The original physical graph, metrics
+        # and thresholds above remain unchanged, even for interrupted prefixes.
+        integrity = result['integrity']
+        checks = {**integrity.get('checks', {}),
+                  'stream_finalized': checkpoint['finalized'] is True,
+                  'stream_complete': checkpoint['complete'] is True}
+        result['integrity'] = {**integrity, 'checks': checks,
+            'status': 'PASS' if integrity['status'] == 'PASS' and all(checks.values()) else 'FAIL'}
+        if result['integrity']['status'] != 'PASS':
+            result.update(verdict='FAIL_INTEGRITY', success=False)
+        completion = dict(recording_format=checkpoint['schema'],
+            recording_completion={key: checkpoint[key] for key in
+                ('sample_count', 'first_time_s', 'last_time_s', 'finalized', 'complete')})
+    receipt = out/'episode_receipt.json'
+    home_status = (json.loads(receipt.read_text()).get('home_status', 'NOT_RUN')
+                   if receipt.exists() or checkpoint is None else 'NOT_RUN')
     return {**result, 'status': result['verdict'], 'success': bool(result.get('success', False)),
+            **completion,
             'evaluator_version': VERSION, 'task_id': task.task_id,
             'simulation_duration_s': float(data['time_s'][-1]),
             'surface_quality_status': 'MEASURED' if (out/'surface_state.npz').exists() else 'NOT_RUN_MESH_NOT_EXPORTED',
-            'home_status': json.loads((out/'episode_receipt.json').read_text()).get('home_status', 'NOT_RUN')}
+            'home_status': home_status}
