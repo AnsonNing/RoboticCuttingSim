@@ -4,6 +4,7 @@ import argparse
 from contextlib import contextmanager
 from dataclasses import asdict, replace
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -17,7 +18,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from robotic_cutting_sim.control import ActionLimits, DELTA_MODE
 from robotic_cutting_sim.live_env import open_cutting_env
 from robotic_cutting_sim.policy_config import policy_preset
-from robotic_cutting_sim.recording import manifest, new_output, write_json
+from robotic_cutting_sim.recording import PhysicsStreamWriter, manifest, new_output, write_json
 
 
 def jsonable(value):
@@ -71,12 +72,22 @@ def save_surface_snapshot(backend, output, index, timestamp):
 
 class EpisodeRecorder:
     """Raw RGB-D, poses, commands and actual material history, with fresh names."""
-    def __init__(self, output, env, controller, every=10, *, save_surfaces=False):
+    def __init__(self, output, env, controller, every=10, *, save_surfaces=False, stream_physics=False):
         self.output, self.env, self.controller, self.every = Path(output), env, controller, every
         self.save_surfaces=save_surfaces
         self.output.mkdir(exist_ok=False)
         (self.output / 'observations').mkdir()
         self.rows, self.samples, self.states, self.errors, self.rotation_errors = [], [], [], [], []
+        self.physics_stream = None
+        if stream_physics:
+            material = env.backend.material
+            reference = dict(mass_kg=material.masses, reference_positions=material.world_points,
+                reference_positions_local=material.points, reference_indices=material.lattice,
+                reference_stencil_nodes=material.bed.nodes.numpy(),
+                reference_stencil_weights=material.bed.weights.numpy(),
+                reference_stencil_gradients=material.bed.gradients.numpy())
+            self.physics_stream = PhysicsStreamWriter(self.output, reference,
+                expected_duration_s=env.task.duration_s)
         self.body_states = [self.body_poses()]
         self.events = dict(rejected=0, clamped=0, cutting_steps=0)
         self.steps = 0
@@ -140,8 +151,18 @@ class EpisodeRecorder:
                               cut_enabled=getattr(self, 'last_cut', False)))
         if getattr(self,'save_surfaces',False):
             save_surface_snapshot(backend,self.output,index,env.time_s)
-        state = backend.material.history_state()
-        self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
+        if getattr(self, 'physics_stream', None) is None:
+            state = backend.material.history_state()
+            self.samples.append({key: state[key].copy() for key in ('positions', 'velocities', 'codes')})
+        else:
+            history = getattr(env, '_history', ())
+            state = history[-1] if history and history[-1]['time_s'] == env.time_s else backend.material.history_state()
+            self.physics_stream.append(env.time_s, state)
+            count = self.physics_stream.checkpoint['sample_count']
+            if count == 1 or count % 10 == 0:
+                from robotic_cutting_sim.runtime_memory import record_memory
+                record_memory(os.environ.get('RCS_RUNTIME_MEMORY_LOG'), 'physics_capture',
+                              sample_count=count, simulation_time_s=env.time_s)
         self.states.append(jsonable(self.measured()))
         if getattr(self, "surface_selection", None) is not None:
             row = backend.surface_frame()
@@ -225,15 +246,18 @@ class EpisodeRecorder:
         env, material = self.env, self.env.backend.material
         if self.rows[-1]['time_s'] != env.time_s:
             self.capture()
-        samples = self.samples
-        np.savez_compressed(self.output / 'physics_state.npz',
-            time_s=[row['time_s'] for row in self.rows],
-            **{key: np.asarray([s[key] for s in samples]) for key in ('positions', 'velocities', 'codes')},
-            mass_kg=material.masses, reference_positions=material.world_points,
-            reference_positions_local=material.points, reference_indices=material.lattice,
-            reference_stencil_nodes=material.bed.nodes.numpy(),
-            reference_stencil_weights=material.bed.weights.numpy(),
-            reference_stencil_gradients=material.bed.gradients.numpy(), **self.phase_arrays())
+        if getattr(self, 'physics_stream', None) is None:
+            samples = self.samples
+            np.savez_compressed(self.output / 'physics_state.npz',
+                time_s=[row['time_s'] for row in self.rows],
+                **{key: np.asarray([s[key] for s in samples]) for key in ('positions', 'velocities', 'codes')},
+                mass_kg=material.masses, reference_positions=material.world_points,
+                reference_positions_local=material.points, reference_indices=material.lattice,
+                reference_stencil_nodes=material.bed.nodes.numpy(),
+                reference_stencil_weights=material.bed.weights.numpy(),
+                reference_stencil_gradients=material.bed.gradients.numpy(), **self.phase_arrays())
+        elif phases := self.phase_arrays():
+            np.savez_compressed(self.output / 'physics_phases.npz', **phases)
         write_json(self.output / 'robot_state.json', self.states)
         backend = env.backend
         body_paths = getattr(backend, 'rigid_link_paths', None)
@@ -264,6 +288,8 @@ class EpisodeRecorder:
                        rotation_error_rad={key: float(value) for key, value in zip(
                            ('p50', 'p95', 'max'), np.percentile(self.rotation_errors or [0.], [50, 95, 100]))})
         write_json(self.output / 'result.json', {**result, **metrics})
+        if getattr(self, 'physics_stream', None) is not None:
+            self.physics_stream.finalize()
         return metrics
 
 
