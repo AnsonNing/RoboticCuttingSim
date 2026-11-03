@@ -1,0 +1,1149 @@
+{
+  "full_episode_performance": {
+    "512": {
+      "baseline_wall_s": 621.6069238419877,
+      "optimized_wall_s": 375.65302066601,
+      "speedup": 1.6547369238237895,
+      "baseline_episodes_per_gpu_hour": 5.791441282135909,
+      "optimized_episodes_per_gpu_hour": 9.583311731707678
+    },
+    "15": {
+      "baseline_wall_s": 412.60419764602557,
+      "optimized_wall_s": 390.3056334370049,
+      "speedup": 1.0571310334741035,
+      "baseline_episodes_per_gpu_hour": 8.725068771812282,
+      "optimized_episodes_per_gpu_hour": 9.223540967878543
+    }
+  },
+  "pooled": {
+    "seeds": [
+      512,
+      15
+    ],
+    "complete_two_seed_pair": true,
+    "baseline_total_s": 1034.2111214880133,
+    "optimized_total_s": 765.9586541030149,
+    "pooled_time_ratio": 1.3502179470759277,
+    "pooled_time_reduction_percent": 25.937882682893544,
+    "baseline_episodes_per_gpu_hour": 6.9618280546439175,
+    "optimized_episodes_per_gpu_hour": 9.39998518383691
+  },
+  "scope": "Two previously exposed frozen C3 engineering scenes; no held-out success rate or policy-training throughput claim",
+  "baseline": "WP16 optimized, both WP16 options enabled",
+  "optimized_implementation_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+  "baseline_implementation_commit": "0e92f1d917b8117faf2426b168ff25e151ae6d79",
+  "controller": {
+    "name": "trim_skim_c3",
+    "consumer": "agentic control robot",
+    "commit": "87e2a5642d4642ad3b09384e176530cc2603e2d0",
+    "sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506"
+  },
+  "original_evaluator_sha256": "983fa7048cb296a647e77ce0f376988a0922c83b20dd3e35bf67579281f9b55f",
+  "fixed_settings": {
+    "scene_seeds": [
+      512,
+      15
+    ],
+    "simulation_seed": 42,
+    "solver": "tlmpm_v7_2",
+    "particle_spacing_m": 0.001,
+    "grid_spacing_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_dt_s": 0.02,
+    "material_substeps_per_action": 200,
+    "robot_substeps_per_action": 10,
+    "actions": 1200,
+    "simulated_episode_s": 24,
+    "surface_update": "on_capture",
+    "camera_rig_profile": "wrist_camera_rig_v14",
+    "camera_ids": [
+      "global_d455",
+      "wrist_d405_0"
+    ],
+    "global_rgb_only": true,
+    "physical_grasp": true,
+    "bidirectional_physx_reaction": true,
+    "v7_2_optimizations": true,
+    "material_diagnostics": "device_reduction_v1"
+  },
+  "versions": {
+    "newton": "1.6.1",
+    "warp-lang": "1.17.0",
+    "numpy": "2.3.1",
+    "scipy": "1.17.0",
+    "isaaclab": null,
+    "isaacsim": "6.2.0.0",
+    "torch": "2.11.0+cu128",
+    "usd-core": null,
+    "mujoco": "3.12.0",
+    "mujoco-warp": "3.12.0",
+    "newton-usd-schemas": "0.5.0",
+    "ovrtx": null,
+    "ovstage": null
+  },
+  "timing_boundary": "Identical timing wrapper factory entry before scene/app/reset through finalize_end, including original recording, internal independent evaluation and full success MP4 export. Outer process and external verification are separate.",
+  "timing_wrapper_sha256": "b1a9377fedd364f248f2e8e131cd1ae17f2d436d8d9ffd2992b3411e376547b7",
+  "source_sha256": {
+    "src/robotic_cutting_sim/isaac_sim_runner.py": "7ed74a616f043ccdc7c1b18a9587fbcb7664e7016c543cac5755249d79cc447f",
+    "src/robotic_cutting_sim/live_material.py": "58466e5a1f974c3c433aace2895ad7577e93fb59e376ad4f508969bad86dffb7",
+    "src/robotic_cutting_sim/material_diagnostics.py": "57e48aa3c2ecec092d7079dd5c81be41d2d602b8d188097a7e6b3bc8695165db",
+    "src/robotic_cutting_sim/tlmpm_v7_2.py": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+    "src/robotic_cutting_sim/tlmpm_v7_2_contacts.py": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+    "src/robotic_cutting_sim/tlmpm_v7_2_frontier.py": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+  },
+  "episodes": {
+    "baseline": {
+      "512": {
+        "full_episode_wall_s": 621.6069238419877,
+        "episodes_per_gpu_hour": 5.791441282135909,
+        "source_commit": "0e92f1d917b8117faf2426b168ff25e151ae6d79",
+        "artifact_directory": "wp16/artifacts/native_optimized_001/seed_512",
+        "raw_recording": "box/env/recording/attempt_000",
+        "timing": {
+          "factory_to_finalize_s": 621.6069238419877,
+          "episodes_per_gpu_hour": 5.791441282135909,
+          "simulated_seconds_per_wall_second": 0.03860960854757273,
+          "startup_to_first_step_s": 70.66729160599061,
+          "step_call_total_s": 537.871154810302,
+          "step_interval_s": 538.8384019450168,
+          "finalize_s": 12.020980159984902,
+          "internal_evaluation_s": 2.3682595360151026,
+          "media_s": 8.685048393992474,
+          "snapshot_auxiliary_s": 0,
+          "control_step_total_s": 536.7525998377823,
+          "graph_total_s": 388.7145845099294
+        },
+        "outer_native_process_wall_s": 626.946,
+        "identity": {
+          "scene_hash": "0b67cc00549f0bc7268442264696fad4807bf5556449e79f129a116f8cba03a9",
+          "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+          "solver_hash": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707",
+          "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+          "compiled_task_sha256": "d3054a69b28443390414731a14b48dbe8001e57d67a3b73e39253418c3456f2d"
+        },
+        "configuration_sha256": "6c646f90160e23b64e4c38e26de9c2ef8e0eb9f97077a4ad850d5a7de30b7d4e",
+        "solver_execution": {
+          "contact": "skip_zero_reaction_atomics_v1",
+          "frontier": "original_complete_links",
+          "optimize_contacts": true,
+          "optimize_frontier": false
+        },
+        "integrity": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "initial_components": 1,
+            "nonzero_digit_rewrites": 0,
+            "code_encoding": "packed2",
+            "cuts": 2,
+            "frames": 121,
+            "particles": 102732,
+            "recorded_mass_kg": 0.15409799999999996,
+            "reference_mass_absolute_error_kg": 0.0
+          }
+        },
+        "outcome": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "mechanical_components": 2,
+            "plane_local_z_m": 0.02,
+            "largest_component_below_plane_mass_share": 0.9999999999991656,
+            "detached_below_plane_mass_fraction": 0.0,
+            "reference_substrate_component_ids": [
+              0
+            ],
+            "items": [
+              {
+                "id": "p0",
+                "selected": true,
+                "reference_particles_above_plane": 332,
+                "reference_mass_above_plane_kg": 0.000498,
+                "removed_mass_fraction": 1.0,
+                "pass": true,
+                "residual_substrate_height_m": 0.0
+              }
+            ],
+            "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+          }
+        },
+        "quality": {
+          "status": "REPORTED_NOT_SCORED",
+          "residual_substrate_height_m": {
+            "p0": 0.0
+          },
+          "surface": {
+            "status": "MEASURED",
+            "scope": "Frozen TRIM surface metrics, reported as quality only",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              32
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0,
+            "surface_p95_absolute_plane_error_m": 0.0004833697910246225,
+            "surface_rms_plane_error_m": 0.0001735389149699079,
+            "maximum_gouge_depth_m": 0.0014020956851701315,
+            "overcut_volume_m3": 7.224132052157224e-07,
+            "overcut_volume_fraction_of_initial_base": 0.007054816457184788
+          }
+        },
+        "home": "NOT_RUN",
+        "recording": {
+          "format": "physical_state_stream_v1",
+          "samples": 121,
+          "complete": true,
+          "finalized": true,
+          "mass": {
+            "particles": 102732,
+            "retained_stream_particle_count": 102732,
+            "total_reference_mass_kg": 0.15409799999999996,
+            "mass_array_sha256": "6fc209056042846f942f1f7eef5fb383b178c01d857414992fbd12317979dce1"
+          },
+          "code_bits_monotone": true,
+          "final_codes_sha256": "83bef9f653dcdde8120fcd4748bee30c38f6ba89721d73109c7f5b867e0f3e76",
+          "all_code_samples_sha256": "7c31d3b2c44c80dd41a5f9f7f96ac163810107931b3972809c0755c9ab699298",
+          "final_labelled_particles": 33692,
+          "final_unique_codes": [
+            0,
+            1,
+            2
+          ]
+        },
+        "numerical": {
+          "recorded_extrema_finite": true,
+          "minimum_detF_positive": true,
+          "minimum_detF": 0.9101927280426025,
+          "maximum_material_speed_m_s": 0.45211002230644226,
+          "maximum_plastic_strain": 0.8889166116714478
+        },
+        "robot": {
+          "actions": 1200,
+          "cut_executions": 141,
+          "rejected": 0,
+          "grasp_status_counts": {
+            "HOLDING": 1200
+          },
+          "grasp_lost_steps": 0,
+          "invalid_grasp_contact_steps": 0,
+          "maximum_grasp_slip_m": 7.153670938611071e-07,
+          "maximum_grasp_rotation_rad": 7.077249759993415e-05,
+          "minimum_bilateral_loaded_tool_fraction": 1.0,
+          "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+          "secondary_command_max_change_rad": 0.0
+        },
+        "grasp_reset_status": "PASS_STABLE_GRASP",
+        "contacts": {
+          "recorded_statistics_finite": true,
+          "control_steps_with_blade_contact": 100,
+          "control_steps_with_particle_contact": 49,
+          "statistics_max": [
+            0.00024179724277928472,
+            7827.0,
+            1.304442139371531e-05,
+            0.00010523904347792268,
+            4379.0,
+            0.00016050921112764627,
+            0.00035127223236486316
+          ],
+          "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+        },
+        "observed_resources": {
+          "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+          "host_rss_mib": {
+            "min": 6090.37890625,
+            "max": 6561.90625
+          },
+          "gpu_job_mib": {
+            "min": 5052.0,
+            "max": 5350.0
+          },
+          "gpu1_other_memory_mib": {
+            "min": 47.0,
+            "max": 47.0
+          },
+          "competing_gpu1_compute_pid_count": 0
+        },
+        "success_media": {
+          "status": "PASS",
+          "decode_status": "PASS",
+          "mp4_sha256": "d5b6e5eb1fe71570233dc71a4021a28d293b4036274999272a0f50773c805559",
+          "mp4_path": "media_000/episode.mp4",
+          "all_original_raw_source_time_checks_pass": true
+        },
+        "gpu_guard": "PASS",
+        "audit_status": "PASS",
+        "all_read_only_audit_checks_pass": true
+      },
+      "15": {
+        "full_episode_wall_s": 412.60419764602557,
+        "episodes_per_gpu_hour": 8.725068771812282,
+        "source_commit": "0e92f1d917b8117faf2426b168ff25e151ae6d79",
+        "artifact_directory": "wp16/artifacts/native_optimized_001/seed_15",
+        "raw_recording": "box/env/recording/attempt_000",
+        "timing": {
+          "factory_to_finalize_s": 412.60419764602557,
+          "episodes_per_gpu_hour": 8.725068771812282,
+          "simulated_seconds_per_wall_second": 0.05816712514541521,
+          "startup_to_first_step_s": 70.46197986800689,
+          "step_call_total_s": 328.6918393796659,
+          "step_interval_s": 329.6589346409892,
+          "finalize_s": 12.403989225014811,
+          "internal_evaluation_s": 2.468635514000198,
+          "media_s": 8.91393723001238,
+          "snapshot_auxiliary_s": 0,
+          "control_step_total_s": 327.60147543333005,
+          "graph_total_s": 173.8456128759717
+        },
+        "outer_native_process_wall_s": 417.821,
+        "identity": {
+          "scene_hash": "30beffb71ca5be34934a88398207875d93a6c6058178ab0a0f69d7043755d921",
+          "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+          "solver_hash": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707",
+          "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+          "compiled_task_sha256": "7abab37e2470628a611686b2cd36ed6e272e6e5addd9d39f6927dda6c62b8f00"
+        },
+        "configuration_sha256": "47b1289a5e03c113cd066995a90fce2dcc6489a9fb23b1647186933d8e041cba",
+        "solver_execution": {
+          "contact": "skip_zero_reaction_atomics_v1",
+          "frontier": "original_complete_links",
+          "optimize_contacts": true,
+          "optimize_frontier": false
+        },
+        "integrity": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "initial_components": 1,
+            "nonzero_digit_rewrites": 0,
+            "code_encoding": "packed2",
+            "cuts": 2,
+            "frames": 121,
+            "particles": 103898,
+            "recorded_mass_kg": 0.15584699999999996,
+            "reference_mass_absolute_error_kg": 0.0
+          }
+        },
+        "outcome": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "mechanical_components": 3,
+            "plane_local_z_m": 0.02,
+            "largest_component_below_plane_mass_share": 0.9999999999991656,
+            "detached_below_plane_mass_fraction": 0.0,
+            "reference_substrate_component_ids": [
+              0
+            ],
+            "items": [
+              {
+                "id": "p0",
+                "selected": true,
+                "reference_particles_above_plane": 495,
+                "reference_mass_above_plane_kg": 0.0007424999999999999,
+                "removed_mass_fraction": 1.0,
+                "pass": true,
+                "residual_substrate_height_m": 0.0
+              },
+              {
+                "id": "p1",
+                "selected": true,
+                "reference_particles_above_plane": 1003,
+                "reference_mass_above_plane_kg": 0.0015044999999999998,
+                "removed_mass_fraction": 1.0,
+                "pass": true,
+                "residual_substrate_height_m": 0.0
+              }
+            ],
+            "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+          }
+        },
+        "quality": {
+          "status": "REPORTED_NOT_SCORED",
+          "residual_substrate_height_m": {
+            "p0": 0.0,
+            "p1": 0.0
+          },
+          "surface": {
+            "status": "MEASURED",
+            "scope": "Frozen TRIM surface metrics, reported as quality only",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              32
+            ],
+            "valid_surface_fraction": 0.999609375,
+            "missing_surface_fraction": 0.0003906249999999778,
+            "maximum_substrate_surface_residual_height_m": 2.5137673866127558e-05,
+            "surface_p95_absolute_plane_error_m": 0.00048606138756430994,
+            "surface_rms_plane_error_m": 0.00018827163092203342,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 7.923039634919447e-07,
+            "overcut_volume_fraction_of_initial_base": 0.0077373433934760216
+          }
+        },
+        "home": "NOT_RUN",
+        "recording": {
+          "format": "physical_state_stream_v1",
+          "samples": 121,
+          "complete": true,
+          "finalized": true,
+          "mass": {
+            "particles": 103898,
+            "retained_stream_particle_count": 103898,
+            "total_reference_mass_kg": 0.155847,
+            "mass_array_sha256": "460a259c788152247994964c6d5558307ea1b42d591da9bdc2b0beba9d543357"
+          },
+          "code_bits_monotone": true,
+          "final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+          "all_code_samples_sha256": "ae9d1997d41515e8524727a99578f52d79bd684074e707905c745fdd67e7a6e1",
+          "final_labelled_particles": 85786,
+          "final_unique_codes": [
+            0,
+            1,
+            2
+          ]
+        },
+        "numerical": {
+          "recorded_extrema_finite": true,
+          "minimum_detF_positive": true,
+          "minimum_detF": 0.8438251614570618,
+          "maximum_material_speed_m_s": 0.5382744669914246,
+          "maximum_plastic_strain": 1.2390124797821045
+        },
+        "robot": {
+          "actions": 1200,
+          "cut_executions": 287,
+          "rejected": 0,
+          "grasp_status_counts": {
+            "HOLDING": 1200
+          },
+          "grasp_lost_steps": 0,
+          "invalid_grasp_contact_steps": 0,
+          "maximum_grasp_slip_m": 8.596875629887718e-07,
+          "maximum_grasp_rotation_rad": 9.517246357509875e-05,
+          "minimum_bilateral_loaded_tool_fraction": 1.0,
+          "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+          "secondary_command_max_change_rad": 0.0
+        },
+        "grasp_reset_status": "PASS_STABLE_GRASP",
+        "contacts": {
+          "recorded_statistics_finite": true,
+          "control_steps_with_blade_contact": 248,
+          "control_steps_with_particle_contact": 519,
+          "statistics_max": [
+            0.0002101658028550446,
+            16187.0,
+            2.1994957933202386e-05,
+            0.00014513431233353913,
+            20290.0,
+            0.00150920613668859,
+            0.0007344570476561785
+          ],
+          "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+        },
+        "observed_resources": {
+          "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+          "host_rss_mib": {
+            "min": 6030.40234375,
+            "max": 6506.0546875
+          },
+          "gpu_job_mib": {
+            "min": 5052.0,
+            "max": 5638.0
+          },
+          "gpu1_other_memory_mib": {
+            "min": 47.0,
+            "max": 47.0
+          },
+          "competing_gpu1_compute_pid_count": 0
+        },
+        "success_media": {
+          "status": "PASS",
+          "decode_status": "PASS",
+          "mp4_sha256": "4c78534b861547f797f41678bdfef3e5772decf8e4df907616939ca7bc3aafe6",
+          "mp4_path": "media_000/episode.mp4",
+          "all_original_raw_source_time_checks_pass": true
+        },
+        "gpu_guard": "PASS",
+        "audit_status": "PASS",
+        "all_read_only_audit_checks_pass": true
+      }
+    },
+    "optimized": {
+      "512": {
+        "full_episode_wall_s": 375.65302066601,
+        "episodes_per_gpu_hour": 9.583311731707678,
+        "source_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+        "artifact_directory": "wp17/artifacts/native_optimized_001/seed_512",
+        "raw_recording": "box/env/recording/attempt_000",
+        "timing": {
+          "factory_to_finalize_s": 375.65302066601,
+          "episodes_per_gpu_hour": 9.583311731707678,
+          "simulated_seconds_per_wall_second": 0.06388874487805118,
+          "startup_to_first_step_s": 65.97386552600074,
+          "step_call_total_s": 297.00342706480296,
+          "step_interval_s": 297.9194298410148,
+          "finalize_s": 11.681046820012853,
+          "internal_evaluation_s": 2.3184860970068257,
+          "media_s": 8.42383754698676,
+          "snapshot_auxiliary_s": 0,
+          "control_step_total_s": 295.98420416007866,
+          "graph_total_s": 154.61807869467884
+        },
+        "outer_native_process_wall_s": 380.926,
+        "identity": {
+          "scene_hash": "0b67cc00549f0bc7268442264696fad4807bf5556449e79f129a116f8cba03a9",
+          "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+          "solver_hash": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707",
+          "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+          "compiled_task_sha256": "d3054a69b28443390414731a14b48dbe8001e57d67a3b73e39253418c3456f2d"
+        },
+        "configuration_sha256": "6c646f90160e23b64e4c38e26de9c2ef8e0eb9f97077a4ad850d5a7de30b7d4e",
+        "solver_execution": {
+          "contact": "skip_zero_reaction_atomics_v1",
+          "frontier": "hoisted_interface_v1",
+          "optimize_contacts": true,
+          "optimize_frontier": true
+        },
+        "integrity": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "initial_components": 1,
+            "nonzero_digit_rewrites": 0,
+            "code_encoding": "packed2",
+            "cuts": 2,
+            "frames": 121,
+            "particles": 102732,
+            "recorded_mass_kg": 0.15409799999999996,
+            "reference_mass_absolute_error_kg": 0.0
+          }
+        },
+        "outcome": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "mechanical_components": 2,
+            "plane_local_z_m": 0.02,
+            "largest_component_below_plane_mass_share": 0.9999999999991656,
+            "detached_below_plane_mass_fraction": 0.0,
+            "reference_substrate_component_ids": [
+              0
+            ],
+            "items": [
+              {
+                "id": "p0",
+                "selected": true,
+                "reference_particles_above_plane": 332,
+                "reference_mass_above_plane_kg": 0.000498,
+                "removed_mass_fraction": 1.0,
+                "pass": true,
+                "residual_substrate_height_m": 0.0
+              }
+            ],
+            "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+          }
+        },
+        "quality": {
+          "status": "REPORTED_NOT_SCORED",
+          "residual_substrate_height_m": {
+            "p0": 0.0
+          },
+          "surface": {
+            "status": "MEASURED",
+            "scope": "Frozen TRIM surface metrics, reported as quality only",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              32
+            ],
+            "valid_surface_fraction": 1.0,
+            "missing_surface_fraction": 0.0,
+            "maximum_substrate_surface_residual_height_m": 0.0,
+            "surface_p95_absolute_plane_error_m": 0.0004834016374043251,
+            "surface_rms_plane_error_m": 0.00017355849848321533,
+            "maximum_gouge_depth_m": 0.0014030325881664932,
+            "overcut_volume_m3": 7.224647408266012e-07,
+            "overcut_volume_fraction_of_initial_base": 0.007055319734634777
+          }
+        },
+        "home": "NOT_RUN",
+        "recording": {
+          "format": "physical_state_stream_v1",
+          "samples": 121,
+          "complete": true,
+          "finalized": true,
+          "mass": {
+            "particles": 102732,
+            "retained_stream_particle_count": 102732,
+            "total_reference_mass_kg": 0.15409799999999996,
+            "mass_array_sha256": "6fc209056042846f942f1f7eef5fb383b178c01d857414992fbd12317979dce1"
+          },
+          "code_bits_monotone": true,
+          "final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab",
+          "all_code_samples_sha256": "fab90d1493b9dff2e29ee4e20a7729cc39febfe89891004bfa2d1c18696fd83f",
+          "final_labelled_particles": 37958,
+          "final_unique_codes": [
+            0,
+            1,
+            2
+          ]
+        },
+        "numerical": {
+          "recorded_extrema_finite": true,
+          "minimum_detF_positive": true,
+          "minimum_detF": 0.9100968837738037,
+          "maximum_material_speed_m_s": 0.45156386494636536,
+          "maximum_plastic_strain": 0.8886826634407043
+        },
+        "robot": {
+          "actions": 1200,
+          "cut_executions": 141,
+          "rejected": 0,
+          "grasp_status_counts": {
+            "HOLDING": 1200
+          },
+          "grasp_lost_steps": 0,
+          "invalid_grasp_contact_steps": 0,
+          "maximum_grasp_slip_m": 7.153670938611071e-07,
+          "maximum_grasp_rotation_rad": 7.448423068271914e-05,
+          "minimum_bilateral_loaded_tool_fraction": 1.0,
+          "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+          "secondary_command_max_change_rad": 0.0
+        },
+        "grasp_reset_status": "PASS_STABLE_GRASP",
+        "contacts": {
+          "recorded_statistics_finite": true,
+          "control_steps_with_blade_contact": 101,
+          "control_steps_with_particle_contact": 49,
+          "statistics_max": [
+            0.0002429511514492333,
+            7828.0,
+            1.2844679076806642e-05,
+            0.0001048737030941993,
+            4377.0,
+            0.0001604775752639398,
+            0.0003510835813358426
+          ],
+          "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+        },
+        "observed_resources": {
+          "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+          "host_rss_mib": {
+            "min": 5985.515625,
+            "max": 6477.0390625
+          },
+          "gpu_job_mib": {
+            "min": 5030.0,
+            "max": 5350.0
+          },
+          "gpu1_other_memory_mib": {
+            "min": 47.0,
+            "max": 47.0
+          },
+          "competing_gpu1_compute_pid_count": 0
+        },
+        "success_media": {
+          "status": "PASS",
+          "decode_status": "PASS",
+          "mp4_sha256": "a3a23d51360aba39cf6a0d2de5dbab2a4bc8931f6e2e65b2acefe7abd4baba52",
+          "mp4_path": "media_000/episode.mp4",
+          "all_original_raw_source_time_checks_pass": true
+        },
+        "gpu_guard": "PASS",
+        "audit_status": "PASS",
+        "all_read_only_audit_checks_pass": true
+      },
+      "15": {
+        "full_episode_wall_s": 390.3056334370049,
+        "episodes_per_gpu_hour": 9.223540967878543,
+        "source_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+        "artifact_directory": "wp17/artifacts/native_optimized_001/seed_15",
+        "raw_recording": "box/env/recording/attempt_000",
+        "timing": {
+          "factory_to_finalize_s": 390.3056334370049,
+          "episodes_per_gpu_hour": 9.223540967878543,
+          "simulated_seconds_per_wall_second": 0.061490273119190295,
+          "startup_to_first_step_s": 67.02212246801355,
+          "step_call_total_s": 310.4298345679417,
+          "step_interval_s": 311.3368535999907,
+          "finalize_s": 11.871165390999522,
+          "internal_evaluation_s": 2.3680291210184805,
+          "media_s": 8.48807329198462,
+          "snapshot_auxiliary_s": 0,
+          "control_step_total_s": 309.4180938541831,
+          "graph_total_s": 164.78575657945476
+        },
+        "outer_native_process_wall_s": 395.074,
+        "identity": {
+          "scene_hash": "30beffb71ca5be34934a88398207875d93a6c6058178ab0a0f69d7043755d921",
+          "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+          "solver_hash": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707",
+          "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+          "compiled_task_sha256": "7abab37e2470628a611686b2cd36ed6e272e6e5addd9d39f6927dda6c62b8f00"
+        },
+        "configuration_sha256": "47b1289a5e03c113cd066995a90fce2dcc6489a9fb23b1647186933d8e041cba",
+        "solver_execution": {
+          "contact": "skip_zero_reaction_atomics_v1",
+          "frontier": "hoisted_interface_v1",
+          "optimize_contacts": true,
+          "optimize_frontier": true
+        },
+        "integrity": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "initial_components": 1,
+            "nonzero_digit_rewrites": 0,
+            "code_encoding": "packed2",
+            "cuts": 2,
+            "frames": 121,
+            "particles": 103898,
+            "recorded_mass_kg": 0.15584699999999996,
+            "reference_mass_absolute_error_kg": 0.0
+          }
+        },
+        "outcome": {
+          "status": "PASS",
+          "all_original_checks_pass": true,
+          "metrics": {
+            "mechanical_components": 3,
+            "plane_local_z_m": 0.02,
+            "largest_component_below_plane_mass_share": 0.9999999999991656,
+            "detached_below_plane_mass_fraction": 0.0,
+            "reference_substrate_component_ids": [
+              0
+            ],
+            "items": [
+              {
+                "id": "p0",
+                "selected": true,
+                "reference_particles_above_plane": 495,
+                "reference_mass_above_plane_kg": 0.0007424999999999999,
+                "removed_mass_fraction": 1.0,
+                "pass": true,
+                "residual_substrate_height_m": 0.0
+              },
+              {
+                "id": "p1",
+                "selected": true,
+                "reference_particles_above_plane": 1003,
+                "reference_mass_above_plane_kg": 0.0015044999999999998,
+                "removed_mass_fraction": 1.0,
+                "pass": true,
+                "residual_substrate_height_m": 0.0
+              }
+            ],
+            "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+          }
+        },
+        "quality": {
+          "status": "REPORTED_NOT_SCORED",
+          "residual_substrate_height_m": {
+            "p0": 0.0,
+            "p1": 0.0
+          },
+          "surface": {
+            "status": "MEASURED",
+            "scope": "Frozen TRIM surface metrics, reported as quality only",
+            "measurement_spacing_xy_m": [
+              0.001,
+              0.001
+            ],
+            "grid_shape_xy": [
+              160,
+              32
+            ],
+            "valid_surface_fraction": 0.999609375,
+            "missing_surface_fraction": 0.0003906249999999778,
+            "maximum_substrate_surface_residual_height_m": 2.4780051917718676e-05,
+            "surface_p95_absolute_plane_error_m": 0.00048608606768898305,
+            "surface_rms_plane_error_m": 0.0001882212865583336,
+            "maximum_gouge_depth_m": 0.02,
+            "overcut_volume_m3": 7.922520815369109e-07,
+            "overcut_volume_fraction_of_initial_base": 0.007736836733758895
+          }
+        },
+        "home": "NOT_RUN",
+        "recording": {
+          "format": "physical_state_stream_v1",
+          "samples": 121,
+          "complete": true,
+          "finalized": true,
+          "mass": {
+            "particles": 103898,
+            "retained_stream_particle_count": 103898,
+            "total_reference_mass_kg": 0.155847,
+            "mass_array_sha256": "460a259c788152247994964c6d5558307ea1b42d591da9bdc2b0beba9d543357"
+          },
+          "code_bits_monotone": true,
+          "final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+          "all_code_samples_sha256": "be559ac935aa0b141db21778ee8754130c53f52fa23c8c73cbd04edef00ea1c9",
+          "final_labelled_particles": 85786,
+          "final_unique_codes": [
+            0,
+            1,
+            2
+          ]
+        },
+        "numerical": {
+          "recorded_extrema_finite": true,
+          "minimum_detF_positive": true,
+          "minimum_detF": 0.8437231183052063,
+          "maximum_material_speed_m_s": 0.5332352519035339,
+          "maximum_plastic_strain": 1.239931344985962
+        },
+        "robot": {
+          "actions": 1200,
+          "cut_executions": 287,
+          "rejected": 0,
+          "grasp_status_counts": {
+            "HOLDING": 1200
+          },
+          "grasp_lost_steps": 0,
+          "invalid_grasp_contact_steps": 0,
+          "maximum_grasp_slip_m": 9.270300098441303e-07,
+          "maximum_grasp_rotation_rad": 9.593672540189988e-05,
+          "minimum_bilateral_loaded_tool_fraction": 1.0,
+          "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+          "secondary_command_max_change_rad": 0.0
+        },
+        "grasp_reset_status": "PASS_STABLE_GRASP",
+        "contacts": {
+          "recorded_statistics_finite": true,
+          "control_steps_with_blade_contact": 248,
+          "control_steps_with_particle_contact": 514,
+          "statistics_max": [
+            0.00021150318207219243,
+            16232.0,
+            2.2029111278243363e-05,
+            0.0001453965378459543,
+            20288.0,
+            0.0015262122033163905,
+            0.0007359128212556243
+          ],
+          "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+        },
+        "observed_resources": {
+          "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+          "host_rss_mib": {
+            "min": 6115.2421875,
+            "max": 6613.921875
+          },
+          "gpu_job_mib": {
+            "min": 5052.0,
+            "max": 5510.0
+          },
+          "gpu1_other_memory_mib": {
+            "min": 47.0,
+            "max": 47.0
+          },
+          "competing_gpu1_compute_pid_count": 0
+        },
+        "success_media": {
+          "status": "PASS",
+          "decode_status": "PASS",
+          "mp4_sha256": "fa3aa505dc43e48e22e87b498717ed2ac880f3a97553f12897605695e98267b7",
+          "mp4_path": "media_000/episode.mp4",
+          "all_original_raw_source_time_checks_pass": true
+        },
+        "gpu_guard": "PASS",
+        "audit_status": "PASS",
+        "all_read_only_audit_checks_pass": true
+      }
+    }
+  },
+  "comparison": {
+    "512": {
+      "full_episode_speedup": 1.6547369238237895,
+      "action_loop_speedup": 1.8086715667808873,
+      "graph_speedup": 2.5140306217199617,
+      "identity_checks": {
+        "controller_sha256": true,
+        "agent_commit": true,
+        "scene_hash": true,
+        "material_hash": true,
+        "solver_hash": true,
+        "goal_hash": true,
+        "compiled_task_sha256": true,
+        "observations": true,
+        "versions": true,
+        "timing_wrapper_sha256": true,
+        "original_evaluator_sha256": true,
+        "physics_parameters": true
+      },
+      "final_codes_identical": false,
+      "all_recorded_code_samples_identical": false,
+      "mass_array_sha256_identical": true,
+      "configuration_differences": {},
+      "quality_notes": "Original descriptive metrics; missing-surface cells and20mm gouge proxy remain unscored limitations; no thresholds changed"
+    },
+    "15": {
+      "full_episode_speedup": 1.0571310334741035,
+      "action_loop_speedup": 1.0588497019518894,
+      "graph_speedup": 1.0549796079744826,
+      "identity_checks": {
+        "controller_sha256": true,
+        "agent_commit": true,
+        "scene_hash": true,
+        "material_hash": true,
+        "solver_hash": true,
+        "goal_hash": true,
+        "compiled_task_sha256": true,
+        "observations": true,
+        "versions": true,
+        "timing_wrapper_sha256": true,
+        "original_evaluator_sha256": true,
+        "physics_parameters": true
+      },
+      "final_codes_identical": true,
+      "all_recorded_code_samples_identical": false,
+      "mass_array_sha256_identical": true,
+      "configuration_differences": {},
+      "quality_notes": "Original descriptive metrics; missing-surface cells and20mm gouge proxy remain unscored limitations; no thresholds changed"
+    }
+  },
+  "physical_integrity": "PASS 4/4",
+  "original_task_outcome": "PASS 4/4",
+  "complete_original_success_media": "PASS 4/4",
+  "source_configuration_and_api_identity": "PASS",
+  "active_frontier": {
+    "scope": "Original real Native eager action300 with intact live internal history; separate perturbing measurement",
+    "material_substeps": 200,
+    "complete_links": {
+      "total_s": 1.69537522983551,
+      "calls": 200,
+      "share_of_kernel_time": 0.9227137120933517
+    },
+    "pre_launch_gate_counts": {
+      "unassigned_active_digit": 92270,
+      "reached_unassigned": 4202,
+      "eligible": 4202,
+      "eligible_retained_pending": 0,
+      "eligible_stroke_active": 4202,
+      "eligible_support_occurrences": 14607360,
+      "zero_weight_positive_gradient_nodes": 0,
+      "eligible_with_nonconflicting_other": 4202
+    },
+    "eligible_interface_work_confirmed": true,
+    "observation": "Zero accepted-link event delta coexists with positive eligible searches and large measured cost"
+  },
+  "same_state_frontier": {
+    "scope": "Exact saved active kernel-entry arguments; component result with output-restoration copies inside each measured graph",
+    "status": "PASS",
+    "checkpoint_arguments_sha256": "73a5732bf9471abef34c18dddddacaafb0be4ddb38c85de0abd955ca29a0f1d2",
+    "checkpoint_metadata_sha256": "47bf051e4112c14307f6c6b062954172c3823e8af4167bf3a7fcea81148c5d2a",
+    "original_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+    "candidate_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6",
+    "launches_per_graph": 20,
+    "timing_samples_per_path": 3,
+    "output_parity": {
+      "code": {
+        "exact_equal": true,
+        "different_entries": 0
+      },
+      "pending_q": {
+        "exact_equal": true,
+        "different_entries": 0
+      },
+      "pending_cut": {
+        "exact_equal": true,
+        "different_entries": 0
+      },
+      "link_diagnostics": {
+        "exact_equal": true,
+        "different_entries": 0
+      }
+    },
+    "shared_input_arrays_unchanged": true,
+    "median_copy_plus_kernel_graph_wall_s": {
+      "original": 0.1677025849930942,
+      "candidate": 0.029516273003537208
+    },
+    "speedup": 5.681699209551181
+  },
+  "positive_pending_frontier_gpu": {
+    "status": "PASS",
+    "cases": 12,
+    "coverage": {
+      "positive_completions": [
+        "contact",
+        "small_rotation",
+        "pending_reuse",
+        "node_first_worked",
+        "zero_weight_gradient",
+        "code_zero_bridge",
+        "second_cut"
+      ],
+      "new_pending_writes": [
+        "no_stroke",
+        "first_unworked"
+      ],
+      "readonly_arrays_per_path": 19,
+      "scope": "Same incoming handcrafted arguments on each CUDA path; no CPU/GPU floating-point equivalence claim"
+    },
+    "case_names": [
+      "contact",
+      "small_rotation",
+      "no_stroke",
+      "pending_reuse",
+      "pending_stopped",
+      "first_unworked",
+      "node_first_worked",
+      "zero_weight_gradient",
+      "code_zero_bridge",
+      "second_cut",
+      "underflow_opposite_sides",
+      "pending_empty_keeps_cut"
+    ],
+    "all_four_outputs_exact": true,
+    "all_initial_arguments_identical": true,
+    "all_readonly_inputs_unchanged": true,
+    "source_sha256": {
+      "src/robotic_cutting_sim/tlmpm_v7_2.py": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+      "src/robotic_cutting_sim/tlmpm_v7_2_frontier.py": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6",
+      "tests/test_wp17_frontier.py": "6587d7f483be2c89ac439f27dc75eefb021087b0b741ad139bce551bcfbcb65d"
+    },
+    "receipt_sha256": "e003302f47c07e83bbb9d8ea2ed95a67f52204b0102f7320c4a94e7e00c175e5",
+    "artifact_locator": "wp17/artifacts/frontier_positive_gpu_001/probe/frontier_positive.json",
+    "versions": {
+      "python": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]",
+      "numpy": "2.5.4",
+      "warp": "1.17.0"
+    },
+    "timing": "NOT_RUN",
+    "scope": "Small same-argument CUDA fixtures include real completion and pending writes. Isolated NumPy version differs from Native; no episode timing or trajectory equivalence claim."
+  },
+  "read_only_audit_tool_wall_s": {
+    "seed512_verification": 1.620264803,
+    "seed512_comparison": 0.459047087,
+    "seed15_verification_plus_final_comparison": 2.614887233
+  },
+  "read_only_audit_timing_scope": "Recorded external command wall, outside Native full wall. Seed15 verification and final comparison share one command; isolated seed15 verification duration NOT_MEASURED. No decode was repeated to add a timer.",
+  "paired_visual_review": "PASS: main reviewed actual Global RGB at 6 s and 24 s for both seeds; no obvious regression. Separate from descriptive quality acceptance.",
+  "seed512_code_discrepancy": {
+    "final_changed_particles": 4266,
+    "changed_reference_mass_kg": 0.006399,
+    "changed_target_particles": 0,
+    "changed_substrate_particles": 4266,
+    "changed_reference_local_bounds_m": {
+      "min": [
+        0.01850000023841858,
+        -0.01549999974668026,
+        0.0005000000237487257
+      ],
+      "max": [
+        0.03150000050663948,
+        0.01549999974668026,
+        0.019500000402331352
+      ]
+    },
+    "changed_digits": {
+      "0": {
+        "0->1": 4266
+      },
+      "1": {
+        "0->0": 4266
+      }
+    },
+    "first_code_difference": {
+      "sample": 26,
+      "time_s": 5.2,
+      "different_particles": 1978
+    },
+    "all_reference_arrays_equal": {
+      "mass_kg": true,
+      "reference_positions": true,
+      "reference_positions_local": true,
+      "reference_indices": true,
+      "reference_stencil_nodes": true,
+      "reference_stencil_weights": true,
+      "reference_stencil_gradients": true
+    },
+    "initial_dynamic_positions_equal": true,
+    "initial_dynamic_velocities_equal": true,
+    "history_sampled_position_difference": [
+      {
+        "sample": 0,
+        "time_s": 0.0,
+        "max_m": 0.0,
+        "rms_m": 0.0,
+        "different_code_particles": 0
+      },
+      {
+        "sample": 1,
+        "time_s": 0.2,
+        "max_m": 4.5291395544215395e-08,
+        "rms_m": 6.901236491838039e-09,
+        "different_code_particles": 0
+      },
+      {
+        "sample": 25,
+        "time_s": 5.0,
+        "max_m": 6.8953567867019335e-06,
+        "rms_m": 3.859937694875678e-07,
+        "different_code_particles": 0
+      },
+      {
+        "sample": 26,
+        "time_s": 5.2,
+        "max_m": 6.887673425692779e-06,
+        "rms_m": 3.88155499940924e-07,
+        "different_code_particles": 1978
+      },
+      {
+        "sample": 30,
+        "time_s": 6.0,
+        "max_m": 6.594092942110453e-06,
+        "rms_m": 5.061902772226694e-07,
+        "different_code_particles": 4266
+      },
+      {
+        "sample": 120,
+        "time_s": 24.0,
+        "max_m": 3.907123386644878e-05,
+        "rms_m": 4.966888639740988e-06,
+        "different_code_particles": 4266
+      }
+    ]
+  },
+  "code_discrepancy_limit": "Final code arrays differ for seed512. Cause is not isolated to GPU nondeterminism; no bitwise or full physical equivalence claim. Same-state component timing and full episode timing are reported separately.",
+  "old_wp16_movies_preserved": {
+    "status": "PASS",
+    "movies": 4,
+    "scope": "Current hashes match all four preserved full-decode receipts"
+  },
+  "preserved_failures": [
+    {
+      "artifact_directory": "wp17/artifacts/active_profile_001",
+      "steps": 0,
+      "reason": "Missing task cache mount parent"
+    },
+    {
+      "artifact_directory": "wp17/artifacts/active_profile_002",
+      "steps": 0,
+      "reason": "Asset symlink resolved outside sandbox"
+    }
+  ],
+  "surface_quality": "REPORTED_NOT_SCORED",
+  "home": "NOT_RUN",
+  "limitations": [
+    "Material parameters provisional and uncalibrated",
+    "Seed15 missing cells and20mm gouge proxy remain descriptive limits",
+    "Two engineering scenes do not establish generalization or training throughput",
+    "Intermediate floating-point and code histories are not bitwise identical"
+  ],
+  "artifact_scope": "Relative locators identify retained lab artifact roots. Complete MP4s and raw synchronized/physical recordings remain in artifact storage and are not committed to this repository."
+}

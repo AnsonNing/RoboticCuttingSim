@@ -1,3 +1,29 @@
+# WP-17 performance — 2026-11-04 — paired Native verified
+
+- Full Episode Wall Time: pooled 1034.211→765.959s, 25.94% less (1.350×).
+  Episodes/GPU-hour 6.96183→9.39999. Seed512 621.607→375.653s (1.655×),
+  seed15 412.604→390.306s (1.057×); no uniform 1.5× claim. Both inherited
+  WP16 options remain enabled, including device diagnostics.
+- Both new 24s/1200-action episodes PASS original independent integrity/outcome
+  and complete MP4/raw/camera/source verification. Targets 100% removed,
+  substrate retained, mass arrays exact and components 2/3 preserved.
+- Seed512 retains an explicit discrepancy: 4266 extra cut0 negative-side
+  substrate labels/6.399g, zero target particles. Drift precedes code changes;
+  cause unisolated. Seed15 final codes match; both intermediate histories differ.
+- Real active action300 has 4202 eligible particles and 14,607,360 support-neighbor
+  occurrences/substep; frontier 1.695375s/200, 92.27% of measured kernel time,
+  with [0,0] new events/completions. Partial 410-action profile FAIL_INTEGRITY.
+- Scoped transform/side reuse and current-interface rejection preserve order,
+  pending semantics and gates; original kernel is byte-identical rollback.
+  Same-state graph gain 5.682× is separate from full/history-dependent timing.
+  CPU 58 frontier + 10 related PASS; separate GPU 12 positive/pending cases PASS.
+- Original 1mm/4mm/0.1ms/50Hz, 10 PhysX/200 material steps, cameras, API/evaluator
+  remain. Quality REPORTED_NOT_SCORED, HOME NOT_RUN, materials uncalibrated.
+  Old WP16 four MP4 hashes unchanged. Publication and CI status are tracked separately
+  in the repository pull request and [CPU workflow](https://github.com/AnsonNing/RoboticCuttingSim/actions/workflows/tests.yml).
+- [Measured report and rollback](reports/WP17_PERFORMANCE_OPTIMIZATION.md),
+  [compact evidence](evidence/wp17/performance_001.json).
+
 # WP-16 performance — 2026-11-04 — paired Native validated
 
 - Scoped v7_2 contact execution avoids exactly-zero blade reaction atomics;

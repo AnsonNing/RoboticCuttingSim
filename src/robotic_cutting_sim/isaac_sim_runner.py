@@ -108,7 +108,7 @@ class IsaacSimCuttingConfig:
     # Read-only safety statistics: snapshot retains the historical CPU path;
     # device_reduction_v1 downloads only finite-state status and three extrema.
     material_diagnostics: str = "snapshot"
-    # False restores the original tlmpm_v7_2 contact path; other solvers ignore it.
+    # False restores original tlmpm_v7_2 contact/frontier paths; other solvers ignore it.
     v7_2_optimizations: bool = True
 
     def __post_init__(self):
