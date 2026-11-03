@@ -18,6 +18,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from robotic_cutting_sim.seeded_trim import evaluate_recording
+from robotic_cutting_sim.recording import physical_recording_paths
 
 
 def sha256(path):
@@ -94,7 +95,8 @@ def media_checks(rec, *, decode):
     checks['source_identity'] = all(manifest.get(k) == provenance.get(k) for k in identity)
     checks['independent_physical_result'] = bool(manifest.get('task_success') is True
         and manifest.get('physical_result') == read_json(rec / 'independent_evaluation.json'))
-    required_hashes = {'physics_state.npz', 'compiled_task.json', 'independent_evaluation.json', 'provenance.json'}
+    required_hashes = {p.relative_to(rec).as_posix() for p in physical_recording_paths(rec)} | {
+        'compiled_task.json', 'independent_evaluation.json', 'provenance.json'}
     checks['recording_hashes'] = required_hashes.issubset(manifest.get('recording_hashes', {}))
     for name, expected in manifest.get('recording_hashes', {}).items():
         if Path(name).name != name:
@@ -157,7 +159,8 @@ def audit_attempt(rec, *, decode=True, public=False):
                                       for name, digest in hashes.items())
     checks['recording_unchanged'] &= set(hashes) == {
         p.relative_to(rec).as_posix() for p in rec.rglob('*') if p.is_file() and not p.is_symlink()}
-    checks['raw_physics_present'] = 'physics_state.npz' in hashes
+    checks['raw_physics_present'] = all(p.relative_to(rec).as_posix() in hashes
+                                        for p in physical_recording_paths(rec))
     provenance = {key: provenance.get(key) for key in ('scene_seed', 'policy_seed', 'sim_seed', 'scene_hash',
         'solver_commit', 'solver_version', 'agent_commit', 'candidate_id', 'controller_sha256',
         'controller_provenance', 'split', 'agent_success_eligible')}
