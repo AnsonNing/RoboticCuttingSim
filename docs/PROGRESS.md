@@ -1,3 +1,21 @@
+# WP-15 recovery — agentic control robot — 2026-11-03 — IN_PROGRESS
+
+- Opt-in exact-precision streamed recording, interruption recovery, memory
+  receipts and a versioned offline Isaac Sim 6.2 contact-extension repair are
+  implemented. Historical study output, physics and scoring remain preserved.
+- One actual offline Native scripted reference completed 1200 actions / 24 s,
+  121 physical samples and independent physical PASS. Full MP4 decoding and
+  source/frame/physical identities PASS. It is excluded from agent rates.
+- Full-run live rig14 Global RGB-only/wrist0 RGB-D, contact freshness and parked
+  arm1 checks PASS. Recording finalization RSS 5654000→5654040 KiB; whole-process
+  observations are separate from causal claims about recorder memory.
+- Exact inherited C2 completed a one-protrusion scene: integrity PASS, outcome
+  FAIL (64.8% detached versus the original 90% requirement). The existing
+  researcher is actually analyzing its own observations and running inherited
+  comparisons. Revisions, new held-out outcomes and autonomous success remain
+  pending; runtime readiness alone does not complete this task.
+- [Current evidence and remaining work](reports/AGENTIC_TRIM_RECOVERY.md).
+
 # WP-15 bounded study — agentic control robot — 2026-11-03
 
 - Existing agent authored two methods and three controller versions, inspected
