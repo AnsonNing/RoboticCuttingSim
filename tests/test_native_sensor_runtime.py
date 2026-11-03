@@ -66,3 +66,12 @@ def test_kit_import_failure_is_recorded_before_context_close(tmp_path, monkeypat
     assert receipt["activation_stage"] == "IMPORT_KIT_BINDINGS"
     assert "deliberate unavailable Kit binding" in receipt["error"]
     assert "ModuleNotFoundError" in receipt["traceback"]
+
+
+def test_file_url_normalization_preserves_local_path_requirements(tmp_path):
+    expected = (tmp_path/"registry with space/v2").as_uri()
+    assert runtime._same_local_file_url(expected.replace("file:///", "file:/"), expected)
+    assert runtime._same_local_file_url(expected.replace("file:///", "file://localhost/"), expected)
+    assert not runtime._same_local_file_url(expected+"/different", expected)
+    assert not runtime._same_local_file_url(expected.replace("file:///", "file://remote/"), expected)
+    assert not runtime._same_local_file_url(expected.replace("file:", "https:"), expected)

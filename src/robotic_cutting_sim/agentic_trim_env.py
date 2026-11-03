@@ -63,7 +63,9 @@ class AgenticTrimEnv:
             candidate_id=spec.get('ctx', {}).get('candidate_id') or
                          Path(spec.get('control', {}).get('path', 'diagnostic')).stem,
             agent_commit=spec.get('ctx', {}).get('agent_commit'),
-            controller_provenance='agent_candidate' if spec else 'environment_diagnostic',
+            controller_provenance=spec.get('ctx', {}).get('controller_provenance') or
+                                  ('agent_candidate' if spec else 'environment_diagnostic'),
+            parent_run=spec.get('ctx', {}).get('parent_run'),
             split=spec.get('ctx', {}).get('split', 'diagnostic'), solver_version='tlmpm_v7_2',
             physical_recording='streamed_physics_v1' if self.stream_physics else 'legacy_npz')
         try:

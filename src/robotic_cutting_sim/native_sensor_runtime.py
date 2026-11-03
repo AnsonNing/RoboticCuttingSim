@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import traceback
+from urllib.parse import unquote, urlsplit
 
 from .recording import write_json
 
@@ -32,6 +33,18 @@ SENSOR_EXTENSION = "isaacsim.sensors.experimental.physics"
 
 def _sha256(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def _same_local_file_url(actual, expected):
+    def local_path(url):
+        parts = urlsplit(url)
+        if (parts.scheme != "file" or parts.netloc.lower() not in ("", "localhost") or
+                parts.query or parts.fragment):
+            return None
+        return Path(unquote(parts.path)).resolve()
+
+    actual_path, expected_path = local_path(actual), local_path(expected)
+    return actual_path is not None and actual_path == expected_path
 
 
 def _store_identical(path, data):
@@ -141,7 +154,7 @@ def activate_offline_contact_extension(app, output):
         receipt["provider_index_record_counts"] = provider_counts
         urls = {row["name"]: registry.get_registry_url_by_name(row["name"]) for row in registries}
         receipt["provider_urls"] = urls
-        if any(urls[row["name"]] != row["url"]+"/v2" for row in registries):
+        if any(not _same_local_file_url(urls[row["name"]], row["url"]+"/v2") for row in registries):
             raise RuntimeError("Kit registry provider did not consume the offline URLs")
         receipt["activation_stage"] = "ENABLE_CONTACT_EXTENSION"
         write_json(output/"activation.json", receipt)
