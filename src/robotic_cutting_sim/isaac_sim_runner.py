@@ -105,8 +105,17 @@ class IsaacSimCuttingConfig:
     surface_unmeshable: str | None = None
     # Opt-in task runtime repair; extension code, dependency metadata and physics stay unchanged.
     native_sensor_runtime: str | None = None
+    # Read-only safety statistics: snapshot retains the historical CPU path;
+    # device_reduction_v1 downloads only finite-state status and three extrema.
+    material_diagnostics: str = "snapshot"
+    # False restores the original tlmpm_v7_2 contact path; other solvers ignore it.
+    v7_2_optimizations: bool = True
 
     def __post_init__(self):
+        if not isinstance(self.v7_2_optimizations, bool):
+            raise ValueError("v7_2_optimizations must be a bool")
+        if self.material_diagnostics not in ("snapshot", "device_reduction_v1"):
+            raise ValueError("material_diagnostics must be snapshot or device_reduction_v1")
         if self.native_sensor_runtime not in (None, "isaac62_physx_offline_v1"):
             raise ValueError("Unknown native_sensor_runtime profile")
         if self.tool_attachment_mode not in ("legacy_fixed_tool", "physical_grasp"):
@@ -694,9 +703,12 @@ class LiveIsaacSimCutting:
             self.material = LiveCuttingMaterial(material_config, task=self.task, max_cuts=self.task.max_cuts,
                 cutting_law=self.task.cutting_law,
                 solver=self.task.solver_module if self.task.solver_module in ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1", "tlmpm_v7_2") else None,
+                v7_2_optimizations=c.v7_2_optimizations,
                 **recorder)
         else:
-            self.material = (LiveCuttingMaterial(material_config,task=self.task,max_cuts=c.max_cuts,cutting_law=c.cutting_law) if self.task else LiveCuttingMaterial(material_config))
+            self.material = (LiveCuttingMaterial(material_config, task=self.task, max_cuts=c.max_cuts,
+                cutting_law=c.cutting_law, v7_2_optimizations=c.v7_2_optimizations) if self.task else
+                LiveCuttingMaterial(material_config, v7_2_optimizations=c.v7_2_optimizations))
         if self.pad_geometry:
             self.material.configure_pad_obstacles(self._pad_boxes(initial['tool_pose']),
                 [None] + [pad['body_path'] for pad in self.pad_geometry])
@@ -1557,13 +1569,7 @@ class LiveIsaacSimCutting:
                            cut_index=self._command_cut_index if action is not None else None)
         if not np.array_equal(diagnostics["applied_previous_material_wrench_world"],applied):
             raise AssertionError("The material receipt does not match the wrench actually applied to PhysX")
-        state=self.material.debug_state()
-        if not all(np.isfinite(state[name]).all() for name in ("positions","velocities","F","plastic_strain")):
-            raise FloatingPointError("Nonfinite live TLMPM state")
-        determinant=np.linalg.det(state["F"])
-        diagnostics.update(minimum_detF=float(determinant.min()),
-                           maximum_material_speed_m_s=float(np.linalg.norm(state["velocities"],axis=1).max()),
-                           maximum_plastic_strain=float(state["plastic_strain"].max()))
+        diagnostics.update(self.material.numerical_diagnostics(c.material_diagnostics))
         surface_start = time.perf_counter()
         if c.camera and c.surface_update == "every_step":
             self._update_surface()

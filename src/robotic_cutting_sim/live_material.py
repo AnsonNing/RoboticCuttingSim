@@ -23,7 +23,8 @@ from .packed_solvers import is_packed_solver as is_packed_solver_name
 class LiveCuttingMaterial:
     def __init__(self, config=None, target=None, *, task=None, tool_profile=None, cutting_law=None,
                  slice_efficiency=1., obstacle_boxes_edge=None, max_cuts=1, solver=None, slots_per_node=None,
-                 cut_events=None, cut_events_capacity=None, cut_events_summary_capacity=None):
+                 cut_events=None, cut_events_capacity=None, cut_events_summary_capacity=None,
+                 v7_2_optimizations=True):
         """``tool_profile`` (tool_profile.ToolProfile) selects the tlmpm_v2 solver
         with that blade polygon; None keeps the frozen v1 solver and task wedge.
 
@@ -41,6 +42,9 @@ class LiveCuttingMaterial:
         grid-consistent position update and is handled exactly as tlmpm_v5 here (packed codes, slots, recorders);
         its receipt adds ``tlmpm_v6`` (position update and source hashes).
 
+        ``v7_2_optimizations=False`` rolls tlmpm_v7_2 contact execution
+        back to the original path. True uses its adopted defaults; other solvers are unchanged.
+
         ``cut_events='cut_events_v1'`` (WP-12, opt-in, tlmpm_v5 only) attaches the read-only Hermite
         cut-event recorder (cut_events.CutEventRecorder) to every substep; its overflow raises after the
         control step. None (default) creates no recorder and launches nothing new.
@@ -49,6 +53,9 @@ class LiveCuttingMaterial:
         """
         from .tasks import ProfileTaskSpec
         from .tool_profile import handle_box_edge
+        if not isinstance(v7_2_optimizations, bool):
+            raise ValueError("v7_2_optimizations must be a bool")
+        self.v7_2_optimizations = v7_2_optimizations
         self.config = config or CouplingConfig()
         if isinstance(task, ProfileTaskSpec):
             tool_profile = tool_profile or task.tool_profile
@@ -158,6 +165,7 @@ class LiveCuttingMaterial:
 
     def reset(self, measured_edge_pose, seed=42):
         import warp as wp
+        self._numerical_reduction = None  # release scratch and its previous solver before rebuilding
         if self.tool_profile is None:
             from .tlmpm import TLMPM
             solver_module, solver_kwargs = "robotic_cutting_sim.tlmpm", {}
@@ -184,6 +192,8 @@ class LiveCuttingMaterial:
                 "obstacle_boxes_edge": self.obstacle_boxes_edge}
             if is_packed_solver_name(self.solver):
                 solver_kwargs["slots_per_node"] = self.slots_per_node
+            if self.solver == 'tlmpm_v7_2' and not self.v7_2_optimizations:
+                solver_kwargs["optimize_contacts"] = False
 
         start = time.perf_counter()
         c = self.config
@@ -388,6 +398,23 @@ class LiveCuttingMaterial:
     def debug_state(self):
         """Solver-LOCAL oracle diagnostics; never include in observations."""
         return self.bed.snapshot()
+
+    def numerical_diagnostics(self, mode="snapshot"):
+        """Same live safety fields; device reduction is an explicit read-only option."""
+        if mode == "device_reduction_v1":
+            from .material_diagnostics import MaterialDiagnosticsReduction
+            reducer = getattr(self, "_numerical_reduction", None)
+            if reducer is None or reducer.bed is not self.bed:
+                reducer = self._numerical_reduction = MaterialDiagnosticsReduction(self.bed)
+            return reducer.read()
+        if mode != "snapshot":
+            raise ValueError("material_diagnostics must be snapshot or device_reduction_v1")
+        state = self.debug_state()
+        if not all(np.isfinite(state[name]).all() for name in ("positions", "velocities", "F", "plastic_strain")):
+            raise FloatingPointError("Nonfinite live TLMPM state")
+        return {"minimum_detF": float(np.linalg.det(state["F"]).min()),
+                "maximum_material_speed_m_s": float(np.linalg.norm(state["velocities"], axis=1).max()),
+                "maximum_plastic_strain": float(state["plastic_strain"].max())}
 
     def world_state(self):
         """WORLD oracle diagnostics for recording/evaluation, separate from policy."""

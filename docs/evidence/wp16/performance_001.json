@@ -1,0 +1,1339 @@
+{
+  "scope": "Two previously exposed successful frozen C3 engineering pairs; no held-out success rate or policy-training throughput claim",
+  "baseline_commit": "c8a573b6337ee6bc0ea0257badb3413f08b59a23",
+  "optimized_implementation_commit": "0e92f1d917b8117faf2426b168ff25e151ae6d79",
+  "implementation_sha256": {
+    "src/robotic_cutting_sim/agentic_trim_env.py": "c0d67c9fc595598c77931e8057945f517ca1851018db4d8b18f1fff3855e3403",
+    "src/robotic_cutting_sim/isaac_sim_runner.py": "a932b71382d4c0ddc212b2caeb314f6eee889685d64ae232c02673ac0671e858",
+    "src/robotic_cutting_sim/live_material.py": "2f8b33088e776cbefef51bc3473609c1137bea3a2af7bb5433cfb14b4576a055",
+    "src/robotic_cutting_sim/material_diagnostics.py": "57e48aa3c2ecec092d7079dd5c81be41d2d602b8d188097a7e6b3bc8695165db",
+    "src/robotic_cutting_sim/tlmpm_v7_2.py": "37385f630fed06b4312dfc9b65036c93b8710a3bac1db35fa619d3cb09d1ce5f",
+    "src/robotic_cutting_sim/tlmpm_v7_2_contacts.py": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4"
+  },
+  "controller": {
+    "name": "trim_skim_c3",
+    "commit": "87e2a5642d4642ad3b09384e176530cc2603e2d0",
+    "sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506"
+  },
+  "original_evaluator_sha256": "983fa7048cb296a647e77ce0f376988a0922c83b20dd3e35bf67579281f9b55f",
+  "fixed_settings": {
+    "scene_seeds": [
+      512,
+      15
+    ],
+    "simulation_seed": 42,
+    "solver": "tlmpm_v7_2",
+    "particle_spacing_m": 0.001,
+    "grid_spacing_m": 0.004,
+    "material_dt_s": 0.0001,
+    "control_dt_s": 0.02,
+    "material_substeps_per_action": 200,
+    "actions": 1200,
+    "simulated_episode_s": 24,
+    "robot_substeps": 10,
+    "surface_update": "on_capture",
+    "physics_recording": "physical_state_stream_v1",
+    "camera_rig_profile": "wrist_camera_rig_v14",
+    "camera_ids": [
+      "global_d455",
+      "wrist_d405_0"
+    ],
+    "global_rgb_only": true,
+    "physical_grasp": true,
+    "material_reaction_to_physx": true,
+    "gpu_model": "NVIDIA GeForce RTX 5090",
+    "gpu_isolation": "GPU1 only; no competing GPU1 compute PID; unrelated GPU0 job retained"
+  },
+  "versions": {
+    "python": "3.12.12",
+    "newton": "1.6.1",
+    "warp-lang": "1.17.0",
+    "numpy": "2.3.1",
+    "scipy": "1.17.0",
+    "isaaclab": null,
+    "isaacsim": "6.2.0.0",
+    "torch": "2.11.0+cu128",
+    "usd-core": null,
+    "mujoco": "3.12.0",
+    "mujoco-warp": "3.12.0",
+    "newton-usd-schemas": "0.5.0",
+    "ovrtx": null,
+    "ovstage": null
+  },
+  "observations": {
+    "cameras": {
+      "global_d455": {
+        "rgb": {
+          "shape": [
+            480,
+            640,
+            3
+          ],
+          "dtype": "uint8"
+        },
+        "modalities": {
+          "shape": [
+            1
+          ],
+          "dtype": "<U3"
+        },
+        "physics_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "surface_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "native_physics_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "live_source": {
+          "shape": [],
+          "dtype": "<U26"
+        },
+        "camera_id": {
+          "shape": [],
+          "dtype": "<U11"
+        },
+        "K": {
+          "shape": [
+            3,
+            3
+          ],
+          "dtype": "float64"
+        },
+        "T_world_camera": {
+          "shape": [
+            4,
+            4
+          ],
+          "dtype": "float64"
+        },
+        "T_camera_world": {
+          "shape": [
+            4,
+            4
+          ],
+          "dtype": "float64"
+        },
+        "camera_extrinsics_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "physical_sensor_calibration_validated": {
+          "shape": [],
+          "dtype": "bool"
+        }
+      },
+      "wrist_d405_0": {
+        "rgb": {
+          "shape": [
+            480,
+            848,
+            3
+          ],
+          "dtype": "uint8"
+        },
+        "depth_m": {
+          "shape": [
+            480,
+            848
+          ],
+          "dtype": "float32"
+        },
+        "valid_mask": {
+          "shape": [
+            480,
+            848
+          ],
+          "dtype": "bool"
+        },
+        "physics_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "surface_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "native_physics_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "live_source": {
+          "shape": [],
+          "dtype": "<U26"
+        },
+        "camera_id": {
+          "shape": [],
+          "dtype": "<U12"
+        },
+        "sensor_model": {
+          "shape": [],
+          "dtype": "<U20"
+        },
+        "K": {
+          "shape": [
+            3,
+            3
+          ],
+          "dtype": "float64"
+        },
+        "T_world_camera": {
+          "shape": [
+            4,
+            4
+          ],
+          "dtype": "float64"
+        },
+        "T_camera_world": {
+          "shape": [
+            4,
+            4
+          ],
+          "dtype": "float64"
+        },
+        "camera_extrinsics_timestamp_s": {
+          "shape": [],
+          "dtype": "float64"
+        },
+        "prototype_sensor_model": {
+          "shape": [],
+          "dtype": "bool"
+        },
+        "physical_sensor_calibration_validated": {
+          "shape": [],
+          "dtype": "bool"
+        },
+        "T_world_hand": {
+          "shape": [
+            4,
+            4
+          ],
+          "dtype": "float64"
+        },
+        "T_hand_camera": {
+          "shape": [
+            4,
+            4
+          ],
+          "dtype": "float64"
+        }
+      }
+    },
+    "recorded_backend_proprio_shapes": {
+      "q": [
+        2,
+        7
+      ],
+      "qdot": [
+        2,
+        7
+      ],
+      "hand_pose": [
+        7
+      ],
+      "finger_q": [
+        2,
+        2
+      ],
+      "finger_qdot": [
+        2,
+        2
+      ]
+    },
+    "public_adapter_proprio_shapes": {
+      "q": [
+        7
+      ],
+      "qdot": [
+        7
+      ],
+      "hand_pose": [
+        7
+      ],
+      "finger_q": [
+        2
+      ],
+      "finger_qdot": [
+        2
+      ]
+    },
+    "proprio_scope": "Recorder retains both arms; public adapter filters arm0 as frozen observe() specifies",
+    "force_or_material_oracle_in_camera_npz": false
+  },
+  "timing_boundary": "Timing wrapper factory entry before scene/app/reset through finalization including original independent physical evaluation and full success media; process teardown and external recheck separately measured",
+  "memory_scope": "Observed action-loop samples, not proven peak bounds or a causal memory reduction",
+  "baseline": {
+    "512": {
+      "source_commit": "c8a573b6337ee6bc0ea0257badb3413f08b59a23",
+      "controller_sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506",
+      "agent_commit": "87e2a5642d4642ad3b09384e176530cc2603e2d0",
+      "checks": {
+        "independent_physical_pass": true,
+        "native_external_match": true,
+        "single_complete_attempt": true,
+        "expected_control": true,
+        "source": true,
+        "actual_actions": true,
+        "full_media": true
+      },
+      "timing": {
+        "factory_to_finalize_s": 813.351556204987,
+        "startup_to_first_step_s": 64.14589232500293,
+        "step_call_total_s": 736.0480612244573,
+        "step_interval_s": 737.0115099060058,
+        "finalize_s": 12.1093272640137,
+        "internal_evaluation_s": 2.3183699730143417,
+        "media_s": 8.799209529010113,
+        "snapshot_auxiliary_s": 0,
+        "control_step_total_s": 734.9906342946051,
+        "graph_total_s": 577.0653890871326,
+        "native_outer_process_s": 818.884,
+        "execution_wrapper_s": 820.292297535023
+      },
+      "outcome": {
+        "status": "PASS",
+        "checks": {
+          "selection_nonempty": true,
+          "selected_protrusions_removed": true,
+          "unselected_protrusions_retained": true,
+          "substrate_holds_below_plane_mass": true,
+          "detached_below_plane_mass_bounded": true,
+          "single_substrate_component": true
+        },
+        "metrics": {
+          "mechanical_components": 2,
+          "plane_local_z_m": 0.02,
+          "largest_component_below_plane_mass_share": 0.9999999999991656,
+          "detached_below_plane_mass_fraction": 0.0,
+          "reference_substrate_component_ids": [
+            0
+          ],
+          "items": [
+            {
+              "id": "p0",
+              "selected": true,
+              "reference_particles_above_plane": 332,
+              "reference_mass_above_plane_kg": 0.000498,
+              "removed_mass_fraction": 1.0,
+              "pass": true,
+              "residual_substrate_height_m": 0.0
+            }
+          ],
+          "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+        },
+        "missing_evidence": []
+      },
+      "integrity": {
+        "status": "PASS",
+        "checks": {
+          "initial_codes_zero": true,
+          "initial_continuous_graph": true,
+          "persistent_history_no_digit_rewrites": true,
+          "valid_digit_values": true,
+          "reference_matches_scene_sampler": true,
+          "reference_mass_budget": true,
+          "complete_episode": true,
+          "stream_finalized": true,
+          "stream_complete": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "nonzero_digit_rewrites": 0,
+          "code_encoding": "packed2",
+          "cuts": 2,
+          "frames": 121,
+          "particles": 102732,
+          "recorded_mass_kg": 0.15409799999999996,
+          "reference_mass_absolute_error_kg": 0.0
+        },
+        "scope": "Recording and persistent-history validity only; not the goal outcome"
+      },
+      "quality": {
+        "status": "REPORTED_NOT_SCORED",
+        "residual_substrate_height_m": {
+          "p0": 0.0
+        },
+        "surface": {
+          "status": "MEASURED",
+          "scope": "Frozen TRIM surface metrics, reported as quality only",
+          "measurement_spacing_xy_m": [
+            0.001,
+            0.001
+          ],
+          "grid_shape_xy": [
+            160,
+            32
+          ],
+          "valid_surface_fraction": 1.0,
+          "missing_surface_fraction": 0.0,
+          "maximum_substrate_surface_residual_height_m": 0.0,
+          "surface_p95_absolute_plane_error_m": 0.00048335499730992206,
+          "surface_rms_plane_error_m": 0.00017353532349418828,
+          "maximum_gouge_depth_m": 0.0014001250077783356,
+          "overcut_volume_m3": 7.224012675143752e-07,
+          "overcut_volume_fraction_of_initial_base": 0.007054699878070069
+        }
+      },
+      "home": "NOT_RUN",
+      "recording": {
+        "format": "physical_state_stream_v1",
+        "samples": 121,
+        "complete": true,
+        "finalized": true,
+        "mass": {
+          "particles": 102732,
+          "retained_stream_particle_count": 102732,
+          "total_reference_mass_kg": 0.15409799999999996,
+          "mass_array_sha256": "6fc209056042846f942f1f7eef5fb383b178c01d857414992fbd12317979dce1"
+        },
+        "code_bits_monotone": true,
+        "final_labelled_particles": 33692,
+        "final_unique_codes": [
+          0,
+          1,
+          2
+        ]
+      },
+      "numerical": {
+        "minimum_detF": 0.91002357006073,
+        "maximum_material_speed_m_s": 0.45099008083343506,
+        "maximum_plastic_strain": 0.8891199827194214
+      },
+      "observed_resources": {
+        "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+        "host_rss_mib": {
+          "min": 6053.59375,
+          "max": 6560.69921875
+        },
+        "gpu_job_mib": {
+          "min": 5030.0,
+          "max": 5350.0
+        },
+        "gpu1_other_memory_mib": {
+          "min": 47.0,
+          "max": 47.0
+        },
+        "competing_gpu1_compute_pids": []
+      },
+      "success_media": {
+        "status": "PASS",
+        "checks": {
+          "mp4_hash": true,
+          "original_frames": true,
+          "recording_hashes": true,
+          "source_identity": true,
+          "independent_physical_result": true,
+          "capture_times": true,
+          "codec_and_frames": true
+        },
+        "decode_status": "PASS",
+        "mp4_sha256": "6271b661852330b1d2669af51e366a14c6e444ac1535d7eb693adb847550ec5f",
+        "mp4_path": "media_000/episode.mp4"
+      },
+      "gpu_guard": "PASS",
+      "artifact_directory": "artifacts/native_baseline_002/seed_512",
+      "identity": {
+        "scene_hash": "0b67cc00549f0bc7268442264696fad4807bf5556449e79f129a116f8cba03a9",
+        "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+        "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+        "compiled_task_sha256": "d3054a69b28443390414731a14b48dbe8001e57d67a3b73e39253418c3456f2d",
+        "solver_configuration_sha256": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707"
+      },
+      "robot": {
+        "actions": 1200,
+        "cut_executions": 141,
+        "rejected": 0,
+        "grasp_status_counts": {
+          "HOLDING": 1200
+        },
+        "grasp_lost_steps": 0,
+        "invalid_grasp_contact_steps": 0,
+        "maximum_grasp_slip_m": 7.153670938611071e-07,
+        "maximum_grasp_rotation_rad": 7.335245447265139e-05,
+        "minimum_bilateral_loaded_tool_fraction": 1.0,
+        "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+        "secondary_command_max_change_rad": 0.0,
+        "reset_status": "PASS_STABLE_GRASP"
+      },
+      "contacts": {
+        "control_steps_with_blade_contact": 100,
+        "control_steps_with_particle_contact": 49,
+        "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+      },
+      "native_stage_means_ms": {
+        "camera_render_readback": {
+          "mean_ms": 25.185629002420075,
+          "exclusive_mean_ms": 18.374446070811246,
+          "steps_with_stage": 120
+        },
+        "grasp_contact_sample": {
+          "mean_ms": 27.084325030543063,
+          "exclusive_mean_ms": 20.722769171164447,
+          "steps_with_stage": 1200
+        },
+        "ik_controller": {
+          "mean_ms": 17.49970229982864,
+          "exclusive_mean_ms": 17.49970229982864,
+          "steps_with_stage": 1200
+        },
+        "physx_step": {
+          "mean_ms": 17.508774577606044,
+          "exclusive_mean_ms": 17.508774577606044,
+          "steps_with_stage": 1200
+        },
+        "surface_extract_usd": {
+          "mean_ms": 6.624168792380564,
+          "exclusive_mean_ms": 6.624168792380564,
+          "steps_with_stage": 120
+        },
+        "tlmpm_substeps_graph": {
+          "mean_ms": 480.8878242392772,
+          "exclusive_mean_ms": 480.8878242392772,
+          "steps_with_stage": 1200
+        }
+      }
+    },
+    "15": {
+      "source_commit": "c8a573b6337ee6bc0ea0257badb3413f08b59a23",
+      "controller_sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506",
+      "agent_commit": "87e2a5642d4642ad3b09384e176530cc2603e2d0",
+      "checks": {
+        "independent_physical_pass": true,
+        "native_external_match": true,
+        "single_complete_attempt": true,
+        "expected_control": true,
+        "source": true,
+        "actual_actions": true,
+        "full_media": true
+      },
+      "timing": {
+        "factory_to_finalize_s": 607.4353532509995,
+        "startup_to_first_step_s": 66.19518313600565,
+        "step_call_total_s": 526.9638739479415,
+        "step_interval_s": 527.9481769689883,
+        "finalize_s": 13.209695697005372,
+        "internal_evaluation_s": 3.1703502029995434,
+        "media_s": 9.047481178015005,
+        "snapshot_auxiliary_s": 0.014822439989075065,
+        "control_step_total_s": 525.8858780867595,
+        "graph_total_s": 361.78762031844235,
+        "native_outer_process_s": 612.709,
+        "execution_wrapper_s": 616.5110871810175
+      },
+      "outcome": {
+        "status": "PASS",
+        "checks": {
+          "selection_nonempty": true,
+          "selected_protrusions_removed": true,
+          "unselected_protrusions_retained": true,
+          "substrate_holds_below_plane_mass": true,
+          "detached_below_plane_mass_bounded": true,
+          "single_substrate_component": true
+        },
+        "metrics": {
+          "mechanical_components": 3,
+          "plane_local_z_m": 0.02,
+          "largest_component_below_plane_mass_share": 0.9999999999991656,
+          "detached_below_plane_mass_fraction": 0.0,
+          "reference_substrate_component_ids": [
+            0
+          ],
+          "items": [
+            {
+              "id": "p0",
+              "selected": true,
+              "reference_particles_above_plane": 495,
+              "reference_mass_above_plane_kg": 0.0007424999999999999,
+              "removed_mass_fraction": 1.0,
+              "pass": true,
+              "residual_substrate_height_m": 0.0
+            },
+            {
+              "id": "p1",
+              "selected": true,
+              "reference_particles_above_plane": 1003,
+              "reference_mass_above_plane_kg": 0.0015044999999999998,
+              "removed_mass_fraction": 1.0,
+              "pass": true,
+              "residual_substrate_height_m": 0.0
+            }
+          ],
+          "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+        },
+        "missing_evidence": []
+      },
+      "integrity": {
+        "status": "PASS",
+        "checks": {
+          "initial_codes_zero": true,
+          "initial_continuous_graph": true,
+          "persistent_history_no_digit_rewrites": true,
+          "valid_digit_values": true,
+          "reference_matches_scene_sampler": true,
+          "reference_mass_budget": true,
+          "complete_episode": true,
+          "stream_finalized": true,
+          "stream_complete": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "nonzero_digit_rewrites": 0,
+          "code_encoding": "packed2",
+          "cuts": 2,
+          "frames": 121,
+          "particles": 103898,
+          "recorded_mass_kg": 0.15584699999999996,
+          "reference_mass_absolute_error_kg": 0.0
+        },
+        "scope": "Recording and persistent-history validity only; not the goal outcome"
+      },
+      "quality": {
+        "status": "REPORTED_NOT_SCORED",
+        "residual_substrate_height_m": {
+          "p0": 0.0,
+          "p1": 0.0
+        },
+        "surface": {
+          "status": "MEASURED",
+          "scope": "Frozen TRIM surface metrics, reported as quality only",
+          "measurement_spacing_xy_m": [
+            0.001,
+            0.001
+          ],
+          "grid_shape_xy": [
+            160,
+            32
+          ],
+          "valid_surface_fraction": 0.999609375,
+          "missing_surface_fraction": 0.0003906249999999778,
+          "maximum_substrate_surface_residual_height_m": 2.5847339799510427e-05,
+          "surface_p95_absolute_plane_error_m": 0.00048594664611797294,
+          "surface_rms_plane_error_m": 0.0001882453687862396,
+          "maximum_gouge_depth_m": 0.02,
+          "overcut_volume_m3": 7.922896619309844e-07,
+          "overcut_volume_fraction_of_initial_base": 0.007737203729794769
+        }
+      },
+      "home": "NOT_RUN",
+      "recording": {
+        "format": "physical_state_stream_v1",
+        "samples": 121,
+        "complete": true,
+        "finalized": true,
+        "mass": {
+          "particles": 103898,
+          "retained_stream_particle_count": 103898,
+          "total_reference_mass_kg": 0.155847,
+          "mass_array_sha256": "460a259c788152247994964c6d5558307ea1b42d591da9bdc2b0beba9d543357"
+        },
+        "code_bits_monotone": true,
+        "final_labelled_particles": 85786,
+        "final_unique_codes": [
+          0,
+          1,
+          2
+        ]
+      },
+      "numerical": {
+        "minimum_detF": 0.8437452912330627,
+        "maximum_material_speed_m_s": 0.5339236259460449,
+        "maximum_plastic_strain": 1.2394087314605713
+      },
+      "observed_resources": {
+        "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+        "host_rss_mib": {
+          "min": 6082.7890625,
+          "max": 6637.734375
+        },
+        "gpu_job_mib": {
+          "min": 5308.0,
+          "max": 5926.0
+        },
+        "gpu1_other_memory_mib": {
+          "min": 47.0,
+          "max": 47.0
+        },
+        "competing_gpu1_compute_pids": []
+      },
+      "success_media": {
+        "status": "PASS",
+        "checks": {
+          "mp4_hash": true,
+          "original_frames": true,
+          "recording_hashes": true,
+          "source_identity": true,
+          "independent_physical_result": true,
+          "capture_times": true,
+          "codec_and_frames": true
+        },
+        "decode_status": "PASS",
+        "mp4_sha256": "218f823d746083ff290a89b265a06fe3fc163625696dcda3a707830986f9fd05",
+        "mp4_path": "media_000/episode.mp4"
+      },
+      "gpu_guard": "PASS",
+      "artifact_directory": "artifacts/native_baseline_003/seed_15",
+      "identity": {
+        "scene_hash": "30beffb71ca5be34934a88398207875d93a6c6058178ab0a0f69d7043755d921",
+        "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+        "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+        "compiled_task_sha256": "7abab37e2470628a611686b2cd36ed6e272e6e5addd9d39f6927dda6c62b8f00",
+        "solver_configuration_sha256": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707"
+      },
+      "robot": {
+        "actions": 1200,
+        "cut_executions": 287,
+        "rejected": 0,
+        "grasp_status_counts": {
+          "HOLDING": 1200
+        },
+        "grasp_lost_steps": 0,
+        "invalid_grasp_contact_steps": 0,
+        "maximum_grasp_slip_m": 9.203764442943884e-07,
+        "maximum_grasp_rotation_rad": 9.608701204410702e-05,
+        "minimum_bilateral_loaded_tool_fraction": 1.0,
+        "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+        "secondary_command_max_change_rad": 0.0,
+        "reset_status": "PASS_STABLE_GRASP"
+      },
+      "contacts": {
+        "control_steps_with_blade_contact": 248,
+        "control_steps_with_particle_contact": 512,
+        "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+      },
+      "native_stage_means_ms": {
+        "camera_render_readback": {
+          "mean_ms": 29.84181941191006,
+          "exclusive_mean_ms": 18.315466582668403,
+          "steps_with_stage": 120
+        },
+        "grasp_contact_sample": {
+          "mean_ms": 27.511784512995895,
+          "exclusive_mean_ms": 21.02338829448854,
+          "steps_with_stage": 1200
+        },
+        "ik_controller": {
+          "mean_ms": 17.674102028322523,
+          "exclusive_mean_ms": 17.674102028322523,
+          "steps_with_stage": 1200
+        },
+        "physx_step": {
+          "mean_ms": 16.80756286405085,
+          "exclusive_mean_ms": 16.80756286405085,
+          "steps_with_stage": 1200
+        },
+        "surface_extract_usd": {
+          "mean_ms": 11.333368737396086,
+          "exclusive_mean_ms": 11.333368737396086,
+          "steps_with_stage": 120
+        },
+        "tlmpm_substeps_graph": {
+          "mean_ms": 301.48968359870196,
+          "exclusive_mean_ms": 301.48968359870196,
+          "steps_with_stage": 1200
+        }
+      }
+    }
+  },
+  "optimized": {
+    "512": {
+      "source_commit": "0e92f1d917b8117faf2426b168ff25e151ae6d79",
+      "controller_sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506",
+      "agent_commit": "87e2a5642d4642ad3b09384e176530cc2603e2d0",
+      "checks": {
+        "independent_physical_pass": true,
+        "native_external_match": true,
+        "single_complete_attempt": true,
+        "expected_control": true,
+        "source": true,
+        "actual_actions": true,
+        "full_media": true
+      },
+      "timing": {
+        "factory_to_finalize_s": 621.6069238419877,
+        "startup_to_first_step_s": 70.66729160599061,
+        "step_call_total_s": 537.871154810302,
+        "step_interval_s": 538.8384019450168,
+        "finalize_s": 12.020980159984902,
+        "internal_evaluation_s": 2.3682595360151026,
+        "media_s": 8.685048393992474,
+        "snapshot_auxiliary_s": 0,
+        "control_step_total_s": 536.7525998377823,
+        "graph_total_s": 388.7145845099294,
+        "native_outer_process_s": 626.946,
+        "execution_wrapper_s": 630.6325913949986
+      },
+      "outcome": {
+        "status": "PASS",
+        "checks": {
+          "selection_nonempty": true,
+          "selected_protrusions_removed": true,
+          "unselected_protrusions_retained": true,
+          "substrate_holds_below_plane_mass": true,
+          "detached_below_plane_mass_bounded": true,
+          "single_substrate_component": true
+        },
+        "metrics": {
+          "mechanical_components": 2,
+          "plane_local_z_m": 0.02,
+          "largest_component_below_plane_mass_share": 0.9999999999991656,
+          "detached_below_plane_mass_fraction": 0.0,
+          "reference_substrate_component_ids": [
+            0
+          ],
+          "items": [
+            {
+              "id": "p0",
+              "selected": true,
+              "reference_particles_above_plane": 332,
+              "reference_mass_above_plane_kg": 0.000498,
+              "removed_mass_fraction": 1.0,
+              "pass": true,
+              "residual_substrate_height_m": 0.0
+            }
+          ],
+          "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+        },
+        "missing_evidence": []
+      },
+      "integrity": {
+        "status": "PASS",
+        "checks": {
+          "initial_codes_zero": true,
+          "initial_continuous_graph": true,
+          "persistent_history_no_digit_rewrites": true,
+          "valid_digit_values": true,
+          "reference_matches_scene_sampler": true,
+          "reference_mass_budget": true,
+          "complete_episode": true,
+          "stream_finalized": true,
+          "stream_complete": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "nonzero_digit_rewrites": 0,
+          "code_encoding": "packed2",
+          "cuts": 2,
+          "frames": 121,
+          "particles": 102732,
+          "recorded_mass_kg": 0.15409799999999996,
+          "reference_mass_absolute_error_kg": 0.0
+        },
+        "scope": "Recording and persistent-history validity only; not the goal outcome"
+      },
+      "quality": {
+        "status": "REPORTED_NOT_SCORED",
+        "residual_substrate_height_m": {
+          "p0": 0.0
+        },
+        "surface": {
+          "status": "MEASURED",
+          "scope": "Frozen TRIM surface metrics, reported as quality only",
+          "measurement_spacing_xy_m": [
+            0.001,
+            0.001
+          ],
+          "grid_shape_xy": [
+            160,
+            32
+          ],
+          "valid_surface_fraction": 1.0,
+          "missing_surface_fraction": 0.0,
+          "maximum_substrate_surface_residual_height_m": 0.0,
+          "surface_p95_absolute_plane_error_m": 0.0004833697910246225,
+          "surface_rms_plane_error_m": 0.0001735389149699079,
+          "maximum_gouge_depth_m": 0.0014020956851701315,
+          "overcut_volume_m3": 7.224132052157224e-07,
+          "overcut_volume_fraction_of_initial_base": 0.007054816457184788
+        }
+      },
+      "home": "NOT_RUN",
+      "recording": {
+        "format": "physical_state_stream_v1",
+        "samples": 121,
+        "complete": true,
+        "finalized": true,
+        "mass": {
+          "particles": 102732,
+          "retained_stream_particle_count": 102732,
+          "total_reference_mass_kg": 0.15409799999999996,
+          "mass_array_sha256": "6fc209056042846f942f1f7eef5fb383b178c01d857414992fbd12317979dce1"
+        },
+        "code_bits_monotone": true,
+        "final_labelled_particles": 33692,
+        "final_unique_codes": [
+          0,
+          1,
+          2
+        ]
+      },
+      "numerical": {
+        "minimum_detF": 0.9101927280426025,
+        "maximum_material_speed_m_s": 0.45211002230644226,
+        "maximum_plastic_strain": 0.8889166116714478
+      },
+      "observed_resources": {
+        "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+        "host_rss_mib": {
+          "min": 6090.37890625,
+          "max": 6561.90625
+        },
+        "gpu_job_mib": {
+          "min": 5052.0,
+          "max": 5350.0
+        },
+        "gpu1_other_memory_mib": {
+          "min": 47.0,
+          "max": 47.0
+        },
+        "competing_gpu1_compute_pids": []
+      },
+      "success_media": {
+        "status": "PASS",
+        "checks": {
+          "mp4_hash": true,
+          "original_frames": true,
+          "recording_hashes": true,
+          "source_identity": true,
+          "independent_physical_result": true,
+          "capture_times": true,
+          "codec_and_frames": true
+        },
+        "decode_status": "PASS",
+        "mp4_sha256": "d5b6e5eb1fe71570233dc71a4021a28d293b4036274999272a0f50773c805559",
+        "mp4_path": "media_000/episode.mp4"
+      },
+      "gpu_guard": "PASS",
+      "artifact_directory": "artifacts/native_optimized_001/seed_512",
+      "identity": {
+        "scene_hash": "0b67cc00549f0bc7268442264696fad4807bf5556449e79f129a116f8cba03a9",
+        "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+        "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+        "compiled_task_sha256": "d3054a69b28443390414731a14b48dbe8001e57d67a3b73e39253418c3456f2d",
+        "solver_configuration_sha256": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707"
+      },
+      "robot": {
+        "actions": 1200,
+        "cut_executions": 141,
+        "rejected": 0,
+        "grasp_status_counts": {
+          "HOLDING": 1200
+        },
+        "grasp_lost_steps": 0,
+        "invalid_grasp_contact_steps": 0,
+        "maximum_grasp_slip_m": 7.153670938611071e-07,
+        "maximum_grasp_rotation_rad": 7.077249759993415e-05,
+        "minimum_bilateral_loaded_tool_fraction": 1.0,
+        "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+        "secondary_command_max_change_rad": 0.0,
+        "reset_status": "PASS_STABLE_GRASP"
+      },
+      "contacts": {
+        "control_steps_with_blade_contact": 100,
+        "control_steps_with_particle_contact": 49,
+        "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+      },
+      "native_stage_means_ms": {
+        "camera_render_readback": {
+          "mean_ms": 24.66423614168889,
+          "exclusive_mean_ms": 17.856659303336833,
+          "steps_with_stage": 120
+        },
+        "grasp_contact_sample": {
+          "mean_ms": 28.33642539786524,
+          "exclusive_mean_ms": 21.849877488615068,
+          "steps_with_stage": 1200
+        },
+        "ik_controller": {
+          "mean_ms": 17.659575747748022,
+          "exclusive_mean_ms": 17.659575747748022,
+          "steps_with_stage": 1200
+        },
+        "physx_step": {
+          "mean_ms": 17.163180254089337,
+          "exclusive_mean_ms": 17.163180254089337,
+          "steps_with_stage": 1200
+        },
+        "surface_extract_usd": {
+          "mean_ms": 6.617857268308095,
+          "exclusive_mean_ms": 6.617857268308095,
+          "steps_with_stage": 120
+        },
+        "tlmpm_substeps_graph": {
+          "mean_ms": 323.9288204249412,
+          "exclusive_mean_ms": 323.9288204249412,
+          "steps_with_stage": 1200
+        }
+      }
+    },
+    "15": {
+      "source_commit": "0e92f1d917b8117faf2426b168ff25e151ae6d79",
+      "controller_sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506",
+      "agent_commit": "87e2a5642d4642ad3b09384e176530cc2603e2d0",
+      "checks": {
+        "independent_physical_pass": true,
+        "native_external_match": true,
+        "single_complete_attempt": true,
+        "expected_control": true,
+        "source": true,
+        "actual_actions": true,
+        "full_media": true
+      },
+      "timing": {
+        "factory_to_finalize_s": 412.60419764602557,
+        "startup_to_first_step_s": 70.46197986800689,
+        "step_call_total_s": 328.6918393796659,
+        "step_interval_s": 329.6589346409892,
+        "finalize_s": 12.403989225014811,
+        "internal_evaluation_s": 2.468635514000198,
+        "media_s": 8.91393723001238,
+        "snapshot_auxiliary_s": 0,
+        "control_step_total_s": 327.60147543333005,
+        "graph_total_s": 173.8456128759717,
+        "native_outer_process_s": 417.821,
+        "execution_wrapper_s": 421.55757650599116
+      },
+      "outcome": {
+        "status": "PASS",
+        "checks": {
+          "selection_nonempty": true,
+          "selected_protrusions_removed": true,
+          "unselected_protrusions_retained": true,
+          "substrate_holds_below_plane_mass": true,
+          "detached_below_plane_mass_bounded": true,
+          "single_substrate_component": true
+        },
+        "metrics": {
+          "mechanical_components": 3,
+          "plane_local_z_m": 0.02,
+          "largest_component_below_plane_mass_share": 0.9999999999991656,
+          "detached_below_plane_mass_fraction": 0.0,
+          "reference_substrate_component_ids": [
+            0
+          ],
+          "items": [
+            {
+              "id": "p0",
+              "selected": true,
+              "reference_particles_above_plane": 495,
+              "reference_mass_above_plane_kg": 0.0007424999999999999,
+              "removed_mass_fraction": 1.0,
+              "pass": true,
+              "residual_substrate_height_m": 0.0
+            },
+            {
+              "id": "p1",
+              "selected": true,
+              "reference_particles_above_plane": 1003,
+              "reference_mass_above_plane_kg": 0.0015044999999999998,
+              "removed_mass_fraction": 1.0,
+              "pass": true,
+              "residual_substrate_height_m": 0.0
+            }
+          ],
+          "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+        },
+        "missing_evidence": []
+      },
+      "integrity": {
+        "status": "PASS",
+        "checks": {
+          "initial_codes_zero": true,
+          "initial_continuous_graph": true,
+          "persistent_history_no_digit_rewrites": true,
+          "valid_digit_values": true,
+          "reference_matches_scene_sampler": true,
+          "reference_mass_budget": true,
+          "complete_episode": true,
+          "stream_finalized": true,
+          "stream_complete": true
+        },
+        "metrics": {
+          "initial_components": 1,
+          "nonzero_digit_rewrites": 0,
+          "code_encoding": "packed2",
+          "cuts": 2,
+          "frames": 121,
+          "particles": 103898,
+          "recorded_mass_kg": 0.15584699999999996,
+          "reference_mass_absolute_error_kg": 0.0
+        },
+        "scope": "Recording and persistent-history validity only; not the goal outcome"
+      },
+      "quality": {
+        "status": "REPORTED_NOT_SCORED",
+        "residual_substrate_height_m": {
+          "p0": 0.0,
+          "p1": 0.0
+        },
+        "surface": {
+          "status": "MEASURED",
+          "scope": "Frozen TRIM surface metrics, reported as quality only",
+          "measurement_spacing_xy_m": [
+            0.001,
+            0.001
+          ],
+          "grid_shape_xy": [
+            160,
+            32
+          ],
+          "valid_surface_fraction": 0.999609375,
+          "missing_surface_fraction": 0.0003906249999999778,
+          "maximum_substrate_surface_residual_height_m": 2.5137673866127558e-05,
+          "surface_p95_absolute_plane_error_m": 0.00048606138756430994,
+          "surface_rms_plane_error_m": 0.00018827163092203342,
+          "maximum_gouge_depth_m": 0.02,
+          "overcut_volume_m3": 7.923039634919447e-07,
+          "overcut_volume_fraction_of_initial_base": 0.0077373433934760216
+        }
+      },
+      "home": "NOT_RUN",
+      "recording": {
+        "format": "physical_state_stream_v1",
+        "samples": 121,
+        "complete": true,
+        "finalized": true,
+        "mass": {
+          "particles": 103898,
+          "retained_stream_particle_count": 103898,
+          "total_reference_mass_kg": 0.155847,
+          "mass_array_sha256": "460a259c788152247994964c6d5558307ea1b42d591da9bdc2b0beba9d543357"
+        },
+        "code_bits_monotone": true,
+        "final_labelled_particles": 85786,
+        "final_unique_codes": [
+          0,
+          1,
+          2
+        ]
+      },
+      "numerical": {
+        "minimum_detF": 0.8438251614570618,
+        "maximum_material_speed_m_s": 0.5382744669914246,
+        "maximum_plastic_strain": 1.2390124797821045
+      },
+      "observed_resources": {
+        "scope": "Observed samples during action loop, not a causal peak or allocated-memory bound",
+        "host_rss_mib": {
+          "min": 6030.40234375,
+          "max": 6506.0546875
+        },
+        "gpu_job_mib": {
+          "min": 5052.0,
+          "max": 5638.0
+        },
+        "gpu1_other_memory_mib": {
+          "min": 47.0,
+          "max": 47.0
+        },
+        "competing_gpu1_compute_pids": []
+      },
+      "success_media": {
+        "status": "PASS",
+        "checks": {
+          "mp4_hash": true,
+          "original_frames": true,
+          "recording_hashes": true,
+          "source_identity": true,
+          "independent_physical_result": true,
+          "capture_times": true,
+          "codec_and_frames": true
+        },
+        "decode_status": "PASS",
+        "mp4_sha256": "4c78534b861547f797f41678bdfef3e5772decf8e4df907616939ca7bc3aafe6",
+        "mp4_path": "media_000/episode.mp4"
+      },
+      "gpu_guard": "PASS",
+      "artifact_directory": "artifacts/native_optimized_001/seed_15",
+      "identity": {
+        "scene_hash": "30beffb71ca5be34934a88398207875d93a6c6058178ab0a0f69d7043755d921",
+        "material_hash": "6643c6c74db58a78324d1b29fda848664e5f3a1917ab75b3dfd89beee47eb086",
+        "goal_hash": "5e7b6665e41840e427f184496557f7e17f7c001236286c984de966e8075bc901",
+        "compiled_task_sha256": "7abab37e2470628a611686b2cd36ed6e272e6e5addd9d39f6927dda6c62b8f00",
+        "solver_configuration_sha256": "13a09c4f0b7beecb4ffa34ec03fda29860dc6620439b036da385f47245f04707"
+      },
+      "robot": {
+        "actions": 1200,
+        "cut_executions": 287,
+        "rejected": 0,
+        "grasp_status_counts": {
+          "HOLDING": 1200
+        },
+        "grasp_lost_steps": 0,
+        "invalid_grasp_contact_steps": 0,
+        "maximum_grasp_slip_m": 8.596875629887718e-07,
+        "maximum_grasp_rotation_rad": 9.517246357509875e-05,
+        "minimum_bilateral_loaded_tool_fraction": 1.0,
+        "secondary_joint_max_motion_from_first_rad": 2.0231427644290534e-11,
+        "secondary_command_max_change_rad": 0.0,
+        "reset_status": "PASS_STABLE_GRASP"
+      },
+      "contacts": {
+        "control_steps_with_blade_contact": 248,
+        "control_steps_with_particle_contact": 519,
+        "scope": "1200 recorded control boundaries; detailed rigid substep trace retained"
+      },
+      "native_stage_means_ms": {
+        "camera_render_readback": {
+          "mean_ms": 28.948765535945615,
+          "exclusive_mean_ms": 18.165127333680477,
+          "steps_with_stage": 120
+        },
+        "grasp_contact_sample": {
+          "mean_ms": 28.28415957000592,
+          "exclusive_mean_ms": 21.765351821353153,
+          "steps_with_stage": 1200
+        },
+        "ik_controller": {
+          "mean_ms": 17.736154305530363,
+          "exclusive_mean_ms": 17.736154305530363,
+          "steps_with_stage": 1200
+        },
+        "physx_step": {
+          "mean_ms": 16.539671483794034,
+          "exclusive_mean_ms": 16.539671483794034,
+          "steps_with_stage": 1200
+        },
+        "surface_extract_usd": {
+          "mean_ms": 10.595757294843981,
+          "exclusive_mean_ms": 10.595757294843981,
+          "steps_with_stage": 120
+        },
+        "tlmpm_substeps_graph": {
+          "mean_ms": 144.87134406330975,
+          "exclusive_mean_ms": 144.87134406330975,
+          "steps_with_stage": 1200
+        }
+      }
+    }
+  },
+  "comparison": {
+    "512": {
+      "full_episode_speedup": 1.3084660498597354,
+      "action_loop_speedup": 1.3677783677734436,
+      "graph_speedup": 1.4845478201304587,
+      "identity_checks": {
+        "controller_sha256": true,
+        "agent_commit": true,
+        "scene_hash": true,
+        "material_hash": true,
+        "solver_hash": true,
+        "goal_hash": true,
+        "compiled_task_sha256": true,
+        "observations": true
+      },
+      "configuration_differences": {
+        "material_diagnostics": [
+          null,
+          "device_reduction_v1"
+        ],
+        "v7_2_optimizations": [
+          null,
+          true
+        ]
+      },
+      "quality_notes": "Original descriptive metrics; missing-surface cells and20mm gouge proxy remain unscored limitations; no thresholds changed",
+      "final_codes_identical": true,
+      "all_recorded_code_samples_identical": false,
+      "mass_array_sha256_identical": true
+    },
+    "15": {
+      "full_episode_speedup": 1.4721986754291825,
+      "action_loop_speedup": 1.6014981591320843,
+      "graph_speedup": 2.0810857077915212,
+      "identity_checks": {
+        "controller_sha256": true,
+        "agent_commit": true,
+        "scene_hash": true,
+        "material_hash": true,
+        "solver_hash": true,
+        "goal_hash": true,
+        "compiled_task_sha256": true,
+        "observations": true
+      },
+      "configuration_differences": {
+        "material_diagnostics": [
+          null,
+          "device_reduction_v1"
+        ],
+        "v7_2_optimizations": [
+          null,
+          true
+        ]
+      },
+      "quality_notes": "Original descriptive metrics; missing-surface cells and20mm gouge proxy remain unscored limitations; no thresholds changed",
+      "final_codes_identical": true,
+      "all_recorded_code_samples_identical": false,
+      "mass_array_sha256_identical": true
+    }
+  },
+  "pooled": {
+    "baseline_total_s": 1420.7869094559865,
+    "optimized_total_s": 1034.2111214880133,
+    "pooled_time_ratio": 1.3737880786002103,
+    "pooled_time_reduction_percent": 27.20856909612093,
+    "baseline15_only_auxiliary_snapshot_s": 0.014822439989075065
+  },
+  "isolated_components": {
+    "scope": "Existing eager/same-state probes are not complete Native timing; their NumPy2.5.4 differs from Native2.3.1",
+    "blade_200_launches": {
+      "baseline_ms": 153.53,
+      "optimized_air_ms": 1.012,
+      "optimized_contact_ms": 1.255,
+      "particle_arrays_exact": true,
+      "reaction_atomic_order_difference_approx": 2e-10
+    },
+    "diagnostics": {
+      "particles": 102732,
+      "baseline_warm_ms": 11.100354,
+      "optimized_warm_ms": 0.201098,
+      "first_reduction_compile_ms": 113.9,
+      "readback_bytes": 16,
+      "partials_bytes": 25696,
+      "same_state_scalars_equal": true,
+      "read_only_state_hashes_equal": true,
+      "nonfinite_field_injections_rejected": true
+    }
+  },
+  "focused_checks": {
+    "contact_cpu": "PASS8;56 original/current arrays exact",
+    "diagnostics_finite_config_cpu": "PASS;includes nonfinite fields, tiny impulse, reset lifetime and rollback",
+    "existing_api_observation_action_streaming_cpu": "PASS15",
+    "frozen_v7_cut_source_binding": "PASS",
+    "max_source_review": "PASS",
+    "qualitative_cut_and_final_image_review": "PASS for both pairs;no obvious regression",
+    "full_mp4_verification": "PASS4/4",
+    "home": "NOT_RUN",
+    "surface_quality": "REPORTED_NOT_SCORED",
+    "large_historical_matrix": "NOT_RUN for WP16"
+  },
+  "failed_attempts": [
+    {
+      "path": "artifacts/native_baseline_001/seed_512",
+      "steps": 0,
+      "reason": "missing task snapshot asset cache",
+      "native_wall_s": 20.769,
+      "preserved": true
+    },
+    {
+      "path": "artifacts/native_baseline_002/seed_512/evaluator",
+      "steps": 1200,
+      "reason": "external sandbox hid old frozen evaluator source",
+      "repair": "Same original frozen evaluator, read-only source explicitly visible; new artifacts/native_baseline_002_seed512_evaluation_repair_001,2.43033146s CPU, no physics/media rerun",
+      "preserved": true
+    }
+  ],
+  "rejected_candidate": "Tool projection/link cache removed after actual seed15 state had zero eligible link searches; prototype and compile failure retained locally",
+  "previous_batch": "PAUSED_UNCHANGED",
+  "artifact_scope": "Relative locators identify locally retained raw artifacts; large recordings and MP4s are not checked into this repository",
+  "limits": [
+    "Material parameters provisional and uncalibrated",
+    "Intermediate state/code histories are not bitwise identical",
+    "Seed15 missing surface fraction0.000390625 and20mm gouge proxy remain descriptive limitations",
+    "No new policy training or broader VLA validation",
+    "Full-episode1.5-2x aspiration not uniformly reached"
+  ]
+}

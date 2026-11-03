@@ -11,6 +11,7 @@ import hashlib
 from pathlib import Path
 import warp as wp
 from . import tlmpm_v5 as B, tlmpm_v7 as V, tlmpm_v7_1 as I
+from . import tlmpm_v7_2_contacts as H
 from .tlmpm_v7_1 import _interface, _endpoint_work
 
 SOLVER_NAME='tlmpm_v7_2'
@@ -107,15 +108,21 @@ def _complete_links(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3),
 class TLMPM(I.TLMPM):
     solver_name=SOLVER_NAME
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self,*args,optimize_contacts=True,**kwargs):
         super().__init__(*args,**kwargs)
+        self.optimize_contacts = bool(optimize_contacts)
+        if self.optimize_contacts:
+            wp.load_module(module=H.__name__,device=self.device)
         wp.load_module(module=__name__,device=self.device)
 
     def step(self,advance=True):
         with wp.ScopedDevice(self.device):
             wp.copy(self.link_previous_pose,self.previous_pose)
             wp.copy(self.link_velocity_start,self.v)
-            _SHARED_V7_STEP(self,advance=False)
+            if self.optimize_contacts:
+                H.step(self,advance=False)
+            else:
+                _SHARED_V7_STEP(self,advance=False)
             wp.copy(self.link_codes,self.code)
             wp.launch(_complete_links,self.n,[self.x_start,self.x,self.link_velocity_start,self.mass,
                 self.link_codes,self.code,self.front_reached,self.nodes,self.weights,self.gradients,
@@ -133,5 +140,9 @@ class TLMPM(I.TLMPM):
             'candidate_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'parent_candidate_source_sha256':hashlib.sha256(Path(I.__file__).read_bytes()).hexdigest(),
             'maximum_rotation_per_substep_rad':1.e-4,
+            'optimize_contacts':self.optimize_contacts,
+            'contact_execution':'skip_zero_reaction_atomics_v1' if self.optimize_contacts else 'original_v7',
+            'contact_source_sha256':hashlib.sha256(Path(H.__file__).read_bytes()).hexdigest()
+                if self.optimize_contacts else None,
             'scope':'Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. '
                     'No general rotational CCD or physical calibration; original v7 CUT profile unchanged.'}

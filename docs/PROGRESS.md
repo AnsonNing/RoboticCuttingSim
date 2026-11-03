@@ -1,3 +1,21 @@
+# WP-16 performance — 2026-11-04 — paired Native validated
+
+- Scoped v7_2 contact execution avoids exactly-zero blade reaction atomics;
+  optional device diagnostics retain safety checks with a 16-byte readback.
+  Existing CUDA Graph, 1mm/4mm/0.1ms/50Hz and all original thresholds remain.
+- Full 24s episodes: seed512 813.352→621.607s (1.308×),
+  seed15 607.435→412.604s (1.472×); pooled wall time falls 27.21%.
+- Both baseline/optimized pairs pass original independent physical integrity
+  and outcome. All four complete MP4s/raw identities verified; final cut codes
+  and mass arrays match. Intermediate GPU states are not bitwise identical.
+- Focused contact/diagnostic/source and existing API/observation/action/streaming
+  checks PASS. Agentic control robot, VLA and policy consumers keep the same
+  action/observation contract; runtime options expose optimization and rollback.
+- Quality remains descriptive, including seed15 missing cells/20mm gouge proxy;
+  HOME NOT_RUN, materials uncalibrated. Previous batch remains PAUSED unchanged.
+- [Measured timings, physical/surface results, memory and runtime selection](reports/WP16_PERFORMANCE_OPTIMIZATION.md),
+  [compact evidence](evidence/wp16/performance_001.json).
+
 # WP-15 recovery — agentic control robot — 2026-11-03 — evaluation complete
 
 - Opt-in exact-precision streamed recording, interruption recovery, memory
