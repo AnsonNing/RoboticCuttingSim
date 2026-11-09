@@ -599,3 +599,32 @@ Deviations and refinements:
 Measured on CPU (development figures, not performance rows): Lab build plus reset for N=3 B1 takes about 1.8 s
 (solver init 0.84 s). A 50-step N=4 coupling run takes 10.3 s wall including the build. The B2 2 s settle for N=2
 takes 8.4 s wall. The full T suite takes 110 s.
+
+### Stage S1 (GPU0, robot-only gates, then material rows), 2026-11-10
+
+Report: `docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md`; evidence `docs/evidence/rl_ready/p1_1b_s1_001.json`; raw
+outputs `artifacts/rl_ready/p1_1b/<run>/`. All rows `SHARED_GPU` (GPU0 co-tenants at 65-90 % SM).
+
+Deviations and refinements:
+
+1. **Table geometry (fix of §3.1).** §3.1 prescribed the static colliders "exactly as `isaac_lab_env.py:267-275`",
+   i.e. the legacy 1.8 x 1.2 m table centered at the origin. For WP-12 flat-board tasks Native places the table
+   from `task.table_box_world` (`isaac_sim_runner.py:956-966`; for seeded TRIM y from -0.075 to 0.6 m). With
+   the legacy table the hand of the TRIM skim pose (hand horizontal, about 0.2 m to -y of the edge) hit the
+   table and the edge stalled 6 cm above the cut plane. `lab_scene.table_box(task)` now follows Native (legacy
+   table only when a task declares no box); `rigid_scene_key` includes it. Rows before commit `359ce0d`'s
+   source state used the legacy table and are kept as superseded.
+2. **Graph capture and Python state.** Callbacks captured into the Newton substep graph must not branch on Python
+   state after binding: the B2 contact callback samples unconditionally once bound (an earlier `_sampling`
+   flag would have been frozen at capture time). If a Newton graph was captured before the material existed
+   (B2 captures during the settle), `_attach_material` drops it and Newton recaptures on the next step, so the
+   wrench kernel reads the material's `pending_wrench` buffer.
+3. **Host syncs.** `targets[:, cols] = value` (index_put with a device index) synchronized; replaced by masks.
+   T2 then finds exactly one host read per step (`check_valid`, strict mode) and no Torch sync.
+4. **Deterministic mode** sets `MJWarpSolverCfg.disable_sensors=True` (Newton's precondition; no MuJoCo sensors
+   are used). The first deterministic build compiled its kernel variants for 9 minutes (cold cache).
+5. **Material coupling.** `material="tlmpm_v7_2"` builds `BatchedCuttingMaterial(backend="isaac_lab_newton")`
+   from the measured HOME edge and pad boxes at the first `reset()` (recipients: handle + both finger pads).
+   Rewards stay zero (`reward_available` false): the packed reward is not wired into this env yet.
+6. **GPU G-probe driver.** G2 material rows use a device reference-tracking driver of `edge_delta_v1` on the
+   task's `reference_action` (not a policy, not the WP-17 controller).

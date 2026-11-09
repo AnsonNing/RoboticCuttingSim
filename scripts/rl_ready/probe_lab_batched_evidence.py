@@ -43,14 +43,23 @@ def _row_summary(name, r):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--source-hash", default=None, help="authoritative workload_b_sources_sha256 (default: newest)")
     args = parser.parse_args()
     rows = {p.parent.name: _load(p) for p in sorted(RAW.glob("*/row.json"))}
     compares = {p.parent.name: _load(p) for p in sorted(RAW.glob("compare_*/compare.json"))}
     summaries = {name: _row_summary(name, r) for name, r in rows.items()}
-    g0 = {n: s for n, s in summaries.items() if s["probe"] == "g0"}
-    t2 = {n: s for n, s in summaries.items() if s["probe"] == "t2"}
-    g1 = {n: s for n, s in summaries.items() if s["probe"] == "g1"}
-    g2 = {n: s for n, s in summaries.items() if s["probe"] == "g2"}
+    # Authoritative rows: the final workload B source state (hash recorded by the probe); earlier rows (legacy
+    # table, pre-fix host sync, preliminary mixed-source G1) are kept and labelled superseded, never deleted.
+    hashes = {name: (r.get("commit") or {}).get("workload_b_sources_sha256") for name, r in rows.items()}
+    final = args.source_hash or hashes.get(max((n for n in rows if hashes[n]), key=lambda n: rows[n].get(
+        "wall_s_total_process", 0) and Path(RAW/n/"row.json").stat().st_mtime))
+    for name, summary in summaries.items():
+        summary["authoritative"] = hashes[name] == final
+        summary["workload_b_sources_sha256"] = hashes[name]
+    auth = {n: s for n, s in summaries.items() if s["authoritative"]}
+    g0 = {n: s for n, s in auth.items() if s["probe"] == "g0"}
+    t2 = {n: s for n, s in auth.items() if s["probe"] == "t2"}
+    g2 = {n: s for n, s in auth.items() if s["probe"] == "g2"}
     evidence = {
         "schema": "rcs_rl_ready_p1_1b_s1_v1", "work_package": "P1-1b stage S1 (robot-only) on GPU0",
         "adr": "docs/adr/0022-batched-robot-workload-b.md", "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md",
@@ -60,11 +69,11 @@ def main():
                            "/mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock"},
         "evidence_commit": subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
                                           cwd=ROOT).stdout.strip(),
-        "rows": summaries, "comparisons": compares,
+        "authoritative_source_sha256": final, "rows": summaries, "comparisons": compares,
         "gates": {
             "G0_graph_safety": {n: s.get("g0_graph_safety", {}).get("status") for n, s in g0.items()},
             "T2_host_syncs": {n: s.get("t2", {}).get("status") for n, s in t2.items()},
-            "G1": {n: c for n, c in compares.items() if n.startswith("compare_g1")},
+            "G1": {n: c for n, c in compares.items() if n.startswith("compare_g1") and n.endswith("_002")},
             "G2_rows": sorted(g2),
         },
         "not_run": ["G3 (B2 restore vs fresh settle)", "G4 (batched N=1 B2 vs single Lab env)",
