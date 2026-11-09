@@ -482,6 +482,7 @@ def main():
                     git_dirty=bool(git("status", "--porcelain", "--untracked-files=no")),
                     cuda_visible_devices=os.environ.get("CUDA_VISIBLE_DEVICES"), python=sys.version.split()[0],
                     interpreter=os.path.relpath(sys.executable, ROOT), kit_started=False,
+                    package_origin=os.path.relpath(sys.modules["robotic_cutting_sim"].__file__, ROOT),
                     source_sha256={path: sha256(ROOT / path) for path in SOURCES})
     import warp, numpy
     try:

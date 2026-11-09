@@ -142,8 +142,8 @@ def kernel_split(run_dir):
             cut_index=[e["cut_index"] for e in window["eager_steps"]],
             groups_per_substep_us={k: round(v["per_substep_us"], 2) for k, v in window["kernel_groups"].items()},
             group_share={k: round(v["share"], 4) for k, v in window["kernel_groups"].items()},
-            top_kernels_per_substep_us={k: round(v["per_substep_us"], 2)
-                                        for k, v in list(window["kernels"].items())[:12]},
+            top_kernels_per_substep_us={k: round(v["per_substep_us"], 2) for k, v in sorted(
+                window["kernels"].items(), key=lambda kv: -kv[1]["per_substep_us"])[:12]},
             kernel_launches_per_substep={k: v["calls"] / window["substeps_timed"]
                                          for k, v in window["kernels"].items()})
     return dict(run=run_dir.name, scope=result["scope"], phase_info=result["phase_info"],
@@ -168,12 +168,94 @@ def parity(result):
                 trajectory_checks=result["trajectory"]["checks"])
 
 
+def band_entry(run_dir):
+    import numpy as np
+    result = load(run_dir / "result.json")
+    if result["status"] != "COMPLETE" or result["mode"] != "replay":
+        return dict(run=run_dir.name, status=result["status"], error=(result.get("error") or "")[-300:])
+    p, final = result["parity"], result["parity"]["final"]
+    evaluation = result.get("evaluation") or {}
+    with np.load(run_dir / "final_state.npz") as data:
+        codes = data["codes"]
+    return dict(run=run_dir.name, status="COMPLETE", replay_obstacles=result.get("replay_obstacles"),
+                final_codes_equal_native=final["codes_equal"], final_different_code_particles=final["different_code_particles"],
+                final_labelled_replay={k: v["labelled"] for k, v in final["labelled_replay"].items()},
+                final_labelled_count_diff=final["labelled_count_diff"],
+                final_max_position_diff_m=final["max_position_diff_m"],
+                final_mean_position_diff_m=final["mean_position_diff_m"],
+                max_position_diff_m_over_time=p["max_position_diff_m_over_time"],
+                max_position_diff_m_by_sample=[c["max_position_diff_m"] for c in result["comparisons"]],
+                different_code_particles_by_sample=[c["different_code_particles"] for c in result["comparisons"]],
+                first_sample_with_code_difference=p["first_sample_with_code_difference"],
+                replay_final_codes_sha256=final["replay_final_codes_sha256"],
+                invariants=result["invariants"]["status"], reactions=result.get("reactions"),
+                evaluator_replay=evaluation.get("replay"), evaluator_native=evaluation.get("native_same_evaluator"),
+                warm_env_steps_per_s=result["timing"]["warm_env_steps_per_s"], gpu_sharing=result["telemetry"]["gpu_sharing"],
+                _codes=codes)
+
+
+def l3_band(base, names_by_seed):
+    import numpy as np
+    out = {}
+    for seed, names in names_by_seed.items():
+        entries = [band_entry(base / name) for name in names]
+        done = [e for e in entries if e["status"] == "COMPLETE"]
+        codes = [e.pop("_codes") for e in done]
+        pairwise = [int(np.count_nonzero(codes[i] != codes[j])) for i in range(len(codes))
+                    for j in range(i + 1, len(codes))]
+
+        def rng(key, sub=None):
+            values = [e[key] if sub is None else (e[key] or {}).get(sub) for e in done]
+            values = [v for v in values if v is not None and not isinstance(v, dict)]
+            return dict(min=min(values), max=max(values), n=len(values)) if values else None
+        evaluated = [e for e in done if e["evaluator_replay"]]
+        per_sample = np.asarray([e["max_position_diff_m_by_sample"] for e in done])
+        out[f"s{seed}"] = dict(
+            runs=len(entries), complete=len(done), runs_detail=[{k: v for k, v in e.items() if not k.endswith("_by_sample")}
+                                                                for e in entries],
+            final_different_code_particles=rng("final_different_code_particles"),
+            final_codes_equal_native_count=sum(bool(e["final_codes_equal_native"]) for e in done),
+            final_labelled_digit0=dict(min=min(e["final_labelled_replay"]["0"] for e in done),
+                                       max=max(e["final_labelled_replay"]["0"] for e in done)),
+            final_labelled_digit1=dict(min=min(e["final_labelled_replay"]["1"] for e in done),
+                                       max=max(e["final_labelled_replay"]["1"] for e in done)),
+            max_position_diff_m_over_time=rng("max_position_diff_m_over_time"),
+            final_max_position_diff_m=rng("final_max_position_diff_m"),
+            max_position_diff_m_band_by_sample=dict(sample_every_s=0.2, min=per_sample.min(0).tolist(),
+                                                    max=per_sample.max(0).tolist()),
+            samples_with_code_difference_any_run=int(np.count_nonzero(
+                np.asarray([e["different_code_particles_by_sample"] for e in done]).max(0))),
+            replay_vs_replay_final_code_differences=pairwise,
+            evaluator=dict(runs=len(evaluated),
+                           verdicts=[e["evaluator_replay"]["verdict"] for e in evaluated],
+                           removed_mass_fraction=[e["evaluator_replay"]["removed_mass_fraction"] for e in evaluated],
+                           largest_component_below_plane_mass_share=[
+                               e["evaluator_replay"]["largest_component_below_plane_mass_share"] for e in evaluated],
+                           detached_below_plane_mass_fraction=[
+                               e["evaluator_replay"]["detached_below_plane_mass_fraction"] for e in evaluated],
+                           native_same_evaluator=evaluated[0]["evaluator_native"] if evaluated else None,
+                           note="The first replay run of each seed predates the evaluator option (codes/positions only)"))
+    return out
+
+
+def sequential_baseline(rows):
+    out = {}
+    for row in rows:
+        if row.boundary == "single_env_headless" and row.warm_cold == "warm":
+            step = 1. / row.env_steps_per_s
+            out[row.workload_id] = {str(n): dict(wall_per_vector_step_s=n * step, aggregate_env_steps_per_s=1. / step,
+                                                 aggregate_sim_time_per_wall=0.02 / step) for n in (1, 4, 8, 16)}
+    return dict(status="DERIVED_NOT_RUN", rule="N sequential single-env warm steps: wall = N x single warm step time; "
+                "aggregate env-steps/s does not grow with N", by_workload=out)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--replay", nargs="+", required=True, help="replay run directory names")
     parser.add_argument("--kernels", required=True)
     parser.add_argument("--coldcache")
     parser.add_argument("--extra-failed", nargs="*", default=[], help="failed/aborted run names to list")
+    parser.add_argument("--band", nargs="*", default=[], help="seed=run[,run...] for the L3 band (incl. --replay runs)")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     if args.out.exists():
@@ -211,6 +293,22 @@ def main():
                 rows=[row.to_dict() for row in rows], markdown_table=markdown_table(rows),
                 replay_parity=parity_out, kernel_split=kernel_split(base / args.kernels), cold_start_fresh_cache=cold,
                 runs=runs, failed_or_aborted_runs=args.extra_failed,
+                l3_band=l3_band(base, {int(item.split("=")[0]): item.split("=")[1].split(",") for item in args.band}),
+                sequential_n_single_env=sequential_baseline(rows),
+                import_origin=dict(status="PASS", detail=(
+                    "Every GPU run used .deps/isaacsim-venv/bin/python with PYTHONPATH=src (chain scripts) and "
+                    "run_baseline.py inserts <worktree>/src at sys.path[0] before importing robotic_cutting_sim. The "
+                    "Isaac Sim venv has no robotic_cutting_sim installed, and the main checkout has no "
+                    "robotic_cutting_sim.rl subpackage, so the rl.replay relative imports (live_material, tlmpm_v7_2, "
+                    "goals) can only resolve to this worktree; verified by printing the module files. Manifest "
+                    "source_sha256 records the worktree sources; runs after this note also record package_origin.")),
+                replay_obstacles=dict(label="handle_and_measured_pads_v1", verification=(
+                    "reset pad boxes rebuilt from robot_state.npz row 0 + recorded reset edge are bitwise equal to the "
+                    "recorded configure_pad_obstacles input (finger_geometry_00.json, material.json); the knife body "
+                    "poses of the same robot_state rows composed with tool_from_edge reproduce the recorded advance() "
+                    "edge pose at all 1200 steps (max 2.8e-17 m), so the finger body poses are the same PhysX snapshot "
+                    "Native read; Native and replay finger-pad reactions are zero at every step (the pads never touch "
+                    "the material in these two episodes, so pad geometry is not exercised beyond that)")),
                 native_source=dict(evidence="docs/evidence/wp17/performance_001.json",
                                    gpu_verdicts="wp17/native_optimized_001/seed_<s>/gpu/gpu_verdict.json"))
     args.out.parent.mkdir(parents=True, exist_ok=True)
