@@ -169,3 +169,38 @@ def test_reset_keeps_caller_order_for_seeds_and_scene_keys():
     material.reset([2, 0], seeds=[300, 301])
     assert material.reset_mask.numpy().tolist() == [1, 0, 1]
     assert material.seed.numpy().tolist() == [301, 8, 300]
+
+
+def _poison(array, rng):
+    host = array.numpy()
+    raw = host.view(np.uint8)
+    raw[...] = rng.integers(0, 256, raw.shape, dtype=np.uint8)
+    array.assign(host)
+
+
+def _bytes(state):
+    return {k: (b"".join(np.asarray(x).tobytes() for x in v) if k == "fixture_data" else np.asarray(v).tobytes())
+            for k, v in state.items()}
+
+
+@pytest.mark.parametrize("seeds", [None, [43]])
+def test_poisoned_state_partial_reset_restores_env_and_leaves_others(seeds):
+    """Review finding 3: every reset-listed array of every env is filled with random bytes; reset([1]) makes
+    env 1 equal a fresh pack (documented kept field: ``seed`` when no seed is given) and leaves envs 0 and 2
+    byte-identical (poison included)."""
+    run, fresh = batch_material(CONFIGS), batch_material(CONFIGS)
+    rng = np.random.default_rng(1)
+    for name in MB.SOLVER_RESET_ARRAYS:
+        _poison(getattr(run.solver, name), rng)
+    for name in MB.MATERIAL_RESET_ARRAYS:
+        _poison(getattr(run, name), rng)
+    poisoned = [_bytes(env_state(run, e)) for e in range(3)]
+    assert all(poisoned[1][k] != _bytes(env_state(fresh, 1))[k] for k in ("x", "F", "code", "material.pending_wrench"))
+    run.reset([1], seeds=seeds)
+    bad = compare_snapshots(env_state(run, 1), env_state(fresh, 1))
+    assert bad == ([] if seeds else ["material.seed"]), bad
+    if seeds is None:
+        assert run.seed.numpy()[1].tobytes() == poisoned[1]["material.seed"]   # kept, not restored
+    for e in (0, 2):
+        after = _bytes(env_state(run, e))
+        assert [k for k in after if after[k] != poisoned[e][k]] == [], e
