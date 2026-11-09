@@ -192,7 +192,7 @@ class VectorCuttingEnv:
     def __init__(self, num_envs, *, runtime=RUNTIME, task=None, material=MATERIAL, observation_profile="state",
                  device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, autoreset=False,
                  strict=True, output_dir=None, parity_mode=False, reward_config=None, cameras=None, sensors=None,
-                 recorders=None, debug_sync=False):
+                 recorders=None, debug_sync=False, particle_contact_mode="frozen_v1", particle_contact_options=None):
         t0 = time.perf_counter()
         import torch
         import warp as wp
@@ -237,6 +237,9 @@ class VectorCuttingEnv:
         self.num_envs, self.task_family = num_envs, task
         self.observation_profile, self.autoreset, self.strict = observation_profile, autoreset, bool(strict)
         self.parity_mode = bool(parity_mode)
+        # P1-3a opt-in material execution (batched/particle_contacts.py); "frozen_v1" is the default and rollback.
+        self.particle_contact_mode = particle_contact_mode
+        self.particle_contact_options = particle_contact_options
         self.debug_sync = bool(debug_sync)   # ADR §14 risk 4: synchronize the device after every public call
         self.last_warp_stream_handle = None  # Warp stream used by the last public call (stream-policy test hook)
         self.output_dir = None if output_dir is None else Path(output_dir)
@@ -305,7 +308,8 @@ class VectorCuttingEnv:
                 m.configure_pad_obstacles(pads[e], list(fam.pad_recipients))
             specs.append(layout.EnvSpec(m, initial[e], int(fam.sim_seed), task.config_sha256))
         self.material = BatchedCuttingMaterial(specs, device=self.wp_device, parity_mode=self.parity_mode,
-                                               strict=self.strict)
+                                               strict=self.strict, particle_contact_mode=self.particle_contact_mode,
+                                               particle_contact_options=self.particle_contact_options)
         if self._cuda:
             wp.synchronize_device(self.wp_device)
         pk = self.material.packed

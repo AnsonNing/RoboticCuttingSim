@@ -536,7 +536,8 @@ def _complete_links_b(start: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3)
 def source_sha256():
     return {"tlmpm_v7_2_batch.py": hashlib.sha256(_HERE.read_bytes()).hexdigest(),
             "constitutive.py": hashlib.sha256(_HERE.with_name("constitutive.py").read_bytes()).hexdigest(),
-            "layout.py": hashlib.sha256(_HERE.with_name("layout.py").read_bytes()).hexdigest()}
+            "layout.py": hashlib.sha256(_HERE.with_name("layout.py").read_bytes()).hexdigest(),
+            "particle_contacts.py": hashlib.sha256(_HERE.with_name("particle_contacts.py").read_bytes()).hexdigest()}
 
 
 class BatchedTLMPMv7_2:
@@ -565,7 +566,9 @@ class BatchedTLMPMv7_2:
         "gradients": wp.vec3, "profile": wp.vec2, "fixture_plane": wp.vec4,
     }
 
-    def __init__(self, packed, device):
+    def __init__(self, packed, device, particle_contact=None):
+        """``particle_contact``: ``None`` (``frozen_v1``, the default and rollback) or a resolved
+        ``particle_contacts.ParticleContactConfig`` (P1-3a ``alias_free_v1``)."""
         self.packed = packed
         self.device = str(wp.get_device(device))
         u = packed.uniform
@@ -617,6 +620,10 @@ class BatchedTLMPMv7_2:
             self.hash.build(self.x, 2.4*self.radius, groups=self.env_of_particle)
         for module in (v5.__name__, "robotic_cutting_sim.tlmpm_v6", __name__, constitutive.__name__):
             wp.load_module(module=module, device=self.device)
+        self.particle_contact = None
+        if particle_contact is not None and not particle_contact.is_default:
+            from .particle_contacts import AliasFreeContacts
+            self.particle_contact = AliasFreeContacts(self, particle_contact)
 
     # ------------------------------------------------------------------ substep (frozen launch order)
 
@@ -661,7 +668,9 @@ class BatchedTLMPMv7_2:
                 wp.launch(_fixture_contacts_b, n, [self.x, self.v, self.mass, self.impulse, self.fixture_centers,
                     self.fixture_halves, self.fixture_offset, self.fixture_plane, r, dt, self.params,
                     self.stats_max, self.contact_totals_sum, self.contact_totals_max, self.env_of_particle])
-            if self.material_contact:
+            if self.material_contact and self.particle_contact is not None:
+                self.particle_contact.launch(self, r, dt)   # opt-in alias_free_v1 (particle_contacts.py)
+            elif self.material_contact:
                 self.hash.build(self.x, 2.4*r, groups=self.env_of_particle)
                 wp.launch(_particle_contacts_b, n, [self.hash.id, self.x, self.reference, self.v, self.mass,
                     self.code, self.impulse, self.stats_sum, self.stats_max, r, 3*self.dx, dt, self.params,
@@ -763,10 +772,17 @@ class BatchedTLMPMv7_2:
                                self.fixture_plane.numpy()[e].copy())
         return out
 
+    def particle_contact_receipt(self):
+        if self.particle_contact is None:
+            return {"particle_contact_mode": "frozen_v1", "hash_dims": [64, 64, 32],
+                    "kernel": "_particle_contacts_b", "parity_level": "reference"}
+        return self.particle_contact.receipt(self)
+
     def solver_receipt(self):
         return {"solver": SOLVER_NAME, "base_solver": BASE_SOLVER, "status": STATUS,
                 "execution": "batched_flat_soa_env_kernels_v1", "contact_execution": "skip_zero_reaction_atomics_v1",
                 "frontier_execution": "hoisted_interface_v1", "particle_contact_hash": "warp_grouped_hashgrid",
+                "particle_contact": self.particle_contact_receipt(),
                 "constitutive_model": self.model.receipt(), "source_sha256": source_sha256(),
                 "frozen_source_sha256": frozen_source_sha256(), "device": self.device,
                 "warp_version": wp.config.version}

@@ -191,6 +191,7 @@ def test_every_unsupported_code_is_raised():
         "UNSUPPORTED_INT32_OVERFLOW": lambda: layout.check_int32(2**31, 1, 8, 1),
         "UNSUPPORTED_EMPTY_BATCH": lambda: layout.pack([]),
         "UNSUPPORTED_SINGLE_ENV_STATE": lambda: layout.pack_from_beds([_stepped_bed()]),
+        "UNSUPPORTED_PARTICLE_CONTACT_MODE": _material(particle_contact_mode="frozen_v2"),
     }
     assert set(cases) == set(MATERIAL_CODES), set(MATERIAL_CODES) ^ set(cases)
     for code, call in cases.items():
