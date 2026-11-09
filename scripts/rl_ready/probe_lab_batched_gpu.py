@@ -1,39 +1,48 @@
-"""Workload B stage S1 GPU probes (ADR 0022 §9): G0 smoke, T2 no-host-sync, G1 deterministic isolation, G2 throughput.
+"""Workload B stage S1 GPU probes (ADR 0022 §9), robot-only: G0 smoke, T2 host syncs, G1 isolation, G2 timing.
 
-NOT RUN in stage S0 (CPU only). S1 starts after workload A M2 and runs under the RCS GPU rules (decision D-07):
-one job per GPU under the flock, explicit device, >= 4 GB left free, rows labelled SHARED_GPU / EXCLUSIVE_GPU from
-sampled co-tenant utilisation. Example (physical GPU 1, CUDA ordinal 0 inside the process)::
+RCS GPU rules (decision D-07): one job per GPU under the flock, explicit device, >= 4 GB left free, rows labelled
+SHARED_GPU / EXCLUSIVE_GPU from sampled co-tenant use (``robotic_cutting_sim.rl.telemetry``). Example (physical GPU 0)::
 
-    CUDA_VISIBLE_DEVICES=1 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src \
-        flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock \
+    CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src \
+        flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock \
         .deps/isaaclab-venv/bin/python scripts/rl_ready/probe_lab_batched_gpu.py --probe g0 --num-envs 1 \
-        --gpu-index 1 --out artifacts/rl_ready/workload_b/g0_n1_001
+        --gpu-index 0 --out artifacts/rl_ready/p1_1b/g0_b1_n1_001
 
-Probes (one Isaac Lab build per process; the output directory must not exist):
+One Isaac Lab build per process; the output directory must not exist. Probes:
 
-* ``g0``  N worlds, ``use_cuda_graph=True``: build/reset/first-step timing (cold), graph capture observed, model
-          receipt, 20 warm steps with per-stage wall (IK, 10 substeps, edge/pad, dones, observation).
-* ``t2``  20 warm steps under ``torch.cuda.set_sync_debug_mode("error")`` with ``wp.array.numpy`` and
-          ``wp.synchronize*`` patched to count (strict-mode reads are whitelisted and counted).
-* ``g1``  N=4 with ``deterministic_mode="run_to_run"``: (a) identical copies, (b) env 2 perturbed, (c) env 1 reset at
-          step 30; writes per-step joint/body state for the bitwise comparison (``--variant base|perturb|reset``).
-* ``g2``  ``--steps`` steps at N with staggered masked resets every ``--reset-every`` steps; env-steps/s, reset p95,
-          VRAM peak/slope. Robot-only until the batched material accepts ``backend="isaac_lab_newton"``:
-          every row is labelled ``reduced_fidelity`` with the reasons from ``BatchedLabOptions.fidelity()``.
+* ``g0``  N worlds: cold build/reset/first step (graph capture inside), then ``--steps`` warm steps with a constant
+          0.5 N external edge force in every env. Graph safety: the wrench kernel (state-force callback) must have run
+          in all 10 substeps of every step (``applied_impulse_z == 10 * 2 ms * 0.5 N``) and, in B2, the contact
+          callback in all 10 (``contact_integral[:, 9] == 10``). Per-step states are saved; ``--no-graph`` runs the
+          same steps eagerly for the graph-vs-eager comparison (``--probe compare``).
+* ``t2``  ``--steps`` warm steps under ``torch.cuda.set_sync_debug_mode("warn")`` with ``wp.array.numpy`` and
+          ``wp.synchronize*`` counted by call site. PASS: the only syncs are the strict-mode validity read
+          (one int32 per step, ``check_valid``).
+* ``g1``  N=4, ``--deterministic`` (Newton ``run_to_run``), ``--variant base|perturb|reset`` (env 2 perturbed;
+          env 1 reset at step 30); per-step states saved for ``--probe compare``.
+* ``g2``  ``--steps`` steps with a staggered masked reset every ``--reset-every`` steps; strict mode (one int32
+          read per step, so each step ends synchronized); env-steps/s, aggregate sim-time/wall, reset p95, own VRAM
+          peak and slope.
+* ``compare``  bitwise / max-difference comparison of saved ``states.npz`` runs (no GPU work).
 
-Every row records N, particles/env (0: robot-only), control Hz 50, material dt (none), substeps 10 x 2 ms rigid,
-cameras none, recording none, warm/cold, GPU name/index/driver, sharing label, source commit.
+Robot-only: no material (``robot_only_no_material_coupling``); B1 also ``rigid_tool_mount_no_grasp``. Every row
+records N, particles/env 0, control 50 Hz, 10 x 2 ms rigid substeps, no material dt, cameras none, recording none,
+warm/cold, GPU name/index/driver, sharing label and commit.
 """
 import argparse
+import collections
 import json
 import os
 from pathlib import Path
 import subprocess
 import time
+import traceback
 
 import numpy as np
 
 MIN_FREE_MB = 4096
+JOB_ESTIMATE_MB = 2560
+EXTERNAL_FORCE_N = .5
 
 
 def _gpu_row(index):
@@ -46,7 +55,10 @@ def _gpu_row(index):
 
 def _commit():
     try:
-        return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", "src", "scripts"], capture_output=True,
+                               text=True).stdout.strip()
+        return {"sha": sha, "src_or_scripts_dirty": bool(dirty)}
     except Exception:
         return None
 
@@ -57,119 +69,250 @@ def _task(seed):
     return compile_task(generate_scene(seed), goal_config(), seed=42)
 
 
-def _actions(n, step, perturb=None):
+def _actions(n, step, device, perturb=None):
     import torch
-    a = torch.zeros((n, 8), device="cuda")
-    a[:, 0] = .6*np.sin(.35*step)
-    a[:, 1] = .4*np.cos(.245*step)
+    a = torch.zeros((n, 8), device=device)
+    a[:, 0] = float(.6*np.sin(.35*step))
+    a[:, 1] = float(.4*np.cos(.245*step))
     a[:, 2] = -.5 if step < 6 else .3
+    a[:, 5] = float(.2*np.sin(.175*step))
     a[:, 6] = 1.
     if perturb is not None:
-        a[perturb, :3] = torch.tensor([-1., 1., -1.], device="cuda")
+        a[perturb, :3] = torch.tensor([-1., 1., -1.], device=device)
     return a
+
+
+def _site(stack):
+    """First frame outside warp/torch/stdlib: where a sync was requested."""
+    for frame in reversed(stack[:-1]):
+        name = frame.filename
+        if "/warp/" in name or "/torch/" in name or "/python3.12/" in name and "site-packages" not in name:
+            continue
+        return f"{Path(name).name}:{frame.lineno}:{frame.name}"
+    return "unknown"
+
+
+def compare(args):
+    runs = {p: np.load(Path(p)/"states.npz") for p in args.inputs}
+    ref_path = args.inputs[0]
+    ref = runs[ref_path]
+    cs, bw = ref["coord_start"], ref["body_world"]
+    N = len(cs)-1
+    out = {"reference": ref_path, "runs": {}}
+    for path, d in runs.items():
+        if path == ref_path:
+            continue
+        steps = min(len(d["joint_q"]), len(ref["joint_q"]))
+        per = {}
+        for e in range(N):
+            q = d["joint_q"][:steps, cs[e]:cs[e+1]]
+            q0 = ref["joint_q"][:steps, cs[e]:cs[e+1]]
+            b = d["body_q"][:steps][:, bw == e]
+            b0 = ref["body_q"][:steps][:, bw == e]
+            per[e] = {"bitwise": bool(np.array_equal(q, q0) and np.array_equal(b, b0)),
+                      "max_abs_joint_q": float(np.abs(q-q0).max()), "max_abs_body_q": float(np.abs(b-b0).max()),
+                      "first_differing_step": int(np.argmax(np.any(q != q0, 1))) if not np.array_equal(q, q0) else None}
+        out["runs"][path] = {"steps": steps, "worlds": per}
+    Path(args.out).mkdir(parents=True, exist_ok=False)
+    (Path(args.out)/"compare.json").write_text(json.dumps(out, indent=1))
+    print(json.dumps(out, indent=1))
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--probe", required=True, choices=("g0", "t2", "g1", "g2"))
+    parser.add_argument("--probe", required=True, choices=("g0", "t2", "g1", "g2", "compare"))
     parser.add_argument("--num-envs", type=int, default=1)
     parser.add_argument("--tool-mount", default="rigid_mount_v1")
-    parser.add_argument("--gpu-index", type=int, required=True, help="physical nvidia-smi index (for telemetry)")
+    parser.add_argument("--gpu-index", type=int, default=0, help="physical nvidia-smi index (telemetry)")
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--reset-every", type=int, default=0)
     parser.add_argument("--variant", default="base", choices=("base", "perturb", "reset"))
+    parser.add_argument("--deterministic", action="store_true")
+    parser.add_argument("--no-graph", action="store_true")
     parser.add_argument("--scene-seed", type=int, default=512)
+    parser.add_argument("--inputs", nargs="*", default=())
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
+    if args.probe == "compare":
+        return compare(args)
+    if os.environ.get("CUDA_VISIBLE_DEVICES", "") == "":
+        raise SystemExit("GPU probe: set CUDA_VISIBLE_DEVICES to the one GPU this job holds the flock for")
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
     gpu = _gpu_row(args.gpu_index)
-    if gpu["memory_total_mb"]-gpu["memory_used_mb"] < MIN_FREE_MB+2048:
-        raise SystemExit(f"BLOCKED: GPU {args.gpu_index} has {gpu['memory_total_mb']-gpu['memory_used_mb']:.0f} MB free; "
-                         f"D-07 needs >= {MIN_FREE_MB} MB left after this job")
+    free = gpu["memory_total_mb"]-gpu["memory_used_mb"]
+    if free-JOB_ESTIMATE_MB < MIN_FREE_MB:
+        (out/"row.json").write_text(json.dumps({"status": "BLOCKED", "reason": f"{free:.0f} MB free", "gpu": gpu}))
+        raise SystemExit(f"BLOCKED: GPU {args.gpu_index} has {free:.0f} MB free; D-07 needs >= {MIN_FREE_MB} MB left")
+    from robotic_cutting_sim.rl.telemetry import GpuTelemetry
+    telemetry = GpuTelemetry(args.gpu_index)
+    telemetry.set_phase("baseline")
+    for _ in range(3):
+        telemetry.sample()
+        time.sleep(.3)
+    telemetry.set_phase("build")
+    telemetry.start()
+    t_start = time.perf_counter()
     import torch
     import warp as wp
     from isaaclab.app.sim_launcher import launch_simulation
     from robotic_cutting_sim.batched import lab_scene
     from robotic_cutting_sim.rl.lab_batched_env import IsaacLabBatchedCuttingEnv
-    from robotic_cutting_sim.rl.telemetry import GpuTelemetry
+    t_import = time.perf_counter()
     task = _task(args.scene_seed)
     options = lab_scene.BatchedLabOptions(num_envs=args.num_envs, tool_mount=args.tool_mount, device="cuda:0",
-                                          deterministic_mode="run_to_run" if args.probe == "g1" else "not_guaranteed",
-                                          strict=True)
+                                          deterministic_mode="run_to_run" if args.deterministic else "not_guaranteed",
+                                          use_cuda_graph=not args.no_graph, strict=True)
     cfg = lab_scene.make_batched_lab_cfg(options, task)
-    row = {"probe": args.probe, "N": args.num_envs, "tool_mount": args.tool_mount, "particles_per_env": 0,
-           "control_hz": 50, "rigid_substeps": "10 x 2 ms", "material_dt": None, "cameras": "none", "recording": "none",
-           "gpu": gpu, "commit": _commit(), "workload": "B", **options.fidelity()}
-    telemetry = GpuTelemetry(args.gpu_index).start()
-    t_start = time.perf_counter()
-    with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": "cuda:0"}):
-        telemetry.set_phase("build")
+    fidelity = options.fidelity()
+    fidelity["reasons"] = [("robot_only_no_material" if r == "robot_only_no_material_coupling" else r)
+                           for r in fidelity["reasons"]]
+    row = {"probe": args.probe, "variant": args.variant, "N": args.num_envs, "tool_mount": args.tool_mount,
+           "particles_per_env": 0, "control_hz": 50, "rigid_substeps_per_control_step": 10, "rigid_dt_s": .002,
+           "material_dt_s": None, "material": "none (robot-only)", "cameras": "none", "recording": "none",
+           "use_cuda_graph": not args.no_graph, "deterministic_mode": options.deterministic_mode,
+           "strict_mode": True, "gpu": gpu, "commit": _commit(), "workload": "B (robot-only)", **fidelity,
+           "boundary": "batched_headless (Isaac Lab Newton/MJWarp kit-less, one process)"}
+    device = "cuda:0"
+    with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": device}):
+        from isaaclab_newton.physics import NewtonManager
         env = IsaacLabBatchedCuttingEnv(cfg, options, task)
+        torch.cuda.synchronize()
         t_build = time.perf_counter()
         env.reset()
         torch.cuda.synchronize()
         t_reset = time.perf_counter()
-        env.step(_actions(args.num_envs, 0))
+        if args.probe == "g0":
+            env.frames.external_wrench.assign(np.tile([0., 0., EXTERNAL_FORCE_N, 0., 0., 0.], (args.num_envs, 1)))
+        env.step(_actions(args.num_envs, 0, device))
         torch.cuda.synchronize()
-        row.update(cold={"build_s": t_build-t_start, "reset_s": t_reset-t_build,
-                         "first_step_s": time.perf_counter()-t_reset}, receipt=env.receipt())
+        t_first = time.perf_counter()
+        row["cold"] = {"imports_s": t_import-t_start, "build_s": t_build-t_import, "reset_s": t_reset-t_build,
+                       "first_step_s": t_first-t_reset, "process_to_first_step_s": t_first-t_start,
+                       "warp_kernel_cache": "user cache (not cleared)",
+                       "grasp_settle_included_in_reset": args.tool_mount == "physical_grasp_v1"}
+        row["graph_captured"] = NewtonManager._graph is not None
+        row["receipt"] = env.receipt()
+        if env.grasp_initialization:
+            row["grasp_initialization"] = {k: v for k, v in env.grasp_initialization.items() if k != "accumulators"}
         telemetry.set_phase("warm")
-        if args.probe == "t2":
-            counts = {"numpy": 0, "synchronize": 0}
-            original_numpy = wp.array.numpy
+        states = {"joint_q": [], "body_q": [], "edge": [], "status": []}
+        walls, reset_walls, graph_checks = [], [], []
 
-            def counted(self):
-                counts["numpy"] += 1
-                return original_numpy(self)
-            wp.array.numpy = counted
-            torch.cuda.set_sync_debug_mode("error")
+        def record():
+            state = NewtonManager.get_state_0()
+            states["joint_q"].append(state.joint_q.numpy().copy())
+            states["body_q"].append(state.body_q.numpy().copy())
+            states["edge"].append(env.frames.measured_edge.numpy().copy())
+            states["status"].append(env.action_status.cpu().numpy().copy())
+
+        if args.probe == "t2":
+            counts = collections.Counter()
+            originals = {"numpy": wp.array.numpy}
+
+            def counted_numpy(self):
+                counts["wp.array.numpy@"+_site(traceback.extract_stack())] += 1
+                return originals["numpy"](self)
+            wp.array.numpy = counted_numpy
+            for name in ("synchronize", "synchronize_device", "synchronize_stream"):
+                originals[name] = getattr(wp, name)
+
+                def counted(*a, _name=name, **k):
+                    counts[f"wp.{_name}@"+_site(traceback.extract_stack())] += 1
+                    return originals[_name](*a, **k)
+                setattr(wp, name, counted)
+            import warnings
+            torch.cuda.set_sync_debug_mode("warn")
             try:
-                for step in range(1, args.steps+1):
-                    env.step(_actions(args.num_envs, step))
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    t0 = time.perf_counter()
+                    for step in range(1, args.steps+1):
+                        env.step(_actions(args.num_envs, step, device))
+                    wall = time.perf_counter()-t0
             finally:
                 torch.cuda.set_sync_debug_mode(0)
-                wp.array.numpy = original_numpy
-            row["t2"] = {"steps": args.steps, "warp_numpy_reads": counts["numpy"],
-                         "expected_strict_reads_per_step": 1, "status": "PASS" if counts["numpy"] <= args.steps else "FAIL"}
+                wp.array.numpy = originals.pop("numpy")
+                for name, fn in originals.items():
+                    setattr(wp, name, fn)
+            torch_syncs = collections.Counter()
+            for w in caught:
+                if "synchroniz" in str(w.message):
+                    torch_syncs[f"{Path(w.filename).name}:{w.lineno}"] += 1
+            allowed = {k: v for k, v in counts.items() if "check_valid" in k}
+            other = {k: v for k, v in counts.items() if "check_valid" not in k}
+            row["t2"] = {"steps": args.steps, "warp_reads_and_syncs": dict(counts), "torch_syncs": dict(torch_syncs),
+                         "strict_reads": sum(allowed.values()), "expected_strict_reads": args.steps,
+                         "other_syncs": {**other, **{"torch@"+k: v for k, v in torch_syncs.items()}},
+                         "wall_s": wall,
+                         "status": "PASS" if not other and not torch_syncs and sum(allowed.values()) == args.steps
+                         else "FAIL"}
         else:
-            walls, records, resets = [], [], []
             for step in range(1, args.steps+1):
-                if args.variant == "reset" and step == 30:
-                    mask = torch.zeros(args.num_envs, dtype=torch.bool, device="cuda")
+                if args.probe == "g1" and args.variant == "reset" and step == 30:
+                    mask = torch.zeros(args.num_envs, dtype=torch.bool, device=device)
                     mask[1] = True
                     env.reset_envs(mask)
                 if args.reset_every and step % args.reset_every == 0:
-                    mask = torch.zeros(args.num_envs, dtype=torch.bool, device="cuda")
+                    mask = torch.zeros(args.num_envs, dtype=torch.bool, device=device)
                     mask[(step//args.reset_every) % args.num_envs] = True
                     t0 = time.perf_counter()
                     env.reset_envs(mask)
                     torch.cuda.synchronize()
-                    resets.append(time.perf_counter()-t0)
+                    reset_walls.append(time.perf_counter()-t0)
+                perturb = 2 if (args.probe == "g1" and args.variant == "perturb") else None
                 t0 = time.perf_counter()
-                env.step(_actions(args.num_envs, step, 2 if args.variant == "perturb" else None))
+                env.step(_actions(args.num_envs, step, device, perturb))
                 torch.cuda.synchronize()
                 walls.append(time.perf_counter()-t0)
-                if args.probe == "g1":
-                    from isaaclab_newton.physics import NewtonManager
-                    state = NewtonManager.get_state_0()
-                    records.append(np.concatenate([state.joint_q.numpy(), state.body_q.numpy().ravel()]))
-            row["warm"] = {"steps": args.steps, "step_wall_s_mean": float(np.mean(walls)),
+                if args.probe == "g0":
+                    impulse = env.frames.applied_impulse.numpy()[:, 2]
+                    contacts = env.contact_integral.numpy()[:, 9] if args.tool_mount == "physical_grasp_v1" else None
+                    graph_checks.append({"impulse_z": impulse.tolist(),
+                                         "contact_substeps": None if contacts is None else contacts.tolist()})
+                if args.probe in ("g0", "g1"):
+                    record()
+            total = float(np.sum(walls))
+            row["warm"] = {"steps": args.steps, "wall_s_total": total, "step_wall_s_mean": float(np.mean(walls)),
+                           "step_wall_s_p50": float(np.percentile(walls, 50)),
                            "step_wall_s_p95": float(np.percentile(walls, 95)),
-                           "env_steps_per_s": args.num_envs/float(np.mean(walls)),
-                           "aggregate_sim_time_per_wall": args.num_envs*.02/float(np.mean(walls)),
-                           "reset_p95_s": float(np.percentile(resets, 95)) if resets else None,
-                           "vram_peak_bytes": int(torch.cuda.max_memory_allocated())}
-            if records:
-                np.savez_compressed(out/f"g1_{args.variant}.npz", state=np.asarray(records),
-                                    body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
-    row["telemetry"] = telemetry.stop()
-    row["gpu_sharing"] = row["telemetry"].get("gpu_sharing")
+                           "env_steps_per_s": args.num_envs*args.steps/total,
+                           "aggregate_sim_time_per_wall": args.num_envs*args.steps*.02/total,
+                           "resets": len(reset_walls),
+                           "reset_p95_s": float(np.percentile(reset_walls, 95)) if reset_walls else None,
+                           "torch_max_memory_allocated_bytes": int(torch.cuda.max_memory_allocated()),
+                           "timing": "per-step wall with a device sync after each step (strict mode already reads "
+                                     "one int32 per step)"}
+            if graph_checks:
+                expected = 10*.002*EXTERNAL_FORCE_N
+                worst = max(abs(v-expected) for c in graph_checks for v in c["impulse_z"])
+                contact_ok = all(c["contact_substeps"] is None or all(x == 10 for x in c["contact_substeps"])
+                                 for c in graph_checks)
+                row["g0_graph_safety"] = {"expected_impulse_z_per_step": expected, "max_abs_deviation": worst,
+                                          "wrench_kernel_every_substep": worst < 1e-6, "contact_callback_every_substep":
+                                          contact_ok, "per_step": graph_checks[:5],
+                                          "status": "PASS" if worst < 1e-6 and contact_ok and
+                                          (row["graph_captured"] or args.no_graph) else "FAIL"}
+        if states["joint_q"]:
+            np.savez_compressed(out/"states.npz", **{k: np.asarray(v) for k, v in states.items()},
+                                body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
+    summary = telemetry.stop()
+    warm = [s for s in telemetry.samples if s.get("phase") == "warm" and s.get("ok")]
+    slope = None
+    if len(warm) >= 3:
+        t = np.asarray([s["t"] for s in warm])
+        m = np.asarray([s.get("own_memory_mib") or 0. for s in warm])
+        slope = float(np.polyfit(t-t[0], m, 1)[0])
+    row["telemetry"] = summary
+    row["vram_own_peak_mib"] = summary.get("own_vram_peak_mib")
+    row["vram_own_slope_mib_per_s_warm"] = slope
+    row["gpu_sharing"] = summary.get("gpu_sharing")
+    row["wall_s_total_process"] = time.perf_counter()-t_start
     (out/"row.json").write_text(json.dumps(row, indent=1, default=str))
-    print(json.dumps({k: row.get(k) for k in ("probe", "N", "cold", "warm", "t2", "gpu_sharing")}, default=str))
+    print(json.dumps({k: row.get(k) for k in ("probe", "variant", "N", "tool_mount", "graph_captured", "cold", "warm",
+                                              "t2", "g0_graph_safety", "gpu_sharing", "vram_own_peak_mib")},
+                     default=str, indent=1))
 
 
 if __name__ == "__main__":
-    if os.environ.get("CUDA_VISIBLE_DEVICES", "") == "":
-        raise SystemExit("GPU probe: set CUDA_VISIBLE_DEVICES to the one GPU this job holds the flock for")
     main()

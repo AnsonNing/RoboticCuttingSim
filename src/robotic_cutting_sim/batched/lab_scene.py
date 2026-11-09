@@ -535,7 +535,9 @@ def make_batched_lab_cfg(options, task):
             physics=NewtonCfg(use_cuda_graph=options.graph, load_visual_shapes=False,
                 deterministic_mode=options.deterministic_mode, default_shape_cfg=NewtonShapeCfg(gap=.001),
                 solver_cfg=SeparateWorldsMJWarpSolverCfg(use_mujoco_cpu=False, iterations=50, nconmax=256,
-                    njmax=1024, integrator="implicitfast", cone="elliptic"))))
+                    njmax=1024, integrator="implicitfast", cone="elliptic",
+                    # Newton's run_to_run guarantee needs MJWarp's internal sensor stage off (no sensors are used)
+                    disable_sensors=options.deterministic_mode != "not_guaranteed"))))
     return cfg
 
 

@@ -239,11 +239,11 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.grasp_slip = wp.zeros(N, dtype=float)
             self.grasp_angle = wp.zeros(N, dtype=float)
             self.grasp_status = wp.zeros(N, dtype=wp.int32)
-        self._sampling = False
 
     def _post_step(self):
         """B2, every 2 ms substep: per-world tool contact sample and its interval integral (device only)."""
-        if not (self._bound and self._sampling):
+        # No Python-side branching after binding: this callback is captured into the substep graph.
+        if not self._bound:
             return
         from isaaclab_newton.physics import NewtonManager
         state = NewtonManager.get_state_0()
@@ -310,7 +310,6 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.frames.applied_impulse.zero_()
         if self.options.tool_mount == "physical_grasp_v1":
             self.contact_integral.zero_()
-            self._sampling = True
 
     def _apply_action(self):
         pass  # Lab's scene writes the persistent actuator targets before every substep.
@@ -442,7 +441,6 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         acc = wp.zeros((N, grasp_batch.ACC_WIDTH), dtype=float, device=self.wp_device)
         count = int(round(grasp.settle_s/self.physics_dt))
         window_start = grasp.settle_s-grasp.stability_window_s-1e-9
-        self._sampling = True
         self.contact_integral.zero_()
         for index in range(count):
             self.scene.write_data_to_sim()
@@ -455,7 +453,6 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                               inputs=[state.body_q, state.body_qd, self.frames.hand, self.frames.tool,
                                       self.reference_R, self.reference_p, self.contact_integral, acc])
                 self.contact_integral.zero_()
-        self._sampling = False
         failed = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         failing = wp.zeros(1, dtype=wp.int32, device=self.wp_device)
         grasp_batch.launch_gates(acc, grasp, failed, failing, self.wp_device)
