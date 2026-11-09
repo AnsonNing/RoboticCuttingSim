@@ -238,6 +238,27 @@ def l3_band(base, names_by_seed):
     return out
 
 
+def throughput_band(base, names):
+    """Warm stepping of every complete full-episode replay run, with its own GPU sharing evidence."""
+    out = []
+    for name in names:
+        result = load(base / name / "result.json")
+        if result["status"] != "COMPLETE":
+            continue
+        t, tel = result["timing"], result["telemetry"]
+        out.append(dict(run=name, seed=result["seed"], warm_env_steps_per_s=t["warm_env_steps_per_s"],
+                        warm_step_mean_ms=t["warm_step_mean_s"] * 1e3, warm_step_p95_ms=t["warm_step_p95_s"] * 1e3,
+                        material_graph_wall_mean_ms=t["material_graph_wall_mean_s"] * 1e3,
+                        cold_process_start_to_first_step_done_s=t["cold_process_start_to_first_step_done_s"],
+                        first_reset_s=t["first_reset_s"], warm_reset_mean_s=t["warm_reset_mean_s"],
+                        own_vram_peak_mib=tel.get("own_vram_peak_mib"), gpu_sharing=tel.get("gpu_sharing"),
+                        sharing_reasons=tel.get("sharing_reasons"),
+                        foreign_sm_pct_mean=(tel.get("foreign_sm_pct") or {}).get("mean"),
+                        foreign_sm_pct_max=(tel.get("foreign_sm_pct") or {}).get("max"),
+                        evaluate_option=result.get("evaluation") is not None))
+    return out
+
+
 def sequential_baseline(rows):
     out = {}
     for row in rows:
@@ -267,7 +288,7 @@ def main():
     for name in args.replay:
         new, result = headless_rows(base / name, None)
         rows += new
-        parity_out[f"s{result['seed']}"] = parity(result)
+        parity_out[f"s{result['seed']}:{name}"] = parity(result)
         t = result["timing"]
         runs[name] = dict(seed=result["seed"], wall_s=result["wall_s"], device=result["device"],
                           material_receipt={k: v for k, v in result["material_receipt"].items() if k != "solver_receipt"},
@@ -295,6 +316,8 @@ def main():
                 runs=runs, failed_or_aborted_runs=args.extra_failed,
                 l3_band=l3_band(base, {int(item.split("=")[0]): item.split("=")[1].split(",") for item in args.band}),
                 sequential_n_single_env=sequential_baseline(rows),
+                single_env_headless_throughput_band=throughput_band(base, [n for item in args.band
+                                                                             for n in item.split("=")[1].split(",")]),
                 import_origin=dict(status="PASS", detail=(
                     "Every GPU run used .deps/isaacsim-venv/bin/python with PYTHONPATH=src (chain scripts) and "
                     "run_baseline.py inserts <worktree>/src at sys.path[0] before importing robotic_cutting_sim. The "

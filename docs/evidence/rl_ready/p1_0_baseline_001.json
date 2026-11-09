@@ -1,0 +1,3885 @@
+{
+ "boundaries_note": "Timings of different boundaries are never merged into one speedup number.",
+ "cold_start_fresh_cache": {
+  "first_reset_s": 38.682628444978036,
+  "gpu_sharing": "SHARED_GPU",
+  "kernel_cache": "fresh empty Warp kernel cache (true compile cold start)",
+  "module_lines": [
+   "Module robotic_cutting_sim.tlmpm_v5 7891574 load on device 'cuda:0' took 5091.60 ms  (compiled)",
+   "Module robotic_cutting_sim.tlmpm_v6 8f28a19 load on device 'cuda:0' took 212.23 ms  (compiled)",
+   "Module robotic_cutting_sim.tlmpm_v7 3972bf9 load on device 'cuda:0' took 2659.18 ms  (compiled)",
+   "Module robotic_cutting_sim.tlmpm_v7_1 38c8f86 load on device 'cuda:0' took 14747.85 ms  (compiled)",
+   "Module robotic_cutting_sim.tlmpm_v7_2_contacts 8096b0e load on device 'cuda:0' took 202.70 ms  (compiled)",
+   "Module robotic_cutting_sim.tlmpm_v7_2_frontier 853790e load on device 'cuda:0' took 133.42 ms  (compiled)",
+   "Module robotic_cutting_sim.tlmpm_v7_2 302c99a load on device 'cuda:0' took 14244.48 ms  (compiled)",
+   "Module robotic_cutting_sim.fixture_contacts 2e4bdd1 load on device 'cuda:0' took 344.44 ms  (compiled)",
+   "Module robotic_cutting_sim.material_diagnostics 85d29ce load on device 'cuda:0' took 44.01 ms  (compiled)"
+  ],
+  "process_start_to_first_step_done_s": 44.309999999939464,
+  "run": "coldcache_replay_s512_001",
+  "scope": "Truncated to the first steps on purpose; cold-start measurement only, never a throughput row",
+  "status": "TRUNCATED",
+  "steps_run": 20,
+  "warm_resets_s": [
+   0.16539314994588494,
+   0.42016961402259767
+  ],
+  "warp_modules_first_reset": {
+   "cached": 0,
+   "compiled": 8,
+   "module_loads": 8,
+   "reported_load_ms_total": 37635.9
+  }
+ },
+ "evidence_commit_parent": "3f8d0d5c2aef23a9d27303828ad8dce3afb56de9",
+ "failed_or_aborted_runs": [
+  "smoke_replay_s512_001: 15-step smoke, TRUNCATED, not a row",
+  "smoke_kernels_s512_001: 1-step kernel smoke, not used"
+ ],
+ "import_origin": {
+  "detail": "Every GPU run used .deps/isaacsim-venv/bin/python with PYTHONPATH=src (chain scripts) and run_baseline.py inserts <worktree>/src at sys.path[0] before importing robotic_cutting_sim. The Isaac Sim venv has no robotic_cutting_sim installed, and the main checkout has no robotic_cutting_sim.rl subpackage, so the rl.replay relative imports (live_material, tlmpm_v7_2, goals) can only resolve to this worktree; verified by printing the module files. Manifest source_sha256 records the worktree sources; runs after this note also record package_origin.",
+  "status": "PASS"
+ },
+ "kernel_split": {
+  "gpu_sharing": "SHARED_GPU",
+  "phase_info": {
+   "first_cut_step": 255,
+   "first_native_contact_step": 229,
+   "last_cut_step": 395,
+   "native_contact_steps": 101
+  },
+  "run": "kernels_s512_001",
+  "scope": "Perturbing eager run (profiling.StageProfiler kernels=True): CUDA activity GPU time of each kernel/memset; graph replay elsewhere. Kernel times are GPU execution, not host wall.",
+  "telemetry": {
+   "baseline_total_util_pct_max": 65.0,
+   "foreign_compute_pids": [],
+   "foreign_graphics_pids": [
+    635777,
+    635780,
+    635784,
+    635786,
+    635790,
+    635794,
+    635796,
+    635798
+   ],
+   "foreign_memory_mib_max": 5720.0,
+   "foreign_memory_mib_mean": 4680.944827586207,
+   "foreign_processes_max": 8,
+   "foreign_sm_pct_max": 70.0,
+   "foreign_sm_pct_mean": 21.324137931034482,
+   "samples": 145,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation",
+    "baseline_total_utilisation"
+   ],
+   "total_util_pct_max": 100.0,
+   "total_util_pct_mean": 97.22535211267606
+  },
+  "windows": {
+   "active_cutting": {
+    "cut_index": [
+     0,
+     0,
+     0
+    ],
+    "eager_step_wall_mean_s": 0.2136,
+    "graph_step_wall_after_window_mean_s": 0.1818,
+    "group_share": {
+     "contacts": 0.5404,
+     "g2p": 0.1041,
+     "grid_update": 0.0282,
+     "label_stroke": 0.0445,
+     "memset": 0.0401,
+     "other_kernels": 0.0265,
+     "p2g": 0.1477,
+     "slot_claim": 0.0549,
+     "stress": 0.0135
+    },
+    "groups_per_substep_us": {
+     "contacts": 445.5,
+     "g2p": 85.82,
+     "grid_update": 23.24,
+     "label_stroke": 36.71,
+     "memset": 33.07,
+     "other_kernels": 21.81,
+     "p2g": 121.72,
+     "slot_claim": 45.29,
+     "stress": 11.16
+    },
+    "kernel_gpu_time_per_control_step_ms": 164.865,
+    "kernel_gpu_time_per_substep_us": 824.33,
+    "kernel_launches_per_substep": {
+     "_advance": 1.0,
+     "_assign_front": 1.0,
+     "_claim_slots": 1.0,
+     "_complete_links": 1.0,
+     "_deformation": 1.0,
+     "_g2p": 1.0,
+     "_grid_positions": 1.0,
+     "_grid_update": 2.0,
+     "_musl": 1.0,
+     "_obstacle_contacts": 3.0,
+     "_p2g": 1.0,
+     "_particle_contacts": 1.0,
+     "_remember_cut": 1.0,
+     "_remember_pose": 1.0,
+     "_rigid_contacts": 1.0,
+     "_segment_motion": 1.0,
+     "_segment_plow": 1.0,
+     "_start_cut": 1.0,
+     "_stress": 1.0,
+     "_update_stroke": 1.0,
+     "fixture_contacts": 1.0,
+     "memset": 10.02
+    },
+    "reaction_impulse_norm": [
+     5.8e-05,
+     6.4e-05,
+     5.8e-05
+    ],
+    "steps": [
+     325,
+     326,
+     327
+    ],
+    "substeps_timed": 600,
+    "top_kernels_per_substep_us": {
+     "_claim_slots": 45.29,
+     "_deformation": 17.24,
+     "_g2p": 10.8,
+     "_grid_update": 23.24,
+     "_musl": 57.78,
+     "_obstacle_contacts": 17.09,
+     "_p2g": 121.72,
+     "_particle_contacts": 388.24,
+     "_rigid_contacts": 11.16,
+     "_stress": 11.16,
+     "fixture_contacts": 29.01,
+     "memset": 33.07
+    }
+   },
+   "approach_contact_no_cut": {
+    "cut_index": [
+     -1,
+     -1,
+     -1
+    ],
+    "eager_step_wall_mean_s": 0.2145,
+    "graph_step_wall_after_window_mean_s": 0.1713,
+    "group_share": {
+     "contacts": 0.5381,
+     "g2p": 0.1045,
+     "grid_update": 0.0259,
+     "label_stroke": 0.0425,
+     "memset": 0.0414,
+     "other_kernels": 0.0245,
+     "p2g": 0.1559,
+     "slot_claim": 0.0489,
+     "stress": 0.0182
+    },
+    "groups_per_substep_us": {
+     "contacts": 446.93,
+     "g2p": 86.79,
+     "grid_update": 21.53,
+     "label_stroke": 35.33,
+     "memset": 34.41,
+     "other_kernels": 20.34,
+     "p2g": 129.5,
+     "slot_claim": 40.61,
+     "stress": 15.12
+    },
+    "kernel_gpu_time_per_control_step_ms": 166.111,
+    "kernel_gpu_time_per_substep_us": 830.55,
+    "kernel_launches_per_substep": {
+     "_advance": 1.0,
+     "_assign_front": 1.0,
+     "_claim_slots": 1.0,
+     "_complete_links": 1.0,
+     "_deformation": 1.0,
+     "_g2p": 1.0,
+     "_grid_positions": 1.0,
+     "_grid_update": 2.0,
+     "_musl": 1.0,
+     "_obstacle_contacts": 3.0,
+     "_p2g": 1.0,
+     "_particle_contacts": 1.0,
+     "_remember_cut": 1.0,
+     "_remember_pose": 1.0,
+     "_rigid_contacts": 1.0,
+     "_segment_motion": 1.0,
+     "_segment_plow": 1.0,
+     "_start_cut": 1.0,
+     "_stress": 1.0,
+     "_update_stroke": 1.0,
+     "fixture_contacts": 1.0,
+     "memset": 10.02
+    },
+    "reaction_impulse_norm": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "steps": [
+     242,
+     243,
+     244
+    ],
+    "substeps_timed": 600,
+    "top_kernels_per_substep_us": {
+     "_claim_slots": 40.61,
+     "_deformation": 15.13,
+     "_g2p": 12.39,
+     "_grid_positions": 10.81,
+     "_grid_update": 21.53,
+     "_musl": 59.27,
+     "_obstacle_contacts": 23.54,
+     "_p2g": 129.5,
+     "_particle_contacts": 387.24,
+     "_stress": 15.12,
+     "fixture_contacts": 27.3,
+     "memset": 34.41
+    }
+   },
+   "no_contact": {
+    "cut_index": [
+     -1,
+     -1,
+     -1
+    ],
+    "eager_step_wall_mean_s": 0.2123,
+    "graph_step_wall_after_window_mean_s": 0.1857,
+    "group_share": {
+     "contacts": 0.5364,
+     "g2p": 0.0941,
+     "grid_update": 0.0218,
+     "label_stroke": 0.0457,
+     "memset": 0.0404,
+     "other_kernels": 0.0287,
+     "p2g": 0.1709,
+     "slot_claim": 0.0448,
+     "stress": 0.0172
+    },
+    "groups_per_substep_us": {
+     "contacts": 435.48,
+     "g2p": 76.39,
+     "grid_update": 17.72,
+     "label_stroke": 37.1,
+     "memset": 32.78,
+     "other_kernels": 23.34,
+     "p2g": 138.77,
+     "slot_claim": 36.39,
+     "stress": 13.95
+    },
+    "kernel_gpu_time_per_control_step_ms": 162.384,
+    "kernel_gpu_time_per_substep_us": 811.92,
+    "kernel_launches_per_substep": {
+     "_advance": 1.0,
+     "_assign_front": 1.0,
+     "_claim_slots": 1.0,
+     "_complete_links": 1.0,
+     "_deformation": 1.0,
+     "_g2p": 1.0,
+     "_grid_positions": 1.0,
+     "_grid_update": 2.0,
+     "_musl": 1.0,
+     "_obstacle_contacts": 3.0,
+     "_p2g": 1.0,
+     "_particle_contacts": 1.0,
+     "_remember_cut": 1.0,
+     "_remember_pose": 1.0,
+     "_rigid_contacts": 1.0,
+     "_segment_motion": 1.0,
+     "_segment_plow": 1.0,
+     "_start_cut": 1.0,
+     "_stress": 1.0,
+     "_update_stroke": 1.0,
+     "fixture_contacts": 1.0,
+     "memset": 10.02
+    },
+    "reaction_impulse_norm": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "steps": [
+     20,
+     21,
+     22
+    ],
+    "substeps_timed": 600,
+    "top_kernels_per_substep_us": {
+     "_claim_slots": 36.39,
+     "_deformation": 13.86,
+     "_g2p": 10.88,
+     "_grid_positions": 10.38,
+     "_grid_update": 17.72,
+     "_musl": 51.65,
+     "_obstacle_contacts": 16.92,
+     "_p2g": 138.77,
+     "_particle_contacts": 386.39,
+     "_stress": 13.95,
+     "fixture_contacts": 24.55,
+     "memset": 32.78
+    }
+   },
+   "post_cut": {
+    "cut_index": [
+     -1,
+     -1,
+     -1
+    ],
+    "eager_step_wall_mean_s": 0.2216,
+    "graph_step_wall_after_window_mean_s": 0.1795,
+    "group_share": {
+     "contacts": 0.536,
+     "g2p": 0.1046,
+     "grid_update": 0.0363,
+     "label_stroke": 0.0384,
+     "memset": 0.0424,
+     "other_kernels": 0.0213,
+     "p2g": 0.147,
+     "slot_claim": 0.0564,
+     "stress": 0.0176
+    },
+    "groups_per_substep_us": {
+     "contacts": 460.8,
+     "g2p": 89.89,
+     "grid_update": 31.24,
+     "label_stroke": 33.02,
+     "memset": 36.42,
+     "other_kernels": 18.33,
+     "p2g": 126.39,
+     "slot_claim": 48.52,
+     "stress": 15.13
+    },
+    "kernel_gpu_time_per_control_step_ms": 171.95,
+    "kernel_gpu_time_per_substep_us": 859.75,
+    "kernel_launches_per_substep": {
+     "_advance": 1.0,
+     "_assign_front": 1.0,
+     "_claim_slots": 1.0,
+     "_complete_links": 1.0,
+     "_deformation": 1.0,
+     "_g2p": 1.0,
+     "_grid_positions": 1.0,
+     "_grid_update": 2.0,
+     "_musl": 1.0,
+     "_obstacle_contacts": 3.0,
+     "_p2g": 1.0,
+     "_particle_contacts": 1.0,
+     "_remember_cut": 1.0,
+     "_remember_pose": 1.0,
+     "_rigid_contacts": 1.0,
+     "_segment_motion": 1.0,
+     "_segment_plow": 1.0,
+     "_start_cut": 1.0,
+     "_stress": 1.0,
+     "_update_stroke": 1.0,
+     "fixture_contacts": 1.0,
+     "memset": 10.02
+    },
+    "reaction_impulse_norm": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "steps": [
+     797,
+     798,
+     799
+    ],
+    "substeps_timed": 600,
+    "top_kernels_per_substep_us": {
+     "_claim_slots": 48.52,
+     "_deformation": 16.88,
+     "_g2p": 13.76,
+     "_grid_update": 31.24,
+     "_musl": 59.25,
+     "_obstacle_contacts": 18.61,
+     "_p2g": 126.39,
+     "_particle_contacts": 405.19,
+     "_rigid_contacts": 10.24,
+     "_stress": 15.13,
+     "fixture_contacts": 26.76,
+     "memset": 36.42
+    }
+   }
+  }
+ },
+ "l3_band": {
+  "s15": {
+   "complete": 4,
+   "evaluator": {
+    "detached_below_plane_mass_fraction": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "largest_component_below_plane_mass_share": [
+     0.9999999999991656,
+     0.9999999999991656,
+     0.9999999999991656
+    ],
+    "native_same_evaluator": {
+     "detached_below_plane_mass_fraction": 0.0,
+     "integrity": "PASS",
+     "integrity_checks": {
+      "complete_episode": true,
+      "initial_codes_zero": true,
+      "initial_continuous_graph": true,
+      "persistent_history_no_digit_rewrites": true,
+      "reference_mass_budget": true,
+      "reference_matches_scene_sampler": true,
+      "valid_digit_values": true
+     },
+     "largest_component_below_plane_mass_share": 0.9999999999991656,
+     "mechanical_components": 3,
+     "outcome": "PASS",
+     "outcome_checks": {
+      "detached_below_plane_mass_bounded": true,
+      "selected_protrusions_removed": true,
+      "selection_nonempty": true,
+      "single_substrate_component": true,
+      "substrate_holds_below_plane_mass": true,
+      "unselected_protrusions_retained": true
+     },
+     "removed_mass_fraction": {
+      "p0": 1.0,
+      "p1": 1.0
+     },
+     "residual_substrate_height_m": {
+      "p0": 0.0,
+      "p1": 0.0
+     },
+     "verdict": "PASS"
+    },
+    "note": "The first replay run of each seed predates the evaluator option (codes/positions only)",
+    "removed_mass_fraction": [
+     {
+      "p0": 1.0,
+      "p1": 1.0
+     },
+     {
+      "p0": 1.0,
+      "p1": 1.0
+     },
+     {
+      "p0": 1.0,
+      "p1": 1.0
+     }
+    ],
+    "runs": 3,
+    "verdicts": [
+     "PASS",
+     "PASS",
+     "PASS"
+    ]
+   },
+   "final_codes_equal_native_count": 4,
+   "final_different_code_particles": {
+    "max": 0,
+    "min": 0,
+    "n": 4
+   },
+   "final_labelled_digit0": {
+    "max": 85786,
+    "min": 85786
+   },
+   "final_labelled_digit1": {
+    "max": 0,
+    "min": 0
+   },
+   "final_max_position_diff_m": {
+    "max": 0.000118195664666705,
+    "min": 6.268663952130912e-05,
+    "n": 4
+   },
+   "max_position_diff_m_band_by_sample": {
+    "max": [
+     0.0,
+     5.216237889580595e-08,
+     8.685800134140282e-08,
+     1.9693013489290435e-07,
+     2.6324243306599277e-07,
+     3.453830174328384e-07,
+     4.316044637234785e-07,
+     5.464167645181146e-07,
+     6.63292580772851e-07,
+     7.86705754666065e-07,
+     9.70927457655191e-07,
+     1.1595164285587283e-06,
+     1.3605627601042833e-06,
+     1.5528205724110662e-06,
+     1.7478727922787935e-06,
+     1.9064875741844223e-06,
+     2.046185137262904e-06,
+     2.233147203656284e-06,
+     2.4376356657040524e-06,
+     2.6265682622850107e-06,
+     2.798506185264493e-06,
+     2.9436498223682782e-06,
+     3.110005701705699e-06,
+     3.2626200661127113e-06,
+     3.2620172535848492e-06,
+     4.634418953072309e-06,
+     8.51974583539715e-06,
+     8.519740185159061e-06,
+     8.51973977793455e-06,
+     8.516017747235284e-06,
+     8.50483841428786e-06,
+     8.512303208678808e-06,
+     8.497449690846257e-06,
+     8.504864726249515e-06,
+     8.504867122877637e-06,
+     8.504905111892767e-06,
+     8.501137611251684e-06,
+     8.508720639253353e-06,
+     8.534683011663408e-06,
+     8.52734028757742e-06,
+     8.48645787398208e-06,
+     8.512425379991958e-06,
+     8.542235905748672e-06,
+     8.568263095879735e-06,
+     8.55710012116926e-06,
+     8.549747635068875e-06,
+     8.57986728394699e-06,
+     8.616666721962243e-06,
+     8.575728410822426e-06,
+     8.542179653499224e-06,
+     8.57947640021371e-06,
+     8.594355582362824e-06,
+     0.00011533196235247223,
+     0.00011798427461523382,
+     8.587519376834718e-05,
+     7.514129914861439e-05,
+     7.5791678219047e-05,
+     7.606113702002872e-05,
+     8.63399774865555e-05,
+     0.00011549777976187673,
+     9.002412880957872e-05,
+     8.444697926195544e-05,
+     9.908929672072247e-05,
+     0.00011364911070634151,
+     0.00012556258558379385,
+     0.00011772004123557677,
+     0.00011883082895757158,
+     0.00011393410833687045,
+     0.000153842980802464,
+     0.00011489611352416878,
+     0.00012864990764797056,
+     0.00046197226017502627,
+     0.00018075583086510607,
+     0.0003604279860290226,
+     0.00017502466362518385,
+     0.0002861778198057505,
+     0.00011249968767467864,
+     0.00013638280212093686,
+     0.00018929922724049728,
+     0.0002873892205865943,
+     0.00011991652425212506,
+     0.00012394086730669335,
+     0.00015080932225149126,
+     0.0001868119393782415,
+     0.0002446203760051934,
+     0.00028020399141225934,
+     0.00026172615056985074,
+     0.00024160608248664946,
+     0.00022689409844111575,
+     0.00019248921390177632,
+     0.00018376565869972997,
+     0.0001797660526907941,
+     0.00016260640055336249,
+     0.00015371199027617753,
+     0.00014962489481105628,
+     0.00014820643879683126,
+     0.0001416638127680154,
+     0.00013850215520025023,
+     0.00013614808458207626,
+     0.00013376571007410394,
+     0.0001334095095956656,
+     0.00013254352050080386,
+     0.00013099842930277273,
+     0.0001307726565096449,
+     0.00013031205863640166,
+     0.00012388926161148166,
+     0.00012087333965774187,
+     0.00011964736596222862,
+     0.00011927649337234934,
+     0.00011899197471094969,
+     0.000116949927145854,
+     0.0001169968850132563,
+     0.0001168339234586714,
+     0.00011683152847362689,
+     0.00011689444171304415,
+     0.00011706167996248008,
+     0.00011750116388765473,
+     0.00011784231139010585,
+     0.0001180652573676991,
+     0.00011807500656756725,
+     0.000118195664666705
+    ],
+    "min": [
+     0.0,
+     3.771568970999976e-08,
+     7.093352833513027e-08,
+     1.641962902818698e-07,
+     1.641962902818698e-07,
+     2.627669903960425e-07,
+     3.777723023691279e-07,
+     4.579238672998698e-07,
+     5.019233876275137e-07,
+     5.163572958314278e-07,
+     5.209552125335497e-07,
+     5.227012591024446e-07,
+     5.423385942172994e-07,
+     6.367172986318215e-07,
+     7.369041778902484e-07,
+     8.344365904506642e-07,
+     9.394356417332877e-07,
+     1.0558356798443521e-06,
+     1.16938684897626e-06,
+     1.2845698241371623e-06,
+     1.3728643257101277e-06,
+     1.4644190459365907e-06,
+     1.5581280318615188e-06,
+     1.6411712702632377e-06,
+     1.638905296200778e-06,
+     3.280533547033749e-06,
+     6.757843457032857e-06,
+     6.757981623205532e-06,
+     6.757991120822881e-06,
+     6.754224204174046e-06,
+     6.750430836715643e-06,
+     6.7429896152795935e-06,
+     6.761734452920275e-06,
+     6.761962265548543e-06,
+     6.762014022584169e-06,
+     6.758437686289307e-06,
+     6.754514293462022e-06,
+     6.743218575691854e-06,
+     6.732146190185206e-06,
+     6.758179979455696e-06,
+     6.776635650802269e-06,
+     6.788075158742398e-06,
+     6.70208874811687e-06,
+     6.698928947551046e-06,
+     6.721219496038535e-06,
+     6.732497251767456e-06,
+     6.73628397447376e-06,
+     6.725063059027034e-06,
+     6.743641690837574e-06,
+     6.7398014323627185e-06,
+     6.724901962828818e-06,
+     6.7287882382191085e-06,
+     1.1206200247883885e-05,
+     1.636252465653101e-05,
+     1.446488213605509e-05,
+     9.827359948420673e-06,
+     1.0674258628461618e-05,
+     1.1465568319609517e-05,
+     1.3715092456231686e-05,
+     3.0992642896703597e-05,
+     1.3470981447309717e-05,
+     1.9084969607529092e-05,
+     2.148566290022243e-05,
+     2.2433698684794e-05,
+     2.537326829182995e-05,
+     3.150150274827123e-05,
+     3.1379112942984194e-05,
+     3.550480586589628e-05,
+     6.548230425398245e-05,
+     4.783802121503827e-05,
+     5.8844629493307186e-05,
+     0.0001135075344880115,
+     6.511539851675135e-05,
+     0.0001007746177277227,
+     6.180102318756076e-05,
+     8.340307007893708e-05,
+     4.878788159743287e-05,
+     6.38497648646257e-05,
+     8.78465104516104e-05,
+     0.00011546326855606344,
+     4.8221367800979504e-05,
+     5.193822393390826e-05,
+     6.27047606030883e-05,
+     7.98860494162647e-05,
+     9.544895111320008e-05,
+     9.299854825696582e-05,
+     8.835252285184627e-05,
+     8.241381313153068e-05,
+     7.83706303237749e-05,
+     6.975841880129267e-05,
+     6.543796258187978e-05,
+     6.272952676297494e-05,
+     6.027265795063042e-05,
+     5.897294623172501e-05,
+     5.881654723363304e-05,
+     5.8777819687261036e-05,
+     6.0419980272759726e-05,
+     6.321028087602346e-05,
+     6.335459461358033e-05,
+     6.690421432489606e-05,
+     6.687862441800854e-05,
+     6.71698535951057e-05,
+     7.118713880883676e-05,
+     7.117704689349032e-05,
+     7.120483244295579e-05,
+     7.140683395614486e-05,
+     7.124467691945797e-05,
+     7.11429334394833e-05,
+     7.110108832293886e-05,
+     7.114399765727268e-05,
+     6.233094672705951e-05,
+     6.227726605087554e-05,
+     6.21823833344549e-05,
+     6.217481474925434e-05,
+     6.218381727115755e-05,
+     6.23643197089318e-05,
+     6.25791508667672e-05,
+     6.261145838708838e-05,
+     6.259427107973788e-05,
+     6.252992086937114e-05,
+     6.268663952130912e-05
+    ],
+    "sample_every_s": 0.2
+   },
+   "max_position_diff_m_over_time": {
+    "max": 0.00046197226017502627,
+    "min": 0.00019569518905335448,
+    "n": 4
+   },
+   "replay_vs_replay_final_code_differences": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "runs": 4,
+   "runs_detail": [
+    {
+     "evaluator_native": null,
+     "evaluator_replay": null,
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 85786,
+      "1": 0
+     },
+     "final_max_position_diff_m": 0.000118195664666705,
+     "final_mean_position_diff_m": 1.4868911259131087e-06,
+     "first_sample_with_code_difference": {
+      "particles": 3,
+      "sample": 47,
+      "step": 470,
+      "time_s": 9.4
+     },
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 0.00046197226017502627,
+     "reactions": null,
+     "replay_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+     "replay_obstacles": null,
+     "run": "replay_s15_001",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 5.629192761302048
+    },
+    {
+     "evaluator_native": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 3,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "evaluator_replay": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 3,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 85786,
+      "1": 0
+     },
+     "final_max_position_diff_m": 6.268663952130912e-05,
+     "final_mean_position_diff_m": 1.5540857763159246e-06,
+     "first_sample_with_code_difference": {
+      "particles": 2,
+      "sample": 45,
+      "step": 450,
+      "time_s": 9.0
+     },
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 0.00022318482051830157,
+     "reactions": {
+      "contact_on_off_mismatch_steps": 0,
+      "finger_wrench_max_abs_diff": 0.0,
+      "native_contact_steps": 248,
+      "native_finger_wrench_steps": 0,
+      "replay_contact_steps": 248,
+      "replay_finger_wrench_steps": 0,
+      "scope": "Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not",
+      "steps": 1200,
+      "total_impulse_max_abs_diff": 4.507674020715058e-06,
+      "total_impulse_max_abs_native": 0.002462262287735939,
+      "total_impulse_max_rel_diff_of_peak": 0.0018307042442906778
+     },
+     "replay_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+     "replay_obstacles": "handle_and_measured_pads_v1",
+     "run": "band_replay_s15_001",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 7.378002291821804
+    },
+    {
+     "evaluator_native": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 3,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "evaluator_replay": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 3,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 85786,
+      "1": 0
+     },
+     "final_max_position_diff_m": 9.126655782238411e-05,
+     "final_mean_position_diff_m": 1.3871171205605652e-06,
+     "first_sample_with_code_difference": {
+      "particles": 1,
+      "sample": 48,
+      "step": 480,
+      "time_s": 9.6
+     },
+     "gpu_sharing": "EXCLUSIVE_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 0.00038955080886393786,
+     "reactions": {
+      "contact_on_off_mismatch_steps": 0,
+      "finger_wrench_max_abs_diff": 0.0,
+      "native_contact_steps": 248,
+      "native_finger_wrench_steps": 0,
+      "replay_contact_steps": 248,
+      "replay_finger_wrench_steps": 0,
+      "scope": "Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not",
+      "steps": 1200,
+      "total_impulse_max_abs_diff": 5.4987031035125256e-06,
+      "total_impulse_max_abs_native": 0.002462262287735939,
+      "total_impulse_max_rel_diff_of_peak": 0.002233191456044517
+     },
+     "replay_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+     "replay_obstacles": "handle_and_measured_pads_v1",
+     "run": "band_replay_s15_002",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 7.418997570867552
+    },
+    {
+     "evaluator_native": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 3,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "evaluator_replay": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 3,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 85786,
+      "1": 0
+     },
+     "final_max_position_diff_m": 0.00010946146300696433,
+     "final_mean_position_diff_m": 1.7055409227901814e-06,
+     "first_sample_with_code_difference": {
+      "particles": 1,
+      "sample": 47,
+      "step": 470,
+      "time_s": 9.4
+     },
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 0.00019569518905335448,
+     "reactions": {
+      "contact_on_off_mismatch_steps": 0,
+      "finger_wrench_max_abs_diff": 0.0,
+      "native_contact_steps": 248,
+      "native_finger_wrench_steps": 0,
+      "replay_contact_steps": 248,
+      "replay_finger_wrench_steps": 0,
+      "scope": "Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not",
+      "steps": 1200,
+      "total_impulse_max_abs_diff": 1.5128898667171597e-06,
+      "total_impulse_max_abs_native": 0.002462262287735939,
+      "total_impulse_max_rel_diff_of_peak": 0.0006144308322685917
+     },
+     "replay_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+     "replay_obstacles": "handle_and_measured_pads_v1",
+     "run": "band_replay_s15_003",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 4.397696963694345
+    }
+   ],
+   "samples_with_code_difference_any_run": 4
+  },
+  "s512": {
+   "complete": 4,
+   "evaluator": {
+    "detached_below_plane_mass_fraction": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "largest_component_below_plane_mass_share": [
+     0.9999999999991656,
+     0.9999999999991656,
+     0.9999999999991656
+    ],
+    "native_same_evaluator": {
+     "detached_below_plane_mass_fraction": 0.0,
+     "integrity": "PASS",
+     "integrity_checks": {
+      "complete_episode": true,
+      "initial_codes_zero": true,
+      "initial_continuous_graph": true,
+      "persistent_history_no_digit_rewrites": true,
+      "reference_mass_budget": true,
+      "reference_matches_scene_sampler": true,
+      "valid_digit_values": true
+     },
+     "largest_component_below_plane_mass_share": 0.9999999999991656,
+     "mechanical_components": 2,
+     "outcome": "PASS",
+     "outcome_checks": {
+      "detached_below_plane_mass_bounded": true,
+      "selected_protrusions_removed": true,
+      "selection_nonempty": true,
+      "single_substrate_component": true,
+      "substrate_holds_below_plane_mass": true,
+      "unselected_protrusions_retained": true
+     },
+     "removed_mass_fraction": {
+      "p0": 1.0
+     },
+     "residual_substrate_height_m": {
+      "p0": 0.0
+     },
+     "verdict": "PASS"
+    },
+    "note": "The first replay run of each seed predates the evaluator option (codes/positions only)",
+    "removed_mass_fraction": [
+     {
+      "p0": 1.0
+     },
+     {
+      "p0": 1.0
+     },
+     {
+      "p0": 1.0
+     }
+    ],
+    "runs": 3,
+    "verdicts": [
+     "PASS",
+     "PASS",
+     "PASS"
+    ]
+   },
+   "final_codes_equal_native_count": 4,
+   "final_different_code_particles": {
+    "max": 0,
+    "min": 0,
+    "n": 4
+   },
+   "final_labelled_digit0": {
+    "max": 37958,
+    "min": 37958
+   },
+   "final_labelled_digit1": {
+    "max": 0,
+    "min": 0
+   },
+   "final_max_position_diff_m": {
+    "max": 3.8464872515711716e-05,
+    "min": 1.3910405714932552e-05,
+    "n": 4
+   },
+   "max_position_diff_m_band_by_sample": {
+    "max": [
+     0.0,
+     5.222884898189438e-08,
+     6.000529488990418e-08,
+     1.2300511435493124e-07,
+     4.966229600080036e-07,
+     9.283956013258695e-07,
+     1.393634613959405e-06,
+     1.8590850843585772e-06,
+     2.2966864579373223e-06,
+     2.7606786525073572e-06,
+     3.2263391155827164e-06,
+     3.6919997865740044e-06,
+     4.157660595621067e-06,
+     4.623321501008983e-06,
+     5.0889824762911086e-06,
+     5.554643503889176e-06,
+     6.0203045716635185e-06,
+     6.4859656709607476e-06,
+     6.9516267954460945e-06,
+     7.417287940375591e-06,
+     7.88294910212621e-06,
+     8.348610277883252e-06,
+     8.814271465426824e-06,
+     9.23662748419611e-06,
+     9.236162683514388e-06,
+     9.23174602238337e-06,
+     9.243144398390427e-06,
+     9.243144398390427e-06,
+     9.240816732980014e-06,
+     9.241983693472656e-06,
+     9.241052212925566e-06,
+     9.240823612037006e-06,
+     1.6552476691497954e-05,
+     9.234095439115837e-06,
+     9.232460901004344e-06,
+     9.233203464287523e-06,
+     9.234600584097383e-06,
+     9.98255915099395e-06,
+     9.775372069869655e-06,
+     1.0688319146085986e-05,
+     1.069235995979754e-05,
+     1.0692725602316877e-05,
+     1.0692784664196166e-05,
+     1.0687936158151133e-05,
+     1.068799928876613e-05,
+     1.0694084029665485e-05,
+     1.0692792303090481e-05,
+     1.0692477144262364e-05,
+     1.0692813376720879e-05,
+     1.068732058899696e-05,
+     1.0687103860181981e-05,
+     1.0687405804574285e-05,
+     1.0934561359323933e-05,
+     1.1390205494806417e-05,
+     1.1836304093073444e-05,
+     1.2287525272114261e-05,
+     1.275225083147823e-05,
+     1.321790801529654e-05,
+     1.3683565478402845e-05,
+     1.414922319322265e-05,
+     1.4614881135695757e-05,
+     1.508053928473368e-05,
+     1.5546197621774596e-05,
+     1.6011856130415943e-05,
+     1.6477514796109314e-05,
+     1.6943173605905663e-05,
+     1.740883254824141e-05,
+     1.7874491612757964e-05,
+     1.8340150790148763e-05,
+     1.8805810072029018e-05,
+     1.9271469450824347e-05,
+     1.9737128919675175e-05,
+     2.0202788472354367e-05,
+     2.066844810319597e-05,
+     2.1134107807033392e-05,
+     2.153154841843379e-05,
+     2.1955728395892016e-05,
+     2.2407419208995493e-05,
+     2.2854220610179245e-05,
+     2.3310369922812264e-05,
+     2.3746892159297515e-05,
+     2.4043983700395426e-05,
+     2.441933935516029e-05,
+     2.47280720214492e-05,
+     2.506893525866726e-05,
+     2.5335292885716718e-05,
+     2.5680812764031385e-05,
+     2.5992106634805933e-05,
+     2.638507229049987e-05,
+     2.6756902755322867e-05,
+     2.717723915750673e-05,
+     2.7627299451358724e-05,
+     2.801965509926693e-05,
+     2.8448760211505294e-05,
+     2.8824045599318765e-05,
+     2.9201265883482664e-05,
+     2.959940578566062e-05,
+     2.9983342086477266e-05,
+     3.036588144461536e-05,
+     3.069533563656142e-05,
+     3.103899247382274e-05,
+     3.1448773018452615e-05,
+     3.1800539518036346e-05,
+     3.204547686180258e-05,
+     3.234769043883715e-05,
+     3.2581684779990875e-05,
+     3.276236101204188e-05,
+     3.303430668806708e-05,
+     3.3397754646622324e-05,
+     3.383431131047191e-05,
+     3.4260157803640266e-05,
+     3.4653873741368375e-05,
+     3.503967346573715e-05,
+     3.534235280079756e-05,
+     3.57509234199796e-05,
+     3.620564152991833e-05,
+     3.664848528388181e-05,
+     3.7110188317744044e-05,
+     3.756024982589996e-05,
+     3.802521249421014e-05,
+     3.8464872515711716e-05
+    ],
+    "min": [
+     0.0,
+     3.862743881976323e-08,
+     5.2452563644680094e-08,
+     1.0923926492499425e-07,
+     2.6286255502955326e-07,
+     6.985968575476801e-07,
+     1.1230621548686264e-06,
+     1.4880271692838843e-06,
+     1.6779057745330408e-06,
+     1.8163543517152467e-06,
+     2.1180968111787727e-06,
+     2.5141359948246015e-06,
+     2.9253390597997055e-06,
+     3.3104345633837616e-06,
+     3.675946276547875e-06,
+     4.029847443230362e-06,
+     4.356274906901072e-06,
+     4.55418036456499e-06,
+     4.746730780548779e-06,
+     4.934873350552126e-06,
+     5.103889036610509e-06,
+     5.378462696225786e-06,
+     5.615946788433398e-06,
+     5.951956489828537e-06,
+     5.945485491354393e-06,
+     5.8125303723450985e-06,
+     5.682392056572089e-06,
+     5.453812278917338e-06,
+     5.4545603558427e-06,
+     5.4550259941076184e-06,
+     5.459374569023694e-06,
+     5.456777918249475e-06,
+     6.834070578816607e-06,
+     5.460057150520267e-06,
+     5.449582218761534e-06,
+     5.454789756278008e-06,
+     5.45548625159866e-06,
+     5.4464283437701826e-06,
+     5.542066201825024e-06,
+     5.549566989927203e-06,
+     5.546256626820987e-06,
+     5.546256626820987e-06,
+     5.546256626820987e-06,
+     5.5501087792433875e-06,
+     5.550110725778178e-06,
+     5.5501146742451e-06,
+     5.566500938594962e-06,
+     5.566506157891031e-06,
+     5.566506157891031e-06,
+     5.573976343988067e-06,
+     5.8634837364452625e-06,
+     6.329136957279064e-06,
+     6.794791283728109e-06,
+     7.260446503063946e-06,
+     7.726102453842666e-06,
+     8.19175901132889e-06,
+     8.657416077623663e-06,
+     9.123073574815644e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.225344173742266e-06,
+     9.29724320867082e-06,
+     9.529373343977358e-06,
+     9.762202061475635e-06,
+     9.995030868711745e-06,
+     1.0223086766493343e-05,
+     1.0447650304199482e-05,
+     1.0680479342044569e-05,
+     1.091191147357406e-05,
+     1.1143343668583639e-05,
+     1.1376172898752152e-05,
+     1.160900218561834e-05,
+     1.1839852476230016e-05,
+     1.2072565451594543e-05,
+     1.2305394889080685e-05,
+     1.2538107956611055e-05,
+     1.2770471822128925e-05,
+     1.2997597061936653e-05,
+     1.3225653656392893e-05,
+     1.3458250463717168e-05,
+     1.3683280340380446e-05,
+     1.3910405714932552e-05
+    ],
+    "sample_every_s": 0.2
+   },
+   "max_position_diff_m_over_time": {
+    "max": 3.8464872515711716e-05,
+    "min": 1.3910405714932552e-05,
+    "n": 4
+   },
+   "replay_vs_replay_final_code_differences": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "runs": 4,
+   "runs_detail": [
+    {
+     "evaluator_native": null,
+     "evaluator_replay": null,
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 37958,
+      "1": 0
+     },
+     "final_max_position_diff_m": 3.8443609049142626e-05,
+     "final_mean_position_diff_m": 8.832957673826261e-07,
+     "first_sample_with_code_difference": null,
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 3.8443609049142626e-05,
+     "reactions": null,
+     "replay_final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab",
+     "replay_obstacles": null,
+     "run": "replay_s512_001",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 5.928040503029016
+    },
+    {
+     "evaluator_native": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 2,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "evaluator_replay": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 2,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 37958,
+      "1": 0
+     },
+     "final_max_position_diff_m": 2.4107950473121576e-05,
+     "final_mean_position_diff_m": 6.477960478257353e-07,
+     "first_sample_with_code_difference": {
+      "particles": 1,
+      "sample": 32,
+      "step": 320,
+      "time_s": 6.4
+     },
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 2.4107950473121576e-05,
+     "reactions": {
+      "contact_on_off_mismatch_steps": 0,
+      "finger_wrench_max_abs_diff": 0.0,
+      "native_contact_steps": 101,
+      "native_finger_wrench_steps": 0,
+      "replay_contact_steps": 101,
+      "replay_finger_wrench_steps": 0,
+      "scope": "Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not",
+      "steps": 1200,
+      "total_impulse_max_abs_diff": 2.5174881557177287e-07,
+      "total_impulse_max_abs_native": 0.003500041551887989,
+      "total_impulse_max_rel_diff_of_peak": 7.192737910096375e-05
+     },
+     "replay_final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab",
+     "replay_obstacles": "handle_and_measured_pads_v1",
+     "run": "band_replay_s512_001",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 5.903697607595496
+    },
+    {
+     "evaluator_native": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 2,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "evaluator_replay": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 2,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 37958,
+      "1": 0
+     },
+     "final_max_position_diff_m": 3.8464872515711716e-05,
+     "final_mean_position_diff_m": 9.40774559458998e-07,
+     "first_sample_with_code_difference": null,
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 3.8464872515711716e-05,
+     "reactions": {
+      "contact_on_off_mismatch_steps": 0,
+      "finger_wrench_max_abs_diff": 0.0,
+      "native_contact_steps": 101,
+      "native_finger_wrench_steps": 0,
+      "replay_contact_steps": 101,
+      "replay_finger_wrench_steps": 0,
+      "scope": "Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not",
+      "steps": 1200,
+      "total_impulse_max_abs_diff": 5.338552000466734e-07,
+      "total_impulse_max_abs_native": 0.003500041551887989,
+      "total_impulse_max_rel_diff_of_peak": 0.00015252824634573317
+     },
+     "replay_final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab",
+     "replay_obstacles": "handle_and_measured_pads_v1",
+     "run": "band_replay_s512_002",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 5.9181597967317146
+    },
+    {
+     "evaluator_native": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 2,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "evaluator_replay": {
+      "detached_below_plane_mass_fraction": 0.0,
+      "integrity": "PASS",
+      "integrity_checks": {
+       "complete_episode": true,
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "reference_mass_budget": true,
+       "reference_matches_scene_sampler": true,
+       "valid_digit_values": true
+      },
+      "largest_component_below_plane_mass_share": 0.9999999999991656,
+      "mechanical_components": 2,
+      "outcome": "PASS",
+      "outcome_checks": {
+       "detached_below_plane_mass_bounded": true,
+       "selected_protrusions_removed": true,
+       "selection_nonempty": true,
+       "single_substrate_component": true,
+       "substrate_holds_below_plane_mass": true,
+       "unselected_protrusions_retained": true
+      },
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      },
+      "verdict": "PASS"
+     },
+     "final_codes_equal_native": true,
+     "final_different_code_particles": 0,
+     "final_labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "final_labelled_replay": {
+      "0": 37958,
+      "1": 0
+     },
+     "final_max_position_diff_m": 1.3910405714932552e-05,
+     "final_mean_position_diff_m": 4.3689908159324367e-07,
+     "first_sample_with_code_difference": {
+      "particles": 1,
+      "sample": 32,
+      "step": 320,
+      "time_s": 6.4
+     },
+     "gpu_sharing": "SHARED_GPU",
+     "invariants": "PASS",
+     "max_position_diff_m_over_time": 1.3910405714932552e-05,
+     "reactions": {
+      "contact_on_off_mismatch_steps": 0,
+      "finger_wrench_max_abs_diff": 0.0,
+      "native_contact_steps": 101,
+      "native_finger_wrench_steps": 0,
+      "replay_contact_steps": 101,
+      "replay_finger_wrench_steps": 0,
+      "scope": "Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not",
+      "steps": 1200,
+      "total_impulse_max_abs_diff": 2.3055326892063022e-07,
+      "total_impulse_max_abs_native": 0.003500041551887989,
+      "total_impulse_max_rel_diff_of_peak": 6.587158052345561e-05
+     },
+     "replay_final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab",
+     "replay_obstacles": "handle_and_measured_pads_v1",
+     "run": "band_replay_s512_003",
+     "status": "COMPLETE",
+     "warm_env_steps_per_s": 6.445445062399347
+    }
+   ],
+   "samples_with_code_difference_any_run": 1
+  }
+ },
+ "markdown_table": "| N | particles/env | control Hz | material dt | cameras | env-steps/s | aggregate sim-time/wall | VRAM peak | reset p95 | physics verdict | boundary | workload | substeps | robot DOF | contacts | recording | warm/cold | reset mean | reduced fidelity | GPU | sharing | co-tenant | source | commit |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| 1 | 102732 | 50 | 0.0001 s | global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture | 4.040 | 0.0808 | 5542 MiB | n/a | PASS | single_env_native | D-s512 | 200 | 18 | PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback | full (actions, robot state, 121 physics samples, camera frames, media) | warm | n/a | no | NVIDIA GeForce RTX 5090 (#1, None) | EXCLUSIVE_GPU | procs 0, mem max 205 MiB | wp17_evidence | f55f94afe8c0 |\n| 1 | 102732 | 50 | 0.0001 s | global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture | 3.194 | 0.0639 | 5542 MiB | n/a | PASS | single_env_native | D-s512 | 200 | 18 | PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback | full (actions, robot state, 121 physics samples, camera frames, media) | cold | n/a | no | NVIDIA GeForce RTX 5090 (#1, None) | EXCLUSIVE_GPU | procs 0, mem max 205 MiB | wp17_evidence | f55f94afe8c0 |\n| 1 | 103898 | 50 | 0.0001 s | global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture | 3.866 | 0.0773 | 5638 MiB | n/a | PASS | single_env_native | D-s15 | 200 | 18 | PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback | full (actions, robot state, 121 physics samples, camera frames, media) | warm | n/a | no | NVIDIA GeForce RTX 5090 (#1, None) | EXCLUSIVE_GPU | procs 0, mem max 117 MiB | wp17_evidence | f55f94afe8c0 |\n| 1 | 103898 | 50 | 0.0001 s | global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture | 3.075 | 0.0615 | 5638 MiB | n/a | PASS | single_env_native | D-s15 | 200 | 18 | PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback | full (actions, robot state, 121 physics samples, camera frames, media) | cold | n/a | no | NVIDIA GeForce RTX 5090 (#1, None) | EXCLUSIVE_GPU | procs 0, mem max 117 MiB | wp17_evidence | f55f94afe8c0 |\n| 1 | 102732 | 50 | 0.0001 s | none | 5.928 | 0.1186 | 758 MiB | 0.185 s | PASS | single_env_headless | A/D-s512 | 200 | 0 | material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back) | none (121 parity samples read outside the timed step calls) | warm | 0.171 s | no | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 8, SM max 80%, mem max 3560 MiB, baseline util 54% | measured | abab5570ed85 |\n| 1 | 102732 | 50 | 0.0001 s | none | 5.773 | 0.1155 | 758 MiB | 0.352 s | PASS | single_env_headless | A/D-s512 | 200 | 0 | material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back) | none (121 parity samples read outside the timed step calls) | cold | 0.352 s | no | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 8, SM max 80%, mem max 3560 MiB, baseline util 54% | measured | abab5570ed85 |\n| 1 | 103898 | 50 | 0.0001 s | none | 5.629 | 0.1126 | 758 MiB | 0.304 s | PASS | single_env_headless | A/D-s15 | 200 | 0 | material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back) | none (121 parity samples read outside the timed step calls) | warm | 0.204 s | no | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 8, SM max 56%, mem max 5720 MiB, baseline util 32% | measured | abab5570ed85 |\n| 1 | 103898 | 50 | 0.0001 s | none | 5.481 | 0.1096 | 758 MiB | 0.347 s | PASS | single_env_headless | A/D-s15 | 200 | 0 | material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back) | none (121 parity samples read outside the timed step calls) | cold | 0.347 s | no | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 8, SM max 56%, mem max 5720 MiB, baseline util 32% | measured | abab5570ed85 |\n| 1 | 103898 | 50 | 0.0001 s | none | 7.419 | 0.1484 | 758 MiB | 0.149 s | PASS | single_env_headless | A/D-s15 | 200 | 0 | material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back) | none (121 parity samples read outside the timed step calls) | warm | 0.141 s | no | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | EXCLUSIVE_GPU | procs 0, SM max 0%, mem max 0 MiB, baseline util 0% | measured | 97d6f4d3730a |\n| 1 | 103898 | 50 | 0.0001 s | none | 7.177 | 0.1435 | 758 MiB | 0.289 s | PASS | single_env_headless | A/D-s15 | 200 | 0 | material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back) | none (121 parity samples read outside the timed step calls) | cold | 0.289 s | no | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | EXCLUSIVE_GPU | procs 0, SM max 0%, mem max 0 MiB, baseline util 0% | measured | 97d6f4d3730a |\n| 1 | n/a | 50 | 0.0001 s | none | n/a | n/a | n/a | n/a | NOT_RUN | batched_headless | A | 200 | n/a | n/a | none | n/a | n/a | no | n/a | UNKNOWN | n/a | not_run | n/a |\n| 4 | n/a | 50 | 0.0001 s | none | n/a | n/a | n/a | n/a | NOT_RUN | batched_headless | A | 200 | n/a | n/a | none | n/a | n/a | no | n/a | UNKNOWN | n/a | not_run | n/a |\n| 16 | n/a | 50 | 0.0001 s | none | n/a | n/a | n/a | n/a | NOT_RUN | batched_headless | A | 200 | n/a | n/a | none | n/a | n/a | no | n/a | UNKNOWN | n/a | not_run | n/a |\n",
+ "native_source": {
+  "evidence": "docs/evidence/wp17/performance_001.json",
+  "gpu_verdicts": "wp17/native_optimized_001/seed_<s>/gpu/gpu_verdict.json"
+ },
+ "replay_obstacles": {
+  "label": "handle_and_measured_pads_v1",
+  "verification": "reset pad boxes rebuilt from robot_state.npz row 0 + recorded reset edge are bitwise equal to the recorded configure_pad_obstacles input (finger_geometry_00.json, material.json); the knife body poses of the same robot_state rows composed with tool_from_edge reproduce the recorded advance() edge pose at all 1200 steps (max 2.8e-17 m), so the finger body poses are the same PhysX snapshot Native read; Native and replay finger-pad reactions are zero at every step (the pads never touch the material in these two episodes, so pad geometry is not exercised beyond that)"
+ },
+ "replay_parity": {
+  "s15:band_replay_s15_002": {
+   "final": {
+    "codes_equal": true,
+    "different_code_particles": 0,
+    "labelled_count_diff": {
+     "0": 0,
+     "1": 0
+    },
+    "labelled_native": {
+     "0": {
+      "labelled": 85786,
+      "negative": 84288,
+      "positive": 1498
+     },
+     "1": {
+      "labelled": 0,
+      "negative": 0,
+      "positive": 0
+     }
+    },
+    "labelled_replay": {
+     "0": {
+      "labelled": 85786,
+      "negative": 84288,
+      "positive": 1498
+     },
+     "1": {
+      "labelled": 0,
+      "negative": 0,
+      "positive": 0
+     }
+    },
+    "max_position_diff_m": 9.126655782238411e-05,
+    "mean_position_diff_m": 1.3871171205605652e-06,
+    "native_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+    "replay_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e"
+   },
+   "first_sample_with_code_difference": {
+    "particles": 1,
+    "sample": 48,
+    "step": 480,
+    "time_s": 9.6
+   },
+   "first_sample_with_position_difference": {
+    "max_m": 5.216237889580595e-08,
+    "sample": 1,
+    "step": 10,
+    "time_s": 0.2
+   },
+   "invariants": {
+    "all_samples_finite": true,
+    "finite_diagnostics": true,
+    "mass_constant": true,
+    "maximum_material_speed_m_s": 0.5330865979194641,
+    "maximum_plastic_strain": 1.2384378910064697,
+    "minimum_detF": 0.8438094854354858,
+    "minimum_detF_positive": true,
+    "nonzero_digit_rewrites": 0,
+    "resolved_cut_matches_recording": true,
+    "status": "PASS"
+   },
+   "max_mean_position_diff_m_over_time": 2.067976240162379e-06,
+   "max_position_diff_m_over_time": 0.00038955080886393786,
+   "reference": {
+    "evaluation_reference_arrays_equal_native": {
+     "mass_kg": true,
+     "reference_indices": true,
+     "reference_positions": true,
+     "reference_positions_local": true,
+     "reference_stencil_gradients": true,
+     "reference_stencil_nodes": true,
+     "reference_stencil_weights": true
+    },
+    "masses_equal": true,
+    "native_total_mass_kg": 0.155847,
+    "particles": 103898,
+    "reference_positions_equal": true,
+    "replay_total_mass_kg": 0.155847
+   },
+   "samples_compared": 121,
+   "selected_samples": [
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.0,
+     "mean_position_diff_m": 0.0,
+     "sample": 0,
+     "time_s": 0.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 5.216237889580595e-08,
+     "mean_position_diff_m": 5.530445070166227e-09,
+     "sample": 1,
+     "time_s": 0.2
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.359625304385698e-08,
+     "mean_position_diff_m": 9.092655268648215e-09,
+     "sample": 2,
+     "time_s": 0.4
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 3.0957635970515755e-07,
+     "mean_position_diff_m": 2.6656202720992518e-08,
+     "sample": 5,
+     "time_s": 1.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 6.430282709183813e-07,
+     "mean_position_diff_m": 2.948435086568591e-08,
+     "sample": 10,
+     "time_s": 2.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 1.7560255854710985e-06,
+     "mean_position_diff_m": 3.56051359377408e-08,
+     "sample": 20,
+     "time_s": 4.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.50483841428786e-06,
+     "mean_position_diff_m": 1.467917607763831e-07,
+     "sample": 30,
+     "time_s": 6.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.48645787398208e-06,
+     "mean_position_diff_m": 1.8810136147884134e-07,
+     "sample": 40,
+     "time_s": 8.0
+    },
+    {
+     "different_code_particles": 1,
+     "labelled_count_diff": {
+      "0": 1,
+      "1": 0
+     },
+     "max_position_diff_m": 8.575728410822426e-06,
+     "mean_position_diff_m": 2.3862916696228216e-07,
+     "sample": 48,
+     "time_s": 9.6
+    },
+    {
+     "different_code_particles": 1,
+     "labelled_count_diff": {
+      "0": -1,
+      "1": 0
+     },
+     "max_position_diff_m": 8.57947640021371e-06,
+     "mean_position_diff_m": 2.3365941254500503e-07,
+     "sample": 50,
+     "time_s": 10.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 1.3470981447309717e-05,
+     "mean_position_diff_m": 4.22058895855321e-07,
+     "sample": 60,
+     "time_s": 12.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.532240527256969e-05,
+     "mean_position_diff_m": 7.359832805940522e-07,
+     "sample": 70,
+     "time_s": 14.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.478964852975733e-05,
+     "mean_position_diff_m": 8.565649988474398e-07,
+     "sample": 80,
+     "time_s": 16.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.0001549074490429423,
+     "mean_position_diff_m": 1.354085585647305e-06,
+     "sample": 90,
+     "time_s": 18.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.00010275112484813807,
+     "mean_position_diff_m": 1.3716025215839926e-06,
+     "sample": 100,
+     "time_s": 20.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.820738572342427e-05,
+     "mean_position_diff_m": 1.3622584268221205e-06,
+     "sample": 110,
+     "time_s": 22.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 9.126655782238411e-05,
+     "mean_position_diff_m": 1.3871171205605652e-06,
+     "sample": 120,
+     "time_s": 24.0
+    }
+   ],
+   "trajectory_checks": {
+    "cut_digit_matches_command": true,
+    "cut_flag_matches_command": true,
+    "cutting_steps": 287,
+    "first_cutting_step": 255,
+    "knife_body_to_edge_max_position_diff_m": 2.7755575615628914e-17,
+    "knife_body_to_edge_max_rotation_diff_rad": 2.9802322387695312e-08,
+    "last_cutting_step": 541,
+    "material_json_obstacle_boxes_max_abs_diff_m": 0.0,
+    "pad_boxes_verified": true,
+    "reset_knife_body_to_edge_position_diff_m": 0.0,
+    "reset_pad_boxes_rebuilt_max_abs_diff_m": 0.0,
+    "steps": 1200,
+    "time_matches_control_boundaries": true
+   }
+  },
+  "s15:replay_s15_001": {
+   "final": {
+    "codes_equal": true,
+    "different_code_particles": 0,
+    "labelled_count_diff": {
+     "0": 0,
+     "1": 0
+    },
+    "labelled_native": {
+     "0": {
+      "labelled": 85786,
+      "negative": 84288,
+      "positive": 1498
+     },
+     "1": {
+      "labelled": 0,
+      "negative": 0,
+      "positive": 0
+     }
+    },
+    "labelled_replay": {
+     "0": {
+      "labelled": 85786,
+      "negative": 84288,
+      "positive": 1498
+     },
+     "1": {
+      "labelled": 0,
+      "negative": 0,
+      "positive": 0
+     }
+    },
+    "max_position_diff_m": 0.000118195664666705,
+    "mean_position_diff_m": 1.4868911259131087e-06,
+    "native_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e",
+    "replay_final_codes_sha256": "5942b1abb0c18e60082b330088e04a62b9a2b6753b414bc0058d540cfb3e7b0e"
+   },
+   "first_sample_with_code_difference": {
+    "particles": 3,
+    "sample": 47,
+    "step": 470,
+    "time_s": 9.4
+   },
+   "first_sample_with_position_difference": {
+    "max_m": 4.4868102187089264e-08,
+    "sample": 1,
+    "step": 10,
+    "time_s": 0.2
+   },
+   "invariants": {
+    "all_samples_finite": true,
+    "finite_diagnostics": true,
+    "mass_constant": true,
+    "maximum_material_speed_m_s": 0.5329839587211609,
+    "maximum_plastic_strain": 1.2390285730361938,
+    "minimum_detF": 0.8437808752059937,
+    "minimum_detF_positive": true,
+    "nonzero_digit_rewrites": 0,
+    "resolved_cut_matches_recording": true,
+    "status": "PASS"
+   },
+   "max_mean_position_diff_m_over_time": 2.254774750064849e-06,
+   "max_position_diff_m_over_time": 0.00046197226017502627,
+   "reference": {
+    "masses_equal": true,
+    "native_total_mass_kg": 0.155847,
+    "particles": 103898,
+    "reference_positions_equal": true,
+    "replay_total_mass_kg": 0.155847
+   },
+   "samples_compared": 121,
+   "selected_samples": [
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.0,
+     "mean_position_diff_m": 0.0,
+     "sample": 0,
+     "time_s": 0.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 4.4868102187089264e-08,
+     "mean_position_diff_m": 5.488589747671984e-09,
+     "sample": 1,
+     "time_s": 0.2
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.685800134140282e-08,
+     "mean_position_diff_m": 8.751993468151286e-09,
+     "sample": 2,
+     "time_s": 0.4
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 2.997818183388764e-07,
+     "mean_position_diff_m": 2.661728810509911e-08,
+     "sample": 5,
+     "time_s": 1.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 8.241630319224644e-07,
+     "mean_position_diff_m": 3.071148145366958e-08,
+     "sample": 10,
+     "time_s": 2.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 1.988199389296681e-06,
+     "mean_position_diff_m": 3.853392585185966e-08,
+     "sample": 20,
+     "time_s": 4.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 6.906706360294751e-06,
+     "mean_position_diff_m": 1.3817546610791573e-07,
+     "sample": 30,
+     "time_s": 6.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 6.988648761481819e-06,
+     "mean_position_diff_m": 1.766207993579609e-07,
+     "sample": 40,
+     "time_s": 8.0
+    },
+    {
+     "different_code_particles": 3,
+     "labelled_count_diff": {
+      "0": -3,
+      "1": 0
+     },
+     "max_position_diff_m": 7.037073381076772e-06,
+     "mean_position_diff_m": 2.415665024750597e-07,
+     "sample": 47,
+     "time_s": 9.4
+    },
+    {
+     "different_code_particles": 1,
+     "labelled_count_diff": {
+      "0": -1,
+      "1": 0
+     },
+     "max_position_diff_m": 6.981195856021067e-06,
+     "mean_position_diff_m": 2.3180406463912042e-07,
+     "sample": 50,
+     "time_s": 10.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 2.3913578463071527e-05,
+     "mean_position_diff_m": 4.7036549532541345e-07,
+     "sample": 60,
+     "time_s": 12.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.00011200461404225111,
+     "mean_position_diff_m": 8.318928045984851e-07,
+     "sample": 70,
+     "time_s": 14.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.00010769245249379845,
+     "mean_position_diff_m": 9.608183521167491e-07,
+     "sample": 80,
+     "time_s": 16.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.00018376565869972997,
+     "mean_position_diff_m": 1.3517038975049963e-06,
+     "sample": 90,
+     "time_s": 18.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.0001334095095956656,
+     "mean_position_diff_m": 1.3656169743040726e-06,
+     "sample": 100,
+     "time_s": 20.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.000116949927145854,
+     "mean_position_diff_m": 1.42675940479084e-06,
+     "sample": 110,
+     "time_s": 22.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.000118195664666705,
+     "mean_position_diff_m": 1.4868911259131087e-06,
+     "sample": 120,
+     "time_s": 24.0
+    }
+   ],
+   "trajectory_checks": {
+    "cut_digit_matches_command": true,
+    "cut_flag_matches_command": true,
+    "cutting_steps": 287,
+    "first_cutting_step": 255,
+    "knife_body_to_edge_max_position_diff_m": 2.7755575615628914e-17,
+    "knife_body_to_edge_max_rotation_diff_rad": 2.9802322387695312e-08,
+    "last_cutting_step": 541,
+    "material_json_obstacle_boxes_max_abs_diff_m": 0.0,
+    "reset_knife_body_to_edge_position_diff_m": 0.0,
+    "reset_pad_boxes_rebuilt_max_abs_diff_m": 0.0,
+    "steps": 1200,
+    "time_matches_control_boundaries": true
+   }
+  },
+  "s512:replay_s512_001": {
+   "final": {
+    "codes_equal": true,
+    "different_code_particles": 0,
+    "labelled_count_diff": {
+     "0": 0,
+     "1": 0
+    },
+    "labelled_native": {
+     "0": {
+      "labelled": 37958,
+      "negative": 37626,
+      "positive": 332
+     },
+     "1": {
+      "labelled": 0,
+      "negative": 0,
+      "positive": 0
+     }
+    },
+    "labelled_replay": {
+     "0": {
+      "labelled": 37958,
+      "negative": 37626,
+      "positive": 332
+     },
+     "1": {
+      "labelled": 0,
+      "negative": 0,
+      "positive": 0
+     }
+    },
+    "max_position_diff_m": 3.8443609049142626e-05,
+    "mean_position_diff_m": 8.832957673826261e-07,
+    "native_final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab",
+    "replay_final_codes_sha256": "eb0c2537ac97719cf19984a9477ad32a0c0db45cda5cb98a8b7e5d12dd8407ab"
+   },
+   "first_sample_with_code_difference": null,
+   "first_sample_with_position_difference": {
+    "max_m": 5.222884898189438e-08,
+    "sample": 1,
+    "step": 10,
+    "time_s": 0.2
+   },
+   "invariants": {
+    "all_samples_finite": true,
+    "finite_diagnostics": true,
+    "mass_constant": true,
+    "maximum_material_speed_m_s": 0.4513925611972809,
+    "maximum_plastic_strain": 0.8880423307418823,
+    "minimum_detF": 0.9100921154022217,
+    "minimum_detF_positive": true,
+    "nonzero_digit_rewrites": 0,
+    "resolved_cut_matches_recording": true,
+    "status": "PASS"
+   },
+   "max_mean_position_diff_m_over_time": 8.832957673826261e-07,
+   "max_position_diff_m_over_time": 3.8443609049142626e-05,
+   "reference": {
+    "masses_equal": true,
+    "native_total_mass_kg": 0.15409799999999996,
+    "particles": 102732,
+    "reference_positions_equal": true,
+    "replay_total_mass_kg": 0.15409799999999996
+   },
+   "samples_compared": 121,
+   "selected_samples": [
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 0.0,
+     "mean_position_diff_m": 0.0,
+     "sample": 0,
+     "time_s": 0.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 5.222884898189438e-08,
+     "mean_position_diff_m": 5.854645859117081e-09,
+     "sample": 1,
+     "time_s": 0.2
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 5.97935204180871e-08,
+     "mean_position_diff_m": 7.662762948014391e-09,
+     "sample": 2,
+     "time_s": 0.4
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 9.283956013258695e-07,
+     "mean_position_diff_m": 4.999550848840889e-08,
+     "sample": 5,
+     "time_s": 1.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 3.205393000936714e-06,
+     "mean_position_diff_m": 1.0784484415705751e-07,
+     "sample": 10,
+     "time_s": 2.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 7.861997860428355e-06,
+     "mean_position_diff_m": 1.9738507778641276e-07,
+     "sample": 20,
+     "time_s": 4.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 9.199757564489623e-06,
+     "mean_position_diff_m": 2.548070762302049e-07,
+     "sample": 30,
+     "time_s": 6.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 9.493436130432403e-06,
+     "mean_position_diff_m": 2.903949460403032e-07,
+     "sample": 40,
+     "time_s": 8.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 1.0025756564436994e-05,
+     "mean_position_diff_m": 2.3140048325318437e-07,
+     "sample": 50,
+     "time_s": 10.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 1.4614881135695757e-05,
+     "mean_position_diff_m": 2.993449325383729e-07,
+     "sample": 60,
+     "time_s": 12.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 1.9271469450824347e-05,
+     "mean_position_diff_m": 3.922924397870749e-07,
+     "sample": 70,
+     "time_s": 14.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 2.3746892159297515e-05,
+     "mean_position_diff_m": 4.922290770466658e-07,
+     "sample": 80,
+     "time_s": 16.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 2.717723915750673e-05,
+     "mean_position_diff_m": 5.89262090139705e-07,
+     "sample": 90,
+     "time_s": 18.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 3.103899247382274e-05,
+     "mean_position_diff_m": 6.876020884600036e-07,
+     "sample": 100,
+     "time_s": 20.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 3.4260157803640266e-05,
+     "mean_position_diff_m": 7.844547356942047e-07,
+     "sample": 110,
+     "time_s": 22.0
+    },
+    {
+     "different_code_particles": 0,
+     "labelled_count_diff": {
+      "0": 0,
+      "1": 0
+     },
+     "max_position_diff_m": 3.8443609049142626e-05,
+     "mean_position_diff_m": 8.832957673826261e-07,
+     "sample": 120,
+     "time_s": 24.0
+    }
+   ],
+   "trajectory_checks": {
+    "cut_digit_matches_command": true,
+    "cut_flag_matches_command": true,
+    "cutting_steps": 141,
+    "first_cutting_step": 255,
+    "knife_body_to_edge_max_position_diff_m": 2.7755575615628914e-17,
+    "knife_body_to_edge_max_rotation_diff_rad": 2.9802322387695312e-08,
+    "last_cutting_step": 395,
+    "material_json_obstacle_boxes_max_abs_diff_m": 0.0,
+    "reset_knife_body_to_edge_position_diff_m": 0.0,
+    "reset_pad_boxes_rebuilt_max_abs_diff_m": 0.0,
+    "steps": 1200,
+    "time_matches_control_boundaries": true
+   }
+  }
+ },
+ "rows": [
+  {
+   "aggregate_sim_time_per_wall": 0.08080714837934667,
+   "boundary": "single_env_native",
+   "cameras": "global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture",
+   "co_tenant": {
+    "foreign_memory_mib_max": 205,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": null,
+    "samples": 352,
+    "scope": "WP-17 runner GPU verdict: process list and memory at 1 Hz; per-process utilisation not recorded; GPU1 others peak includes the display server"
+   },
+   "contacts": "PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback",
+   "control_hz": 50.0,
+   "env_steps_per_s": 4.040357418967334,
+   "gpu_driver": null,
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Action loop only: sum of 1200 step calls 297.00 s (PhysX 10 substeps + IK + material graph + recording per action). Physics verdict = WP-17 integrity/outcome PASS. Driver not recorded in WP-17 evidence (UNVERIFIED; inventory now shows 570.211.01). Native rows are not rerun in P1-0.",
+   "num_envs": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "PASS",
+   "recording": "full (actions, robot state, 121 physics samples, camera frames, media)",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": 18,
+   "source": "wp17_evidence",
+   "source_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 5542.0,
+   "warm_cold": "warm",
+   "workload_id": "D-s512"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.06388874487805118,
+   "boundary": "single_env_native",
+   "cameras": "global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture",
+   "co_tenant": {
+    "foreign_memory_mib_max": 205,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": null,
+    "samples": 352,
+    "scope": "WP-17 runner GPU verdict: process list and memory at 1 Hz; per-process utilisation not recorded; GPU1 others peak includes the display server"
+   },
+   "contacts": "PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback",
+   "control_hz": 50.0,
+   "env_steps_per_s": 3.1944372439025592,
+   "gpu_driver": null,
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Factory entry -> finalize 375.65 s incl. Kit start/scene/reset 65.97 s, evaluation 2.32 s and media 8.42 s.",
+   "num_envs": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "PASS",
+   "recording": "full (actions, robot state, 121 physics samples, camera frames, media)",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": 18,
+   "source": "wp17_evidence",
+   "source_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 5542.0,
+   "warm_cold": "cold",
+   "workload_id": "D-s512"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.07731215665338145,
+   "boundary": "single_env_native",
+   "cameras": "global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture",
+   "co_tenant": {
+    "foreign_memory_mib_max": 117,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": null,
+    "samples": 364,
+    "scope": "WP-17 runner GPU verdict: process list and memory at 1 Hz; per-process utilisation not recorded; GPU1 others peak includes the display server"
+   },
+   "contacts": "PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback",
+   "control_hz": 50.0,
+   "env_steps_per_s": 3.8656078326690726,
+   "gpu_driver": null,
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Action loop only: sum of 1200 step calls 310.43 s (PhysX 10 substeps + IK + material graph + recording per action). Physics verdict = WP-17 integrity/outcome PASS. Driver not recorded in WP-17 evidence (UNVERIFIED; inventory now shows 570.211.01). Native rows are not rerun in P1-0.",
+   "num_envs": 1,
+   "particles_per_env": 103898,
+   "physics_verdict": "PASS",
+   "recording": "full (actions, robot state, 121 physics samples, camera frames, media)",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": 18,
+   "source": "wp17_evidence",
+   "source_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 5638.0,
+   "warm_cold": "warm",
+   "workload_id": "D-s15"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.061490273119190295,
+   "boundary": "single_env_native",
+   "cameras": "global_d455 (RGB) + wrist_d405_0 (RGB-D), surface on capture",
+   "co_tenant": {
+    "foreign_memory_mib_max": 117,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": null,
+    "samples": 364,
+    "scope": "WP-17 runner GPU verdict: process list and memory at 1 Hz; per-process utilisation not recorded; GPU1 others peak includes the display server"
+   },
+   "contacts": "PhysX robot/tool/fingers + material tool/pads/fixture, 20 ms reaction feedback",
+   "control_hz": 50.0,
+   "env_steps_per_s": 3.0745136559595148,
+   "gpu_driver": null,
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Factory entry -> finalize 390.31 s incl. Kit start/scene/reset 67.02 s, evaluation 2.37 s and media 8.49 s.",
+   "num_envs": 1,
+   "particles_per_env": 103898,
+   "physics_verdict": "PASS",
+   "recording": "full (actions, robot state, 121 physics samples, camera frames, media)",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": 18,
+   "source": "wp17_evidence",
+   "source_commit": "f55f94afe8c0155c0b70094e41b4c0dcb45da3d7",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 5638.0,
+   "warm_cold": "cold",
+   "workload_id": "D-s15"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.11856081006058032,
+   "boundary": "single_env_headless",
+   "cameras": "none",
+   "co_tenant": {
+    "baseline_total_util_pct_max": 54.0,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [
+     625263,
+     625264,
+     625265,
+     625266,
+     625267,
+     625268,
+     625269,
+     625270,
+     629841
+    ],
+    "foreign_memory_mib_max": 3560.0,
+    "foreign_memory_mib_mean": 2924.355450236967,
+    "foreign_processes_max": 8,
+    "foreign_sm_pct_max": 80.0,
+    "foreign_sm_pct_mean": 19.222748815165875,
+    "samples": 211,
+    "sharing_reasons": [
+     "foreign_graphics_process",
+     "foreign_sm_utilisation",
+     "baseline_total_utilisation"
+    ],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 97.1875
+   },
+   "contacts": "material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.928040503029016,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "SHARED_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Steps 2..1200: update_pad_obstacles + advance (graph launch of 200 substeps + device sync + reaction readback) + device_reduction_v1 diagnostics; mean 168.7 ms, p95 184.8 ms. Reset = 5 warm resets in the same process (task particles, solver construction, graph capture). Physics verdict = material invariants (finite, detF>0, constant mass, no digit rewrites); parity reported separately. Run replay_s512_001.",
+   "num_envs": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "PASS",
+   "recording": "none (121 parity samples read outside the timed step calls)",
+   "reduced_fidelity": false,
+   "reset_mean_s": 0.17052503461018204,
+   "reset_p95_s": 0.18491558944806458,
+   "robot_dof": 0,
+   "source": "measured",
+   "source_commit": "abab5570ed8515d4a29be2ac49126da230d1785f",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 758.0,
+   "warm_cold": "warm",
+   "workload_id": "A/D-s512"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.11545728867368744,
+   "boundary": "single_env_headless",
+   "cameras": "none",
+   "co_tenant": {
+    "baseline_total_util_pct_max": 54.0,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [
+     625263,
+     625264,
+     625265,
+     625266,
+     625267,
+     625268,
+     625269,
+     625270,
+     629841
+    ],
+    "foreign_memory_mib_max": 3560.0,
+    "foreign_memory_mib_mean": 2924.355450236967,
+    "foreign_processes_max": 8,
+    "foreign_sm_pct_max": 80.0,
+    "foreign_sm_pct_mean": 19.222748815165875,
+    "samples": 211,
+    "sharing_reasons": [
+     "foreign_graphics_process",
+     "foreign_sm_utilisation",
+     "baseline_total_utilisation"
+    ],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 97.1875
+   },
+   "contacts": "material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.772864433684372,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "SHARED_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Process start -> first step done 5.61 s (first reset incl. Warp module load and graph capture 0.35 s, user kernel cache: 0 modules compiled, 8 cached) + steps 2..1200. Run replay_s512_001.",
+   "num_envs": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "PASS",
+   "recording": "none (121 parity samples read outside the timed step calls)",
+   "reduced_fidelity": false,
+   "reset_mean_s": 0.3517456449335441,
+   "reset_p95_s": 0.3517456449335441,
+   "robot_dof": 0,
+   "source": "measured",
+   "source_commit": "abab5570ed8515d4a29be2ac49126da230d1785f",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 758.0,
+   "warm_cold": "cold",
+   "workload_id": "A/D-s512"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.11258385522604096,
+   "boundary": "single_env_headless",
+   "cameras": "none",
+   "co_tenant": {
+    "baseline_total_util_pct_max": 32.0,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [
+     625263,
+     625264,
+     625265,
+     625266,
+     625267,
+     625268,
+     625269,
+     625270,
+     635777,
+     635780,
+     635784,
+     635786,
+     635790,
+     635794,
+     635796,
+     635798
+    ],
+    "foreign_memory_mib_max": 5720.0,
+    "foreign_memory_mib_mean": 3109.981981981982,
+    "foreign_processes_max": 8,
+    "foreign_sm_pct_max": 56.0,
+    "foreign_sm_pct_mean": 17.274774774774773,
+    "samples": 222,
+    "sharing_reasons": [
+     "foreign_graphics_process",
+     "foreign_sm_utilisation",
+     "baseline_total_utilisation"
+    ],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 97.5662100456621
+   },
+   "contacts": "material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.629192761302048,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "SHARED_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Steps 2..1200: update_pad_obstacles + advance (graph launch of 200 substeps + device sync + reaction readback) + device_reduction_v1 diagnostics; mean 177.6 ms, p95 198.9 ms. Reset = 5 warm resets in the same process (task particles, solver construction, graph capture). Physics verdict = material invariants (finite, detF>0, constant mass, no digit rewrites); parity reported separately. Run replay_s15_001.",
+   "num_envs": 1,
+   "particles_per_env": 103898,
+   "physics_verdict": "PASS",
+   "recording": "none (121 parity samples read outside the timed step calls)",
+   "reduced_fidelity": false,
+   "reset_mean_s": 0.20371289120521396,
+   "reset_p95_s": 0.30360906720161435,
+   "robot_dof": 0,
+   "source": "measured",
+   "source_commit": "abab5570ed8515d4a29be2ac49126da230d1785f",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 758.0,
+   "warm_cold": "warm",
+   "workload_id": "A/D-s15"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.10961066682394818,
+   "boundary": "single_env_headless",
+   "cameras": "none",
+   "co_tenant": {
+    "baseline_total_util_pct_max": 32.0,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [
+     625263,
+     625264,
+     625265,
+     625266,
+     625267,
+     625268,
+     625269,
+     625270,
+     635777,
+     635780,
+     635784,
+     635786,
+     635790,
+     635794,
+     635796,
+     635798
+    ],
+    "foreign_memory_mib_max": 5720.0,
+    "foreign_memory_mib_mean": 3109.981981981982,
+    "foreign_processes_max": 8,
+    "foreign_sm_pct_max": 56.0,
+    "foreign_sm_pct_mean": 17.274774774774773,
+    "samples": 222,
+    "sharing_reasons": [
+     "foreign_graphics_process",
+     "foreign_sm_utilisation",
+     "baseline_total_utilisation"
+    ],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 97.5662100456621
+   },
+   "contacts": "material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.480533341197409,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "SHARED_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Process start -> first step done 5.96 s (first reset incl. Warp module load and graph capture 0.35 s, user kernel cache: 0 modules compiled, 8 cached) + steps 2..1200. Run replay_s15_001.",
+   "num_envs": 1,
+   "particles_per_env": 103898,
+   "physics_verdict": "PASS",
+   "recording": "none (121 parity samples read outside the timed step calls)",
+   "reduced_fidelity": false,
+   "reset_mean_s": 0.34675309900194407,
+   "reset_p95_s": 0.34675309900194407,
+   "robot_dof": 0,
+   "source": "measured",
+   "source_commit": "abab5570ed8515d4a29be2ac49126da230d1785f",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 758.0,
+   "warm_cold": "cold",
+   "workload_id": "A/D-s15"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.14837995141735105,
+   "boundary": "single_env_headless",
+   "cameras": "none",
+   "co_tenant": {
+    "baseline_total_util_pct_max": 0.0,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 179,
+    "sharing_reasons": [],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 90.6590909090909
+   },
+   "contacts": "material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 7.418997570867552,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Steps 2..1200: update_pad_obstacles + advance (graph launch of 200 substeps + device sync + reaction readback) + device_reduction_v1 diagnostics; mean 134.8 ms, p95 134.5 ms. Reset = 2 warm resets in the same process (task particles, solver construction, graph capture). Physics verdict = material invariants (finite, detF>0, constant mass, no digit rewrites); parity reported separately. Run band_replay_s15_002.",
+   "num_envs": 1,
+   "particles_per_env": 103898,
+   "physics_verdict": "PASS",
+   "recording": "none (121 parity samples read outside the timed step calls)",
+   "reduced_fidelity": false,
+   "reset_mean_s": 0.1409027210320346,
+   "reset_p95_s": 0.14913466645521112,
+   "robot_dof": 0,
+   "source": "measured",
+   "source_commit": "97d6f4d3730ad558c3224c1b5848d6806eebee77",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 758.0,
+   "warm_cold": "warm",
+   "workload_id": "A/D-s15"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.14353884113980128,
+   "boundary": "single_env_headless",
+   "cameras": "none",
+   "co_tenant": {
+    "baseline_total_util_pct_max": 0.0,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 179,
+    "sharing_reasons": [],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 90.6590909090909
+   },
+   "contacts": "material tool/handle/pads/fixture (replayed poses, reaction computed but not fed back)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 7.176942056990064,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 1,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_dt_s": 0.0001,
+   "notes": "Process start -> first step done 5.59 s (first reset incl. Warp module load and graph capture 0.29 s, user kernel cache: 0 modules compiled, 8 cached) + steps 2..1200. Run band_replay_s15_002.",
+   "num_envs": 1,
+   "particles_per_env": 103898,
+   "physics_verdict": "PASS",
+   "recording": "none (121 parity samples read outside the timed step calls)",
+   "reduced_fidelity": false,
+   "reset_mean_s": 0.28918360895477235,
+   "reset_p95_s": 0.28918360895477235,
+   "robot_dof": 0,
+   "source": "measured",
+   "source_commit": "97d6f4d3730ad558c3224c1b5848d6806eebee77",
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": 758.0,
+   "warm_cold": "cold",
+   "workload_id": "A/D-s15"
+  },
+  {
+   "aggregate_sim_time_per_wall": null,
+   "boundary": "batched_headless",
+   "cameras": "none",
+   "co_tenant": {},
+   "contacts": "n/a",
+   "control_hz": 50.0,
+   "env_steps_per_s": null,
+   "gpu_driver": null,
+   "gpu_index": null,
+   "gpu_name": null,
+   "gpu_sharing": "UNKNOWN",
+   "material_dt_s": 0.0001,
+   "notes": "NOT_RUN in P1-0: the batched runtime does not exist yet (P1-1).",
+   "num_envs": 1,
+   "particles_per_env": null,
+   "physics_verdict": "NOT_RUN",
+   "recording": "none",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": null,
+   "source": "not_run",
+   "source_commit": null,
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": null,
+   "warm_cold": "n/a",
+   "workload_id": "A"
+  },
+  {
+   "aggregate_sim_time_per_wall": null,
+   "boundary": "batched_headless",
+   "cameras": "none",
+   "co_tenant": {},
+   "contacts": "n/a",
+   "control_hz": 50.0,
+   "env_steps_per_s": null,
+   "gpu_driver": null,
+   "gpu_index": null,
+   "gpu_name": null,
+   "gpu_sharing": "UNKNOWN",
+   "material_dt_s": 0.0001,
+   "notes": "NOT_RUN in P1-0: the batched runtime does not exist yet (P1-1).",
+   "num_envs": 4,
+   "particles_per_env": null,
+   "physics_verdict": "NOT_RUN",
+   "recording": "none",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": null,
+   "source": "not_run",
+   "source_commit": null,
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": null,
+   "warm_cold": "n/a",
+   "workload_id": "A"
+  },
+  {
+   "aggregate_sim_time_per_wall": null,
+   "boundary": "batched_headless",
+   "cameras": "none",
+   "co_tenant": {},
+   "contacts": "n/a",
+   "control_hz": 50.0,
+   "env_steps_per_s": null,
+   "gpu_driver": null,
+   "gpu_index": null,
+   "gpu_name": null,
+   "gpu_sharing": "UNKNOWN",
+   "material_dt_s": 0.0001,
+   "notes": "NOT_RUN in P1-0: the batched runtime does not exist yet (P1-1).",
+   "num_envs": 16,
+   "particles_per_env": null,
+   "physics_verdict": "NOT_RUN",
+   "recording": "none",
+   "reduced_fidelity": false,
+   "reset_mean_s": null,
+   "reset_p95_s": null,
+   "robot_dof": null,
+   "source": "not_run",
+   "source_commit": null,
+   "substeps_per_control_step": 200,
+   "vram_peak_mib": null,
+   "warm_cold": "n/a",
+   "workload_id": "A"
+  }
+ ],
+ "runs": {
+  "band_replay_s15_002": {
+   "device": "cuda:0",
+   "manifest": {
+    "args": {
+     "attempt": null,
+     "baseline_s": 3.0,
+     "device": "cuda:0",
+     "evaluate": true,
+     "gpu_index": 1,
+     "kernel_cache": "user",
+     "kernel_repeat": 3,
+     "kernel_steps": null,
+     "max_steps": null,
+     "mode": "replay",
+     "run_name": "band_replay_s15",
+     "seed": 15,
+     "warm_resets": 2
+    },
+    "argv": [
+     "scripts/rl_ready/run_baseline.py",
+     "--mode",
+     "replay",
+     "--seed",
+     "15",
+     "--gpu-index",
+     "1",
+     "--warm-resets",
+     "2",
+     "--evaluate",
+     "--run-name",
+     "band_replay_s15"
+    ],
+    "boundary": "single_env_headless",
+    "cuda_visible_devices": "1",
+    "git_dirty": true,
+    "git_head": "97d6f4d3730ad558c3224c1b5848d6806eebee77",
+    "interpreter": ".deps/isaacsim-venv/bin/python",
+    "kit_started": false,
+    "python": "3.12.12",
+    "schema": "rcs_rl_p1_0_run_v1",
+    "source_sha256": {
+     "scripts/rl_ready/run_baseline.py": "c2b9575ce6a78ea455b4be134a06db5bed1fa3d7897572456e4a2345515d45d3",
+     "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+     "src/robotic_cutting_sim/goals.py": "c2cb544a0dee129d71054c0df3266601fbc6e75b41e94c6a00a735812bba8602",
+     "src/robotic_cutting_sim/live_material.py": "58466e5a1f974c3c433aace2895ad7577e93fb59e376ad4f508969bad86dffb7",
+     "src/robotic_cutting_sim/material_diagnostics.py": "57e48aa3c2ecec092d7079dd5c81be41d2d602b8d188097a7e6b3bc8695165db",
+     "src/robotic_cutting_sim/profiling.py": "76f3d8d60c846bafbf1eac4d052e167c2ce8c8de5c1e91694a4905350fbb9c1e",
+     "src/robotic_cutting_sim/rl/replay.py": "9b37818e4406d6055afc31c0475dde113caa2edfa20815f03c2fece0e4199d2d",
+     "src/robotic_cutting_sim/seeded_trim.py": "ed1a89228259ac558b8ebe70b995180299ac8534296a01660cd5bd8adf0046c1",
+     "src/robotic_cutting_sim/tlmpm_v7_2.py": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+     "src/robotic_cutting_sim/tlmpm_v7_2_contacts.py": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+     "src/robotic_cutting_sim/tlmpm_v7_2_frontier.py": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+    },
+    "started_unix_s": 1794247831.7553918,
+    "versions": {
+     "numpy": "2.3.1",
+     "torch": "2.11.0+cu128",
+     "warp": "1.17.0"
+    }
+   },
+   "material_receipt": {
+    "cutting_law": 8,
+    "max_cuts": 2,
+    "seed": 42,
+    "slots_per_node": 8,
+    "solver": "tlmpm_v7_2",
+    "spacing_m": 0.001,
+    "substeps": 200,
+    "v7_2_optimizations": true
+   },
+   "seed": 15,
+   "telemetry": {
+    "baseline_samples": 3,
+    "baseline_total_util_pct": {
+     "max": 0.0,
+     "mean": 0.0,
+     "n": 3
+    },
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib": {
+     "max": 0.0,
+     "mean": 0.0,
+     "n": 179
+    },
+    "foreign_process_count_max": 0,
+    "foreign_sm_pct": {
+     "max": 0.0,
+     "mean": 0.0,
+     "n": 179
+    },
+    "gpu_driver": "570.211.01",
+    "gpu_index": 1,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_sharing": "EXCLUSIVE_GPU",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "own_sm_pct": {
+     "max": 98.0,
+     "mean": 88.23463687150839,
+     "n": 179
+    },
+    "own_vram_peak_mib": 758.0,
+    "samples": 179,
+    "sharing_reasons": [],
+    "total_memory_used_peak_mib": 834.0,
+    "total_util_pct": {
+     "max": 100.0,
+     "mean": 90.6590909090909,
+     "n": 176
+    },
+    "util_threshold_pct": 5.0,
+    "valid_samples": 179
+   },
+   "timing": {
+    "all_steps_wall_s": 161.7782676614588,
+    "cold_process_start_to_first_step_done_s": 5.589999999967404,
+    "first_reset_s": 0.28918360895477235,
+    "first_reset_wall_reported_by_material_s": 0.2674409900791943,
+    "first_step_s": 0.16613764700014144,
+    "kernel_cache": "user",
+    "loop_wall_including_samples_s": 162.65795190399513,
+    "material_graph_wall_mean_s": 0.13361362474787983,
+    "mempool_used_high_bytes_after_episode": 52902015,
+    "mempool_used_high_bytes_end": 105723935,
+    "peak_rss_mib": 3137.45703125,
+    "process_age_at_script_entry_s": 0.10999999998603016,
+    "sample_capture_and_compare_s": 0.862723789177835,
+    "script_entry_to_warp_init_s": null,
+    "task_compile_and_material_construct_s": 0.40622972999699414,
+    "warm_env_steps_per_s": 7.418997570867552,
+    "warm_reset_mean_s": 0.1409027210320346,
+    "warm_reset_p95_s": 0.14913466645521112,
+    "warm_resets_s": [
+     0.15004932705778629,
+     0.13175611500628293
+    ],
+    "warm_sim_time_per_wall": 0.14837995141735105,
+    "warm_step_max_s": 0.41890814201906323,
+    "warm_step_mean_s": 0.13478909926143343,
+    "warm_step_median_s": 0.13395575899630785,
+    "warm_step_p95_s": 0.13446994548430666,
+    "warm_steps": 1199,
+    "warp_init_s": 0.17789819603785872
+   },
+   "wall_s": 179.15636245603673,
+   "warp_modules_first_reset": {
+    "cached": 8,
+    "compiled": 0,
+    "module_loads": 8,
+    "reported_load_ms_total": 10.39
+   }
+  },
+  "replay_s15_001": {
+   "device": "cuda:0",
+   "manifest": {
+    "args": {
+     "attempt": null,
+     "baseline_s": 3.0,
+     "device": "cuda:0",
+     "gpu_index": 1,
+     "kernel_cache": "user",
+     "kernel_repeat": 3,
+     "kernel_steps": null,
+     "max_steps": null,
+     "mode": "replay",
+     "run_name": null,
+     "seed": 15,
+     "warm_resets": 5
+    },
+    "argv": [
+     "scripts/rl_ready/run_baseline.py",
+     "--mode",
+     "replay",
+     "--seed",
+     "15",
+     "--gpu-index",
+     "1",
+     "--warm-resets",
+     "5"
+    ],
+    "boundary": "single_env_headless",
+    "cuda_visible_devices": "1",
+    "git_dirty": false,
+    "git_head": "abab5570ed8515d4a29be2ac49126da230d1785f",
+    "interpreter": ".deps/isaacsim-venv/bin/python",
+    "kit_started": false,
+    "python": "3.12.12",
+    "schema": "rcs_rl_p1_0_run_v1",
+    "source_sha256": {
+     "scripts/rl_ready/run_baseline.py": "0d5c0467af647757df5124df680a385b80241e8602e2d9879efe13ca3ee02e6e",
+     "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+     "src/robotic_cutting_sim/live_material.py": "58466e5a1f974c3c433aace2895ad7577e93fb59e376ad4f508969bad86dffb7",
+     "src/robotic_cutting_sim/material_diagnostics.py": "57e48aa3c2ecec092d7079dd5c81be41d2d602b8d188097a7e6b3bc8695165db",
+     "src/robotic_cutting_sim/profiling.py": "76f3d8d60c846bafbf1eac4d052e167c2ce8c8de5c1e91694a4905350fbb9c1e",
+     "src/robotic_cutting_sim/rl/replay.py": "36ea883f71b3bec23b91d65c0a17bd239d2fdc7711554406000501954858f9a7",
+     "src/robotic_cutting_sim/tlmpm_v7_2.py": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+     "src/robotic_cutting_sim/tlmpm_v7_2_contacts.py": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+     "src/robotic_cutting_sim/tlmpm_v7_2_frontier.py": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+    },
+    "started_unix_s": 1794246569.7900624,
+    "versions": {
+     "numpy": "2.3.1",
+     "torch": "2.11.0+cu128",
+     "warp": "1.17.0"
+    }
+   },
+   "material_receipt": {
+    "cutting_law": 8,
+    "max_cuts": 2,
+    "seed": 42,
+    "slots_per_node": 8,
+    "solver": "tlmpm_v7_2",
+    "spacing_m": 0.001,
+    "substeps": 200,
+    "v7_2_optimizations": true
+   },
+   "seed": 15,
+   "telemetry": {
+    "baseline_samples": 3,
+    "baseline_total_util_pct": {
+     "max": 32.0,
+     "mean": 30.0,
+     "n": 3
+    },
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [
+     625263,
+     625264,
+     625265,
+     625266,
+     625267,
+     625268,
+     625269,
+     625270,
+     635777,
+     635780,
+     635784,
+     635786,
+     635790,
+     635794,
+     635796,
+     635798
+    ],
+    "foreign_memory_mib": {
+     "max": 5720.0,
+     "mean": 3109.981981981982,
+     "n": 222
+    },
+    "foreign_process_count_max": 8,
+    "foreign_sm_pct": {
+     "max": 56.0,
+     "mean": 17.274774774774773,
+     "n": 222
+    },
+    "gpu_driver": "570.211.01",
+    "gpu_index": 1,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_sharing": "SHARED_GPU",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "own_sm_pct": {
+     "max": 98.0,
+     "mean": 77.09009009009009,
+     "n": 222
+    },
+    "own_vram_peak_mib": 758.0,
+    "samples": 222,
+    "sharing_reasons": [
+     "foreign_graphics_process",
+     "foreign_sm_utilisation",
+     "baseline_total_utilisation"
+    ],
+    "total_memory_used_peak_mib": 6569.0,
+    "total_util_pct": {
+     "max": 100.0,
+     "mean": 97.5662100456621,
+     "n": 219
+    },
+    "util_threshold_pct": 5.0,
+    "valid_samples": 222
+   },
+   "timing": {
+    "all_steps_wall_s": 213.2081184380222,
+    "cold_process_start_to_first_step_done_s": 5.959999999962747,
+    "first_reset_s": 0.34675309900194407,
+    "first_reset_wall_reported_by_material_s": 0.3219719199696556,
+    "first_step_s": 0.21132638596463948,
+    "kernel_cache": "user",
+    "loop_wall_including_samples_s": 215.89794571697712,
+    "material_graph_wall_mean_s": 0.17626131940786466,
+    "mempool_used_high_bytes_after_episode": 52902015,
+    "mempool_used_high_bytes_end": 105723935,
+    "peak_rss_mib": 1495.55078125,
+    "process_age_at_script_entry_s": 0.11999999999534339,
+    "sample_capture_and_compare_s": 2.6767691869754344,
+    "script_entry_to_warp_init_s": null,
+    "task_compile_and_material_construct_s": 0.4437907710671425,
+    "warm_env_steps_per_s": 5.629192761302048,
+    "warm_reset_mean_s": 0.20371289120521396,
+    "warm_reset_p95_s": 0.30360906720161435,
+    "warm_resets_s": [
+     0.33553113299421966,
+     0.17592080403119326,
+     0.17244808201212436,
+     0.16968223499134183,
+     0.16498220199719071
+    ],
+    "warm_sim_time_per_wall": 0.11258385522604096,
+    "warm_step_max_s": 0.5750115539412946,
+    "warm_step_mean_s": 0.1776453645138095,
+    "warm_step_median_s": 0.17526678193826228,
+    "warm_step_p95_s": 0.19888759393943473,
+    "warm_steps": 1199,
+    "warp_init_s": 0.2016065299976617
+   },
+   "wall_s": 222.72065676900093,
+   "warp_modules_first_reset": {
+    "cached": 8,
+    "compiled": 0,
+    "module_loads": 8,
+    "reported_load_ms_total": 10.290000000000001
+   }
+  },
+  "replay_s512_001": {
+   "device": "cuda:0",
+   "manifest": {
+    "args": {
+     "attempt": null,
+     "baseline_s": 3.0,
+     "device": "cuda:0",
+     "gpu_index": 1,
+     "kernel_cache": "user",
+     "kernel_repeat": 3,
+     "kernel_steps": null,
+     "max_steps": null,
+     "mode": "replay",
+     "run_name": null,
+     "seed": 512,
+     "warm_resets": 5
+    },
+    "argv": [
+     "scripts/rl_ready/run_baseline.py",
+     "--mode",
+     "replay",
+     "--seed",
+     "512",
+     "--gpu-index",
+     "1",
+     "--warm-resets",
+     "5"
+    ],
+    "boundary": "single_env_headless",
+    "cuda_visible_devices": "1",
+    "git_dirty": false,
+    "git_head": "abab5570ed8515d4a29be2ac49126da230d1785f",
+    "interpreter": ".deps/isaacsim-venv/bin/python",
+    "kit_started": false,
+    "python": "3.12.12",
+    "schema": "rcs_rl_p1_0_run_v1",
+    "source_sha256": {
+     "scripts/rl_ready/run_baseline.py": "0d5c0467af647757df5124df680a385b80241e8602e2d9879efe13ca3ee02e6e",
+     "src/robotic_cutting_sim/finger_geometry.py": "61aca9be9165361230ca4c6bf35db178ffaf7b9682e6ed1a295ac02728b89970",
+     "src/robotic_cutting_sim/live_material.py": "58466e5a1f974c3c433aace2895ad7577e93fb59e376ad4f508969bad86dffb7",
+     "src/robotic_cutting_sim/material_diagnostics.py": "57e48aa3c2ecec092d7079dd5c81be41d2d602b8d188097a7e6b3bc8695165db",
+     "src/robotic_cutting_sim/profiling.py": "76f3d8d60c846bafbf1eac4d052e167c2ce8c8de5c1e91694a4905350fbb9c1e",
+     "src/robotic_cutting_sim/rl/replay.py": "36ea883f71b3bec23b91d65c0a17bd239d2fdc7711554406000501954858f9a7",
+     "src/robotic_cutting_sim/tlmpm_v7_2.py": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+     "src/robotic_cutting_sim/tlmpm_v7_2_contacts.py": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+     "src/robotic_cutting_sim/tlmpm_v7_2_frontier.py": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+    },
+    "started_unix_s": 1794246357.2661142,
+    "versions": {
+     "numpy": "2.3.1",
+     "torch": "2.11.0+cu128",
+     "warp": "1.17.0"
+    }
+   },
+   "material_receipt": {
+    "cutting_law": 8,
+    "max_cuts": 2,
+    "seed": 42,
+    "slots_per_node": 8,
+    "solver": "tlmpm_v7_2",
+    "spacing_m": 0.001,
+    "substeps": 200,
+    "v7_2_optimizations": true
+   },
+   "seed": 512,
+   "telemetry": {
+    "baseline_samples": 3,
+    "baseline_total_util_pct": {
+     "max": 54.0,
+     "mean": 39.0,
+     "n": 3
+    },
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [
+     625263,
+     625264,
+     625265,
+     625266,
+     625267,
+     625268,
+     625269,
+     625270,
+     629841
+    ],
+    "foreign_memory_mib": {
+     "max": 3560.0,
+     "mean": 2924.355450236967,
+     "n": 211
+    },
+    "foreign_process_count_max": 8,
+    "foreign_sm_pct": {
+     "max": 80.0,
+     "mean": 19.222748815165875,
+     "n": 211
+    },
+    "gpu_driver": "570.211.01",
+    "gpu_index": 1,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_sharing": "SHARED_GPU",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "own_sm_pct": {
+     "max": 98.0,
+     "mean": 75.72985781990522,
+     "n": 211
+    },
+    "own_vram_peak_mib": 758.0,
+    "samples": 211,
+    "sharing_reasons": [
+     "foreign_graphics_process",
+     "foreign_sm_utilisation",
+     "baseline_total_utilisation"
+    ],
+    "total_memory_used_peak_mib": 4473.0,
+    "total_util_pct": {
+     "max": 100.0,
+     "mean": 97.1875,
+     "n": 208
+    },
+    "util_threshold_pct": 5.0,
+    "valid_samples": 211
+   },
+   "timing": {
+    "all_steps_wall_s": 202.4616698793834,
+    "cold_process_start_to_first_step_done_s": 5.60999999998603,
+    "first_reset_s": 0.3517456449335441,
+    "first_reset_wall_reported_by_material_s": 0.3226874100510031,
+    "first_step_s": 0.20259297406300902,
+    "kernel_cache": "user",
+    "loop_wall_including_samples_s": 205.11394687497523,
+    "material_graph_wall_mean_s": 0.16724908012371306,
+    "mempool_used_high_bytes_after_episode": 52356039,
+    "mempool_used_high_bytes_end": 104632559,
+    "peak_rss_mib": 1602.01171875,
+    "process_age_at_script_entry_s": 0.09999999997671694,
+    "sample_capture_and_compare_s": 2.63705058360938,
+    "script_entry_to_warp_init_s": null,
+    "task_compile_and_material_construct_s": 0.35655169596429914,
+    "warm_env_steps_per_s": 5.928040503029016,
+    "warm_reset_mean_s": 0.17052503461018204,
+    "warm_reset_p95_s": 0.18491558944806458,
+    "warm_resets_s": [
+     0.17606304306536913,
+     0.15848620899487287,
+     0.17023037502076477,
+     0.18712872604373842,
+     0.16071681992616504
+    ],
+    "warm_sim_time_per_wall": 0.11856081006058032,
+    "warm_step_max_s": 0.5679966020397842,
+    "warm_step_mean_s": 0.16868980559242736,
+    "warm_step_median_s": 0.16620369907468557,
+    "warm_step_p95_s": 0.18483959550503642,
+    "warm_steps": 1199,
+    "warp_init_s": 0.18902795400936157
+   },
+   "wall_s": 211.42453412199393,
+   "warp_modules_first_reset": {
+    "cached": 8,
+    "compiled": 0,
+    "module_loads": 8,
+    "reported_load_ms_total": 3.14
+   }
+  }
+ },
+ "schema": "rcs_rl_p1_0_baseline_v1",
+ "sequential_n_single_env": {
+  "by_workload": {
+   "A/D-s15": {
+    "1": {
+     "aggregate_env_steps_per_s": 7.418997570867552,
+     "aggregate_sim_time_per_wall": 0.14837995141735105,
+     "wall_per_vector_step_s": 0.13478909926143343
+    },
+    "16": {
+     "aggregate_env_steps_per_s": 7.418997570867552,
+     "aggregate_sim_time_per_wall": 0.14837995141735105,
+     "wall_per_vector_step_s": 2.156625588182935
+    },
+    "4": {
+     "aggregate_env_steps_per_s": 7.418997570867552,
+     "aggregate_sim_time_per_wall": 0.14837995141735105,
+     "wall_per_vector_step_s": 0.5391563970457337
+    },
+    "8": {
+     "aggregate_env_steps_per_s": 7.418997570867552,
+     "aggregate_sim_time_per_wall": 0.14837995141735105,
+     "wall_per_vector_step_s": 1.0783127940914674
+    }
+   },
+   "A/D-s512": {
+    "1": {
+     "aggregate_env_steps_per_s": 5.928040503029016,
+     "aggregate_sim_time_per_wall": 0.11856081006058032,
+     "wall_per_vector_step_s": 0.16868980559242736
+    },
+    "16": {
+     "aggregate_env_steps_per_s": 5.928040503029016,
+     "aggregate_sim_time_per_wall": 0.11856081006058032,
+     "wall_per_vector_step_s": 2.6990368894788377
+    },
+    "4": {
+     "aggregate_env_steps_per_s": 5.928040503029016,
+     "aggregate_sim_time_per_wall": 0.11856081006058032,
+     "wall_per_vector_step_s": 0.6747592223697094
+    },
+    "8": {
+     "aggregate_env_steps_per_s": 5.928040503029016,
+     "aggregate_sim_time_per_wall": 0.11856081006058032,
+     "wall_per_vector_step_s": 1.3495184447394188
+    }
+   }
+  },
+  "rule": "N sequential single-env warm steps: wall = N x single warm step time; aggregate env-steps/s does not grow with N",
+  "status": "DERIVED_NOT_RUN"
+ },
+ "single_env_headless_throughput_band": [
+  {
+   "cold_process_start_to_first_step_done_s": 5.60999999998603,
+   "evaluate_option": false,
+   "first_reset_s": 0.3517456449335441,
+   "foreign_sm_pct_max": 80.0,
+   "foreign_sm_pct_mean": 19.222748815165875,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 167.24908012371307,
+   "own_vram_peak_mib": 758.0,
+   "run": "replay_s512_001",
+   "seed": 512,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation",
+    "baseline_total_utilisation"
+   ],
+   "warm_env_steps_per_s": 5.928040503029016,
+   "warm_reset_mean_s": 0.17052503461018204,
+   "warm_step_mean_ms": 168.68980559242735,
+   "warm_step_p95_ms": 184.8395955050364
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 5.799999999930151,
+   "evaluate_option": true,
+   "first_reset_s": 0.3520162069471553,
+   "foreign_sm_pct_max": 60.0,
+   "foreign_sm_pct_mean": 20.49099099099099,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 167.99615636253162,
+   "own_vram_peak_mib": 694.0,
+   "run": "band_replay_s512_001",
+   "seed": 512,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation",
+    "baseline_total_utilisation"
+   ],
+   "warm_env_steps_per_s": 5.903697607595496,
+   "warm_reset_mean_s": 0.14779808750608936,
+   "warm_step_mean_ms": 169.3853693850163,
+   "warm_step_p95_ms": 186.72157461987806
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 6.440000000060536,
+   "evaluate_option": true,
+   "first_reset_s": 0.3183167079696432,
+   "foreign_sm_pct_max": 64.0,
+   "foreign_sm_pct_mean": 18.09722222222222,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 167.46293221069445,
+   "own_vram_peak_mib": 694.0,
+   "run": "band_replay_s512_002",
+   "seed": 512,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation",
+    "baseline_total_utilisation"
+   ],
+   "warm_env_steps_per_s": 5.9181597967317146,
+   "warm_reset_mean_s": 0.1524200449930504,
+   "warm_step_mean_ms": 168.97144287186143,
+   "warm_step_p95_ms": 183.9504867326468
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 6.380000000004657,
+   "evaluate_option": true,
+   "first_reset_s": 0.30619778588879853,
+   "foreign_sm_pct_max": 63.0,
+   "foreign_sm_pct_mean": 14.537313432835822,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 153.8551306399401,
+   "own_vram_peak_mib": 694.0,
+   "run": "band_replay_s512_003",
+   "seed": 512,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation",
+    "baseline_total_utilisation"
+   ],
+   "warm_env_steps_per_s": 6.445445062399347,
+   "warm_reset_mean_s": 0.1292932095238939,
+   "warm_step_mean_ms": 155.1483241760415,
+   "warm_step_p95_ms": 180.8049232349731
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 5.959999999962747,
+   "evaluate_option": false,
+   "first_reset_s": 0.34675309900194407,
+   "foreign_sm_pct_max": 56.0,
+   "foreign_sm_pct_mean": 17.274774774774773,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 176.26131940786465,
+   "own_vram_peak_mib": 758.0,
+   "run": "replay_s15_001",
+   "seed": 15,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation",
+    "baseline_total_utilisation"
+   ],
+   "warm_env_steps_per_s": 5.629192761302048,
+   "warm_reset_mean_s": 0.20371289120521396,
+   "warm_step_mean_ms": 177.64536451380948,
+   "warm_step_p95_ms": 198.88759393943474
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 5.71999999997206,
+   "evaluate_option": true,
+   "first_reset_s": 0.30274297890719026,
+   "foreign_sm_pct_max": 14.0,
+   "foreign_sm_pct_mean": 0.28415300546448086,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 134.40849733448823,
+   "own_vram_peak_mib": 694.0,
+   "run": "band_replay_s15_001",
+   "seed": 15,
+   "sharing_reasons": [
+    "foreign_graphics_process",
+    "foreign_sm_utilisation"
+   ],
+   "warm_env_steps_per_s": 7.378002291821804,
+   "warm_reset_mean_s": 0.1352874055155553,
+   "warm_step_mean_ms": 135.5380441001566,
+   "warm_step_p95_ms": 141.4734019082971
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 5.589999999967404,
+   "evaluate_option": true,
+   "first_reset_s": 0.28918360895477235,
+   "foreign_sm_pct_max": 0.0,
+   "foreign_sm_pct_mean": 0.0,
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "material_graph_wall_mean_ms": 133.61362474787984,
+   "own_vram_peak_mib": 758.0,
+   "run": "band_replay_s15_002",
+   "seed": 15,
+   "sharing_reasons": [],
+   "warm_env_steps_per_s": 7.418997570867552,
+   "warm_reset_mean_s": 0.1409027210320346,
+   "warm_step_mean_ms": 134.78909926143342,
+   "warm_step_p95_ms": 134.46994548430666
+  },
+  {
+   "cold_process_start_to_first_step_done_s": 5.699999999953434,
+   "evaluate_option": true,
+   "first_reset_s": 0.2893072839360684,
+   "foreign_sm_pct_max": 99.0,
+   "foreign_sm_pct_mean": 39.49659863945578,
+   "gpu_sharing": "SHARED_GPU",
+   "material_graph_wall_mean_ms": 225.15879211375633,
+   "own_vram_peak_mib": 758.0,
+   "run": "band_replay_s15_003",
+   "seed": 15,
+   "sharing_reasons": [
+    "foreign_compute_process",
+    "foreign_graphics_process",
+    "foreign_sm_utilisation"
+   ],
+   "warm_env_steps_per_s": 4.397696963694345,
+   "warm_reset_mean_s": 0.15017188800266013,
+   "warm_step_mean_ms": 227.39174805713228,
+   "warm_step_p95_ms": 285.22245622007176
+  }
+ ]
+}
