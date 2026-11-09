@@ -730,3 +730,54 @@ tests `tests/test_batched_{layout,cpu_parity,isolation,partial_reset,frozen_sour
     singles at N=4.
   - The first smoke, `gpu_smoke_001`, ran before the `_claim_slots` guard and measured N=1 at 0.43 s against the
     single's 0.13 s (then about 1% co-tenant load). It is kept as a failed-performance record.
+
+### P1-2 vector env `open_vector_env` and workload-A policies (2026-11-10)
+
+Files: `src/robotic_cutting_sim/rl/{vector_env,policies_batched}.py` (`open_vector_env`, `TaskFamily`,
+`VectorCuttingEnv`, `UnsupportedVectorConfiguration` exported lazily from `robotic_cutting_sim.rl`); tests
+`tests/test_vector_env_api.py`, `tests/test_vector_env_gpu_stream.py`, `tests/test_rl_policies_batched.py`;
+milestone runner `scripts/rl_ready/run_vector_milestones.py`. Nothing under `batched/` was changed for P1-2.
+
+- **Composition.** The env owns one `BatchedCuttingMaterial` and drives it only through its device buffers:
+  zero-copy Torch views (`wp.to_torch`) of `measured_pose`, `cut_input`, `step_count`, `invalid_reason`, `seed`,
+  `reset_mask`, `reset_seed`, `pending_wrench`, `code` and the box arrays, then `advance(interpolation="device")`.
+  Ideal tracking: the measured pose written to the material is the float64 commanded pose of `edge_delta_v1`.
+- **Task family (refines §8 `TaskFamily("agentic_trim_id", scene_seeds)`).** `TaskFamily(scene_seeds,
+  family_id="agentic_trim_id"|"agentic_trim_ood", sim_seed=42, particle_spacing_m=None, max_episode_steps=None,
+  initial_edge_poses=None, pad_boxes_edge=None, pad_recipients=None)`. Tasks are `compile_task(generate_scene(seed),
+  goal_config(), seed=42)`, whose `config_sha256` equals the WP-17 payloads (checked by the milestone runner).
+  Default initial edge = `task.reference_edge_pose_world(0)` (as `kinematic_env`); the WP-17 replays use the
+  recorded reset edge. `pad_boxes_edge` + `pad_recipients` configure the Native handle + two-pad obstacle set
+  (`configure_pad_obstacles`), otherwise the handle box only.
+- **Replay drive (new, privileged).** `step_measured_edge(edge_pose[N,7] f64, cut_index[N] i32, pad_boxes=None,
+  env_mask=None, actions=None)`: masked envs are driven by recorded measured poses (and their pad boxes are
+  written first, as `update_pad_obstacles`), the others apply `actions` through `edge_delta_v1` in the same
+  batched control step. `info["drive"]` is 1 for replay and `info["action_status"]` is -1 (`STATUS_REPLAY`).
+- **Seeds and autoreset.** Env seeds are the material `seed[N]`. Explicit resets keep or replace them;
+  `autoreset="same_step"` resets done envs with the masked device kernels (no host sync) and sets the next seed
+  to `splitmix64(seed + episode + 1)`. `RandomPolicyV1` draws from SplitMix64(seed, episode, step, component)
+  (counter based; independent of N and of the other envs).
+- **Strict and training modes.** `strict=True` (default) keeps the material's single int32 readback per step
+  and raises `InvalidBatchEnvs`; `strict=False` performs no host read in `step` (tested by counting
+  `wp.array.numpy` and `Tensor.item/tolist/cpu/numpy` calls during a step: 1 and 0 respectively) and reports
+  `terminated = invalid_reason != 0`.
+- **Streams (§7, implemented here).** Every public call enters `wp.ScopedStream(wp.stream_from_torch(
+  torch.cuda.current_stream()))`; the graph is captured on Warp's own stream at construction (the legacy default
+  stream cannot be captured) and replayed on the Torch stream. `debug_sync=True` synchronizes after every call.
+  GPU test: the recorded Warp stream equals the Torch current stream for the default and a side stream.
+- **Evaluation.** `evaluate(env_ids)` hands `task.evaluate_goal` (frozen `goals.evaluate_goal`) a recording of
+  two frames: the reset state (t = 0, reference positions, zero codes) and the host snapshot at
+  `t = step_count·dt`; reference arrays are the packed frozen ones. `frames=` adds intermediate snapshots
+  (M0 compares 2 vs 121 frames). The integrity layer's history check sees only those frames.
+- **Fidelity** is computed in `receipt()["fidelity"]` against `NATIVE_TRIM_V7_2_REFERENCE`: always
+  `ideal_edge_tracking_no_robot_dynamics` and `reaction_not_fed_back`; `no_finger_pad_obstacles` with the handle
+  box only; any resolution or episode-length difference by value; per env
+  `finger_pad_boxes_static_in_edge_frame_on_non_measured_steps` when configured pads were not updated from a
+  measurement (action-driven steps).
+- **Refusals.** `UnsupportedVectorConfiguration` (subclass of `UnsupportedBatchConfiguration`, adds
+  `UNSUPPORTED_RUNTIME/OPTION/TASK/DEVICE`) for other runtimes, backends, materials, observation profiles,
+  action specs, rewards, autoreset modes, cameras, recorders, reset options, pad boxes without configured pads
+  and a scene-seed change on partial reset (`UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET`).
+- **`recorded_command_policy_v1`.** Open-loop float32 actions computed against the reconstructed commanded
+  pose (frozen NumPy control path), so rounding does not accumulate; the material then sees the commanded
+  targets, not the Native measured poses (no tracking error): a different material input than WP-17.
