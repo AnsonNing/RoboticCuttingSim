@@ -11,7 +11,9 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - Running agents:
   1. P1-2 integration + milestones (GPU1, `rcs_rl_runner/gpu1.lock`): M0/M1 done, M2 N=8/16 running on post-fix
      HEAD → `artifacts/rl_ready/p1_2/`, report `docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`.
-  2. P1-1b S1 robot-only GPU probes (GPU0, `rcs_rl_runner/gpu0.lock`) → `artifacts/rl_ready/p1_1b/`.
+  2. P1-1b: S1 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md): G0/T2/G1 PASS, robot-only and with-material
+     G2 rows SHARED_GPU, table fix 359ce0d); now S2 (B2 grasp + material, G3–G5) and S3 (TRIM seeds 512/15 with
+     recorded commands, frozen evaluator) + reward/evaluator wiring, GPU0/GPU1 under their locks.
   3. P1-3a `alias_free_v1` contact mode in a separate worktree `/home/ningan/RoboticCuttingSim-rl-p13`
      (branch `claude/rl-p1-3a`, merged back after M2) — design: [P1_3_BOTTLENECK_ANALYSIS.md](reports/rl_ready/P1_3_BOTTLENECK_ANALYSIS.md).
 - Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
@@ -50,6 +52,7 @@ material without Kit/robot (replayed measured edge + pad boxes). Not one speedup
 
 ## Log
 
+- 2026-11-10 — P1-1b S1 PASS (robot-only gates; batched robots cut with material attached); S2/S3 started.
 - 2026-11-10 — P1-1 review fixes done; P1-3 analysis committed (hash aliasing: ~58 % spurious candidates; C1/C2 bitwise); P1-3a started in worktree `RoboticCuttingSim-rl-p13`.
 - 2026-11-10 — P1-1b S0 PASS (CPU bitwise); P1-1 review fixes started; S1 robot-only GPU on GPU0.
 - 2026-11-10 — P1-1 core done (bitwise CPU parity/isolation/reset; GPU smoke PASS); vector env + milestones started; P1-1 xhigh review started.
