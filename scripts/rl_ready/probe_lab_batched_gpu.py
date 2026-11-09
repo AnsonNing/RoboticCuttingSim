@@ -475,6 +475,9 @@ def main():
                                           "min_bilateral_fraction": g["bilateral"].min(0).tolist()}
             if env.snapshot is not None:
                 row["grasp_snapshot"] = env.snapshot.receipt()
+                row["grasp_snapshot"]["relative_R"] = env.snapshot.relative_R.numpy().tolist()
+                row["grasp_snapshot"]["relative_p"] = env.snapshot.relative_p.numpy().tolist()
+                row["grasp_snapshot"]["accumulators"] = (env.grasp_initialization or {}).get("accumulators")
         if trace["edge"]:
             np.savez_compressed(out/"trace.npz", **{k: torch.stack(v).cpu().numpy() for k, v in trace.items() if v})
         if states["joint_q"]:
