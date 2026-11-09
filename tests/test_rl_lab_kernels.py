@@ -294,3 +294,47 @@ def test_grasp_monitor_kernel_matches_host_monitor():
         assert abs(host["rotation_since_settling_rad"]-out["angle"].numpy()[e]) < 2e-5
         assert rk.GRASP_STATUS_NAMES[status.numpy()[e]] == host["status"]
         assert bool(lost.numpy()[e]) == host["grasp_lost"]
+
+
+def test_settle_gates_match_frozen_check_dictionary():
+    """grasp_batch gates (device) decide as isaac_lab_env._settle_physical_grasp's checks (host) per world."""
+    from robotic_cutting_sim.batched import grasp_batch
+    from robotic_cutting_sim.physical_tool import ToolGraspConfig
+    grasp = ToolGraspConfig()
+    rng = np.random.default_rng(9)
+    worlds = []
+    for e in range(64):
+        rows = []
+        for _ in range(int(rng.integers(0, 4)) if e % 9 == 0 else 26):
+            rows.append({"bilateral_substep_fraction": float(rng.choice([1., .9, .97])),
+                         "relative_translation_drift_m": float(rng.uniform(0, .0025)),
+                         "relative_rotation_drift_rad": float(rng.uniform(0, .06)),
+                         "tool_linear_velocity_world_m_s": rng.uniform(-.013, .013, 3),
+                         "tool_angular_velocity_world_rad_s": rng.uniform(-.13, .13, 3),
+                         "max_tool_rigid_penetration_m": float(rng.uniform(0, .0011)),
+                         "unintended_tool_contact_slots": int(rng.random() < .02)})
+        worlds.append(rows)
+    acc = np.zeros((len(worlds), grasp_batch.ACC_WIDTH), np.float32)
+    for e, rows in enumerate(worlds):
+        for r in rows:
+            acc[e] += [1., r["bilateral_substep_fraction"], 0, 0, 0, 0, 0, r["unintended_tool_contact_slots"]]
+            acc[e, 2:7] = np.maximum(acc[e, 2:7], [r["relative_translation_drift_m"], r["relative_rotation_drift_rad"],
+                                                   np.linalg.norm(r["tool_linear_velocity_world_m_s"]),
+                                                   np.linalg.norm(r["tool_angular_velocity_world_rad_s"]),
+                                                   r["max_tool_rigid_penetration_m"]])
+    with wp.ScopedDevice(DEVICE):
+        failed = wp.zeros(len(worlds), dtype=wp.int32)
+        count = wp.zeros(1, dtype=wp.int32)
+        grasp_batch.launch_gates(wp.array(acc, dtype=float), grasp, failed, count, DEVICE)
+    decided = 0
+    for e, rows in enumerate(worlds):
+        host = grasp_batch.host_gate_reference(rows, grasp)
+        device = set(grasp_batch.decode_checks(failed.numpy()[e]))
+        host_failed = {k for k, ok in host.items() if not ok}
+        if not rows:
+            assert "nonempty_stability_window" in device
+            continue
+        # float32 accumulation may only flip a decision exactly at a threshold; none of these samples sit there
+        assert device == host_failed, (e, device, host_failed)
+        decided += 1
+    assert decided > 40 and count.numpy()[0] == sum(bool(failed.numpy()[e]) for e in range(len(worlds)))

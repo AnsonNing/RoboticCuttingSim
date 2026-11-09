@@ -12,6 +12,8 @@ T3  coupling contract, every env and step of a 50-step N=4 run (synthetic test c
     coupling output of step k, bitwise.
 Lab isolation (CPU analogue of G1 a-c): N=1 equals world 0 of N=3; perturbing env 2 and a masked reset of env 1
     leave the other worlds bitwise unchanged.
+B2 grasp (S2 component, run on CPU in S0): 2 s settle of all worlds with per-world gates (PASS required), identical
+    copies, snapshot restore of one world writes exactly its masks and its settled joint state, others untouched.
 """
 import json
 import os
@@ -142,3 +144,22 @@ def test_lab_masked_reset_of_env1_leaves_others(rollouts):
         _equal(_world(rollouts["reset"], e), _world(rollouts["n3"], e), f"masked reset env 1, world {e}")
     reset, base = _world(rollouts["reset"], 1), _world(rollouts["n3"], 1)
     assert np.array_equal(reset["q"][:5], base["q"][:5]) and not np.array_equal(reset["q"][5:], base["q"][5:])
+
+
+def test_b2_settle_gates_snapshot_and_masked_restore(tmp_path_factory):
+    out = run_worker(tmp_path_factory, "grasp", "--mode", "grasp", "--num-envs", 2, "--steps", 5, "--reset-env", 1)
+    r = json.loads((out/"grasp.json").read_text())
+    d = np.load(out/"grasp.npz")
+    init = r["grasp_initialization"]
+    assert init["status"] == "PASS_PHYSICAL_PREGRASP" and not init["failed"], init["failed"]
+    assert init["accumulators"][0] == init["accumulators"][1], "identical worlds settle identically"
+    assert all(row["grasp_status"] == [0, 0] for row in r["steps"]), "grasp must keep HOLDING over 5 steps"
+    assert r["world_reset_mask"] == [False, True, False]
+    world = np.asarray(r["articulation_world"])
+    assert r["fk_reset_mask"] == (world == 1).tolist()
+    cs, bw = d["coord_start"], d["body_world"]
+    # world 1 is restored to its settled snapshot (Franka joints and the tool free joint), world 0 untouched
+    assert np.array_equal(d["restored_joint_q"][cs[1]:cs[2]], d["settled_joint_q"][cs[1]:cs[2]])
+    assert np.array_equal(d["restored_joint_q"][cs[0]:cs[1]], d["before_joint_q"][cs[0]:cs[1]])
+    assert np.array_equal(d["restored_body_q"][bw == 0], d["before_body_q"][bw == 0])
+    assert not np.array_equal(d["before_joint_q"][cs[1]:cs[2]], d["settled_joint_q"][cs[1]:cs[2]])

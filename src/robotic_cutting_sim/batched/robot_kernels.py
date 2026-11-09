@@ -418,8 +418,8 @@ def grasp_monitor_kernel(body_q: wp.array(dtype=wp.transform), hand: wp.array(dt
     dR = wp.transpose(Rr)*R
     dp = wp.transpose(Rr)*(p-reference_p[e])
     translation = float(wp.length(dp))
-    c = (float(dR[0, 0]+dR[1, 1]+dR[2, 2])-1.)/2.
-    rotation = wp.acos(wp.clamp(c, -1., 1.))
+    c = (dR[0, 0]+dR[1, 1]+dR[2, 2]-wp.float64(1.0))/wp.float64(2.0)
+    rotation = float(wp.acos(wp.clamp(c, wp.float64(-1.0), wp.float64(1.0))))
     observed = integral[e, 9]
     fraction = float(0.)
     if observed > 0.:

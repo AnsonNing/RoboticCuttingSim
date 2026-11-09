@@ -282,9 +282,51 @@ def mode_coupling(args, out):
                             applied=np.asarray([a[1] for a in applied]), boxes=np.asarray(boxes))
 
 
+def mode_grasp(args, out):
+    """B2 build-time settle (2 s, all worlds) with per-world gates and snapshot; steps; masked restore of one env."""
+    import torch
+    from isaaclab_newton.physics import NewtonManager
+    args.tool_mount = "physical_grasp_v1"
+    cfg, options, task, Env = _build(args)
+    with _launch(cfg):
+        env = Env(cfg, options, task)
+        t0 = time.perf_counter()
+        env.reset()
+        settle_s = time.perf_counter()-t0
+        state = NewtonManager.get_state_0()
+        settled = {"body_q": state.body_q.numpy().copy(), "joint_q": state.joint_q.numpy().copy()}
+        rows = []
+        for step in range(args.steps):
+            env.step(scripted_actions(args.num_envs, step) * .3)
+            rows.append({"grasp_status": env.grasp_status.numpy().tolist(), "slip_m": env.grasp_slip.numpy().tolist(),
+                         "angle_rad": env.grasp_angle.numpy().tolist(),
+                         "bilateral": (env.contact_integral.numpy()[:, 8]/np.maximum(env.contact_integral.numpy()[:, 9], 1)).tolist()})
+        state = NewtonManager.get_state_0()
+        before = {"body_q": state.body_q.numpy().copy(), "joint_q": state.joint_q.numpy().copy()}
+        mask = torch.zeros(args.num_envs, dtype=torch.bool)
+        mask[args.reset_env] = True
+        env.reset_envs(mask)
+        audit = env.last_reset_mask_audit
+        env.scene.write_data_to_sim()
+        env.sim.forward()
+        state = NewtonManager.get_state_0()
+        restored = {"body_q": state.body_q.numpy().copy(), "joint_q": state.joint_q.numpy().copy()}
+        result = {"settle_wall_s": settle_s, "grasp_initialization": env.grasp_initialization,
+                  "snapshot": env.snapshot.receipt(), "steps": rows,
+                  "world_reset_mask": audit["world_reset_mask"].numpy().astype(bool).tolist(),
+                  "fk_reset_mask": audit["fk_reset_mask"].numpy().astype(bool).tolist(),
+                  "articulation_world": env.model.articulation_world.numpy().tolist()}
+        (out/"grasp.json").write_text(json.dumps(result, default=float))
+        np.savez_compressed(out/"grasp.npz", settled_body_q=settled["body_q"], settled_joint_q=settled["joint_q"],
+                            restored_body_q=restored["body_q"], restored_joint_q=restored["joint_q"],
+                            before_body_q=before["body_q"], before_joint_q=before["joint_q"],
+                            body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--mode", required=True, choices=("receipt", "single", "mask_audit", "rollout", "coupling"))
+    parser.add_argument("--mode", required=True, choices=("receipt", "single", "mask_audit", "rollout", "coupling",
+                                                               "grasp"))
     parser.add_argument("--num-envs", type=int, default=3)
     parser.add_argument("--tool-mount", default="rigid_mount_v1")
     parser.add_argument("--scene-seed", type=int, default=512)
@@ -300,7 +342,7 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     start = time.perf_counter()
     {"receipt": mode_receipt, "single": mode_single, "mask_audit": mode_mask_audit, "rollout": mode_rollout,
-     "coupling": mode_coupling}[args.mode](args, out)
+     "coupling": mode_coupling, "grasp": mode_grasp}[args.mode](args, out)
     (out/"done.json").write_text(json.dumps({"mode": args.mode, "wall_s": time.perf_counter()-start,
                                              "num_envs": args.num_envs, "tool_mount": args.tool_mount}))
 

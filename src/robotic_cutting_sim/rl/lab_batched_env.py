@@ -35,8 +35,10 @@ from isaaclab.envs import DirectRLEnv
 
 from ..batched import lab_scene
 from ..batched.lab_scene import BatchedLabOptions, unsupported
-from ..batched.robot_kernels import (RIGID_REASONS, RobotFrames, decode_rigid_reason, resolve_index_tables,
-                                     rigid_validity_kernel)
+from ..batched import grasp_batch
+from ..batched.robot_kernels import (GRASP_STATUS_NAMES, RIGID_REASONS, SAMPLE_WIDTH, RobotFrames,
+                                     collect_world_contacts, decode_rigid_reason, grasp_monitor_kernel,
+                                     integrate_world_contacts, resolve_index_tables, rigid_validity_kernel)
 from ..batched.robot_ik import BatchedEdgeIK, ik_rejection_status_code
 from .actions import EdgeDeltaActionV1
 from .observations import StateObservation
@@ -45,6 +47,7 @@ RUNTIME = "rl_gpu_headless"
 BACKEND = "isaac_lab_newton"
 ENV_VERSION = "isaac_lab_batched_cutting_env_v1"
 IK_STREAK_LIMIT = 0  # 0: an IK failure streak never invalidates an env by itself (held, reported per step)
+GRASP_SETTLE_FAILED = 16  # rigid_reason bit (training mode) for a world whose B2 settle gates failed
 
 
 # ----------------------------------------------------------------------------- material coupling interface
@@ -128,6 +131,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         if self.options.cameras or self.options.sensors:
             raise unsupported("UNSUPPORTED_SENSOR", "no cameras in the kit-less batched path")
         NewtonManager.register_state_force_callback(self._state_force)
+        if self.options.tool_mount == "physical_grasp_v1":
+            NewtonManager.register_post_step_callback(self._post_step)
 
     def _bind(self):
         from isaaclab_newton.physics import NewtonManager
@@ -202,6 +207,57 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.coord_start = wp.array(coord_start, dtype=wp.int32, device=self.wp_device)
         self.last_reset_mask_audit = None
         self.step_index = 0
+        self.snapshot = None
+        self.grasp_initialization = None
+        if o.tool_mount == "physical_grasp_v1":
+            self._bind_physical_grasp()
+
+    def _bind_physical_grasp(self):
+        import newton
+        N, model = self.num_envs, self.model
+        self.tool = self.scene["cutting_tool"]
+        data = self.solver.mjw_data
+        with wp.ScopedDevice(self.wp_device):
+            self.contacts = newton.Contacts(rigid_contact_max=data.naconmax, soft_contact_max=0,
+                                            requested_attributes={"force"}, device=self.wp_device)
+            labels = list(model.shape_label)
+            shape_body = model.shape_body.numpy()
+            tools = set(self.tables["tool"].tolist())
+            handle = np.zeros(model.shape_count, np.int32)
+            for i, label in enumerate(labels):
+                if shape_body[i] in tools and label.endswith("/Handle"):
+                    handle[i] = 1
+            if int(handle.sum()) != N:
+                raise RuntimeError(f"Expected one handle collider per world, got {int(handle.sum())}")
+            self.handle_mask = wp.array(handle, dtype=int)
+            self.contact_sample = wp.zeros((N, SAMPLE_WIDTH), dtype=float)
+            self.contact_integral = wp.zeros((N, SAMPLE_WIDTH), dtype=float)
+            self.reference_R = wp.zeros(N, dtype=wp.mat33d)
+            self.reference_p = wp.zeros(N, dtype=wp.vec3d)
+            self.grasp_unsupported = wp.zeros(N, dtype=float)
+            self.grasp_lost = wp.zeros(N, dtype=wp.int32)
+            self.grasp_slip = wp.zeros(N, dtype=float)
+            self.grasp_angle = wp.zeros(N, dtype=float)
+            self.grasp_status = wp.zeros(N, dtype=wp.int32)
+        self._sampling = False
+
+    def _post_step(self):
+        """B2, every 2 ms substep: per-world tool contact sample and its interval integral (device only)."""
+        if not (self._bound and self._sampling):
+            return
+        from isaaclab_newton.physics import NewtonManager
+        state = NewtonManager.get_state_0()
+        self.solver.update_contacts(self.contacts, state)
+        self.contact_sample.zero_()
+        data = self.solver.mjw_data
+        wp.launch(collect_world_contacts, data.naconmax, device=self.wp_device,
+                  inputs=[self.contacts.rigid_contact_count, self.contacts.rigid_contact_shape0,
+                          self.contacts.rigid_contact_shape1, self.contacts.force, self.contacts.rigid_contact_normal,
+                          data.contact.pos, data.contact.dist, self.model.shape_body, self.model.shape_world,
+                          self.handle_mask, state.body_q, self.model.body_com, self.frames.tool, self.frames.finger,
+                          self.num_envs, self.contact_sample])
+        wp.launch(integrate_world_contacts, self.num_envs, device=self.wp_device,
+                  inputs=[self.contact_sample, self.physics_dt, self.contact_integral])
 
     def _lab_order(self, robot):
         names = list(robot.joint_names)
@@ -252,6 +308,9 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         franka1.actuators.target_command.set_position_mask(value=self.home_targets[1])
         franka1.actuators.target_command.set_velocity_mask(value=torch.zeros_like(self.home_targets[1]))
         self.frames.applied_impulse.zero_()
+        if self.options.tool_mount == "physical_grasp_v1":
+            self.contact_integral.zero_()
+            self._sampling = True
 
     def _apply_action(self):
         pass  # Lab's scene writes the persistent actuator targets before every substep.
@@ -276,6 +335,16 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.check_valid()
         self.step_index += 1
         invalid = wp.to_torch(self.rigid_reason) != 0
+        if self.options.tool_mount == "physical_grasp_v1":
+            from ..grasp_monitor import GraspLossConfig
+            g = GraspLossConfig()
+            wp.launch(grasp_monitor_kernel, self.num_envs, device=self.wp_device,
+                      inputs=[state.body_q, self.frames.hand, self.frames.tool, self.reference_R, self.reference_p,
+                              self.contact_integral, float(self.step_dt), g.translation_warning_m,
+                              g.rotation_warning_rad, g.translation_loss_m, g.rotation_loss_rad, g.unsupported_loss_s,
+                              int(self.cfg.decimation), self.grasp_unsupported, self.grasp_lost, self.grasp_slip,
+                              self.grasp_angle, self.grasp_status])
+            invalid = invalid | (wp.to_torch(self.grasp_lost) != 0)
         truncated = self.episode_length_buf >= self.max_steps
         return invalid, truncated
 
@@ -318,32 +387,134 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.reset_envs(mask, _initial=True)
 
     def reset(self, seed=None, options=None):
-        obs, extras = super().reset(seed=seed, options=options)
+        """Full reset of every world. B1: HOME. B2 (first call, or after ``rebuild``): HOME, tool at the nominal
+        hand mount, 2 s settle of all worlds with per-world gates, then the per-slot snapshot; later calls restore
+        the snapshot."""
         from isaaclab_newton.physics import NewtonManager
+        if self.options.tool_mount == "physical_grasp_v1" and self.snapshot is not None:
+            self.reset_envs(torch.ones(self.num_envs, dtype=torch.bool, device=self.device))
+            self.scene.write_data_to_sim()
+            self.sim.forward()
+            return self._get_observations(), {}
+        obs, extras = super().reset(seed=seed, options=options)
+        if self.options.tool_mount == "physical_grasp_v1":
+            self._settle_and_snapshot()
         self.frames.launch_edge(NewtonManager.get_state_0().body_q)
         self.home_commanded.copy_(wp.to_torch(self.frames.nominal_edge))
         self.commanded.copy_(self.home_commanded)
+        if self.snapshot is not None:
+            self.snapshot.nominal_edge = self.home_commanded.clone()
         return self._get_observations(), extras
+
+    def _settle_and_snapshot(self):
+        """B2 build-time grasp initialization of all worlds (``isaac_lab_env._settle_physical_grasp`` per world)."""
+        from isaaclab_newton.physics import NewtonManager
+        N, grasp, o = self.num_envs, self.options.grasp, self.options
+        state = NewtonManager.get_state_0()
+        # tool at the nominal hand mount of the HOME pose: compose_tool_pose(body_q[hand], hand_from_tool), computed by
+        # the edge kernel's nominal branch with hand_from_tool in place of hand_from_edge
+        chain = RobotFrames(self.tables, self.spec, self.spec.hand_from_tool_xyz_xyzw, "physical_grasp_v1",
+                            device=self.wp_device)
+        chain.launch_edge(state.body_q)
+        pose = wp.to_torch(chain.nominal_edge).to(torch.float32)
+        self.tool.write_root_link_pose_to_sim_mask(root_pose=pose.contiguous())
+        self.tool.write_root_com_velocity_to_sim_mask(root_velocity=torch.zeros((N, 6), device=self.device))
+        self.scene.write_data_to_sim()
+        self.sim.forward()
+        state = NewtonManager.get_state_0()
+        wp.launch(grasp_batch.initial_relative_kernel, N, device=self.wp_device,
+                  inputs=[state.body_q, self.frames.hand, self.frames.tool, self.reference_R, self.reference_p])
+        franka0, franka1 = self.robots
+        targets = self.robots[0].data.joint_pos.torch.clone()
+        targets[:, self._finger_cols] = float(grasp.closed_target_m)
+        franka0.actuators.target_command.set_position_mask(value=targets.contiguous())
+        franka0.actuators.target_command.set_velocity_mask(value=torch.zeros_like(targets))
+        franka1.actuators.target_command.set_position_mask(value=self.home_targets[1])
+        franka1.actuators.target_command.set_velocity_mask(value=torch.zeros_like(self.home_targets[1]))
+        acc = wp.zeros((N, grasp_batch.ACC_WIDTH), dtype=float, device=self.wp_device)
+        count = int(round(grasp.settle_s/self.physics_dt))
+        window_start = grasp.settle_s-grasp.stability_window_s-1e-9
+        self._sampling = True
+        self.contact_integral.zero_()
+        for index in range(count):
+            self.scene.write_data_to_sim()
+            self.sim.step(render=False)
+            self.scene.update(self.physics_dt)
+            if (index+1) % self.cfg.decimation == 0:
+                if (index+1)*self.physics_dt >= window_start:
+                    state = NewtonManager.get_state_0()
+                    wp.launch(grasp_batch.settle_window_kernel, N, device=self.wp_device,
+                              inputs=[state.body_q, state.body_qd, self.frames.hand, self.frames.tool,
+                                      self.reference_R, self.reference_p, self.contact_integral, acc])
+                self.contact_integral.zero_()
+        self._sampling = False
+        failed = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
+        failing = wp.zeros(1, dtype=wp.int32, device=self.wp_device)
+        grasp_batch.launch_gates(acc, grasp, failed, failing, self.wp_device)
+        bits = failed.numpy()   # build time, outside the step loop
+        self.grasp_initialization = {"status": "PASS_PHYSICAL_PREGRASP" if not bits.any() else "FAIL_PHYSICAL_PREGRASP",
+                                     "failed": {int(e): grasp_batch.decode_checks(b) for e, b in enumerate(bits) if b},
+                                     "rigid_settle_s": count*self.physics_dt, "window_s": grasp.stability_window_s,
+                                     "accumulators": acc.numpy().tolist(), "hidden_attachment": False}
+        if bits.any():
+            if o.strict:
+                raise RuntimeError(f"Physical pregrasp failed in worlds {np.flatnonzero(bits).tolist()}: "
+                                   f"{self.grasp_initialization['failed']}")
+            reason = wp.to_torch(self.rigid_reason)
+            reason.copy_(torch.where(wp.to_torch(failed) != 0, reason | GRASP_SETTLE_FAILED, reason))
+        state = NewtonManager.get_state_0()
+        # monitor reference: the settled relative pose (GraspMonitor(settled hand, settled tool))
+        wp.launch(grasp_batch.initial_relative_kernel, N, device=self.wp_device,
+                  inputs=[state.body_q, self.frames.hand, self.frames.tool, self.reference_R, self.reference_p])
+        self.frames.launch_edge(state.body_q)
+        self.frames.launch_pad_boxes(state.body_q)
+        self.snapshot = grasp_batch.GraspSnapshot(
+            franka_q=[r.data.joint_pos.torch.clone() for r in self.robots],
+            franka_targets=[targets.clone(), self.home_targets[1].clone()],
+            tool_pose=self.tool.data.root_link_pose_w.torch.clone(),
+            tool_velocity=self.tool.data.root_com_vel_w.torch.clone(),
+            relative_R=wp.clone(self.reference_R), relative_p=wp.clone(self.reference_p),
+            measured_edge=wp.to_torch(self.frames.measured_edge).clone(),
+            nominal_edge=wp.to_torch(self.frames.nominal_edge).clone(),
+            box_centers=wp.clone(self.frames.box_centers), box_halves=wp.clone(self.frames.box_halves),
+            passed=wp.to_torch(failed) == 0, failed_checks=failed)
+        self.last_targets = targets.clone()
 
     def reset_envs(self, mask, *, _initial=False):
         """Masked per-world reset (ADR 0022 §6.1). ``mask``: ``torch.bool [N]`` on the env device."""
         from isaaclab_newton.physics import NewtonManager
-        if self.options.tool_mount == "physical_grasp_v1":
+        b2 = self.options.tool_mount == "physical_grasp_v1"
+        if b2 and not _initial and self.snapshot is None:
             raise unsupported("UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET",
-                              "B2 snapshot restore is stage S2 (grasp_batch); not wired in S0")
+                              "B2 partial reset restores the settled snapshot; call reset() once to settle")
         mask = mask.to(device=self.device, dtype=torch.bool).contiguous()
         wmask = wp.from_torch(mask, dtype=wp.bool)
-        for robot, home in zip(self.robots, self.home_targets):
-            robot.write_joint_state_to_sim_mask(position=home, velocity=torch.zeros_like(home), env_mask=wmask)
-            robot.actuators.target_command.set_position_mask(value=home, env_mask=wmask)
-            robot.actuators.target_command.set_velocity_mask(value=torch.zeros_like(home), env_mask=wmask)
+        restore = b2 and self.snapshot is not None and not _initial
+        for arm, (robot, home) in enumerate(zip(self.robots, self.home_targets)):
+            q = self.snapshot.franka_q[arm] if restore else home
+            target = self.snapshot.franka_targets[arm] if restore else home
+            robot.write_joint_state_to_sim_mask(position=q, velocity=torch.zeros_like(q), env_mask=wmask)
+            robot.actuators.target_command.set_position_mask(value=target, env_mask=wmask)
+            robot.actuators.target_command.set_velocity_mask(value=torch.zeros_like(target), env_mask=wmask)
+        if restore:
+            self.tool.write_root_link_pose_to_sim_mask(root_pose=self.snapshot.tool_pose, env_mask=wmask)
+            self.tool.write_root_com_velocity_to_sim_mask(root_velocity=self.snapshot.tool_velocity, env_mask=wmask)
+            for values in (self.grasp_lost, self.grasp_status):
+                t = wp.to_torch(values)
+                t.copy_(torch.where(mask, torch.zeros_like(t), t))
+            t = wp.to_torch(self.grasp_unsupported)
+            t.copy_(torch.where(mask, torch.zeros_like(t), t))
+            for dst, src in ((self.reference_R, self.snapshot.relative_R), (self.reference_p, self.snapshot.relative_p)):
+                d, s_ = wp.to_torch(dst), wp.to_torch(src)
+                d.copy_(torch.where(mask.view(-1, *([1]*(d.dim()-1))), s_, d))
         world = NewtonManager._world_reset_mask
         fk = NewtonManager._fk_reset_mask
         self.last_reset_mask_audit = {"world_reset_mask": None if world is None else wp.clone(world),
                                       "fk_reset_mask": None if fk is None else wp.clone(fk), "mask": mask.clone()}
         self.frames.reset_masked(wmask)
         self.coupling.reset_masked(wmask)
-        self.last_targets = torch.where(mask[:, None], self.home_targets[0], self.last_targets)
+        home0 = self.snapshot.franka_targets[0] if restore else self.home_targets[0]
+        self.last_targets = torch.where(mask[:, None], home0, self.last_targets)
         self.commanded = torch.where(mask[:, None], self.home_commanded, self.commanded)
         self.previous_action = torch.where(mask[:, None], torch.zeros_like(self.previous_action), self.previous_action)
         self.armed = self.armed & ~mask
