@@ -705,8 +705,9 @@ tests `tests/test_batched_{layout,cpu_parity,isolation,partial_reset,frozen_sour
     again; whether that equals the frozen path bitwise for poses that are not exactly unit is **UNVERIFIED** (open).
 - **Segmented diagnostics** (`batched/diagnostics.py`, `fuse_fp=False` as the frozen module). Each env's summary
   equals the frozen `MaterialDiagnosticsReduction.read()` of that env exactly; this is tested.
-- **Graph capture.** `HashGrid.reserve(P, with_groups=True)` runs before capture. Measured mempool use before and
-  after capture is equal: 0 bytes allocated, N=1 and N=4.
+- **Graph capture.** `HashGrid.reserve(P, with_groups=True)` runs before capture. Measured Warp mempool
+  used-bytes before and after capture are equal (net growth 0 bytes, N=1 and N=4). This is a net reading: an
+  allocation freed again during capture would not show (receipt field `allocated_during_capture_semantics`).
 - **Upstream hazard (Warp 1.17.0, not caused by batching).**
   - A frozen single `LiveCuttingMaterial` graph, captured without `HashGrid.reserve`, segfaults in `capture_launch`
     after any later, larger non-captured `HashGrid.build` in the same process. 400k points reproduce it, grouped
@@ -723,8 +724,12 @@ tests `tests/test_batched_{layout,cpu_parity,isolation,partial_reset,frozen_sour
   - All 4 GPU copies end with identical codes (3,220 labelled), and positions differ by ≤ 7.1e-8 m from atomic
     order. The frozen single on the same GPU also labels 3,220.
   - Memory: 49.26 MB per env (`memory_bytes`, excluding the hash grid).
-- **Smoke timing.** These are not the M2 benchmark rows. All runs were SHARED_GPU: GPU1 had a co-tenant at about
-  96–100% utilisation; state only, no cameras, no recording, warm.
+- **Smoke timing.** These are not the M2 benchmark rows. All runs were SHARED_GPU; state only, no cameras, no
+  recording, warm. GPU1 co-tenancy per run (from the recorded `nvidia-smi` samples):
+  - `gpu_smoke_002`: before the run GPU1 showed 2% utilisation with another user's process holding 12,922 MiB;
+    the after sample (98%) was taken while the probe itself was still resident, so the co-tenant's load during
+    the run is unknown.
+  - `ab_timing_001`: GPU1 at 96% utilisation before the run (co-tenant active).
   - Interleaved A/B in one process (`artifacts/rl_ready/p1_1/ab_timing_001`), per 20 ms control step (200 substeps):
     single graph 270 ms; batched N=1 270 ms; batched N=4 558 ms. That is about 1.9× aggregate over sequential
     singles at N=4.
@@ -781,3 +786,60 @@ milestone runner `scripts/rl_ready/run_vector_milestones.py`. Nothing under `bat
 - **`recorded_command_policy_v1`.** Open-loop float32 actions computed against the reconstructed commanded
   pose (frozen NumPy control path), so rounding does not accumulate; the material then sees the commanded
   targets, not the Native measured poses (no tracking error): a different material input than WP-17.
+
+### Review fixes (2026-11-10)
+
+Fixes of the xhigh review of P1-1. Each is one commit ("P1-1 review fix: ..."); all CPU tests run with
+`CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -p no:cacheprovider tests/test_batched_*.py
+tests/test_wp17_frontier.py tests/test_repo_naming.py`.
+
+1. **`reset()` order (major).** `np.unique` sorted `env_ids` while `seeds`/`scene_keys` were paired by position, so
+   unsorted ids swapped seeds and the geometry guard failed open. Ids now keep the caller's order; duplicate,
+   non-integer ids and non-integer seeds are refused; all arguments are validated before any state changes.
+   Test: `test_batched_partial_reset.py::test_reset_keeps_caller_order_for_seeds_and_scene_keys`.
+2. **Coverage of zero paths.** `tests/test_batched_paths_parity.py`, bitwise after every substep, each test asserting
+   its quantity is non-zero: three heterogeneous lattice blocks (sizes, E, friction, particle-contact stiffness,
+   yield, G_c) with compressed lattices and conflicting codes (particle contacts > 0), handle + two pads
+   overlapping material (every box row reacts), digits 0/1/-1 in the same substep, rotated tool, frontier link
+   candidates; and `BatchedCuttingMaterial` vs frozen `LiveCuttingMaterial` with pad recipients configured and
+   yawed workpieces (+1.5°, −2°). **Wrench rotation is now bitwise for any rotation** (supersedes the "may differ by
+   1 ulp" bullet above): `_rotate` reproduces the host BLAS order of `rotate_wrench_at_same_point`
+   (`fma(c,R2, fma(a,R0, b·R1))`, exact IEEE ops), pinned by `test_host_wrench_rotation_order_the_kernel_reproduces`;
+   the plain sum was up to 4.7e-16 relative off. Not reached by any full-solver scene tried: the frontier link label
+   (`link_diagnostics[1]`); it stays covered at kernel level by the WP17 fixtures with expected diagnostics `(·,1)`.
+3. **Poison reset.** Every reset-listed array of every env filled with random bytes; `reset([1])` restores env 1 to
+   the fresh pack (kept field: `seed` when no seed is given) and leaves envs 0/2 byte-identical.
+   Test: `test_batched_partial_reset.py::test_poisoned_state_partial_reset_restores_env_and_leaves_others`.
+4. **Device cut digits before the graph.** `pose_interp.fill_cut_rows_checked` writes digits outside `-1..K-1`
+   (≥ K, ≥ 16, < −1) as −1 and sets `INVALID_CUT_DIGIT` before any substep; preset rows go through
+   `disarm_invalid_cut_rows`. Host digits are refused before either input buffer is written (frozen semantics).
+   The closest device equivalent of the frozen refusal: the env advances one control step with a disarmed blade
+   (bitwise equal to a `-1` env, tested), then strict mode raises / training terminates it.
+   Tests: `test_batched_pose_interp.py::test_checked_cut_fill_*`, `test_batched_coupling.py::test_device_cut_digits_*`.
+5. **Pose validity follows the live chain (`device_f64_slerp_v2`).** The v1 docstring was wrong: the live material
+   normalises with `validate_pose` first, accepts any finite nonzero quaternion and stores the normalised pose as
+   `last_pose`. v1 refused norms outside 1 ± 1e-6 and normalised in another order; against the live chain it differed
+   by up to 1,200 float32 ulp in the twists of 1e-9…1e-6 rad rotations of float32-rounded FK quaternions (measured,
+   4.68M components; 0 ulp elsewhere). Chosen variant: normalise like the live chain. `validate_measured` writes
+   `actual = validate_pose(measured)` and the status (`NONFINITE`, `ZERO_QUATERNION`, `NON_UNIT_QUATERNION` for a
+   non-unit previous pose or overflowing norm); `pose_interp` interpolates `last_pose → actual`; the material stores
+   `actual` as `last_pose` (new `actual_pose`). Measured: **0 ulp** against the live chain for float32 FK
+   quaternions at 0…3 rad including 1e-9 rad, over multi-step `last_pose` chains, and end to end
+   (`advance(interpolation="device")` equals the `host_reference` path over every array). This resolves the
+   "UNVERIFIED (open)" bullet above. Tests: `test_batched_pose_interp.py`,
+   `test_batched_coupling.py::test_device_pose_path_equals_the_live_chain_end_to_end`.
+6. **In-place pad boxes.** `BatchedCuttingMaterial.set_obstacle_boxes(boxes [N,B,2,3] float32 host/Warp/Torch,
+   env_mask=None)` writes the existing `box_centers/box_halves` (no reallocation, graph-safe between steps); host
+   input is refused like `update_pad_obstacles`; a device env with invalid boxes keeps them and gets the new bit
+   `INVALID_OBSTACLE_BOXES` (32); `advance()` checks the boxes before the substeps. Configured pads that are never
+   updated stay at their packed edge-frame boxes; the receipt then lists
+   `pad_boxes_not_updated_through_set_obstacle_boxes` (a backend writing the arrays in place directly is not
+   counted). Test: `test_batched_paths_parity.py::test_in_place_pad_box_updates_equal_frozen_update_pad_obstacles`
+   (host, Warp and masked updates; bitwise incl. pad wrenches).
+7. **Receipts.** `batched_source_sha256` (material_batch, pose_interp, diagnostics, errors, layout, constitutive,
+   tlmpm_v7_2_batch); `pose_interpolation` names the path the steps actually used (kernel version,
+   `host_reference_frozen_scipy_parity_only`, `preset_written_by_caller`, `mixed:…`), with per-path step counts.
+   Test: `test_batched_coupling.py::test_receipt_hashes_sources_and_names_the_interpolation_path_used`.
+8. **Nits.** `reset_mask/reset_seed` moved to the new `RESET_INPUTS` list; `rebuild()` is atomic (the new batch is
+   built first; a refused rebuild leaves the material unchanged, tested); preset cut rows are validated (item 4);
+   the capture-allocation and GPU1 co-tenant wording above is corrected.

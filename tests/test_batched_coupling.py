@@ -117,3 +117,22 @@ def test_receipt_hashes_sources_and_names_the_interpolation_path_used():
     assert receipt["pose_interpolation"] == "mixed:device_f64_slerp_v2+preset_written_by_caller"
     assert receipt["pose_interpolation_steps"] == {"device": 1, "host_reference": 0, "preset": 1}
     assert receipt["pose_interpolation_kernel"] == "device_f64_slerp_v2"
+
+
+def test_rebuild_is_atomic():
+    """Review nit: a refused rebuild leaves the material unchanged; a successful one replaces every array."""
+    from batched_fixtures import trim_material
+    from robotic_cutting_sim.batched import layout
+    from robotic_cutting_sim.batched.errors import UnsupportedBatchConfiguration
+    material = batch_material([(512, None, 42)])
+    arrays = dict(material.device_arrays())
+    with pytest.raises(UnsupportedBatchConfiguration):
+        material.rebuild([])
+    with pytest.raises(UnsupportedBatchConfiguration):
+        material.rebuild([layout.EnvSpec(trim_material(512), start_pose(512), 42),          # non-uniform
+                          layout.EnvSpec(trim_material(512, spacing=.003), start_pose(512, spacing=.003), 42)])
+    assert material.num_envs == 1 and all(material.device_arrays()[k] is v for k, v in arrays.items())
+    material.rebuild([layout.EnvSpec(trim_material(512), start_pose(512), 7),
+                      layout.EnvSpec(trim_material(15), start_pose(15), 8)])
+    assert material.num_envs == 2 and material.seed.numpy().tolist() == [7, 8]
+    assert material.parity_mode and material.device == "cpu"

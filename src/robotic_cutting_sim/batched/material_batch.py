@@ -469,12 +469,22 @@ class BatchedCuttingMaterial:
         self.capture_receipt = {"substeps_per_graph": self.solver.substeps, "capture_wall_s": time.perf_counter()-start,
                                 "mempool_enabled": bool(mempool), "mempool_used_before": before,
                                 "mempool_used_after": after,
-                                "allocated_during_capture_bytes": None if mempool is False else int(after-before)}
+                                "allocated_during_capture_bytes": None if mempool is False else int(after-before),
+                                "allocated_during_capture_semantics": "net Warp mempool used-bytes reading after "
+                                "minus before capture; 0 = no net growth (transient allocations freed during "
+                                "capture are not visible)"}
 
     def rebuild(self, specs):
-        """Explicit repack + recapture for a new geometry or batch shape; resets every env."""
-        self.graph = None
-        self._build(specs)
+        """Explicit repack + recapture for a new geometry or batch shape; resets every env.
+
+        Atomic: the new batch is built completely first and only then replaces this object's state, so a
+        refused or failing rebuild leaves the material unchanged and usable. Every device array is new
+        afterwards; views taken before (e.g. ``wp.to_torch``) must be taken again."""
+        options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
+                       capture_graph=self.capture_graph, constitutive_model=self.constitutive_model)
+        replacement = type(self)(specs, **options)
+        self.__dict__.clear()
+        self.__dict__.update(replacement.__dict__)
 
     # ------------------------------------------------------------------ inputs
 
