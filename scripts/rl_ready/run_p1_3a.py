@@ -50,7 +50,9 @@ OUT_ROOT = ROOT / "artifacts" / "rl_ready" / "p1_3"
 VARIANTS = {"frozen_v1": ("frozen_v1", None), "alias_free_v1": ("alias_free_v1", None),
             "c1_only": ("alias_free_v1", {"alias_free_hash_dims": False}),
             "c2_fallback_no_c1": ("alias_free_v1", {"skip_zero_impulse_atomics": False}),
-            "c1_c2_unguarded": ("alias_free_v1", {"speed_guard": "off"})}
+            "c1_c2_unguarded": ("alias_free_v1", {"speed_guard": "off"}),
+            # guard bound 0: every moving env takes the conditional FallbackGrid path every substep (check only)
+            "alias_free_forced_fallback": ("alias_free_v1", {"speed_bound_m_s": 0.0})}
 P1_0_POSITION_BAND_M = {512: (1.4e-5, 3.9e-5), 15: (2.0e-4, 4.6e-4)}
 
 
@@ -211,7 +213,8 @@ def mode_samestate(args, run, telemetry):
     seeds = (seed,) * args.copies
     out = dict(seed=seed, sample=sample, time_s=float(data["time_s"][sample]), copies=args.copies)
     with contextlib.ExitStack() as stack:
-        envs = {name: open_env(stack, name, seeds, inputs) for name in ("frozen_v1", "alias_free_v1")}
+        envs = {name: open_env(stack, name, seeds, inputs)
+                for name in ("frozen_v1", "alias_free_v1", "alias_free_forced_fallback")}
         for env in envs.values():
             env.reset(seeds=[42] * args.copies)
             load_state(env, data, sample)
@@ -227,6 +230,9 @@ def mode_samestate(args, run, telemetry):
         out["frozen_vs_alias_free"] = compare_stage(rows["frozen_v1_0"], rows["alias_free_v1_0"])
         out["frozen_vs_frozen_rerun"] = compare_stage(rows["frozen_v1_0"], rows["frozen_v1_1"])
         out["alias_free_vs_alias_free_rerun"] = compare_stage(rows["alias_free_v1_0"], rows["alias_free_v1_1"])
+        out["frozen_vs_forced_fallback"] = compare_stage(rows["frozen_v1_0"], rows["alias_free_forced_fallback_0"])
+        out["forced_fallback_guard_violations"] = guard_violations(envs["alias_free_forced_fallback"])
+        RV.dump(run / "partial_eager.json", out)
         first = rows["alias_free_v1_0"]
         P = int(envs["alias_free_v1"].material.packed.particle_counts[0])
         out["copies_identical_alias_free"] = [bool(np.array_equal(first["impulse"][:P], first["impulse"][e * P:(e + 1) * P]))
@@ -234,6 +240,13 @@ def mode_samestate(args, run, telemetry):
         out["speed_m_s_max"] = float(np.linalg.norm(np.asarray(data["velocities"][sample]), axis=1).max())
         out["alias_free_receipt"] = envs["alias_free_v1"].material.solver.particle_contact_receipt()
         # Stage graphs (alias_free_v1 contains the conditional fallback node), interleaved replay timing.
+        out["checks"] = dict(
+            nonzero_sets_identical=out["frozen_vs_alias_free"]["nonzero_sets_identical"],
+            stats4_identical=out["frozen_vs_alias_free"]["stats4_identical"],
+            forced_fallback_nonzero_sets_identical=out["frozen_vs_forced_fallback"]["nonzero_sets_identical"],
+            forced_fallback_stats4_identical=out["frozen_vs_forced_fallback"]["stats4_identical"],
+            forced_fallback_ran=all(v > 0 for v in out["forced_fallback_guard_violations"]),
+            alias_free_no_violation=all(v == 0 for v in guard_violations(envs["alias_free_v1"])))
         graphs = {}
         for name, env in envs.items():
             with wp.ScopedCapture(device=env.material.device) as capture:
@@ -251,7 +264,8 @@ def mode_samestate(args, run, telemetry):
                 wp.record_event(end)
                 wp.synchronize_event(end)
                 times[name].append(wp.get_event_elapsed_time(start, end))
-        out["stage_graph_ms"] = {name: dict(median=float(np.median(t)), p10=float(np.percentile(t, 10)),
+        out["stage_graph_ms"] = {name: dict(median=float(np.median(t)), min=float(np.min(t)),
+                                            p10=float(np.percentile(t, 10)),
                                             p90=float(np.percentile(t, 90)), n=len(t)) for name, t in times.items()}
         out["stage_graph_scope"] = ("CUDA-event time of one replay of a graph holding impulse/stats memsets + hash "
                                     "build (incl. CUB sort) + contact kernel(s) [+ guard kernel and conditional "
@@ -259,6 +273,8 @@ def mode_samestate(args, run, telemetry):
         replayed = {name: read_stage(env) for name, env in envs.items()}
         out["after_graph_replays_frozen_vs_alias_free"] = compare_stage(replayed["frozen_v1"],
                                                                         replayed["alias_free_v1"])
+        out["after_graph_replays_frozen_vs_forced_fallback"] = compare_stage(replayed["frozen_v1"],
+                                                                             replayed["alias_free_forced_fallback"])
         # Warp activity timing (kernels, memsets, memcpys) of the eager stage, interleaved.
         activity = {name: {} for name in envs}
         for repeat in range(args.repeats // 4 or 1):
@@ -318,7 +334,7 @@ def mode_ab(args, run, telemetry):
                 if t >= args.warmup:
                     walls[name].append(wall)
                 contacts[name].append(stats_counts(env).tolist())
-        out["step_wall_s"] = {name: dict(median=float(np.median(w)), mean=float(np.mean(w)),
+        out["step_wall_s"] = {name: dict(median=float(np.median(w)), mean=float(np.mean(w)), min=float(np.min(w)),
                                          p10=float(np.percentile(w, 10)), p90=float(np.percentile(w, 90)),
                                          n=len(w)) for name, w in walls.items()}
         out["env_steps_per_s"] = {name: float(N * len(w) / np.sum(w)) for name, w in walls.items()}
@@ -456,6 +472,7 @@ def mode_episode(args, run, telemetry):
                                                           int(contacts[name][:, e].sum())]))
                 out["cross_variant"][name] = rows
         out["timing"] = {name: dict(steps=steps, warm_step_median_s=float(np.median(w[1:steps])),
+                                    warm_step_min_s=float(np.min(w[1:steps])),
                                     warm_step_mean_s=float(np.mean(w[1:steps])),
                                     warm_step_p95_s=float(np.percentile(w[1:steps], 95)), first_step_s=float(w[0]),
                                     warm_env_steps_per_s=float(N * (steps - 1) / np.sum(w[1:steps])))

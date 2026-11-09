@@ -457,3 +457,81 @@ def test_resolve_refusals_and_options():
     assert m.solver.particle_contact.speed_bound_m_s == 1.
     m.rebuild([layout.EnvSpec(trim_material(512), start_pose(512), 42)])
     assert m.particle_contact_mode == AF and m.solver.particle_contact.speed_bound_m_s == 1.
+
+
+# ----------------------------------------------------------------------------- fallback grid vs Warp HashGrid
+
+K_SEQ = 1024
+
+
+@wp.kernel
+def _warp_sequence(grid: wp.uint64, x: wp.array(dtype=wp.vec3), env_of_particle: wp.array(dtype=int),
+                   radius: float, seq: wp.array2d(dtype=int), count: wp.array(dtype=int)):
+    p = wp.tid()
+    j = int(0)
+    for q in wp.hash_grid_query(grid, x[p], 2.4*radius, env_of_particle[p]):
+        if j < K_SEQ:
+            seq[p, j] = q
+        j += 1
+    count[p] = j
+
+
+@wp.kernel
+def _fallback_sequence(x: wp.array(dtype=wp.vec3), env_of_particle: wp.array(dtype=int), radius: float, inv: float,
+                       dims: wp.vec3i, cells: int, starts: wp.array(dtype=int), ends: wp.array(dtype=int),
+                       ids: wp.array(dtype=int), seq: wp.array2d(dtype=int), count: wp.array(dtype=int)):
+    """The cell walk of ``particle_contacts._particle_contacts_fallback_b`` (copied), recording candidates."""
+    p = wp.tid()
+    e = env_of_particle[p]
+    xp = x[p]
+    reach = 2.4*radius
+    x0 = int(wp.floor((xp[0]-reach)*inv))
+    y0 = int(wp.floor((xp[1]-reach)*inv))
+    z0 = int(wp.floor((xp[2]-reach)*inv))
+    x1 = wp.min(int(wp.floor((xp[0]+reach)*inv)), x0+dims[0]-1)
+    y1 = wp.min(int(wp.floor((xp[1]+reach)*inv)), y0+dims[1]-1)
+    z1 = wp.min(int(wp.floor((xp[2]+reach)*inv)), z0+dims[2]-1)
+    j = int(0)
+    for cz in range(z0, z1+1):
+        for cy in range(y0, y1+1):
+            for cx in range(x0, x1+1):
+                k = e*cells+PC._cell_index(cx, cy, cz, dims)
+                for i in range(starts[k], ends[k]):
+                    if j < K_SEQ:
+                        seq[p, j] = ids[i]
+                    j += 1
+    count[p] = j
+
+
+@pytest.mark.parametrize("dims", [(5, 5, 5), (64, 64, 32), (7, 3, 4)])
+def test_fallback_grid_reproduces_warp_grouped_query_sequence(dims):
+    """``FallbackGrid`` buckets walked in Warp's cell order give exactly the candidate sequence of a grouped
+    ``wp.HashGrid(*dims)`` query (ids and order), for 3 envs with overlapping coordinates, negative coordinates,
+    lattice points on cell boundaries and forced aliasing."""
+    from types import SimpleNamespace
+    rng = np.random.default_rng(3)
+    radius = .00045
+    h = 2.4*radius
+    parts = [rng.uniform(-.03, .05, (1500, 3)), (np.indices((8, 8, 8)).reshape(3, -1).T*h-.004),
+             rng.uniform(-.01, .01, (700, 3))]
+    x_host = np.concatenate(parts).astype(np.float32)
+    env = np.repeat(np.arange(3, dtype=np.int32), [len(p) for p in parts])
+    n = len(x_host)
+    x = wp.array(x_host, dtype=wp.vec3, device="cpu")
+    env_of_particle = wp.array(env, dtype=int, device="cpu")
+    grid = wp.HashGrid(*dims, device="cpu")
+    grid.build(x, h, groups=env_of_particle)
+    fallback = PC.FallbackGrid(SimpleNamespace(num_envs=3, total_particles=n, device="cpu", x=x,
+                                               env_of_particle=env_of_particle), dims, h)
+    fallback.build(SimpleNamespace(total_particles=n, x=x, env_of_particle=env_of_particle))
+    out = []
+    for kernel, args in ((_warp_sequence, [grid.id, x, env_of_particle, radius]),
+                         (_fallback_sequence, [x, env_of_particle, radius, fallback.inv, fallback.dims, fallback.cells,
+                                               fallback.starts, fallback.ends, fallback.ids])):
+        seq = wp.full((n, K_SEQ), -1, dtype=int, device="cpu")
+        count = wp.zeros(n, dtype=int, device="cpu")
+        wp.launch(kernel, n, args+[seq, count], device="cpu")
+        out.append((seq.numpy(), count.numpy()))
+    assert np.array_equal(out[0][1], out[1][1])
+    assert np.array_equal(out[0][0], out[1][0])
+    assert out[0][1].max() <= K_SEQ and out[0][1].min() >= 1    # untruncated; every query sees its own particle

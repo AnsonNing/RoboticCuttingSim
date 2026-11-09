@@ -17,9 +17,15 @@ launches ``_particle_contacts_b`` exactly as before; nothing in this module runs
   particle speed of the env is below the certified bound (analysis certificate (ii)).
 * ``speed_guard`` (needs C2): a per-env device check before the contact kernel, every substep, of
   ``|v_p|^2 <= bound^2`` and finite ``x_p`` for all particles of the env. ``"fallback"``: an env that fails
-  is skipped by the alias-free kernel and processed in the same substep by the frozen kernel body on a grouped
-  grid with the frozen reference dims, inside a conditional graph node (``wp.capture_if``; eager on CPU), so
-  its result is the frozen result; the substep is counted in ``contact_guard_violations[e]``. ``"flag"``: no
+  is skipped by the alias-free kernel and processed in the same substep by the frozen kernel body over the
+  frozen candidate sequence of the reference dims, inside a conditional graph node (``wp.capture_if``; eager
+  on CPU), so its result is the frozen result; the substep is counted in ``contact_guard_violations[e]``.
+  The fallback cannot rebuild a ``wp.HashGrid`` inside the conditional node (its build copies the grid
+  descriptor from pageable host memory, which a conditional body refuses at instantiation; measured on the
+  RTX 5090 / driver 570 with Warp 1.17.0), so ``FallbackGrid`` rebuilds the same buckets from kernels, memsets
+  and the stable ``wp.utils.radix_sort_pairs`` (all valid in a conditional body): key ``env*C + cell`` with
+  Warp's own ``hash_grid_index`` arithmetic, values = particle ids, so each (cell, env) bucket lists ascending
+  ids exactly as the grouped Warp grid does, and the query walks the virtual cells in Warp's x-fastest order. ``"flag"``: no
   fallback, the substep is only counted (the parity claim does not cover that env). ``"off"``: unchecked
   (A/B timing only; the receipt says ``certificate: unchecked``). A non-zero count makes the material set the
   sticky ``INVALID_CONTACT_SPEED_GUARD`` bit.
@@ -220,9 +226,8 @@ def _particle_contacts_env_filter_b(grid: wp.uint64, x: wp.array(dtype=wp.vec3),
                                     dt: float, params: wp.array2d(dtype=float),
                                     env_of_particle: wp.array(dtype=int), guard_flag: wp.array(dtype=int),
                                     flagged: int):
-    """The frozen ``_particle_contacts_b`` body (no C1) for the envs whose guard flag equals ``flagged != 0``:
-    ``flagged=1`` is the fallback (flagged envs on the reference-dims grid), ``flagged=0`` the alias-free
-    launch without C1 (unflagged envs)."""
+    """The frozen ``_particle_contacts_b`` body (no C1) for the envs whose guard flag equals ``flagged != 0``;
+    used with ``flagged=0`` (alias-free launch without C1 in fallback mode: unflagged envs only)."""
     p = wp.tid()
     e = env_of_particle[p]
     if (guard_flag[e] != 0) != (flagged != 0):
@@ -246,6 +251,129 @@ def _particle_contacts_env_filter_b(grid: wp.uint64, x: wp.array(dtype=wp.vec3),
                         wp.atomic_add(stats_sum, e*ST+4, 1.0)
                         wp.atomic_add(stats_sum, e*ST+5, wp.length(ji))
                         wp.atomic_max(stats_max, e*ST+6, wp.max(2.0*radius-distance, 0.0))
+
+
+# ----------------------------------------------------------------------------- fallback grid (reference dims)
+
+@wp.func
+def _cell_index(x: int, y: int, z: int, dims: wp.vec3i):
+    """warp/native/hashgrid.h ``hash_grid_index(grid, x, y, z)``: origin offset, clamp, modulo, z-major."""
+    origin = 1 << 20
+    cx = wp.max(x+origin, 0) % dims[0]
+    cy = wp.max(y+origin, 0) % dims[1]
+    cz = wp.max(z+origin, 0) % dims[2]
+    return cz*(dims[0]*dims[1])+cy*dims[0]+cx
+
+
+@wp.kernel
+def _fallback_keys_b(x: wp.array(dtype=wp.vec3), env_of_particle: wp.array(dtype=int), inv: float,
+                     dims: wp.vec3i, cells: int, keys: wp.array(dtype=int), values: wp.array(dtype=int)):
+    """Warp's ``compute_point_keys`` cell (``floor(p*cell_width_inv)``) per particle, env-major key."""
+    p = wp.tid()
+    xp = x[p]
+    cell = _cell_index(int(wp.floor(xp[0]*inv)), int(wp.floor(xp[1]*inv)), int(wp.floor(xp[2]*inv)), dims)
+    keys[p] = env_of_particle[p]*cells+cell
+    values[p] = p
+
+
+@wp.kernel
+def _fallback_ranges_b(keys: wp.array(dtype=int), n: int, starts: wp.array(dtype=int), ends: wp.array(dtype=int)):
+    i = wp.tid()
+    k = keys[i]
+    if i == 0:
+        starts[k] = i
+    elif keys[i-1] != k:
+        starts[k] = i
+    if i == n-1:
+        ends[k] = i+1
+    elif keys[i+1] != k:
+        ends[k] = i+1
+
+
+@wp.kernel
+def _particle_contacts_fallback_b(x: wp.array(dtype=wp.vec3), reference: wp.array(dtype=wp.vec3),
+                                  v: wp.array(dtype=wp.vec3), mass: wp.array(dtype=float), code: wp.array(dtype=int),
+                                  impulse: wp.array(dtype=wp.vec3), stats_sum: wp.array(dtype=float),
+                                  stats_max: wp.array(dtype=float), radius: float, reference_exclusion: float,
+                                  dt: float, params: wp.array2d(dtype=float), env_of_particle: wp.array(dtype=int),
+                                  guard_flag: wp.array(dtype=int), inv: float, dims: wp.vec3i, cells: int,
+                                  starts: wp.array(dtype=int), ends: wp.array(dtype=int),
+                                  ids: wp.array(dtype=int)):
+    """The frozen ``_particle_contacts_b`` body for flagged envs, walking the grouped reference-dims grid
+    exactly as ``hash_grid_query(grid, x[p], 2.4*radius, e)`` does (hashgrid.h ``hash_grid_query_impl`` /
+    ``hash_grid_query_next``: cells x fastest, then y, then z; each bucket in ascending id order)."""
+    p = wp.tid()
+    e = env_of_particle[p]
+    if guard_flag[e] == 0:
+        return
+    stiffness = params[e, P_PARTICLE_STIFFNESS]
+    friction = params[e, P_FRICTION]
+    xp = x[p]
+    reach = 2.4*radius
+    x0 = int(wp.floor((xp[0]-reach)*inv))
+    y0 = int(wp.floor((xp[1]-reach)*inv))
+    z0 = int(wp.floor((xp[2]-reach)*inv))
+    x1 = wp.min(int(wp.floor((xp[0]+reach)*inv)), x0+dims[0]-1)
+    y1 = wp.min(int(wp.floor((xp[1]+reach)*inv)), y0+dims[1]-1)
+    z1 = wp.min(int(wp.floor((xp[2]+reach)*inv)), z0+dims[2]-1)
+    for cz in range(z0, z1+1):
+        for cy in range(y0, y1+1):
+            for cx in range(x0, x1+1):
+                k = e*cells+_cell_index(cx, cy, cz, dims)
+                for i in range(starts[k], ends[k]):
+                    q = ids[i]
+                    if q > p:
+                        if v5._conflict_packed(code[p], code[q]) or wp.length_sq(reference[p]-reference[q]) > reference_exclusion**2.0:
+                            delta = x[p]-x[q]
+                            distance = wp.length(delta)
+                            if distance > 1.0e-10:
+                                normal = delta/distance
+                                effective = mass[p]*mass[q]/(mass[p]+mass[q])
+                                ji = v5._contact_impulse(distance-2.0*radius, normal, v[p]-v[q], effective,
+                                                         dt, stiffness, friction)
+                                wp.atomic_add(impulse, p, ji)
+                                wp.atomic_sub(impulse, q, ji)
+                                if wp.length_sq(ji) > 0.0:
+                                    wp.atomic_add(stats_sum, e*ST+4, 1.0)
+                                    wp.atomic_add(stats_sum, e*ST+5, wp.length(ji))
+                                    wp.atomic_max(stats_max, e*ST+6, wp.max(2.0*radius-distance, 0.0))
+
+
+class FallbackGrid:
+    """Grouped reference-dims buckets rebuilt from kernels + memsets + stable radix sort (graph and
+    conditional-node safe). ``starts/ends[N*C]`` index ``ids`` (particle ids sorted by ``env*C + cell``)."""
+
+    def __init__(self, solver, dims, cell_width):
+        s = solver
+        self.dims = wp.vec3i(*dims)
+        self.cells = int(np.prod(dims))
+        N, n = s.num_envs, s.total_particles
+        if N*self.cells >= 2**31:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_INT32_OVERFLOW", f"fallback keys N*C = {N*self.cells}")
+        # Warp's float32 cell_width_inv = Type(1) / cell_width (hashgrid.cpp), cell_width = float32(build radius).
+        self.inv = float(np.float32(1.0)/np.float32(cell_width))
+        self.end_bit = max(int(N*self.cells-1).bit_length(), 1)
+        with wp.ScopedDevice(s.device):
+            self.keys = wp.zeros(2*n, dtype=int)
+            self.ids = wp.zeros(2*n, dtype=int)
+            self.starts = wp.zeros(N*self.cells, dtype=int)
+            self.ends = wp.zeros(N*self.cells, dtype=int)
+
+    def nbytes(self):
+        return int(sum(a.capacity for a in (self.keys, self.ids, self.starts, self.ends)))
+
+    def build(self, s):
+        n = s.total_particles
+        wp.launch(_fallback_keys_b, n, [s.x, s.env_of_particle, self.inv, self.dims, self.cells, self.keys, self.ids])
+        wp.utils.radix_sort_pairs(self.keys, self.ids, n, 0, self.end_bit)
+        self.starts.zero_()
+        self.ends.zero_()
+        wp.launch(_fallback_ranges_b, n, [self.keys, n, self.starts, self.ends])
+
+    def launch_contacts(self, s, r, dt):
+        wp.launch(_particle_contacts_fallback_b, s.total_particles, [s.x, s.reference, s.v, s.mass, s.code,
+            s.impulse, s.stats_sum, s.stats_max, r, 3*s.dx, dt, s.params, s.env_of_particle, s.contact_guard_flag,
+            self.inv, self.dims, self.cells, self.starts, self.ends, self.ids])
 
 
 @wp.kernel
@@ -305,10 +433,8 @@ class AliasFreeContacts:
                 s.contact_guard_flag = wp.zeros(N, dtype=int)
                 s.contact_guard_any = wp.zeros(1, dtype=int)
                 s.contact_guard_violations = wp.zeros(N, dtype=int)
-            if config.speed_guard == "fallback":
-                self.fallback_grid = wp.HashGrid(*config.reference_hash_dims)
-                self.fallback_grid.reserve(n, with_groups=True)
-                self.fallback_grid.build(s.x, self.cell_width, groups=s.env_of_particle)
+        if config.speed_guard == "fallback":
+            self.fallback_grid = FallbackGrid(s, config.reference_hash_dims, self.cell_width)
         wp.load_module(module=__name__, device=s.device)
         # Bound arrays used only for argument lists when the guard is off (never read then).
         self._no_flags = wp.zeros(N, dtype=int, device=s.device) if config.speed_guard == "off" else None
@@ -341,11 +467,9 @@ class AliasFreeContacts:
                                                      s.contact_guard_violations])
 
     def _fallback(self, s, r, dt):
-        """Flagged envs: the frozen body on the reference-dims grid (the frozen candidate sequence)."""
-        self.fallback_grid.build(s.x, self.cell_width, groups=s.env_of_particle)
-        wp.launch(_particle_contacts_env_filter_b, s.total_particles, [self.fallback_grid.id, s.x, s.reference, s.v,
-            s.mass, s.code, s.impulse, s.stats_sum, s.stats_max, r, 3*s.dx, dt, s.params, s.env_of_particle,
-            s.contact_guard_flag, 1])
+        """Flagged envs: the frozen body over the reference-dims candidate sequence (``FallbackGrid``)."""
+        self.fallback_grid.build(s)
+        self.fallback_grid.launch_contacts(s, r, dt)
         wp.launch(_guard_consume_b, s.num_envs, [s.contact_guard_flag, s.contact_guard_any,
                                                  s.contact_guard_violations])
 
@@ -367,7 +491,10 @@ class AliasFreeContacts:
                                "off": "unchecked" if c.alias_free_hash_dims else "not_needed_c1_only"}[c.speed_guard],
                "conditional_graph_supported": self.conditional_graph_supported,
                "parity_level": "A_bitwise_given_certificate" if c.alias_free_hash_dims else "A_bitwise_unconditional",
-               "fallback_hash_dims": list(c.reference_hash_dims) if c.speed_guard == "fallback" else None}
+               "fallback_hash_dims": list(c.reference_hash_dims) if c.speed_guard == "fallback" else None,
+               "fallback_grid": ("FallbackGrid: kernels + memsets + stable radix sort in a conditional graph node"
+                                 if c.speed_guard == "fallback" else None),
+               "fallback_grid_bytes": self.fallback_grid.nbytes() if self.fallback_grid is not None else 0}
         if solver is not None and c.speed_guard != "off":
             out["guard_violation_substeps"] = solver.contact_guard_violations.numpy().tolist()
         return out
