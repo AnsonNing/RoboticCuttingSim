@@ -131,3 +131,39 @@ def test_reset_argument_checks():
     key = material.packed.scene_keys[0]
     material.reset([0], scene_keys=[key])             # same geometry: allowed
     material.reset([])                                # no-op
+    with pytest.raises(ValueError):
+        material.reset([], seeds=[1])
+    with pytest.raises(ValueError):
+        material.reset([0.0])                         # float ids are not silently truncated
+    with pytest.raises(ValueError):
+        material.reset([0], seeds=[1.5])
+
+
+def test_reset_keeps_caller_order_for_seeds_and_scene_keys():
+    """Review finding 1: seeds and scene keys pair with env_ids by position in the caller's order."""
+    from robotic_cutting_sim.batched.errors import UnsupportedBatchConfiguration
+    material = batch_material(CONFIGS)
+    keys = list(material.packed.scene_keys)
+    assert len(set(keys)) == 3 and None not in keys, keys
+    assert material.seed.numpy().tolist() == [42, 43, 44]
+    material.reset([2, 0], seeds=[200, 100])
+    assert material.seed.numpy().tolist() == [100, 43, 200]
+    material.reset([2, 0], scene_keys=[keys[2], keys[0]], seeds=[202, 101])   # correct keys, caller order
+    assert material.seed.numpy().tolist() == [101, 43, 202]
+    material.reset(None, seeds=[7, 8, 9])                                      # None = env order 0..N-1
+    assert material.seed.numpy().tolist() == [7, 8, 9]
+    before = {name: getattr(material, name).numpy().copy() for name in ("seed", "reset_mask", "reset_seed")}
+    for ids, wrong in (([2, 0], [keys[0], keys[2]]),          # env 2 asked to take env 0's scene and vice versa
+                       ([1], [keys[0]]), ([0, 1, 2], [keys[0], keys[2], keys[1]])):
+        with pytest.raises(UnsupportedBatchConfiguration) as info:
+            material.reset(ids, seeds=[5]*len(ids), scene_keys=wrong)
+        assert info.value.code == "UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET"
+    for ids in ([0, 0], [2, 1, 2]):
+        with pytest.raises(ValueError, match="duplicate"):
+            material.reset(ids, seeds=list(range(len(ids))))
+    for name, value in before.items():                    # refused calls change nothing
+        assert np.array_equal(getattr(material, name).numpy(), value), name
+    # The mask follows the ids, not their order: only envs 2 and 0 were reset.
+    material.reset([2, 0], seeds=[300, 301])
+    assert material.reset_mask.numpy().tolist() == [1, 0, 1]
+    assert material.seed.numpy().tolist() == [301, 8, 300]

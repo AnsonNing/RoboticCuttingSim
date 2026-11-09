@@ -516,14 +516,27 @@ class BatchedCuttingMaterial:
     def reset(self, env_ids=None, seeds=None, scene_keys=None):
         """Masked partial reset to the freshly packed state (ADR §6); no allocation, no recapture.
 
-        ``env_ids`` None resets all. ``seeds`` (one per reset env) replace the env seeds; None keeps them.
-        ``scene_keys`` must equal the packed geometry of each env, else UNSUPPORTED (use ``rebuild``)."""
+        ``env_ids`` None resets all (in env order 0..N-1). ``seeds`` and ``scene_keys`` are matched to
+        ``env_ids`` by position, in the caller's order (``reset([2, 0], seeds=[s2, s0])``); duplicate ids
+        are refused. ``seeds`` replace the env seeds; None keeps them. ``scene_keys`` must equal the packed
+        geometry of each env, else UNSUPPORTED (use ``rebuild``). Every argument is validated before any
+        state changes."""
         N = self.num_envs
-        ids = np.arange(N) if env_ids is None else np.unique(np.asarray(env_ids, np.int64).reshape(-1))
-        if ids.size == 0:
-            return
-        if ids.min() < 0 or ids.max() >= N:
-            raise ValueError(f"env_ids must be in [0, {N})")
+        if env_ids is None:
+            ids = np.arange(N, dtype=np.int64)
+        else:
+            raw = np.asarray(env_ids).reshape(-1)
+            if raw.size == 0:
+                if (seeds is not None and np.asarray(seeds).size) or (scene_keys is not None and len(scene_keys)):
+                    raise ValueError("seeds/scene_keys given for an empty env_ids")
+                return
+            if raw.dtype.kind not in "iu":
+                raise ValueError(f"env_ids must be integers, got dtype {raw.dtype}")
+            ids = raw.astype(np.int64)
+            if ids.min() < 0 or ids.max() >= N:
+                raise ValueError(f"env_ids must be in [0, {N})")
+            if np.unique(ids).size != ids.size:
+                raise ValueError(f"duplicate env_ids {ids.tolist()}: each env is reset at most once per call")
         if scene_keys is not None:
             keys = list(scene_keys)
             if len(keys) != len(ids):
@@ -536,10 +549,12 @@ class BatchedCuttingMaterial:
         mask[ids] = 1
         new_seed = self.seed.numpy().astype(np.int64)
         if seeds is not None:
-            values = np.asarray(seeds, np.int64).reshape(-1)
+            values = np.asarray(seeds).reshape(-1)
             if len(values) != len(ids):
                 raise ValueError("one seed per reset env")
-            new_seed[ids] = values
+            if values.dtype.kind not in "iu":
+                raise ValueError(f"seeds must be integers, got dtype {values.dtype}")
+            new_seed[ids] = values.astype(np.int64)   # ids has no duplicates: caller order is kept
         self.reset_mask.assign(mask)
         self.reset_seed.assign(new_seed)
         self.reset_masked(full=len(ids) == N)
