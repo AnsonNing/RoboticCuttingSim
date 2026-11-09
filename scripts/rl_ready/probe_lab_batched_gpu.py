@@ -251,6 +251,15 @@ def main():
     t_start = time.perf_counter()
     import torch
     import warp as wp
+    # Warp 1.17 HashGrid static-descriptor hazard (P1-3a): every row records each wp.HashGrid this process built,
+    # with its device and creator, so a process holding more than one CUDA grid is visible (and INVALID).
+    hashgrids = []
+    _hashgrid_init = wp.HashGrid.__init__
+
+    def _counted_hashgrid(self, *a, **k):
+        _hashgrid_init(self, *a, **k)
+        hashgrids.append(dict(device=str(self.device), created_by=_site(traceback.extract_stack())))
+    wp.HashGrid.__init__ = _counted_hashgrid
     from isaaclab.app.sim_launcher import launch_simulation
     from robotic_cutting_sim.batched import lab_scene
     from robotic_cutting_sim.rl.lab_batched_env import IsaacLabBatchedCuttingEnv
@@ -514,6 +523,10 @@ def main():
         m = np.asarray([s.get("own_memory_mib") or 0. for s in warm])
         slope = float(np.polyfit(t-t[0], m, 1)[0])
     row["telemetry"] = summary
+    cuda_grids = [g for g in hashgrids if g["device"].startswith("cuda")]
+    row["hashgrids"] = {"all": hashgrids, "cuda_count": len(cuda_grids),
+                        "multi_grid_process": len(cuda_grids) > 1,
+                        "status": "INVALID_MULTI_GRID_PROCESS" if len(cuda_grids) > 1 else "SINGLE_DEVICE_GRID_OR_NONE"}
     row["vram_own_peak_mib"] = summary.get("own_vram_peak_mib")
     row["vram_own_slope_mib_per_s_warm"] = slope
     row["gpu_sharing"] = summary.get("gpu_sharing")

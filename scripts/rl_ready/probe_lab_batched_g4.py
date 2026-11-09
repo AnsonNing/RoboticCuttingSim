@@ -144,6 +144,18 @@ def main():
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
     start = time.perf_counter()
+    hashgrids = []
+    if args.mode != "compare":
+        import traceback
+        import warp as wp
+        _init = wp.HashGrid.__init__
+
+        def _counted(self, *a, **k):   # Warp 1.17 static-descriptor hazard: record every grid of this process
+            _init(self, *a, **k)
+            frame = next((f for f in reversed(traceback.extract_stack()[:-1]) if "/warp/" not in f.filename), None)
+            hashgrids.append(dict(device=str(self.device),
+                                  created_by=f"{Path(frame.filename).name}:{frame.lineno}" if frame else "unknown"))
+        wp.HashGrid.__init__ = _counted
     if args.mode == "compare":
         result = compare(args, out)
         (out/"g4_compare.json").write_text(json.dumps(result, indent=1))
@@ -153,6 +165,8 @@ def main():
     np.savez_compressed(out/"g4_trace.npz", **{k: np.stack([r[k] for r in rows]) for k in rows[0]})
     (out/"g4.json").write_text(json.dumps({"mode": args.mode, "task_id": TASK_ID, "steps": STEPS,
                                            "max_amplitude_rad": AMPLITUDE.tolist(), "feedback": False, "info": info,
+                                           "hashgrids": {"all": hashgrids, "cuda_count": sum(
+                                               g["device"].startswith("cuda") for g in hashgrids)},
                                            "wall_s": time.perf_counter()-start}, indent=1, default=str))
     print(json.dumps({"mode": args.mode, "info": info}, default=str)[:2000])
 

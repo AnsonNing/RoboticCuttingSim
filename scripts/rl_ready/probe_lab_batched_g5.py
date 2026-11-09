@@ -98,6 +98,30 @@ def mode_l0(args, inputs, tasks):
             "status": "PASS" if all(r["codes_bitwise"] and r["positions_bitwise"] for r in out) else "FAIL"}
 
 
+def mode_l3combine(args):
+    """Band of single replays run ONE PER PROCESS (Warp HashGrid static-descriptor hazard): combine g5.json files."""
+    parts = [json.loads((Path(p)/"g5.json").read_text()) for p in args.inputs]
+    by_env = {}
+    for part in parts:
+        if part.get("hashgrids", {}).get("multi_grid_process"):
+            raise ValueError(f"{part['run']}: a multi-grid process cannot enter the band")
+        for env in part["envs"]:
+            by_env.setdefault(env["env"], dict(env=env["env"], scene_seed=env["scene_seed"], steps=env["steps"],
+                                               batch_labelled=env["batch_labelled"], batch_by_digit=env["batch_by_digit"],
+                                               replays=[]))["replays"].extend(env["replays"])
+    out = []
+    for e, row in sorted(by_env.items()):
+        labelled = [r["labelled"] for r in row["replays"]]
+        row.update(single_band_labelled=[min(labelled), max(labelled)],
+                   batch_inside_single_band=bool(min(labelled) <= row["batch_labelled"] <= max(labelled)),
+                   replays_codes_equal_batch=[r["codes_equal_batch"] for r in row["replays"]],
+                   max_different_code_particles=max(r["different_code_particles"] for r in row["replays"]),
+                   max_abs_position_diff_m=max(r["max_abs_position_diff_m"] for r in row["replays"]))
+        out.append(row)
+    return {"mode": "l3combine", "inputs": list(args.inputs), "envs": out,
+            "one_replay_per_process": True}
+
+
 def mode_l3(args, inputs, tasks, run):
     final = np.load(run/"final_codes.npz")
     T = len(inputs["edge"])
@@ -132,8 +156,9 @@ def mode_l3(args, inputs, tasks, run):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--mode", required=True, choices=("l0", "l3"))
-    parser.add_argument("--run", required=True)
+    parser.add_argument("--mode", required=True, choices=("l0", "l3", "l3combine"))
+    parser.add_argument("--run", default=None)
+    parser.add_argument("--inputs", nargs="*", default=())
     parser.add_argument("--envs", type=int, nargs="+", default=[0, 1])
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--replays", type=int, default=3)
@@ -142,6 +167,22 @@ def main():
     args = parser.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
+    if args.mode == "l3combine":
+        result = mode_l3combine(args)
+        (out/"g5.json").write_text(json.dumps(result, indent=1, default=str))
+        print(json.dumps(result, indent=1, default=str)[:3000])
+        return
+    import traceback
+    import warp as wp
+    hashgrids = []
+    _init = wp.HashGrid.__init__
+
+    def _counted(self, *a, **k):   # Warp 1.17 static-descriptor hazard: record every grid this process builds
+        _init(self, *a, **k)
+        frame = next((f for f in reversed(traceback.extract_stack()[:-1]) if "/warp/" not in f.filename), None)
+        hashgrids.append(dict(device=str(self.device), created_by=f"{Path(frame.filename).name}:{frame.lineno}"
+                              if frame else "unknown"))
+    wp.HashGrid.__init__ = _counted
     run = Path(args.run)
     inputs = dict(np.load(run/"material_inputs.npz"))
     seeds = [int(s) for s in inputs["scene_seeds"]]
@@ -149,6 +190,9 @@ def main():
     tasks = [compiled[s] for s in seeds]
     start = time.perf_counter()
     result = mode_l0(args, inputs, tasks) if args.mode == "l0" else mode_l3(args, inputs, tasks, run)
+    cuda = [g for g in hashgrids if g["device"].startswith("cuda")]
+    result["hashgrids"] = {"all": hashgrids, "cuda_count": len(cuda), "multi_grid_process": len(cuda) > 1,
+                           "status": "INVALID_MULTI_GRID_PROCESS" if len(cuda) > 1 else "SINGLE_DEVICE_GRID_OR_NONE"}
     result.update(run=str(run), wall_s=time.perf_counter()-start, solver="tlmpm_v7_2 (frozen LiveCuttingMaterial)",
                   call_order="update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, "
                              "cut_index=max(cut,0))")
