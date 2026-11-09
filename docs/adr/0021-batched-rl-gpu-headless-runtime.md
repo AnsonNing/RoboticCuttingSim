@@ -592,3 +592,67 @@ CPU tests run with `.venv/bin/python -m pytest`; torch tests run in `.deps/isaac
 | 10 | State-only TRIM policies are blind to geometry | Documented scope. Privileged critic only through an explicit profile |
 | 11 | Venv split: no torch in `.venv` | Torch-free core. API tests run in the torch venv; elsewhere they are NOT_RUN |
 | 12 | `.deps` symlinks into the main checkout | Treat as read-only; record versions in receipts |
+
+## Implementation notes
+
+Appended during implementation; earlier sections are unchanged. Each subsection names its work package and
+records where the code deviates from or refines the text above.
+
+### P1-1/P1-2 device components: `pose_interp`, `edge_delta_v1`, `state` observation, `trim_bond_progress_packed_v1` (2026-11-10)
+
+Files: `src/robotic_cutting_sim/batched/pose_interp.py`, `src/robotic_cutting_sim/rl/{actions,observations,reward_packed}.py`;
+tests `tests/test_batched_pose_interp.py`, `tests/test_rl_{actions,observations,reward_packed}.py`.
+
+- **Test invocation.** The `.venv` editable install resolves `robotic_cutting_sim` to the main checkout
+  (`/home/ningan/RoboticCuttingSim/src`), not to this worktree. Worktree tests therefore run with `PYTHONPATH=src`
+  in `.venv` as well (`PYTHONPATH=src .venv/bin/python -m pytest ...`); without it they test the wrong source or fail
+  to import new modules.
+- **§7.1 pose interpolation (refinement, stronger than required).**
+  - Inputs are `float64 [N,7]` world poses on the device; per-env `T_local_world` is a `wp.mat44d[N]` plus a
+    `wp.vec4d[N]` quaternion computed once on the host at pack time with `Rotation.from_matrix` (the call
+    `transform_poses` repeats every control step, so it is identical by construction).
+  - The kernel follows SciPy's numpy (Cython) operation order exactly, including two host BLAS FMA chains that the
+    frozen path uses implicitly: `np.linalg.norm` in `robot.validate_pose` (OpenBLAS ddot = sequential FMA chain) and
+    the `(1,3)@(3,3).T` matmul in `transform_points` (`fma(p2,R2, fma(p0,R0, p1*R1))`). All other products and sums
+    are single IEEE operations that the compiler cannot contract (`__dmul_rn/__dadd_rn/__dsub_rn` on CUDA via
+    `wp.func_native`).
+  - Measured: **0 float32 ulp** (bitwise) over 2,341,248 pose/twist components (angles 0 to π, including 1e-14 rad
+    cancellation cases, sign flips, heterogeneous transforms) on the Warp CPU device in `.venv` (NumPy 2.5.4,
+    SciPy 1.18.1) and `.deps/isaacsim-venv` (NumPy 2.3.1, SciPy 1.17.0), and on CUDA (RTX 5090, GPU1, shared,
+    Warp 1.17.0). The gate in the test stays ≤ 1 ulp. A dedicated test pins the two host BLAS orders on the
+    machine that runs it (AMD Threadripper PRO 9975WX here); on a host whose BLAS selects another kernel that test
+    fails first, and near-zero-rotation twists could then differ by more than 1 ulp (float64 cancellation), at
+    absolute errors near 1e-16.
+  - The kernel cannot raise: it writes `status[N]` (`OK`, `NONFINITE_POSE`, `NON_UNIT_QUATERNION` with the 1e-6
+    tolerance of `validate_pose_xyzw`); outputs of a non-OK env are unspecified and the caller must treat the env as
+    invalid. `fill_cut_rows` writes `cuts[N,T]` from a per-env digit.
+- **§8 actions `edge_delta_v1`.**
+  - The commanded edge pose stays `float64` state on the device (it accumulates like the frozen `inner._commanded`).
+    Measured against the frozen NumPy path: max |Δ| < 1e-12 over 5,120 random env-actions (default and TRIM limits)
+    and over a 300-step accumulated rollout; the test gate is float32 tolerance.
+  - Rejections follow `PolicyReadyEnv` (validation order target → `cut_enabled` → `cut_index`; HOLD keeps the clock):
+    nonfinite `a[0:6]` → `REJECTED_INVALID_TARGET`; nonfinite `a[6]` → `REJECTED_INVALID_SCHEMA` (the frozen
+    "cut_enabled must be a Boolean"); nonfinite `a[7]` → `REJECTED_CUT_INDEX_OUT_OF_RANGE`. The ADR did not specify
+    the last two.
+  - Finite out-of-range components are clipped silently, exactly as `normalized_delta` clips; `out_of_box` reports
+    it without changing the status. Selector mapping: `digit = min(floor((clip(a7,-1,1)+1)/2·K), K−1)`; `a6 > 0` arms.
+  - **Not ported:** the `PolicyReadyEnv` sampled tool-vs-fixture/table collision check and IK rejection, so
+    `REJECTED_COLLISION_*` and `REJECTED_IK_UNREACHABLE` are never emitted (recorded in `spec()["not_implemented"]`).
+    The delta frame is `edge` per this ADR; the `cutting_research_v1` preset default is `world`.
+- **§8 observations (`rl_state_obs_v1`).** Policy block is 18-dim in the fixed order pose(7), time remaining(1),
+  previous action(8), arm flag(1), step fraction(1). The pose quaternion is canonicalized to w ≥ 0 in the observation
+  only. "Previous action" is the executed action (the HOLD row `[0]*6+[-1,0]` after a rejection). Default critic
+  terms: target-bond progress, off-target fraction, pending material wrench, invalid flag. The guard rejects any
+  `PRIVILEGED_KEYS` name and material/code/contact/wrench/force/generator tokens in policy term names.
+- **§8 reward `trim_bond_progress_packed_v1`.**
+  - Module path `rl/reward_packed.py` follows amendment 1 (§13's file list still names `batched/`).
+  - Definitions: target bond = vertical reference-lattice bond with lower endpoint `z ≤ h` and upper `z > h` (the
+    `compile_seed` "above" test) at a column where `max_b bump.height(x,y) > 0`; this is one bond per footprint
+    column. Substrate bonds have both endpoints at `z ≤ h`, all depths by default (optional depth band). Measured:
+    seed 512 has 129 target / 298,240 substrate bonds; seed 15 has 452 / 298,240.
+  - Off-target is normalized by the env's target-bond count, not by the substrate count, so both terms have the same
+    scale. Default weights `(progress 1, off-target 1, time 1e-4/step, invalid 1)` are provisional. Invalid envs get
+    only `−invalid_penalty`.
+  - Counting is exact int64 cumulative-sum segmentation in Torch (deterministic on GPU), not a Warp kernel. The
+    conflict-rule ports (NumPy, Torch) are bit-identical to the frozen `tlmpm_v5._conflict_packed` for K = 1, 2, 15.
+  - The NumPy pack/reference path is torch-free; the device reducer needs Torch.
