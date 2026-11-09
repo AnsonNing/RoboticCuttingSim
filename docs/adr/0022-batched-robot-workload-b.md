@@ -518,3 +518,84 @@ Also unsupported: `autoreset="same_step"` with `final_obs` (host `nonzero`), def
 | 8 | Venv split: workload B runs in isaaclab-venv (NumPy 2.5.2), workload A in isaacsim-venv (2.3.1) | Compare only rows from the same venv; hash packed initial material states across both venvs; if they differ, use a B-specific L3 band |
 | 9 | 10 Python-driven substeps per control step | Measured in G2; it matters only at large N; optional outer capture in P1-3 |
 | 10 | Material `backend` / box-writer API changes in the ADR 0021 code | Opt-in additions only; ADR 0021 L0/L1 tests rerun |
+
+## Implementation notes
+
+Appended during implementation; the sections above are unchanged. Each subsection names its stage and records
+where the code deviates from or refines the text above.
+
+### Stage S0 (CPU only), 2026-11-10
+
+Files: `src/robotic_cutting_sim/batched/{lab_scene,robot_kernels,robot_ik,grasp_batch}.py`,
+`src/robotic_cutting_sim/rl/lab_batched_env.py`, `scripts/rl_ready/probe_lab_batched_{cpu,gpu}.py`,
+tests `tests/test_rl_lab_{kernels,ik,rigid_isolation,scene_usd,env}.py`. No GPU was used (`CUDA_VISIBLE_DEVICES=''`).
+
+Results (Warp 1.17.0, Newton 1.6.1, MJWarp 3.12.0; C tests in `.venv` NumPy 2.5.4 and again in
+`.deps/isaaclab-venv` NumPy 2.5.2 / Torch 2.11 with the D-09 overlay; AMD Threadripper PRO 9975WX):
+
+| Test | Result |
+|---|---|
+| C1 index tables, edge, pad, wrench, contact/grasp/validity kernels | PASS. Edge kernel **0 f64 ulp** (bitwise) against `compose_pose` / `compose_tool_pose` on 4,096 random and all real poses, B1 and B2 chains; pad boxes **0 f32 ulp** on 21,600 components (gate stays <= 1 ulp); wrench isolation bitwise, values within 2e-6 of the NumPy lever arm |
+| C2 batched IK | PASS. N problems bitwise equal to N single-problem solves (B1 and B2 prototypes); against `DualFrankaController.inverse_kinematics` on 50 TRIM targets both pass the gate and the measured joint difference is **0** (reported, not claimed in general) |
+| C3 MJWarp on Warp CPU, 60 substeps, B1 and B2 | PASS. N=1 vs world 0 of N=3, a world driven into the board plus a per-world wrench, and a masked reset of world 2 all leave the other worlds bitwise equal; contacts > 0 in every substep |
+| C4 USD authoring | PASS. `author_batched_tool` equals `author_newton_tool` after rebasing (every attribute, relationship, schema, custom datum, binding); B1 FixedJoint structure; no rigid body outside `{ENV_REGEX_NS}`; all §10 refusals raise their codes |
+| T1 model receipt and mask audit (Lab, N=3, B1 and B2) | PASS. 23 bodies / 18 DOFs (B1) and 23 / 24 (B2) per world, no global bodies; per-joint Newton drive/limit arrays and MuJoCo `nu`, `neq`, `eq_type`, `actuator_gainprm/biasprm/forcerange/gear/trnid` equal to the single Lab env; after `reset_envs([F,T,F])` `_world_reset_mask = [F,T,F,F]` and `_fk_reset_mask` = exactly world 1's articulations |
+| T3 coupling contract (Lab, N=4, 50 steps) | PASS, bitwise. Coupling input = edge-kernel output every env and step; the wrench read in all 10 substeps of interval k+1 = the coupling output of step k (a synthetic test coupling, not material) |
+| Lab isolation (CPU analogue of G1 a-c, N=3, 10 steps) | PASS, bitwise (N=1 vs world 0, perturbed env 2, masked reset of env 1) |
+| B2 settle / snapshot / restore (Lab, N=2) | PASS. Both worlds `PASS_PHYSICAL_PREGRASP` with identical accumulators (26 window rows, bilateral fraction 1.0, drift 0.2 mm); HOLDING over 5 steps; masked restore of world 1 marks only world 1 and restores its settled joint state bitwise, world 0 untouched. Not G3 (no warm-start comparison) |
+| T2, G0-G5 | NOT_RUN (GPU, stage S1+); `scripts/rl_ready/probe_lab_batched_gpu.py` is written and only compile-checked |
+
+Deviations and refinements:
+
+1. **The Lab runtime runs on the Warp CPU device in S0.** `BatchedLabOptions(device="cpu", cpu_test_mode=True)` builds
+   the real `DirectRLEnv` with MJWarp on Warp CPU (`use_mujoco_cpu=False`). So T1, T3, Lab-level isolation and the B2
+   settle ran in S0, not only "the smallest build". `UNSUPPORTED_RIGID_CPU` is refined: `use_mujoco_cpu=True` is
+   always refused; `device="cpu"` is refused unless `cpu_test_mode=True` (as the material's `parity_mode`).
+2. **The single Lab env has no world 0.** With `num_envs=1` and `/World/Franka_*` paths, all 23 of its bodies are in
+   world -1 (`world_count=1`). T1 compares against those global bodies (`make_lab_cfg`, physical grasp,
+   `TRIM-01-R`, with `use_mujoco_cpu` switched off on the returned cfg so both use MJWarp).
+3. **Finger drive (closes the §4.4 UNVERIFIED for Lab):** in both the single env and the batch every DOF of a Franka
+   has a position and a velocity actuator (`nu = 36` per world for two Frankas), so **both** finger DOFs are driven,
+   plus one joint equality per Franka (`neq = 2` per world, `eq_type = joint`). The batch inherits this unchanged.
+4. **B1 tool prim.** The welded tool is a child prim of the hand, `.../panda_hand/CuttingTool`, with the FixedJoint
+   at `.../CuttingTool/HandMount`. The Lab `Articulation` lists `CuttingTool` among Franka 0's body names; its
+   `joint_names` stay the 9 Panda joints (risk 6 resolved on CPU). The tool body is interleaved (`tool = hand + 1`).
+   Its gravity compensation is 0, like the free tool of the single env. B1 uses the physical-grasp finger drive
+   (2000 N/m, 20 N s/m, 20 N) and holds the fingers at the task HOME opening (0.0112 m).
+5. **SciPy apply order.** The frozen paths compose one pose at a time; a single or length-1 `Rotation.apply` matches
+   the dgemv FMA chain `fma(R2,v2, fma(R0,v0, R1*v1))` (the order `pose_interp` pins). A multi-row batch would use
+   NumPy einsum's `(R0 v0 + R2 v2) + R1 v1` instead. The kernels use the single-pose order.
+6. **Partial reset skips `scene.reset(env_ids)`.** `Articulation.reset` calls `actuators.reset(None)` (all envs). The
+   batch uses implicit actuators only (asserted at bind; others raise `UNSUPPORTED_ACTUATOR_OVERRIDE`) and no wrench
+   composers, so there is no per-env actuator or composer state to reset. `_reset_envs_from_buffer` returns None;
+   terminated envs wait for an explicit `reset_envs(mask)`.
+7. **IK hold.** On `REJECTED_IK_UNREACHABLE` the env keeps its commanded pose and previous joint targets (velocity
+   feed-forward 0) and disarms the cut; the executed action is the HOLD row. An IK failure streak does not
+   invalidate an env by itself (`IK_STREAK_LIMIT = 0`); the streak is kept per env.
+8. **Material coupling in S0.** `BatchedCuttingMaterial` still refuses `backend="isaac_lab_newton"`, so the env
+   drives a `MaterialCoupling` interface (ADR 0021 §7: `pending_wrench [N,6]` and `pad_wrench [N,B,6]` read in
+   place, `box_centers/box_halves` written in place before `advance`, `set_measured_poses`, `advance`,
+   `reset_masked`). The only built-in implementation is `RobotOnlyCoupling` (no material, zero reaction, label
+   `robot_only_no_material_coupling`, `reduced_fidelity`). Reward is zero with `extras["reward_available"] = False`;
+   `compute_task_reward()` and `evaluate()` raise `UNSUPPORTED_MATERIAL_COUPLING`.
+9. **B2 initialization.** The tool starts at `compose_tool_pose(hand FK(HOME), hand_from_tool)`; the single env
+   uses `reference_edge(0) o inv(T_tool_edge)` instead. The fingers start at the task HOME opening, then target
+   `closed_target_m`. Later `reset()` calls restore the snapshot of every world; there is no re-settle and no
+   `rebuild()` yet (a new env is the explicit path).
+10. **Contact world.** A contact's world is `max(shape_world[a], shape_world[b])`, so a static (-1) shape resolves to
+    the other side. Grasp drift angles are computed in float64 (a float32 `acos` near 1 quantizes to about 5e-4 rad).
+11. **C3 test model.** `build_newton_rigid_scene` is a pure Newton model with the same USD authoring. Its drives are
+    set on the builder as `DualFrankaController` does (`nu = 18` per world, not Lab's 36). It is a test model; the
+    Lab-level equivalents are the T tests.
+12. **Entry point.** `rl.lab_batched_env.open_lab_batched_env(num_envs, backend="isaac_lab_newton", tool_mount=...)`
+    returns `(cfg, factory)`. The dispatch from `rl.vector_env.open_vector_env` (another work package) is not wired
+    yet; it still refuses `isaac_lab_newton`.
+13. **New UNSUPPORTED codes** are raised through `lab_scene.UnsupportedLabBatchConfiguration`, a subclass of
+    `errors.UnsupportedBatchConfiguration`, until `errors.CODES` lists them: `UNSUPPORTED_ENV_SPACING`,
+    `UNSUPPORTED_NONUNIFORM_RIGID_SCENE`, `UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET`, `UNSUPPORTED_RIGID_CPU`,
+    `UNSUPPORTED_ACTION_SPEC`, `UNSUPPORTED_ACTUATOR_OVERRIDE`, and two not in §10: `UNSUPPORTED_TOOL_MOUNT` and
+    `UNSUPPORTED_MATERIAL_COUPLING`.
+
+Measured on CPU (development figures, not performance rows): Lab build plus reset for N=3 B1 takes about 1.8 s
+(solver init 0.84 s). A 50-step N=4 coupling run takes 10.3 s wall including the build. The B2 2 s settle for N=2
+takes 8.4 s wall. The full T suite takes 110 s.

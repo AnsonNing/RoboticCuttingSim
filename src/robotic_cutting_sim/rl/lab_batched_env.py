@@ -547,9 +547,10 @@ def make_batched_env(options, task, *, coupling=None):
     return IsaacLabBatchedCuttingEnv(cfg, options, task, coupling=coupling)
 
 
-def open_vector_env(num_envs, *, backend="isaac_lab_newton", task=None, tool_mount="rigid_mount_v1", device="cuda:0",
+def open_lab_batched_env(num_envs, *, backend="isaac_lab_newton", task=None, tool_mount="rigid_mount_v1", device="cuda:0",
                     material=None, observation_profile="state", **kwargs):
-    """``open_vector_env(backend="isaac_lab_newton", tool_mount=...)`` wiring (ADR 0022 §9).
+    """Entry point for ``open_vector_env(backend="isaac_lab_newton", tool_mount=...)`` (ADR 0022 §9); the
+    dispatch from ``rl.vector_env.open_vector_env`` is not wired here (that module refuses the backend today).
 
     Returns ``(cfg, factory)``: the caller enters ``launch_simulation(cfg, {"headless": True, "visualizer": []})``
     and calls ``factory()`` inside it (Isaac Lab owns the process-wide simulation context)."""
@@ -566,4 +567,4 @@ def open_vector_env(num_envs, *, backend="isaac_lab_newton", task=None, tool_mou
 
 
 __all__ = ["IsaacLabBatchedCuttingEnv", "MaterialCoupling", "RobotOnlyCoupling", "make_batched_env",
-           "open_vector_env", "ENV_VERSION", "RUNTIME", "BACKEND"]
+           "open_lab_batched_env", "ENV_VERSION", "RUNTIME", "BACKEND"]
