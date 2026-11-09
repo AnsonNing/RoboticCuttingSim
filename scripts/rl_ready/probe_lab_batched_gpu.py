@@ -56,9 +56,13 @@ def _gpu_row(index):
 def _commit():
     try:
         sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
-        dirty = subprocess.run(["git", "status", "--porcelain", "--", "src", "scripts"], capture_output=True,
-                               text=True).stdout.strip()
-        return {"sha": sha, "src_or_scripts_dirty": bool(dirty)}
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "scripts"],
+                               capture_output=True, text=True).stdout.strip()
+        import hashlib
+        sources = sorted(Path("src/robotic_cutting_sim/batched").glob("*.py"))+[
+            Path("src/robotic_cutting_sim/rl/lab_batched_env.py"), Path(__file__)]
+        digest = hashlib.sha256(b"".join(p.read_bytes() for p in sources)).hexdigest()
+        return {"sha": sha, "tracked_src_or_scripts_modified": bool(dirty), "workload_b_sources_sha256": digest}
     except Exception:
         return None
 
