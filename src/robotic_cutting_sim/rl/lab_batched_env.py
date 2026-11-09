@@ -192,6 +192,9 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self._finger_cols = torch.tensor([names.index("panda_finger_joint1"), names.index("panda_finger_joint2")],
                                          device=self.device)
         self.last_targets = self.home_targets[0].clone()
+        self._finger_mask = torch.zeros(len(names), dtype=torch.bool, device=self.device)
+        self._finger_mask[self._finger_cols] = True
+        self._finger_hold_value = torch.tensor(self.finger_hold, dtype=torch.float32, device=self.device)
         self.reject_ik = ik_rejection_status_code()
         starts = self.model.joint_q_start.numpy()
         world_of_joint = self.model.joint_world.numpy() if hasattr(self.model, "joint_world") else None
@@ -295,10 +298,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         streak.copy_(torch.where(ik_failed, streak+1, torch.zeros_like(streak)))
         solved = wp.to_torch(self.ik.joint_q_out)
         targets = torch.where(accept[:, None], solved, self.last_targets)
-        targets[:, self._finger_cols] = self.finger_hold
+        # masks, not tensor-indexed assignment (index_put with a device index synchronizes)
+        targets = torch.where(self._finger_mask, self._finger_hold_value, targets)
         if self.options.velocity_feedforward:
-            velocity = (targets-self.last_targets)/self.step_dt
-            velocity[:, self._finger_cols] = 0.
+            velocity = torch.where(self._finger_mask, torch.zeros_like(targets), (targets-self.last_targets)/self.step_dt)
         else:
             velocity = torch.zeros_like(targets)
         self.last_targets = targets
