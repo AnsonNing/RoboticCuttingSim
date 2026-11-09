@@ -184,7 +184,7 @@ def test_every_unsupported_code_is_raised():
         "UNSUPPORTED_SENSOR": _material(cameras=["wrist_d405"]),
         "UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET": lambda: _material()().reset([0], scene_keys=["other"]),
         "UNSUPPORTED_WORKPIECE_MOTION": lambda: _material()().set_workpiece_pose([0, 0, 0, 0, 0, 0, 1]),
-        "UNSUPPORTED_BACKEND": _material(backend="isaac_lab_newton"),
+        "UNSUPPORTED_BACKEND": _material(backend="physx_rigid"),
         "UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS": _material(constitutive_model="neo_hookean_v1"),
         "UNSUPPORTED_CPU_WITHOUT_PARITY_MODE": lambda: BatchedCuttingMaterial(
             [layout.EnvSpec(trim_material(512), start_pose(512), 42)], device="cpu"),

@@ -33,6 +33,12 @@ from .tlmpm_v7_2_batch import BatchedTLMPMv7_2
 RUNTIME = "rl_gpu_headless"
 MATERIAL_BATCH_VERSION = "batched_cutting_material_v1"
 BACKEND = "kinematic_ideal_tracking_batched"
+LAB_BACKEND = "isaac_lab_newton"
+BACKENDS = (BACKEND, LAB_BACKEND)
+# Receipt label of the coupling per backend. The backend changes validation and labels only, never physics:
+# both run the same pose_interp -> 200-substep graph -> wrench path on the measured edge pose they are given.
+COUPLING_LABELS = {BACKEND: "kinematic_ideal_tracking_measured_edge",
+                   LAB_BACKEND: "isaac_lab_newton_measured_edge_and_pads_v1"}
 INVALID_NONFINITE_STATE = 1
 INVALID_SLOT_OVERFLOW = 2
 INVALID_POSE = 4
@@ -198,6 +204,26 @@ def _check_boxes(nboxes: int, centers: wp.array(dtype=wp.vec3), halves: wp.array
                 ok = 0
     if ok == 0:
         invalid_reason[e] = invalid_reason[e] | flag
+
+
+@wp.kernel
+def _mask_from_bool(mask: wp.array(dtype=wp.bool), seed: wp.array(dtype=wp.int64), out: wp.array(dtype=int),
+                    reset_seed: wp.array(dtype=wp.int64)):
+    e = wp.tid()
+    out[e] = 0
+    if mask[e]:
+        out[e] = 1
+    reset_seed[e] = seed[e]
+
+
+@wp.kernel
+def _mask_from_int(mask: wp.array(dtype=wp.int32), seed: wp.array(dtype=wp.int64), out: wp.array(dtype=int),
+                   reset_seed: wp.array(dtype=wp.int64)):
+    e = wp.tid()
+    out[e] = 0
+    if mask[e] != 0:
+        out[e] = 1
+    reset_seed[e] = seed[e]
 
 
 @wp.kernel
@@ -368,14 +394,19 @@ class BatchedCuttingMaterial:
     ``specs``: ``layout.EnvSpec`` list (un-reset ``LiveCuttingMaterial`` on device 'cpu', initial measured edge
     pose in WORLD, seed). ``device``: the batch device; ``"cpu"`` only with ``parity_mode=True`` (tests).
     ``strict``: raise ``InvalidBatchEnvs`` after a control step that left any env invalid (one int32 read);
-    ``strict=False`` (training) only records ``invalid_reason`` for the caller to terminate those envs."""
+    ``strict=False`` (training) only records ``invalid_reason`` for the caller to terminate those envs.
+    ``backend``: ``"kinematic_ideal_tracking_batched"`` (workload A) or ``"isaac_lab_newton"`` (workload B, ADR 0022:
+    requires handle + two pad recipients; the robot path writes ``box_centers/box_halves`` in place, calls
+    ``set_measured_poses`` with device arrays, ``advance()`` and ``reset_masked(mask)``, and reads
+    ``pending_wrench``/``pad_wrench`` in place). The backend changes validation and receipt labels only."""
     runtime = RUNTIME
 
     def __init__(self, specs, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
                  backend=BACKEND, cameras=None, recorders=None, sensors=None,
                  constitutive_model=constitutive.DEFAULT_MODEL_ID):
-        if backend != BACKEND:
-            raise UnsupportedBatchConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; only {BACKEND} (P1-1b later)")
+        if backend not in BACKENDS:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; supported {BACKENDS}")
+        self.backend = backend
         if cameras or sensors:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_SENSOR", f"cameras={cameras!r} sensors={sensors!r}")
         if recorders:
@@ -395,6 +426,13 @@ class BatchedCuttingMaterial:
         from .pose_interp import POSE_INTERPOLATION_VERSION, local_frames
         start = time.perf_counter()
         specs = list(specs)
+        if self.backend == LAB_BACKEND:
+            for e, spec in enumerate(specs):
+                recipients = spec.material.obstacle_reaction_recipients
+                if recipients is None or len(recipients) != 3 or recipients[0] is not None or None in recipients[1:]:
+                    raise UnsupportedBatchConfiguration(
+                        "UNSUPPORTED_MATERIAL_COUPLING", f"env {e}: {LAB_BACKEND} needs the handle box plus two "
+                        "finger-pad recipients (LiveCuttingMaterial.configure_pad_obstacles), ADR 0022 §5.2")
         self.specs_feedback = [bool(s.material.config.feedback) for s in specs]
         if any(f != self.specs_feedback[0] for f in self.specs_feedback):
             raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH", "coupling feedback differs")
@@ -481,7 +519,8 @@ class BatchedCuttingMaterial:
         refused or failing rebuild leaves the material unchanged and usable. Every device array is new
         afterwards; views taken before (e.g. ``wp.to_torch``) must be taken again."""
         options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
-                       capture_graph=self.capture_graph, constitutive_model=self.constitutive_model)
+                       capture_graph=self.capture_graph, constitutive_model=self.constitutive_model,
+                       backend=self.backend)
         replacement = type(self)(specs, **options)
         self.__dict__.clear()
         self.__dict__.update(replacement.__dict__)
@@ -723,8 +762,15 @@ class BatchedCuttingMaterial:
         self.reset_seed.assign(new_seed)
         self.reset_masked(full=len(ids) == N)
 
-    def reset_masked(self, full=False):
-        """Device part of ``reset``: uses ``reset_mask[N]`` and ``reset_seed[N]`` already on the device."""
+    def reset_masked(self, mask=None, full=False):
+        """Device part of ``reset``.
+
+        ``mask`` None: uses ``reset_mask[N]`` and ``reset_seed[N]`` already written on the device (``reset``, or a
+        caller through device views). ``mask`` given (``MaterialCoupling.reset_masked(mask)``: Warp bool/int32
+        ``[N]``, a Torch tensor or a host array): it becomes ``reset_mask`` and the reset envs keep their seeds.
+        No allocation for device masks, no host sync."""
+        if mask is not None:
+            self._write_reset_mask(mask)
         s = self.solver
         with wp.ScopedDevice(self.device):
             wp.launch(_reset_particles, s.total_particles, [self.reset_mask, s.env_of_particle, s.reference, s.x,
@@ -748,6 +794,45 @@ class BatchedCuttingMaterial:
                 self.cut_input, self.pose_status, self.invalid_reason])
             if full:
                 s.index.zero_()
+
+    def _write_reset_mask(self, mask):
+        N = self.num_envs
+        if type(mask).__module__.split(".")[0] == "torch":
+            mask = wp.from_torch(mask.contiguous())
+        if isinstance(mask, wp.array):
+            if mask.shape != (N,) or str(mask.device) != self.device:
+                raise ValueError(f"mask must be [{N}] on {self.device}")
+            if mask.dtype == wp.bool:
+                kernel = _mask_from_bool
+            elif mask.dtype == wp.int32:
+                kernel = _mask_from_int
+            else:
+                raise ValueError(f"mask dtype must be bool or int32, got {mask.dtype}")
+            wp.launch(kernel, N, [mask, self.seed, self.reset_mask, self.reset_seed], device=self.device)
+            return
+        values = np.asarray(mask).reshape(-1)
+        if values.shape != (N,):
+            raise ValueError(f"mask must be [{N}]")
+        self.reset_mask.assign((values != 0).astype(np.int32))
+        wp.copy(self.reset_seed, self.seed)
+
+    # ------------------------------------------------------------------ MaterialCoupling surface (ADR 0022 §5)
+
+    material_coupled = True
+
+    @property
+    def name(self):
+        return COUPLING_LABELS[self.backend]
+
+    @property
+    def box_centers(self):
+        """``[N*B] wp.vec3`` (float32) edge-frame box centers, the solver's own array: a backend may write it in
+        place before ``advance`` (``advance`` validates it); see also ``set_obstacle_boxes``."""
+        return self.solver.box_centers
+
+    @property
+    def box_halves(self):
+        return self.solver.box_halves
 
     # ------------------------------------------------------------------ queries
 
@@ -785,11 +870,14 @@ class BatchedCuttingMaterial:
         B = self.solver.boxes
         pads = pk.uniform["recipients"] is not None and any(r is not None for r in pk.uniform["recipients"])
         reasons = [] if pads else ["no_finger_pad_obstacles"]
-        if pads and self.box_updates == 0:
+        if self.backend == LAB_BACKEND:
+            reasons.append("pad_boxes_written_in_place_by_backend_each_control_step")
+        elif pads and self.box_updates == 0:
             # set_obstacle_boxes never called: pads stay at their packed edge-frame boxes unless a backend wrote
             # box_centers/box_halves in place itself.
             reasons.append("pad_boxes_not_updated_through_set_obstacle_boxes")
-        return {"runtime": RUNTIME, "version": MATERIAL_BATCH_VERSION, "backend": BACKEND, "device": self.device,
+        return {"runtime": RUNTIME, "version": MATERIAL_BATCH_VERSION, "backend": self.backend,
+                "coupling": self.name, "material_coupled": True, "device": self.device,
                 "parity_mode": self.parity_mode, "strict": self.strict, "graph": self.capture_receipt,
                 "pose_interpolation": self.pose_interpolation,
                 "pose_interpolation_steps": dict(self.interpolation_steps),

@@ -843,3 +843,21 @@ tests/test_wp17_frontier.py tests/test_repo_naming.py`.
 8. **Nits.** `reset_mask/reset_seed` moved to the new `RESET_INPUTS` list; `rebuild()` is atomic (the new batch is
    built first; a refused rebuild leaves the material unchanged, tested); preset cut rows are validated (item 4);
    the capture-allocation and GPU1 co-tenant wording above is corrected.
+
+### P1-1b coupling: `backend="isaac_lab_newton"` and workload B codes (2026-11-10)
+
+- `errors.CODES = MATERIAL_CODES + ROBOT_CODES`; the eight ADR 0022 codes (`UNSUPPORTED_ENV_SPACING`,
+  `UNSUPPORTED_NONUNIFORM_RIGID_SCENE`, `UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET`, `UNSUPPORTED_RIGID_CPU`,
+  `UNSUPPORTED_ACTION_SPEC`, `UNSUPPORTED_ACTUATOR_OVERRIDE`, `UNSUPPORTED_TOOL_MOUNT`,
+  `UNSUPPORTED_MATERIAL_COUPLING`) are registered; `lab_scene.UnsupportedLabBatchConfiguration` still raises them.
+- `BatchedCuttingMaterial(backend="isaac_lab_newton")` implements the `MaterialCoupling` surface of
+  `rl/lab_batched_env.py`: `pending_wrench [N,6]`, `pad_wrench [N,B,6]` (same arrays every step),
+  `box_centers/box_halves` (properties returning the solver's `[N·B] wp.vec3` arrays, written in place by the
+  robot path and validated by `advance`), `set_measured_poses` (device copy), `advance()`, `reset_masked(mask)`
+  (Warp bool/int32, Torch or host mask; reset envs keep their seeds), `material_coupled = True`, `name`, `receipt()`.
+  It requires handle + two pad recipients (`UNSUPPORTED_MATERIAL_COUPLING` otherwise). The backend changes only
+  validation and labels: test `tests/test_batched_lab_coupling.py` drives it through that surface with a synthetic
+  measured-edge and in-place pad-box sequence (incl. a masked reset) and asserts bitwise equality with the kinematic
+  backend over every array. Not done here: the `factory(N, device)` in `rl/lab_batched_env.py` that builds specs
+  from the Lab task, and any GPU run of the coupled loop.
+
