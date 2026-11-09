@@ -567,6 +567,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             NewtonManager._graph_capture_pending = True
             self.material_graph_recaptured = True
         self.material_initial_edge = edge
+        self.material_initial_boxes = boxes
 
     def _settle_and_snapshot(self):
         """B2 build-time grasp initialization of all worlds (``isaac_lab_env._settle_physical_grasp`` per world)."""

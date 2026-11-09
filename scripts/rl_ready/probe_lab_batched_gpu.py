@@ -451,6 +451,10 @@ def main():
             evaluations = env.evaluate()
             row["evaluation"] = [{k: v for k, v in r.items() if k != "result"} for r in evaluations]
             final_codes = {f"env{e}": env.snapshot_world(e)["codes"] for e in range(args.num_envs)}
+            pk = env.coupling.packed
+            x_all = env.coupling.solver.x.numpy()
+            final_codes.update({f"x_local_env{e}": x_all[int(pk.particle_offset[e]):int(pk.particle_offset[e+1])]
+                                for e in range(args.num_envs)})
             for r in row["evaluation"]:
                 codes = final_codes[f"env{r['env']}"]
                 r["labelled_by_digit"] = {str(d): int(np.count_nonzero((codes >> (2*d)) & 3))
@@ -461,7 +465,8 @@ def main():
             row["reward_fractions"] = {k: v.cpu().tolist() for k, v in env.compute_task_reward().items()}
         if inputs["edge"]:
             np.savez_compressed(out/"material_inputs.npz", **{k: torch.stack(v).cpu().numpy() for k, v in inputs.items()},
-                                initial_edge=env.material_initial_edge, scene_seeds=np.asarray(seeds))
+                                initial_edge=env.material_initial_edge, initial_boxes=env.material_initial_boxes,
+                                scene_seeds=np.asarray(seeds), seed=int(options.seed))
         if grasp_rows["slip"]:
             g = {k: torch.stack(v).cpu().numpy() for k, v in grasp_rows.items()}
             np.savez_compressed(out/"grasp_trace.npz", **g)
