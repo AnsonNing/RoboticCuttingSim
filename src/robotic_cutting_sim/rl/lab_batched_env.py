@@ -48,6 +48,10 @@ BACKEND = "isaac_lab_newton"
 ENV_VERSION = "isaac_lab_batched_cutting_env_v1"
 IK_STREAK_LIMIT = 0  # 0: an IK failure streak never invalidates an env by itself (held, reported per step)
 GRASP_SETTLE_FAILED = 16  # rigid_reason bit (training mode) for a world whose B2 settle gates failed
+# termination_reason bits (ADR 0022 §7: validity, grasp monitor, IK streak -> dones)
+TERM_RIGID_INVALID, TERM_MATERIAL_INVALID, TERM_GRASP_LOST, TERM_IK_STREAK = 1, 2, 4, 8
+TERMINATION_REASONS = {TERM_RIGID_INVALID: "RIGID_INVALID", TERM_MATERIAL_INVALID: "MATERIAL_INVALID",
+                       TERM_GRASP_LOST: "GRASP_LOST", TERM_IK_STREAK: "IK_FAILURE_STREAK"}
 
 
 # ----------------------------------------------------------------------------- material coupling interface
@@ -183,7 +187,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.cut_digit = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         self.rigid_reason = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         self.rigid_count = wp.zeros(1, dtype=wp.int32, device=self.wp_device)
-        q0, q1 = lab_scene.home_joint_positions(self.task, o.tool_mount, o.grasp)
+        q0, q1 = lab_scene.home_joint_positions(self.task, o.tool_mount, o.grasp, o.initial_joint_positions)
         self._joint_index = [self._lab_order(robot) for robot in self.robots]
         self.home_targets = [torch.as_tensor(np.tile(q[idx], (N, 1)), dtype=torch.float32, device=self.device)
                              for q, idx in zip((q0, q1), self._joint_index)]
@@ -213,6 +217,9 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.snapshot = None
         self.grasp_initialization = None
         self.material_graph_recaptured = False
+        self.reward = None
+        self._env_host = None
+        self.termination_reason = torch.zeros(N, dtype=torch.int32, device=self.device)
         if o.tool_mount == "physical_grasp_v1":
             self._bind_physical_grasp()
 
@@ -338,6 +345,14 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.check_valid()
         self.step_index += 1
         invalid = wp.to_torch(self.rigid_reason) != 0
+        reason = torch.where(invalid, torch.full_like(self.termination_reason, TERM_RIGID_INVALID),
+                             torch.zeros_like(self.termination_reason))
+        if self.coupling.material_coupled:
+            material_invalid = wp.to_torch(self.coupling.invalid_reason) != 0
+            reason = reason | torch.where(material_invalid, TERM_MATERIAL_INVALID, 0).to(reason.dtype)
+        if self.options.max_consecutive_ik_failures is not None:
+            streak = wp.to_torch(self.ik_streak) >= int(self.options.max_consecutive_ik_failures)
+            reason = reason | torch.where(streak, TERM_IK_STREAK, 0).to(reason.dtype)
         if self.options.tool_mount == "physical_grasp_v1":
             from ..grasp_monitor import GraspLossConfig
             g = GraspLossConfig()
@@ -347,9 +362,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                               g.rotation_warning_rad, g.translation_loss_m, g.rotation_loss_rad, g.unsupported_loss_s,
                               int(self.cfg.decimation), self.grasp_unsupported, self.grasp_lost, self.grasp_slip,
                               self.grasp_angle, self.grasp_status])
-            invalid = invalid | (wp.to_torch(self.grasp_lost) != 0)
+            reason = reason | torch.where(wp.to_torch(self.grasp_lost) != 0, TERM_GRASP_LOST, 0).to(reason.dtype)
+        self.termination_reason = reason
         truncated = self.episode_length_buf >= self.max_steps
-        return invalid, truncated
+        return reason != 0, truncated
 
     def debug_set_commanded(self, mask, pose):
         """TEST HARNESS ONLY: overwrite the commanded edge pose of the masked envs (``pose [N,7]`` float64).
@@ -370,15 +386,85 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         return 0
 
     def _get_rewards(self):
-        # Rewards need the material (trim_bond_progress_packed_v1); robot-only stepping returns no reward.
-        self.extras["reward_available"] = self.coupling.material_coupled
-        return torch.zeros(self.num_envs, device=self.device)
+        """``trim_bond_progress_packed_v1`` from the material codes (as workload A); zeros without material."""
+        self.extras["reward_available"] = self.reward is not None
+        self.extras["termination_reason"] = self.termination_reason
+        self.extras["action_status"] = self.action_status
+        if self.reward is None:
+            return torch.zeros(self.num_envs, device=self.device)
+        invalid = (self.termination_reason & (TERM_RIGID_INVALID | TERM_MATERIAL_INVALID)) != 0
+        reward, terms = self.reward.step(self._codes, invalid)
+        self.extras["reward_terms"] = terms
+        return reward
 
     def compute_task_reward(self):
-        raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "task reward needs the batched material coupling")
+        if self.reward is None:
+            raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "task reward needs the batched material coupling")
+        return self.reward.fractions(self.reward.counts)
 
-    def evaluate(self):
-        raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "cut outcome/evaluator needs the batched material")
+    # ------------------------------------------------------------------ evaluation (frozen evaluator, host)
+
+    def snapshot_world(self, e):
+        """Host WORLD material state of env ``e`` (positions, velocities, codes); oracle, never an observation."""
+        from ..scene_frames import transform_points
+        self._require_material()
+        s, pk = self.coupling.solver, self.coupling.packed
+        p0, p1 = int(pk.particle_offset[e]), int(pk.particle_offset[e+1])
+        x, v, code = s.x[p0:p1].numpy(), s.v[p0:p1].numpy(), s.code[p0:p1].numpy()
+        step = int(self.coupling.step_count[e:e+1].numpy()[0])
+        T = self._env_host[e]["T_world_local"]
+        return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.asarray(code),
+                    step_count=step, time_s=step*float(self.task.control_dt_s))
+
+    def evaluation_reference(self, e):
+        """Reference arrays of env ``e`` in the frozen evaluator's keys (as ``rl.vector_env`` / ``run_baseline``)."""
+        from ..scene_frames import transform_points
+        pk, h = self.coupling.packed, self._env_host[e]
+        p0, p1 = int(pk.particle_offset[e]), int(pk.particle_offset[e+1])
+        return dict(mass_kg=np.asarray(pk.host["mass"][p0:p1], float).copy(),
+                    reference_positions=transform_points(h["T_world_local"], h["points"]),
+                    reference_positions_local=np.asarray(h["points"]).copy(),
+                    reference_indices=np.asarray(h["lattice"]).copy(),
+                    reference_stencil_nodes=pk.host["nodes"][p0:p1]-np.int32(pk.node_offset[e]),
+                    reference_stencil_weights=pk.host["weights"][p0:p1].copy(),
+                    reference_stencil_gradients=pk.host["gradients"][p0:p1].copy())
+
+    def evaluate(self, env_ids=None, *, frames=None):
+        """Frozen seeded_trim goal evaluation (``task.evaluate_goal`` = ``goals.evaluate_goal``) of the CURRENT
+        material state of ``env_ids`` on a host snapshot; call at episode end. Two frames (reset state at t=0 and
+        the current state) unless ``frames[e]`` supplies intermediate ``snapshot_world`` dicts. Same construction
+        as ``rl.vector_env.VectorCuttingEnv.evaluate``."""
+        import hashlib
+        import time
+        from .vector_env import summarize_evaluation
+        self._require_material()
+        ids = range(self.num_envs) if env_ids is None else [int(e) for e in np.asarray(env_ids).reshape(-1)]
+        out = []
+        for e in ids:
+            start = time.perf_counter()
+            task, ref = self._env_host[e]["task"], self.evaluation_reference(e)
+            final = self.snapshot_world(e)
+            series = [s for s in list((frames or {}).get(e, []))+[final] if s["step_count"] > 0]
+            n = len(ref["mass_kg"])
+            data = dict(ref, time_s=np.asarray([0.]+[s["time_s"] for s in series], float),
+                        positions=np.stack([ref["reference_positions"]]+[s["positions"] for s in series]),
+                        velocities=np.stack([np.zeros((n, 3))]+[s["velocities"] for s in series]),
+                        codes=np.stack([np.zeros(n, np.int32)]+[s["codes"].astype(np.int32) for s in series]),
+                        code_encoding="packed2", max_cuts=int(task.max_cuts),
+                        particle_spacing_m=task.particle_spacing_m)
+            result = task.evaluate_goal(data)
+            out.append(dict(env=e, task_id=task.task_id, step_count=final["step_count"], time_s=final["time_s"],
+                            frames=len(data["time_s"]),
+                            final_codes_sha256=hashlib.sha256(np.ascontiguousarray(final["codes"])).hexdigest(),
+                            labelled=int(np.count_nonzero(final["codes"])), summary=summarize_evaluation(result),
+                            result=result, evaluator="goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal "
+                            f"(frozen goal {task.goal.get('goal_id')}); host snapshot at episode end",
+                            wall_s=time.perf_counter()-start))
+        return out
+
+    def _require_material(self):
+        if not self.coupling.material_coupled:
+            raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "cut outcome/evaluator needs the batched material")
 
     def _get_observations(self):
         return self.observation.compute(commanded_pose=self.commanded, step_count=self.episode_length_buf,
@@ -449,6 +535,18 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             specs.append(layout.EnvSpec(m, edge[e], int(o.seed), task.config_sha256))
         self.coupling = BatchedCuttingMaterial(specs, device=str(self.wp_device), parity_mode=str(self.wp_device) == "cpu",
                                                strict=o.strict, backend="isaac_lab_newton")
+        from .reward_packed import TrimBondProgressReward, TrimBondRewardConfig, bonds_from_task, pack_bonds
+        pk = self.coupling.packed
+        m = specs[0].material
+        particles = (np.asarray(m.points), np.asarray(m.masses), np.asarray(m.lattice))   # uniform rigid scene
+        self._env_host = [dict(task=task, T_world_local=np.asarray(spec.material.T_world_local, float),
+                               points=particles[0], lattice=particles[2]) for spec in specs]
+        bonds = [bonds_from_task(task, particles=particles) for _ in specs]
+        self.reward = TrimBondProgressReward(pack_bonds(bonds, pk.particle_offset), TrimBondRewardConfig(),
+                                             device=self.device)
+        self._codes = wp.to_torch(self.coupling.solver.code)
+        self.reward.reset(self._codes)
+        del specs
         if NewtonManager._graph is not None:
             NewtonManager._graph = None
             NewtonManager._graph_capture_pending = True
@@ -560,6 +658,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                                       "fk_reset_mask": None if fk is None else wp.clone(fk), "mask": mask.clone()}
         self.frames.reset_masked(wmask)
         self.coupling.reset_masked(wmask)
+        if self.reward is not None:
+            counts = self.reward.severed_counts(self._codes)
+            self.reward.counts.copy_(torch.where(mask[None], counts, self.reward.counts))
+        self.termination_reason = torch.where(mask, torch.zeros_like(self.termination_reason), self.termination_reason)
         home0 = self.snapshot.franka_targets[0] if restore else self.home_targets[0]
         self.last_targets = torch.where(mask[:, None], home0, self.last_targets)
         self.commanded = torch.where(mask[:, None], self.home_commanded, self.commanded)

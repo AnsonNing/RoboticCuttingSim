@@ -117,6 +117,8 @@ class BatchedLabOptions:
     feedback: bool = True
     material: str | None = None          # None: robot-only stepping; "tlmpm_v7_2": BatchedCuttingMaterial(isaac_lab_newton)
     material_dt_s: float = 1e-4
+    max_consecutive_ik_failures: int | None = None   # live_env.LiveCuttingEnv semantics; None never terminates
+    initial_joint_positions: object = None            # G4 harness only: uniform Franka 0 arm HOME override (7 rad)
     cameras: object = None
     sensors: object = None
     recorders: object = None
@@ -152,6 +154,8 @@ class BatchedLabOptions:
             raise unsupported("UNSUPPORTED_SOLVER" if isinstance(self.material, str) and self.material.startswith("tlmpm")
                               else "UNSUPPORTED_MATERIAL_COUPLING",
                               f"material={self.material!r}; supported {MATERIALS} (None = robot-only)")
+        if self.max_consecutive_ik_failures is not None and int(self.max_consecutive_ik_failures) < 1:
+            raise ValueError("max_consecutive_ik_failures must be positive or None")
         if self.material is not None and not self.material_dt_s > 0:
             raise ValueError("material_dt_s must be positive")
         if self.deterministic_mode not in ("not_guaranteed", "run_to_run", "gpu_to_gpu"):
@@ -221,11 +225,12 @@ def _same(a, b):
         return a == b
 
 
-def home_joint_positions(task, tool_mount, grasp):
+def home_joint_positions(task, tool_mount, grasp, initial_joint_positions=None):
     """(Franka 0 [9], Franka 1 [9]) initial joint positions: declared task HOME and the shared safe park."""
     from ..workcell import PARK_JOINTS, SECONDARY_PARK_JOINTS
     home = getattr(task, "home", None) or {}
-    arm = np.asarray(home.get("joint_positions", PARK_JOINTS), float)
+    arm = np.asarray(home.get("joint_positions", PARK_JOINTS) if initial_joint_positions is None
+                     else initial_joint_positions, float)
     if arm.shape != (7,) or not np.isfinite(arm).all():
         raise ValueError("Task HOME must declare seven finite joint positions")
     finger = float(home.get("finger_position_m", np.nan)) if home else np.nan
@@ -490,7 +495,7 @@ def make_batched_lab_cfg(options, task):
         raise FileNotFoundError(asset)
     spec = tool_spec_for_task(task)
     grasp = options.grasp
-    q0, q1 = home_joint_positions(task, options.tool_mount, grasp)
+    q0, q1 = home_joint_positions(task, options.tool_mount, grasp, options.initial_joint_positions)
     names = [f"panda_joint{i}" for i in range(1, 8)]
 
     def robot(arm):

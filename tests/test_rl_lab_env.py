@@ -201,8 +201,18 @@ def test_t3_coupling_contract_with_batched_material(tmp_path_factory):
     out = run_worker(tmp_path_factory, "material", "--mode", "coupling", "--num-envs", 2, "--steps", 8,
                      "--material", "tlmpm_v7_2")
     d = np.load(out/"coupling.npz")
-    receipt = json.loads((out/"coupling_receipt.json").read_text())["coupling"]
+    full = json.loads((out/"coupling_receipt.json").read_text())
+    receipt = full["coupling"]
     assert receipt["backend"] == "isaac_lab_newton" and receipt["material_coupled"] is True
+    # reward wiring: available from the first material step, finite, nothing terminated; frozen evaluator runs
+    rewards = full["rewards"]
+    assert all(r["reward_available"] for r in rewards[1:]) and all(np.isfinite(r["reward"]).all() for r in rewards)
+    assert not any(any(r["terminated"]) or any(r["truncated"]) for r in rewards)
+    assert [e["env"] for e in full["evaluation"]] == [0, 1]
+    # a short episode: every integrity check passes except complete_episode (8 of 1200 steps)
+    for e in full["evaluation"]:
+        checks = e["summary"]["integrity_checks"]
+        assert checks.pop("complete_episode") is False and all(checks.values()) and e["labelled"] == 0
     assert np.array_equal(d["inputs"], d["edges"])
     for k in range(d["edges"].shape[0]):
         rows = d["applied"][d["applied_step"] == k]

@@ -270,9 +270,13 @@ def mode_coupling(args, out):
         env.reset()
         applied.clear()
         edges, boxes = [], []
-        inputs, pending, pad = [], [], []
+        inputs, pending, pad, rewards = [], [], [], []
         for step in range(args.steps):
-            env.step(scripted_actions(args.num_envs, step))
+            _, reward, terminated, truncated, extras = env.step(scripted_actions(args.num_envs, step))
+            rewards.append(dict(reward=reward.numpy().tolist(), terminated=terminated.numpy().tolist(),
+                                truncated=truncated.numpy().tolist(),
+                                reward_available=bool(extras.get("reward_available")),
+                                termination_reason=env.termination_reason.numpy().tolist()))
             edges.append(env.frames.measured_edge.numpy().copy())
             boxes.append(np.stack([env.coupling.box_centers.numpy().copy(), env.coupling.box_halves.numpy().copy()]))
             if args.material:
@@ -282,8 +286,12 @@ def mode_coupling(args, out):
         coupling = env.coupling
         if not args.material:
             inputs, pending, pad = coupling.inputs, [o[0] for o in coupling.outputs], [o[1] for o in coupling.outputs]
+        evaluation = None
+        if args.material:
+            evaluation = [{k: v for k, v in r.items() if k != "result"} for r in env.evaluate()]
         (out/"coupling_receipt.json").write_text(json.dumps({"coupling": coupling.receipt(),
-                                                              "graph_recaptured": env.material_graph_recaptured},
+                                                              "graph_recaptured": env.material_graph_recaptured,
+                                                              "rewards": rewards, "evaluation": evaluation},
                                                              default=str))
         np.savez_compressed(out/"coupling.npz", edges=np.asarray(edges), inputs=np.asarray(inputs),
                             pending=np.asarray(pending), pad=np.asarray(pad),
