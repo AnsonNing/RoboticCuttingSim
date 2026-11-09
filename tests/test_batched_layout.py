@@ -152,6 +152,19 @@ def _material(**options):
     return make
 
 
+def _second_device_grid():
+    """Guard refusal with a live grid counted as a device grid (CPU stand-in; tests/test_batched_hashgrid_guard)."""
+    import warp as wp
+    from robotic_cutting_sim.batched import material_batch as MB
+    grid = wp.HashGrid(4, 4, 4, device="cpu")
+    original = MB._is_device_grid
+    MB._is_device_grid = lambda g: g is grid
+    try:
+        MB.check_single_device_hashgrid()
+    finally:
+        MB._is_device_grid = original
+
+
 def test_every_unsupported_code_is_raised():
     from dataclasses import replace
     from robotic_cutting_sim.coupled_robot import CouplingConfig
@@ -191,6 +204,7 @@ def test_every_unsupported_code_is_raised():
         "UNSUPPORTED_INT32_OVERFLOW": lambda: layout.check_int32(2**31, 1, 8, 1),
         "UNSUPPORTED_EMPTY_BATCH": lambda: layout.pack([]),
         "UNSUPPORTED_SINGLE_ENV_STATE": lambda: layout.pack_from_beds([_stepped_bed()]),
+        "UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS": _second_device_grid,
     }
     assert set(cases) == set(MATERIAL_CODES), set(MATERIAL_CODES) ^ set(cases)
     for code, call in cases.items():

@@ -459,6 +459,10 @@ class VectorCuttingEnv:
         if ids.size == 0:
             with self._stream():
                 return self._observe(), self._reset_info()
+        from ..batched import material_batch as MB
+        if env_ids is None and self.material.device_hashgrid_guard == MB.DEVICE_HASHGRID_GUARD:
+            check_single_device_hashgrid = MB.check_single_device_hashgrid
+            check_single_device_hashgrid(own=self.material.solver.hash)   # a grid built after construction
         order = np.argsort(ids, kind="stable")
         ids_sorted = ids[order]
         seeds_sorted = None if seeds is None else seeds[order]
@@ -746,7 +750,7 @@ class VectorCuttingEnv:
                 (self.output_dir / "vector_env_close_error.txt").write_text(repr(error) + "\n")
         if self._cuda:
             self.wp.synchronize_device(self.wp_device)
-        self.material.graph = None
+        self.material.release()      # frees the device HashGrid: another env may be opened in this process
         self._closed = True
 
     def __enter__(self):

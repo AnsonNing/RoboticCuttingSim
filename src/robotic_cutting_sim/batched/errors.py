@@ -27,6 +27,8 @@ MATERIAL_CODES = (
     "UNSUPPORTED_INT32_OVERFLOW",                 # P*8 or nodes_total*S >= 2**31
     "UNSUPPORTED_EMPTY_BATCH",
     "UNSUPPORTED_SINGLE_ENV_STATE",               # a single solver that is not a fresh, unstepped reset state
+    # process-level hazard (Warp 1.17 HashGrid static descriptor, see material_batch.check_single_device_hashgrid)
+    "UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS",      # another live CUDA wp.HashGrid in the process
 )
 # Workload B (ADR 0022 §10 and its implementation notes): raised by batched/lab_scene, robot kernels and
 # rl/lab_batched_env (tested in tests/test_rl_lab_*), merged here from lab_scene.LAB_UNSUPPORTED_CODES.

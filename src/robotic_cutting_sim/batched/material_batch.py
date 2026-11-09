@@ -374,6 +374,48 @@ def _reset_envs(mask: wp.array(dtype=int), segments: int, boxes: int, T: int,
     invalid_reason[e] = 0
 
 
+# ----------------------------------------------------------------------------- device HashGrid guard
+
+DEVICE_HASHGRID_GUARD = "single_device_hashgrid_per_process_v1"
+_REBUILD_EXEMPT_GRIDS = []   # grids of a material being replaced by rebuild() (dropped right after)
+
+
+def _guard_applies(device):
+    return wp.get_device(device).is_cuda
+
+
+def _is_device_grid(grid):
+    return getattr(grid, "device", None) is not None and grid.device.is_cuda
+
+
+def live_device_hashgrids():
+    """Every live ``wp.HashGrid`` of this process that counts for the guard (CUDA grids; gc scan)."""
+    import gc
+    gc.collect()
+    return [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, "id", None)
+            and _is_device_grid(o)]
+
+
+def check_single_device_hashgrid(own=None):
+    """Refuse a second live CUDA HashGrid in the process (``UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS``).
+
+    Warp 1.17.0 ``hash_grid_update_device_impl`` copies the grid descriptor from one function-static host
+    variable inside the captured graph, so a replayed graph uses the descriptor of the grid built LAST on the
+    host in the process, not its own (P1-3a, ``probe_hashgrid_descriptor.py``). With two device grids every graph
+    but the last-built one runs particle contacts against the wrong grid. ``own`` (this material's grid) and
+    grids being replaced by ``rebuild()`` are exempt. Host (CPU) grids have no such static and are not counted.
+    Limitation: a device grid created AFTER this check (e.g. a frozen single LiveCuttingMaterial on CUDA built
+    later) is not detected here; ``rl.vector_env`` re-checks on full reset."""
+    others = [g for g in live_device_hashgrids()
+              if g is not own and not any(g is x for x in _REBUILD_EXEMPT_GRIDS)]
+    if others:
+        raise UnsupportedBatchConfiguration(
+            "UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS",
+            f"{len(others)} other live CUDA wp.HashGrid(s) in this process; Warp 1.17 graph replay would use the "
+            "last-built grid's descriptor (one batch or single material per process, or release the other first)")
+    return True
+
+
 # ----------------------------------------------------------------------------- material
 
 class InvalidBatchEnvs(FloatingPointError):
@@ -403,7 +445,7 @@ class BatchedCuttingMaterial:
 
     def __init__(self, specs, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
                  backend=BACKEND, cameras=None, recorders=None, sensors=None,
-                 constitutive_model=constitutive.DEFAULT_MODEL_ID):
+                 constitutive_model=constitutive.DEFAULT_MODEL_ID, allow_multiple_device_hashgrids=False):
         if backend not in BACKENDS:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; supported {BACKENDS}")
         self.backend = backend
@@ -418,6 +460,7 @@ class BatchedCuttingMaterial:
         self.device, self.parity_mode, self.strict = device, bool(parity_mode), bool(strict)
         self.capture_graph = wp.get_device(device).is_cuda if capture_graph is None else bool(capture_graph)
         self.constitutive_model = constitutive_model
+        self.allow_multiple_device_hashgrids = bool(allow_multiple_device_hashgrids)
         self._build(specs)
 
     # ------------------------------------------------------------------ construction
@@ -445,8 +488,13 @@ class BatchedCuttingMaterial:
         self.pose_interpolation_kernel = POSE_INTERPOLATION_VERSION
         self.interpolation_steps = {"device": 0, "host_reference": 0, "preset": 0}
         self.num_envs = pk.num_envs
+        guarded = _guard_applies(self.device) and not self.allow_multiple_device_hashgrids
+        if guarded:
+            check_single_device_hashgrid()
         self.solver = BatchedTLMPMv7_2(pk, self.device)
         s = self.solver
+        self.device_hashgrid_guard = (DEVICE_HASHGRID_GUARD if guarded else "disabled"
+                                      if self.allow_multiple_device_hashgrids else "not_applicable_host_grid")
         N, B = self.num_envs, s.boxes
         recipients = pk.uniform["recipients"]
         recipient_mask = np.zeros(B, np.int32)
@@ -520,8 +568,14 @@ class BatchedCuttingMaterial:
         afterwards; views taken before (e.g. ``wp.to_torch``) must be taken again."""
         options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
                        capture_graph=self.capture_graph, constitutive_model=self.constitutive_model,
-                       backend=self.backend)
-        replacement = type(self)(specs, **options)
+                       backend=self.backend,
+                       allow_multiple_device_hashgrids=self.allow_multiple_device_hashgrids)
+        own = getattr(getattr(self, "solver", None), "hash", None)
+        _REBUILD_EXEMPT_GRIDS.append(own)
+        try:
+            replacement = type(self)(specs, **options)
+        finally:
+            _REBUILD_EXEMPT_GRIDS.remove(own)
         self.__dict__.clear()
         self.__dict__.update(replacement.__dict__)
 
@@ -865,6 +919,13 @@ class BatchedCuttingMaterial:
         """Every device array of the batch (solver, coupling, diagnostics), excluding the hash grid."""
         return int(sum(v.capacity for v in self.device_arrays().values()))
 
+    def release(self):
+        """Drop the CUDA graph and this material's HashGrid (end of life), so another batch or single material
+        may own the process's device grid (``check_single_device_hashgrid``). The material is unusable after."""
+        self.graph = None
+        if getattr(self, "solver", None) is not None:
+            self.solver.hash = None
+
     def receipt(self):
         pk = self.packed
         B = self.solver.boxes
@@ -887,4 +948,5 @@ class BatchedCuttingMaterial:
                 "solver": self.solver.solver_receipt(), "envs": pk.receipts,
                 "material_fidelity_reasons": reasons, "batched_source_sha256": batched_source_sha256(),
                 "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "memory_bytes": self.memory_bytes(),
-                "build_wall_s": self.build_wall_s}
+                "build_wall_s": self.build_wall_s,
+                "device_hashgrid_guard": getattr(self, "device_hashgrid_guard", None)}

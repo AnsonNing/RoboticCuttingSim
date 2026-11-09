@@ -152,6 +152,8 @@ def main():
     parser.add_argument("--l4")
     parser.add_argument("--m2", nargs="*", default=[])
     parser.add_argument("--single")
+    parser.add_argument("--ab", nargs="*", default=[])
+    parser.add_argument("--prefix-runs", nargs="*", default=[], help="pre-review-fix runs kept with their commit")
     parser.add_argument("--nsys", nargs="*", default=[])
     parser.add_argument("--extra", type=Path, help="JSON with hand-written statuses/notes merged into the evidence")
     parser.add_argument("--out", type=Path, required=True)
@@ -176,7 +178,8 @@ def main():
             rows.append(m1_row(d))
     if args.l4:
         d = load(args.l4)
-        evidence["runs"][args.l4] = {k: d.get(k) for k in ("status", "error", "mode", "steps", "copy_vs_copy",
+        evidence["runs"][args.l4] = {k: d.get(k) for k in ("status", "error", "l4_status", "l4_error",
+                                                           "deterministic_mode", "steps", "copy_vs_copy",
                                                            "run_vs_run", "labelled", "walls_s",
                                                            "wrench_run_vs_run_equal", "traceback", "wall_s",
                                                            "telemetry", "scope")}
@@ -200,6 +203,17 @@ def main():
                                                                "wall_s", "telemetry")}
         if d["status"] == "COMPLETE":
             rows.append(single_row(d))
+    for run in args.ab:
+        d = load(run)
+        evidence["runs"][run] = {k: d.get(k) for k in ("status", "error", "sizes", "block", "rounds", "per_n",
+                                                       "ratio_vs_smallest", "scope", "wall_s", "telemetry")}
+    evidence["prefix_runs"] = list(args.prefix_runs)
+    for run, entry in evidence["runs"].items():
+        root = P12 if (P12 / run).exists() else ROOT / "artifacts" / "rl_ready"
+        m = json.loads((root / run / "manifest.json").read_text())
+        entry["source"] = dict(git_head=m.get("git_head"), git_dirty=m.get("git_dirty"),
+                               git_diff_stat=m.get("git_diff_stat"), started_unix_s=m.get("started_unix_s"),
+                               pre_review_fix=run in args.prefix_runs)
     n1 = [d for d in m2.values() if d["num_envs"] == 1 and d["status"] == "COMPLETE"]
     if n1:
         base = sum(d["timing"]["env_steps_per_s"] for d in n1) / len(n1)
@@ -209,6 +223,10 @@ def main():
                                     ratio=d["timing"]["env_steps_per_s"] / base)
                     for d in m2.values() if d["status"] == "COMPLETE"},
             scope="same venv, same GPU, separate processes, SHARED_GPU (co-tenant load varies between runs)")
+    for row in rows:
+        run = row.source.split("p1_2/")[-1]
+        if run in args.prefix_runs:
+            row.notes = "PRE-REVIEW-FIX source (dirty tree, commit " + (row.source_commit or "?")[:7] + "); " + row.notes
     evidence["nsys"] = [nsys_summary(r) for r in args.nsys]
     evidence["rows"] = [r.to_dict() for r in rows]
     evidence["markdown_table"] = markdown_table(rows)
