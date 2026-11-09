@@ -323,16 +323,57 @@ def mode_grasp(args, out):
                             body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
 
 
+def unreachable_pose(task):
+    """HOME edge rotated 150 deg about its local x: kinematically unreachable from HOME (C2 scan: 0.79 m error)."""
+    from scipy.spatial.transform import Rotation
+    home = np.asarray(task.reference_edge_pose_world(0.), float)
+    home[3:] = (Rotation.from_quat(home[3:])*Rotation.from_euler("x", 150, degrees=True)).as_quat()
+    return home
+
+
+def mode_ik_hold(args, out):
+    """IK-rejection hold in the env: env ``--reset-env`` gets an unreachable commanded pose at step 2."""
+    import torch
+    from isaaclab_newton.physics import NewtonManager
+    cfg, options, task, Env = _build(args)
+    with _launch(cfg):
+        env = Env(cfg, options, task)
+        env.reset()
+        rows = {k: [] for k in ("status", "commanded", "targets", "joint_q", "previous_action", "armed", "cut_digit",
+                                "ik_streak", "body_q")}
+        for step in range(args.steps):
+            if args.reset_env is not None and step == 2:
+                mask = torch.zeros(args.num_envs, dtype=torch.bool)
+                mask[args.reset_env] = True
+                pose = env.commanded.clone()
+                pose[args.reset_env] = torch.as_tensor(unreachable_pose(task))
+                env.debug_set_commanded(mask, pose)
+            env.step(scripted_actions(args.num_envs, step))
+            state = NewtonManager.get_state_0()
+            rows["status"].append(env.action_status.numpy().copy())
+            rows["commanded"].append(env.commanded.numpy().copy())
+            rows["targets"].append(env.last_targets.numpy().copy())
+            rows["joint_q"].append(state.joint_q.numpy().copy())
+            rows["body_q"].append(state.body_q.numpy().copy())
+            rows["previous_action"].append(env.previous_action.numpy().copy())
+            rows["armed"].append(env.armed.numpy().copy())
+            rows["cut_digit"].append(env.cut_digit.numpy().copy())
+            rows["ik_streak"].append(env.ik_streak.numpy().copy())
+        np.savez_compressed(out/"ik_hold.npz", **{k: np.asarray(v) for k, v in rows.items()},
+                            unreachable=unreachable_pose(task), reject_code=env.reject_ik,
+                            body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--mode", required=True, choices=("receipt", "single", "mask_audit", "rollout", "coupling",
-                                                               "grasp"))
+                                                               "grasp", "ik_hold"))
     parser.add_argument("--num-envs", type=int, default=3)
     parser.add_argument("--tool-mount", default="rigid_mount_v1")
     parser.add_argument("--scene-seed", type=int, default=512)
     parser.add_argument("--steps", type=int, default=10)
     parser.add_argument("--perturb-env", type=int, default=None)
-    parser.add_argument("--reset-env", type=int, default=None)
+    parser.add_argument("--reset-env", type=int, default=None, help="reset / perturb-target env (rollout, grasp, ik_hold)")
     parser.add_argument("--reset-step", type=int, default=5)
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
@@ -342,7 +383,7 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     start = time.perf_counter()
     {"receipt": mode_receipt, "single": mode_single, "mask_audit": mode_mask_audit, "rollout": mode_rollout,
-     "coupling": mode_coupling, "grasp": mode_grasp}[args.mode](args, out)
+     "coupling": mode_coupling, "grasp": mode_grasp, "ik_hold": mode_ik_hold}[args.mode](args, out)
     (out/"done.json").write_text(json.dumps({"mode": args.mode, "wall_s": time.perf_counter()-start,
                                              "num_envs": args.num_envs, "tool_mount": args.tool_mount}))
 

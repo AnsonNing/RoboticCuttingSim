@@ -348,6 +348,14 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         truncated = self.episode_length_buf >= self.max_steps
         return invalid, truncated
 
+    def debug_set_commanded(self, mask, pose):
+        """TEST HARNESS ONLY: overwrite the commanded edge pose of the masked envs (``pose [N,7]`` float64).
+
+        Used to drive the IK-rejection hold with a target the arm cannot reach; never part of the action contract."""
+        mask = mask.to(device=self.device, dtype=torch.bool)
+        pose = torch.as_tensor(pose, dtype=torch.float64, device=self.device)
+        self.commanded = torch.where(mask[:, None], pose, self.commanded)
+
     def check_valid(self):
         """Strict mode: one int32 read; raises with env ids and reasons."""
         count = int(self.rigid_count.numpy()[0])

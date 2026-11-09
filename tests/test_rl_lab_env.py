@@ -163,3 +163,31 @@ def test_b2_settle_gates_snapshot_and_masked_restore(tmp_path_factory):
     assert np.array_equal(d["restored_joint_q"][cs[0]:cs[1]], d["before_joint_q"][cs[0]:cs[1]])
     assert np.array_equal(d["restored_body_q"][bw == 0], d["before_body_q"][bw == 0])
     assert not np.array_equal(d["before_joint_q"][cs[1]:cs[2]], d["settled_joint_q"][cs[1]:cs[2]])
+
+
+@pytest.fixture(scope="module")
+def ik_hold(tmp_path_factory):
+    def go(name, *args):
+        return np.load(run_worker(tmp_path_factory, name, "--mode", "ik_hold", "--num-envs", 3, "--steps", 6,
+                                  *args)/"ik_hold.npz")
+    return go("ik_hold", "--reset-env", 1), go("ik_base")
+
+
+def test_ik_rejection_holds_only_that_env(ik_hold):
+    """An unreachable commanded pose in env 1 (test harness): REJECTED_IK_UNREACHABLE, previous joint targets and
+    commanded pose held, cut disarmed, HOLD row, streak counted; envs 0 and 2 bitwise equal to the run without it."""
+    d, base = ik_hold
+    code = int(d["reject_code"])
+    status = d["status"]
+    assert np.all(status[:2] != code) and np.all(status[2:, 1] == code)
+    assert np.all(status[:, [0, 2]] != code)
+    np.testing.assert_array_equal(d["targets"][2:, 1], np.repeat(d["targets"][1:2, 1], len(status)-2, 0))
+    np.testing.assert_array_equal(d["commanded"][2:, 1], np.repeat(d["unreachable"][None], len(status)-2, 0))
+    assert np.all(d["cut_digit"][2:, 1] == -1) and not d["armed"][2:, 1].any()
+    np.testing.assert_array_equal(d["previous_action"][2:, 1], np.repeat([[0, 0, 0, 0, 0, 0, -1, 0]], len(status)-2, 0))
+    assert d["ik_streak"][2:, 1].tolist() == list(range(1, len(status)-1))
+    cs, bw = d["coord_start"], d["body_world"]
+    for e in (0, 2):
+        assert np.array_equal(d["joint_q"][:, cs[e]:cs[e+1]], base["joint_q"][:, cs[e]:cs[e+1]])
+        assert np.array_equal(d["body_q"][:, bw == e], base["body_q"][:, bw == e])
+        assert np.array_equal(d["status"][:, e], base["status"][:, e])
