@@ -9,7 +9,8 @@ running as 3 x the single env's own 3-run spread (per quantity, max over the ste
     --mode batched  ``IsaacLabBatchedCuttingEnv`` N=1 B2, robot-only, HOME = the single run's settled arm q
                     (``--initial-from``), the same joint sequence through ``step_joint_targets`` (G4 harness)
 
-Sequence: q_k = q_settled + A * sin(2 pi k / 50), A = (0, .05, 0, .05, 0, .05, 0) rad.
+Sequence: q_k = q_settled + A * sin(2 pi k / 50) with A_j = min(0.05, 0.5 x the settled joint's limit margin) on
+joints 2, 4 and 6 (else 0), computed once by the single run from the actual articulation limits and reused.
 
     CUDA_VISIBLE_DEVICES=0 PYTHONPATH=src flock <gpu0.lock> .deps/isaaclab-venv/bin/python \
         scripts/rl_ready/probe_lab_batched_g4.py --mode single --out artifacts/rl_ready/p1_1b/g4_single_001
@@ -27,9 +28,14 @@ AMPLITUDE = np.array([0., .05, 0., .05, 0., .05, 0.])
 STEPS = 100
 
 
-def sequence(q0, steps=STEPS):
+def amplitude(q0, lower, upper):
+    margin = np.minimum(np.asarray(q0)-np.asarray(lower), np.asarray(upper)-np.asarray(q0))
+    return np.where(AMPLITUDE > 0, np.minimum(AMPLITUDE, .5*np.maximum(margin, 0.)), 0.)
+
+
+def sequence(q0, amp, steps=STEPS):
     k = np.arange(1, steps+1)[:, None]
-    return np.asarray(q0, float)[None]+AMPLITUDE[None]*np.sin(2*np.pi*k/50.)
+    return np.asarray(q0, float)[None]+np.asarray(amp, float)[None]*np.sin(2*np.pi*k/50.)
 
 
 def mode_single(args, out):
@@ -46,12 +52,14 @@ def mode_single(args, out):
         env.reset(seed=42)
         settled = env.measured()
         q0 = np.asarray(settled["q"][0], float)
-        for q in sequence(q0):
+        dofs = env._joint_dofs[0][:7]
+        amp = amplitude(q0, env.model.joint_limit_lower.numpy()[dofs], env.model.joint_limit_upper.numpy()[dofs])
+        for q in sequence(q0, amp):
             env.step(torch.tensor(q[None], dtype=torch.float32, device="cuda:0"))
             m = env.measured()
             rows.append(dict(arm_q=np.asarray(m["q"][0], float), hand=np.asarray(m["hand_pose"], float),
                              tool=np.asarray(m["tool_body_pose_xyzw"], float), finger=np.asarray(m["finger_q"][0], float)))
-        info = dict(grasp_initialization=env.grasp_initialization, settled_q=q0.tolist(),
+        info = dict(grasp_initialization=env.grasp_initialization, settled_q=q0.tolist(), amplitude_rad=amp.tolist(),
                     settled_finger=np.asarray(settled["finger_q"][0], float).tolist())
     return rows, info
 
@@ -63,7 +71,8 @@ def mode_batched(args, out):
     from robotic_cutting_sim.rl.lab_batched_env import IsaacLabBatchedCuttingEnv
     from robotic_cutting_sim.task_scenarios import configure_task
     from robotic_cutting_sim.tasks import make_task
-    q0 = np.asarray(json.loads((Path(args.initial_from)/"g4.json").read_text())["info"]["settled_q"], float)
+    source = json.loads((Path(args.initial_from)/"g4.json").read_text())["info"]
+    q0, amp = np.asarray(source["settled_q"], float), np.asarray(source["amplitude_rad"], float)
     task = configure_task(make_task(TASK_ID, seed=42), scenario=None, material_profile_id=None)   # as make_lab_cfg
     options = lab_scene.BatchedLabOptions(num_envs=1, tool_mount="physical_grasp_v1", device="cuda:0",
                                           feedback=False, initial_joint_positions=tuple(q0), seed=42)
@@ -76,14 +85,14 @@ def mode_batched(args, out):
         names = list(env.robots[0].joint_names)
         arm = [names.index(f"panda_joint{i}") for i in range(1, 8)]
         fingers = [names.index("panda_finger_joint1"), names.index("panda_finger_joint2")]
-        for q in sequence(q0):
+        for q in sequence(q0, amp):
             env.step_joint_targets(torch.tensor(q[None], dtype=torch.float32, device="cuda:0"))
             body = NewtonManager.get_state_0().body_q.numpy()
             jp = env.robots[0].data.joint_pos.torch.cpu().numpy()[0]
             rows.append(dict(arm_q=jp[arm].astype(float), hand=body[env.tables["hand"][0]].astype(float),
                              tool=body[env.tables["tool"][0]].astype(float), finger=jp[fingers].astype(float)))
         info = dict(grasp_initialization={k: v for k, v in (env.grasp_initialization or {}).items()
-                                          if k != "accumulators"}, initial_q=q0.tolist())
+                                          if k != "accumulators"}, initial_q=q0.tolist(), amplitude_rad=amp.tolist())
     return rows, info
 
 
@@ -138,7 +147,7 @@ def main():
     rows, info = (mode_single if args.mode == "single" else mode_batched)(args, out)
     np.savez_compressed(out/"g4_trace.npz", **{k: np.stack([r[k] for r in rows]) for k in rows[0]})
     (out/"g4.json").write_text(json.dumps({"mode": args.mode, "task_id": TASK_ID, "steps": STEPS,
-                                           "amplitude_rad": AMPLITUDE.tolist(), "feedback": False, "info": info,
+                                           "max_amplitude_rad": AMPLITUDE.tolist(), "feedback": False, "info": info,
                                            "wall_s": time.perf_counter()-start}, indent=1, default=str))
     print(json.dumps({"mode": args.mode, "info": info}, default=str)[:2000])
 
