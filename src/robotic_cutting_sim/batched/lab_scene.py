@@ -148,8 +148,11 @@ class BatchedLabOptions:
             raise unsupported("UNSUPPORTED_ACTUATOR_OVERRIDE", "gains/drive/mimic must equal the single Lab env")
         if self.tool_init_mode != "pregrasped":
             raise unsupported("UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET", f"tool_init_mode={self.tool_init_mode!r}")
-        if self.grip_contact_profile != POINT_PROFILE:
+        from ..pad_contact import PATCH_PROFILE
+        if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
             raise unsupported("UNSUPPORTED_ACTUATOR_OVERRIDE", f"grip contact profile {self.grip_contact_profile!r}")
+        if self.grip_contact_profile == PATCH_PROFILE and self.tool_mount != "physical_grasp_v1":
+            raise unsupported("UNSUPPORTED_TOOL_MOUNT", "finite pad contacts need the B2 physical grasp")
         if self.material not in MATERIALS:
             raise unsupported("UNSUPPORTED_SOLVER" if isinstance(self.material, str) and self.material.startswith("tlmpm")
                               else "UNSUPPORTED_MATERIAL_COUPLING",
@@ -172,7 +175,10 @@ class BatchedLabOptions:
         reasons = list(REDUCED_FIDELITY[self.tool_mount])
         if self.material is None:
             reasons.append("robot_only_no_material_coupling")
-        return {"reduced_fidelity": bool(reasons), "reasons": reasons, "listed_differences": dict(LISTED_DIFFERENCES),
+        differences = dict(LISTED_DIFFERENCES)
+        if self.tool_mount == "physical_grasp_v1":
+            differences["grip_contact_profile"] = self.grip_contact_profile
+        return {"reduced_fidelity": bool(reasons), "reasons": reasons, "listed_differences": differences,
                 "grasp_restore": "grasp_restored_from_settled_snapshot" if self.tool_mount == "physical_grasp_v1"
                 else None}
 

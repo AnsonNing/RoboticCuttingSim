@@ -234,6 +234,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.termination_reason = torch.zeros(N, dtype=torch.int32, device=self.device)
         if o.tool_mount == "physical_grasp_v1":
             self._bind_physical_grasp()
+            self._apply_grip_material()
 
     def _bind_physical_grasp(self):
         import newton
@@ -262,6 +263,30 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.grasp_slip = wp.zeros(N, dtype=float)
             self.grasp_angle = wp.zeros(N, dtype=float)
             self.grasp_status = wp.zeros(N, dtype=wp.int32)
+
+    def _apply_grip_material(self):
+        """``isaac_lab_env.set_grip_friction`` for every world (the single env applies it at each reset): sliding
+        friction ``grasp.friction`` on the tool and both finger collision shapes and, with ``finite_pad_patch_v3``,
+        the torsional friction length of ``pad_contact.patch_receipt``. Applied once at bind (uniform batch)."""
+        import newton
+        from isaaclab_newton.physics import NewtonManager
+        from ..pad_contact import PATCH_PROFILE, patch_receipt
+        model, grasp = self.model, self.options.grasp
+        bodies = model.shape_body.numpy()
+        targets = np.concatenate([self.tables["tool"], self.tables["finger"].reshape(-1)])
+        mask = np.isin(bodies, targets)
+        mu = model.shape_material_mu.numpy()
+        mu[mask] = grasp.friction
+        model.shape_material_mu.assign(mu)
+        torsional = None
+        if self.options.grip_contact_profile == PATCH_PROFILE:
+            torsional = patch_receipt(self.spec.handle_half_extents_m, grasp.friction)["torsional_friction_length_m"]
+            values = model.shape_material_mu_torsional.numpy()
+            values[mask] = torsional
+            model.shape_material_mu_torsional.assign(values)
+        NewtonManager.add_model_change(newton.ModelFlags.SHAPE_PROPERTIES)
+        self.grip_material_receipt = {"coefficient": float(grasp.friction), "torsional_coefficient_m": torsional,
+                                      "shapes": int(mask.sum()), "profile": self.options.grip_contact_profile}
 
     def _post_step(self):
         """B2, every 2 ms substep: per-world tool contact sample and its interval integral (device only)."""
