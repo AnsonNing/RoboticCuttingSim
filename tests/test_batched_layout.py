@@ -9,7 +9,7 @@ import warp as wp
 from batched_fixtures import start_pose, trim_material
 from robotic_cutting_sim import tlmpm_v7_2
 from robotic_cutting_sim.batched import constitutive, layout, tlmpm_v7_2_batch
-from robotic_cutting_sim.batched.errors import CODES, UnsupportedBatchConfiguration
+from robotic_cutting_sim.batched.errors import CODES, MATERIAL_CODES, ROBOT_CODES, UnsupportedBatchConfiguration
 from robotic_cutting_sim.batched.material_batch import BatchedCuttingMaterial
 from robotic_cutting_sim.batched.tlmpm_v7_2_batch import BatchedTLMPMv7_2
 
@@ -192,9 +192,13 @@ def test_every_unsupported_code_is_raised():
         "UNSUPPORTED_EMPTY_BATCH": lambda: layout.pack([]),
         "UNSUPPORTED_SINGLE_ENV_STATE": lambda: layout.pack_from_beds([_stepped_bed()]),
     }
-    assert set(cases) == set(CODES), set(CODES) ^ set(cases)
+    assert set(cases) == set(MATERIAL_CODES), set(MATERIAL_CODES) ^ set(cases)
     for code, call in cases.items():
         _expect(code, call)
+    # Workload B codes are raised by the robot path (tests/test_rl_lab_*); here only their registration.
+    assert set(CODES) == set(MATERIAL_CODES) | set(ROBOT_CODES) and len(set(CODES)) == len(CODES)
+    for code in ROBOT_CODES:
+        assert UnsupportedBatchConfiguration(code, "x").code == code
     # Recorders are also refused at the material level.
     _expect("UNSUPPORTED_RECORDER", _material(recorders=["cut_aware_surface_v1"]))
     with pytest.raises(ValueError, match="unknown UNSUPPORTED code"):

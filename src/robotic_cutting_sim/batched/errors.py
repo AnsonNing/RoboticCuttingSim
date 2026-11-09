@@ -5,7 +5,7 @@ Every configuration the batched path does not implement raises
 loop over single environments. The message always starts with ``UNSUPPORTED``.
 """
 
-CODES = (
+MATERIAL_CODES = (
     # solvers (§10 "Solvers")
     "UNSUPPORTED_SOLVER",                         # anything but tlmpm_v7_2 (including legacy v1-v4 tool paths)
     "UNSUPPORTED_V7_2_OPTIMIZATIONS_DISABLED",    # v7_2_optimizations=False / optimize_* False rollbacks
@@ -28,6 +28,19 @@ CODES = (
     "UNSUPPORTED_EMPTY_BATCH",
     "UNSUPPORTED_SINGLE_ENV_STATE",               # a single solver that is not a fresh, unstepped reset state
 )
+# Workload B (ADR 0022 §10 and its implementation notes): raised by batched/lab_scene, robot kernels and
+# rl/lab_batched_env (tested in tests/test_rl_lab_*), merged here from lab_scene.LAB_UNSUPPORTED_CODES.
+ROBOT_CODES = (
+    "UNSUPPORTED_ENV_SPACING",                    # env_spacing != 0 (worlds sit at the origin)
+    "UNSUPPORTED_NONUNIFORM_RIGID_SCENE",         # a world differs from world 0
+    "UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET",  # B2: re-settling one world's grasp (snapshot restore only)
+    "UNSUPPORTED_RIGID_CPU",                      # MuJoCo C / Warp-CPU MJWarp rigid runtime outside tests
+    "UNSUPPORTED_ACTION_SPEC",                    # action contract other than edge_delta_v1
+    "UNSUPPORTED_ACTUATOR_OVERRIDE",              # gains/drive/mimic/actuator type differ from the single Lab env
+    "UNSUPPORTED_TOOL_MOUNT",                     # tool mount other than rigid_mount_v1 / physical_grasp_v1
+    "UNSUPPORTED_MATERIAL_COUPLING",              # reward/cut outcome/evaluator requested without a material coupling
+)
+CODES = MATERIAL_CODES + ROBOT_CODES
 
 
 class UnsupportedBatchConfiguration(ValueError):
