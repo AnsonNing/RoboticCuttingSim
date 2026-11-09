@@ -259,6 +259,10 @@ def manifest(args, run):
     import warp
     data = dict(schema="rcs_rl_p1_2_run_v1", argv=sys.argv, args=vars(args), git_head=git("rev-parse", "HEAD"),
                 git_dirty=bool(git("status", "--porcelain", "--untracked-files=no")), started_unix_s=time.time(),
+                git_diff_stat=git("diff", "--stat", "HEAD"),
+                source_sha256_at_start={str(p.relative_to(ROOT)): __import__("hashlib").sha256(p.read_bytes()).hexdigest()
+                                        for p in sorted((ROOT / "src" / "robotic_cutting_sim" / "batched").glob("*.py"))
+                                        + sorted((ROOT / "src" / "robotic_cutting_sim" / "rl").glob("*.py"))},
                 cuda_visible_devices=os.environ.get("CUDA_VISIBLE_DEVICES"), python=sys.version.split()[0],
                 interpreter=os.path.relpath(sys.executable, ROOT), kit_started=False,
                 package_origin=os.path.relpath(sys.modules["robotic_cutting_sim"].__file__, ROOT),
