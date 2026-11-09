@@ -38,6 +38,10 @@ import numpy as np
 
 SCHEMA = "rcs_measured_trajectory_v1"
 NATIVE_SOLVERS = ("tlmpm_v5", "tlmpm_v7", "tlmpm_v7_1", "tlmpm_v7_2")   # isaac_sim_runner's configured-task rule
+# ADR 0021 label: handle box plus the two measured finger pads, reconstructed with the Native code path and
+# verified (reset boxes bitwise equal to the recorded configure_pad_obstacles input; the knife body poses of the
+# same robot_state rows reproduce the recorded edge poses). The ADR fallback would be handle_only_pads_unverified.
+REPLAY_OBSTACLES = "handle_and_measured_pads_v1"
 
 
 def _sha256(path):
@@ -163,7 +167,8 @@ def extract_trajectory(attempt_dir, native_dir=None, *, locator_root=None):
                    max_cuts=int(config["max_cuts"]), solver=solver["module"], cutting_law=int(solver["cutting_law"]),
                    particle_spacing_m=float(solver["particle_spacing_m"]),
                    slots_per_node=material.get("slots_per_node"), code_encoding=material.get("code_encoding"),
-                   cut_events=None, surface_profile=config.get("surface_profile"))
+                   cut_events=None, surface_profile=config.get("surface_profile"),
+                   replay_obstacles=REPLAY_OBSTACLES)
     if material.get("solver") != options["solver"] or int(material.get("cutting_law")) != options["cutting_law"]:
         raise ValueError("material.json and the compiled scene disagree on solver or cutting law")
     if int(material.get("max_cuts")) != options["max_cuts"]:
@@ -226,6 +231,10 @@ def extract_trajectory(attempt_dir, native_dir=None, *, locator_root=None):
         cutting_steps=int(active.sum()),
         first_cutting_step=int(steps[active][0]) if active.any() else None,
         last_cutting_step=int(steps[active][-1]) if active.any() else None)
+    checks["pad_boxes_verified"] = bool(checks["reset_pad_boxes_rebuilt_max_abs_diff_m"] == 0.0
+                                        and checks["knife_body_to_edge_max_position_diff_m"] < 1e-12)
+    if not checks["pad_boxes_verified"]:
+        raise ValueError("Pad box reconstruction could not be verified; use handle_only_pads_unverified instead")
     if not (checks["cut_flag_matches_command"] and checks["cut_digit_matches_command"]):
         raise ValueError("Recorded resolved cut flags/digits differ from the submitted commands")
 

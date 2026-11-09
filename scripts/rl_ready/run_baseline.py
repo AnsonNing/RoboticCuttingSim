@@ -54,6 +54,7 @@ SOURCES = ("src/robotic_cutting_sim/live_material.py", "src/robotic_cutting_sim/
            "src/robotic_cutting_sim/tlmpm_v7_2_contacts.py", "src/robotic_cutting_sim/tlmpm_v7_2_frontier.py",
            "src/robotic_cutting_sim/material_diagnostics.py", "src/robotic_cutting_sim/finger_geometry.py",
            "src/robotic_cutting_sim/profiling.py", "src/robotic_cutting_sim/rl/replay.py",
+           "src/robotic_cutting_sim/goals.py", "src/robotic_cutting_sim/seeded_trim.py",
            "scripts/rl_ready/run_baseline.py")
 
 
@@ -139,6 +140,53 @@ def native_reaction_steps(attempt):
     return steps
 
 
+def native_reactions(attempt, recipients):
+    """Recorded Native per-step total material reaction impulse [T,6] and finger wrenches [T,2,6]."""
+    total, fingers = [], []
+    with (Path(attempt) / "actions.jsonl").open() as stream:
+        for line in stream:
+            diag = json.loads(line)["privileged_diagnostics"]
+            total.append(diag["current_total_material_reaction_impulse_world"])
+            fingers.append([diag["next_finger_wrenches_about_edge_world"].get(r, [0.] * 6) for r in recipients])
+    return np.asarray(total, float), np.asarray(fingers, float)
+
+
+def reaction_comparison(native_total, native_fingers, replay_total, replay_fingers):
+    n_contact, r_contact = np.any(native_total != 0, 1), np.any(replay_total != 0, 1)
+    n_finger, r_finger = np.any(native_fingers != 0, (1, 2)), np.any(replay_fingers != 0, (1, 2))
+    diff = np.abs(replay_total - native_total)
+    scale = np.abs(native_total).max() if np.abs(native_total).max() > 0 else 1.
+    return dict(steps=len(native_total), native_contact_steps=int(n_contact.sum()),
+                replay_contact_steps=int(r_contact.sum()),
+                contact_on_off_mismatch_steps=int(np.count_nonzero(n_contact != r_contact)),
+                total_impulse_max_abs_diff=float(diff.max()), total_impulse_max_abs_native=float(scale),
+                total_impulse_max_rel_diff_of_peak=float(diff.max() / scale),
+                native_finger_wrench_steps=int(n_finger.sum()), replay_finger_wrench_steps=int(r_finger.sum()),
+                finger_wrench_max_abs_diff=float(np.abs(replay_fingers - native_fingers).max()),
+                scope="Per-step reaction from the same measured poses; Native fed it back into PhysX, replay does not")
+
+
+def evaluate_states(task, reference, times, positions, velocities, codes):
+    """Frozen seeded_trim goal evaluation (task.evaluate_goal, as seeded_trim.evaluate_recording) of states."""
+    data = dict(reference, time_s=np.asarray(times, float), positions=np.stack(positions),
+                velocities=np.stack(velocities), codes=np.stack(codes))
+    data.update(code_encoding="packed2", max_cuts=2, particle_spacing_m=task.particle_spacing_m)
+    return summarize_evaluation(task.evaluate_goal(data))
+
+
+def summarize_evaluation(result):
+    outcome = result.get("outcome", {})
+    metrics = outcome.get("metrics", {})
+    items = metrics.get("items", [])
+    return dict(verdict=result.get("verdict"), integrity=result.get("integrity", {}).get("status"),
+                integrity_checks=result.get("integrity", {}).get("checks"), outcome=outcome.get("status"),
+                outcome_checks=outcome.get("checks"), mechanical_components=metrics.get("mechanical_components"),
+                largest_component_below_plane_mass_share=metrics.get("largest_component_below_plane_mass_share"),
+                detached_below_plane_mass_fraction=metrics.get("detached_below_plane_mass_fraction"),
+                removed_mass_fraction={i.get("id"): i.get("removed_mass_fraction") for i in items},
+                residual_substrate_height_m={i.get("id"): i.get("residual_substrate_height_m") for i in items})
+
+
 def code_rewrites(previous, current, max_cuts):
     """Particles whose already-assigned packed digit changed (must be 0: labels are persistent)."""
     previous, current = np.asarray(previous, np.int64), np.asarray(current, np.int64)
@@ -185,6 +233,14 @@ def run_replay(args, run, telemetry, trajectory, attempt):
                      native_total_mass_kg=float(np.asarray(native["mass_kg"]).sum()),
                      particles=int(len(material.masses)))
     by_step = {int(step): index for index, step in enumerate(sample_steps)}
+    eval_reference = dict(mass_kg=material.masses.copy(), reference_positions=material.world_points,
+                          reference_positions_local=material.points.copy(), reference_indices=material.lattice.copy(),
+                          reference_stencil_nodes=material.bed.nodes.numpy(),
+                          reference_stencil_weights=material.bed.weights.numpy(),
+                          reference_stencil_gradients=material.bed.gradients.numpy())
+    reference["evaluation_reference_arrays_equal_native"] = {
+        key: bool(np.array_equal(value, native[key])) for key, value in eval_reference.items() if key in native}
+    kept = dict(times=[], positions=[], velocities=[], codes=[])
     comparisons, timings = [], dict(sample_capture_s=0.)
     previous_codes = None
     rewrites, finite = 0, True
@@ -202,6 +258,10 @@ def run_replay(args, run, telemetry, trajectory, attempt):
             rewrites += code_rewrites(previous_codes, state["codes"], max_cuts)
         previous_codes = np.asarray(state["codes"]).copy()
         comparisons.append(row)
+        if args.evaluate:
+            kept["times"].append(row["time_s"])
+            for key in ("positions", "velocities", "codes"):
+                kept[key].append(np.asarray(state[key]).copy())
         timings["sample_capture_s"] += time.perf_counter() - start
         return state
 
@@ -209,6 +269,8 @@ def run_replay(args, run, telemetry, trajectory, attempt):
     steps = trajectory.steps if args.max_steps is None else min(args.max_steps, trajectory.steps)
     step_wall = np.zeros(steps)
     diag_rows = np.zeros((steps, 6))
+    replay_total, replay_fingers = np.zeros((steps, 6)), np.zeros((steps, 2, 6))
+    recipients = [r for r in trajectory.pad_recipients if r is not None]
     first_step_age = None
     loop_start = time.perf_counter()
     state = None
@@ -222,6 +284,8 @@ def run_replay(args, run, telemetry, trajectory, attempt):
         diag_rows[t] = (d["minimum_detF"], d["maximum_material_speed_m_s"], d["maximum_plastic_strain"],
                         d["cut_index"], float(np.linalg.norm(d["current_total_material_reaction_impulse_world"][:3])),
                         d["material_wall_s"])
+        replay_total[t] = d["current_total_material_reaction_impulse_world"]
+        replay_fingers[t] = [d["next_finger_wrenches_about_edge_world"].get(r, np.zeros(6)) for r in recipients]
         finite = finite and bool(np.isfinite(diag_rows[t]).all())
         if t + 1 in by_step:
             state = capture(t + 1)
@@ -234,6 +298,22 @@ def run_replay(args, run, telemetry, trajectory, attempt):
                         diagnostics_columns=np.asarray(["minimum_detF", "maximum_material_speed_m_s",
                                                         "maximum_plastic_strain", "cut_index",
                                                         "reaction_impulse_norm_n_s", "material_wall_s"]))
+    native_total, native_fingers = native_reactions(attempt, recipients)
+    reactions = reaction_comparison(native_total[:steps], native_fingers[:steps], replay_total, replay_fingers)
+    np.savez_compressed(run / "reactions.npz", replay_total_impulse=replay_total.astype(np.float32),
+                        replay_finger_wrenches=replay_fingers.astype(np.float32))
+    evaluation = None
+    if args.evaluate and steps == trajectory.steps:
+        start = time.perf_counter()
+        replay_eval = evaluate_states(task, eval_reference, kept["times"], kept["positions"], kept["velocities"],
+                                      kept["codes"])
+        native_eval = evaluate_states(task, {key: native[key] for key in eval_reference}, native["time_s"],
+                                      list(native["positions"]), list(native["velocities"]), list(native["codes"]))
+        kept.clear()
+        evaluation = dict(replay=replay_eval, native_same_evaluator=native_eval, wall_s=time.perf_counter() - start,
+                          evaluator="robotic_cutting_sim.goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal "
+                                    "(same inputs as seeded_trim.evaluate_recording, without surface_state, which "
+                                    "feeds quality only); in-process after the replay")
     mempool_after_episode = int(wp.get_mempool_used_mem_high(device)) if wp.is_mempool_enabled(device) else None
     # warm resets in the same process (new solver + graph capture each time; old state released)
     warm_resets = []
@@ -296,6 +376,7 @@ def run_replay(args, run, telemetry, trajectory, attempt):
             {k: v for k, v in warm_reset_module_log.items() if k != "lines"}),
         kernel_cache=args.kernel_cache)
     return dict(steps_run=steps, complete=complete, timing=timing, invariants=invariants, parity=parity,
+                reactions=reactions, evaluation=evaluation, replay_obstacles=trajectory.options.get("replay_obstacles"),
                 comparisons=comparisons, particles=reference["particles"], device=str(device),
                 material_receipt=dict(solver=material.solver, cutting_law=material.cutting_law,
                                       max_cuts=material.max_cuts, slots_per_node=material.slots_per_node,
@@ -390,6 +471,8 @@ def main():
     parser.add_argument("--kernel-repeat", type=int, default=3)
     parser.add_argument("--kernel-cache", choices=("user", "fresh"), default="user")
     parser.add_argument("--baseline-s", type=float, default=3.)
+    parser.add_argument("--evaluate", action="store_true",
+                        help="Keep the 121 replay states in RAM and apply the frozen seeded_trim goal evaluator")
     args = parser.parse_args()
     attempt = args.attempt or WP17 / f"seed_{args.seed}" / "box" / "env" / "recording" / "attempt_000"
     run = new_run_dir(args.run_name or f"{args.mode}_s{args.seed}")
