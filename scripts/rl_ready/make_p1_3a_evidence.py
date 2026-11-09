@@ -87,7 +87,8 @@ def episode_rows(data):
             gpu_sharing=g["gpu_sharing"], co_tenant=g["co_tenant"], source_commit=data["_manifest"]["git_head"],
             source=data["_run"], notes=f"{REDUCED}; 1200 steps; variants interleaved per step "
                                        f"({', '.join(data['variants'])}); verdict = L2 + frozen evaluator (2 and 121 "
-                                       "frames) + final codes equal Native"))
+                                       "frames) + final codes equal Native; the L3 position band vs Native is "
+                                       "reported separately (parity_vs_native)"))
     return rows
 
 
@@ -134,7 +135,7 @@ def nsys_summary(directory, substeps=600):
         out[label] = dict(kernel_total_ns=total, substeps=substeps, stage_split_us_per_substep=split,
                           all_kernels_us_per_substep={s: sum(g[s] for g in split.values())
                                                       for s in ("median_us", "min_us", "total_us")},
-                          kernels=kernels)
+                          top_kernels=dict(sorted(kernels.items(), key=lambda kv: -kv[1]["total_ns"])[:15]))
     return dict(status="MEASURED" if out else "NOT_RUN", run=f"rl_ready/p1_3/{directory}", reports=out,
                 scope="nsys --cuda-graph-trace=node, one process per (N, variant), 3 profiled control steps = 600 "
                       "substeps after 3 warm-up steps; SHARED_GPU: durations include time-slice preemption")
@@ -158,7 +159,8 @@ def main():
             "frozen_vs_frozen_rerun", "alias_free_vs_alias_free_rerun", "frozen_vs_forced_fallback",
             "after_graph_replays_frozen_vs_alias_free", "after_graph_replays_frozen_vs_forced_fallback",
             "copies_identical_alias_free", "speed_m_s_max", "guard_violations", "forced_fallback_guard_violations",
-            "stage_graph_ms", "stage_graph_scope", "stage_eager_activity_ms", "alias_free_receipt", "wall_s")}
+            "stage_graph_ms", "stage_graph_scope", "stage_eager_activity_ms", "alias_free_receipt", "wall_s",
+            "clocks", "stage_compare_after", "variants", "repeats")}
         evidence["runs"][run]["telemetry"] = short_telemetry(d.get("telemetry_run_phase") or d["telemetry"])
     for run in args.ab:
         d = load(run)
@@ -169,6 +171,9 @@ def main():
             "memory_bytes", "mempool_high_bytes_all_envs", "activity_ms_per_profiled_step", "activity_profiled_steps",
             "timing_scope", "build_wall_s", "peak_rss_mib", "wall_s")}
         evidence["runs"][run]["telemetry"] = short_telemetry(d.get("telemetry_run_phase") or d["telemetry"])
+        activity = evidence["runs"][run].get("activity_ms_per_profiled_step") or {}
+        for name, table in activity.items():
+            activity[name] = dict(list(table.items())[:8])
         if d["status"] == "COMPLETE":
             rows += ab_rows(d)
     for run in args.episode:

@@ -30,6 +30,13 @@ launches ``_particle_contacts_b`` exactly as before; nothing in this module runs
   (A/B timing only; the receipt says ``certificate: unchecked``). A non-zero count makes the material set the
   sticky ``INVALID_CONTACT_SPEED_GUARD`` bit.
 
+Warp 1.17.0 hazard (``scripts/rl_ready/probe_hashgrid_descriptor.py``): a captured ``HashGrid.build`` copies the
+grid descriptor from a function-static host variable at replay time, i.e. the descriptor of the LAST grid built on
+the host in the process, not necessarily its own. ``alias_free_v1`` therefore keeps exactly one device HashGrid per
+material (with C2 the solver's ``hash`` attribute is replaced by the alias-free grid) and the material rebuilds that
+grid on the host right before every graph launch (``restore_descriptor``), so a graph never replays another
+grid's descriptor even when other grids exist in the process. ``frozen_v1`` is unchanged (and keeps the hazard).
+
 Nothing here edits a frozen module; the kernels below are the frozen ``_particle_contacts_b`` body with the
 listed changes only.
 """
@@ -428,6 +435,9 @@ class AliasFreeContacts:
                 self.grid = wp.HashGrid(*self.dims)
                 self.grid.reserve(n, with_groups=True)
                 self.grid.build(s.x, self.cell_width, groups=s.env_of_particle)
+                # One device HashGrid per material (Warp static-descriptor hazard, module docstring): the
+                # unused frozen-dims grid is released and ``solver.hash`` names the grid the contacts query.
+                s.hash = self.grid
             self.fallback_grid = None
             if config.speed_guard != "off":
                 s.contact_guard_flag = wp.zeros(N, dtype=int)
@@ -438,6 +448,12 @@ class AliasFreeContacts:
         wp.load_module(module=__name__, device=s.device)
         # Bound arrays used only for argument lists when the guard is off (never read then).
         self._no_flags = wp.zeros(N, dtype=int, device=s.device) if config.speed_guard == "off" else None
+
+    def restore_descriptor(self, s):
+        """Host-side rebuild of this material's grid so the static descriptor a captured build replays is ours
+        (called by ``BatchedCuttingMaterial.advance`` right before every graph launch)."""
+        with wp.ScopedDevice(s.device):
+            self.grid.build(s.x, self.cell_width, groups=s.env_of_particle)
 
     # ------------------------------------------------------------------ one substep (inside the solver step)
 
@@ -494,7 +510,8 @@ class AliasFreeContacts:
                "fallback_hash_dims": list(c.reference_hash_dims) if c.speed_guard == "fallback" else None,
                "fallback_grid": ("FallbackGrid: kernels + memsets + stable radix sort in a conditional graph node"
                                  if c.speed_guard == "fallback" else None),
-               "fallback_grid_bytes": self.fallback_grid.nbytes() if self.fallback_grid is not None else 0}
+               "fallback_grid_bytes": self.fallback_grid.nbytes() if self.fallback_grid is not None else 0,
+               "hashgrid_descriptor_guard": "single_grid_and_host_rebuild_before_graph_launch_v1"}
         if solver is not None and c.speed_guard != "off":
             out["guard_violation_substeps"] = solver.contact_guard_violations.numpy().tolist()
         return out

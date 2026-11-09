@@ -698,6 +698,8 @@ class BatchedCuttingMaterial:
                                                    INVALID_OBSTACLE_BOXES])
             s.zero_control_step_accumulators()
             if self.graph is not None:
+                if s.particle_contact is not None:   # alias_free_v1 only: Warp static-descriptor guard
+                    s.particle_contact.restore_descriptor(s)
                 wp.capture_launch(self.graph)
             else:
                 for _ in range(s.substeps):

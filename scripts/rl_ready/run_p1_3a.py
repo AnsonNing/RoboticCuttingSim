@@ -290,10 +290,20 @@ def mode_samestate(args, run, telemetry):
     return out
 
 
+def restore_descriptor(env):
+    """Warp 1.17.0 hazard (probe_hashgrid_descriptor.py): a captured ``HashGrid.build`` copies the grid descriptor
+    from a function-static host variable at REPLAY time, i.e. the descriptor of the last grid built on the host.
+    With several grids in one process, rebuild this env's active grid on the host before replaying its graph."""
+    s = env.material.solver
+    grid = s.hash if s.particle_contact is None else s.particle_contact.grid
+    grid.build(s.x, 2.4 * s.radius, groups=s.env_of_particle)
+
+
 def mode_stagebench(args, run, telemetry):
     """Contact stage alone on a recorded state (``--copies`` copies), three clocks, variants interleaved:
     host wall of an eager stage + device sync, host wall of a stage-graph replay + sync, CUDA events around the
-    replay; ``--repeats`` each."""
+    replay; ``--repeats`` each. Each graph replay is preceded (outside the clocks) by a host-side build of that
+    env's own grid (``restore_descriptor``)."""
     import warp as wp
     from robotic_cutting_sim.rl.replay import native_samples
     seed, sample = args.seed, args.sample
@@ -327,15 +337,19 @@ def mode_stagebench(args, run, telemetry):
                 contact_stage(env)
                 wp.synchronize_device(device)
                 clocks[name]["eager_host_ms"].append((time.perf_counter() - t0) * 1e3)
+                restore_descriptor(env)
+                wp.synchronize_device(device)
                 t0 = time.perf_counter()
                 wp.capture_launch(graphs[name])
                 wp.synchronize_device(device)
                 clocks[name]["graph_host_ms"].append((time.perf_counter() - t0) * 1e3)
+                restore_descriptor(env)
+                wp.synchronize_device(device)
                 start, end = wp.Event(device=device, enable_timing=True), wp.Event(device=device, enable_timing=True)
                 stream = wp.get_stream(device)
-                wp.record_event(start, stream=stream)
+                stream.record_event(start)
                 wp.capture_launch(graphs[name], stream=stream)
-                wp.record_event(end, stream=stream)
+                stream.record_event(end)
                 wp.synchronize_event(end)
                 clocks[name]["graph_event_ms"].append(wp.get_event_elapsed_time(start, end))
         out["clocks"] = {name: {k: dict(median=float(np.median(v)), min=float(np.min(v)), p90=float(np.percentile(v, 90)))

@@ -431,6 +431,10 @@ def test_alias_free_receipt_layout_and_dims():
         c = cells[int(material.packed.particle_offset[e]):int(material.packed.particle_offset[e+1])]
         assert np.all(c.max(0)-c.min(0)+4 <= np.array(r["hash_dims"])), (e, r["hash_dims"])
         assert np.all(np.array(r["env_cell_spans"][e]) >= c.max(0)-c.min(0)+1)
+    # Warp static-descriptor guard: one device HashGrid per alias-free material, rebuilt before graph launches.
+    assert s.hash is s.particle_contact.grid
+    assert r["hashgrid_descriptor_guard"] == "single_grid_and_host_rebuild_before_graph_launch_v1"
+    s.particle_contact.restore_descriptor(s)
     assert s.contact_guard_flag.shape == (3,) and s.contact_guard_violations.shape == (3,)
     assert s.contact_guard_any.shape == (1,)
     assert material.memory_bytes() > batch_material(CONFIGS).memory_bytes()
