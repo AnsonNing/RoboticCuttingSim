@@ -17,15 +17,26 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      recorded commands, frozen evaluator) + reward/evaluator wiring, GPU0/GPU1 under their locks.
   3. P1-3a `alias_free_v1` contact mode in a separate worktree `/home/ningan/RoboticCuttingSim-rl-p13`
      (branch `claude/rl-p1-3a`, merged back after M2) — design: [P1_3_BOTTLENECK_ANALYSIS.md](reports/rl_ready/P1_3_BOTTLENECK_ANALYSIS.md).
-  4. P1-6 design in the external agentic optimizer repository (its own worktree and branch, CPU only):
-     thin performance-worktree / proposal / benchmark / PR adapter, GPU lock policy, descriptor + sync receipt format.
+  4. P1-6: design DONE in the external agentic optimizer repository (design doc + ADR + CPU scaffold, 35 tests);
+     its thin adapter (worktree/proposal/bench/accept/PR/pin/receipt) is being implemented there, CPU only.
+     Cycle 1 baseline = the Phase 1 merge on RCS `main`. RCS-side prerequisite R0 (after P1-2 and P1-3a land):
+     `scripts/rl_ready/run_perf_acceptance.py` (variant JSON → `open_vector_env` kwargs, `--out` outside the
+     checkout, stdout timing markers, physics dumps), `scripts/rl_ready/judge_perf_acceptance.py` (runs from the
+     frozen evaluator checkout on dumped outputs), frozen `configs/rl_benchmark/acceptance_v1.json`.
+     P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks, never the other project's `locks/gpu1.lock`.
 - Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
 - Next: P1-1/P1-2 acceptance review → merge P1-3a → P1-1b with material → P1-4 long rollout → P1-5 parity matrix → P1-6.
 
 ## 待使用者決定
 
-- (none yet) Real rubber measurements are not available on this machine; Phase 2
+- Real rubber measurements are not available on this machine; Phase 2
   calibration status will stay `SIMULATOR_ONLY_UNCALIBRATED` unless data is provided.
+- P1-6 defaults in force until the user decides otherwise (none blocks work):
+  U1 optimizer-written candidate code runs on GPU1 only (not GPU0);
+  U2 `acceptance_v1` speed gate: at N=16 paired median ≥ 1.05 with ≥ 4/5 pairs faster, every N ≥ 0.97,
+  VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms;
+  U3 per-cycle budget: research agent $20 / 6 h plus one xhigh review (~1 working day, 3–5 GPU-h);
+  U4 the research agent gets no web access.
 
 ## P1-0 baseline — 2026-11-10 — PASS
 
