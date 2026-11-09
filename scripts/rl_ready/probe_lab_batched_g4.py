@@ -54,12 +54,17 @@ def mode_single(args, out):
         q0 = np.asarray(settled["q"][0], float)
         dofs = env._joint_dofs[0][:7]
         amp = amplitude(q0, env.model.joint_limit_lower.numpy()[dofs], env.model.joint_limit_upper.numpy()[dofs])
+        own_q0 = q0.copy()
+        if args.initial_from:   # repeat runs replay the first run's exact sequence (identical joint commands)
+            source = json.loads((Path(args.initial_from)/"g4.json").read_text())["info"]
+            q0, amp = np.asarray(source["settled_q"], float), np.asarray(source["amplitude_rad"], float)
         for q in sequence(q0, amp):
             env.step(torch.tensor(q[None], dtype=torch.float32, device="cuda:0"))
             m = env.measured()
             rows.append(dict(arm_q=np.asarray(m["q"][0], float), hand=np.asarray(m["hand_pose"], float),
                              tool=np.asarray(m["tool_body_pose_xyzw"], float), finger=np.asarray(m["finger_q"][0], float)))
         info = dict(grasp_initialization=env.grasp_initialization, settled_q=q0.tolist(), amplitude_rad=amp.tolist(),
+                    own_settled_q=own_q0.tolist(), sequence_from=args.initial_from,
                     settled_finger=np.asarray(settled["finger_q"][0], float).tolist())
     return rows, info
 
