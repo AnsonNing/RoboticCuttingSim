@@ -122,6 +122,52 @@ class ReferenceDriver:
         return a.to(torch.float32), cut
 
 
+WP17_ATTEMPT = "artifacts/wp17/native_optimized_001/seed_{seed}/box/env/recording/attempt_000"
+
+
+class RecordedDriver:
+    """``recorded_command_policy_v1`` (``rl.policies_batched``, imported unchanged): the COMMANDED edge targets of
+    the WP-17 Native episode of each env's scene seed, converted to ``edge_delta_v1`` actions open loop from the
+    env's own initial commanded pose (``env.home_commanded``), replayed by the env's episode step."""
+
+    def __init__(self, env, seeds, device):
+        import torch
+        from robotic_cutting_sim.rl.policies_batched import (RecordedCommandPolicyV1, load_recorded_commands,
+                                                              recorded_command_actions)
+        home = env.home_commanded.cpu().numpy()
+        tables, targets, cuts, self.reports = [], [], [], []
+        for e, (seed, task) in enumerate(zip(seeds, env.tasks)):
+            rec = load_recorded_commands(WP17_ATTEMPT.format(seed=seed))
+            if rec["config_sha256"] != task.config_sha256:
+                raise ValueError(f"WP-17 seed {seed} was recorded for another task config")
+            actions, _, report = recorded_command_actions(rec["targets"], rec["cut_enabled"], rec["cut_index"],
+                                                          home[e], task.action_limits(), task.T_world_workpiece,
+                                                          task.max_cuts)
+            tables.append(actions)
+            targets.append(rec["targets"])
+            cuts.append(rec["cut_enabled"])
+            self.reports.append(dict(env=e, scene_seed=seed, actions_sha256=rec["actions_sha256"],
+                                     reset_edge_native=rec["reset_edge"].tolist(), initial_commanded=home[e].tolist(),
+                                     **report))
+        self.policy = RecordedCommandPolicyV1(tables, np.arange(len(tables)), device=device)
+        self.target = torch.as_tensor(np.stack(targets), dtype=torch.float64, device=device)   # [N, T, 7]
+        self.cut = torch.as_tensor(np.stack(cuts), device=device)
+        self.env, self.T = env, self.policy.steps
+
+    def __call__(self):
+        import torch
+        step = self.env.episode_length_buf.to(torch.int64)
+        action = self.policy(None, {"step_count": step})
+        k = torch.clamp(step, max=self.T-1)
+        n = torch.arange(len(k), device=k.device)
+        return action, self.cut[n, k] & (step < self.T)
+
+    def current_target(self):
+        import torch
+        k = torch.clamp(self.env.episode_length_buf.to(torch.int64), max=self.T-1)
+        return self.target[torch.arange(len(k), device=k.device), k]
+
+
 def _site(stack):
     """First frame outside warp/torch/stdlib: where a sync was requested."""
     for frame in reversed(stack[:-1]):
@@ -160,7 +206,7 @@ def compare(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--probe", required=True, choices=("g0", "t2", "g1", "g2", "compare"))
+    parser.add_argument("--probe", required=True, choices=("g0", "t2", "g1", "g2", "g3", "compare"))
     parser.add_argument("--num-envs", type=int, default=1)
     parser.add_argument("--tool-mount", default="rigid_mount_v1")
     parser.add_argument("--gpu-index", type=int, default=0, help="physical nvidia-smi index (telemetry)")
@@ -170,8 +216,13 @@ def main():
     parser.add_argument("--deterministic", action="store_true")
     parser.add_argument("--no-graph", action="store_true")
     parser.add_argument("--material", default=None, help="tlmpm_v7_2: BatchedCuttingMaterial(isaac_lab_newton)")
-    parser.add_argument("--driver", default="scripted", choices=("scripted", "reference"))
+    parser.add_argument("--driver", default="scripted", choices=("scripted", "reference", "recorded", "hold"))
     parser.add_argument("--scene-seed", type=int, default=512)
+    parser.add_argument("--scene-seeds", type=int, nargs="*", default=None, help="per-env scene seeds (cycled)")
+    parser.add_argument("--evaluate", action="store_true", help="frozen evaluator per env at the end")
+    parser.add_argument("--record-inputs", action="store_true", help="save the material input sequence (G5)")
+    parser.add_argument("--restore-env", type=int, default=None, help="g3: env restored at --restore-step")
+    parser.add_argument("--restore-step", type=int, default=10)
     parser.add_argument("--inputs", nargs="*", default=())
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
@@ -201,7 +252,11 @@ def main():
     from robotic_cutting_sim.batched import lab_scene
     from robotic_cutting_sim.rl.lab_batched_env import IsaacLabBatchedCuttingEnv
     t_import = time.perf_counter()
-    task = _task(args.scene_seed)
+    seeds = [args.scene_seed] if not args.scene_seeds else list(args.scene_seeds)
+    seeds = [seeds[e % len(seeds)] for e in range(args.num_envs)]
+    compiled = {seed: _task(seed) for seed in dict.fromkeys(seeds)}
+    task = compiled[seeds[0]]
+    env_tasks = [compiled[seed] for seed in seeds]
     options = lab_scene.BatchedLabOptions(num_envs=args.num_envs, tool_mount=args.tool_mount, device="cuda:0",
                                           deterministic_mode="run_to_run" if args.deterministic else "not_guaranteed",
                                           use_cuda_graph=not args.no_graph, strict=True, material=args.material)
@@ -219,7 +274,7 @@ def main():
     device = "cuda:0"
     with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": device}):
         from isaaclab_newton.physics import NewtonManager
-        env = IsaacLabBatchedCuttingEnv(cfg, options, task)
+        env = IsaacLabBatchedCuttingEnv(cfg, options, task, tasks=env_tasks)
         torch.cuda.synchronize()
         t_build = time.perf_counter()
         env.reset()
@@ -241,7 +296,13 @@ def main():
             row["particles_per_env"] = [int(x) for x in pk.particle_counts]
             row["material_substeps_per_control_step"] = int(env.coupling.solver.substeps)
             row["material_graph_recaptured_newton"] = env.material_graph_recaptured
-        driver = ReferenceDriver(task, env, device) if args.driver == "reference" else None
+        row["scene_seeds"] = seeds
+        driver = (ReferenceDriver(task, env, device) if args.driver == "reference" else
+                  RecordedDriver(env, seeds, device) if args.driver == "recorded" else None)
+        if args.driver == "recorded":
+            row["recorded_policy"] = {"policy": "recorded_command_policy_v1", "per_env": driver.reports}
+        inputs = {"edge": [], "cut": [], "box_centers": [], "box_halves": []}
+        grasp_rows = {"slip": [], "angle": [], "status": [], "bilateral": []}
         wrench_max = torch.zeros(args.num_envs, dtype=torch.float64, device=device)
         trace = {"target": [], "edge": [], "commanded": [], "status": [], "force": []}
         armed_steps = torch.zeros(args.num_envs, dtype=torch.int64, device=device)
@@ -301,6 +362,10 @@ def main():
                          else "FAIL"}
         else:
             for step in range(1, args.steps+1):
+                if args.probe == "g3" and step == args.restore_step and args.restore_env is not None:
+                    mask = torch.zeros(args.num_envs, dtype=torch.bool, device=device)
+                    mask[args.restore_env] = True
+                    env.reset_envs(mask)
                 if args.probe == "g1" and args.variant == "reset" and step == 30:
                     mask = torch.zeros(args.num_envs, dtype=torch.bool, device=device)
                     mask[1] = True
@@ -317,13 +382,28 @@ def main():
                 if driver is not None:
                     action, cut = driver()
                     armed_steps += cut.to(torch.int64)
-                    trace["target"].append(driver.target[torch.clamp(env.episode_length_buf.to(torch.long),
+                    trace["target"].append(driver.current_target().clone() if args.driver == "recorded" else
+                                           driver.target[torch.clamp(env.episode_length_buf.to(torch.long),
                                                                      max=driver.T-1)].clone())
+                elif args.driver == "hold":
+                    action = torch.zeros((args.num_envs, 8), device=device)
+                    action[:, 6] = -1.
                 else:
                     action = _actions(args.num_envs, step, device, perturb)
                 env.step(action)
                 if args.material:
                     wrench_max = torch.maximum(wrench_max, wp.to_torch(env.coupling.pending_wrench)[:, :3].norm(dim=1))
+                if args.record_inputs:
+                    inputs["edge"].append(wp.to_torch(env.coupling.measured_pose).clone())
+                    inputs["cut"].append(wp.to_torch(env.coupling.cut_input).clone())
+                    inputs["box_centers"].append(wp.to_torch(env.coupling.box_centers).clone())
+                    inputs["box_halves"].append(wp.to_torch(env.coupling.box_halves).clone())
+                if args.tool_mount == "physical_grasp_v1":
+                    grasp_rows["slip"].append(wp.to_torch(env.grasp_slip).clone())
+                    grasp_rows["angle"].append(wp.to_torch(env.grasp_angle).clone())
+                    grasp_rows["status"].append(wp.to_torch(env.grasp_status).clone())
+                    ci = wp.to_torch(env.contact_integral)
+                    grasp_rows["bilateral"].append(ci[:, 8]/torch.clamp(ci[:, 9], min=1.))
                 if driver is not None:
                     trace["edge"].append(wp.to_torch(env.frames.measured_edge).clone())
                     trace["commanded"].append(env.commanded.clone())
@@ -337,7 +417,7 @@ def main():
                     contacts = env.contact_integral.numpy()[:, 9] if args.tool_mount == "physical_grasp_v1" else None
                     graph_checks.append({"impulse_z": impulse.tolist(),
                                          "contact_substeps": None if contacts is None else contacts.tolist()})
-                if args.probe in ("g0", "g1"):
+                if args.probe in ("g0", "g1", "g3"):
                     record()
             total = float(np.sum(walls))
             row["warm"] = {"steps": args.steps, "wall_s_total": total, "step_wall_s_mean": float(np.mean(walls)),
@@ -366,11 +446,36 @@ def main():
                                           contact_ok, "per_step": graph_checks[:5],
                                           "status": "PASS" if worst < 1e-6 and contact_ok and
                                           (row["graph_captured"] or args.no_graph) else "FAIL"}
+        if args.evaluate and args.material:
+            telemetry.set_phase("evaluate")
+            evaluations = env.evaluate()
+            row["evaluation"] = [{k: v for k, v in r.items() if k != "result"} for r in evaluations]
+            final_codes = {f"env{e}": env.snapshot_world(e)["codes"] for e in range(args.num_envs)}
+            for r in row["evaluation"]:
+                codes = final_codes[f"env{r['env']}"]
+                r["labelled_by_digit"] = {str(d): int(np.count_nonzero((codes >> (2*d)) & 3))
+                                          for d in range(int(task.max_cuts))}
+            np.savez_compressed(out/"final_codes.npz", **final_codes)
+        if args.material:
+            row["termination_reason"] = env.termination_reason.cpu().tolist()
+            row["reward_fractions"] = {k: v.cpu().tolist() for k, v in env.compute_task_reward().items()}
+        if inputs["edge"]:
+            np.savez_compressed(out/"material_inputs.npz", **{k: torch.stack(v).cpu().numpy() for k, v in inputs.items()},
+                                initial_edge=env.material_initial_edge, scene_seeds=np.asarray(seeds))
+        if grasp_rows["slip"]:
+            g = {k: torch.stack(v).cpu().numpy() for k, v in grasp_rows.items()}
+            np.savez_compressed(out/"grasp_trace.npz", **g)
+            row["grasp_trace_summary"] = {"max_slip_m": g["slip"].max(0).tolist(), "max_angle_rad": g["angle"].max(0).tolist(),
+                                          "final_status": g["status"][-1].tolist(),
+                                          "min_bilateral_fraction": g["bilateral"].min(0).tolist()}
+            if env.snapshot is not None:
+                row["grasp_snapshot"] = env.snapshot.receipt()
         if trace["edge"]:
             np.savez_compressed(out/"trace.npz", **{k: torch.stack(v).cpu().numpy() for k, v in trace.items() if v})
         if states["joint_q"]:
             np.savez_compressed(out/"states.npz", **{k: np.asarray(v) for k, v in states.items()},
-                                body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
+                                body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy(),
+                                hand=env.tables["hand"], tool=env.tables["tool"])
     summary = telemetry.stop()
     warm = [s for s in telemetry.samples if s.get("phase") == "warm" and s.get("ok")]
     slope = None

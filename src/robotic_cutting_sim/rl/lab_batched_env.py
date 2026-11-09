@@ -119,9 +119,18 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
 
     runtime_source = "isaac_lab_newton_batched"
 
-    def __init__(self, cfg, options, task, *, coupling=None):
+    def __init__(self, cfg, options, task, *, coupling=None, tasks=None):
+        """``task``: the rigid scene / HOME / tool task (env 0). ``tasks``: optional per-env material tasks (length
+        N, e.g. seeded TRIM seeds 512 and 15 in one batch); their rigid scenes must be uniform
+        (``check_uniform_rigid_scene``); default: ``task`` in every env."""
         self.options = options.validate()
         self.task = task
+        self.tasks = [task]*int(options.num_envs) if tasks is None else list(tasks)
+        if len(self.tasks) != int(options.num_envs):
+            raise ValueError("tasks must hold one task per env")
+        lab_scene.check_uniform_rigid_scene([task, *self.tasks])
+        if len({(float(t.duration_s), float(t.control_dt_s), int(t.max_cuts)) for t in self.tasks}) != 1:
+            raise unsupported("UNSUPPORTED_NONUNIFORM_BATCH", "duration, control dt and max_cuts must be uniform")
         self._bound = False
         self._coupling_factory = coupling
         super().__init__(cfg)
@@ -172,7 +181,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                                 rotation_tolerance_rad=o.ik_rotation_tolerance_rad, device=self.wp_device,
                                 joint_names=list(self.robots[0].joint_names))
         # action, observation, per-env state (Torch views on the same device)
-        T = np.repeat(np.asarray(self.task.T_world_workpiece, float)[None], N, 0)
+        T = np.stack([np.asarray(t.T_world_workpiece, float) for t in self.tasks])
         self.action_spec = EdgeDeltaActionV1(self.task.action_limits(), T, int(self.task.max_cuts), device=self.device)
         self.max_steps = int(round(float(self.task.duration_s)/float(self.task.control_dt_s)))
         self.observation = StateObservation(N, max_steps=self.max_steps, control_dt=float(self.task.control_dt_s),
@@ -518,7 +527,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         from ..batched.material_batch import BatchedCuttingMaterial
         from ..coupled_robot import CouplingConfig
         from ..live_material import LiveCuttingMaterial
-        task, o, N = self.task, self.options, self.num_envs
+        o, N = self.options, self.num_envs
         self.frames.launch_edge(body_q)
         self.frames.launch_pad_boxes(body_q)
         edge = self.frames.measured_edge.numpy()                       # build time, outside the step loop
@@ -527,6 +536,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         recipients = [None]+[pad["body_path"] for pad in self.pad_geometry]
         specs = []
         for e in range(N):
+            task = self.tasks[e]
             config = CouplingConfig(control_dt=float(task.control_dt_s), material_dt=float(o.material_dt_s),
                                     dx=float(task.grid_dx_m), device="cpu", feedback=bool(o.feedback))
             m = LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
@@ -537,11 +547,16 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                                                strict=o.strict, backend="isaac_lab_newton")
         from .reward_packed import TrimBondProgressReward, TrimBondRewardConfig, bonds_from_task, pack_bonds
         pk = self.coupling.packed
-        m = specs[0].material
-        particles = (np.asarray(m.points), np.asarray(m.masses), np.asarray(m.lattice))   # uniform rigid scene
-        self._env_host = [dict(task=task, T_world_local=np.asarray(spec.material.T_world_local, float),
-                               points=particles[0], lattice=particles[2]) for spec in specs]
-        bonds = [bonds_from_task(task, particles=particles) for _ in specs]
+        cache, bonds, self._env_host = {}, [], []
+        for task, spec in zip(self.tasks, specs):
+            m = spec.material
+            if task.config_sha256 not in cache:
+                particles = (np.asarray(m.points), np.asarray(m.masses), np.asarray(m.lattice))
+                cache[task.config_sha256] = (particles, bonds_from_task(task, particles=particles))
+            particles, env_bonds = cache[task.config_sha256]
+            bonds.append(env_bonds)
+            self._env_host.append(dict(task=task, T_world_local=np.asarray(m.T_world_local, float),
+                                       points=particles[0], lattice=particles[2], scene_key=task.config_sha256))
         self.reward = TrimBondProgressReward(pack_bonds(bonds, pk.particle_offset), TrimBondRewardConfig(),
                                              device=self.device)
         self._codes = wp.to_torch(self.coupling.solver.code)
