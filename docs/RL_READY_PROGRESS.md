@@ -7,12 +7,17 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 
 ## 進行中
 
-- Work packages: P1-1 core (L0/L1 CPU bitwise tests committed; GPU smoke pending), P1-1b stage S0
-  (CPU, robot batching), then P1-2 `open_vector_env` integration. Branch `claude/rl-ready-rubber-physics`.
-- Running agents: P1-1 core (high), P1-1b S0 (high). GPU jobs only under
-  `/mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock`; raw `artifacts/rl_ready/`, logs `artifacts/rl_ready/logs/`.
-- Next: `rl/vector_env.py` (`open_vector_env`, workload A) → M0 (N=1) / M1 (N=4) / M2 (N=8–16) GPU runs →
-  xhigh review of P1-1/P1-2 → P1-1b GPU stages.
+- P1-1 core DONE (commits 220bcde…c2bfe1c): batched tlmpm_v7_2 bitwise equal to the frozen single solver on
+  the Warp CPU device (N=1, N=3 heterogeneous, copies, 47+8 WP-17 frontier fixtures, full-size substep),
+  isolation + partial reset bitwise; GPU smoke N=1/4 structural PASS (SHARED_GPU).
+- Running agents (2026-11-10):
+  1. P1-2 integration (high): `rl/vector_env.py` `open_vector_env`, recorded-command/random policies, API tests,
+     GPU milestones M0/M1/M2 → `artifacts/rl_ready/p1_2/`, report `docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`.
+  2. P1-1b stage S0 (high): robot batching on Isaac Lab Newton, CPU only.
+  3. xhigh review of the P1-1 core (read-only).
+- GPU1 now hosts another project's training (~13 GB, ~99 % util): all current rows are `SHARED_GPU`; formal
+  acceptance rows will be rerun in an exclusive window.
+- Next: fix review findings → P1-1b GPU stages → P1-3 (`_particle_contacts` ≈47 % of substep time) → P1-4/P1-5.
 
 ## 待使用者決定
 
@@ -47,6 +52,7 @@ material without Kit/robot (replayed measured edge + pad boxes). Not one speedup
 
 ## Log
 
+- 2026-11-10 — P1-1 core done (bitwise CPU parity/isolation/reset; GPU smoke PASS); vector env + milestones started; P1-1 xhigh review started.
 - 2026-11-10 — P1-0 PASS; ADR 0022 accepted (D-10); pytest pythonpath fix (45ecf92).
 - 2026-11-10 — ADR 0021 accepted with amendments; D-09 pytest overlay for the Torch venv; P1-1/P1-2 implementation started.
 - 2026-11-10 — `RL_READY_PLAN.md` committed (decisions D-01..D-07); D-08 headless runtime venv.
