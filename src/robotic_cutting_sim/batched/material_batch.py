@@ -36,9 +36,10 @@ INVALID_SLOT_OVERFLOW = 2
 INVALID_POSE = 4
 INVALID_CUT_DIGIT = 8
 INVALID_NONFINITE_WRENCH = 16
+INVALID_OBSTACLE_BOXES = 32
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_SLOT_OVERFLOW: "SLOT_OVERFLOW",
                    INVALID_POSE: "INVALID_MEASURED_POSE", INVALID_CUT_DIGIT: "INVALID_CUT_DIGIT",
-                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH"}
+                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES"}
 
 # ---- reset coverage (ADR §6; tested by tests/test_batched_partial_reset.py over vars())
 # Solver arrays restored by reset() to their freshly packed values.
@@ -64,8 +65,9 @@ MATERIAL_RESET_ARRAYS = ("pending_wrench", "applied_previous", "pad_wrench", "st
 MATERIAL_CONSTANT_ARRAYS = ("R_world_local", "T_local_world", "q_local_world", "recipients",
                             "initial_local_pose", "initial_previous_pose", "initial_link_previous_pose",
                             "initial_box_centers", "initial_box_halves", "initial_measured_pose", "initial_seed")
-# Scratch recomputed from scratch in every control step before being read.
-RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count", "actual_pose")
+# Scratch written before every read: in every control step (invalid_count, actual_pose) or in every
+# set_obstacle_boxes call (box_input, box_mask staging for host inputs).
+RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count", "actual_pose", "box_input", "box_mask")
 # Inputs of reset_masked(): written by reset() (or by a caller through device views) right before it, read
 # only by it, never by a control step. They keep the last reset's values (not a fresh-pack value).
 RESET_INPUTS = ("reset_mask", "reset_seed")
@@ -142,6 +144,47 @@ def _validity_b(summary: wp.array2d(dtype=float), slot_overflow: wp.array(dtype=
     invalid_reason[e] = reason
     if reason != 0:
         wp.atomic_add(invalid_count, 0, 1)
+
+
+@wp.kernel
+def _set_boxes(boxes: wp.array4d(dtype=wp.float32), mask: wp.array(dtype=int), use_mask: int, nboxes: int,
+               centers: wp.array(dtype=wp.vec3), halves: wp.array(dtype=wp.vec3),
+               invalid_reason: wp.array(dtype=int), flag: int):
+    """``LiveCuttingMaterial.update_pad_obstacles`` for env e: ``box_centers/halves = boxes[e, :, 0/1]`` (float32).
+    An env whose boxes are not finite with positive half extents (the frozen refusal) keeps its boxes and is
+    flagged instead."""
+    e = wp.tid()
+    if use_mask != 0:
+        if mask[e] == 0:
+            return
+    ok = int(1)
+    for b in range(nboxes):
+        for k in range(3):
+            if not (wp.isfinite(boxes[e, b, 0, k]) and wp.isfinite(boxes[e, b, 1, k])) or boxes[e, b, 1, k] <= 0.0:
+                ok = 0
+    if ok == 0:
+        invalid_reason[e] = invalid_reason[e] | flag
+        return
+    for b in range(nboxes):
+        centers[e*nboxes+b] = wp.vec3(boxes[e, b, 0, 0], boxes[e, b, 0, 1], boxes[e, b, 0, 2])
+        halves[e*nboxes+b] = wp.vec3(boxes[e, b, 1, 0], boxes[e, b, 1, 1], boxes[e, b, 1, 2])
+
+
+@wp.kernel
+def _check_boxes(nboxes: int, centers: wp.array(dtype=wp.vec3), halves: wp.array(dtype=wp.vec3),
+                 invalid_reason: wp.array(dtype=int), flag: int):
+    """Before the substeps: flag envs whose boxes (possibly written in place by a backend) are not finite
+    with positive half extents (the frozen ``update_pad_obstacles`` refusal)."""
+    e = wp.tid()
+    ok = int(1)
+    for b in range(nboxes):
+        c = centers[e*nboxes+b]
+        h = halves[e*nboxes+b]
+        for k in range(3):
+            if not (wp.isfinite(c[k]) and wp.isfinite(h[k])) or h[k] <= 0.0:
+                ok = 0
+    if ok == 0:
+        invalid_reason[e] = invalid_reason[e] | flag
 
 
 @wp.kernel
@@ -380,6 +423,8 @@ class BatchedCuttingMaterial:
             self.invalid_reason = wp.zeros(N, dtype=int)
             self.invalid_count = wp.zeros(1, dtype=int)
             self.reset_mask = wp.zeros(N, dtype=int)
+            self.box_input = wp.zeros((N, B, 2, 3), dtype=wp.float32)
+            self.box_mask = wp.zeros(N, dtype=int)
             self.reset_seed = wp.zeros(N, dtype=wp.int64)
             self.initial_local_pose = wp.array(pk.env["initial_local_pose"], dtype=wp.transform)
             self.initial_previous_pose = wp.array(pk.env["initial_previous_pose"], dtype=wp.transform)
@@ -389,6 +434,7 @@ class BatchedCuttingMaterial:
         self.diagnostics = SegmentedDiagnostics(s)
         for module in (__name__, "robotic_cutting_sim.batched.diagnostics", "robotic_cutting_sim.batched.pose_interp"):
             wp.load_module(module=module, device=self.device)
+        self.box_updates = 0
         self.graph = None
         self.capture_receipt = None
         if self.capture_graph:
@@ -443,6 +489,53 @@ class BatchedCuttingMaterial:
             wp.copy(self.cut_input, cut)
         else:
             self.cut_input.assign(digits)
+
+    def set_obstacle_boxes(self, boxes, env_mask=None):
+        """In-place obstacle/pad box update (``LiveCuttingMaterial.update_pad_obstacles`` for every env at once).
+
+        ``boxes``: edge-frame ``[N,B,2,3]`` float32 (``[:, :, 0]`` centers, ``[:, :, 1]`` half extents) as a host
+        array, a Warp array on the material device or a Torch tensor (zero-copy ``wp.from_torch``). ``env_mask``
+        ``[N]`` (nonzero = write; None = all). Values are written into the solver's existing ``box_centers`` /
+        ``box_halves`` (no reallocation), so a captured graph sees them on its next replay; call it between
+        control steps. Host input is validated and refused (``ValueError``) like the frozen method; a device env
+        with nonfinite or non-positive boxes keeps its boxes and gets ``INVALID_OBSTACLE_BOXES``.
+        Requires configured pad recipients, as the frozen method does. Without calls, configured pads stay at
+        their packed edge-frame boxes (they move with the edge, not with the fingers)."""
+        s, N, B = self.solver, self.num_envs, self.solver.boxes
+        if self.packed.uniform["recipients"] is None:
+            raise ValueError("Configure the actual pad recipients before updating geometry")
+        if type(boxes).__module__.split(".")[0] == "torch":
+            boxes = wp.from_torch(boxes.contiguous(), dtype=wp.float32)
+        if isinstance(boxes, wp.array):
+            if boxes.shape != (N, B, 2, 3) or boxes.dtype != wp.float32 or str(boxes.device) != self.device:
+                raise ValueError(f"boxes must be float32 [{N},{B},2,3] on {self.device}")
+            source = boxes
+        else:
+            host = np.asarray(boxes, np.float32)
+            if host.shape != (N, B, 2, 3):
+                raise ValueError(f"boxes must be [{N},{B},2,3]")
+            rows = slice(None) if env_mask is None else np.asarray(env_mask).reshape(-1).astype(bool)
+            if not np.isfinite(host[rows]).all() or np.any(host[rows][:, :, 1] <= 0):
+                raise ValueError("Pad bounds must be finite and nonempty")
+            self.box_input.assign(host)
+            source = self.box_input
+        use_mask = env_mask is not None
+        if use_mask:
+            if isinstance(env_mask, wp.array):
+                if env_mask.shape != (N,) or env_mask.dtype != wp.int32:
+                    raise ValueError(f"env_mask must be int32 [{N}]")
+                mask = env_mask
+            else:
+                values = np.asarray(env_mask).reshape(-1)
+                if values.shape != (N,):
+                    raise ValueError(f"env_mask must be [{N}]")
+                self.box_mask.assign((values != 0).astype(np.int32))
+                mask = self.box_mask
+        else:
+            mask = self.box_mask
+        wp.launch(_set_boxes, N, [source, mask, int(use_mask), B, s.box_centers, s.box_halves, self.invalid_reason,
+                                  INVALID_OBSTACLE_BOXES], device=self.device)
+        self.box_updates += 1
 
     def _interpolate_device(self):
         from .pose_interp import launch_fill_cuts, launch_pose_interp
@@ -520,6 +613,8 @@ class BatchedCuttingMaterial:
                                        self.invalid_reason, INVALID_CUT_DIGIT, device=self.device)
         s = self.solver
         with wp.ScopedDevice(self.device):
+            wp.launch(_check_boxes, self.num_envs, [s.boxes, s.box_centers, s.box_halves, self.invalid_reason,
+                                                   INVALID_OBSTACLE_BOXES])
             s.zero_control_step_accumulators()
             if self.graph is not None:
                 wp.capture_launch(self.graph)

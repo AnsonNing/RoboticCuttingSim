@@ -219,3 +219,72 @@ def test_pad_recipients_and_rotated_workpiece_wrench_bitwise():
     assert np.all(np.abs(material.pad_wrench.numpy()[:, 1:]).sum(-1) > 0)
     assert np.all(np.abs(material.pending_wrench.numpy()).sum(1) > 0)
     assert np.count_nonzero(singles[1].bed.code.numpy()) > 0, "env 1 cuts"
+
+
+@pytest.mark.cpu_sim
+def test_in_place_pad_box_updates_equal_frozen_update_pad_obstacles():
+    """Review finding 6: set_obstacle_boxes per control step (host array, Warp array, masked) equals the frozen
+    ``update_pad_obstacles`` bitwise, writing into the existing (graph-captured) box arrays."""
+    material, singles, starts = _pad_scene()
+    s = material.solver
+    pointers = (s.box_centers.ptr, s.box_halves.ptr)
+    base = np.stack([np.asarray(PAD_BOXES["handle_touches"], np.float32),
+                     np.asarray(PAD_BOXES["handle_clear"], np.float32)])
+    current = [p.copy() for p in starts]
+    moved_any = np.zeros(2, bool)
+    for step, how in enumerate(("host", "warp", "masked", "host")):
+        boxes = base.copy()
+        boxes[:, 1:, 0, 1] += np.float32(.0005*(step+1))*np.array([1, -1], np.float32)   # pads close in
+        boxes[:, 1:, 0, 2] -= np.float32(.0004*(step+1))
+        mask = np.array([1, 0], np.int32) if how == "masked" else np.ones(2, np.int32)
+        for e in range(2):
+            if mask[e]:
+                singles[e].update_pad_obstacles(boxes[e])
+                moved_any[e] = True
+        if how == "warp":
+            material.set_obstacle_boxes(wp.array(boxes, dtype=wp.float32, device="cpu"))
+        elif how == "masked":
+            material.set_obstacle_boxes(boxes, env_mask=mask)
+        else:
+            material.set_obstacle_boxes(boxes)
+        for e in range(2):
+            current[e] = current[e].copy()
+            current[e][0] += .001
+            singles[e].advance(current[e], (step+1)*.02, cutting=True, cut_index=0)
+        material.advance(np.stack(current), np.zeros(2, np.int32), interpolation="device")
+        pad = material.pad_wrench.numpy()
+        for e, single in enumerate(singles):
+            assert compare_env(s, e, single.bed) == [], (step, how, e)
+            assert np.array_equal(material.pending_wrench.numpy()[e], single.pending_wrench)
+            assert np.array_equal(pad[e, 1], single.pending_obstacle_wrenches["left"])
+            assert np.array_equal(pad[e, 2], single.pending_obstacle_wrenches["right"])
+    assert (s.box_centers.ptr, s.box_halves.ptr) == pointers, "no reallocation"
+    assert moved_any.all() and material.box_updates == 4
+    assert material.invalid_reason.numpy().tolist() == [0, 0]
+    assert np.all(np.abs(material.pad_wrench.numpy()[:, 1:]).sum(-1) > 0)
+
+
+def test_obstacle_box_setter_refusals():
+    from batched_fixtures import batch_material
+    from robotic_cutting_sim.batched import material_batch as MB
+    plain = batch_material([(512, None, 42)])
+    with pytest.raises(ValueError, match="recipients"):
+        plain.set_obstacle_boxes(np.ones((1, plain.solver.boxes, 2, 3), np.float32))
+    material, _, _ = _pad_scene()
+    s = material.solver
+    before = (s.box_centers.numpy().copy(), s.box_halves.numpy().copy())
+    good = np.stack([np.asarray(PAD_BOXES["handle_touches"], np.float32)]*2)
+    for bad_value, index in ((np.nan, (0, 1, 0, 0)), (0., (1, 2, 1, 1)), (-1e-3, (0, 0, 1, 2))):
+        bad = good.copy()
+        bad[index] = bad_value
+        with pytest.raises(ValueError):
+            material.set_obstacle_boxes(bad)                      # host input: refused, nothing written
+        assert np.array_equal(s.box_centers.numpy(), before[0]) and np.array_equal(s.box_halves.numpy(), before[1])
+    with pytest.raises(ValueError):
+        material.set_obstacle_boxes(good[:1])
+    bad = good.copy()
+    bad[1, 1, 1, 0] = np.inf
+    material.set_obstacle_boxes(wp.array(bad, dtype=wp.float32, device="cpu"))   # device: env 1 flagged, kept
+    centers = s.box_centers.numpy().reshape(2, -1, 3)
+    assert np.array_equal(centers[0], good[0, :, 0]) and np.array_equal(centers[1], before[0].reshape(2, -1, 3)[1])
+    assert material.invalid_reason.numpy().tolist() == [0, MB.INVALID_OBSTACLE_BOXES]
