@@ -86,6 +86,42 @@ def _actions(n, step, device, perturb=None):
     return a
 
 
+class ReferenceDriver:
+    """Scripted ``edge_delta_v1`` controller tracking the task's frozen reference (``task.reference_action``), on the
+    device: per env, the target is the reference at the env's own episode step + 1 (restarts after a reset); the
+    action is the clipped edge-frame delta from the commanded pose, armed with digit 0 where the reference cuts.
+    A driver for timing/engagement rows, not a policy and not the WP-17 controller."""
+
+    def __init__(self, task, env, device):
+        import torch
+        T = int(round(float(task.duration_s)/float(task.control_dt_s)))
+        rows = [task.reference_action((k+1)*float(task.control_dt_s)) for k in range(T)]
+        self.target = torch.tensor(np.stack([r["target"] for r in rows]), dtype=torch.float64, device=device)
+        self.cut = torch.tensor([bool(r.get("cut_enabled", False)) for r in rows], device=device)
+        K = int(task.max_cuts)
+        self.selector = torch.tensor([(int(r.get("cut_index", 0))+.5)/K*2.-1. for r in rows], dtype=torch.float64,
+                                     device=device)
+        limits = task.action_limits()
+        self.max_t, self.max_r = float(limits.max_translation_m), float(limits.max_rotation_rad)
+        self.env, self.T = env, T
+
+    def __call__(self):
+        import torch
+        from robotic_cutting_sim.rl.actions import _as_matrix, _as_rotvec, _compose, _inv, _normalize
+        env = self.env
+        k = torch.clamp(env.episode_length_buf.to(torch.long), max=self.T-1)
+        target, cut = self.target[k], self.cut[k]
+        p, q = env.commanded[:, :3], _normalize(env.commanded[:, 3:])
+        local = torch.einsum("nji,nj->ni", _as_matrix(q), target[:, :3]-p)
+        rot = _as_rotvec(_compose(_inv(q), _normalize(target[:, 3:])))
+        a = torch.zeros((len(k), 8), dtype=torch.float64, device=k.device)
+        a[:, :3] = torch.clamp(local/self.max_t, -1., 1.)
+        a[:, 3:6] = torch.clamp(rot/self.max_r, -1., 1.)
+        a[:, 6] = torch.where(cut, torch.ones_like(a[:, 6]), -torch.ones_like(a[:, 6]))
+        a[:, 7] = self.selector[k]
+        return a.to(torch.float32), cut
+
+
 def _site(stack):
     """First frame outside warp/torch/stdlib: where a sync was requested."""
     for frame in reversed(stack[:-1]):
@@ -133,6 +169,8 @@ def main():
     parser.add_argument("--variant", default="base", choices=("base", "perturb", "reset"))
     parser.add_argument("--deterministic", action="store_true")
     parser.add_argument("--no-graph", action="store_true")
+    parser.add_argument("--material", default=None, help="tlmpm_v7_2: BatchedCuttingMaterial(isaac_lab_newton)")
+    parser.add_argument("--driver", default="scripted", choices=("scripted", "reference"))
     parser.add_argument("--scene-seed", type=int, default=512)
     parser.add_argument("--inputs", nargs="*", default=())
     parser.add_argument("--out", required=True)
@@ -166,14 +204,15 @@ def main():
     task = _task(args.scene_seed)
     options = lab_scene.BatchedLabOptions(num_envs=args.num_envs, tool_mount=args.tool_mount, device="cuda:0",
                                           deterministic_mode="run_to_run" if args.deterministic else "not_guaranteed",
-                                          use_cuda_graph=not args.no_graph, strict=True)
+                                          use_cuda_graph=not args.no_graph, strict=True, material=args.material)
     cfg = lab_scene.make_batched_lab_cfg(options, task)
     fidelity = options.fidelity()
     fidelity["reasons"] = [("robot_only_no_material" if r == "robot_only_no_material_coupling" else r)
                            for r in fidelity["reasons"]]
     row = {"probe": args.probe, "variant": args.variant, "N": args.num_envs, "tool_mount": args.tool_mount,
-           "particles_per_env": 0, "control_hz": 50, "rigid_substeps_per_control_step": 10, "rigid_dt_s": .002,
-           "material_dt_s": None, "material": "none (robot-only)", "cameras": "none", "recording": "none",
+           "particles_per_env": 0, "control_hz": 50, "driver": args.driver, "rigid_substeps_per_control_step": 10, "rigid_dt_s": .002,
+           "material_dt_s": 1e-4 if args.material else None,
+           "material": args.material or "none (robot-only)", "cameras": "none", "recording": "none",
            "use_cuda_graph": not args.no_graph, "deterministic_mode": options.deterministic_mode,
            "strict_mode": True, "gpu": gpu, "commit": _commit(), "workload": "B (robot-only)", **fidelity,
            "boundary": "batched_headless (Isaac Lab Newton/MJWarp kit-less, one process)"}
@@ -197,6 +236,14 @@ def main():
                        "grasp_settle_included_in_reset": args.tool_mount == "physical_grasp_v1"}
         row["graph_captured"] = NewtonManager._graph is not None
         row["receipt"] = env.receipt()
+        if args.material:
+            pk = env.coupling.packed
+            row["particles_per_env"] = [int(x) for x in pk.particle_counts]
+            row["material_substeps_per_control_step"] = int(env.coupling.solver.substeps)
+            row["material_graph_recaptured_newton"] = env.material_graph_recaptured
+        driver = ReferenceDriver(task, env, device) if args.driver == "reference" else None
+        wrench_max = torch.zeros(args.num_envs, dtype=torch.float64, device=device)
+        armed_steps = torch.zeros(args.num_envs, dtype=torch.int64, device=device)
         if env.grasp_initialization:
             row["grasp_initialization"] = {k: v for k, v in env.grasp_initialization.items() if k != "accumulators"}
         telemetry.set_phase("warm")
@@ -266,7 +313,14 @@ def main():
                     reset_walls.append(time.perf_counter()-t0)
                 perturb = 2 if (args.probe == "g1" and args.variant == "perturb") else None
                 t0 = time.perf_counter()
-                env.step(_actions(args.num_envs, step, device, perturb))
+                if driver is not None:
+                    action, cut = driver()
+                    armed_steps += cut.to(torch.int64)
+                else:
+                    action = _actions(args.num_envs, step, device, perturb)
+                env.step(action)
+                if args.material:
+                    wrench_max = torch.maximum(wrench_max, wp.to_torch(env.coupling.pending_wrench)[:, :3].norm(dim=1))
                 torch.cuda.synchronize()
                 walls.append(time.perf_counter()-t0)
                 if args.probe == "g0":
@@ -287,6 +341,12 @@ def main():
                            "torch_max_memory_allocated_bytes": int(torch.cuda.max_memory_allocated()),
                            "timing": "per-step wall with a device sync after each step (strict mode already reads "
                                      "one int32 per step)"}
+            if args.material or driver is not None:
+                row["engagement"] = {"max_material_force_n": wrench_max.cpu().tolist(),
+                                     "reference_cut_steps": armed_steps.cpu().tolist(),
+                                     "material_invalid_reason": env.coupling.invalid_reason.numpy().tolist()
+                                     if args.material else None,
+                                     "material_receipt": env.coupling.receipt() if args.material else None}
             if graph_checks:
                 expected = 10*.002*EXTERNAL_FORCE_N
                 worst = max(abs(v-expected) for c in graph_checks for v in c["impulse_z"])
