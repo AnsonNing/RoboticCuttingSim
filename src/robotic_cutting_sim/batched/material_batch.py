@@ -25,6 +25,7 @@ import warp as wp
 from . import constitutive, layout
 from .diagnostics import SegmentedDiagnostics
 from .errors import UnsupportedBatchConfiguration
+from .pose_interp import _fma, _mul
 from .tlmpm_v7_2_batch import BatchedTLMPMv7_2
 
 RUNTIME = "rl_gpu_headless"
@@ -75,9 +76,14 @@ DIAGNOSTICS_SCRATCH = ("partials", "summary")
 
 vec6d = wp.types.vector(length=6, dtype=wp.float64)
 
+
 @wp.func
 def _rotate(R: wp.mat33d, a: wp.float64, b: wp.float64, c: wp.float64, row: int):
-    return a*R[row, 0] + b*R[row, 1] + c*R[row, 2]
+    """Row ``row`` of ``scene_frames.rotate_wrench_at_same_point``: ``w[:3] @ R.T`` is a NumPy (3,)@(3,3)
+    product whose host BLAS order is ``fma(c,R2, fma(a,R0, b*R1))`` (the same dgemv order as
+    ``transform_points``; asserted on the test machine by tests/test_batched_coupling.py). Exact IEEE ops
+    (no compiler contraction) make the result bitwise equal to the frozen host for any rotation."""
+    return _fma(c, R[row, 2], _fma(a, R[row, 0], _mul(b, R[row, 1])))
 
 
 @wp.kernel

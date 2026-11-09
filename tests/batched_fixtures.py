@@ -137,3 +137,44 @@ def env_state(material, e):
 def step_material(material, poses, cuts):
     """One control step through the frozen SciPy interpolation (L0 input path)."""
     material.advance(np.asarray(poses, np.float64), np.asarray(cuts, np.int32), interpolation="host_reference")
+
+
+# ----------------------------------------------------------------------------- review-fix scenes (2026-11-10)
+
+def yawed_trim_material(seed, yaw_deg, boxes_edge=None, recipients=(None, "left", "right"), spacing=SPACING):
+    """An un-reset frozen single v7_2 TRIM material whose workpiece (and board) is yawed about world z, so
+    ``T_world_local`` is a non-identity rotation; ``boxes_edge [3,2,3]`` configures handle + two pads with
+    reaction recipients (``LiveCuttingMaterial.configure_pad_obstacles``)."""
+    import copy
+    scene = copy.deepcopy(generate_scene(seed))
+    scene["workpiece"]["world_pose"]["yaw_deg"] = float(yaw_deg)
+    scene["supports"]["workcell"]["overrides"] = {"cutting_board": {"yaw_deg": float(yaw_deg)}}
+    task = compile_task(scene, goal_config(), seed=42, particle_spacing_m=spacing)
+    config = CouplingConfig(control_dt=task.control_dt_s, material_dt=1e-4, dx=task.grid_dx_m, device="cpu")
+    material = LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
+                                   solver="tlmpm_v7_2")
+    if boxes_edge is not None:
+        material.configure_pad_obstacles(np.asarray(boxes_edge, np.float32), list(recipients))
+    return material
+
+
+def yawed_start_pose(material, seed):
+    pose = np.asarray(material.task.reference_edge_pose_world(4.0), float)
+    pose[0] = BUMP_FRONT_X[seed]
+    return pose
+
+
+def block_bed(size, obstacles, **config):
+    """A frozen single ``tlmpm_v7_2.TLMPM`` lattice block (2 mm spacing, bottom on z=0) with the ruler-knife
+    profile, edge-frame obstacle boxes, a fixture box under it and a table plane (no LiveCuttingMaterial)."""
+    from robotic_cutting_sim import tlmpm_v7_2
+    from robotic_cutting_sim.blade_probe import block
+    from robotic_cutting_sim.material_config import TLMPMConfig
+    from robotic_cutting_sim.tool_profile import RULER_KNIFE_V2_Y
+    polygon, half = RULER_KNIFE_V2_Y.tlmpm_profile()
+    points, masses = block(size_m=size, spacing=.002)
+    base = dict(cuts=2, floor=False, fixture_walls=False, blade_half_width=float(half))
+    base.update(config)
+    return tlmpm_v7_2.TLMPM(points, masses, .002, TLMPMConfig(**base), "cpu", blade_profile_xz=polygon,
+                            cutting_law=8, obstacle_boxes_edge=obstacles,
+                            fixture_boxes=[[[0., 0., -.002], [.05, .05, .002]]], table_plane=[0., 0., 1., .0012])
