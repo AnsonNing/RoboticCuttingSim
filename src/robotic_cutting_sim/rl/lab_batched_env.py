@@ -48,6 +48,10 @@ BACKEND = "isaac_lab_newton"
 ENV_VERSION = "isaac_lab_batched_cutting_env_v1"
 IK_STREAK_LIMIT = 0  # 0: an IK failure streak never invalidates an env by itself (held, reported per step)
 GRASP_SETTLE_FAILED = 16  # rigid_reason bit (training mode) for a world whose B2 settle gates failed
+# termination_reason bits (ADR 0022 §7: validity, grasp monitor, IK streak -> dones)
+TERM_RIGID_INVALID, TERM_MATERIAL_INVALID, TERM_GRASP_LOST, TERM_IK_STREAK = 1, 2, 4, 8
+TERMINATION_REASONS = {TERM_RIGID_INVALID: "RIGID_INVALID", TERM_MATERIAL_INVALID: "MATERIAL_INVALID",
+                       TERM_GRASP_LOST: "GRASP_LOST", TERM_IK_STREAK: "IK_FAILURE_STREAK"}
 
 
 # ----------------------------------------------------------------------------- material coupling interface
@@ -115,9 +119,18 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
 
     runtime_source = "isaac_lab_newton_batched"
 
-    def __init__(self, cfg, options, task, *, coupling=None):
+    def __init__(self, cfg, options, task, *, coupling=None, tasks=None):
+        """``task``: the rigid scene / HOME / tool task (env 0). ``tasks``: optional per-env material tasks (length
+        N, e.g. seeded TRIM seeds 512 and 15 in one batch); their rigid scenes must be uniform
+        (``check_uniform_rigid_scene``); default: ``task`` in every env."""
         self.options = options.validate()
         self.task = task
+        self.tasks = [task]*int(options.num_envs) if tasks is None else list(tasks)
+        if len(self.tasks) != int(options.num_envs):
+            raise ValueError("tasks must hold one task per env")
+        lab_scene.check_uniform_rigid_scene([task, *self.tasks])
+        if len({(float(t.duration_s), float(t.control_dt_s), int(getattr(t, "max_cuts", 1))) for t in self.tasks}) != 1:
+            raise unsupported("UNSUPPORTED_NONUNIFORM_BATCH", "duration, control dt and max_cuts must be uniform")
         self._bound = False
         self._coupling_factory = coupling
         super().__init__(cfg)
@@ -168,8 +181,11 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                                 rotation_tolerance_rad=o.ik_rotation_tolerance_rad, device=self.wp_device,
                                 joint_names=list(self.robots[0].joint_names))
         # action, observation, per-env state (Torch views on the same device)
-        T = np.repeat(np.asarray(self.task.T_world_workpiece, float)[None], N, 0)
-        self.action_spec = EdgeDeltaActionV1(self.task.action_limits(), T, int(self.task.max_cuts), device=self.device)
+        T = np.stack([np.asarray(t.T_world_workpiece, float) for t in self.tasks])
+        # registered v2 tasks (e.g. TRIM-01-R for G4) declare no action limits / cut digits: control defaults
+        from ..control import ActionLimits
+        limits = self.task.action_limits() if callable(getattr(self.task, "action_limits", None)) else ActionLimits()
+        self.action_spec = EdgeDeltaActionV1(limits, T, int(getattr(self.task, "max_cuts", 1)), device=self.device)
         self.max_steps = int(round(float(self.task.duration_s)/float(self.task.control_dt_s)))
         self.observation = StateObservation(N, max_steps=self.max_steps, control_dt=float(self.task.control_dt_s),
                                             device=self.device)
@@ -183,7 +199,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.cut_digit = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         self.rigid_reason = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         self.rigid_count = wp.zeros(1, dtype=wp.int32, device=self.wp_device)
-        q0, q1 = lab_scene.home_joint_positions(self.task, o.tool_mount, o.grasp)
+        q0, q1 = lab_scene.home_joint_positions(self.task, o.tool_mount, o.grasp, o.initial_joint_positions)
         self._joint_index = [self._lab_order(robot) for robot in self.robots]
         self.home_targets = [torch.as_tensor(np.tile(q[idx], (N, 1)), dtype=torch.float32, device=self.device)
                              for q, idx in zip((q0, q1), self._joint_index)]
@@ -213,8 +229,12 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.snapshot = None
         self.grasp_initialization = None
         self.material_graph_recaptured = False
+        self.reward = None
+        self._env_host = None
+        self.termination_reason = torch.zeros(N, dtype=torch.int32, device=self.device)
         if o.tool_mount == "physical_grasp_v1":
             self._bind_physical_grasp()
+            self._apply_grip_material()
 
     def _bind_physical_grasp(self):
         import newton
@@ -243,6 +263,30 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.grasp_slip = wp.zeros(N, dtype=float)
             self.grasp_angle = wp.zeros(N, dtype=float)
             self.grasp_status = wp.zeros(N, dtype=wp.int32)
+
+    def _apply_grip_material(self):
+        """``isaac_lab_env.set_grip_friction`` for every world (the single env applies it at each reset): sliding
+        friction ``grasp.friction`` on the tool and both finger collision shapes and, with ``finite_pad_patch_v3``,
+        the torsional friction length of ``pad_contact.patch_receipt``. Applied once at bind (uniform batch)."""
+        import newton
+        from isaaclab_newton.physics import NewtonManager
+        from ..pad_contact import PATCH_PROFILE, patch_receipt
+        model, grasp = self.model, self.options.grasp
+        bodies = model.shape_body.numpy()
+        targets = np.concatenate([self.tables["tool"], self.tables["finger"].reshape(-1)])
+        mask = np.isin(bodies, targets)
+        mu = model.shape_material_mu.numpy()
+        mu[mask] = grasp.friction
+        model.shape_material_mu.assign(mu)
+        torsional = None
+        if self.options.grip_contact_profile == PATCH_PROFILE:
+            torsional = patch_receipt(self.spec.handle_half_extents_m, grasp.friction)["torsional_friction_length_m"]
+            values = model.shape_material_mu_torsional.numpy()
+            values[mask] = torsional
+            model.shape_material_mu_torsional.assign(values)
+        NewtonManager.add_model_change(newton.ModelFlags.SHAPE_PROPERTIES)
+        self.grip_material_receipt = {"coefficient": float(grasp.friction), "torsional_coefficient_m": torsional,
+                                      "shapes": int(mask.sum()), "profile": self.options.grip_contact_profile}
 
     def _post_step(self):
         """B2, every 2 ms substep: per-world tool contact sample and its interval integral (device only)."""
@@ -280,7 +324,23 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
 
     # ------------------------------------------------------------------ DirectRLEnv hooks
 
+    def step_joint_targets(self, arm_q):
+        """G4 TEST HARNESS ONLY (ADR 0022 §10: ``joint_position_rad`` exists only here): one control step with
+        Franka 0 arm targets ``arm_q [N,7]`` (rad) instead of an ``edge_delta_v1`` action -- no action spec, no IK,
+        no commanded-pose update. Fingers hold, velocity feed-forward and Franka 1 park as in a normal step,
+        mirroring the single Lab env's ``joint_position_rad`` mode."""
+        q = torch.as_tensor(arm_q, dtype=torch.float32, device=self.device)
+        if q.shape != (self.num_envs, 7):
+            raise ValueError(f"arm_q must be [{self.num_envs}, 7]")
+        self._joint_override = q
+        try:
+            return self.step(torch.zeros((self.num_envs, 8), device=self.device))
+        finally:
+            self._joint_override = None
+
     def _pre_physics_step(self, actions):
+        if getattr(self, "_joint_override", None) is not None:
+            return self._pre_physics_joint_override(self._joint_override)
         result = self.action_spec.apply(actions.to(self.device), self.commanded)
         joint_pos = wp.from_torch(self.robots[0].data.joint_pos.torch.contiguous())
         self.ik.solve_from(joint_pos, wp.from_torch(result.commanded_pose.contiguous()))
@@ -315,6 +375,27 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         if self.options.tool_mount == "physical_grasp_v1":
             self.contact_integral.zero_()
 
+    def _pre_physics_joint_override(self, arm_q):
+        names = list(self.robots[0].joint_names)
+        arm_cols = torch.tensor([names.index(f"panda_joint{i}") for i in range(1, 8)], device=self.device)
+        targets = self.last_targets.clone()
+        targets[:, arm_cols] = arm_q
+        targets = torch.where(self._finger_mask, self._finger_hold_value, targets)
+        if self.options.velocity_feedforward:
+            velocity = torch.where(self._finger_mask, torch.zeros_like(targets), (targets-self.last_targets)/self.step_dt)
+        else:
+            velocity = torch.zeros_like(targets)
+        self.last_targets = targets
+        franka0, franka1 = self.robots
+        franka0.actuators.target_command.set_position_mask(value=targets.contiguous())
+        franka0.actuators.target_command.set_velocity_mask(value=velocity.contiguous())
+        franka1.actuators.target_command.set_position_mask(value=self.home_targets[1])
+        franka1.actuators.target_command.set_velocity_mask(value=torch.zeros_like(self.home_targets[1]))
+        wp.copy(self.cut_digit, wp.from_torch(torch.full((self.num_envs,), -1, dtype=torch.int32, device=self.device)))
+        self.frames.applied_impulse.zero_()
+        if self.options.tool_mount == "physical_grasp_v1":
+            self.contact_integral.zero_()
+
     def _apply_action(self):
         pass  # Lab's scene writes the persistent actuator targets before every substep.
 
@@ -338,6 +419,14 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.check_valid()
         self.step_index += 1
         invalid = wp.to_torch(self.rigid_reason) != 0
+        reason = torch.where(invalid, torch.full_like(self.termination_reason, TERM_RIGID_INVALID),
+                             torch.zeros_like(self.termination_reason))
+        if self.coupling.material_coupled:
+            material_invalid = wp.to_torch(self.coupling.invalid_reason) != 0
+            reason = reason | torch.where(material_invalid, TERM_MATERIAL_INVALID, 0).to(reason.dtype)
+        if self.options.max_consecutive_ik_failures is not None:
+            streak = wp.to_torch(self.ik_streak) >= int(self.options.max_consecutive_ik_failures)
+            reason = reason | torch.where(streak, TERM_IK_STREAK, 0).to(reason.dtype)
         if self.options.tool_mount == "physical_grasp_v1":
             from ..grasp_monitor import GraspLossConfig
             g = GraspLossConfig()
@@ -347,9 +436,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                               g.rotation_warning_rad, g.translation_loss_m, g.rotation_loss_rad, g.unsupported_loss_s,
                               int(self.cfg.decimation), self.grasp_unsupported, self.grasp_lost, self.grasp_slip,
                               self.grasp_angle, self.grasp_status])
-            invalid = invalid | (wp.to_torch(self.grasp_lost) != 0)
+            reason = reason | torch.where(wp.to_torch(self.grasp_lost) != 0, TERM_GRASP_LOST, 0).to(reason.dtype)
+        self.termination_reason = reason
         truncated = self.episode_length_buf >= self.max_steps
-        return invalid, truncated
+        return reason != 0, truncated
 
     def debug_set_commanded(self, mask, pose):
         """TEST HARNESS ONLY: overwrite the commanded edge pose of the masked envs (``pose [N,7]`` float64).
@@ -370,15 +460,85 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         return 0
 
     def _get_rewards(self):
-        # Rewards need the material (trim_bond_progress_packed_v1); robot-only stepping returns no reward.
-        self.extras["reward_available"] = self.coupling.material_coupled
-        return torch.zeros(self.num_envs, device=self.device)
+        """``trim_bond_progress_packed_v1`` from the material codes (as workload A); zeros without material."""
+        self.extras["reward_available"] = self.reward is not None
+        self.extras["termination_reason"] = self.termination_reason
+        self.extras["action_status"] = self.action_status
+        if self.reward is None:
+            return torch.zeros(self.num_envs, device=self.device)
+        invalid = (self.termination_reason & (TERM_RIGID_INVALID | TERM_MATERIAL_INVALID)) != 0
+        reward, terms = self.reward.step(self._codes, invalid)
+        self.extras["reward_terms"] = terms
+        return reward
 
     def compute_task_reward(self):
-        raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "task reward needs the batched material coupling")
+        if self.reward is None:
+            raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "task reward needs the batched material coupling")
+        return self.reward.fractions(self.reward.counts)
 
-    def evaluate(self):
-        raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "cut outcome/evaluator needs the batched material")
+    # ------------------------------------------------------------------ evaluation (frozen evaluator, host)
+
+    def snapshot_world(self, e):
+        """Host WORLD material state of env ``e`` (positions, velocities, codes); oracle, never an observation."""
+        from ..scene_frames import transform_points
+        self._require_material()
+        s, pk = self.coupling.solver, self.coupling.packed
+        p0, p1 = int(pk.particle_offset[e]), int(pk.particle_offset[e+1])
+        x, v, code = s.x[p0:p1].numpy(), s.v[p0:p1].numpy(), s.code[p0:p1].numpy()
+        step = int(self.coupling.step_count[e:e+1].numpy()[0])
+        T = self._env_host[e]["T_world_local"]
+        return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.asarray(code),
+                    step_count=step, time_s=step*float(self.task.control_dt_s))
+
+    def evaluation_reference(self, e):
+        """Reference arrays of env ``e`` in the frozen evaluator's keys (as ``rl.vector_env`` / ``run_baseline``)."""
+        from ..scene_frames import transform_points
+        pk, h = self.coupling.packed, self._env_host[e]
+        p0, p1 = int(pk.particle_offset[e]), int(pk.particle_offset[e+1])
+        return dict(mass_kg=np.asarray(pk.host["mass"][p0:p1], float).copy(),
+                    reference_positions=transform_points(h["T_world_local"], h["points"]),
+                    reference_positions_local=np.asarray(h["points"]).copy(),
+                    reference_indices=np.asarray(h["lattice"]).copy(),
+                    reference_stencil_nodes=pk.host["nodes"][p0:p1]-np.int32(pk.node_offset[e]),
+                    reference_stencil_weights=pk.host["weights"][p0:p1].copy(),
+                    reference_stencil_gradients=pk.host["gradients"][p0:p1].copy())
+
+    def evaluate(self, env_ids=None, *, frames=None):
+        """Frozen seeded_trim goal evaluation (``task.evaluate_goal`` = ``goals.evaluate_goal``) of the CURRENT
+        material state of ``env_ids`` on a host snapshot; call at episode end. Two frames (reset state at t=0 and
+        the current state) unless ``frames[e]`` supplies intermediate ``snapshot_world`` dicts. Same construction
+        as ``rl.vector_env.VectorCuttingEnv.evaluate``."""
+        import hashlib
+        import time
+        from .vector_env import summarize_evaluation
+        self._require_material()
+        ids = range(self.num_envs) if env_ids is None else [int(e) for e in np.asarray(env_ids).reshape(-1)]
+        out = []
+        for e in ids:
+            start = time.perf_counter()
+            task, ref = self._env_host[e]["task"], self.evaluation_reference(e)
+            final = self.snapshot_world(e)
+            series = [s for s in list((frames or {}).get(e, []))+[final] if s["step_count"] > 0]
+            n = len(ref["mass_kg"])
+            data = dict(ref, time_s=np.asarray([0.]+[s["time_s"] for s in series], float),
+                        positions=np.stack([ref["reference_positions"]]+[s["positions"] for s in series]),
+                        velocities=np.stack([np.zeros((n, 3))]+[s["velocities"] for s in series]),
+                        codes=np.stack([np.zeros(n, np.int32)]+[s["codes"].astype(np.int32) for s in series]),
+                        code_encoding="packed2", max_cuts=int(task.max_cuts),
+                        particle_spacing_m=task.particle_spacing_m)
+            result = task.evaluate_goal(data)
+            out.append(dict(env=e, task_id=task.task_id, step_count=final["step_count"], time_s=final["time_s"],
+                            frames=len(data["time_s"]),
+                            final_codes_sha256=hashlib.sha256(np.ascontiguousarray(final["codes"])).hexdigest(),
+                            labelled=int(np.count_nonzero(final["codes"])), summary=summarize_evaluation(result),
+                            result=result, evaluator="goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal "
+                            f"(frozen goal {task.goal.get('goal_id')}); host snapshot at episode end",
+                            wall_s=time.perf_counter()-start))
+        return out
+
+    def _require_material(self):
+        if not self.coupling.material_coupled:
+            raise unsupported("UNSUPPORTED_MATERIAL_COUPLING", "cut outcome/evaluator needs the batched material")
 
     def _get_observations(self):
         return self.observation.compute(commanded_pose=self.commanded, step_count=self.episode_length_buf,
@@ -432,7 +592,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         from ..batched.material_batch import BatchedCuttingMaterial
         from ..coupled_robot import CouplingConfig
         from ..live_material import LiveCuttingMaterial
-        task, o, N = self.task, self.options, self.num_envs
+        o, N = self.options, self.num_envs
         self.frames.launch_edge(body_q)
         self.frames.launch_pad_boxes(body_q)
         edge = self.frames.measured_edge.numpy()                       # build time, outside the step loop
@@ -441,6 +601,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         recipients = [None]+[pad["body_path"] for pad in self.pad_geometry]
         specs = []
         for e in range(N):
+            task = self.tasks[e]
             config = CouplingConfig(control_dt=float(task.control_dt_s), material_dt=float(o.material_dt_s),
                                     dx=float(task.grid_dx_m), device="cpu", feedback=bool(o.feedback))
             m = LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
@@ -449,11 +610,29 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             specs.append(layout.EnvSpec(m, edge[e], int(o.seed), task.config_sha256))
         self.coupling = BatchedCuttingMaterial(specs, device=str(self.wp_device), parity_mode=str(self.wp_device) == "cpu",
                                                strict=o.strict, backend="isaac_lab_newton")
+        from .reward_packed import TrimBondProgressReward, TrimBondRewardConfig, bonds_from_task, pack_bonds
+        pk = self.coupling.packed
+        cache, bonds, self._env_host = {}, [], []
+        for task, spec in zip(self.tasks, specs):
+            m = spec.material
+            if task.config_sha256 not in cache:
+                particles = (np.asarray(m.points), np.asarray(m.masses), np.asarray(m.lattice))
+                cache[task.config_sha256] = (particles, bonds_from_task(task, particles=particles))
+            particles, env_bonds = cache[task.config_sha256]
+            bonds.append(env_bonds)
+            self._env_host.append(dict(task=task, T_world_local=np.asarray(m.T_world_local, float),
+                                       points=particles[0], lattice=particles[2], scene_key=task.config_sha256))
+        self.reward = TrimBondProgressReward(pack_bonds(bonds, pk.particle_offset), TrimBondRewardConfig(),
+                                             device=self.device)
+        self._codes = wp.to_torch(self.coupling.solver.code)
+        self.reward.reset(self._codes)
+        del specs
         if NewtonManager._graph is not None:
             NewtonManager._graph = None
             NewtonManager._graph_capture_pending = True
             self.material_graph_recaptured = True
         self.material_initial_edge = edge
+        self.material_initial_boxes = boxes
 
     def _settle_and_snapshot(self):
         """B2 build-time grasp initialization of all worlds (``isaac_lab_env._settle_physical_grasp`` per world)."""
@@ -560,6 +739,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                                       "fk_reset_mask": None if fk is None else wp.clone(fk), "mask": mask.clone()}
         self.frames.reset_masked(wmask)
         self.coupling.reset_masked(wmask)
+        if self.reward is not None:
+            counts = self.reward.severed_counts(self._codes)
+            self.reward.counts.copy_(torch.where(mask[None], counts, self.reward.counts))
+        self.termination_reason = torch.where(mask, torch.zeros_like(self.termination_reason), self.termination_reason)
         home0 = self.snapshot.franka_targets[0] if restore else self.home_targets[0]
         self.last_targets = torch.where(mask[:, None], home0, self.last_targets)
         self.commanded = torch.where(mask[:, None], self.home_commanded, self.commanded)

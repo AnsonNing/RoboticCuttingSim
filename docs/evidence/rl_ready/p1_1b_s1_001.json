@@ -1,0 +1,2584 @@
+{
+ "schema": "rcs_rl_ready_p1_1b_s1_v1",
+ "work_package": "P1-1b stage S1 (robot-only) on GPU0",
+ "adr": "docs/adr/0022-batched-robot-workload-b.md",
+ "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md",
+ "runtime": {
+  "python": ".deps/isaaclab-venv/bin/python (Isaac Lab 3.0 kit-less, Newton 1.6.1, MJWarp 3.12.0, Warp 1.17.0, Torch 2.11)",
+  "host": "user-System-Product-Name",
+  "env": "CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src, flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock"
+ },
+ "evidence_commit": "3c6049a82320f8cec697fd1cd2e5c30b7f9fa5de",
+ "authoritative_source_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb",
+ "rows": {
+  "g0_b1_n1_002": {
+   "run": "g0_b1_n1_002",
+   "artifact": "artifacts/rl_ready/p1_1b/g0_b1_n1_002",
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.131006496027112,
+    "build_s": 6.16049302497413,
+    "reset_s": 0.15173934306949377,
+    "first_step_s": 1.8463108208961785,
+    "process_to_first_step_s": 9.289549684966914,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 20,
+    "wall_s_total": 1.3282371677923948,
+    "step_wall_s_mean": 0.06641185838961974,
+    "step_wall_s_p50": 0.0742394695407711,
+    "step_wall_s_p95": 0.09209531288943254,
+    "env_steps_per_s": 15.057551832585087,
+    "aggregate_sim_time_per_wall": 0.3011510366517018,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16867.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 90.0,
+    "mean": 88.35714285714286,
+    "n": 14
+   },
+   "total_util_pct": {
+    "max": 92.0,
+    "mean": 91.27272727272727,
+    "n": 11
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     }
+    ],
+    "status": "PASS"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g0_b1_n1_nograph_002": {
+   "run": "g0_b1_n1_nograph_002",
+   "artifact": "artifacts/rl_ready/p1_1b/g0_b1_n1_nograph_002",
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": false,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1114343060180545,
+    "build_s": 6.022770707961172,
+    "reset_s": 0.11800527898594737,
+    "first_step_s": 1.3933916069800034,
+    "process_to_first_step_s": 8.645601899945177,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 20,
+    "wall_s_total": 4.699937631259672,
+    "step_wall_s_mean": 0.23499688156298362,
+    "step_wall_s_p50": 0.22315153543604538,
+    "step_wall_s_p95": 0.29016192925628276,
+    "env_steps_per_s": 4.255375617535508,
+    "aggregate_sim_time_per_wall": 0.08510751235071017,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16922.0,
+    "utilization_pct": 87.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 85.0,
+    "n": 17
+   },
+   "total_util_pct": {
+    "max": 92.0,
+    "mean": 91.92857142857143,
+    "n": 14
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 682.0,
+   "vram_own_slope_mib_per_s_warm": -6.75603338649972e-14,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     }
+    ],
+    "status": "PASS"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g0_b1_n4_001": {
+   "run": "g0_b1_n4_001",
+   "artifact": "artifacts/rl_ready/p1_1b/g0_b1_n4_001",
+   "probe": "g0",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1651642670622095,
+    "build_s": 4.6600242119748145,
+    "reset_s": 0.06888971000444144,
+    "first_step_s": 1.4680823039961979,
+    "process_to_first_step_s": 7.362160493037663,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 20,
+    "wall_s_total": 0.7257195839192718,
+    "step_wall_s_mean": 0.03628597919596359,
+    "step_wall_s_p50": 0.035640649031847715,
+    "step_wall_s_p95": 0.047880868881475185,
+    "env_steps_per_s": 110.2354156793695,
+    "aggregate_sim_time_per_wall": 2.20470831358739,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16922.0,
+    "utilization_pct": 87.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 90.0,
+    "mean": 86.45454545454545,
+    "n": 11
+   },
+   "total_util_pct": {
+    "max": 93.0,
+    "mean": 90.625,
+    "n": 8
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157,
+       0.010000000707805157
+      ],
+      "contact_substeps": null
+     }
+    ],
+    "status": "PASS"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g0_b2_n1_002": {
+   "run": "g0_b2_n1_002",
+   "artifact": "artifacts/rl_ready/p1_1b/g0_b2_n1_002",
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.0987440240569413,
+    "build_s": 6.585965613950975,
+    "reset_s": 3.8980100069893524,
+    "first_step_s": 0.4556003890465945,
+    "process_to_first_step_s": 12.038320034043863,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true
+   },
+   "warm": {
+    "steps": 20,
+    "wall_s_total": 1.2921652088407427,
+    "step_wall_s_mean": 0.06460826044203713,
+    "step_wall_s_p50": 0.06689847999950871,
+    "step_wall_s_p95": 0.08289753889548593,
+    "env_steps_per_s": 15.47789699270952,
+    "aggregate_sim_time_per_wall": 0.3095579398541904,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8581632,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16821.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 87.70588235294117,
+    "n": 17
+   },
+   "total_util_pct": {
+    "max": 94.0,
+    "mean": 92.28571428571429,
+    "n": 14
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     }
+    ],
+    "status": "PASS"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g0_b2_n1_nograph_002": {
+   "run": "g0_b2_n1_nograph_002",
+   "artifact": "artifacts/rl_ready/p1_1b/g0_b2_n1_nograph_002",
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": false,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1539311320520937,
+    "build_s": 6.152669820934534,
+    "reset_s": 19.740071343025193,
+    "first_step_s": 0.5639131660573184,
+    "process_to_first_step_s": 27.61058546206914,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true
+   },
+   "warm": {
+    "steps": 20,
+    "wall_s_total": 3.799914379022084,
+    "step_wall_s_mean": 0.1899957189511042,
+    "step_wall_s_p50": 0.18636692001018673,
+    "step_wall_s_p95": 0.21134448989178056,
+    "env_steps_per_s": 5.2632764860209935,
+    "aggregate_sim_time_per_wall": 0.10526552972041987,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8581632,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16922.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 92.0,
+    "mean": 86.34285714285714,
+    "n": 35
+   },
+   "total_util_pct": {
+    "max": 93.0,
+    "mean": 91.8125,
+    "n": 32
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 682.0,
+   "vram_own_slope_mib_per_s_warm": 2.0003847563693767e-14,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     }
+    ],
+    "status": "PASS"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g1_det_base_005": {
+   "run": "g1_det_base_005",
+   "artifact": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "run_to_run",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1423098259838298,
+    "build_s": 6.560624787001871,
+    "reset_s": 0.06903560308273882,
+    "first_step_s": 12.771645610919222,
+    "process_to_first_step_s": 20.54361582698766,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 40,
+    "wall_s_total": 20.22049166355282,
+    "step_wall_s_mean": 0.5055122915888205,
+    "step_wall_s_p50": 0.49497065850300714,
+    "step_wall_s_p95": 0.6056182943517342,
+    "env_steps_per_s": 7.912765063393486,
+    "aggregate_sim_time_per_wall": 0.15825530126786974,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16922.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 78.725,
+    "n": 40
+   },
+   "total_util_pct": {
+    "max": 94.0,
+    "mean": 92.72972972972973,
+    "n": 37
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 1448.0,
+   "vram_own_slope_mib_per_s_warm": -4.9178131524423145e-15,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g1_det_base_006": {
+   "run": "g1_det_base_006",
+   "artifact": "artifacts/rl_ready/p1_1b/g1_det_base_006",
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "run_to_run",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1596844650339335,
+    "build_s": 8.479527403018437,
+    "reset_s": 0.11223543097730726,
+    "first_step_s": 14.214105242979713,
+    "process_to_first_step_s": 23.96555254200939,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 40,
+    "wall_s_total": 22.486484973458573,
+    "step_wall_s_mean": 0.5621621243364643,
+    "step_wall_s_p50": 0.5584349635173567,
+    "step_wall_s_p95": 0.6134648156119511,
+    "env_steps_per_s": 7.115385094151108,
+    "aggregate_sim_time_per_wall": 0.14230770188302216,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16922.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 81.1304347826087,
+    "n": 46
+   },
+   "total_util_pct": {
+    "max": 93.0,
+    "mean": 92.44186046511628,
+    "n": 43
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 1448.0,
+   "vram_own_slope_mib_per_s_warm": 2.1281302978226058e-14,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g1_det_perturb_003": {
+   "run": "g1_det_perturb_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g1_det_perturb_003",
+   "probe": "g1",
+   "variant": "perturb",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "run_to_run",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.147424921975471,
+    "build_s": 8.081835368997417,
+    "reset_s": 0.09283315506763756,
+    "first_step_s": 14.034208183991723,
+    "process_to_first_step_s": 23.35630163003225,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 40,
+    "wall_s_total": 17.852872073999606,
+    "step_wall_s_mean": 0.44632180184999015,
+    "step_wall_s_p50": 0.45003328804159537,
+    "step_wall_s_p95": 0.5260848121484741,
+    "env_steps_per_s": 8.962143420778736,
+    "aggregate_sim_time_per_wall": 0.17924286841557474,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16467.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 81.88095238095238,
+    "n": 42
+   },
+   "total_util_pct": {
+    "max": 95.0,
+    "mean": 92.53846153846153,
+    "n": 39
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 1448.0,
+   "vram_own_slope_mib_per_s_warm": -3.2694008004586414e-14,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g1_det_reset_003": {
+   "run": "g1_det_reset_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g1_det_reset_003",
+   "probe": "g1",
+   "variant": "reset",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "run_to_run",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1182849359465763,
+    "build_s": 5.588403356028721,
+    "reset_s": 0.06455289805307984,
+    "first_step_s": 12.223022674908862,
+    "process_to_first_step_s": 18.99426386493724,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 40,
+    "wall_s_total": 12.093875965452753,
+    "step_wall_s_mean": 0.30234689913631885,
+    "step_wall_s_p50": 0.3093603085144423,
+    "step_wall_s_p95": 0.33319844484212807,
+    "env_steps_per_s": 13.229836361564681,
+    "aggregate_sim_time_per_wall": 0.2645967272312936,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577536,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15557.0,
+    "utilization_pct": 93.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 92.0,
+    "mean": 82.06666666666666,
+    "n": 30
+   },
+   "total_util_pct": {
+    "max": 95.0,
+    "mean": 91.77777777777777,
+    "n": 27
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 1448.0,
+   "vram_own_slope_mib_per_s_warm": 5.3368653854888595e-14,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g1_nondet_base_006": {
+   "run": "g1_nondet_base_006",
+   "artifact": "artifacts/rl_ready/p1_1b/g1_nondet_base_006",
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1257327779894695,
+    "build_s": 4.637567342957482,
+    "reset_s": 0.0686507560312748,
+    "first_step_s": 1.4246415860252455,
+    "process_to_first_step_s": 7.2565924630034715,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 40,
+    "wall_s_total": 1.6312533366726711,
+    "step_wall_s_mean": 0.04078133341681678,
+    "step_wall_s_p50": 0.04342531500151381,
+    "step_wall_s_p95": 0.053861762664746494,
+    "env_steps_per_s": 98.08409055969076,
+    "aggregate_sim_time_per_wall": 1.9616818111938155,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15102.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 87.25,
+    "n": 12
+   },
+   "total_util_pct": {
+    "max": 92.0,
+    "mean": 89.55555555555556,
+    "n": 9
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g1_nondet_base_007": {
+   "run": "g1_nondet_base_007",
+   "artifact": "artifacts/rl_ready/p1_1b/g1_nondet_base_007",
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.161973039037548,
+    "build_s": 5.230680588982068,
+    "reset_s": 0.07577092899009585,
+    "first_step_s": 1.5379445160506293,
+    "process_to_first_step_s": 8.006369073060341,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 40,
+    "wall_s_total": 1.8064558330224827,
+    "step_wall_s_mean": 0.04516139582556207,
+    "step_wall_s_p50": 0.04672159004257992,
+    "step_wall_s_p95": 0.05976065534632651,
+    "env_steps_per_s": 88.57122165688104,
+    "aggregate_sim_time_per_wall": 1.771424433137621,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8577024,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15102.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 85.07692307692308,
+    "n": 13
+   },
+   "total_util_pct": {
+    "max": 92.0,
+    "mean": 91.6,
+    "n": 10
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g2_b1_n16_003": {
+   "run": "g2_b1_n16_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g2_b1_n16_003",
+   "probe": "g2",
+   "variant": "base",
+   "N": 16,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.2524649819824845,
+    "build_s": 5.988931086030789,
+    "reset_s": 0.08250335999764502,
+    "first_step_s": 1.6830693139927462,
+    "process_to_first_step_s": 9.006968742003664,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 1200,
+    "wall_s_total": 60.41113210155163,
+    "step_wall_s_mean": 0.05034261008462636,
+    "step_wall_s_p50": 0.04947938147233799,
+    "step_wall_s_p95": 0.0746013241179753,
+    "env_steps_per_s": 317.82221805949,
+    "aggregate_sim_time_per_wall": 6.3564443611898005,
+    "resets": 60,
+    "reset_p95_s": 0.011819208890665317,
+    "torch_max_memory_allocated_bytes": 8589824,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 18040.0,
+    "utilization_pct": 93.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 90.0,
+    "mean": 76.27027027027027,
+    "n": 74
+   },
+   "total_util_pct": {
+    "max": 92.0,
+    "mean": 91.38028169014085,
+    "n": 71
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791,
+    840407,
+    840544
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": -2.3270656223302053e-15,
+   "commit": {
+    "sha": "4fc431e7cbefa7c582dc7e17cd461996e8488e37",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g2_b1_n1_003": {
+   "run": "g2_b1_n1_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g2_b1_n1_003",
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.119068956002593,
+    "build_s": 6.547653260058723,
+    "reset_s": 0.0967374179745093,
+    "first_step_s": 1.667835367959924,
+    "process_to_first_step_s": 9.43129500199575,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 1200,
+    "wall_s_total": 76.75255874765571,
+    "step_wall_s_mean": 0.06396046562304643,
+    "step_wall_s_p50": 0.06287127203540877,
+    "step_wall_s_p95": 0.08742280000005849,
+    "env_steps_per_s": 15.634657913429526,
+    "aggregate_sim_time_per_wall": 0.3126931582685905,
+    "resets": 60,
+    "reset_p95_s": 0.01585869542323053,
+    "torch_max_memory_allocated_bytes": 8577536,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 21152.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 79.17582417582418,
+    "n": 91
+   },
+   "total_util_pct": {
+    "max": 93.0,
+    "mean": 91.35227272727273,
+    "n": 88
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791,
+    840407,
+    840544
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": 2.278314243144377e-15,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g2_b1_n4_003": {
+   "run": "g2_b1_n4_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g2_b1_n4_003",
+   "probe": "g2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1788597319973633,
+    "build_s": 6.334374101017602,
+    "reset_s": 0.1163533009821549,
+    "first_step_s": 1.7621495380299166,
+    "process_to_first_step_s": 9.391736672027037,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 1200,
+    "wall_s_total": 54.04391653020866,
+    "step_wall_s_mean": 0.04503659710850722,
+    "step_wall_s_p50": 0.04227085749153048,
+    "step_wall_s_p95": 0.07179840965545736,
+    "env_steps_per_s": 88.81665704810582,
+    "aggregate_sim_time_per_wall": 1.7763331409621164,
+    "resets": 60,
+    "reset_p95_s": 0.011648533330298961,
+    "torch_max_memory_allocated_bytes": 8577536,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 17768.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 77.0,
+    "n": 67
+   },
+   "total_util_pct": {
+    "max": 93.0,
+    "mean": 91.703125,
+    "n": 64
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791,
+    840407,
+    840544
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": 2.7935955949093215e-15,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g2mat_b1_n1_001": {
+   "run": "g2mat_b1_n1_001",
+   "artifact": "artifacts/rl_ready/p1_1b/g2mat_b1_n1_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal"
+   ],
+   "cold": {
+    "imports_s": 1.165466465987265,
+    "build_s": 7.401589751010761,
+    "reset_s": 0.5014282609336078,
+    "first_step_s": 3.3680060469778255,
+    "process_to_first_step_s": 12.436490524909459,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 1200,
+    "wall_s_total": 831.8696270154323,
+    "step_wall_s_mean": 0.693224689179527,
+    "step_wall_s_p50": 0.7067865529679693,
+    "step_wall_s_p95": 0.9648604646848978,
+    "env_steps_per_s": 1.4425337348898524,
+    "aggregate_sim_time_per_wall": 0.028850674697797046,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 11726336,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 18223.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 93.0,
+    "mean": 70.21108490566037,
+    "n": 848
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 93.71479289940828,
+    "n": 845
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791,
+    840407,
+    840544
+   ],
+   "vram_own_peak_mib": 866.0,
+   "vram_own_slope_mib_per_s_warm": 0.0031555477149698414,
+   "commit": {
+    "sha": "eb7a1f63ecc16b78a57ac5700fa1abe6aa2ec61b",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g2mat_b1_n4_001": {
+   "run": "g2mat_b1_n4_001",
+   "artifact": "artifacts/rl_ready/p1_1b/g2mat_b1_n4_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732,
+    102732,
+    102732,
+    102732
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal"
+   ],
+   "cold": {
+    "imports_s": 1.1386061509838328,
+    "build_s": 3.3566780060064048,
+    "reset_s": 0.5352804280119017,
+    "first_step_s": 2.0357105690054595,
+    "process_to_first_step_s": 7.066275154007599,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 1200,
+    "wall_s_total": 733.6882609614404,
+    "step_wall_s_mean": 0.6114068841345337,
+    "step_wall_s_p50": 0.430286017479375,
+    "step_wall_s_p95": 0.8571508639084641,
+    "env_steps_per_s": 6.542288128898205,
+    "aggregate_sim_time_per_wall": 0.1308457625779641,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 11726336,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 1153.0,
+    "utilization_pct": 2.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 84.0,
+    "mean": 28.541666666666668,
+    "n": 744
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 97.11875843454791,
+    "n": 741
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323
+   ],
+   "vram_own_peak_mib": 1026.0,
+   "vram_own_slope_mib_per_s_warm": 0.004081694673789681,
+   "commit": {
+    "sha": "3c6049a82320f8cec697fd1cd2e5c30b7f9fa5de",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "g2mat_smoke_b1_n1_003": {
+   "run": "g2mat_smoke_b1_n1_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g2mat_smoke_b1_n1_003",
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal"
+   ],
+   "cold": {
+    "imports_s": 1.1501640509814024,
+    "build_s": 5.9947640569880605,
+    "reset_s": 0.4250686609884724,
+    "first_step_s": 2.8148870520526543,
+    "process_to_first_step_s": 10.38488382101059,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": {
+    "steps": 300,
+    "wall_s_total": 211.45256639283616,
+    "step_wall_s_mean": 0.7048418879761206,
+    "step_wall_s_p50": 0.7189266399946064,
+    "step_wall_s_p95": 0.8553833406302147,
+    "env_steps_per_s": 1.4187579045158554,
+    "aggregate_sim_time_per_wall": 0.028375158090317106,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 9422336,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16662.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 93.0,
+    "mean": 68.96444444444444,
+    "n": 225
+   },
+   "total_util_pct": {
+    "max": 96.0,
+    "mean": 93.54504504504504,
+    "n": 222
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791,
+    812033
+   ],
+   "vram_own_peak_mib": 864.0,
+   "vram_own_slope_mib_per_s_warm": 1.7290546161653749e-15,
+   "commit": {
+    "sha": "359ce0d84862706492bf9aa0676aaf07dc99d0b9",
+    "tracked_src_or_scripts_modified": true,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "t2_b1_n4_003": {
+   "run": "t2_b1_n4_003",
+   "artifact": "artifacts/rl_ready/p1_1b/t2_b1_n4_003",
+   "probe": "t2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal",
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.0988316820003092,
+    "build_s": 4.435949736041948,
+    "reset_s": 0.06149721902329475,
+    "first_step_s": 1.3942009159363806,
+    "process_to_first_step_s": 6.990479553001933,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false
+   },
+   "warm": null,
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16641.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 91.0,
+    "mean": 88.54545454545455,
+    "n": 11
+   },
+   "total_util_pct": {
+    "max": 93.0,
+    "mean": 90.0,
+    "n": 8
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "t2": {
+    "steps": 20,
+    "warp_reads_and_syncs": {
+     "wp.array.numpy@lab_batched_env.py:364:check_valid": 20
+    },
+    "torch_syncs": {},
+    "strict_reads": 20,
+    "expected_strict_reads": 20,
+    "other_syncs": {},
+    "wall_s": 0.6422402150928974,
+    "status": "PASS"
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  },
+  "t2_b2_n4_003": {
+   "run": "t2_b2_n4_003",
+   "artifact": "artifacts/rl_ready/p1_1b/t2_b2_n4_003",
+   "probe": "t2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.220546371070668,
+    "build_s": 4.354397227987647,
+    "reset_s": 2.4926573280245066,
+    "first_step_s": 0.3370419059647247,
+    "process_to_first_step_s": 8.404642833047546,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true
+   },
+   "warm": null,
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 16922.0,
+    "utilization_pct": 86.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 93.0,
+    "mean": 88.75,
+    "n": 12
+   },
+   "total_util_pct": {
+    "max": 95.0,
+    "mean": 90.44444444444444,
+    "n": 9
+   },
+   "foreign_compute_pids": [
+    642659,
+    784440,
+    784474,
+    784510,
+    784571,
+    784945,
+    785001,
+    785151,
+    785203,
+    787791
+   ],
+   "vram_own_peak_mib": 706.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "0b9e695b55c74f00da807310c02742a78b57d2e6",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+   },
+   "t2": {
+    "steps": 20,
+    "warp_reads_and_syncs": {
+     "wp.array.numpy@lab_batched_env.py:364:check_valid": 20
+    },
+    "torch_syncs": {},
+    "strict_reads": 20,
+    "expected_strict_reads": 20,
+    "other_syncs": {},
+    "wall_s": 0.6835617410251871,
+    "status": "PASS"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "authoritative": true,
+   "workload_b_sources_sha256": "97acf256016465a5fac50ec54ab272fa238e0e09f50d24e081279760e218afcb"
+  }
+ },
+ "superseded_rows": {
+  "g0_b1_n1_001": {
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "9bf4d210dfb3e83af33b77e47f6a4f5b45440564",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g0_b1_n1_nograph_001": {
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "9bf4d210dfb3e83af33b77e47f6a4f5b45440564",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g0_b2_n1_001": {
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "physical_grasp_v1",
+   "commit": {
+    "sha": "9bf4d210dfb3e83af33b77e47f6a4f5b45440564",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g0_b2_n1_nograph_001": {
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "physical_grasp_v1",
+   "commit": {
+    "sha": "9bf4d210dfb3e83af33b77e47f6a4f5b45440564",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_base_001": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "d5ede1bcad6a87acd93dc98cbb21c3b315c90a7a",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_base_002": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "8535ef4ece42b41f55a1e723ab023f3b1e40c521",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_base_003": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_base_004": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_perturb_001": {
+   "probe": "g1",
+   "variant": "perturb",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "e8ed5febec70c0f37c6a14162af350b1005f0084",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_perturb_002": {
+   "probe": "g1",
+   "variant": "perturb",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_reset_001": {
+   "probe": "g1",
+   "variant": "reset",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "e8ed5febec70c0f37c6a14162af350b1005f0084",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_det_reset_002": {
+   "probe": "g1",
+   "variant": "reset",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_nondet_base_001": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "e8ed5febec70c0f37c6a14162af350b1005f0084",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_nondet_base_002": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "e8ed5febec70c0f37c6a14162af350b1005f0084",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_nondet_base_003": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_nondet_base_004": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g1_nondet_base_005": {
+   "probe": "g1",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2_b1_n16_001": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 16,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2_b1_n16_002": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 16,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2_b1_n1_001": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2_b1_n1_002": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2_b1_n4_001": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2_b1_n4_002": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "b731416f6568d5b396f34199f9b9f256fdb4ba0f",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16"
+   },
+   "workload_b_sources_sha256": "d07c0328e4c66906d525161a1cd1b09b4947b471d86e8494c859eb34af314d16",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2mat_smoke_b1_n1_001": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "251c2364e6c9d5d1994a4bac790cdaaf44f6a7ef",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "9f1d9714207f484e039090ca172e3c65c4a306c10c2ba3440a44fd7969905725"
+   },
+   "workload_b_sources_sha256": "9f1d9714207f484e039090ca172e3c65c4a306c10c2ba3440a44fd7969905725",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "g2mat_smoke_b1_n1_002": {
+   "probe": "g2",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "ddfe2c729667d3a5226eff4637133959972e4ac7",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "00f4e2f98888d261b0974eb6194df163d608be74e794f1c6999dd62e1882deac"
+   },
+   "workload_b_sources_sha256": "00f4e2f98888d261b0974eb6194df163d608be74e794f1c6999dd62e1882deac",
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "t2_b1_n4_001": {
+   "probe": "t2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "9bf4d210dfb3e83af33b77e47f6a4f5b45440564",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "t2_b1_n4_002": {
+   "probe": "t2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "commit": {
+    "sha": "61c417486c6a172990f34e7267928bce74db5337",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "t2_b2_n4_001": {
+   "probe": "t2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "physical_grasp_v1",
+   "commit": {
+    "sha": "9bf4d210dfb3e83af33b77e47f6a4f5b45440564",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  },
+  "t2_b2_n4_002": {
+   "probe": "t2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "physical_grasp_v1",
+   "commit": {
+    "sha": "61c417486c6a172990f34e7267928bce74db5337",
+    "src_or_scripts_dirty": true
+   },
+   "workload_b_sources_sha256": null,
+   "gpu_sharing": "SHARED_GPU"
+  }
+ },
+ "superseded_reason": "earlier source states: legacy 1.8 x 1.2 m table (before 359ce0d), T2 host-sync fix, preliminary G1 runs spanning several source states; raw outputs kept",
+ "comparisons": {
+  "compare_g0_b1_graph_vs_eager_002": {
+   "reference": "artifacts/rl_ready/p1_1b/g0_b1_n1_002",
+   "runs": {
+    "artifacts/rl_ready/p1_1b/g0_b1_n1_nograph_002": {
+     "steps": 20,
+     "worlds": {
+      "0": {
+       "bitwise": false,
+       "max_abs_joint_q": 1.5755639848347158e-11,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": 0
+      }
+     }
+    }
+   }
+  },
+  "compare_g0_b2_graph_vs_eager_002": {
+   "reference": "artifacts/rl_ready/p1_1b/g0_b2_n1_002",
+   "runs": {
+    "artifacts/rl_ready/p1_1b/g0_b2_n1_nograph_002": {
+     "steps": 20,
+     "worlds": {
+      "0": {
+       "bitwise": false,
+       "max_abs_joint_q": 5.029141902923584e-08,
+       "max_abs_body_q": 5.029141902923584e-08,
+       "first_differing_step": 0
+      }
+     }
+    }
+   }
+  },
+  "compare_g1_det_perturb_002": {
+   "reference": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+   "runs": {
+    "artifacts/rl_ready/p1_1b/g1_det_perturb_003": {
+     "steps": 40,
+     "worlds": {
+      "0": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "1": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "2": {
+       "bitwise": false,
+       "max_abs_joint_q": 0.08044815063476562,
+       "max_abs_body_q": 0.05142366886138916,
+       "first_differing_step": 0
+      },
+      "3": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      }
+     }
+    }
+   }
+  },
+  "compare_g1_det_reset_002": {
+   "reference": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+   "runs": {
+    "artifacts/rl_ready/p1_1b/g1_det_reset_003": {
+     "steps": 40,
+     "worlds": {
+      "0": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "1": {
+       "bitwise": false,
+       "max_abs_joint_q": 0.015784919261932373,
+       "max_abs_body_q": 0.0078102946281433105,
+       "first_differing_step": 29
+      },
+      "2": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "3": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      }
+     }
+    }
+   }
+  },
+  "compare_g1_det_run_to_run_002": {
+   "reference": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+   "runs": {
+    "artifacts/rl_ready/p1_1b/g1_det_base_006": {
+     "steps": 40,
+     "worlds": {
+      "0": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "1": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "2": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      },
+      "3": {
+       "bitwise": true,
+       "max_abs_joint_q": 0.0,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": null
+      }
+     }
+    }
+   }
+  },
+  "compare_g1_nondet_run_to_run_002": {
+   "reference": "artifacts/rl_ready/p1_1b/g1_nondet_base_006",
+   "runs": {
+    "artifacts/rl_ready/p1_1b/g1_nondet_base_007": {
+     "steps": 40,
+     "worlds": {
+      "0": {
+       "bitwise": false,
+       "max_abs_joint_q": 4.76837158203125e-07,
+       "max_abs_body_q": 2.637971192598343e-07,
+       "first_differing_step": 0
+      },
+      "1": {
+       "bitwise": false,
+       "max_abs_joint_q": 3.857553165786953e-11,
+       "max_abs_body_q": 0.0,
+       "first_differing_step": 0
+      },
+      "2": {
+       "bitwise": false,
+       "max_abs_joint_q": 4.76837158203125e-07,
+       "max_abs_body_q": 2.637971192598343e-07,
+       "first_differing_step": 0
+      },
+      "3": {
+       "bitwise": false,
+       "max_abs_joint_q": 9.5367431640625e-07,
+       "max_abs_body_q": 4.6461354941129684e-07,
+       "first_differing_step": 0
+      }
+     }
+    }
+   }
+  }
+ },
+ "gates": {
+  "G0_graph_safety": {
+   "g0_b1_n1_002": "PASS",
+   "g0_b1_n1_nograph_002": "PASS",
+   "g0_b1_n4_001": "PASS",
+   "g0_b2_n1_002": "PASS",
+   "g0_b2_n1_nograph_002": "PASS"
+  },
+  "T2_host_syncs": {
+   "t2_b1_n4_003": "PASS",
+   "t2_b2_n4_003": "PASS"
+  },
+  "G1": {
+   "compare_g1_det_perturb_002": {
+    "reference": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+    "runs": {
+     "artifacts/rl_ready/p1_1b/g1_det_perturb_003": {
+      "steps": 40,
+      "worlds": {
+       "0": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "1": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "2": {
+        "bitwise": false,
+        "max_abs_joint_q": 0.08044815063476562,
+        "max_abs_body_q": 0.05142366886138916,
+        "first_differing_step": 0
+       },
+       "3": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       }
+      }
+     }
+    }
+   },
+   "compare_g1_det_reset_002": {
+    "reference": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+    "runs": {
+     "artifacts/rl_ready/p1_1b/g1_det_reset_003": {
+      "steps": 40,
+      "worlds": {
+       "0": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "1": {
+        "bitwise": false,
+        "max_abs_joint_q": 0.015784919261932373,
+        "max_abs_body_q": 0.0078102946281433105,
+        "first_differing_step": 29
+       },
+       "2": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "3": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       }
+      }
+     }
+    }
+   },
+   "compare_g1_det_run_to_run_002": {
+    "reference": "artifacts/rl_ready/p1_1b/g1_det_base_005",
+    "runs": {
+     "artifacts/rl_ready/p1_1b/g1_det_base_006": {
+      "steps": 40,
+      "worlds": {
+       "0": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "1": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "2": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       },
+       "3": {
+        "bitwise": true,
+        "max_abs_joint_q": 0.0,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": null
+       }
+      }
+     }
+    }
+   },
+   "compare_g1_nondet_run_to_run_002": {
+    "reference": "artifacts/rl_ready/p1_1b/g1_nondet_base_006",
+    "runs": {
+     "artifacts/rl_ready/p1_1b/g1_nondet_base_007": {
+      "steps": 40,
+      "worlds": {
+       "0": {
+        "bitwise": false,
+        "max_abs_joint_q": 4.76837158203125e-07,
+        "max_abs_body_q": 2.637971192598343e-07,
+        "first_differing_step": 0
+       },
+       "1": {
+        "bitwise": false,
+        "max_abs_joint_q": 3.857553165786953e-11,
+        "max_abs_body_q": 0.0,
+        "first_differing_step": 0
+       },
+       "2": {
+        "bitwise": false,
+        "max_abs_joint_q": 4.76837158203125e-07,
+        "max_abs_body_q": 2.637971192598343e-07,
+        "first_differing_step": 0
+       },
+       "3": {
+        "bitwise": false,
+        "max_abs_joint_q": 9.5367431640625e-07,
+        "max_abs_body_q": 4.6461354941129684e-07,
+        "first_differing_step": 0
+       }
+      }
+     }
+    }
+   }
+  },
+  "G2_rows": [
+   "g2_b1_n16_003",
+   "g2_b1_n1_003",
+   "g2_b1_n4_003",
+   "g2mat_b1_n1_001",
+   "g2mat_b1_n4_001",
+   "g2mat_smoke_b1_n1_003"
+  ]
+ },
+ "not_run": [
+  "G3 (B2 restore vs fresh settle)",
+  "G4 (batched N=1 B2 vs single Lab env)",
+  "G5 (material parity)",
+  "G2 with material (until the robot-only gates pass and coupling lands)"
+ ],
+ "material_results": "NONE (robot-only rows)"
+}
