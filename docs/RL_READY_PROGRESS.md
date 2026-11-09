@@ -17,7 +17,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      recorded commands, frozen evaluator) + reward/evaluator wiring, GPU0/GPU1 under their locks.
   3. P1-3a `alias_free_v1` contact mode in a separate worktree `/home/ningan/RoboticCuttingSim-rl-p13`
      (branch `claude/rl-p1-3a`, merged back after M2) — design: [P1_3_BOTTLENECK_ANALYSIS.md](reports/rl_ready/P1_3_BOTTLENECK_ANALYSIS.md).
-  4. P1-6 design (RSI worktree `/home/ningan/rsi_v2_wt/rcs-rl`, branch `exp/rcs-rl-ready`, CPU only):
+  4. P1-6 design in the external agentic optimizer repository (its own worktree and branch, CPU only):
      thin performance-worktree / proposal / benchmark / PR adapter, GPU lock policy, descriptor + sync receipt format.
 - Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
 - Next: P1-1/P1-2 acceptance review → merge P1-3a → P1-1b with material → P1-4 long rollout → P1-5 parity matrix → P1-6.
