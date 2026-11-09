@@ -109,3 +109,31 @@ def compare_snapshots(a, b):
         elif not np.array_equal(a[name], b[name]):
             bad.append(name)
     return bad
+
+
+# ----------------------------------------------------------------------------- BatchedCuttingMaterial helpers
+
+MATERIAL_ENV_ARRAYS = ("pending_wrench", "applied_previous", "pad_wrench", "step_count", "seed", "last_pose",
+                       "measured_pose", "cut_input", "pose_status", "invalid_reason")
+
+
+def batch_material(configs, **options):
+    """BatchedCuttingMaterial (Warp CPU, parity mode) over [(seed, material overrides, reset seed)]."""
+    from robotic_cutting_sim.batched import layout
+    from robotic_cutting_sim.batched.material_batch import BatchedCuttingMaterial
+    specs = [layout.EnvSpec(trim_material(seed, material=material), start_pose(seed), reset_seed)
+             for seed, material, reset_seed in configs]
+    return BatchedCuttingMaterial(specs, device="cpu", parity_mode=True, **options)
+
+
+def env_state(material, e):
+    """Solver snapshot of env e plus that env's rows of every per-env material array (host copies)."""
+    state = material.snapshot(e)
+    for name in MATERIAL_ENV_ARRAYS:
+        state[f"material.{name}"] = getattr(material, name).numpy()[e].copy()
+    return state
+
+
+def step_material(material, poses, cuts):
+    """One control step through the frozen SciPy interpolation (L0 input path)."""
+    material.advance(np.asarray(poses, np.float64), np.asarray(cuts, np.int32), interpolation="host_reference")
