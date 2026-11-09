@@ -178,11 +178,23 @@ def rigid_scene_key(task):
     home = getattr(task, "home", None) or {}
     boxes = tuple((b.name, tuple(map(float, b.center_m)), tuple(map(float, b.half_extents_m)), b.role)
                   for b in task.fixture_boxes_local)
-    return {"table_top_world_z_m": float(task.table_top_world_z_m), "fixture_boxes_local": boxes,
+    return {"table_top_world_z_m": float(task.table_top_world_z_m), "table_box": table_box(task),
+            "fixture_boxes_local": boxes,
             "world_from_workpiece_xyzw": tuple(map(float, task.world_from_workpiece_xyzw)),
             "hand_from_edge_xyz_xyzw": tuple(map(float, task.hand_from_edge_xyz_xyzw)),
             "home_joint_positions": tuple(map(float, home.get("joint_positions", ()))),
             "home_finger_position_m": float(home.get("finger_position_m", np.nan)) if home else None}
+
+
+def table_box(task):
+    """(center, half extents) of the static table, as the Native runtime places it (``isaac_sim_runner.py:956-966``):
+    the task's ``table_box_world`` when it declares one (WP-12 flat-board workcell), else the legacy 1.8 x 1.2 x
+    0.05 m table under ``table_top_world_z_m`` (``isaac_lab_env.make_lab_cfg``)."""
+    box = getattr(task, "table_box_world", None)
+    if box is not None:
+        center, half = (tuple(map(float, v)) for v in box)
+        return center, half
+    return (0., 0., float(task.table_top_world_z_m)-.025), (.9, .6, .025)
 
 
 def check_uniform_rigid_scene(tasks):
@@ -510,7 +522,7 @@ def make_batched_lab_cfg(options, task):
 
     @configclass
     class BatchedCuttingSceneCfg(InteractiveSceneCfg):
-        table = fixed_box("Table", (0., 0., task.table_top_world_z_m-.025), (1.8, 1.2, .05))
+        table = fixed_box("Table", table_box(task)[0], 2*np.asarray(table_box(task)[1]))
         franka_0 = robot(0)
         franka_1 = robot(1)
 
@@ -651,8 +663,8 @@ def build_newton_rigid_scene(task, num_envs, tool_mount="rigid_mount_v1", *, dev
         builder = newton.ModelBuilder()
         builder.rigid_gap = .001
         SolverMuJoCo.register_custom_attributes(builder)
-        table_z = float(task.table_top_world_z_m)-.025
-        builder.add_shape_box(-1, xform=wp.transform(wp.vec3(0., 0., table_z)), hx=.9, hy=.6, hz=.025,
+        center, half = table_box(task)
+        builder.add_shape_box(-1, xform=wp.transform(wp.vec3(*center)), hx=half[0], hy=half[1], hz=half[2],
                               label=f"{WORKCELL_ROOT}/Table")
         rotation = np.asarray(task.world_from_workpiece_xyzw[3:], float)
         for index, box in enumerate(task.fixture_boxes_local):
