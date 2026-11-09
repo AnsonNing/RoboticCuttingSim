@@ -243,6 +243,7 @@ def main():
             row["material_graph_recaptured_newton"] = env.material_graph_recaptured
         driver = ReferenceDriver(task, env, device) if args.driver == "reference" else None
         wrench_max = torch.zeros(args.num_envs, dtype=torch.float64, device=device)
+        trace = {"target": [], "edge": [], "commanded": [], "status": [], "force": []}
         armed_steps = torch.zeros(args.num_envs, dtype=torch.int64, device=device)
         if env.grasp_initialization:
             row["grasp_initialization"] = {k: v for k, v in env.grasp_initialization.items() if k != "accumulators"}
@@ -316,11 +317,19 @@ def main():
                 if driver is not None:
                     action, cut = driver()
                     armed_steps += cut.to(torch.int64)
+                    trace["target"].append(driver.target[torch.clamp(env.episode_length_buf.to(torch.long),
+                                                                     max=driver.T-1)].clone())
                 else:
                     action = _actions(args.num_envs, step, device, perturb)
                 env.step(action)
                 if args.material:
                     wrench_max = torch.maximum(wrench_max, wp.to_torch(env.coupling.pending_wrench)[:, :3].norm(dim=1))
+                if driver is not None:
+                    trace["edge"].append(wp.to_torch(env.frames.measured_edge).clone())
+                    trace["commanded"].append(env.commanded.clone())
+                    trace["status"].append(env.action_status.clone())
+                    if args.material:
+                        trace["force"].append(wp.to_torch(env.coupling.pending_wrench).clone())
                 torch.cuda.synchronize()
                 walls.append(time.perf_counter()-t0)
                 if args.probe == "g0":
@@ -357,6 +366,8 @@ def main():
                                           contact_ok, "per_step": graph_checks[:5],
                                           "status": "PASS" if worst < 1e-6 and contact_ok and
                                           (row["graph_captured"] or args.no_graph) else "FAIL"}
+        if trace["edge"]:
+            np.savez_compressed(out/"trace.npz", **{k: torch.stack(v).cpu().numpy() for k, v in trace.items() if v})
         if states["joint_q"]:
             np.savez_compressed(out/"states.npz", **{k: np.asarray(v) for k, v in states.items()},
                                 body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
