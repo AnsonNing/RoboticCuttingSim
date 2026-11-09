@@ -1,0 +1,198 @@
+{
+ "command": "python scripts/rl_ready/inventory.py --out docs/evidence/rl_ready/p1_0_inventory_001.json",
+ "created_unix_s": 1794246162.216581,
+ "created_utc": "2026-11-09T17:42:42Z",
+ "decision_d08_runtime": ".deps/isaacsim-venv/bin/python with PYTHONPATH=src and no Kit application for headless GPU material runs",
+ "disk": {
+  "/": {
+   "free_gib": 83.9,
+   "total_gib": 915.3,
+   "used_percent": 85.7
+  },
+  "/mnt/data": {
+   "free_gib": 41.4,
+   "total_gib": 915.8,
+   "used_percent": 90.4
+  }
+ },
+ "git": {
+  "branch": "claude/rl-ready-rubber-physics",
+  "dirty": false,
+  "dirty_paths": [],
+  "head": "588c17aac25cc2705717ed311366b24d2d60d285"
+ },
+ "gpu": {
+  "gpus": [
+   {
+    "driver": "570.211.01",
+    "foreign_compute_memory_mib": 13762.0,
+    "foreign_compute_processes": 2,
+    "index": 0,
+    "memory_total_mib": 32607.0,
+    "memory_used_mib": 14180.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "util_pct": 95.0
+   },
+   {
+    "driver": "570.211.01",
+    "foreign_compute_memory_mib": 0,
+    "foreign_compute_processes": 0,
+    "index": 1,
+    "memory_total_mib": 32607.0,
+    "memory_used_mib": 3697.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "util_pct": 15.0
+   }
+  ],
+  "note": "Snapshot at inventory time; GPU sharing per benchmark row comes from the run's own telemetry",
+  "nvidia_smi_version": [
+   "NVIDIA-SMI version  : 570.211.01",
+   "NVML version        : 570.211",
+   "DRIVER version      : 570.211.01",
+   "CUDA Version        : 12.8"
+  ],
+  "status": "OK"
+ },
+ "host": {
+  "cpu_count": 64,
+  "machine": "x86_64",
+  "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35"
+ },
+ "kit_started": false,
+ "ram": {
+  "MemAvailable_gib": 21.84,
+  "MemTotal_gib": 62.14,
+  "SwapFree_gib": 0.0,
+  "SwapTotal_gib": 2.0
+ },
+ "runtimes": [
+  {
+   "distributions": {
+    "isaaclab": null,
+    "isaacsim": null,
+    "mujoco": "3.12.0",
+    "mujoco-warp": "3.12.0",
+    "newton": "1.6.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "torch": null,
+    "warp-lang": "1.17.0"
+   },
+   "exit_code": 0,
+   "imports": {
+    "mujoco_warp": {
+     "ok": true,
+     "version": "3.12.0"
+    },
+    "newton": {
+     "ok": true,
+     "version": "1.6.1"
+    },
+    "numpy": {
+     "ok": true,
+     "version": "2.5.4"
+    },
+    "torch": {
+     "error": "ModuleNotFoundError: No module named 'torch'",
+     "ok": false
+    },
+    "warp": {
+     "ok": true,
+     "version": "1.17.0"
+    }
+   },
+   "interpreter": ".venv/bin/python",
+   "label": ".venv",
+   "probe_wall_s": 3.815278652939014,
+   "python": "3.12.12",
+   "status": "OK"
+  },
+  {
+   "distributions": {
+    "isaaclab": null,
+    "isaacsim": "6.2.0.0",
+    "mujoco": "3.12.0",
+    "mujoco-warp": "3.12.0",
+    "newton": "1.6.1",
+    "numpy": "2.3.1",
+    "scipy": "1.17.0",
+    "torch": "2.11.0+cu128",
+    "warp-lang": "1.17.0"
+   },
+   "exit_code": 0,
+   "imports": {
+    "mujoco_warp": {
+     "ok": true,
+     "version": "3.12.0"
+    },
+    "newton": {
+     "ok": true,
+     "version": "1.6.1"
+    },
+    "numpy": {
+     "ok": true,
+     "version": "2.3.1"
+    },
+    "torch": {
+     "cuda": "12.8",
+     "cuda_available": true,
+     "ok": true,
+     "version": "2.11.0+cu128"
+    },
+    "warp": {
+     "ok": true,
+     "version": "1.17.0"
+    }
+   },
+   "interpreter": ".deps/isaacsim-venv/bin/python",
+   "label": ".deps/isaacsim-venv",
+   "probe_wall_s": 4.939129891106859,
+   "python": "3.12.12",
+   "status": "OK"
+  },
+  {
+   "distributions": {
+    "isaaclab": "28.0.0",
+    "isaacsim": null,
+    "mujoco": "3.12.0",
+    "mujoco-warp": "3.12.0",
+    "newton": "1.6.1",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "torch": "2.11.0+cu128",
+    "warp-lang": "1.17.0"
+   },
+   "exit_code": 0,
+   "imports": {
+    "mujoco_warp": {
+     "ok": true,
+     "version": "3.12.0"
+    },
+    "newton": {
+     "ok": true,
+     "version": "1.6.1"
+    },
+    "numpy": {
+     "ok": true,
+     "version": "2.5.2"
+    },
+    "torch": {
+     "cuda": "12.8",
+     "cuda_available": true,
+     "ok": true,
+     "version": "2.11.0+cu128"
+    },
+    "warp": {
+     "ok": true,
+     "version": "1.17.0"
+    }
+   },
+   "interpreter": ".deps/isaaclab-venv/bin/python",
+   "label": ".deps/isaaclab-venv",
+   "probe_wall_s": 4.890192801016383,
+   "python": "3.12.12",
+   "status": "OK"
+  }
+ ],
+ "schema": "rcs_rl_inventory_v1"
+}
