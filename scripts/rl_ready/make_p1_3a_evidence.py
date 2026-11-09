@@ -135,7 +135,8 @@ def nsys_summary(directory, substeps=600):
         out[label] = dict(kernel_total_ns=total, substeps=substeps, stage_split_us_per_substep=split,
                           all_kernels_us_per_substep={s: sum(g[s] for g in split.values())
                                                       for s in ("median_us", "min_us", "total_us")},
-                          top_kernels=dict(sorted(kernels.items(), key=lambda kv: -kv[1]["total_ns"])[:15]))
+                          top_kernels={k[:80]: v for k, v in sorted(kernels.items(),
+                                                                    key=lambda kv: -kv[1]["total_ns"])[:8]})
     return dict(status="MEASURED" if out else "NOT_RUN", run=f"rl_ready/p1_3/{directory}", reports=out,
                 scope="nsys --cuda-graph-trace=node, one process per (N, variant), 3 profiled control steps = 600 "
                       "substeps after 3 warm-up steps; SHARED_GPU: durations include time-slice preemption")
@@ -148,6 +149,9 @@ def main():
     parser.add_argument("--episode", nargs="*", default=[])
     parser.add_argument("--nsys", nargs="*", default=[])
     parser.add_argument("--failed", nargs="*", default=[])
+    parser.add_argument("--invalid", nargs="*", default=[],
+                        help="runs invalidated by the Warp HashGrid static-descriptor hazard (kept, summarised, no rows)")
+    parser.add_argument("--probe", nargs="*", default=[], help="hashgrid_descriptor_probe_NNN directories")
     parser.add_argument("--extra", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
@@ -157,10 +161,12 @@ def main():
         evidence["runs"][run] = {k: d.get(k) for k in (
             "status", "error", "seed", "sample", "time_s", "copies", "checks", "frozen_vs_alias_free",
             "frozen_vs_frozen_rerun", "alias_free_vs_alias_free_rerun", "frozen_vs_forced_fallback",
-            "after_graph_replays_frozen_vs_alias_free", "after_graph_replays_frozen_vs_forced_fallback",
             "copies_identical_alias_free", "speed_m_s_max", "guard_violations", "forced_fallback_guard_violations",
-            "stage_graph_ms", "stage_graph_scope", "stage_eager_activity_ms", "alias_free_receipt", "wall_s",
-            "clocks", "stage_compare_after", "variants", "repeats")}
+            "wall_s", "clocks", "stage_compare_after", "variants", "repeats")}
+        if "stage_graph_ms" in d:
+            evidence["runs"][run]["excluded"] = ("stage_graph_ms, after_graph_replays_* and stage_eager_activity_ms "
+                                                 "omitted: three grids in one process (Warp static-descriptor hazard) "
+                                                 "and CUPTI eager durations inflated by co-tenant preemption")
         evidence["runs"][run]["telemetry"] = short_telemetry(d.get("telemetry_run_phase") or d["telemetry"])
     for run in args.ab:
         d = load(run)
@@ -184,6 +190,18 @@ def main():
         evidence["runs"][run]["telemetry"] = short_telemetry(d.get("telemetry_run_phase") or d["telemetry"])
         if d["status"] == "COMPLETE":
             rows += episode_rows(d)
+    for run in args.invalid:
+        d = load(run)
+        summary = dict(status=d["status"], invalid="INVALID: multi-grid same-process run, Warp HashGrid static-descriptor "
+                       "hazard (graphs replay the last host-built grid's descriptor); preserved, not used",
+                       variants=d.get("variants"), num_envs=d.get("num_envs"))
+        if "step_wall_s" in d:
+            summary["step_wall_s_median"] = {k: v["median"] for k, v in d["step_wall_s"].items()}
+        if "timing" in d:
+            summary["warm_step_median_s"] = {k: v["warm_step_median_s"] for k, v in d["timing"].items()}
+        evidence["runs"][run] = summary
+    for run in args.probe:
+        evidence["runs"][run] = json.loads((P13 / run / "result.json").read_text())
     for run in args.failed:
         d = json.loads((P13 / run / "result.json").read_text())
         evidence["runs"][run] = dict(status=d["status"], error=(d.get("error") or "")[-1200:], preserved=True)

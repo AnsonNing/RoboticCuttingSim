@@ -8,15 +8,15 @@ Evidence: [`docs/evidence/rl_ready/p1_3a_001.json`](../../evidence/rl_ready/p1_3
 | Item | Status |
 | --- | --- |
 | Opt-in `alias_free_v1` (C1, C2, per-env speed guard with exact frozen fallback), default `frozen_v1` unchanged, receipts | DONE |
-| CPU L0 bitwise vs frozen singles (15 new tests; batched + WP-17 + naming suite __CPU_COUNT__) | **PASS** |
+| CPU L0 bitwise vs frozen singles (15 new tests; batched + WP-17 + naming suite 219 passed in 452.10 s) | **PASS** |
 | GPU same-state check s512 k=33 / s15 k=43, incl. forced fallback (eager) | **PASS** |
 | First GPU fallback design (`wp.HashGrid` rebuilt inside a conditional graph node) | FAIL (preserved) → replaced by `FallbackGrid`, PASS |
 | **Warp 1.17.0 HashGrid static-descriptor hazard** (found here; the mechanism behind the P1-1 rule "never build a batch after a single LiveCuttingMaterial in one process") | CONFIRMED by probe; every multi-grid same-process A/B of this package is INVALID and was re-run one variant per process; `alias_free_v1` hardened |
 | Contact stage alone (graph replay, own descriptor restored), 1 / 16 copies | −51 % / −49 % (SHARED) |
 | Kernel split, nsys graph-node trace, N=1/16, all sub-flags | contact kernel −68 % / −50 %; all kernels −35 % / −29 % (SHARED) |
 | End-to-end control-step wall, one variant per process, N=1/4/8/16 | **1.40–1.45× faster** (SHARED, 2 reps at N=1/16) |
-| Full episodes, alias_free_v1: N=1 s512, N=1 s15, N=4 (s512, s15, s512, s15)__HARDENED_EP_STATUS__ | final codes = Native, labels = Native, frozen evaluator PASS (2 and 121 frames), L2 PASS, 0 guard violations: **PASS** |
-| L3 position band vs Native (P1-0 single-env band) | s512 inside everywhere; s15 **outside** in __S15_OUT__ — the unchanged frozen batched path (P1-2 `m0_s15_001`) is outside too |
+| Full episodes, alias_free_v1: N=1 s512, N=1 s15, N=4 (s512, s15, s512, s15); hardened code again N=1 s512 and s15 | final codes = Native, labels = Native, frozen evaluator PASS (2 and 121 frames), L2 PASS, 0 guard violations: **PASS** |
+| L3 position band vs Native (P1-0 single-env band) | s512 inside everywhere; s15 **outside** in 3 of 4 s15 envs (max over time) — the unchanged frozen batched path (P1-2 `m0_s15_001`) is outside too |
 | EXCLUSIVE_GPU timing, RUN_TO_RUN determinism, C3 | NOT_RUN |
 
 ## 1. What changed
@@ -79,7 +79,7 @@ particle_contact_options=)`.
 ```bash
 CUDA_VISIBLE_DEVICES='' TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -p no:cacheprovider -q \
     tests/test_batched_*.py tests/test_wp17_frontier.py tests/test_repo_naming.py
-# __CPU_COUNT__   (baseline at 4fc431e: 204 passed in 347.46 s)
+# 219 passed in 452.10 s   (baseline at 4fc431e: 204 passed in 347.46 s)
 CUDA_VISIBLE_DEVICES='' TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src \
     .deps/isaacsim-venv/bin/python -m pytest -p no:cacheprovider -q tests/test_vector_env_api.py \
     tests/test_rl_policies_batched.py tests/test_rl_replay.py
@@ -111,7 +111,7 @@ Scripts: `scripts/rl_ready/run_p1_3a.py`, `scripts/rl_ready/probe_hashgrid_descr
 2024.6.2. Each job under `flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock`, `CUDA_VISIBLE_DEVICES=<N>
 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src`; GPU 0 for `samestate_*`, `ab_*`, `episode_512_001`, `episode_15_001`,
 `episode_512_15_512_15_001`, `nsys_001`, `profile_*_001` (except the sub-flag ones); GPU 1 for everything else.
-**Every GPU row is `SHARED_GPU`** (≥ 1 foreign compute process always present; foreign SM mean 23–62 %, max 45–99 %
+**Every GPU row is `SHARED_GPU`** (≥ 1 foreign compute process always present; foreign SM mean 23–96 %, max 45–99 %
 depending on the window). Workload A: seeded TRIM s512/s15 (WP-17 configuration), 102,732 / 103,898 particles per
 env, 1 mm / 4 mm / 0.1 ms, 200 substeps per 50 Hz control step, tlmpm_v7_2 law 8, handle + two measured pads, no
 cameras, no recording, `reduced_fidelity` (ideal edge tracking), warm.
@@ -146,7 +146,7 @@ Consequences:
   `episode_512_15_512_15_001`, `hardened_*`), the eager same-state checks and `stagebench_*_002` (each replay is
   preceded by a host rebuild of that env's own grid, outside the clocks).
 - alias_free_v1 is hardened (single grid + host rebuild before each graph launch, §1). `hardened_pair_n16_001` (alias
-  built first, frozen last — the order that slowed the alias env to frozen speed before): __HARDENED_PAIR__
+  built first, frozen last — the order that slowed the alias env to frozen speed before): alias_free_v1 2.4375 s per N=16 step = its solo speed (2.437 s), i.e. it replays its own descriptor; the unguarded frozen_v1 env of the same process now replays the alias-free grid (2.4235 s instead of its solo 3.40 s) — the default path stays exposed (hence listed with the invalid runs).
 
 ### 3.1 Same-state check (contact stage alone, eager, identical recorded Native states)
 
@@ -192,11 +192,29 @@ One process per (N, variant), 3 warm-up + 3 profiled control steps (600 substeps
 preemption, so medians of long kernels at N=16 are inflated up to 2× (min is the better estimate of uncontended
 execution).
 
-__NSYS_TABLE__
+| N | run (GPU) | variant | particle-contact kernel | all kernels | p2g | hash build (CUB + Warp) | guard |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | nsys_001 (0) | frozen_v1 | 348.7 (344.1) | 672 (641) | 101.1 | 71.8 | — |
+| 1 | nsys_001 (0) | alias_free_v1 | 115.0 (113.9) | 442 (412) | 101.2 | 73.1 | 1.6 |
+| 1 | nsys_002 (1) | frozen_v1 | 351.5 (343.7) | 673 (638) | 97.2 | 72.3 | — |
+| 1 | nsys_002 (1) | c1_only | 319.3 (316.5) | 640 (610) | 97.2 | 72.3 | — |
+| 1 | nsys_002 (1) | c2_fallback_no_c1 | 110.8 (109.0) | 434 (407) | 96.7 | 73.3 | 1.6 |
+| 1 | nsys_002 (1) | c1_c2_unguarded | 111.4 (109.3) | 433 (402) | 96.9 | 73.3 | — |
+| 1 | nsys_002 (1) | alias_free_v1 | 111.1 (109.2) | 435 (402) | 97.0 | 73.3 | 1.6 |
+| 16 | nsys_001 (0) | frozen_v1 | 9400.6 (4556.6) | 15359 (7996) | 3836.3 | 189.5 | — |
+| 16 | nsys_001 (0) | alias_free_v1 | 4642.1 (2274.9) | 10510 (5721) | 3734.7 | 192.4 | 7.1 |
+| 16 | nsys_002 (1) | frozen_v1 | 9171.6 (4530.8) | 15037 (7972) | 3733.1 | 189.0 | — |
+| 16 | nsys_002 (1) | c1_only | 8561.6 (3946.0) | 14425 (7386) | 3731.0 | 189.5 | — |
+| 16 | nsys_002 (1) | c2_fallback_no_c1 | 4546.3 (2214.0) | 10423 (5665) | 3734.1 | 192.8 | 7.1 |
+| 16 | nsys_002 (1) | c1_c2_unguarded | 4549.1 (2234.7) | 10418 (5670) | 3735.4 | 192.3 | — |
+| 16 | nsys_002 (1) | alias_free_v1 | 2449.3 (2183.2) | 6199 (5628) | 1606.7 | 192.3 | 7.1 |
 
-At N=1 the frozen contact kernel is 52 % of kernel time (P1-0 eager split 47–54 %), after C1+C2 ≈ 26 %; p2g is then
-the largest kernel at N=16 (≈ 36 % of median time) — the analysis' next target (C7, Level C, separately versioned).
-The grouped-build CUB sort is 10–16 % at N=1, 1–2 % at N=16.
+At N=1 the frozen contact kernel is 52 % of kernel time (P1-0 eager split 47–54 %), after C1+C2 ≈ 26 %, level with
+p2g (≈ 22 %). At N=16 the alias-free contact kernel (min 2.2–2.3 ms per substep) is still the largest, p2g (min
+1.39 ms) second — the analysis' next targets are C3 (P1-3b) and then C7 (Level C, separately versioned). The grouped
+hash build (CUB sort + Warp kernels) is 11–17 % at N=1 and 1–3 % at N=16. C2 carries the kernel gain; C1 alone saves
+9 % (N=1) / 7–13 % (N=16) of the contact kernel and nothing measurable on top of C2. p2g medians at N=16 vary 2×
+between processes (preemption); its min is identical in all variants.
 
 ### 3.4 End-to-end control step, one variant per process (no profiler)
 
@@ -204,11 +222,19 @@ The grouped-build CUB sort is 10–16 % at N=1, 1–2 % at N=16.
 3–14, `env.step_measured_edge` = one 50 Hz control step (200-substep graph + coupling + strict int32 readback),
 device-synchronised; build/capture excluded (warm).
 
-__SOLO_TABLE__
+| N | frozen_v1 median (min) [s] | alias_free_v1 median (min) [s] | speed-up (median) | env-steps/s frozen → alias | foreign SM mean (frozen / alias run) | runs |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 0.2933 (0.2665) | 0.2016 (0.1838) | **1.45×** | 3.49 → 5.05 | 50 / 42 % | `solo_n1_*_001` |
+| 1 | 0.2881 (0.1407) | 0.2017 (0.1758) | **1.43×** | 3.73 → 5.05 | 58 / 62 % | `solo_n1_*_002` |
+| 4 | 0.5605 (0.5467) | 0.3931 (0.2855) | **1.43×** | 7.08 → 11.14 | 27 / 23 % | `solo_n4_*_001` |
+| 8 | 1.1543 (1.1083) | 0.8223 (0.8044) | **1.40×** | 6.96 → 9.76 | 30 / 23 % | `solo_n8_*_001` |
+| 16 | 3.4013 (3.3812) | 2.4373 (2.4325) | **1.40×** | 4.70 → 6.56 | 49 / 49 % | `solo_n16_*_001` |
+| 16 | 3.4013 (3.3775) | 2.4349 (2.4314) | **1.40×** | 4.71 → 6.56 | 45 / 52 % | `solo_n16_*_002` |
 
 alias_free_v1 is **1.40–1.45× faster per control step at every N** (≈ 87 ms less at N=1, 0.96 s less at N=16). The
-nsys kernel reduction accounts for ≈ 46 ms (N=1, medians); the rest is co-tenant time-slice waiting, which scales
-with our GPU time on this shared GPU. Hardened code (`hardened_solo_n{1,16}_alias_free_v1_001`): 0.2019 s / 2.4399 s
+nsys kernel reduction accounts for ≈ 46 ms at N=1 (medians; 0.47–0.96 s at N=16); the remaining N=1 difference is
+wall time outside our kernel durations on this shared GPU that shrank as well — not attributed further without an
+exclusive window. Hardened code (`hardened_solo_n{1,16}_alias_free_v1_001`): 0.2019 s / 2.4399 s
 median — the descriptor guard costs nothing measurable. The window covers the approach (no particle contacts yet),
 which the analysis predicted to be cost-representative (the frozen kernel visits ~8.3 M candidates in every phase);
 the full episodes below cover all phases at N=1 and N=4.
@@ -229,13 +255,15 @@ max s512 1.4–3.8e-5 m, s15 6.3e-5–1.2e-4 m.
 | | 1 / 15 | yes (0) | 85786 | PASS / PASS | PASS | 0 | 1.73e-4: below band | 7.9e-5: inside | |
 | | 2 / 512 | yes (0) | 37958 | PASS / PASS | PASS | 0 | 2.31e-5: inside | 2.31e-5: inside | |
 | | 3 / 15 | yes (0) | 85786 | PASS / PASS | PASS | 0 | 8.20e-4: **outside** | 1.80e-4: **outside** | |
-__HARDENED_EP_ROWS__| reference: P1-2 `m0_s512_001` (frozen_v1, solo) | 0 / 512 | yes | 37958 | PASS | PASS | — | 2.24e-5 | 2.24e-5 | 3.508 (other window) |
+| hardened_episode_512_001 (1, hardened) | 0 / 512 | yes (0) | 37958 (37958) | PASS / PASS | PASS | 0 | 1.58e-05: inside | 1.58e-05: inside | 5.088 |
+| hardened_episode_15_001 (1, hardened) | 0 / 15 | yes (0) | 85786 (85786) | PASS / PASS | PASS | 0 | 5.98e-04: **outside** | 1.33e-04: **outside** | 5.037 |
+| reference: P1-2 `m0_s512_001` (frozen_v1, solo) | 0 / 512 | yes | 37958 | PASS | PASS | — | 2.24e-5 | 2.24e-5 | 3.508 (other window) |
 | reference: P1-2 `m0_s15_001` (frozen_v1, solo) | 0 / 15 | yes | 85786 | PASS | PASS | — | 6.50e-4: **outside** | 1.36e-4: **outside** | 3.288 (other window) |
 
 Final codes equal Native with 0 differing particles in every alias-free episode; evaluator PASS on 2 and 121 frames
 everywhere; L2 PASS (no digit rewrite, finite, min detF > 0, no slot overflow, no invalid flag, grouped-query
 foreign = 0, mass bitwise constant); no guard violation (certified bound 150.5 m/s). Position band: s512 inside
-everywhere; **s15 outside the P1-0 single-env band** in __S15_OUT__ — like the unchanged frozen batched path in P1-2
+everywhere; **s15 outside the P1-0 single-env band** in 3 of 4 s15 envs (max over time) — like the unchanged frozen batched path in P1-2
 (`m0_s15_001`), so the band is not met by the batched GPU path at s15 in general; it is reported, not attributed to
 alias_free_v1. Transient code differences (1–2 particles at t = 5.4 s or 9.6–10.0 s for s15, 6.4 s for s512, as in
 P1-0) occur, none at the end. (`episode_512_001` / `episode_15_001` also contain a frozen_v1 control interleaved in
@@ -244,7 +272,27 @@ valid — s512 2.45e-5 m inside, s15 1.99e-2 m outside — but it is not used as
 
 ## 4. Rows (plan format, valid runs only)
 
-__ROWS__
+| N | particles/env | control Hz | material dt | cameras | env-steps/s | aggregate sim-time/wall | VRAM peak | reset p95 | physics verdict | boundary | workload | substeps | robot DOF | contacts | recording | warm/cold | reset mean | reduced fidelity | GPU | sharing | co-tenant | source | commit |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 102732 | 50 | 0.0001 s | none | 3.485 | 0.0697 | 832 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [frozen_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 54%, mem max 11895 MiB | rl_ready/p1_3/solo_n1_frozen_v1_001 | 39d96f3de7e4 |
+| 1 | 102732 | 50 | 0.0001 s | none | 5.053 | 0.1011 | 926 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 66%, mem max 11895 MiB | rl_ready/p1_3/solo_n1_alias_free_v1_001 | 39d96f3de7e4 |
+| 1 | 102732 | 50 | 0.0001 s | none | 3.732 | 0.0746 | 832 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [frozen_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 74%, mem max 11895 MiB | rl_ready/p1_3/solo_n1_frozen_v1_002 | 39d96f3de7e4 |
+| 1 | 102732 | 50 | 0.0001 s | none | 5.054 | 0.1011 | 926 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 88%, mem max 11895 MiB | rl_ready/p1_3/solo_n1_alias_free_v1_002 | 39d96f3de7e4 |
+| 4 | 103315 | 50 | 0.0001 s | none | 7.082 | 0.1416 | 1072 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [frozen_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 42%, mem max 11895 MiB | rl_ready/p1_3/solo_n4_frozen_v1_001 | 39d96f3de7e4 |
+| 4 | 103315 | 50 | 0.0001 s | none | 11.144 | 0.2229 | 1166 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 47%, mem max 11895 MiB | rl_ready/p1_3/solo_n4_alias_free_v1_001 | 39d96f3de7e4 |
+| 8 | 103315 | 50 | 0.0001 s | none | 6.960 | 0.1392 | 1376 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [frozen_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 55%, mem max 11895 MiB | rl_ready/p1_3/solo_n8_frozen_v1_001 | 39d96f3de7e4 |
+| 8 | 103315 | 50 | 0.0001 s | none | 9.761 | 0.1952 | 1502 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 36%, mem max 11895 MiB | rl_ready/p1_3/solo_n8_alias_free_v1_001 | 39d96f3de7e4 |
+| 16 | 103315 | 50 | 0.0001 s | none | 4.701 | 0.0940 | 2064 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [frozen_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 82%, mem max 11895 MiB | rl_ready/p1_3/solo_n16_frozen_v1_001 | 39d96f3de7e4 |
+| 16 | 103315 | 50 | 0.0001 s | none | 6.561 | 0.1312 | 2222 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 74%, mem max 11895 MiB | rl_ready/p1_3/solo_n16_alias_free_v1_001 | 39d96f3de7e4 |
+| 16 | 103315 | 50 | 0.0001 s | none | 4.705 | 0.0941 | 2064 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [frozen_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 70%, mem max 11895 MiB | rl_ready/p1_3/solo_n16_frozen_v1_002 | 39d96f3de7e4 |
+| 16 | 103315 | 50 | 0.0001 s | none | 6.556 | 0.1311 | 2222 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 86%, mem max 11895 MiB | rl_ready/p1_3/solo_n16_alias_free_v1_002 | 39d96f3de7e4 |
+| 1 | 102732 | 50 | 0.0001 s | none | 5.069 | 0.1014 | 894 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 82%, mem max 11895 MiB | rl_ready/p1_3/hardened_solo_n1_alias_free_v1_001 | 39d96f3de7e4 |
+| 16 | 103315 | 50 | 0.0001 s | none | 6.552 | 0.1310 | 2190 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 74%, mem max 11895 MiB | rl_ready/p1_3/hardened_solo_n16_alias_free_v1_001 | 39d96f3de7e4 |
+| 1 | n/a | 50 | 0.0001 s | none | 7.385 | 0.1477 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 75%, mem max 11895 MiB | rl_ready/p1_3/episode_solo_512_001 | 39d96f3de7e4 |
+| 1 | n/a | 50 | 0.0001 s | none | 7.467 | 0.1493 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 67%, mem max 11895 MiB | rl_ready/p1_3/episode_solo_15_001 | 39d96f3de7e4 |
+| 4 | n/a | 50 | 0.0001 s | none | 5.839 | 0.1168 | 1166 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512, 15, 512, 15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#0, 570.211.01) | SHARED_GPU | procs 4, SM max 98%, mem max 15529 MiB | rl_ready/p1_3/episode_512_15_512_15_001 | a18e8f5c42d5 |
+| 1 | n/a | 50 | 0.0001 s | none | 5.088 | 0.1018 | 896 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 94%, mem max 11895 MiB | rl_ready/p1_3/hardened_episode_512_001 | 39d96f3de7e4 |
+| 1 | n/a | 50 | 0.0001 s | none | 5.037 | 0.1007 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 86%, mem max 11895 MiB | rl_ready/p1_3/hardened_episode_15_001 | 39d96f3de7e4 |
 
 ## 5. Rollback
 
