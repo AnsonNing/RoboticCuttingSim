@@ -626,9 +626,10 @@ def mode_profile(args, run, telemetry):
 
 def mode_l4(args, run, telemetry):
     import warp as wp
-    wp.config.deterministic = wp.DeterministicMode.RUN_TO_RUN      # before any kernel module is created
     import torch
-    out = dict(mode="DeterministicMode.RUN_TO_RUN", steps=args.steps, num_envs=2)
+    if wp.config.deterministic != wp.DeterministicMode.RUN_TO_RUN:
+        raise RuntimeError("main() sets wp.config.deterministic before importing robotic_cutting_sim")
+    out = dict(deterministic_mode="DeterministicMode.RUN_TO_RUN", steps=args.steps, num_envs=2)
     try:
         from robotic_cutting_sim.rl import open_vector_env
         from robotic_cutting_sim.rl.policies_batched import MeasuredTrajectoryDriver
@@ -658,13 +659,13 @@ def mode_l4(args, run, telemetry):
         copy = [diff(f["state"][0], f["state"][1]) for f in finals]
         r2r = [diff(finals[0]["state"][e], finals[1]["state"][e]) for e in range(2)]
         bitwise = all(all(v[0] for v in d.values()) for d in copy + r2r)
-        out.update(status="PASS" if bitwise else "FAIL", copy_vs_copy=copy, run_vs_run=r2r,
+        out.update(l4_status="PASS" if bitwise else "FAIL", copy_vs_copy=copy, run_vs_run=r2r,
                    labelled=[f["labelled"] for f in finals], walls_s=[f["wall_s"] for f in finals],
                    wrench_run_vs_run_equal=bool(np.array_equal(finals[0]["wrench"], finals[1]["wrench"])),
                    scope="deterministic verification build only; never used for production timing")
     except Exception as error:   # report as is: BLOCKED when the mode cannot compile or launch these kernels
         import traceback
-        out.update(status="BLOCKED", error=repr(error), traceback=traceback.format_exc())
+        out.update(l4_status="BLOCKED", l4_error=repr(error), traceback=traceback.format_exc())
     return out
 
 
@@ -685,6 +686,9 @@ def main():
     name = args.run_name or {"m0": f"m0_s{args.seed}", "m1": "m1_n4", "m2": f"m2_n{args.num_envs}",
                              "l4": "l4_deterministic", "profile": f"profile_n{args.num_envs}"}[args.mode]
     run = new_run_dir(name)
+    if args.mode == "l4":   # before any kernel module of robotic_cutting_sim is created
+        import warp as wp
+        wp.config.deterministic = wp.DeterministicMode.RUN_TO_RUN
     import torch  # noqa: F401
     import robotic_cutting_sim  # noqa: F401
     manifest(args, run)
