@@ -80,7 +80,7 @@ def _launch(cfg):
 def _options(args):
     from robotic_cutting_sim.batched.lab_scene import BatchedLabOptions
     return BatchedLabOptions(num_envs=args.num_envs, tool_mount=args.tool_mount, device="cpu", cpu_test_mode=True,
-                             seed=42)
+                             seed=42, material=getattr(args, "material", None))
 
 
 def mode_single(args, out):
@@ -260,7 +260,7 @@ def _synthetic_coupling_class():
 def mode_coupling(args, out):
     from isaaclab_newton.physics import NewtonManager
     cfg, options, task, Env = _build(args)
-    Probe = _synthetic_coupling_class()
+    Probe = None if args.material else _synthetic_coupling_class()
     with _launch(cfg):
         env = Env(cfg, options, task, coupling=Probe)
         applied = []
@@ -270,14 +270,23 @@ def mode_coupling(args, out):
         env.reset()
         applied.clear()
         edges, boxes = [], []
+        inputs, pending, pad = [], [], []
         for step in range(args.steps):
             env.step(scripted_actions(args.num_envs, step))
             edges.append(env.frames.measured_edge.numpy().copy())
             boxes.append(np.stack([env.coupling.box_centers.numpy().copy(), env.coupling.box_halves.numpy().copy()]))
+            if args.material:
+                inputs.append(env.coupling.measured_pose.numpy().copy())
+                pending.append(env.coupling.pending_wrench.numpy().copy())
+                pad.append(env.coupling.pad_wrench.numpy().copy())
         coupling = env.coupling
-        np.savez_compressed(out/"coupling.npz", edges=np.asarray(edges), inputs=np.asarray(coupling.inputs),
-                            pending=np.asarray([o[0] for o in coupling.outputs]),
-                            pad=np.asarray([o[1] for o in coupling.outputs]),
+        if not args.material:
+            inputs, pending, pad = coupling.inputs, [o[0] for o in coupling.outputs], [o[1] for o in coupling.outputs]
+        (out/"coupling_receipt.json").write_text(json.dumps({"coupling": coupling.receipt(),
+                                                              "graph_recaptured": env.material_graph_recaptured},
+                                                             default=str))
+        np.savez_compressed(out/"coupling.npz", edges=np.asarray(edges), inputs=np.asarray(inputs),
+                            pending=np.asarray(pending), pad=np.asarray(pad),
                             applied_step=np.asarray([a[0] for a in applied]),
                             applied=np.asarray([a[1] for a in applied]), boxes=np.asarray(boxes))
 
@@ -375,6 +384,7 @@ def main():
     parser.add_argument("--perturb-env", type=int, default=None)
     parser.add_argument("--reset-env", type=int, default=None, help="reset / perturb-target env (rollout, grasp, ik_hold)")
     parser.add_argument("--reset-step", type=int, default=5)
+    parser.add_argument("--material", default=None, help="tlmpm_v7_2: real BatchedCuttingMaterial coupling")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     if os.environ.get("CUDA_VISIBLE_DEVICES", None) != "":

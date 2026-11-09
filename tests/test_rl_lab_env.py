@@ -191,3 +191,20 @@ def test_ik_rejection_holds_only_that_env(ik_hold):
         assert np.array_equal(d["joint_q"][:, cs[e]:cs[e+1]], base["joint_q"][:, cs[e]:cs[e+1]])
         assert np.array_equal(d["body_q"][:, bw == e], base["body_q"][:, bw == e])
         assert np.array_equal(d["status"][:, e], base["status"][:, e])
+
+
+def test_t3_coupling_contract_with_batched_material(tmp_path_factory):
+    """T3 with the real ``BatchedCuttingMaterial(backend="isaac_lab_newton")`` (coarse 2.5 mm CPU task, N=2, 8 steps):
+    material input = edge-kernel output and the wrench read in every substep of interval k+1 = the material's
+    ``pending_wrench`` after step k, bitwise (one buffer). The scripted motion stays above the workpiece, so the
+    wrench is zero here; contact-loaded wrenches are exercised by the GPU G2 material rows, not by this test."""
+    out = run_worker(tmp_path_factory, "material", "--mode", "coupling", "--num-envs", 2, "--steps", 8,
+                     "--material", "tlmpm_v7_2")
+    d = np.load(out/"coupling.npz")
+    receipt = json.loads((out/"coupling_receipt.json").read_text())["coupling"]
+    assert receipt["backend"] == "isaac_lab_newton" and receipt["material_coupled"] is True
+    assert np.array_equal(d["inputs"], d["edges"])
+    for k in range(d["edges"].shape[0]):
+        rows = d["applied"][d["applied_step"] == k]
+        expected = np.zeros((2, 6)) if k == 0 else d["pending"][k-1]
+        assert len(rows) == 10 and all(np.array_equal(r, expected) for r in rows)

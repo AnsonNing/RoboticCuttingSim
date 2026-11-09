@@ -150,7 +150,8 @@ def test_no_rigid_body_under_shared_paths_and_per_world_bodies(mount):
     (dict(recorders=("raw2ms",)), "UNSUPPORTED_RECORDER"),
     (dict(actuator_overrides={"fingers": 1.}), "UNSUPPORTED_ACTUATOR_OVERRIDE"),
     (dict(tool_init_mode="free"), "UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET"),
-    (dict(material="tlmpm_v7_2"), "UNSUPPORTED_MATERIAL_COUPLING"),
+    (dict(material="tlmpm_v5"), "UNSUPPORTED_SOLVER"),
+    (dict(material="rubber_v0"), "UNSUPPORTED_MATERIAL_COUPLING"),
     (dict(num_envs=0), "UNSUPPORTED_EMPTY_BATCH"),
 ])
 def test_options_refuse_unsupported(kwargs, code):

@@ -35,6 +35,7 @@ from .errors import UnsupportedBatchConfiguration
 
 LAB_SCENE_VERSION = "lab_batched_scene_v1"
 TOOL_MOUNTS = ("rigid_mount_v1", "physical_grasp_v1")
+MATERIALS = (None, "tlmpm_v7_2")
 ENV_TEMPLATE = "/World/envs/env_{}"
 ENV_REGEX_NS = "{ENV_REGEX_NS}"
 WORKCELL_ROOT = "/World/Workcell"
@@ -62,7 +63,7 @@ LAB_UNSUPPORTED_CODES = (
     "UNSUPPORTED_ACTION_SPEC",
     "UNSUPPORTED_ACTUATOR_OVERRIDE",
     "UNSUPPORTED_TOOL_MOUNT",                    # anything but rigid_mount_v1 / physical_grasp_v1
-    "UNSUPPORTED_MATERIAL_COUPLING",             # material backend isaac_lab_newton not built yet (S0)
+    "UNSUPPORTED_MATERIAL_COUPLING",             # material coupling not available for the requested configuration
 )
 
 
@@ -114,7 +115,8 @@ class BatchedLabOptions:
     ik_position_tolerance_m: float = .001
     velocity_feedforward: bool = True
     feedback: bool = True
-    material: str | None = None          # None: robot-only stepping (no material, reduced fidelity row)
+    material: str | None = None          # None: robot-only stepping; "tlmpm_v7_2": BatchedCuttingMaterial(isaac_lab_newton)
+    material_dt_s: float = 1e-4
     cameras: object = None
     sensors: object = None
     recorders: object = None
@@ -146,10 +148,12 @@ class BatchedLabOptions:
             raise unsupported("UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET", f"tool_init_mode={self.tool_init_mode!r}")
         if self.grip_contact_profile != POINT_PROFILE:
             raise unsupported("UNSUPPORTED_ACTUATOR_OVERRIDE", f"grip contact profile {self.grip_contact_profile!r}")
-        if self.material is not None:
-            raise unsupported("UNSUPPORTED_MATERIAL_COUPLING",
-                              f"material={self.material!r}: BatchedCuttingMaterial backend 'isaac_lab_newton' "
-                              "is not built yet (ADR 0022 S0 runs robot-only)")
+        if self.material not in MATERIALS:
+            raise unsupported("UNSUPPORTED_SOLVER" if isinstance(self.material, str) and self.material.startswith("tlmpm")
+                              else "UNSUPPORTED_MATERIAL_COUPLING",
+                              f"material={self.material!r}; supported {MATERIALS} (None = robot-only)")
+        if self.material is not None and not self.material_dt_s > 0:
+            raise ValueError("material_dt_s must be positive")
         if self.deterministic_mode not in ("not_guaranteed", "run_to_run", "gpu_to_gpu"):
             raise ValueError("deterministic_mode is not_guaranteed, run_to_run or gpu_to_gpu")
         if self.ik_iterations < 1 or not self.ik_rotation_tolerance_rad > 0 or not self.ik_position_tolerance_m > 0:

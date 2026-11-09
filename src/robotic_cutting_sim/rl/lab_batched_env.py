@@ -212,6 +212,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.step_index = 0
         self.snapshot = None
         self.grasp_initialization = None
+        self.material_graph_recaptured = False
         if o.tool_mount == "physical_grasp_v1":
             self._bind_physical_grasp()
 
@@ -414,7 +415,45 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.commanded.copy_(self.home_commanded)
         if self.snapshot is not None:
             self.snapshot.nominal_edge = self.home_commanded.clone()
+        if self.options.material is not None and not self.coupling.material_coupled:
+            self._attach_material(NewtonManager.get_state_0().body_q)
         return self._get_observations(), extras
+
+    def _attach_material(self, body_q):
+        """Build ``BatchedCuttingMaterial(backend="isaac_lab_newton")`` from the measured HOME (B1) or settled (B2)
+        edge and pad boxes of every world; its packed initial state is what ``reset_envs`` restores.
+
+        The state-force callback reads ``coupling.pending_wrench``/``pad_wrench`` in place; if a Newton graph was
+        already captured with the robot-only buffers (B2 captures during the settle), it is recaptured on the next
+        step so the graph reads the material's buffers."""
+        from isaaclab_newton.physics import NewtonManager
+
+        from ..batched import layout
+        from ..batched.material_batch import BatchedCuttingMaterial
+        from ..coupled_robot import CouplingConfig
+        from ..live_material import LiveCuttingMaterial
+        task, o, N = self.task, self.options, self.num_envs
+        self.frames.launch_edge(body_q)
+        self.frames.launch_pad_boxes(body_q)
+        edge = self.frames.measured_edge.numpy()                       # build time, outside the step loop
+        boxes = np.stack([self.frames.box_centers.numpy().reshape(N, -1, 3),
+                          self.frames.box_halves.numpy().reshape(N, -1, 3)], 2).astype(np.float32)
+        recipients = [None]+[pad["body_path"] for pad in self.pad_geometry]
+        specs = []
+        for e in range(N):
+            config = CouplingConfig(control_dt=float(task.control_dt_s), material_dt=float(o.material_dt_s),
+                                    dx=float(task.grid_dx_m), device="cpu", feedback=bool(o.feedback))
+            m = LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
+                                    solver=task.solver_module, v7_2_optimizations=True)
+            m.configure_pad_obstacles(boxes[e], recipients)
+            specs.append(layout.EnvSpec(m, edge[e], int(o.seed), task.config_sha256))
+        self.coupling = BatchedCuttingMaterial(specs, device=str(self.wp_device), parity_mode=str(self.wp_device) == "cpu",
+                                               strict=o.strict, backend="isaac_lab_newton")
+        if NewtonManager._graph is not None:
+            NewtonManager._graph = None
+            NewtonManager._graph_capture_pending = True
+            self.material_graph_recaptured = True
+        self.material_initial_edge = edge
 
     def _settle_and_snapshot(self):
         """B2 build-time grasp initialization of all worlds (``isaac_lab_env._settle_physical_grasp`` per world)."""
