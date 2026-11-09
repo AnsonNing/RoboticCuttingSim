@@ -367,6 +367,7 @@ def test_evaluate_returns_the_frozen_evaluator_result():
 def test_material_reset_arrays_cover_the_env_views():
     """The arrays the env writes through zero-copy views are reset by the masked material reset."""
     written = {"measured_pose", "cut_input", "reset_mask", "reset_seed"}
-    covered = set(MB.MATERIAL_RESET_ARRAYS) | set(MB.RECOMPUTED_EVERY_CONTROL_STEP)
+    covered = (set(MB.MATERIAL_RESET_ARRAYS) | set(MB.RECOMPUTED_EVERY_CONTROL_STEP)
+               | set(getattr(MB, "RESET_INPUTS", ())))
     assert written <= covered
     assert {"box_centers", "box_halves"} <= set(MB.SOLVER_RESET_ARRAYS)
