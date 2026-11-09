@@ -199,3 +199,36 @@ def test_host_float64_operation_orders_the_kernel_reproduces():
         p, m = rng.normal(size=(1, 3)), rng.normal(size=(3, 3))
         expected = [fma(p[0, 2], m[j, 2], fma(p[0, 0], m[j, 0], p[0, 1]*m[j, 1])) for j in range(3)]
         assert (p@m.T)[0].tolist() == expected
+
+
+@pytest.mark.parametrize("max_cuts", [1, 2, 15])
+def test_checked_cut_fill_disarms_and_flags_before_stepping(max_cuts):
+    """Review finding 4: digits outside -1..K-1 (>= K, >= 16, < -1) are written as -1 and flagged."""
+    digits = np.array([-1, 0, max_cuts-1, max_cuts, 16, 99, -2, 2**31-1, -2**31], np.int32)
+    N, T = len(digits), SUBSTEPS+1
+    cut = wp.array(digits, dtype=wp.int32, device=DEVICE)
+    cuts = wp.full((N, T), 7, dtype=wp.int32, device=DEVICE)
+    reason = wp.array(np.array([0, 0, 0, 0, 0, 0, 0, 4, 16], np.int32), dtype=int, device=DEVICE)
+    PI.launch_fill_cuts(cut, cuts, max_cuts=max_cuts, invalid_reason=reason, flag=8)
+    valid = (digits >= -1) & (digits < max_cuts)
+    expected = np.where(valid, digits, -1)
+    np.testing.assert_array_equal(cuts.numpy(), np.repeat(expected[:, None], T, 1))
+    np.testing.assert_array_equal(reason.numpy(), np.where(valid, 0, 8) | np.array([0]*7+[4, 16]))
+    assert (~valid).sum() >= 5 and valid.sum() >= 2           # both branches exercised
+    with pytest.raises(ValueError):
+        PI.launch_fill_cuts(cut, cuts, max_cuts=max_cuts)   # checked fill needs the reason buffer
+
+
+def test_preset_cut_rows_disarm_invalid_entries_only():
+    rows = np.zeros((3, SUBSTEPS+1), np.int32)
+    rows[0, 5] = 2          # == K
+    rows[1, :] = -1
+    rows[2, 7] = -5
+    rows[2, 9] = 16
+    cuts = wp.array(rows, dtype=wp.int32, device=DEVICE)
+    reason = wp.zeros(3, dtype=int, device=DEVICE)
+    PI.launch_disarm_invalid_cuts(cuts, 2, reason, 8)
+    expected = rows.copy()
+    expected[0, 5] = expected[2, 7] = expected[2, 9] = -1
+    np.testing.assert_array_equal(cuts.numpy(), expected)
+    assert reason.numpy().tolist() == [8, 0, 8]

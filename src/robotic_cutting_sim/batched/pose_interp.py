@@ -243,9 +243,42 @@ def pose_interp(last_pose: wp.array2d(dtype=wp.float64), measured_pose: wp.array
 
 @wp.kernel
 def fill_cut_rows(cut: wp.array(dtype=wp.int32), cuts: wp.array2d(dtype=wp.int32)):
-    """dim = (N, T). ``cuts[e, :] = cut[e]`` as the frozen ``np.full(substeps+1, cut, np.int32)``."""
+    """dim = (N, T). ``cuts[e, :] = cut[e]`` as the frozen ``np.full(substeps+1, cut, np.int32)`` (unchecked)."""
     e, k = wp.tid()
     cuts[e, k] = cut[e]
+
+
+@wp.kernel
+def fill_cut_rows_checked(cut: wp.array(dtype=wp.int32), max_cuts: int, flag: int,
+                          cuts: wp.array2d(dtype=wp.int32), invalid_reason: wp.array(dtype=int)):
+    """dim = (N, T). As :func:`fill_cut_rows`, but a digit outside ``-1..max_cuts-1`` (the frozen
+    ``LiveCuttingMaterial.advance`` refusal "Explicit cut index exceeds retained material history") is
+    written as ``-1`` (disarmed) and ``flag`` is OR-ed into ``invalid_reason[e]`` before any substep runs,
+    so an invalid digit never labels particles (a digit >= 16 would overflow the 2-bit packed code)."""
+    e, k = wp.tid()
+    digit = cut[e]
+    if digit < -1 or digit >= max_cuts:
+        cuts[e, k] = -1
+        if k == 0:
+            invalid_reason[e] = invalid_reason[e] | flag
+    else:
+        cuts[e, k] = digit
+
+
+@wp.kernel
+def disarm_invalid_cut_rows(cuts: wp.array2d(dtype=wp.int32), max_cuts: int, flag: int,
+                            invalid_reason: wp.array(dtype=int)):
+    """dim = N. Caller-written ``cuts[N, T]`` (``advance(interpolation="preset")``): every digit outside
+    ``-1..max_cuts-1`` becomes ``-1`` and the env is flagged, before any substep runs."""
+    e = wp.tid()
+    bad = int(0)
+    for k in range(cuts.shape[1]):
+        digit = cuts[e, k]
+        if digit < -1 or digit >= max_cuts:
+            cuts[e, k] = -1
+            bad = 1
+    if bad != 0:
+        invalid_reason[e] = invalid_reason[e] | flag
 
 
 def local_frames(T_local_world, device=None):
@@ -286,9 +319,25 @@ def launch_pose_interp(last_pose, measured_pose, T_local_world, q_local_world, p
                       wp.float64(control_dt), poses, twists, status])
 
 
-def launch_fill_cuts(cut, cuts, device=None, stream=None):
+def launch_fill_cuts(cut, cuts, device=None, stream=None, *, max_cuts=None, invalid_reason=None, flag=8):
+    """Fill ``cuts[N,T]`` from per-env digits. With ``max_cuts`` (production), out-of-range digits are
+    disarmed (-1) and ``flag`` is OR-ed into ``invalid_reason[N]`` (:func:`fill_cut_rows_checked`)."""
     N, T = cuts.shape
     if cut.shape != (N,):
         raise ValueError("cut must be [N] for cuts [N,T]")
-    wp.launch(fill_cut_rows, dim=(N, T), device=device if device is not None else cuts.device, stream=stream,
-              inputs=[cut, cuts])
+    device = device if device is not None else cuts.device
+    if max_cuts is None:
+        wp.launch(fill_cut_rows, dim=(N, T), device=device, stream=stream, inputs=[cut, cuts])
+        return
+    if invalid_reason is None or invalid_reason.shape != (N,):
+        raise ValueError("checked cut fill needs invalid_reason [N]")
+    wp.launch(fill_cut_rows_checked, dim=(N, T), device=device, stream=stream,
+              inputs=[cut, int(max_cuts), int(flag), cuts, invalid_reason])
+
+
+def launch_disarm_invalid_cuts(cuts, max_cuts, invalid_reason, flag=8, device=None, stream=None):
+    N = cuts.shape[0]
+    if invalid_reason.shape != (N,):
+        raise ValueError("invalid_reason must be [N] for cuts [N,T]")
+    wp.launch(disarm_invalid_cut_rows, dim=N, device=device if device is not None else cuts.device, stream=stream,
+              inputs=[cuts, int(max_cuts), int(flag), invalid_reason])

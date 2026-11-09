@@ -410,22 +410,27 @@ class BatchedCuttingMaterial:
     def set_measured_poses(self, measured_pose, cut):
         """Write WORLD measured edge poses [N,7] (float64) and cut digits [N] (int32) into the input buffers.
 
-        Host arrays are validated and copied; device arrays (Warp, same device) are copied without a host sync."""
-        if isinstance(measured_pose, wp.array):
-            wp.copy(self.measured_pose, measured_pose)
-        else:
+        Host arrays are validated (shapes, digit range) before either buffer is written, then copied; device
+        arrays (Warp, same device) are copied without a host sync and checked on the device (``advance``)."""
+        pose = digits = None
+        if not isinstance(measured_pose, wp.array):
             pose = np.asarray(measured_pose, np.float64)
             if pose.shape != (self.num_envs, 7):
                 raise ValueError(f"measured_pose must be [{self.num_envs}, 7]")
-            self.measured_pose.assign(pose)
-        if isinstance(cut, wp.array):
-            wp.copy(self.cut_input, cut)
-        else:
-            digits = np.asarray(cut, np.int32)
-            if digits.shape != (self.num_envs,):
-                raise ValueError(f"cut must be [{self.num_envs}]")
+        if not isinstance(cut, wp.array):
+            digits = np.asarray(cut)
+            if digits.shape != (self.num_envs,) or digits.dtype.kind not in "iu":
+                raise ValueError(f"cut must be [{self.num_envs}] integers")
             if np.any(digits < -1) or np.any(digits >= self.solver.max_cuts):
                 raise ValueError(f"Cut digits must be -1 (disarmed) or 0..{self.solver.max_cuts-1}")
+            digits = digits.astype(np.int32)
+        if pose is None:
+            wp.copy(self.measured_pose, measured_pose)
+        else:
+            self.measured_pose.assign(pose)
+        if digits is None:
+            wp.copy(self.cut_input, cut)
+        else:
             self.cut_input.assign(digits)
 
     def _interpolate_device(self):
@@ -434,7 +439,9 @@ class BatchedCuttingMaterial:
         launch_pose_interp(self.last_pose, self.measured_pose, self.T_local_world, self.q_local_world,
                            s.poses.reshape((N, T)), s.twists.reshape((N, T)), self.pose_status, s.substeps,
                            self.control_dt, device=self.device)
-        launch_fill_cuts(self.cut_input, s.cuts.reshape((N, T)), device=self.device)
+        # Out-of-range digits are disarmed and flagged before the substeps run (review finding 4).
+        launch_fill_cuts(self.cut_input, s.cuts.reshape((N, T)), device=self.device, max_cuts=s.max_cuts,
+                         invalid_reason=self.invalid_reason, flag=INVALID_CUT_DIGIT)
 
     def _interpolate_host_reference(self, measured_pose, cut):
         """Parity path: the frozen SciPy interpolation per env (input preparation only, never production)."""
@@ -472,17 +479,27 @@ class BatchedCuttingMaterial:
         ``interpolation``: ``"device"`` (pose_interp kernel from ``last_pose`` to ``measured_pose``),
         ``"host_reference"`` (parity mode: frozen SciPy path) or ``"preset"`` (the caller already wrote
         ``solver.poses/twists/cuts`` in place; ``measured_pose``/``cut`` still update the buffers if given).
+        Cut digits: host digits outside ``-1..K-1`` raise ``ValueError`` before any state changes (the frozen
+        ``LiveCuttingMaterial.advance`` refusal). Device digits (a Warp ``cut`` array, or caller-written preset
+        rows) cannot raise: they are written as ``-1`` (disarmed) and the env gets ``INVALID_CUT_DIGIT`` before
+        the substeps run; that env still advances one control step with a disarmed blade, then strict mode
+        raises / training mode terminates it.
         Returns nothing; read ``pending_wrench``, ``applied_previous``, ``invalid_reason`` on the device."""
         if (measured_pose is None) != (cut is None):
             raise ValueError("measured_pose and cut are given together")
+        if interpolation not in ("device", "host_reference", "preset"):
+            raise ValueError("interpolation is 'device', 'host_reference' or 'preset'")
         if interpolation == "host_reference":
             self._interpolate_host_reference(measured_pose, cut)
         elif measured_pose is not None:
             self.set_measured_poses(measured_pose, cut)
         if interpolation == "device":
             self._interpolate_device()
-        elif interpolation not in ("host_reference", "preset"):
-            raise ValueError("interpolation is 'device', 'host_reference' or 'preset'")
+        elif interpolation == "preset":
+            from .pose_interp import launch_disarm_invalid_cuts
+            s = self.solver
+            launch_disarm_invalid_cuts(s.cuts.reshape((self.num_envs, s.trajectory_length)), s.max_cuts,
+                                       self.invalid_reason, INVALID_CUT_DIGIT, device=self.device)
         s = self.solver
         with wp.ScopedDevice(self.device):
             s.zero_control_step_accumulators()
