@@ -370,6 +370,8 @@ def main():
                          else "FAIL"}
         else:
             for step in range(1, args.steps+1):
+                if args.non_strict and step % 100 == 0:
+                    row.setdefault("termination_trace", []).append([step, env.termination_reason.cpu().tolist()])
                 if driven and step == 2:
                     row["cold"]["first_step_s"] = walls.pop(0)
                     row["cold"]["process_to_first_step_s"] += row["cold"]["first_step_s"]
@@ -460,7 +462,12 @@ def main():
                                           (row["graph_captured"] or args.no_graph) else "FAIL"}
         if args.evaluate and args.material:
             telemetry.set_phase("evaluate")
-            evaluations = env.evaluate()
+            evaluations = []
+            for e in range(args.num_envs):
+                try:
+                    evaluations += env.evaluate([e])
+                except Exception as error:   # e.g. a terminated env with a nonfinite state: recorded, not hidden
+                    evaluations.append(dict(env=e, error=f"{type(error).__name__}: {error}"[:500]))
             row["evaluation"] = [{k: v for k, v in r.items() if k != "result"} for r in evaluations]
             final_codes = {f"env{e}": env.snapshot_world(e)["codes"] for e in range(args.num_envs)}
             pk = env.coupling.packed
@@ -468,6 +475,8 @@ def main():
             final_codes.update({f"x_local_env{e}": x_all[int(pk.particle_offset[e]):int(pk.particle_offset[e+1])]
                                 for e in range(args.num_envs)})
             for r in row["evaluation"]:
+                if "error" in r:
+                    continue
                 codes = final_codes[f"env{r['env']}"]
                 r["labelled_by_digit"] = {str(d): int(np.count_nonzero((codes >> (2*d)) & 3))
                                           for d in range(int(task.max_cuts))}
