@@ -669,9 +669,59 @@ def mode_l4(args, run, telemetry):
     return out
 
 
+def mode_ab(args, run, telemetry):
+    """Interleaved throughput A/B in ONE process (same co-tenant load for every N): batches of N in
+    ``--ab-envs`` (batches built first, largest first; no single LiveCuttingMaterial in this process) replay
+    their WP-17 trajectories; each round runs ``--block`` steps of every batch in turn."""
+    import torch
+    from robotic_cutting_sim.rl import open_vector_env
+    from robotic_cutting_sim.rl.policies_batched import MeasuredTrajectoryDriver
+    sync = torch.cuda.synchronize
+    sizes = sorted(set(args.ab_envs), reverse=True)
+    inputs = load_inputs([512, 15])
+    envs, drivers, walls, steps_done = {}, {}, {n: [] for n in sizes}, {n: 0 for n in sizes}
+    stack = []
+    try:
+        for n in sizes:
+            seeds = tuple(512 if n == 1 else (512 if k % 2 == 0 else 15) for k in range(n))
+            cm = open_vector_env(n, task=family_for(seeds, inputs), device="cuda", strict=True)
+            env = cm.__enter__()
+            stack.append(cm)
+            order = sorted(set(seeds))
+            envs[n] = env
+            drivers[n] = MeasuredTrajectoryDriver([inputs[s]["trajectory"] for s in order],
+                                                  [order.index(s) for s in seeds], device="cuda")
+            env.reset(seeds=[42] * n)
+        telemetry.set_phase("run")
+        for _ in range(args.rounds):
+            for n in sizes:
+                env, driver = envs[n], drivers[n]
+                for _ in range(args.block):
+                    if steps_done[n] and steps_done[n] % STEPS == 0:
+                        env.reset(seeds=[42] * n)
+                        sync()
+                    pose, cut, pads = driver.inputs(env._step_count)
+                    _, wall = timed(lambda: env.step_measured_edge(pose, cut, pad_boxes=pads), sync)
+                    walls[n].append(wall)
+                    steps_done[n] += 1
+    finally:
+        for cm in reversed(stack):
+            cm.__exit__(None, None, None)
+    out = dict(sizes=sizes, block=args.block, rounds=args.rounds, per_n={})
+    for n in sizes:
+        w = np.asarray(walls[n][1:])
+        out["per_n"][str(n)] = dict(steps=len(walls[n]), step_mean_s=float(w.mean()), step_median_s=float(np.median(w)),
+                                    env_steps_per_s=float(n * len(w) / w.sum()))
+    base = out["per_n"][str(min(sizes))]["env_steps_per_s"]
+    out["ratio_vs_smallest"] = {k: v["env_steps_per_s"] / base for k, v in out["per_n"].items()}
+    out["scope"] = ("interleaved blocks in one process; replay drive (s512/s15 alternating; N=1 replays s512); "
+                    "first step of each N excluded; per-step device sync for timing")
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--mode", choices=("m0", "m1", "m2", "l4", "profile"), required=True)
+    parser.add_argument("--mode", choices=("m0", "m1", "m2", "l4", "profile", "ab"), required=True)
     parser.add_argument("--seed", type=int, default=512, choices=(512, 15))
     parser.add_argument("--num-envs", type=int, default=8)
     parser.add_argument("--episodes", type=int, default=3)
@@ -680,11 +730,15 @@ def main():
     parser.add_argument("--l2-every", type=int, default=1, help="L2 device monitor period in steps (0: audits only)")
     parser.add_argument("--max-global-steps", type=int, default=0)
     parser.add_argument("--m1-reset-steps", type=int, nargs=4, default=[300, 400, 500, 600])
+    parser.add_argument("--ab-envs", type=int, nargs="+", default=[1, 8])
+    parser.add_argument("--block", type=int, default=10)
+    parser.add_argument("--rounds", type=int, default=20)
     parser.add_argument("--gpu-index", type=int, required=True, help="physical nvidia-smi index (telemetry)")
     parser.add_argument("--run-name")
     args = parser.parse_args()
     name = args.run_name or {"m0": f"m0_s{args.seed}", "m1": "m1_n4", "m2": f"m2_n{args.num_envs}",
-                             "l4": "l4_deterministic", "profile": f"profile_n{args.num_envs}"}[args.mode]
+                             "l4": "l4_deterministic", "profile": f"profile_n{args.num_envs}",
+                             "ab": "ab_n" + "_".join(map(str, args.ab_envs))}[args.mode]
     run = new_run_dir(name)
     if args.mode == "l4":   # before any kernel module of robotic_cutting_sim is created
         import warp as wp
@@ -695,7 +749,7 @@ def main():
     telemetry = telemetry_start(args.gpu_index)
     status, error, result = "FAIL", None, {}
     try:
-        result = dict(m0=mode_m0, m1=mode_m1, m2=mode_m2, l4=mode_l4, profile=mode_profile)[args.mode](
+        result = dict(m0=mode_m0, m1=mode_m1, m2=mode_m2, l4=mode_l4, profile=mode_profile, ab=mode_ab)[args.mode](
             args, run, telemetry)
         status = "COMPLETE"
     except Exception:   # preserved as a failed run, never hidden
