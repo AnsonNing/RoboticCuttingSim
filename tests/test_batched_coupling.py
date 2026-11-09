@@ -96,3 +96,24 @@ def test_device_pose_path_equals_the_live_chain_end_to_end():
         assert np.array_equal(device.actual_pose.numpy(), host.actual_pose.numpy())
     assert device.pose_status.numpy().tolist() == [0, 0]
     assert np.count_nonzero(device.snapshot(0)["code"]) > 0
+
+
+def test_receipt_hashes_sources_and_names_the_interpolation_path_used():
+    """Review finding 7."""
+    import hashlib
+    from pathlib import Path
+    material = batch_material([(512, None, 42)])
+    receipt = material.receipt()
+    here = Path(MB.__file__).resolve().parent
+    expected = {name: hashlib.sha256((here/name).read_bytes()).hexdigest()
+                for name in ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
+                             "constitutive.py", "tlmpm_v7_2_batch.py")}
+    assert receipt["batched_source_sha256"] == expected
+    assert receipt["pose_interpolation"] == "none_no_control_step_yet"
+    material.advance(interpolation="preset")
+    assert material.receipt()["pose_interpolation"] == "preset_written_by_caller"
+    material.advance(_moved(start_pose(512), .001)[None], np.zeros(1, np.int32), interpolation="device")
+    receipt = material.receipt()
+    assert receipt["pose_interpolation"] == "mixed:device_f64_slerp_v2+preset_written_by_caller"
+    assert receipt["pose_interpolation_steps"] == {"device": 1, "host_reference": 0, "preset": 1}
+    assert receipt["pose_interpolation_kernel"] == "device_f64_slerp_v2"

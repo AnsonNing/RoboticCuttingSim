@@ -17,7 +17,9 @@
 ``reset(env_ids)`` is a masked device reset (no allocation, no recapture) to the exact freshly packed
 state. A geometry change on partial reset is refused; ``rebuild(specs)`` repacks and recaptures.
 """
+import hashlib
 import time
+from pathlib import Path
 
 import numpy as np
 import warp as wp
@@ -40,6 +42,17 @@ INVALID_OBSTACLE_BOXES = 32
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_SLOT_OVERFLOW: "SLOT_OVERFLOW",
                    INVALID_POSE: "INVALID_MEASURED_POSE", INVALID_CUT_DIGIT: "INVALID_CUT_DIGIT",
                    INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES"}
+
+BATCHED_SOURCES = ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
+                   "constitutive.py", "tlmpm_v7_2_batch.py")
+INTERPOLATION_LABELS = {"host_reference": "host_reference_frozen_scipy_parity_only", "preset": "preset_written_by_caller"}
+
+
+def batched_source_sha256():
+    """SHA256 of every batched-runtime source a material result depends on (receipts)."""
+    here = Path(__file__).resolve().parent
+    return {name: hashlib.sha256((here/name).read_bytes()).hexdigest() for name in BATCHED_SOURCES}
+
 
 # ---- reset coverage (ADR §6; tested by tests/test_batched_partial_reset.py over vars())
 # Solver arrays restored by reset() to their freshly packed values.
@@ -391,7 +404,8 @@ class BatchedCuttingMaterial:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_RECORDER", "cut_events recorder attached")
         self.control_dt = float(pk.uniform["control_dt"])
         self.feedback = self.specs_feedback[0]
-        self.pose_interpolation = POSE_INTERPOLATION_VERSION
+        self.pose_interpolation_kernel = POSE_INTERPOLATION_VERSION
+        self.interpolation_steps = {"device": 0, "host_reference": 0, "preset": 0}
         self.num_envs = pk.num_envs
         self.solver = BatchedTLMPMv7_2(pk, self.device)
         s = self.solver
@@ -629,8 +643,18 @@ class BatchedCuttingMaterial:
             wp.launch(_validity_b, self.num_envs, [self.diagnostics.summary, s.slot_overflow, self.pose_status,
                 self.cut_input, s.max_cuts, self.pending_wrench, self.invalid_reason, self.invalid_count])
             wp.launch(_finish_control_step, self.num_envs, [self.step_count, self.last_pose, self.actual_pose])
+        self.interpolation_steps[interpolation] += 1
         if self.strict:
             self.check_valid()
+
+    @property
+    def pose_interpolation(self):
+        """The interpolation path actually used by the control steps so far (receipt label)."""
+        used = [k for k, v in self.interpolation_steps.items() if v]
+        if not used:
+            return "none_no_control_step_yet"
+        labels = [self.pose_interpolation_kernel if k == "device" else INTERPOLATION_LABELS[k] for k in used]
+        return labels[0] if len(labels) == 1 else "mixed:" + "+".join(labels)
 
     def check_valid(self):
         """Strict mode check: one int32 read; raises InvalidBatchEnvs with env ids and reasons."""
@@ -751,11 +775,18 @@ class BatchedCuttingMaterial:
         B = self.solver.boxes
         pads = pk.uniform["recipients"] is not None and any(r is not None for r in pk.uniform["recipients"])
         reasons = [] if pads else ["no_finger_pad_obstacles"]
+        if pads and self.box_updates == 0:
+            # set_obstacle_boxes never called: pads stay at their packed edge-frame boxes unless a backend wrote
+            # box_centers/box_halves in place itself.
+            reasons.append("pad_boxes_not_updated_through_set_obstacle_boxes")
         return {"runtime": RUNTIME, "version": MATERIAL_BATCH_VERSION, "backend": BACKEND, "device": self.device,
                 "parity_mode": self.parity_mode, "strict": self.strict, "graph": self.capture_receipt,
-                "pose_interpolation": self.pose_interpolation, "control_dt_s": self.control_dt,
+                "pose_interpolation": self.pose_interpolation,
+                "pose_interpolation_steps": dict(self.interpolation_steps),
+                "pose_interpolation_kernel": self.pose_interpolation_kernel,
+                "obstacle_box_updates": self.box_updates, "control_dt_s": self.control_dt,
                 "feedback": self.feedback, "obstacle_boxes": B, "layout": pk.layout_receipt(),
                 "solver": self.solver.solver_receipt(), "envs": pk.receipts,
-                "material_fidelity_reasons": reasons,
+                "material_fidelity_reasons": reasons, "batched_source_sha256": batched_source_sha256(),
                 "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "memory_bytes": self.memory_bytes(),
                 "build_wall_s": self.build_wall_s}
