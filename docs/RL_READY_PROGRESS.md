@@ -15,8 +15,17 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   2. P1-1b: S1 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md): G0/T2/G1 PASS, robot-only and with-material
      G2 rows SHARED_GPU, table fix 359ce0d); now S2 (B2 grasp + material, G3–G5) and S3 (TRIM seeds 512/15 with
      recorded commands, frozen evaluator) + reward/evaluator wiring, GPU0/GPU1 under their locks.
-  3. P1-3a `alias_free_v1` contact mode in a separate worktree `/home/ningan/RoboticCuttingSim-rl-p13`
-     (branch `claude/rl-p1-3a`, merged back after M2) — design: [P1_3_BOTTLENECK_ANALYSIS.md](reports/rl_ready/P1_3_BOTTLENECK_ANALYSIS.md).
+  3. P1-3a DONE on branch `claude/rl-p1-3a` (worktree `/home/ningan/RoboticCuttingSim-rl-p13`, head 25c4fc1 after a
+     trial merge of this branch, no conflicts; merge here after the P1-2 chain ends). Opt-in
+     `particle_contact_mode="alias_free_v1"` (C2 alias-free hash dims + C1 + speed guard with conditional-node
+     fallback); default `frozen_v1` kernel source byte-identical. Contact stage −49…−51 %, full control step
+     1.40–1.45× at N=1/4/8/16 (all SHARED_GPU); same-state contacts/impulses equal; full episodes N=1 (s512, s15) and
+     N=4: final codes = Native, frozen evaluator PASS. Not done: EXCLUSIVE_GPU timing, RUN_TO_RUN, C3.
+     **Warp 1.17 finding:** one static host hash-grid descriptor — a replayed graph uses the *last-built* grid, so any
+     process holding 2+ `wp.HashGrid`s computes contacts on the wrong grid for all but the last-built one (probe
+     `scripts/rl_ready/probe_hashgrid_descriptor.py`: 8,804,086 → 0 candidates). `alias_free_v1` is protected;
+     `frozen_v1` is still exposed. Multi-variant in-process A/B runs are INVALID; P1-2 and P1-1b agents are auditing
+     their runs for multi-grid processes (label `INVALID_MULTI_GRID_PROCESS`).
   4. P1-6: design DONE in the external agentic optimizer repository (design doc + ADR + CPU scaffold, 35 tests);
      its thin adapter (worktree/proposal/bench/accept/PR/pin/receipt) is being implemented there, CPU only.
      Cycle 1 baseline = the Phase 1 merge on RCS `main`. RCS-side prerequisite R0 (after P1-2 and P1-3a land):
