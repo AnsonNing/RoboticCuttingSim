@@ -7,14 +7,15 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 
 ## 進行中
 
-- P1-1 core DONE + xhigh review PASS_WITH_LIMITATIONS ([record](reports/rl_ready/P1_1_CORE_REVIEW.md));
-  review fixes running (fixer agent: reset ordering MAJOR, stronger parity/poison tests, pad-box setter,
-  receipts; then `backend="isaac_lab_newton"` coupling + error codes).
-- P1-1b stage S0 DONE (CPU, bitwise C1–C4/T1/T3; Isaac Lab env on the Warp CPU device; commits dbe388e…20a8cfd).
-  Now S1 robot-only GPU probes on **GPU0** under `rcs_rl_runner/gpu0.lock` → `artifacts/rl_ready/p1_1b/`.
-- P1-2 integration + M0/M1/M2 running on GPU1 under `rcs_rl_runner/gpu1.lock` → `artifacts/rl_ready/p1_2/`.
-- Both GPUs are shared with other projects' jobs: rows are `SHARED_GPU`; formal rows rerun later.
-- Next: P1-1/P1-2 acceptance review → P1-1b with material → P1-3 (`_particle_contacts`) → P1-4/P1-5 → P1-6.
+- P1-1 core DONE; review fixes DONE (204 CPU tests PASS; `isaac_lab_newton` coupling + error codes added).
+- Running agents:
+  1. P1-2 integration + milestones (GPU1, `rcs_rl_runner/gpu1.lock`): M0/M1 done, M2 N=8/16 running on post-fix
+     HEAD → `artifacts/rl_ready/p1_2/`, report `docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`.
+  2. P1-1b S1 robot-only GPU probes (GPU0, `rcs_rl_runner/gpu0.lock`) → `artifacts/rl_ready/p1_1b/`.
+  3. P1-3a `alias_free_v1` contact mode in a separate worktree `/home/ningan/RoboticCuttingSim-rl-p13`
+     (branch `claude/rl-p1-3a`, merged back after M2) — design: [P1_3_BOTTLENECK_ANALYSIS.md](reports/rl_ready/P1_3_BOTTLENECK_ANALYSIS.md).
+- Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
+- Next: P1-1/P1-2 acceptance review → merge P1-3a → P1-1b with material → P1-4 long rollout → P1-5 parity matrix → P1-6.
 
 ## 待使用者決定
 
@@ -49,6 +50,7 @@ material without Kit/robot (replayed measured edge + pad boxes). Not one speedup
 
 ## Log
 
+- 2026-11-10 — P1-1 review fixes done; P1-3 analysis committed (hash aliasing: ~58 % spurious candidates; C1/C2 bitwise); P1-3a started in worktree `RoboticCuttingSim-rl-p13`.
 - 2026-11-10 — P1-1b S0 PASS (CPU bitwise); P1-1 review fixes started; S1 robot-only GPU on GPU0.
 - 2026-11-10 — P1-1 core done (bitwise CPU parity/isolation/reset; GPU smoke PASS); vector env + milestones started; P1-1 xhigh review started.
 - 2026-11-10 — P1-0 PASS; ADR 0022 accepted (D-10); pytest pythonpath fix (45ecf92).
