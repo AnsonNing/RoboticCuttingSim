@@ -127,6 +127,8 @@ def _validate_material(material):
         raise TypeError("EnvSpec.material must be a LiveCuttingMaterial")
     if material.solver != SOLVER:
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"solver {material.solver!r}; only {SOLVER}")
+    if material.task is None:
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", "legacy material without a compiled task")
     if material.tool_profile is None:
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", "legacy wedge path without a tool profile")
     if not material.v7_2_optimizations:
@@ -234,7 +236,7 @@ def pack(specs, *, constitutive_model=constitutive.DEFAULT_MODEL_ID):
         meta.append(dict(T_world_local=np.asarray(m.T_world_local, float),
                          measured_edge_pose=np.asarray(m.last_pose, float), seed=int(m.seed),
                          control_dt=float(m.config.control_dt), substeps=int(m.substeps),
-                         recipients=m.obstacle_reaction_recipients,
+                         recipients=m.obstacle_reaction_recipients, tool_profile=m.tool_profile.to_dict(),
                          scene_key=spec.scene_key if spec.scene_key is not None
                          else getattr(m.task, "config_sha256", None),
                          parameter_receipt=m.parameter_receipt, reset_receipt=reset_receipt))
@@ -260,6 +262,9 @@ def pack_from_beds(beds, meta=None, *, constitutive_model=constitutive.DEFAULT_M
         signature, tool_keys = uniform_signature(bed, m.get("control_dt"))
         signatures.append(signature)
     check_uniform(signatures, tool_keys)
+    profiles = [m.get("tool_profile") for m in meta]
+    if any(p != profiles[0] for p in profiles):
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_PER_ENV_TOOL_PROFILE", "tool profiles differ")
     recipients = [m.get("recipients") for m in meta]
     if any(r != recipients[0] for r in recipients):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH", "obstacle reaction recipients differ")
