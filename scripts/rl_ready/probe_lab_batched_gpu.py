@@ -273,7 +273,7 @@ def main():
            "material_dt_s": 1e-4 if args.material else None,
            "material": args.material or "none (robot-only)", "cameras": "none", "recording": "none",
            "use_cuda_graph": not args.no_graph, "deterministic_mode": options.deterministic_mode,
-           "strict_mode": not args.non_strict, "gpu": gpu, "commit": _commit(), "workload": "B (robot-only)", **fidelity,
+           "strict_mode": not args.non_strict, "gpu": gpu, "commit": _commit(), "workload": "B" if args.material else "B (robot-only)", **fidelity,
            "boundary": "batched_headless (Isaac Lab Newton/MJWarp kit-less, one process)"}
     device = "cuda:0"
     with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": device}):
