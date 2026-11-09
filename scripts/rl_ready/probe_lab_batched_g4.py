@@ -80,7 +80,8 @@ def mode_batched(args, out):
     q0, amp = np.asarray(source["settled_q"], float), np.asarray(source["amplitude_rad"], float)
     task = configure_task(make_task(TASK_ID, seed=42), scenario=None, material_profile_id=None)   # as make_lab_cfg
     options = lab_scene.BatchedLabOptions(num_envs=1, tool_mount="physical_grasp_v1", device="cuda:0",
-                                          feedback=False, initial_joint_positions=tuple(q0), seed=42)
+                                          feedback=False, initial_joint_positions=tuple(q0), seed=42,
+                                          strict=not args.non_strict)
     cfg = lab_scene.make_batched_lab_cfg(options, task)
     rows = []
     with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": "cuda:0"}):
@@ -96,8 +97,11 @@ def mode_batched(args, out):
             jp = env.robots[0].data.joint_pos.torch.cpu().numpy()[0]
             rows.append(dict(arm_q=jp[arm].astype(float), hand=body[env.tables["hand"][0]].astype(float),
                              tool=body[env.tables["tool"][0]].astype(float), finger=jp[fingers].astype(float)))
-        info = dict(grasp_initialization={k: v for k, v in (env.grasp_initialization or {}).items()
-                                          if k != "accumulators"}, initial_q=q0.tolist(), amplitude_rad=amp.tolist())
+        info = dict(grasp_initialization=dict(env.grasp_initialization or {}), initial_q=q0.tolist(),
+                    amplitude_rad=amp.tolist(), strict=not args.non_strict,
+                    accumulator_columns=["rows", "bilateral_sum", "max_translation_m", "max_rotation_rad",
+                                         "max_linear_speed_m_s", "max_angular_speed_rad_s", "max_penetration_m",
+                                         "unintended_slots"])
     return rows, info
 
 
@@ -139,6 +143,7 @@ def main():
     parser.add_argument("--initial-from", default=None, help="batched: a single run directory (settled q)")
     parser.add_argument("--singles", nargs="*", default=())
     parser.add_argument("--batched", nargs="*", default=())
+    parser.add_argument("--non-strict", action="store_true", help="batched: record a failed settle gate, continue")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     out = Path(args.out)

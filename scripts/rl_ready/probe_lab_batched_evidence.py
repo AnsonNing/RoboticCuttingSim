@@ -55,16 +55,30 @@ def _native_wp17(seed):
 
 def s2_s3(args):
     rows = {p.parent.name: _load(p) for p in sorted(RAW.glob("*/row.json"))
-            if p.parent.name.startswith(("g3_", "s3_b", "g2mat_b2_"))}
+            if p.parent.name.startswith(("g3_", "s3_b", "g2mat_b2_", "g0_det_b2", "hashgrid_check"))}
+    crashed = {}
+    for d in sorted(RAW.glob("*")):
+        if d.name.startswith(("g3_", "s3_b", "g2mat_b2_", "g4_", "g5_")) and d.is_dir() and not any(
+                (d/f).exists() for f in ("row.json", "g4.json", "g5.json", "g4_compare.json", "g3.json")):
+            log = (d/"stdout.log").read_text(errors="replace")[-3000:] if (d/"stdout.log").exists() else ""
+            reason = next((line for line in log.splitlines()[::-1] if "Error" in line or "Fatal" in line
+                           or "Segmentation" in line), "no row written")
+            aborted = (d/"aborted.json").exists()
+            crashed[d.name] = dict(status="ABORTED" if aborted else "FAIL_NO_ROW", reason=reason[:400],
+                                   detail=_load(d/"aborted.json") if aborted else None)
     out = {"schema": "rcs_rl_ready_p1_1b_s2_s3_v1", "work_package": "P1-1b stages S2 (B2 + material) and S3 (TRIM)",
            "adr": "docs/adr/0022-batched-robot-workload-b.md", "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md",
            "evidence_commit": subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
                                              cwd=ROOT).stdout.strip(), "rows": {}, "g4": {}, "g5": {},
            "native_wp17": {str(s): _native_wp17(s) for s in (512, 15)}, "material_results": "SIMULATOR_ONLY_UNCALIBRATED"}
+    out["failed_or_aborted_runs"] = crashed
     for name, r in rows.items():
         summary = _row_summary(name, r)
+        summary["workload"] = "B" if r.get("material") not in (None, "none (robot-only)") else "B (robot-only)"
+        summary["hashgrids"] = r.get("hashgrids", "not instrumented (row predates the HashGrid census)")
         for key in ("scene_seeds", "evaluation", "termination_reason", "reward_fractions", "engagement",
-                    "grasp_trace_summary", "grasp_snapshot", "recorded_policy", "driver"):
+                    "grasp_trace_summary", "grasp_snapshot", "recorded_policy", "driver", "grasp_initialization",
+                    "grip_material", "termination_trace"):
             if r.get(key) is not None:
                 summary[key] = r[key]
         if isinstance(summary.get("engagement"), dict):
