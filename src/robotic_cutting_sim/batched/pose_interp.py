@@ -1,16 +1,24 @@
-"""Device pose interpolation for the batched material coupling (ADR 0021 §7.1, ``device_f64_slerp_v1``).
+"""Device pose interpolation for the batched material coupling (ADR 0021 §7.1, ``device_f64_slerp_v2``).
 
-One Warp kernel reproduces, per env and per substep sample, the frozen host path of a
-control step::
+Two Warp kernels reproduce, per env and per substep sample, the live host chain of one
+``LiveCuttingMaterial.advance`` control step (``live_material.py:321,334,376``)::
 
-    live_material.advance -> coupled_robot.interpolate_measured_poses(
-        scene_frames.transform_poses(T_local_world, last_pose),
-        scene_frames.transform_poses(T_local_world, measured_pose), substeps, control_dt)
+    actual = robot.validate_pose(measured_pose)                 # finite, nonzero; q / np.linalg.norm(q)
+    poses, twists = coupled_robot.interpolate_measured_poses(
+        scene_frames.transform_poses(T_local_world, last_pose),  # last_pose = previous step's ``actual``
+        scene_frames.transform_poses(T_local_world, actual), substeps, control_dt)
+    last_pose = actual
 
-It computes in float64 with the same operation sequence as SciPy's numpy (Cython)
+* :func:`validate_measured` (dim N) is ``validate_pose`` plus the checks of ``transform_poses``: it writes
+  ``actual[N,7]`` (the measured pose with its quaternion divided by the OpenBLAS ``np.linalg.norm``) and
+  ``status[N]``. The caller stores ``actual`` as the next ``last_pose``, exactly as the live material does.
+* :func:`pose_interp` (dim ``(N, substeps+1)``) is ``transform_poses`` + ``interpolate_measured_poses`` from
+  ``last_pose`` to ``actual``.
+
+They compute in float64 with the same operation sequence as SciPy's numpy (Cython)
 ``Rotation`` backend (``from_quat`` / ``__mul__`` normalize; ``inv`` negates xyz;
 ``as_rotvec`` takes the canonical w >= 0 hemisphere; ``Slerp`` evaluates
-``q0 * exp(f * log(q0^-1 q1))``) and casts to float32 last, exactly where the frozen
+``q0 * exp(f * log(q0^-1 q1))``) and cast to float32 last, exactly where the frozen
 path calls ``astype(np.float32)``.
 
 Outputs are written in place into preallocated arrays with the layout of the frozen
@@ -20,27 +28,40 @@ Outputs are written in place into preallocated arrays with the layout of the fro
 * ``twists[N, T]`` ``wp.spatial_vector`` = the frozen ``(T, 6)`` float32 ``[linear, angular]`` rows;
 
 with ``T = substeps + 1``. A flat ``[N*T]`` solver array can be passed as
-``array.reshape((N, T))`` (a view). The launch allocates nothing and is graph-capturable.
+``array.reshape((N, T))`` (a view). With a preallocated ``actual`` the launches allocate nothing
+and are graph-capturable.
 
 The per-env workpiece rotation quaternion ``q_local_world[e]`` is computed once on the
 host at pack time with ``Rotation.from_matrix`` -- the call ``transform_poses`` repeats
 on every control step -- so it is bit-identical by construction.
 
-Validity: the frozen path raises on a non-finite pose (``validate_pose``) or a quaternion
-whose norm is not within 1e-6 of 1 (``validate_pose_xyzw``). The kernel cannot raise; it
-writes ``status[e]`` (``STATUS_OK``, ``STATUS_NONFINITE``, ``STATUS_NON_UNIT_QUATERNION``)
-and the outputs of a non-OK env are unspecified. The caller must treat such an env as
-invalid (strict mode: raise; training mode: terminate), never continue silently.
+Validity (``status[e]``), mirroring what the live chain raises on:
+
+* ``STATUS_NONFINITE``: a non-finite ``last_pose`` or ``measured_pose`` (``validate_pose`` /
+  ``validate_pose_xyzw``);
+* ``STATUS_ZERO_QUATERNION``: measured quaternion norm < 1e-8 (``validate_pose``: "Quaternion must be
+  nonzero");
+* ``STATUS_NON_UNIT_QUATERNION``: ``last_pose`` quaternion norm not within 1e-6 of 1, or a measured norm
+  that overflows (``transform_poses`` -> ``validate_pose_xyzw``).
+
+A measured quaternion of any other finite, nonzero norm is accepted and normalized, as the live material
+accepts it (``device_f64_slerp_v1`` refused norms outside 1 +- 1e-6 and normalized in a different order,
+which differed from the live chain by up to ~1e3 float32 ulp in the twists of 1e-9..1e-6 rad rotations
+of float32-rounded quaternions). The kernels cannot raise; the outputs of a non-OK env are unspecified and
+the caller must treat that env as invalid (strict mode: raise; training mode: terminate), never continue
+silently.
 """
 import numpy as np
 import warp as wp
 
-POSE_INTERPOLATION_VERSION = "device_f64_slerp_v1"
+POSE_INTERPOLATION_VERSION = "device_f64_slerp_v2"
 STATUS_OK = 0
 STATUS_NONFINITE = 1
 STATUS_NON_UNIT_QUATERNION = 2
-STATUS_NAMES = ("OK", "NONFINITE_POSE", "NON_UNIT_QUATERNION")
+STATUS_ZERO_QUATERNION = 3
+STATUS_NAMES = ("OK", "NONFINITE_POSE", "NON_UNIT_QUATERNION", "ZERO_QUATERNION")
 UNIT_TOLERANCE = 1e-6   # scene_frames.validate_pose_xyzw
+NONZERO_TOLERANCE = 1e-8   # robot.validate_pose
 
 
 # ----------------------------------------------------------------------------- exact float64 arithmetic
@@ -194,8 +215,9 @@ def _local_position(T: wp.mat44d, pose: wp.array2d(dtype=wp.float64), e: int):
 
 @wp.func
 def _local_quaternion(qT: wp.vec4d, pose: wp.array2d(dtype=wp.float64), e: int):
-    """``transform_poses`` (from_quat normalizes, compose normalizes), then ``validate_pose`` and the
-    interpolation's ``Rotation.from_quat`` (two further normalizations), in that order."""
+    """For an already validated pose (``last_pose`` or ``actual``): ``transform_poses`` (from_quat
+    normalizes, compose normalizes), then ``interpolate_measured_poses``' own ``validate_pose`` and
+    ``Rotation.from_quat`` (two further normalizations), in that order."""
     q = _normalize4(wp.vec4d(pose[e, 3], pose[e, 4], pose[e, 5], pose[e, 6]))
     q = _compose(qT, q)
     n = _norm4_blas(q)                       # robot.validate_pose: q / np.linalg.norm(q)
@@ -204,29 +226,44 @@ def _local_quaternion(qT: wp.vec4d, pose: wp.array2d(dtype=wp.float64), e: int):
 
 
 @wp.kernel
-def pose_interp(last_pose: wp.array2d(dtype=wp.float64), measured_pose: wp.array2d(dtype=wp.float64),
+def validate_measured(last_pose: wp.array2d(dtype=wp.float64), measured_pose: wp.array2d(dtype=wp.float64),
+                      actual: wp.array2d(dtype=wp.float64), status: wp.array(dtype=wp.int32)):
+    """dim = N. ``actual = validate_pose(measured)`` and the live chain's checks (module docstring)."""
+    e = wp.tid()
+    code = wp.int32(0)
+    nb = wp.float64(1.0)
+    if not (_finite7(last_pose, e) and _finite7(measured_pose, e)):
+        code = wp.int32(1)
+    else:
+        nb = _norm4_blas(wp.vec4d(measured_pose[e, 3], measured_pose[e, 4], measured_pose[e, 5], measured_pose[e, 6]))
+        na = _norm4_blas(wp.vec4d(last_pose[e, 3], last_pose[e, 4], last_pose[e, 5], last_pose[e, 6]))
+        if nb < wp.float64(1.0e-8):
+            code = wp.int32(3)
+        elif not wp.isfinite(nb) or wp.abs(na - wp.float64(1.0)) > wp.float64(1.0e-6):
+            code = wp.int32(2)
+    for i in range(3):
+        actual[e, i] = measured_pose[e, i]
+    for i in range(3, 7):
+        if code == wp.int32(0):
+            actual[e, i] = measured_pose[e, i]/nb
+        else:
+            actual[e, i] = measured_pose[e, i]
+    status[e] = code
+
+
+@wp.kernel
+def pose_interp(last_pose: wp.array2d(dtype=wp.float64), actual: wp.array2d(dtype=wp.float64),
                 T_local_world: wp.array(dtype=wp.mat44d), q_local_world: wp.array(dtype=wp.vec4d),
                 substeps: int, control_dt: wp.float64,
-                poses: wp.array2d(dtype=wp.transform), twists: wp.array2d(dtype=wp.spatial_vector),
-                status: wp.array(dtype=wp.int32)):
-    """dim = (N, substeps+1). World measured poses -> per-substep LOCAL tool poses and twists (float32)."""
+                poses: wp.array2d(dtype=wp.transform), twists: wp.array2d(dtype=wp.spatial_vector)):
+    """dim = (N, substeps+1). Validated WORLD poses -> per-substep LOCAL tool poses and twists (float32)."""
     e, k = wp.tid()
     T = T_local_world[e]
     qT = q_local_world[e]
-    if k == 0:
-        code = wp.int32(0)
-        if not (_finite7(last_pose, e) and _finite7(measured_pose, e)):
-            code = wp.int32(1)
-        else:
-            na = _norm4_blas(wp.vec4d(last_pose[e, 3], last_pose[e, 4], last_pose[e, 5], last_pose[e, 6]))
-            nb = _norm4_blas(wp.vec4d(measured_pose[e, 3], measured_pose[e, 4], measured_pose[e, 5], measured_pose[e, 6]))
-            if wp.abs(na - wp.float64(1.0)) > wp.float64(1.0e-6) or wp.abs(nb - wp.float64(1.0)) > wp.float64(1.0e-6):
-                code = wp.int32(2)
-        status[e] = code
     pa = _local_position(T, last_pose, e)
-    pb = _local_position(T, measured_pose, e)
+    pb = _local_position(T, actual, e)
     q0 = _local_quaternion(qT, last_pose, e)
-    q1 = _local_quaternion(qT, measured_pose, e)
+    q1 = _local_quaternion(qT, actual, e)
     f = wp.float64(k)/wp.float64(substeps)
     # Slerp([0, 1], [q0, q1])(f) = q0 * from_rotvec(as_rotvec(q0^-1 q1) * f)
     r = _as_rotvec(_compose(_inv(q0), q1))
@@ -299,9 +336,26 @@ def local_frames(T_local_world, device=None):
     return (wp.array(T, dtype=wp.mat44d, device=device), wp.array(q, dtype=wp.vec4d, device=device))
 
 
+def launch_validate_measured(last_pose, measured_pose, actual, status, device=None, stream=None):
+    """Launch :func:`validate_measured` over N (``actual`` and ``status`` are outputs)."""
+    N = last_pose.shape[0]
+    if last_pose.shape != (N, 7) or measured_pose.shape != (N, 7) or actual.shape != (N, 7) or status.shape != (N,):
+        raise ValueError(f"validate_measured shapes: last {last_pose.shape}, measured {measured_pose.shape}, "
+                         f"actual {actual.shape}, status {status.shape}")
+    if last_pose.dtype != wp.float64 or measured_pose.dtype != wp.float64 or actual.dtype != wp.float64:
+        raise ValueError("pose_interp inputs are float64 (the frozen host path is float64 until the final cast)")
+    wp.launch(validate_measured, dim=N, device=device if device is not None else actual.device, stream=stream,
+              inputs=[last_pose, measured_pose, actual, status])
+
+
 def launch_pose_interp(last_pose, measured_pose, T_local_world, q_local_world, poses, twists, status,
-                       substeps, control_dt, device=None, stream=None):
-    """Launch :func:`pose_interp` over ``(N, substeps+1)``; validates shapes only (no host sync, no allocation)."""
+                       substeps, control_dt, device=None, stream=None, *, actual=None):
+    """Launch :func:`validate_measured` (N) then :func:`pose_interp` (``(N, substeps+1)``).
+
+    ``last_pose`` is the previous step's validated pose (``LiveCuttingMaterial.last_pose``); ``actual``
+    (``[N,7]`` float64, output) receives ``validate_pose(measured_pose)`` -- the caller's next ``last_pose``.
+    Production passes a preallocated ``actual`` (then nothing is allocated and nothing syncs); without it a
+    scratch array is allocated (component tests). Validates shapes only."""
     N = last_pose.shape[0]
     T = int(substeps)+1
     if (substeps < 1 or last_pose.shape != (N, 7) or measured_pose.shape != (N, 7) or poses.shape != (N, T)
@@ -310,13 +364,16 @@ def launch_pose_interp(last_pose, measured_pose, T_local_world, q_local_world, p
         raise ValueError(f"pose_interp shapes: N={N}, T={T}; got last {last_pose.shape}, measured "
                          f"{measured_pose.shape}, poses {poses.shape}, twists {twists.shape}, "
                          f"T_local_world {T_local_world.shape}, q {q_local_world.shape}, status {status.shape}")
-    if last_pose.dtype != wp.float64 or measured_pose.dtype != wp.float64:
-        raise ValueError("pose_interp inputs are float64 (the frozen host path is float64 until the final cast)")
     if not np.isfinite(control_dt) or control_dt <= 0:
         raise ValueError("control_dt must be positive and finite")
-    wp.launch(pose_interp, dim=(N, T), device=device if device is not None else poses.device, stream=stream,
-              inputs=[last_pose, measured_pose, T_local_world, q_local_world, int(substeps),
-                      wp.float64(control_dt), poses, twists, status])
+    device = device if device is not None else poses.device
+    if actual is None:
+        actual = wp.empty((N, 7), dtype=wp.float64, device=device)
+    launch_validate_measured(last_pose, measured_pose, actual, status, device=device, stream=stream)
+    wp.launch(pose_interp, dim=(N, T), device=device, stream=stream,
+              inputs=[last_pose, actual, T_local_world, q_local_world, int(substeps), wp.float64(control_dt),
+                      poses, twists])
+    return actual
 
 
 def launch_fill_cuts(cut, cuts, device=None, stream=None, *, max_cuts=None, invalid_reason=None, flag=8):

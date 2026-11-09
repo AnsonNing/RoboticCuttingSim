@@ -65,3 +65,34 @@ def test_host_cut_digits_are_refused_before_any_state_change():
             material.advance(moved, [digit])
     assert compare_snapshots(env_state(material, 0), before) == []
     assert not np.array_equal(moved[0], before["material.measured_pose"])   # a refused write would show
+
+
+def _fk_like(pose, rotation_rad, scale):
+    """A float32-rounded, slightly non-unit quaternion, as an articulated FK chain delivers it."""
+    from scipy.spatial.transform import Rotation
+    out = np.array(pose, np.float64)
+    q = (Rotation.from_rotvec([0., 0., rotation_rad])*Rotation.from_quat(out[3:])).as_quat()*scale
+    out[3:] = q.astype(np.float32).astype(np.float64)
+    out[:3] = out[:3].astype(np.float32)
+    return out
+
+
+@pytest.mark.cpu_sim
+def test_device_pose_path_equals_the_live_chain_end_to_end():
+    """Review finding 5: advance(interpolation="device") equals the host_reference (frozen SciPy live chain)
+    path bitwise over every array, for non-unit float32 quaternions and 1e-9..1e-3 rad rotations, including
+    the stored last_pose (= validate_pose(measured), as LiveCuttingMaterial.last_pose)."""
+    configs = [(512, None, 42), (15, None, 43)]
+    device, host = batch_material(configs), batch_material(configs)
+    starts = [start_pose(512), start_pose(15)]
+    plan = ((.001, 1e-9, 1+3e-7, 0), (.001, 2e-6, 1-4e-7, 0), (.0005, 1e-3, 1+9e-7, -1))
+    for step, (dx, angle, scale, cut) in enumerate(plan):
+        poses = np.stack([_fk_like(_moved(p, dx*(step+1)), angle*(step+1), scale) for p in starts])
+        assert np.abs(np.linalg.norm(poses[:, 3:], axis=1)-1).max() > 1e-7      # not exactly unit
+        device.advance(poses, np.array([cut, cut], np.int32), interpolation="device")
+        host.advance(poses, np.array([cut, cut], np.int32), interpolation="host_reference")
+        for e in range(2):
+            assert compare_snapshots(env_state(device, e), env_state(host, e)) == [], (step, e)
+        assert np.array_equal(device.actual_pose.numpy(), host.actual_pose.numpy())
+    assert device.pose_status.numpy().tolist() == [0, 0]
+    assert np.count_nonzero(device.snapshot(0)["code"]) > 0

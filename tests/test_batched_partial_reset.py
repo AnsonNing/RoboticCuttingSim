@@ -39,13 +39,15 @@ def _all_arrays(material):
 
 def _classified():
     solver = set(MB.SOLVER_RESET_ARRAYS) | set(MB.SOLVER_CONSTANT_ARRAYS) | set(MB.SOLVER_SHARED_ARRAYS)
-    material = set(MB.MATERIAL_RESET_ARRAYS) | set(MB.MATERIAL_CONSTANT_ARRAYS) | set(MB.RECOMPUTED_EVERY_CONTROL_STEP)
+    material = (set(MB.MATERIAL_RESET_ARRAYS) | set(MB.MATERIAL_CONSTANT_ARRAYS)
+                | set(MB.RECOMPUTED_EVERY_CONTROL_STEP) | set(MB.RESET_INPUTS))
     return ({f"solver.{n}" for n in solver} | material | {f"diagnostics.{n}" for n in MB.DIAGNOSTICS_SCRATCH})
 
 
 def _compare_all(a, b, skip=()):
     """Names of arrays (all of vars()) that differ, except recomputed scratch and ``skip``."""
-    excluded = set(MB.RECOMPUTED_EVERY_CONTROL_STEP) | {f"diagnostics.{n}" for n in MB.DIAGNOSTICS_SCRATCH}
+    excluded = (set(MB.RECOMPUTED_EVERY_CONTROL_STEP) | set(MB.RESET_INPUTS)
+                | {f"diagnostics.{n}" for n in MB.DIAGNOSTICS_SCRATCH})
     arrays_a, arrays_b = _all_arrays(a), _all_arrays(b)
     assert set(arrays_a) == set(arrays_b)
     return [n for n in arrays_a if n not in excluded and n not in skip

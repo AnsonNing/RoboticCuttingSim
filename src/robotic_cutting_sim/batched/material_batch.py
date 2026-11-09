@@ -64,7 +64,10 @@ MATERIAL_CONSTANT_ARRAYS = ("R_world_local", "T_local_world", "q_local_world", "
                             "initial_local_pose", "initial_previous_pose", "initial_link_previous_pose",
                             "initial_box_centers", "initial_box_halves", "initial_measured_pose", "initial_seed")
 # Scratch recomputed from scratch in every control step before being read.
-RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count", "reset_mask", "reset_seed")
+RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count", "actual_pose")
+# Inputs of reset_masked(): written by reset() (or by a caller through device views) right before it, read
+# only by it, never by a control step. They keep the last reset's values (not a fresh-pack value).
+RESET_INPUTS = ("reset_mask", "reset_seed")
 DIAGNOSTICS_SCRATCH = ("partials", "summary")
 
 
@@ -137,11 +140,12 @@ def _validity_b(summary: wp.array2d(dtype=float), slot_overflow: wp.array(dtype=
 
 @wp.kernel
 def _finish_control_step(step_count: wp.array(dtype=wp.int64), last_pose: wp.array2d(dtype=wp.float64),
-                         measured_pose: wp.array2d(dtype=wp.float64)):
+                         actual_pose: wp.array2d(dtype=wp.float64)):
+    """``LiveCuttingMaterial.advance``: ``self.last_pose = actual`` (= ``validate_pose(measured)``)."""
     e = wp.tid()
     step_count[e] = step_count[e]+wp.int64(1)
     for k in range(7):
-        last_pose[e, k] = measured_pose[e, k]
+        last_pose[e, k] = actual_pose[e, k]
 
 
 @wp.kernel
@@ -364,6 +368,7 @@ class BatchedCuttingMaterial:
             self.initial_measured_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
             self.last_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
             self.measured_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
+            self.actual_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
             self.cut_input = wp.full(N, -1, dtype=wp.int32)
             self.pose_status = wp.zeros(N, dtype=wp.int32)
             self.invalid_reason = wp.zeros(N, dtype=int)
@@ -438,7 +443,7 @@ class BatchedCuttingMaterial:
         s, N, T = self.solver, self.num_envs, self.solver.trajectory_length
         launch_pose_interp(self.last_pose, self.measured_pose, self.T_local_world, self.q_local_world,
                            s.poses.reshape((N, T)), s.twists.reshape((N, T)), self.pose_status, s.substeps,
-                           self.control_dt, device=self.device)
+                           self.control_dt, device=self.device, actual=self.actual_pose)
         # Out-of-range digits are disarmed and flagged before the substeps run (review finding 4).
         launch_fill_cuts(self.cut_input, s.cuts.reshape((N, T)), device=self.device, max_cuts=s.max_cuts,
                          invalid_reason=self.invalid_reason, flag=INVALID_CUT_DIGIT)
@@ -455,8 +460,12 @@ class BatchedCuttingMaterial:
         from ..scene_frames import invert_transform
         s, T = self.solver, self.solver.trajectory_length
         # As LiveCuttingMaterial.advance: actual = validate_pose(measured); last_pose holds the previous actual.
-        actual = np.stack([validate_pose(p) for p in np.asarray(measured_pose, np.float64)])
-        self.set_measured_poses(actual, cut)
+        raw = np.asarray(measured_pose, np.float64)
+        if raw.shape != (self.num_envs, 7):
+            raise ValueError(f"measured_pose must be [{self.num_envs}, 7]")
+        actual = np.stack([validate_pose(p) for p in raw])
+        self.set_measured_poses(raw, cut)
+        self.actual_pose.assign(actual)
         last = self.last_pose.numpy()
         T_world_local = self.packed.env["T_world_local"]
         poses, twists = [], []
@@ -496,8 +505,11 @@ class BatchedCuttingMaterial:
         if interpolation == "device":
             self._interpolate_device()
         elif interpolation == "preset":
-            from .pose_interp import launch_disarm_invalid_cuts
+            from .pose_interp import launch_disarm_invalid_cuts, launch_validate_measured
             s = self.solver
+            # last_pose bookkeeping and pose_status follow the measured buffer as in the device path.
+            launch_validate_measured(self.last_pose, self.measured_pose, self.actual_pose, self.pose_status,
+                                     device=self.device)
             launch_disarm_invalid_cuts(s.cuts.reshape((self.num_envs, s.trajectory_length)), s.max_cuts,
                                        self.invalid_reason, INVALID_CUT_DIGIT, device=self.device)
         s = self.solver
@@ -515,7 +527,7 @@ class BatchedCuttingMaterial:
             self.invalid_count.zero_()
             wp.launch(_validity_b, self.num_envs, [self.diagnostics.summary, s.slot_overflow, self.pose_status,
                 self.cut_input, s.max_cuts, self.pending_wrench, self.invalid_reason, self.invalid_count])
-            wp.launch(_finish_control_step, self.num_envs, [self.step_count, self.last_pose, self.measured_pose])
+            wp.launch(_finish_control_step, self.num_envs, [self.step_count, self.last_pose, self.actual_pose])
         if self.strict:
             self.check_valid()
 

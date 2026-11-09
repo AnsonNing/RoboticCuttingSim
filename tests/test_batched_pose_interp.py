@@ -1,7 +1,11 @@
 """ADR 0021 §7.1: the device pose interpolation equals the frozen SciPy path to <= 1 float32 ulp.
 
-Reference per env: ``interpolate_measured_poses(transform_poses(T_e, last), transform_poses(T_e, measured),
-substeps, control_dt)`` -- the call ``live_material.advance`` makes. Runs on the Warp CPU device.
+Reference per env -- the live chain of ``LiveCuttingMaterial.advance`` (``live_material.py:321,334,376``)::
+
+    actual = validate_pose(measured)
+    interpolate_measured_poses(transform_poses(T_e, last), transform_poses(T_e, actual), substeps, control_dt)
+
+where ``last`` is the previous step's ``actual`` (a validated pose). Runs on the Warp CPU device.
 """
 import numpy as np
 import pytest
@@ -12,6 +16,7 @@ from scipy.spatial.transform import Rotation  # noqa: E402
 
 from robotic_cutting_sim.batched import pose_interp as PI  # noqa: E402
 from robotic_cutting_sim.coupled_robot import interpolate_measured_poses  # noqa: E402
+from robotic_cutting_sim.robot import validate_pose  # noqa: E402
 from robotic_cutting_sim.scene_frames import invert_transform, pose_matrix, transform_poses  # noqa: E402
 
 DEVICE = "cpu"
@@ -37,31 +42,40 @@ def _random_transforms(rng, n):
 
 
 def _reference(last, measured, T_local_world):
+    """The live chain; ``last`` rows are validated poses (the live ``last_pose``)."""
     poses, twists = [], []
     for a, b, T in zip(last, measured, T_local_world):
-        p, t = interpolate_measured_poses(transform_poses(T, a), transform_poses(T, b), SUBSTEPS, DT)
+        p, t = interpolate_measured_poses(transform_poses(T, a), transform_poses(T, validate_pose(b)), SUBSTEPS, DT)
         poses.append(p)
         twists.append(t)
     return np.stack(poses), np.stack(twists)
 
 
-def _device(last, measured, T_local_world):
+def _device(last, measured, T_local_world, return_actual=False):
     N, T = len(last), SUBSTEPS+1
     Tw, qw = PI.local_frames(T_local_world, device=DEVICE)
     poses = wp.zeros((N, T), dtype=wp.transform, device=DEVICE)
     twists = wp.zeros((N, T), dtype=wp.spatial_vector, device=DEVICE)
     status = wp.full(N, -1, dtype=wp.int32, device=DEVICE)
+    actual = wp.zeros((N, 7), dtype=wp.float64, device=DEVICE)
     PI.launch_pose_interp(wp.array(np.asarray(last, np.float64), dtype=wp.float64, device=DEVICE),
                           wp.array(np.asarray(measured, np.float64), dtype=wp.float64, device=DEVICE),
-                          Tw, qw, poses, twists, status, SUBSTEPS, DT)
+                          Tw, qw, poses, twists, status, SUBSTEPS, DT, actual=actual)
     wp.synchronize_device(DEVICE)
-    return poses.numpy().reshape(N, T, 7), twists.numpy().reshape(N, T, 6), status.numpy()
+    out = poses.numpy().reshape(N, T, 7), twists.numpy().reshape(N, T, 6), status.numpy()
+    return (*out, actual.numpy()) if return_actual else out
+
+
+def _validated(poses):
+    return np.stack([validate_pose(p) for p in np.asarray(poses, np.float64)])
 
 
 def _check(last, measured, T_local_world, label):
+    last = _validated(last)          # the device last_pose holds the previous validated pose, as live
     ref_p, ref_t = _reference(last, measured, T_local_world)
-    dev_p, dev_t, status = _device(last, measured, T_local_world)
+    dev_p, dev_t, status, actual = _device(last, measured, T_local_world, return_actual=True)
     assert (status == PI.STATUS_OK).all(), label
+    assert np.array_equal(actual, _validated(measured)), label   # validate_pose(measured), bitwise
     up, ut = ulp_distance(dev_p, ref_p), ulp_distance(dev_t, ref_t)
     worst = {"pose_max_ulp": int(up.max()), "twist_max_ulp": int(ut.max()),
              "pose_components_off_by_1ulp": int((up == 1).sum()), "twist_components_off_by_1ulp": int((ut == 1).sum()),
@@ -154,18 +168,80 @@ def test_layout_matches_frozen_set_trajectory_arrays():
         assert ulp_distance(frozen_p, dev_p[e]).max() <= 1 and ulp_distance(frozen_t, dev_t[e]).max() <= 1
 
 
-def test_status_codes_for_inputs_the_frozen_path_rejects():
-    last = np.tile([0., 0., .03, 0., 0., 0., 1.], (4, 1))
+@pytest.mark.filterwarnings("ignore:overflow encountered")
+def test_status_codes_follow_the_live_chain():
+    """Review finding 5: the live chain normalizes the measured quaternion (validate_pose) before
+    transform_poses, so any finite nonzero norm is accepted; it refuses nonfinite poses, a zero quaternion
+    and a non-unit previous pose (validate_pose_xyzw in transform_poses)."""
+    last = np.tile([0., 0., .03, 0., 0., 0., 1.], (8, 1))
     measured = last.copy()
     measured[1, 0] = np.nan
-    measured[2, 3:] = [0., 0., 0., 1.+1e-5]
-    measured[3, 3:] = [0., 0., 0., 1.+5e-7]   # inside validate_pose_xyzw's 1e-6 tolerance
-    T = np.repeat(np.eye(4)[None], 4, 0)
+    measured[2, 3:] = [0., 0., .1, 1.+1e-5]
+    measured[3, 3:] = [0., 0., 0., 1.+5e-7]
+    measured[4, 3:] = [0., 3., 0., 4.]         # norm 5: accepted and normalized, as live
+    measured[5, 3:] = [0., 0., 0., 1e-9]      # zero quaternion
+    last[6, 3:] = [0., 0., 0., 1.+1e-5]       # a non-unit previous pose
+    measured[7, 3:] = [1e308, 1e308, 0., 0.]  # norm overflows
+    T = np.repeat(np.eye(4)[None], 8, 0)
     _, _, status = _device(last, measured, T)
-    assert status.tolist() == [PI.STATUS_OK, PI.STATUS_NONFINITE, PI.STATUS_NON_UNIT_QUATERNION, PI.STATUS_OK]
-    with pytest.raises(ValueError):
-        transform_poses(np.eye(4), measured[2])
-    _check(last[[3]], measured[[3]], T[:1], "near-unit input")
+    expected = [PI.STATUS_OK, PI.STATUS_NONFINITE, PI.STATUS_OK, PI.STATUS_OK, PI.STATUS_OK,
+                PI.STATUS_ZERO_QUATERNION, PI.STATUS_NON_UNIT_QUATERNION, PI.STATUS_NON_UNIT_QUATERNION]
+    assert status.tolist() == expected
+    # The host chain agrees on every row: accepted rows pass, refused rows raise.
+    for e, code in enumerate(expected):
+        def chain():
+            actual = validate_pose(measured[e])
+            return transform_poses(np.eye(4), last[e]), transform_poses(np.eye(4), actual)
+        if code == PI.STATUS_OK:
+            chain()
+        else:
+            with pytest.raises(ValueError):
+                chain()
+    ok = [0, 2, 3, 4]
+    _check(last[ok], measured[ok], T[ok], "non-unit measured norms")
+
+
+@pytest.mark.parametrize("angle", [0., 1e-12, 1e-9, 1e-7, 1e-6, 1e-5, 1e-3, 1e-2, 1., 3.])
+def test_float32_fk_quaternions_equal_the_live_chain_bitwise(angle):
+    """Float32 FK quaternions (norm off by ~1e-8): 0 ulp against the live chain, including the 1e-9..1e-6 rad
+    rotations where device_f64_slerp_v1 differed by up to ~1e3 float32 ulp in the twist."""
+    rng = np.random.default_rng(int(angle*1e6)+17)
+    N = 64
+    q0 = Rotation.random(N, random_state=rng).as_quat().astype(np.float32).astype(np.float64)
+    axes = rng.normal(size=(N, 3))
+    axes /= np.linalg.norm(axes, axis=1, keepdims=True)
+    q1 = (Rotation.from_rotvec(axes*angle)*Rotation.from_quat(q0)).as_quat().astype(np.float32).astype(np.float64)
+    raw_last = np.c_[rng.uniform(-.1, .1, (N, 3)).astype(np.float32), q0]
+    measured = np.c_[raw_last[:, :3]+np.float32(1e-3), q1]
+    T = _random_transforms(rng, N)
+    T[:N//4] = invert_transform(pose_matrix([0., 0., .01, 0., 0., 0., 1.]))   # TRIM workpiece frame
+    last = _validated(raw_last)
+    ref_p, ref_t = _reference(last, measured, T)
+    dev_p, dev_t, status = _device(last, measured, T)
+    assert (status == PI.STATUS_OK).all()
+    assert ulp_distance(dev_p, ref_p).max() == 0 and ulp_distance(dev_t, ref_t).max() == 0
+
+
+def test_multi_step_chain_uses_the_validated_previous_pose():
+    """Three control steps of raw FK poses: device last_pose <- actual equals live last_pose <- actual."""
+    rng = np.random.default_rng(23)
+    N, steps = 16, 3
+    T = _random_transforms(rng, N)
+    q = Rotation.random(N, random_state=rng)
+    raw = [np.c_[rng.uniform(-.1, .1, (N, 3)), q.as_quat()]]
+    for _ in range(steps):
+        q = Rotation.from_rotvec(rng.normal(size=(N, 3))*1e-7)*q
+        raw.append(np.c_[raw[-1][:, :3]+rng.normal(scale=1e-4, size=(N, 3)), q.as_quat().astype(np.float32)])
+    live_last = _validated(raw[0])
+    device_last = live_last.copy()
+    for k in range(1, steps+1):
+        ref_p, ref_t = _reference(live_last, raw[k], T)
+        dev_p, dev_t, status, actual = _device(device_last, raw[k], T, return_actual=True)
+        assert (status == PI.STATUS_OK).all()
+        assert np.array_equal(dev_p, ref_p) and np.array_equal(dev_t, ref_t), k
+        live_last = _validated(raw[k])
+        device_last = actual
+        assert np.array_equal(device_last, live_last)
 
 
 def test_fill_cuts_and_shape_guards():
