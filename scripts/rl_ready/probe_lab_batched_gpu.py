@@ -516,4 +516,6 @@ def main():
 
 
 if __name__ == "__main__":
+    import faulthandler
+    faulthandler.enable()   # infrastructure failures (SIGSEGV) leave a Python stack in stdout.log
     main()
