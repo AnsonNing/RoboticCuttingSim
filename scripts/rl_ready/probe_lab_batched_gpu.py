@@ -282,7 +282,10 @@ def main():
         t_reset = time.perf_counter()
         if args.probe == "g0":
             env.frames.external_wrench.assign(np.tile([0., 0., EXTERNAL_FORCE_N, 0., 0., 0.], (args.num_envs, 1)))
-        env.step(_actions(args.num_envs, 0, device))
+        driven = args.driver != "scripted"
+        if not driven:
+            env.step(_actions(args.num_envs, 0, device))
+        # driven rows (reference/recorded/hold): the first control step is the driver's step 1, timed as cold below
         torch.cuda.synchronize()
         t_first = time.perf_counter()
         row["cold"] = {"imports_s": t_import-t_start, "build_s": t_build-t_import, "reset_s": t_reset-t_build,
@@ -362,6 +365,10 @@ def main():
                          else "FAIL"}
         else:
             for step in range(1, args.steps+1):
+                if driven and step == 2:
+                    row["cold"]["first_step_s"] = walls.pop(0)
+                    row["cold"]["process_to_first_step_s"] += row["cold"]["first_step_s"]
+                    row["cold"]["first_step_note"] = "first driver step (graph capture inside), excluded from warm"
                 if args.probe == "g3" and step == args.restore_step and args.restore_env is not None:
                     mask = torch.zeros(args.num_envs, dtype=torch.bool, device=device)
                     mask[args.restore_env] = True
@@ -420,11 +427,11 @@ def main():
                 if args.probe in ("g0", "g1", "g3"):
                     record()
             total = float(np.sum(walls))
-            row["warm"] = {"steps": args.steps, "wall_s_total": total, "step_wall_s_mean": float(np.mean(walls)),
+            row["warm"] = {"steps": len(walls), "episode_steps_driven": args.steps if driven else None, "wall_s_total": total, "step_wall_s_mean": float(np.mean(walls)),
                            "step_wall_s_p50": float(np.percentile(walls, 50)),
                            "step_wall_s_p95": float(np.percentile(walls, 95)),
-                           "env_steps_per_s": args.num_envs*args.steps/total,
-                           "aggregate_sim_time_per_wall": args.num_envs*args.steps*.02/total,
+                           "env_steps_per_s": args.num_envs*len(walls)/total,
+                           "aggregate_sim_time_per_wall": args.num_envs*len(walls)*.02/total,
                            "resets": len(reset_walls),
                            "reset_p95_s": float(np.percentile(reset_walls, 95)) if reset_walls else None,
                            "torch_max_memory_allocated_bytes": int(torch.cuda.max_memory_allocated()),
