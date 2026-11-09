@@ -180,7 +180,7 @@ class BatchedLabOptions:
 def rigid_scene_key(task):
     """Everything of a task that shapes the shared rigid scene or the per-world HOME (ADR 0022 §3.1)."""
     home = getattr(task, "home", None) or {}
-    boxes = tuple((b.name, tuple(map(float, b.center_m)), tuple(map(float, b.half_extents_m)), b.role)
+    boxes = tuple((b.name, tuple(map(float, b.center_m)), tuple(map(float, b.half_extents_m)), getattr(b, "role", None))
                   for b in task.fixture_boxes_local)
     return {"table_top_world_z_m": float(task.table_top_world_z_m), "table_box": table_box(task),
             "fixture_boxes_local": boxes,

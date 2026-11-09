@@ -129,7 +129,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         if len(self.tasks) != int(options.num_envs):
             raise ValueError("tasks must hold one task per env")
         lab_scene.check_uniform_rigid_scene([task, *self.tasks])
-        if len({(float(t.duration_s), float(t.control_dt_s), int(t.max_cuts)) for t in self.tasks}) != 1:
+        if len({(float(t.duration_s), float(t.control_dt_s), int(getattr(t, "max_cuts", 1))) for t in self.tasks}) != 1:
             raise unsupported("UNSUPPORTED_NONUNIFORM_BATCH", "duration, control dt and max_cuts must be uniform")
         self._bound = False
         self._coupling_factory = coupling
@@ -182,7 +182,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                                 joint_names=list(self.robots[0].joint_names))
         # action, observation, per-env state (Torch views on the same device)
         T = np.stack([np.asarray(t.T_world_workpiece, float) for t in self.tasks])
-        self.action_spec = EdgeDeltaActionV1(self.task.action_limits(), T, int(self.task.max_cuts), device=self.device)
+        # registered v2 tasks (e.g. TRIM-01-R for G4) declare no action limits / cut digits: control defaults
+        from ..control import ActionLimits
+        limits = self.task.action_limits() if callable(getattr(self.task, "action_limits", None)) else ActionLimits()
+        self.action_spec = EdgeDeltaActionV1(limits, T, int(getattr(self.task, "max_cuts", 1)), device=self.device)
         self.max_steps = int(round(float(self.task.duration_s)/float(self.task.control_dt_s)))
         self.observation = StateObservation(N, max_steps=self.max_steps, control_dt=float(self.task.control_dt_s),
                                             device=self.device)
@@ -296,7 +299,23 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
 
     # ------------------------------------------------------------------ DirectRLEnv hooks
 
+    def step_joint_targets(self, arm_q):
+        """G4 TEST HARNESS ONLY (ADR 0022 §10: ``joint_position_rad`` exists only here): one control step with
+        Franka 0 arm targets ``arm_q [N,7]`` (rad) instead of an ``edge_delta_v1`` action -- no action spec, no IK,
+        no commanded-pose update. Fingers hold, velocity feed-forward and Franka 1 park as in a normal step,
+        mirroring the single Lab env's ``joint_position_rad`` mode."""
+        q = torch.as_tensor(arm_q, dtype=torch.float32, device=self.device)
+        if q.shape != (self.num_envs, 7):
+            raise ValueError(f"arm_q must be [{self.num_envs}, 7]")
+        self._joint_override = q
+        try:
+            return self.step(torch.zeros((self.num_envs, 8), device=self.device))
+        finally:
+            self._joint_override = None
+
     def _pre_physics_step(self, actions):
+        if getattr(self, "_joint_override", None) is not None:
+            return self._pre_physics_joint_override(self._joint_override)
         result = self.action_spec.apply(actions.to(self.device), self.commanded)
         joint_pos = wp.from_torch(self.robots[0].data.joint_pos.torch.contiguous())
         self.ik.solve_from(joint_pos, wp.from_torch(result.commanded_pose.contiguous()))
@@ -327,6 +346,27 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         franka0.actuators.target_command.set_velocity_mask(value=velocity.contiguous())
         franka1.actuators.target_command.set_position_mask(value=self.home_targets[1])
         franka1.actuators.target_command.set_velocity_mask(value=torch.zeros_like(self.home_targets[1]))
+        self.frames.applied_impulse.zero_()
+        if self.options.tool_mount == "physical_grasp_v1":
+            self.contact_integral.zero_()
+
+    def _pre_physics_joint_override(self, arm_q):
+        names = list(self.robots[0].joint_names)
+        arm_cols = torch.tensor([names.index(f"panda_joint{i}") for i in range(1, 8)], device=self.device)
+        targets = self.last_targets.clone()
+        targets[:, arm_cols] = arm_q
+        targets = torch.where(self._finger_mask, self._finger_hold_value, targets)
+        if self.options.velocity_feedforward:
+            velocity = torch.where(self._finger_mask, torch.zeros_like(targets), (targets-self.last_targets)/self.step_dt)
+        else:
+            velocity = torch.zeros_like(targets)
+        self.last_targets = targets
+        franka0, franka1 = self.robots
+        franka0.actuators.target_command.set_position_mask(value=targets.contiguous())
+        franka0.actuators.target_command.set_velocity_mask(value=velocity.contiguous())
+        franka1.actuators.target_command.set_position_mask(value=self.home_targets[1])
+        franka1.actuators.target_command.set_velocity_mask(value=torch.zeros_like(self.home_targets[1]))
+        wp.copy(self.cut_digit, wp.from_torch(torch.full((self.num_envs,), -1, dtype=torch.int32, device=self.device)))
         self.frames.applied_impulse.zero_()
         if self.options.tool_mount == "physical_grasp_v1":
             self.contact_integral.zero_()
