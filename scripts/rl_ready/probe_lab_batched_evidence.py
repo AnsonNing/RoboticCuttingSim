@@ -69,7 +69,14 @@ def main():
                            "/mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock"},
         "evidence_commit": subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
                                           cwd=ROOT).stdout.strip(),
-        "authoritative_source_sha256": final, "rows": summaries, "comparisons": compares,
+        "authoritative_source_sha256": final,
+        "rows": {n: s for n, s in summaries.items() if s["authoritative"]},
+        "superseded_rows": {n: {k: s.get(k) for k in ("probe", "variant", "N", "tool_mount", "commit",
+                                                      "workload_b_sources_sha256", "gpu_sharing")}
+                            for n, s in summaries.items() if not s["authoritative"]},
+        "superseded_reason": "earlier source states: legacy 1.8 x 1.2 m table (before 359ce0d), T2 host-sync fix, "
+                             "preliminary G1 runs spanning several source states; raw outputs kept",
+        "comparisons": {n: c for n, c in compares.items() if n.endswith("_002")},
         "gates": {
             "G0_graph_safety": {n: s.get("g0_graph_safety", {}).get("status") for n, s in g0.items()},
             "T2_host_syncs": {n: s.get("t2", {}).get("status") for n, s in t2.items()},
