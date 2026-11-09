@@ -100,6 +100,14 @@ Acceptance:
   reported with tolerance.
 - Profiler shows batched kernels (one launch over all envs), not N launches.
 
+### P1-1b — robot batching (workload B)
+
+After M2 of workload A, under a separate ADR (ADR 0021 §9): Isaac Lab DirectRLEnv on Newton/MuJoCo-Warp with N
+worlds (`{ENV_REGEX_NS}` scene, per-world body indices, batched IK, graph-safe per-world wrench), first B1 rigid
+knife mount (`reduced_fidelity: rigid_tool_mount_no_grasp`), then B2 physical grasp. Acceptance: N=1/4/16 real
+batched articulation + batched material coupling with the delayed wrench, per-env wrench isolation test, Native
+confirmation of material parity on identical edge sequences.
+
 ### P1-2 — vectorized environment API + fast/partial reset
 
 Deliverables: `open_vector_env(num_envs, runtime="rl_gpu_headless", task, material,
@@ -176,8 +184,8 @@ throughput/VRAM vs Phase 1). Done per the specification's "Phase 2 Done".
 | D-01 | 2026-11-10 | The verbatim user documents stay outside the repository; `RL_READY_SPECIFICATION.md` is the in-repo copy with the naming substitution only. | Repository naming rule. |
 | D-02 | 2026-11-10 | The plan §7 status word naming the external project is written `MERGED_RCS_PENDING_OPTIMIZER_SYNC` in RCS; the external repository uses the original word. | Naming rule; meaning unchanged. |
 | D-03 | 2026-11-10 | Three measurement boundaries (§2); `FULL_NATIVE_REFERENCE` = existing Native runtime unchanged; `RL_GPU_HEADLESS` = new batched runtime. | Specification §3, P1-0.4. |
-| D-04 | 2026-11-10 | New RL-ready code lives in the subpackage `robotic_cutting_sim.rl`; configs in `configs/rl_benchmark/`; scripts in `scripts/rl_ready/`; tests `tests/test_rl_*.py`. Existing modules are only extended where an opt-in hook is unavoidable. | Keeps frozen code untouched and reviewable. |
+| D-04 | 2026-11-10 | Physics batching lives in `robotic_cutting_sim.batched`; RL-facing code (vector env, reward, benchmark, telemetry, replay) in `robotic_cutting_sim.rl`; configs in `configs/rl_benchmark/`; scripts in `scripts/rl_ready/`; tests `tests/test_rl_*.py`. Existing modules are only extended where an opt-in hook is unavoidable. | Keeps frozen code untouched and reviewable. |
 | D-05 | 2026-11-10 | WP-17 Native seed 512 / 15 recordings (actions, measured body poses, 121 physical samples) are the frozen replay regression inputs for material parity. | Same material input as Native without rerunning Kit; reproducible. |
-| D-06 | pending | Batched physics architecture — see `docs/adr/0021-batched-rl-gpu-headless-runtime.md`. | Under xhigh analysis. |
+| D-06 | 2026-11-10 | Batched physics architecture: ADR 0021 accepted with amendments — flat per-env concatenation packed from frozen single solvers, env-indexed copies of 13 kernels, grouped HashGrid, one CUDA graph per batch shape, masked partial reset, CPU bitwise parity (L0/L1) required, GPU invariants + outcome band (L2/L3). Workload A (batched ideal tracking, labelled `reduced_fidelity`) first; robot batching on Isaac Lab Newton N worlds is P1-1b under its own ADR. | xhigh analysis with source citations. |
 | D-07 | 2026-11-10 | RCS GPU jobs: one per GPU under `flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock`, explicit device, ≥4 GB left free; rows labelled `SHARED_GPU`/`EXCLUSIVE_GPU` from sampled co-tenant use. | Shared machine. |
 | D-08 | 2026-11-10 | Headless single-env and batched material runs use `.deps/isaacsim-venv/bin/python` without starting Kit (Python 3.12.12, Warp 1.17.0, NumPy 2.3.1, Torch 2.11+cu128 — identical to the WP-17 Native runs); CPU tests keep `.venv/bin/python -m pytest`; Torch-dependent tests run separately in the Torch venv and are reported as such. | Same numerics as Native; `.venv` has no Torch. |
