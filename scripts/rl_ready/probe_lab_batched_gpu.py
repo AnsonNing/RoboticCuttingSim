@@ -223,6 +223,9 @@ def main():
     parser.add_argument("--record-inputs", action="store_true", help="save the material input sequence (G5)")
     parser.add_argument("--restore-env", type=int, default=None, help="g3: env restored at --restore-step")
     parser.add_argument("--restore-step", type=int, default=10)
+    parser.add_argument("--grip-profile", default="legacy_point_contact",
+                        choices=("legacy_point_contact", "finite_pad_patch_v3"))
+    parser.add_argument("--non-strict", action="store_true", help="training mode: flag/terminate instead of raise")
     parser.add_argument("--inputs", nargs="*", default=())
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
@@ -259,7 +262,8 @@ def main():
     env_tasks = [compiled[seed] for seed in seeds]
     options = lab_scene.BatchedLabOptions(num_envs=args.num_envs, tool_mount=args.tool_mount, device="cuda:0",
                                           deterministic_mode="run_to_run" if args.deterministic else "not_guaranteed",
-                                          use_cuda_graph=not args.no_graph, strict=True, material=args.material)
+                                          use_cuda_graph=not args.no_graph, strict=not args.non_strict,
+                                          material=args.material, grip_contact_profile=args.grip_profile)
     cfg = lab_scene.make_batched_lab_cfg(options, task)
     fidelity = options.fidelity()
     fidelity["reasons"] = [("robot_only_no_material" if r == "robot_only_no_material_coupling" else r)
@@ -269,7 +273,7 @@ def main():
            "material_dt_s": 1e-4 if args.material else None,
            "material": args.material or "none (robot-only)", "cameras": "none", "recording": "none",
            "use_cuda_graph": not args.no_graph, "deterministic_mode": options.deterministic_mode,
-           "strict_mode": True, "gpu": gpu, "commit": _commit(), "workload": "B (robot-only)", **fidelity,
+           "strict_mode": not args.non_strict, "gpu": gpu, "commit": _commit(), "workload": "B (robot-only)", **fidelity,
            "boundary": "batched_headless (Isaac Lab Newton/MJWarp kit-less, one process)"}
     device = "cuda:0"
     with launch_simulation(cfg, {"headless": True, "visualizer": [], "device": device}):
@@ -310,7 +314,8 @@ def main():
         trace = {"target": [], "edge": [], "commanded": [], "status": [], "force": []}
         armed_steps = torch.zeros(args.num_envs, dtype=torch.int64, device=device)
         if env.grasp_initialization:
-            row["grasp_initialization"] = {k: v for k, v in env.grasp_initialization.items() if k != "accumulators"}
+            row["grasp_initialization"] = {k: v for k, v in env.grasp_initialization.items()
+                                           if k != "accumulators" or args.non_strict}
         telemetry.set_phase("warm")
         states = {"joint_q": [], "body_q": [], "edge": [], "status": []}
         walls, reset_walls, graph_checks = [], [], []
@@ -480,6 +485,7 @@ def main():
             row["grasp_trace_summary"] = {"max_slip_m": g["slip"].max(0).tolist(), "max_angle_rad": g["angle"].max(0).tolist(),
                                           "final_status": g["status"][-1].tolist(),
                                           "min_bilateral_fraction": g["bilateral"].min(0).tolist()}
+            row["grip_material"] = getattr(env, "grip_material_receipt", None)
             if env.snapshot is not None:
                 row["grasp_snapshot"] = env.snapshot.receipt()
                 row["grasp_snapshot"]["relative_R"] = env.snapshot.relative_R.numpy().tolist()
