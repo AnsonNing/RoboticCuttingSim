@@ -56,7 +56,8 @@ def replay_single(task, inputs, e, device, steps):
         m.update_pad_obstacles(boxes[k, e*B:(e+1)*B].astype(np.float32))
         cut = int(inputs["cut"][k, e])
         m.advance(np.asarray(inputs["edge"][k, e], float), (k+1)*dt, cutting=cut >= 0, cut_index=max(cut, 0))
-    return m.bed.code.numpy().copy(), m.bed.x.numpy().copy()
+    state = m.debug_state()                        # solver-LOCAL snapshot (positions, codes)
+    return np.asarray(state["codes"]).copy(), np.asarray(state["positions"]).copy()
 
 
 def digit_counts(codes, max_cuts):
