@@ -346,7 +346,11 @@ def _claim_slots_b(code: wp.array(dtype=int), nodes: wp.array2d(dtype=int), slot
     e = env_of_particle[p]
     if found < 0:
         wp.atomic_add(overflow, e, 1)
-    else:
+    elif max_occupied[e] < found+1:
+        # Integer max is idempotent: skipping the atomic when the stored value is already >= found+1 gives the
+        # same final value (CPU and GPU). The frozen kernel's constant address [0] lets the CUDA compiler
+        # aggregate the atomic per warp; an env-indexed address cannot, so without this guard every
+        # (particle, corner) contends on one word (measured 13x slower on an RTX 5090).
         wp.atomic_max(max_occupied, e, found+1)
 
 

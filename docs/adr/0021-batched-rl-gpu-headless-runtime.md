@@ -656,3 +656,77 @@ tests `tests/test_batched_pose_interp.py`, `tests/test_rl_{actions,observations,
   - Counting is exact int64 cumulative-sum segmentation in Torch (deterministic on GPU), not a Warp kernel. The
     conflict-rule ports (NumPy, Torch) are bit-identical to the frozen `tlmpm_v5._conflict_packed` for K = 1, 2, 15.
   - The NumPy pack/reference path is torch-free; the device reducer needs Torch.
+
+### P1-1 batched material core: `layout`, `tlmpm_v7_2_batch`, `constitutive`, `material_batch`, `diagnostics` (2026-11-10)
+
+Files: `src/robotic_cutting_sim/batched/{errors,layout,constitutive,tlmpm_v7_2_batch,material_batch,diagnostics}.py`;
+tests `tests/test_batched_{layout,cpu_parity,isolation,partial_reset,frozen_sources}.py` with helpers in
+`tests/batched_fixtures.py`; GPU probe `scripts/probe_batched_material_gpu.py`.
+
+- **L0 result.** Bitwise (`np.array_equal`) on the Warp CPU device over every Warp array of the single solver
+  (vars()-complete) after every control step: N=1, N=3 heterogeneous (seeds 512/15/7, different particle and node
+  counts, Young's modulus, friction, yield stress, fracture energy), N identical copies, one full-size TRIM substep
+  (102,732 particles), and all 47 WP17 frontier fixtures plus the 8 pending-lifecycle fixtures as envs of
+  heterogeneous batches. No tolerance was needed anywhere.
+- **Test scenes.** CPU tests use seeded TRIM scenes at 2.5 mm particle spacing (`compile_task(...,
+  particle_spacing_m=.0025)`; grid, dt, substeps, law, K and S unchanged), with a scripted edge motion that starts
+  2 mm before the first protrusion at the reference cutting height. Full resolution is covered by the one-substep smoke.
+- **Dead branches dropped (refined §3.3).** The ENV copy of `_rigid_contacts` keeps only the law-4 contact path that
+  the frozen step always passes (laws 5/8 use it) and has no tray loop. `floor=True` and laws other than 8 raise
+  UNSUPPORTED, so the removed code is unreachable.
+- **Kernel scalars kept uniform.** Uniform per batch, checked by `layout.uniform_signature`: dt, dx, spacing, radius,
+  volume, trajectory length, S, K, law, segments, B, contact flags, pic, float32 local gravity, contact-radius
+  scale, law-4/8 parameters, optimisation flags, control dt and the blade cross-section. Tool-profile differences
+  raise `UNSUPPORTED_PER_ENV_TOOL_PROFILE`, including a handle-only difference with an identical cross-section,
+  compared via `ToolProfile.to_dict()`. Per-env `params[N,9]` holds λ, μ, σ_y, contact stiffness, friction, G_c,
+  sharpness, slice efficiency and particle-contact stiffness.
+- **`_claim_slots` guard (performance, result-neutral).** The ENV kernel skips `atomic_max(max_occupied, e, ·)` when
+  the stored value is already ≥ the candidate. Integer max is idempotent, so the result is unchanged on CPU and GPU.
+  Reason: with an env-indexed address the CUDA compiler no longer warp-aggregates that atomic. The unguarded kernel
+  measured 0.355 ms per substep against 0.027 ms for the frozen kernel at N=1 (RTX 5090, shared).
+- **Reset restores everything (deviation from §6).**
+  - `reset` also restores `slot`, `slot_code` and the grid arrays (`gm/gp/gj/old/new_v`), although every substep
+    recomputes them, so that a full reset is bitwise equal to a freshly packed batch over *every* array.
+  - The fresh values are those of the frozen constructors, not the §6 text: `x_start`, `link_velocity_start` and
+    `link_previous_pose` are **zero** (not `reference` or the initial pose); `previous_pose` is the initial tile pose.
+  - The only array a partial reset leaves alone is the shared substep `index`; it is zeroed before every control step.
+  - Coverage lists are `material_batch.SOLVER_RESET_ARRAYS / SOLVER_CONSTANT_ARRAYS / SOLVER_SHARED_ARRAYS /
+    MATERIAL_*_ARRAYS / RECOMPUTED_EVERY_CONTROL_STEP / DIAGNOSTICS_SCRATCH`, enforced over `vars()`.
+  - Constitutive internal variables are reset through the registry (`per_particle_state`, initial value
+    `identity` or `zero`).
+- **Coupling.**
+  - `pad_wrench` is `[N,B,6]`; rows of non-recipient boxes, such as the handle, stay zero. This refines `[N,2,6]`.
+  - `invalid_reason[N]` is a sticky bit mask until reset: 1 nonfinite state, 2 slot overflow, 4 invalid measured
+    pose (the `pose_interp` status), 8 cut digit out of range, 16 nonfinite wrench.
+  - Wrench rotation is a plain sequential float64 sum. It is exactly equal for the TRIM identity workpiece rotation
+    (tested). For a non-identity rotation, NumPy's BLAS order may differ by 1 ulp in float64; this is untested.
+  - `advance(interpolation="host_reference")` (parity mode only) stores `validate_pose(measured)` as `last_pose`,
+    as `LiveCuttingMaterial` does. The device path stores the raw measured pose, and `pose_interp` normalises it
+    again; whether that equals the frozen path bitwise for poses that are not exactly unit is **UNVERIFIED** (open).
+- **Segmented diagnostics** (`batched/diagnostics.py`, `fuse_fp=False` as the frozen module). Each env's summary
+  equals the frozen `MaterialDiagnosticsReduction.read()` of that env exactly; this is tested.
+- **Graph capture.** `HashGrid.reserve(P, with_groups=True)` runs before capture. Measured mempool use before and
+  after capture is equal: 0 bytes allocated, N=1 and N=4.
+- **Upstream hazard (Warp 1.17.0, not caused by batching).**
+  - A frozen single `LiveCuttingMaterial` graph, captured without `HashGrid.reserve`, segfaults in `capture_launch`
+    after any later, larger non-captured `HashGrid.build` in the same process. 400k points reproduce it, grouped
+    or not, with no batched code involved.
+  - Batched graphs, which reserve first, survive a later larger batch build.
+  - Rule: in one process, build batches before any frozen single material, or use separate processes.
+  - Evidence: `artifacts/rl_ready/p1_1/sort_temp_hazard_001/`.
+- **GPU smoke (L2)** in `artifacts/rl_ready/p1_1/gpu_smoke_002`.
+  - Setup: N=1 and N=4 copies of seed 512 at full resolution (102,732 particles per env), 5 control steps, real
+    graph capture, device `pose_interp`.
+  - Result: L2 PASS for every env and step. Mass is bitwise constant; codes are monotone; state is finite; minimum
+    det F ≥ 0.897; slot overflow is 0; range audits are 0; the instrumented grouped query found 0 foreign
+    neighbours in about 8.3M candidates per env.
+  - All 4 GPU copies end with identical codes (3,220 labelled), and positions differ by ≤ 7.1e-8 m from atomic
+    order. The frozen single on the same GPU also labels 3,220.
+  - Memory: 49.26 MB per env (`memory_bytes`, excluding the hash grid).
+- **Smoke timing.** These are not the M2 benchmark rows. All runs were SHARED_GPU: GPU1 had a co-tenant at about
+  96–100% utilisation; state only, no cameras, no recording, warm.
+  - Interleaved A/B in one process (`artifacts/rl_ready/p1_1/ab_timing_001`), per 20 ms control step (200 substeps):
+    single graph 270 ms; batched N=1 270 ms; batched N=4 558 ms. That is about 1.9× aggregate over sequential
+    singles at N=4.
+  - The first smoke, `gpu_smoke_001`, ran before the `_claim_slots` guard and measured N=1 at 0.43 s against the
+    single's 0.13 s (then about 1% co-tenant load). It is kept as a failed-performance record.
