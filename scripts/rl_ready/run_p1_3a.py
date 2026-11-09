@@ -290,6 +290,61 @@ def mode_samestate(args, run, telemetry):
     return out
 
 
+def mode_stagebench(args, run, telemetry):
+    """Contact stage alone on a recorded state (``--copies`` copies), three clocks, variants interleaved:
+    host wall of an eager stage + device sync, host wall of a stage-graph replay + sync, CUDA events around the
+    replay; ``--repeats`` each."""
+    import warp as wp
+    from robotic_cutting_sim.rl.replay import native_samples
+    seed, sample = args.seed, args.sample
+    inputs = RV.load_inputs([seed])
+    data, _ = native_samples(RV.attempt_dir(seed))
+    seeds = (seed,) * args.copies
+    variants = args.variants.split(",")
+    out = dict(seed=seed, sample=sample, copies=args.copies, variants=variants, repeats=args.repeats)
+    with contextlib.ExitStack() as stack:
+        envs = {name: open_env(stack, name, seeds, inputs) for name in variants}
+        for env in envs.values():
+            env.reset(seeds=[42] * args.copies)
+            load_state(env, data, sample)
+        sync()
+        graphs = {}
+        for name, env in envs.items():
+            contact_stage(env)          # warm (module load, lazy function load)
+            with wp.ScopedCapture(device=env.material.device) as capture:
+                contact_stage(env)
+            graphs[name] = capture.graph
+            wp.capture_launch(graphs[name])
+        sync()
+        telemetry.set_phase("run")
+        clocks = {name: dict(eager_host_ms=[], graph_host_ms=[], graph_event_ms=[]) for name in envs}
+        device = envs[variants[0]].material.device
+        for repeat in range(args.repeats):
+            order = variants if repeat % 2 == 0 else variants[::-1]
+            for name in order:
+                env = envs[name]
+                t0 = time.perf_counter()
+                contact_stage(env)
+                wp.synchronize_device(device)
+                clocks[name]["eager_host_ms"].append((time.perf_counter() - t0) * 1e3)
+                t0 = time.perf_counter()
+                wp.capture_launch(graphs[name])
+                wp.synchronize_device(device)
+                clocks[name]["graph_host_ms"].append((time.perf_counter() - t0) * 1e3)
+                start, end = wp.Event(device=device, enable_timing=True), wp.Event(device=device, enable_timing=True)
+                stream = wp.get_stream(device)
+                wp.record_event(start, stream=stream)
+                wp.capture_launch(graphs[name], stream=stream)
+                wp.record_event(end, stream=stream)
+                wp.synchronize_event(end)
+                clocks[name]["graph_event_ms"].append(wp.get_event_elapsed_time(start, end))
+        out["clocks"] = {name: {k: dict(median=float(np.median(v)), min=float(np.min(v)), p90=float(np.percentile(v, 90)))
+                                for k, v in c.items()} for name, c in clocks.items()}
+        out["stage_compare_after"] = {name: compare_stage(read_stage(envs[variants[0]]), read_stage(env))
+                                      for name, env in envs.items()}
+    return out
+
+
 # ----------------------------------------------------------------------------- ab timing
 
 def mode_ab(args, run, telemetry):
@@ -521,7 +576,7 @@ def mode_profile(args, run, telemetry):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--mode", choices=("samestate", "ab", "episode", "profile"), required=True)
+    parser.add_argument("--mode", choices=("samestate", "stagebench", "ab", "episode", "profile"), required=True)
     parser.add_argument("--seed", type=int, default=512, choices=(512, 15))
     parser.add_argument("--sample", type=int, default=33)
     parser.add_argument("--copies", type=int, default=4)
@@ -539,7 +594,8 @@ def main():
     for name in args.variants.split(","):
         if name not in VARIANTS:
             raise SystemExit(f"unknown variant {name}")
-    name = args.run_name or {"samestate": f"samestate_s{args.seed}_k{args.sample}", "ab": f"ab_n{args.num_envs}",
+    name = args.run_name or {"samestate": f"samestate_s{args.seed}_k{args.sample}",
+                             "stagebench": f"stagebench_s{args.seed}_c{args.copies}", "ab": f"ab_n{args.num_envs}",
                              "episode": "episode_" + args.seeds.replace(",", "_"),
                              "profile": f"profile_n{args.num_envs}_{args.variants}"}[args.mode]
     run = new_run_dir(name)
@@ -549,7 +605,8 @@ def main():
     telemetry = RV.telemetry_start(args.gpu_index)
     status, error, result = "FAIL", None, {}
     try:
-        result = dict(samestate=mode_samestate, ab=mode_ab, episode=mode_episode, profile=mode_profile)[args.mode](
+        result = dict(samestate=mode_samestate, stagebench=mode_stagebench, ab=mode_ab, episode=mode_episode,
+                      profile=mode_profile)[args.mode](
             args, run, telemetry)
         status = "COMPLETE"
     except Exception:   # preserved as a failed run, never hidden

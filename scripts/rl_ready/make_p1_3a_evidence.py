@@ -91,7 +91,36 @@ def episode_rows(data):
     return rows
 
 
-def nsys_summary(directory):
+GROUPS = (("particle contacts kernel", ("particle_contacts",)), ("speed guard", ("speed_guard", "guard_consume")),
+          ("fallback grid", ("fallback_keys", "fallback_ranges")),
+          ("hash build: CUB radix sort", ("void cub",)),
+          ("hash build: Warp kernels", ("compute_point_keys", "compute_cell_indices", "extract_cells_from_keys",
+                                        "compute_cell_offsets")),
+          ("p2g", ("_p2g",)), ("musl", ("_musl",)), ("claim slots", ("claim_slots",)), ("grid update", ("grid_update",)),
+          ("g2p/deformation/positions", ("_g2p", "_deformation", "_grid_positions")),
+          ("rigid/obstacle/fixture contacts", ("rigid_contacts", "obstacle_contacts", "fixture_contacts")),
+          ("stress", ("stress",)))
+
+
+def kernel_group(name):
+    for group, keys in GROUPS:
+        if any(name.startswith(k) if k == "void cub" else k in name for k in keys):
+            return group
+    return "other"
+
+
+def group_split(kernels, substeps):
+    """us per substep by stage from instances x median / min (nsys durations include time-slice preemption)."""
+    out = {}
+    for name, k in kernels.items():
+        g = out.setdefault(kernel_group(name), dict(median_us=0., min_us=0., total_us=0.))
+        g["median_us"] += k["med_ns"] * k["instances"] / substeps / 1e3
+        g["min_us"] += k["min_ns"] * k["instances"] / substeps / 1e3
+        g["total_us"] += k["total_ns"] / substeps / 1e3
+    return out
+
+
+def nsys_summary(directory, substeps=600):
     out = {}
     for path in sorted((P13 / directory).glob("*_cuda_gpu_kern_sum.csv")):
         label = path.name.replace("_cuda_gpu_kern_sum.csv", "")
@@ -101,8 +130,14 @@ def nsys_summary(directory):
                                       med_ns=float(r["Med (ns)"]), min_ns=float(r["Min (ns)"]),
                                       avg_ns=float(r["Avg (ns)"]))
         total = sum(k["total_ns"] for k in kernels.values())
-        out[label] = dict(kernel_total_ns=total, kernels=kernels)
-    return dict(status="MEASURED" if out else "NOT_RUN", run=f"rl_ready/p1_3/{directory}", reports=out)
+        split = group_split(kernels, substeps)
+        out[label] = dict(kernel_total_ns=total, substeps=substeps, stage_split_us_per_substep=split,
+                          all_kernels_us_per_substep={s: sum(g[s] for g in split.values())
+                                                      for s in ("median_us", "min_us", "total_us")},
+                          kernels=kernels)
+    return dict(status="MEASURED" if out else "NOT_RUN", run=f"rl_ready/p1_3/{directory}", reports=out,
+                scope="nsys --cuda-graph-trace=node, one process per (N, variant), 3 profiled control steps = 600 "
+                      "substeps after 3 warm-up steps; SHARED_GPU: durations include time-slice preemption")
 
 
 def main():
