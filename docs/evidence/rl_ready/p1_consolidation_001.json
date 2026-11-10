@@ -28,4 +28,16 @@
  },
  "new_tests": ["tests/test_rl_consolidation_cpu.py", "tests/test_rl_termination.py (3 new)", "tests/test_vector_env_consolidation.py",
                "tests/test_rl_lab_grip_profile.py::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env"]
+,
+ "corrections_wp12_failure_description": {
+  "schema": "rcs_rl_evidence_correction_v1",
+  "added": "2026-11-10",
+  "source": "docs/reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md finding 9",
+  "additive_only": true,
+  "original_values_unchanged": true,
+  "corrects": "preexisting_failure.symptom",
+  "symptom_corrected": "workcell_live_006: artifacts/wp12/workcell_live_006/analysis_001/analysis.json says TASK_SUCCESS, equal to the committed evidence; the test's run_wp12_phase5.native_execution re-derives CUTTING_FAILURE from run/, so the assertion at tests/test_wp12_phase5_native_success.py:201 fails. The original symptom text ('local artifacts/wp12 analysis class CUTTING_FAILURE') is inaccurate.",
+  "condition": "fails only when artifacts/wp12 links the main checkout's WP-12 artifacts",
+  "status": "OPEN (WP-12 records question); unrelated to the RL-ready branch (test, scripts/run_wp12_phase5.py and generalization_wp12.py byte-identical to origin/main per the review, note N7)"
+ }
 }

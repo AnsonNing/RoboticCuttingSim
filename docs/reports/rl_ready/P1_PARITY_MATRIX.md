@@ -32,7 +32,7 @@ Runtimes:
 | 1 | Scene / goal / material schema | **PARTIAL**. `rcs_scene_v1` / `rcs_goal_v1` go through the same `compile_task`. Seeded TRIM uses `TaskFamily`; configured `tlmpm_v7_2` scenes use `ConfiguredTaskFamily` (P1-5 T5.2). Since this branch, configured scenes can also be selected per env through `tasks=` (`{scene, goal, planner_options, family_id, seed}` or the workload id `cut_v7_2_v1`). TRIM and configured slots in one batch are refused by the compiled layout (`UNSUPPORTED_NONUNIFORM_BATCH`: K 2 vs 4, 1200 vs 700 steps, reward kind) | **PASS**: every configured scene (v4–v7_2) and registered task | `p1_2_milestones_001.json` @ `f0a544b`; `p1_5_cut_001.json` @ `354fc13`; this branch `53b915e` (`tests/test_rl_consolidation_cpu.py`, `tests/test_vector_env_consolidation.py`) | Solvers other than `tlmpm_v7_2` are refused (`UNSUPPORTED_SOLVER`). A batch with mixed layouts is refused | PARTIAL (labelled: other solvers `UNSUPPORTED_SOLVER`; one batched layout per batch) |
 | 2a | CUT, batched (versioned v7_2 scene `bar_flat_board_tlmpm_v7_2_v1`, workload C2) | **PASS for the declared v7_2 workload**. N=1/4/8/16: 35/35 reference episodes evaluator PASS (36-frame stream), L2 PASS, final codes within the single band. CPU L0 bitwise vs the frozen single v7_2 (2.5 mm) | **PASS**: Native v7_2 CUT episode, T5.8 (2 pieces 0.5 / 0.5, HOME PASS) | `p1_5_cut_001.json` @ `354fc13` (merged `03a2f72`); [P1_5_CUT.md](P1_5_CUT.md) §5–§6 | Batched replay of the Native v7_2 recording (N=1 / N=4) NOT_RUN. Lab/B1 CUT (T5.9) NOT_RUN. No EXCLUSIVE CUT rows | `reduced_fidelity` (ideal tracking, no robot, reaction not fed back) |
 | 2b | CUT, frozen v5 (WP-12 Demo 1, C1) | **single_env_headless only**: Demo 1 replay 4/4 evaluator PASS, final codes = Native in 3/4 (2 particles off in 1/4). Batched v5: **UNSUPPORTED** (`UNSUPPORTED_SOLVER`, by design) | **PASS** (WP-12 Demo 1 Native v5) | `p1_5_cut_001.json` @ `354fc13`; [P1_5_CUT.md](P1_5_CUT.md) §3 | The frozen v5 / v7 / v7_1 physics is not batched | CUT row overall: **PARTIAL** (as declared in P1_5_PLAN §2) |
-| 3a | TRIM, workload A (replayed / ideal edge, `tlmpm_v7_2`, law 8, 1 mm / 4 mm / 0.1 ms) | **PASS**. M0 / M1 / M2: final codes = Native, frozen evaluator PASS (M2 N=8 24/24, N=16 16/16). Replay parity: final codes = Native 4/4 per seed; positions within band v2 | **PASS** (WP-17 seeds 512 / 15) | `p1_2_milestones_001.json` @ `f0a544b`; `p1_0_baseline_001.json` @ `9f46fc9`; `review_fix1_001.json` @ `1f7d39f` (band v2) | No EXCLUSIVE rows | `reduced_fidelity` (ideal tracking, no robot dynamics, reaction not fed back) |
+| 3a | TRIM, workload A (replayed / ideal edge, `tlmpm_v7_2`, law 8, 1 mm / 4 mm / 0.1 ms) | **PASS**. M0 / M1 / M2: final codes = Native, frozen evaluator PASS (M2 N=8 24/24, N=16 16/16). Replay parity: final codes = Native 4/4 per seed; positions within band v2 | **PASS** (WP-17 seeds 512 / 15) | `p1_2_milestones_001.json` @ `f0a544b`; `p1_0_baseline_001.json` @ `9f46fc9`; `review_fix1_001.json` @ `1f7d39f` (band v2) | EXCLUSIVE rows in [P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md) (throughput, physics `REPORTED_NOT_SCORED`). Open: the WP-16 ↔ WP-17 Native seed-512 final cut-code difference (4,266 particles) is unresolved; replay parity is against WP-17 only and is no physics-equivalence claim ([P1_0_BASELINE.md](P1_0_BASELINE.md)) | `reduced_fidelity` (ideal tracking, no robot dynamics, reaction not fed back) |
 | 3b | TRIM, workload D (single_env_headless replay of WP-17) | **PASS**: 3 / 3 per seed | **PASS** | `p1_0_baseline_001.json` @ `9f46fc9`; [P1_0_BASELINE.md](P1_0_BASELINE.md) | — | reference wrapper (not batched) |
 | 3c | TRIM, workload B1 (rigid knife mount) | **PASS**: S3 N=2 / 4, seeds 512 / 15, frozen evaluator PASS in every env | **PASS** | `p1_1b_s2_s3_001.json` @ `78a211b`; [P1_1B_ROBOT_BATCHING.md](P1_1B_ROBOT_BATCHING.md) S2/S3 | Lab long run (LR-E) NOT_RUN | `reduced_fidelity: rigid_tool_mount_no_grasp, finger_opening_fixed_nominal` |
 | 3d | TRIM, workload B2 (physical grasp) | **PASS with the opt-in `mjwarp_grip_v1`**: S3 N=2 and N=4, seeds 512 / 15, frozen evaluator PASS in every env, no termination. Default point profile: **FAIL** (GRASP_LOST in every env) | **PASS** | `p1_1b_b2_001.json` @ `e1b6634` (merged `52dfcf6`); [P1_1B_ROBOT_BATCHING.md](P1_1B_ROBOT_BATCHING.md) "B2 grasp follow-up" §3 | Slip about 1.5 mm and rotation about 15 mrad, against about 1 µm / 1e-4 rad in Native | listed difference `contact_solver_profile: mjwarp_grip_v1` (MuJoCo-Warp options, `physical_calibration: NOT_VALIDATED`) |
@@ -43,7 +43,7 @@ Runtimes:
 | 7 | Vectorized reset / step | **PASS** (`SHARED_GPU`). One process; one launch per kernel for all envs (nsys). Masked partial reset: non-reset envs are CPU bitwise; GPU outcome level only. N=1/4/8/16 measured; 1.40× (N=8) / 1.37× (N=16) aggregate over N=1 in matched windows; about 1.24–1.26× vs the frozen single env (inferred). Partial-reset p95 about 7 ms (TRIM) / 3.2 ms (CUT M1) | N/A (N=1 by design; `reload_in_place` reset) | `p1_2_milestones_001.json` @ `f0a544b`; `review_fix1_001.json` @ `1f7d39f` (matched windows); `p1_5_cut_001.json` @ `354fc13` | EXCLUSIVE rows: [P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md) (`p1_exclusive_001.json` @ `ff4133f`, merged 8e503e1) (batching plateaus at N≈4 for A). L4 RUN_TO_RUN BLOCKED | workload A `reduced_fidelity` |
 | 8 | GPU-native action / obs / reward / done | **PASS**. Batch-first Torch tensors on the device; Warp runs on Torch's stream. One int32 readback per step in strict mode, none in training mode. No per-env host loop. T2 sync audit for Lab B1/B2 | N/A (single env; Gymnasium adapter retained) | `p1_2_milestones_001.json` @ `f0a544b`; `p1_1b_s1_001.json` @ `660691c` | — | — |
 | 9 | Seeded randomisation | **PARTIAL**. Per-env RNG seeds (`reset(seeds=)`); SplitMix64 policies. Heterogeneous scene seeds in one batch (`tasks=[512, 15]`, both backends). Since this branch, per-slot seeds also work for configured scenes in `tasks=`. A geometry change on partial reset raises `UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET` | **PASS** (seeded scenes, `task_randomization_v1`) | `p1_2b_001.json` @ `c578348`; this branch `53b915e` | No per-episode geometry or material randomisation inside a live batch (that needs a new env). CUT `task_randomization_v1` unsupported. Domain randomisation is user decision U-P15-3 | PARTIAL (labelled) |
-| 10 | Performance profiling | **PASS** (all `SHARED_GPU`): benchmark rows with the plan's columns; telemetry with co-tenant sampling; `StageProfiler` kernel split; nsys graph-node traces; CUT rows | **PASS** (WP-16/17 timings; Native rows from WP-17 evidence) | `p1_0_baseline_001.json` @ `9f46fc9`; `p1_3a_001.json` @ `e144362`; `p1_5_cut_001.json` @ `354fc13` | EXCLUSIVE rows in [P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md) (`p1_exclusive_001.json` @ `ff4133f`, merged 8e503e1) | `SHARED_GPU` on every batched row |
+| 10 | Performance profiling | **PASS**: benchmark rows with the plan's columns; telemetry with co-tenant sampling; `StageProfiler` kernel split; nsys graph-node traces; CUT rows. The formal Phase 1 table is `EXCLUSIVE_GPU` on GPU1 for 20 of 23 runs ([P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md)); the earlier P1-0…P1-5 development rows cited here, P1-4 and every partial-reset latency are `SHARED_GPU` | **PASS** (WP-16/17 timings; Native rows from WP-17 evidence) | `p1_exclusive_001.json` @ `ff4133f` (merged 8e503e1); `p1_0_baseline_001.json` @ `9f46fc9`; `p1_3a_001.json` @ `e144362`; `p1_5_cut_001.json` @ `354fc13` | The formal rows measured code `691b571`, before the per-step HashGrid refresh of review fix F1. No EXCLUSIVE partial-reset latency; batched cold rows, CUT N=4, B2 at N ≠ 4 NOT_RUN; B1 N=16 `SHARED_GPU` only. Workload-A windows are pre-contact at N ≥ 4 | `EXCLUSIVE_GPU` on 20 of 23 formal rows (SHARED: `a_n8_s15_default`, `b1_n4`, `b1_n16`; the first two were repeated EXCLUSIVE); earlier development rows `SHARED_GPU` |
 | 11 | Rubber material (placeholder) | **PARTIAL** (extension point only): the `batched/constitutive.py` `ConstitutiveModel` registry (per-env params, per-particle state); one model; mixed models `UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS` | **NOT_RUN** (Phase 2) | No evidence file on this branch; [ADR 0021](../../adr/0021-batched-rl-gpu-headless-runtime.md) §11. Phase 2 is in progress on `claude/rl-rubber` (decision D-12, its own acceptance and PR) | Rubber model not in Phase 1 | PARTIAL (placeholder; Phase 2) |
 | 12 | Frozen independent evaluators | **PASS**. `goals.evaluate_goal` via `ConfiguredTaskSpec.evaluate_goal` on host snapshots, with source SHA256 in receipts. TRIM verdicts and metrics equal Native on replay. The sever evaluator decides batched CUT episodes. Since this branch, a non-finite env gets a structured `FAIL_INTEGRITY` entry with decoded reasons and no metrics; the evaluator is not called for it, and the other envs are evaluated normally (the P1-4 finding is fixed) | **PASS** | `p1_0_baseline_001.json` @ `9f46fc9`; `p1_2_milestones_001.json` @ `f0a544b`; `p1_5_cut_001.json` @ `354fc13`; this branch `53b915e` (`tests/test_vector_env_consolidation.py`) | v1 `evaluate_oracle` / the precision benchmark stay single-env (`NOT_APPLICABLE` to configured tasks) | v1 benchmark single-env (labelled) |
 | 13 | Recording / replay | **PASS for RL data and replay**. Measured-trajectory replay drive; WP-17 replay parity (codes = Native 4/4 per seed; positions in band v2); WP-12 CUT replay adapter; `rcs_rl_rollout_v1` transitions with a consumer check | **PASS** (streamed exact-precision recording, media) | `p1_0_baseline_001.json` @ `9f46fc9`; `review_fix1_001.json` @ `1f7d39f`; `p1_5_cut_001.json` @ `354fc13` | Physics recorders (`cut_events_v1`, surfaces, raw 2 ms traces): `UNSUPPORTED_RECORDER` | physics recorders UNSUPPORTED (listed) |
@@ -61,6 +61,10 @@ Runtimes:
 
 This is the P1-5 plan's target tally, plus the new row 16. No row is FAIL overall. The recorded FAILs inside rows
 are the B2 default point profile, LR-B B0 and the first S-TRIM smoke; all are preserved.
+
+**Open issue (not a row status).** The WP-16 ↔ WP-17 Native seed-512 final cut-code difference (4,266 particles)
+remains open. The batched and single-env replays reproduce the WP-17 Native codes, which says nothing about the
+WP-16 difference; there is no physics-equivalence claim ([P1_0_BASELINE.md](P1_0_BASELINE.md), [P1_5_PLAN.md](P1_5_PLAN.md)).
 
 ## Phase 1 Done checklist (specification, seven checkboxes)
 
@@ -99,7 +103,8 @@ Ticked means the checkbox is met by merged evidence, with its limitation stated.
   - The test counts of this branch are in the consolidation section below.
 
   Limitation: no per-episode randomisation inside a live batch (row 9 PARTIAL).
-- [x] **Long rollout, OOM / memory / reset stress tests, real GPU telemetry.** P1-4 (`p1_4_001.json` @ `7c5d8ca`):
+- [x] **Long rollout, OOM / memory / reset stress tests, real GPU telemetry.** Met with a recorded FAIL (LR-B,
+  VRAM bound B0). P1-4 (`p1_4_001.json` @ `7c5d8ca`):
   - LR-A PASS;
   - LR-C PASS;
   - LR-D 5/5 PASS (NaN env, bad pose, SIGSEGV, hang, device OOM);
@@ -126,8 +131,9 @@ Ticked means the checkbox is met by merged evidence, with its limitation stated.
 The plan's "Phase 1 done" also requires these, all still open:
 
 - an xhigh acceptance review that passes, or PASS_WITH_LIMITATIONS written into the PR and docs. The review of
-  P1-1 / P1-2 / P1-3a was PASS_WITH_LIMITATIONS ×3; the Phase 1 review that covers P1-4, P1-5, B2 and this
-  consolidation is next;
+  P1-1 / P1-2 / P1-3a was PASS_WITH_LIMITATIONS ×3; the Phase 1 review at `f03fbff` (P1-4, P1-5, B2, R0, this
+  consolidation, the EXCLUSIVE table) is **PASS_WITH_LIMITATIONS**, merge GO with conditions
+  ([PHASE1_ACCEPTANCE_REVIEW.md](PHASE1_ACCEPTANCE_REVIEW.md)); its §7 list goes into the PR body;
 - the merge to `main` through a PR;
 - the external descriptor pinned (SYNCED).
 
@@ -150,9 +156,12 @@ load average of about 65 on 64 cores.
 | Torch RL / vector suite, CPU device | 343 | 0 | 10 | — |
 | Isaac Lab suite, Warp CPU | 56 | 0 | 0 | — |
 
-- The one CPU failure, `test_wp12_phase5_native_success.py::test_reproduces_phase2b_records`, comes from local
-  WP-12 artifacts: `workcell_live_006` holds analysis class CUTTING_FAILURE, while the committed evidence says
-  TASK_SUCCESS. It fails identically at the base `181ed37` and the test imports no RL module. It is OPEN and
-  unrelated to this branch.
+- The one CPU failure, `test_wp12_phase5_native_success.py::test_reproduces_phase2b_records`, is pre-existing and
+  unrelated to this branch. Corrected description (Phase 1 acceptance review, finding 9): `workcell_live_006`'s
+  `analysis_001/analysis.json` says **TASK_SUCCESS**, matching the committed evidence; the test's
+  `run_wp12_phase5.native_execution` re-derives **CUTTING_FAILURE** from `run/`, so the assertion at
+  `tests/test_wp12_phase5_native_success.py:201` fails. It fails only when `artifacts/wp12` links the main
+  checkout's artifacts. It fails identically at the base `181ed37` and the test imports no RL module. It is OPEN
+  (a WP-12 records question).
 - The Torch skips are NOT_RUN: the workload-B modules need Isaac Lab or OpenUSD, and the CUDA stream test needs a
   GPU.
