@@ -20,8 +20,9 @@ config is validated and its path, version and sha256 are recorded in ``result.js
 Modes (W + K <= 1200 control steps; the timed window is the K steps after the W warm-up steps):
 
 * ``throughput``: one untimed and 10 timed full resets, W + K replay steps; final codes per env (work check).
-* ``episode``: W + K replay steps with the in-process L2 monitor (candidate-reported), per-step contact counts and
-  the Native sample steps dumped (codes exact; positions as int8 micrometre deltas to the Native sample with exact
+* ``episode``: W + K replay steps with the in-process L2 monitor (candidate-reported), per-step contact counts
+  (``contacts``: stats slot 4, particle-particle / cut-face contacts; ``tool_contacts``: stats slot 1, tool-material
+  contacts of the handle, pads and edge obstacles; one host read per step for both) and the Native sample steps dumped (codes exact; positions as int8 micrometre deltas to the Native sample with exact
   escapes); exact final snapshot per env; in-process 2-frame ``evaluate()`` (candidate-reported).
 * ``samestate``: per seed, the recorded Native state of each ``SAMESTATE_SAMPLES`` sample written into the batch
   and the contact stage run alone twice (impulse, stats); then a W + K step replay from reset (contacts, final).
@@ -305,6 +306,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
                         for x in natives}
         samples = {e: [] for e in range(N)}
         contacts = np.zeros((W + K, N), np.int64) if mode in ("episode", "samestate") else None
+        tool_contacts = np.zeros((W + K, N), np.int64) if contacts is not None else None
         walls = np.zeros(W + K)
         start = marks.global_step
         if gpu.telemetry:
@@ -324,7 +326,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
             if monitor is not None:
                 monitor.update()
             if contacts is not None:
-                contacts[t] = P3.stats_counts(env)
+                contacts[t], tool_contacts[t] = stats_slots(env)
             if mode == "episode":
                 n_step = t + 1
                 for e, seed in enumerate(env_seeds):
@@ -368,6 +370,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
             arrays.update({f"final_positions_e{e}": np.asarray(f["positions"], np.float64)
                            for e, f in enumerate(finals)})
             arrays["contacts"] = contacts
+            arrays["tool_contacts"] = tool_contacts
             dumps.append(dict(kind="samestate", round=r, seed=int(env_seeds[0]), env_seeds=list(env_seeds),
                               samples=list(PA.SAMESTATE_SAMPLES), steps=W + K,
                               **save_npz(out, f"{tag}_samestate_s{env_seeds[0]}.npz", arrays)))
@@ -395,7 +398,8 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
                     final_positions=np.asarray(f["positions"], np.float64),
                     final_velocities=np.asarray(f["velocities"], np.float32),
                     final_codes=np.asarray(f["codes"], np.int32), final_step_count=np.int64(f["step_count"]),
-                    contacts=contacts[:, e].copy(), invalid_reason=np.int64(res["invalid_reason"][e]))
+                    contacts=contacts[:, e].copy(), tool_contacts=tool_contacts[:, e].copy(),
+                    invalid_reason=np.int64(res["invalid_reason"][e]))
                 dumps.append(dict(kind="episode", round=r, env=e, seed=int(seed), samples=len(rows),
                                   **save_npz(out, f"{tag}_e{e}_s{seed}.npz", arrays)))
         res["dumps"] = dumps
@@ -403,6 +407,13 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
             res["profile_step_walls_s"] = walls[W:].tolist()
         res["step_walls_s"] = [round(float(x), 7) for x in walls]   # every step incl. warm-up (per-phase report)
     return res
+
+
+def stats_slots(env):
+    """Per-env contact counts of the last control step from one host read of the solver's ``stats_sum``: slot 4
+    (particle-particle contacts, what ``run_p1_3a.stats_counts`` returns) and slot 1 (tool-material contacts)."""
+    a = env.material.solver.stats_sum.numpy().reshape(env.num_envs, -1)
+    return a[:, 4].astype(np.int64), a[:, 1].astype(np.int64)
 
 
 def timed_reset(env, gpu, N):

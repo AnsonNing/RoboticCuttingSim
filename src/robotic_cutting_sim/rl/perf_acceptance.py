@@ -6,8 +6,11 @@ Used by ``scripts/rl_ready/run_perf_acceptance.py`` (the harness, in the process
 standard library only; nothing here imports Torch or Warp. Part of the evaluator file set of every acceptance
 config (``configs/rl_benchmark/acceptance_v<N>.json``, schema ``rcs_perf_acceptance_v1``): a candidate may not change
 it. ``acceptance_v2`` (decision D-14) adds two optional ``performance`` blocks that ``acceptance_v1`` does not have:
-``window_check`` (the judge's ``G9:window`` gate: the G9 timed window must contain tool-material contact and cutting,
-measured on the episode dumps of the same variants) and ``phases`` (descriptive per-phase step walls).
+``window_check`` (the judge's ``G9:window`` gate: the G9 timed window must contain the tool-material contact phase,
+counted as steps with non-zero stats slot 1 (``tool_contacts`` in the episode dumps), and the cutting, counted as new
+labelled particles; particle-particle contacts (stats slot 4, ``contacts``) are reported, never gated; measured on
+the episode dumps of the same variants, not inside the G9 processes) and ``phases`` (descriptive per-phase step
+walls, candidate-reported).
 """
 import hashlib
 import inspect
@@ -50,7 +53,7 @@ PERF_KEYS = ("num_envs", "primary_num_envs", "pairs", "order", "warmup_steps", "
 THRESHOLD_KEYS = ("primary_median_min", "primary_pairs_above_1", "all_median_min", "vram_ratio_max",
                   "vram_slack_mib", "reset_p95_ratio_max", "reset_p95_slack_ms", "clock_tolerance")
 PHYSICS_KEYS = ("position_band", "impulse_rel_tol", "contact_total_rel_tol", "replay_position_tol_m")
-WINDOW_CHECK_KEYS = ("plans", "min_contact_steps", "min_new_labels")   # optional performance.window_check (v2)
+WINDOW_CHECK_KEYS = ("plans", "min_tool_contact_steps", "min_new_labels")   # optional performance.window_check (v2)
 POSITION_BAND_MODES = ("descriptive", "gate")
 
 
@@ -358,12 +361,12 @@ def performance_window_problems(perf, plan):
     check = perf.get("window_check")
     if check is not None:
         episodes = {e.get("id"): e for e in plan if isinstance(e, dict) and e.get("mode") == "episode"}
-        if not isinstance(check, dict) or any(k not in check for k in WINDOW_CHECK_KEYS):
-            p.append(f"performance.window_check: needs {', '.join(WINDOW_CHECK_KEYS)}")
+        if not isinstance(check, dict) or set(check) != set(WINDOW_CHECK_KEYS):
+            p.append(f"performance.window_check: exactly the keys {', '.join(WINDOW_CHECK_KEYS)}")
         elif not (isinstance(check["plans"], list) and check["plans"] and all(x in episodes for x in check["plans"])
-                  and isinstance(check["min_contact_steps"], int) and check["min_contact_steps"] >= 1
+                  and isinstance(check["min_tool_contact_steps"], int) and check["min_tool_contact_steps"] >= 1
                   and isinstance(check["min_new_labels"], int) and check["min_new_labels"] >= 0):
-            p.append("performance.window_check: plans = ids of episode plan entries, min_contact_steps >= 1, "
+            p.append("performance.window_check: plans = ids of episode plan entries, min_tool_contact_steps >= 1, "
                      "min_new_labels >= 0 (ints)")
         else:
             last = max(b for _, b in g9_windows(perf).values())

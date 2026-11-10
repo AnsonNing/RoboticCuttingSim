@@ -109,15 +109,17 @@ def test_acceptance_v2_config_times_contact_and_cutting():
     perf = v2["performance"]
     assert perf["num_envs"] == [1, 16] and perf["primary_num_envs"] == 16 and perf["order"] == "BCCBBC"
     assert perf["seeds"] == [512] and "steps_by_num_envs" not in perf
-    # the timed window lies inside the s512 cutting phase (labels 251-380) after first contact (315), every N
-    assert PA.g9_windows(perf) == {1: (321, 400), 16: (321, 400)}
-    assert perf["window_check"] == {"plans": ["G6_replay", "G7_batched"], "min_contact_steps": 40,
-                                    "min_new_labels": 10000}
-    assert perf["phases"]["timed_window"] == [321, 400] and perf["phases"]["approach"] == [21, 250]
+    # the timed window starts at the first s512 tool-contact step (229) and holds all tool contact (229-366), all
+    # particle contact (315-364) and all labelling (251-380), every N; the untimed warm-up is the approach
+    assert PA.g9_windows(perf) == {1: (229, 400), 16: (229, 400)}
+    assert perf["window_check"] == {"plans": ["G6_replay", "G7_batched"], "min_tool_contact_steps": 80,
+                                    "min_new_labels": 30000}
+    assert perf["phases"]["timed_window"] == [229, 400] and perf["phases"]["approach"] == [21, 228]
+    assert perf["phases"]["particle_contact"] == [315, 364]
     for key in ("window", "statistics", "budget"):
         assert perf["design"][key]
     for entry in v2["baseline_measure"]:
-        assert (entry["warmup_steps"], entry["steps"]) == (320, 80)
+        assert (entry["warmup_steps"], entry["steps"]) == (228, 172)
 
 
 @pytest.mark.parametrize("config", CONFIGS, ids=["v1", "v2"])
@@ -171,7 +173,8 @@ def test_config_problems_are_reported(config, mutate, message):
 @pytest.mark.parametrize("mutate, message", [
     (lambda p: p["window_check"].update(plans=["G4_samestate"]), "window_check"),
     (lambda p: p["window_check"].pop("min_new_labels"), "window_check"),
-    (lambda p: p["window_check"].update(min_contact_steps=0), "window_check"),
+    (lambda p: p["window_check"].update(min_tool_contact_steps=0), "window_check"),
+    (lambda p: p["window_check"].update(min_contact_steps=40), "window_check"),   # the pre-review key is refused
     (lambda p: p.update(warmup_steps=1150), "through step"),        # the episode plans end before the window
     (lambda p: p["phases"].update(bad=[400, 300]), "phases"),
     (lambda p: p["phases"].update(bad=[1, 1201]), "phases"),
@@ -297,9 +300,9 @@ def test_harness_argument_validation(harness_mod, tmp_path, argv):
 
 def test_harness_config_argument_is_optional_provenance(harness_mod, tmp_path):
     """``--config`` (default none = the acceptance_v1 behaviour): validated, recorded, never passed to the rounds;
-    the acceptance_v2 G9 window (W 320, K 80) is a valid harness request at every N."""
+    the acceptance_v2 G9 window (W 228, K 172) is a valid harness request at every N."""
     base = ["--variant-json", "v.json", "--mode", "throughput", "--num-envs", "16", "--seeds", "512",
-            "--warmup-steps", "320", "--steps", "80", "--out", str(tmp_path / "o")]
+            "--warmup-steps", "228", "--steps", "172", "--out", str(tmp_path / "o")]
     args = harness_mod.parse_args(base)
     assert args.config is None and args.acceptance_config is None
     args = harness_mod.parse_args(base + ["--config", str(CONFIG_V2)])
@@ -317,7 +320,7 @@ def test_harness_writes_acceptance_config_into_the_result(harness_mod, tmp_path)
     (tmp_path / "v.json").write_text(json.dumps({"made_up_flag": True}))
     out = tmp_path / "run"
     rc = harness_mod.main(["--variant-json", str(tmp_path / "v.json"), "--mode", "throughput", "--num-envs", "1",
-                           "--seeds", "512", "--warmup-steps", "320", "--steps", "80", "--device", "cpu",
+                           "--seeds", "512", "--warmup-steps", "228", "--steps", "172", "--device", "cpu",
                            "--config", str(CONFIG_V2), "--out", str(out)])
     res = json.loads((out / "result.json").read_text())
     assert rc == 3 and res["error_code"] == "UNSUPPORTED_OPTION"
@@ -420,15 +423,20 @@ def synthetic_config(version="v1"):
     return cfg
 
 
+_STEP = np.arange(1, 1201)
+TOOL_CONTACT_S512 = np.where((_STEP >= 229) & (_STEP <= 366) & ~((_STEP >= 237) & (_STEP <= 256))
+                             & ~((_STEP >= 259) & (_STEP <= 273)), 30, 0)
+
+
 def synthetic_config_v2():
-    """acceptance_v2's G9 block at the synthetic scale: G6 (s512, 1200 steps) feeds G9:window; W 320 / K 80."""
+    """acceptance_v2's G9 block at the synthetic scale: G6 (s512, 1200 steps) feeds G9:window; W 228 / K 172."""
     cfg = json.loads(CONFIG_V2.read_text())
     cfg["version"] = "acceptance_v2_test"
     cfg["plan"] = synthetic_config("v1")["plan"]
-    cfg["performance"] = dict(num_envs=[1, 2], primary_num_envs=2, pairs=2, order="BCCB", warmup_steps=320,
-                              steps=80, seeds=[SEED],
-                              window_check=dict(plans=["G6_replay"], min_contact_steps=40, min_new_labels=5),
-                              phases=dict(approach=[21, 250], timed_window=[321, 400], beyond=[401, 500]))
+    cfg["performance"] = dict(num_envs=[1, 2], primary_num_envs=2, pairs=2, order="BCCB", warmup_steps=228,
+                              steps=172, seeds=[SEED],
+                              window_check=dict(plans=["G6_replay"], min_tool_contact_steps=80, min_new_labels=5),
+                              phases=dict(approach=[21, 228], timed_window=[229, 400], beyond=[401, 500]))
     cfg["thresholds"]["primary_pairs_above_1"] = 2
     cfg["torch_tests"] = None
     assert PA.config_problems(cfg) == []
@@ -448,6 +456,9 @@ class Acceptance:
         # per-step particle contact counts of the episode dumps (side -> [1200]); WP-17 s512: contacts at 315-364
         self.contacts = {side: np.where((np.arange(1, 1201) >= 315) & (np.arange(1, 1201) <= 364), 7, 0)
                          for side in ("baseline", "candidate")}
+        # per-step tool-material contacts (stats slot 1); WP-17 s512: 229-366 with gaps 237-256 and 259-273
+        self.tool_contacts = {side: TOOL_CONTACT_S512.copy() for side in ("baseline", "candidate")}
+        self.dump_tool_contacts = True
         self.step_walls = True
         self.checkouts = {s: self.root / s for s in ("baseline", "candidate")}
         for c in self.checkouts.values():
@@ -519,6 +530,8 @@ class Acceptance:
                       final_positions=pos[-1], final_velocities=np.zeros((P, 3), np.float32), final_codes=final_codes,
                       final_step_count=np.int64(1200), contacts=np.asarray(self.contacts[side], np.int64),
                       invalid_reason=np.int64(0))
+        if self.dump_tool_contacts:
+            arrays["tool_contacts"] = np.asarray(self.tool_contacts[side], np.int64)
         rounds = [dict(round=0, invalid_reason=[0], final_step_count=[1200],
                        l2_candidate_reported=dict(code_monotone_violations=[0], nonfinite_steps=[0], status="PASS"))]
         return [("r0_e0_s512.npz", dict(kind="episode", round=0, env=0, seed=SEED, samples=120), arrays)], rounds
@@ -767,12 +780,17 @@ def test_judge_v2_window_pass_and_phase_report(judge_mod, tmp_path):
     assert v["config"] == "acceptance_v2_test"
     assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}, v["gates"]
     g = next(g for g in v["gates"] if g["id"] == "G9:window")
-    assert g["status"] == "PASS" and g["threshold"]["windows"] == [[321, 400]]
+    assert g["status"] == "PASS" and g["threshold"]["windows"] == [[229, 400]]
+    assert g["threshold"]["particle_contacts"] == "reported, not gated"
     rows = g["value"]
     assert {r["side"] for r in rows} == {"baseline", "candidate"} and len(rows) == 4      # 2 repeats x 2 sides
     w = rows[0]["values"]["windows"][0]
-    # synthetic recording: contacts at 315-364 -> 44 steps in 321-400; labels 7 -> 15 between steps 320 and 400
-    assert (w["contact_steps"], w["new_labels"], w["label_steps"]) == (44, 8, [320, 400])
+    # synthetic recording: tool contact 229-366 (103 steps) all inside 229-400; labels 0 -> 15 (samples 220, 400);
+    # particle contacts 315-364 (50 steps) reported only
+    n_tool = int(np.count_nonzero(TOOL_CONTACT_S512))
+    assert (w["tool_contact_steps"], w["tool_contact_steps_episode"]) == (n_tool, n_tool) == (103, 103)
+    assert (w["new_labels"], w["label_steps"]) == (15, [220, 400])
+    assert (w["particle_contact_steps_reported"], w["particle_contact_steps_episode_reported"]) == (50, 50)
     assert {"G9:n1", "G9:n2", "G9:n2:work"} <= set(gates(v, "PASS"))
     phases = v["performance"]["phases"]["2"]
     assert phases["timed_window"]["speed_ratio_c_over_b"] == pytest.approx(1.2)
@@ -784,7 +802,7 @@ def test_judge_v2_window_pass_and_phase_report(judge_mod, tmp_path):
 
 def test_judge_v2_window_fails_when_the_candidate_window_has_no_contact(judge_mod, tmp_path):
     acc = Acceptance(tmp_path, judge_mod, "v2")
-    acc.contacts["candidate"] = np.where(np.arange(1, 1201) <= 300, 7, 0)    # contact moved before the window
+    acc.tool_contacts["candidate"] = np.where(_STEP <= 228, 30, 0)            # tool contact moved before the window
     v = acc.build().verdict()
     assert next(g for g in v["gates"] if g["id"] == "G9:window")["status"] == "FAIL"
     assert v["layers"]["PERFORMANCE"] == "FAIL" and "G9:window" in v["failed_gates"]
@@ -792,11 +810,28 @@ def test_judge_v2_window_fails_when_the_candidate_window_has_no_contact(judge_mo
 
 def test_judge_v2_window_blocked_when_the_baseline_window_has_no_contact(judge_mod, tmp_path):
     acc = Acceptance(tmp_path, judge_mod, "v2")
-    acc.contacts = {s: np.zeros(1200, np.int64) for s in acc.contacts}
+    acc.tool_contacts = {s: np.zeros(1200, np.int64) for s in acc.tool_contacts}
     v = acc.build().verdict()
     g = next(g for g in v["gates"] if g["id"] == "G9:window")
     assert g["status"] == "BLOCKED" and v["layers"]["PERFORMANCE"] == "BLOCKED"
     assert "G9:window" not in v["failed_gates"]
+
+
+def test_judge_v2_window_does_not_gate_particle_contacts(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.contacts = {s: np.zeros(1200, np.int64) for s in acc.contacts}     # no particle-particle contact anywhere
+    v = acc.build().verdict()
+    g = next(g for g in v["gates"] if g["id"] == "G9:window")
+    assert g["status"] == "PASS" and g["value"][0]["values"]["windows"][0]["particle_contact_steps_reported"] == 0
+
+
+def test_judge_v2_window_needs_tool_contact_dumps(judge_mod, tmp_path):
+    """Episode dumps of a harness before the re-declared v2 (no ``tool_contacts``) cannot pass G9:window."""
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.dump_tool_contacts = False
+    v = acc.build().verdict()
+    g = next(g for g in v["gates"] if g["id"] == "G9:window")
+    assert g["status"] == "BLOCKED" and g["value"][0]["values"]["windows"][0]["tool_contact_steps"] is None
 
 
 def test_judge_v2_window_blocked_without_episode_dumps(judge_mod, tmp_path):
