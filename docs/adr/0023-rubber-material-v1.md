@@ -993,7 +993,12 @@ group map (slerp, quaternion to matrix).
 
 The table holds exactly the M, b that `group_target` computes before M X + b, so on the Warp CPU device every variant is
 byte-identical to `all_nodes_v1` and to the single reference (tests: case A heterogeneous, case C two grips with partial
-masks, rotation and an inactive grip, affine block; v1 options and F8 + F9 + F10; past-table steps). GPU:
+masks, rotation and an inactive grip, affine block; v1 options and F8 + F9 + F10; past-table steps).
+Since `22982df` (review R1) `begin_control_step()` and `reset_masked()` (full and partial reset) also refresh the table,
+so direct `solver.step()` calls after them are byte-identical to `all_nodes_v1` as well
+(`tests/test_rubber_motion_table_refresh.py`); before that the equivalence held for the `advance()` path only, and the
+default launch replayed the previous control step's table (max |Δx| 2.0e-4 m in the review probe).
+GPU:
 `bc_bench_002` BC pair 0.0185 ms with the table (4.3× less) plus 0.019 ms per control step for the table (≈ 4 ns per
 substep); end-to-end interleaved A/B (`bc_e2e_none_001`, workload E N = 4, guard 1.0, graph chunks, 10 rounds,
 SHARED_GPU): 0.404 → 0.331 ms per substep, 1.98 → 2.42 env-steps/s, paired ratio median 0.804 (0.74–0.84, all rounds
@@ -1477,12 +1482,12 @@ transfer's small-kL expansion and E* round trip). (4) Formal runner `run_visc_v2
   `branch_work` byte-for-byte (full length, or the v1 prefix of the longer 16 / 32 Hz runs). Their left-point W_b equals
   the v1 `branch_work` byte-for-byte: the energy option moves no dynamics. 0 invalid flags, 0 guard violations, 0
   negative D increments.
-- **RUBBER-VISC-03: PASS.** De-embedded E′ is −0.402, −0.402, −0.403, −0.404, −0.401, −0.414 % (1 … 32 Hz; limit 1 %).
+- **RUBBER-VISC-03: v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848).** De-embedded E′ is −0.402, −0.402, −0.403, −0.404, −0.401, −0.414 % (1 … 32 Hz; limit 1 %).
   E″ is −0.435 … −0.867 % (3 %), the loss per cycle −0.397 … −0.434 % (3 %), and grip 0 vs grip 1 ≤ 0.003 % (0.2 %).
   The fit on 1 / 4 / 16 Hz gives τ₁ −3.4 %, τ₂ −0.29 %, g₁ +1.1 %, g₂ +0.07 %. Held-out 2 / 8 / 32 Hz: E′ +0.04 /
   +0.03 / −0.10 % (1 %), E″ +0.04 / −0.26 / +1.90 % (4 %). Block 1.3e-7 / 1.4e-7. On the same series, without
   de-embedding the 32 Hz E′ is −1.87 %, and with the v1 estimator −2.54 % (= v1).
-- **RUBBER-VISC-05: PASS.** max |B_N|/S_N is 0.002 … 0.007 % on the strips, 0.035 % on the creep run and
+- **RUBBER-VISC-05: v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848).** max |B_N|/S_N is 0.002 … 0.007 % on the strips, 0.035 % on the creep run and
   0.012 / 0.006 / 0.003 % on the cantilever at ×1 / ×2 / ×4. The v1 left-point books on the same runs are
   2.576 / 1.054 / 0.474 % (= v1). 16 Hz ×2 / ×1 = 0.48. Cycle books are within ±0.008 % (left-point at 1 Hz: +1.166 %
   = v1). ΔD/ΔW_b − 1 is −0.39 … −0.41 %. The g = 0 control is 0.020 %.
@@ -1491,4 +1496,21 @@ transfer's small-kL expansion and E* round trip). (4) Formal runner `run_visc_v2
   −0.42 % at every rate, equal to E′ and the loss. The stamp is kept (no change after a result); a later protocol may
   adopt it.
 - CPU suites (rubber + batched, commit `bc52a2d`): 397 passed, 0 skipped with `CUDA_VISIBLE_DEVICES=''` and with `=0`.
-  Material status: `SIMULATOR_ONLY_UNCALIBRATED`. The v1 FAILs remain the v1 results. Independent rcs-review: NOT_RUN.
+  Material status: `SIMULATOR_ONLY_UNCALIBRATED`. The v1 FAILs remain the v1 results. Independent rcs-review: NOT_RUN
+  at the time of this entry (since run, 21.7.7).
+
+**21.7.7 Review follow-up** (rcs-review xhigh `c9d771f`, `docs/reports/rl_ready/P2_PREREQ_P2_3_REVIEW.md`:
+PASS_WITH_LIMITATIONS; merge GO). No protocol, threshold, record or frozen file changes.
+
+- **R2, citation.** RUBBER-VISC-03 and -05 are cited as "v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)", never as a blind pass. The held-out
+  rates are held out from the identification, not from the protocol design (`provenance.seen_before_declaration` of
+  v2). Blind evidence for the rate dependence must come from rates or scenes not yet seen (P2-5, or a v3 with a fresh
+  held-out rate).
+- **R3, wrench time stamp.** The next visco protocol that scores E″ adopts the dt/2-corrected stamp: the control-step
+  wrench is the mean of the kicks at t_{k−1} + j·dt, j = 0 … n − 1, so it is stamped t_k − Δt_c/2 − dt/2, not the
+  declared t_k − Δt_c/2 (the declared stamp biases E″ by up to −0.45 % at 32 Hz; re-stamped, the `visc_v2_001` data give
+  E″ −0.395 … −0.419 % at every rate, equal to E′ and the loss). v2 keeps its declared stamp.
+- **R1** (`motion_table_v1` stale table after `begin_control_step()` / reset with direct `solver.step()` calls): fixed
+  in `22982df` (§20.2); `advance()` unchanged (same launches; every device array identical before / after the fix).
+- **R4** (VISC-09 covered only the full option set): `tests/test_rubber_visco09_default_options.py` adds the default
+  options (case A, C, block; M = 0 and M = 2 with every g = 0), byte-identical to the frozen `TLMPMRubber`.

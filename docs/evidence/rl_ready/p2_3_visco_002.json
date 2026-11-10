@@ -1594,5 +1594,26 @@
   "rcs-review xhigh acceptance review of the v2 decision and run",
   "a protocol with the corrected wrench time stamp (observation only)"
  ],
- "report": "docs/reports/rl_ready/P2_3_RUBBER_VISCO.md section 8"
+ "report": "docs/reports/rl_ready/P2_3_RUBBER_VISCO.md section 8",
+ "review_corrections_c9d771f": {
+  "kind": "additive correction block; no value above is rewritten",
+  "review": {
+   "report": "docs/reports/rl_ready/P2_PREREQ_P2_3_REVIEW.md",
+   "commit": "c9d771f",
+   "reviewer": "rcs-review (xhigh)",
+   "verdict_p2_3_viscoelasticity": "PASS_WITH_LIMITATIONS"
+  },
+  "R2_citation": {
+   "RUBBER-VISC-03": "v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)",
+   "RUBBER-VISC-05": "v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)",
+   "rule": "formal.verdicts (PASS under protocol rubber_visc_tests_v2) must be cited with this wording, never as a blind pass; the held-out rates are held out from the identification, not from the protocol design. The v1 FAILs (v1_results_preserved) stand.",
+   "timeline": {
+    "diagnostic_reanalysis_b9baa57": "2026-11-11 00:14:10 KST",
+    "protocol_v2_declared_dca4848": "2026-11-11 00:16:54 KST",
+    "formal_run_visc_v2_001_started": "2026-11-11 00:24:25 KST"
+   }
+  },
+  "R3_wrench_time_stamp": "The next visco protocol that scores E'' adopts the dt/2-corrected wrench time stamp t_k - control_dt/2 - dt/2 (the control-step wrench is the mean of the kicks at t_{k-1} + j dt, j = 0..n-1). rubber_visc_tests_v2 keeps its declared stamp. ADR 0023 section 21.7.7.",
+  "not_run_update": "not_run[1] (rcs-review xhigh acceptance review of the v2 decision and run) has since run: c9d771f, PASS_WITH_LIMITATIONS."
+ }
 }
