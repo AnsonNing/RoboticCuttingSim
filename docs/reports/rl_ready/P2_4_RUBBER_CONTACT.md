@@ -26,6 +26,7 @@ Nothing frozen changed: v1–v7_2, law 8, evaluators, every Phase 1 module (`bat
 | CPU suites | §5 | |
 | Task X1: law `grid_node_penalty_coulomb_v2` + μ envelope (ADR §22.9) | **DONE** (`0b33246`, protocol v2 `8842573`) | dashpots on the realised node velocity; sliding accurate μ ≤ 0.6, static μ ≤ 0.8; §8 |
 | Formal CPU run `contact_v2_001` (`ffb099f`, clean) | -02, -03 **PASS**; -01, -04, -05 **FAIL** (μ 0.8 sliding / pinch 60 µm outside the envelope, stick-run books); -07 CARRIED_OVER; -09 NOT_RUN (B2-v2) | §8 |
+| Task B2-v2: RUBBER-CONT-09 under the v2 rule, v2 law, GPU0 `gpu_cont09_v2_001` (`2b8cb9c`, clean, SHARED_GPU) | **PASS** (a, b, c) | 1,566 scalars, 0 failing, worst d / limit 0.34; v2-law batched cost rows reported; §9 |
 
 ## 1. Decision probe (DIAGNOSTIC, before the protocol)
 
@@ -388,3 +389,78 @@ tests/test_repo_naming.py` at `ffb099f` (src and tests unchanged since; B1 merge
 with `CUDA_VISIBLE_DEVICES=''` (579 s) and **455 passed** with `=0` under the GPU0 lock (578 s); 2 pre-existing scipy
 warnings; logs `artifacts/rl_ready/p2_4/cpu_tests_x1_001/`. New: `tests/test_rubber_contact_v2.py` (8), the v2 protocol pin.
 None of the tests needs local artifacts, torch or CUDA.
+
+## 9. Task B2-v2 — RUBBER-CONT-09 under the v2 rule (branch `claude/rl-rubber-p24b`)
+
+Protocol `configs/rubber/rubber_contact_tests_v2.json` (sha256 `89bc7680…a339d0`, checked by the script before it runs;
+thresholds k_per_side 5, λ 4, eps_rel 1e-6 read from it), law **`grid_node_penalty_coulomb_v2`** as the protocol
+declares for -09 ("the -09 v1 configuration with the v2 law"; the batch's `ct_law` and options receipt record it).
+Script `scripts/rubber/p2_4b/gpu_contact_batched_check_v2.py` (new; the v1 script and `gpu_cont09_001` are unchanged and
+preserved); rule arithmetic unit-tested on CPU in `tests/test_rubber_cont09_rule_v2.py` (7 tests: hand values, d =
+brute-force max pairwise |A_i − B_j|, inclusive boundary, shift > (λ + 1) s rejected, floor on the vector's largest
+|A| component, aggregation, protocol pin). Evidence `docs/evidence/rl_ready/p2_4_contact_batched_002.json` (writer
+`write_contact_batched_evidence_v2.py`). Raw `artifacts/rl_ready/p2_4b/gpu_cont09_v2_001` (smoke, reduced geometry
+30 × 10 × 4 mm n_t 2, script check only: `gpu_cont09_v2_smoke_001`).
+
+`flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp
+PYTHONPATH=src .venv/bin/python scripts/rubber/p2_4b/gpu_contact_batched_check_v2.py --out
+artifacts/rl_ready/p2_4b/gpu_cont09_v2_001` — commit `2b8cb9c`, clean tree, RTX 5090 GPU0, driver 570.211.01, Warp
+1.17.0, Python 3.12, **SHARED_GPU** (co-tenant PID 642659, 766 MB, in every sample, not touched), 30,959 MB free at
+start, wall 117 s. Configuration as §7.3: workload E (case A 150 × 20 × 4 mm, n_t 3, 41,220 particles/env, 19,200
+nodes/env, 50 Hz, dt 7.74e-6 s, 2,585 substeps, F8 + kick-average + F9 + F10, guard 1.0), N = 4, env 1 pinched (A:
+20 µm, B: 30 µm, ramp over 3 steps) on the table, envs 0 / 2 / 3 out of reach; **10 episodes in one batch, interleaved
+A1, B1, …, A5, B5, each from a full reset**, 6 control steps each. Observables per the v2 protocol: markers, energies
+summary, group (clamp) wrench, plane / box / pad / pending wrenches (the v1 script omitted the pending wrench, which is
+zero by construction).
+
+| Criterion | Verdict | Measured |
+|---|---|---|
+| a zero rows | **PASS** | every contact row of envs 0 / 2 / 3 (plane / box / pad / pending wrenches, ct_work, ct_pen_max, ct_counts, ct_energy, reactions, per-node impulses, slider state, obstacle ids −1) exactly 0.0 after every step of all 10 episodes |
+| b perturbation band (v2) | **PASS** | 126 (step, env, observable) rows, **1,566 scalars, 0 failing**; worst d / (λ s + floor) = **0.34** (step 1, env 0, clamp wrench F_x: d 2.21e-7 N, s 1.50e-7 N, floor 5.2e-8 N, limit 6.53e-7 N); every row with d / limit > 0.2 is the clamp wrench of an out-of-reach env; 720 scalars bitwise deterministic (s = 0, d = 0) |
+| c audits | **PASS** | node / cell / marker / group / traction / contact-row ownership audits 0; finite every step; invalid bits 0; guard violations 0 |
+| validity | met | env 1's contact rows nonzero every step; env 1's pad wrench differs for every A–B pair (last-step top-pad F_z A 3.870–3.875 N, B 5.827–5.829 N) |
+
+**Verdict RUBBER-CONT-09 (v2): PASS.** The v1 FAIL of `gpu_cont09_001` (§7.3) stays preserved.
+
+Diagnostic (not part of the verdict): the same rule applied to env 1 (the perturbed env) rejects 95 of its 522 scalars
+(worst d / limit 1,447, the pad wrench at step 0), so the rule has power at the size of the A–B change; no A episode is
+bitwise identical to another for any observable except the pending wrench (GPU float atomics: within-side range of
+the out-of-reach clamp wrench up to 2.0e-7 N on a reaction of 0.03–0.15 N); the largest d / limit of any other
+observable is 0.06 (markers).
+
+Finding (calibration text, not the rule): the protocol's calibration statement assumed ≤ 648 scalars; the declared
+observables have 1,566 (846 with s > 0), so its family-wise H0 bound is 0.86 % over all scalars (0.47 % over those with
+s > 0) by the union bound at 5.5e-6 per scalar, not 0.4 %. The rule and its thresholds are unchanged by this; noted for
+the R1 review.
+
+Erratum §7.3 / §7.4: the "second co-tenant PID 3093155, 712 MB, at the end" of `gpu_cont09_001` was that run's own
+process (its `meta.pid`); the SHARED_GPU label stands because of PID 642659. The utilisation samples in §7.4 and below
+are GPU-wide and include this process.
+
+### 9.1 RUBBER-CONT-11 batched cost rows, v2 law (reported, not scored)
+
+Same run, rows sequential after -09, GPU0 RTX 5090, driver 570.211.01, **SHARED_GPU** (PID 642659 in every sample;
+GPU-wide utilisation before / after each row 47 / 36, 0 / 4, 0 / 72, 3 / 69 %), commit `2b8cb9c`, clean tree, protocol
+sha `89bc7680…`. Workload E, `batched_headless` (BatchedRubberMaterial, material only), 41,220 particles/env, 50 Hz,
+dt 7.74e-6 s, 2,585 substeps per control step, cameras none, recording none, robot DOF 0, CUDA graph chunks of 500,
+1 cold + 3 warm control steps (median), reset = masked partial reset of one env (20 resets). The protocol's `note_v2`
+says the v2 kernel has the v1 cost and need not be re-measured; these rows measure it.
+
+| Row | N | contacts | law | cold s | warm s | ms / substep | (v1 law, §7.4) | env-steps / s | sim-time / wall | reset p95 | VRAM peak (process, cumulative) | arrays | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| no contact | 4 | none | – | 1.066 | 1.026 | 0.397 | 0.389 | 3.90 | 0.078 | 0.44 ms | 776 MB | 90 MB | L2 PASS |
+| -09 configuration | 4 | table + 2 pads per env, env 1 in reach | v2 | 1.493 | 1.453 | 0.562 (+42 %) | 0.556 | 2.75 | 0.055 | 0.48 ms | 776 MB | 100 MB | L2 PASS |
+| all pinched | 4 | table + 2 pads per env, all in reach | v2 | 1.585 | 1.543 | 0.597 (+50 %) | 0.578 | 2.59 | 0.052 | 0.64 ms | 776 MB | 100 MB | L2 PASS |
+| N = 1 pinched | 1 | table + 2 pads | v2 | 0.843 | 0.800 | 0.309 | 0.304 | 1.25 | 0.025 | 0.47 ms | 776 MB | 25 MB | L2 PASS |
+
+The v2 law costs the same as v1 within the shared-GPU noise of these 3-step medians (+1–3 %, the no-contact row moved
++2 % too). N = 4 with contact: 2.1× the env-steps/s of N = 1. Arrays in MB = 10^6 bytes; the byte counts are identical
+to the v1-law rows (§7.4 listed them in MiB as 86 / 95 / 24 MB).
+
+### 9.2 CPU tests
+
+`tests/test_rubber_cont09_rule_v2.py tests/test_rubber_contact_v2.py tests/test_rubber_contact_batched.py
+tests/test_rubber_p2_4_protocols.py tests/test_repo_naming.py` at `2b8cb9c` (clean): **46 passed** with
+`CUDA_VISIBLE_DEVICES=''` (27 s) and **46 passed** with `=0` under the GPU0 lock (28 s); logs
+`artifacts/rl_ready/p2_4b/cpu_tests_v2_001/`. No src change in B2-v2; the full suite was not rerun (last: 455 passed at
+`ffb099f`, §8.4). None of the tests needs local artifacts, torch or CUDA.

@@ -1,0 +1,758 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_4_contact_batched_002",
+ "phase": "P2-4 rubber contact, batched path, task B2-v2 (RUBBER-CONT-09 under the v2 rule and the v2 law)",
+ "adr": "docs/adr/0023-rubber-material-v1.md section 22.9",
+ "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 9",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "protocol": {
+  "path": "configs/rubber/rubber_contact_tests_v2.json",
+  "sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+  "thresholds": {
+   "k_per_side": 5,
+   "lam": 4.0,
+   "eps_rel": 1e-06
+  },
+  "contact_law": "grid_node_penalty_coulomb_v2"
+ },
+ "supersedes": "nothing: p2_4_contact_batched_001 (RUBBER-CONT-09 v1 FAIL, gpu_cont09_001) stays preserved",
+ "script": "scripts/rubber/p2_4b/gpu_contact_batched_check_v2.py",
+ "RUBBER-CONT-09": {
+  "verdict": "PASS",
+  "run": "artifacts/rl_ready/p2_4b/gpu_cont09_v2_001",
+  "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15",
+  "dirty_tree": false,
+  "command": "flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .venv/bin/python scripts/rubber/p2_4b/gpu_contact_batched_check_v2.py --out artifacts/rl_ready/p2_4b/gpu_cont09_v2_001",
+  "wall_s": 117.3470612000674,
+  "contact_law_built": "grid_node_penalty_coulomb_v2",
+  "options_receipt": {
+   "dirichlet": "consistent_mass_projection_v1",
+   "traction_work": "grid_displacement_v1",
+   "state_precision": "f64_shadow_v1",
+   "constraint_work": "kick_average_v1",
+   "projection_rows": 2304,
+   "visco_terms": 0,
+   "visco_energy": "off_v1",
+   "bc_launch": "motion_table_v1",
+   "bc_nodes": 768,
+   "adr": "ADR 0023 \u00a720",
+   "contact_law": "grid_node_penalty_coulomb_v2",
+   "contact_work": "kick_average_v1"
+  },
+  "N": 4,
+  "particles_per_env": 41220,
+  "nodes_per_env": 19200,
+  "substeps": 2585,
+  "dt_s": 7.736943907156674e-06,
+  "control_steps_per_episode": 6,
+  "reach": [
+   false,
+   true,
+   false,
+   false
+  ],
+  "squeeze_depth_A_m": [
+   2e-05,
+   2e-05,
+   2e-05,
+   2e-05
+  ],
+  "squeeze_depth_B_m": [
+   2e-05,
+   3e-05,
+   2e-05,
+   2e-05
+  ],
+  "episode_order": [
+   "A1",
+   "B1",
+   "A2",
+   "B2",
+   "A3",
+   "B3",
+   "A4",
+   "B4",
+   "A5",
+   "B5"
+  ],
+  "a_zero_rows": {
+   "pass": true,
+   "failures_first_30": []
+  },
+  "b_perturbation_band": {
+   "pass": true,
+   "scalars": 1566,
+   "scalars_failing": 0,
+   "scalars_with_s_zero": 720,
+   "rows": 126,
+   "rows_failing": 0,
+   "max_d_over_limit": 0.33898649426460403,
+   "declared_scalar_bound_for_fwer": 648,
+   "rows_worst_first_8": [
+    {
+     "step": 1,
+     "env": 0,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 2.2142283628151516e-07,
+     "s": 1.5033595862287696e-07,
+     "floor": 5.184689737487217e-08,
+     "limit": 6.5319073186638e-07,
+     "d_over_limit": 0.33898649426460403,
+     "max_d": 2.2142283628151516e-07,
+     "max_s": 1.5033595862287696e-07,
+     "pass": true
+    },
+    {
+     "step": 2,
+     "env": 2,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 2.3622909729736907e-07,
+     "s": 1.646174181413329e-07,
+     "floor": 7.084817966951361e-08,
+     "limit": 7.293178522348452e-07,
+     "d_over_limit": 0.323904175077428,
+     "max_d": 2.3622909729736907e-07,
+     "max_s": 1.646174181413329e-07,
+     "pass": true
+    },
+    {
+     "step": 0,
+     "env": 2,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 7.827512229358069e-08,
+     "s": 5.450821157198388e-08,
+     "floor": 2.923621708780916e-08,
+     "limit": 2.4726906337574467e-07,
+     "d_over_limit": 0.31655849391331065,
+     "max_d": 7.827512229358069e-08,
+     "max_s": 5.450821157198388e-08,
+     "pass": true
+    },
+    {
+     "step": 4,
+     "env": 0,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 2.745474151771843e-07,
+     "s": 1.8781699741288183e-07,
+     "floor": 1.310172129241236e-07,
+     "limit": 8.822852025756509e-07,
+     "d_over_limit": 0.31117762643609953,
+     "max_d": 2.745474151771843e-07,
+     "max_s": 1.8781699741288183e-07,
+     "pass": true
+    },
+    {
+     "step": 3,
+     "env": 0,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 2.5783900110820657e-07,
+     "s": 2.0466949044589677e-07,
+     "floor": 8.90144994726008e-08,
+     "limit": 9.07692461256188e-07,
+     "d_over_limit": 0.28405986841773917,
+     "max_d": 2.5783900110820657e-07,
+     "max_s": 2.0466949044589677e-07,
+     "pass": true
+    },
+    {
+     "step": 2,
+     "env": 3,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 1.6516489170781412e-07,
+     "s": 1.3034457976152103e-07,
+     "floor": 7.084818298329938e-08,
+     "limit": 5.922265020293835e-07,
+     "d_over_limit": 0.2788880456072859,
+     "max_d": 1.6516489170781412e-07,
+     "max_s": 1.3034457976152103e-07,
+     "pass": true
+    },
+    {
+     "step": 5,
+     "env": 2,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 1.9750611134072837e-07,
+     "s": 1.6465871648108088e-07,
+     "floor": 1.4685597576676714e-07,
+     "limit": 8.054908416910907e-07,
+     "d_over_limit": 0.24519969826854077,
+     "max_d": 1.9750611134072837e-07,
+     "max_s": 1.6465871648108088e-07,
+     "pass": true
+    },
+    {
+     "step": 0,
+     "env": 0,
+     "observable": "wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 0,
+     "d": 9.002287772001683e-08,
+     "s": 8.707816743017127e-08,
+     "floor": 2.923621751192618e-08,
+     "limit": 3.7754888723261126e-07,
+     "d_over_limit": 0.2384403206161562,
+     "max_d": 9.002287772001683e-08,
+     "max_s": 8.707816743017127e-08,
+     "pass": true
+    }
+   ]
+  },
+  "c_audits": {
+   "pass": true,
+   "audits": {
+    "node_out_of_env": 0,
+    "cell_csr_out_of_env": 0,
+    "marker_out_of_env": 0,
+    "group_out_of_env": 0,
+    "traction_out_of_env": 0,
+    "contact_node_env_mismatch": 0,
+    "contact_obstacle_id_out_of_env": 0,
+    "contact_row_table_size_mismatch": 0,
+    "contact_env_table_size_mismatch": 0
+   },
+   "finite_every_step": true,
+   "invalid_bits_zero_every_step": true,
+   "guard_violations_after": [
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "validity": {
+   "env1_contact_rows_nonzero_every_step": true,
+   "env1_pad_wrench_differs_every_A_B_pair": true
+  },
+  "fwer_note": {
+   "scalars_checked": 1566,
+   "scalars_nondegenerate_s_gt_0": 846,
+   "protocol_calibration_bound_assumed_scalars": 648,
+   "union_bound_all_scalars": 0.008612999999999999,
+   "union_bound_nondegenerate_scalars": 0.004653,
+   "reading": "the protocol's calibration text assumed <= 648 scalars; the declared observables (markers, summary, group wrench, plane / box / pad / pending wrenches) have 1566 scalars in 126 rows (720 bitwise deterministic, s = 0, which cannot false-reject under H0 unless d > floor). The verdict rule does not depend on this count; the family-wise H0 false-reject bound is 0.86% (all) / 0.47% (s > 0), not 0.4 %"
+  },
+  "diagnostic_not_verdict": {
+   "A_episodes_bitwise_identical_per_observable_all_envs": {
+    "markers": false,
+    "summary": false,
+    "wrench": false,
+    "plane_wrench": false,
+    "box_wrench": false,
+    "pad_wrench": false,
+    "pending_wrench": true
+   },
+   "env1_same_rule_summary": {
+    "scalars": 522,
+    "scalars_failing": 95,
+    "scalars_with_s_zero": 60,
+    "rows": 42,
+    "rows_failing": 25,
+    "max_d_over_limit": 1446.7420408165026
+   },
+   "env1_same_rule_rows_worst_first": [
+    {
+     "step": 0,
+     "env": 1,
+     "observable": "box_wrench",
+     "components": 12,
+     "failing_components": 6,
+     "worst_component": 8,
+     "d": 0.3199284603236512,
+     "s": 5.512272234597937e-05,
+     "floor": 6.462942311325997e-07,
+     "limit": 0.00022113718361505008,
+     "d_over_limit": 1446.7420408165026,
+     "max_d": 0.32273754439387636,
+     "max_s": 7.371198970529402e-05,
+     "pass": false
+    },
+    {
+     "step": 0,
+     "env": 1,
+     "observable": "pad_wrench",
+     "components": 12,
+     "failing_components": 6,
+     "worst_component": 8,
+     "d": 0.3199284603236512,
+     "s": 5.512272234597937e-05,
+     "floor": 6.462942311325997e-07,
+     "limit": 0.00022113718361505008,
+     "d_over_limit": 1446.7420408165026,
+     "max_d": 0.32273754439387636,
+     "max_s": 7.371198970529402e-05,
+     "pass": false
+    },
+    {
+     "step": 2,
+     "env": 1,
+     "observable": "box_wrench",
+     "components": 12,
+     "failing_components": 4,
+     "worst_component": 8,
+     "d": 1.6117784322310937,
+     "s": 0.0019436466387841023,
+     "floor": 3.227429899055367e-06,
+     "limit": 0.007777813985035464,
+     "d_over_limit": 207.22769088231732,
+     "max_d": 1.6245114472182745,
+     "max_s": 0.0025800101393524955,
+     "pass": false
+    },
+    {
+     "step": 2,
+     "env": 1,
+     "observable": "pad_wrench",
+     "components": 12,
+     "failing_components": 4,
+     "worst_component": 8,
+     "d": 1.6117784322310937,
+     "s": 0.0019436466387841023,
+     "floor": 3.227429899055367e-06,
+     "limit": 0.007777813985035464,
+     "d_over_limit": 207.22769088231732,
+     "max_d": 1.6245114472182745,
+     "max_s": 0.0025800101393524955,
+     "pass": false
+    },
+    {
+     "step": 1,
+     "env": 1,
+     "observable": "box_wrench",
+     "components": 12,
+     "failing_components": 6,
+     "worst_component": 8,
+     "d": 0.9623305198916405,
+     "s": 0.0011788342771383853,
+     "floor": 1.9336220284521422e-06,
+     "limit": 0.004717270730581993,
+     "d_over_limit": 204.0015455659279,
+     "max_d": 0.9702707547028273,
+     "max_s": 0.0015621102224758765,
+     "pass": false
+    },
+    {
+     "step": 1,
+     "env": 1,
+     "observable": "pad_wrench",
+     "components": 12,
+     "failing_components": 6,
+     "worst_component": 8,
+     "d": 0.9623305198916405,
+     "s": 0.0011788342771383853,
+     "floor": 1.9336220284521422e-06,
+     "limit": 0.004717270730581993,
+     "d_over_limit": 204.0015455659279,
+     "max_d": 0.9702707547028273,
+     "max_s": 0.0015621102224758765,
+     "pass": false
+    }
+   ]
+  },
+  "pad_force_z_env1_last_step_N": {
+   "A": [
+    [
+     3.8744263808113466,
+     -3.8502920988887257
+    ],
+    [
+     3.8745493880683246,
+     -3.850399654559696
+    ],
+    [
+     3.8748490753997014,
+     -3.850631157503459
+    ],
+    [
+     3.872030130066934,
+     -3.8484754327012567
+    ],
+    [
+     3.870022492798623,
+     -3.8469899130729255
+    ]
+   ],
+   "B": [
+    [
+     5.827273921603564,
+     -5.7883657936864
+    ],
+    [
+     5.828088949217483,
+     -5.789041659183507
+    ],
+    [
+     5.827464838408506,
+     -5.788522841264575
+    ],
+    [
+     5.828712544210914,
+     -5.789486398014478
+    ],
+    [
+     5.82655859703434,
+     -5.787860111490812
+    ]
+   ]
+  },
+  "walls_s": {
+   "A1": [
+    1.5152311970014125,
+    1.4556543149519712,
+    1.4533366028917953,
+    1.4850393669912592,
+    1.48533709498588,
+    1.48537163506262
+   ],
+   "B1": [
+    1.4726821300573647,
+    1.4546285760588944,
+    1.4783379269065335,
+    1.4883640370098874,
+    1.488812912022695,
+    1.4713377830339596
+   ],
+   "A2": [
+    1.4608521360205486,
+    1.4850012629758567,
+    1.4824923010310158,
+    1.4889567719073966,
+    1.463508082088083,
+    1.4650029690237716
+   ],
+   "B2": [
+    1.460727220051922,
+    1.483671905938536,
+    1.4781010729493573,
+    1.4632761758984998,
+    1.4894456289475784,
+    1.4891107230214402
+   ],
+   "A3": [
+    1.4877900080755353,
+    1.4723643040051684,
+    1.4578213430941105,
+    1.4898071489296854,
+    1.489940489991568,
+    1.4898127459455281
+   ],
+   "B3": [
+    1.4655204149894416,
+    1.4583805029978976,
+    1.4825371369952336,
+    1.4895448869792745,
+    1.4885493529727682,
+    1.4638937740819529
+   ],
+   "A4": [
+    1.4879256099229679,
+    1.4859137709718198,
+    1.4828605810180306,
+    1.4800415729405358,
+    1.4640423260862008,
+    1.4902700450038537
+   ],
+   "B4": [
+    1.4876536950469017,
+    1.4847247520228848,
+    1.4653081950964406,
+    1.4636008169036359,
+    1.489734313916415,
+    1.4899483260232955
+   ],
+   "A5": [
+    1.487905450980179,
+    1.4600962749682367,
+    1.482795104966499,
+    1.490046281949617,
+    1.4900630560005084,
+    1.483022156986408
+   ],
+   "B5": [
+    1.4615516299381852,
+    1.4850482650799677,
+    1.4821189909707755,
+    1.4735528799938038,
+    1.4639782239682972,
+    1.4638960909796879
+   ]
+  }
+ },
+ "smoke_run": {
+  "run": "artifacts/rl_ready/p2_4b/gpu_cont09_v2_smoke_001",
+  "smoke_reduced_fidelity": true,
+  "geometry_m": [
+   0.03,
+   0.01,
+   0.004
+  ],
+  "n_t": 2,
+  "verdict_of_script_check_not_protocol": "PASS",
+  "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15"
+ },
+ "RUBBER-CONT-11_batched_cost_rows_v2_law": [
+  {
+   "row": "N4_no_contact",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 4,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contact_law": null,
+   "contacts": "none (no ContactSpec)",
+   "cold_wall_s": 1.065926969051361,
+   "warm_wall_s_median": 1.0260227059479803,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.39691400616943145,
+   "env_steps_per_s_warm": 3.898549200530852,
+   "aggregate_sim_time_per_wall_warm": 0.07797098401061704,
+   "reset_p95_ms": 0.4353563825134192,
+   "reset_median_ms": 0.3418455016799271,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 90240828,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "co_tenant_pids": [
+    "642659"
+   ],
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "warp": "1.17.0",
+   "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15",
+   "dirty_tree": false,
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "smoke_reduced_fidelity": false,
+   "co_tenant_gpu_util_pct_before_after_row (GPU-wide, includes this process)": [
+    "47",
+    "36"
+   ],
+   "v1_law_row_gpu_cont09_001_ms_per_substep_warm": 0.3889952541727075
+  },
+  {
+   "row": "N4_contact_cont09_config",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 4,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contact_law": "grid_node_penalty_coulomb_v2",
+   "contacts": "table plane + 2 pad frames x 1 box per env, envs in reach: [1]",
+   "cold_wall_s": 1.4928859359351918,
+   "warm_wall_s_median": 1.4530696159927174,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.5621159056064671,
+   "env_steps_per_s_warm": 2.7527930912430882,
+   "aggregate_sim_time_per_wall_warm": 0.05505586182486177,
+   "reset_p95_ms": 0.48125573666766325,
+   "reset_median_ms": 0.40438497671857476,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 100075080,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "co_tenant_pids": [
+    "642659"
+   ],
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "warp": "1.17.0",
+   "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15",
+   "dirty_tree": false,
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "smoke_reduced_fidelity": false,
+   "co_tenant_gpu_util_pct_before_after_row (GPU-wide, includes this process)": [
+    "0",
+    "4"
+   ],
+   "v1_law_row_gpu_cont09_001_ms_per_substep_warm": 0.5556370669388622
+  },
+  {
+   "row": "N4_contact_all_pinched",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 4,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contact_law": "grid_node_penalty_coulomb_v2",
+   "contacts": "table plane + 2 pad frames x 1 box per env, envs in reach: [0, 1, 2, 3]",
+   "cold_wall_s": 1.5846220389939845,
+   "warm_wall_s_median": 1.5426675099879503,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.5967765996084914,
+   "env_steps_per_s_warm": 2.5929112878193976,
+   "aggregate_sim_time_per_wall_warm": 0.05185822575638796,
+   "reset_p95_ms": 0.6449554348364475,
+   "reset_median_ms": 0.4125924897380173,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 100075080,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "co_tenant_pids": [
+    "642659"
+   ],
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "warp": "1.17.0",
+   "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15",
+   "dirty_tree": false,
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "smoke_reduced_fidelity": false,
+   "co_tenant_gpu_util_pct_before_after_row (GPU-wide, includes this process)": [
+    "0",
+    "72"
+   ],
+   "v1_law_row_gpu_cont09_001_ms_per_substep_warm": 0.5784892712177517
+  },
+  {
+   "row": "N1_contact_pinched",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 1,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contact_law": "grid_node_penalty_coulomb_v2",
+   "contacts": "table plane + 2 pad frames x 1 box per env, envs in reach: [0]",
+   "cold_wall_s": 0.8434861329151317,
+   "warm_wall_s_median": 0.7998749209800735,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.30942936981821023,
+   "env_steps_per_s_warm": 1.2501954665295876,
+   "aggregate_sim_time_per_wall_warm": 0.025003909330591753,
+   "reset_p95_ms": 0.474086403846741,
+   "reset_median_ms": 0.3317464725114405,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 25018836,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "co_tenant_pids": [
+    "642659"
+   ],
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "warp": "1.17.0",
+   "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15",
+   "dirty_tree": false,
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "smoke_reduced_fidelity": false,
+   "co_tenant_gpu_util_pct_before_after_row (GPU-wide, includes this process)": [
+    "3",
+    "69"
+   ],
+   "v1_law_row_gpu_cont09_001_ms_per_substep_warm": 0.3039145814272894
+  }
+ ],
+ "gpu_meta": {
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "physical_gpu_index": 0,
+  "driver": "570.211.01",
+  "warp": "1.17.0",
+  "python": "3.12.12",
+  "pid": 3135747,
+  "shared_gpu": true,
+  "label_gpu": "SHARED_GPU",
+  "co_tenant_pids": [
+   "642659"
+  ],
+  "free_mb_at_start": 30959.0,
+  "started": "2026-11-11T05:52:31+0900",
+  "finished": "2026-11-11T05:54:29+0900",
+  "co_tenant_before": {
+   "time": "05:52:31",
+   "gpus": [
+    "0, NVIDIA GeForce RTX 5090, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1153, 32607, 0",
+    "1, NVIDIA GeForce RTX 5090, GPU-a278df44-8db0-7770-630f-4f298a570b35, 71, 32607, 0"
+   ],
+   "apps": [
+    "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766"
+   ]
+  },
+  "co_tenant_after": {
+   "time": "05:54:29",
+   "gpus": [
+    "0, NVIDIA GeForce RTX 5090, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1870, 32607, 1",
+    "1, NVIDIA GeForce RTX 5090, GPU-a278df44-8db0-7770-630f-4f298a570b35, 71, 32607, 0"
+   ],
+   "apps": [
+    "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766",
+    "3135747, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 712"
+   ]
+  },
+  "smoke_reduced_fidelity": false
+ },
+ "erratum_p2_4_contact_batched_001": "report section 7.3 named PID 3093155 (712 MB, at the end) a second co-tenant of gpu_cont09_001; it is that run's own process (meta.pid 3093155). The SHARED_GPU label stands (PID 642659)",
+ "cpu_suites": {
+  "run": "artifacts/rl_ready/p2_4b/cpu_tests_v2_001",
+  "cuda_visible_devices_empty": [
+   "46 passed in 26.97s"
+  ],
+  "cuda_visible_devices_0": [
+   "46 passed in 27.50s"
+  ],
+  "meta": {
+   "commit": "2b8cb9c36c64e5a72e6eb8ee90d0e1da29ae2d15",
+   "dirty_tree": false,
+   "tests": "tests/test_rubber_cont09_rule_v2.py tests/test_rubber_contact_v2.py tests/test_rubber_contact_batched.py tests/test_rubber_p2_4_protocols.py tests/test_repo_naming.py",
+   "started": "2026-11-11T05:54:57+09:00"
+  },
+  "cuda_visible_devices_empty_passed": 46,
+  "cuda_visible_devices_0_passed": 46
+ },
+ "not_done": [
+  "B3 MaterialCoupling adapter (strip-to-world wrenches, finger recipients)",
+  "P1 contact kernel cost",
+  "X2 (friction-normal flutter, defect 2)",
+  "independent review (R1)"
+ ]
+}
