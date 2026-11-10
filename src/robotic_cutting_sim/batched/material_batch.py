@@ -45,9 +45,25 @@ INVALID_POSE = 4
 INVALID_CUT_DIGIT = 8
 INVALID_NONFINITE_WRENCH = 16
 INVALID_OBSTACLE_BOXES = 32
+INVALID_INPUT_DOMAIN = 64
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_SLOT_OVERFLOW: "SLOT_OVERFLOW",
                    INVALID_POSE: "INVALID_MEASURED_POSE", INVALID_CUT_DIGIT: "INVALID_CUT_DIGIT",
-                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES"}
+                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES",
+                   INVALID_INPUT_DOMAIN: "INPUT_OUT_OF_DOMAIN"}
+# Valid domain of the rigid-tool input of one control step (P1-1b B2 follow-up). An edge pose or pad box outside it
+# (a lost grasp swinging or ejecting the tool, a teleport, a non-finite or oversized box) gets INPUT_OUT_OF_DOMAIN
+# and, like an invalid measured pose or invalid boxes, from then on until its reset the env's substep inputs are
+# HELD: blade at the last in-domain substep pose with zero twist, cut disarmed, pads at the last in-domain boxes.
+# The hold is written on the device before the substep graph (no host sync, no recapture); other envs are not
+# touched. Limits: the edge within 1.5 m of the workpiece frame origin (the Franka reach of 0.855 m from a base
+# 0.47 m from the workcell origin is under 1.33 m); per-control-step edge speed below twice the Franka Panda
+# Cartesian limits (1.7 m/s, 2.5 rad/s); pad box centres within 0.5 m of the edge and half extents in (0, 0.25] m
+# (the measured pads: 0.096 m / 0.03 m). Measured S3 inputs: B1 0.17 m/s, 0.9 rad/s; B2 after a lost grasp
+# 0.59 m/s, 8.7 rad/s (P1-1b B2 report).
+INPUT_DOMAIN_VERSION = "material_input_domain_v1"
+INPUT_DOMAIN = {"max_edge_distance_m": 1.5, "max_edge_speed_m_s": 3.4, "max_edge_angular_speed_rad_s": 5.0,
+                "max_box_center_m": .5, "max_box_half_m": .25}
+HOLD_LATCH = INVALID_POSE | INVALID_OBSTACLE_BOXES | INVALID_INPUT_DOMAIN
 
 BATCHED_SOURCES = ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
                    "constitutive.py", "tlmpm_v7_2_batch.py")
@@ -79,7 +95,8 @@ SOLVER_CONSTANT_ARRAYS = (
 SOLVER_SHARED_ARRAYS = ("index",)
 # Material arrays restored by reset().
 MATERIAL_RESET_ARRAYS = ("pending_wrench", "applied_previous", "pad_wrench", "step_count", "seed", "last_pose",
-                         "measured_pose", "cut_input", "pose_status", "invalid_reason")
+                         "measured_pose", "cut_input", "pose_status", "invalid_reason",
+                         "hold_pose", "hold_box_centers", "hold_box_halves")
 # Material constants and reset tables.
 MATERIAL_CONSTANT_ARRAYS = ("R_world_local", "T_local_world", "q_local_world", "recipients",
                             "initial_local_pose", "initial_previous_pose", "initial_link_previous_pose",
@@ -224,6 +241,78 @@ def _mask_from_int(mask: wp.array(dtype=wp.int32), seed: wp.array(dtype=wp.int64
     if mask[e] != 0:
         out[e] = 1
     reset_seed[e] = seed[e]
+
+
+@wp.kernel
+def _input_domain_b(pose_status: wp.array(dtype=wp.int32), last_pose: wp.array2d(dtype=wp.float64),
+                    actual: wp.array2d(dtype=wp.float64), T_local_world: wp.array(dtype=wp.mat44d),
+                    control_dt: wp.float64, max_distance: wp.float64, max_speed: wp.float64,
+                    max_angular_speed: wp.float64, nboxes: int, centers: wp.array(dtype=wp.vec3),
+                    halves: wp.array(dtype=wp.vec3), max_center: float, max_half: float, T: int,
+                    poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=wp.spatial_vector),
+                    cuts: wp.array(dtype=int), hold_pose: wp.array(dtype=wp.transform),
+                    hold_centers: wp.array(dtype=wp.vec3), hold_halves: wp.array(dtype=wp.vec3),
+                    invalid_reason: wp.array(dtype=int), latch: int, flag: int):
+    """dim = N, after the pose interpolation and before the substeps (see INPUT_DOMAIN). An in-domain env only
+    records its hold state (last substep pose, boxes); its solver inputs are not touched."""
+    e = wp.tid()
+    out = int(0)
+    if pose_status[e] == wp.int32(0):
+        d = wp.float64(0.0)
+        for k in range(3):
+            d = d+(actual[e, k]-last_pose[e, k])*(actual[e, k]-last_pose[e, k])
+        if not (wp.sqrt(d) <= max_speed*control_dt):
+            out = 1
+        qa = wp.vec4d(last_pose[e, 3], last_pose[e, 4], last_pose[e, 5], last_pose[e, 6])
+        qb = wp.vec4d(actual[e, 3], actual[e, 4], actual[e, 5], actual[e, 6])
+        c = wp.abs(wp.dot(qa, qb))/wp.sqrt(wp.dot(qa, qa)*wp.dot(qb, qb))
+        angle = wp.float64(2.0)*wp.acos(wp.min(c, wp.float64(1.0)))
+        if not (angle <= max_angular_speed*control_dt):
+            out = 1
+        M = T_local_world[e]
+        r = wp.float64(0.0)
+        for i in range(3):
+            pl = M[i, 0]*actual[e, 0]+M[i, 1]*actual[e, 1]+M[i, 2]*actual[e, 2]+M[i, 3]
+            r = r+pl*pl
+        if not (wp.sqrt(r) <= max_distance):
+            out = 1
+    for b in range(nboxes):
+        cb = centers[e*nboxes+b]
+        hb = halves[e*nboxes+b]
+        if not (wp.length(cb) <= max_center):
+            out = 1
+        for k in range(3):
+            if not (hb[k] > 0.0 and hb[k] <= max_half):
+                out = 1
+    if out != 0:
+        invalid_reason[e] = invalid_reason[e] | flag
+    if out != 0 or pose_status[e] != wp.int32(0) or (invalid_reason[e] & latch) != 0:
+        held = hold_pose[e]
+        for k in range(T):
+            poses[e*T+k] = held
+            twists[e*T+k] = wp.spatial_vector()
+            cuts[e*T+k] = -1
+        for b in range(nboxes):
+            centers[e*nboxes+b] = hold_centers[e*nboxes+b]
+            halves[e*nboxes+b] = hold_halves[e*nboxes+b]
+    else:
+        hold_pose[e] = poses[e*T+T-1]
+        for b in range(nboxes):
+            hold_centers[e*nboxes+b] = centers[e*nboxes+b]
+            hold_halves[e*nboxes+b] = halves[e*nboxes+b]
+
+
+@wp.kernel
+def _reset_hold(mask: wp.array(dtype=int), nboxes: int, initial_local_pose: wp.array(dtype=wp.transform),
+                initial_centers: wp.array(dtype=wp.vec3), initial_halves: wp.array(dtype=wp.vec3),
+                hold_pose: wp.array(dtype=wp.transform), hold_centers: wp.array(dtype=wp.vec3),
+                hold_halves: wp.array(dtype=wp.vec3)):
+    e = wp.tid()
+    if mask[e] != 0:
+        hold_pose[e] = initial_local_pose[e]
+        for b in range(nboxes):
+            hold_centers[e*nboxes+b] = initial_centers[e*nboxes+b]
+            hold_halves[e*nboxes+b] = initial_halves[e*nboxes+b]
 
 
 @wp.kernel
@@ -531,6 +620,9 @@ class BatchedCuttingMaterial:
             self.initial_link_previous_pose = wp.array(pk.env["initial_link_previous_pose"], dtype=wp.transform)
             self.initial_box_centers = wp.array(pk.env["initial_box_centers"].reshape(-1, 3), dtype=wp.vec3)
             self.initial_box_halves = wp.array(pk.env["initial_box_halves"].reshape(-1, 3), dtype=wp.vec3)
+            self.hold_pose = wp.clone(self.initial_local_pose)
+            self.hold_box_centers = wp.clone(self.initial_box_centers)
+            self.hold_box_halves = wp.clone(self.initial_box_halves)
         self.diagnostics = SegmentedDiagnostics(s)
         for module in (__name__, "robotic_cutting_sim.batched.diagnostics", "robotic_cutting_sim.batched.pose_interp"):
             wp.load_module(module=module, device=self.device)
@@ -732,6 +824,7 @@ class BatchedCuttingMaterial:
         with wp.ScopedDevice(self.device):
             wp.launch(_check_boxes, self.num_envs, [s.boxes, s.box_centers, s.box_halves, self.invalid_reason,
                                                    INVALID_OBSTACLE_BOXES])
+            self._launch_input_domain()
             s.zero_control_step_accumulators()
             if self.graph is not None:
                 wp.capture_launch(self.graph)
@@ -749,6 +842,16 @@ class BatchedCuttingMaterial:
         self.interpolation_steps[interpolation] += 1
         if self.strict:
             self.check_valid()
+
+    def _launch_input_domain(self):
+        """INPUT_DOMAIN check and hold of out-of-domain / invalid envs (device, before the substep graph)."""
+        s, D = self.solver, INPUT_DOMAIN
+        wp.launch(_input_domain_b, self.num_envs, [self.pose_status, self.last_pose, self.actual_pose,
+            self.T_local_world, wp.float64(self.control_dt), wp.float64(D["max_edge_distance_m"]),
+            wp.float64(D["max_edge_speed_m_s"]), wp.float64(D["max_edge_angular_speed_rad_s"]), s.boxes,
+            s.box_centers, s.box_halves, float(D["max_box_center_m"]), float(D["max_box_half_m"]),
+            s.trajectory_length, s.poses, s.twists, s.cuts, self.hold_pose, self.hold_box_centers,
+            self.hold_box_halves, self.invalid_reason, HOLD_LATCH, INVALID_INPUT_DOMAIN], device=self.device)
 
     @property
     def pose_interpolation(self):
@@ -846,6 +949,9 @@ class BatchedCuttingMaterial:
                 layout.TOTALS_WIDTH, self.pending_wrench, self.applied_previous, self.pad_wrench, self.step_count,
                 self.seed, self.reset_seed, self.last_pose, self.measured_pose, self.initial_measured_pose,
                 self.cut_input, self.pose_status, self.invalid_reason])
+            wp.launch(_reset_hold, self.num_envs, [self.reset_mask, s.boxes, self.initial_local_pose,
+                self.initial_box_centers, self.initial_box_halves, self.hold_pose, self.hold_box_centers,
+                self.hold_box_halves])
             if full:
                 s.index.zero_()
 
@@ -949,4 +1055,7 @@ class BatchedCuttingMaterial:
                 "material_fidelity_reasons": reasons, "batched_source_sha256": batched_source_sha256(),
                 "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "memory_bytes": self.memory_bytes(),
                 "build_wall_s": self.build_wall_s,
-                "device_hashgrid_guard": getattr(self, "device_hashgrid_guard", None)}
+                "device_hashgrid_guard": getattr(self, "device_hashgrid_guard", None),
+                "input_domain": {"version": INPUT_DOMAIN_VERSION, **INPUT_DOMAIN,
+                                 "on_violation": "INPUT_OUT_OF_DOMAIN; env inputs held (blade at last in-domain pose, "
+                                 "zero twist, cut disarmed, pads at last in-domain boxes) until its reset"}}
