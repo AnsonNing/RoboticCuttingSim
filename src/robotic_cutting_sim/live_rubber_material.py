@@ -62,7 +62,7 @@ class LiveRubberMaterial:
                  capture_graph=None, record=False, strict=True, table_plane=None, fixture_boxes=None,
                  stable_step_guard=None, deformation_reserve=1.0, dirichlet="lumped_v1",
                  traction_work="particle_velocity_v1", state_precision="float32_v1",
-                 constraint_work="end_velocity_v1", visco_energy="off_v1"):
+                 constraint_work="end_velocity_v1", visco_energy="off_v1", contact=None):
         start = time.perf_counter()
         self.recipe = rm.load_recipe() if recipe is None else recipe
         self.material = self.recipe.nominal() if material is None else material
@@ -84,7 +84,15 @@ class LiveRubberMaterial:
         self.substeps = int(self.step_rule["substeps_per_control_step"])
         self.dt = self.control_dt/self.substeps
         solver_cls, extra = TLMPMRubber, {}
-        if getattr(self.material, "prony", ()) or visco_energy != "off_v1":
+        if contact is not None:
+            # ADR 0023 §22: contact law grid_node_penalty_coulomb_v1 (opt-in; without a ContactSpec the classes below
+            # are built unchanged)
+            from .rubber_constraint_work import check_options
+            from .tlmpm_rubber_contact_v1 import TLMPMRubberContact
+            check_options(constraint_work, dirichlet)
+            solver_cls, extra = TLMPMRubberContact, {"constraint_work": constraint_work, "visco_energy": visco_energy,
+                                                     "contact": contact}
+        elif getattr(self.material, "prony", ()) or visco_energy != "off_v1":
             # ADR 0023 §21.2: neo_hookean_jbar_prony_v1 (the elastic solver classes are used otherwise)
             from .rubber_constraint_work import check_options
             from .tlmpm_rubber_visco_v1 import TLMPMRubberVisco
@@ -160,17 +168,26 @@ class LiveRubberMaterial:
         self._last_violations = 0
         self._last_cfl_violations = 0
         self.last_visco = None
+        self.last_contact = None
         self.records = [self.header()] if self.record else []
         return self.receipt_short()
 
-    def advance(self, motions=None, traction=None):
+    def advance(self, motions=None, traction=None, frames=None):
         """One control step. ``motions``: {group: dict(rotation=3x3, translation=3, affine=3x3, active=bool)} giving
         the END of the step (relative to the reference); unlisted groups hold. ``traction``: {group: force [3] N}.
-        Returns the group wrenches [G, 6] (force the material exerts on the group, averaged over the step)."""
+        ``frames`` (contact solver only, ADR 0023 §22): {contact frame: dict(rotation=3x3, translation=3,
+        active=bool)}, the END pose of each moving contact frame (pads); unlisted frames hold.
+        Returns the group wrenches [G, 6] (force the material exerts on the group, averaged over the step); the
+        contact wrenches of the step are in ``last_contact`` (planes [P, 6], boxes [F, B, 6])."""
         s = self.solver
         s.begin_control_step()
         for g, m in (motions or {}).items():
             s.set_group_motion(int(g), **m)
+        if frames:
+            if not hasattr(s, "set_frame_motion"):
+                raise ValueError("frames need a contact solver (LiveRubberMaterial(contact=ContactSpec(...)))")
+            for f, m in frames.items():
+                s.set_frame_motion(int(f), **m)
         for t, f in (traction or {}).items():
             s.set_traction(int(t), f)
         self._run_substeps()
@@ -181,6 +198,9 @@ class LiveRubberMaterial:
         if getattr(s, "visco_diagnostics", None) is not None:
             s.visco_diagnostics.launch(s.diagnostics.summary, s.dparams, s.particle_offset)
             self.last_visco = s.visco_diagnostics.read()[0]
+        if hasattr(s, "contact_wrenches"):
+            planes, boxes = s.contact_wrenches(self.control_dt)
+            self.last_contact = {"plane_wrench": planes, "box_wrench": boxes, **s.contact_diagnostics()}
         violations = int(s.violations.numpy()[0])
         step_violations = violations-self._last_violations
         self._last_violations = violations
@@ -232,7 +252,10 @@ class LiveRubberMaterial:
                 "max_speed_m_s": diag["max_speed_m_s"], "nonfinite": bool(diag["nonfinite"] != 0.0),
                 "stable_step": {"cfl_eff_max_end_of_step": diag["cfl_eff_max"], "guard_limit": s.cfl_guard_limit,
                                 "guard_violations_step": int(step_cfl_violations)},
-                **({"visco": dict(self.last_visco)} if getattr(self, "last_visco", None) else {})}
+                **({"visco": dict(self.last_visco)} if getattr(self, "last_visco", None) else {}),
+                **({"contact": {k: (np.asarray(v).tolist() if isinstance(v, np.ndarray) else v)
+                                for k, v in self.last_contact.items()}}
+                   if getattr(self, "last_contact", None) else {})}
 
     # ------------------------------------------------------------------ queries
 
