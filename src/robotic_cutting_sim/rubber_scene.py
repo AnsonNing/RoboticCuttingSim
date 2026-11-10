@@ -154,8 +154,9 @@ def compile_strip(spec):
     """Compile a :class:`RubberStripSpec` into a :class:`RubberStripScene` (numpy, host)."""
     if spec.case not in CASES:
         raise ValueError(f"case {spec.case!r} not in {CASES}")
-    if spec.ppc != 2:
-        raise ValueError("rubber_strip_v1 uses 2 particles per cell per axis (ADR 0023 §8)")
+    if spec.ppc not in (2, 3):
+        raise ValueError("rubber_strip_v1 uses 2 particles per cell per axis (ADR 0023 §8); 3 only as the labelled "
+                         "quadrature check of the refinement study (§14.4)")
     dx = spec.grid_dx()
     s = dx/spec.ppc
     jaw = 0.0

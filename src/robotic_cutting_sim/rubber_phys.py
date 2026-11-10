@@ -23,7 +23,8 @@ from .rubber_initializer import relax_to_static
 
 CONFIG = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v2.json"
 CONFIG_V3 = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v3.json"
-PROTOCOLS = {"v2": CONFIG, "v3": CONFIG_V3}
+CONFIG_V4 = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v4.json"
+PROTOCOLS = {"v2": CONFIG, "v3": CONFIG_V3, "v4": CONFIG_V4}
 RHO = 1150.0
 BETA = 20.0
 
@@ -36,6 +37,12 @@ def guard_limit(cfg):
     """The protocol's stable-step guard limit (v3: common.stable_step_guard.limit; v2: off)."""
     g = cfg["common"].get("stable_step_guard")
     return None if g is None else float(g["limit"])
+
+
+def solver_options(cfg, test):
+    """The protocol's opt-in solver options of ``test`` (v4: tests.<id>.setup.solver_options; earlier: none = v1)."""
+    return dict(cfg["tests"][test]["setup"].get("solver_options", {})) if isinstance(cfg["tests"][test]["setup"],
+                                                                                   dict) else {}
 
 
 def stop_rule_id(cfg):
@@ -175,11 +182,11 @@ def cantilever_live(L, W, t, n_t, mu, g, device="cpu", control_dt=1e-3, **kw):
 
 
 def case_static_sag(L, W, t, n_t, mu, g, *, device="cpu", delta_ref=None, label=None, stop_rule="static_stop_v2",
-                    stable_step_guard=None):
+                    stable_step_guard=None, options=None):
     """Static sag by the relax_mass_proportional_v1 initializer (static_stop_v2, or v3: the deflection is measured
     on the float64 initializer markers, the float32-position value is reported as ``delta_x_f32_m``)."""
     start = time.perf_counter()
-    live = cantilever_live(L, W, t, n_t, mu, g, device, stable_step_guard=stable_step_guard)
+    live = cantilever_live(L, W, t, n_t, mu, g, device, stable_step_guard=stable_step_guard, **(options or {}))
     mat = live.material
     E = mat.young_effective()
     f1 = R.cantilever_f1(mat.density, W, t, L, E)
@@ -199,7 +206,8 @@ def case_static_sag(L, W, t, n_t, mu, g, *, device="cpu", delta_ref=None, label=
             "J_min": diag["J_min"], "J_max": diag["J_max"], "tip_x_m": float(markers[-1][0]),
             "reaction_residual": init["final"].get("reaction_residual"), "device": live.device,
             "stop_rule": stop_rule, "delta_x_f32_m": delta_x_f32, "invalid": live.invalid_reason,
-            "cfl_eff_max_end": diag["cfl_eff_max"], "wall_s": time.perf_counter()-start}
+            "cfl_eff_max_end": diag["cfl_eff_max"], "solver_options": live.solver.solver_receipt()["options"],
+            "wall_s": time.perf_counter()-start}
 
 
 def configs_02(cfg):
@@ -550,7 +558,7 @@ def evaluate_static_v3(evaluator, results, cfg):
 
 # ----------------------------------------------------------------------------- RUBBER-PHYS-07 (v3) and -12
 
-def _strip_07(cfg, device, control_dt, guard, traction_end=False):
+def _strip_07(cfg, device, control_dt, guard, traction_end=False, **options):
     st = cfg["tests"]["RUBBER-PHYS-06"]["setup"]
     L = st["L_m"]
     spacing = st["t_m"]/st["n_t"]/2
@@ -558,10 +566,10 @@ def _strip_07(cfg, device, control_dt, guard, traction_end=False):
     spec = rs.RubberStripSpec(length=L, width=st["W_m"], thickness=st["t_m"], n_t=st["n_t"], case="C",
                               end_mask="x", traction_regions=regions)
     return LiveRubberMaterial(spec, material=material(st["mu_pa"]), control_dt=control_dt, gravity=(0, 0, 0),
-                              device=device, strict=False, stable_step_guard=guard), st
+                              device=device, strict=False, stable_step_guard=guard, **options), st
 
 
-def case_stretch_release_v3(cfg, variant, device="cpu"):
+def case_stretch_release_v3(cfg, variant, device="cpu", options=None):
     """RUBBER-PHYS-07 v3 (``variant`` = "ramped" / "instant", see the v3 protocol): cosine ramp to lambda, hold, then
     either a force-controlled release (grip 1 replaced in the same control step by a traction on the end particle
     layer carrying the hold force, cosine-ramped to zero) or the instantaneous removal of grip 1; then 10 fixed-free
@@ -570,7 +578,7 @@ def case_stretch_release_v3(cfg, variant, device="cpu"):
     var = t7["setup"]["variants"][variant]
     dtc = float(t7["setup"]["control_interval_s"])
     ramped = var["release"] == "ramped_traction"
-    live, st = _strip_07(cfg, device, dtc, guard_limit(cfg), traction_end=ramped)
+    live, st = _strip_07(cfg, device, dtc, guard_limit(cfg), traction_end=ramped, **(options or {}))
     mat, L, t = live.material, st["L_m"], st["t_m"]
     T_ax = axial_period(L, mat)
     steps = lambda periods: int(math.ceil(periods*T_ax/dtc-1e-9))                       # noqa: E731
@@ -626,7 +634,8 @@ def case_stretch_release_v3(cfg, variant, device="cpu"):
             "cfl_eff_max": max(r["cfl_eff_max"] for r in rows), "J_range": [min(r["J_min"] for r in rows),
                                                                             max(r["J_max"] for r in rows)],
             "Jbar_range": [min(r["Jbar_min"] for r in rows), max(r["Jbar_max"] for r in rows)], "rows": rows,
-            "wall_s": time.perf_counter()-start, "device": live.device}
+            "solver_options": live.solver.solver_receipt()["options"], "wall_s": time.perf_counter()-start,
+            "device": live.device}
 
 
 def evaluate_07_v3(results, cfg):
