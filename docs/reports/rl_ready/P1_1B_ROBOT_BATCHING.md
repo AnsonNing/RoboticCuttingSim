@@ -387,6 +387,9 @@ MJWarp 3.12.0, Warp 1.17.0).
 | Opt-in versioned profile `mjwarp_grip_v1` (MuJoCo `box_box` collider + `impratio` 10) | IMPLEMENTED; default (B1, point profile) and existing profiles unchanged |
 | Robot-only recorded TRIM sequence, N=2 (seeds 512, 15), GPU, graph, strict, `mjwarp_grip_v1` | PASS: grasp held (HOLDING 1196/1200 steps per env, max slip 1.51 / 1.59 mm, max rotation 14.1 / 15.2 mrad) |
 | S3 TRIM B2 N=2 (seeds 512, 15) with material, frozen evaluator, `mjwarp_grip_v1` | PASS in both envs, no termination |
+| S3 TRIM B2 N=4 (seeds 512, 15, 512, 15), `mjwarp_grip_v1` | PASS in all four envs, no termination |
+| B2 settle gate, G4 ruler-knife setting, strict GPU builds, `mjwarp_grip_v1` | PASS 3 of 3 (point profile: 5 of 6 strict builds FAIL on angular speed; same root cause) |
+| B2 settle under deterministic `run_to_run`, `mjwarp_grip_v1` | PASS (point profile: tool ejected 1.43 m); B2 G1/G3 deterministic isolation not run |
 | Slip comparable to Native | NO: Native PhysX <= 0.93 um / 9.6e-5 rad; MJWarp with the profile 1.6 mm / 15 mrad (inside the monitor's 2 mm / pi/60 warning gates, three orders of magnitude above Native) |
 | Material crash after a lost grasp | Crash site recorded (graph replay); the out-of-domain input that precedes it reproduced and FIXED with an env-local input-domain guard (`INPUT_OUT_OF_DOMAIN` + device-side hold); CPU tests incl. bitwise isolation PASS; GPU see section 4 |
 
@@ -502,8 +505,13 @@ at rest (about 0.01 mm/s); Native shows neither.
   the digest of the committed sources at `a930a8c`. The guard set no flag (the recorded inputs peak at 0.19 m/s and
   1.17 rad/s).
 
-**S3 N=4 with the profile** (`s3_b2grip_n4_001`, seeds 512 / 15 / 512 / 15): NOT_RUN at the time of writing
-(queued on GPU0 behind other RCS jobs; see the update below if present).
+**S3 N=4 with the profile** (`s3_b2grip_n4_001`, seeds 512 / 15 / 512 / 15, same settings, strict, clean commit
+`4bf1663`): frozen evaluator PASS in all four envs, termination reason 0 everywhere, HOLDING 1196/1200 steps per env,
+max slip 1.51-1.59 mm, max rotation 14.0-15.1 mrad. Labelled 38,220 / 81,033 / 38,220 / 81,034; the seed-512 final
+codes are bitwise identical in envs 0 and 2 and equal to `s3_b2grip_n2_001` env 0 (`final_codes_sha256` 243a3f8b...);
+seed 15 env 3 equals `s3_b2grip_n2_001` env 1 (0316c347...), env 1 differs by one labelled particle (default-mode
+MJWarp run-to-run band through the contact-loaded material; B1 duplicates were bitwise equal). 1099 ms/step (3.6
+env-steps/s), `SHARED_GPU` (foreign SM 49 % mean), own VRAM peak 1108 MiB.
 
 **Settle reliability and deterministic mode with the profile** (the S2 findings "settle fails the angular-speed gate
 in 5/6 strict batched builds" and "B2 under `run_to_run` ejects the tool"). The G4 setting (registered `TRIM-01-R`,
@@ -514,9 +522,9 @@ the point profile FAILS the settle gate on the tool's angular speed, 1.16 rad/s 
 every step (`settle_cpu_trim01r_grip_001`). On the seeded TRIM tool the settle accumulators drop from 2.2e-3 to
 1.8e-4 rad/s and from 4.4 to 0.38 mrad (`diag_cpu_point_001` against `prof_cpu_mjwarp_grip_v1_001`). So the S2 settle
 flakiness has the same root cause. GPU, strict, the G4 batched setting with the profile (`probe_lab_batched_g4.py --grip-profile mjwarp_grip_v1`):
-`g4_settle_b2grip_001` and `_002` PASS with max tool angular speed 4.6e-5 rad/s and rotation drift 0.36 mrad,
-identical accumulators in both builds (the point-profile rows `g4_batched_ns_001..003`: 0.70 / 0.026 / 1.16 rad/s,
-two of three failing; strict builds: 5 of 6 failing, `g4_batched_003..007`). G3_PLACEHOLDER
+`g4_settle_b2grip_001`, `_002` and `_003` PASS (3 of 3 strict builds) with max tool angular speed 4.6e-5 rad/s and
+rotation drift 0.36 mrad, identical accumulators in all three builds (the point-profile rows `g4_batched_ns_001..003`: 0.70 / 0.026 / 1.16 rad/s,
+two of three failing; strict builds: 5 of 6 failing, `g4_batched_003..007`).
 
 Deterministic mode (`g0_det_b2grip_n1_001`, `run_to_run`, N=1, graph, 20 steps with a 0.5 N edge force): settle PASS
 (angular speed 1.8e-4 rad/s, drift 0.085 mm / 0.38 mrad), slip 0.14 mm and 0.85 mrad over the 20 steps, graph safety
@@ -613,7 +621,8 @@ PYTHONPATH=src .venv/bin/python scripts/rl_ready/probe_material_ood.py --device 
 - The SIGSEGV itself was never reproduced on demand; the crash site is the material graph replay. The guard removes
   the out-of-domain inputs that preceded it and the step-time collapse, and the crash configuration now completes;
   that the guard removes every SIGSEGV path is not proven.
-- Not done with the profile: G1/G3 isolation in deterministic mode for B2, G4 against the single Lab env (the frozen
+- Not done with the profile: G1/G3 isolation in deterministic mode for B2 (now possible: the deterministic settle
+  passes), G4 against the single Lab env (the frozen
   single env keeps the point profile), G5 replays of B2 inputs, an exclusive-GPU timing row, wiring
   `grip_contact_profile` through `rl.vector_env.open_vector_env`. ADR 0022 is not updated here (§5.1 table would list
   the profile as a B2 option).
