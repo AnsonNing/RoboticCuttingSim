@@ -205,6 +205,86 @@ The kinematic runtime has ideal tracking and no cameras; it is a physics diagnos
 GPU probes run separately. A skipped check is NOT_RUN; successful execution is
 separate from task success, physical fidelity and real-material calibration.
 
+## RL-ready (Phase 1)
+
+`open_vector_env` runs N cutting envs in **one process with batched GPU kernels**: one batched `tlmpm_v7_2`
+material and one CUDA graph per batch shape. It never loops over single envs or starts N Kit processes; an
+unsupported configuration raises an `UNSUPPORTED_*` code. Plan and status are in
+[RL_READY_PLAN.md](docs/RL_READY_PLAN.md) and [RL_READY_PROGRESS.md](docs/RL_READY_PROGRESS.md). The final
+feature-parity matrix and Phase 1 checklist are in
+[P1_PARITY_MATRIX.md](docs/reports/rl_ready/P1_PARITY_MATRIX.md).
+
+**Backends of `open_vector_env(num_envs, task=..., tasks=..., device="cuda", backend=...)`:**
+
+- `kinematic_ideal_tracking_batched` (default, workloads A / C). The edge is replayed or ideally tracked, with no
+  robot.
+  - Tasks: seeded TRIM (`TaskFamily`, `tasks=[512, 15]`) or configured `tlmpm_v7_2` scenes
+    (`ConfiguredTaskFamily`, e.g. the CUT workload `cut_v7_2_v1`, or `tasks=[{"scene": "cut_v7_2_v1", "seed": 3}]`).
+  - Fidelity: always `reduced_fidelity`.
+- `isaac_lab_newton` (workload B). N Franka worlds on Isaac Lab Newton / MuJoCo-Warp, coupled to the same batched
+  material.
+  - `tool_mount="rigid_mount_v1"` (B1): `reduced_fidelity: rigid_tool_mount_no_grasp`.
+  - `tool_mount="physical_grasp_v1"` (B2) with the opt-in `grip_contact_profile="mjwarp_grip_v1"` (a listed
+    difference, not a calibrated grip).
+  - Needs `.deps/isaaclab-venv`.
+
+**Both backends share one contract (`rl.vector_contract`):**
+
+- `reset(seeds=, env_ids=)` (masked partial reset); `step(actions[N,8])` returns Torch device tensors;
+- `info["termination_reason"]` (`rl.termination`: material, rigid, grasp lost, IK, truncation, input guard,
+  infrastructure; `decode_termination_detail` names the material bits);
+- `evaluate(env_ids)` through the **frozen** `goals.evaluate_goal`. A non-finite env gets a structured
+  `FAIL_INTEGRITY` entry;
+- `receipt()` with computed fidelity.
+
+**Around the env:**
+
+- the P1-4 supervisor and crash-safe ledger (`rl.supervision`, `scripts/rl_ready/supervise_rollout.py`);
+- the RL pipeline smoke (`scripts/rl_ready/run_rl_smoke.py`, `rcs_rl_rollout_v1`, no training);
+- the P1-6 acceptance harness and judge (`scripts/rl_ready/run_perf_acceptance.py`, `judge_perf_acceptance.py`,
+  `configs/rl_benchmark/acceptance_v1.json`).
+
+```bash
+# CPU tests (project venv); run once with CUDA hidden and once with GPU 0 visible.
+CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider tests/
+# Torch vector-env / RL tests on the Warp/Torch CPU device (D-09 pytest overlay, nothing installed into .deps)
+PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaacsim-venv/bin/python -m pytest -q \
+  -p no:cacheprovider tests/test_rl_*.py tests/test_vector_env_*.py tests/test_perf_acceptance.py
+# Isaac Lab workload B tests (Warp-CPU MJWarp)
+PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaaclab-venv/bin/python -m pytest -q \
+  -p no:cacheprovider tests/test_rl_lab_*.py tests/test_vector_env_contract.py
+# GPU smokes: one RCS job per GPU under its flock, explicit device, >= 4 GB left free
+CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock \
+  .deps/isaacsim-venv/bin/python scripts/rl_ready/run_p1_2b_smoke.py --backend kinematic_ideal_tracking_batched \
+  --gpu-index 0 --out artifacts/rl_ready/<new_run>
+CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock \
+  .deps/isaacsim-venv/bin/python scripts/rl_ready/run_rl_smoke.py --run S-CUT --gpu-index 0
+```
+
+**Known limitations:**
+
+- Workload A and B1 are `reduced_fidelity`, and every receipt says why. Batched CUT is the versioned v7_2 scene
+  only; frozen v5 / v7 CUT stays single-env / Native (`UNSUPPORTED_SOLVER`). B2 grip slip is about 1.5 mm,
+  against about 1 µm in Native.
+- Cameras, vision profiles and physics recorders are **UNSUPPORTED** in the batched path (`UNSUPPORTED_SENSOR` /
+  `UNSUPPORTED_RECORDER`). Vision data comes from the Native reference.
+- Warp 1.17 replays a captured HashGrid query with the descriptor of the last-built grid. So the rule is **one
+  device HashGrid per process**: one batch or single material per process (`UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS`;
+  a grid created later sets `FOREIGN_DEVICE_HASHGRID`, which counts as material-invalid plus infrastructure).
+- Every batched throughput number so far is `SHARED_GPU` (co-tenants on the machine). Exclusive-GPU rows are
+  pending.
+- Materials are provisional and uncalibrated. The rubber material is Phase 2 work on its own branch.
+
+Reports in `docs/reports/rl_ready/`:
+[P1-0 baseline](docs/reports/rl_ready/P1_0_BASELINE.md) ·
+[P1-1/P1-2 milestones](docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md) ·
+[P1-1b robot batching](docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md) ·
+[P1-3a contacts](docs/reports/rl_ready/P1_3A_ALIAS_FREE_CONTACTS.md) ·
+[P1-4 long rollout](docs/reports/rl_ready/P1_4_LONG_ROLLOUT.md) ·
+[P1-5 CUT](docs/reports/rl_ready/P1_5_CUT.md) ·
+[P1-6 acceptance harness](docs/reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md) ·
+[acceptance review](docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md).
+
 ## Agentic control robot seeded trimming
 
 The opt-in [seeded trimming challenge](docs/AGENTIC_TRIM_CHALLENGE.md) provides
