@@ -65,7 +65,13 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
     Chain A DONE 18:18–18:31, all 8 rows EXCLUSIVE_GPU (no foreign PID on GPU1), workload A s512, R0 harness
     throughput mode, RTX 5090 #1: env-steps/s frozen_v1 / alias_free_v1 = N=1 6.75 / 9.74, N=4 10.06 / 13.85,
     N=8 9.62 / 14.01, N=16 9.83 / 13.56 (aggregate sim-time/wall up to 0.28); VRAM peak 864→2044 / 926→2202 MiB.
-    Batching saturates the GPU at N≈4 (≈1.45× over N=1); alias_free_v1 ≈1.38–1.46× at every N. Chain B running.
+    Batching saturates the GPU at N≈4 (≈1.45× over N=1); alias_free_v1 ≈1.38–1.46× at every N.
+    **Formal table DONE and merged (8e503e1)**: [P1_PERFORMANCE_TABLE.md](reports/rl_ready/P1_PERFORMANCE_TABLE.md),
+    evidence `p1_exclusive_001.json`, 20 of 23 runs EXCLUSIVE_GPU (3 SHARED only for a < 2 s, 2–7 MiB foreign graphics
+    context; 2 rerun EXCLUSIVE): single_env_headless s512/s15 7.57/7.21; CUT v7_2 N=1/8/16 6.85/10.35/10.22 (33/33
+    episodes PASS); B1 N=1/4/8 4.96/7.66/8.67 (N=16 8.79 SHARED); B2 `mjwarp_grip_v1` N=4 7.37 (4/4 PASS, grasp held).
+  - **Phase 1 xhigh acceptance review running at f03fbff** → then PR to `main` (#12), merge, first descriptor pin in the
+    external repository (SYNCED), then the P1-6 optimizer cycle.
   - **Phase 1 consolidation DONE and merged (3674780)**: `grip_contact_profile` (incl. `mjwarp_grip_v1`) through `open_vector_env(backend="isaac_lab_newton")` (code `UNSUPPORTED_GRIP_CONTACT_PROFILE`); `evaluate()` returns `FAIL_INTEGRITY` for a non-finite env (no raise); one `material_termination_bits` for workload A, Lab and the supervisor (every material bit → 2, FOREIGN_DEVICE_HASHGRID also → 64; stale supervisor bit table fixed; test iterates `INVALID_REASONS`); `tasks=` accepts configured scenes (TRIM+CUT mixes refused with a code); [P1_PARITY_MATRIX.md](reports/rl_ready/P1_PARITY_MATRIX.md): 9 PASS, 6 PARTIAL, 1 UNSUPPORTED (cameras in the batched path); README "RL-ready (Phase 1)" section. Tests at 53b915e: full CPU 2443 passed / 1 failed / 28 skipped / 6 xfailed with CUDA hidden and the same with GPU0 visible; Torch 343 / 10 skipped; Isaac Lab 56. The 1 failure (`test_wp12_phase5_native_success.py::test_reproduces_phase2b_records`) is pre-existing and environment-dependent: it runs only when `artifacts/wp12` links the main checkout's newer WP-12 analyses (CUTTING_FAILURE for `workcell_live_006` vs committed TASK_SUCCESS) and skips otherwise; WP-12 records are out of scope and untouched (open item).
   - Running now:
     P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
