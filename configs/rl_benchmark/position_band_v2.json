@@ -1,0 +1,56 @@
+{
+ "schema": "rcs_rl_position_band_method_v2",
+ "id": "position_band_v2",
+ "status": "PRE_DECLARED",
+ "declared": "2026-11-10, before any band-v2 reference run (review finding F2, docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md)",
+ "supersedes": {
+  "id": "position_band_v1_p1_0",
+  "definition": "[min, max] of max_position_diff_m_over_time over 4 single-env GPU replays per seed (docs/evidence/rl_ready/p1_0_baseline_001.json l3_band)",
+  "reason": "a new run from the same distribution falls outside the range of 4 earlier runs with probability 2/(4+1) = 40 %; reported in P1-0 as 'reported, not scored'",
+  "kept": true
+ },
+ "metric": {
+  "name": "max_position_diff_m_over_time",
+  "definition": "max over the Native samples (every 10 control steps = 0.2 s, t = 0 .. 24 s, 121 samples incl. t = 0) of the max over particles of the Euclidean distance between the replay and the Native WORLD particle positions (robotic_cutting_sim.rl.replay.compare_sample, max_position_diff_m); unit m",
+  "episode": "full 1200-step WP-17 replay (measured edge pose, resolved cut digit, measured pad boxes), workload A",
+  "secondary_reported_not_scored": ["final_max_position_diff_m"]
+ },
+ "reference_sample": {
+  "boundary": "single_env_headless",
+  "material": "frozen single LiveCuttingMaterial (tlmpm_v7_2, law 8, v7_2 optimizations, one 200-substep CUDA graph), material seed 42",
+  "driver": "scripts/rl_ready/run_baseline.py --mode replay --seed <s> --warm-resets 0 --out-root artifacts/rl_ready/review_fix1 --run-name band_v2_s<s>",
+  "seeds": [512, 15],
+  "runs_per_seed_min": 10,
+  "one_run_per_process": true,
+  "gpu_assignment": "two chains (GPU 0 and GPU 1, RTX 5090, driver 570.211.01), each alternating seed 512 / 15, 5 + 5 runs per chain; each chain under its rcs_rl_runner gpu<N>.lock",
+  "inclusion": "every run with status COMPLETE, 1200 steps and invariants PASS is used; no run is dropped for its metric value. A crashed or truncated process is preserved and replaced by one extra run (at most 2 extras per seed); if fewer than 10 valid runs per seed remain, the band for that seed is INCONCLUSIVE_UNDERSAMPLED",
+  "excluded_from_reference": "P1-0 band runs, p1_2_single_ref_s512_001 and every batched run: they are re-classified as held-out runs, never used to derive the band"
+ },
+ "tolerance": {
+  "kind": "one_sided_lognormal_prediction_bound",
+  "transform": "y = ln(metric)",
+  "upper_m": "exp(mean(y) + k * sd(y)), sd with ddof = 1",
+  "k": "t_{1 - alpha, n - 1} * sqrt(1 + 1 / n)  (Student t quantile; prediction bound for one new run)",
+  "alpha": 0.01,
+  "nominal_false_reject_rate_per_run": 0.01,
+  "false_reject_rate_assumptions": "the new run is exchangeable with the reference runs (same seed, same distribution) and ln(metric) is normal",
+  "lower_m_descriptive_only": "exp(mean(y) - k * sd(y)); a run below it is BELOW_REFERENCE (smaller deviation from Native than the frozen single env spread), reported, never a failure",
+  "normality_check": "Shapiro-Wilk on y per seed, reported. If p < 0.01 the parametric bound is not used: upper_m = max(reference) with nominal one-sided false-reject rate 1 / (n + 1), recorded as fallback_empirical_max",
+  "rounding": "no rounding of the bound; values stored as float"
+ },
+ "classification_per_run": {
+  "WITHIN": "metric <= upper_m (includes BELOW_REFERENCE)",
+  "BELOW_REFERENCE": "metric < lower_m (sub-label of WITHIN)",
+  "OUTSIDE": "metric > upper_m",
+  "INVALID_PROCESS": "the run is labelled invalid by its own evidence (e.g. INVALID_MULTI_GRID_PROCESS); value reported, not scored",
+  "NO_POSITION_DATA": "the run recorded no comparison against the Native samples",
+  "NOT_APPLICABLE": "smoke / truncated / cold-cache runs shorter than the full episode"
+ },
+ "aggregate_per_run_set": {
+  "rule": "a set of n scored runs (WITHIN or OUTSIDE) of one package is MET if the number of OUTSIDE runs r <= c(n), with c(n) the smallest c such that P[Binomial(n, alpha) > c] <= 0.05; else NOT_MET",
+  "note": "c(1..5) = 0, c(6..35) = 1 at alpha 0.01 (computed, see robotic_cutting_sim.rl.position_band.critical_count)"
+ },
+ "scope": "the band is a statistical regression check of GPU float-atomic run-to-run position spread against Native. It is not a physical tolerance; final codes, labelled counts and the frozen evaluator remain independent pass/fail criteria",
+ "values_file": "configs/rl_benchmark/position_band_v2_reference.json (schema rcs_rl_position_band_reference_v2, written by scripts/rl_ready/make_position_band_v2.py from the reference runs)",
+ "consumer_api": "robotic_cutting_sim.rl.position_band: load_reference(), classify(seed, metric_m), critical_count(n, alpha), aggregate(classes)"
+}

@@ -550,3 +550,32 @@ Results are quoted in §3.1 and F5.
    - build a batch, then a frozen single `LiveCuttingMaterial` on CUDA;
    - count the batch's contact candidates and `stats[4]` before and after;
    - repeat with the proposed default-path guard, to show the hazard is closed.
+
+## 7. Review fixes (2480dc2)
+
+Branch `claude/rl-review-fix1`, from 2480dc2. Each finding, its fix and the commit are listed in §7.9 when the work is
+complete. Raw output: `artifacts/rl_ready/review_fix1/` (not committed). Evidence:
+`docs/evidence/rl_ready/review_fix1_001.json`.
+
+### 7.1 F2 — position band v2, pre-declared before any reference run
+
+Declared in `configs/rl_benchmark/position_band_v2.json` (schema `rcs_rl_position_band_method_v2`) and committed
+before the first band-v2 reference run. The old band (`position_band_v1_p1_0`, [min, max] of 4 runs) and every
+status derived from it are kept and marked superseded; nothing is deleted.
+
+- **Metric (unchanged):** `max_position_diff_m_over_time`, the max over the 121 Native samples of the max particle
+  distance between the replay and Native WORLD positions, full 1200-step WP-17 replay.
+- **Reference sample:** at least 10 frozen single-env (`LiveCuttingMaterial`) headless replays per seed (512, 15), one
+  process each (`run_baseline.py --mode replay --warm-resets 0`), two chains on GPU 0 and GPU 1, each alternating the
+  seeds. Every COMPLETE run counts; none is dropped for its value. P1-0, `p1_2_single_ref_s512_001` and all batched
+  runs are held out and only re-classified.
+- **Tolerance:** one-sided log-normal prediction bound `U = exp(mean(ln m) + k·sd(ln m))`,
+  `k = t(0.99, n−1)·sqrt(1 + 1/n)`, nominal **false-reject rate 1 % per run** (assumptions: exchangeable runs,
+  ln m normal). Shapiro–Wilk on ln m is reported; if p < 0.01 the bound falls back to the reference maximum (nominal
+  false-reject rate 1/(n+1)), labelled `fallback_empirical_max`. The lower bound `exp(mean − k·sd)` is descriptive
+  only: a run below it is `BELOW_REFERENCE` (closer to Native than the frozen spread), never a failure.
+- **Per-run classes:** `WITHIN` (≤ U), `OUTSIDE` (> U), `INVALID_PROCESS`, `NO_POSITION_DATA`, `NOT_APPLICABLE`.
+- **Per run set:** `MET` if the number of OUTSIDE runs r ≤ c(n), the smallest c with P[Bin(n, 0.01) > c] ≤ 0.05
+  (c = 0 for n ≤ 5, c = 1 for 6 ≤ n ≤ 35); else `NOT_MET`.
+- **Scope:** a statistical regression check of GPU float-atomic spread against Native, not a physical tolerance.
+  Final codes, labelled counts and the frozen evaluator stay independent criteria.
