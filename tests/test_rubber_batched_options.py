@@ -26,6 +26,13 @@ from robotic_cutting_sim.live_rubber_material import LiveRubberMaterial
 from robotic_cutting_sim.rubber_material import MaterialValues
 
 STEP_MATERIAL = MaterialValues(mu0=1e6, kappa=2e7, density=1000.0)
+
+
+def _same_bytes(a, b):
+    """L0 / L1 comparison (ADR 0023 §20.4): same dtype, same shape and the same raw bytes (distinguishes +0.0 / -0.0
+    and NaN payloads, unlike np.array_equal)."""
+    a, b = np.ascontiguousarray(a), np.ascontiguousarray(b)
+    return a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
 F8 = {"dirichlet": "consistent_mass_projection_v1"}
 F9 = {"traction_work": "grid_displacement_v1"}
 F10 = {"state_precision": "f64_shadow_v1"}
@@ -89,12 +96,12 @@ def _compare(batch, e, live):
     option_names = [n for n in OPTION_NAMES if hasattr(s, n)]
     assert set(option_names) == {n for n in OPTION_NAMES if n in snap}, "option array set"
     for name in names+tuple(option_names):
-        assert np.array_equal(snap[name], _single_array(s, name, G, Gt)), name
-    assert np.array_equal(batch.summary.numpy()[e], s.diagnostics.summary.numpy()[0]), "diagnostics"
+        assert _same_bytes(snap[name], _single_array(s, name, G, Gt)), name
+    assert _same_bytes(batch.summary.numpy()[e], s.diagnostics.summary.numpy()[0]), "diagnostics"
     K = batch.K
-    assert np.array_equal(batch.marker_x.numpy()[e*K:(e+1)*K], s.diagnostics.marker_x.numpy()), "markers"
-    assert np.array_equal(batch.marker_v.numpy()[e*K:(e+1)*K], s.diagnostics.marker_v.numpy()), "marker velocity"
-    assert np.array_equal(batch.wrench.numpy()[e, :G], live.last_wrench), "wrench"
+    assert _same_bytes(batch.marker_x.numpy()[e*K:(e+1)*K], s.diagnostics.marker_x.numpy()), "markers"
+    assert _same_bytes(batch.marker_v.numpy()[e*K:(e+1)*K], s.diagnostics.marker_v.numpy()), "marker velocity"
+    assert _same_bytes(batch.wrench.numpy()[e, :G], live.last_wrench), "wrench"
 
 
 def _advance_all(batch, singles, k, case="A"):
@@ -169,10 +176,10 @@ def test_l1_perturbation_isolation_with_options():
         sa, sb = a.solver.snapshot(e), b.solver.snapshot(e)
         assert set(OPTION_NAMES) <= set(sa)
         for name in sa:
-            assert np.array_equal(sa[name], sb[name]), (e, name)
-        assert np.array_equal(a.summary.numpy()[e], b.summary.numpy()[e])
+            assert _same_bytes(sa[name], sb[name]), (e, name)
+        assert _same_bytes(a.summary.numpy()[e], b.summary.numpy()[e])
     for name in ("x", "x64", "proj_mu", "work"):
-        assert not np.array_equal(a.solver.snapshot(1)[name], b.solver.snapshot(1)[name]), name
+        assert not _same_bytes(a.solver.snapshot(1)[name], b.solver.snapshot(1)[name]), name
 
 
 def test_reset_classification_is_vars_complete_with_options():
@@ -198,19 +205,19 @@ def test_partial_reset_with_options_equals_fresh_env_and_keeps_others():
     snap, ref = batch.solver.snapshot(1), fresh.solver.snapshot(1)
     for name in snap:
         if name != "index":
-            assert np.array_equal(snap[name], ref[name]), name
+            assert _same_bytes(snap[name], ref[name]), name
     for name in rmb.MATERIAL_RESET_ARRAYS:
-        assert np.array_equal(getattr(batch, name).numpy()[1], getattr(fresh, name).numpy()[1]), name
+        assert _same_bytes(getattr(batch, name).numpy()[1], getattr(fresh, name).numpy()[1]), name
     for e in (0, 2):
         after = batch.solver.snapshot(e)
         for name in after:
             if name != "index":
-                assert np.array_equal(after[name], before[e][name]), (e, name)
+                assert _same_bytes(after[name], before[e][name]), (e, name)
     tr, force = _inputs(0, 3)
     batch.advance(translation=tr, traction=force)
     fresh.advance(translation=tr, traction=force)
     for name, value in batch.solver.snapshot(1).items():
-        assert np.array_equal(value, fresh.solver.snapshot(1)[name]), name
+        assert _same_bytes(value, fresh.solver.snapshot(1)[name]), name
 
 
 def test_reset_with_resampled_material_rebuilds_the_projection_blocks():
@@ -223,14 +230,14 @@ def test_reset_with_resampled_material_rebuilds_the_projection_blocks():
     new = MaterialValues(mu0=8e5, kappa=1.6e7, density=1010.0, friction_table=1.1)
     batch.reset([1], materials=[new])
     single = _live(ALL, **{**HETERO[1], "mu": 8e5, "rho": 1010.0, "ft": 1.1})
-    assert not np.array_equal(batch.solver.snapshot(1)["proj_inv"], inv0)
+    assert not _same_bytes(batch.solver.snapshot(1)["proj_inv"], inv0)
     for k in range(2):
         tr, force = _inputs(k, 3)
         batch.advance(translation=tr, traction=force)
         single.advance({0: {"translation": tr[1, 0]}}, traction={0: force[1]})
         _compare(batch, 1, single)
     batch.reset([1])                                     # back to the packed material: the packed inverse again
-    assert np.array_equal(batch.solver.snapshot(1)["proj_inv"], inv0)
+    assert _same_bytes(batch.solver.snapshot(1)["proj_inv"], inv0)
 
 
 def test_defaults_add_no_option_array_and_report_v1_ids():
@@ -269,8 +276,8 @@ def test_bc_launch_variants_equal_the_all_node_launch(options, launch):
         for e in range(2):
             sa, sb = a.solver.snapshot(e), b.solver.snapshot(e)
             for name in sa:
-                assert np.array_equal(sa[name], sb[name]), (k, e, name)
-        assert np.array_equal(a.wrench.numpy(), b.wrench.numpy()) and np.array_equal(a.summary.numpy(),
+                assert _same_bytes(sa[name], sb[name]), (k, e, name)
+        assert _same_bytes(a.wrench.numpy(), b.wrench.numpy()) and _same_bytes(a.summary.numpy(),
                                                                                      b.summary.numpy())
     for m in (a, b):                              # direct substeps past the control step (beyond the motion table)
         m.solver.step()
@@ -279,4 +286,46 @@ def test_bc_launch_variants_equal_the_all_node_launch(options, launch):
         sa, sb = a.solver.snapshot(e), b.solver.snapshot(e)
         assert int(sa["index"][0]) > a.solver.substeps
         for name in sa:
-            assert np.array_equal(sa[name], sb[name]), ("past", e, name)
+            assert _same_bytes(sa[name], sb[name]), ("past", e, name)
+
+
+def _block(options):
+    spec = rs.RubberStripSpec(length=0.004, width=0.004, thickness=0.004, dx=0.001, case="block")
+    return LiveRubberMaterial(spec, material=MaterialValues(mu0=4e5, kappa=8e6, density=1150.0), control_dt=1e-4,
+                              gravity=(0, 0, 0), **options)
+
+
+def _affine(k, e):
+    A = np.eye(3)
+    A[0, 0] += 2e-3*(k+1)*(e+1)
+    A[0, 1] += 1e-3*(k+1)
+    return A
+
+
+@pytest.mark.parametrize("options", [{}, ALL], ids=["defaults", "F8_F9_F10"])
+def test_affine_block_l0_and_bc_launches(options):
+    """Affine group (patch / homogeneous scene): batched (every BC launch) vs the single reference, byte-wise."""
+    singles = [_block(options) for _ in range(2)]
+    batches = {launch: rmb.BatchedRubberMaterial([_block(options) for _ in range(2)], device="cpu", parity_mode=True,
+                                                 bc_launch=launch) for launch in rb.BC_LAUNCHES}
+    for k in range(3):
+        A = np.stack([_affine(k, e) for e in range(2)])[:, None]
+        for b in batches.values():
+            b.advance(affine=A)
+        for e, live in enumerate(singles):
+            live.advance({0: {"affine": A[e, 0]}})
+            for b in batches.values():
+                _compare(b, e, live)
+
+
+def test_projection_cross_group_coupling_is_refused():
+    from robotic_cutting_sim.batched.rubber_layout import pack_rubber, projection_cross_group_particles
+    spec = rs.RubberStripSpec(length=0.0015, width=0.003, thickness=0.003, n_t=2, case="C", end_mask="x")
+    live = LiveRubberMaterial(spec, material=MaterialValues(mu0=4e5, kappa=8e6, density=1150.0), control_dt=2e-4,
+                              **F8)
+    assert projection_cross_group_particles(live.scene) > 0          # one cell: both faces in every stencil
+    with pytest.raises(UnsupportedBatchConfiguration, match="UNSUPPORTED_SOLVER: PROJECTION_CROSS_GROUP_COUPLING"):
+        pack_rubber([live])
+    for kw in HETERO:                                                 # the scenes used here have none
+        assert projection_cross_group_particles(_live(F8, **kw).scene) == 0
+    assert projection_cross_group_particles(_live(F8, case="C").scene) == 0

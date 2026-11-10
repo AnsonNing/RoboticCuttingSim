@@ -18,6 +18,13 @@ from robotic_cutting_sim.rubber_material import MaterialValues
 STEP_MATERIAL = MaterialValues(mu0=1e6, kappa=2e7, density=1000.0)
 
 
+def _same_bytes(a, b):
+    """L0 / L1 comparison (ADR 0023 §20.4): same dtype, same shape and the same raw bytes (distinguishes +0.0 / -0.0
+    and NaN payloads, unlike np.array_equal)."""
+    a, b = np.ascontiguousarray(a), np.ascontiguousarray(b)
+    return a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
+
+
 def _live(L=0.012, W=0.003, t=0.003, n_t=2, mu=4e5, rho=1150.0, ft=0.8, traction=True):
     regions = (("tip", (L-0.0015, -1, -1), (1, 1, 1)),) if traction else ()
     spec = rs.RubberStripSpec(length=L, width=W, thickness=t, n_t=n_t, case="A", traction_regions=regions)
@@ -43,16 +50,16 @@ def _compare(batch, e, live):
     s = live.solver
     G, Gt = s.G, s.Gt
     for name in PARTICLE_ARRAYS+NODE_ARRAYS+("cell_node", "cell_offsets", "cell_particles", "index"):
-        assert np.array_equal(snap[name], getattr(s, name).numpy()), name
+        assert _same_bytes(snap[name], getattr(s, name).numpy()), name
     for name in GROUP_ARRAYS:
-        assert np.array_equal(snap[name], getattr(s, name).numpy()[:G]), name
+        assert _same_bytes(snap[name], getattr(s, name).numpy()[:G]), name
     for name in TRACTION_ARRAYS:
-        assert np.array_equal(snap[name], getattr(s, name).numpy()[:Gt]), name
-    assert np.array_equal(snap["work"], s.work.numpy()) and np.array_equal(snap["violations"], s.violations.numpy())
-    assert np.array_equal(batch.summary.numpy()[e], s.diagnostics.summary.numpy()[0]), "diagnostics"
+        assert _same_bytes(snap[name], getattr(s, name).numpy()[:Gt]), name
+    assert _same_bytes(snap["work"], s.work.numpy()) and _same_bytes(snap["violations"], s.violations.numpy())
+    assert _same_bytes(batch.summary.numpy()[e], s.diagnostics.summary.numpy()[0]), "diagnostics"
     K = batch.K
-    assert np.array_equal(batch.marker_x.numpy()[e*K:(e+1)*K], s.diagnostics.marker_x.numpy()), "markers"
-    assert np.array_equal(batch.wrench.numpy()[e, :G], live.last_wrench), "wrench"
+    assert _same_bytes(batch.marker_x.numpy()[e*K:(e+1)*K], s.diagnostics.marker_x.numpy()), "markers"
+    assert _same_bytes(batch.wrench.numpy()[e, :G], live.last_wrench), "wrench"
 
 
 def _run_l0(kwargs_list, steps=3):
@@ -95,9 +102,9 @@ def test_l1_perturbation_isolation():
     for e in (0, 2):
         sa, sb = a.solver.snapshot(e), b.solver.snapshot(e)
         for name in sa:
-            assert np.array_equal(sa[name], sb[name]), (e, name)
-        assert np.array_equal(a.summary.numpy()[e], b.summary.numpy()[e])
-    assert not np.array_equal(a.solver.snapshot(1)["x"], b.solver.snapshot(1)["x"])
+            assert _same_bytes(sa[name], sb[name]), (e, name)
+        assert _same_bytes(a.summary.numpy()[e], b.summary.numpy()[e])
+    assert not _same_bytes(a.solver.snapshot(1)["x"], b.solver.snapshot(1)["x"])
 
 
 def _classified():
@@ -128,24 +135,24 @@ def test_partial_reset_equals_fresh_env_and_keeps_others():
     for name in snap:
         if name == "index":
             continue
-        assert np.array_equal(snap[name], ref[name]), name
+        assert _same_bytes(snap[name], ref[name]), name
     covered = set(snap) | {"reference", "plane", "box_c", "box_h", "env_of_particle", "env_of_node", "env_of_group",
                            "particle_offset", "node_offset", "cell_env_offset", "marker_offsets", "marker_particles",
                            "group_kind", "group_origin", "slot", "slot_code", "node_X", "node_mask", "bc_nodes"}
     assert reset_names <= covered | {"params"}
     for name in rmb.MATERIAL_RESET_ARRAYS:
-        assert np.array_equal(getattr(batch, name).numpy()[1], getattr(fresh, name).numpy()[1]), name
+        assert _same_bytes(getattr(batch, name).numpy()[1], getattr(fresh, name).numpy()[1]), name
     for e in (0, 2):
         after = batch.solver.snapshot(e)
         for name in after:
             if name != "index":
-                assert np.array_equal(after[name], before[e][name]), (e, name)
+                assert _same_bytes(after[name], before[e][name]), (e, name)
     # the reset env then evolves exactly like a fresh env (index is the shared lockstep counter)
     tr, force = _inputs(0, 3)
     batch.advance(translation=tr, traction=force)
     fresh.advance(translation=tr, traction=force)
     for name, value in batch.solver.snapshot(1).items():
-        assert np.array_equal(value, fresh.solver.snapshot(1)[name]), name
+        assert _same_bytes(value, fresh.solver.snapshot(1)[name]), name
 
 
 def test_reset_with_resampled_material_equals_single_reference():
@@ -156,7 +163,7 @@ def test_reset_with_resampled_material_equals_single_reference():
     new = MaterialValues(mu0=8e5, kappa=1.6e7, density=1010.0, friction_table=1.1)
     batch.reset([1], materials=[new])
     single = _live(**{**HETERO[1], "mu": 8e5, "rho": 1010.0, "ft": 1.1})
-    assert np.array_equal(batch.solver.params.numpy()[1][:4], np.float32([8e5, 1.6e7, 1010.0, 1.1]))
+    assert _same_bytes(batch.solver.params.numpy()[1][:4], np.float32([8e5, 1.6e7, 1010.0, 1.1]))
     for k in range(2):
         tr, force = _inputs(k, 3)
         batch.advance(translation=tr, traction=force)

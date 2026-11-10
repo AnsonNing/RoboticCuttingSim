@@ -23,6 +23,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"scripts"/"rubber"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 ALL = {"dirichlet": "consistent_mass_projection_v1", "traction_work": "grid_displacement_v1",
        "state_precision": "f64_shadow_v1"}
 
@@ -60,6 +61,8 @@ def main():
             "commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
                                      text=True).stdout.strip(), "warp": wp.config.version,
             "co_tenant_before": gpu_sample(), "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+    from run_meta import run_meta
+    meta.update(run_meta())                             # review F10: driver, dirty flag, protocol SHA
     batches = {}
     for launch in ("all_nodes_v1", "motion_table_v1"):
         lives = [LiveRubberMaterial(spec, control_dt=wl["control_dt_s"], device="cpu", step_material=step_mat,

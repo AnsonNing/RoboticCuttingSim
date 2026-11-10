@@ -201,6 +201,22 @@ def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
                              constitutive_model=constitutive_model)
 
 
+def projection_cross_group_particles(scene):
+    """Number of particles whose stencil holds constrained nodes of two different groups in the same velocity component
+    (with nonzero weight). The F8 projection (``tlmpm_rubber_v1.projection_blocks``) builds one block per (group,
+    component), so such particles would couple blocks that are solved independently: the batched path refuses them
+    (review F8; every current scene has none: case A one group, case C faces L apart, pins inside one group)."""
+    nodes, w = scene.nodes, scene.weights
+    group, mask = scene.node_group[nodes], scene.node_mask[nodes]
+    bad = np.zeros(len(nodes), bool)
+    for k in range(3):
+        valid = (group >= 0) & (((mask >> k) & 1) == 1) & (w != 0)
+        gmin = np.where(valid, group, np.iinfo(group.dtype).max).min(1)
+        gmax = np.where(valid, group, -1).max(1)
+        bad |= valid.any(1) & (gmin != gmax)
+    return int(bad.sum())
+
+
 def _pack_options(solvers, uniform, host, po, no, N, G):
     """Option arrays (ADR 0023 §20), concatenated from the single references in env order with global ids:
     F64 / x64 shadows; the projection rows (global node and group ids), blocks (global row offsets) and the float64
@@ -211,6 +227,15 @@ def _pack_options(solvers, uniform, host, po, no, N, G):
             host[name] = np.concatenate([getattr(s, name).numpy() for s in solvers])
         host["reference64"] = host["x64"].copy()
     if uniform["dirichlet"] == "consistent_mass_projection_v1" and uniform["projection_rows_nonzero"]:
+        for e, s in enumerate(solvers):
+            coupled = projection_cross_group_particles(s.scene)
+            if coupled:
+                # code UNSUPPORTED_SOLVER with the fixed tag PROJECTION_CROSS_GROUP_COUPLING (batched/errors.py is a
+                # frozen Phase 1 module: no new code is added there)
+                raise UnsupportedBatchConfiguration(
+                    "UNSUPPORTED_SOLVER",
+                    f"PROJECTION_CROSS_GROUP_COUPLING: env {e}: {coupled} particles touch constrained nodes of two groups in the same component; "
+                    "consistent_mass_projection_v1 solves per (group, component) blocks independently (ADR 0023 §20.3)")
         rows = np.array([s.proj_rows for s in solvers], np.int64)
         nblocks = np.array([len(s.projection_receipt["blocks"]) for s in solvers], np.int64)
         ninv = np.array([s.proj_inv.shape[0] for s in solvers], np.int64)

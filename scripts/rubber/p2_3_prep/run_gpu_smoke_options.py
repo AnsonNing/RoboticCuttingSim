@@ -31,6 +31,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"scripts"/"rubber"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 ALL = {"dirichlet": "consistent_mass_projection_v1", "traction_work": "grid_displacement_v1",
        "state_precision": "f64_shadow_v1"}
 ROWS = {"list": (("default_all_nodes", {}, "all_nodes_v1"), ("default_list", {}, "constrained_list_v1"),
@@ -111,6 +112,8 @@ def main():
                                     text=True).stdout.strip(),
             "workload_sha256": hashlib.sha256(cfg_path.read_bytes()).hexdigest(), "warp": wp.config.version,
             "free_mb_before": free_mb(physical), "co_tenant_before": gpu_sample(),
+    from run_meta import run_meta
+    meta.update(run_meta())                             # review F10: driver, dirty flag, protocol SHA
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     (out/"meta.json").write_text(json.dumps(meta, indent=1))
     peak = Peak()

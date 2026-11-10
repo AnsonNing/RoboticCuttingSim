@@ -98,10 +98,15 @@ def batched_source_sha256():
 @wp.kernel
 def _wrench_b(reaction: wp.array(dtype=wp.spatial_vectord), control_dt: wp.float64, G: int,
               wrench: wp.array3d(dtype=wp.float64)):
+    """-reaction / control_dt, written (r * -1) / dt: Warp's unary minus is 0 - x (+0.0 stays +0.0), NumPy's flips the
+    sign bit, so the single reference's ``-reaction / control_dt`` gives -0.0 for a zero reaction (e.g. an inactive
+    grip). The product by -1 is exact and flips the sign of zeros, so the result is byte-identical to the single
+    reference for every finite value and both zeros (ADR 0023 §20.4); a NaN keeps its sign bit here (a NaN wrench sets
+    NONFINITE_STATE)."""
     e, g = wp.tid()
     r = reaction[e*G+g]
     for k in range(6):
-        wrench[e, g, k] = -r[k]/control_dt
+        wrench[e, g, k] = (r[k]*wp.float64(-1.0))/control_dt
 
 
 @wp.kernel
