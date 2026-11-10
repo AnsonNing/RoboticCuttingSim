@@ -91,6 +91,7 @@ DIAGNOSTICS_SCRATCH = ("pp", "pc", "pn", "summary", "marker_x", "marker_v")
 # neo_hookean_jbar_prony_v1 (ADR 0023 §21.2.5; exist only for a Prony batch)
 MODEL_STATE_RESET_ARRAYS = {"neo_hookean_jbar_prony_v1": ("visco_q", "visco_s_prev", "params64")}
 VISCO_ENERGY_RESET_ARRAYS = ("visco_pb", "visco_branch_work", "visco_dissipation", "visco_d_negative")
+VISCO_ENERGY_V2_RESET_ARRAYS = ("visco_df_prev", "visco_branch_work_left")   # branch_work_kick_average_v2 (§21.7)
 VISCO_MATERIAL_CONSTANT_ARRAYS = ("initial_params64",)
 VISCO_RESET_INPUTS = ("stage_params64",)
 VISCO_DIAGNOSTICS_SCRATCH = ("vpp", "visco_summary")       # in ``visco_diagnostics`` (tlmpm_rubber_visco_v1)
@@ -292,6 +293,21 @@ def _reset_visco_energy_r(mask: wp.array(dtype=int), env_of_particle: wp.array(d
     p = wp.tid()
     if mask[env_of_particle[p]] != 0:
         pb[p] = wp.mat33d()
+
+
+@wp.kernel
+def _reset_visco_energy_v2_r(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                             df_prev: wp.array(dtype=wp.mat33d)):
+    p = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        df_prev[p] = wp.mat33d()
+
+
+@wp.kernel
+def _reset_visco_env_v2_r(mask: wp.array(dtype=int), work_left: wp.array(dtype=wp.float64)):
+    e = wp.tid()
+    if mask[e] != 0:
+        work_left[e] = wp.float64(0.0)
 
 
 @wp.kernel
@@ -663,6 +679,10 @@ class BatchedRubberMaterial:
                 wp.launch(_reset_visco_energy_r, s.total_particles, [self.reset_mask, s.env_of_particle, s.visco_pb])
                 wp.launch(_reset_visco_env_r, N, [self.reset_mask, s.visco_branch_work, s.visco_dissipation,
                                                   s.visco_d_negative])
+                if s.visco_energy == "branch_work_kick_average_v2":
+                    wp.launch(_reset_visco_energy_v2_r, s.total_particles, [self.reset_mask, s.env_of_particle,
+                                                                            s.visco_df_prev])
+                    wp.launch(_reset_visco_env_v2_r, N, [self.reset_mask, s.visco_branch_work_left])
             if full:
                 s.index.zero_()
 

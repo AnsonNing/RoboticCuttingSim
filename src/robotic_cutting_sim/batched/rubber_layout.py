@@ -18,7 +18,8 @@ Constitutive model (ADR 0023 §21.2.4): taken from the lives (``TLMPMRubberVisco
 ``UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS``, a different M or ``visco_energy`` with ``UNSUPPORTED_NONUNIFORM_BATCH`` (pad
 fewer terms with g = 0: ``rubber_material.pad_prony``). Prony arrays (float64): ``params64[N, 1 + 4M]`` (the single
 references' rows, same bits), registry state ``visco_q[P*M]`` / ``visco_s_prev[P]`` (vec6d) and, with
-``visco_energy = branch_work_v1``, ``visco_pb[P]`` and the per-env accumulators.
+``visco_energy = branch_work_v1``, ``visco_pb[P]`` and the per-env accumulators; with
+``branch_work_kick_average_v2`` (ADR 0023 §21.7) also ``visco_df_prev[P]`` and ``visco_branch_work_left[N]``.
 """
 from dataclasses import dataclass, field
 
@@ -48,6 +49,15 @@ BATCHED_OPTIONS = {"dirichlet": ("lumped_v1", "consistent_mass_projection_v1"),
 SHADOW_ARRAYS = ("F64", "x64")                                      # per particle (f64_shadow_v1)
 VISCO_STATE_ARRAYS = ("visco_q", "visco_s_prev")                    # registry state (neo_hookean_jbar_prony_v1)
 VISCO_ENERGY_ARRAYS = ("visco_pb", "visco_branch_work", "visco_dissipation", "visco_d_negative")   # branch_work_v1
+VISCO_ENERGY_V2_ARRAYS = ("visco_df_prev", "visco_branch_work_left")   # + branch_work_kick_average_v2 (§21.7)
+KICK_AVERAGE_ENERGY = "branch_work_kick_average_v2"
+
+
+def visco_energy_arrays(visco_energy):
+    """Energy arrays of a ``visco_energy`` mode (none for ``off_v1``)."""
+    if visco_energy == "off_v1":
+        return ()
+    return VISCO_ENERGY_ARRAYS+(VISCO_ENERGY_V2_ARRAYS if visco_energy == KICK_AVERAGE_ENERGY else ())
 PROJECTION_ROW_ARRAYS = ("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block", "proj_row_local",
                          "proj_rhs", "proj_vpresc", "proj_mu")     # per constrained (node, component) row
 PROJECTION_BLOCK_ARRAYS = ("proj_block_offset", "proj_block_size", "proj_inv_offset")   # per block
@@ -229,9 +239,8 @@ def pack_rubber(lives, *, constitutive_model=None):
         for name in VISCO_STATE_ARRAYS:
             host[name] = np.concatenate([getattr(s, name).numpy() for s in solvers])
         host["params64"] = np.concatenate([s.params64.numpy() for s in solvers]).astype(np.float64)
-        if uniform["visco_energy"] != "off_v1":
-            for name in VISCO_ENERGY_ARRAYS:
-                host[name] = (np.concatenate([getattr(s, name).numpy() for s in solvers]))
+        for name in visco_energy_arrays(uniform["visco_energy"]):
+            host[name] = (np.concatenate([getattr(s, name).numpy() for s in solvers]))
     env = {"mass_per_particle": np.array([float(s.mass_value) for s in solvers], np.float32),
            "traction_particle_counts": np.array([[np.count_nonzero(lv.scene.particle_traction == t) for t in range(Gt)]
                                                  for lv in lives], np.int64).reshape(N, Gt),

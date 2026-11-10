@@ -17,6 +17,10 @@
   s1 = -zeta + i omega_d by Newton from the instantaneous elastic root.
 
 Terms with g = 0 (padding) are ignored. Small-strain formulas differ from the finite-strain model by O(strain).
+
+Protocol ``rubber_visc_tests_v2`` (ADR 0023 §21.7) adds the declared steady window (K whole periods with an integer
+number of control steps, starting after 6 tau_max), the mean-removed estimator over it, and the inertia de-embedding
+with the exact steady state of the 1-D linear viscoelastic rod (``rod_transfer``, ``deembed_rod``).
 """
 import math
 
@@ -248,5 +252,62 @@ def fourier_modulus(sigma, eps, t_sigma, t_eps, omega, control_dt):
     return complex(num/den)
 
 
+# ----------------------------------------------------------------------------- rubber_visc_tests_v2 (ADR 0023 §21.7)
+
+MAX_WINDOW_PERIODS = 64
+
+
+def steady_window_v2(f, control_dt, tau_max):
+    """``common.observables.steady_window`` of v2: K = the smallest number of periods with an integer number of control
+    steps; n_cycles = K ceil((ceil(6 tau_max f) + K) / K); returns dict(periods K, n_cycles, steps, window_samples)."""
+    spp = 1.0/(f*control_dt)
+    for K in range(1, MAX_WINDOW_PERIODS+1):
+        if abs(K*spp-round(K*spp)) <= 1e-9*K*spp:
+            break
+    else:
+        raise ValueError(f"no whole-period window with <= {MAX_WINDOW_PERIODS} periods at f = {f} Hz")
+    n_cycles = K*math.ceil((math.ceil(6.0*tau_max*f-1e-12)+K)/K)
+    steps = n_cycles*spp
+    if abs(steps-round(steps)) > 1e-9*steps:
+        raise ValueError("run length is not an integer number of control steps")
+    return {"periods": K, "n_cycles": n_cycles, "steps": int(round(steps)), "window_samples": int(round(K*spp))}
+
+
+def fourier_modulus_window_v2(sigma, eps, t_sigma, t_eps, omega, control_dt):
+    """``common.observables.complex_modulus_from_window`` of v2: the v1 projection with sigma AND eps mean-removed
+    over the (whole-period) window; wrench samples stamped t_k - dtc/2 and divided by sinc(w dtc / 2)."""
+    x = omega*control_dt/2
+    sinc = math.sin(x)/x if x != 0 else 1.0
+    s = np.asarray(sigma, np.float64)
+    e = np.asarray(eps, np.float64)
+    num = np.sum((s-s.mean())*np.exp(-1j*omega*np.asarray(t_sigma, np.float64)))/sinc
+    den = np.sum((e-e.mean())*np.exp(-1j*omega*np.asarray(t_eps, np.float64)))
+    return complex(num/den)
+
+
+def rod_transfer(omega, E, rho, length, a, b, end):
+    """Exact steady state of the 1-D linear viscoelastic rod rho u_tt = E u_xx, u(0) = 0, u(L) = U e^{iwt}: ratio of the
+    end stress to the gauge strain (u(b) - u(a)) / (b - a). ``end`` 1: the driven end x = L,
+    k (b - a) cos(kL) / (sin kb - sin ka); ``end`` 0: the fixed end x = 0, k (b - a) / (sin kb - sin ka);
+    k = w sqrt(rho / E) (principal branch). The measured apparent modulus is E T."""
+    k = omega*np.sqrt(rho/complex(E))
+    ratio = k*(b-a)/(np.sin(k*b)-np.sin(k*a))
+    return complex(ratio*np.cos(k*length)) if end == 1 else complex(ratio)
+
+
+def deembed_rod(E_meas, omega, rho, length, a, b, end, *, tol=1e-14, max_iter=100):
+    """E_mat with E_meas = E_mat T(w; E_mat) by fixed-point iteration from E_meas (v2
+    ``common.observables.inertia_deembedding``); returns (E_mat, iterations). Raises if not converged."""
+    E_meas = complex(E_meas)
+    E = E_meas
+    for it in range(1, max_iter+1):
+        new = E_meas/rod_transfer(omega, E, rho, length, a, b, end)
+        if abs(new-E) <= tol*abs(E):
+            return new, it
+        E = new
+    raise RuntimeError(f"rod de-embedding did not converge in {max_iter} iterations")
+
+
 __all__ = ["relaxation_function", "complex_shear_modulus", "uniaxial_complex_modulus", "relaxation_uniaxial",
-           "creep_uniaxial", "creep_terms", "boltzmann_staircase", "HereditaryBlock", "beam_root", "fourier_modulus"]
+           "creep_uniaxial", "creep_terms", "boltzmann_staircase", "HereditaryBlock", "beam_root", "fourier_modulus",
+           "steady_window_v2", "fourier_modulus_window_v2", "rod_transfer", "deembed_rod"]

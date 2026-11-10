@@ -29,7 +29,9 @@ stress pass is the J-bar pass + ``tlmpm_rubber_visco_v1.stress_prony`` and the g
 solver's kernels, per-env ``params``/``params64`` rows and accumulators through ``env_of_particle``); with
 ``visco_energy = branch_work_v1`` the single solver's ``visco_branch_work`` runs after the position update. Arrays:
 ``params64[N, 1 + 4M]``, ``visco_q[P*M]``, ``visco_s_prev[P]`` (float64) [, ``visco_pb[P]``, ``visco_branch_work[N]``,
-``visco_dissipation[N]``, ``visco_d_negative[N]``].
+``visco_dissipation[N]``, ``visco_d_negative[N]``]. With ``visco_energy = branch_work_kick_average_v2`` (ADR 0023 §21.7)
+the single solver's ``visco_branch_work_kick_average`` runs instead (kick-paired W_b, the v1 left-point sum in
+``visco_branch_work_left[N]``, dF_{n-1} in ``visco_df_prev[P]``); every other array and launch is the same.
 
 BC launch (``bc_launch``, ADR 0023 §20.2): ``all_nodes_v1`` is the P2-1/P2-2 launch (``_bc_b`` over every node,
 group maps evaluated per node); ``constrained_list_v1`` launches the same body over the packed list of constrained
@@ -57,7 +59,8 @@ from . import constitutive_rubber as cr
 from .constitutive_rubber import P_FRICTION_TABLE
 from .errors import UnsupportedBatchConfiguration
 from .rubber_layout import (GROUP_ARRAYS, NODE_ARRAYS, PARTICLE_ARRAYS, PROJECTION_BLOCK_ARRAYS, PROJECTION_ROW_ARRAYS,
-                            SHADOW_ARRAYS, TRACTION_ARRAYS, VISCO_ENERGY_ARRAYS, VISCO_STATE_ARRAYS)
+                            KICK_AVERAGE_ENERGY, SHADOW_ARRAYS, TRACTION_ARRAYS, VISCO_STATE_ARRAYS,
+                            visco_energy_arrays)
 
 wp.set_module_options({"enable_backward": False})
 
@@ -290,6 +293,7 @@ class BatchedTLMPMRubber:
         # neo_hookean_jbar_prony_v1 (ADR 0023 §21.2)
         "visco_q": rvc.vec6d, "visco_s_prev": rvc.vec6d, "params64": wp.float64, "visco_pb": wp.mat33d,
         "visco_branch_work": wp.float64, "visco_dissipation": wp.float64, "visco_d_negative": int,
+        "visco_df_prev": wp.mat33d, "visco_branch_work_left": wp.float64,      # branch_work_kick_average_v2
     }
     OPTION_ARRAYS = {"f64_shadow_v1": SHADOW_ARRAYS+("reference64",),
                      "consistent_mass_projection_v1": PROJECTION_ROW_ARRAYS+PROJECTION_BLOCK_ARRAYS
@@ -336,7 +340,7 @@ class BatchedTLMPMRubber:
         if self.M:
             names += VISCO_STATE_ARRAYS+("params64",)
         if self.visco_energy_on:
-            names += VISCO_ENERGY_ARRAYS
+            names += visco_energy_arrays(self.visco_energy)
         self.bc_node_count = int(np.count_nonzero(h["node_group"] >= 0)) if self.G else 0
         self.proj_rows = int(h["proj_row_node"].shape[0]) if self.projection else 0
         with wp.ScopedDevice(self.device):
@@ -405,10 +409,18 @@ class BatchedTLMPMRubber:
                                                      self.traction_force, self.traction_mass, self.env_of_particle,
                                                      self.work])
             if self.visco_energy_on:
-                from ..tlmpm_rubber_visco_v1 import visco_branch_work
-                wp.launch(visco_branch_work, n, [self.visco_pb, self.nodes, self.gradients, self.new_v,
-                                                 self.env_of_particle, wp.float64(self.volume), wp.float64(dt),
-                                                 self.visco_branch_work])
+                if self.visco_energy == KICK_AVERAGE_ENERGY:
+                    from ..tlmpm_rubber_visco_v1 import visco_branch_work_kick_average
+                    wp.launch(visco_branch_work_kick_average, n, [self.visco_pb, self.nodes, self.gradients,
+                                                                  self.new_v, self.env_of_particle,
+                                                                  wp.float64(self.volume), wp.float64(dt),
+                                                                  self.visco_df_prev, self.visco_branch_work,
+                                                                  self.visco_branch_work_left])
+                else:
+                    from ..tlmpm_rubber_visco_v1 import visco_branch_work
+                    wp.launch(visco_branch_work, n, [self.visco_pb, self.nodes, self.gradients, self.new_v,
+                                                     self.env_of_particle, wp.float64(self.volume), wp.float64(dt),
+                                                     self.visco_branch_work])
             wp.launch(v5._advance, 1, [self.index])
 
     def _launch_projection(self):
@@ -533,6 +545,9 @@ class BatchedTLMPMRubber:
             out["visco_pb"] = self.visco_pb.numpy()[p0:p1].copy()
             for name in ("visco_branch_work", "visco_dissipation", "visco_d_negative"):
                 out[name] = getattr(self, name).numpy()[e:e+1].copy()
+            if self.visco_energy == KICK_AVERAGE_ENERGY:
+                out["visco_df_prev"] = self.visco_df_prev.numpy()[p0:p1].copy()
+                out["visco_branch_work_left"] = self.visco_branch_work_left.numpy()[e:e+1].copy()
         return out
 
     def options_receipt(self):

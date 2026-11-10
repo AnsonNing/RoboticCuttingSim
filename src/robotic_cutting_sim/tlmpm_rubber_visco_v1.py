@@ -25,6 +25,15 @@ counted in ``visco_d_negative``); after the position update ``visco_branch_work`
 grad N_I) (the drift's dF, recomputed in float64 from the MUSL grid velocity after the BC) to ``visco_branch_work``.
 The layer-N books B_N = E_kin + Psi_eq + E_grav + W_b - W_ext close up to the O(dt) symplectic error.
 
+Energy option ``branch_work_kick_average_v2`` (ADR 0023 §21.7, protocol ``rubber_visc_tests_v2``): the same stress pass,
+dissipation and ``visco_pb``; after the position update ``visco_branch_work_kick_average`` adds
+V visco_pb_n : (dF_{n-1} + dF_n) / 2 to ``visco_branch_work`` (the branch force paired with the velocity average of the
+kick, i.e. the conjugate of the discrete kinetic energy; ``visco_df_prev[n]`` (mat33d) holds dF_{n-1}, zero after a
+reset) and the v1 left-point V visco_pb_n : dF_n, with the arithmetic of ``visco_branch_work``, to
+``visco_branch_work_left`` (reported). The left-point W_b of ``branch_work_v1`` drifts by about dt w^2 tau / 2 of the
+branch dissipation on high-frequency content (§21.7.1). Bookkeeping only: every other array is byte-identical to
+``branch_work_v1`` (and the state to ``off_v1``); ``off_v1`` / ``branch_work_v1`` are unchanged.
+
 Visco diagnostics (``ViscoDiagnostics``, fixed-order, per env, shared with the batch): Psi_eq (g_inf mu0 isochoric +
 the frozen volumetric column), Psi_v = sum V sum_i |Q_i|^2 / (4 g_i mu0), the accumulators and the max visco CFL of
 the current state.
@@ -50,13 +59,15 @@ wp.set_module_options({"enable_backward": False})
 SOLVER_NAME = "tlmpm_rubber_visco_v1"
 STATUS = "EXPERIMENTAL_NOT_ACCEPTED"
 ADR = "docs/adr/0023-rubber-material-v1.md section 21.2"
-VISCO_ENERGY_MODES = ("off_v1", "branch_work_v1")
+VISCO_ENERGY_MODES = ("off_v1", "branch_work_v1", "branch_work_kick_average_v2")
 DEFAULT_VISCO_ENERGY = "off_v1"
+KICK_AVERAGE_ENERGY = "branch_work_kick_average_v2"         # ADR 0023 §21.7
 P_MU, P_KAPPA = 0, 1               # columns of the float32 per-env table (single: dparams; batch: params)
 VISCO_DIAG_COLUMNS = ("psi_eq", "psi_eq_iso", "psi_eq_vol", "psi_visc_stored", "branch_work", "dissipation",
                       "dissipation_negative_increments", "cfl_visco_max")
 NVDIAG = len(VISCO_DIAG_COLUMNS)
 ENERGY_ARRAYS = ("visco_pb", "visco_branch_work", "visco_dissipation", "visco_d_negative")
+KICK_AVERAGE_ARRAYS = ("visco_df_prev", "visco_branch_work_left")      # branch_work_kick_average_v2 only
 _HERE = Path(__file__).resolve()
 SOURCES = ("tlmpm_rubber_visco_v1.py", "rubber_visco_constitutive.py")
 
@@ -121,6 +132,25 @@ def visco_branch_work(pb: wp.array(dtype=wp.mat33d), nodes: wp.array2d(dtype=int
     for c in range(8):
         grad += wp.outer(wp.vec3d(velocity[nodes[p, c]]), wp.vec3d(gradients[p, c]))
     wp.atomic_add(work, env_of_particle[p], volume*wp.ddot(pb[p], dt*grad))
+
+
+@wp.kernel
+def visco_branch_work_kick_average(pb: wp.array(dtype=wp.mat33d), nodes: wp.array2d(dtype=int),
+                                   gradients: wp.array2d(dtype=wp.vec3), velocity: wp.array(dtype=wp.vec3),
+                                   env_of_particle: wp.array(dtype=int), volume: wp.float64, dt: wp.float64,
+                                   df_prev: wp.array(dtype=wp.mat33d), work: wp.array(dtype=wp.float64),
+                                   work_left: wp.array(dtype=wp.float64)):
+    """``branch_work_kick_average_v2`` (ADR 0023 §21.7): W_b[env] += V visco_pb : (dF_{n-1} + dF_n) / 2 and the v1
+    left-point W_b,v1[env] += V visco_pb : dF_n (same arithmetic as ``visco_branch_work``); dF_{n-1} <- dF_n."""
+    p = wp.tid()
+    grad = wp.mat33d()
+    for c in range(8):
+        grad += wp.outer(wp.vec3d(velocity[nodes[p, c]]), wp.vec3d(gradients[p, c]))
+    e = env_of_particle[p]
+    df = dt*grad
+    wp.atomic_add(work_left, e, volume*wp.ddot(pb[p], df))
+    wp.atomic_add(work, e, wp.float64(0.5)*volume*wp.ddot(pb[p], df+df_prev[p]))
+    df_prev[p] = df
 
 
 @wp.kernel
@@ -247,6 +277,9 @@ class TLMPMRubberVisco(TLMPMRubberCW):
                 self.visco_branch_work = wp.zeros(1, dtype=wp.float64)
                 self.visco_dissipation = wp.zeros(1, dtype=wp.float64)
                 self.visco_d_negative = wp.zeros(1, dtype=int)
+                if visco_energy == KICK_AVERAGE_ENERGY:
+                    self.visco_df_prev = wp.zeros(self.n, dtype=wp.mat33d)
+                    self.visco_branch_work_left = wp.zeros(1, dtype=wp.float64)
         self.visco_diagnostics = ViscoDiagnostics(self, 1) if self.M else None
         for module in (rvc.__name__, __name__):
             wp.load_module(module=module, device=self.device)
@@ -317,9 +350,16 @@ class TLMPMRubberVisco(TLMPMRubberCW):
                 wp.launch(T._traction_work_grid, n, [self.x, self.x_start, self.mass, self.particle_traction,
                                                      self.traction_force, self.traction_mass, self.work])
             if self.visco_energy_on:
-                wp.launch(visco_branch_work, n, [self.visco_pb, self.nodes, self.gradients, self.new_v,
-                                                 self.env_of_particle, wp.float64(self.volume), wp.float64(dt),
-                                                 self.visco_branch_work])
+                if self.visco_energy == KICK_AVERAGE_ENERGY:
+                    wp.launch(visco_branch_work_kick_average, n, [self.visco_pb, self.nodes, self.gradients,
+                                                                  self.new_v, self.env_of_particle,
+                                                                  wp.float64(self.volume), wp.float64(dt),
+                                                                  self.visco_df_prev, self.visco_branch_work,
+                                                                  self.visco_branch_work_left])
+                else:
+                    wp.launch(visco_branch_work, n, [self.visco_pb, self.nodes, self.gradients, self.new_v,
+                                                     self.env_of_particle, wp.float64(self.volume), wp.float64(dt),
+                                                     self.visco_branch_work])
             wp.launch(v5._advance, 1, [self.index])
 
     def _launch_stress_prony(self):
@@ -339,7 +379,7 @@ class TLMPMRubberVisco(TLMPMRubberCW):
         ``grid_displacement_v1`` (not cleared by the frozen parent; cleared by the batched masked reset), so two
         episodes from reset() are byte-identical (RUBBER-VISC-06)."""
         super().reset()
-        for name in ("visco_q", "visco_s_prev", "work_scratch")+ENERGY_ARRAYS:
+        for name in ("visco_q", "visco_s_prev", "work_scratch")+ENERGY_ARRAYS+KICK_AVERAGE_ARRAYS:
             if hasattr(self, name):
                 getattr(self, name).zero_()
 
@@ -385,4 +425,5 @@ class TLMPMRubberVisco(TLMPMRubberCW):
 
 
 __all__ = ["TLMPMRubberVisco", "ViscoDiagnostics", "stress_prony", "cfl_guard_prony", "visco_branch_work",
+           "visco_branch_work_kick_average", "KICK_AVERAGE_ENERGY", "KICK_AVERAGE_ARRAYS",
            "visco_diag_particles", "visco_diag_combine", "VISCO_DIAG_COLUMNS", "DEFAULT_CONSTRAINT_WORK"]

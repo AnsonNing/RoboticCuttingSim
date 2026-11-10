@@ -14,12 +14,13 @@ PROTOCOL_PATH = ROOT/"configs"/"rubber"/"rubber_visc_tests_v1.json"
 OPTIONS = {"dirichlet": "consistent_mass_projection_v1", "constraint_work": "kick_average_v1",
            "traction_work": "grid_displacement_v1", "state_precision": "f64_shadow_v1"}
 VISCO_ENERGY = "branch_work_v1"
+VISCO_ENERGY_V2 = "branch_work_kick_average_v2"      # rubber_visc_tests_v2 (ADR 0023 §21.7)
 COMMON_ARRAYS = ("cell_node", "cell_offsets", "cell_particles", "index", "work", "violations", "cfl_violations")
 OPTION_NAMES = ("work_end_velocity", "work_scratch", "F64", "x64", "proj_row_node", "proj_row_comp", "proj_row_group",
                 "proj_row_block", "proj_row_local", "proj_rhs", "proj_vpresc", "proj_mu", "proj_block_offset",
                 "proj_block_size", "proj_inv_offset", "proj_inv", "proj_mu_node")
 VISCO_NAMES = ("visco_q", "visco_s_prev", "params64", "visco_pb", "visco_branch_work", "visco_dissipation",
-               "visco_d_negative")
+               "visco_d_negative", "visco_df_prev", "visco_branch_work_left")
 
 
 def load_protocol():
