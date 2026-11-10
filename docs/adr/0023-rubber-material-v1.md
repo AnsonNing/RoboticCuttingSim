@@ -1073,3 +1073,276 @@ discrete motion) is not yet isolated. Open before batched VISC hysteresis runs w
 - The F8 row kernels `_proj_rhs` / `_proj_reaction_b` still evaluate `group_target` per row (the same float64 cost as
   §20.2); they could read the motion table.
 - Viscoelasticity (`neo_hookean_jbar_prony_v1`) and `rubber_visc_tests_v1` are not started (declared after the review).
+
+## 21. P2-3: moving-grip energy books and the viscoelastic implementation design (amendment, 2026-11-10, rcs-xhigh)
+
+Scope: (1) the moving-clamp energy gap left open in §20.5/§20.6; (2) the binding implementation design of D7
+(`neo_hookean_jbar_prony_v1`, refining §10), its protocol `rubber_visc_tests_v1` (declared and SHA-pinned before any
+implementation run) and the rcs-impl task list. Nothing frozen changed: v1–v7_2, law 8, evaluators, every Phase 1
+module (including `batched/constitutive.py`, `batched/errors.py`), `configs/rl_benchmark/*`, `scripts/rl_ready/*`,
+`rubber_phys_tests_v1..v4.json`, and the single-env reference **`tlmpm_rubber_v1.py` (sha256 `28fc5189…c8d5`) and
+`rubber_constitutive.py` (`c12cc77e…b869`) stay byte-identical** (the R2.5 freeze recommendation). Branch
+`claude/rl-rubber-p23` (from `1b21801`). Raw outputs `artifacts/rl_ready/p2_3/`. Material status unchanged:
+`SIMULATOR_ONLY_UNCALIBRATED`.
+
+### 21.1 Moving Dirichlet grip: why the books did not close, and the fix
+
+**Diagnosis** (`scripts/rubber/p2_3/diag_moving_clamp_energy.py`, run `moving_clamp_diag_001` at `87c3696`, Warp CPU;
+the §20.5 probe scene: case A 12 × 3 × 3 mm, n_t 2, μ 0.4 MPa, β 20, ρ 1150, gravity; the grip lifts 1 mm and rolls
+0.15 rad over 6 ms, then holds 6 ms; 320 particles). A subclass, local to the script, reads after each projection / BC
+launch the per-row constraint impulse Λ_n (on the material) and evaluates three quadratures of its work:
+*end* Λ_n·v_presc,n (what `tlmpm_rubber_v1` accumulates), *start* Λ_n·g_n,C and *kick average* Λ_n·(g_n,C + v_presc,n)/2,
+where g_n is the P2G-pass grid velocity `old` = p/m. Residual (Ψ + KE_particle + E_grav − W)/max(Ψ + KE) at the end of
+the hold (max over the run in brackets):
+
+| Profile, constraint | control dt, substeps | end (v1) | kick average | start |
+|---|---|---|---|---|
+| linear, lumped | 100 µs, 12 | −22.1 % | −4.24 % (4.24 %) | +13.7 % |
+| linear, F8 (± F10) | 100 µs, 12 | −19.24 % | −0.006 % (0.38 %) | +19.2 % |
+| linear, F8 + F10 | 100 µs, **24** | −19.18 % | −0.004 % (**0.19 %**) | +19.2 % |
+| linear, F8 + F10 | **25 µs**, 3 | −19.24 % | −0.006 % (0.39 %) | +19.2 % |
+| smootherstep, lumped | 100 µs, 12 | −1.59 % | −0.33 % (0.67 %) | +0.93 % |
+| smootherstep, F8 (± F10) | 100 µs, 12 | −1.62 % | +0.19 % (0.23 %) | +2.00 % |
+| smootherstep, F8 + F10 | 100 µs, **24** | −1.66 % | +0.09 % (**0.11 %**) | +1.85 % |
+| smootherstep, F8 + F10 | **25 µs**, 3 | **−0.35 %** | +0.19 % (0.23 %) | +0.73 % |
+
+Candidates, one by one:
+
+| Candidate | Verdict | Evidence |
+|---|---|---|
+| Which velocity the constraint work is evaluated at | **Root cause** (projected constraint) | With the kick average the F8 books close to 6e-5 (linear) / 1.9e-3 (smooth) at the end; the residual is a bounded oscillation that halves with dt (0.38 → 0.19 %, 0.23 → 0.11 %), i.e. the O(dt) energy error of symplectic Euler. The end-velocity error is dt-independent (−19.2 % at 12 and 24 substeps) and is exactly ½ Σ Λ_n·(v_presc,n − g_n,C) |
+| Discontinuous acceleration (linear profile, start/stop jerk) | Where the quadrature error concentrates, not a loss | The end − kick difference is a staircase: +9.77 % of S at the start jump, +9.46 % at the stop (= ½ Δv·m_eff Δv per jump). With the kick average a linear profile closes as well as a smooth one (6e-5). The jumps inject real, correctly accounted energy into vibration |
+| Time integration of the motion table vs the substep | Explains the "smooth" 1.6 % | The pose is linear (slerp) within a control step, so v_presc is piecewise constant and jumps at every control-step boundary even for a C2 control-level profile: the v1 error scales with the control interval (−1.62 % at 100 µs, −0.35 % at 25 µs) and not with dt. The motion table itself is exact (§20.2, bitwise) |
+| FLIP increment of constrained nodes (lumped clamp) | Real numerical dissipation, removed by F8 | Lumped with the kick average still loses 4.2 % (linear) / 0.33 % (smooth): its FLIP increment is a lumped-mass correction and the MUSL-pass overwrite never reaches the particles, so a velocity jump is partly inelastic (§18.1 F6). No quadrature closes the lumped books |
+| Missing kinetic energy of the moving clamped (jaw) particles | Not missing | `kinetic_particle` sums every particle; the jaw particles carry up to 7.5 % (linear) / 15 % (smooth) of S. Under F8, v_p = Wᵀa always, so the particle KE equals ½πᵀBπ exactly |
+
+**Root cause.** Pure FLIP + MUSL with fixed weights is symplectic Euler in (π, u) with KE = ½πᵀBπ (B = M_l⁻¹M_cM_l⁻¹,
+g = Bπ; §18.1 F1). The F8 projection is the standard constrained symplectic Euler for the linear holonomic
+constraint u_C = c(t): π_{n+1} = π_n + dt f(u_n) + Λ_n, Λ supported on the constrained rows, (Bπ_{n+1})_C = v_presc,n
+(the projection of §19.1 solves exactly B_CC Λ_C = v_presc − (Bπ*)_C). KE is quadratic, so
+KE_{n+1} − KE_n = (dt f + Λ_n)·(g_n + g_{n+1})/2 *exactly*: the work conjugate to the discrete kinetic energy is
+Λ_n·(g_n,C + v_presc,n)/2. `tlmpm_rubber_v1` books Λ_n·v_presc,n, i.e. it attributes the kick, which happens between
+two drifts, entirely to the following drift. The error per substep is ½Λ_n·(v_presc,n − g_n,C); summed, it is
+½ Δv·m_eff Δv at every discontinuity of the prescribed velocity (m_eff = m_C A⁻¹ m_C ≥ m_C) plus an O(dt) force term.
+For a fixed grip (v_presc = 0, §19.1 runs) both quadratures give ≈ 0, which is why F8 closed the books at rest.
+Physically the kick average is also the right limit: a rigid grip that changes its velocity quickly but continuously
+from v_old to v_new does work ½(v_old + v_new)·J, not v_new·J.
+
+**Decision.** The constraint is right; the bookkeeping is versioned: option `constraint_work`
+(`rubber_constraint_work.py`), `end_velocity_v1` (default, the §19.1 accounting, unchanged) or **`kick_average_v1`**
+(W += Λ·(g_n,C + v_presc)/2 with g_n = `old` read before the MUSL grid update overwrites it; equal to v_presc,n−1 on an
+active row up to float32, the free velocity on a freshly activated one). Bookkeeping only: every state array, the
+reaction and the wrench are byte-identical (test); the v1 end-velocity work is reported in `work_end_velocity`.
+`kick_average_v1` requires `dirichlet = consistent_mass_projection_v1` (with the lumped clamp it is refused: that
+constraint is not symplectic and has no conjugate work). Every P2-3 test with a moving grip uses F8 + `kick_average_v1`;
+a lumped grip is never used for energy, hysteresis or dissipation measurements.
+
+**Implementation** (`59fca99`). Single env: `TLMPMRubberCW` subclasses the frozen `TLMPMRubber` and re-launches the
+parent's F8 kernels in the parent's order, diverting `_proj_reaction`'s work to `work_end_velocity` and adding
+`proj_work_kick_average` (one thread per constrained row; target `env_of_group[g]`, a one-env zero array in the single
+solver). `LiveRubberMaterial(constraint_work=…)` builds the subclass only for the non-default value. Batched:
+`BATCHED_OPTIONS["constraint_work"]`, part of the uniform signature (mixed values refused), the same kernel launched
+unchanged after `_proj_reaction_b`, per-env `work_end_velocity` cleared by the masked reset (`OPTION_RESET_ARRAYS`).
+Tests (`tests/test_rubber_constraint_work.py`, 13): default builds the frozen class; refusals; state byte-identical and
+`work_end_velocity` = the default run's `work`; kernel = host float64 every substep; moving-grip closure (linear and
+smooth); L0 byte-wise N = 1 / N = 3 heterogeneous / case C two grips with rotation and an inactive grip; masked reset;
+vars()-complete classification; mixed refusal. `test_rubber_batched_options.py::test_reset_classification_is_vars_complete_with_options`
+now builds its all-options batch with `kick_average_v1` too (otherwise the declared table names an array the batch
+does not have). CPU suites: rubber tests 182 passed with `CUDA_VISIBLE_DEVICES=''` and with `=0`.
+
+**Formal result: `rubber_moving_grip_tests_v1`** (declared and pinned at `ea32f2a`, sha256 `ff14f39d…78bc`, before the
+run; S1 = the diagnostic scene, S2/S3 unseen). Run `moving_grip_v1_001` (commit `ea32f2a`, clean tree, Warp 1.17.0 CPU,
+15 workers, 22:08:38–22:09:34 KST; the runner smoke `moving_grip_v1_smoke_001`, three control steps, is preserved and
+labelled SMOKE). Options F8 + `kick_average_v1` + F10, guard 1.0, CFL 0.5 and 0.25 (2× substeps).
+
+| Scene | Profile | Particles, substeps | M (CFL 0.5) | H | M (CFL 0.25) | ratio | v1 end-velocity M (reported) |
+|---|---|---|---|---|---|---|---|
+| S1 cantilever lift + roll, n_t 2 | linear | 320, 12 | 0.384 % | +3.3e-4 | 0.189 % | 0.49 | 19.5 % |
+| S1 | smootherstep | 320, 12 | 0.227 % | +3.7e-4 | 0.113 % | 0.50 | 2.03 % |
+| S2 wide cantilever lift + yaw, n_t 3 | linear | 3,744, 44 | 0.094 % | +6.4e-5 | 0.049 % | 0.52 | 4.19 % |
+| S2 | smootherstep | 3,744, 44 | 0.057 % | +1.9e-5 | 0.028 % | 0.50 | 0.78 % |
+| S3 two-grip load–unload λ 1.2, n_t 3 | linear | 4,320, 35 | 0.070 % | +6.2e-5 | 0.034 % | 0.49 | 0.055 % |
+| S3 | smootherstep | 4,320, 35 | 0.088 % | +4.6e-5 | 0.043 % | 0.49 | 0.154 % |
+
+M = max |r|, H = mean of r over the final hold, r = (Ψ + KE + E_grav − W)/max(Ψ + KE). **RUBBER-GRIP-01 PASS**
+(M ≤ 1 %, |H| ≤ 0.2 %), **-02 PASS** (ratio 0.49–0.52 ≤ 0.65: first order, i.e. numerical), **-03 PASS** (no flag;
+CFL_eff ≤ 0.565, J ∈ [0.970, 1.028]), **-04 PASS** (N = 2 heterogeneous batch byte-identical to two single
+references after every control step: S1 120, S2 80, S3 110 steps, every array incl. `work_end_velocity`, F64/x64 and
+the projection arrays, diagnostics, markers, wrenches). In S3 the v1 error is small because Ψ dominates S and the
+velocity jumps are small; its dt-ratio (2.0 / 0.41) is erratic because the end-velocity bias and the O(dt) error are
+of similar size there (reported).
+
+**Consequences and limits.** The v4 -07 PASSes are unaffected (no moving grip in their energy windows) and so is -06
+(stress criteria). The velocity jumps at control-step boundaries are part of the prescribed motion (the pose is
+linear within a control step) and now cost exactly the work they do; a C¹ pose interpolation would be a separate,
+versioned motion option and is not needed for the books. The batched F8 cross-group refusal (§20.3) still applies.
+Only CPU runs here; on a GPU the float64 work atomics stay order-nondeterministic (as the reaction since P2-1).
+
+### 21.2 `neo_hookean_jbar_prony_v1`: binding implementation design (refines §10)
+
+**21.2.1 Stress.** With S⁰(C) = μ₀J^(−2/3)(I − (I₁/3)C⁻¹) (C⁻¹ = cof Fᵀ cof F / J², J floored at 0.05 for evaluation as in
+§5), the §10 stress S = g_∞S⁰ + ΣQ_i, P = FS + p(J̄) cof F is evaluated in the **overstress form**
+
+```
+P = P_NH(F, J̄; μ₀, κ) + F · Σ_i (Q_i − g_i S⁰)        (P_NH = rubber_constitutive.nh_jbar_pk1, unchanged)
+```
+
+(algebraically identical, since P_NH = F S⁰ + p cof F). The overstress Σ(Q_i − g_iS⁰) is summed in float64,
+multiplied by F in float64, rounded once and added to the float32 P_NH. Consequences: the elastic part is the frozen
+function (structural parity with v1); with every g_i = 0 the overstress is an exact zero and P is byte-identical to the
+elastic solver (P_NH has no −0.0 entries, so adding ±0.0 leaves its bytes unchanged; RUBBER-VISC-09 tests it); the
+instantaneous response (Q_i ≈ g_iS⁰ at fast loading) is μ₀ and the equilibrium response μ_∞ = g_∞μ₀. Volumetric
+viscosity: none (§10).
+
+**21.2.2 Update order (per particle, inside the stress pass of substep n, F = F_n at the start of the substep).**
+(1) S⁰_n from F_n; (2) Q_i ← a_iQ_i + b_i(S⁰_n − S⁰_prev) for every term; (3) S⁰_prev ← S⁰_n; (4) P from the
+overstress form; (5) with `visco_energy=branch_work_v1`, the branch PK1 `visco_pb` = F_nΣQ_i and the dissipation
+increment (21.2.7). The Prony state after a control step therefore belongs to t_k − dt (the last stress pass), as the
+stress array does. Reset state (F = I, S⁰_prev = 0, Q = 0) is the stress-free reference; the first stress pass gives
+S⁰ = 0 and Q = 0 again. a_i, b_i exactly as §10 (exact for S⁰ piecewise linear between stress passes; τ → ∞ elastic
+with μ₀, τ → 0 equilibrium μ_∞).
+
+**21.2.3 Precision: float64 internal state and coefficients (amends §10's float32 storage).** For τ ≫ dt,
+1 − a_i = dt/τ_i is below float32 resolution near 1: at dt 5 µs, τ 0.1 s, 1 − a = 5e-5 carries a relative error
+≈ 6e-4 in float32 (a 0.06 % error of the relaxation rate), at τ 10 s ≈ 6 %; the per-substep increments b_iΔS⁰ are
+≈ 1e-4 of Q and would be lost exactly like the F increments of §19.1 F10. Hence `visco_q` and `visco_s_prev` are
+float64, and a_i, b_i (and g_i, τ_i, g_∞) live in a **float64 per-env table**; S⁰ is evaluated in float64 from the
+float32 F the elastic part reads (the same input; with F10 the float32 F is the rounded shadow). A float32 storage
+variant (`visco_precision = f32_v1`) is allowed later only as an opt-in for throughput with its own declared
+equivalence test; it is not part of v1.
+
+**21.2.4 Storage, registry, parameters.**
+
+| Item | Layout | Notes |
+|---|---|---|
+| `visco_q` | `[P·M]` sym-6 float64 (`vec6d`: xx, yy, zz, yz, xz, xy), particle-major `p·M + i` | registry state, initial `zero` or `snapshot`, multiplicity M |
+| `visco_s_prev` | `[P]` sym-6 float64 | registry state, initial `zero` or `snapshot` |
+| `params` (float32, existing) | `[N, 6]` μ₀, κ, ρ, frictions | unchanged columns (μ₀ = instantaneous modulus) |
+| `params64` (new, float64) | `[N, 1 + 4M]`: g_∞, then (g_i, τ_i, a_i, b_i) per term | declared by the model (`param64_names`); a_i, b_i computed on the host in float64 with `expm1` from the batch dt (`RubberRecipe.prony_coefficients`) |
+| per-env energy accumulators (option) | `visco_branch_work[N]`, `visco_dissipation[N]` float64; `visco_pb[P]` mat33d | only with `visco_energy = branch_work_v1` |
+
+M is uniform per batch, 1 ≤ M ≤ 4; an env with fewer terms is padded with g = 0 (Q stays an exact zero; the
+dissipation and stored-energy terms skip g = 0). Memory: 48(M + 1) B per particle (144 B at M = 2, 240 B at M = 4;
++72 B with the energy option). The registry (`batched/constitutive_rubber.py`) gets the model
+`NEO_HOOKEAN_JBAR_PRONY_V1` (id, version 1, `param_names` (float32), `param64_names`, `per_particle_state =
+(visco_q ×M, visco_s_prev)`, `launch_stress` = J-bar pass + `_stress_prony_b`, `launch_guard` = 21.2.6, energy
+description, receipt with M and the Prony table); `DECLARED_LATER` loses the entry. The batch takes its model from its
+lives (uniform; a mixed batch is `UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS`, a different M `UNSUPPORTED_NONUNIFORM_BATCH`).
+`MaterialValues` gains an optional `prony` tuple ((g, τ), …) (default empty: the elastic model); the recipe's
+`rubber_generic_visco_v1.json` (provisional, §14.1 example values, `SIMULATOR_ONLY_UNCALIBRATED`) is added.
+Randomisation per reset (D10): declared ranges `prony_g_scale` (multiplies every g_i, Σg < 1 enforced) and
+`prony_tau_scale` (multiplies every τ_i); the host stages params64 (expm1 in float64) like `stage_params`, without
+device allocation or recapture.
+
+**21.2.5 Masked partial reset.** A generic registry-state reset kernel per state variable (zero, or copy from a
+per-slot snapshot) runs for the masked envs, plus params64 from its stage; `SOLVER_RESET_ARRAYS` / the
+vars()-complete classification list `visco_q`, `visco_s_prev`, `params64` and the option accumulators, so an env
+cannot inherit material memory (RUBBER-VISC-06). The single-env `reset()` clears both arrays.
+
+**21.2.6 Stable step: μ₀ plus the overstress (guard `stable_step_guard_visco_v1`).** The step rule uses μ₀ (already so:
+`RubberRecipe.mu0 = μ_eq/g_∞`; tested in RUBBER-VISC-08a). The algorithmic tangent of the update is
+∂S/∂C = (g_∞ + Σb_i)∂S⁰/∂C with g_∞ + Σb_i ≤ 1, but the geometric term carries the current S = S⁰ + Σ(Q_i − g_iS⁰),
+and after a load–unload history the overstress can be positive in a direction where S⁰ is not. Hence, per particle
+(float64 inputs, float32 bound as the v1 guard):
+
+```
+ρ c_v² = (1 + Σ_i (g_i − b_i)) · W(F, J̄; μ₀, κ) + max(0, λ_max^G(Σ_i (Q_i − g_i S⁰)))
+```
+
+W = `rubber_constitutive.wave_modulus_bound` (§18.2), λ_max^G the Gershgorin bound of the symmetric overstress
+(max over rows of the diagonal plus the absolute off-diagonals; ≥ the largest eigenvalue). By Weyl, this bounds the
+largest eigenvalue of the algorithmic acoustic tensor A_el + (N·ΣΔN)I − Σ(g_i − b_i)M⁰ if the isochoric material part
+M⁰ is positive semidefinite; that premise and the bound are verified, not assumed, by the **Prony tangent check**
+(RUBBER-VISC-08b: ≥ 2,000 states with history-generated Q, exact algorithmic acoustic tensor by float64 central
+differences of the discrete update with Q_n frozen, 512 directions; ratio ≤ 1 everywhere, else a declared v2 of the
+guard before any further visco run). Limit 1.0, sticky `RUBBER_CFL_EXCEEDED`, read-only, as §18.2.
+
+**21.2.7 Energy accounting (`visco_energy`: `off_v1` default — no array, no launch — or `branch_work_v1`).**
+- Ψ_eq = Σ V g_∞μ₀/2(J^(−2/3)I₁ − 3) + Σ V_c U(J̄): the equilibrium free energy. (The frozen diagnostics' `elastic` uses
+  μ₀; a separate fixed-order visco diagnostics kernel reports `psi_eq`, `psi_visc_stored`, the accumulators.)
+- **Branch work** W_b = Σ_n Σ_p V (F_nΣQ_i^n):(F_{n+1} − F_n), the discrete work of the internal force on the viscous
+  branches (stored `visco_pb` × the ΔF = dt Σ v_I ⊗ ∇N recomputed after the MUSL BC, float64, per env). Since
+  P = ∂Ψ_eq/∂F + FΣQ_i, the books **B_N = E_kin + Ψ_eq + E_grav + W_b − W_ext** close at any strain up to the O(dt)
+  symplectic error (layer N: the numerics lose nothing).
+- **Explicit dissipation** D = Σ_n Σ_p V Σ_i dt(|Q_i^n|² + |Q_i^{n+1}|²)/(4g_iμ₀τ_i) and stored branch energy
+  Ψ_v = Σ V Σ|Q_i|²/(4g_iμ₀): each branch is an exact linear Maxwell element in the strain-like variable S⁰/(2μ₀),
+  for which these are the stored energy and the dissipation rate; they equal the mechanical branch split at small
+  strain (O(ε) otherwise). Over a closed steady cycle E_kin, Ψ_eq and Ψ_v are periodic, so the loss per cycle is
+  ΔW_ext = ΔW_b (layer N) = ΔD (layer M, small strain) = πε₀²E″(ω)V (analytic): the material, not the numerics,
+  accounts for the measured loss (RUBBER-VISC-05).
+
+**21.2.8 Code organisation.** New: `rubber_visco_constitutive.py` (shared `@wp.func`s: sym-6 helpers, S⁰, Prony
+update, overstress PK1, dissipation/stored densities, visco guard; numpy references), `tlmpm_rubber_visco_v1.py`
+(`TLMPMRubberVisco(TLMPMRubberCW)`: `step()` = the `tlmpm_rubber_v1` launch sequence with the stress pass replaced by
+the J-bar pass + `_stress_prony` when M ≥ 1 and the frozen `_stress` when M = 0, plus the opt-in energy kernel after the
+position update; its own `reset`, receipts, `nodal_internal_force` refusal), `rubber_visco_reference.py` (G*, E*,
+relaxation/creep by partial fractions, hereditary integral by quadrature, beam root), `configs/materials/rubber_generic_visco_v1.json`.
+Changed Phase 2 modules only: `rubber_material.py` (MaterialValues.prony, params64 builder), `live_rubber_material.py`
+(model selection), `batched/constitutive_rubber.py`, `rubber_layout.py`, `rubber_batch.py`, `rubber_material_batch.py`.
+The visco solver's `step()` duplicates the frozen launch order; RUBBER-VISC-09 (byte identity with M = 0 and with
+g = 0) guards the copy.
+
+**21.2.9 Cost (estimate, to be measured in RUBBER-VISC-10).** The stress pass adds ≈ 150 float64 flops (S⁰, C⁻¹) +
+≈ 20 per term and 96(M + 1) B of traffic per particle-substep; on the RTX 5090 (float64 at 1/64 rate) this is expected
+to cost ≈ +15–30 % per substep at M = 2 (the NH stress is already float64). Rows report M, the energy option and
+substeps per control step (D11).
+
+### 21.3 Protocol `rubber_visc_tests_v1` (declared before any implementation; sha256 `95ad1f94…f080`, pinned in `tests/test_rubber_p2_3_protocols.py`)
+
+Common: P2 set μ₀ 0.4 MPa, (g, τ) = (0.2, 5 ms), (0.15, 50 ms), g_∞ 0.65; SLS set (0.3, 10 ms); β 20 on μ₀, ρ 1150,
+CFL 0.5, F8 + `kick_average_v1` + F9 + F10, guard 1.0 with 21.2.6, no gravity. Analytic values used for the design:
+E′/E″ at 1 / 4 / 8 / 16 / 32 Hz = 0.788/0.058, 0.883/0.115, 0.937/0.116, 0.988/0.127, 1.063/0.134 MPa; shear
+retardation times 6.2 and 61.9 ms; cantilever 40 × 4 × 4 mm root ζ 4.743 1/s, f_d 11.71 Hz.
+
+| Id | Test | Reference | Pass |
+|---|---|---|---|
+| -01 | Relaxation after a one-control-step ramp, block (uniaxial isochoric λ 1.5, shear γ 1), SLS and P2, hold 6τ_max | finite-strain hereditary integral (quadrature, independent of the update); g(t)S⁰ reported | ‖P − P_ref‖/‖P_ref(t_r)‖ ≤ 1e-4 |
+| -02 | Creep (σ₀ = 0.002E_∞, cosine ramp 20 ms, hold to 0.4 s) and recovery (to 0.8 s), strip 30 × 6 × 3 mm with traction | Boltzmann superposition of the uniaxial creep compliance (partial fractions) on the actual staircase load | curve within 2 % of max ε; creep ratio within 1 %; recovery within 2 % |
+| -03 | Load–unload u = ε₀L(1 − cos 2πft), ε₀ 0.002, fit rates 1 / 4 / 16 Hz, held-out 2 / 8 / 32 Hz; block shear γ₀ 0.15 at 4 / 16 Hz | E*(ω), πε₀²E″V; block hereditary integral | E′ 1 %, E″ 3 %, loss 3 % per rate; 4-parameter fit on the fit rates recovers τ within 10 %, g within 5 %; held-out predictions E′ 1 %, E″ 4 %; single-rate fit reported; block 1e-4 |
+| -04 | dt, dt/2, dt/4: block relaxation τ fits; cantilever tap and free decay (n_t 4) | declared τ; complex EB root | τ within 0.5 % across dt and of the declared; ζ 0.5 %, f_d 0.2 % across dt; vs root f_d 3 %, ζ 5 % |
+| -05 | Energy balance on every strip/cantilever run; 16 Hz at 2× substeps | layer N / layer M (21.2.7) | \|B_N\| ≤ 0.5 % of S_N; first order (ratio ≤ 0.65); per cycle \|ΔW_ext/ΔW_b − 1\| ≤ 0.5 %, \|ΔD/ΔW_b − 1\| ≤ 2 %, D increments ≥ 0 |
+| -06 | Partial reset memory: N = 3 batch, env 1 loaded then reset | fresh batch / fresh single | byte-identical after the reset and for 20 further steps; others unchanged; resampled Prony reset = single built with it; single reset clears |
+| -07 | Single vs batched L0 / L1 (N 1, N 3 heterogeneous g, τ, μ₀, ρ, geometry; cases A, C, block) | single references | byte-wise every array every control step; isolation; refusals |
+| -08 | Step rule on μ₀; Prony tangent check; guard validity | exact algorithmic acoustic tensor (FD) | ratio ≤ 1 on ≥ 2,000 states; zero violations |
+| -09 | Elastic limit | `tlmpm_rubber_v1` | byte-identical with M = 0 and with g = 0 |
+| -10 | Cost (reported) | – | D11 columns, SHARED_GPU labels |
+
+Time stamps are part of the protocol (a wrench is a control-step average stamped t_k − Δt_c/2 with the sinc factor;
+the stress and Prony state belong to t_k − dt; tractions are constant per control step at the midpoint value), so
+that a phase lag of Δt_c/2 (0.02 rad at 32 Hz, 16 % of the loss angle) cannot pass as material behaviour. The
+identification in -03 is a synthetic dry run of the P2-5 fit / held-out split (no calibration claim); a pre-declaration
+check with 0.3 % synthetic noise gave τ errors ≤ 6 % and held-out errors ≤ 2.8 %, and a one-term single-rate fit
+mispredicts E″ by 25–43 % at the held-out rates.
+
+### 21.4 Implementation task list (rcs-impl; S ≈ ½ day, M ≈ 1 day, L ≈ 2–3 days)
+
+CPU tests twice (`CUDA_VISIBLE_DEVICES=''` and `=0`); GPU only under `flock …/rcs_rl_runner/gpu<N>.lock` with ≥ 4 GB
+free; raw outputs `artifacts/rl_ready/p2_3/visc_*`; no protocol run before its code is committed clean.
+
+| Task | Deliverable | Tests / evidence | GPU | Size |
+|---|---|---|---|---|
+| R3.0 | **Done here**: `constraint_work kick_average_v1`, `rubber_moving_grip_tests_v1` PASS | §21.1 | – | – |
+| R3.1 | `rubber_visco_constitutive.py`: vec6d helpers, S⁰ (float64), Prony update, overstress PK1, dissipation / stored densities, visco guard, numpy twins | S⁰ = 2∂Ψ_iso/∂C by float64 FD; objectivity (Q in the reference frame); update exact for linear S⁰(t) vs closed form; a, b from expm1 byte-equal to the host; g = 0 → P byte-equal to `nh_jbar_pk1` (random F) | – | M |
+| R3.2 | `rubber_material.py`: `MaterialValues.prony`, params64 builder, validation (M ≤ 4, Σg < 1), μ₀ step rule; `rubber_generic_visco_v1.json` | recipe refusals, μ₀ step rule (VISC-08a), params64 values | – | S |
+| R3.3 | `rubber_visco_reference.py` | SLS closed forms; E(t) ∗ J_E(t) = t interconversion; creep/relaxation limits; hereditary integral vs closed form for a linear ramp; beam root → elastic limit at g = 0 | – | M |
+| R3.4 | `tlmpm_rubber_visco_v1.py` (`TLMPMRubberVisco`), `live_rubber_material` model selection, energy option + visco diagnostics, visco guard | VISC-09 (M = 0 and g = 0 byte identity, single); energy accumulators vs host recompute; single reset clears; guard counts on a forced overstress | – | L |
+| R3.5 | `scripts/rubber/p2_3/visco_tangent_check.py` (VISC-08b) | runs before any dynamic visco run; a failure stops and goes to a declared guard v2 | – | S–M |
+| R3.6 | Registry model + batched path (`constitutive_rubber`, `rubber_layout` params64/state/model from lives, `rubber_batch` allocation and energy kernel, `rubber_material_batch` generic state reset, params64 staging, Prony-scale resampling) | VISC-06, VISC-07 CPU (byte-wise), vars()-complete with the model state; existing batched suites unchanged | L2 smoke N 1/4/8 (≤ 1.5 GB) | L |
+| R3.7 | `scripts/rubber/p2_3/run_visc_v1.py` + evidence writer: -01, -03 block, -04a, -06, -07, -09 (CPU, minutes); -02, -03 strip, -04b, -05 (CPU hours or single-env GPU, recorded) | formal run of `rubber_visc_tests_v1` at a clean commit; summary with every verdict, failures preserved | strip/cantilever optional, ≤ 2 GB | M (+ runs L) |
+| R3.8 | VISC-10 cost rows (workload E n_t 4 and the labelled n_t 3 row; elastic vs M = 2, energy off/on) | ms/substep, env-steps/s, VRAM, stage split | ≤ 4 GB, ≤ 30 min | S |
+| R3.9 | Report `P2_3_RUBBER_VISCO.md`, ADR results section, evidence JSON; then an xhigh review | – | – | S |
+
+Order: R3.1 → R3.2/R3.3 → R3.4 → R3.5 (gate) → R3.6 → R3.7 → R3.8 → R3.9. `float32` Prony storage, C¹ grip-pose
+interpolation, device-side resampling (I2), snapshot (preload) reset of the Prony state and the P2-6 dispatch are
+not in this list.
+
+### 21.5 Open items and risks
+
+- **ADR numbering:** `claude/rl-rubber-v5` (protocol v5) may also amend this ADR; whichever merges second renumbers.
+- The guard's PSD premise (21.2.6) is checked, not proven; RUBBER-VISC-08b decides before any dynamic visco run.
+- Finite-strain energy split: Ψ_v and D are exact for the Maxwell branches in S⁰-strain space; at finite strain they
+  differ from the mechanical branch work W_b by O(ε) (reported in -05; layer N is exact).
+- The strip tests are long on CPU (≈ 0.7 M substeps for -03); a single-env GPU run is allowed and recorded; GPU L3 for
+  visco follows the v4 L3 rule if declared later.
+- Float64 throughput on consumer GPUs (21.2.9) may motivate `visco_precision f32_v1`, only with its own declared test.
+- `rubber_generic_visco_v1` values are provisional literature-typical magnitudes; no calibration claim.
