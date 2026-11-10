@@ -372,6 +372,30 @@ CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312
 # 70 passed in 500 s -> PASS (includes the finding 3 and 4 Lab Warp-CPU tests)
 ```
 
+**After the window re-declaration and the follow-up review fixes.** The runs below cover the changed and dependent
+test files only, at docs commit `f91145f`. The code is identical to `259a9e2` plus the docs, and includes the merge of
+`d3d9dee`.
+
+```bash
+SEL="tests/test_acceptance_frozen.py tests/test_perf_acceptance.py tests/test_rl_lab_fidelity.py \
+  tests/test_rl_rollout_roles.py tests/test_rl_smoke.py tests/test_rl_supervision.py tests/test_rl_termination.py \
+  tests/test_rl_lab_*.py tests/test_vector_env_*.py tests/test_repo_naming.py tests/test_batched_lab_coupling.py \
+  tests/test_long_rollout_config.py tests/test_rl_stability.py tests/test_rl_consolidation_cpu.py \
+  tests/test_rl_configured_family.py tests/test_rl_position_band.py"   # as listed in the run logs
+CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider -rs $SEL
+# 290 passed, 10 skipped in 67 s -> PASS
+flock .../gpu0.lock env CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m pytest -q -p no:cacheprovider -rs $SEL
+# 290 passed, 10 skipped in 68 s -> PASS (identical skip set)
+# Torch venv: test_perf_acceptance, test_acceptance_frozen, test_rl_rollout_roles, test_rl_smoke, test_vector_env_*,
+#   test_rl_lab_fidelity, test_rl_supervision, test_rl_termination
+# 241 passed, 3 skipped in 533 s -> PASS (NOT_RUN: CUDA stream test; workload B contract needs the Lab venv)
+# Isaac Lab venv: test_rl_lab_*.py, test_vector_env_contract.py, test_batched_lab_coupling.py
+# 72 passed in 301 s -> PASS
+```
+
+The full suites above were not re-run after the re-declaration. GitHub CI on the branch head runs the full suite in the
+CI environment.
+
 **What was skipped (NOT_RUN):**
 - `.venv`, 37 skips: the Torch and Isaac Lab modules, plus WP-12 records that are not linked here. The known WP-12
   failure does not appear, because `artifacts/wp12` is not linked in this worktree.
