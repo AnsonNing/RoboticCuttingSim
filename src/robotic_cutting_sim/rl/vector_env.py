@@ -1,5 +1,10 @@
 """Batched vector environment ``open_vector_env`` for runtime ``rl_gpu_headless`` (ADR 0021 §8, P1-2).
 
+P1-5 T5.2: ``task`` may also be a ``rl.configured_family.ConfiguredTaskFamily`` (configured ``rcs_scene_v1`` /
+``rcs_goal_v1`` scenes on ``tlmpm_v7_2``, e.g. the CUT workload ``cut_v7_2_v1``); the shaping reward is dispatched by
+goal type (``reward=None``: ``trim_bond_progress_packed_v1`` for TRIM, ``sever_bond_progress_packed_v1`` for
+sever/divide goals) and fidelity is computed against the family's Native reference.
+
 One process, one ``BatchedCuttingMaterial`` (batched v7_2 kernels, one CUDA graph per batch shape) and
 batched Torch action/observation/reward code over N independent seeded TRIM envs (workload A: ideal edge
 tracking, no robot). Nothing here is a Python loop over single environments.
@@ -71,6 +76,9 @@ LAB_BACKEND = "isaac_lab_newton"
 BACKENDS = (BACKEND, LAB_BACKEND)
 ACTION_SPEC = "edge_delta_v1"
 REWARD = "trim_bond_progress_packed_v1"
+SEVER_REWARD = "sever_bond_progress_packed_v1"         # P1-5 T5.3 (rl.reward_sever), configured CUT scenes
+REWARD_BY_GOAL = "by_goal_type_v1"                      # reward=None: dispatch by the tasks' goal type (P1-5 T5.2)
+REWARDS = (REWARD, SEVER_REWARD, REWARD_BY_GOAL)
 MATERIAL = "scene_declared"
 OBSERVATION_PROFILES = ("state", "privileged_state")
 AUTORESET_MODES = (False, "same_step")
@@ -284,7 +292,7 @@ class VectorCuttingEnv:
     metadata = {"render_modes": [], "runtime": RUNTIME, "backend": BACKEND, "version": VECTOR_ENV_VERSION}
 
     def __init__(self, num_envs, *, runtime=RUNTIME, task=None, material=MATERIAL, observation_profile="state",
-                 device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, autoreset=False,
+                 device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=None, autoreset=False,
                  strict=True, output_dir=None, parity_mode=False, reward_config=None, cameras=None, sensors=None,
                  recorders=None, debug_sync=False, particle_contact_mode="frozen_v1", particle_contact_options=None,
                  evaluation_stream=None, input_guard=None, terminal_capture=False,
@@ -307,8 +315,10 @@ class VectorCuttingEnv:
                                                  f"supported {OBSERVATION_PROFILES}")
         if action_spec != ACTION_SPEC:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"action_spec={action_spec!r}")
-        if reward != REWARD:
-            raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"reward={reward!r}")
+        if reward is not None and reward not in REWARDS:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"reward={reward!r}; supported {REWARDS} or None "
+                                                 "(by goal type)")
+        self.requested_reward = reward
         if not any(autoreset is mode or autoreset == mode for mode in AUTORESET_MODES) or autoreset is True:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"autoreset={autoreset!r}; "
                                                  f"supported {AUTORESET_MODES}")
@@ -316,8 +326,11 @@ class VectorCuttingEnv:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_SENSOR", f"cameras={cameras!r} sensors={sensors!r}")
         if recorders:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_RECORDER", f"recorders={recorders!r}")
-        if not isinstance(task, TaskFamily):
-            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "task must be a TaskFamily of seeded TRIM scenes")
+        from .configured_family import ConfiguredTaskFamily
+        if not isinstance(task, (TaskFamily, ConfiguredTaskFamily)):
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "task must be a TaskFamily of seeded TRIM scenes or a "
+                                                 "ConfiguredTaskFamily of tlmpm_v7_2 configured scenes")
+        self.configured = isinstance(task, ConfiguredTaskFamily)
         if not isinstance(num_envs, int) or num_envs < 1 or len(task.scene_seeds) != num_envs:
             raise ValueError("num_envs must be a positive int equal to len(task.scene_seeds)")
         from .evaluation_stream import stream_config
@@ -378,11 +391,16 @@ class VectorCuttingEnv:
         from ..live_material import LiveCuttingMaterial
         from .actions import EdgeDeltaActionV1
         from .observations import StateObservation
-        from .reward_packed import TrimBondProgressReward, TrimBondRewardConfig, bonds_from_task, pack_bonds
+        from .reward_packed import pack_bonds
+        from .reward_sever import bonds_for_task, reward_class_for_version
 
         fam, N = self.task_family, self.num_envs
-        self.tasks = compile_family(fam)
+        self.tasks = fam.compile_tasks() if self.configured else compile_family(fam)
         first = self.tasks[0]
+        for e, task in enumerate(self.tasks):
+            if task.solver_module != "tlmpm_v7_2":
+                raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"env {e}: solver {task.solver_module!r}; "
+                                                    "only tlmpm_v7_2")
         for task in self.tasks:
             if (task.control_dt_s, task.duration_s, task.grid_dx_m, task.max_cuts, task.cutting_law,
                     task.solver_module) != (first.control_dt_s, first.duration_s, first.grid_dx_m, first.max_cuts,
@@ -408,7 +426,7 @@ class VectorCuttingEnv:
 
         specs, self._env_host = [], []
         particles_cache = {}
-        bonds = []
+        bonds, reward_versions = [], []
         for e, task in enumerate(self.tasks):
             config = CouplingConfig(control_dt=self.control_dt, material_dt=float(fam.material_dt_s),
                                     dx=float(task.grid_dx_m), device="cpu", feedback=True)
@@ -433,8 +451,17 @@ class VectorCuttingEnv:
             self._env_host.append(dict(task=task, scene_seed=fam.scene_seeds[e], family_id=fam.family_of(e), scene_key=key,
                                        T_world_local=np.asarray(m.T_world_local, float), points=points,
                                        masses=masses, lattice=lattice))
-            bonds.append(bonds_from_task(task, particles=(points, masses, lattice)))
+            version, env_bonds = bonds_for_task(task, particles=(points, masses, lattice))
+            reward_versions.append(version)
+            bonds.append(env_bonds)
         del specs   # frozen CPU single solvers are no longer needed (their arrays are packed)
+        if len(set(reward_versions)) != 1:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_NONUNIFORM_BATCH", f"reward kinds differ {reward_versions}")
+        self.reward_version = reward_versions[0]
+        if self.requested_reward not in (None, REWARD_BY_GOAL, self.reward_version):
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"reward={self.requested_reward!r} does not match "
+                                                 f"the tasks' goal type ({self.reward_version})")
+        reward_cls, default_reward_config = reward_class_for_version(self.reward_version)
         T_world = np.stack([np.asarray(t.T_world_workpiece, float) for t in self.tasks])
         if not np.allclose(T_world, pk.env["T_world_local"], atol=1e-12, rtol=0):
             raise ValueError("task.T_world_workpiece differs from the material T_world_local")
@@ -442,8 +469,8 @@ class VectorCuttingEnv:
         dev = self.torch_device
         with self._stream():
             self.actions = EdgeDeltaActionV1(self.action_limits, T_world, first.max_cuts, device=dev)
-            self.reward = TrimBondProgressReward(pack_bonds(bonds, pk.particle_offset),
-                                                 reward_config or TrimBondRewardConfig(), device=dev)
+            self.reward = reward_cls(pack_bonds(bonds, pk.particle_offset), reward_config or default_reward_config,
+                                     device=dev)
             self.observation = StateObservation(N, max_steps=self.max_episode_steps, control_dt=self.control_dt,
                                                 profile=self.observation_profile, device=dev)
             mt, s = self.material, self.material.solver
@@ -889,10 +916,14 @@ class VectorCuttingEnv:
     # ------------------------------------------------------------------ receipt
 
     def fidelity(self):
-        """Reduced-fidelity reasons computed against ``NATIVE_TRIM_V7_2_REFERENCE`` (batch-wide and per env)."""
-        ref, pk = NATIVE_TRIM_V7_2_REFERENCE, self.material.packed
+        """Reduced-fidelity reasons computed against the family's Native reference (batch-wide and per env):
+        ``NATIVE_TRIM_V7_2_REFERENCE`` for seeded TRIM, ``task_family.native_reference`` for configured scenes."""
+        ref = self.task_family.native_reference if self.configured else NATIVE_TRIM_V7_2_REFERENCE
+        pk = self.material.packed
         u = pk.uniform
         reasons = ["ideal_edge_tracking_no_robot_dynamics", "reaction_not_fed_back"]
+        if ref.get("status") == "NOT_RUN":
+            reasons.append("native_reference_not_run")
         actual = dict(solver="tlmpm_v7_2", cutting_law=int(u["cutting_law"]), max_cuts=int(u["max_cuts"]),
                       slots_per_node=int(u["slots"]), particle_spacing_m=float(u["spacing"]),
                       grid_dx_m=float(u["dx"]), material_dt_s=float(u["dt"]),
@@ -900,7 +931,7 @@ class VectorCuttingEnv:
                       episode_steps=self.max_episode_steps, obstacle_boxes=self.boxes)
         for key in ("cutting_law", "max_cuts", "slots_per_node", "particle_spacing_m", "grid_dx_m", "material_dt_s",
                     "substeps_per_control_step", "control_dt_s", "episode_steps"):
-            if not np.isclose(actual[key], ref[key], rtol=1e-9, atol=0):
+            if key in ref and not np.isclose(actual[key], ref[key], rtol=1e-9, atol=0):
                 reasons.append(f"{key}={actual[key]} (reference {ref[key]})")
         if self.boxes == 1:
             reasons.append("no_finger_pad_obstacles")
@@ -1010,12 +1041,15 @@ def summarize_evaluation(result):
                 largest_component_below_plane_mass_share=metrics.get("largest_component_below_plane_mass_share"),
                 detached_below_plane_mass_fraction=metrics.get("detached_below_plane_mass_fraction"),
                 removed_mass_fraction={i.get("id"): i.get("removed_mass_fraction") for i in items},
-                residual_substrate_height_m={i.get("id"): i.get("residual_substrate_height_m") for i in items})
+                residual_substrate_height_m={i.get("id"): i.get("residual_substrate_height_m") for i in items},
+                piece_mass_fractions=metrics.get("piece_mass_fractions"),
+                substantial_pieces=metrics.get("substantial_pieces"),
+                main_pieces_mass_fraction=metrics.get("main_pieces_mass_fraction"))
 
 
 @contextmanager
 def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, observation_profile="state",
-                    device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, autoreset=False,
+                    device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=None, autoreset=False,
                     strict=True, output_dir=None, tasks=None, **options):
     """Open a vector env and close it on exit.
 
@@ -1028,7 +1062,8 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
         from .lab_vector_env import LabVectorCuttingEnv
         env = LabVectorCuttingEnv(num_envs, runtime=runtime, task=task, material=material,
                                   observation_profile=observation_profile, device=device, action_spec=action_spec,
-                                  reward=reward, autoreset=autoreset, strict=strict, output_dir=output_dir, **options)
+                                  reward=REWARD if reward is None else reward, autoreset=autoreset, strict=strict,
+                                  output_dir=output_dir, **options)
     else:
         env = VectorCuttingEnv(num_envs, runtime=runtime, task=task, material=material,
                                observation_profile=observation_profile, device=device, backend=backend,
@@ -1040,6 +1075,6 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
         env.close()
 
 
-__all__ = ["open_vector_env", "VectorCuttingEnv", "TaskFamily", "UnsupportedVectorConfiguration",
+__all__ = ["open_vector_env", "VectorCuttingEnv", "TaskFamily", "UnsupportedVectorConfiguration", "REWARDS",
            "NATIVE_TRIM_V7_2_REFERENCE", "splitmix64", "summarize_evaluation", "resolve_tasks", "compile_family",
            "BACKENDS", "LAB_BACKEND"]
