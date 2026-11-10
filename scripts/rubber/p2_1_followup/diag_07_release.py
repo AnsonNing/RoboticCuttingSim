@@ -5,8 +5,12 @@ lambda 1.5, strip 60 x 10 x 4 mm, n_t 4) at fine time resolution.
     PYTHONPATH=src .venv/bin/python scripts/rubber/p2_1_followup/diag_07_release.py run --checkpoint <dir>/release.npz \
         --out <dir2> --dt-factor 1|2|4 [--free-free] [--ms 20] [--every 10]
 
-``prepare`` runs the v2 protocol path (CFL 0.5, cosine ramp to 1.5 over 60 T_ax, hold 10 T_ax) and saves the solver
-state at the release (x, v, F, work). ``run`` restores it into a fresh solver, deactivates grip 1 (and grip 0 with
+``prepare`` runs the v2 protocol path (CFL 0.5, cosine ramp to --lambda (default 1.5) over 60 T_ax, hold 10 T_ax) and
+saves the solver state at the release (x, v, F, work).
+
+Correction (2026-11-10): the ``bc_ke_removed_lumped`` values of the first runs (``followup_07_release_*_001``) are
+INVALID: on the Warp CPU device ``array.numpy()`` is a zero-copy view, so the "before" and "after" grid velocities
+were the same memory and the measured removal was identically 0. The script now copies them (``*_002`` runs). ``run`` restores it into a fresh solver, deactivates grip 1 (and grip 0 with
 --free-free), divides dt by --dt-factor and samples every --every substeps: J / Jbar extremes, minimum principal
 stretch, kinetic (particle and grid), elastic and total mechanical energy, the lumped-grid kinetic energy removed by
 the Dirichlet projection (both BC passes), the length between the end markers, lateral marker excursion, max speed,
@@ -64,13 +68,14 @@ def prepare(args):
     n_r, n_h = int(math.ceil(60*T_ax/dtc-1e-9)), int(math.ceil(10*T_ax/dtc-1e-9))
     t0 = time.perf_counter()
     for k in range(n_r+n_h):
-        lam = P.cosine_path((k+1)*dtc, n_r*dtc, 1.5)
+        lam = P.cosine_path((k+1)*dtc, n_r*dtc, args.lam)
         live.advance({1: {"translation": np.array([(lam-1)*L, 0.0, 0.0])}})
     s = live.solver
     d = s.diagnostics.read()[0]
     np.savez(out/"release.npz", x=s.x.numpy(), v=s.v.numpy(), F=s.F.numpy(), work=s.work.numpy(),
              b1=s.group_b1.numpy())
-    meta = {"label": "DIAGNOSTIC checkpoint at the RUBBER-PHYS-07 (v2) release", "ramp_steps": n_r, "hold_steps": n_h,
+    meta = {"label": "DIAGNOSTIC checkpoint at the RUBBER-PHYS-07 (v2 path) release", "lambda": args.lam,
+            "ramp_steps": n_r, "hold_steps": n_h,
             "T_ax_s": T_ax, "substeps": live.substeps, "dt_s": live.dt, "particles": live.scene.n,
             "diagnostics_at_release": d, "external_work_j": float(s.work.numpy()[0]),
             "invalid": live.invalid_reason, "wall_s": time.perf_counter()-t0}
@@ -157,11 +162,11 @@ def run(args):
                                         s.gm, s.gp, s.gj, 1, s.volume, dt, s.gravity])
             wp.launch(v5._grid_update, (1, nn), [s.gm, s.gp, s.gj, s.old, s.new_v, s.slot_code, 1])
             if not args.free_free:
-                gm_host = s.gm.numpy()
-                before = s.new_v.numpy()
+                gm_host = s.gm.numpy().copy()
+                before = s.new_v.numpy().copy()
             s._launch_bc(1)
             if not args.free_free:
-                after = s.new_v.numpy()
+                after = s.new_v.numpy().copy()
                 sel = gnode >= 0
                 e_bc += float(0.5*np.sum(gm_host[sel, None].astype(np.float64)*(before[sel].astype(np.float64)**2
                                                                               - after[sel].astype(np.float64)**2)))
@@ -170,10 +175,10 @@ def run(args):
             wp.launch(v5._musl, (n, 8), [s.v, s.mass, s.slot, s.nodes, s.weights, s.gp, 1])
             wp.launch(v5._grid_update, (1, nn), [s.gm, s.gp, s.gj, s.old, s.new_v, s.slot_code, 1])
             if not args.free_free:
-                before = s.new_v.numpy()
+                before = s.new_v.numpy().copy()
             s._launch_bc(0)
             if not args.free_free:
-                after = s.new_v.numpy()
+                after = s.new_v.numpy().copy()
                 e_bc += float(0.5*np.sum(gm_host[sel, None].astype(np.float64)*(before[sel].astype(np.float64)**2
                                                                               - after[sel].astype(np.float64)**2)))
             wp.launch(v5._deformation, n, [s.F, s.slot, s.nodes, s.gradients, s.new_v, 1, dt])
@@ -203,6 +208,7 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     a = sub.add_parser("prepare")
     a.add_argument("--out", required=True)
+    a.add_argument("--lambda", dest="lam", type=float, default=1.5)
     b = sub.add_parser("run")
     b.add_argument("--checkpoint", required=True)
     b.add_argument("--out", required=True)
