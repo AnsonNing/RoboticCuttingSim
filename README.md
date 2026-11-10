@@ -280,7 +280,7 @@ CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/dat
   - workload A `frozen_v1`: 6.75 at N=1, 9.83 at N=16; opt-in `alias_free_v1`: 9.74 at N=1, 13.56 at N=16
     (A windows are pre-contact at N ≥ 4);
   - batched CUT (v7_2 scene): 6.85 at N=1, 10.35 at N=8, 10.22 at N=16;
-  - workload B1 (rigid mount): 4.96 at N=1, 8.67 at N=8; N=16 (8.79) is `SHARED_GPU` only; B2 N=4: 7.37.
+  - workload B1 (rigid mount): 4.96 at N=1, 7.66 at N=4, 8.67 at N=8; N=16 (8.79) is `SHARED_GPU` only; B2 N=4: 7.37.
 
   The rows measured code `691b571`, before the per-step HashGrid refresh of review fix F1. P1-4 long-rollout rows
   and every partial-reset latency are `SHARED_GPU`. No B-vs-Native ratio is claimed.
