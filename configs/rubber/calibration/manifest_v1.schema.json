@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rcs_rubber_calibration_dataset_v1",
+  "title": "RCS rubber calibration-dataset manifest v1 (ADR 0023 §14.2)",
+  "description": "Documentation schema. Authoritative validator: robotic_cutting_sim.rubber_calibration.validate_manifest (CSV headers/units/monotone time, boundary conditions per experiment type, disjoint splits, freeze hash).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "dataset_id", "status", "units", "specimens", "experiments", "splits", "boundary_conditions_note"],
+  "properties": {
+    "schema": {"const": "rcs_rubber_calibration_dataset_v1"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["NO_REAL_DATA", "PILOT", "FROZEN_FOR_HELDOUT"]},
+    "units": {"const": "SI"},
+    "specimens": {"type": "array", "items": {"type": "object", "required": ["specimen_id", "material_label", "supplier", "batch", "dimensions_m", "dimension_uncertainty_m", "mass_kg", "mass_uncertainty_kg", "temperature_c", "preconditioning"]}},
+    "experiments": {"type": "array", "items": {"type": "object", "required": ["experiment_id", "type", "specimen_id", "split"],
+      "properties": {"type": {"enum": ["tensile_load_unload", "stress_relaxation", "cantilever_rebound_video", "gravity_sag_static", "friction_sliding", "incline_slip_onset"]},
+                     "split": {"enum": ["fit", "heldout"]}}}},
+    "splits": {"type": "object", "additionalProperties": false, "required": ["fit", "heldout", "frozen_at", "sha256"],
+               "properties": {"fit": {"type": "array", "items": {"type": "string"}}, "heldout": {"type": "array", "items": {"type": "string"}},
+                              "frozen_at": {"type": ["string", "null"]}, "sha256": {"type": ["string", "null"]}}},
+    "boundary_conditions_note": {"type": "string"}
+  },
+  "x-rules": [
+    "NO_REAL_DATA: specimens, experiments and splits empty; not frozen",
+    "each experiment carries its boundary condition (grip / clamp / counterface) and temperature",
+    "tensile and relaxation experiments at >= 3 loading rates (one entry per rate)",
+    "CSV header equals the declared columns; units in {s, m, N, -, Pa, kg, rad, deg}; time_s strictly increasing",
+    "fit and heldout disjoint and consistent with each experiment's split field",
+    "FROZEN_FOR_HELDOUT: frozen_at and sha256 (canonical manifest + data files) written before any held-out evaluation"
+  ]
+}

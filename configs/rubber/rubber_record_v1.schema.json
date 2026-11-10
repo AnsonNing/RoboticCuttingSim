@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rcs_rubber_record_v1",
+  "title": "RCS rubber material record v1 (ADR 0023 R1.4, RUBBER-PHYS-09)",
+  "description": "One header per run, then one step record per control step. Authoritative validator: robotic_cutting_sim.live_rubber_material.validate_records. Oracle / privileged data (J, energies, wrenches) is for receipts and critics only, never a policy observation.",
+  "header": {
+    "type": "object",
+    "required": ["schema", "kind", "solver", "solver_status", "calibration_status", "scene", "material", "step_rule",
+                 "surface_particle_ids", "marker_offsets", "marker_particles", "marker_reference_m", "groups",
+                 "traction_groups"],
+    "properties": {
+      "schema": {"const": "rcs_rubber_record_v1"},
+      "kind": {"const": "header"},
+      "solver": {"const": "tlmpm_rubber_v1"},
+      "calibration_status": {"const": "SIMULATOR_ONLY_UNCALIBRATED"},
+      "surface_particle_ids": {"type": "array", "items": {"type": "integer", "minimum": 0}},
+      "marker_offsets": {"type": "array", "items": {"type": "integer"}, "description": "CSR offsets, K + 1 entries (K = 9)"},
+      "marker_particles": {"type": "array", "items": {"type": "integer"}},
+      "marker_reference_m": {"type": "array", "description": "[K, 3]"},
+      "groups": {"type": "array", "description": "BC groups: name, kind, node count"},
+      "traction_groups": {"type": "array"}
+    }
+  },
+  "step": {
+    "type": "object",
+    "required": ["schema", "kind", "step", "t_s", "substeps", "markers_m", "marker_velocities_m_s", "j_stats",
+                 "energies_j", "bc_wrench", "bc_active", "traction_n", "invalid_reason", "invalid_flags",
+                 "j_domain_violations", "max_speed_m_s", "nonfinite"],
+    "properties": {
+      "schema": {"const": "rcs_rubber_record_v1"},
+      "kind": {"const": "step"},
+      "step": {"type": "integer", "minimum": 1},
+      "t_s": {"type": "number"},
+      "substeps": {"type": "integer", "minimum": 1},
+      "markers_m": {"type": "array", "description": "[K, 3] cross-section centroids, finite"},
+      "marker_velocities_m_s": {"type": "array", "description": "[K, 3] mean particle velocity of each marker, finite"},
+      "j_stats": {"type": "object", "required": ["J_min", "J_max", "Jbar_min", "Jbar_max", "volume_ratio", "frac_cells_jbar_dev_gt_0_05"]},
+      "energies_j": {"type": "object", "required": ["kinetic_particle", "kinetic_grid", "elastic", "gravity", "external_work", "total"],
+                     "description": "gravity relative to the reset state; external_work accumulated since reset (BC impulse x prescribed velocity + traction)"},
+      "bc_wrench": {"type": "array", "description": "[G, 6] force (N) and torque (N m) the material exerts on each group, averaged over the control step (torque about the group origin)"},
+      "bc_active": {"type": "array", "items": {"type": "integer"}},
+      "traction_n": {"type": "array", "description": "[Gt, 3]"},
+      "invalid_reason": {"type": "integer", "minimum": 0},
+      "invalid_flags": {"type": "array", "items": {"type": "string"}},
+      "j_domain_violations": {"type": "integer", "minimum": 0},
+      "max_speed_m_s": {"type": "number"},
+      "nonfinite": {"type": "boolean"}
+    }
+  }
+}
