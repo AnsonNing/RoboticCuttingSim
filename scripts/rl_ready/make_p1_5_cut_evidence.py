@@ -212,12 +212,87 @@ def native_t5_8(name):
     return out
 
 
+def batched_summary(name, reference_runs):
+    """T5.7 batched CUT run: L2, per-episode verdicts, final codes vs the C2 single-reference band, benchmark row."""
+    run = P15 / name
+    r = load(run / "result.json")
+    singles = {n: np.load(P15 / n / "final_state.npz") for n in reference_runs}
+    episodes = []
+    for ep in r.get("episodes", []):
+        row = {k: ep.get(k) for k in ("env", "episode", "end", "drive", "step_count", "frames", "evaluation_mode",
+                                       "verdict", "integrity", "outcome", "mechanical_components",
+                                       "piece_mass_fractions", "labelled", "final_codes_sha256",
+                                       "undiscounted_shaping_return", "stream_dropped_samples")}
+        if ep["drive"] == "reference_command_policy_v1" and ep["end"] == "TRUNCATED_TIME_LIMIT" and singles:
+            with np.load(run / ep["final_state_file"]) as f:
+                codes, pos = f["codes"], f["positions"].astype(float)
+            row["vs_single_reference"] = {
+                n: dict(different_code_particles=int(np.count_nonzero(codes != s["codes"])),
+                        labelled_diff=int(np.count_nonzero(codes)) - int(np.count_nonzero(s["codes"])),
+                        max_position_diff_m=float(np.linalg.norm(pos - s["positions"].astype(float), axis=1).max()))
+                for n, s in singles.items()}
+        episodes.append(row)
+    t = r.get("timing", {})
+    tele = r["telemetry"]
+    ref_eps = [e for e in episodes if e["drive"] == "reference_command_policy_v1" and e["end"] == "TRUNCATED_TIME_LIMIT"]
+    verdict = ("PASS" if ref_eps and all(e["verdict"] == "PASS" for e in ref_eps) and (r.get("l2") or {}).get("status") == "PASS"
+               else "FAIL") if r["status"] == "COMPLETE" else "NOT_RUN"
+    rows = []
+    if r["status"] == "COMPLETE":
+        N = r["num_envs"]
+        common = dict(boundary="batched_headless", workload_id=f"C2-batched-N{N}", num_envs=N,
+                      particles_per_env=(r.get("particles_per_env") or [None])[0], control_hz=50., material_dt_s=1e-4,
+                      substeps_per_control_step=200, cameras="none", robot_dof=0, contacts=HEADLESS_REFERENCE_CONTACTS,
+                      recording="evaluation stream every 20 steps on the device (36 frames/episode); evaluation outside timing",
+                      vram_peak_mib=tele.get("own_vram_peak_mib"),
+                      reset_mean_s=float(np.mean(t["full_resets_s"])) if t.get("full_resets_s") else None,
+                      reset_p95_s=t.get("partial_reset_p95_s") or t.get("full_reset_p95_s"), physics_verdict=verdict,
+                      reduced_fidelity=True, gpu_name=tele.get("gpu_name"), gpu_index=tele.get("gpu_index"),
+                      gpu_driver=tele.get("gpu_driver"), gpu_sharing=tele.get("gpu_sharing", "UNKNOWN"),
+                      co_tenant=co_tenant_stats(tele), source_commit=r.get("git_head"), source=f"measured ({name})")
+        rows.append(BenchmarkRow(**common, warm_cold="warm", env_steps_per_s=t["warm_env_steps_per_s"],
+                                 aggregate_sim_time_per_wall=t["warm_aggregate_sim_time_per_wall"],
+                                 notes=f"{t['steps']} synchronized env.step calls (batch steps 2..), mean "
+                                       f"{t['warm_step_mean_s']:.3f} s/batch step; reset p95 = partial resets when "
+                                       "present, else full resets; physics verdict = every reference episode PASS "
+                                       "and L2 PASS. reduced_fidelity: ideal tracking, no robot, no reaction "
+                                       "feedback, handle box only."))
+    return dict(run=name, status=r["status"], error=(r.get("error") or "")[-600:] or None, num_envs=r.get("num_envs"),
+                episodes_requested=r.get("episodes_requested"), random_envs=r.get("random_envs"),
+                forced_resets=r.get("forced_resets"), timing=t, l2={k: v for k, v in (r.get("l2") or {}).items()
+                                                                  if k != "audits"},
+                l2_audits=[{k: a.get(k) for k in ("step", "grouped_query_foreign", "grouped_query_visited",
+                                                    "mass_bitwise_constant")} for a in (r.get("l2") or {}).get("audits", [])],
+                hashgrid_census=r.get("hashgrid_census"), terminated_events=r.get("terminated_events"),
+                fidelity=(r.get("receipt") or {}).get("fidelity"), episodes=episodes, verdict=verdict,
+                gpu_sharing=tele.get("gpu_sharing"), own_vram_peak_mib=tele.get("own_vram_peak_mib"),
+                co_tenant=co_tenant_stats(tele), git_head=r.get("git_head")), rows
+
+
+def smoke_summary(path):
+    """T5.12 smoke rollout: consumer check (re-run here) and the manifest's counts."""
+    spec = __import__("importlib.util").util.spec_from_file_location("check_rl_rollout",
+                                                                       ROOT / "scripts/rl_ready/check_rl_rollout.py")
+    module = __import__("importlib.util").util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    report = module.check(P15 / path)
+    manifest = load(P15 / path / "manifest.json")
+    return dict(dir=path, consumer_check=report, end_counts=manifest.get("end_counts"),
+                evaluations=manifest.get("evaluations"), timing=manifest.get("timing"),
+                gpu_sharing=(manifest.get("telemetry") or {}).get("gpu_sharing"),
+                own_vram_peak_mib=(manifest.get("telemetry") or {}).get("own_vram_peak_mib"),
+                git_head=manifest.get("git_head"), git_dirty=manifest.get("git_dirty"), steps=manifest.get("steps"),
+                num_envs=manifest.get("num_envs"), chunks=len(manifest.get("chunks", [])))
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--v5-replay", nargs="+", required=True)
     p.add_argument("--v7-2-reference", nargs="+", required=True)
     p.add_argument("--native-t5-8", help="native_cut_v7_2_NNN directory (launch record)")
     p.add_argument("--v7-2-native-replay", nargs="*", default=[])
+    p.add_argument("--batched", nargs="*", default=[], help="T5.7 run_cut_batched.py run directories")
+    p.add_argument("--smoke", nargs="*", default=[], help="T5.12 rollout directories")
     p.add_argument("--excluded", nargs="*", default=[], help="run directories listed but not used as rows (smoke...)")
     p.add_argument("--out", type=Path, required=True)
     a = p.parse_args()
@@ -240,6 +315,11 @@ def main():
         if s["status"] == "COMPLETE":
             rows += headless_rows(s, "C2-v7_2-native-replay", HEADLESS_REPLAY_CONTACTS, False, note)
     complete = lambda runs: [s["run"] for s in runs if s["status"] == "COMPLETE"]  # noqa: E731
+    batched = []
+    for name in a.batched:
+        summary, brows = batched_summary(name, complete(v72))
+        batched.append(summary)
+        rows += brows
     strip = lambda s: {k: v for k, v in s.items() if not k.startswith("_")}  # noqa: E731
     demo1 = load(DEMO1 / "analysis_001" / "analysis.json")
     evidence = dict(
@@ -259,6 +339,8 @@ def main():
         t5_8_native_v7_2=t58,
         t5_8_v7_2_native_replay=dict(runs=[strip(s) for s in v72n],
                                      band=band(complete(v72n)) if len(complete(v72n)) > 1 else None),
+        t5_7_batched=batched,
+        t5_12_smoke=[smoke_summary(s) for s in a.smoke],
         rows=[r.to_dict() for r in rows], markdown_table=markdown_table(rows), excluded_runs=a.excluded)
     if a.out.exists():
         raise SystemExit(f"{a.out} exists (never overwritten)")
