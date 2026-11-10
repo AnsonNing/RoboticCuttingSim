@@ -1,0 +1,4072 @@
+{
+ "schema": "rcs_rl_ready_p1_1b_s2_s3_v1",
+ "work_package": "P1-1b stages S2 (B2 + material) and S3 (TRIM)",
+ "adr": "docs/adr/0022-batched-robot-workload-b.md",
+ "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md",
+ "evidence_commit": "638a0f3f0783de6304636708956eddb94598ceb0",
+ "rows": {
+  "g0_det_b2_n1_diag_001": {
+   "run": "g0_det_b2_n1_diag_001",
+   "artifact": "artifacts/rl_ready/p1_1b/g0_det_b2_n1_diag_001",
+   "probe": "g0",
+   "variant": "base",
+   "N": 1,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "run_to_run",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 2.0759413400664926,
+    "build_s": 6.271812441991642,
+    "reset_s": 38.59315990796313,
+    "first_step_s": 0.5142971760360524,
+    "process_to_first_step_s": 47.455210866057314,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true
+   },
+   "warm": {
+    "steps": 5,
+    "episode_steps_driven": null,
+    "wall_s_total": 1.1499507710104808,
+    "step_wall_s_mean": 0.22999015420209618,
+    "step_wall_s_p50": 0.229816819075495,
+    "step_wall_s_p95": 0.2338132355362177,
+    "env_steps_per_s": 4.348012215867656,
+    "aggregate_sim_time_per_wall": 0.08696024431735312,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8590336,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 21433.0,
+    "utilization_pct": 100.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 98.0,
+    "mean": 75.4375,
+    "n": 48
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 98.62222222222222,
+    "n": 45
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323
+   ],
+   "vram_own_peak_mib": 932.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "32ed8e3f44cd73891679f3bd9cc64a57dba7fdce",
+    "tracked_src_or_scripts_modified": true,
+    "workload_b_sources_sha256": "d517f9094837af38c05075966661353bc2f91a370ea55d564eb4d6ee0cbdb967"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     }
+    ],
+    "status": "PASS"
+   },
+   "grasp_initialization": {
+    "status": "FAIL_PHYSICAL_PREGRASP",
+    "failed": {
+     "0": [
+      "bilateral_load_bearing_contacts",
+      "translation_stable",
+      "rotation_stable",
+      "linear_speed_stable",
+      "angular_speed_stable",
+      "penetration_bounded",
+      "no_unintended_support"
+     ]
+    },
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "accumulators": [
+     [
+      26.0,
+      0.0,
+      1.427099585533142,
+      3.1039178371429443,
+      4.671548366546631,
+      31.21445083618164,
+      0.005280648823827505,
+      69.0
+     ]
+    ],
+    "hidden_attachment": false
+   },
+   "workload": "B (robot-only)",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512
+   ],
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     0.505989134311676
+    ],
+    "max_angle_rad": [
+     2.6159110069274902
+    ],
+    "final_status": [
+     2
+    ],
+    "min_bilateral_fraction": [
+     0.0
+    ]
+   },
+   "grasp_snapshot": {
+    "version": "lab_batched_grasp_settle_v1",
+    "slots": 1,
+    "failed": {
+     "0": [
+      "bilateral_load_bearing_contacts",
+      "translation_stable",
+      "rotation_stable",
+      "linear_speed_stable",
+      "angular_speed_stable",
+      "penetration_bounded",
+      "no_unintended_support"
+     ]
+    },
+    "restore": "masked joint/root writes of the settled slot state; MuJoCo warm start zeroed (UNVERIFIED, G3)",
+    "relative_R": [
+     [
+      [
+       0.8789467351214295,
+       -0.42564757414744825,
+       -0.21512038360362926
+      ],
+      [
+       -0.14643727401479656,
+       -0.6701376853689569,
+       0.7276479969239608
+      ],
+      [
+       -0.45388188066775204,
+       -0.6080621886540304,
+       -0.6513460010860397
+      ]
+     ]
+    ],
+    "relative_p": [
+     [
+      -0.0700614002698396,
+      0.1411654790696822,
+      1.522021253051961
+     ]
+    ],
+    "accumulators": [
+     [
+      26.0,
+      0.0,
+      1.427099585533142,
+      3.1039178371429443,
+      4.671548366546631,
+      31.21445083618164,
+      0.005280648823827505,
+      69.0
+     ]
+    ]
+   },
+   "driver": "scripted",
+   "grip_material": {
+    "coefficient": 0.6,
+    "torsional_coefficient_m": null,
+    "shapes": 4,
+    "profile": "legacy_point_contact"
+   }
+  },
+  "g3_b2_n2_001": {
+   "run": "g3_b2_n2_001",
+   "artifact": "artifacts/rl_ready/p1_1b/g3_b2_n2_001",
+   "probe": "g3",
+   "variant": "base",
+   "N": 2,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.210975521011278,
+    "build_s": 4.298480044002645,
+    "reset_s": 2.214539555949159,
+    "first_step_s": 0.2925332779996097,
+    "process_to_first_step_s": 8.016537782968953,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 39,
+    "episode_steps_driven": 40,
+    "wall_s_total": 1.2093516096938401,
+    "step_wall_s_mean": 0.031009015633175388,
+    "step_wall_s_p50": 0.029565050033852458,
+    "step_wall_s_p95": 0.03643497283337638,
+    "env_steps_per_s": 64.49737146316488,
+    "aggregate_sim_time_per_wall": 1.2899474292632978,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8662528,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15910.0,
+    "utilization_pct": 97.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 97.0,
+    "mean": 89.0,
+    "n": 13
+   },
+   "total_util_pct": {
+    "max": 99.0,
+    "mean": 97.0,
+    "n": 10
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323,
+    955863
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "fe971fbcd51fe0311dedf7d873ceb6bab79d7d4b",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "fd6df64cbac8e08a0841cbe1421ed1eee1ad75784a722522fe45b783d8009683"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "workload": "B (robot-only)",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    512
+   ],
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     5.9375404816819355e-05,
+     4.604767309501767e-05
+    ],
+    "max_angle_rad": [
+     0.0017153980443254113,
+     0.0013317035045474768
+    ],
+    "final_status": [
+     0,
+     0
+    ],
+    "min_bilateral_fraction": [
+     1.0,
+     1.0
+    ]
+   },
+   "grasp_snapshot": {
+    "version": "lab_batched_grasp_settle_v1",
+    "slots": 2,
+    "failed": {},
+    "restore": "masked joint/root writes of the settled slot state; MuJoCo warm start zeroed (UNVERIFIED, G3)",
+    "relative_R": [
+     [
+      [
+       0.9999901895773822,
+       -1.2019113380889021e-05,
+       -0.0044295151577458045
+      ],
+      [
+       1.1873255466776932e-05,
+       0.9999999993864992,
+       -3.295493596789537e-05
+      ],
+      [
+       0.004429515551117404,
+       3.290201990098427e-05,
+       0.999990189106593
+      ]
+     ],
+     [
+      [
+       0.9999901896392469,
+       -1.20203635877338e-05,
+       -0.004429501188001577
+      ],
+      [
+       1.1874528562505728e-05,
+       0.999999999386651,
+       -3.294987518226851e-05
+      ],
+      [
+       0.004429501581354223,
+       3.289695369373159e-05,
+       0.9999901891686396
+      ]
+     ]
+    ],
+    "relative_p": [
+     [
+      2.3677196023892407e-05,
+      1.391726860878167e-07,
+      0.10387366259695914
+     ],
+     [
+      2.3682783957129995e-05,
+      1.391399532498244e-07,
+      0.1038736625919305
+     ]
+    ],
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      0.0002249088283861056,
+      0.004429668188095093,
+      0.00012635297025553882,
+      0.0021783483680337667,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.00022490941046271473,
+      0.0044296542182564735,
+      0.00012634512677323073,
+      0.0021783343981951475,
+      6.487670907517895e-05,
+      0.0
+     ]
+    ]
+   },
+   "driver": "hold"
+  },
+  "g3_b2_n2_002": {
+   "run": "g3_b2_n2_002",
+   "artifact": "artifacts/rl_ready/p1_1b/g3_b2_n2_002",
+   "probe": "g3",
+   "variant": "base",
+   "N": 2,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.1724067350151017,
+    "build_s": 4.165184968966059,
+    "reset_s": 2.1213470650836825,
+    "first_step_s": 0.2777311379322782,
+    "process_to_first_step_s": 7.736679371912032,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 39,
+    "episode_steps_driven": 40,
+    "wall_s_total": 1.0806868211366236,
+    "step_wall_s_mean": 0.027709918490682658,
+    "step_wall_s_p50": 0.02777684002649039,
+    "step_wall_s_p95": 0.029291264375206082,
+    "env_steps_per_s": 72.1763220152557,
+    "aggregate_sim_time_per_wall": 1.4435264403051142,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8662528,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15910.0,
+    "utilization_pct": 98.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 96.0,
+    "mean": 91.08333333333333,
+    "n": 12
+   },
+   "total_util_pct": {
+    "max": 99.0,
+    "mean": 97.22222222222223,
+    "n": 9
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323,
+    955863
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "fe971fbcd51fe0311dedf7d873ceb6bab79d7d4b",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "fd6df64cbac8e08a0841cbe1421ed1eee1ad75784a722522fe45b783d8009683"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "workload": "B (robot-only)",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    512
+   ],
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     5.93754775763955e-05,
+     4.6047669457038864e-05
+    ],
+    "max_angle_rad": [
+     0.0017154000233858824,
+     0.0013317081611603498
+    ],
+    "final_status": [
+     0,
+     0
+    ],
+    "min_bilateral_fraction": [
+     1.0,
+     1.0
+    ]
+   },
+   "grasp_snapshot": {
+    "version": "lab_batched_grasp_settle_v1",
+    "slots": 2,
+    "failed": {},
+    "restore": "masked joint/root writes of the settled slot state; MuJoCo warm start zeroed (UNVERIFIED, G3)",
+    "relative_R": [
+     [
+      [
+       0.9999901891523204,
+       -1.203229767426193e-05,
+       -0.004429611081248898
+      ],
+      [
+       1.1886368956926232e-05,
+       0.9999999993858393,
+       -3.297023657888684e-05
+      ],
+      [
+       0.004429611475236105,
+       3.2917261121270355e-05,
+       0.9999901886811856
+      ]
+     ],
+     [
+      [
+       0.9999901896289419,
+       -1.2019634677798045e-05,
+       -0.004429503516353403
+      ],
+      [
+       1.187380118880563e-05,
+       0.9999999993866715,
+       -3.294950946017419e-05
+      ],
+      [
+       0.004429503909677727,
+       3.2896591169141856e-05,
+       0.999990189158338
+      ]
+     ]
+    ],
+    "relative_p": [
+     [
+      2.368281080608189e-05,
+      1.3921777610779696e-07,
+      0.103873692394228
+     ],
+     [
+      2.3686509245558425e-05,
+      1.3934368604061097e-07,
+      0.10387366258853975
+     ]
+    ],
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      0.00022493905271403491,
+      0.0044297645799815655,
+      0.00012634909944608808,
+      0.002178345574066043,
+      6.487668724730611e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.0002249098033644259,
+      0.00442965654656291,
+      0.00012634709128178656,
+      0.0021783378906548023,
+      6.487671635113657e-05,
+      0.0
+     ]
+    ]
+   },
+   "driver": "hold"
+  },
+  "g3_b2_n2_003": {
+   "run": "g3_b2_n2_003",
+   "artifact": "artifacts/rl_ready/p1_1b/g3_b2_n2_003",
+   "probe": "g3",
+   "variant": "base",
+   "N": 2,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": 0,
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": null,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "cold": {
+    "imports_s": 1.248759087990038,
+    "build_s": 4.276222542044707,
+    "reset_s": 2.20169553195592,
+    "first_step_s": 0.2963060479378328,
+    "process_to_first_step_s": 8.0229929338675,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 39,
+    "episode_steps_driven": 40,
+    "wall_s_total": 1.1681665357900783,
+    "step_wall_s_mean": 0.029952988097181495,
+    "step_wall_s_p50": 0.028099535033106804,
+    "step_wall_s_p95": 0.03573166452115402,
+    "env_steps_per_s": 66.77130153128847,
+    "aggregate_sim_time_per_wall": 1.3354260306257693,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 8662528,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15892.0,
+    "utilization_pct": 98.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 98.0,
+    "mean": 92.3076923076923,
+    "n": 13
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 97.2,
+    "n": 10
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323,
+    955863
+   ],
+   "vram_own_peak_mib": 714.0,
+   "vram_own_slope_mib_per_s_warm": null,
+   "commit": {
+    "sha": "fe971fbcd51fe0311dedf7d873ceb6bab79d7d4b",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "fd6df64cbac8e08a0841cbe1421ed1eee1ad75784a722522fe45b783d8009683"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "workload": "B (robot-only)",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    512
+   ],
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     5.9375404816819355e-05,
+     4.604766581906006e-05
+    ],
+    "max_angle_rad": [
+     0.0017153967637568712,
+     0.0013317035045474768
+    ],
+    "final_status": [
+     0,
+     0
+    ],
+    "min_bilateral_fraction": [
+     1.0,
+     1.0
+    ]
+   },
+   "grasp_snapshot": {
+    "version": "lab_batched_grasp_settle_v1",
+    "slots": 2,
+    "failed": {},
+    "restore": "masked joint/root writes of the settled slot state; MuJoCo warm start zeroed (UNVERIFIED, G3)",
+    "relative_R": [
+     [
+      [
+       0.9999901891750205,
+       -1.2031354607830439e-05,
+       -0.004429605959147056
+      ],
+      [
+       1.1885431411263593e-05,
+       0.99999999938589,
+       -3.296902623225089e-05
+      ],
+      [
+       0.004429606353088836,
+       3.2916055001098356e-05,
+       0.9999901887039142
+      ]
+     ],
+     [
+      [
+       0.9999901896537055,
+       -1.201861671818048e-05,
+       -0.004429497928601555
+      ],
+      [
+       1.1872787153757529e-05,
+       0.9999999993867118,
+       -3.294866270579983e-05
+      ],
+      [
+       0.0044294983218823416,
+       3.2895748981904406e-05,
+       0.9999901891831174
+      ]
+     ]
+    ],
+    "relative_p": [
+     [
+      2.3679085517365577e-05,
+      1.3917775236096122e-07,
+      0.10387369239759094
+     ],
+     [
+      2.3688371890041332e-05,
+      1.3929275732831378e-07,
+      0.10387366258687034
+     ]
+    ],
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      0.00022493865981232375,
+      0.004429759457707405,
+      0.00012634843005798757,
+      0.002178336726501584,
+      6.48766799713485e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.00022490999253932387,
+      0.004429650958627462,
+      0.0001263430604012683,
+      0.002178327878937125,
+      6.487670907517895e-05,
+      0.0
+     ]
+    ]
+   },
+   "driver": "hold"
+  },
+  "hashgrid_check_b1_n2_001": {
+   "run": "hashgrid_check_b1_n2_001",
+   "artifact": "artifacts/rl_ready/p1_1b/hashgrid_check_b1_n2_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 2,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal"
+   ],
+   "cold": {
+    "imports_s": 2.121376079041511,
+    "build_s": 4.799958431976847,
+    "reset_s": 1.2231073590228334,
+    "first_step_s": 1.8379573801066726,
+    "process_to_first_step_s": 9.982410267111845,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 2,
+    "episode_steps_driven": 3,
+    "wall_s_total": 0.9543954810360447,
+    "step_wall_s_mean": 0.47719774051802233,
+    "step_wall_s_p50": 0.47719774051802233,
+    "step_wall_s_p95": 0.48356642260332594,
+    "env_steps_per_s": 4.191134681042074,
+    "aggregate_sim_time_per_wall": 0.08382269362084148,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 49876480,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 14190.0,
+    "utilization_pct": 96.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 98.0,
+    "mean": 90.33333333333333,
+    "n": 15
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 98.25,
+    "n": 12
+   },
+   "foreign_compute_pids": [
+    642659,
+    1143175
+   ],
+   "vram_own_peak_mib": 968.0,
+   "vram_own_slope_mib_per_s_warm": 76.43346823448411,
+   "commit": {
+    "sha": "d0a09ff1c5312c512505ef009d0f297323fd43f5",
+    "tracked_src_or_scripts_modified": true,
+    "workload_b_sources_sha256": "5a2c2dbe143bebba71701279c4961409e81b4294d7739177a850967d03616fd8"
+   },
+   "workload": "B",
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v7_2_batch.py:613:__init__"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "scene_seeds": [
+    512,
+    15
+   ],
+   "termination_reason": [
+    0,
+    0
+   ],
+   "reward_fractions": {
+    "target_bond_progress_fraction": [
+     0.0,
+     0.0
+    ],
+    "off_target_bond_fraction": [
+     0.0,
+     0.0
+    ]
+   },
+   "engagement": {
+    "max_material_force_n": [
+     0.0,
+     0.0
+    ],
+    "reference_cut_steps": [
+     0,
+     0
+    ],
+    "material_invalid_reason": [
+     0,
+     0
+    ]
+   },
+   "recorded_policy": {
+    "policy": "recorded_command_policy_v1",
+    "per_env": [
+     {
+      "env": 0,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.00010273139758226746,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 1,
+      "max_abs_normalized_component": 1.1007455467377834,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 1,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.0002712687418618964,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 3,
+      "max_abs_normalized_component": 1.1007462614987134,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     }
+    ]
+   },
+   "driver": "recorded"
+  },
+  "s3_b1_n2_001": {
+   "run": "s3_b1_n2_001",
+   "artifact": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 2,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal"
+   ],
+   "cold": {
+    "imports_s": 1.2240859220037237,
+    "build_s": 4.521268230979331,
+    "reset_s": 0.542645481065847,
+    "first_step_s": 2.33805516094435,
+    "process_to_first_step_s": 8.626067915000021,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 1199,
+    "episode_steps_driven": 1200,
+    "wall_s_total": 822.6949830556987,
+    "step_wall_s_mean": 0.6861509450005827,
+    "step_wall_s_p50": 0.516646528034471,
+    "step_wall_s_p95": 1.3672848267829976,
+    "env_steps_per_s": 2.9148105304996723,
+    "aggregate_sim_time_per_wall": 0.058296210609993446,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 55396352,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15910.0,
+    "utilization_pct": 97.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 97.0,
+    "mean": 51.16009557945042,
+    "n": 837
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 99.1558752997602,
+    "n": 834
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323,
+    955863
+   ],
+   "vram_own_peak_mib": 974.0,
+   "vram_own_slope_mib_per_s_warm": 0.008081630050642549,
+   "commit": {
+    "sha": "fe971fbcd51fe0311dedf7d873ceb6bab79d7d4b",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "fd6df64cbac8e08a0841cbe1421ed1eee1ad75784a722522fe45b783d8009683"
+   },
+   "workload": "B",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    15
+   ],
+   "evaluation": [
+    {
+     "env": 0,
+     "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "108cc6fda81ac773dcc7eb7e5c1fe23a08c8c31e05489f17c670e9835b596904",
+     "labelled": 33740,
+     "summary": {
+      "verdict": "PASS",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "PASS",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": true,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 2,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.6058606290025637,
+     "labelled_by_digit": {
+      "0": 33740,
+      "1": 0
+     }
+    },
+    {
+     "env": 1,
+     "task_id": "CFG-agentic_trim_id_s15-agentic_trim_all_v1-1baf08e1",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "ced881272131b647f31643c48f56ee4d8195e71d42e1f67a7c51ff56a6cdb347",
+     "labelled": 80986,
+     "summary": {
+      "verdict": "PASS",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "PASS",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": true,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 3,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.5817875089123845,
+     "labelled_by_digit": {
+      "0": 80986,
+      "1": 0
+     }
+    }
+   ],
+   "termination_reason": [
+    0,
+    0
+   ],
+   "reward_fractions": {
+    "target_bond_progress_fraction": [
+     1.0,
+     1.0
+    ],
+    "off_target_bond_fraction": [
+     0.0,
+     0.0
+    ]
+   },
+   "engagement": {
+    "max_material_force_n": [
+     0.1880202685075925,
+     0.1379491458559066
+    ],
+    "reference_cut_steps": [
+     141,
+     287
+    ],
+    "material_invalid_reason": [
+     0,
+     0
+    ]
+   },
+   "recorded_policy": {
+    "policy": "recorded_command_policy_v1",
+    "per_env": [
+     {
+      "env": 0,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.00010273139758226746,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 1,
+      "max_abs_normalized_component": 1.1007455467377834,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 1,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.0002712687418618964,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 3,
+      "max_abs_normalized_component": 1.1007462614987134,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     }
+    ]
+   },
+   "driver": "recorded"
+  },
+  "s3_b1_n4_001": {
+   "run": "s3_b1_n4_001",
+   "artifact": "artifacts/rl_ready/p1_1b/s3_b1_n4_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732,
+    103898,
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": true,
+   "reasons": [
+    "rigid_tool_mount_no_grasp",
+    "finger_opening_fixed_nominal"
+   ],
+   "cold": {
+    "imports_s": 1.3330389730399475,
+    "build_s": 4.465436854981817,
+    "reset_s": 0.7051306809298694,
+    "first_step_s": 2.620443121995777,
+    "process_to_first_step_s": 9.124059375026263,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": false,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 1199,
+    "episode_steps_driven": 1200,
+    "wall_s_total": 1557.4015889685834,
+    "step_wall_s_mean": 1.2989170883808034,
+    "step_wall_s_p50": 1.2110413659829646,
+    "step_wall_s_p95": 1.9489394490490666,
+    "env_steps_per_s": 3.0794883182161357,
+    "aggregate_sim_time_per_wall": 0.06158976636432271,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 93206528,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 14336.0,
+    "utilization_pct": 92.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 99.0,
+    "mean": 57.365250475586556,
+    "n": 1577
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 99.06670902160101,
+    "n": 1574
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323,
+    1072411,
+    1072600
+   ],
+   "vram_own_peak_mib": 1106.0,
+   "vram_own_slope_mib_per_s_warm": 0.002698811709898187,
+   "commit": {
+    "sha": "35f01d550e0a37728b662efa30a704921bfde9a1",
+    "tracked_src_or_scripts_modified": true,
+    "workload_b_sources_sha256": "fd6df64cbac8e08a0841cbe1421ed1eee1ad75784a722522fe45b783d8009683"
+   },
+   "workload": "B",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    15,
+    512,
+    15
+   ],
+   "evaluation": [
+    {
+     "env": 0,
+     "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "108cc6fda81ac773dcc7eb7e5c1fe23a08c8c31e05489f17c670e9835b596904",
+     "labelled": 33740,
+     "summary": {
+      "verdict": "PASS",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "PASS",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": true,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 2,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 3.404074128018692,
+     "labelled_by_digit": {
+      "0": 33740,
+      "1": 0
+     }
+    },
+    {
+     "env": 1,
+     "task_id": "CFG-agentic_trim_id_s15-agentic_trim_all_v1-1baf08e1",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "ced881272131b647f31643c48f56ee4d8195e71d42e1f67a7c51ff56a6cdb347",
+     "labelled": 80986,
+     "summary": {
+      "verdict": "PASS",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "PASS",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": true,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 3,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 1.089810465928167,
+     "labelled_by_digit": {
+      "0": 80986,
+      "1": 0
+     }
+    },
+    {
+     "env": 2,
+     "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "108cc6fda81ac773dcc7eb7e5c1fe23a08c8c31e05489f17c670e9835b596904",
+     "labelled": 33740,
+     "summary": {
+      "verdict": "PASS",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "PASS",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": true,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 2,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.9135001549730077,
+     "labelled_by_digit": {
+      "0": 33740,
+      "1": 0
+     }
+    },
+    {
+     "env": 3,
+     "task_id": "CFG-agentic_trim_id_s15-agentic_trim_all_v1-1baf08e1",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "ced881272131b647f31643c48f56ee4d8195e71d42e1f67a7c51ff56a6cdb347",
+     "labelled": 80986,
+     "summary": {
+      "verdict": "PASS",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "PASS",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": true,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 3,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 1.0,
+       "p1": 1.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0,
+       "p1": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 1.2058275890303776,
+     "labelled_by_digit": {
+      "0": 80986,
+      "1": 0
+     }
+    }
+   ],
+   "termination_reason": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "reward_fractions": {
+    "target_bond_progress_fraction": [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ],
+    "off_target_bond_fraction": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "engagement": {
+    "max_material_force_n": [
+     0.18795277135004182,
+     0.1379921395907329,
+     0.1881812095577701,
+     0.1380792237220053
+    ],
+    "reference_cut_steps": [
+     141,
+     287,
+     141,
+     287
+    ],
+    "material_invalid_reason": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "recorded_policy": {
+    "policy": "recorded_command_policy_v1",
+    "per_env": [
+     {
+      "env": 0,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.00010273139758226746,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 1,
+      "max_abs_normalized_component": 1.1007455467377834,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 1,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.0002712687418618964,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 3,
+      "max_abs_normalized_component": 1.1007462614987134,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 2,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.00010273139758226746,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 1,
+      "max_abs_normalized_component": 1.1007455467377834,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 3,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       8.059765425338927e-07,
+       -3.1725878031730547e-07,
+       0.19800121500773232,
+       0.7071066610541982,
+       -2.86579584071603e-07,
+       -4.196129228711812e-07,
+       -0.707106901318694
+      ],
+      "max_position_diff_m": 0.0002712687418618964,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.6165335176298044e-10,
+      "steps": 1200,
+      "clamped_steps": 3,
+      "max_abs_normalized_component": 1.1007462614987134,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     }
+    ]
+   },
+   "driver": "recorded"
+  },
+  "s3_b2_n2_001": {
+   "run": "s3_b2_n2_001",
+   "artifact": "artifacts/rl_ready/p1_1b/s3_b2_n2_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 2,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": [
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": false,
+   "reasons": [],
+   "cold": {
+    "imports_s": 1.169138628989458,
+    "build_s": 4.542533581960015,
+    "reset_s": 2.4301973610417917,
+    "first_step_s": 1.2510136760538444,
+    "process_to_first_step_s": 9.392891951021738,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 1199,
+    "episode_steps_driven": 1200,
+    "wall_s_total": 753.7773650728632,
+    "step_wall_s_mean": 0.6286716973084764,
+    "step_wall_s_p50": 0.5374812979716808,
+    "step_wall_s_p95": 1.2071414234233084,
+    "env_steps_per_s": 3.18131070408064,
+    "aggregate_sim_time_per_wall": 0.0636262140816128,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 57856512,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 14336.0,
+    "utilization_pct": 100.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 99.0,
+    "mean": 51.276041666666664,
+    "n": 768
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 99.37908496732027,
+    "n": 765
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323
+   ],
+   "vram_own_peak_mib": 976.0,
+   "vram_own_slope_mib_per_s_warm": 0.009496096542392871,
+   "commit": {
+    "sha": "35f01d550e0a37728b662efa30a704921bfde9a1",
+    "tracked_src_or_scripts_modified": true,
+    "workload_b_sources_sha256": "fd6df64cbac8e08a0841cbe1421ed1eee1ad75784a722522fe45b783d8009683"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "workload": "B",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    15
+   ],
+   "evaluation": [
+    {
+     "env": 0,
+     "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "c33bfb665d4a8dafcf70c2fa38dca3dd1f46ef9e0a7f34b8a013994f2535d257",
+     "labelled": 0,
+     "summary": {
+      "verdict": "FAIL",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "FAIL",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": false,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 1,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 0.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.005381272658705711
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.30631529493257403,
+     "labelled_by_digit": {
+      "0": 0,
+      "1": 0
+     }
+    },
+    {
+     "env": 1,
+     "task_id": "CFG-agentic_trim_id_s15-agentic_trim_all_v1-1baf08e1",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "0a790651632ffaaf3260141aba0623c742fb7a2ca8ca7c276a8b726326e1a49f",
+     "labelled": 36760,
+     "summary": {
+      "verdict": "FAIL",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "FAIL",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": false,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 1,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.004978214874863624,
+       "p1": 0.007326464653015136
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.5720424270257354,
+     "labelled_by_digit": {
+      "0": 36760,
+      "1": 0
+     }
+    }
+   ],
+   "termination_reason": [
+    4,
+    4
+   ],
+   "reward_fractions": {
+    "target_bond_progress_fraction": [
+     0.0,
+     0.024336283185840708
+    ],
+    "off_target_bond_fraction": [
+     0.0,
+     4.922566371681416
+    ]
+   },
+   "engagement": {
+    "max_material_force_n": [
+     0.6553668903182709,
+     1.6397522561888613
+    ],
+    "reference_cut_steps": [
+     141,
+     287
+    ],
+    "material_invalid_reason": [
+     0,
+     0
+    ]
+   },
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     0.02724323235452175,
+     0.013445761986076832
+    ],
+    "max_angle_rad": [
+     1.5275185108184814,
+     0.6231022477149963
+    ],
+    "final_status": [
+     2,
+     2
+    ],
+    "min_bilateral_fraction": [
+     0.8999999761581421,
+     0.8999999761581421
+    ]
+   },
+   "grasp_snapshot": {
+    "version": "lab_batched_grasp_settle_v1",
+    "slots": 2,
+    "failed": {},
+    "restore": "masked joint/root writes of the settled slot state; MuJoCo warm start zeroed (UNVERIFIED, G3)",
+    "relative_R": [
+     [
+      [
+       0.9999901896103716,
+       -1.2020221363262234e-05,
+       -0.004429507707173241
+      ],
+      [
+       1.1874377228466815e-05,
+       0.9999999993865865,
+       -3.29518829943312e-05
+      ],
+      [
+       0.004429508100545047,
+       3.28989620780686e-05,
+       0.9999901891396964
+      ]
+     ],
+     [
+      [
+       0.9999901892472375,
+       -1.202936489004145e-05,
+       -0.0044295896614493235
+      ],
+      [
+       1.188346028294657e-05,
+       0.9999999993860481,
+       -3.2964946317950506e-05
+      ],
+      [
+       0.004429590055277135,
+       3.291198405420073e-05,
+       0.999990188776242
+      ]
+     ]
+    ],
+    "relative_p": [
+     [
+      2.3682783957110804e-05,
+      1.3915086718608644e-07,
+      0.10387366259192865
+     ],
+     [
+      2.3686536094881347e-05,
+      1.3921050613081815e-07,
+      0.1038736923908731
+     ]
+    ],
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      0.00022490941046271473,
+      0.004429660737514496,
+      0.00012634761515073478,
+      0.002178337424993515,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.00022493944561574608,
+      0.004429743159562349,
+      0.00012634537415578961,
+      0.002178336028009653,
+      6.48766799713485e-05,
+      0.0
+     ]
+    ]
+   },
+   "recorded_policy": {
+    "policy": "recorded_command_policy_v1",
+    "per_env": [
+     {
+      "env": 0,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       -0.0002600705142962699,
+       5.9666269497093086e-05,
+       0.19761468623135708,
+       0.7070466399990687,
+       -0.00031792367442677117,
+       -0.0003191129690829827,
+       -0.7071667737934793
+      ],
+      "max_position_diff_m": 3.2371494373961696e-11,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.5188109931129077e-10,
+      "steps": 1200,
+      "clamped_steps": 0,
+      "max_abs_normalized_component": 0.8725430475279194,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 1,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       -0.0002600705142962699,
+       5.9666269497093086e-05,
+       0.19761468623135708,
+       0.7070466399990687,
+       -0.00031792367442677117,
+       -0.0003191129690829827,
+       -0.7071667737934793
+      ],
+      "max_position_diff_m": 3.800747057711032e-11,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.5188109931129077e-10,
+      "steps": 1200,
+      "clamped_steps": 0,
+      "max_abs_normalized_component": 0.875168846584518,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     }
+    ]
+   },
+   "driver": "recorded"
+  },
+  "s3_b2_n4_001": {
+   "run": "s3_b2_n4_001",
+   "artifact": "artifacts/rl_ready/p1_1b/s3_b2_n4_001",
+   "probe": "g2",
+   "variant": "base",
+   "N": 4,
+   "tool_mount": "physical_grasp_v1",
+   "particles_per_env": [
+    102732,
+    103898,
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "rigid": "10 x 2 ms substeps per control step",
+   "material_dt_s": 0.0001,
+   "cameras": "none",
+   "recording": "none",
+   "use_cuda_graph": true,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "reduced_fidelity": false,
+   "reasons": [],
+   "cold": {
+    "imports_s": 1.4798788890475407,
+    "build_s": 5.29645323404111,
+    "reset_s": 4.596003368962556,
+    "first_step_s": 1.991089107003063,
+    "process_to_first_step_s": 13.363436095998622,
+    "warp_kernel_cache": "user cache (not cleared)",
+    "grasp_settle_included_in_reset": true,
+    "first_step_note": "first driver step (graph capture inside), excluded from warm"
+   },
+   "warm": {
+    "steps": 1199,
+    "episode_steps_driven": 1200,
+    "wall_s_total": 1229.2229324772488,
+    "step_wall_s_mean": 1.0252067827166378,
+    "step_wall_s_p50": 0.956635660957545,
+    "step_wall_s_p95": 1.428678380674681,
+    "env_steps_per_s": 3.9016519081161603,
+    "aggregate_sim_time_per_wall": 0.07803303816232321,
+    "resets": 0,
+    "reset_p95_s": null,
+    "torch_max_memory_allocated_bytes": 95666688,
+    "timing": "per-step wall with a device sync after each step (strict mode already reads one int32 per step)"
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 21136.0,
+    "utilization_pct": 99.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "foreign_sm_pct": {
+    "max": 98.0,
+    "mean": 51.4576,
+    "n": 1250
+   },
+   "total_util_pct": {
+    "max": 100.0,
+    "mean": 99.4683239775461,
+    "n": 1247
+   },
+   "foreign_compute_pids": [
+    642659,
+    885323
+   ],
+   "vram_own_peak_mib": 1108.0,
+   "vram_own_slope_mib_per_s_warm": 0.004664475032964393,
+   "commit": {
+    "sha": "32ed8e3f44cd73891679f3bd9cc64a57dba7fdce",
+    "tracked_src_or_scripts_modified": true,
+    "workload_b_sources_sha256": "d517f9094837af38c05075966661353bc2f91a370ea55d564eb4d6ee0cbdb967"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "hidden_attachment": false
+   },
+   "workload": "B",
+   "hashgrids": "not instrumented (row predates the HashGrid census)",
+   "scene_seeds": [
+    512,
+    15,
+    512,
+    15
+   ],
+   "evaluation": [
+    {
+     "env": 0,
+     "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "8cc296951e2c88746c322fbf3e1a040b2ce80e7f99cc3180dedb035c0c9fe740",
+     "labelled": 12032,
+     "summary": {
+      "verdict": "FAIL",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "FAIL",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": false,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 1,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 0.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.6250812100479379,
+     "labelled_by_digit": {
+      "0": 12032,
+      "1": 0
+     }
+    },
+    {
+     "env": 1,
+     "task_id": "CFG-agentic_trim_id_s15-agentic_trim_all_v1-1baf08e1",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "637983cd6295cf32ba72a9f91e54fbfc25d36dacb5041157fefb454130ad4f90",
+     "labelled": 43959,
+     "summary": {
+      "verdict": "FAIL",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "FAIL",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": false,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 1,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.02850110411643982,
+       "p1": 0.037162888348102566
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.5952152060344815,
+     "labelled_by_digit": {
+      "0": 43959,
+      "1": 0
+     }
+    },
+    {
+     "env": 2,
+     "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "c33bfb665d4a8dafcf70c2fa38dca3dd1f46ef9e0a7f34b8a013994f2535d257",
+     "labelled": 0,
+     "summary": {
+      "verdict": "FAIL",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "FAIL",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": false,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 1,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 0.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.0053326781094074245
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.2954666519071907,
+     "labelled_by_digit": {
+      "0": 0,
+      "1": 0
+     }
+    },
+    {
+     "env": 3,
+     "task_id": "CFG-agentic_trim_id_s15-agentic_trim_all_v1-1baf08e1",
+     "step_count": 1200,
+     "time_s": 24.0,
+     "frames": 2,
+     "final_codes_sha256": "f15e656675c8cb1b3742e92cdedc2b63ffd8189bb2a34bc4441b2e9381611d9b",
+     "labelled": 39388,
+     "summary": {
+      "verdict": "FAIL",
+      "integrity": "PASS",
+      "integrity_checks": {
+       "initial_codes_zero": true,
+       "initial_continuous_graph": true,
+       "persistent_history_no_digit_rewrites": true,
+       "valid_digit_values": true,
+       "reference_matches_scene_sampler": true,
+       "reference_mass_budget": true,
+       "complete_episode": true
+      },
+      "outcome": "FAIL",
+      "outcome_checks": {
+       "selection_nonempty": true,
+       "selected_protrusions_removed": false,
+       "unselected_protrusions_retained": true,
+       "substrate_holds_below_plane_mass": true,
+       "detached_below_plane_mass_bounded": true,
+       "single_substrate_component": true
+      },
+      "mechanical_components": 1,
+      "largest_component_below_plane_mass_share": 1.0,
+      "detached_below_plane_mass_fraction": 0.0,
+      "removed_mass_fraction": {
+       "p0": 0.0,
+       "p1": 0.0
+      },
+      "residual_substrate_height_m": {
+       "p0": 0.01720199316740036,
+       "p1": 0.009433129355311393
+      }
+     },
+     "evaluator": "goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal agentic_trim_all_v1); host snapshot at episode end",
+     "wall_s": 0.5908017749898136,
+     "labelled_by_digit": {
+      "0": 39388,
+      "1": 0
+     }
+    }
+   ],
+   "termination_reason": [
+    4,
+    4,
+    4,
+    4
+   ],
+   "reward_fractions": {
+    "target_bond_progress_fraction": [
+     0.0,
+     0.0,
+     0.0,
+     0.01327433628318584
+    ],
+    "off_target_bond_fraction": [
+     7.736434108527132,
+     4.201327433628318,
+     0.0,
+     3.0420353982300883
+    ]
+   },
+   "engagement": {
+    "max_material_force_n": [
+     2.3669195682945134,
+     3.2585216248340614,
+     1.2222581675920174,
+     1.4024495210113703
+    ],
+    "reference_cut_steps": [
+     141,
+     287,
+     141,
+     287
+    ],
+    "material_invalid_reason": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     0.014711200259625912,
+     0.3085295557975769,
+     0.016680937260389328,
+     0.015280956402420998
+    ],
+    "max_angle_rad": [
+     0.5291898846626282,
+     2.4185805320739746,
+     0.8653124570846558,
+     1.2465360164642334
+    ],
+    "final_status": [
+     2,
+     2,
+     2,
+     2
+    ],
+    "min_bilateral_fraction": [
+     0.8999999761581421,
+     0.0,
+     0.8999999761581421,
+     0.8999999761581421
+    ]
+   },
+   "grasp_snapshot": {
+    "version": "lab_batched_grasp_settle_v1",
+    "slots": 4,
+    "failed": {},
+    "restore": "masked joint/root writes of the settled slot state; MuJoCo warm start zeroed (UNVERIFIED, G3)",
+    "relative_R": [
+     [
+      [
+       0.9999901895898495,
+       -1.2011171880764342e-05,
+       -0.004429512364682931
+      ],
+      [
+       1.1865353973982855e-05,
+       0.9999999993868903,
+       -3.2945907222190245e-05
+      ],
+      [
+       0.0044295127576861075,
+       3.289302627718845e-05,
+       0.9999901891192625
+      ]
+     ],
+     [
+      [
+       0.9999901896393553,
+       -1.20109578049945e-05,
+       -0.004429501188993927
+      ],
+      [
+       1.1865147421398242e-05,
+       0.9999999993869463,
+       -3.294429132805949e-05
+      ],
+      [
+       0.0044295015819708974,
+       3.2891411448069694e-05,
+       0.9999901891688193
+      ]
+     ],
+     [
+      [
+       0.999990189558912,
+       -1.2010993829498218e-05,
+       -0.0044295193495255385
+      ],
+      [
+       1.1865174661779742e-05,
+       0.9999999993868851,
+       -3.2946139622802726e-05
+      ],
+      [
+       0.004429519742525611,
+       3.2893259385890965e-05,
+       0.9999901890883153
+      ]
+     ],
+     [
+      [
+       0.9999901895816053,
+       -1.2010615009186705e-05,
+       -0.004429514227340187
+      ],
+      [
+       1.1864784472877773e-05,
+       0.9999999993868036,
+       -3.29487433504753e-05
+      ],
+      [
+       0.0044295146203586966,
+       3.2895864877890506e-05,
+       0.9999901891109182
+      ]
+     ]
+    ],
+    "relative_p": [
+     [
+      2.3684646601280242e-05,
+      1.3927819943276514e-07,
+      0.10387366259022895
+     ],
+     [
+      2.3686509245667184e-05,
+      1.3928184040178488e-07,
+      0.10387366258855026
+     ],
+     [
+      2.368092131252555e-05,
+      1.3926000355846023e-07,
+      0.10387366259358817
+     ],
+     [
+      2.367719602371968e-05,
+      1.3927091151419193e-07,
+      0.10387366259694246
+     ]
+    ],
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      0.0002249095996376127,
+      0.004429665394127369,
+      0.00012634802260436118,
+      0.00217834347859025,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.0002249098033644259,
+      0.0044296542182564735,
+      0.0001263437734451145,
+      0.002178334631025791,
+      6.487671635113657e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.00022490922128781676,
+      0.0044296723790466785,
+      0.0001263532176380977,
+      0.0021783518604934216,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.0002249088283861056,
+      0.004429667256772518,
+      0.00012635007442440838,
+      0.002178349532186985,
+      6.487670907517895e-05,
+      0.0
+     ]
+    ]
+   },
+   "recorded_policy": {
+    "policy": "recorded_command_policy_v1",
+    "per_env": [
+     {
+      "env": 0,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       -0.0002600705142962699,
+       5.9666269497093086e-05,
+       0.19761468623135708,
+       0.7070466399990687,
+       -0.00031792367442677117,
+       -0.0003191129690829827,
+       -0.7071667737934793
+      ],
+      "max_position_diff_m": 3.2371494373961696e-11,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.5188109931129077e-10,
+      "steps": 1200,
+      "clamped_steps": 0,
+      "max_abs_normalized_component": 0.8725430475279194,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 1,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       -0.0002600705142962699,
+       5.9666269497093086e-05,
+       0.19761468623135708,
+       0.7070466399990687,
+       -0.00031792367442677117,
+       -0.0003191129690829827,
+       -0.7071667737934793
+      ],
+      "max_position_diff_m": 3.800747057711032e-11,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.5188109931129077e-10,
+      "steps": 1200,
+      "clamped_steps": 0,
+      "max_abs_normalized_component": 0.875168846584518,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 2,
+      "scene_seed": 512,
+      "actions_sha256": "d770c6122146c38d1740770dd1856b406872df82a641808fc1fb2b97115b6a26",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       -0.0002600705142962699,
+       5.9666269497093086e-05,
+       0.19761468623135708,
+       0.7070466399990687,
+       -0.00031792367442677117,
+       -0.0003191129690829827,
+       -0.7071667737934793
+      ],
+      "max_position_diff_m": 3.2371494373961696e-11,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.5188109931129077e-10,
+      "steps": 1200,
+      "clamped_steps": 0,
+      "max_abs_normalized_component": 0.8725430475279194,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     },
+     {
+      "env": 3,
+      "scene_seed": 15,
+      "actions_sha256": "d22e36d935fc43e41a610694237c0488b4a4c88566d7957d3b5107dc1802f791",
+      "reset_edge_native": [
+       -0.00017253732960232498,
+       4.660466835052783e-05,
+       0.19695430034295747,
+       0.7070485972791308,
+       -0.0002073730251513333,
+       -0.00010177409938197904,
+       -0.7071649225775235
+      ],
+      "initial_commanded": [
+       -0.0002600705142962699,
+       5.9666269497093086e-05,
+       0.19761468623135708,
+       0.7070466399990687,
+       -0.00031792367442677117,
+       -0.0003191129690829827,
+       -0.7071667737934793
+      ],
+      "max_position_diff_m": 3.800747057711032e-11,
+      "max_rotation_diff_rad": 2.9802322387695312e-08,
+      "max_quaternion_component_diff": 2.5188109931129077e-10,
+      "steps": 1200,
+      "clamped_steps": 0,
+      "max_abs_normalized_component": 0.875168846584518,
+      "path": "encode_edge_delta (SciPy) -> float32 -> control.normalized_delta + resolve_delta(edge)"
+     }
+    ]
+   },
+   "driver": "recorded",
+   "grip_material": {
+    "coefficient": 0.6,
+    "torsional_coefficient_m": null,
+    "shapes": 16,
+    "profile": "legacy_point_contact"
+   }
+  }
+ },
+ "g4": {
+  "g4_batched_ns_001/g4.json": {
+   "mode": "batched",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "FAIL_PHYSICAL_PREGRASP",
+     "failed": {
+      "0": [
+       "angular_speed_stable"
+      ]
+     },
+     "rigid_settle_s": 2.0,
+     "window_s": 0.5,
+     "accumulators": [
+      [
+       26.0,
+       26.0,
+       0.00012003872689092532,
+       0.0020263988990336657,
+       0.011412234976887703,
+       0.7032593488693237,
+       0.00011460227688075975,
+       0.0
+      ]
+     ],
+     "hidden_attachment": false
+    },
+    "initial_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "strict": false,
+    "accumulator_columns": [
+     "rows",
+     "bilateral_sum",
+     "max_translation_m",
+     "max_rotation_rad",
+     "max_linear_speed_m_s",
+     "max_angular_speed_rad_s",
+     "max_penetration_m",
+     "unintended_slots"
+    ]
+   },
+   "hashgrids": {
+    "all": [],
+    "cuda_count": 0
+   },
+   "wall_s": 8.932991554960608
+  },
+  "g4_batched_ns_002/g4.json": {
+   "mode": "batched",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "PASS_PHYSICAL_PREGRASP",
+     "failed": {},
+     "rigid_settle_s": 2.0,
+     "window_s": 0.5,
+     "accumulators": [
+      [
+       26.0,
+       26.0,
+       9.981165931094438e-05,
+       0.0015707139391452074,
+       0.00022177844948600978,
+       0.025765564292669296,
+       5.287983367452398e-05,
+       0.0
+      ]
+     ],
+     "hidden_attachment": false
+    },
+    "initial_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "strict": false,
+    "accumulator_columns": [
+     "rows",
+     "bilateral_sum",
+     "max_translation_m",
+     "max_rotation_rad",
+     "max_linear_speed_m_s",
+     "max_angular_speed_rad_s",
+     "max_penetration_m",
+     "unintended_slots"
+    ]
+   },
+   "hashgrids": {
+    "all": [],
+    "cuda_count": 0
+   },
+   "wall_s": 9.086603490053676
+  },
+  "g4_batched_ns_003/g4.json": {
+   "mode": "batched",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "FAIL_PHYSICAL_PREGRASP",
+     "failed": {
+      "0": [
+       "angular_speed_stable"
+      ]
+     },
+     "rigid_settle_s": 2.0,
+     "window_s": 0.5,
+     "accumulators": [
+      [
+       26.0,
+       26.0,
+       0.00013649437460117042,
+       0.0021626686211675406,
+       0.018058842048048973,
+       1.1644411087036133,
+       0.00016311561921611428,
+       0.0
+      ]
+     ],
+     "hidden_attachment": false
+    },
+    "initial_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "strict": false,
+    "accumulator_columns": [
+     "rows",
+     "bilateral_sum",
+     "max_translation_m",
+     "max_rotation_rad",
+     "max_linear_speed_m_s",
+     "max_angular_speed_rad_s",
+     "max_penetration_m",
+     "unintended_slots"
+    ]
+   },
+   "hashgrids": {
+    "all": [],
+    "cuda_count": 0
+   },
+   "wall_s": 11.13566971605178
+  },
+  "g4_compare_002/g4_compare.json": {
+   "arm_q_rad": {
+    "single_spread_max": 7.081031799316406e-05,
+    "tolerance": 0.0002124309539794922,
+    "batched_vs_single_max": 0.00034499168395996094,
+    "within_tolerance": false,
+    "divergence_curve_every_10_steps": [
+     2.956390380859375e-05,
+     6.651878356933594e-05,
+     7.62939453125e-06,
+     1.9073486328125e-06,
+     2.6226043701171875e-06,
+     2.384185791015625e-06,
+     2.1457672119140625e-06,
+     2.2649765014648438e-06,
+     1.1920928955078125e-06,
+     1.6689300537109375e-06
+    ]
+   },
+   "hand_position_m": {
+    "single_spread_max": 2.493601054060259e-05,
+    "tolerance": 7.480803162180777e-05,
+    "batched_vs_single_max": 0.00027256761427035396,
+    "within_tolerance": false,
+    "divergence_curve_every_10_steps": [
+     2.157377624069204e-05,
+     2.104679202120288e-05,
+     2.7961449286120856e-06,
+     1.1613349776505657e-06,
+     1.9289954612009006e-06,
+     9.898342382599728e-07,
+     1.481153123227682e-06,
+     1.6621350282889316e-06,
+     6.55989667864297e-07,
+     7.339483711734266e-07
+    ]
+   },
+   "tool_position_m": {
+    "single_spread_max": 0.001647762731657393,
+    "tolerance": 0.004943288194972179,
+    "batched_vs_single_max": 0.0019425850287120704,
+    "within_tolerance": true,
+    "divergence_curve_every_10_steps": [
+     0.0012072856491156865,
+     0.001356381171130823,
+     0.00121096638218513,
+     0.0012110644441757788,
+     0.0011904203821879993,
+     0.0011332075423993355,
+     0.0007901088096329211,
+     0.0006942724085054234,
+     0.0006940409046534081,
+     0.0006940451191872583
+    ]
+   },
+   "tool_rotation_rad": {
+    "single_spread_max": 0.057017151766083456,
+    "tolerance": 0.17105145529825036,
+    "batched_vs_single_max": 0.042294721509464214,
+    "within_tolerance": true,
+    "divergence_curve_every_10_steps": [
+     0.0342036263224711,
+     0.030296943314551916,
+     0.029769401890251408,
+     0.029771950874865727,
+     0.029870485583746973,
+     0.029884359522585703,
+     0.029545146572725438,
+     0.029427127807028237,
+     0.029422002471065672,
+     0.029414384752408616
+    ]
+   },
+   "finger_q_m": {
+    "single_spread_max": 0.0015387116000056267,
+    "tolerance": 0.00461613480001688,
+    "batched_vs_single_max": 0.001540287397801876,
+    "within_tolerance": true,
+    "divergence_curve_every_10_steps": [
+     7.347855716943741e-05,
+     0.0014003785327076912,
+     0.0002274494618177414,
+     3.7224963307380676e-06,
+     1.726485788822174e-05,
+     0.00012647919356822968,
+     3.0015595257282257e-05,
+     1.5898607671260834e-05,
+     7.533468306064606e-06,
+     2.2366642951965332e-05
+    ]
+   }
+  },
+  "g4_single_005/g4.json": {
+   "mode": "single",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "PASS_PHYSICAL_PREGRASP",
+     "checks": {
+      "actual_free_body": true,
+      "no_hidden_attachment": true,
+      "nonempty_stability_window": true,
+      "bilateral_load_bearing_contacts": "True",
+      "translation_stable": true,
+      "rotation_stable": true,
+      "linear_speed_stable": "True",
+      "angular_speed_stable": "True",
+      "penetration_bounded": true,
+      "no_unintended_support": true
+     },
+     "rigid_settle_s": 2.0,
+     "material_advanced_s": 0.0,
+     "formal_episode_time_s": 0.0,
+     "window_s": 0.5,
+     "min_bilateral_fraction": 0.95,
+     "hidden_attachment": false
+    },
+    "settled_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "own_settled_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "sequence_from": null,
+    "settled_finger": [
+     0.010980328544974327,
+     0.010995750315487385
+    ]
+   },
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v2.py:622"
+     }
+    ],
+    "cuda_count": 1
+   },
+   "wall_s": 81.62615085206926
+  },
+  "g4_single_007/g4.json": {
+   "mode": "single",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "PASS_PHYSICAL_PREGRASP",
+     "checks": {
+      "actual_free_body": true,
+      "no_hidden_attachment": true,
+      "nonempty_stability_window": true,
+      "bilateral_load_bearing_contacts": "True",
+      "translation_stable": true,
+      "rotation_stable": true,
+      "linear_speed_stable": "True",
+      "angular_speed_stable": "True",
+      "penetration_bounded": true,
+      "no_unintended_support": true
+     },
+     "rigid_settle_s": 2.0,
+     "material_advanced_s": 0.0,
+     "formal_episode_time_s": 0.0,
+     "window_s": 0.5,
+     "min_bilateral_fraction": 0.95,
+     "hidden_attachment": false
+    },
+    "settled_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "own_settled_q": [
+     0.4620577394962311,
+     -1.7623851299285889,
+     -2.3875467777252197,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532498836517334,
+     -0.2472519874572754
+    ],
+    "sequence_from": "artifacts/rl_ready/p1_1b/g4_single_005",
+    "settled_finger": [
+     0.010978499427437782,
+     0.010993930511176586
+    ]
+   },
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v2.py:622"
+     }
+    ],
+    "cuda_count": 1
+   },
+   "wall_s": 82.76057642302476
+  },
+  "g4_single_008/g4.json": {
+   "mode": "single",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "PASS_PHYSICAL_PREGRASP",
+     "checks": {
+      "actual_free_body": true,
+      "no_hidden_attachment": true,
+      "nonempty_stability_window": true,
+      "bilateral_load_bearing_contacts": "True",
+      "translation_stable": true,
+      "rotation_stable": true,
+      "linear_speed_stable": "True",
+      "angular_speed_stable": "True",
+      "penetration_bounded": true,
+      "no_unintended_support": true
+     },
+     "rigid_settle_s": 2.0,
+     "material_advanced_s": 0.0,
+     "formal_episode_time_s": 0.0,
+     "window_s": 0.5,
+     "min_bilateral_fraction": 0.95,
+     "hidden_attachment": false
+    },
+    "settled_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "own_settled_q": [
+     0.4620576500892639,
+     -1.7623848915100098,
+     -2.3875441551208496,
+     -2.7488760948181152,
+     -2.8855504989624023,
+     2.7532496452331543,
+     -0.24725191295146942
+    ],
+    "sequence_from": "artifacts/rl_ready/p1_1b/g4_single_005",
+    "settled_finger": [
+     0.010976985096931458,
+     0.010992427356541157
+    ]
+   },
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v2.py:622"
+     }
+    ],
+    "cuda_count": 1
+   },
+   "wall_s": 81.85937934403773
+  },
+  "g4_single_010/g4.json": {
+   "mode": "single",
+   "task_id": "TRIM-01-R",
+   "steps": 100,
+   "max_amplitude_rad": [
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0,
+    0.05,
+    0.0
+   ],
+   "feedback": false,
+   "info": {
+    "grasp_initialization": {
+     "status": "PASS_PHYSICAL_PREGRASP",
+     "checks": {
+      "actual_free_body": true,
+      "no_hidden_attachment": true,
+      "nonempty_stability_window": true,
+      "bilateral_load_bearing_contacts": "True",
+      "translation_stable": true,
+      "rotation_stable": true,
+      "linear_speed_stable": "True",
+      "angular_speed_stable": "True",
+      "penetration_bounded": true,
+      "no_unintended_support": true
+     },
+     "rigid_settle_s": 2.0,
+     "material_advanced_s": 0.0,
+     "formal_episode_time_s": 0.0,
+     "window_s": 0.5,
+     "min_bilateral_fraction": 0.95,
+     "hidden_attachment": false
+    },
+    "settled_q": [
+     0.4620577096939087,
+     -1.7623851299285889,
+     -2.3875465393066406,
+     -2.7488760948181152,
+     -2.8855507373809814,
+     2.7532496452331543,
+     -0.2472519874572754
+    ],
+    "amplitude_rad": [
+     0.0,
+     0.00020742416381835938,
+     0.0,
+     0.05,
+     0.0,
+     0.05,
+     0.0
+    ],
+    "own_settled_q": [
+     0.46205756068229675,
+     -1.7623852491378784,
+     -2.3875460624694824,
+     -2.748875141143799,
+     -2.8855504989624023,
+     2.75325083732605,
+     -0.2472519427537918
+    ],
+    "sequence_from": "artifacts/rl_ready/p1_1b/g4_single_005",
+    "settled_finger": [
+     0.010979647748172283,
+     0.01099508348852396
+    ]
+   },
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v2.py:622"
+     }
+    ],
+    "cuda_count": 1
+   },
+   "wall_s": 82.3789536479162
+  }
+ },
+ "g5": {
+  "g5_l0_s3_b1_n2_001": {
+   "mode": "l0",
+   "device": "cpu",
+   "envs": [
+    {
+     "env": 0,
+     "steps": 20,
+     "codes_bitwise": true,
+     "positions_bitwise": true,
+     "max_abs_position_diff_m": 0.0,
+     "labelled_single": 0,
+     "labelled_batch": 0
+    },
+    {
+     "env": 1,
+     "steps": 20,
+     "codes_bitwise": true,
+     "positions_bitwise": true,
+     "max_abs_position_diff_m": 0.0,
+     "labelled_single": 0,
+     "labelled_batch": 0
+    }
+   ],
+   "status": "PASS",
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 2229.725343982922,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  },
+  "g5_l3_combined_s3_b1_n2_001": {
+   "mode": "l3combine",
+   "inputs": [
+    "artifacts/rl_ready/p1_1b/g5_l3_s3_b1_n2_e0_r1",
+    "artifacts/rl_ready/p1_1b/g5_l3_s3_b1_n2_e0_r2",
+    "artifacts/rl_ready/p1_1b/g5_l3_s3_b1_n2_e0_r3",
+    "artifacts/rl_ready/p1_1b/g5_l3_s3_b1_n2_e1_r1",
+    "artifacts/rl_ready/p1_1b/g5_l3_s3_b1_n2_e1_r2",
+    "artifacts/rl_ready/p1_1b/g5_l3_s3_b1_n2_e1_r3"
+   ],
+   "envs": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "steps": 1200,
+     "batch_labelled": 33740,
+     "batch_by_digit": {
+      "0": 33740,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 406.92611131293233,
+       "labelled": 33740,
+       "by_digit": {
+        "0": 33740,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 2.7980655431747437e-05,
+       "mean_abs_position_diff_m": 6.879641887280741e-07
+      },
+      {
+       "replay": 0,
+       "wall_s": 447.0163659689715,
+       "labelled": 33740,
+       "by_digit": {
+        "0": 33740,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 1.9402941688895226e-05,
+       "mean_abs_position_diff_m": 3.925861449260992e-07
+      },
+      {
+       "replay": 0,
+       "wall_s": 447.4560335900169,
+       "labelled": 33740,
+       "by_digit": {
+        "0": 33740,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 2.5490298867225647e-05,
+       "mean_abs_position_diff_m": 6.853794616290543e-07
+      }
+     ],
+     "single_band_labelled": [
+      33740,
+      33740
+     ],
+     "batch_inside_single_band": true,
+     "replays_codes_equal_batch": [
+      true,
+      true,
+      true
+     ],
+     "max_different_code_particles": 0,
+     "max_abs_position_diff_m": 2.7980655431747437e-05
+    },
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "steps": 1200,
+     "batch_labelled": 80986,
+     "batch_by_digit": {
+      "0": 80986,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 570.8685931890504,
+       "labelled": 80986,
+       "by_digit": {
+        "0": 80986,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 0.0001065509277395904,
+       "mean_abs_position_diff_m": 1.715660118861706e-06
+      },
+      {
+       "replay": 0,
+       "wall_s": 493.6510651160497,
+       "labelled": 80986,
+       "by_digit": {
+        "0": 80986,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 0.00011102110147476196,
+       "mean_abs_position_diff_m": 1.80072106559237e-06
+      },
+      {
+       "replay": 0,
+       "wall_s": 536.7455369119998,
+       "labelled": 80986,
+       "by_digit": {
+        "0": 80986,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 0.00020585209131240845,
+       "mean_abs_position_diff_m": 3.3871206142066512e-06
+      }
+     ],
+     "single_band_labelled": [
+      80986,
+      80986
+     ],
+     "batch_inside_single_band": true,
+     "replays_codes_equal_batch": [
+      true,
+      true,
+      true
+     ],
+     "max_different_code_particles": 0,
+     "max_abs_position_diff_m": 0.00020585209131240845
+    }
+   ],
+   "one_replay_per_process": true
+  },
+  "g5_l3_s3_b1_n2_e0_r1": {
+   "mode": "l3",
+   "device": "cuda:0",
+   "envs": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "steps": 1200,
+     "batch_labelled": 33740,
+     "batch_by_digit": {
+      "0": 33740,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 406.92611131293233,
+       "labelled": 33740,
+       "by_digit": {
+        "0": 33740,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 2.7980655431747437e-05,
+       "mean_abs_position_diff_m": 6.879641887280741e-07
+      }
+     ],
+     "single_band_labelled": [
+      33740,
+      33740
+     ],
+     "single_pairwise_different_code_particles": [],
+     "batch_inside_single_band": true
+    }
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v5.py:798"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 406.94920997100417,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  },
+  "g5_l3_s3_b1_n2_e0_r2": {
+   "mode": "l3",
+   "device": "cuda:0",
+   "envs": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "steps": 1200,
+     "batch_labelled": 33740,
+     "batch_by_digit": {
+      "0": 33740,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 447.0163659689715,
+       "labelled": 33740,
+       "by_digit": {
+        "0": 33740,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 1.9402941688895226e-05,
+       "mean_abs_position_diff_m": 3.925861449260992e-07
+      }
+     ],
+     "single_band_labelled": [
+      33740,
+      33740
+     ],
+     "single_pairwise_different_code_particles": [],
+     "batch_inside_single_band": true
+    }
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v5.py:798"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 447.03915834997315,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  },
+  "g5_l3_s3_b1_n2_e0_r3": {
+   "mode": "l3",
+   "device": "cuda:0",
+   "envs": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "steps": 1200,
+     "batch_labelled": 33740,
+     "batch_by_digit": {
+      "0": 33740,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 447.4560335900169,
+       "labelled": 33740,
+       "by_digit": {
+        "0": 33740,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 2.5490298867225647e-05,
+       "mean_abs_position_diff_m": 6.853794616290543e-07
+      }
+     ],
+     "single_band_labelled": [
+      33740,
+      33740
+     ],
+     "single_pairwise_different_code_particles": [],
+     "batch_inside_single_band": true
+    }
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v5.py:798"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 447.47853664599825,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  },
+  "g5_l3_s3_b1_n2_e1_r1": {
+   "mode": "l3",
+   "device": "cuda:0",
+   "envs": [
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "steps": 1200,
+     "batch_labelled": 80986,
+     "batch_by_digit": {
+      "0": 80986,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 570.8685931890504,
+       "labelled": 80986,
+       "by_digit": {
+        "0": 80986,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 0.0001065509277395904,
+       "mean_abs_position_diff_m": 1.715660118861706e-06
+      }
+     ],
+     "single_band_labelled": [
+      80986,
+      80986
+     ],
+     "single_pairwise_different_code_particles": [],
+     "batch_inside_single_band": true
+    }
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v5.py:798"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 570.891230897978,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  },
+  "g5_l3_s3_b1_n2_e1_r2": {
+   "mode": "l3",
+   "device": "cuda:0",
+   "envs": [
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "steps": 1200,
+     "batch_labelled": 80986,
+     "batch_by_digit": {
+      "0": 80986,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 493.6510651160497,
+       "labelled": 80986,
+       "by_digit": {
+        "0": 80986,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 0.00011102110147476196,
+       "mean_abs_position_diff_m": 1.80072106559237e-06
+      }
+     ],
+     "single_band_labelled": [
+      80986,
+      80986
+     ],
+     "single_pairwise_different_code_particles": [],
+     "batch_inside_single_band": true
+    }
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v5.py:798"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 493.6738225410227,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  },
+  "g5_l3_s3_b1_n2_e1_r3": {
+   "mode": "l3",
+   "device": "cuda:0",
+   "envs": [
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "steps": 1200,
+     "batch_labelled": 80986,
+     "batch_by_digit": {
+      "0": 80986,
+      "1": 0
+     },
+     "replays": [
+      {
+       "replay": 0,
+       "wall_s": 536.7455369119998,
+       "labelled": 80986,
+       "by_digit": {
+        "0": 80986,
+        "1": 0
+       },
+       "codes_equal_batch": true,
+       "different_code_particles": 0,
+       "max_abs_position_diff_m": 0.00020585209131240845,
+       "mean_abs_position_diff_m": 3.3871206142066512e-06
+      }
+     ],
+     "single_band_labelled": [
+      80986,
+      80986
+     ],
+     "single_pairwise_different_code_particles": [],
+     "batch_inside_single_band": true
+    }
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v5.py:798"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "run": "artifacts/rl_ready/p1_1b/s3_b1_n2_001",
+   "wall_s": 536.7718869800447,
+   "solver": "tlmpm_v7_2 (frozen LiveCuttingMaterial)",
+   "call_order": "update_pad_obstacles(boxes[k]) -> advance(edge[k], (k+1)*dt, cutting=cut>=0, cut_index=max(cut,0))"
+  }
+ },
+ "native_wp17": {
+  "512": {
+   "source": "artifacts/wp17/native_optimized_001/seed_512/box/env/recording/attempt_000",
+   "verdict": "PASS",
+   "outcome": "PASS",
+   "mechanical_components": 2,
+   "largest_component_below_plane_mass_share": 0.9999999999991656,
+   "detached_below_plane_mass_fraction": 0.0,
+   "removed_mass_fraction": {
+    "p0": 1.0
+   }
+  },
+  "15": {
+   "source": "artifacts/wp17/native_optimized_001/seed_15/box/env/recording/attempt_000",
+   "verdict": "PASS",
+   "outcome": "PASS",
+   "mechanical_components": 3,
+   "largest_component_below_plane_mass_share": 0.9999999999991656,
+   "detached_below_plane_mass_fraction": 0.0,
+   "removed_mass_fraction": {
+    "p0": 1.0,
+    "p1": 1.0
+   }
+  }
+ },
+ "material_results": "SIMULATOR_ONLY_UNCALIBRATED",
+ "failed_or_aborted_runs": {
+  "g2mat_b2_n1_001": {
+   "status": "FAIL_NO_ROW",
+   "reason": "no row written",
+   "detail": null
+  },
+  "g2mat_b2_n4_001": {
+   "status": "FAIL_NO_ROW",
+   "reason": "no row written",
+   "detail": null
+  },
+  "g3_det_b2_n2_001": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0, 1]: {0: ['bilateral_load_bearing_contacts', 'translation_stable', 'rotation_stable', 'linear_speed_stable', 'angular_speed_stable', 'penetration_bounded', 'no_unintended_support'], 1: ['bilateral_load_bearing_contacts', 'translation_stable', 'rotation_stable', 'linear_speed_stable', 'angular_speed_stable', 'penetration_bounded', 'no_unintended_s",
+   "detail": null
+  },
+  "g3_det_b2_n2_002": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0, 1]: {0: ['bilateral_load_bearing_contacts', 'translation_stable', 'rotation_stable', 'linear_speed_stable', 'angular_speed_stable', 'penetration_bounded', 'no_unintended_support'], 1: ['bilateral_load_bearing_contacts', 'translation_stable', 'rotation_stable', 'linear_speed_stable', 'angular_speed_stable', 'penetration_bounded', 'no_unintended_s",
+   "detail": null
+  },
+  "g4_batched_003": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0]: {0: ['angular_speed_stable']}",
+   "detail": null
+  },
+  "g4_batched_004": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0]: {0: ['angular_speed_stable']}",
+   "detail": null
+  },
+  "g4_batched_005": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0]: {0: ['angular_speed_stable']}",
+   "detail": null
+  },
+  "g4_batched_006": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0]: {0: ['angular_speed_stable']}",
+   "detail": null
+  },
+  "g4_batched_007": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed in worlds [0]: {0: ['angular_speed_stable']}",
+   "detail": null
+  },
+  "g4_compare_001": {
+   "status": "ABORTED",
+   "reason": "no row written",
+   "detail": {
+    "status": "FAIL_NO_OUTPUT",
+    "reason": "compare started before g4_batched_ns_003 existed (operator error); superseded by g4_compare_002"
+   }
+  },
+  "g4_single_001": {
+   "status": "FAIL_NO_ROW",
+   "reason": "ValueError: Joint command exceeds the actual articulation limits",
+   "detail": null
+  },
+  "g4_single_002": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed: {'status': 'FAIL_PHYSICAL_PREGRASP', 'checks': {'actual_free_body': True, 'no_hidden_attachment': True, 'nonempty_stability_window': True, 'bilateral_load_bearing_contacts': np.True_, 'translation_stable': True, 'rotation_stable': True, 'linear_speed_stable': np.True_, 'angular_speed_stable': np.False_, 'penetration_bounded': True, 'no_unintended_support': T",
+   "detail": null
+  },
+  "g4_single_006": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed: {'status': 'FAIL_PHYSICAL_PREGRASP', 'checks': {'actual_free_body': True, 'no_hidden_attachment': True, 'nonempty_stability_window': True, 'bilateral_load_bearing_contacts': np.True_, 'translation_stable': True, 'rotation_stable': True, 'linear_speed_stable': np.True_, 'angular_speed_stable': np.False_, 'penetration_bounded': True, 'no_unintended_support': T",
+   "detail": null
+  },
+  "g4_single_009": {
+   "status": "FAIL_NO_ROW",
+   "reason": "RuntimeError: Physical pregrasp failed: {'status': 'FAIL_PHYSICAL_PREGRASP', 'checks': {'actual_free_body': True, 'no_hidden_attachment': True, 'nonempty_stability_window': True, 'bilateral_load_bearing_contacts': np.True_, 'translation_stable': True, 'rotation_stable': True, 'linear_speed_stable': np.True_, 'angular_speed_stable': np.False_, 'penetration_bounded': True, 'no_unintended_support': T",
+   "detail": null
+  },
+  "s3_b2patch_n2_001": {
+   "status": "FAIL_NO_ROW",
+   "reason": "no row written",
+   "detail": null
+  },
+  "s3_b2patch_n2_002": {
+   "status": "FAIL_NO_ROW",
+   "reason": "no row written",
+   "detail": null
+  },
+  "s3_b2patch_n2_003": {
+   "status": "ABORTED",
+   "reason": "no row written",
+   "detail": {
+    "status": "ABORTED",
+    "reason": "operator abort after 43 min wall (vs 13 min for the point-profile B2 N=2 row); the strict retry _002 raised InvalidBatchEnvs for env 1 (NONFINITE_STATE, INVALID_MEASURED_POSE, NONFINITE_WRENCH, INVALID_OBSTACLE_BOXES)"
+   }
+  }
+ },
+ "hashgrid_census": {
+  "hazard": "Warp 1.17.0 hash_grid_update_device_impl copies the grid descriptor from a function-static host variable; a replayed CUDA graph uses the last host-built grid (P1-3a probe_hashgrid_descriptor.py)",
+  "verdict": "NO P1-1b process held more than one CUDA wp.HashGrid; no run is INVALID_MULTI_GRID_PROCESS",
+  "method": [
+   "grep of every wp.HashGrid constructor in src/ (tlmpm_v5.py:798 single bed at reset; batched/tlmpm_v7_2_batch.py:613 one grouped grid per batch), Newton (builder.py particle_grid only for models with particles; the rigid model has none), MuJoCo-Warp and Isaac Lab (none)",
+   "instrumented run hashgrid_check_b1_n2_001 on the Lab material code path: 1 CUDA grid (batch) + 2 CPU grids (the per-env single materials reset on the CPU device for packing)",
+   "every later probe row/json records its census (hashgrids.cuda_count); G5 L3 runs one replay per process and the combiner refuses multi-grid inputs"
+  ],
+  "instrumented": {
+   "hashgrid_check_b1_n2_001": {
+    "all": [
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v7_2_batch.py:613:__init__"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   }
+  }
+ },
+ "g3_analysis": {
+  "g3_analysis_001": {
+   "restore_vs_fresh": {
+    "artifacts/rl_ready/p1_1b/g3_b2_n2_001": {
+     "deterministic": "not_guaranteed",
+     "window_steps": 25,
+     "max_translation_diff_m": 3.9554732465258393e-07,
+     "max_rotation_diff_rad": 1.0477697808860803e-06,
+     "restored_equals_fresh_exactly": false,
+     "fresh_max_drift": [
+      3.720470692182707e-05,
+      0.0010769660924001513
+     ],
+     "restored_max_drift": [
+      3.712804065015645e-05,
+      0.001076036215670954
+     ],
+     "within_grasp_tolerance": true,
+     "translation_diff_every_5_steps": [
+      2.6601064828236225e-07,
+      1.8983449544276535e-07,
+      3.831861931696619e-07,
+      3.2378811623684027e-07,
+      3.4354029262454774e-07
+     ],
+     "grasp_final_status": [
+      0,
+      0
+     ]
+    },
+    "artifacts/rl_ready/p1_1b/g3_b2_n2_002": {
+     "deterministic": "not_guaranteed",
+     "window_steps": 25,
+     "max_translation_diff_m": 4.113761461538115e-07,
+     "max_rotation_diff_rad": 1.1380165696481225e-06,
+     "restored_equals_fresh_exactly": false,
+     "fresh_max_drift": [
+      3.7204766751772444e-05,
+      0.001076966612086635
+     ],
+     "restored_max_drift": [
+      3.712803770808432e-05,
+      0.0010760394646737257
+     ],
+     "within_grasp_tolerance": true,
+     "translation_diff_every_5_steps": [
+      2.713803622431337e-07,
+      2.1905174239440854e-07,
+      4.0467681002537527e-07,
+      3.4401706806384726e-07,
+      3.4897215976802323e-07
+     ],
+     "grasp_final_status": [
+      0,
+      0
+     ]
+    },
+    "artifacts/rl_ready/p1_1b/g3_b2_n2_003": {
+     "deterministic": "not_guaranteed",
+     "window_steps": 25,
+     "max_translation_diff_m": 4.169911476936608e-07,
+     "max_rotation_diff_rad": 1.1401007603409705e-06,
+     "restored_equals_fresh_exactly": false,
+     "fresh_max_drift": [
+      3.720470614302507e-05,
+      0.0010769642983376468
+     ],
+     "restored_max_drift": [
+      3.712803592213664e-05,
+      0.0010760352912409408
+     ],
+     "within_grasp_tolerance": true,
+     "translation_diff_every_5_steps": [
+      2.639803934647931e-07,
+      2.172808622854762e-07,
+      4.089338437203613e-07,
+      3.487064396874568e-07,
+      3.559788170834435e-07
+     ],
+     "grasp_final_status": [
+      0,
+      0
+     ]
+    }
+   },
+   "tolerances": {
+    "translation_m": 0.002,
+    "rotation_rad": 0.05235987755982988
+   },
+   "rebuild_spread_env0": {
+    "runs": [
+     "artifacts/rl_ready/p1_1b/g3_b2_n2_001",
+     "artifacts/rl_ready/p1_1b/g3_b2_n2_002",
+     "artifacts/rl_ready/p1_1b/g3_b2_n2_003"
+    ],
+    "max_translation_m": 3.032169262589624e-08,
+    "max_rotation_rad": 9.801864453277941e-08,
+    "within_grasp_tolerance": true
+   }
+  }
+ }
+}

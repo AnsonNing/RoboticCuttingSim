@@ -169,3 +169,198 @@ WP-17 controller). Rewards are not computed.
    the env returns zeros with `extras["reward_available"] = False`.
 5. Refuse cameras/vision profiles (`UNSUPPORTED_SENSOR`), `autoreset="same_step"` with final obs, and
    `device="cpu"` (CPU is `cpu_test_mode` only).
+
+---
+
+# Stages S2 and S3 (2026-11-10, second session)
+
+Evidence: `docs/evidence/rl_ready/p1_1b_s2_s3_001.json` (assembled by `probe_lab_batched_evidence.py --stage s2s3`
+from the raw outputs in `artifacts/rl_ready/p1_1b/`). All GPU rows on GPU0 under its RCS flock, `SHARED_GPU`
+(foreign SM 50-57 % mean during the S3 rows). The lock was also held for about 45 minutes by another RCS job
+(P1-3a), which my queue waited for.
+
+## Status
+
+| Check | Status |
+| --- | --- |
+| Reward/termination/evaluator wiring in the Lab env | PASS (CPU tests; used by every S3 row) |
+| G3 B2 restore vs fresh settle, default mode (3 builds) | PASS within grasp tolerance; warm-start effect not separable (see G3) |
+| G3/G1 in deterministic mode for B2 | BLOCKED: under `run_to_run` (with `disable_sensors`) the B2 settle fails, the free tool is ejected |
+| G4 batched N=1 B2 vs single Lab env | FAIL against the fixed tolerance for arm joints and hand position; tool pose and fingers within (not an acceptance gate) |
+| G5 L0 (CPU, 20 steps, B1 S3 input sequence) | PASS bitwise (no contact in the first 20 steps) |
+| G5 L3 (GPU, 1200 steps, 3 single replays per env, one replay per process) | PASS: final codes of every single replay bitwise equal to the batched Lab run (B1 S3, both seeds) |
+| S3 TRIM B1 N=2 and N=4 (seeds 512, 15) | PASS: frozen evaluator PASS in every env, outcome metrics equal to Native WP-17 (descriptive) |
+| S3 TRIM B2 N=2 and N=4 (point grip profile) | FAIL: grasp lost in every env during the free-space reorientation, evaluator FAIL |
+| S3 TRIM B2 with the opt-in `finite_pad_patch_v3` grip | FAIL: env 1 non-finite (strict raise); the non-strict rerun was aborted (step rate collapsed); one GPU build crashed (SIGSEGV) |
+| G2 with material, B2 (reference driver) N=1 / N=4 | FAIL (infrastructure): SIGSEGV in the material graph replay after the grasp was lost |
+| Configured CUT scene for `tlmpm_v7_2` | NOT_RUN: no declared CUT scene uses `tlmpm_v7_2` (the WP-12 CUT demos declare `tlmpm_v5`); compiling one would be a new, undeclared scene without a Native reference |
+
+## 1. Reward, termination and evaluator wiring
+
+- With material attached the env computes `trim_bond_progress_packed_v1` exactly as workload A
+  (`TrimBondProgressReward` over `bonds_from_task` per env, device codes view, invalid penalty), and
+  `extras["reward_available"] = True`; masked resets re-baseline the counts of the reset envs.
+- `termination_reason` bits: 1 rigid invalid, 2 material invalid (`invalid_reason`), 4 grasp lost (B2 monitor),
+  8 IK-failure streak (`max_consecutive_ik_failures`, `live_env` semantics, default off). Truncation at the
+  task's step count (1200 for seeded TRIM).
+- `evaluate(env_ids)` runs the frozen `goals.evaluate_goal` (via `ConfiguredTaskSpec.evaluate_goal`) on a host
+  snapshot of each env, built the same way as `rl.vector_env.VectorCuttingEnv.evaluate`.
+- Per-env material tasks: one batch may hold different seeded TRIM scenes (512 and 15) when their rigid scenes
+  are uniform (`check_uniform_rigid_scene`).
+
+## 2. S2 — B2 physical grasp with material
+
+### G3: snapshot restore against a fresh settle
+
+N=2, B2, hold actions; env 1 is restored to its settled snapshot at step 10 and compared over 25 steps (0.5 s)
+with env 0's first 25 steps after the build settle (both start from the same snapshot state; the restore zeroes
+env 1's MuJoCo warm start). Three separately built processes, default mode:
+
+| Run | max hand-relative tool translation diff | rotation diff | drift from snapshot (fresh / restored) |
+| --- | --- | --- | --- |
+| g3_b2_n2_001 | 4.0e-7 m | 1.05e-6 rad | 37.2 / 37.1 um, 1.08e-3 / 1.08e-3 rad |
+| g3_b2_n2_002 | 4.1e-7 m | 1.14e-6 rad | same |
+| g3_b2_n2_003 | 4.2e-7 m | 1.14e-6 rad | same |
+
+Settled relative pose spread over the three rebuilds: 3.0e-8 m, 9.8e-8 rad. Everything is far inside the grasp
+tolerances (2 mm, pi/60), so G3 passes. The restored-vs-fresh difference (about 4e-7 m) is of the same size as
+the default-mode run-to-run band (G1), so the warm-start effect itself is bounded by it but not separated from
+it. The deterministic runs that would separate it are BLOCKED (next item).
+
+### Deterministic mode and B2
+
+With `deterministic_mode="run_to_run"` (which requires `MJWarpSolverCfg.disable_sensors=True`) the B2 settle fails
+in every world: over the stability window the tool moves 1.43 m relative to the hand at up to 4.7 m/s
+(`g0_det_b2_n1_diag_001`, non-strict, accumulators recorded). The same build passes the settle in default mode.
+B1 (no free tool) is bitwise deterministic in this mode (S1 G1). Not investigated further here; deterministic-mode
+isolation evidence therefore exists for B1 only.
+
+### G4
+
+Task `TRIM-01-R` (the registered ruler task the single env supports, ruler knife v1), physical grasp, `feedback=False`
+(robot only), 100 steps of the identical `joint_position_rad` sequence: the first successful single run's settled
+arm q plus a sine of amplitude min(0.05, half the joint-limit margin) on joints 2, 4 and 6
+(`probe_lab_batched_g4.py`; the batched env gets the sequence through its G4-only `step_joint_targets` harness, its
+HOME is the single run's settled arm q). The tolerance was fixed before running: 3 x the single env's own spread.
+
+- The frozen single env's settle is itself marginal on GPU: 3 of 7 single builds raised `FAIL_PHYSICAL_PREGRASP`
+  (angular speed gate; `g4_single_002/006/009`; `g4_single_001` hit a joint limit with the first, unbounded
+  sequence). The batched settle of this tool failed the same gate in 5 of 6 strict builds (`g4_batched_003..007`).
+  The three non-strict batched builds (`g4_batched_ns_001..003`) record the accumulators: translation/rotation
+  drift 0.1 mm / 2 mrad (inside the gates), max tool angular speed 0.70 / 0.03 / 1.16 rad/s against the 0.2 rad/s
+  gate; ns_002 passed.
+- Comparison (`g4_compare_002`, singles 005/007/008/010, batched ns_001..003), max over the 100 steps:
+
+| Quantity | Single 4-run spread | Tolerance (3 x) | Batched vs single | Verdict |
+| --- | --- | --- | --- | --- |
+| Arm joints | 7.1e-5 rad | 2.1e-4 rad | 3.5e-4 rad | outside |
+| Hand position | 2.5e-5 m | 7.5e-5 m | 2.7e-4 m | outside |
+| Tool position | 1.6e-3 m | 4.9e-3 m | 1.9e-3 m | within |
+| Tool rotation | 5.7e-2 rad | 1.7e-1 rad | 4.2e-2 rad | within |
+| Finger q | 1.5e-3 m | 4.6e-3 m | 1.5e-3 m | within |
+
+  The batched arm differs from the single env by about 0.35 mrad (0.27 mm at the hand), more than the single env
+  differs from itself. Known differences that can explain it: the batched HOME starts from the single's
+  post-settle q (the single env starts from its IK pose), MuJoCo model composition (per-world `{ENV_REGEX_NS}`
+  paths and `separate_worlds` against global prims) and the tool's initial pose (hand FK x hand_from_tool against
+  reference edge x inv(T_tool_edge)). Not separated further. The free tool's pose agrees within the single env's
+  (large) spread.
+
+### G5: material parity on identical edge and pad sequences
+
+The Lab run records, per env and step, the material's input (measured edge, cut digit, handle + two measured pad
+boxes) and its final codes and local positions. `probe_lab_batched_g5.py` replays that sequence through the
+frozen single `LiveCuttingMaterial` with the Native call order (`update_pad_obstacles` then `advance`).
+
+- L0 (CPU, `g5_l0_s3_b1_n2_001`): `BatchedCuttingMaterial(backend="isaac_lab_newton")` fed the recorded sequence
+  through the coupling surface against the single material, 20 steps, both envs: codes and positions bitwise
+  equal. The first 20 steps of the TRIM episode do not touch the workpiece, so this L0 covers the input path,
+  not contact.
+- L3 (GPU, `g5_l3_s3_b1_n2_e{0,1}_r{1,2,3}`, combined in `g5_l3_combined_s3_b1_n2_001`): the full 1200-step
+  input sequences of both envs of `s3_b1_n2_001` (seeds 512 and 15, real cutting) replayed through the frozen
+  single material, three replays per env, one replay per process. Every replay's final codes equal the batched
+  run's final codes (0 differing particles; labelled 33,740 and 80,986, band width 0); max position difference
+  2.8e-5 m (seed 512) and 2.1e-4 m (seed 15). Native side (descriptive, from P1-0): the P1-0 headless replay of
+  the WP-17 Native measured inputs reproduces the Native final codes exactly (labelled 37,958 / 85,786); the Lab
+  batch's inputs are its own closed-loop robot's, so its counts differ from Native's (section 3), while for the
+  same inputs the batched material equals the material Native runs. This is the "Native confirmation of
+  material parity" of P1-1b: the material class Native runs, on the batch's identical edge and pad sequence.
+  B2 inputs were not replayed (no B2 episode completed with a held grasp).
+
+### G2 with material, B2
+
+With the reference driver the B2 grasp is lost (as in S3 B2), and both rows (N=1, N=4) ended in a SIGSEGV inside
+the material's CUDA graph replay (`material_batch.advance` -> `wp.capture_launch`, Python stack in
+`g2mat_b2_n4_001/stdout.log`) instead of an invalid-env flag. B2 material timing is available from the S3 B2
+rows below (recorded driver, 1200 steps completed): 629 ms/step at N=2 and 1025 ms/step at N=4.
+
+## 3. S3 — representative TRIM (WP-17 seeds 512 and 15)
+
+Driver: `recorded_command_policy_v1` (imported from `rl/policies_batched.py`, unchanged): the WP-17 Native
+commanded edge targets converted to `edge_delta_v1` actions open loop from the env's own initial commanded pose
+(reconstruction residual against the recorded targets 0.10 mm for seed 512, 0.27 mm for seed 15; 1 and 3 clamped
+steps). Full 1200 steps, material `tlmpm_v7_2` law 8 at 1 mm / 4 mm / 0.1 ms, 102,732 / 103,898 particles (seeds 512 / 15), feedback
+on, strict mode, frozen evaluator per env at the end. Closed-loop robot dynamics (MJWarp) differ from Native
+PhysX; the comparison below is descriptive, never an equivalence claim.
+
+| Run | env (seed) | Labelled | Verdict | Components | Largest substrate share | Detached | Removed | Residual height |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Native WP-17 | 512 | 37,958 | PASS | 2 | 1.0 | 0.0 | 1.0 | 0.0 |
+| Native WP-17 | 15 | 85,786 | PASS | 3 | 1.0 | 0.0 | 1.0 / 1.0 | 0.0 / 0.0 |
+| s3_b1_n2_001 | 0 (512) | 33,740 | PASS | 2 | 1.0 | 0.0 | 1.0 | 0.0 |
+| s3_b1_n2_001 | 1 (15) | 80,986 | PASS | 3 | 1.0 | 0.0 | 1.0 / 1.0 | 0.0 / 0.0 |
+| s3_b1_n4_001 | 0, 2 (512) | 33,740 each | PASS | 2 | 1.0 | 0.0 | 1.0 | 0.0 |
+| s3_b1_n4_001 | 1, 3 (15) | 80,986 each | PASS | 3 | 1.0 | 0.0 | 1.0 / 1.0 | 0.0 / 0.0 |
+| s3_b2_n2_001 | 0 (512) | 0 | FAIL | 1 | 1.0 | 0.0 | 0.0 | 5.4 mm |
+| s3_b2_n2_001 | 1 (15) | 36,760 | FAIL | 1 | 1.0 | 0.0 | 0.0 / 0.0 | 5.0 / 7.3 mm |
+| s3_b2_n4_001 | 0..3 | 12,032 / 43,959 / 0 / 39,388 | FAIL | 1 | 1.0 | 0.0 | 0.0 | 0-37 mm |
+
+- **B1** (rigid mount, `reduced_fidelity`): every env passes the frozen evaluator with the same component count,
+  removed fraction and residual height as Native; 11 % (512) and 6 % (seed 15) fewer labelled particles than
+  Native. The final codes of a seed are bitwise identical across the N=2 and N=4 batches and across duplicate
+  envs (`final_codes_sha256` 108cc6fd... / ced88127...), even in default mode. Edge tracking of the recorded
+  targets: max 5.8 / 5.3 mm (tracking lag under the 1 mm/step limits), reaction up to 0.19 / 0.14 N.
+- **B2** (physical grasp, point contact profile, not reduced): the tool slips in the fingers during the free-space
+  reorientation from HOME to the skim pose (8-13 mm slip and 0.05-0.5 rad rotation at steps 20-160 with full
+  bilateral contact and no material force), the monitor latches GRASP_LOST at steps 177/181 (termination reason
+  4 in every env), and the episodes then cut with a misplaced edge: no protrusion removed, evaluator FAIL. The
+  N=4 envs with the same seed diverge (default-mode run-to-run differences amplified by the slipping grasp).
+  Native PhysX holds the same grasp configuration (WP-17 `grasp_stabilization` PASS, then PASS outcome).
+- **B2 with `finite_pad_patch_v3`** (the single Lab env's existing opt-in finite-pad profile, now accepted by the
+  batch): `s3_b2patch_n2_001` crashed with SIGSEGV during the build; `_002` (strict) raised `InvalidBatchEnvs` for env 1
+  (seed 15: NONFINITE_STATE, INVALID_MEASURED_POSE, NONFINITE_WRENCH, INVALID_OBSTACLE_BOXES); the non-strict
+  `_003` was aborted after 43 min (the B2 point-profile row took 13 min). No outcome for this profile.
+- Throughput of the S3 rows (warm, strict, recorded driver, SHARED_GPU): B1 686 ms/step at N=2 (2.9 env-steps/s),
+  1299 ms/step at N=4 (3.1 env-steps/s); B2 629 / 1025 ms/step (3.2 / 3.9 env-steps/s). Own VRAM peak 974-1108 MiB.
+
+## 4. Needed changes outside my files
+
+- `batched/material_batch.py`: an env whose measured edge / tool trajectory leaves the valid domain (here after a
+  lost grasp) must be flagged invalid, not crash the graph replay (SIGSEGV in `capture_launch`). Suggested: use
+  `pose_status` (known before the substeps) to neutralize the substep inputs of invalid envs and guard grid index
+  computations against non-finite particle positions.
+- `batched/errors.py`: nothing new (the eight codes are merged).
+- `rl/vector_env.py`: the dispatch list of the S1 section; plus `tasks=` (per-env seeds) and the
+  `termination_reason` / `evaluate(env_ids)` surface of the Lab env.
+
+## 5. Warp 1.17 HashGrid static-descriptor hazard (P1-3a finding): census of P1-1b processes
+
+Warp 1.17.0 replays a CUDA graph's HashGrid build with the descriptor of the last grid built on the host, so a
+process holding two or more CUDA `wp.HashGrid`s runs particle contacts on the wrong grid. CPU builds have no such
+static copy (P1-3a report §2-§3.0). Grid constructors in the code these processes import: `tlmpm_v5.py:798`
+(single material solver bed, created at `LiveCuttingMaterial.reset`), `batched/tlmpm_v7_2_batch.py:613` (one
+grouped grid per batch), and in Newton only `ModelBuilder.finalize` for models with particles (`particle_grid`,
+`builder.py:12590`; the rigid workload B model has none), plus `particle_surface.py` / `remesh.py` (not used).
+MuJoCo-Warp and Isaac Lab construct none (grep of `.deps/isaaclab-venv/.../mujoco_warp` and
+`.deps/IsaacLab/source`).
+
+| Process type | CUDA HashGrids | How checked | Verdict |
+| --- | --- | --- | --- |
+| Lab env with material (S1 G2 material rows, S3 B1/B2, G2 B2, patch rows) | 1 (the batch); the per-env single materials used for packing are reset on the CPU device (2 CPU grids for N=2) | instrumented run `hashgrid_check_b1_n2_001` (every `wp.HashGrid.__init__` recorded with device and creator) on the same code path | not affected |
+| Lab env robot-only (S1 G0/T2/G1/G2, G3, G4 batched) | 0 | no material code path; `g4_batched_ns_*` rows record 0 | not affected |
+| G4 single Lab env (frozen `IsaacLabCuttingEnv` with its `LiveCuttingMaterial`) | 1 | `g4_single_*/g4.json` `hashgrids` | not affected |
+| G5 L0 (CPU) | 0 CUDA (all CPU) | CPU device only | not affected |
+| G5 L3 single replays | 1 per process | rerun one replay per process (`g5_l3_*_e{0,1}_r{1,2,3}`), each records `hashgrids.cuda_count = 1` | not affected (the multi-replay design was replaced before it ran) |
+
+So no P1-1b process held two CUDA grids and no run is labelled `INVALID_MULTI_GRID_PROCESS`. Every probe now
+records its grid census in its row, and the G5 band combiner refuses a multi-grid input.

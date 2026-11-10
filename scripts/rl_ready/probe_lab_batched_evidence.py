@@ -72,6 +72,18 @@ def s2_s3(args):
                                              cwd=ROOT).stdout.strip(), "rows": {}, "g4": {}, "g5": {},
            "native_wp17": {str(s): _native_wp17(s) for s in (512, 15)}, "material_results": "SIMULATOR_ONLY_UNCALIBRATED"}
     out["failed_or_aborted_runs"] = crashed
+    out["hashgrid_census"] = dict(
+        hazard="Warp 1.17.0 hash_grid_update_device_impl copies the grid descriptor from a function-static host "
+               "variable; a replayed CUDA graph uses the last host-built grid (P1-3a probe_hashgrid_descriptor.py)",
+        verdict="NO P1-1b process held more than one CUDA wp.HashGrid; no run is INVALID_MULTI_GRID_PROCESS",
+        method=["grep of every wp.HashGrid constructor in src/ (tlmpm_v5.py:798 single bed at reset; "
+                "batched/tlmpm_v7_2_batch.py:613 one grouped grid per batch), Newton (builder.py particle_grid only "
+                "for models with particles; the rigid model has none), MuJoCo-Warp and Isaac Lab (none)",
+                "instrumented run hashgrid_check_b1_n2_001 on the Lab material code path: 1 CUDA grid (batch) + "
+                "2 CPU grids (the per-env single materials reset on the CPU device for packing)",
+                "every later probe row/json records its census (hashgrids.cuda_count); G5 L3 runs one replay per "
+                "process and the combiner refuses multi-grid inputs"],
+        instrumented={n: r["hashgrids"] for n, r in rows.items() if isinstance(r.get("hashgrids"), dict)})
     for name, r in rows.items():
         summary = _row_summary(name, r)
         summary["workload"] = "B" if r.get("material") not in (None, "none (robot-only)") else "B (robot-only)"

@@ -628,3 +628,31 @@ Deviations and refinements:
    Rewards stay zero (`reward_available` false): the packed reward is not wired into this env yet.
 6. **GPU G-probe driver.** G2 material rows use a device reference-tracking driver of `edge_delta_v1` on the
    task's `reference_action` (not a policy, not the WP-17 controller).
+
+### Stages S2 and S3 (GPU0), 2026-11-10
+
+Report sections "Stages S2 and S3" of `docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md`; evidence
+`docs/evidence/rl_ready/p1_1b_s2_s3_001.json`.
+
+1. **Reward and evaluation in the Lab env.** With material attached: `trim_bond_progress_packed_v1` as workload A,
+   `termination_reason` bits (rigid invalid, material invalid, grasp lost, IK-failure streak with
+   `max_consecutive_ik_failures`), truncation at the task step count, and `evaluate(env_ids)` through the frozen
+   `goals.evaluate_goal` on a host snapshot. Per-env material tasks (`tasks=`) when the rigid scene is uniform.
+2. **G3** passes within grasp tolerance in default mode. The warm-start effect could not be isolated:
+   **deterministic mode breaks the B2 settle** (the free tool is ejected; B1 is unaffected), so G1 bitwise
+   evidence exists for B1 only.
+3. **B2 grasp under the TRIM motion (S3).** With the point contact profile the tool slips out of the hand pose
+   during the HOME-to-skim reorientation (8-13 mm, up to 0.5 rad before any material contact); the monitor
+   terminates every env (GRASP_LOST) and the TRIM outcome fails. Native PhysX holds the same grasp. The opt-in
+   `finite_pad_patch_v3` profile (the single Lab env's existing option, now accepted for B2) did not complete an
+   episode (one SIGSEGV at build, one non-finite env, one aborted run). B1 passes S3 on both seeds.
+4. **G4** (batched N=1 B2 vs the single Lab env, robot only): tool pose and fingers within 3 x the single env's
+   spread; arm joints (0.35 mrad) and hand position (0.27 mm) outside. The single env's own grasp settle fails the
+   angular-speed gate in 3 of 7 GPU builds, the batch's in 5 of 6 strict builds for this tool.
+5. **G5:** L0 bitwise on CPU (first 20 steps, no contact); L3: the frozen single material reproduces the batched
+   Lab run's final codes exactly on the batch's own 1200-step edge/pad sequences (both seeds, 3 replays each).
+6. **Material robustness.** After a lost grasp, the material's graph replay crashed (SIGSEGV) in two B2 runs
+   instead of flagging the env invalid; listed as a needed change in `batched/material_batch.py`.
+7. **Warp HashGrid hazard (P1-3a).** No P1-1b process held more than one CUDA HashGrid (census in the evidence);
+   probes now record their grid census.
+8. **CUT for `tlmpm_v7_2`:** NOT_RUN, no declared configured CUT scene uses `tlmpm_v7_2`.
