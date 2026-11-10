@@ -24,30 +24,35 @@ from .policies_batched import RecordedCommandPolicyV1, recorded_command_actions
 POLICY_REFERENCE = "reference_command_policy_v1"
 
 
-def reference_schedule(task, steps=None):
+def reference_schedule(task, steps=None, start_step=0):
     """Per-control-step reference of a compiled task (CPU, NumPy).
+
+    ``start_step`` > 0 starts at knot ``start_step`` (initial pose = that knot; window tests only).
 
     Returns ``dict(targets [T,7] WORLD XYZ+XYZW float64, cut_enabled [T] bool, cut_index [T] int32 (digit,
     0 when disarmed, the submitted default), resolved_cut [T] int32 (-1 disarmed), labels [T] str (planner
     phase pursued during the step), initial_pose [7], steps T, control_dt_s)``."""
     dt = float(task.control_dt_s)
     declared = int(round(float(task.duration_s) / dt))
-    T = declared if steps is None else int(steps)
-    if not 1 <= T <= declared:
-        raise ValueError(f"steps must lie in [1, {declared}]")
-    times = dt * np.arange(T + 1)
+    start_step = int(start_step)
+    T = declared - start_step if steps is None else int(steps)
+    if not 0 <= start_step < declared or not 1 <= T <= declared - start_step:
+        raise ValueError(f"start_step + steps must lie in [1, {declared}]")
+    times = dt * (start_step + np.arange(T + 1))
     times[-1] = min(times[-1], float(task.duration_s))
     targets = np.stack([np.asarray(task.reference_edge_pose_world(float(t)), float) for t in times[1:]])
     resolved = np.asarray([task.active_cut_index(float(t)) for t in times[:-1]], np.int32)
-    labels = [str(task.reference_phase_labels[min(k, len(task.reference_phase_labels) - 1)]) for k in range(T)]
+    labels = [str(task.reference_phase_labels[min(k, len(task.reference_phase_labels) - 1)])
+              for k in range(start_step, start_step + T)]
     return dict(targets=targets, cut_enabled=resolved >= 0, cut_index=np.where(resolved >= 0, resolved, 0).astype(np.int32),
                 resolved_cut=resolved, labels=labels,
-                initial_pose=np.asarray(task.reference_edge_pose_world(0.), float), steps=T, control_dt_s=dt)
+                initial_pose=np.asarray(task.reference_edge_pose_world(float(times[0])), float), steps=T,
+                start_step=start_step, control_dt_s=dt)
 
 
-def reference_command_actions(task, steps=None):
+def reference_command_actions(task, steps=None, start_step=0):
     """``(actions [T,8] float32, reconstructed [T,7] float64, schedule, report)`` of a compiled task."""
-    schedule = reference_schedule(task, steps)
+    schedule = reference_schedule(task, steps, start_step)
     actions, reconstructed, report = recorded_command_actions(
         schedule["targets"], schedule["cut_enabled"], schedule["cut_index"], schedule["initial_pose"],
         task.action_limits(), task.T_world_workpiece, int(task.max_cuts))

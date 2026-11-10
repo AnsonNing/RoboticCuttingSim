@@ -136,7 +136,8 @@ class SeverBondProgressReward(RP.TrimBondProgressReward):
 
     def step(self, codes, invalid=None):
         reward, terms = super().step(codes, invalid)
-        terms["severed_off_target_bonds"] = terms.pop("severed_substrate_bonds")
+        # the shared vector-env contract keeps the CSR slot name ``severed_substrate_bonds`` (here: off-target)
+        terms["severed_off_target_bonds"] = terms["severed_substrate_bonds"]
         return reward, terms
 
 

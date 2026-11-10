@@ -124,5 +124,5 @@ def test_torch_reducer_matches_the_numpy_reference_over_two_envs():
         np.testing.assert_allclose(r.numpy(), expected.astype(np.float32), rtol=0, atol=0)
         assert terms["severed_target_bonds"].tolist() == counts[0].tolist()
         assert terms["severed_off_target_bonds"].tolist() == counts[1].tolist()
-        assert "severed_substrate_bonds" not in terms
+        assert terms["severed_substrate_bonds"].tolist() == counts[1].tolist()      # contract slot name (alias)
         previous = counts
