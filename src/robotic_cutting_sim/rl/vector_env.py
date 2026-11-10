@@ -38,7 +38,16 @@ synchronizes the device after every public call, a debug mode for suspected stre
 use the legacy default stream) and replayed on the Torch stream.
 
 Success comes only from ``evaluate()`` (the frozen ``goals.evaluate_goal`` of the compiled task) on a host
-snapshot at episode end, never from the shaping reward. Fidelity against the Native TRIM reference is computed
+snapshot at episode end, never from the shaping reward. ``evaluation_stream=True`` (opt-in, P1-2b) records the
+Native WP-17 sample cadence (reset, every 10 steps, done) on the device and ``evaluate()`` passes those frames
+(``rl.evaluation_stream``); the default keeps the two-frame evaluation and every result names its mode.
+
+P1-2b additions (both backends): ``tasks=`` per-env task selection (``[512, 15]`` or dicts with ``scene_seed``,
+``family_id``, ``seed``); ``info["termination_reason"]`` (``rl.termination`` bitfield, decoded by
+``decode_termination``); the material input guard (``rl.material_guard``, default on, ``input_guard=False`` rolls
+it back) that holds an env whose edge/pad input leaves the valid domain; infrastructure failures raised as
+``VectorEnvInfrastructureError``. ``backend="isaac_lab_newton"`` (workload B, robot-batched) dispatches to
+``rl.lab_vector_env.LabVectorCuttingEnv`` with the same public contract (``rl.vector_contract``). Fidelity against the Native TRIM reference is computed
 into ``receipt()["fidelity"]``; workload A is always ``reduced_fidelity`` (ideal tracking, no robot dynamics,
 reaction not fed back, plus pad/resolution/episode differences when present).
 """
@@ -55,8 +64,11 @@ import numpy as np
 from ..batched.errors import CODES as BATCH_CODES, UnsupportedBatchConfiguration
 
 VECTOR_ENV_VERSION = "rl_vector_env_v1"
+VECTOR_API_REVISION = "p1_2b"   # tasks=, termination_reason, input guard, evaluation stream, isaac_lab_newton dispatch
 RUNTIME = "rl_gpu_headless"
 BACKEND = "kinematic_ideal_tracking_batched"
+LAB_BACKEND = "isaac_lab_newton"
+BACKENDS = (BACKEND, LAB_BACKEND)
 ACTION_SPEC = "edge_delta_v1"
 REWARD = "trim_bond_progress_packed_v1"
 MATERIAL = "scene_declared"
@@ -78,7 +90,7 @@ NATIVE_TRIM_V7_2_REFERENCE = dict(
     source="WP-17 native_optimized_001 (seeded_trim rcs_trim_random_sim_v1, seeds 512/15)")
 
 VECTOR_CODES = BATCH_CODES + ("UNSUPPORTED_RUNTIME", "UNSUPPORTED_OPTION", "UNSUPPORTED_TASK",
-                              "UNSUPPORTED_DEVICE")
+                              "UNSUPPORTED_DEVICE", "UNSUPPORTED_AUTORESET_FINAL_OBS")
 
 
 class UnsupportedVectorConfiguration(UnsupportedBatchConfiguration):
@@ -113,20 +125,38 @@ class TaskFamily:
     pad_boxes_edge: tuple | None = None
     pad_recipients: tuple | None = None
     material_dt_s: float = DEFAULT_MATERIAL_DT_S
+    family_ids: tuple | None = None     # per-env family (P1-2b ``tasks=``); None: ``family_id`` everywhere
+    env_seeds: tuple | None = None      # per-env initial RNG seed (P1-2b ``tasks=``); None: ``sim_seed`` everywhere
 
     def __post_init__(self):
         seeds = tuple(int(s) for s in self.scene_seeds)
         if not seeds or any(s < 0 for s in seeds):
             raise ValueError("scene_seeds must be a nonempty sequence of nonnegative ints")
         object.__setattr__(self, "scene_seeds", seeds)
-        if self.family_id not in TASK_FAMILIES:
-            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"family {self.family_id!r}; "
-                                                 f"supported {sorted(TASK_FAMILIES)}")
+        for family in (self.family_id, *(self.family_ids or ())):
+            if family not in TASK_FAMILIES:
+                raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"family {family!r}; "
+                                                     f"supported {sorted(TASK_FAMILIES)}")
+        if self.family_ids is not None:
+            object.__setattr__(self, "family_ids", tuple(self.family_ids))
+            if len(self.family_ids) != len(seeds):
+                raise ValueError("family_ids must hold one family per env")
+        if self.env_seeds is not None:
+            env_seeds = tuple(int(s) for s in self.env_seeds)
+            if len(env_seeds) != len(seeds) or any(s < 0 for s in env_seeds):
+                raise ValueError("env_seeds must hold one nonnegative int per env")
+            object.__setattr__(self, "env_seeds", env_seeds)
         if self.max_episode_steps is not None and (not isinstance(self.max_episode_steps, int)
                                                    or self.max_episode_steps < 1):
             raise ValueError("max_episode_steps must be a positive int or None")
         if (self.pad_boxes_edge is None) != (self.pad_recipients is None):
             raise ValueError("pad_boxes_edge and pad_recipients are given together")
+
+    def family_of(self, e):
+        return self.family_id if self.family_ids is None else self.family_ids[e]
+
+    def env_seed(self, e):
+        return int(self.sim_seed) if self.env_seeds is None else self.env_seeds[e]
 
     def to_dict(self):
         out = asdict(self)
@@ -136,12 +166,63 @@ class TaskFamily:
         return out
 
 
-def _compile(family, seed):
+def _compile(family, seed, family_id=None):
     from ..scene_config import compile_task
     from ..seeded_trim import generate_scene, goal_config
     options = {} if family.particle_spacing_m is None else {"particle_spacing_m": float(family.particle_spacing_m)}
-    return compile_task(generate_scene(seed, distribution=TASK_FAMILIES[family.family_id]), goal_config(),
+    family_id = family.family_id if family_id is None else family_id
+    return compile_task(generate_scene(seed, distribution=TASK_FAMILIES[family_id]), goal_config(),
                         seed=int(family.sim_seed), **options)
+
+
+def compile_family(family):
+    """One compiled task per env (compiled once per distinct (family, scene seed))."""
+    cache = {}
+    for e, seed in enumerate(family.scene_seeds):
+        key = (family.family_of(e), seed)
+        if key not in cache:
+            cache[key] = _compile(family, seed, key[0])
+    return [cache[(family.family_of(e), seed)] for e, seed in enumerate(family.scene_seeds)]
+
+
+TASK_SELECTION_KEYS = ("scene_seed", "family_id", "seed")
+
+
+def resolve_tasks(num_envs, task=None, tasks=None):
+    """``open_vector_env(tasks=...)``: per-env task/seed selection of a heterogeneous batch.
+
+    ``tasks``: one item per env, an int scene seed (``[512, 15]``) or a dict with ``scene_seed`` and optional
+    ``family_id`` (``agentic_trim_id`` | ``agentic_trim_ood``) and ``seed`` (the env's initial RNG seed). With a
+    ``TaskFamily`` as ``task`` its other options (spacing, episode length, poses, pads, dt) are kept and the
+    per-env selection is replaced; without one, a default ``TaskFamily`` is built. Anything else (compiled task
+    objects, CUT scenes) raises ``UNSUPPORTED_TASK``."""
+    from dataclasses import replace
+    if tasks is None:
+        return task
+    items = list(tasks)
+    if not isinstance(num_envs, int) or len(items) != num_envs:
+        raise ValueError(f"tasks must hold one entry per env ({num_envs}), got {len(items)}")
+    seeds, families, env_seeds = [], [], []
+    for e, item in enumerate(items):
+        if isinstance(item, (int, np.integer)) and not isinstance(item, bool):
+            item = {"scene_seed": int(item)}
+        if not isinstance(item, dict) or "scene_seed" not in item or set(item) - set(TASK_SELECTION_KEYS):
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]={item!r}: an int scene seed or a "
+                                                 f"dict with keys {TASK_SELECTION_KEYS} (scene_seed required)")
+        seeds.append(int(item["scene_seed"]))
+        families.append(item.get("family_id"))
+        env_seeds.append(item.get("seed"))
+    if task is not None and not isinstance(task, TaskFamily):
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "task must be a TaskFamily (or None) with tasks=")
+    base = task if task is not None else TaskFamily(scene_seeds=tuple(seeds))
+    default_family = base.family_id
+    family_ids = tuple(f if f is not None else default_family for f in families)
+    uniform_family = len(set(family_ids)) == 1
+    default_seed = int(base.sim_seed)
+    resolved_seeds = tuple(int(s) if s is not None else default_seed for s in env_seeds)
+    return replace(base, scene_seeds=tuple(seeds), family_id=family_ids[0] if uniform_family else default_family,
+                   family_ids=None if uniform_family else family_ids,
+                   env_seeds=None if all(s is None for s in env_seeds) else resolved_seeds)
 
 
 # ----------------------------------------------------------------------------- helpers
@@ -182,6 +263,19 @@ class MinimalBox:
     dtype: type = np.float32
 
 
+def _guard_config(value, config_type):
+    """``input_guard``: None/True (default config), False (disabled: the P1-2 behaviour), a dict or a config."""
+    if value is False:
+        return None
+    if value is None or value is True:
+        return config_type().validate()
+    if isinstance(value, config_type):
+        return value.validate()
+    if isinstance(value, dict):
+        return config_type(**value).validate()
+    raise ValueError("input_guard must be None, a bool, a dict or a MaterialInputGuardConfig")
+
+
 # ----------------------------------------------------------------------------- environment
 
 class VectorCuttingEnv:
@@ -192,7 +286,9 @@ class VectorCuttingEnv:
     def __init__(self, num_envs, *, runtime=RUNTIME, task=None, material=MATERIAL, observation_profile="state",
                  device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, autoreset=False,
                  strict=True, output_dir=None, parity_mode=False, reward_config=None, cameras=None, sensors=None,
-                 recorders=None, debug_sync=False, particle_contact_mode="frozen_v1", particle_contact_options=None):
+                 recorders=None, debug_sync=False, particle_contact_mode="frozen_v1", particle_contact_options=None,
+                 evaluation_stream=None, input_guard=None, terminal_capture=False,
+                 allow_multiple_device_hashgrids=False):
         t0 = time.perf_counter()
         import torch
         import warp as wp
@@ -200,8 +296,8 @@ class VectorCuttingEnv:
         if runtime != RUNTIME:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_RUNTIME", f"{runtime!r}; only {RUNTIME!r}")
         if backend != BACKEND:
-            raise UnsupportedVectorConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; only {BACKEND!r} "
-                                                 "(isaac_lab_newton is P1-1b)")
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; VectorCuttingEnv is {BACKEND!r} "
+                                                 f"(open_vector_env dispatches {LAB_BACKEND!r} to LabVectorCuttingEnv)")
         if material != MATERIAL:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"material={material!r}; only {MATERIAL!r}")
         if observation_profile not in OBSERVATION_PROFILES:
@@ -224,6 +320,19 @@ class VectorCuttingEnv:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "task must be a TaskFamily of seeded TRIM scenes")
         if not isinstance(num_envs, int) or num_envs < 1 or len(task.scene_seeds) != num_envs:
             raise ValueError("num_envs must be a positive int equal to len(task.scene_seeds)")
+        from .evaluation_stream import stream_config
+        from .material_guard import MaterialInputGuardConfig
+        self.evaluation_stream_config = stream_config(evaluation_stream)
+        self.terminal_capture_enabled = bool(terminal_capture)
+        if self.terminal_capture_enabled and autoreset != "same_step":
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", "terminal_capture=True captures envs that finish "
+                                                 "under autoreset='same_step'; without autoreset evaluate() at the "
+                                                 "episode end instead")
+        if self.evaluation_stream_config is not None and autoreset == "same_step" and not self.terminal_capture_enabled:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", "evaluation_stream with autoreset='same_step' "
+                                                 "needs terminal_capture=True (else a finished episode's samples are "
+                                                 "overwritten in the same call)")
+        self.input_guard_config = _guard_config(input_guard, MaterialInputGuardConfig)
         self.torch_device = torch.device(device)
         if self.torch_device.type == "cuda" and self.torch_device.index is None:
             self.torch_device = torch.device("cuda", torch.cuda.current_device())
@@ -240,6 +349,9 @@ class VectorCuttingEnv:
         # P1-3a opt-in material execution (batched/particle_contacts.py); "frozen_v1" is the default and rollback.
         self.particle_contact_mode = particle_contact_mode
         self.particle_contact_options = particle_contact_options
+        # DIAGNOSTICS ONLY (review F7): forwarded to BatchedCuttingMaterial; lets several batches with device grids
+        # live in one process (P1-3a samestate/ab/stagebench). Refused by default; recorded in the receipt.
+        self.allow_multiple_device_hashgrids = bool(allow_multiple_device_hashgrids)
         self.debug_sync = bool(debug_sync)   # ADR §14 risk 4: synchronize the device after every public call
         self.last_warp_stream_handle = None  # Warp stream used by the last public call (stream-policy test hook)
         self.output_dir = None if output_dir is None else Path(output_dir)
@@ -249,6 +361,7 @@ class VectorCuttingEnv:
             self.output_dir.mkdir(parents=True, exist_ok=True)
         self._streams = {}
         self._closed = False
+        self.infrastructure_error = None
         self._build(reward_config)
         self.build_wall_s = time.perf_counter() - t0
         if self.output_dir is not None:
@@ -268,10 +381,7 @@ class VectorCuttingEnv:
         from .reward_packed import TrimBondProgressReward, TrimBondRewardConfig, bonds_from_task, pack_bonds
 
         fam, N = self.task_family, self.num_envs
-        tasks = {}
-        for seed in sorted(set(fam.scene_seeds)):
-            tasks[seed] = _compile(fam, seed)
-        self.tasks = [tasks[s] for s in fam.scene_seeds]
+        self.tasks = compile_family(fam)
         first = self.tasks[0]
         for task in self.tasks:
             if (task.control_dt_s, task.duration_s, task.grid_dx_m, task.max_cuts, task.cutting_law,
@@ -306,10 +416,11 @@ class VectorCuttingEnv:
                                     solver=task.solver_module, v7_2_optimizations=True)
             if pads is not None:
                 m.configure_pad_obstacles(pads[e], list(fam.pad_recipients))
-            specs.append(layout.EnvSpec(m, initial[e], int(fam.sim_seed), task.config_sha256))
+            specs.append(layout.EnvSpec(m, initial[e], fam.env_seed(e), task.config_sha256))
         self.material = BatchedCuttingMaterial(specs, device=self.wp_device, parity_mode=self.parity_mode,
                                                strict=self.strict, particle_contact_mode=self.particle_contact_mode,
-                                               particle_contact_options=self.particle_contact_options)
+                                               particle_contact_options=self.particle_contact_options,
+                                               allow_multiple_device_hashgrids=self.allow_multiple_device_hashgrids)
         if self._cuda:
             wp.synchronize_device(self.wp_device)
         pk = self.material.packed
@@ -319,7 +430,7 @@ class VectorCuttingEnv:
             if key not in particles_cache:
                 particles_cache[key] = (np.asarray(m.points), np.asarray(m.masses), np.asarray(m.lattice))
             points, masses, lattice = particles_cache[key]
-            self._env_host.append(dict(task=task, scene_seed=fam.scene_seeds[e], scene_key=key,
+            self._env_host.append(dict(task=task, scene_seed=fam.scene_seeds[e], family_id=fam.family_of(e), scene_key=key,
                                        T_world_local=np.asarray(m.T_world_local, float), points=points,
                                        masses=masses, lattice=lattice))
             bonds.append(bonds_from_task(task, particles=(points, masses, lattice)))
@@ -358,7 +469,19 @@ class VectorCuttingEnv:
             self.action_steps = torch.zeros(N, dtype=torch.int64, device=dev)
             self.replay_steps = torch.zeros(N, dtype=torch.int64, device=dev)
             self.replay_pad_steps = torch.zeros(N, dtype=torch.int64, device=dev)
+            self._last_pose = view(mt.last_pose)                # [N,7] float64 (last accepted measured pose)
             self.reward.reset(self._codes)
+            from .material_guard import MaterialInputGuard
+            from .evaluation_stream import EvaluationStream
+            self.input_guard = (None if self.input_guard_config is None else
+                                MaterialInputGuard(mt, N, dev, self.input_guard_config))
+            from .evaluation_stream import TerminalCapture
+            self.terminal = TerminalCapture(mt, dev) if self.terminal_capture_enabled else None
+            self.evaluation_stream = (None if self.evaluation_stream_config is None else
+                                      EvaluationStream(mt, self.max_episode_steps, dev, self.evaluation_stream_config,
+                                                       banks=2 if self.terminal is not None else 1))
+            self.termination_reason = torch.zeros(N, dtype=torch.int32, device=dev)
+            self.autoreset_count = torch.zeros(N, dtype=torch.int64, device=dev)
         self.boxes = int(s.boxes)
         self.pads_configured = pads is not None
         self.single_action_space = _box_space(-1., 1., (8,))
@@ -430,6 +553,10 @@ class VectorCuttingEnv:
         seeds: a geometry change raises ``UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET`` (use a new env).
         Non-reset envs are untouched (bitwise on CPU)."""
         self._check_open()
+        return self._infrastructure_guarded(self._reset_impl, seeds=seeds, env_ids=env_ids, scene_seeds=scene_seeds,
+                                            options=options, seed=seed)
+
+    def _reset_impl(self, *, seeds=None, env_ids=None, scene_seeds=None, options=None, seed=None):
         torch, N = self.torch, self.num_envs
         if options:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"reset options {sorted(options)}")
@@ -489,6 +616,12 @@ class VectorCuttingEnv:
         self.drive.masked_fill_(mask, DRIVE_ACTION)
         counts = self.reward.severed_counts(self._codes)
         self.reward.counts.copy_(torch.where(mask[None], counts, self.reward.counts))
+        self.termination_reason.masked_fill_(mask, 0)
+        if self.input_guard is not None:
+            self.input_guard.reset(mask)
+        if self.evaluation_stream is not None:
+            self.evaluation_stream.reset(mask)
+            self.evaluation_stream.capture(mask)        # the reset state is the step-0 sample (Native capture())
 
     def _reset_device(self, mask):
         """Masked device reset (autoreset): no host sync; next seed = splitmix64(seed + episode + 1)."""
@@ -517,6 +650,9 @@ class VectorCuttingEnv:
     def _check_open(self):
         if self._closed:
             raise RuntimeError("vector env is closed")
+        if self.infrastructure_error is not None:
+            raise RuntimeError(f"vector env had an infrastructure error ({self.infrastructure_error['kind']}); "
+                               "close it and open a new env (or process)")
 
     def _check_tensor(self, value, shape, dtype, name):
         torch = self.torch
@@ -527,6 +663,27 @@ class VectorCuttingEnv:
 
     def _step(self, actions, edge_pose, cut_index, pad_boxes, env_mask):
         self._check_open()
+        return self._infrastructure_guarded(self._step_impl, actions, edge_pose, cut_index, pad_boxes, env_mask)
+
+    def _infrastructure_guarded(self, fn, *args, **kwargs):
+        """Run a public call; an infrastructure failure (OOM, CUDA/Warp error) becomes
+        ``VectorEnvInfrastructureError`` with every env marked ``TERM_INFRASTRUCTURE`` and the env refuses further
+        calls. Task failures (strict-mode invalid envs) and caller errors propagate unchanged."""
+        from .termination import TERM_INFRASTRUCTURE, VectorEnvInfrastructureError, classify_exception
+        try:
+            return fn(*args, **kwargs)
+        except VectorEnvInfrastructureError:
+            raise
+        except Exception as error:
+            category, kind = classify_exception(error)
+            if category != "infrastructure":
+                raise
+            reason = np.full(self.num_envs, TERM_INFRASTRUCTURE, np.int32)
+            self.infrastructure_error = dict(kind=kind, error=f"{type(error).__name__}: {error}"[:2000],
+                                             call=getattr(fn, "__name__", str(fn)))
+            raise VectorEnvInfrastructureError(kind, self.infrastructure_error["error"], reason) from error
+
+    def _step_impl(self, actions, edge_pose, cut_index, pad_boxes, env_mask):
         torch, N = self.torch, self.num_envs
         replay = edge_pose is not None
         if replay:
@@ -554,6 +711,7 @@ class VectorCuttingEnv:
                 executed, armed, clamped = result.executed_action, result.armed, (
                     result.translation_clamped | result.rotation_clamped | result.workspace_clamped)
                 out_of_box = result.out_of_box
+            mask = None
             if replay:
                 mask = torch.ones(N, dtype=torch.bool, device=self.torch_device) if env_mask is None else env_mask
                 replay_executed = torch.zeros((N, 8), dtype=torch.float32, device=self.torch_device)
@@ -573,38 +731,62 @@ class VectorCuttingEnv:
                     armed = torch.where(mask, cut_index >= 0, armed)
                     clamped = clamped & ~mask
                     out_of_box = out_of_box & ~mask
+            cut = cut.to(torch.int32)
+            box_write = mask
+            if self.input_guard is not None:
+                # P1-2b material input guard: out-of-domain envs are held (no host sync), others untouched
+                pose, cut, box_write = self.input_guard.apply(pose, cut, self._last_pose, step_count=self._step_count + 1,
+                                                              boxes=pad_boxes, box_mask=mask)
+                armed = armed & ~self.input_guard.held
+            if replay:
                 if pad_boxes is not None:
-                    m3 = mask[:, None, None]
+                    m3 = box_write[:, None, None]
                     self._box_centers.copy_(torch.where(m3, pad_boxes[:, :, 0], self._box_centers))
                     self._box_halves.copy_(torch.where(m3, pad_boxes[:, :, 1], self._box_halves))
-                    self.replay_pad_steps.add_(mask.to(torch.int64))
+                    self.replay_pad_steps.add_(box_write.to(torch.int64))
                 self.drive.copy_(mask.to(torch.int8))
                 self.replay_steps.add_(mask.to(torch.int64))
                 self.action_steps.add_((~mask).to(torch.int64))
             else:
                 self.drive.zero_()
                 self.action_steps.add_(1)
-            # ideal tracking: measured = commanded
+            # ideal tracking: measured = commanded (held envs: the last accepted pose)
             self.commanded_pose.copy_(pose)
             self._measured.copy_(pose)
-            self._cut_input.copy_(cut.to(torch.int32))
+            self._cut_input.copy_(cut)
             self.material.advance(interpolation="device")      # strict: one int32 readback, raises on invalid
-            invalid = self._invalid != 0
+            from .termination import INVALID_STATE_BITS, TERM_MATERIAL_INVALID, TERM_TRUNCATED
+            reason = torch.where(self._invalid != 0, TERM_MATERIAL_INVALID, 0).to(torch.int32)
+            if self.input_guard is not None:
+                reason = reason | self.input_guard.termination_bits()
+            invalid = (reason & INVALID_STATE_BITS) != 0
             reward, terms = self.reward.step(self._codes, invalid)
             self.previous_action.copy_(executed)
             self.armed.copy_(armed)
             step_count = self._step_count.clone()
             truncated = step_count >= self.max_episode_steps
-            terminated = invalid.clone()
+            terminated = reason != 0
+            self.termination_reason.copy_(reason | torch.where(truncated, TERM_TRUNCATED, 0).to(torch.int32))
+            if self.evaluation_stream is not None:
+                self.evaluation_stream.capture(self.evaluation_stream.due(step_count, terminated | truncated))
             obs = self._observe()
             info = {"step_count": step_count, "action_status": status.to(torch.int32),
-                    "invalid_reason": self._invalid.clone(), "cut_digit": cut.to(torch.int32),
+                    "invalid_reason": self._invalid.clone(), "cut_digit": cut,
                     "action_clamped": clamped, "action_out_of_box": out_of_box, "drive": self.drive.clone(),
-                    "seed": self._seed.clone(), "episode": self.episode.clone(), **terms}
+                    "seed": self._seed.clone(), "episode": self.episode.clone(),
+                    "termination_reason": self.termination_reason.clone(), **terms}
+            if self.input_guard is not None:
+                info["input_guard_reason"] = self.input_guard.reason.clone()
             if self.autoreset == "same_step":
                 done = terminated | truncated
                 info["final_obs"] = obs
                 info["autoreset"] = done
+                if self.terminal is not None:      # review F5: keep the finished episode for evaluate()
+                    self.terminal.capture(done, step_count, self.episode)
+                    if self.evaluation_stream is not None:
+                        self.evaluation_stream.flip(done)
+                    info["terminal_captured"] = done.clone()
+                self.autoreset_count.add_(done.to(torch.int64))
                 self._reset_device(done)
                 obs = self._observe()
             return obs, reward, terminated, truncated, info
@@ -620,7 +802,8 @@ class VectorCuttingEnv:
             x, v, code = s.x[p0:p1].numpy(), s.v[p0:p1].numpy(), s.code[p0:p1].numpy()
             step = int(self.material.step_count[e:e + 1].numpy()[0])
         T = self._env_host[e]["T_world_local"]
-        return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.asarray(code),
+        # copies: on the Warp CPU device .numpy() aliases the live solver arrays
+        return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.array(code, copy=True),
                     step_count=step, time_s=step * self.control_dt)
 
     def evaluation_reference(self, e):
@@ -637,41 +820,71 @@ class VectorCuttingEnv:
                     reference_stencil_weights=pk.host["weights"][p0:p1].copy(),
                     reference_stencil_gradients=pk.host["gradients"][p0:p1].copy())
 
-    def evaluate(self, env_ids=None, *, frames=None):
-        """Frozen seeded_trim goal evaluation of the CURRENT state of ``env_ids`` (host; call at episode end).
+    def evaluate(self, env_ids=None, *, frames=None, episode="current"):
+        """Frozen seeded_trim goal evaluation of ``env_ids`` (host; call at episode end).
 
-        The recording handed to ``task.evaluate_goal`` (= ``goals.evaluate_goal``, the same call as
-        ``seeded_trim.evaluate_recording`` without ``surface_state``) has two frames: the reset state (t = 0,
-        reference positions, zero velocities and codes) and the current state at ``t = step_count * dt``.
-        ``frames`` (optional, per env: list of ``snapshot_world`` dicts in time order, the first after t = 0)
-        replaces the final frame by that series plus the current state. Returns one dict per env with the
-        full evaluator result and a summary."""
+        ``episode="current"`` scores the CURRENT state. Default (``evaluation_mode =
+        two_frame_reset_and_current_v1``): the recording handed to ``task.evaluate_goal`` (= ``goals.evaluate_goal``,
+        the same call as ``seeded_trim.evaluate_recording`` without ``surface_state``) has two frames, the reset
+        state (t = 0, reference positions, zero velocities and codes) and the current state at
+        ``t = step_count * dt``; ``frames`` (optional, per env: ``snapshot_world`` dicts in time order, the first
+        after t = 0) are inserted between them. With ``evaluation_stream`` enabled (``evaluation_mode =
+        evaluation_stream_v1``) the recorded samples (reset, every ``every`` steps, done) plus the current state are
+        passed instead (``frames`` is then refused). An env that was autoreset inside ``step()`` and holds its fresh
+        state (step 0) is refused (``NOT_EVALUATED``), never scored silently (review F5).
+
+        ``episode="last_completed"`` (needs ``terminal_capture=True`` with ``autoreset="same_step"``) scores the
+        state captured when the env's last episode ended inside ``step()`` (and, with the stream, that episode's
+        samples). Returns one dict per env with the full evaluator result, a summary, the mode and
+        ``episode_scored``."""
+        from .evaluation_stream import DEFAULT_MODE, STREAM_VERSION, evaluate_frozen
         self._check_open()
+        if episode not in ("current", "last_completed"):
+            raise ValueError("episode is 'current' or 'last_completed'")
+        stream = self.evaluation_stream
+        if stream is not None and frames:
+            raise ValueError("frames= and the evaluation stream are exclusive (the stream already holds the samples)")
+        if episode == "last_completed" and self.terminal is None:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", "episode='last_completed' needs "
+                                                 "terminal_capture=True with autoreset='same_step'")
         ids = range(self.num_envs) if env_ids is None else [int(e) for e in np.asarray(env_ids).reshape(-1)]
+        with self._stream():
+            steps = self._step_count.cpu().clone().numpy()
+            autoreset = self.autoreset_count.cpu().clone().numpy()
         out = []
         for e in ids:
-            start = time.perf_counter()
-            task, ref = self._env_host[e]["task"], self.evaluation_reference(e)
-            final = self.snapshot_world(e)
-            series = list((frames or {}).get(e, [])) + [final]
-            series = [s for s in series if s["step_count"] > 0]
-            n = len(ref["mass_kg"])
-            data = dict(ref, time_s=np.asarray([0.] + [s["time_s"] for s in series], float),
-                        positions=np.stack([ref["reference_positions"]] + [s["positions"] for s in series]),
-                        velocities=np.stack([np.zeros((n, 3))] + [s["velocities"] for s in series]),
-                        codes=np.stack([np.zeros(n, np.int32)] + [s["codes"].astype(np.int32) for s in series]),
-                        code_encoding="packed2", max_cuts=int(task.max_cuts),
-                        particle_spacing_m=task.particle_spacing_m)
-            result = task.evaluate_goal(data)
-            out.append(dict(env=e, scene_seed=self._env_host[e]["scene_seed"], task_id=task.task_id,
-                            step_count=final["step_count"], time_s=final["time_s"], frames=len(data["time_s"]),
-                            final_codes_sha256=hashlib.sha256(np.ascontiguousarray(final["codes"])).hexdigest(),
-                            labelled=int(np.count_nonzero(final["codes"])),
-                            summary=summarize_evaluation(result), result=result,
-                            evaluator="goals.evaluate_goal via ConfiguredTaskSpec.evaluate_goal (frozen goal "
-                                      f"{task.goal.get('goal_id')}); host snapshot at episode end",
-                            wall_s=time.perf_counter() - start))
+            h = self._env_host[e]
+            extra = dict(scene_seed=h["scene_seed"], family_id=h["family_id"], episode_scored=episode)
+            if episode == "current":
+                if autoreset[e] > 0 and steps[e] == 0:
+                    raise RuntimeError(f"NOT_EVALUATED: env {e} was autoreset inside step() and holds the fresh "
+                                       "state of its next episode; use terminal_capture=True and "
+                                       "evaluate(episode='last_completed')")
+                final = self.snapshot_world(e)
+                completed = False
+            else:
+                with self._stream():
+                    final = self.terminal.host_snapshot(e, h["T_world_local"], self.control_dt)
+                if final is None:
+                    raise RuntimeError(f"NOT_EVALUATED: env {e} has not finished an episode inside step()")
+                extra["completed_episode_index"] = final.pop("episode")
+                completed = True
+            if stream is None:
+                series, mode = list((frames or {}).get(e, [])), DEFAULT_MODE
+            else:
+                with self._stream():
+                    series, dropped = stream.host_frames(e, h["T_world_local"], self.control_dt, completed=completed)
+                mode = STREAM_VERSION
+                extra.update(stream_samples=len(series), stream_every=stream.every, stream_dropped_samples=dropped)
+            out.append(evaluate_frozen(h["task"], self.evaluation_reference(e), final, series, mode=mode, env=e,
+                                       extra=extra))
         return out
+
+    def _terminal_receipt(self):
+        if self.terminal is None:
+            return {"enabled": False, "statement": "evaluate() scores the current state; an env autoreset in step() "
+                    "and still at step 0 is refused (NOT_EVALUATED)"}
+        return self.terminal.receipt()
 
     # ------------------------------------------------------------------ receipt
 
@@ -715,19 +928,31 @@ class VectorCuttingEnv:
         evaluator_sources = {name: _sha256_file(root / name) for name in ("goals.py", "seeded_trim.py",
                                                                            "scene_config.py", "control.py")}
         rl_sources = {name: _sha256_file(Path(__file__).with_name(name))
-                      for name in ("vector_env.py", "actions.py", "observations.py", "reward_packed.py")}
+                      for name in ("vector_env.py", "actions.py", "observations.py", "reward_packed.py",
+                                   "termination.py", "material_guard.py", "evaluation_stream.py")}
         try:
             import gymnasium
             gym_version = gymnasium.__version__
         except ImportError:
             gym_version = None
+        from .termination import termination_table
         return dict(
-            version=VECTOR_ENV_VERSION, runtime=RUNTIME, backend=BACKEND, num_envs=self.num_envs,
+            version=VECTOR_ENV_VERSION, api_revision=VECTOR_API_REVISION, runtime=RUNTIME, backend=BACKEND,
+            num_envs=self.num_envs, termination=termination_table(),
+            input_guard={"enabled": False, "statement": "input_guard=False (P1-2 behaviour)"}
+            if self.input_guard is None else self.input_guard.receipt(),
+            evaluation_stream=None if self.evaluation_stream is None else self.evaluation_stream.receipt(),
+            evaluation_mode="evaluation_stream_v1" if self.evaluation_stream is not None
+            else "two_frame_reset_and_current_v1", infrastructure_error=self.infrastructure_error,
+            terminal_capture=self._terminal_receipt(),
+            allow_multiple_device_hashgrids=self.allow_multiple_device_hashgrids,
+            device_hashgrid_guard=self.material.device_hashgrid_guard,
             device=str(self.torch_device), warp_device=self.wp_device, parity_mode=self.parity_mode,
             strict=self.strict, autoreset=self.autoreset, observation_profile=self.observation_profile,
             observation=self.observation.metadata(), action_spec=self.actions.spec(), reward=self.reward.metadata(),
             task_family=self.task_family.to_dict(),
-            tasks=[dict(env=e, scene_seed=h["scene_seed"], task_id=h["task"].task_id, config_sha256=h["scene_key"])
+            tasks=[dict(env=e, scene_seed=h["scene_seed"], family_id=h["family_id"], task_id=h["task"].task_id,
+                        config_sha256=h["scene_key"], initial_seed=self.task_family.env_seed(e))
                    for e, h in enumerate(self._env_host)],
             episode=dict(control_dt_s=self.control_dt, declared_steps=self.declared_episode_steps,
                          max_episode_steps=self.max_episode_steps),
@@ -791,12 +1016,24 @@ def summarize_evaluation(result):
 @contextmanager
 def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, observation_profile="state",
                     device="cuda", backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, autoreset=False,
-                    strict=True, output_dir=None, **options):
-    """Open a ``VectorCuttingEnv`` (ADR 0021 §8) and close it on exit."""
-    env = VectorCuttingEnv(num_envs, runtime=runtime, task=task, material=material,
-                           observation_profile=observation_profile, device=device, backend=backend,
-                           action_spec=action_spec, reward=reward, autoreset=autoreset, strict=strict,
-                           output_dir=output_dir, **options)
+                    strict=True, output_dir=None, tasks=None, **options):
+    """Open a vector env and close it on exit.
+
+    ``backend="kinematic_ideal_tracking_batched"`` (default, workload A): ``VectorCuttingEnv`` (ADR 0021 §8).
+    ``backend="isaac_lab_newton"`` (workload B, robot-batched, ADR 0022): ``rl.lab_vector_env.LabVectorCuttingEnv``
+    (Isaac Lab venv; it keeps ``launch_simulation`` open for its lifetime). Both have the same public contract
+    (``rl.vector_contract``). ``tasks``: per-env task selection (``resolve_tasks``), e.g. ``tasks=[512, 15]``."""
+    task = resolve_tasks(num_envs, task, tasks)
+    if backend == LAB_BACKEND:
+        from .lab_vector_env import LabVectorCuttingEnv
+        env = LabVectorCuttingEnv(num_envs, runtime=runtime, task=task, material=material,
+                                  observation_profile=observation_profile, device=device, action_spec=action_spec,
+                                  reward=reward, autoreset=autoreset, strict=strict, output_dir=output_dir, **options)
+    else:
+        env = VectorCuttingEnv(num_envs, runtime=runtime, task=task, material=material,
+                               observation_profile=observation_profile, device=device, backend=backend,
+                               action_spec=action_spec, reward=reward, autoreset=autoreset, strict=strict,
+                               output_dir=output_dir, **options)
     try:
         yield env
     finally:
@@ -804,4 +1041,5 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
 
 
 __all__ = ["open_vector_env", "VectorCuttingEnv", "TaskFamily", "UnsupportedVectorConfiguration",
-           "NATIVE_TRIM_V7_2_REFERENCE", "splitmix64", "summarize_evaluation"]
+           "NATIVE_TRIM_V7_2_REFERENCE", "splitmix64", "summarize_evaluation", "resolve_tasks", "compile_family",
+           "BACKENDS", "LAB_BACKEND"]
