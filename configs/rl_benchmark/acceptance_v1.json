@@ -47,12 +47,12 @@
   "rules": "G9 per N: median over the ABBA pairs of candidate/baseline outer-clock env-steps/s; primary N median >= primary_median_min with >= primary_pairs_above_1 pairs > 1.0; every N median >= all_median_min; max VRAM peak C <= vram_ratio_max x max B + vram_slack_mib; median reset p95 C <= reset_p95_ratio_max x median B + reset_p95_slack_ms; every G9 run |inner/outer - 1| <= clock_tolerance"
  },
  "physics": {
-  "position_band_m": {"512": [1.4e-05, 3.9e-05], "15": [2.0e-04, 4.6e-04]},
-  "position_rule": "full episodes: final maximum position difference vs Native <= max(P1-0 band high, the largest value of the reference variant for the same seed in the same acceptance)",
+  "position_band": {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"},
+  "position_rule": "full episodes: the final maximum position difference vs Native is compared with the band file's high value per seed (or the reference variant's own value for that seed in the same acceptance, whichever is larger). mode descriptive: a WARN in verdict.warnings and the gate values, never a gate result; mode gate: a PHYSICS check. The P1-0 min-max band is descriptive only; the coordinator points path/mode at band v2 when it lands.",
   "impulse_rel_tol": 1e-05,
   "contact_total_rel_tol": 0.01,
   "replay_position_tol_m": 0.0001,
-  "rules": "episodes: final codes = Native, labelled counts = Native, position rule, sample invariants (finite, digits <= 2, no digit rewrites, invalid_reason 0), frozen TRIM evaluator PASS on 2 frames and on the Native sample series, per-env contact total within max(contact_total_rel_tol, 2 x baseline spread) of the baseline median; samestate: per recorded sample identical non-zero impulse sets (both reruns) and stats[4], impulse max relative difference <= impulse_rel_tol; short replay final codes equal, positions within replay_position_tol_m, contact totals within contact_total_rel_tol; a candidate failure where the baseline fails the same check for the same seed is BLOCKED"
+  "rules": "episodes (hard gates): final codes = Native, labelled counts = Native, sample invariants (finite, digits <= 2, no digit rewrites, invalid_reason 0), frozen TRIM evaluator PASS on 2 frames and on the Native sample series, per-env contact total within max(contact_total_rel_tol, 2 x baseline spread) of the baseline median; position band per position_band.mode; samestate: per recorded sample identical non-zero impulse sets (both reruns) and stats[4], impulse max relative difference <= impulse_rel_tol; short replay final codes equal, positions within replay_position_tol_m, contact totals within contact_total_rel_tol; a candidate failure where the baseline fails the same check for the same seed is BLOCKED"
  },
  "cpu_tests": {"args": ["tests"], "timeout_s": 7200},
  "torch_tests": {"args": ["tests/test_vector_env_api.py", "tests/test_rl_policies_batched.py", "tests/test_rl_replay.py",

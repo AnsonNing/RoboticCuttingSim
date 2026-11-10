@@ -46,7 +46,8 @@ PLAN_KEYS = ("id", "gate", "mode", "num_envs", "seeds", "warmup_steps", "steps",
 PERF_KEYS = ("num_envs", "primary_num_envs", "pairs", "order", "warmup_steps", "steps", "seeds")
 THRESHOLD_KEYS = ("primary_median_min", "primary_pairs_above_1", "all_median_min", "vram_ratio_max",
                   "vram_slack_mib", "reset_p95_ratio_max", "reset_p95_slack_ms", "clock_tolerance")
-PHYSICS_KEYS = ("position_band_m", "impulse_rel_tol", "contact_total_rel_tol", "replay_position_tol_m")
+PHYSICS_KEYS = ("position_band", "impulse_rel_tol", "contact_total_rel_tol", "replay_position_tol_m")
+POSITION_BAND_MODES = ("descriptive", "gate")
 
 
 # ----------------------------------------------------------------------------- marks
@@ -326,9 +327,34 @@ def config_problems(cfg):
     ph = cfg["physics"]
     if not isinstance(ph, dict) or any(k not in ph for k in PHYSICS_KEYS):
         p.append(f"physics: needs {', '.join(PHYSICS_KEYS)}")
-    elif not all(str(k).isdigit() and isinstance(v, list) and len(v) == 2 for k, v in ph["position_band_m"].items()):
-        p.append('physics.position_band_m: {"seed": [low, high]}')
+    else:
+        band = ph["position_band"]
+        if not (isinstance(band, dict) and isinstance(band.get("path"), str) and not band["path"].startswith("/")
+                and ".." not in band["path"] and band.get("mode") in POSITION_BAND_MODES):
+            p.append(f"physics.position_band: {{path: repository-relative band file, mode: {POSITION_BAND_MODES}}}")
     return p
+
+
+def band_high(entry):
+    """Upper value of one seed's band entry: ``[low, high]`` or a dict with ``high_m`` / ``high`` / ``upper_m``."""
+    if isinstance(entry, (list, tuple)) and len(entry) == 2:
+        return float(entry[1])
+    if isinstance(entry, dict):
+        for key in ("high_m", "high", "upper_m", "upper"):
+            if isinstance(entry.get(key), (int, float)):
+                return float(entry[key])
+    raise ValueError(f"position band entry {entry!r}: [low, high] or {{high_m: x}}")
+
+
+def load_position_band(root, spec):
+    """``{"path", "mode", "version", "sha256", "high_m": {seed: high}}`` of the config's band file under ``root``."""
+    path = Path(root) / spec["path"]
+    data = json.loads(path.read_text(encoding="utf-8"))
+    table = data.get("position_band_m")
+    if not isinstance(table, dict) or not table:
+        raise ValueError(f"{spec['path']}: needs position_band_m {{seed: [low, high] | {{high_m}}}}")
+    return dict(path=spec["path"], mode=spec["mode"], version=data.get("version"), status=data.get("status"),
+                sha256=sha256_file(path), high_m={str(k): band_high(v) for k, v in table.items()})
 
 
 def load_config(path):

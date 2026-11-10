@@ -10,11 +10,14 @@ Reads the manifest (``rcs_perf_accept_manifest_v1``), every run's ``result.json`
 records and the caller's outer clock; writes only ``DIR/verdict.json`` (``rcs_perf_verdict_v1``). Physics is
 recomputed from the dumps with this checkout's code (never the candidate's ``evaluate()``):
 
-* episode plan entries (G6, G7): final codes vs Native, labelled counts vs Native, final maximum position difference
-  vs Native within the P1-0 band (or no worse than the reference variant of the same acceptance and seed), sample
-  invariants (finite positions, valid digits, no digit rewrites, invalid_reason 0), the frozen TRIM evaluator
+* episode plan entries (G6, G7), hard gates: final codes vs Native, labelled counts vs Native, sample invariants
+  (finite positions, valid digits, no digit rewrites, invalid_reason 0), the frozen TRIM evaluator
   (``goals.evaluate_goal`` via the compiled task) on 2 frames and on the Native sample series, per-env contact
-  totals vs the baseline side; candidate-reported L2 vs the recomputed invariants (disagreement = INTEGRITY);
+  totals vs the baseline side; candidate-reported L2 vs the recomputed invariants (disagreement = INTEGRITY).
+  The final maximum position difference vs Native is compared with the swappable band file
+  ``physics.position_band.path`` (high value per seed, or the reference variant's own value for that seed if
+  larger): ``mode: descriptive`` (the P1-0 min-max band) only adds a WARN to ``verdict.warnings``; ``mode: gate``
+  makes it a check;
 * samestate plan entries (G4, G8): same recorded state, candidate vs baseline: non-zero impulse particle sets and
   stats[4] identical, impulse within the relative tolerance; the short replay's final codes and labelled counts
   equal, positions within tolerance, contact totals within tolerance;
@@ -133,7 +136,12 @@ class Judge:
     def __init__(self, cfg, cfg_path, manifest, manifest_path, natives=None):
         """``natives``: an object with ``get(seed)`` (as :class:`Natives`); tests pass synthetic references."""
         self.cfg, self.cfg_path, self.man, self.manifest_path = cfg, Path(cfg_path), manifest, Path(manifest_path)
-        self.gates, self.rows, self.notes = [], [], []
+        self.gates, self.rows, self.notes, self.warnings = [], [], [], []
+        self.band, self.band_error = None, None
+        try:   # the band file is a swappable input of this (evaluator) checkout
+            self.band = PA.load_position_band(ROOT, cfg["physics"]["position_band"])
+        except (OSError, ValueError, KeyError) as error:
+            self.band_error = f"{type(error).__name__}: {error}"
         self.natives = natives
         self.harness_sha256 = PA.sha256_file(HARNESS)
         self.shared_sha256 = PA.sha256_file(Path(PA.__file__).resolve())
@@ -369,8 +377,8 @@ class Judge:
                                  else None)
             out["checks"]["codes_equal_native"] = out["values"]["different_code_particles"] == 0
             out["checks"]["labelled_equal_native"] = out["values"]["labelled"] == out["values"]["labelled_native"]
-            if steps == PA.EPISODE_STEPS and str(seed) in ph["position_band_m"]:
-                out["values"]["position_band_m"] = ph["position_band_m"][str(seed)]
+            if steps == PA.EPISODE_STEPS and self.band and str(seed) in self.band["high_m"]:
+                out["values"]["position_band_high_m"] = self.band["high_m"][str(seed)]
         # frozen TRIM evaluator: 2 frames (reset + final) and the Native sample series (+ final)
         if finite:
             t_final = steps * PA.CONTROL_DT_S
@@ -432,13 +440,20 @@ class Judge:
                 base.setdefault(r["seed"], []).append(r)
         for r in envs:
             b = base.get(r["seed"]) or []
-            band = r["values"].get("position_band_m")
+            high = r["values"].get("position_band_high_m")
             fmax = r["values"].get("final_max_position_diff_m")
-            if band is not None:
+            if high is not None:
                 b_max = max([x["values"].get("final_max_position_diff_m") or 0. for x in b] or [0.])
-                limit = max(float(band[1]), b_max)
+                limit = max(float(high), b_max)
+                within = fmax is not None and fmax <= limit
                 r["values"]["position_limit_m"] = limit
-                r["checks"]["position_band"] = fmax is not None and fmax <= limit
+                r["values"]["position_band_within"] = within
+                if self.band["mode"] == "gate":
+                    r["checks"]["position_band"] = within
+                elif not within:
+                    self.warnings.append(
+                        f"WARN position band ({self.band['version']}, descriptive, not a gate): {gid} {r['run']} "
+                        f"s{r['seed']} e{r['env']} final max position diff {fmax} m > {limit} m")
             if b:
                 totals = [x["values"]["contacts_total"] for x in b]
                 med = float(np.median(totals))
@@ -687,6 +702,11 @@ class Judge:
                            "manifest baseline variant is not the config reference_variant")
         if not isinstance((self.man.get("candidate") or {}).get("variant"), dict):
             self.integrity("I-proposal", "caller", ["PHYSICS", "PERFORMANCE"], "candidate variant missing")
+        if self.band_error:
+            if self.cfg["physics"]["position_band"]["mode"] == "gate":
+                self.gate("position_band", "PHYSICS", "BLOCKED", detail=f"band file: {self.band_error}")
+            else:
+                self.warnings.append(f"WARN position band file unusable (descriptive): {self.band_error}")
         ratios = {}
         if self.man.get("blocked"):
             self.gate("blocked", "PHYSICS", "BLOCKED", detail=str(self.man["blocked"])[:300])
@@ -714,7 +734,9 @@ class Judge:
                     baseline=self.man.get("baseline"), candidate=self.man.get("candidate"),
                     layers=layers, gates=self.gates, failed_gates=sorted({g["id"] for g in self.gates
                                                                          if g["status"] == "FAIL"}),
-                    performance=dict(ratios=ratios), rows=self.rows, notes=self.notes, limitations=limitations,
+                    performance=dict(ratios=ratios), rows=self.rows, notes=self.notes, warnings=self.warnings,
+                    position_band=self.band or dict(error=self.band_error, **self.cfg["physics"]["position_band"]),
+                    limitations=limitations,
                     wall_s=time.perf_counter() - T0, peak_rss_mib=peak_rss_mib())
 
 

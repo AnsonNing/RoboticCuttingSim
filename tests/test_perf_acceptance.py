@@ -72,7 +72,11 @@ def test_acceptance_v1_config_is_complete_and_matches_the_contract():
     assert set(gates) == {"G4", "G6", "G7", "G8"}
     assert gates["G6"]["seeds"] == [512, 15] and gates["G6"]["repeats"] == 3 and gates["G6"]["steps"] == 1200
     assert gates["G7"]["num_envs"] == 4 and gates["G8"]["variant"] == "default"
-    assert cfg["physics"]["position_band_m"] == {"512": [1.4e-05, 3.9e-05], "15": [2.0e-04, 4.6e-04]}
+    # the P1-0 min-max band is a swappable, descriptive input (never a hard gate until a pre-declared band lands)
+    band = cfg["physics"]["position_band"]
+    assert band == {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"}
+    loaded = PA.load_position_band(ROOT, band)
+    assert loaded["high_m"] == {"512": 3.9e-05, "15": 4.6e-04} and loaded["status"] == "descriptive_only"
     assert set(cfg["gpu_mem_mib"]) >= {str(n) for n in perf["num_envs"]} | {"4"}
 
 
@@ -111,6 +115,7 @@ def test_evaluator_files_and_frozen_paths_cover_the_evaluator():
     (lambda c: c["thresholds"].pop("clock_tolerance"), "thresholds"),
     (lambda c: c.pop("physics"), "missing physics"),
     (lambda c: c.update(harness="/abs/path.py"), "harness"),
+    (lambda c: c["physics"]["position_band"].update(mode="hard"), "position_band"),
 ])
 def test_config_problems_are_reported(mutate, message):
     cfg = json.loads(CONFIG.read_text())
@@ -231,6 +236,14 @@ def test_harness_argument_validation(harness_mod, tmp_path, argv):
     assert info.value.code == 2
 
 
+def test_harness_child_argv_round_trips(harness_mod, tmp_path):
+    args = harness_mod.parse_args(["--variant-json", "v.json", "--mode", "episode", "--num-envs", "1", "--seeds",
+                                   "512,15", "--steps", "5", "--gpu-uuid", "GPU-x", "--out", str(tmp_path / "o")])
+    child = harness_mod.parse_args(harness_mod.child_argv(args, 1, 5))
+    assert (child.child_round, child.child_global_step, child.seed_list, child.gpu_uuid) == (1, 5, [512, 15], "GPU-x")
+    assert (child.mode, child.num_envs, child.steps, child.out) == ("episode", 1, 5, args.out)
+
+
 def test_harness_cpu_one_step_end_to_end(tmp_path):
     """The real harness process on the CPU (Torch venv only): marks after the steps, result.json, dumps."""
     pytest.importorskip("torch")
@@ -251,6 +264,7 @@ def test_harness_cpu_one_step_end_to_end(tmp_path):
     assert row["cameras"] == "none" and row["recording"] == "none" and row["robot_dof"] == 0
     assert res["rounds"][0]["final_step_count"] == [1] and len(res["rounds"][0]["reset_ms"]) == 10
     assert all((out / d["path"]).is_file() for d in res["dumps"])
+    assert res["process_model"].startswith("one child process per round") and len(res["round_pids"]) == 1
 
 
 # ----------------------------------------------------------------------------- judge on synthetic outputs
@@ -328,6 +342,7 @@ class Acceptance:
         self.tamper_candidate_dump = False
         self.drop_baseline_results = False
         self.candidate_error = False
+        self.candidate_position_offset = 2e-6
 
     def variant(self, side, key):
         return {} if key == "default" else self.cfg["reference_variant"] if side == "baseline" else self.proposal
@@ -366,7 +381,7 @@ class Acceptance:
         nat = self.native
         steps = nat["steps"][1:]
         idx = np.arange(1, 121)
-        pos = nat["data"]["positions"][idx] + 2e-6
+        pos = nat["data"]["positions"][idx] + (self.candidate_position_offset if side == "candidate" else 2e-6)
         enc = PA.encode_positions(nat["data"]["positions"][idx], pos)
         codes = nat["data"]["codes"][idx].copy()
         final_codes = codes[-1].copy()
@@ -434,9 +449,11 @@ class Acceptance:
         self.manifest_path.write_text(json.dumps(manifest))
         return self
 
-    def verdict(self):
+    def verdict(self, band_mode=None):
         J = self.judge_mod
         cfg = PA.load_config(self.cfg_path)
+        if band_mode:
+            cfg["physics"]["position_band"]["mode"] = band_mode
         manifest = json.loads(self.manifest_path.read_text())
         return J.Judge(cfg, self.cfg_path, manifest, self.manifest_path, natives=FakeNatives()).run()
 
@@ -529,3 +546,20 @@ def test_judge_cli_writes_verdict_and_never_overwrites(judge_mod, tmp_path):
     assert v["layers"]["PHYSICS"] in ("BLOCKED",) and "FAIL" not in v["layers"].values()
     assert judge_mod.main(["--config", str(acc.cfg_path), "--manifest", str(acc.manifest_path),
                            "--out", str(out)]) == 2
+
+
+def test_judge_position_band_is_descriptive_by_default(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod)
+    acc.candidate_position_offset = 1e-4      # final max diff ~1.7e-4 m > the P1-0 s512 high 3.9e-5 m
+    acc.build()
+    v = acc.verdict()
+    assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}
+    assert v["position_band"]["mode"] == "descriptive" and v["position_band"]["version"] == "p1_0_minmax_v1"
+    assert len(v["warnings"]) == 2 and all(w.startswith("WARN position band") for w in v["warnings"])
+    g6 = next(g for g in v["gates"] if g["id"] == "G6")
+    assert "position_band" not in g6["threshold"]
+    assert {x["values"]["position_band_within"] for x in g6["value"] if x["side"] == "candidate"} == {False}
+    # the same outputs with the band switched to a gate (as band v2 will be): PHYSICS FAIL
+    v = acc.verdict(band_mode="gate")
+    assert v["layers"]["PHYSICS"] == "FAIL" and "position_band@" in next(
+        g for g in v["gates"] if g["id"] == "G6")["detail"]

@@ -22,9 +22,10 @@ Modes (W + K <= 1200 control steps; the timed window is the K steps after the W 
   and the contact stage run alone twice (impulse, stats); then a W + K step replay from reset (contacts, final).
 * ``profile``: as throughput, the K timed steps inside ``cudaProfilerStart/Stop`` (for an external nsys).
 
-Seeds: one batch per round (``perf_acceptance.plan_rounds``), each released before the next is built; at most one
-live device ``wp.HashGrid`` in the process at any time (Warp 1.17 static-descriptor hazard) — checked before every
-build. Marks ``RCS_PERF_MARK {"event", "global_step", "num_envs"}`` are printed after a device synchronize;
+Seeds: one batch per round (``perf_acceptance.plan_rounds``); every round runs in its own child process (the
+parent only samples GPU telemetry and assembles ``result.json``), so each process builds exactly one material and
+holds one device ``wp.HashGrid`` (Warp 1.17 static-descriptor hazard; the child also refuses to build while any
+other device grid is alive). Marks ``RCS_PERF_MARK {"event", "global_step", "num_envs"}`` are printed after a device synchronize;
 ``global_step`` counts vector steps over the whole process.
 
 Output (only under ``--out``, which must not exist): ``result.json`` (``rcs_perf_result_v1``), ``dumps/*.npz`` (no
@@ -83,6 +84,9 @@ def parse_args(argv=None):
     g.add_argument("--gpu-index", type=int)
     p.add_argument("--wp17", default=None, help="WP-17 record tree: DIR/<record>/seed_<s>/ (default artifacts/wp17)")
     p.add_argument("--out", required=True)
+    # internal: the parent runs every round in its own child process (one material per process)
+    p.add_argument("--child-round", type=int, default=None, help=argparse.SUPPRESS)
+    p.add_argument("--child-global-step", type=int, default=0, help=argparse.SUPPRESS)
     args = p.parse_args(argv)
     try:
         args.seed_list = [int(s) for s in str(args.seeds).split(",") if s.strip()]
@@ -152,13 +156,6 @@ class Gpu:
         self.device = args.device
         self.cuda = str(args.device).startswith("cuda")
         self.telemetry, self.gpu_index = None, physical_gpu_index(args)
-        if self.cuda and self.gpu_index is not None:
-            from robotic_cutting_sim.rl.telemetry import GpuTelemetry
-            self.telemetry = GpuTelemetry(self.gpu_index, interval_s=1.)
-            self.telemetry.set_phase("baseline")
-            self.telemetry.start()
-            time.sleep(2.)
-            self.telemetry.set_phase("setup")
 
     def sync(self):
         if self.cuda:
@@ -213,8 +210,8 @@ def physical_gpu_index(args):
 
 
 class Marks:
-    def __init__(self, gpu):
-        self.gpu, self.global_step, self.rows = gpu, 0, []
+    def __init__(self, gpu, start=0):
+        self.gpu, self.global_step, self.rows = gpu, int(start), []
 
     def __call__(self, event, num_envs, step=None):
         self.gpu.sync()
@@ -441,47 +438,122 @@ def row_for(args, res, gpu_info, sharing, telemetry_run, own_vram_mib):
                 workload_id="A", boundary="batched_headless", reduced_fidelity=True)
 
 
-def run(args, out, variant):
-    gpu = Gpu(args)
-    sys.path.insert(0, str(SCRIPTS))
-    import run_vector_milestones as RV  # noqa: E402  (helpers; its OUT_ROOT is never used)
-    import run_p1_3a as P3  # noqa: E402  (helpers; its OUT_ROOT is never used)
-    wp17_root = Path(args.wp17) if args.wp17 else ROOT / "artifacts" / "wp17"
-    RV.WP17 = wp17_record(wp17_root, args.seed_list)
-    import torch
-    import warp
-    versions = dict(warp=warp.__version__, torch=torch.__version__, numpy=np.__version__)
-    marks = Marks(gpu)
-    rounds = []
-    for r, env_seeds in enumerate(PA.plan_rounds(args.mode, args.seed_list, args.num_envs)):
-        rounds.append(run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3))
+class ChildFailure(RuntimeError):
+    """A round's child process failed; ``candidate`` when it wrote a round result with status ERROR."""
+
+    def __init__(self, code, detail, candidate):
+        super().__init__(f"{code}: {detail}")
+        self.code, self.candidate = code, candidate
+
+
+def child_argv(args, r, global_step):
+    argv = ["--variant-json", str(args.variant_json), "--mode", args.mode, "--num-envs", str(args.num_envs),
+            "--seeds", ",".join(map(str, args.seed_list)), "--warmup-steps", str(args.warmup_steps),
+            "--steps", str(args.steps), "--device", args.device, "--out", str(args.out),
+            "--child-round", str(r), "--child-global-step", str(global_step)]
+    if args.gpu_uuid:
+        argv += ["--gpu-uuid", args.gpu_uuid]
+    elif args.gpu_index is not None:
+        argv += ["--gpu-index", str(args.gpu_index)]
+    if args.wp17:
+        argv += ["--wp17", str(args.wp17)]
+    return argv
+
+
+def child_main(args):
+    """One round in this process: one material, built once and never followed by another (Warp 1.17 HashGrid
+    static descriptor). Writes ``rounds/round_<R>.json``; marks go to the inherited stdout."""
+    out = Path(args.out)
+    path = out / "rounds" / f"round_{args.child_round}.json"
+    try:
+        variant = PA.check_variant(json.loads(Path(args.variant_json).read_text()))
+        gpu = Gpu(args)
+        sys.path.insert(0, str(SCRIPTS))
+        import run_vector_milestones as RV  # noqa: E402  (helpers; its OUT_ROOT is never used)
+        import run_p1_3a as P3  # noqa: E402  (helpers; its OUT_ROOT is never used)
+        wp17_root = Path(args.wp17) if args.wp17 else ROOT / "artifacts" / "wp17"
+        RV.WP17 = wp17_record(wp17_root, args.seed_list)
+        marks = Marks(gpu, args.child_global_step)
+        env_seeds = PA.plan_rounds(args.mode, args.seed_list, args.num_envs)[args.child_round]
+        res = run_round(args, gpu, marks, args.child_round, env_seeds, variant, out, RV, P3)
         gc.collect()   # the round's batch (and its grid) is unreachable once run_round returned
         if gpu.cuda:
             gpu.wp.synchronize_device(gpu.device)
-        rounds[-1]["device_hashgrids_after_release"] = gpu.live_device_hashgrids() if gpu.cuda else 0
-    summary = run_phase = None
-    samples = []
-    if gpu.telemetry:
-        summary = gpu.telemetry.stop()
-        run_phase = gpu.telemetry.summary(phases=("run",))
-        samples = gpu.telemetry.samples
-    with (out / "telemetry_samples.jsonl").open("x") as stream:
-        for sample in samples:
-            stream.write(json.dumps(sample, default=str) + "\n")
-    gpu_info = dict(gpu.gpu_identity(), **({k: summary.get(k) for k in ("gpu_index", "gpu_name", "gpu_driver",
-                                                                         "gpu_uuid", "memory_total_mib")}
-                                           if summary and summary.get("valid_samples") else {}))
+        res.update(device_hashgrids_after_release=gpu.live_device_hashgrids() if gpu.cuda else 0,
+                   marks=marks.rows, end_global_step=marks.global_step, wp17_record=str(RV.WP17),
+                   gpu_identity=gpu.gpu_identity(), pid=os.getpid(), status="COMPLETE",
+                   versions=dict(warp=gpu.wp.__version__, torch=gpu.torch.__version__, numpy=np.__version__))
+        write_json(path, res)
+        return 0
+    except Exception as exc:   # preserved and classified, never hidden
+        error = traceback.format_exc()
+        print(error, file=sys.stderr)
+        code = getattr(exc, "code", None) or type(exc).__name__
+        candidate = any(c.__name__ in CANDIDATE_ERRORS for c in type(exc).__mro__)
+        write_json(path if candidate else path.with_name(f"round_{args.child_round}_error.json"),
+                   dict(status="ERROR" if candidate else "INFRA_ERROR", error=error, error_code=code,
+                        round=args.child_round, pid=os.getpid()))
+        return 3 if candidate else 1
+
+
+def run(args, out, variant):
+    """Parent: GPU telemetry (its process tree includes the children), one child process per round, assembly."""
+    gpu_index = physical_gpu_index(args) if str(args.device).startswith("cuda") else None
+    telemetry = None
+    if gpu_index is not None:
+        from robotic_cutting_sim.rl.telemetry import GpuTelemetry
+        telemetry = GpuTelemetry(gpu_index, interval_s=1.)
+        telemetry.set_phase("baseline")
+        telemetry.start()
+        time.sleep(2.)
+    (out / "rounds").mkdir()
+    rounds, global_step = [], 0
+    try:
+        for r, _ in enumerate(PA.plan_rounds(args.mode, args.seed_list, args.num_envs)):
+            if telemetry:
+                telemetry.set_phase("run")
+            sys.stdout.flush()
+            rc = subprocess.run([sys.executable, str(Path(__file__).resolve()), *child_argv(args, r, global_step)],
+                                cwd=os.getcwd()).returncode
+            if telemetry:
+                telemetry.set_phase("between_rounds")
+            path = out / "rounds" / f"round_{r}.json"
+            res = json.loads(path.read_text()) if path.is_file() else None
+            if rc != 0 or not res or res.get("status") != "COMPLETE":
+                err = res or (json.loads(path.with_name(f"round_{r}_error.json").read_text())
+                              if path.with_name(f"round_{r}_error.json").is_file() else {})
+                raise ChildFailure(err.get("error_code") or f"CHILD_EXIT_{rc}", str(err.get("error") or "")[-2000:],
+                                   candidate=rc == 3 and err.get("status") == "ERROR")
+            global_step = res.pop("end_global_step")
+            rounds.append(res)
+    finally:
+        summary = run_phase = None
+        samples = []
+        if telemetry:
+            summary = telemetry.stop()
+            run_phase = telemetry.summary(phases=("run",))
+            samples = telemetry.samples
+        with (out / "telemetry_samples.jsonl").open("x") as stream:
+            for sample in samples:
+                stream.write(json.dumps(sample, default=str) + "\n")
+    gpu_info = dict(rounds[-1].get("gpu_identity") or {}, **(
+        {k: summary.get(k) for k in ("gpu_index", "gpu_name", "gpu_driver", "gpu_uuid", "memory_total_mib")}
+        if summary and summary.get("valid_samples") else {}))
     sharing = (run_phase or {}).get("gpu_sharing") or "UNKNOWN"
     own = (summary or {}).get("own_vram_peak_mib") or None
     rows = [row_for(args, res, gpu_info, sharing, run_phase, own) for res in rounds]
-    return dict(rounds=rounds, rows=rows[-1:], round_rows=rows, marks=marks.rows, versions=versions,
-                gpu=gpu_info, gpu_sharing=sharing, telemetry=summary, telemetry_run_phase=run_phase,
-                wp17_record=str(RV.WP17), dumps=[d for res in rounds for d in res.pop("dumps")],
-                hashgrids_after=gpu.live_device_hashgrids() if gpu.cuda else 0)
+    return dict(rounds=rounds, rows=rows[-1:], round_rows=rows, marks=[m for res in rounds for m in res.pop("marks")],
+                versions=rounds[-1].get("versions"), gpu=gpu_info, gpu_sharing=sharing, telemetry=summary,
+                telemetry_run_phase=run_phase, wp17_record=rounds[-1].get("wp17_record"),
+                dumps=[d for res in rounds for d in res.pop("dumps")],
+                process_model="one child process per round: one material per process (parent: telemetry only)",
+                round_pids=[res.get("pid") for res in rounds])
 
 
 def main(argv=None):
     args = parse_args(argv)
+    if args.child_round is not None:
+        return child_main(args)
     out = Path(args.out)
     if out.exists() or out.is_symlink():
         print(f"run_perf_acceptance: --out {out} exists (never overwritten)", file=sys.stderr)
@@ -506,7 +578,9 @@ def main(argv=None):
         error = traceback.format_exc()
         print(error, file=sys.stderr)
         code = getattr(exc, "code", None) or type(exc).__name__
-        if not any(c.__name__ in CANDIDATE_ERRORS for c in type(exc).__mro__) or "environment" not in base:
+        candidate = exc.candidate if isinstance(exc, ChildFailure) else \
+            any(c.__name__ in CANDIDATE_ERRORS for c in type(exc).__mro__)
+        if not candidate or "environment" not in base:
             write_json(out / "error.json", dict(base, status="INFRA_ERROR", error=error, error_code=code,
                                                wall_s=time.perf_counter() - T_SCRIPT))
             return 1
