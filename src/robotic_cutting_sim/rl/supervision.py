@@ -9,7 +9,14 @@ Torch- and Warp-free (importable in the project ``.venv``). Plan: ``docs/reports
   watchdog reason. ``classify_episode_end``: every episode end is a task outcome, a task-level termination, an
   env-level invalid state or a truncation; never an infrastructure class of the process.
 * ``step_status``: the integration adapter over the vector env ``info``. It reads ``info["termination_reason"]``
-  (P1-2b bitfield; bits shared with the Lab env) when present and falls back to today's ``invalid_reason``.
+  (``rl.termination``, ``termination_reason_v1``: bit 64 ``INFRASTRUCTURE_ERROR`` is the env's own
+  infrastructure verdict) when present and falls back to the pre-P1-2b ``invalid_reason`` otherwise.
+* Two pre-declared episode/process splits (config ``classification.split``):
+  ``p1_4_v1`` (``long_rollout_v1``: numerical invalid bits are an env-level infrastructure class, a strict-mode
+  invalid env is ``INFRA_INVALID_STATE``) and ``termination_reason_v1`` (``long_rollout_v2``: the env's own
+  classification, ``rl.termination.classify_exception`` / ``classify_process_exit``: only bit 64 /
+  ``VectorEnvInfrastructureError`` / a crash is infrastructure; ``MATERIAL_INVALID`` incl. non-finite state and a
+  strict-mode invalid env are task-level).
 * ``Supervisor``: runs each attempt in its own child process (one material = one device HashGrid per process,
   the Warp 1.17 static-descriptor hazard), watches heartbeats (hang) and wall time, samples per-PID VRAM and
   RSS, classifies the end and restarts per policy into a NEW attempt directory (never overwritten).
@@ -49,33 +56,40 @@ INFRA_CLASSES = {
     "INFRA_INVALID_STATE": "NAN_INVALID_STATE",
     "INFRA_DISK": "DISK",
     "INFRA_PYTHON_EXCEPTION": "PYTHON_EXCEPTION",
+    "INFRA_CONTACT_POOL_OVERFLOW": "SIMULATOR_CAPACITY",
     "INFRA_UNKNOWN_EXIT": "UNKNOWN",
 }
+TASK_STRICT_INVALID_ENV = "TASK_STRICT_INVALID_ENV"   # split termination_reason_v1: uncaught strict invalid env
+SPLITS = ("p1_4_v1", "termination_reason_v1")
 INFRA_FAMILIES = tuple(dict.fromkeys(INFRA_CLASSES.values()))
 
 # episode end classes (never mixed with the process classes above)
 TASK_SUCCESS, TASK_FAILURE = "TASK_SUCCESS", "TASK_FAILURE"
 TERMINATED = "TERMINATED"                    # task-level termination (policy drove the env out of its domain)
-ENV_INVALID_STATE = "ENV_INVALID_STATE"      # env-level numerical failure (NaN / overflow); infra family, isolated
+ENV_INVALID_STATE = "ENV_INVALID_STATE"      # split p1_4_v1: env-level numerical failure (NaN / overflow); infra
+ENV_INFRASTRUCTURE = "ENV_INFRASTRUCTURE"    # split termination_reason_v1: env bit 64 (OOM / CUDA / pool); infra
 TRUNCATED_BY_FORCED_RESET = "TRUNCATED_BY_FORCED_RESET"
 TRUNCATED_RUN_END = "TRUNCATED_RUN_END"
 INFRA_INCOMPLETE = "INFRA_INCOMPLETE"        # in flight when the process died (written by the supervisor)
-EPISODE_CLASSES = (TASK_SUCCESS, TASK_FAILURE, TERMINATED, ENV_INVALID_STATE, TRUNCATED_BY_FORCED_RESET,
-                   TRUNCATED_RUN_END, INFRA_INCOMPLETE)
-QUOTA_CLASSES = (TASK_SUCCESS, TASK_FAILURE, TERMINATED, ENV_INVALID_STATE)   # count toward episodes per env
+EPISODE_CLASSES = (TASK_SUCCESS, TASK_FAILURE, TERMINATED, ENV_INVALID_STATE, ENV_INFRASTRUCTURE,
+                   TRUNCATED_BY_FORCED_RESET, TRUNCATED_RUN_END, INFRA_INCOMPLETE)
+QUOTA_CLASSES = (TASK_SUCCESS, TASK_FAILURE, TERMINATED, ENV_INVALID_STATE, ENV_INFRASTRUCTURE)  # episodes per env
 FULL_LENGTH_CLASSES = (TASK_SUCCESS, TASK_FAILURE)
 SUCCESS_DENOMINATOR_CLASSES = (TASK_SUCCESS, TASK_FAILURE)                  # invalid / terminated excluded
 
-# termination_reason bits (shared with rl.lab_batched_env, ADR 0022 §7; P1-2b T5.11)
-TERM_RIGID_INVALID, TERM_MATERIAL_INVALID, TERM_GRASP_LOST, TERM_IK_STREAK = 1, 2, 4, 8
-TERMINATION_REASONS = {TERM_RIGID_INVALID: "RIGID_INVALID", TERM_MATERIAL_INVALID: "MATERIAL_INVALID",
-                       TERM_GRASP_LOST: "GRASP_LOST", TERM_IK_STREAK: "IK_FAILURE_STREAK"}
+# termination_reason bits: the env's own module (torch- and Warp-free), termination_reason_v1
+from .termination import (TERM_INFRASTRUCTURE, TERM_MATERIAL_INVALID, TERM_TRUNCATED, TERMINAL_BITS,  # noqa: E402
+                          TERMINATION_REASONS, TERMINATION_VERSION, classify_process_exit)
 # material invalid_reason bits (batched.material_batch.INVALID_REASONS; copied, the module imports Warp)
 INVALID_REASONS = {1: "NONFINITE_STATE", 2: "SLOT_OVERFLOW", 4: "INVALID_MEASURED_POSE", 8: "INVALID_CUT_DIGIT",
                    16: "NONFINITE_WRENCH", 32: "INVALID_OBSTACLE_BOXES", 64: "CONTACT_SPEED_GUARD"}
 DEFAULT_NUMERICAL_INVALID = ("NONFINITE_STATE", "SLOT_OVERFLOW", "NONFINITE_WRENCH")
-# candidate per-env infrastructure keys of a future info dict (P1-2b); the first present key is used
+# optional explicit per-env infrastructure keys (none in termination_reason_v1, where bit 64 carries it); read when
+# present so a later info revision is not silently ignored
 INFRA_INFO_KEYS = ("infra_error", "infrastructure_error", "infra_reason", "infrastructure_failure")
+VECTOR_ENV_INFRA_KINDS = {"OOM": "INFRA_OOM_DEVICE", "CUDA_ERROR": "INFRA_CUDA_ERROR", "WARP_ERROR": "INFRA_CUDA_ERROR",
+                          "CONTACT_POOL_OVERFLOW": "INFRA_CONTACT_POOL_OVERFLOW",
+                          "INFRASTRUCTURE_OTHER": "INFRA_CUDA_ERROR"}
 
 
 def decode_bits(value, table):
@@ -221,13 +235,16 @@ _DISK = re.compile(r"No space left on device|ENOSPC|Disk quota exceeded|\[Errno 
 _CUDA = re.compile(r"CUDA error|cudaError|CUDA_ERROR|illegal memory access|unspecified launch failure|"
                    r"Warp CUDA error|CUDA driver error|device-side assert|CUBLAS_STATUS|illegal instruction|"
                    r"misaligned address|launch timed out", re.IGNORECASE)
-_INVALID = re.compile(r"\bFloatingPointError\b|\bInvalidBatchEnvs\b|Invalid batched envs|non-?finite|"
-                      r"NaN detected", re.IGNORECASE)
+_INVALID = re.compile(r"\bFloatingPointError\b|\bInvalidBatchEnvs\b|Invalid batched envs|Invalid rigid worlds|"
+                      r"non-?finite|NaN detected", re.IGNORECASE)
 
 
 def classify_error_text(exc_type, message=""):
     """Infrastructure class of one exception (type name + message), or None if nothing specific matches."""
     text = f"{exc_type or ''}: {message or ''}"
+    pool = re.search(r"CONTACT_POOL_OVERFLOW", text)
+    if pool:
+        return "INFRA_CONTACT_POOL_OVERFLOW"
     if exc_type == "MemoryError":                     # Python host allocation failure
         return "INFRA_OOM_HOST"
     if exc_type in ("OutOfMemoryError", "torch.OutOfMemoryError", "torch.cuda.OutOfMemoryError") \
@@ -272,16 +289,23 @@ def kernel_oom_evidence(pid, *, runner=None):
 
 
 def classify_process_end(returncode, *, records=(), stderr_tail="", supervisor_reason=None, pid=None,
-                         oom_probe=kernel_oom_evidence):
-    """One process end -> dict(cls, family, infrastructure, detail...). See the module docstring.
+                         oom_probe=kernel_oom_evidence, split="p1_4_v1"):
+    """One process end -> dict(cls, family, infrastructure, env_exit, detail...). See the module docstring.
 
     Precedence: supervisor watchdog reason (hang / wall timeout), then COMPLETE (exit 0 with an ``end`` record),
     then the child's last ``infra_error`` record, then the signal (refined by CUDA / OOM text in stderr), then
-    the stderr text of a non-zero exit."""
+    the stderr text of a non-zero exit. ``env_exit`` is always the env's own ``classify_process_exit``; with split
+    ``termination_reason_v1`` the env's category decides task vs infrastructure: an ``infra_error`` record the child
+    classified with ``rl.termination.classify_exception`` (``env_category``) is mapped through its kind, and an
+    uncaught strict-mode invalid env is ``TASK_STRICT_INVALID_ENV`` (not infrastructure)."""
+    if split not in SPLITS:
+        raise ValueError(f"unknown split {split!r}")
     records = list(records)
     has_end = any(r.get("type") == "end" for r in records)
     infra = [r for r in records if r.get("type") == "infra_error"]
-    out = dict(returncode=returncode, has_end_record=has_end, supervisor_reason=supervisor_reason)
+    env_exit = classify_process_exit(returncode, stderr_tail or "")
+    out = dict(returncode=returncode, has_end_record=has_end, supervisor_reason=supervisor_reason, split=split,
+               env_exit=env_exit)
     sig = None
     if returncode is not None and returncode < 0:
         sig = -returncode
@@ -291,7 +315,11 @@ def classify_process_end(returncode, *, records=(), stderr_tail="", supervisor_r
         out["signal"] = signal_name(sig)
 
     def done(cls, **detail):
-        out.update(cls=cls, family=INFRA_CLASSES.get(cls), infrastructure=cls != COMPLETE, **detail)
+        if split == "termination_reason_v1" and cls == "INFRA_INVALID_STATE":
+            cls = TASK_STRICT_INVALID_ENV          # the env's split: a strict-mode invalid env is a task failure
+        out.update(cls=cls, family=INFRA_CLASSES.get(cls), infrastructure=cls in INFRA_CLASSES, **detail)
+        out["agrees_with_env_exit"] = (env_exit["category"] == "infrastructure") == out["infrastructure"] \
+            if cls != COMPLETE else env_exit["category"] == "ok"
         return out
 
     if supervisor_reason == "hang":
@@ -302,8 +330,17 @@ def classify_process_end(returncode, *, records=(), stderr_tail="", supervisor_r
         return done(COMPLETE)
     if infra:
         last = infra[-1]
+        detail = dict(exc_type=last.get("exc_type"), message=str(last.get("message"))[:2000],
+                      env_category=last.get("env_category"), env_kind=last.get("env_kind"))
+        if split == "termination_reason_v1" and last.get("env_category") == "infrastructure":
+            kind = last.get("env_kind")
+            cls = "INFRA_OOM_HOST" if (kind == "OOM" and last.get("exc_type") == "MemoryError") else \
+                VECTOR_ENV_INFRA_KINDS.get(kind, "INFRA_CUDA_ERROR")
+            return done(cls, **detail)
+        if split == "termination_reason_v1" and last.get("env_category") == "task":
+            return done(TASK_STRICT_INVALID_ENV, **detail)
         cls = classify_error_text(last.get("exc_type"), last.get("message")) or "INFRA_PYTHON_EXCEPTION"
-        return done(cls, exc_type=last.get("exc_type"), message=str(last.get("message"))[:2000])
+        return done(cls, **detail)
     hint = classify_error_text(None, stderr_tail)
     if sig is not None:
         if hint in ("INFRA_OOM_DEVICE", "INFRA_CUDA_ERROR", "INFRA_OOM_HOST", "INFRA_DISK"):
@@ -335,7 +372,7 @@ def _host(value):
 class StepStatus:
     """Host view of one vector-env step (all ``[N]`` numpy arrays)."""
 
-    source: str                       # "termination_reason" (P1-2b) or "legacy_invalid_reason" (today)
+    source: str                       # "termination_reason" (termination_reason_v1) or "legacy_invalid_reason"
     terminated: np.ndarray
     truncated: np.ndarray
     termination_reason: np.ndarray    # bits of TERMINATION_REASONS (derived on the legacy path)
@@ -360,8 +397,10 @@ def step_status(info, terminated=None, truncated=None, *, num_envs):
         reason = np.where(invalid != 0, TERM_MATERIAL_INVALID, 0).astype(np.int64)
     infra_key = next((k for k in INFRA_INFO_KEYS if k in info), None)
     infra = zeros.copy() if infra_key is None else _host(info[infra_key]).astype(np.int64).reshape(N)
+    if source == "termination_reason":
+        infra = np.where((reason & TERM_INFRASTRUCTURE) != 0, 1, infra)   # the env's own infrastructure bit
     term = _host(terminated)
-    term = (reason != 0) | (infra != 0) if term is None else term.astype(bool).reshape(N)
+    term = ((reason & TERMINAL_BITS) != 0) | (infra != 0) if term is None else term.astype(bool).reshape(N)
     trunc = _host(truncated)
     trunc = np.zeros(N, bool) if trunc is None else trunc.astype(bool).reshape(N)
     step = _host(info.get("step_count"))
@@ -372,17 +411,25 @@ def step_status(info, terminated=None, truncated=None, *, num_envs):
 
 
 def classify_episode_end(*, cause, termination_reason=0, invalid_reason=0, infra=0, verdict=None,
-                         numerical_invalid=DEFAULT_NUMERICAL_INVALID):
+                         numerical_invalid=DEFAULT_NUMERICAL_INVALID, split="p1_4_v1"):
     """Episode end class from the end ``cause`` ("full", "terminated", "forced", "run_end") and the reasons.
 
-    ``terminated``: an env-level infra flag or a numerical invalid bit (``numerical_invalid``, default NaN state,
-    slot overflow, NaN wrench) -> ENV_INVALID_STATE; otherwise TERMINATED (task-level termination reason).
+    ``terminated``, split ``termination_reason_v1`` (the env's own classification): bit 64 or an explicit infra
+    flag -> ENV_INFRASTRUCTURE, everything else -> TERMINATED (task level, incl. MATERIAL_INVALID from non-finite
+    state; the material detail stays in ``invalid_names``). Split ``p1_4_v1``: an infra flag or a numerical invalid
+    bit (``numerical_invalid``) -> ENV_INVALID_STATE, otherwise TERMINATED.
     ``full``: the frozen evaluator verdict PASS -> TASK_SUCCESS, else TASK_FAILURE."""
+    if split not in SPLITS:
+        raise ValueError(f"unknown split {split!r}")
     if cause == "forced":
         return TRUNCATED_BY_FORCED_RESET
     if cause == "run_end":
         return TRUNCATED_RUN_END
     if cause == "terminated":
+        if split == "termination_reason_v1":
+            if int(infra) != 0 or int(termination_reason) & TERM_INFRASTRUCTURE:
+                return ENV_INFRASTRUCTURE
+            return TERMINATED
         numerical = bits_of(numerical_invalid, INVALID_REASONS)
         if int(infra) != 0 or int(invalid_reason) & numerical:
             return ENV_INVALID_STATE
@@ -479,16 +526,19 @@ class SupervisorPolicy:
     restart_on: tuple = ("INFRA_OOM_DEVICE", "INFRA_OOM_HOST", "INFRA_CUDA_ERROR", "INFRA_CRASH_SIGNAL",
                          "INFRA_KILLED", "INFRA_HANG")
     py_spy_on_hang: bool = True
+    split: str = "p1_4_v1"                # classification split of the config (``classification.split``)
 
     @classmethod
     def from_config(cls, config, run=None, **override):
-        t, r = config.get("timeouts", {}), config.get("recovery", {})
+        t = dict(config.get("timeouts", {}), **(run or {}).get("timeouts", {}))     # a run may override
+        r = dict(config.get("recovery", {}), **(run or {}).get("recovery", {}))
         values = dict(startup_timeout_s=t.get("startup_s"), hang_min_s=t.get("hang_min_s"),
                       hang_factor_median_step=t.get("hang_factor_median_step"),
                       term_grace_s=t.get("term_grace_s"), sample_interval_s=config.get("cadence", {}).get(
                           "supervisor_sample_interval_s"),
                       max_wall_s=(run or {}).get("max_wall_s"), max_restarts=r.get("max_restarts"),
-                      restart_on=tuple(r["restart_on"]) if "restart_on" in r else None)
+                      restart_on=tuple(r["restart_on"]) if "restart_on" in r else None,
+                      split=config.get("classification", {}).get("split"))
         values.update(override)
         return cls(**{k: v for k, v in values.items() if v is not None})
 
@@ -609,7 +659,7 @@ class Supervisor:
         records, report = read_ledger(attempt_dir / "ledger.jsonl")
         tail = (attempt_dir / "stderr.log").read_bytes()[-8192:].decode(errors="replace")
         result = classify_process_end(returncode, records=records, stderr_tail=tail, supervisor_reason=reason,
-                                      pid=proc.pid, oom_probe=self.oom_probe)
+                                      pid=proc.pid, oom_probe=self.oom_probe, split=policy.split)
         incomplete = [] if result["cls"] == COMPLETE else open_segments(records)
         for seg in incomplete:
             self.ledger.write("episode_incomplete", attempt=attempt, end_class=INFRA_INCOMPLETE,
@@ -643,7 +693,7 @@ class Supervisor:
         tallies = {}
         for a in self.attempts:
             c = a["classification"]["cls"]
-            if c != COMPLETE:
+            if c in INFRA_CLASSES:
                 tallies[c] = tallies.get(c, 0) + 1
         final = dict(status=status, attempts=len(self.attempts), infra_failures=tallies,
                      infra_failure_families={f: sum(n for c, n in tallies.items() if INFRA_CLASSES[c] == f)
@@ -658,4 +708,5 @@ class Supervisor:
 __all__ = ["Ledger", "LedgerFollower", "read_ledger", "classify_error_text", "classify_process_end",
            "classify_episode_end", "step_status", "StepStatus", "Supervisor", "SupervisorPolicy", "splitmix64",
            "episode_seed", "open_segments", "completed_quota", "proc_status", "nvidia_smi_sampler",
-           "free_vram_mib", "INFRA_CLASSES", "EPISODE_CLASSES", "QUOTA_CLASSES"]
+           "free_vram_mib", "INFRA_CLASSES", "EPISODE_CLASSES", "QUOTA_CLASSES", "SPLITS", "TASK_STRICT_INVALID_ENV",
+           "ENV_INFRASTRUCTURE", "TERMINATION_VERSION"]

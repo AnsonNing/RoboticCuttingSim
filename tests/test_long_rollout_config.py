@@ -66,12 +66,14 @@ def test_bounds_are_the_plan_numbers():
 
 def test_classification_and_recovery_use_known_classes():
     cls = CONFIG["classification"]
-    assert set(cls["process_classes"]) == {"COMPLETE", *S.INFRA_CLASSES}
-    assert set(cls["episode_classes"]) == set(S.EPISODE_CLASSES)
+    assert cls.get("split", "p1_4_v1") == "p1_4_v1"
+    # v1 was declared before INFRA_CONTACT_POOL_OVERFLOW / ENV_INFRASTRUCTURE existed (added for termination_reason_v1)
+    assert set(cls["process_classes"]) == {"COMPLETE", *S.INFRA_CLASSES} - {"INFRA_CONTACT_POOL_OVERFLOW"}
+    assert set(cls["episode_classes"]) == set(S.EPISODE_CLASSES) - {S.ENV_INFRASTRUCTURE}
     assert set(cls["numerical_invalid_reasons"]) <= set(S.INVALID_REASONS.values())
     rec = CONFIG["recovery"]
     assert rec["max_restarts"] == 1
-    assert set(rec["restart_on"]) | set(rec["no_restart_on"]) == set(S.INFRA_CLASSES)
+    assert set(rec["restart_on"]) | set(rec["no_restart_on"]) == set(S.INFRA_CLASSES) - {"INFRA_CONTACT_POOL_OVERFLOW"}
     assert not set(rec["restart_on"]) & set(rec["no_restart_on"])
     policy = S.SupervisorPolicy.from_config(CONFIG, CONFIG["runs"]["LR-A"])
     assert policy.hang_min_s == 300 and policy.hang_factor_median_step == 20 and policy.max_restarts == 1
@@ -81,3 +83,45 @@ def test_classification_and_recovery_use_known_classes():
 def test_native_limitations_are_retained():
     text = " ".join(CONFIG["native_limitations_retained"])
     assert "reload_in_place" in text and "camera-off" in text and "NOT POLICY_READY" in text
+
+
+# ----------------------------------------------------------------------------- long_rollout_v2 (T4.5 / T4.6)
+
+PATH_V2 = ROOT / "configs" / "rl_benchmark" / "long_rollout_v2.json"
+CONFIG_V2 = json.loads(PATH_V2.read_text())
+PINNED_SHA256_V2 = "524c84d6ca11c886179cf3883f9d9df312fd8445f325ea4b13cae9585be2658d"
+
+
+def test_v2_is_pinned_and_uses_the_env_split():
+    assert hashlib.sha256(PATH_V2.read_bytes()).hexdigest() == PINNED_SHA256_V2
+    assert CONFIG_V2["id"] == "long_rollout_v2" and CONFIG_V2["status"] == "PRE_DECLARED"
+    cls = CONFIG_V2["classification"]
+    assert cls["split"] == "termination_reason_v1" and cls["split"] in S.SPLITS
+    assert set(cls["process_classes"]) == {"COMPLETE", *S.INFRA_CLASSES}
+    assert set(cls["task_process_classes"]) == {S.TASK_STRICT_INVALID_ENV}
+    assert set(cls["episode_classes"]) == set(S.EPISODE_CLASSES)
+    rec = CONFIG_V2["recovery"]
+    assert set(rec["restart_on"]) | set(rec["no_restart_on"]) == set(S.INFRA_CLASSES)
+    assert "LR-A" not in CONFIG_V2["runs"]                    # LR-A stays declared by v1 only
+
+
+def test_v2_runs():
+    runs = CONFIG_V2["runs"]
+    a2 = runs["LR-A2"]
+    assert a2["particle_contact_mode"] == "alias_free_v1" and a2["num_envs"] == 8 and a2["episodes_per_env"] == 4
+    assert RolloutSchedule(8, episode_steps=1200, episodes_per_env=4, offset_steps=150,
+                           base_seed=a2["base_seed"]).expected_batch_steps() == a2["expected_batch_steps_if_all_full_length"]
+    b = runs["LR-B"]
+    assert b["mode"] == "reset_stress" and b["num_envs"] == 16 and len(b["envs"]) == 16
+    assert [e["drive"] for e in b["envs"]][:2] == ["replay_canary"] * 2
+    assert b["expected_forced_resets"] == round(14 * b["batch_steps"] * b["forced_reset_probability"])
+    c = runs["LR-C"]
+    assert c["mode"] == "rebuild_cycles" and c["cycles"] == 10 and c["steps_per_cycle"] == 50
+    assert c["bounds"]["C2"]["max_minus_min_mib"] == 1.0 and c["bounds"]["C3"]["slope_mib_per_cycle"] == 8.0
+    d = runs["LR-D"]
+    assert set(d["probes"]) == {"nan_env:1@20", "bad_pose:0@20", "sigsegv@20", "hang@20", "device_oom@20"}
+    assert d["recovery"]["max_restarts"] == 0 and d["timeouts"]["hang_min_s"] == 60
+    policy = S.SupervisorPolicy.from_config(CONFIG_V2, d)
+    assert policy.hang_min_s == 60 and policy.max_restarts == 0 and policy.split == "termination_reason_v1"
+    for name in ("LR-A2", "LR-B", "LR-C", "LR-D"):
+        assert runs[name]["own_vram_bound_mib"] <= 2253

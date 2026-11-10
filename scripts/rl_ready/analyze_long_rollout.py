@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / "src"))
 import numpy as np  # noqa: E402
 
 from robotic_cutting_sim.rl import supervision as S  # noqa: E402
-from robotic_cutting_sim.rl.stability import GATED, evaluate_bounds  # noqa: E402
+from robotic_cutting_sim.rl.stability import GATED, evaluate_bounds, evaluate_rebuild_bounds  # noqa: E402
 from robotic_cutting_sim.rl.telemetry import summarize  # noqa: E402
 
 
@@ -70,13 +70,19 @@ def analyze(run_dir, config=None):
         attempts.append(dict(
             attempt=a, attempt_dir=ex["attempt_dir"], classification=ex["classification"], wall_s=ex["wall_s"],
             ledger_report=report, incomplete_segments=ex["incomplete_segments"],
-            global_steps=end["global_steps"] if end else max((r.get("global_step") or 0 for r in records
+            global_steps=end["global_steps"] if end and "global_steps" in end else max((r.get("global_step") or 0 for r in records
                                                                if isinstance(r.get("global_step"), int)), default=0),
             reduced=bool(next((r for r in records if r["type"] == "start"), {}).get("reduced")),
             adapter_source=adapter.get("source"), adapter_infra_key=adapter.get("infra_key"),
             receipt=built.get("receipt"),
-            bounds=evaluate_bounds(records, tel, bounds, num_envs=N, quota_classes=S.QUOTA_CLASSES, gate=gate,
-                                   required=GATED if meta.get("backend") == "trim" else ("B3", "B4")),
+            bounds=(evaluate_rebuild_bounds(records, run["bounds"], gate=gate) if run.get("mode") == "rebuild_cycles"
+                    else evaluate_bounds(records, tel, bounds, num_envs=N, quota_classes=S.QUOTA_CLASSES, gate=gate,
+                                         required=GATED if meta.get("backend") == "trim" else ("B3", "B4"),
+                                         warmup_override=run.get("warmup_batch_steps"))),
+            mode_result={k: v for k, v in (end or {}).items() if k in (
+                "forced_resets", "reset_checks", "reset_check_mismatches", "reset_check_mismatch_detail",
+                "reset_check_status", "canary_samples", "canary_max_different_code_particles",
+                "canary_max_position_diff_m", "canary_status", "canary_rule", "cycles", "rows")},
             l2_audits=dict(n=len(audits), foreign_candidates_max=max((r.get("grouped_query_foreign") or 0)
                                                                       for r in audits) if audits else None,
                            range_audit_nonzero=[r["step"] for r in audits if r.get("range_audit_nonzero")],
@@ -99,14 +105,20 @@ def analyze(run_dir, config=None):
     full = {e: sum(c[k] for k in S.FULL_LENGTH_CLASSES) for e, c in by_env.items()}
     drives = {spec["env"]: spec["drive"] for spec in run["envs"]} if isinstance(run.get("envs"), list) else {}
     canary_eps = [e for e in episodes if e["canary"] is not None]
-    infra_proc = Counter(c for c in process_classes if c != S.COMPLETE)
+    infra_proc = Counter(c for c in process_classes if c in S.INFRA_CLASSES)
+    task_proc = Counter(c for c in process_classes if c not in S.INFRA_CLASSES and c != S.COMPLETE)
     env_invalid = sum(c[S.ENV_INVALID_STATE] for c in by_env.values())
+    env_infra = sum(c[S.ENV_INFRASTRUCTURE] for c in by_env.values())
+    numerical_terminated = sum(1 for e in episodes if e["end_class"] == S.TERMINATED and set(
+        e.get("invalid_names") or []) & set(config.get("classification", {}).get("numerical_invalid_reasons", [])))
     infra_incomplete = sum(c[S.INFRA_INCOMPLETE] for c in by_env.values())
     families = Counter()
     for cls, n in infra_proc.items():
         families[S.INFRA_CLASSES[cls]] += n
     if env_invalid:
         families["NAN_INVALID_STATE (env level)"] += env_invalid
+    if env_infra:
+        families["ENV_LEVEL_INFRASTRUCTURE"] += env_infra
     labelled = defaultdict(list)
     for e in episodes:
         if e["end_class"] in S.FULL_LENGTH_CLASSES:
@@ -131,7 +143,13 @@ def analyze(run_dir, config=None):
                                    different_code_particles=e["canary_different_code_particles"])
                               for e in canary_eps if e["canary"] != "PASS"]),
         infrastructure=dict(process_classes=process_classes, process_failures=dict(infra_proc),
-                            env_level_invalid_state=env_invalid, infra_incomplete_episodes=infra_incomplete,
+                            process_task_failures=dict(task_proc),
+                            split=config.get("classification", {}).get("split", "p1_4_v1"),
+                            env_level_invalid_state=env_invalid, env_level_infrastructure=env_infra,
+                            terminated_with_numerical_invalid_detail=numerical_terminated,
+                            env_exit=[a["classification"].get("env_exit") for a in attempts],
+                            agrees_with_env_exit=[a["classification"].get("agrees_with_env_exit") for a in attempts],
+                            infra_incomplete_episodes=infra_incomplete,
                             families=dict(families),
                             note="process classes per attempt; env-level ENV_INVALID_STATE and INFRA_INCOMPLETE "
                                  "episodes are infrastructure tallies, never task failures"),
@@ -141,10 +159,25 @@ def analyze(run_dir, config=None):
 
 
 def acceptance(out, run, drives):
+    mode = run.get("mode", "rollout")
+    attempts = out["attempts"]
+    if mode in ("reset_stress", "rebuild_cycles"):
+        last = attempts[-1] if attempts else {}
+        result = last.get("mode_result", {})
+        checks = dict(supervisor_complete=str(out["supervisor_status"]).startswith("COMPLETE"),
+                      not_reduced=not any(a["reduced"] for a in attempts),
+                      bounds_pass=bool(attempts) and all(a["bounds"].get("verdict") == "PASS" for a in attempts))
+        if mode == "reset_stress":
+            checks.update(reset_check_pass=result.get("reset_check_status") == "PASS",
+                          canary_rule_pass=result.get("canary_status") == "PASS",
+                          hashgrid_census_valid=not any(a["bounds"].get("B4", {}).get("invalid_multi_grid_process")
+                                                        for a in attempts))
+        else:
+            checks.update(l2_every_cycle=bool(result.get("rows")) and all(r["l2_pass"] for r in result["rows"]))
+        return dict(checks=checks, verdict="PASS" if all(checks.values()) else "FAIL", label=None)
     quota_needed = run["episodes_per_env"]
     q, f = out["episodes"]["quota_episodes_per_env"], out["episodes"]["full_length_episodes_per_env"]
     deterministic = [e for e, d in drives.items() if d in ("replay_canary", "recorded_command_policy_v1")]
-    attempts = out["attempts"]
     bounds = [a["bounds"].get("verdict") for a in attempts if a["bounds"].get("warmup_end_batch_step") is not None]
     census = [a["bounds"].get("B4", {}).get("invalid_multi_grid_process") for a in attempts]
     checks = dict(

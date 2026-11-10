@@ -142,7 +142,8 @@ def _range_check(values, limit):
 GATED = ("B0", "B1", "B2", "B3", "B4")
 
 
-def evaluate_bounds(records, telemetry, bounds, *, num_envs, quota_classes, gate="theil_sen", required=GATED):
+def evaluate_bounds(records, telemetry, bounds, *, num_envs, quota_classes, gate="theil_sen", required=GATED,
+                    warmup_override=None):
     """B0 (VRAM budget), B1-B5 for ONE process (attempt). ``records``: child ledger; ``telemetry``: supervisor
     samples of that attempt. Returns per-bound dicts plus ``verdict``: FAIL if any gated bound fails,
     NOT_EVALUABLE if a ``required`` bound is not PASS (missing samples or counters), else PASS."""
@@ -151,8 +152,11 @@ def evaluate_bounds(records, telemetry, bounds, *, num_envs, quota_classes, gate
     resets = [r for r in records if r.get("type") == "reset"]
     anchors = [(r["t"], r["global_step"]) for r in records if r.get("type") in ("heartbeat", "sample")
                and r.get("global_step") is not None]
-    warm = warmup_end_step(episodes, resets, num_envs, quota_classes)
-    out = dict(warmup_end_batch_step=warm, gate_statistic=gate)
+    warm = warmup_end_step(episodes, resets, num_envs, quota_classes) if warmup_override is None \
+        else int(warmup_override)
+    out = dict(warmup_end_batch_step=warm, gate_statistic=gate,
+               warmup_rule="declared batch step (run.warmup_batch_steps)" if warmup_override is not None
+               else "every env completed its first quota episode and the reset after it")
     if warm is None:
         out.update(verdict="NOT_EVALUABLE", reason="warm-up not reached (an env never completed episode + reset)")
         return out
@@ -200,7 +204,8 @@ def evaluate_bounds(records, telemetry, bounds, *, num_envs, quota_classes, gate
                          peak_own_mib=peak, limit_mib=budget)
 
     # B3: RSS at post-gc episode-end samples, per 1000 env-steps
-    gc_samples = [s for s in post if s.get("kind") == "episode_end_post_gc" and s.get("rss_mib") is not None]
+    gc_samples = [s for s in post if s.get("kind") in ("episode_end_post_gc", "post_gc")
+                  and s.get("rss_mib") is not None]
     b3 = dict(samples=len(gc_samples))
     if len(gc_samples) >= b["B3"].get("min_samples", 5):
         x = np.array([s["global_step"] for s in gc_samples], float) * num_envs
@@ -265,5 +270,46 @@ def evaluate_bounds(records, telemetry, bounds, *, num_envs, quota_classes, gate
     return out
 
 
-__all__ = ["GATED", "ols_slope", "theil_sen", "slopes", "quintile_medians", "warmup_end_step", "map_time_to_step",
+def evaluate_rebuild_bounds(records, bounds, *, gate="theil_sen"):
+    """LR-C (rebuild cycles) bounds C1-C5 from the child's ``cycle`` / ``post_close`` / ``census`` records."""
+    cycles = sorted((r for r in records if r.get("type") == "cycle"), key=lambda r: r["cycle"])
+    post = sorted((r for r in records if r.get("type") == "sample" and r.get("kind") == "post_close"),
+                  key=lambda r: r["cycle"])
+    out = dict(cycles=len(cycles))
+    if len(cycles) < bounds.get("min_cycles", 3) or len(post) != len(cycles):
+        out.update(verdict="NOT_EVALUABLE", reason="too few completed cycles")
+        return out
+    out["C1"] = dict(open=[c["live_device_hashgrids_open"] for c in cycles],
+                     after_close=[c["live_device_hashgrids_after_close"] for c in cycles])
+    out["C1"]["status"] = "PASS" if (set(out["C1"]["open"]) == {1} and set(out["C1"]["after_close"]) == {0}) \
+        else "FAIL"
+    lim = bounds["C2"]["max_minus_min_mib"] * MIB
+    out["C2"] = dict(mempool_current=_range_check([s.get("mempool_current_bytes") for s in post], lim),
+                     torch_allocated=_range_check([s.get("torch_allocated_bytes") for s in post], lim))
+    parts = [v["status"] for v in out["C2"].values()]
+    out["C2"]["status"] = "FAIL" if "FAIL" in parts else ("PASS" if "PASS" in parts else "NOT_APPLICABLE")
+    x = np.array([s["cycle"] for s in post], float)
+    for key, field_, limit in (("C3", "own_vram_mib", bounds["C3"]["slope_mib_per_cycle"]),
+                               ("C4", "rss_mib", bounds["C4"]["slope_mib_per_cycle"])):
+        y = np.array([np.nan if s.get(field_) is None else s[field_] for s in post], float)
+        if np.isfinite(y).sum() < 3:
+            out[key] = dict(status="NOT_APPLICABLE", values=y.tolist())
+            continue
+        sl = slopes(x, y, per=1.)
+        out[key] = dict(values=y.tolist(), slope_per_cycle=sl,
+                        status="PASS" if sl[gate]["slope"] <= limit else "FAIL", limit_mib_per_cycle=limit)
+    caps = [s.get("graph_captures") for s in post]
+    inits = [s.get("hashgrid_device_inits") for s in post]
+    expected = list(range(1, len(post) + 1))
+    out["C5"] = dict(graph_captures=caps, hashgrid_device_inits=inits,
+                     status="PASS" if caps == expected and inits == expected else "FAIL",
+                     rule="one capture and one device HashGrid per build")
+    statuses = {k: out[k]["status"] for k in ("C1", "C2", "C3", "C4", "C5")}
+    out["gated_statuses"] = statuses
+    out["verdict"] = "FAIL" if "FAIL" in statuses.values() else (
+        "PASS" if all(v == "PASS" for v in statuses.values()) else "NOT_EVALUABLE")
+    return out
+
+
+__all__ = ["evaluate_rebuild_bounds", "GATED", "ols_slope", "theil_sen", "slopes", "quintile_medians", "warmup_end_step", "map_time_to_step",
            "evaluate_bounds"]

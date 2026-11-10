@@ -20,6 +20,7 @@ from robotic_cutting_sim.rl.long_rollout import RolloutSchedule  # noqa: E402
 
 CHILD = ROOT / "scripts" / "rl_ready" / "run_long_rollout.py"
 CONFIG = ROOT / "configs" / "rl_benchmark" / "long_rollout_v1.json"
+CONFIG_V2 = ROOT / "configs" / "rl_benchmark" / "long_rollout_v2.json"
 
 
 # ----------------------------------------------------------------------------- ledger
@@ -136,6 +137,45 @@ def test_classify_episode_end(kwargs, expected):
     assert S.classify_episode_end(**kwargs) == expected
 
 
+@pytest.mark.parametrize("kwargs,expected", [
+    (dict(cause="terminated", termination_reason=2, invalid_reason=1), S.TERMINATED),     # NaN: task level (env split)
+    (dict(cause="terminated", termination_reason=32), S.TERMINATED),                     # input domain guard
+    (dict(cause="terminated", termination_reason=64 | 2), S.ENV_INFRASTRUCTURE),
+    (dict(cause="terminated", termination_reason=2, infra=1), S.ENV_INFRASTRUCTURE),
+    (dict(cause="full", verdict="PASS"), S.TASK_SUCCESS),
+])
+def test_classify_episode_end_termination_reason_v1_split(kwargs, expected):
+    assert S.classify_episode_end(split="termination_reason_v1", **kwargs) == expected
+    with pytest.raises(ValueError):
+        S.classify_episode_end(split="other", **kwargs)
+
+
+@pytest.mark.parametrize("returncode,records,stderr,expected,infrastructure,env_category", [
+    (1, [{"type": "infra_error", "exc_type": "InvalidBatchEnvs", "message": "Invalid batched envs [0]",
+          "env_category": "task", "env_kind": "MATERIAL_INVALID"}], "", "TASK_STRICT_INVALID_ENV", False, "unknown"),
+    (1, [{"type": "infra_error", "exc_type": "FloatingPointError", "message": "Invalid batched envs [1]"}],
+     "InvalidBatchEnvs", "TASK_STRICT_INVALID_ENV", False, "task"),
+    (1, [{"type": "infra_error", "exc_type": "VectorEnvInfrastructureError", "message": "INFRASTRUCTURE_ERROR[OOM]: x",
+          "env_category": "infrastructure", "env_kind": "OOM"}], "INFRASTRUCTURE_ERROR[OOM]", "INFRA_OOM_DEVICE", True,
+     "infrastructure"),
+    (1, [{"type": "infra_error", "exc_type": "VectorEnvInfrastructureError",
+          "message": "INFRASTRUCTURE_ERROR[CONTACT_POOL_OVERFLOW]: pool", "env_category": "infrastructure",
+          "env_kind": "CONTACT_POOL_OVERFLOW"}], "", "INFRA_CONTACT_POOL_OVERFLOW", True, "unknown"),
+    (1, [{"type": "infra_error", "exc_type": "MemoryError", "message": "", "env_category": "infrastructure",
+          "env_kind": "OOM"}], "", "INFRA_OOM_HOST", True, "unknown"),
+    (-11, [], "Fatal Python error: Segmentation fault", "INFRA_CRASH_SIGNAL", True, "infrastructure"),
+    (0, [{"type": "end"}], "", "COMPLETE", False, "ok"),
+])
+def test_classify_process_end_termination_reason_v1_split(returncode, records, stderr, expected, infrastructure,
+                                                           env_category):
+    out = S.classify_process_end(returncode, records=records, stderr_tail=stderr, pid=1, oom_probe=_unverified,
+                                 split="termination_reason_v1")
+    assert out["cls"] == expected and out["infrastructure"] is infrastructure
+    assert out["env_exit"]["category"] == env_category and out["split"] == "termination_reason_v1"
+    if env_category in ("infrastructure", "ok", "task"):
+        assert out["agrees_with_env_exit"]
+
+
 # ----------------------------------------------------------------------------- the info adapter
 
 class _FakeTensor:
@@ -165,6 +205,15 @@ def test_step_status_legacy_info_derives_material_termination():
     assert st.step_count.tolist() == [3, 3, 3, 1200] and "action_status" in st.extra_keys
 
 
+def test_step_status_termination_reason_v1_infrastructure_bit():
+    info = {"invalid_reason": np.array([0, 1, 0, 0]), "termination_reason": np.array([0, 2, 64 | 16, 16 | 32])}
+    st = S.step_status(info, None, None, num_envs=4)
+    assert st.source == "termination_reason" and st.infra_key is None
+    assert st.infra.tolist() == [0, 0, 1, 0]
+    assert st.terminated.tolist() == [False, True, True, True]          # TRUNCATED_HORIZON alone is not terminal
+    assert S.decode_bits(64 | 16, S.TERMINATION_REASONS) == ["TRUNCATED_HORIZON", "INFRASTRUCTURE_ERROR"]
+
+
 def test_step_status_prefers_termination_reason_and_reads_infra_key():
     info = {"invalid_reason": np.array([0, 1, 0]), "termination_reason": np.array([4, 2, 0]),
             "infrastructure_error": np.array([0, 1, 0])}
@@ -173,16 +222,18 @@ def test_step_status_prefers_termination_reason_and_reads_infra_key():
     assert st.termination_reason.tolist() == [4, 2, 0] and st.infra.tolist() == [0, 1, 0]
     assert st.terminated.tolist() == [True, True, False]          # derived when not given
     assert S.decode_bits(4 | 2, S.TERMINATION_REASONS) == ["MATERIAL_INVALID", "GRASP_LOST"]
+    assert st.infra.tolist() == [0, 1, 0]
     assert S.decode_bits(65, S.INVALID_REASONS) == ["NONFINITE_STATE", "CONTACT_SPEED_GUARD"]
 
 
-def test_invalid_reason_table_matches_material_batch_source():
+def test_invalid_reason_table_matches_material_batch_source_and_termination_is_the_env_module():
     text = (ROOT / "src" / "robotic_cutting_sim" / "batched" / "material_batch.py").read_text()
     for bit, name in S.INVALID_REASONS.items():
         assert f'"{name}"' in text
     assert "INVALID_CONTACT_SPEED_GUARD = 64" in text and "INVALID_NONFINITE_STATE = 1" in text
-    lab = (ROOT / "src" / "robotic_cutting_sim" / "rl" / "lab_batched_env.py").read_text()
-    assert "TERM_RIGID_INVALID, TERM_MATERIAL_INVALID, TERM_GRASP_LOST, TERM_IK_STREAK = 1, 2, 4, 8" in lab
+    from robotic_cutting_sim.rl import termination
+    assert S.TERMINATION_REASONS is termination.TERMINATION_REASONS and S.TERMINATION_VERSION == "termination_reason_v1"
+    assert S.TERM_INFRASTRUCTURE == 64 and S.TERM_MATERIAL_INVALID == 2
 
 
 # ----------------------------------------------------------------------------- seeds and schedule
@@ -244,12 +295,12 @@ def test_open_segments_and_completed_quota():
 
 # ----------------------------------------------------------------------------- end to end: supervisor + fake child
 
-def _config(tmp_path, *, num_envs=4, episodes=3, steps=6, offset=2):
-    config = json.loads(CONFIG.read_text())
+def _config(tmp_path, *, num_envs=4, episodes=3, steps=6, offset=2, version=1):
+    config = json.loads((CONFIG if version == 1 else CONFIG_V2).read_text())
     envs = [dict(env=0, drive="replay_canary", scene_seed=512), dict(env=1, drive="recorded_command_policy_v1",
                                                                       scene_seed=15),
             dict(env=2, drive="random_policy_v1", scene_seed=512), dict(env=3, drive="replay_canary", scene_seed=15)]
-    config["runs"]["TEST"] = dict(config["runs"]["LR-A"], num_envs=num_envs, episodes_per_env=episodes,
+    config["runs"]["TEST"] = dict(config["runs"]["LR-A" if version == 1 else "LR-A2"], num_envs=num_envs, episodes_per_env=episodes,
                                   episode_steps=steps, offset_steps_per_env=offset, envs=envs[:num_envs])
     config["cadence"].update(sample_every_batch_steps=4, heartbeat_every_batch_steps=1)
     config["bounds"]["B2"]["min_samples"] = 3          # short fake runs: few VRAM samples after warm-up
@@ -266,23 +317,29 @@ def _fake_sampler(pids):
                 display_pids=[], own_sm_pct=None, foreign_sm_pct=None, pmon_available=False)
 
 
-def _supervise(tmp_path, *, fault=None, step_s=0.02, policy=None, child_args=(), name="run"):
-    path, config = _config(tmp_path)
+def _supervise(tmp_path, *, fault=None, step_s=0.02, policy=None, child_args=(), name="run", version=1,
+               config=None, run="TEST"):
+    if config is None:
+        path, config = _config(tmp_path, version=version)
+    else:
+        path = tmp_path / f"config_{name}.json"
+        path.write_text(json.dumps(config))
 
     def command(attempt, attempt_dir, resume_dirs):
-        argv = [sys.executable, str(CHILD), "--config", str(path), "--run", "TEST", "--attempt-dir",
+        argv = [sys.executable, str(CHILD), "--config", str(path), "--run", run, "--attempt-dir",
                 str(attempt_dir), "--backend", "fake", f"--fake-step-s={step_s}", *child_args]
         for d in resume_dirs:
             argv += ["--resume-from", str(d)]
         return argv
     pol = S.SupervisorPolicy(startup_timeout_s=60., hang_min_s=60., hang_factor_median_step=20., term_grace_s=5.,
-                             poll_s=.05, sample_interval_s=.02, max_restarts=0, py_spy_on_hang=False)
+                             poll_s=.05, sample_interval_s=.02, max_restarts=0, py_spy_on_hang=False,
+                             split=config.get("classification", {}).get("split", "p1_4_v1"))
     for k, v in (policy or {}).items():
         setattr(pol, k, v)
     env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
     sup = S.Supervisor(tmp_path / name, command, policy=pol, env=env, fault_inject=fault,
                        sampler=_fake_sampler, oom_probe=_unverified,
-                       meta=dict(run="TEST", backend="fake"))
+                       meta=dict(run=run, backend="fake"))
     final = sup.run()
     return final, sup, tmp_path / name, config
 
@@ -300,7 +357,7 @@ def test_e2e_complete_run_classified_and_analyzed(tmp_path):
     assert next(r for r in records if r["type"] == "adapter")["source"] == "legacy_invalid_reason"
     tele = S.read_ledger(run_dir / "telemetry.jsonl")[0]
     assert tele and all(r["gpu"]["own_memory_mib"] == 700. for r in tele)
-    alive = [r for r in tele if r["child"] is not None]          # a last sample may follow the child's exit
+    alive = [r for r in tele if (r["child"] or {}).get("rss_mib")]   # a last sample may follow the exit (zombie)
     assert alive and all(r["child"]["rss_mib"] > 0 and r["child"]["threads"] >= 1 for r in alive)
     from analyze_long_rollout import analyze
     result = analyze(run_dir, config)
@@ -432,7 +489,7 @@ def test_e2e_termination_reason_info_is_read_through_adapter(tmp_path):
     assert final["status"] == "COMPLETE"
     records = _attempt_records(run_dir)
     adapter = next(r for r in records if r["type"] == "adapter")
-    assert adapter["source"] == "termination_reason" and adapter["infra_key"] == "infra_error"
+    assert adapter["source"] == "termination_reason" and adapter["infra_key"] is None
     bad = [r for r in records if r["type"] == "episode" and r["end_class"] == S.ENV_INVALID_STATE]
     assert len(bad) == 1 and bad[0]["adapter_source"] == "termination_reason"
     canary = [r for r in records if r["type"] == "episode" and r.get("canary")]
@@ -465,3 +522,103 @@ def test_fault_injection_is_not_in_library_code():
     hits = [p for p in lib.rglob("*.py") if any(t in p.read_text() for t in (
         'os.environ.get("RCS_FAULT_INJECT', 'os.environ["RCS_FAULT_INJECT"]', "def parse_faults", "FaultInjector"))]
     assert hits == []
+
+
+# ----------------------------------------------------------------------------- split termination_reason_v1 (v2 config)
+
+def test_e2e_v2_split_nan_is_task_level_and_infra_bit_is_env_infrastructure(tmp_path):
+    final, _, run_dir, config = _supervise(tmp_path, fault="nan_env:2@8,infra_env:1@9", version=2,
+                                           child_args=("--fake-info-style", "termination_reason"))
+    assert final["status"] == "COMPLETE"
+    eps = [r for r in _attempt_records(run_dir) if r["type"] == "episode"]
+    nan = next(r for r in eps if r["env"] == 2 and r["cause"] == "terminated")
+    assert nan["end_class"] == S.TERMINATED and nan["invalid_names"] == ["NONFINITE_STATE"]
+    assert nan["termination_names"] == ["MATERIAL_INVALID"]
+    infra = next(r for r in eps if r["env"] == 1 and r["cause"] == "terminated")
+    assert infra["end_class"] == S.ENV_INFRASTRUCTURE and "INFRASTRUCTURE_ERROR" in infra["termination_names"]
+    from analyze_long_rollout import analyze
+    result = analyze(run_dir, config)
+    assert result["infrastructure"]["split"] == "termination_reason_v1"
+    assert result["infrastructure"]["env_level_infrastructure"] == 1
+    assert result["infrastructure"]["terminated_with_numerical_invalid_detail"] == 1
+    assert result["infrastructure"]["families"] == {"ENV_LEVEL_INFRASTRUCTURE": 1}
+
+
+def test_e2e_v2_split_legacy_info_fallback_still_classifies(tmp_path):
+    final, _, run_dir, _ = _supervise(tmp_path, fault="nan_env:2@8", version=2)        # legacy info (no bitfield)
+    assert final["status"] == "COMPLETE"
+    records = _attempt_records(run_dir)
+    assert next(r for r in records if r["type"] == "adapter")["source"] == "legacy_invalid_reason"
+    nan = next(r for r in records if r["type"] == "episode" and r["env"] == 2 and r["cause"] == "terminated")
+    assert nan["end_class"] == S.TERMINATED and nan["termination_names"] == ["MATERIAL_INVALID"]
+
+
+@pytest.mark.parametrize("fault,status,infra", [
+    ("strict_invalid@5", "FAILED_TASK_STRICT_INVALID_ENV", {}),
+    ("cuda_error@5", "FAILED_INFRA_CUDA_ERROR", {"INFRA_CUDA_ERROR": 1}),
+    ("cuda_oom@5", "FAILED_INFRA_OOM_DEVICE", {"INFRA_OOM_DEVICE": 1}),
+    ("memoryerror@5", "FAILED_INFRA_OOM_HOST", {"INFRA_OOM_HOST": 1}),
+    ("sigsegv@5", "FAILED_INFRA_CRASH_SIGNAL", {"INFRA_CRASH_SIGNAL": 1}),
+])
+def test_e2e_v2_split_process_classes_follow_the_env(tmp_path, fault, status, infra):
+    final, sup, run_dir, _ = _supervise(tmp_path, fault=fault, version=2)
+    assert final["status"] == status and final["infra_failures"] == infra
+    cls = sup.attempts[0]["classification"]
+    assert cls["split"] == "termination_reason_v1" and cls["agrees_with_env_exit"] in (True, False)
+    if fault.startswith("cuda") or fault.startswith("memory"):
+        record = next(r for r in _attempt_records(run_dir) if r["type"] == "infra_error")
+        assert record["env_category"] == "infrastructure"
+    if fault.startswith("sigsegv"):
+        assert cls["env_exit"]["kind"] == "CRASH_SIGSEGV" and cls["agrees_with_env_exit"]
+
+
+def _small(config, name, **override):
+    config = json.loads(json.dumps(config))
+    config["runs"][name] = dict(config["runs"][name], **override)
+    config["cadence"].update(sample_every_batch_steps=5, heartbeat_every_batch_steps=1)
+    return config
+
+
+def test_e2e_reset_stress_checks_every_reset_and_canaries(tmp_path):
+    base = json.loads(CONFIG_V2.read_text())
+    envs = base["runs"]["LR-B"]["envs"][:4]
+    config = _small(base, "LR-B", num_envs=4, envs=envs, batch_steps=60, forced_reset_probability=0.2,
+                    warmup_batch_steps=10, canary_sample_every_steps=10, episode_steps=100)
+    final, _, run_dir, _ = _supervise(tmp_path, config=config, run="LR-B", name="stress", step_s=0.01,
+                                      child_args=("--fake-info-style", "termination_reason"))
+    assert final["status"] == "COMPLETE"
+    records = _attempt_records(run_dir)
+    end = next(r for r in records if r["type"] == "end")
+    assert end["reset_check_status"] == "PASS" and end["reset_checks"] > 5 and end["forced_resets"] > 5
+    assert end["canary_status"] == "PASS" and end["canary_samples"] == 12
+    resets = [r for r in records if r["type"] == "reset"]
+    assert all(set(r["ids"]) <= {2, 3} for r in resets)                 # canaries are never reset
+    from analyze_long_rollout import analyze
+    result = analyze(run_dir, config)
+    assert result["acceptance"]["checks"]["reset_check_pass"] and result["acceptance"]["checks"]["canary_rule_pass"]
+    assert result["attempts"][0]["bounds"]["warmup_end_batch_step"] == 10
+
+
+def test_e2e_reset_stress_detects_a_leaking_reset(tmp_path):
+    base = json.loads(CONFIG_V2.read_text())
+    config = _small(base, "LR-B", num_envs=4, envs=base["runs"]["LR-B"]["envs"][:4], batch_steps=60,
+                    forced_reset_probability=0.2, warmup_batch_steps=10, episode_steps=100)
+    final, _, run_dir, _ = _supervise(tmp_path, config=config, run="LR-B", name="leak", step_s=0.01,
+                                      fault="reset_leak:3@2")
+    end = next(r for r in _attempt_records(run_dir) if r["type"] == "end")
+    assert end["reset_check_status"] == "FAIL" and end["reset_check_mismatches"] == 1
+    assert end["reset_check_mismatch_detail"][0]["envs"] == {"3": ["x"]}
+
+
+def test_e2e_rebuild_cycles_census_and_counters(tmp_path):
+    base = json.loads(CONFIG_V2.read_text())
+    config = _small(base, "LR-C", cycles=4, steps_per_cycle=5)
+    final, _, run_dir, _ = _supervise(tmp_path, config=config, run="LR-C", name="cycles", step_s=0.01)
+    assert final["status"] == "COMPLETE"
+    from analyze_long_rollout import analyze
+    result = analyze(run_dir, config)
+    b = result["attempts"][0]["bounds"]
+    assert b["cycles"] == 4 and b["C1"]["status"] == "PASS" and b["C1"]["after_close"] == [0] * 4
+    assert b["C5"]["status"] == "PASS" and b["C5"]["graph_captures"] == [1, 2, 3, 4]
+    assert b["C4"]["status"] == "PASS" and b["C3"]["status"] == "NOT_APPLICABLE"       # fake: no VRAM
+    assert result["acceptance"]["checks"]["l2_every_cycle"]

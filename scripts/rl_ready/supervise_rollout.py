@@ -69,6 +69,8 @@ def main():
     config_bytes = Path(args.config).read_bytes()
     config = json.loads(config_bytes)
     run = config["runs"][args.run]
+    if not args.max_global_steps and run.get("max_global_steps"):
+        args.max_global_steps = int(run["max_global_steps"])      # a declared reduced run (LR-D fault probes)
     gpu = None if (args.no_gpu_telemetry or args.backend == "fake") else args.gpu_index
     if args.backend == "trim" and gpu is None:
         parser.error("--gpu-index is required for the trim backend (VRAM telemetry and the free-VRAM check)")
@@ -82,7 +84,9 @@ def main():
                 config_sha256=hashlib.sha256(config_bytes).hexdigest(), git_head=git("rev-parse", "HEAD"),
                 git_dirty=bool(git("status", "--porcelain", "--untracked-files=no")), gpu_index=gpu,
                 cuda_visible_devices=os.environ.get("CUDA_VISIBLE_DEVICES"), tmpdir=os.environ.get("TMPDIR"),
-                argv=sys.argv, max_global_steps=args.max_global_steps, reduced=bool(args.max_global_steps))
+                argv=sys.argv, max_global_steps=args.max_global_steps, reduced=bool(args.max_global_steps),
+                fault_inject=args.fault_inject, mode=run.get("mode", "rollout"),
+                split=config.get("classification", {}).get("split", "p1_4_v1"))
     free_check = None
     if gpu is not None:
         need = float(run.get("own_vram_bound_mib", 0)) + float(config["common"].get("free_vram_margin_mib", 4096))
@@ -108,6 +112,8 @@ def main():
             argv += ["--resume-from", str(d)]
         if args.max_global_steps:
             argv += ["--max-global-steps", str(args.max_global_steps)]
+        if gpu is not None:
+            argv += ["--gpu-index", str(gpu)]
         return argv + list(args.child_arg)
 
     sampler = S.nvidia_smi_sampler(gpu) if gpu is not None else None
