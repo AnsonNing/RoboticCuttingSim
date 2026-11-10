@@ -444,7 +444,7 @@ def test_e2e_nonfinite_env_is_isolated_in_non_strict_mode(tmp_path):
     invalid = [r for r in eps if r["end_class"] == S.ENV_INVALID_STATE]
     assert len(invalid) == 1 and invalid[0]["env"] == 2 and invalid[0]["invalid_names"] == ["NONFINITE_STATE"]
     assert invalid[0]["termination_names"] == ["MATERIAL_INVALID"] and invalid[0]["cause"] == "terminated"
-    assert invalid[0]["evaluation"] is not None                   # evaluator still runs for diagnostics
+    assert invalid[0]["evaluation"]["evaluation_error"].startswith("ValueError")   # diagnostic evaluation refused
     others = [r for r in eps if r["env"] != 2 and r["episode_index"] >= 0 and r["cause"] != "run_end"]
     assert others and all(r["end_class"] == S.TASK_SUCCESS for r in others)
     from analyze_long_rollout import analyze

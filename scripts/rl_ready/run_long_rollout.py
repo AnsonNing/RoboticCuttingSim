@@ -120,6 +120,25 @@ def _invalid_batch_envs(ids, reasons, note=""):
         return FloatingPointError(f"Invalid batched envs {ids}: {reasons} {note}")
 
 
+def safe_evaluate(backend, ids):
+    """Frozen evaluation of ended envs; an env whose evaluation raises (e.g. ``VectorCuttingEnv.evaluate`` refuses a
+    non-finite snapshot in ``transform_points``) gets ``evaluation_error`` instead of killing the process (the
+    evaluation of a terminated env is diagnostic only)."""
+    ids = list(ids)
+    if not ids:
+        return {}
+    try:
+        return backend.evaluate(ids)
+    except Exception:
+        out = {}
+        for e in ids:
+            try:
+                out.update(backend.evaluate([e]))
+            except Exception as error:
+                out[e] = dict(verdict=None, evaluation_error=f"{type(error).__name__}: {error}"[:500])
+        return out
+
+
 def env_exception_category(error):
     """The env's own classification of an exception (``rl.termination.classify_exception``) when available."""
     try:
@@ -210,6 +229,8 @@ class FakeBackend:
     def evaluate(self, ids):
         out = {}
         for e in ids:
+            if not np.isfinite(self.x[e]).all():          # like VectorCuttingEnv.evaluate (transform_points)
+                raise ValueError("Expected finite (...,3) points")
             labelled = int(np.count_nonzero(self.codes[e]))
             out[e] = dict(verdict="PASS" if labelled >= self.P // 4 else "FAIL", integrity="PASS",
                           outcome="PASS" if labelled >= self.P // 4 else "FAIL", labelled=labelled,
@@ -724,7 +745,7 @@ def rollout(backend, run, cadence, numerical_invalid, ledger, faults, *, resume_
         ends = schedule.on_step(global_step, status.terminated)
         if ends:
             evaluate = [end["env"] for end in ends if end["cause"] in ("full", "terminated")]
-            results = backend.evaluate(evaluate) if evaluate else {}
+            results = safe_evaluate(backend, evaluate)
             l2 = backend.l2_take([end["env"] for end in ends])
             restart = []
             for end in ends:
@@ -847,7 +868,7 @@ def reset_stress(backend, run, cadence, numerical_invalid, ledger, faults, *, ma
                 ends.append((e, "forced"))
         if ends:
             evaluate = [e for e, c in ends if c == "terminated"]
-            results = backend.evaluate(evaluate) if evaluate else {}
+            results = safe_evaluate(backend, evaluate)
             l2 = backend.l2_take([e for e, _ in ends])
             for e, cause in ends:
                 reason, invalid, infra = (int(status.termination_reason[e]), int(status.invalid_reason[e]),
