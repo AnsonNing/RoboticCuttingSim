@@ -112,9 +112,9 @@ def main():
                                     text=True).stdout.strip(),
             "workload_sha256": hashlib.sha256(cfg_path.read_bytes()).hexdigest(), "warp": wp.config.version,
             "free_mb_before": free_mb(physical), "co_tenant_before": gpu_sample(),
+            "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     from run_meta import run_meta
     meta.update(run_meta())                             # review F10: driver, dirty flag, protocol SHA
-            "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     (out/"meta.json").write_text(json.dumps(meta, indent=1))
     peak = Peak()
     rows, profiles, co_samples = [], {}, []
