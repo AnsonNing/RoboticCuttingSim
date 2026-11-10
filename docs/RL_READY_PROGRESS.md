@@ -40,7 +40,18 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
     N=2 tasks=[512,15], SHARED_GPU: workload A contract PASS (4.25 env-steps/s), B1 contract PASS (4.89) — API smoke,
     no cutting in 50 steps. Tests on the merge 6e1e544: full CPU suite 2260 passed / 27 skipped / 6 xfailed; Torch
     RL/vector/acceptance suite 178 passed / 3 skipped (GPU-only and workload B modules, NOT_RUN in that venv).
-  - Running now: B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
+  - **B2 grasp follow-up DONE and merged (52dfcf6)** ([report section](reports/rl_ready/P1_1B_ROBOT_BATCHING.md),
+    evidence `p1_1b_b2_001.json`). Root cause: MuJoCo-Warp 3.12 routes box–box pad/handle pairs to GJK/EPA
+    multicontact, which collapses to 1–2 diagonal contacts at full friction during the HOME→skim rotation (depth
+    0.09 → 2.25 mm, tool kicked to 16.7 rad/s). Fix: opt-in `mjwarp_grip_v1` (MuJoCo `box_box` collider via NATIVECCD
+    off + impratio 10; geometry, friction 0.6, condim 3, solref/solimp, finger drive unchanged; not a weld). Results
+    (SHARED_GPU): robot-only N=2 holding 1196/1200 steps, slip 1.5 mm / 15 mrad (Native ~1 µm / 1e-4 rad — not
+    Native-level, inside the 2 mm / π/60 monitor limits); **S3 TRIM B2 N=2 and N=4, seeds 512/15: frozen evaluator
+    PASS in every env**; settle 3/3; RUN_TO_RUN B2 settle now PASS. Material SIGSEGV after a lost grasp reproduced and
+    fixed with `material_input_domain_v1` (device-side per-env hold + sticky `INPUT_OUT_OF_DOMAIN`, bit 128 on this
+    branch / 64 on the B2 branch; CPU bitwise isolation PASS; guarded N=4 crash configuration completes). Remaining:
+    `grip_contact_profile` passthrough in `open_vector_env`, ADR 0022 §5.1 update, B2 G1/G3 deterministic, G4, G5.
+  - Running now:
     P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
     `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
     local runner; GPU smoke default vs `alias_free_v1`: PHYSICS/PERFORMANCE/INTEGRITY PASS, ratios 1.361 (N=1) /
