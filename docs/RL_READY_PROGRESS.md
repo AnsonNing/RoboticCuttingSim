@@ -29,6 +29,12 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
     misreported. Fixes: findings 1–4, 6, 8–10 in worktree `/home/ningan/RoboticCuttingSim-rl-fix1` (grid refresh
     before each launch, pre-declared position band v2 with ≥10 replays/seed, matched-window throughput, stale text);
     findings 5 (autoreset → evaluate) and 7 (diagnostics opt-out) folded into P1-2b.
+    **Review fixes DONE and merged (f5178f5)** (review report §7, evidence `review_fix1_001.json`): F1 per-launch grid
+    refresh + sticky `FOREIGN_DEVICE_HASHGRID` (bit 256 here; GPU probe: with refresh 8,633,748 candidates / 18,807
+    contacts = clean process; refresh disabled 0 contacts; cost ≤ 0.25 ms GPU per step); F2 position band v2
+    (pre-declared, 20 frozen single-env reference runs, one-sided 99 % log-normal bound; P1-0 9/9, M0 4/4, P1-3a 8/8
+    WITHIN) — `acceptance_v1` now reads band v2, still descriptive (ac3f6c6); F3 matched windows 1.40× / 1.37×; F4
+    ~1.24–1.26× vs the frozen single env (inferred); F6/F8/F9/F10 corrections; FallbackGrid device pin db036a0.
   - **P1-2b DONE and merged (6e1e544)** ([section in milestones report](reports/rl_ready/P1_1_P1_2_MILESTONES.md),
     evidence `p1_2b_001.json`): `open_vector_env(backend="isaac_lab_newton")` (same contract as workload A via
     `rl/vector_contract.py`; cameras / same-step autoreset / CPU refused with codes), per-env `tasks=` (512 + 15 in one
