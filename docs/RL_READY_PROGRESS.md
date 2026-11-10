@@ -91,6 +91,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      checkout, stdout timing markers, physics dumps), `scripts/rl_ready/judge_perf_acceptance.py` (runs from the
      frozen evaluator checkout on dumped outputs), frozen `configs/rl_benchmark/acceptance_v1.json`.
      P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks, never the other project's `locks/gpu1.lock`.
+- **Phase 2 (rubber) — parallel since 2026-11-10 14:05 (user, D-12):** worktree `/home/ningan/RoboticCuttingSim-rl-rubber`, branch `claude/rl-rubber` (from 4c8bd03). Now: P2-0 architecture decision (material backend, constitutive model, near-incompressibility, viscoelastic internal state, per-env reset) by rcs-xhigh → ADR 0023, recipe + calibration manifest (`SIMULATOR_ONLY_UNCALIBRATED`). CPU tests + small GPU probes; Phase 1 keeps GPU priority.
 - Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
 - Next: review fixes → merge P1-2b / B2 follow-up → P1-4 long rollout → P1-5 parity + CUT → R0 → Phase 1 review/PR/merge → first pin → P1-6 cycle.
 
