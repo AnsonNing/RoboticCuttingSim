@@ -7,7 +7,11 @@ The method is pre-declared in ``configs/rl_benchmark/position_band_v2.json`` (sc
 judge) call ``load_reference()``, ``classify(seed, metric_m)`` and ``aggregate(classes)``; nothing here imports Warp
 or Torch.
 
-Metric: ``max_position_diff_m_over_time`` of a full 1200-step WP-17 replay. Tolerance: one-sided log-normal
+Statistics (both scored, classified separately): ``max_position_diff_m_over_time`` (primary, max over the 121
+Native samples) and ``final_max_position_diff_m`` (amendment 1: the statistic of the P1-6 acceptance judge, at
+control step 1200) of a full 1200-step WP-17 replay. The method file also carries, after derivation,
+``position_band_m = {"<seed>": {"high_m": U}}`` for ``final_max_position_diff_m`` in the judge's format
+(``rl.perf_acceptance.load_position_band``). Tolerance: one-sided log-normal
 prediction bound ``exp(mean(ln m) + k * sd(ln m))`` with ``k = t(1 - alpha, n - 1) * sqrt(1 + 1/n)`` (nominal
 false-reject rate ``alpha`` per run), or the reference maximum when the Shapiro-Wilk check on ``ln m`` rejects
 normality at p < 0.01 (nominal false-reject rate ``1/(n + 1)``).
@@ -20,6 +24,12 @@ METHOD_SCHEMA = "rcs_rl_position_band_method_v2"
 REFERENCE_SCHEMA = "rcs_rl_position_band_reference_v2"
 BAND_ID = "position_band_v2"
 METRIC = "max_position_diff_m_over_time"
+FINAL_METRIC = "final_max_position_diff_m"   # the P1-6 judge's statistic (amendment 1)
+METRICS = (METRIC, FINAL_METRIC)
+JUDGE_METRIC = FINAL_METRIC
+# written after derivation (judge view, status); not part of the method digest
+DERIVED_KEYS = ("position_band_m", "position_band_m_statistic", "position_band_m_by_statistic", "derived", "version",
+                "status")
 ROOT = Path(__file__).resolve().parents[3]
 METHOD_PATH = ROOT / "configs" / "rl_benchmark" / "position_band_v2.json"
 REFERENCE_PATH = ROOT / "configs" / "rl_benchmark" / "position_band_v2_reference.json"
@@ -37,6 +47,20 @@ def load_method(path=METHOD_PATH):
     if method.get("schema") != METHOD_SCHEMA:
         raise ValueError(f"{path}: schema {method.get('schema')!r} is not {METHOD_SCHEMA}")
     return method
+
+
+def method_digest(method=None):
+    """SHA256 of the declared method (the method file without the derived keys written after derivation)."""
+    import hashlib
+    method = load_method() if method is None else method
+    core = {k: v for k, v in method.items() if k not in DERIVED_KEYS}
+    return hashlib.sha256(json.dumps(core, sort_keys=True, ensure_ascii=True).encode()).hexdigest()
+
+
+def judge_table(reference):
+    """``position_band_m`` in the judge's format: ``{"<seed>": {"high_m": U}}`` of ``JUDGE_METRIC``."""
+    return {seed: {"high_m": band["upper_m"], "low_descriptive_m": band["lower_m"]}
+            for seed, band in reference["statistics"][JUDGE_METRIC]["seeds"].items() if band["status"] == "DERIVED"}
 
 
 def derive(values, alpha=0.01, min_runs=MIN_RUNS):
@@ -75,7 +99,7 @@ def load_reference(path=REFERENCE_PATH):
     return reference
 
 
-def classify(seed, metric_m, reference=None, *, invalid=False, applicable=True):
+def classify(seed, metric_m, reference=None, *, invalid=False, applicable=True, metric=METRIC):
     """Class of one run: ``WITHIN`` / ``BELOW_REFERENCE`` (a sub-label of within) / ``OUTSIDE`` for a scored run,
     else ``INVALID_PROCESS`` / ``NO_POSITION_DATA`` / ``NOT_APPLICABLE``. Unknown or under-sampled seeds raise."""
     if not applicable:
@@ -85,7 +109,8 @@ def classify(seed, metric_m, reference=None, *, invalid=False, applicable=True):
     if metric_m is None:
         return NO_DATA
     reference = load_reference() if reference is None else reference
-    band = reference["seeds"].get(str(int(seed)))
+    seeds = reference["statistics"][metric]["seeds"] if "statistics" in reference else reference["seeds"]
+    band = seeds.get(str(int(seed)))
     if band is None or band.get("status") != "DERIVED":
         raise ValueError(f"no derived position band v2 for seed {seed}")
     metric_m = float(metric_m)

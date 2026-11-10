@@ -1,5 +1,4 @@
 """Position band v2 (review fix F2): pre-declared method, derivation, per-run classes and the run-set rule."""
-import hashlib
 import math
 
 import numpy as np
@@ -74,8 +73,33 @@ def test_reference_file_matches_the_declared_method():
     if not PB.REFERENCE_PATH.exists():
         pytest.skip("reference values not derived yet (NOT_RUN)")
     reference = PB.load_reference()
-    assert reference["method_sha256"] == hashlib.sha256(PB.METHOD_PATH.read_bytes()).hexdigest()
-    for seed in ("512", "15"):
-        band = reference["seeds"][seed]
-        assert band["n"] >= PB.MIN_RUNS and band["status"] == "DERIVED"
-        assert band == PB.derive(band["values_m"], alpha=band["alpha"])
+    method = PB.load_method()
+    assert reference["method_digest"] == PB.method_digest(method)
+    for metric in PB.METRICS:
+        for seed in ("512", "15"):
+            band = reference["statistics"][metric]["seeds"][seed]
+            assert band["n"] >= PB.MIN_RUNS and band["status"] == "DERIVED"
+            assert band == PB.derive(band["values_m"], alpha=band["alpha"])
+
+
+def test_method_file_is_consumable_by_the_acceptance_judge():
+    """``position_band_m = {seed: {high_m}}`` of the judge's statistic (final max position difference), as
+    ``rl.perf_acceptance.load_position_band`` reads it."""
+    if not PB.REFERENCE_PATH.exists():
+        pytest.skip("reference values not derived yet (NOT_RUN)")
+    method = PB.load_method()
+    reference = PB.load_reference()
+    assert method["position_band_m_statistic"] == PB.JUDGE_METRIC == "final_max_position_diff_m"
+    table = method["position_band_m"]
+    assert set(table) == {"512", "15"}
+    for seed, entry in table.items():
+        assert isinstance(entry["high_m"], float)
+        assert entry["high_m"] == reference["statistics"][PB.JUDGE_METRIC]["seeds"][seed]["upper_m"]
+    assert method["version"] == PB.BAND_ID and method["derived"]["method_digest"] == PB.method_digest(method)
+
+
+def test_method_digest_ignores_only_the_derived_keys():
+    method = PB.load_method()
+    digest = PB.method_digest(method)
+    assert PB.method_digest(dict(method, position_band_m={"512": {"high_m": 1.}}, status="X")) == digest
+    assert PB.method_digest(dict(method, tolerance=dict(method["tolerance"], alpha=.05))) != digest

@@ -14,7 +14,6 @@ Method (pre-declared): ``configs/rl_benchmark/position_band_v2.json``. Reference
 (``--dry-run`` prints without writing).
 """
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import sys
@@ -25,6 +24,7 @@ from robotic_cutting_sim.rl import position_band as PB  # noqa: E402
 
 ART = ROOT / "artifacts" / "rl_ready"
 V1 = {512: (1.3910405714932552e-05, 3.8464872515711716e-05), 15: (0.00019569518905335448, 0.00046197226017502627)}
+V1_FINAL = {512: (1.3910405714932552e-05, 3.8464872515711716e-05), 15: (6.268663952130912e-05, 0.000118195664666705)}
 INVALID_MULTI_GRID = ("p1_3/episode_512_001", "p1_3/episode_15_001")
 
 
@@ -42,7 +42,9 @@ def reference_runs():
         ok = (d.get("status") == "COMPLETE" and d.get("steps_run") == 1200
               and (d.get("invariants") or {}).get("status") == "PASS")
         entry = dict(run=f"review_fix1/{name}", seed=seed, status=d.get("status"), steps_run=d.get("steps_run"),
-                     metric_m=(d.get("parity") or {}).get(PB.METRIC), gpu_sharing=(d.get("telemetry") or {}).get(
+                     metric_m=(d.get("parity") or {}).get(PB.METRIC),
+                     final_metric_m=((d.get("parity") or {}).get("final") or {}).get("max_position_diff_m"),
+                     gpu_sharing=(d.get("telemetry") or {}).get(
                          "gpu_sharing"), final_codes_equal_native=((d.get("parity") or {}).get("final") or {}).get(
                          "codes_equal"), wall_s=d.get("wall_s"),
                      cuda_visible_devices=load(result.parent / "manifest.json").get("cuda_visible_devices"))
@@ -50,8 +52,8 @@ def reference_runs():
     return runs, rejected
 
 
-def v1_status(seed, value):
-    lo, hi = V1[seed]
+def v1_status(seed, value, table=V1):
+    lo, hi = table[seed]
     return "inside" if lo <= value <= hi else "above" if value > hi else "below"
 
 
@@ -63,15 +65,18 @@ def held_out():
                 "p1_2_single_ref_s512_001"):
         d = load(ART / "p1_0" / run / "result.json")
         rows.append(("P1-0 frozen single (band v1 runs + single ref)", f"p1_0/{run}", 0, d["seed"],
-                     d["parity"][PB.METRIC], False, True, "single_env_headless, frozen LiveCuttingMaterial"))
+                     (d["parity"][PB.METRIC], d["parity"]["final"]["max_position_diff_m"]), False, True,
+                     "single_env_headless, frozen LiveCuttingMaterial"))
     for run in ("smoke_replay_s512_001", "coldcache_replay_s512_001"):
         d = load(ART / "p1_0" / run / "result.json")
         rows.append(("P1-0 frozen single (band v1 runs + single ref)", f"p1_0/{run}", 0, d["seed"],
-                     d["parity"][PB.METRIC], False, False, f"{d.get('steps_run')} steps only"))
+                     (d["parity"][PB.METRIC], d["parity"]["final"]["max_position_diff_m"]), False, False,
+                     f"{d.get('steps_run')} steps only"))
     for run in ("m0_s512_001", "m0_s15_001", "m0_s512_postfix_001", "m0_s15_postfix_001"):
         d = load(ART / "p1_2" / run / "result.json")
         rows.append(("P1-2 M0 batched N=1 frozen_v1", f"p1_2/{run}", 0, d["seed"],
-                     d["parity_vs_native"][PB.METRIC], False, True, "pre-fix" if "postfix" not in run else "post-fix"))
+                     (d["parity_vs_native"][PB.METRIC], d["parity_vs_native"][PB.FINAL_METRIC]), False, True,
+                     "pre-fix" if "postfix" not in run else "post-fix"))
     rows.append(("P1-2 M0 batched N=1 frozen_v1", "p1_2/smoke_m0_001", 0, 512, None, False, False, "smoke (short)"))
     for run in ("m1_n4_001", "m1_n4_postfix_001"):
         for e, seed in enumerate((512, 15)):
@@ -91,31 +96,40 @@ def held_out():
                 "hardened_episode_512_001", "hardened_episode_15_001"):
         d = load(ART / "p1_3" / run / "result.json")
         for env in d["results"]["alias_free_v1"]["envs"]:
-            rows.append((p13, f"p1_3/{run}", env["env"], env["seed"], env["parity_vs_native"][PB.METRIC], False,
+            pv = env["parity_vs_native"]
+            rows.append((p13, f"p1_3/{run}", env["env"], env["seed"], (pv[PB.METRIC], pv[PB.FINAL_METRIC]), False,
                          True, "alias_free_v1"))
     for run in INVALID_MULTI_GRID:
         d = load(ART / run / "result.json")
         for variant, res in d["results"].items():
             for env in res["envs"]:
+                pv = env["parity_vs_native"]
                 rows.append((p13 + " (INVALID_MULTI_GRID_PROCESS)", run, env["env"], env["seed"],
-                             env["parity_vs_native"][PB.METRIC], True, True,
+                             (pv[PB.METRIC], pv[PB.FINAL_METRIC]), True, True,
                              f"{variant}; two variants in one process (Warp descriptor hazard)"))
     return rows
 
 
 def classify_all(reference):
     out = []
-    for package, run, env, seed, metric, invalid, applicable, note in held_out():
-        cls = PB.classify(seed, metric, reference, invalid=invalid, applicable=applicable)
-        band = reference["seeds"][str(seed)]
-        out.append(dict(package=package, run=run, env=env, seed=seed, metric_m=metric,
-                        band_v1_status=None if metric is None or not applicable else v1_status(seed, metric),
-                        band_v2_class=cls, band_v2_upper_m=band["upper_m"],
-                        ratio_to_upper=None if metric is None else metric / band["upper_m"], note=note))
-    packages = {}
-    for row in out:
-        packages.setdefault(row["package"], []).append(row["band_v2_class"])
-    aggregates = {k: PB.aggregate(v) for k, v in packages.items()}
+    for package, run, env, seed, values, invalid, applicable, note in held_out():
+        metric, final = values if values is not None else (None, None)
+        row = dict(package=package, run=run, env=env, seed=seed, note=note)
+        for key, value, table in ((PB.METRIC, metric, V1), (PB.FINAL_METRIC, final, V1_FINAL)):
+            band = reference["statistics"][key]["seeds"][str(seed)]
+            row[key] = dict(value_m=value, band_v1_status=None if value is None or not applicable
+                            else v1_status(seed, value, table),
+                            band_v2_class=PB.classify(seed, value, reference, invalid=invalid, applicable=applicable,
+                                                      metric=key),
+                            band_v2_upper_m=band["upper_m"],
+                            ratio_to_upper=None if value is None else value / band["upper_m"])
+        out.append(row)
+    aggregates = {}
+    for key in PB.METRICS:
+        packages = {}
+        for row in out:
+            packages.setdefault(row["package"], []).append(row[key]["band_v2_class"])
+        aggregates[key] = {k: PB.aggregate(v) for k, v in packages.items()}
     return out, aggregates
 
 
@@ -128,28 +142,50 @@ def main():
     method = PB.load_method()
     alpha = method["tolerance"]["alpha"]
     runs, rejected = reference_runs()
-    reference = dict(schema=PB.REFERENCE_SCHEMA, id=PB.BAND_ID, metric=PB.METRIC,
-                     method=str(PB.METHOD_PATH.relative_to(ROOT)),
-                     method_sha256=hashlib.sha256(PB.METHOD_PATH.read_bytes()).hexdigest(),
-                     seeds={str(seed): PB.derive([r["metric_m"] for r in rows], alpha=alpha)
-                            for seed, rows in runs.items()},
+    reference = dict(schema=PB.REFERENCE_SCHEMA, id=PB.BAND_ID, primary_metric=PB.METRIC,
+                     judge_metric=PB.JUDGE_METRIC, method=str(PB.METHOD_PATH.relative_to(ROOT)),
+                     method_digest=PB.method_digest(method),
+                     statistics={key: dict(seeds={str(seed): PB.derive([r[field] for r in rows], alpha=alpha)
+                                                  for seed, rows in runs.items()})
+                                 for key, field in ((PB.METRIC, "metric_m"), (PB.FINAL_METRIC, "final_metric_m"))},
                      reference_runs={str(seed): rows for seed, rows in runs.items()}, rejected_runs=rejected,
                      classes=list(PB.CLASSES),
                      usage="robotic_cutting_sim.rl.position_band.classify(seed, metric_m) -> class; "
                            "aggregate(classes) -> MET / NOT_MET (binomial rule)")
-    print(json.dumps({s: {k: v for k, v in b.items() if k != "values_m"} for s, b in reference["seeds"].items()},
-                     indent=1))
+    print(json.dumps({key: {s: {k: v for k, v in b.items() if k != "values_m"} for s, b in st["seeds"].items()}
+                      for key, st in reference["statistics"].items()}, indent=1))
     rows, aggregates = classify_all(reference)
     for row in rows:
-        if row["metric_m"] is not None:
-            print(f"{row['run']:<45} env {row['env']} s{row['seed']:<4} {row['metric_m']:.4e} "
-                  f"v1 {row['band_v1_status']:<6} v2 {row['band_v2_class']}")
+        a, b = row[PB.METRIC], row[PB.FINAL_METRIC]
+        if a["value_m"] is not None:
+            print(f"{row['run']:<45} e{row['env']} s{row['seed']:<4} over-time {a['value_m']:.3e} v1 "
+                  f"{a['band_v1_status']:<6} v2 {a['band_v2_class']:<16} final {b['value_m']:.3e} v1 "
+                  f"{b['band_v1_status']:<6} v2 {b['band_v2_class']}")
     print(json.dumps(aggregates, indent=1))
     if args.dry_run:
         return
     with open(args.reference_out, "x") as stream:
         json.dump(reference, stream, indent=1)
         stream.write("\n")
+    # judge view in the method file (derived keys, excluded from the method digest)
+    text = PB.METHOD_PATH.read_text()
+    method = json.loads(text)
+    method["position_band_m"] = PB.judge_table(reference)
+    method["position_band_m_statistic"] = PB.JUDGE_METRIC
+    method["position_band_m_by_statistic"] = {key: {s: {"high_m": b["upper_m"], "low_descriptive_m": b["lower_m"]}
+                                                     for s, b in st["seeds"].items()}
+                                              for key, st in reference["statistics"].items()}
+    method["derived"] = dict(status="DERIVED", version=PB.BAND_ID, reference=str(PB.REFERENCE_PATH.relative_to(ROOT)),
+                             method_digest=reference["method_digest"],
+                             runs={s: [r["run"] for r in rows_] for s, rows_ in runs.items()},
+                             summary={key: {s: {k: b[k] for k in ("n", "kind", "upper_m", "lower_m", "k",
+                                                                  "nominal_false_reject_rate", "shapiro_wilk_p",
+                                                                  "geometric_mean_m", "min_m", "max_m")}
+                                            for s, b in st["seeds"].items()}
+                                      for key, st in reference["statistics"].items()})
+    method["version"] = PB.BAND_ID
+    method["status"] = "DERIVED_FROM_PRE_DECLARED_METHOD"
+    PB.METHOD_PATH.write_text(json.dumps(method, indent=1, ensure_ascii=False) + "\n")
     if args.classification_out:
         with open(args.classification_out, "x") as stream:
             json.dump(dict(schema="rcs_rl_position_band_v2_classification_v1", reference=reference,

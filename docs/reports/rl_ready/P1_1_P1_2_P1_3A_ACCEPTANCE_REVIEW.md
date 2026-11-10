@@ -579,3 +579,10 @@ status derived from it are kept and marked superseded; nothing is deleted.
   (c = 0 for n ≤ 5, c = 1 for 6 ≤ n ≤ 35); else `NOT_MET`.
 - **Scope:** a statistical regression check of GPU float-atomic spread against Native, not a physical tolerance.
   Final codes, labelled counts and the frozen evaluator stay independent criteria.
+- **Amendment 1** (committed 4d39747, after the reference processes had started but before any reference
+  `final_max_position_diff_m` value was read; only one `max_position_diff_m_over_time` value had been printed): the
+  P1-6 acceptance judge compares the **final** max position difference at step 1200 with
+  `position_band_m[<seed>].high`, so `final_max_position_diff_m` becomes a second scored statistic with the same
+  reference runs and the same rule. After derivation the method file carries `position_band_m =
+  {"512": {"high_m": U}, "15": {"high_m": U}}` for that statistic (the judge's format) plus the band of both
+  statistics; the method digest excludes these derived keys. `acceptance_v1.json` is not changed here.
