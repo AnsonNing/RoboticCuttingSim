@@ -4,9 +4,11 @@
         --tests 01,02,03,04,05,06,07,08,09 --device cpu --workers 24 --out artifacts/rl_ready/p2_1/<run_id>
 
 Protocol: ``--protocol v2`` (default, configs/rubber/rubber_phys_tests_v2.json), ``v3`` (rubber_phys_tests_v3.json:
--02/-03/-05 with static_stop_v3, -07 variants ramped / instant, -12; the stable-step guard on) or ``v4``
-(rubber_phys_tests_v4.json: v3 plus the declared per-test solver options, the guard also on -06 / -08); each frozen
-before its formal run. The output directory must not exist
+-02/-03/-05 with static_stop_v3, -07 variants ramped / instant, -12; the stable-step guard on), ``v4``
+(rubber_phys_tests_v4.json: v3 plus the declared per-test solver options, the guard also on -06 / -08) or ``v5``
+(rubber_phys_tests_v5.json: n_t 4 for -02 (pair 4 / 6), -03, -04, -05; the guard also on -04 / -09; -08 with the
+declared deformation reserve 1.5; the -04 batched part is scripts/rubber/p2_2_v5/run_batched_04_v5.py, written to
+<out>/batched_04.json); each frozen before its formal run. The output directory must not exist
 (never overwritten). Every case writes raw/<test>/<label>.json as soon as it finishes; an exception is stored as
 the case result (preserved failure). ``--evaluate-only DIR`` re-applies the criteria to existing raw results.
 Material status: SIMULATOR_ONLY_UNCALIBRATED (numerical verification only).
@@ -38,6 +40,8 @@ def _jobs(tests, cfg, device):
             kw = dict(gamma=g, device=device)
             if v3:
                 kw["stable_step_guard"] = P.guard_limit(cfg)
+            if cfg["version"] >= 5:
+                kw["deformation_reserve"] = P.deformation_reserve(cfg, "RUBBER-PHYS-08")
             jobs.append(("08", f"gamma{g:g}", "case_shear", kw))
     for tid, configs in (("02", P.configs_02), ("03", P.configs_03), ("05", P.configs_05)):
         if tid in tests:
@@ -88,16 +92,19 @@ def _run_job(job, out_dir, protocol="v2"):
             rule = rm.step_rule(sc.dx, st["record_interval_s"], mu0_max=mat.mu0, kappa_max=mat.kappa,
                                 density_min=mat.density, cfl=0.5)
             result = P.case_vibration("dt_half", cfg, device=kw["device"],
-                                      substeps=2*rule["substeps_per_control_step"])
+                                      substeps=2*rule["substeps_per_control_step"],
+                                      stable_step_guard=P.test_guard(cfg, "RUBBER-PHYS-04"))
         elif func == "case_vibration":
-            result = P.case_vibration(kw["run_id"], cfg, device=kw["device"])
+            result = P.case_vibration(kw["run_id"], cfg, device=kw["device"],
+                                      stable_step_guard=P.test_guard(cfg, "RUBBER-PHYS-04"))
         elif func in ("case_uniaxial", "case_stretch_release", "case_guard_regression"):
             result = getattr(P, func)(cfg, device=kw["device"])
         elif func == "case_stretch_release_v3":
             result = P.case_stretch_release_v3(cfg, kw["variant"], device=kw["device"],
                                                options=P.solver_options(cfg, "RUBBER-PHYS-07"))
         elif func == "case_records":
-            result = P.case_records(kw["scenario"], kw["t"], kw["Wt"], cfg, device=kw["device"])
+            result = P.case_records(kw["scenario"], kw["t"], kw["Wt"], cfg, device=kw["device"],
+                                    stable_step_guard=P.test_guard(cfg, "RUBBER-PHYS-09"))
         else:
             result = getattr(P, func)(**kw)
         result = {"status": "OK", **result}
@@ -111,7 +118,7 @@ def _run_job(job, out_dir, protocol="v2"):
     return tid, label, result["status"], result["job_wall_s"]
 
 
-def _evaluate(out_dir, protocol="v2", summary_name="summary.json"):
+def _evaluate(out_dir, protocol="v2", summary_name="summary.json", batched_04=None):
     from robotic_cutting_sim import rubber_phys as P
     cfg = P.load_config(P.PROTOCOLS[protocol])
     v3 = cfg["version"] >= 3
@@ -135,11 +142,13 @@ def _evaluate(out_dir, protocol="v2", summary_name="summary.json"):
         try:
             if tid in evaluators and v3 and tid in ("02", "03", "05"):
                 verdicts, measured = P.evaluate_static_v3(evaluators[tid], ok_rows, cfg)
+            elif tid == "09" and cfg["version"] >= 5:
+                verdicts, measured = P.evaluate_09_v5(ok_rows, cfg)
             elif tid in evaluators:
                 verdicts, measured = evaluators[tid](ok_rows, cfg)
             elif tid == "04":
                 batched = None
-                bpath = Path(out_dir)/"batched_04.json"
+                bpath = Path(batched_04) if batched_04 else Path(out_dir)/"batched_04.json"
                 if bpath.exists():
                     batched = json.loads(bpath.read_text())
                 verdicts, measured = P.evaluate_04(ok_rows, cfg, batched=batched)
@@ -157,6 +166,11 @@ def _evaluate(out_dir, protocol="v2", summary_name="summary.json"):
             verdicts["all_cases_ran"] = "FAIL"
         if cfg["version"] >= 4 and tid in ("06", "08"):
             verdicts["valid"] = "PASS" if all(int(r.get("invalid", 0)) == 0 for r in ok_rows) else "FAIL"
+        if cfg["version"] >= 5 and tid == "04":
+            b = measured.get("batched", {}) if isinstance(measured, dict) else {}
+            singles_ok = all(int(r.get("invalid", 0)) == 0 for r in ok_rows) and len(ok_rows) == 2
+            verdicts["valid"] = ("FAIL" if not singles_ok or (b and b.get("invalid_reason_all_zero") is not True)
+                                 else "PASS" if b else "NOT_RUN")
         values = set(verdicts.values())
         verdict = "FAIL" if "FAIL" in values else ("PASS" if values == {"PASS"} else
                                                   "PASS_EXCEPT_NOT_RUN" if values <= {"PASS", "NOT_RUN"} else "FAIL")
@@ -179,12 +193,13 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out")
     ap.add_argument("--evaluate-only")
-    ap.add_argument("--protocol", default="v2", choices=("v2", "v3", "v4"))
+    ap.add_argument("--protocol", default="v2", choices=("v2", "v3", "v4", "v5"))
     ap.add_argument("--summary-name", default="summary.json", help="evaluate-only output file (never overwritten)")
+    ap.add_argument("--batched-04", help="evaluate-only: the -04 batched result (default <dir>/batched_04.json)")
     args = ap.parse_args()
     if args.evaluate_only:
-        print(json.dumps({k: v["verdict"] for k, v in _evaluate(args.evaluate_only, args.protocol,
-                                                                  args.summary_name).items()}, indent=1))
+        print(json.dumps({k: v["verdict"] for k, v in _evaluate(args.evaluate_only, args.protocol, args.summary_name,
+                                                                  args.batched_04).items()}, indent=1))
         return
     out = Path(args.out)
     if out.exists():
@@ -206,6 +221,10 @@ def main():
             "config": str(cfg_path.relative_to(ROOT)), "config_sha256": hashlib.sha256(cfg_path.read_bytes()).hexdigest(),
             "protocol": args.protocol,
             "device": args.device, "workers": args.workers, "jobs": len(jobs), "warp": wp.config.version,
+            "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"), "load_avg_start": os.getloadavg(),
+            "cpu_count": os.cpu_count(), "tree_dirty_src_scripts_configs_tests": bool(subprocess.run(
+                ["git", "status", "--porcelain", "src", "scripts", "configs", "tests"], cwd=ROOT, capture_output=True,
+                text=True).stdout.strip()),
             "numpy": np.__version__, "cpu": platform.processor() or platform.machine(), "host": platform.node(),
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED"}
     (out/"run_meta.json").write_text(json.dumps(meta, indent=1))
