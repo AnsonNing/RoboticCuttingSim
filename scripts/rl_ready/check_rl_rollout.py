@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Consumer check of an ``rcs_rl_rollout_v1`` directory (P1-5 T5.12, plan section 5): can a standard RL loop use it?
+"""Consumer check of an ``rcs_rl_rollout_v1`` / ``rcs_rl_rollout_v2`` directory (P1-5 T5.12, plan section 5): can a
+standard RL loop use it?
 
 Items (each PASS or FAIL; the exit code is 0 only when every item passes, and an exit code alone is never the
 report): chunk SHA256s; shapes/dtypes vs the declared spaces; finite values; actions in [-1, 1];
@@ -8,7 +9,11 @@ episode increments and the step-count restarts per env; episode returns recomput
 ``episodes.jsonl``; a CleanRL-style GAE (gamma 0.99, lambda 0.95, zero value function, bootstrap on truncation
 only) gives finite advantages (NumPy, and on Torch when importable); one pass of a shuffled minibatch iterator
 over T x N (a PPO-style data loader, no update); ``obs_policy`` carries only ``rl.observations.POLICY_TERMS``
-(dimension and the manifest's observation metadata).
+(dimension and the manifest's observation metadata). ``rcs_rl_rollout_v2`` only (review finding 12):
+``non_deployable_fields_labelled`` — every stored field has a role, ``invalid_reason`` / ``termination_reason`` (and
+``obs_critic`` / ``next_obs_critic`` when present) are ``privileged_non_deployable``, the deployable policy inputs are
+exactly ``obs_policy`` / ``next_obs_policy``. A v1 rollout has no roles: the report says ``field_roles:
+UNLABELLED_V1`` (not an item, so a v1 rollout's result is unchanged).
 
     PYTHONPATH=src .venv/bin/python scripts/rl_ready/check_rl_rollout.py <rollout dir> [--json out.json]
 """
@@ -53,7 +58,8 @@ def gae_torch(rewards, values, next_values, terminated, truncated, gamma=.99, la
 
 
 def check(path):
-    from robotic_cutting_sim.rl.rollout import RESET_AUTO, RESET_FORCED, RESET_NONE, load_rollout
+    from robotic_cutting_sim.rl.rollout import (DEPLOYABLE, FIELD_ROLES, PRIVILEGED, RESET_AUTO, RESET_FORCED,
+                                                RESET_NONE, SCHEMA_V2, load_rollout)
     items = {}
 
     def item(name, ok, detail=None):
@@ -145,10 +151,27 @@ def check(path):
          dict(terms=names, dim=D))
     item("critic_flagged_non_deployable", ("obs_critic" not in a) or manifest.get("obs_critic") == "PRIVILEGED_NON_DEPLOYABLE",
          manifest.get("obs_critic"))
+    field_roles = "UNLABELLED_V1"
+    if manifest.get("schema") == SCHEMA_V2:
+        roles = manifest.get("field_roles") or {}
+        privileged = set(manifest.get("privileged_non_deployable") or [])
+        must = {"invalid_reason", "termination_reason"} | ({"obs_critic", "next_obs_critic"} & set(a))
+        deployable = set(manifest.get("deployable_policy_inputs") or [])
+        problems = sorted({f"no role: {k}" for k in a if k not in roles}
+                          | {f"not privileged: {k}" for k in must if roles.get(k) != PRIVILEGED or k not in privileged}
+                          | {f"role differs from FIELD_ROLES: {k}" for k in roles if roles[k] != FIELD_ROLES.get(k)}
+                          | ({f"deployable inputs {sorted(deployable)}"}
+                             if deployable != {"obs_policy", "next_obs_policy"}
+                             or deployable != {k for k, r in roles.items() if r == DEPLOYABLE} else set()))
+        item("non_deployable_fields_labelled", not problems,
+             problems or dict(privileged_non_deployable=sorted(privileged),
+                              oracle_derived=manifest.get("oracle_derived")))
+        field_roles = manifest.get("field_roles_version")
     status = "PASS" if all(v["status"] in ("PASS", "NOT_RUN") for v in items.values()) else "FAIL"
     if any(v["status"] == "NOT_RUN" for v in items.values()) and status == "PASS":
         status = "PASS_WITH_NOT_RUN"
-    return dict(status=status, items=items, num_envs=N, steps=T, episodes=len(episodes))
+    return dict(status=status, items=items, num_envs=N, steps=T, episodes=len(episodes), schema=manifest.get("schema"),
+                field_roles=field_roles)
 
 
 def main():

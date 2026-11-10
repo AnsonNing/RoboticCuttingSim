@@ -114,7 +114,7 @@ def scripted_tables(env, spec):
     return tables, index, sources
 
 
-def run(spec, out_dir, *, device, gpu_index=None, cpu=False):
+def run(spec, out_dir, *, device, gpu_index=None, cpu=False, rollout_schema="rcs_rl_rollout_v1"):
     import torch
     from robotic_cutting_sim.rl import open_vector_env
     from robotic_cutting_sim.rl.policies_batched import RandomPolicyV1
@@ -149,7 +149,7 @@ def run(spec, out_dir, *, device, gpu_index=None, cpu=False):
         critic = env.observation.critic_dim if env.observation_profile == "privileged_state" else None
         receipt = env.receipt()
         writer = RolloutWriter(out_dir, N, obs_dim=env.observation.policy_dim, chunk_size=spec.get("chunk_size", 256),
-                               device=dev, critic_dim=critic,
+                               device=dev, critic_dim=critic, schema=rollout_schema,
                                manifest=dict(run=spec["id"], declaration=str(DECLARATION.relative_to(ROOT)),
                                              spec=spec, env_receipt=receipt,
                                              single_observation_space=dict(shape=[env.observation.policy_dim],
@@ -252,6 +252,9 @@ def main():
     p.add_argument("--gpu-index", type=int)
     p.add_argument("--cpu-test", action="store_true")
     p.add_argument("--out", type=Path)
+    p.add_argument("--rollout-schema", default="rcs_rl_rollout_v1", choices=("rcs_rl_rollout_v1", "rcs_rl_rollout_v2"),
+                   help="v2 labels the privileged / oracle-derived fields (review finding 12); v1 is the declared "
+                        "format of rl_smoke_v1")
     a = p.parse_args()
     declaration = json.loads(DECLARATION.read_text())
     spec = next(r for r in declaration["runs"] if r["id"] == a.run)
@@ -263,7 +266,8 @@ def main():
                 break
     else:
         out = a.out
-    manifest = run(spec, out, device="cpu" if a.cpu_test else "cuda", gpu_index=a.gpu_index, cpu=a.cpu_test)
+    manifest = run(spec, out, device="cpu" if a.cpu_test else "cuda", gpu_index=a.gpu_index, cpu=a.cpu_test,
+                   rollout_schema=a.rollout_schema)
     print(json.dumps(dict(out=str(out), steps=manifest["steps"], end_counts=manifest["end_counts"],
                           evaluations=manifest["evaluations"], timing=manifest["timing"],
                           wall_s=time.perf_counter() - T_SCRIPT)))
