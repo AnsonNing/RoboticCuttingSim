@@ -383,7 +383,8 @@ Warp 1.17.0 CPU, Python 3.12, 34 jobs, 35 s, shared Threadripper PRO 9975WX; eve
 
 ### 8.4 CPU suites
 
-See the evidence `cpu_tests` (logs `artifacts/rl_ready/p2_4/cpu_tests_x1_001/`): `tests/test_rubber_*.py
-tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_repo_naming.py` with
-`CUDA_VISIBLE_DEVICES=''` and with `=0` (GPU0 lock). New: `tests/test_rubber_contact_v2.py` (8), the v2 protocol pin.
+`tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py
+tests/test_repo_naming.py` at `ffb099f` (src and tests unchanged since; B1 merged): **455 passed, 0 failed, 0 skipped**
+with `CUDA_VISIBLE_DEVICES=''` (579 s) and **455 passed** with `=0` under the GPU0 lock (578 s); 2 pre-existing scipy
+warnings; logs `artifacts/rl_ready/p2_4/cpu_tests_x1_001/`. New: `tests/test_rubber_contact_v2.py` (8), the v2 protocol pin.
 None of the tests needs local artifacts, torch or CUDA.
