@@ -579,8 +579,8 @@ class Supervisor:
         last_size = -1
         while proc.poll() is None:
             for record in follower.poll():
-                if record.get("type") == "heartbeat":
-                    step_seen = True
+                if record.get("type") == "heartbeat" and record.get("global_step") is not None:
+                    step_seen = True          # build-phase heartbeats keep the startup limit
                     median_step = record.get("median_step_s") or median_step
             path = attempt_dir / "ledger.jsonl"
             size = path.stat().st_size if path.exists() else -1

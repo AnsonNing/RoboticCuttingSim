@@ -292,7 +292,7 @@ def _attempt_records(run_dir, attempt=1):
 
 
 def test_e2e_complete_run_classified_and_analyzed(tmp_path):
-    final, sup, run_dir, config = _supervise(tmp_path)
+    final, sup, run_dir, config = _supervise(tmp_path, step_s=0.05)     # enough VRAM samples after warm-up
     assert final["status"] == "COMPLETE" and final["infra_failures"] == {}
     records = _attempt_records(run_dir)
     types = [r["type"] for r in records]
@@ -357,6 +357,21 @@ def test_e2e_hang_detected_by_heartbeat_watchdog(tmp_path):
     kill = next(r for r in sup_records if r["type"] == "watchdog_kill")
     assert kill["sigterm"] and kill["reason"] == "hang"
     assert sup.attempts[0]["classification"]["returncode"] == -signal.SIGTERM
+
+
+def test_e2e_watchdog_startup_limit_before_first_step_then_step_limit(tmp_path):
+    # hang@1 fires before the first step heartbeat (the build-phase heartbeat has no step): startup limit
+    final, sup, run_dir, _ = _supervise(tmp_path, fault="hang@1", policy=dict(
+        startup_timeout_s=1.5, hang_min_s=0.2, hang_factor_median_step=0.1), name="startup")
+    assert final["status"] == "FAILED_INFRA_HANG"
+    hang = next(r for r in S.read_ledger(run_dir / "supervisor.jsonl")[0] if r["type"] == "hang_detected")
+    assert hang["step_seen"] is False and hang["limit_s"] == pytest.approx(1.5)
+    # once steps run, the step limit max(hang_min_s, factor x median step) applies: 0.3 s steps > 0.2 s
+    final, sup, run_dir, _ = _supervise(tmp_path, step_s=0.3, policy=dict(
+        startup_timeout_s=60., hang_min_s=0.2, hang_factor_median_step=0.1), name="slow")
+    assert final["status"] == "FAILED_INFRA_HANG"
+    hang = next(r for r in S.read_ledger(run_dir / "supervisor.jsonl")[0] if r["type"] == "hang_detected")
+    assert hang["step_seen"] is True and hang["limit_s"] == pytest.approx(0.2)
 
 
 def test_e2e_wall_timeout(tmp_path):
