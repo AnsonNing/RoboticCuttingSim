@@ -12,6 +12,13 @@ solver by construction; this module only concatenates them, in env order with ex
 Uniform per batch (kernel scalars; a difference raises ``UNSUPPORTED_NONUNIFORM_BATCH``): dt, dx, particle spacing,
 substeps and control dt, gravity, pic (= 0), j domain, contact radius / stiffness, G and the group kinds, Gt, box count,
 table use. Heterogeneous: geometry (particle counts), material (mu0, kappa, density), frictions, groups' regions.
+
+Constitutive model (ADR 0023 §21.2.4): taken from the lives (``TLMPMRubberVisco`` with M >= 1 Prony terms ->
+``neo_hookean_jbar_prony_v1``, else ``neo_hookean_jbar_v1``); a mixed batch is refused with
+``UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS``, a different M or ``visco_energy`` with ``UNSUPPORTED_NONUNIFORM_BATCH`` (pad
+fewer terms with g = 0: ``rubber_material.pad_prony``). Prony arrays (float64): ``params64[N, 1 + 4M]`` (the single
+references' rows, same bits), registry state ``visco_q[P*M]`` / ``visco_s_prev[P]`` (vec6d) and, with
+``visco_energy = branch_work_v1``, ``visco_pb[P]`` and the per-env accumulators.
 """
 from dataclasses import dataclass, field
 
@@ -39,6 +46,8 @@ BATCHED_OPTIONS = {"dirichlet": ("lumped_v1", "consistent_mass_projection_v1"),
                    # ADR 0023 §21.1 (bookkeeping of the F8 projection; rubber_constraint_work.TLMPMRubberCW)
                    "constraint_work": ("end_velocity_v1", "kick_average_v1")}
 SHADOW_ARRAYS = ("F64", "x64")                                      # per particle (f64_shadow_v1)
+VISCO_STATE_ARRAYS = ("visco_q", "visco_s_prev")                    # registry state (neo_hookean_jbar_prony_v1)
+VISCO_ENERGY_ARRAYS = ("visco_pb", "visco_branch_work", "visco_dissipation", "visco_d_negative")   # branch_work_v1
 PROJECTION_ROW_ARRAYS = ("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block", "proj_row_local",
                          "proj_rhs", "proj_vpresc", "proj_mu")     # per constrained (node, component) row
 PROJECTION_BLOCK_ARRAYS = ("proj_block_offset", "proj_block_size", "proj_inv_offset")   # per block
@@ -73,6 +82,10 @@ class PackedRubberBatch:
     def total_cells(self):
         return int(self.cell_env_offset[-1])
 
+    @property
+    def visco_terms(self):
+        return int(self.uniform.get("visco_terms", 0))
+
     def layout_receipt(self):
         return {"layout_version": LAYOUT_VERSION, "num_envs": self.num_envs,
                 "particle_counts": self.particle_counts.tolist(), "node_counts": self.node_counts.tolist(),
@@ -88,10 +101,11 @@ def _validate(live):
     from ..live_rubber_material import LiveRubberMaterial
     from ..rubber_constraint_work import TLMPMRubberCW
     from ..tlmpm_rubber_v1 import TLMPMRubber
+    from ..tlmpm_rubber_visco_v1 import TLMPMRubberVisco
     if not isinstance(live, LiveRubberMaterial):
         raise TypeError("pack_rubber takes LiveRubberMaterial instances (single-env references)")
     s = live.solver
-    if type(s) not in (TLMPMRubber, TLMPMRubberCW):
+    if type(s) not in (TLMPMRubber, TLMPMRubberCW, TLMPMRubberVisco):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{type(s).__name__}; only {SOLVER}")
     if s.device != "cpu":
         raise ValueError("pack_rubber reads single solvers built on the Warp CPU device (ADR 0021 §3.4)")
@@ -103,6 +117,11 @@ def _validate(live):
     if (live.step_count != 0 or int(s.index.numpy()[0]) != 0 or not np.array_equal(s.x.numpy(), s.reference.numpy())
             or np.abs(s.v.numpy()).max() != 0.0 or s.damping_rate != 0.0):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SINGLE_ENV_STATE", "pack takes fresh, unstepped reset states")
+
+
+def model_of(live):
+    """Constitutive model id of a single reference (ADR 0023 §21.2.4)."""
+    return cr.NEO_HOOKEAN_JBAR_PRONY_V1.model_id if getattr(live.solver, "M", 0) else cr.DEFAULT_MODEL_ID
 
 
 def constraint_work_of(solver):
@@ -120,17 +139,27 @@ def uniform_signature(live):
             "use_plane": int(s.use_plane), "markers": len(live.scene.marker_offsets)-1,
             "stable_step_guard": s.cfl_guard_limit, "dirichlet": s.dirichlet, "traction_work": s.traction_work,
             "state_precision": s.state_precision, "projection_rows_nonzero": bool(getattr(s, "proj_rows", 0)),
-            "constraint_work": constraint_work_of(s)}
+            "constraint_work": constraint_work_of(s), "visco_terms": int(getattr(s, "M", 0)),
+            "visco_energy": getattr(s, "visco_energy", "off_v1") if getattr(s, "M", 0) else "off_v1"}
 
 
-def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
-    """Concatenate fresh single-env rubber references (CPU) into one batch."""
+def pack_rubber(lives, *, constitutive_model=None):
+    """Concatenate fresh single-env rubber references (CPU) into one batch. ``constitutive_model`` (optional) must
+    equal the lives' model."""
     lives = list(lives)
     if not lives:
         raise UnsupportedBatchConfiguration("UNSUPPORTED_EMPTY_BATCH", "num_envs must be >= 1")
-    cr.get_model(constitutive_model)
+    if constitutive_model is not None:
+        cr.get_model(constitutive_model)
     for live in lives:
         _validate(live)
+    models = [model_of(live) for live in lives]
+    expected = models[0] if constitutive_model is None else constitutive_model
+    for e, m in enumerate(models):
+        if m != expected:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS",
+                                                f"env {e} runs {m!r}, the batch {expected!r}")
+    constitutive_model = expected
     sigs = [uniform_signature(live) for live in lives]
     for e, sig in enumerate(sigs[1:], start=1):
         for key, value in sigs[0].items():
@@ -196,13 +225,22 @@ def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
     bc = np.flatnonzero(host["node_group"] >= 0).astype(np.int32) if G else np.zeros(0, np.int32)
     host["bc_nodes"] = bc if bc.size else np.zeros(1, np.int32)
     option_env = _pack_options(solvers, uniform, host, po, no, N, G)
+    if uniform["visco_terms"]:
+        for name in VISCO_STATE_ARRAYS:
+            host[name] = np.concatenate([getattr(s, name).numpy() for s in solvers])
+        host["params64"] = np.concatenate([s.params64.numpy() for s in solvers]).astype(np.float64)
+        if uniform["visco_energy"] != "off_v1":
+            for name in VISCO_ENERGY_ARRAYS:
+                host[name] = (np.concatenate([getattr(s, name).numpy() for s in solvers]))
     env = {"mass_per_particle": np.array([float(s.mass_value) for s in solvers], np.float32),
            "traction_particle_counts": np.array([[np.count_nonzero(lv.scene.particle_traction == t) for t in range(Gt)]
                                                  for lv in lives], np.int64).reshape(N, Gt),
            "marker_reference": np.stack([lv.scene.marker_reference for lv in lives]), **option_env}
     receipts = [{"env": e, "particles": int(s.n), "nodes": int(s.node_count), "cells": int(s.cells),
                  "scene": lv.scene.receipt(), "material": s.material.to_dict(),
-                 "params": dict(zip(cr.RUBBER_PARAM_NAMES, host["params"][e].tolist()))}
+                 "params": dict(zip(cr.RUBBER_PARAM_NAMES, host["params"][e].tolist())),
+                 **({"params64": dict(zip(cr.prony_model(uniform["visco_terms"]).param64_names,
+                                          host["params64"][e].tolist()))} if uniform["visco_terms"] else {})}
                 for e, (s, lv) in enumerate(zip(solvers, lives))]
     keys = [lv.scene.receipt()["array_sha256"] for lv in lives]
     return PackedRubberBatch(num_envs=N, particle_counts=pc, node_counts=nc, cell_counts=cc,

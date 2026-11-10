@@ -24,6 +24,13 @@ were built with; they must agree; the defaults add no array and no launch):
   single solver's kernel, UNCHANGED, target ``env_of_group[g]``) accumulates Lambda . (g_n + v_presc) / 2 into
   ``work``. No state array changes.
 
+Viscoelastic model (ADR 0023 §21.2; ``neo_hookean_jbar_prony_v1`` from the lives, registry ``prony_model(M)``): the
+stress pass is the J-bar pass + ``tlmpm_rubber_visco_v1.stress_prony`` and the guard ``cfl_guard_prony`` (the single
+solver's kernels, per-env ``params``/``params64`` rows and accumulators through ``env_of_particle``); with
+``visco_energy = branch_work_v1`` the single solver's ``visco_branch_work`` runs after the position update. Arrays:
+``params64[N, 1 + 4M]``, ``visco_q[P*M]``, ``visco_s_prev[P]`` (float64) [, ``visco_pb[P]``, ``visco_branch_work[N]``,
+``visco_dissipation[N]``, ``visco_d_negative[N]``].
+
 BC launch (``bc_launch``, ADR 0023 §20.2): ``all_nodes_v1`` is the P2-1/P2-2 launch (``_bc_b`` over every node,
 group maps evaluated per node); ``constrained_list_v1`` launches the same body over the packed list of constrained
 nodes (increasing global id); ``motion_table_v1`` (default since §20) also evaluates the group maps of every substep
@@ -42,6 +49,7 @@ import warp as wp
 from .. import tlmpm_v5 as v5
 from .. import rubber_constitutive as rc
 from .. import rubber_constraint_work as rcw
+from .. import rubber_visco_constitutive as rvc
 from ..tlmpm_rubber_v1 import (GROUP_RIGID, _deformation_f64, _positions_f64, _proj_particles, _proj_rhs, _proj_solve, apply_mask,
                                bc_reaction, bc_work, contact_load, group_target)
 from ..tlmpm_v6 import _grid_positions
@@ -49,7 +57,7 @@ from . import constitutive_rubber as cr
 from .constitutive_rubber import P_FRICTION_TABLE
 from .errors import UnsupportedBatchConfiguration
 from .rubber_layout import (GROUP_ARRAYS, NODE_ARRAYS, PARTICLE_ARRAYS, PROJECTION_BLOCK_ARRAYS, PROJECTION_ROW_ARRAYS,
-                            SHADOW_ARRAYS, TRACTION_ARRAYS)
+                            SHADOW_ARRAYS, TRACTION_ARRAYS, VISCO_ENERGY_ARRAYS, VISCO_STATE_ARRAYS)
 
 wp.set_module_options({"enable_backward": False})
 
@@ -68,7 +76,7 @@ def source_sha256():
     pkg = here.parent
     out.update({name: hashlib.sha256((pkg/name).read_bytes()).hexdigest()
                 for name in ("tlmpm_rubber_v1.py", "rubber_constitutive.py", "tlmpm_v5.py", "tlmpm_v6.py",
-                             "rubber_constraint_work.py")})
+                             "rubber_constraint_work.py", "tlmpm_rubber_visco_v1.py", "rubber_visco_constitutive.py")})
     return out
 
 
@@ -279,6 +287,9 @@ class BatchedTLMPMRubber:
         **dict.fromkeys(("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block", "proj_row_local",
                          "proj_block_offset", "proj_block_size", "proj_inv_offset", "env_of_row"), int),
         **dict.fromkeys(("proj_inv", "proj_rhs", "proj_vpresc", "proj_mu", "proj_mu_node"), wp.float64),
+        # neo_hookean_jbar_prony_v1 (ADR 0023 §21.2)
+        "visco_q": rvc.vec6d, "visco_s_prev": rvc.vec6d, "params64": wp.float64, "visco_pb": wp.mat33d,
+        "visco_branch_work": wp.float64, "visco_dissipation": wp.float64, "visco_d_negative": int,
     }
     OPTION_ARRAYS = {"f64_shadow_v1": SHADOW_ARRAYS+("reference64",),
                      "consistent_mass_projection_v1": PROJECTION_ROW_ARRAYS+PROJECTION_BLOCK_ARRAYS
@@ -308,6 +319,11 @@ class BatchedTLMPMRubber:
         self.G, self.Gt, self.boxes, self.use_plane = u["G"], u["Gt"], u["boxes"], u["use_plane"]
         self.markers_per_env = u["markers"]
         self.model = cr.get_model(packed.constitutive_model)
+        self.M = packed.visco_terms
+        if self.M:
+            self.model = cr.prony_model(self.M)
+        self.visco_energy = u.get("visco_energy", "off_v1")
+        self.visco_energy_on = bool(self.M) and self.visco_energy != "off_v1"
         h = packed.host
         names = (PARTICLE_ARRAYS + NODE_ARRAYS + GROUP_ARRAYS + TRACTION_ARRAYS
                  + ("cell_node", "cell_offsets", "cell_particles", "marker_offsets", "marker_particles", "params",
@@ -317,6 +333,10 @@ class BatchedTLMPMRubber:
             names += self.OPTION_ARRAYS["f64_shadow_v1"]
         if self.projection:
             names += self.OPTION_ARRAYS["consistent_mass_projection_v1"]
+        if self.M:
+            names += VISCO_STATE_ARRAYS+("params64",)
+        if self.visco_energy_on:
+            names += VISCO_ENERGY_ARRAYS
         self.bc_node_count = int(np.count_nonzero(h["node_group"] >= 0)) if self.G else 0
         self.proj_rows = int(h["proj_row_node"].shape[0]) if self.projection else 0
         with wp.ScopedDevice(self.device):
@@ -334,8 +354,11 @@ class BatchedTLMPMRubber:
             self.violations = wp.zeros(self.num_envs, dtype=int)
             self.cfl_violations = wp.zeros(self.num_envs, dtype=int)
             self.index = wp.zeros(1, dtype=int)
-        for module in (v5.__name__, "robotic_cutting_sim.tlmpm_v6", rc.__name__, "robotic_cutting_sim.tlmpm_rubber_v1",
-                       cr.__name__, __name__) + ((rcw.__name__,) if self.kick_average else ()):
+        modules = ((v5.__name__, "robotic_cutting_sim.tlmpm_v6", rc.__name__, "robotic_cutting_sim.tlmpm_rubber_v1",
+                    cr.__name__, __name__) + ((rcw.__name__,) if self.kick_average else ())
+                   + (("robotic_cutting_sim.rubber_visco_constitutive", "robotic_cutting_sim.tlmpm_rubber_visco_v1")
+                      if self.M else ()))
+        for module in modules:
             wp.load_module(module=module, device=self.device)
 
     def step(self):
@@ -381,6 +404,11 @@ class BatchedTLMPMRubber:
                 wp.launch(_traction_work_grid_b, n, [self.x, self.x_start, self.mass, self.particle_traction,
                                                      self.traction_force, self.traction_mass, self.env_of_particle,
                                                      self.work])
+            if self.visco_energy_on:
+                from ..tlmpm_rubber_visco_v1 import visco_branch_work
+                wp.launch(visco_branch_work, n, [self.visco_pb, self.nodes, self.gradients, self.new_v,
+                                                 self.env_of_particle, wp.float64(self.volume), wp.float64(dt),
+                                                 self.visco_branch_work])
             wp.launch(v5._advance, 1, [self.index])
 
     def _launch_projection(self):
@@ -496,12 +524,21 @@ class BatchedTLMPMRubber:
                 out[name] = getattr(self, name).numpy()[b0:b1]-np.int32(base)
             out["proj_inv"] = self.proj_inv.numpy()[int(io[e]):int(io[e+1])].copy()
             out["proj_mu_node"] = self.proj_mu_node.numpy()[n0:n1].copy()
+        if self.M:
+            M = self.M
+            out["visco_q"] = self.visco_q.numpy()[p0*M:p1*M].copy()
+            out["visco_s_prev"] = self.visco_s_prev.numpy()[p0:p1].copy()
+            out["params64"] = self.params64.numpy()[e:e+1].copy()
+        if self.visco_energy_on:
+            out["visco_pb"] = self.visco_pb.numpy()[p0:p1].copy()
+            for name in ("visco_branch_work", "visco_dissipation", "visco_d_negative"):
+                out[name] = getattr(self, name).numpy()[e:e+1].copy()
         return out
 
     def options_receipt(self):
         return {"dirichlet": self.dirichlet, "traction_work": self.traction_work,
                 "state_precision": self.state_precision, "constraint_work": self.constraint_work,
-                "projection_rows": self.proj_rows,
+                "projection_rows": self.proj_rows, "visco_terms": self.M, "visco_energy": self.visco_energy,
                 "bc_launch": self.bc_launch, "bc_nodes": self.bc_node_count, "adr": "ADR 0023 §20"}
 
     def solver_receipt(self):

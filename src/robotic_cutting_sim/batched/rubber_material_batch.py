@@ -25,6 +25,15 @@ F10 float64 shadows) run batched; the masked reset also restores their state (``
 reference, projection scratch and the discarded v1 traction work to zero) and, for an env reset with new material
 values, the F8 block inverses are recomputed on the host with the single solver's ``projection_blocks`` (the mass
 enters the consistent-mass blocks) and written into the preallocated inverse (no device allocation, no recapture).
+
+P2-3 viscoelasticity (ADR 0023 §21.2.4-21.2.5; ``neo_hookean_jbar_prony_v1`` from the lives): the masked reset runs a
+generic registry-state reset kernel per declared state variable of the model (``visco_q`` with multiplicity M,
+``visco_s_prev``; initial value ``zero``), writes ``params64`` from its stage (``stage_params64``, host-staged float64
+rows with a_i, b_i from expm1 at the batch dt) and clears the ``visco_energy`` accumulators, so an env never inherits
+material memory (RUBBER-VISC-06). Per-reset randomisation of the Prony terms: declared ranges ``prony_g_scale``
+(multiplies every g_i; sum g < 1 enforced) and ``prony_tau_scale`` (multiplies every tau_i), relative to the env's
+packed terms. After the frozen diagnostics the visco diagnostics (``visco_summary[N, 8]``: Psi_eq, Psi_v, W_b, D, ...)
+are launched (fixed order; the single solver's kernels).
 """
 import hashlib
 import time
@@ -34,6 +43,7 @@ import numpy as np
 import warp as wp
 
 from .. import tlmpm_rubber_v1 as T
+from .. import rubber_visco_constitutive as rvc
 from . import constitutive_rubber as cr
 from . import rubber_layout
 from .errors import UnsupportedBatchConfiguration
@@ -78,6 +88,13 @@ MATERIAL_CONSTANT_ARRAYS = ("initial_params", "initial_mass", "initial_group_act
 RESET_INPUTS = ("reset_mask", "reset_seed", "stage_params", "stage_mass")
 RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count",)
 DIAGNOSTICS_SCRATCH = ("pp", "pc", "pn", "summary", "marker_x", "marker_v")
+# neo_hookean_jbar_prony_v1 (ADR 0023 §21.2.5; exist only for a Prony batch)
+MODEL_STATE_RESET_ARRAYS = {"neo_hookean_jbar_prony_v1": ("visco_q", "visco_s_prev", "params64")}
+VISCO_ENERGY_RESET_ARRAYS = ("visco_pb", "visco_branch_work", "visco_dissipation", "visco_d_negative")
+VISCO_MATERIAL_CONSTANT_ARRAYS = ("initial_params64",)
+VISCO_RESET_INPUTS = ("stage_params64",)
+VISCO_DIAGNOSTICS_SCRATCH = ("vpp", "visco_summary")       # in ``visco_diagnostics`` (tlmpm_rubber_visco_v1)
+PRONY_RANGE_KEYS = ("prony_g_scale", "prony_tau_scale")
 
 
 class InvalidRubberEnvs(FloatingPointError):
@@ -251,6 +268,42 @@ def _reset_scratch_work_r(mask: wp.array(dtype=int), work_scratch: wp.array(dtyp
         work_scratch[e] = wp.float64(0.0)
 
 
+@wp.kernel
+def _reset_state_vec6d_r(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int), multiplicity: int,
+                         state: wp.array(dtype=rvc.vec6d)):
+    """Generic registry-state reset (initial value ``zero``): entry i belongs to particle i // multiplicity."""
+    i = wp.tid()
+    if mask[env_of_particle[i//multiplicity]] != 0:
+        state[i] = rvc.vec6d()
+
+
+@wp.kernel
+def _reset_params64_r(mask: wp.array(dtype=int), stage: wp.array2d(dtype=wp.float64),
+                      params64: wp.array2d(dtype=wp.float64), ncols: int):
+    e = wp.tid()
+    if mask[e] != 0:
+        for k in range(ncols):
+            params64[e, k] = stage[e, k]
+
+
+@wp.kernel
+def _reset_visco_energy_r(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                          pb: wp.array(dtype=wp.mat33d)):
+    p = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        pb[p] = wp.mat33d()
+
+
+@wp.kernel
+def _reset_visco_env_r(mask: wp.array(dtype=int), branch: wp.array(dtype=wp.float64),
+                       dissipation: wp.array(dtype=wp.float64), d_negative: wp.array(dtype=int)):
+    e = wp.tid()
+    if mask[e] != 0:
+        branch[e] = wp.float64(0.0)
+        dissipation[e] = wp.float64(0.0)
+        d_negative[e] = 0
+
+
 # ----------------------------------------------------------------------------- material
 
 class BatchedRubberMaterial:
@@ -264,7 +317,7 @@ class BatchedRubberMaterial:
 
     def __init__(self, lives, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
                  graph_chunk=DEFAULT_GRAPH_CHUNK, ranges=None, seeds=None, cameras=None, recorders=None,
-                 constitutive_model=cr.DEFAULT_MODEL_ID, bc_launch=None):
+                 constitutive_model=None, bc_launch=None):
         if cameras or recorders:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_SENSOR" if cameras else "UNSUPPORTED_RECORDER",
                                                 f"cameras={cameras!r} recorders={recorders!r}")
@@ -282,6 +335,7 @@ class BatchedRubberMaterial:
         self.control_dt = float(pk.uniform["control_dt"])
         self.solver = s = BatchedTLMPMRubber(pk, device, **({} if bc_launch is None else {"bc_launch": bc_launch}))
         self._init_projection_host(lives)
+        self._initial_prony = [tuple(live.material.prony) for live in lives] if s.M else None
         self.G, self.Gt, self.K = s.G, s.Gt, pk.uniform["markers"]
         self.ranges = self._check_ranges(ranges, lives)
         G1, Gt1 = max(self.G, 1), max(self.Gt, 1)
@@ -311,6 +365,13 @@ class BatchedRubberMaterial:
             self.summary = wp.zeros((N, T.NDIAG), dtype=wp.float64)
             self.marker_x = wp.zeros(N*self.K, dtype=wp.vec3d)
             self.marker_v = wp.zeros(N*self.K, dtype=wp.vec3d)
+            if s.M:
+                self.initial_params64 = wp.array(pk.host["params64"], dtype=wp.float64)
+                self.stage_params64 = wp.array(pk.host["params64"], dtype=wp.float64)
+        self.visco_diagnostics = None
+        if s.M:
+            from ..tlmpm_rubber_visco_v1 import ViscoDiagnostics
+            self.visco_diagnostics = ViscoDiagnostics(s, N)
         for module in (__name__, T.__name__):
             wp.load_module(module=module, device=device)
         s.prepare_motion_table()
@@ -341,12 +402,16 @@ class BatchedRubberMaterial:
     def _check_ranges(self, ranges, lives):
         if not ranges:
             return {}
-        names = cr.RUBBER_PARAM_NAMES
+        names = cr.RUBBER_PARAM_NAMES+(PRONY_RANGE_KEYS if self.solver.M else ())
         out = {}
         for key, (lo, hi) in ranges.items():
             if key not in names or not 0 < lo <= hi:
                 raise ValueError(f"randomisation range {key!r}: ({lo}, {hi})")
             out[key] = (float(lo), float(hi))
+        if "prony_g_scale" in out:
+            worst = max(sum(g for g, _ in live.material.prony) for live in lives)*out["prony_g_scale"][1]
+            if worst >= 1.0:
+                raise ValueError(f"prony_g_scale range gives sum g = {worst} >= 1")
         mu_max = out.get("mu0", (0, max(l.material.mu0 for l in lives)))[1]
         beta = max(l.material.beta for l in lives)
         rho_min = out.get("density", (min(l.material.density for l in lives), 0))[0]
@@ -448,9 +513,18 @@ class BatchedRubberMaterial:
                                           s.particle_offset, s.cell_env_offset, self.summary])
             wp.launch(T.markers_kernel, N*self.K, [s.x, s.v, s.marker_offsets, s.marker_particles, self.marker_x,
                                                    self.marker_v])
+        if self.visco_diagnostics is not None:
+            self.visco_diagnostics.launch(self.summary, s.params, s.particle_offset)
+
+    @property
+    def visco_summary(self):
+        return None if self.visco_diagnostics is None else self.visco_diagnostics.visco_summary
 
     def diagnostics_read(self):
         return [dict(zip(T.DIAG_COLUMNS, map(float, r))) for r in self.summary.numpy()]
+
+    def visco_diagnostics_read(self):
+        return None if self.visco_diagnostics is None else self.visco_diagnostics.read()
 
     def check_valid(self):
         if int(self.invalid_count.numpy()[0]):
@@ -478,6 +552,7 @@ class BatchedRubberMaterial:
             seed[ids] = np.asarray(seeds, np.int64).reshape(len(ids))
         params = self.initial_params.numpy().copy()
         mass = self.initial_mass.numpy().copy()
+        params64 = self.initial_params64.numpy().copy() if self.solver.M else None
         if rng_ranges:
             if not self.ranges:
                 raise ValueError("no randomisation ranges declared")
@@ -485,9 +560,11 @@ class BatchedRubberMaterial:
         if materials is not None:
             from ..rubber_material import mass_per_particle
             for e, m in zip(ids, materials):
-                self._check_in_range(m)
+                self._check_in_range(m, int(e))
                 params[e] = np.array(cr.env_parameters(m), np.float64).astype(np.float32)
                 mass[e] = mass_per_particle(m.density, self.solver.spacing)
+                if params64 is not None:
+                    params64[e] = rvc.params64_row(m.prony, self.solver.dt)
         mask = np.zeros(N, np.int32)
         mask[ids] = 1
         if self.solver.projection:
@@ -503,6 +580,8 @@ class BatchedRubberMaterial:
         self.reset_seed.assign(seed)
         self.stage_params.assign(params)
         self.stage_mass.assign(mass)
+        if params64 is not None:
+            self.stage_params64.assign(params64)
         self.reset_masked(full=len(ids) == N)
 
     def _sample(self, seed, e):
@@ -511,15 +590,33 @@ class BatchedRubberMaterial:
         base = dict(zip(cr.RUBBER_PARAM_NAMES, map(float, self.initial_params.numpy()[e])))
         beta = base["kappa"]/base["mu0"]
         vals = {k: (rng.uniform(*self.ranges[k]) if k in self.ranges else base[k]) for k in cr.RUBBER_PARAM_NAMES}
+        prony = ()
+        if self.solver.M:
+            gs = rng.uniform(*self.ranges["prony_g_scale"]) if "prony_g_scale" in self.ranges else 1.0
+            ts = rng.uniform(*self.ranges["prony_tau_scale"]) if "prony_tau_scale" in self.ranges else 1.0
+            prony = scale_prony(self._initial_prony[e], gs, ts)
         return MaterialValues(mu0=vals["mu0"], kappa=beta*vals["mu0"], density=vals["density"],
                               friction_table=vals["friction_table"], friction_pad=vals["friction_pad"],
-                              friction_self=vals["friction_self"])
+                              friction_self=vals["friction_self"], prony=prony)
 
-    def _check_in_range(self, m):
+    def _check_in_range(self, m, e=None):
         values = dict(zip(cr.RUBBER_PARAM_NAMES, cr.env_parameters(m)))
+        prony = tuple(getattr(m, "prony", ()))
+        if len(prony) != self.solver.M:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH",
+                                                f"material with {len(prony)} Prony terms in a batch with M = "
+                                                f"{self.solver.M} (pad with rubber_material.pad_prony)")
+        if self.solver.M and e is not None:
+            values.update(prony_scales(self._initial_prony[e], prony))
         for key, (lo, hi) in self.ranges.items():
+            if key in PRONY_RANGE_KEYS and key not in values:
+                continue
             if not lo-1e-12*abs(lo) <= values[key] <= hi+1e-12*abs(hi):
                 raise ValueError(f"{key} = {values[key]} outside the declared range [{lo}, {hi}]")
+        if self.solver.M and e is not None:
+            for key in PRONY_RANGE_KEYS:
+                if key not in self.ranges and key in values and abs(values[key]-1.0) > 1e-12:
+                    raise ValueError(f"{key} = {values[key]} but no {key} range is declared")
         c = cr.wave_speed(m.mu0, m.kappa, m.density)
         if self.solver.dt*c/self.solver.dx > 0.5+1e-9:
             raise ValueError("material violates the batch step rule (CFL > 0.5)")
@@ -553,6 +650,19 @@ class BatchedRubberMaterial:
                 wp.launch(_reset_scratch_work_r, N, [self.reset_mask, s.work_scratch])
             if s.kick_average:
                 wp.launch(_reset_scratch_work_r, N, [self.reset_mask, s.work_end_velocity])
+            if s.M:
+                for var in s.model.per_particle_state:          # generic registry-state reset (initial "zero")
+                    if var.initial != "zero" or var.dtype is not rvc.vec6d:
+                        raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER",
+                                                            f"state {var.name}: initial {var.initial!r} not in v1")
+                    wp.launch(_reset_state_vec6d_r, s.total_particles*var.multiplicity,
+                              [self.reset_mask, s.env_of_particle, var.multiplicity, getattr(s, var.name)])
+                wp.launch(_reset_params64_r, N, [self.reset_mask, self.stage_params64, s.params64,
+                                                 s.params64.shape[1]])
+            if s.visco_energy_on:
+                wp.launch(_reset_visco_energy_r, s.total_particles, [self.reset_mask, s.env_of_particle, s.visco_pb])
+                wp.launch(_reset_visco_env_r, N, [self.reset_mask, s.visco_branch_work, s.visco_dissipation,
+                                                  s.visco_d_negative])
             if full:
                 s.index.zero_()
 
@@ -594,3 +704,25 @@ class BatchedRubberMaterial:
                 "coupling": "kinematic Dirichlet groups (no robot feedback in P2-1)",
                 "open_vector_env": "deferred to P2-6 (P1-5 owns the configured-scene dispatch)",
                 "diagnostics_groups": DIAG_GROUPS}
+
+
+def prony_scales(initial, prony):
+    """(g scale, tau scale) of ``prony`` relative to ``initial`` (uniform over the terms, g = 0 terms skipped for g);
+    raises ValueError if the terms are not a uniform scaling."""
+    gs = [g/g0 for (g, _), (g0, _) in zip(prony, initial) if g0 != 0]
+    ts = [t/t0 for (_, t), (_, t0) in zip(prony, initial)]
+    if any(g != 0 for (g, _), (g0, _) in zip(prony, initial) if g0 == 0):
+        raise ValueError("a padding term (g = 0) cannot be resampled to g != 0")
+    out = {}
+    for key, values in (("prony_g_scale", gs), ("prony_tau_scale", ts)):
+        if values:
+            if max(values)-min(values) > 1e-12*max(abs(v) for v in values):
+                raise ValueError(f"{key}: the Prony terms are not scaled uniformly ({values})")
+            out[key] = values[0]
+    return out
+
+
+def scale_prony(initial, g_scale, tau_scale):
+    """Terms with every g_i multiplied by ``g_scale`` and every tau_i by ``tau_scale`` (sum g < 1 is validated)."""
+    from ..rubber_material import validate_prony
+    return validate_prony(tuple((g*g_scale, tau*tau_scale) for g, tau in initial))
