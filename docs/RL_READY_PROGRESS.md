@@ -22,7 +22,10 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   - Running now: xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786; P1-2b (isaac_lab_newton dispatch, `tasks=`,
     `termination_reason`, full evaluation stream, per-env pose-bounds invalidation) in worktree
     `/home/ningan/RoboticCuttingSim-rl-p12b`; B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
-    P1-5/P1-4 plan (parity matrix, CUT in the batched path); P1-6 R0 in `/home/ningan/RoboticCuttingSim-rl-r0`.
+    P1-6 R0 in `/home/ningan/RoboticCuttingSim-rl-r0`; P1-5 plan DONE (30b8a67) → CUT groundwork (T5.1, T5.3–T5.6,
+    T5.8) in `/home/ningan/RoboticCuttingSim-rl-p15` and P1-4 supervisor/ledger + N=8 long run (T4.1, T4.3, T4.4) in
+    `/home/ningan/RoboticCuttingSim-rl-p14`. Parity matrix today: 4 PASS, 8 PARTIAL, 1 UNSUPPORTED (cameras),
+    2 NOT_RUN (CUT, RL smoke).
   2. P1-1b S0–S3 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md), evidence `p1_1b_s2_s3_001.json`, 78a211b):
      reward/evaluator wiring in the Lab batched env; G3 snapshot restore PASS; G5 L0 bitwise PASS, G5 L3 (frozen single
      replays reproduce batch final codes, both seeds) PASS; **S3 TRIM B1 (rigid mount, reduced fidelity) N=2/4 both
@@ -64,6 +67,12 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms;
   U3 per-cycle budget: research agent $20 / 6 h plus one xhigh review (~1 working day, 3–5 GPU-h);
   U4 the research agent gets no web access.
+- P1-5 defaults (none blocks work; [P1_5_PLAN.md](reports/rl_ready/P1_5_PLAN.md)):
+  U-P15-1 the frozen `tlmpm_v5` CUT is **not** batched in Phase 1 (option (a), ~3–4 agent-days, deferred): the batched
+  path runs CUT on a new opt-in `bar_flat_board_tlmpm_v7_2_v1` scene, the frozen v5 CUT runs single-env headless
+  (replay of Native Demo 1); the CUT parity row therefore stays PARTIAL;
+  U-P15-2 no batched camera/vision profile (cameras stay UNSUPPORTED in the batched path);
+  U-P15-3 no per-episode geometry/material randomisation inside a running batch (per-env seeds + rebuild only).
 
 ## P1-0 baseline — 2026-11-10 — PASS
 
