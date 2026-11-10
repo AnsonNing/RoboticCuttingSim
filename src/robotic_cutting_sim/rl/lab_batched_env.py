@@ -52,6 +52,10 @@ BACKEND = "isaac_lab_newton"
 ENV_VERSION = "isaac_lab_batched_cutting_env_v1"
 IK_STREAK_LIMIT = 0  # 0: an IK failure streak never invalidates an env by itself (held, reported per step)
 GRASP_SETTLE_FAILED = 16  # rigid_reason bit (training mode) for a world whose B2 settle gates failed
+# Review finding 4: the bit is a per-world latch. Every reset_envs() (incl. the caller's first full reset, which
+# restores the settled snapshot) re-applies it from GraspSnapshot.passed, so a world whose pregrasp failed is never
+# silently cleared: it terminates (TERM_RIGID_INVALID) on its first step after every reset.
+SETTLE_LATCH_VERSION = "grasp_settle_latch_v1"
 # termination_reason bits (ADR 0022 §7: validity, grasp monitor, IK streak -> dones), shared with workload A in
 # rl.termination since P1-2b (same values 1/2/4/8, plus truncation 16, input guard 32, infrastructure 64).
 
@@ -819,6 +823,12 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         for values in (self.ik_streak, self.rigid_reason, self.cut_digit):
             t = wp.to_torch(values)
             t.copy_(torch.where(mask, torch.zeros_like(t), t))
+        if b2 and self.snapshot is not None:     # finding 4: a failed settle stays latched across resets
+            failed = mask & ~self.snapshot.passed.to(device=mask.device, dtype=torch.bool)
+            t = wp.to_torch(self.rigid_reason)
+            t.copy_(torch.where(failed, t | GRASP_SETTLE_FAILED, t))
+            self.termination_reason = torch.where(failed, self.termination_reason | TERM_RIGID_INVALID,
+                                                  self.termination_reason)
 
     # ------------------------------------------------------------------ receipts
 
@@ -833,7 +843,15 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                 "bodies_per_world": int(np.sum(world == 0)), "global_bodies": int(np.sum(world < 0)),
                 "dofs_per_world": int(model.joint_dof_count//self.num_envs),
                 "index_tables": {k: v.tolist() for k, v in self.tables.items()},
-                "rigid_reasons": {str(k): v for k, v in RIGID_REASONS.items()},
+                "rigid_reasons": {**{str(k): v for k, v in RIGID_REASONS.items()},
+                                  str(GRASP_SETTLE_FAILED): "GRASP_SETTLE_FAILED"},
+                "grasp_initialization": self.grasp_initialization,
+                "grasp_settle_latch": None if self.options.tool_mount != "physical_grasp_v1" else dict(
+                    version=SETTLE_LATCH_VERSION, bit=GRASP_SETTLE_FAILED,
+                    failed_worlds=None if self.snapshot is None else
+                    np.flatnonzero(~self.snapshot.passed.cpu().numpy()).tolist(),
+                    rule="reset_envs re-applies the bit from GraspSnapshot.passed; such a world terminates "
+                         "TERM_RIGID_INVALID on its first step after every reset (strict mode raises at build)"),
                 "contact_solver": getattr(self, "contact_solver_receipt", None),
                 "material_results": "NONE (robot-only)" if not self.coupling.material_coupled
                 else "SIMULATOR_ONLY_UNCALIBRATED"}
