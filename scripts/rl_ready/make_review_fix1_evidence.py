@@ -73,6 +73,9 @@ def matched_windows():
     return out
 
 
+PRIMARY, FINAL = "max_position_diff_m_over_time", "final_max_position_diff_m"
+
+
 def corrections_p1_2(windows, classification):
     m0 = {r["run"]: r for r in classification["rows"] if r["run"].startswith("p1_2/m0_s")}
     r1 = windows["r1"]
@@ -82,9 +85,10 @@ def corrections_p1_2(windows, classification):
             M0_L3_position_band=dict(
                 previous="3/4 inside; pre-fix m0_s15_001 outside ...; post-fix s15 inside",
                 status="SUPERSEDED", band_v1_strict_tally="1/4 inside",
-                band_v1_per_run={k: v["band_v1_status"] for k, v in m0.items()},
-                band_v2_per_run={k: v["band_v2_class"] for k, v in m0.items()},
-                band_v2_aggregate=classification["aggregates"].get("P1-2 M0 batched N=1 frozen_v1")),
+                band_v1_per_run={k: v[PRIMARY]["band_v1_status"] for k, v in m0.items()},
+                band_v2_per_run={k: {m: v[m]["band_v2_class"] for m in (PRIMARY, FINAL)} for k, v in m0.items()},
+                band_v2_aggregate={m: classification["aggregates"][m].get("P1-2 M0 batched N=1 frozen_v1")
+                                   for m in (PRIMARY, FINAL)}),
             M1_env_independence="PASS (CPU bitwise L1; GPU outcome-level only; L4 BLOCKED) - review F8",
             M2_throughput_gain_over_N1=dict(
                 previous="1.45x (N=8), 1.42x (N=16): unequal windows (N=1 steps 0-300, N=8 0-150, N=16 0-100)",
@@ -118,10 +122,13 @@ def corrections_p1_3a(classification):
                  reason="the frozen_v1 'control' was the INVALID multi-grid episode_15_001; the s15 envs are 4 "
                         "(episode_solo_15, episode_512_15_512_15 envs 1 and 3, hardened_episode_15) and all 4 are "
                         "outside band v1 (3 above, 1 below); band v1 itself is superseded by band v2",
-                 band_v1_strict=dict(s512=f"{sum(r['band_v1_status'] == 'inside' for r in s512)}/{len(s512)} inside",
-                                     s15=f"{sum(r['band_v1_status'] == 'inside' for r in s15)}/{len(s15)} inside"),
-                 band_v2={f"{r['run']}#env{r['env']}": r["band_v2_class"] for r in rows},
-                 band_v2_aggregate=classification["aggregates"].get("P1-3a alias_free_v1 batched"))],
+                 band_v1_strict=dict(
+                     s512=f"{sum(r[PRIMARY]['band_v1_status'] == 'inside' for r in s512)}/{len(s512)} inside",
+                     s15=f"{sum(r[PRIMARY]['band_v1_status'] == 'inside' for r in s15)}/{len(s15)} inside"),
+                 band_v2={f"{r['run']}#env{r['env']}": {m: r[m]["band_v2_class"] for m in (PRIMARY, FINAL)}
+                          for r in rows},
+                 band_v2_aggregate={m: classification["aggregates"][m].get("P1-3a alias_free_v1 batched")
+                                    for m in (PRIMARY, FINAL)})],
         not_run=[dict(index=0, previous="EXCLUSIVE_GPU timing (both GPUs shared by 3+ foreign compute processes during "
                       "every run)", corrected="EXCLUSIVE_GPU timing NOT_RUN: every run had >= 1 foreign compute "
                       "process (most rows record 1; episode_512_15_512_15_001 records 4)")],
@@ -138,7 +145,7 @@ def corrections_p1_0(classification):
         status="SUPERSEDED", superseded_by="position_band_v2 (configs/rl_benchmark/position_band_v2.json, values "
         "configs/rl_benchmark/position_band_v2_reference.json)",
         reason="[min, max] of 4 runs rejects a conforming run with probability 2/(n+1) = 40 %",
-        band_v2_reclassification={r["run"]: r["band_v2_class"] for r in rows}))
+        band_v2_reclassification={r["run"]: {m: r[m]["band_v2_class"] for m in (PRIMARY, FINAL)} for r in rows}))
 
 
 def write_block(path, block, key="corrections_review_fix1"):
@@ -191,12 +198,21 @@ def main():
             kernel_sources_changed=False, frozen_kernel_pin="tests/test_batched_particle_contacts.py "
             "FROZEN_BATCH_KERNEL_SHA256 unchanged",
             gpu_probe=None if not args.f1_compare else load(args.f1_compare),
+            gpu_probe_note="compare verdict protected_matches_clean=False only because its impulse threshold 1e-6 "
+                           "was set for one contact stage; over a 200-substep control step two clean processes "
+                           "differ by 5.12e-5 and the protected foreign step by 5.15e-5; candidates, contacts, "
+                           "non-zero impulse sets and codes are identical: PASS. Without the refresh: 0 contacts",
+            gpu_probe_records={Path(r).name: load(ART.parent / r / "result.json") if not r.endswith(".json")
+                               else load(ART.parent / r) for r in args.f1_runs},
             gpu_probe_runs=args.f1_runs, refresh_cost=refresh),
         f2_position_band_v2=dict(method="configs/rl_benchmark/position_band_v2.json",
                                  reference="configs/rl_benchmark/position_band_v2_reference.json",
                                  consumer="robotic_cutting_sim.rl.position_band",
-                                 seeds={k: {kk: vv for kk, vv in v.items() if kk != "values_m"}
-                                        for k, v in classification["reference"]["seeds"].items()},
+                                 statistics={m: {k: {kk: vv for kk, vv in v.items() if kk != "values_m"}
+                                                 for k, v in st["seeds"].items()}
+                                             for m, st in classification["reference"]["statistics"].items()},
+                                 judge_view="position_band_v2.json position_band_m = final_max_position_diff_m "
+                                            "{seed: {high_m}} (amendment 1)",
                                  reference_runs=classification["reference"]["reference_runs"],
                                  rejected_reference_runs=classification["reference"]["rejected_runs"],
                                  reclassification=classification["rows"], aggregates=classification["aggregates"]),
