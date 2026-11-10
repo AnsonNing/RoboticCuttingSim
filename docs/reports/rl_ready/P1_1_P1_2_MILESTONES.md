@@ -290,3 +290,156 @@ per env by ~1.3× at N=4, consistent with the ~1.4× end-to-end gain at N=8–16
   `evaluate()` integrity layer sees only 2 frames (digit-rewrite history between them is checked on the device by
   the L2 monitor in the milestone runs, not by `evaluate()` itself); a device grid created after a batch (e.g. a
   frozen single material on CUDA built later) is detected only at the env's next full reset.
+
+---
+
+# P1-2b — vector env API completion (2026-11-10, branch `claude/rl-p1-2b`)
+
+Base: integration commit `3682786` (P1-1, P1-2, P1-1b S0-S3, P1-3a). Code commits `93d2fc9`, `eefef82`, `fe542f4`
+(the review F5/F7 fixes requested by the coordinator are in `93d2fc9`/`eefef82`); GPU rows ran at `fe542f4`. Compact evidence:
+`docs/evidence/rl_ready/p1_2b_001.json`; raw outputs `artifacts/rl_ready/p1_2b/` (not committed).
+
+## Status
+
+| Item | Status |
+| --- | --- |
+| `open_vector_env(backend="isaac_lab_newton")` dispatch (workload B) | PASS (CPU contract in the Isaac Lab venv; GPU smoke: PASS) |
+| One contract checker for both backends (`rl.vector_contract`) | PASS on CPU for both; GPU: A PASS, B PASS |
+| `tasks=` per-env task/seed selection (seeds 512 and 15 in one batch) | PASS (A: CPU tests + GPU smoke; B: CPU contract + GPU smoke) |
+| `termination_reason` bitfield + decoded table, infrastructure vs task | PASS (CPU tests) |
+| Opt-in evaluation stream (Native WP-17 cadence) and `evaluate()` modes | PASS (CPU: frames equal the live snapshots, evaluator equal to a direct call; 121-sample schedule equals the WP-17 Native `physics_time_s`) |
+| Material input-domain guard (device, no host sync) | PASS (CPU tests; zero trips on all recorded legitimate inputs) |
+| Review F5 (autoreset scored the fresh state) | FIXED (refusal + opt-in `terminal_capture`; CPU test) |
+| Review F7 (no multi-grid diagnostics opt-in) | FIXED (`allow_multiple_device_hashgrids`, receipt; `run_p1_3a.py` multi-env modes use it) |
+| Same-step autoreset with final obs on `isaac_lab_newton` | REFUSED (`UNSUPPORTED_AUTORESET_FINAL_OBS`) |
+| SIGSEGV after a lost B2 grasp | NOT_RUN here (other agent, `claude/rl-b2-grasp`); the guard does not claim to fix it |
+
+## 1. API changes (all in `src/robotic_cutting_sim/rl/`)
+
+- `vector_env.open_vector_env(..., backend="isaac_lab_newton", tasks=None, **options)`: dispatches to
+  `lab_vector_env.LabVectorCuttingEnv`, which enters `isaaclab.app.sim_launcher.launch_simulation(cfg,
+  {"headless": True, "visualizer": [], "device": ...})` at construction and exits it in `close()`, runs the first
+  `env.reset()` (B1 HOME / B2 settle, material attached), maps `reset()` to `env.reset()`, `reset(env_ids=)` to
+  `env.reset_envs(device bool mask)` (+ material seeds), `step()` to `env.step()`. The reward is the Lab env's
+  `trim_bond_progress_packed_v1` over `env.coupling` (the same class as workload A). Observation (`policy`
+  deployable, `critic` only with `privileged_state`), `info` keys/dtypes, spaces, metadata and receipt fields are
+  the workload A ones; workload B adds `rigid_reason` and `ik_streak` to `info`. Refusals (explicit codes, before
+  any Isaac Lab import): cameras/sensors/vision profiles `UNSUPPORTED_SENSOR`; recorders
+  `UNSUPPORTED_RECORDER`; `autoreset="same_step"` `UNSUPPORTED_AUTORESET_FINAL_OBS` (the Lab env's masked reset
+  needs the next `forward()` and returns no final observation); `device="cpu"` without `cpu_test_mode=True`
+  `UNSUPPORTED_RIGID_CPU`; robot-only (`material` other than scene-declared), unknown options, per-env
+  `initial_edge_poses` / `pad_boxes_edge` `UNSUPPORTED_OPTION`; no Isaac Lab runtime `UNSUPPORTED_BACKEND`.
+  Options: `tool_mount`, `grip_contact_profile`, `deterministic_mode`, `use_cuda_graph`,
+  `max_consecutive_ik_failures`, `feedback`, `ik_iterations`, `velocity_feedforward`, `cpu_test_mode`,
+  `evaluation_stream`, `input_guard`.
+- `lab_batched_env`: `IsaacLabBatchedCuttingEnv(..., max_episode_steps=None)`; `open_lab_batched_env(..., tasks=,
+  max_episode_steps=)` (its factory now passes the per-env tasks); `action_clamped` / `action_out_of_box`;
+  `material_input_guard` hook between the pad-box kernel and `coupling.set_measured_poses`; termination bits
+  from `rl.termination` (truncation bit, guard bit; MJWarp contact-pool overflow is `INFRASTRUCTURE_ERROR`, not
+  `RIGID_INVALID`); reward invalid mask `INVALID_STATE_BITS`; `snapshot_world` copies codes.
+- `tasks=`: one entry per env, an int scene seed or `{"scene_seed", "family_id", "seed"}`
+  (`vector_env.resolve_tasks`); a `TaskFamily` passed as `task` keeps its other options. New `TaskFamily` fields
+  `family_ids`, `env_seeds`. Both backends compile per env (`compile_family`); workload B requires a uniform
+  rigid scene (`check_uniform_rigid_scene`).
+- `termination.py`: `info["termination_reason"]` (int32 [N], sticky until reset; truncation follows the step):
+  1 `RIGID_INVALID`, 2 `MATERIAL_INVALID` (material `invalid_reason`, incl. the contact speed guard), 4 `GRASP_LOST`,
+  8 `IK_FAILURE_STREAK` (off by default, `live_env` semantics), 16 `TRUNCATED_HORIZON`, 32
+  `MATERIAL_INPUT_DOMAIN_GUARD`, 64 `INFRASTRUCTURE_ERROR`; `terminated = reason & TERMINAL_BITS != 0`,
+  `truncated = reason & 16 != 0`; `decode_termination`, `termination_table()` (also in every receipt).
+  Infrastructure failures: an OOM / CUDA / Warp error inside `step()`/`reset()` becomes
+  `VectorEnvInfrastructureError(kind)` with every env marked 64 and the env refuses further calls; strict-mode
+  `InvalidBatchEnvs` / invalid rigid worlds stay task failures and propagate unchanged; a process crash is
+  classified by the parent with `classify_process_exit(returncode, stderr)` (SIGSEGV -> `CRASH_SIGSEGV`,
+  infrastructure) — for P1-4.
+- `evaluation_stream.py` (opt-in `evaluation_stream=True | {"every": 10}`): one Warp kernel over all particles
+  copies the solver's local `x`, `v`, `code` of envs whose sample is due (reset, `step % every == 0`, done) into a
+  device store; no host sync per step. `evaluate(env_ids)` then hands the frozen evaluator the samples plus the
+  current state (`evaluation_mode = evaluation_stream_v1`); the default stays the two-frame evaluation
+  (`two_frame_reset_and_current_v1`). Every result and the receipt name the mode. For the 1200-step TRIM episode
+  the schedule gives 121 samples at t = 0, 0.2, ..., 24.0 s, equal to the WP-17 Native `physics_time_s.bin`
+  (test). Memory `S x P x 28` bytes (S = 122): ~350 MB per 1e5-particle env; device only.
+- `material_guard.py` (default on, `input_guard=False` restores the P1-2 behaviour): before the measured edge,
+  cut digit and pad boxes reach the material, each env is checked with Torch device ops (non-finite pose,
+  quaternion norm, edge outside the env's reference-grid AABB U initial edge + 0.25 m in the workpiece frame,
+  > 50 mm or > 0.5 rad per control step, non-finite / oversized / > 0.5 m pad boxes). A failing env is latched
+  until its reset: the material gets its last accepted pose (zero twist), cut -1 and its last accepted pad boxes,
+  and the env reports bit 32 (terminated) and `info["input_guard_reason"]`. Other envs are untouched (bitwise on
+  CPU). No host read; strict mode keeps exactly one int32 readback per step (test). It never raises.
+- Review F5: an env autoreset inside `step()` and still at step 0 is refused by `evaluate()` (`NOT_EVALUATED`);
+  opt-in `terminal_capture=True` (requires `autoreset="same_step"`) copies the finished envs' state before the
+  reset (device kernel) and `evaluate(env_ids, episode="last_completed")` scores it, with the stream (two banks)
+  passing that episode's samples. Receipt `terminal_capture`.
+- Review F7: `open_vector_env(..., allow_multiple_device_hashgrids=True)` forwards the diagnostics-only opt-out to
+  `BatchedCuttingMaterial` (refused by default); receipt `allow_multiple_device_hashgrids`,
+  `device_hashgrid_guard`. `scripts/rl_ready/run_p1_3a.py` `samestate` (always) and `stagebench` / `ab` /
+  `episode` with more than one variant use it; single-variant runs keep one env per process under the guard (help
+  text). The frozen_v1 batch in such a process relies on the per-launch grid rebuild being added by the F1 fix.
+- `vector_contract.py`: `check_vector_env_contract(env, steps, reset_ids, reset_step)` — the one contract both
+  backends are run through (tests and GPU smoke).
+
+## 2. Guard thresholds against recorded legitimate inputs
+
+`scripts/rl_ready/check_input_guard_domain.py` (CPU, `artifacts/rl_ready/p1_2b/guard_domain_check_001`): every step
+of the WP-17 Native measured edge + pad sequences (seeds 512, 15; the workload A replay drive) and of the P1-1b S3
+workload B material inputs (`s3_b1_n2_001`, `s3_b2_n2_001`, the latter after its grasp was lost) through the
+guard's checks: **0 tripped steps** in all six 1200-step sequences. Largest values seen: 11.9 mm and 0.174 rad per
+step (B2 after grasp loss), pad centres 0.118 m, half extents 0.03 m; closest approach to the domain boundary
+0.161 m (B2) / 0.247 m (A, B1). The guard therefore does not change any recorded run; whether it prevents the
+B2 SIGSEGV is not known (those crashing runs left no input record).
+
+## 3. Tests
+
+| Runtime | Command | Result |
+| --- | --- | --- |
+| `.venv` (no Torch) | `CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -p no:cacheprovider -q tests/test_rl_*.py tests/test_vector_env_*.py tests/test_batched_*.py tests/test_repo_naming.py` | 286 passed, 17 skipped (Torch/Isaac Lab/CUDA modules = NOT_RUN there), 499 s |
+| Torch (`.deps/isaacsim-venv` + D-09 overlay) | `tests/test_rl_{actions,observations,reward_packed,policies_batched,benchmark,replay,termination}.py tests/test_vector_env_{api,p12b,contract,gpu_stream}.py` | 123 passed, 3 skipped (GPU stream module with CUDA hidden; the 2 workload B contract tests, no Isaac Lab = NOT_RUN there), 244 s; `test_vector_env_p12b.py` 13/13, `test_vector_env_api.py` 12/12 unchanged |
+| Isaac Lab (`.deps/isaaclab-venv` + overlay, Warp CPU) | `tests/test_vector_env_contract.py tests/test_rl_lab_{env,kernels,ik,rigid_isolation,scene_usd}.py` | 53 passed, 0 skipped, 191 s: both backends through the one contract on CPU (and their reports equal), plus the unchanged S0-S3 Lab tests |
+| Isaac Lab, CPU, `privileged_state` | `run_p1_2b_smoke.py --backend isaac_lab_newton --device cpu ... --observation-profile privileged_state` (`contract_cpu_b1_privileged_001`) | PASS (critic block on workload B) |
+
+New CPU tests (`tests/test_vector_env_p12b.py`): contract for A (state + stream, privileged), `tasks=` (heterogeneous
+512/15, per-env seeds, mixed id/ood families, refusals), termination bits (material invalid, truncation, reset),
+infrastructure vs task (strict `InvalidBatchEnvs` unchanged; injected CUDA error -> `VectorEnvInfrastructureError`,
+env refuses further calls), guard (out-of-domain + NaN envs held, env 0 bitwise equal to an unperturbed run, material
+never sees the input, sticky until reset, rollback switch), guard pad boxes (A replay pads and the B in-place path),
+stream (samples bitwise equal to live snapshots at steps 0/2/4/5, partial reset restarts an env's samples, evaluator
+equal to a direct `goals.evaluate_goal` call, default stays 2 frames), the 121-sample schedule against the WP-17
+Native `physics_time_s.bin`, no host sync with stream + guard (strict 1 int32 read, training 0), workload B dispatch
+refusals, review F5 (refusal, terminal capture with two stream banks, scores equal to an un-reset run) and F7.
+`tests/test_rl_termination.py` (`.venv`): bit table, exception and process-exit classification.
+
+## 4. GPU smoke
+
+Both rows: NVIDIA GeForce RTX 5090, physical index 0, driver 570.211.01, `CUDA_VISIBLE_DEVICES=0`, under
+`flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock` (queued 86 min behind other RCS jobs),
+`TMPDIR=/mnt/data/ningan/tmp`, `PYTHONPATH=src`, source `fe542f4` (clean). **SHARED_GPU** (co-tenant processes
+incl. PID 642659, foreign SM mean 58 % / max 97 % over the row, 48-49 % mean during the warm steps). N=2,
+`tasks=[512, 15]` (102,732 / 103,898 particles, 1 mm / 4 mm / 0.1 ms, 200 material substeps per 50 Hz step,
+tlmpm_v7_2 law 8), strict mode, no cameras, no recording, evaluation stream on (every 10 steps, 706 MB device),
+input guard on, 50 contract steps (`contract_actions`), full reset with seeds, partial reset of env 1 after step
+26, `evaluate()` of both envs at the end. Chain: `artifacts/rl_ready/p1_2b/logs/p12b_gpu_chain.sh`; commands as in
+`scripts/rl_ready/run_p1_2b_smoke.py` docstring.
+
+| Run | Backend | Contract | Warm step median / mean | env-steps/s (warm) | First step | Partial reset | Own VRAM peak | Fidelity | Evaluation (frames, verdict) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `smoke_a_n2_001` | A `kinematic_ideal_tracking_batched` | PASS | 0.489 / 0.471 s | 4.25 | 0.78 s | 7.1 ms | 1620 MiB | reduced (ideal tracking, no reaction feedback, no pads) | 6 / 4 frames, FAIL_INTEGRITY (incomplete episode) |
+| `smoke_b1_n2_001` | B `isaac_lab_newton`, B1 rigid mount | PASS | 0.461 / 0.409 s | 4.89 | 1.84 s | 9.5 ms | 1646 MiB | reduced (`rigid_tool_mount_no_grasp`, `finger_opening_fixed_nominal`) | 6 / 4 frames, FAIL_INTEGRITY (incomplete episode) |
+
+Open time 2.2 s (A) / 5.5 s (B incl. `launch_simulation`, scene, first reset and material attach), warm Warp
+kernel cache. One CUDA `wp.HashGrid` per process (census), no infrastructure error, no termination bit set
+(`termination_reason` 0, guard 0) in either row; the contract steps do not reach the workpiece (labelled 0), so
+these rows check the API, not cutting (cutting through the Lab backend is the S3 evidence). The timing is a smoke
+number on a shared GPU (harness synchronizes around every call), not a benchmark row; A and B are different
+boundaries and are not compared.
+
+## 5. Not done / open
+
+- Same-step autoreset with final obs on `isaac_lab_newton`: refused (explicit code), not implemented.
+- Evaluation stream: device storage only (no host-pinned mode); with N=16 full episodes it needs ~5.6 GB.
+- The guard is preventive for out-of-domain input only; a material state that becomes invalid inside the domain
+  is `MATERIAL_INVALID` (strict raise / training termination). The B2 SIGSEGV root cause is the other agent's.
+- `run_p1_3a.py` multi-variant modes were not rerun here (GPU); their frozen_v1 numbers in one process need the
+  F1 per-launch grid rebuild.
+- Workload B with `privileged_state` ran on CPU only; `tasks` dicts with `family_id="agentic_trim_ood"` were run for
+  workload A only (CPU).
+- The GPU smoke rows are short (50 steps, no contact); a full-length workload B episode through
+  `open_vector_env` (S3-like, 1200 steps, recorded driver, evaluation stream) is NOT_RUN.
