@@ -30,6 +30,16 @@ NODE_ARRAYS = ("gm", "gp", "gj", "old", "new_v", "jbar", "slot_code", "node_grou
 GROUP_ARRAYS = ("group_kind", "group_active", "group_origin", "group_q0", "group_q1", "group_b0", "group_b1",
                 "group_A0", "group_A1", "reaction")
 TRACTION_ARRAYS = ("traction_force", "traction_mass")
+# P2-3 prerequisites (ADR 0023 §20): the P2-2 single-env opt-in options with a batched execution (defaults first; the
+# defaults add no array and keep the v1 launch sequence). A batch runs the options of its single references, which
+# must agree (uniform signature).
+BATCHED_OPTIONS = {"dirichlet": ("lumped_v1", "consistent_mass_projection_v1"),
+                   "traction_work": ("particle_velocity_v1", "grid_displacement_v1"),
+                   "state_precision": ("float32_v1", "f64_shadow_v1")}
+SHADOW_ARRAYS = ("F64", "x64")                                      # per particle (f64_shadow_v1)
+PROJECTION_ROW_ARRAYS = ("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block", "proj_row_local",
+                         "proj_rhs", "proj_vpresc", "proj_mu")     # per constrained (node, component) row
+PROJECTION_BLOCK_ARRAYS = ("proj_block_offset", "proj_block_size", "proj_inv_offset")   # per block
 
 
 @dataclass
@@ -82,11 +92,10 @@ def _validate(live):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{type(s).__name__}; only {SOLVER}")
     if s.device != "cpu":
         raise ValueError("pack_rubber reads single solvers built on the Warp CPU device (ADR 0021 §3.4)")
-    options = (s.dirichlet, s.traction_work, s.state_precision)
-    if options != ("lumped_v1", "particle_velocity_v1", "float32_v1"):
-        raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER",
-                                            f"{options}: the P2-2 opt-in single-env options (ADR 0023 §19) have no "
-                                            "batched execution yet")
+    options = {"dirichlet": s.dirichlet, "traction_work": s.traction_work, "state_precision": s.state_precision}
+    for key, value in options.items():
+        if value not in BATCHED_OPTIONS[key]:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{key}={value!r} has no batched execution")
     if (live.step_count != 0 or int(s.index.numpy()[0]) != 0 or not np.array_equal(s.x.numpy(), s.reference.numpy())
             or np.abs(s.v.numpy()).max() != 0.0 or s.damping_rate != 0.0):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SINGLE_ENV_STATE", "pack takes fresh, unstepped reset states")
@@ -100,7 +109,8 @@ def uniform_signature(live):
             "contact_stiffness": float(s.contact_stiffness), "G": int(s.G), "Gt": int(s.Gt),
             "group_kinds": tuple(g["kind"] for g in live.scene.groups), "boxes": int(s.boxes),
             "use_plane": int(s.use_plane), "markers": len(live.scene.marker_offsets)-1,
-            "stable_step_guard": s.cfl_guard_limit}
+            "stable_step_guard": s.cfl_guard_limit, "dirichlet": s.dirichlet, "traction_work": s.traction_work,
+            "state_precision": s.state_precision, "projection_rows_nonzero": bool(getattr(s, "proj_rows", 0))}
 
 
 def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
@@ -171,10 +181,15 @@ def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
     host["particle_offset"] = po.astype(np.int32)
     host["node_offset"] = no.astype(np.int32)
     host["cell_env_offset"] = co.astype(np.int32)
+    # constrained-node list of the BC pass (global node ids in increasing order: the CPU launch visits the same
+    # nodes in the same order as the all-node launch, which returns at once on unconstrained nodes)
+    bc = np.flatnonzero(host["node_group"] >= 0).astype(np.int32) if G else np.zeros(0, np.int32)
+    host["bc_nodes"] = bc if bc.size else np.zeros(1, np.int32)
+    option_env = _pack_options(solvers, uniform, host, po, no, N, G)
     env = {"mass_per_particle": np.array([float(s.mass_value) for s in solvers], np.float32),
            "traction_particle_counts": np.array([[np.count_nonzero(lv.scene.particle_traction == t) for t in range(Gt)]
                                                  for lv in lives], np.int64).reshape(N, Gt),
-           "marker_reference": np.stack([lv.scene.marker_reference for lv in lives])}
+           "marker_reference": np.stack([lv.scene.marker_reference for lv in lives]), **option_env}
     receipts = [{"env": e, "particles": int(s.n), "nodes": int(s.node_count), "cells": int(s.cells),
                  "scene": lv.scene.receipt(), "material": s.material.to_dict(),
                  "params": dict(zip(cr.RUBBER_PARAM_NAMES, host["params"][e].tolist()))}
@@ -184,6 +199,41 @@ def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
                              marker_particle_counts=mc, particle_offset=po, node_offset=no, cell_env_offset=co,
                              uniform=uniform, host=host, env=env, receipts=receipts, scene_keys=keys,
                              constitutive_model=constitutive_model)
+
+
+def _pack_options(solvers, uniform, host, po, no, N, G):
+    """Option arrays (ADR 0023 §20), concatenated from the single references in env order with global ids:
+    F64 / x64 shadows; the projection rows (global node and group ids), blocks (global row offsets) and the float64
+    block inverses exactly as the single solver computed them (same bits). Returns the per-env offsets."""
+    env = {}
+    if uniform["state_precision"] == "f64_shadow_v1":
+        for name in SHADOW_ARRAYS:
+            host[name] = np.concatenate([getattr(s, name).numpy() for s in solvers])
+        host["reference64"] = host["x64"].copy()
+    if uniform["dirichlet"] == "consistent_mass_projection_v1" and uniform["projection_rows_nonzero"]:
+        rows = np.array([s.proj_rows for s in solvers], np.int64)
+        nblocks = np.array([len(s.projection_receipt["blocks"]) for s in solvers], np.int64)
+        ninv = np.array([s.proj_inv.shape[0] for s in solvers], np.int64)
+        ro, bo, io = (np.r_[0, np.cumsum(c)].astype(np.int64) for c in (rows, nblocks, ninv))
+        if ro[-1] >= INT32_LIMIT or io[-1] >= INT32_LIMIT:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_INT32_OVERFLOW", f"rows {ro[-1]}, inverse {io[-1]}")
+        cat = lambda name, add: np.concatenate([getattr(s, name).numpy()[:k]+np.int32(a)       # noqa: E731
+                                                for s, k, a in zip(solvers, add[1], add[0])]).astype(np.int32)
+        host["proj_row_node"] = cat("proj_row_node", (no[:-1], rows))
+        host["proj_row_group"] = cat("proj_row_group", (np.arange(N)*G, rows))
+        host["proj_row_comp"] = cat("proj_row_comp", (np.zeros(N, np.int64), rows))
+        host["proj_row_block"] = cat("proj_row_block", (bo[:-1], rows))
+        host["proj_row_local"] = cat("proj_row_local", (np.zeros(N, np.int64), rows))
+        host["proj_block_offset"] = cat("proj_block_offset", (ro[:-1], nblocks))
+        host["proj_block_size"] = cat("proj_block_size", (np.zeros(N, np.int64), nblocks))
+        host["proj_inv_offset"] = cat("proj_inv_offset", (io[:-1], nblocks))
+        host["proj_inv"] = np.concatenate([s.proj_inv.numpy() for s in solvers])
+        host["env_of_row"] = np.repeat(np.arange(N, dtype=np.int32), rows)
+        for name in ("proj_rhs", "proj_vpresc", "proj_mu"):
+            host[name] = np.zeros(int(ro[-1]), np.float64)
+        host["proj_mu_node"] = np.zeros((int(no[-1]), 3), np.float64)
+        env.update(proj_row_offset=ro, proj_block_env_offset=bo, proj_inv_env_offset=io)
+    return env
 
 
 def range_audit(packed, host_arrays):

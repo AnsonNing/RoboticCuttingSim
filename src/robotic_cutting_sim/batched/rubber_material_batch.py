@@ -19,6 +19,12 @@ optionally with per-env material values (mu0, kappa, density, frictions) resampl
 ranges (staged in preallocated host-written buffers; the step rule's c_p,max covers the ranges). A geometry change on
 partial reset is refused (``rebuild``). There is no wp.HashGrid in rubber v1 (no self-contact), so the process-level
 device-HashGrid guard is not applicable. The ``open_vector_env`` dispatch to this material is deferred to P2-6.
+
+P2-3 prerequisites (ADR 0023 §20): lives built with the P2-2 opt-in options (F8 projection, F9 grid traction work,
+F10 float64 shadows) run batched; the masked reset also restores their state (``OPTION_RESET_ARRAYS``: shadows to the
+reference, projection scratch and the discarded v1 traction work to zero) and, for an env reset with new material
+values, the F8 block inverses are recomputed on the host with the single solver's ``projection_blocks`` (the mass
+enters the consistent-mass blocks) and written into the preallocated inverse (no device allocation, no recapture).
 """
 import hashlib
 import time
@@ -55,7 +61,15 @@ SOLVER_CONSTANT_ARRAYS = ("reference", "nodes", "weights", "gradients", "slot", 
                           "cell_offsets", "cell_particles", "marker_offsets", "marker_particles", "plane", "box_c",
                           "box_h", "env_of_particle", "env_of_node", "env_of_group", "particle_offset", "node_offset",
                           "cell_env_offset")
+SOLVER_CONSTANT_ARRAYS += ("bc_nodes",)
 SOLVER_SHARED_ARRAYS = ("index",)
+# option arrays (exist only when the lives were built with the option; ADR 0023 §20)
+OPTION_RESET_ARRAYS = {"state_precision": ("F64", "x64"), "traction_work": ("work_scratch",),
+                       "dirichlet": ("proj_rhs", "proj_vpresc", "proj_mu", "proj_mu_node", "proj_inv")}
+OPTION_CONSTANT_ARRAYS = {"state_precision": ("reference64",), "traction_work": (),
+                          "dirichlet": ("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block",
+                                        "proj_row_local", "proj_block_offset", "proj_block_size", "proj_inv_offset",
+                                        "env_of_row")}
 MATERIAL_RESET_ARRAYS = ("invalid_reason", "step_count", "seed", "wrench")
 MATERIAL_CONSTANT_ARRAYS = ("initial_params", "initial_mass", "initial_group_active", "env_of_traction",
                             "traction_counts", "initial_seed")
@@ -194,6 +208,42 @@ def _reset_envs_r(mask: wp.array(dtype=int), stage_params: wp.array2d(dtype=floa
                 wrench[e, g, k] = wp.float64(0.0)
 
 
+@wp.kernel
+def _reset_shadow_r(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                    reference64: wp.array(dtype=wp.vec3d), F64: wp.array(dtype=wp.mat33d),
+                    x64: wp.array(dtype=wp.vec3d)):
+    p = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        F64[p] = wp.identity(n=3, dtype=wp.float64)
+        x64[p] = reference64[p]
+
+
+@wp.kernel
+def _reset_proj_rows_r(mask: wp.array(dtype=int), env_of_row: wp.array(dtype=int), rhs: wp.array(dtype=wp.float64),
+                       vpresc: wp.array(dtype=wp.float64), mu: wp.array(dtype=wp.float64)):
+    r = wp.tid()
+    if mask[env_of_row[r]] != 0:
+        rhs[r] = wp.float64(0.0)
+        vpresc[r] = wp.float64(0.0)
+        mu[r] = wp.float64(0.0)
+
+
+@wp.kernel
+def _reset_proj_nodes_r(mask: wp.array(dtype=int), env_of_node: wp.array(dtype=int),
+                        mu_node: wp.array2d(dtype=wp.float64)):
+    i = wp.tid()
+    if mask[env_of_node[i]] != 0:
+        for k in range(3):
+            mu_node[i, k] = wp.float64(0.0)
+
+
+@wp.kernel
+def _reset_scratch_work_r(mask: wp.array(dtype=int), work_scratch: wp.array(dtype=wp.float64)):
+    e = wp.tid()
+    if mask[e] != 0:
+        work_scratch[e] = wp.float64(0.0)
+
+
 # ----------------------------------------------------------------------------- material
 
 class BatchedRubberMaterial:
@@ -207,7 +257,7 @@ class BatchedRubberMaterial:
 
     def __init__(self, lives, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
                  graph_chunk=DEFAULT_GRAPH_CHUNK, ranges=None, seeds=None, cameras=None, recorders=None,
-                 constitutive_model=cr.DEFAULT_MODEL_ID):
+                 constitutive_model=cr.DEFAULT_MODEL_ID, bc_launch=None):
         if cameras or recorders:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_SENSOR" if cameras else "UNSUPPORTED_RECORDER",
                                                 f"cameras={cameras!r} recorders={recorders!r}")
@@ -223,7 +273,8 @@ class BatchedRubberMaterial:
         pk = self.packed
         self.num_envs = N = pk.num_envs
         self.control_dt = float(pk.uniform["control_dt"])
-        self.solver = s = BatchedTLMPMRubber(pk, device)
+        self.solver = s = BatchedTLMPMRubber(pk, device, **({} if bc_launch is None else {"bc_launch": bc_launch}))
+        self._init_projection_host(lives)
         self.G, self.Gt, self.K = s.G, s.Gt, pk.uniform["markers"]
         self.ranges = self._check_ranges(ranges, lives)
         G1, Gt1 = max(self.G, 1), max(self.Gt, 1)
@@ -261,6 +312,23 @@ class BatchedRubberMaterial:
         if self.capture_graph:
             self._capture()
         self.build_wall_s = time.perf_counter()-start
+
+    def _init_projection_host(self, lives):
+        """F8: host copies of the initial per-env block inverses (exact single-solver bits) and the scenes, to rebuild
+        an env's inverse when a reset changes its mass (``projection_blocks`` of the single solver)."""
+        s = self.solver
+        self._proj_scenes = [live.scene for live in lives] if s.projection else None
+        self._proj_inv_initial = s.proj_inv.numpy().copy() if s.projection else None
+        self._proj_inv_host = self._proj_inv_initial.copy() if s.projection else None
+        self._proj_inv_cache = {}
+
+    def _projection_inverse(self, e, mass):
+        """Concatenated float64 inverses of env e's blocks for particle mass ``mass`` (float32), in row order."""
+        key = (e, np.float32(mass).tobytes())
+        if key not in self._proj_inv_cache:
+            blocks = T.projection_blocks(self._proj_scenes[e], np.float32(mass))
+            self._proj_inv_cache[key] = np.concatenate([b["inv"].reshape(-1) for b in blocks])
+        return self._proj_inv_cache[key]
 
     def _check_ranges(self, ranges, lives):
         if not ranges:
@@ -413,6 +481,15 @@ class BatchedRubberMaterial:
                 mass[e] = mass_per_particle(m.density, self.solver.spacing)
         mask = np.zeros(N, np.int32)
         mask[ids] = 1
+        if self.solver.projection:
+            io = self.packed.env["proj_inv_env_offset"]
+            initial_mass = self.initial_mass.numpy()
+            for e in ids:
+                e = int(e)
+                inv = (self._proj_inv_initial[io[e]:io[e+1]] if mass[e] == initial_mass[e]
+                       else self._projection_inverse(e, mass[e]))
+                self._proj_inv_host[io[e]:io[e+1]] = inv
+            self.solver.proj_inv.assign(self._proj_inv_host)
         self.reset_mask.assign(mask)
         self.reset_seed.assign(seed)
         self.stage_params.assign(params)
@@ -456,12 +533,22 @@ class BatchedRubberMaterial:
             wp.launch(_reset_envs_r, N, [self.reset_mask, self.stage_params, s.params, cr.NUM_PARAMS, s.work,
                                          s.violations, s.cfl_violations, self.invalid_reason, self.step_count,
                                          self.seed, self.reset_seed, self.wrench, self.G])
+            if s.state_precision == "f64_shadow_v1":
+                wp.launch(_reset_shadow_r, s.total_particles, [self.reset_mask, s.env_of_particle, s.reference64,
+                                                               s.F64, s.x64])
+            if s.projection:
+                wp.launch(_reset_proj_rows_r, s.proj_rows, [self.reset_mask, s.env_of_row, s.proj_rhs, s.proj_vpresc,
+                                                            s.proj_mu])
+                wp.launch(_reset_proj_nodes_r, s.total_nodes, [self.reset_mask, s.env_of_node, s.proj_mu_node])
+            if s.traction_work == "grid_displacement_v1":
+                wp.launch(_reset_scratch_work_r, N, [self.reset_mask, s.work_scratch])
             if full:
                 s.index.zero_()
 
     def rebuild(self, lives, **kwargs):
         options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
-                       capture_graph=self.capture_graph, graph_chunk=self.graph_chunk, ranges=self.ranges or None)
+                       capture_graph=self.capture_graph, graph_chunk=self.graph_chunk, ranges=self.ranges or None,
+                       bc_launch=self.solver.bc_launch)
         options.update(kwargs)
         replacement = type(self)(lives, **options)
         self.__dict__.clear()

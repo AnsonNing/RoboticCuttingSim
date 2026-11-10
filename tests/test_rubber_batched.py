@@ -130,7 +130,7 @@ def test_partial_reset_equals_fresh_env_and_keeps_others():
         assert np.array_equal(snap[name], ref[name]), name
     covered = set(snap) | {"reference", "plane", "box_c", "box_h", "env_of_particle", "env_of_node", "env_of_group",
                            "particle_offset", "node_offset", "cell_env_offset", "marker_offsets", "marker_particles",
-                           "group_kind", "group_origin", "slot", "slot_code", "node_X", "node_mask"}
+                           "group_kind", "group_origin", "slot", "slot_code", "node_X", "node_mask", "bc_nodes"}
     assert reset_names <= covered | {"params"}
     for name in rmb.MATERIAL_RESET_ARRAYS:
         assert np.array_equal(getattr(batch, name).numpy()[1], getattr(fresh, name).numpy()[1]), name
