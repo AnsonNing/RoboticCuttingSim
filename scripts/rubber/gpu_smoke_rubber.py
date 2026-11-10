@@ -86,7 +86,17 @@ def part_a(device, cfg, peak):
             "pass": (not d["nonfinite"]) and live.invalid_reason == 0 and peak.value <= 1024 and sum(walls) <= 120}
 
 
-def part_b(device, cfg, Ns, peak):
+def part_b(device, cfg, Ns, peak, guard_modes=(None,), control_steps=None):
+    """``guard_modes``: stable_step_guard values per N (None = off, the v1 launch sequence; a float = the limit),
+    run back to back for the same N so that the with/without-guard timing shares the GPU conditions (F2)."""
+    rows = []
+    for N in Ns:
+        for guard in guard_modes:
+            rows += _part_b_one(device, cfg, N, peak, guard, control_steps)
+    return rows
+
+
+def _part_b_one(device, cfg, N, peak, guard, control_steps):
     import warp as wp
     from robotic_cutting_sim import rubber_scene as rs
     from robotic_cutting_sim.batched.rubber_material_batch import BatchedRubberMaterial
@@ -97,11 +107,12 @@ def part_b(device, cfg, Ns, peak):
                               density=rnd["density_kg_m3"][0])
     ranges = {"mu0": tuple(rnd["shear_modulus_eq_pa"]), "density": tuple(rnd["density_kg_m3"])}
     rows = []
-    for N in Ns:
+    steps = cfg["smoke_variant"]["control_steps"] if control_steps is None else int(control_steps)
+    for N in (N,):
         wp.synchronize_device(device)
         t0 = time.perf_counter()
-        lives = [LiveRubberMaterial(smoke_spec(rs, cfg), control_dt=0.02, device="cpu", step_material=step_mat)
-                 for _ in range(N)]
+        lives = [LiveRubberMaterial(smoke_spec(rs, cfg), control_dt=0.02, device="cpu", step_material=step_mat,
+                                    stable_step_guard=guard) for _ in range(N)]
         batch = BatchedRubberMaterial(lives, device=device, ranges=ranges, strict=False)
         del lives
         batch.reset(seeds=np.arange(N)+100, rng_ranges=True)
@@ -112,7 +123,7 @@ def part_b(device, cfg, Ns, peak):
         env_p = batch.packed.host["env_of_particle"]
         env_mass0 = np.bincount(env_p, weights=mass0.astype(np.float64))
         walls = []
-        for k in range(cfg["smoke_variant"]["control_steps"]):
+        for k in range(steps):
             wp.synchronize_device(device)
             t = time.perf_counter()
             batch.advance()
@@ -130,6 +141,8 @@ def part_b(device, cfg, Ns, peak):
             resets.append(time.perf_counter()-t)
         audits = batch.audits()
         invalid = batch.invalid_reason.numpy().tolist()
+        cfl_violations = batch.solver.cfl_violations.numpy().tolist()
+        cfl_eff_max = [d["cfl_eff_max"] for d in diag]
         ok = (all(not d["nonfinite"] for d in diag) and np.array_equal(env_mass0, env_mass1)
               and not any(invalid) and all(v == 0 for v in audits.values()))
         rows.append({"part": "B_batched_L2_R1.7", "N": N, "particles_per_env": int(batch.packed.particle_counts[0]),
@@ -142,7 +155,10 @@ def part_b(device, cfg, Ns, peak):
                      "vram_peak_mb_process": peak.value, "memory_bytes_arrays": batch.memory_bytes(),
                      "mempool_used_mb": wp.get_mempool_used_mem_current(device)/2**20,
                      "finite": all(not d["nonfinite"] for d in diag), "mass_constant": bool(np.array_equal(env_mass0, env_mass1)),
-                     "invalid_reason": invalid, "audits": audits,
+                     "invalid_reason": invalid, "audits": audits, "stable_step_guard": guard,
+                     "guard_violations_after_run_per_env": cfl_violations, "cfl_eff_max_end_per_env": cfl_eff_max,
+                     "ms_per_substep_warm_median": (1e3*float(np.median(walls[1:]))/batch.solver.substeps
+                                                    if len(walls) > 1 else None),
                      "Jbar_range": [min(d["Jbar_min"] for d in diag), max(d["Jbar_max"] for d in diag)],
                      "params_mu0": batch.solver.params.numpy()[:, 0].tolist(),
                      "physics_verdict": "L2_INVARIANTS_PASS" if ok else "L2_INVARIANTS_FAIL",
@@ -219,6 +235,9 @@ def main():
     ap.add_argument("--device", default="cuda:0")
     ap.add_argument("--parts", default="A,B,C")
     ap.add_argument("--N", default="1,4,8")
+    ap.add_argument("--guard-modes", default="off",
+                    help="part B: comma list of stable_step_guard settings per N, 'off' or a limit (e.g. off,1.0)")
+    ap.add_argument("--control-steps", type=int, default=None, help="part B: control steps (default: workload E)")
     args = ap.parse_args()
     out = Path(args.out)
     if out.exists():
@@ -240,7 +259,8 @@ def main():
             results.append(part_a(args.device, cfg, peak))
             (out/"results.json").write_text(json.dumps(results, indent=1, default=float))
         if "B" in parts:
-            results += part_b(args.device, cfg, [int(n) for n in args.N.split(",")], peak)
+            modes = [None if m.strip() == "off" else float(m) for m in args.guard_modes.split(",")]
+            results += part_b(args.device, cfg, [int(n) for n in args.N.split(",")], peak, modes, args.control_steps)
             (out/"results.json").write_text(json.dumps(results, indent=1, default=float))
         if "C" in parts:
             results.append(part_c(args.device))
