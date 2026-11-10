@@ -2986,5 +2986,50 @@
    "tests/test_batched_frozen_sources.py pins": 8,
    "tests/test_rl_position_band.py": 14
   }
+ },
+ "corrections_bit_renumbering": {
+  "schema": "rcs_rl_evidence_correction_v1",
+  "added": "2026-11-10",
+  "source": "docs/reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md finding 8",
+  "additive_only": true,
+  "original_values_unchanged": true,
+  "note": "Every raw material invalid_reason value in this file was recorded on branch claude/rl-review-fix1 (evidence parent 511545f) and is decoded with that branch's bit table. Do not decode these raw values with the integration-branch table (robotic_cutting_sim.batched.material_batch / rl.termination.decode_material_invalid).",
+  "branch": "claude/rl-review-fix1",
+  "branch_commit": "511545f",
+  "integration_merge": "f5178f5",
+  "bitmap_at_branch_time": {
+   "1": "NONFINITE_STATE",
+   "2": "SLOT_OVERFLOW",
+   "4": "INVALID_MEASURED_POSE",
+   "8": "INVALID_CUT_DIGIT",
+   "16": "NONFINITE_WRENCH",
+   "32": "INVALID_OBSTACLE_BOXES",
+   "64": "CONTACT_SPEED_GUARD",
+   "128": "FOREIGN_DEVICE_HASHGRID"
+  },
+  "bitmap_on_integration": {
+   "1": "NONFINITE_STATE",
+   "2": "SLOT_OVERFLOW",
+   "4": "INVALID_MEASURED_POSE",
+   "8": "INVALID_CUT_DIGIT",
+   "16": "NONFINITE_WRENCH",
+   "32": "INVALID_OBSTACLE_BOXES",
+   "64": "CONTACT_SPEED_GUARD",
+   "128": "INPUT_OUT_OF_DOMAIN",
+   "256": "FOREIGN_DEVICE_HASHGRID"
+  },
+  "renumbered": [
+   {
+    "name": "FOREIGN_DEVICE_HASHGRID",
+    "raw_value_in_this_file": 128,
+    "value_on_integration": 256,
+    "reason": "INPUT_OUT_OF_DOMAIN (B2 follow-up, merged first at 52dfcf6) already used 128 on the integration branch"
+   }
+  ],
+  "affected_fields": [
+   "f1_default_path_descriptor.gpu_probe_records.f1_foreign_002.records.foreign_protected.invalid_reason (raw 128 = FOREIGN_DEVICE_HASHGRID at branch time; 256 on integration)",
+   "f1_default_path_descriptor.gpu_probe_records.f1_foreign_002.records.unprotected.invalid_reason (raw 128 = FOREIGN_DEVICE_HASHGRID at branch time; 256 on integration)",
+   "f1_default_path_descriptor.fix (text 'FOREIGN_DEVICE_HASHGRID (128)')"
+  ]
  }
 }

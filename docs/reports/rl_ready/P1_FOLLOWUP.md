@@ -131,8 +131,8 @@ It also checks that each config's version equals its file name, and that every `
 
 `acceptance_v2` freezes at the commit that merges it into `main`. Any change after that is `acceptance_v3`.
 
-Not changed here: the "frozen from its first commit" wording in D-11 and in the R0 report. Review §8 assigns that
-correction to the Phase 1 PR documentation.
+The "frozen from its first commit" wording was corrected in D-11 and in the R0 report on `claude/rl-phase1`
+(`0b99e7b`), which is merged into this branch. This branch does not edit either file.
 
 ### 1.5 External adapter compatibility (read-only check)
 
@@ -302,6 +302,5 @@ importer looked absent. The run used the project `.venv` with a pytest plugin th
   Selecting v2 in the adapter is the other agent's change (read-only here).
 - **`G9:window` is measured on the episode processes, not inside the G9 throughput processes.** Per-phase walls,
   VRAM and reset p95 are candidate-reported.
-- **D-11 and the R0 report** still say "frozen from its first commit". They are left for the Phase 1 PR docs, per review §8.
 - **`rcs_rl_rollout_v2` is opt-in.** Declared runs (`rl_smoke_v1`, long rollouts) keep v1.
 - **Not addressed here:** findings 5–9 and 11 (not in scope).
