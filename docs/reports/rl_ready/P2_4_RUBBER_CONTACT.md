@@ -181,3 +181,126 @@ tests/test_repo_naming.py` (new: `test_rubber_contact.py` 12 = RUBBER-CONT-10, `
 ADR §22.8: X1 (decision on the μ 0.8 / pinch FAILs, rcs-xhigh), B1–B3 (batched contact, GPU isolation, Lab coupling
 adapter), P1 (contact kernel cost), S1 (self-penetration detector before P2-6), C1 (feedback coupling with a shorter or
 iterated handoff), R1 (independent review). Independent rcs-review: NOT_RUN.
+
+## 7. Batched contact path (tasks B1 / B2; branch `claude/rl-rubber-p24b`)
+
+Branch `claude/rl-rubber-p24b` from `33f5fe3`. Material status **SIMULATOR_ONLY_UNCALIBRATED**. Evidence:
+`docs/evidence/rl_ready/p2_4_contact_batched_001.json`. Raw outputs: `artifacts/rl_ready/p2_4b/` (not committed).
+Nothing frozen changed (Phase 1 modules incl. `batched/constitutive.py`, `errors.py`, `particle_contacts.py`,
+`material_batch.py`, `rl/lab_batched_env.py`; `configs/rl_benchmark/*`, `scripts/rl_ready/*`; the rubber protocols and
+the frozen rubber modules). The single-env law files `rubber_contact.py` / `tlmpm_rubber_contact_v1.py` are NOT
+modified (task X1 may change them on `claude/rl-rubber-p24`).
+
+### 7.1 Implementation
+
+- `batched/rubber_contact_batch.py` (new): `BatchedTLMPMRubberContact(BatchedTLMPMRubber)`. The contact kick is the
+  single solver's own `TLMPMRubberContact._launch_contact`, bound unchanged (batched arrays under the single solver's
+  `ct_*` names, `node_count` = all nodes), so the shared `rubber_contact` kernels run over all envs;
+  `contact_work_end`, `node_displacement`, `slider_update` are launched at the single solver's points through three
+  hooks of `BatchedTLMPMRubber.step` (`_after_p2g_grid_update`, `_after_final_grid_update`, `_after_position_update`;
+  no-ops without contact). Scalar `ct_*` attributes are copied from the single reference (uniform signature); a v2 law
+  that keeps to this pattern plugs in with no batched physics. A single-solver contact array without a declared batched
+  row kind (`rubber_layout.CONTACT_ARRAY_KINDS`) is refused (`UNSUPPORTED_SOLVER`), so a new law's state cannot be
+  silently left unbatched.
+- Per-env frictions: `ct_fric` is the strided view `params[:, 3:5]` (friction_table, friction_pad); a masked reset with
+  resampled frictions changes them with no extra array.
+- Rows: node arrays at the env's node range; per-env `ct_work[N, 6]`, `ct_pen_max[N]`, `ct_counts[N, 3]`,
+  `ct_energy[N, 2]`; planes `e*P + k`, frames `e*F + f`, boxes `(e*F + f)*B + b` (heterogeneous plane values, box
+  geometry, frame origins; P, F, B, frame kinds, law and law parameters uniform, else `UNSUPPORTED_NONUNIFORM_BATCH`).
+- `BatchedRubberMaterial` with contact: `advance(..., frame_rotation=, frame_translation=, frame_active=)` ([N, F, ...]
+  END poses), contact begin-of-step (frames hold, per-step reactions / penetration / counts zeroed; `ct_work`
+  cumulative), a wrench kernel → `plane_wrench [N, P, 6]`, `box_wrench [N, F, B, 6]`, the `MaterialCoupling` arrays
+  `pad_wrench [N, G·B, 6]` (per-pad wrenches [N, G, B, 6] flattened, G = frames of kind pad; `pad_wrenches()` returns
+  the 4-D view) and `pending_wrench [N, 6]` (zero: no edge / tool contact in rubber v1), a NONFINITE check of the contact
+  wrenches, the contact energy every control step, `contact_read()` (the `last_contact` keys), masked reset of every
+  contact array, `contact_audit`. Values are strip-local (= world for an identity strip pose); the strip-to-world
+  transform and the finger recipients are **task B3, not done**.
+- Contact off: lives without a ContactSpec build the unchanged `BatchedTLMPMRubber` (no contact array, no launch).
+
+### 7.2 RUBBER-CONT-08 (CPU L0 / L1 / refusals) — **PASS**
+
+`CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -p no:cacheprovider -v tests/test_rubber_contact_batched.py
+--junitxml artifacts/rl_ready/p2_4b/cont08_cpu_001/junit.xml` — commit `742858a`, clean tree, protocol sha256
+`4d3dc68f…6e4c`, Warp 1.17.0 CPU: **25 / 25 passed** (11 s).
+
+- L0 byte-wise (dtype, shape, raw bytes) against the single `TLMPMRubberContact` after every control step, N = 1 and
+  N = 3 heterogeneous (particle counts, mu0, rho, mu_table, mu_pad, plane offsets, frame geometry and motions), with the
+  protocol options (F8 + kick-average + F9 + F10, guard 1.0): incline (tilted gravity, table + moving fixture frame,
+  elastic), impact (P2-type rods, heterogeneous Prony terms padded to M = 2, per-env initial velocities), pinch (case A
+  clamp, table + two pad frames of two boxes, squeeze / pull / roll, one pad released for a step; elastic and P2); also
+  the v1 options and the projection law. Compared: every base, option and visco array, every contact array (incl.
+  `ct_node_u`, `ct_xi`, `ct_obst`, `ct_vobs`, `ct_work`, the reactions), diagnostics, visco diagnostics, markers, group
+  wrenches, the contact block and the per-pad wrenches. Two single-reference placeholders with no batched counterpart are
+  excluded and asserted unused: `params64 = [[1.0]]` of the elastic visco class, and the F8 placeholder arrays of free
+  scenes with no constrained node (the batch has never allocated either).
+- L1: perturbing env 1's pad motion, friction or table plane changes no byte of envs 0 / 2; masked partial reset equals
+  a fresh env (all reset arrays incl. contact and material outputs) and evolves like one; a reset with resampled
+  frictions equals the single reference built with them; episodes after a full reset repeat byte-wise; vars()-complete
+  classification with the contact arrays; contact ownership audit 0 (and a mutation is detected).
+- Refusals: mixed contact / no contact, law, zeta_t, zeta_n, kappa_n, plane count, frame count, box count, frame kind;
+  an undeclared single contact array.
+- An empty-ContactSpec batch is byte-identical to the batch without contact (elastic and P2). Mutation checks (outside
+  the suite): shifted friction columns, a dropped slider update, a dropped frame-hold copy are each detected by L0.
+
+### 7.3 RUBBER-CONT-09 (GPU per-env isolation) — **FAIL** (criterion b, 1 of 108 rows); a and c PASS
+
+`flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp
+PYTHONPATH=src .venv/bin/python scripts/rubber/p2_4b/gpu_contact_batched_check.py --out
+artifacts/rl_ready/p2_4b/gpu_cont09_001` — commit `742858a`, clean tree, protocol sha `4d3dc68f…`, RTX 5090 GPU0,
+driver 570.211.01, Warp 1.17.0, **SHARED_GPU** (co-tenant PID 642659, 766 MB, before and after, not touched; a second
+co-tenant PID 3093155, 712 MB, at the end), 30,959 MB free at start, wall 74 s. Workload E (case A 150 × 20 × 4 mm,
+n_t 3, 41,220 particles/env, 50 Hz, dt 7.74e-6 s, 2,585 substeps, the protocol options, guard 1.0), N = 4: env 1
+pinched (squeeze 20 µm ramped over 3 steps, then held; ≈ 4.8 N per pad) and on the table z = 0, envs 0 / 2 / 3 with pads
++1 m and table z = -1 m; one batch, episodes A, A' (repeat), B (env 1 squeeze 30 µm, ≈ 7.1 N), 6 control steps each.
+
+| Criterion | Verdict | Measured |
+|---|---|---|
+| a zero rows | **PASS** | every contact row of envs 0 / 2 / 3 (plane / box / pad / pending wrenches, ct_work, ct_pen_max, ct_counts, ct_energy, reactions, per-node impulses, slider state, obstacle ids = -1) exactly 0.0 after every step of A, A', B (and of the diagnostic episodes); env 1's rows nonzero every step |
+| b perturbation band | **FAIL** | 107 of 108 (step, env, observable) rows pass; failing: step 3, env 2, group (clamp) wrench: max\|A − B\| 1.23e-7 N > max\|A − A'\| 2.09e-8 N + 1e-6 · 0.0708 N = 9.2e-8 N. Markers, energies (summary) and contact wrenches pass everywhere |
+| c audits | **PASS** | node / cell / marker / group / traction / contact-row ownership audits 0; finite; invalid bits 0; guard violations 0 |
+
+The reading of b (per control step, per env, per observable vector: max |A − B| ≤ max |A − A'| + 1e-6 · max |A|) was
+implemented before any run and is the verdict. Diagnostic only (added after the SMOKE runs `gpu_cont09_smoke_001/002`,
+reduced geometry, showed the same effect; never part of the verdict): with three A and two B episodes, 105 of 108 rows
+have every A–B difference inside the A–A envelope (+1e-6 relative); the 3 outside are all the clamp wrench of an
+out-of-reach env (A–B up to 1.2e-7 N vs A–A up to 8.2e-8 N); aggregated over all steps per observable, every row passes.
+Reading (not a verdict): the out-of-reach envs' clamp wrench (F8 reaction, float64 atomics fed by the frozen float32
+P2G / MUSL atomics) varies run to run on the GPU by up to ~1.7e-6 of its value, and a single repeat sample A vs A'
+underestimates that spread; the A–B differences of envs 0 / 2 / 3 are of the same size as the repeat differences, the
+contact rows are exactly zero, and the CPU L1 tests show byte isolation. No coupling is shown, but the declared
+criterion is not met; a v2 criterion (e.g. a multi-repeat envelope) would have to be declared (rcs-xhigh) before a new
+run. The v1 FAIL stays.
+
+### 7.4 RUBBER-CONT-11 batched cost rows (reported, not scored)
+
+Same run, rows sequential (not interleaved), GPU0 RTX 5090, driver 570.211.01, **SHARED_GPU** (co-tenant utilisation
+samples 44 / 9 / 6 / 3 % at the row starts), commit `742858a`, clean tree, protocol sha `4d3dc68f…`. Workload E,
+`batched_headless` (material only, BatchedRubberMaterial), 41,220 particles/env, 50 Hz, dt 7.74e-6 s, 2,585 substeps per
+control step, cameras none, recording none, robot DOF 0, CUDA graph chunks of 500, 1 cold + 3 warm control steps
+(median), reset = masked partial reset of one env (20 resets).
+
+| Row | N | contacts | cold s | warm s | ms / substep | env-steps / s | sim-time / wall | reset p95 | VRAM peak (process, cumulative) | arrays | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| no contact | 4 | none | 1.038 | 1.006 | 0.389 | 3.98 | 0.080 | 0.41 ms | 776 MB | 86 MB | L2 PASS |
+| -09 configuration | 4 | table + 2 pads per env, env 1 in reach | 1.492 | 1.436 | 0.556 (+43 %) | 2.78 | 0.056 | 0.49 ms | 776 MB | 95 MB | L2 PASS |
+| all pinched | 4 | table + 2 pads per env, all in reach | 1.577 | 1.495 | 0.579 (+49 %) | 2.68 | 0.054 | 0.48 ms | 776 MB | 95 MB | L2 PASS |
+| N = 1 pinched | 1 | table + 2 pads | 0.847 | 0.786 | 0.304 | 1.27 | 0.025 | 0.39 ms | 776 MB | 24 MB | L2 PASS |
+
+N = 4 with contact gives 2.1× the env-steps/s of N = 1 (2.68 vs 1.27). The contact cost (+43–49 %) matches the
+single-env +40–46 % of `gpu_contact_002`; the per-node float64 frame slerp / quat-to-matrix is the known cost (task P1,
+not done). The VRAM column is the process peak over the whole run (CUDA context included), not per row.
+
+### 7.5 CPU suites
+
+`tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py
+tests/test_repo_naming.py` at `742858a` (tracked tree clean at start; only this report changed during the run):
+**446 passed, 0 failed, 0 skipped** with `CUDA_VISIBLE_DEVICES=''` (579 s) and **446 passed** with `=0` under the GPU0
+lock (585 s); 2 warnings (scipy IntegrationWarning in `rubber_visco_reference.py`, pre-existing). Logs in
+`artifacts/rl_ready/p2_4b/cpu_tests_001/`. New: `tests/test_rubber_contact_batched.py`
+(25). None of the new tests needs local artifacts, torch or CUDA.
+
+### 7.6 Open
+
+B3 (MaterialCoupling adapter: strip-to-world wrenches, finger recipients, `box_centers` / `set_measured_poses` /
+`reset_masked(mask)` of the coupling surface), a declared decision on the RUBBER-CONT-09 b FAIL (criterion v2 or
+otherwise), P1 (contact kernel cost), S1, C1, merge with the X1 law decision, independent review: NOT_RUN.
