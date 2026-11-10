@@ -150,7 +150,7 @@ def case_q4(q, run, device="cpu", options=None, guard=1.0):
     init = relax_to_static(live, omega1=2*math.pi*f1, stop_rule="static_stop_v3")
     delta = float(live.scene.marker_reference[-1][2]-np.asarray(init["markers_f64_m"])[-1][2])
     alpha_beta = R.load_parameter(RHO, q["gravity_m_s2"], t, t, L, E)
-    d = live.last_diagnostics if live.last_diagnostics else live.solver.diagnostics.read()[0]
+    d = live.solver.diagnostics.read()[0]
     return dict(_common(live, run, t0), Q=delta, quantity="Q4 large-deflection tip drop (m)", L_m=L, t_m=t,
                 elastica_beta_m=R.elastica(alpha_beta)["tip_drop"]*L,
                 elastica_incompressible_m=R.elastica(R.load_parameter(RHO, q["gravity_m_s2"], t, t, L, 3*mat.mu0)
